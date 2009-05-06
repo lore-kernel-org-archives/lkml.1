@@ -1,98 +1,314 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758384AbZEFAU4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758923AbZEFA0u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758384AbZEFAU4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 20:20:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753123AbZEFAUq
+	id S1758923AbZEFA0u (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 20:26:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753135AbZEFA0k
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 20:20:46 -0400
-Received: from mail-qy0-f133.google.com ([209.85.221.133]:47871 "EHLO
-	mail-qy0-f133.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752209AbZEFAUq convert rfc822-to-8bit (ORCPT
+	Tue, 5 May 2009 20:26:40 -0400
+Received: from exprod7og107.obsmtp.com ([64.18.2.167]:44877 "EHLO
+	exprod7og107.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752969AbZEFA0i convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 20:20:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=ri5kgjG02nFTw8Zg9TheaGoME+pSKiGQTyasZhESKMoi/BuISgXRMz3DVvEpE7JDIs
-         9V/oI9+fOYgB9w29bA13CRYbbQJBCa9aYngTH4qQrnu39jixGLA4yn6Goqm25UnAU96y
-         81sG/Pj+s5pVV542jFqSroWKHo6uY6splhQnc=
-MIME-Version: 1.0
-In-Reply-To: <200905060127.24777.rjw@sisk.pl>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com> 
-	<d6200be20905051358m34c2be02ped84ad4158cd9865@mail.gmail.com> 
-	<87eiv35eg6.fsf@deeprootsystems.com> <200905060127.24777.rjw@sisk.pl>
-From: Kim Kyuwon <chammoru@gmail.com>
-Date: Wed, 6 May 2009 09:20:00 +0900
-Message-ID: <4d34a0a70905051720y5f9021ack3e71a7a4002a9e97@mail.gmail.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable wakeup IRQs
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>,
-       =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 5 May 2009 20:26:38 -0400
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Austria, Winston" <Winston.Austria@lsi.com>
+Date: Tue, 5 May 2009 18:25:55 -0600
+Subject: [PATCH 2/10] scsi: megaraid_sas - Add Poll Wait mechanism to
+ MegaRAID SAS driver (PART-I)
+Thread-Topic: [PATCH 2/10] scsi: megaraid_sas - Add Poll Wait mechanism to
+ MegaRAID SAS driver (PART-I)
+Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQgDzPsVNAAASQyUA==
+Message-ID: <4B6A08C587958942AA3002690DD4F8C354F61C3E@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C354F61C22@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 6, 2009 at 8:27 AM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
-> On Wednesday 06 May 2009, Kevin Hilman wrote:
->> Arve Hjønnevåg <arve@android.com> writes:
->>
->> > On Tue, May 5, 2009 at 8:52 AM, Kevin Hilman
->> > <khilman@deeprootsystems.com> wrote:
->> >> Andrew Morton <akpm@linux-foundation.org> writes:
->> >>
->> >>> On Mon,  4 May 2009 17:27:04 -0700 Kevin Hilman <khilman@deeprootsystems.com> wrote:
->> >>>
->> >>>> Interrupts that are flagged as wakeup sources via set_irq_wake()
->> >>>> should not be disabled for suspend.
->> >>>>
->> >>>
->> >>> Why not?
->> >>>
->> >>
->> >> If an interrupt is a wakeup source, and it is disabled at the chip
->> >> level, it will no longer generate interrupts, and thus no longer wake
->> >> up the system.
->> >>
->> >> I'd be interested in hearing why wakeup interrupts should be disabled
->> >> during suspend.
->
-> That depends on whether or not they are used for anything else than wake-up.
->
->>
->> [...]
->>
->> >>>
->> >>> If this fixes some bug then please provide a description of that bug?
->> >>
->> >> The bug is that on TI OMAP, interrupts that are used for wakeup events
->> >> are disabled by this code causing the system to no longer wake up.
->> >
->> > What do you do if the interrupt triggers right after your driver has
->> > returned from its late suspend hook?
->>
->> If it's a wakeup IRQ, I assume you want it to prevent suspend.
->>
->> But I don't see how that can happen in the current code. IIUC, by the
->> time your late suspend hook is run, your device IRQ is already
->> disabled, so it won't trigger an interrupt that will be caught by
->> check_wakeup_irqs() anyways.
->
-> My understanding of __disable_irq() was that it didn't actually disable the
-> IRQ at the hardware level, allowing the CPU to actually receive the interrupt
-> and acknowledge it, but preventing the device driver for receiving it.  Does
-> it work differently on the affected systems?
+Add Poll_wait mechanism to SAS-2 MegaRAID SAS Linux driver. Driver will wakeup poll after the driver get event from MegaRAID SAS FW.  Driver also reregisters for Event with the FW when it receives AEN.
 
-Hi Rafael,
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-You can refer to:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=5461af5af5c6a7fee78978aafe720541bf3a2f55
+---
+drivers/scsi/megaraid/megaraid_sas.c |  136 ++++++++++++++++++++++++++++++++++-
+ drivers/scsi/megaraid/megaraid_sas.h |   18 ++++
+ 2 files changed, 153 insertions(+), 1 deletion(-)
 
-Thanks,
-Kyuwon
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-05-04 20:10:20.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-05-04 20:11:52.000000000 -0400
+@@ -40,6 +40,7 @@
+ #include <linux/compat.h>
+ #include <linux/blkdev.h>
+ #include <linux/mutex.h>
++#include <linux/poll.h>
+
+ #include <scsi/scsi.h>
+ #include <scsi/scsi_cmnd.h>
+@@ -89,6 +90,9 @@ static struct megasas_mgmt_info megasas_
+ static struct fasync_struct *megasas_async_queue;
+ static DEFINE_MUTEX(megasas_async_queue_mutex);
+
++static int megasas_poll_wait_aen;
++static DECLARE_WAIT_QUEUE_HEAD(megasas_poll_wait);
++
+ static u32 megasas_dbg_lvl;
+
+ static void
+@@ -1277,6 +1281,8 @@ megasas_bios_param(struct scsi_device *s
+        return 0;
+ }
+
++static void megasas_aen_polling(struct megasas_instance *instance);
++
+ /**
+  * megasas_service_aen -       Processes an event notification
+  * @instance:                  Adapter soft state
+@@ -1295,13 +1301,20 @@ megasas_service_aen(struct megasas_insta
+        /*
+         * Don't signal app if it is just an aborted previously registered aen
+         */
+-       if (!cmd->abort_aen)
++       if ((!cmd->abort_aen) && (instance->unload == 0)) {
++               megasas_poll_wait_aen = 1;
++               wake_up(&megasas_poll_wait);
+                kill_fasync(&megasas_async_queue, SIGIO, POLL_IN);
++       }
+        else
+                cmd->abort_aen = 0;
+
+        instance->aen_cmd = NULL;
+        megasas_return_cmd(instance, cmd);
++
++       if ((!cmd->abort_aen) && (instance->unload == 0)) {
++               megasas_aen_polling(instance);
++       }
+ }
+
+ /*
+@@ -2583,6 +2596,8 @@ megasas_probe_one(struct pci_dev *pdev,
+
+        *instance->producer = 0;
+        *instance->consumer = 0;
++       megasas_poll_wait_aen = 0;
++       instance->hotplug_wk = NULL;
+
+        instance->evt_detail = pci_alloc_consistent(pdev,
+                                                    sizeof(struct
+@@ -2621,6 +2636,7 @@ megasas_probe_one(struct pci_dev *pdev,
+
+        megasas_dbg_lvl = 0;
+        instance->flag = 0;
++       instance->unload = 0;
+        instance->last_time = 0;
+
+        /*
+@@ -2924,6 +2940,7 @@ static void __devexit megasas_detach_one
+        struct megasas_instance *instance;
+
+        instance = pci_get_drvdata(pdev);
++       instance->unload = 1;
+        host = instance->host;
+
+        if (poll_mode_io)
+@@ -2932,6 +2949,15 @@ static void __devexit megasas_detach_one
+        scsi_remove_host(instance->host);
+        megasas_flush_cache(instance);
+        megasas_shutdown_controller(instance, MR_DCMD_CTRL_SHUTDOWN);
++
++       /*
++       * cancel the delayed work if this work still in queue
++       */
++       if (instance->hotplug_wk != NULL) {
++               cancel_delayed_work(
++                       (struct delayed_work *)instance->hotplug_wk);
++               flush_scheduled_work();
++       }
+        tasklet_kill(&instance->isr_tasklet);
+
+        /*
+@@ -3027,6 +3053,19 @@ static int megasas_mgmt_fasync(int fd, s
+ }
+
+ /**
++ * megasas_mgmt_poll -  char node "poll" entry point
++ * */
++static unsigned int megasas_mgmt_poll(struct file *file, poll_table *wait)
++{
++       unsigned int mask = 0;
++       poll_wait(file, &megasas_poll_wait, wait);
++       if (megasas_poll_wait_aen) {
++               mask |=   (POLLIN | POLLRDNORM);
++       }
++       return mask;
++}
++
++/**
+  * megasas_mgmt_fw_ioctl -     Issues management ioctls to FW
+  * @instance:                  Adapter soft state
+  * @argp:                      User's ioctl packet
+@@ -3348,6 +3387,7 @@ static const struct file_operations mega
+        .open = megasas_mgmt_open,
+        .fasync = megasas_mgmt_fasync,
+        .unlocked_ioctl = megasas_mgmt_ioctl,
++       .poll = megasas_mgmt_poll,
+ #ifdef CONFIG_COMPAT
+        .compat_ioctl = megasas_mgmt_compat_ioctl,
+ #endif
+@@ -3462,6 +3502,100 @@ out:
+        return retval;
+ }
+
++static void
++megasas_scsi_scan_host(struct work_struct *work)
++{
++       struct megasas_aen_event *ev = container_of(work,
++               struct megasas_aen_event, hotplug_work);
++       struct megasas_instance *instance = ev->instance;
++
++       instance->hotplug_wk = NULL;
++       if (!instance) {
++               printk(KERN_ERR "%s: invalid instance!\n", __FUNCTION__);
++               kfree(ev);
++               return;
++       }
++
++       printk(KERN_INFO "%s[%d]: scanning ...\n",
++               __FUNCTION__, instance->host->host_no);
++       scsi_scan_host(instance->host);
++       kfree(ev);
++}
++
++static void
++megasas_aen_polling(struct megasas_instance *instance)
++{
++       union megasas_evt_class_locale class_locale;
++       int doscan = 0;
++       u32 seq_num;
++       int error;
++
++       if (instance->evt_detail) {
++               printk(KERN_INFO "%s[%d]: event code 0x%04x\n", __FUNCTION__,
++                       instance->host->host_no, instance->evt_detail->code);
++
++               switch (instance->evt_detail->code) {
++
++               case MR_EVT_LD_CREATED:
++               case MR_EVT_PD_INSERTED:
++               case MR_EVT_LD_DELETED:
++               case MR_EVT_LD_OFFLINE:
++               case MR_EVT_CFG_CLEARED:
++               case MR_EVT_PD_REMOVED:
++               case MR_EVT_FOREIGN_CFG_IMPORTED:
++               case MR_EVT_LD_STATE_CHANGE:
++               case MR_EVT_CTRL_HOST_BUS_SCAN_REQUESTED:
++                       doscan = 1;
++                       break;
++               default:
++                       doscan = 0;
++                       break;
++               }
++       } else {
++               printk(KERN_ERR "%s[%d]: invalid evt_detail!\n",
++                       __FUNCTION__, instance->host->host_no);
++               return;
++       }
++
++       if (doscan) {
++               struct megasas_aen_event *ev;
++               ev = kzalloc(sizeof(*ev), GFP_ATOMIC);
++               if (!ev) {
++                       printk(KERN_ERR "%s: out of memory\n", __FUNCTION__);
++               } else {
++                       ev->instance = instance;
++                       instance->hotplug_wk = &ev->hotplug_work;
++                       INIT_WORK(&ev->hotplug_work, megasas_scsi_scan_host);
++                       schedule_delayed_work(
++                               (struct delayed_work *)&ev->hotplug_work, 0);
++               }
++       }
++
++       seq_num = instance->evt_detail->seq_num + 1;
++
++       /**
++       * Register AEN with FW for latest sequence number plus 1
++       **/
++
++       class_locale.members.reserved = 0;
++       class_locale.members.locale = MR_EVT_LOCALE_ALL;
++       class_locale.members.class = MR_EVT_CLASS_DEBUG;
++
++       if ( instance->aen_cmd != NULL ) {
++               return ;
++       }
++
++       mutex_lock(&instance->aen_mutex);
++       error = megasas_register_aen(instance, seq_num,
++                               class_locale.word);
++       mutex_unlock(&instance->aen_mutex);
++
++       if (error)
++               printk(KERN_ERR "%s[%d]: register aen failed error %x\n",
++                        __FUNCTION__, instance->host->host_no, error);
++}
++
++
+ static DRIVER_ATTR(poll_mode_io, S_IRUGO|S_IWUGO,
+                megasas_sysfs_show_poll_mode_io,
+                megasas_sysfs_set_poll_mode_io);
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2009-05-04 20:10:21.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2009-05-04 20:00:31.000000000 -0400
+@@ -132,6 +132,17 @@
+ #define MR_DCMD_CLUSTER_RESET_ALL              0x08010100
+ #define MR_DCMD_CLUSTER_RESET_LD               0x08010200
+
++#define MR_EVT_CFG_CLEARED                     0x0004
++
++#define MR_EVT_LD_STATE_CHANGE                 0x0051
++#define MR_EVT_PD_INSERTED                     0x005b
++#define MR_EVT_PD_REMOVED                      0x0070
++#define MR_EVT_LD_CREATED                      0x008a
++#define MR_EVT_LD_DELETED                      0x008b
++#define MR_EVT_FOREIGN_CFG_IMPORTED            0x00db
++#define MR_EVT_LD_OFFLINE                      0x00fc
++#define MR_EVT_CTRL_HOST_BUS_SCAN_REQUESTED     0x0152
++
+ /*
+  * MFI command completion codes
+  */
+@@ -1072,6 +1083,11 @@ struct megasas_evt_detail {
+        u32 (*read_fw_status_reg)(struct megasas_register_set __iomem *);
+  };
+
++struct megasas_aen_event {
++       struct work_struct hotplug_work;
++       struct megasas_instance *instance;
++};
++
+ struct megasas_instance {
+
+        u32 *producer;
+@@ -1118,8 +1134,10 @@ struct megasas_instance {
+
+        struct megasas_instance_template *instancet;
+        struct tasklet_struct isr_tasklet;
++       struct work_struct *hotplug_wk;
+
+        u8 flag;
++       u8 unload;
+        unsigned long last_time;
+
+        struct timer_list io_completion_timer;
