@@ -1,71 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759484AbZEFTCQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbZEFTCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759484AbZEFTCQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 15:02:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbZEFTCA
+	id S1758976AbZEFTCc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 15:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758627AbZEFTCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 15:02:00 -0400
-Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33444 "EHLO
-	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751486AbZEFTB7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 15:01:59 -0400
-Date: Wed, 6 May 2009 20:01:10 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Jean Delvare <khali@linux-fr.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
-       Nicolas Pitre <nico@cam.org>, Wolfram Sang <w.sang@pengutronix.de>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: manual merge of the i2c tree with the arm-current
-	tree
-Message-ID: <20090506190110.GB6897@flint.arm.linux.org.uk>
-References: <20090506131031.83f1b04d.sfr@canb.auug.org.au> <20090506071547.GA29466@flint.arm.linux.org.uk> <20090506092559.2d9e53cb@hyperion.delvare>
+	Wed, 6 May 2009 15:02:19 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:41448 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759554AbZEFTCR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 15:02:17 -0400
+Date: Wed, 6 May 2009 12:02:16 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, dhowells@redhat.com,
+       linux-kernel@vger.kernel.org, niv@us.ibm.com, dvhltc@us.ibm.com,
+       lethal@linux-sh.org, kernel@wantstofly.org, matthew@wil.cx
+Subject: Re: [PATCH] v4 RCU: the bloatwatch edition
+Message-ID: <20090506190216.GE6771@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090502163423.GA1633@linux.vnet.ibm.com> <20090506112459.5edd0902.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090506092559.2d9e53cb@hyperion.delvare>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090506112459.5edd0902.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 09:25:59AM +0200, Jean Delvare wrote:
-> Hi Russell,
+On Wed, May 06, 2009 at 11:24:59AM -0700, Andrew Morton wrote:
+> On Wed, 6 May 2009 14:09:09 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
-> On Wed, 6 May 2009 08:15:48 +0100, Russell King wrote:
-> > Since defconfig updates are always going to create lots of noise, and
-> > the files are normally out of date, the *only* sensible way to handle
-> > updates is to have one tree dealing with them per architecture.
 > > 
-> > Spreading them across multiple trees and then expecting merges to sort
-> > out the resulting mess is unreasonable; they just change far too much
-> > when updates happen.  Moreover, defconfig updates should be in their
-> > own separate commit and not combined with other changes.
+> > * David Howells <dhowells@redhat.com> wrote:
+> > 
+> > > Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > This patch is a version of RCU designed for (!SMP && EMBEDDED)
+> > > > provided as a proof of concept of a small-footprint RCU implementation.
+> > > > In particular, the implementation of synchronize_rcu() is extremely
+> > > > lightweight and high performance.  It passes rcutorture testing in each
+> > > > of the four relevant configurations (combinations of NO_HZ and PREEMPT)
+> > > > on x86.  This saves about 900 bytes compared to Classic RCU, and a
+> > > > couple kilobytes compared to Hierarchical RCU (updated to 2.6.29):
+> > > > ...
+> > > > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> > > 
+> > > Acked-by: David Howells <dhowells@redhat.com>
+> > 
+> > i'm wondering what Andrew thinks - he had objections, right?
+> > 
 > 
-> I fail to see how you can handle configuration option renames
-> gracefully with your proposed model.
+> More like "concerns".  It's unobvious to me that the modest .text
+> savings justify the costs of an additional RCU implementation.  Where
+> those costs include
+> 
+> - additional maintenance work and
+> 
+> - the reduced code reliability which comes from fragmenting the
+>   tester base.  This will mostly affect users of the less popular RCU
+>   implementations.
+> 
+> But hey, maybe I'm wrong.  And maybe I'm right, but we'll merge it anyway ;)
 
-That's not the point I'm making.  The point I'm making is about the
-merge issues which is the BIG and I mean BIG as in 1000ft tall
-letters BIG problem with scattering defconfig patches everywhere.
+;-)
 
-The reality of defconfigs is that they're normally months out of date
-with respect to the current kernel, and are occasionally updated by
-the platform maintainers on an occasional basis (as has happened with
-Nicolas' change which your tree has clashed with.)
+How about if acceptance of Tiny RCU happens at the same time as Classic
+RCU is dropped?  That would be a large net decrease in code size and
+complexity.
 
-I've heard it argued that the only people who should ever touch defconfig
-files are the platform maintainers themselves.  What I'm suggesting is
-one step closer to sanity than that position - having the arch maintainer
-responsible for dealing with all changes to those files, thereby providing
-a centralised point for synchronising and co-ordinating all defconfig
-updates.
-
-If you think you have a better solution (no, throwing them into your own
-I2C tree is NOT a solution - it's a cause of major problems) then please
-state it.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+							Thanx, Paul
