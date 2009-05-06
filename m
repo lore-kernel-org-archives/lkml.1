@@ -1,100 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbZEFKOU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757721AbZEFKYA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758762AbZEFKOU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 06:14:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751268AbZEFKOK
+	id S1757721AbZEFKYA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 06:24:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbZEFKXu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 06:14:10 -0400
-Received: from ms01.sssup.it ([193.205.80.99]:37773 "EHLO sssup.it"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751889AbZEFKOJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 06:14:09 -0400
-Date: Wed, 6 May 2009 12:20:30 +0200
-From: Fabio Checconi <fchecconi@gmail.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com
-Subject: Re: IO scheduler based IO Controller V2
-Message-ID: <20090506102030.GB20544@gandalf.sssup.it>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <1241562049.11059.921.camel@twins> <20090506034254.GD4416@balbir.in.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090506034254.GD4416@balbir.in.ibm.com>
-User-Agent: Mutt/1.4.2.3i
+	Wed, 6 May 2009 06:23:50 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:46941 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752710AbZEFKXt convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 06:23:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=atodIxi8+t6qI7IAuQcXGEfU+5V3LYTmtzw2gYkBYXneamj6huTMjUghOxcPi1/Tvh
+         8C1UcsiMPVsM77itUr/ygEk0a3vOooUs0gvG2zBgIL+kOQXPll+zETmJFnCEO7iqJUxn
+         5Oo1UIQWFULzWhcqB1UlrgThYpfKs+5m4X2VA=
+MIME-Version: 1.0
+In-Reply-To: <20090506082814.GB28675@elte.hu>
+References: <20090506042101.231470089@goodmis.org>
+	 <20090506042333.402933098@goodmis.org>
+	 <20090506082814.GB28675@elte.hu>
+Date: Wed, 6 May 2009 12:23:48 +0200
+Message-ID: <c62985530905060323o3983bd3ap34640018d5a46be6@mail.gmail.com>
+Subject: Re: [PATCH 03/11] tracing: export stats of ring buffers to userspace
+From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-
-> From: Balbir Singh <balbir@linux.vnet.ibm.com>
-> Date: Wed, May 06, 2009 09:12:54AM +0530
+2009/5/6 Ingo Molnar <mingo@elte.hu>:
 >
-> * Peter Zijlstra <peterz@infradead.org> [2009-05-06 00:20:49]:
-> 
-> > On Tue, 2009-05-05 at 13:24 -0700, Andrew Morton wrote:
-> > > On Tue,  5 May 2009 15:58:27 -0400
-> > > Vivek Goyal <vgoyal@redhat.com> wrote:
-> > > 
-> > > > 
-> > > > Hi All,
-> > > > 
-> > > > Here is the V2 of the IO controller patches generated on top of 2.6.30-rc4.
-> > > > ...
-> > > > Currently primarily two other IO controller proposals are out there.
-> > > > 
-> > > > dm-ioband
-> > > > ---------
-> > > > This patch set is from Ryo Tsuruta from valinux.
-> > > > ...
-> > > > IO-throttling
-> > > > -------------
-> > > > This patch set is from Andrea Righi provides max bandwidth controller.
-> > > 
-> > > I'm thinking we need to lock you guys in a room and come back in 15 minutes.
-> > > 
-> > > Seriously, how are we to resolve this?  We could lock me in a room and
-> > > cmoe back in 15 days, but there's no reason to believe that I'd emerge
-> > > with the best answer.
-> > > 
-> > > I tend to think that a cgroup-based controller is the way to go. 
-> > > Anything else will need to be wired up to cgroups _anyway_, and that
-> > > might end up messy.
-> > 
-> > FWIW I subscribe to the io-scheduler faith as opposed to the
-> > device-mapper cult ;-)
-> > 
-> > Also, I don't think a simple throttle will be very useful, a more mature
-> > solution should cater to more use cases.
-> >
-> 
-> I tend to agree, unless Andrea can prove us wrong. I don't think
-> throttling a task (not letting it consume CPU, memory when its IO
-> quota is exceeded) is a good idea. I've asked that question to Andrea
-> a few times, but got no response.
->  
+> * Steven Rostedt <rostedt@goodmis.org> wrote:
+>
+>> From: Steven Rostedt <srostedt@redhat.com>
+>>
+>> This patch adds stats to the ftrace ring buffers:
+>>
+>>  # cat /debugfs/tracing/per_cpu/cpu0/stats
+>>  entries: 42360
+>>  overrun: 30509326
+>>  commit overrun: 0
+>>  nmi dropped: 0
+>>
+>> Where entries are the total number of data entries in the buffer.
+>>
+>> overrun is the number of entries not consumed and were overwritten by
+>> the writer.
+>>
+>> commit overrun is the number of entries dropped due to nested writers
+>> wrapping the buffer before the initial writer finished the commit.
+>>
+>> nmi dropped is the number of entries dropped due to the ring buffer
+>> lock being held when an nmi was going to write to the ring buffer.
+>> Note, this field will be meaningless and will go away when the ring
+>> buffer becomes lockless.
+>>
+>> [ Impact: let userspace know what is happening in the ring buffers ]
+>
+> nice! I was always wondering about these properties - Frederic
+> reported that we drop a lot of trace entries when filtering is
+> enabled, due to the rather stupid:
+>
+>        reserve-buffer
+>        put-stuff-into-buffer
+>        drop-buffer-if-filter-false
+>
+> common sequence we do on heavily filtered input.
+>
+>        Ingo
 
-  from what I can see, the principle used by io-throttling is not too
-different to what happens when bandwidth differentiation with synchronous
-access patterns is achieved using idling at the io scheduler level.
 
-When an io scheduler anticipates requests from a task/cgroup, all the
-other tasks with pending (synchronous) requests are in fact blocked, and
-the fact that the task being anticipated is allowed to submit additional
-io while they remain blocked is what creates the bandwidth differentiation
-among them.
+But I think I was wrong actually.
+I looked at it closer recently and the lock events are traced in a
+raw_local_irq_save section.
 
-Of course there are many differences, in particular related to the
-latencies introduced by the two mechanisms, the granularity they use to
-allocate disk service, and to what throttling and proportional share io
-scheduling can or cannot guarantee, but FWIK both of them rely on
-blocking tasks to create bandwidth differentiation.
+So the cause is elsewhere. I haven't had anymore problem with it
+recently, may be because I'm using a script
+which disables the events once I finish the tracing.
