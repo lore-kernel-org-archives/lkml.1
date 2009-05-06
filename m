@@ -1,66 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763003AbZEFWXw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763298AbZEFWYT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763003AbZEFWXw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:23:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763738AbZEFWWA
+	id S1763298AbZEFWYT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:24:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760781AbZEFWWD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 6 May 2009 18:22:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43325 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762568AbZEFWWA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 May 2009 18:22:00 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:12416 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763359AbZEFWV4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 18:21:56 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=K0JOaFQUASKXjiCsQ1IaavIg0qPM1ofMrO8Feot/eWlulMbteumNNp6G8H/BqF0By
-	uZLZe0mvX2PzjYz4IIzBQ==
+Message-ID: <4A020CD5.2000308@ds.jp.nec.com>
+Date: Wed, 06 May 2009 18:19:01 -0400
+From: "IKEDA, Munehiro" <m-ikeda@ds.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
 MIME-Version: 1.0
-In-Reply-To: <20090506221319.GA11493@elte.hu>
-References: <20090228030413.5B915FC3DA@magilla.sf.frob.com>
-	 <alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
-	 <20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
-	 <alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
-	 <904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
-	 <20090506212913.GC4861@elte.hu>
-	 <904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
-	 <20090506215450.GA9537@elte.hu>
-	 <904b25810905061508n6d9cb8dbg71de5b1e0332ede7@mail.gmail.com>
-	 <20090506221319.GA11493@elte.hu>
-Date: Wed, 6 May 2009 15:21:51 -0700
-Message-ID: <904b25810905061521v62b3ddd6l14deb614d203385a@mail.gmail.com>
-Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-From: =?UTF-8?B?TWFya3VzIEd1dHNjaGtlICjpoaflrZ/li6Qp?= 
-	<markus@google.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       linux-mips@linux-mips.org, sparclinux@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 18/18] io-controller: Debug hierarchical IO scheduling
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-19-git-send-email-vgoyal@redhat.com> <4A0203DB.1090809@ds.jp.nec.com> <20090506215833.GK8180@redhat.com>
+In-Reply-To: <20090506215833.GK8180@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 6, 2009 at 15:13, Ingo Molnar <mingo@elte.hu> wrote:
-> doing a (per arch) bitmap of harmless syscalls and replacing the
-> mode1_syscalls[] check with that in kernel/seccomp.c would be a
-> pretty reasonable extension. (.config controllable perhaps, for
-> old-style-seccomp)
->
-> It would probably be faster than the current loop over
-> mode1_syscalls[] as well.
+Hi,
 
-This would be a great option to improve performance of our sandbox. I
-can detect the availability of the new kernel API dynamically, and
-then not intercept the bulk of the system calls. This would allow the
-sandbox to work both with existing and with newer kernels.
+Vivek Goyal wrote:
+> Hi Ikeda,
+> 
+> I think there is some issue with applying the patch. I think you have
+> forgotten to apply following patch and that's why seeing all the issues.
+> 
+> "io-controller: Export disk time used and nr sectors dipatched through
+> cgroups"
+> 
+> This patch changes elv_ioq_served() at the same time introduced additional
+> field of total_sector_service etc.
+> 
+> Thanks
+> Vivek
 
-We'll post a kernel patch for discussion in the next few days,
+Oh!  you are right.  I missed it because it is out of the
+thread...
+Thanks and please forgive my pointless reply.
+  
 
+-- 
+IKEDA, Munehiro
+  NEC Corporation of America
+    m-ikeda@ds.jp.nec.com
 
-Markus
