@@ -1,56 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZEFFIO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755668AbZEFFJn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbZEFFIO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 01:08:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752112AbZEFFH5
+	id S1755668AbZEFFJn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 01:09:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751598AbZEFFJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 01:07:57 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39222 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751133AbZEFFH5 (ORCPT
+	Wed, 6 May 2009 01:09:31 -0400
+Received: from mtoichi11.ns.itscom.net ([219.110.2.181]:63862 "EHLO
+	mtoichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751253AbZEFFJb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 01:07:57 -0400
-Date: Tue, 5 May 2009 22:03:32 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>, chrisw@sous-sol.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] ptrace: ptrace_attach: check PF_KTHREAD +
- exit_state instead of ->mm
-Message-Id: <20090505220332.553be936.akpm@linux-foundation.org>
-In-Reply-To: <20090506045613.GB26214@redhat.com>
-References: <20090505224722.GA954@redhat.com>
-	<20090505164733.54cd4ca4.akpm@linux-foundation.org>
-	<20090505235736.GA7526@redhat.com>
-	<20090505182444.de4e0143.akpm@linux-foundation.org>
-	<20090506020617.7D417FC328@magilla.sf.frob.com>
-	<20090506045613.GB26214@redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 May 2009 01:09:31 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: [PATCH v2] Fix i_mutex handling in nfsd readdir 
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Al Viro <viro@ZenIV.linux.org.uk>,
+       hch@infradead.org,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
+In-Reply-To: <20090505233509.GG27790@fieldses.org>
+References: <20090417193233.GM26366@ZenIV.linux.org.uk> <1240006620.19059.41.camel@macbook.infradead.org> <20090417224350.GN26366@ZenIV.linux.org.uk> <20090417225306.GO26366@ZenIV.linux.org.uk> <1240013753.21423.86.camel@macbook.infradead.org> <1240144069.3589.156.camel@macbook.infradead.org> <7321.1240375306@jrobl> <20090422191244.GD9541@fieldses.org> <9180.1240468823@jrobl> <20090423202705.GA31085@fieldses.org> <20090505233509.GG27790@fieldses.org>
+Date: Wed, 06 May 2009 14:09:05 +0900
+Message-ID: <7475.1241586545@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009 06:56:13 +0200 Oleg Nesterov <oleg@redhat.com> wrote:
 
-> > > signals-tracehook_notify_jctl-change.patch
-> > > utrace-core.patch
-> > > utrace-core-kill-exclude_xtrace-logic.patch
-> >
-> > I'd swap these three to be after ...
-> >
-> > > #
-> > > ptrace-ptrace_attach-check-pf_kthread-exit_state-instead-of-mm.patch
-> > > ptrace-cleanup-check-set-of-pt_ptraced-during-attach.patch
-> > > ptrace-do-not-use-task_lock-for-attach.patch
-> > > ptrace_get_task_struct-s-tasklist-rcu-make-it-static.patch
+"J. Bruce Fields":
+> On Thu, Apr 23, 2009 at 04:27:05PM -0400, bfields wrote:
+> > On Thu, Apr 23, 2009 at 03:40:23PM +0900, hooanon05@yahoo.co.jp wrote:
+> > > 
+> > > "J. Bruce Fields":
+> > > > > Isn't it better to test it BEFORE fh_compose()?
+> > > 	:::
+> > > > Yes, I think you're right.
+	:::
+> Err, no, I was confused, the v3 spec does clearly state that the
+> filehandle field here is just an optional optimization.
 > 
-> Yes, that was the plan.
-> 
-> But, to do this, utrace-core-kill-exclude_xtrace-logic.patch should be
-> folded into utrace-core.patch. Otherwise, utrace-core.patch alone can't
-> be applied after this new series.
+> But now that I look fh_compose() seems perfectly capable of dealing with
+> negative dentries, so I don't think your patch is necessary after all.
 
-ooooh.
+I agree with you.
+I just thought it is _better_ to test it BEFORE fh_compose(). I don't
+think fh_compose() would crash.
+
+
+If you move lookup_one_len() from nfsd4_encode_dirent_fattr() to
+nfsd4_encode_dirent(), then I'd suggest you to move dput() too.
+Applying your patch,
+- when we get a negative dentry, nfsd4_encode_dirent() will return
+  without dput(). Is it OK?
+- when lookup_one_len() returns an error, nfsd4_encode_dirent() may
+  crash later.
+
+
+J. R. Okajima
