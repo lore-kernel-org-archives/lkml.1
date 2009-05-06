@@ -1,118 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761770AbZEFUrP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761749AbZEFUrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761770AbZEFUrP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:47:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760672AbZEFUm7
+	id S1761749AbZEFUrg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761686AbZEFUqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:42:59 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:44696 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761595AbZEFUm5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:42:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=C2NGxezQmaip1GIkzi8xdJtvIBx1FPC1IuX8X1u7ZhshT4r12UCnCBhUW2hMuoRhxD
-         ZUPwCTavvi4MU44EKRr+V7b3bs8T4uiybcJ48nvbxak+kj+mGYWvYJrxYyYYigHaNxXG
-         BiqyM1ca0f7QdXH7Oz5N85kM6J2GCv4GReGck=
-Date: Wed, 6 May 2009 22:42:51 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, nauman@google.com, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, agk@redhat.com,
-       dm-devel@redhat.com, snitzer@redhat.com, m-ikeda@ds.jp.nec.com
-Subject: Re: IO scheduler based IO Controller V2
-Message-ID: <20090506204249.GB4282@linux>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <1241562049.11059.921.camel@twins> <20090506034254.GD4416@balbir.in.ibm.com>
+	Wed, 6 May 2009 16:46:33 -0400
+Received: from waste.org ([66.93.16.53]:39304 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761674AbZEFUqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 16:46:32 -0400
+Date: Wed, 6 May 2009 15:41:57 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
+       security@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [patch] random: make get_random_int() more random
+Message-ID: <20090506204156.GB31071@waste.org>
+References: <alpine.LFD.2.01.0905041514350.4983@localhost.localdomain> <20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu> <m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu> <20090505202219.GL31071@waste.org> <20090506103034.GA25203@elte.hu> <20090506162543.GT31071@waste.org> <alpine.LFD.2.01.0905060942340.4983@localhost.localdomain> <20090506200954.GA21484@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090506034254.GD4416@balbir.in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090506200954.GA21484@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 09:12:54AM +0530, Balbir Singh wrote:
-> * Peter Zijlstra <peterz@infradead.org> [2009-05-06 00:20:49]:
-> 
-> > On Tue, 2009-05-05 at 13:24 -0700, Andrew Morton wrote:
-> > > On Tue,  5 May 2009 15:58:27 -0400
-> > > Vivek Goyal <vgoyal@redhat.com> wrote:
-> > > 
-> > > > 
-> > > > Hi All,
-> > > > 
-> > > > Here is the V2 of the IO controller patches generated on top of 2.6.30-rc4.
-> > > > ...
-> > > > Currently primarily two other IO controller proposals are out there.
-> > > > 
-> > > > dm-ioband
-> > > > ---------
-> > > > This patch set is from Ryo Tsuruta from valinux.
-> > > > ...
-> > > > IO-throttling
-> > > > -------------
-> > > > This patch set is from Andrea Righi provides max bandwidth controller.
-> > > 
-> > > I'm thinking we need to lock you guys in a room and come back in 15 minutes.
-> > > 
-> > > Seriously, how are we to resolve this?  We could lock me in a room and
-> > > cmoe back in 15 days, but there's no reason to believe that I'd emerge
-> > > with the best answer.
-> > > 
-> > > I tend to think that a cgroup-based controller is the way to go. 
-> > > Anything else will need to be wired up to cgroups _anyway_, and that
-> > > might end up messy.
-> > 
-> > FWIW I subscribe to the io-scheduler faith as opposed to the
-> > device-mapper cult ;-)
-> > 
-> > Also, I don't think a simple throttle will be very useful, a more mature
-> > solution should cater to more use cases.
-> >
-> 
-> I tend to agree, unless Andrea can prove us wrong. I don't think
-> throttling a task (not letting it consume CPU, memory when its IO
-> quota is exceeded) is a good idea. I've asked that question to Andrea
-> a few times, but got no response.
+On Wed, May 06, 2009 at 10:09:54PM +0200, Ingo Molnar wrote:
+> I then ran the FIPS randomness test over the first 20,000 bits [2.5K 
+> data], which it passed:
 
-Sorry Balbir, I probably missed your question. Or replied in a different
-thread maybe...
+That's proves nothing except that you have no idea what you're talking
+about. People regularly break things that FIPS gives flying colors.
+FIPS is nothing but a statistical sanity-check.
 
-Actually we could allow an offending cgroup to continue to submit IO
-requests without throttling it directly. But if we don't want to waste
-the memory with pending IO requests or pending writeback pages, we need
-to block it sooner or later.
+Do you need this to be publicly broken again by someone who actually knows
+something about cryptanalysis before you'll accept that it's a bad
+idea? If so, then please move the code out of random.c, so that I
+don't have to share in your embarassment a second time.
 
-Instead of directly throttle the offending applications, we could block
-them when we hit a max limit of requests or dirty pages, i.e. something
-like congestion_wait(), but that's the same, no? the difference is that
-in this case throttling is asynchronous. Or am I oversimplifying it?
-
-As an example, with writeback IO io-throttle doesn't throttle the IO
-requests directly, each request instead receives a deadline (depending
-on the BW limit) and it's added into a rbtree. Then all the requests are
-dispatched asynchronously using a kernel thread (kiothrottled) only when
-the deadline is expired.
-
-OK, there's a lot of space for improvements: provide many kernel threads
-per block device, multiple queues/rbtrees, etc., but this is actually a
-way to apply throttling asynchronously. The fact is that if I don't
-apply the throttling also in balance_dirty_pages() (and I did so in the
-last io-throttle version) or add a max limit of requests the rbtree
-increases indefinitely...
-
-That should be very similar to the proportional BW solution allocating a
-quota of nr_requests per block device and per cgroup.
-
--Andrea
+-- 
+Mathematics is the supreme nostalgia of our time.
