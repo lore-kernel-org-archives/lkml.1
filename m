@@ -1,80 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbZEFK0w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757890AbZEFKcn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758733AbZEFK0w (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 06:26:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753236AbZEFK0n
+	id S1757890AbZEFKcn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 06:32:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZEFKce
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 06:26:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35349 "EHLO hera.kernel.org"
+	Wed, 6 May 2009 06:32:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50559 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751889AbZEFK0m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 06:26:42 -0400
-Date: Wed, 6 May 2009 10:25:44 GMT
-From: tip-bot for David Rientjes <rientjes@google.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, rientjes@google.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, rientjes@google.com,
-       mingo@elte.hu
-In-Reply-To: <alpine.DEB.2.00.0905040136390.15831@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0905040136390.15831@chino.kir.corp.google.com>
-Subject: [tip:sched/core] sched: emit thread info flags with stack trace
-Message-ID: <tip-12b5c43486202dd4ff3cfd59a190984a0dd7f6fd@git.kernel.org>
-Git-Commit-ID: 12b5c43486202dd4ff3cfd59a190984a0dd7f6fd
-X-Mailer: tip-git-log-daemon
+	id S1754086AbZEFKcc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 06:32:32 -0400
+Date: Wed, 6 May 2009 12:30:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Matt Mackall <mpm@selenic.com>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
+       security@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [Security] [PATCH] proc: avoid information leaks to
+	non-privileged processes
+Message-ID: <20090506103034.GA25203@elte.hu>
+References: <20090504125114.5e391564@chukar> <alpine.LFD.2.01.0905041159480.4983@localhost.localdomain> <20090504125124.0f469970@infradead.org> <m1vdogbows.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0905041514350.4983@localhost.localdomain> <20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu> <m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu> <20090505202219.GL31071@waste.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 06 May 2009 10:25:47 +0000 (UTC)
+In-Reply-To: <20090505202219.GL31071@waste.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: 0.0
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
+	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  12b5c43486202dd4ff3cfd59a190984a0dd7f6fd
-Gitweb:     http://git.kernel.org/tip/12b5c43486202dd4ff3cfd59a190984a0dd7f6fd
-Author:     David Rientjes <rientjes@google.com>
-AuthorDate: Mon, 4 May 2009 01:38:05 -0700
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 6 May 2009 12:09:30 +0200
 
-sched: emit thread info flags with stack trace
+* Matt Mackall <mpm@selenic.com> wrote:
 
-When a thread is oom killed and fails to exit, it's helpful to know which
-threads have access to memory reserves if the machine livelocks.  This is
-done by testing for the TIF_MEMDIE thread info flag and should be
-displayed alongside stack traces to identify tasks that have access to
-such reserves but are still stuck allocating pages, for instance.
+> On Tue, May 05, 2009 at 09:52:46PM +0200, Ingo Molnar wrote:
+> > 
+> > * Eric W. Biederman <ebiederm@xmission.com> wrote:
+> > 
+> > > Ingo Molnar <mingo@elte.hu> writes:
+> > > 
+> > > > * Matt Mackall <mpm@selenic.com> wrote:
+> > > >
+> > > >> As to what's the appropriate sort of RNG for ASLR to use, finding 
+> > > >> a balance between too strong and too weak is tricky. [...]
+> > > >
+> > > > In exec-shield i mixed 'easily accessible and fast' semi-random 
+> > > > state to the get_random_int() result: xor-ed the cycle counter, the 
+> > > > pid and a kernel address to it. That strengthened the result in a 
+> > > > pretty practical way (without strengthening the theoretical 
+> > > > randomless - each of those items are considered guessable) and does 
+> > > > so without weakening the entropy of the random pool.
+> > > 
+> > > The trouble is, that thinking completely misses the problem, and I 
+> > > expect that is why we have a problem.  Throwing a bunch of 
+> > > possibly truly random values into the pot for luck is nice.  But 
+> > > you didn't throw in a pseudo random number generator.  An 
+> > > unpredictable sequence that is guaranteed to change from one 
+> > > invocation to the next.
+> > 
+> > Alas, i did - it got 'reviewed' out of existence ;)
+> > 
+> > I still have the backups, here's the original exec-shield RNG:
+> > 
+> > +/*
+> > + * Get a random word:
+> > + */
+> > +static inline unsigned int get_random_int(void)
+> > +{
+> > +       unsigned int val = 0;
+> > +
+> > +       if (!exec_shield_randomize)
+> > +               return 0;
+> > +
+> > +#ifdef CONFIG_X86_HAS_TSC
+> > +       rdtscl(val);
+> > +#endif
+> > +       val += current->pid + jiffies + (int)&val;
+> > +
+> > +       /*
+> > +        * Use IP's RNG. It suits our purpose perfectly: it re-keys itself
+> > +        * every second, from the entropy pool (and thus creates a limited
+> > +        * drain on it), and uses halfMD4Transform within the second. We
+> > +        * also spice it with the TSC (if available), jiffies, PID and the
+> > +        * stack address:
+> > +        */
+> > +       return secure_ip_id(val);
+> > +}
+> 
+> Ingo, what are you on about? On every architecture but X86 with 
+> TSC this is identical to the broken code.
 
-It would probably be helpful in other cases as well, so all thread info
-flags are emitted when showing a task.
+Note that this was the exec-shield arch/*86/mm/mmap.c code.
 
-[ Impact: extend debug printout info ]
+(Also, obviously "only" covering 95% of the Linux systems has its 
+use as well. Most other architectures have their own cycle counters 
+as well.)
 
-Signed-off-by: David Rientjes <rientjes@google.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <alpine.DEB.2.00.0905040136390.15831@chino.kir.corp.google.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+> TSC only helps matters slightly - the timescales involved in 
+> process creation are very short and we can probably brute-force 
+> attack it with a useful probability of success. ie:
+> 
+> a) record TSC
+> b) fork target process
+> c) record TSC
+> d) guess TSC value 
+> e) attempt attack
+> f) repeat
 
+Try that one day and see how much jitter there is in that sequence, 
+even on a completely quiescent system.
 
----
- kernel/sched.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 2a43a58..dfe2583 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -6610,8 +6610,9 @@ void sched_show_task(struct task_struct *p)
- #ifdef CONFIG_DEBUG_STACK_USAGE
- 	free = stack_not_used(p);
- #endif
--	printk(KERN_CONT "%5lu %5d %6d\n", free,
--		task_pid_nr(p), task_pid_nr(p->real_parent));
-+	printk(KERN_CONT "%5lu %5d %6d 0x%08x\n", free,
-+		task_pid_nr(p), task_pid_nr(p->real_parent),
-+		task_thread_info(p)->flags);
- 
- 	show_stack(p, NULL);
- }
+	Ingo
