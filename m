@@ -1,56 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761576AbZEFUvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761198AbZEFUxx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761576AbZEFUvw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759383AbZEFUvk
+	id S1761198AbZEFUxx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:53:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZEFUxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:51:40 -0400
-Received: from mail.windriver.com ([147.11.1.11]:61026 "EHLO mail.wrs.com"
+	Wed, 6 May 2009 16:53:43 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39484 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753410AbZEFUvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:51:39 -0400
-Message-ID: <4A01F842.9080300@windriver.com>
-Date: Wed, 06 May 2009 15:51:14 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	id S1752772AbZEFUxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 16:53:42 -0400
+Date: Wed, 6 May 2009 22:51:45 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Matt Mackall <mpm@selenic.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
+       security@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [patch] random: make get_random_int() more random
+Message-ID: <20090506205145.GA1908@elte.hu>
+References: <20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu> <m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu> <20090505202219.GL31071@waste.org> <20090506103034.GA25203@elte.hu> <20090506162543.GT31071@waste.org> <alpine.LFD.2.01.0905060942340.4983@localhost.localdomain> <20090506200954.GA21484@elte.hu> <20090506204156.GB31071@waste.org>
 MIME-Version: 1.0
-To: Greg KH <greg@kroah.com>
-CC: Oliver Neukum <oliver@neukum.org>, Alan Stern <stern@rowland.harvard.edu>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 5/5] usb_debug: EXPERIMENTAL - poll hcd device to forcewrites
-References: <Pine.LNX.4.44L0.0905061447500.4430-100000@iolanthe.rowland.org> <200905062201.42965.oliver@neukum.org> <4A01F201.3020406@windriver.com> <20090506202821.GA12449@kroah.com>
-In-Reply-To: <20090506202821.GA12449@kroah.com>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 May 2009 20:51:14.0142 (UTC) FILETIME=[64F6F7E0:01C9CE8C]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506204156.GB31071@waste.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
->> Doing enough printk's such as in register_console() will cause loss
->> because you run out of URBs unless you can force them to complete.
->>     
->
-> Why not just make the upper bound of urbs very large?  We used to have
-> an unlimited number of in-flight urbs for some drivers until it was
-> pointed out that a simple:
-> 	cat /dev/null > /dev/ttyUSB0
-> would cause a DoS :)
->
-> What happens if your upper bound is 400?  4000?  Will that work
-> properly?
->   
-Sure, if you have enough of a urb available, ultimately you get all the
-printk's.
 
-If I want to printk from the nmi_watchdog out to this device, am I going
-to get anything if the write is not synchronous, because in theory the
-hcd device is never going to get accessed again?
+* Matt Mackall <mpm@selenic.com> wrote:
 
-Ideally I want to make sure that somehow I get my debug output out to
-the console, even if it means we do some polling after the oops state is
-set.
+> On Wed, May 06, 2009 at 10:09:54PM +0200, Ingo Molnar wrote:
+> > I then ran the FIPS randomness test over the first 20,000 bits [2.5K 
+> > data], which it passed:
+> 
+> That's proves nothing except that you have no idea what you're 
+> talking about. People regularly break things that FIPS gives 
+> flying colors. FIPS is nothing but a statistical sanity-check.
 
-Jason.
+The current code didnt even pass the FIPS test, due to:
+
+           <...>-1739  [000]   112.487579: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487583: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487584: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487585: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487586: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487588: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487589: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487590: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487592: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487593: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487594: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487595: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487597: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487598: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487599: sys_prctl: get_random_int(): d1f8a190
+           <...>-1739  [000]   112.487601: sys_prctl: get_random_int(): d1f8a190
+
+Linus's patch is a marked improvement, and it is really what we need 
+here mostly.
+
+We cannot afford true physical randomness (it's too expensive to get 
+and not all hw has it), and even a 'good' PRNG is pretty expensive. 
+Performance is the main reason why the networking stack has its own 
+fast hack.
+
+> Do you need this to be publicly broken again by someone who 
+> actually knows something about cryptanalysis before you'll accept 
+> that it's a bad idea? If so, then please move the code out of 
+> random.c, so that I don't have to share in your embarassment a 
+> second time.
+
+I see your flame, but what's your technical point?
+
+	Ingo
