@@ -1,97 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755553AbZEFXz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758516AbZEFX4S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755553AbZEFXz1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 19:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753437AbZEFXzQ
+	id S1758516AbZEFX4S (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 19:56:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbZEFX4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 19:55:16 -0400
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:11572
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753353AbZEFXzP (ORCPT
+	Wed, 6 May 2009 19:56:03 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:51137 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753884AbZEFX4B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 19:55:15 -0400
-X-BigFish: VPS-1(z3b68lz14ffO4015Lzz1202hzzz2fh6bh15fn65h)
-X-Spam-TCS-SCL: 4:0
-Message-ID: <4A022333.8030200@am.sony.com>
-Date: Wed, 6 May 2009 16:54:27 -0700
-From: Tim Bird <tim.bird@am.sony.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       =?ISO-8859-1?Q?Uwe_Kleine-K=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>,
-       linux kernel <linux-kernel@vger.kernel.org>,
-       linux-arm-kernel <linux-arm-kernel@lists.arm.linux.org.uk>
-Subject: How to use a different sched_clock() for ftrace on omap?
-Content-Type: text/plain; charset="ISO-8859-1"
+	Wed, 6 May 2009 19:56:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=Hz5UcHpxBk3yFr9sPXFabxwysGAseBJCTGfU8l5dOqufnqhmkZCdDKHSsePYjdn5+d
+         ip/i3T2xeUJUb+sktSS4TEz2Iw3tDxIuYK/VcXmrA8cz7ebW7bJPibD8jSUgKrNa9zVW
+         63k/mBuB2bC7sel62yjs3plp/i3czt3E9egus=
+Date: Thu, 7 May 2009 08:55:47 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Rik van Riel <riel@redhat.com>, Izik Eidus <ieidus@redhat.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       chrisw@redhat.com, device@lanana.org, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 2/6] ksm: dont allow overlap memory addresses
+ registrations.
+Message-Id: <20090507085547.24efb60f.minchan.kim@barrios-desktop>
+In-Reply-To: <20090506145641.GA16078@random.random>
+References: <1241475935-21162-2-git-send-email-ieidus@redhat.com>
+	<1241475935-21162-3-git-send-email-ieidus@redhat.com>
+	<4A00DD4F.8010101@redhat.com>
+	<4A015C69.7010600@redhat.com>
+	<4A0181EA.3070600@redhat.com>
+	<20090506131735.GW16078@random.random>
+	<Pine.LNX.4.64.0905061424480.19190@blonde.anvils>
+	<20090506140904.GY16078@random.random>
+	<20090506152100.41266e4c@lxorguk.ukuu.org.uk>
+	<Pine.LNX.4.64.0905061532240.25289@blonde.anvils>
+	<20090506145641.GA16078@random.random>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 06 May 2009 23:54:28.0621 (UTC) FILETIME=[FE2F53D0:01C9CEA5]
-X-SEL-encryption-scan: scanned
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+Hi, Andrea.
 
-I've worked up a replacement sched_clock for ftrace on my omap platform.
-The current sched_clock, based on the 32K timer, has low resolution and
-doesn't provide very useful results.
+On Wed, 6 May 2009 16:56:42 +0200
+Andrea Arcangeli <aarcange@redhat.com> wrote:
 
-Unfortunately, I'm not sure the best way to use my special one, in place
-of a common one in arch/arm/plat-omap/common.c
+> On Wed, May 06, 2009 at 03:46:31PM +0100, Hugh Dickins wrote:
+> > As I understand it, KSM won't affect the vm_overcommit behaviour at all.
+> 
+> In short vm_overcommit is a virtual thing, KSM only makes virtual
+> takes less physical than before. One issue in KSM that was mentioned
+> was the cgroup accounting if you merge two pages in different groups
+> but that is kind of a corner case and it'll be handled "somehow" :)
+> 
+> > The only difference would be in how much memory (mostly lowmem)
+> > KSM's own data structures will take up - as usual, the kernel
+> > data structures aren't being accounted, but do take up memory.
+> 
+> Oh yeah, on 32bit systems that would be a problem... That lowmem is
+> taken for eacy virtual address scanned. One more reason to still allow
+> ksm to all users only selectively through chown/chmod with ioctl or
+> sysfs permissions with syscall/madvise. Luckily most systems where ksm
+> is used are 64bit. We don't plan to kmap_atomic around the
+> rmap_item/tree_item. No ram is allocated in the holes though, so if
 
-Here's a patch:
+Hmm. Don't you consider 32-bit system ?
 
----
- arch/arm/mach-omap1/time.c  |    9 +++++++++
- arch/arm/plat-omap/common.c |    2 +-
- 2 files changed, 10 insertions(+), 1 deletion(-)
+In http://www.mail-archive.com/kvm@vger.kernel.org/msg13043.html, 
+Jared siad, it's also good in embedded system. (but I don't know well his testing environement).
+Many embedded system is so I/O bouneded that we can use much CPU time in there. 
+I hope this feature will help saving memory in embedded system. 
 
---- a/arch/arm/mach-omap1/time.c
-+++ b/arch/arm/mach-omap1/time.c
-@@ -212,6 +212,15 @@ static struct clocksource clocksource_mp
- 	.flags		= CLOCK_SOURCE_IS_CONTINUOUS,
- };
+One more thing about interface. 
 
-+unsigned long long notrace sched_clock(void)
-+{
-+	unsigned long long ret;
-+
-+	ret = (unsigned long long) ~omap_mpu_timer_read(1);
-+	ret = (ret * clocksource_mpu.mult_orig) >>clocksource_mpu.shift;
-+	return ret;
-+}
-+
- static void __init omap_init_clocksource(unsigned long rate)
- {
- 	static char err[] __initdata = KERN_ERR
---- a/arch/arm/plat-omap/common.c
-+++ b/arch/arm/plat-omap/common.c
-@@ -203,7 +203,7 @@ static struct clocksource clocksource_32
-  * Returns current time from boot in nsecs. It's OK for this to wrap
-  * around for now, as it's just a relative time stamp.
-  */
--unsigned long long notrace sched_clock(void)
-+__attribute__((weak)) unsigned long long notrace sched_clock_old(void)
- {
- 	unsigned long long ret;
+Ksm map regions are dynamic characteritic ?
+I mean sometime A application calls ioctl(0x800000, 0x10000) and sometime it calls ioctl(0xb7000000, 0x20000);
+Of course, It depends on application's behavior. 
+
+For using this feature now, we have to add ioctl and recompile applications.
+It means we have to know application internal well and to need source code. 
+It would prevent various experiements and easy use.
+
+I want to use this feature without appliation internal knowledge easily. 
+Maybe it can be useless without appliation behavior knowledge.
+But it will help various application experiments without much knowledge of application and recompile. 
+
+ex) echo 'pid 0x8050000 0x100000' > sysfs or procfs or cgroup. 
+
+Personally, I support cgroup interface but don't have a good idea now. 
+It can help fork-like application and we can group same address of KSM range among tasks. 
+
+> there's not a real anonymous page allocated the rmap_item will not be
+> allocated either (without requiring pending update ;).
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
 
-Obviously, renaming the common sched_clock() to sched_clock_old() is
-a hack.
-
-I thought the __attribute__ ((weak)) would be enough to have the
-sched_clock() in common.c get out of the way, and allow my board-specific
-sched_clock() to be used.  But that didn't work.  What is the recommended
-way to specify a board-specific function at compile time?
-
-Thanks,
- -- Tim
-
-=============================
-Tim Bird
-Architecture Group Chair, CE Linux Forum
-Senior Staff Engineer, Sony Corporation of America
-=============================
-
+-- 
+Kinds Regards
+Minchan Kim
