@@ -1,70 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbZEFK5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758969AbZEFK61@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbZEFK5x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 06:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753502AbZEFK5n
+	id S1758969AbZEFK61 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 06:58:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752710AbZEFK6R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 06:57:43 -0400
-Received: from web32603.mail.mud.yahoo.com ([68.142.207.230]:44044 "HELO
-	web32603.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752710AbZEFK5m (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 06:57:42 -0400
-Message-ID: <834172.25385.qm@web32603.mail.mud.yahoo.com>
-X-YMail-OSG: HenBl3cVM1lTRq6h._AmvWvRrt.cOM.PKB_DlksTQxgn5tqbIe2BE.5fvqQM097egLxwbl77q0of3SFontbBylVphVpnWuHcvXnnTGywkSveBOdbL2RQ5pSmw53HyqXtXGBxPnl3gx5uWBMvhsqom_OIzVjLaO1vqpQVZoGyqwtM.DzvLLW51NjUnYeTJpSlRS7lcGh7mzxnvkPEzkF1Ab1D4GkwBYyMJTv1LcOq0BtBa9WX0tCKd9QSQESXGeYo3ckGRtS5zVOrULRGVD0zQX3X.YbwKacYVueJWyWfyQrH1nERgyb.mPUzTpSJtZ8PC29njG.16T8gn5akKP0ZonLt
-X-RocketYMMF: knobi.rm
-X-Mailer: YahooMailRC/1277.35 YahooMailWebService/0.7.289.1
-References: <409142.83316.qm@web32605.mail.mud.yahoo.com>  <20090428182837.62c51f26.akpm@linux-foundation.org>  <1240977096.5478.3.camel@marge.simson.net>  <20090429011755.c141c599.akpm@linux-foundation.org>  <20090429120827.GI8633@ZenIV.linux.org.uk>  <1241014725.15095.19.camel@marge.simson.net>  <20090505154911.e0309a4f.akpm@linux-foundation.org>  <1241585140.5196.28.camel@marge.simson.net>  <957194.27869.qm@web32605.mail.mud.yahoo.com> <1241599065.18090.18.camel@marge.simson.net>
-Date: Wed, 6 May 2009 03:57:42 -0700 (PDT)
-From: Martin Knoblauch <knobi@knobisoft.de>
-Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
-To: Mike Galbraith <efault@gmx.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, viro@ZenIV.linux.org.uk,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org, tigran@aivazian.fsnet.co.uk
-In-Reply-To: <1241599065.18090.18.camel@marge.simson.net>
+	Wed, 6 May 2009 06:58:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39980 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753502AbZEFK6Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 06:58:16 -0400
+Date: Wed, 6 May 2009 12:57:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Christoph Hellwig <hch@lst.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>
+Cc: cbe-oss-dev@ozlabs.org, srostedt@redhat.com, linux-kernel@vger.kernel.org,
+       =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>
+Subject: Re: [PATCH, RFC] sputrace: use the generic event tracer
+Message-ID: <20090506105748.GE25203@elte.hu>
+References: <20090506102918.GA23278@lst.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506102918.GA23278@lst.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+(Note: please Cc all tracing related patches to lkml.)
 
+* Christoph Hellwig <hch@lst.de> wrote:
 
- ------------------------------------------------------
-Martin Knoblauch
-email: k n o b i AT knobisoft DOT de
-www:   http://www.knobisoft.de
-
-
-
------ Original Message ----
-> From: Mike Galbraith <efault@gmx.de>
-> To: Martin Knoblauch <knobi@knobisoft.de>
-> Cc: Andrew Morton <akpm@linux-foundation.org>; viro@ZenIV.linux.org.uk; rjw@sisk.pl; linux-kernel@vger.kernel.org; tigran@aivazian.fsnet.co.uk
-> Sent: Wednesday, May 6, 2009 10:37:45 AM
-> Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
+> I wrote sputrace before generic tracing infrastrucure was 
+> available. Now that we have the generic event tracer we can 
+> convert it over and remove a lot of code:
 > 
-> On Wed, 2009-05-06 at 00:55 -0700, Martin Knoblauch wrote:
-> 
-> >  just to bring this back to my problem :-)
-> 
-> Good idea :-)
-> 
-> >  Last week I reported that the "new" sysfs entry in /proc/mounts already comes 
-> out of initrd. Does this ring a bell?
-> > 
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/03048.html
-> 
-> Nope, no bells.
-> 
-> The only thing I can suggest is that you try a bisection.
-> 
+>   8 files changed, 45 insertions(+), 285 deletions(-)
 
- I was afraid that someone would bring up the bi-word :-) I am not using git so far, and my playground is behind a customers firewall.
+Nice! Needs also an Ack from PowerPC folks before we can do this. 
+The cross section to other powerpc code seems to be rather low.
 
- In a first attempt I tried to be "cheap" and look for the first rcX, but unfortunatelly the new behaviour already starts with 29-rc1 :-(
+A few comments:
 
-Cheers
-Martin
+> To use it make sure CONFIG_EVENT_TRACING is enabled and then enable
+> the spufs trace channel by
+> 
+>   echo 1 > /sys/kernel/debug/tracing/events/spufs/spufs_context
+> 
+> and then read the trace records using e.g.
+> 
+>   cat /sys/kernel/debug/tracing/trace
+> 
+> 
+> Note that the patch is ontop of the current tracing tree
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git#tracing/ftrace
+> 
+> as there have been some TRACE_EVENT changes in there that aren't in
+> mainline yet.
+> 
+> I don't have any cell hardware anymore so this is only compile tested.
+> 
+> 
+> Signed-off-by: Christoph Hellwig <hch@lst.de>
+> 
+> Index: linux-2.6-tip/arch/powerpc/platforms/cell/spufs/sputrace.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6-tip/arch/powerpc/platforms/cell/spufs/sputrace.h	2009-05-06 10:17:20.000000000 +0000
+> @@ -0,0 +1,39 @@
+> +#if !defined(_TRACE_SPUFS_H) || defined(TRACE_HEADER_MULTI_READ)
+> +#define _TRACE_SPUFS_H
+> +
+> +#include <linux/tracepoint.h>
+> +
+> +#undef TRACE_SYSTEM
+> +#define TRACE_SYSTEM spufs
+> +
+> +TRACE_EVENT(spufs_context,
+> +	TP_PROTO(struct spu_context *ctx, struct spu *spu, const char *name),
+> +	TP_ARGS(ctx, spu, name),
+> +
+> +	TP_STRUCT__entry(
+> +		__field(int, owner_tid)
+> +		__field(const char *, name)
+> +		__field(int, number)
+> +	),
+> +
+> +	TP_fast_assign(
+> +		__entry->owner_tid = ctx->tid;
+> +		__entry->name = name;
+> +		__entry->number = spu ? spu->number : -1;
+> +	),
+> +
+> +	TP_printk("%s (ctxthread = %d, spu = %d)",
+> +		__entry->name, __entry->owner_tid, __entry->number)
 
+Please keep the natural field ordering that is visible in the output 
+format:
+
+		__field(const char *, name)
+		__field(int, owner_tid)
+		__field(int, number)
+
+This also has the advantage of (potentially) compressing the trace 
+entry some more, as two int's are now following each other. The 
+original sputrace record format had this order:
+
+struct sputrace {
+	ktime_t tstamp;
+	int owner_tid; /* owner */
+	int curr_tid;
+	const char *name;
+	int number;
+};
+
+There 'name' and 'curr_tid' was probably flipped around because 
+'curr_tid' was there too. In the event tracer the PID is at the head 
+of the record.
+
+> +);
+> +
+> +#define spu_context_trace(name, ctx, spu) \
+> +	trace_spufs_context(ctx, spu, __stringify(name))
+> +#define spu_context_nospu_trace(name, ctx) \
+> +	trace_spufs_context(ctx, NULL, __stringify(name))
+> +
+> +#endif /* _TRACE_SPUFS_H */
+> +
+> +#undef TRACE_INCLUDE_PATH
+> +#define TRACE_INCLUDE_PATH .
+> +#define TRACE_INCLUDE_FILE sputrace
+> +#include <trace/define_trace.h>
+> Index: linux-2.6-tip/arch/powerpc/platforms/cell/spufs/spufs.h
+> ===================================================================
+> --- linux-2.6-tip.orig/arch/powerpc/platforms/cell/spufs/spufs.h	2009-05-06 10:14:40.000000000 +0000
+> +++ linux-2.6-tip/arch/powerpc/platforms/cell/spufs/spufs.h	2009-05-06 10:20:14.000000000 +0000
+> @@ -373,9 +373,4 @@
+>  extern void spuctx_switch_state(struct spu_context *ctx,
+>  		enum spu_utilization_state new_state);
+>  
+> -#define spu_context_trace(name, ctx, spu) \
+> -	trace_mark(name, "ctx %p spu %p", ctx, spu);
+> -#define spu_context_nospu_trace(name, ctx) \
+> -	trace_mark(name, "ctx %p", ctx);
+> -
+>  #endif
+> Index: linux-2.6-tip/arch/powerpc/platforms/cell/Kconfig
+> ===================================================================
+> --- linux-2.6-tip.orig/arch/powerpc/platforms/cell/Kconfig	2009-05-06 10:17:46.000000000 +0000
+> +++ linux-2.6-tip/arch/powerpc/platforms/cell/Kconfig	2009-05-06 10:17:50.000000000 +0000
+> @@ -77,13 +77,6 @@
+>  	  uses 4K pages. This can improve performances of applications
+>  	  using multiple SPEs by lowering the TLB pressure on them.
+>  
+> -config SPU_TRACE
+> -	tristate "SPU event tracing support"
+> -	depends on SPU_FS && MARKERS
+> -	help
+> -	  This option allows reading a trace of spu-related events through
+> -	  the sputrace file in procfs.
+
+I think we should keep this option around.
+
+> -
+>  config SPU_BASE
+>  	bool
+>  	default n
+> Index: linux-2.6-tip/arch/powerpc/platforms/cell/spufs/Makefile
+> ===================================================================
+> --- linux-2.6-tip.orig/arch/powerpc/platforms/cell/spufs/Makefile	2009-05-06 10:17:56.000000000 +0000
+> +++ linux-2.6-tip/arch/powerpc/platforms/cell/spufs/Makefile	2009-05-06 10:22:23.000000000 +0000
+> @@ -4,7 +4,8 @@
+>  spufs-y += sched.o backing_ops.o hw_ops.o run.o gang.o
+>  spufs-y += switch.o fault.o lscsa_alloc.o
+>  
+> -obj-$(CONFIG_SPU_TRACE)	+= sputrace.o
+> +# magic for the trace events
+> +CFLAGS_sched.o := -I$(src)
+
+Steve, i'm wondering whether this type of Makefile hackery (caused 
+by modular tracepoints) could be eliminated ...
+
+Anyway, nice patch!
+
+	Ingo
