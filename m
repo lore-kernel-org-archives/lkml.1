@@ -1,61 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759892AbZEFR5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760180AbZEFR5e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759892AbZEFR5T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 13:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZEFR5E
+	id S1760180AbZEFR5e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 13:57:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758516AbZEFR5K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 13:57:04 -0400
-Received: from extu-mxob-1.symantec.com ([216.10.194.28]:51624 "EHLO
-	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750864AbZEFR5E (ORCPT
+	Wed, 6 May 2009 13:57:10 -0400
+Received: from exprod6ob117.obsmtp.com ([64.18.1.38]:50409 "HELO psmtp.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with SMTP
+	id S1756081AbZEFR5I convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 13:57:04 -0400
-Date: Wed, 6 May 2009 18:54:22 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Chris Wright <chrisw@redhat.com>
-cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       aarcange@redhat.com, alan@lxorguk.ukuu.org.uk, device@lanana.org,
-       linux-mm@kvack.org, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-In-Reply-To: <20090506170917.GE15712@x200.localdomain>
-Message-ID: <Pine.LNX.4.64.0905061845540.12391@blonde.anvils>
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com>
- <1241475935-21162-2-git-send-email-ieidus@redhat.com>
- <1241475935-21162-3-git-send-email-ieidus@redhat.com>
- <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com>
- <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils>
- <4A01AC5E.6000906@redhat.com> <20090506161424.GC15712@x200.localdomain>
- <Pine.LNX.4.64.0905061732220.5775@blonde.anvils> <20090506170917.GE15712@x200.localdomain>
+	Wed, 6 May 2009 13:57:08 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8BIT
+Subject: RE: Input: add MAX7359 key switch controller driver
+Date: Wed, 6 May 2009 13:57:05 -0400
+Message-ID: <BD79186B4FD85F4B8E60E381CAEE19090172C682@mi8nycmail19.Mi8.com>
+In-Reply-To: <5d5443650905060638l52b3c17dle0d138b689a23252@mail.gmail.com>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: Input: add MAX7359 key switch controller driver
+Thread-Index: AcnOUOZ12sEBvfjiQAKEw41JjGoxpwAIYaog
+References: <4A012C64.1020101@samsung.com> <5d5443650905060638l52b3c17dle0d138b689a23252@mail.gmail.com>
+From: "H Hartley Sweeten" <hartleys@visionengravers.com>
+To: "Trilok Soni" <soni.trilok@gmail.com>, "Kim Kyuwon" <q1.kim@samsung.com>
+Cc: "LKML" <linux-kernel@vger.kernel.org>,
+       "Dmitry Torokhov" <dmitry.torokhov@gmail.com>,
+       <linux-input@vger.kernel.org>,
+       "Kyungmin Park" <kyungmin.park@samsung.com>,
+       "Marek Szyprowski" <m.szyprowski@samsung.com>,
+       <linux-i2c@vger.kernel.org>, "Jean Delvare" <khali@linux-fr.org>
+X-OriginalArrivalTime: 06 May 2009 17:57:06.0188 (UTC) FILETIME=[117FB4C0:01C9CE74]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009, Chris Wright wrote:
-> * Hugh Dickins (hugh@veritas.com) wrote:
-> > 
-> > Is the phrase "covert channel" going to come up somehow?
-> 
-> There's two (still hand wavy) conerns I see there.  First is the security
-> implication: timing writes to see cow and guess the shared data for
-> another apps VM_LOCKED region,
+On Wednesday, May 06, 2009 6:38 AM, Trilok Soni wrote:
+>> +
+>> +#define KEY(row, col, val)     (((row) << 28) | ((col) << 24) | (val))
+>
+> Looks like this macro is highly used by many input drivers, anyone
+> looking at it to place it at common location?
 
-Mmm, yes, there's fun to be had there; though I don't see it as having
-anything to do with VM_LOCKED, beyond that the paranoid have reason to
-place their most anxious data in VM_LOCKED areas.
+Hello,
 
-I'm thinking of an app which prepares pages full of scurrilous rumour,
-then waits around looking at its /proc/self/smaps to see if anyone else
-is writing stories like that!
+I submitted a patch series around early Feb that did just that. The only
+archive for linux-input that I can find to reference the original submit
+is at http://markmail.org/browse/org.kernel.vger.linux-input/2009-01.
+The first message in the series is $SUBJECT
+"[PATCH 0/5] input: Common macro for keypad drivers".
 
-> second is just plain old complaints of
-> those rt latency sensitive apps that somehow have VM_LOCKED|VM_MERGE
-> and complain of COW fault time, probably just "don't do that".
+At this point the series would probably need to be updated.  If wanted I
+will create a new one.
 
-Right.  There are sensitive sites which ought not to configure such
-merging on; but I don't think we should disallow merging locked.
-
-Hugh
+Regards,
+Hartley
