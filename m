@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761239AbZEFUjk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbZEFUkX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761239AbZEFUjk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:39:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761040AbZEFUit
+	id S1761326AbZEFUkX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:40:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760967AbZEFUi4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:38:49 -0400
-Received: from kroah.org ([198.145.64.141]:33821 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 16:38:56 -0400
+Received: from kroah.org ([198.145.64.141]:33853 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761037AbZEFUis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:38:48 -0400
+	id S1760897AbZEFUiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 16:38:54 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Wed May  6 13:31:28 2009
-Message-Id: <20090506203128.303389365@blue.kroah.org>
+Message-Id: <20090506203128.745694671@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 13:30:13 -0700
+Date: Wed, 06 May 2009 13:30:15 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,13 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Chuck Short <zulcss@ubuntu.com>,
-       Tim Gardner <tim.gardner@canonical.com>,
-       Stefan Bader <stefan.bader@canonical.com>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 03/18] USB: Unusual Device support for Gold MP3 Player Energy
+       alan@lxorguk.ukuu.org.uk, Michael Buesch <mb@bu3sch.de>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Chris Wright <chrisw@sous-sol.org>, Greg Kroah-Hartman <gregkh@suse.de>
+Subject: [patch 05/18] b43: Poison RX buffers
 References: <20090506203010.615363711@blue.kroah.org>
-Content-Disposition: inline; filename=usb-unusual-device-support-for-gold-mp3-player-energy.patch
+Content-Disposition: inline; filename=b43-poison-rx-buffers.patch
 In-Reply-To: <20090506203353.GA14624@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,47 +40,116 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Chuck Short <zulcss@ubuntu.com>
+From: Michael Buesch <mb@bu3sch.de>
 
-upstream commit: 46c6e93faa85d1362e1d127dc28cf9d0b304a6f1
+upstream commit: ec9a1d8c13e36440eda0f3c79b8149080e3ab5ba
 
-Reported by Alessio Treglia on
-https://bugs.launchpad.net/ubuntu/+source/linux/+bug/125250
+This patch adds poisoning and sanity checking to the RX DMA buffers.
+This is used for protection against buggy hardware/firmware that raises
+RX interrupts without doing an actual DMA transfer.
 
-User was getting the following errors in dmesg:
+This mechanism protects against rare "bad packets" (due to uninitialized skb data)
+and rare kernel crashes due to uninitialized RX headers.
 
-[ 2158.139386] sd 5:0:0:1: ioctl_internal_command return code = 8000002
-[ 2158.139390] : Current: sense key: No Sense
-[ 2158.139393] Additional sense: No additional sense information
+The poison is selected to not match on valid frames and to be cheap for checking.
 
-Adds unusual device support.
+The poison check mechanism _might_ trigger incorrectly, if we are voluntarily
+receiving frames with bad PLCP headers. However, this is nonfatal, because the
+chance of such a match is basically zero and in case it happens it just results
+in dropping the packet.
+Bad-PLCP RX defaults to off, and you should leave it off unless you want to listen
+to the latest news broadcasted by your microwave oven.
 
-modified:   drivers/usb/storage/unusual_devs.h
+This patch also moves the initialization of the RX-header "length" field in front of
+the mapping of the DMA buffer. The CPU should not touch the buffer after we mapped it.
 
-Signed-off-by: Chuck Short <zulcss@ubuntu.com>
-Signed-off-by: Tim Gardner <tim.gardner@canonical.com>
-Signed-off-by: Stefan Bader <stefan.bader@canonical.com>
-Cc: stable <stable@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: stable@kernel.org
+Reported-by: Francesco Gringoli <francesco.gringoli@ing.unibs.it>
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/usb/storage/unusual_devs.h |    6 ++++++
- 1 file changed, 6 insertions(+)
+ drivers/net/wireless/b43/dma.c |   37 +++++++++++++++++++++++++++++++++----
+ 1 file changed, 33 insertions(+), 4 deletions(-)
 
---- a/drivers/usb/storage/unusual_devs.h
-+++ b/drivers/usb/storage/unusual_devs.h
-@@ -2147,6 +2147,12 @@ UNUSUAL_DEV(  0xed06, 0x4500, 0x0001, 0x
- 		US_SC_DEVICE, US_PR_DEVICE, NULL,
- 		US_FL_CAPACITY_HEURISTICS),
+--- a/drivers/net/wireless/b43/dma.c
++++ b/drivers/net/wireless/b43/dma.c
+@@ -551,11 +551,32 @@ address_error:
+ 	return 1;
+ }
  
-+/* Reported by Alessio Treglia <quadrispro@ubuntu.com> */
-+UNUSUAL_DEV( 0xed10, 0x7636, 0x0001, 0x0001,
-+		"TGE",
-+		"Digital MP3 Audio Player",
-+		US_SC_DEVICE, US_PR_DEVICE, NULL, US_FL_NOT_LOCKABLE ),
++static bool b43_rx_buffer_is_poisoned(struct b43_dmaring *ring, struct sk_buff *skb)
++{
++	unsigned char *f = skb->data + ring->frameoffset;
 +
- /* Control/Bulk transport for all SubClass values */
- USUAL_DEV(US_SC_RBC, US_PR_CB, USB_US_TYPE_STOR),
- USUAL_DEV(US_SC_8020, US_PR_CB, USB_US_TYPE_STOR),
++	return ((f[0] & f[1] & f[2] & f[3] & f[4] & f[5] & f[6] & f[7]) == 0xFF);
++}
++
++static void b43_poison_rx_buffer(struct b43_dmaring *ring, struct sk_buff *skb)
++{
++	struct b43_rxhdr_fw4 *rxhdr;
++	unsigned char *frame;
++
++	/* This poisons the RX buffer to detect DMA failures. */
++
++	rxhdr = (struct b43_rxhdr_fw4 *)(skb->data);
++	rxhdr->frame_len = 0;
++
++	B43_WARN_ON(ring->rx_buffersize < ring->frameoffset + sizeof(struct b43_plcp_hdr6) + 2);
++	frame = skb->data + ring->frameoffset;
++	memset(frame, 0xFF, sizeof(struct b43_plcp_hdr6) + 2 /* padding */);
++}
++
+ static int setup_rx_descbuffer(struct b43_dmaring *ring,
+ 			       struct b43_dmadesc_generic *desc,
+ 			       struct b43_dmadesc_meta *meta, gfp_t gfp_flags)
+ {
+-	struct b43_rxhdr_fw4 *rxhdr;
+ 	dma_addr_t dmaaddr;
+ 	struct sk_buff *skb;
+ 
+@@ -564,6 +585,7 @@ static int setup_rx_descbuffer(struct b4
+ 	skb = __dev_alloc_skb(ring->rx_buffersize, gfp_flags);
+ 	if (unlikely(!skb))
+ 		return -ENOMEM;
++	b43_poison_rx_buffer(ring, skb);
+ 	dmaaddr = map_descbuffer(ring, skb->data, ring->rx_buffersize, 0);
+ 	if (b43_dma_mapping_error(ring, dmaaddr, ring->rx_buffersize, 0)) {
+ 		/* ugh. try to realloc in zone_dma */
+@@ -574,6 +596,7 @@ static int setup_rx_descbuffer(struct b4
+ 		skb = __dev_alloc_skb(ring->rx_buffersize, gfp_flags);
+ 		if (unlikely(!skb))
+ 			return -ENOMEM;
++		b43_poison_rx_buffer(ring, skb);
+ 		dmaaddr = map_descbuffer(ring, skb->data,
+ 					 ring->rx_buffersize, 0);
+ 	}
+@@ -589,9 +612,6 @@ static int setup_rx_descbuffer(struct b4
+ 	ring->ops->fill_descriptor(ring, desc, dmaaddr,
+ 				   ring->rx_buffersize, 0, 0, 0);
+ 
+-	rxhdr = (struct b43_rxhdr_fw4 *)(skb->data);
+-	rxhdr->frame_len = 0;
+-
+ 	return 0;
+ }
+ 
+@@ -1484,6 +1504,15 @@ static void dma_rx(struct b43_dmaring *r
+ 			goto drop;
+ 		}
+ 	}
++	if (unlikely(b43_rx_buffer_is_poisoned(ring, skb))) {
++		/* Something went wrong with the DMA.
++		 * The device did not touch the buffer and did not overwrite the poison. */
++		b43dbg(ring->dev->wl, "DMA RX: Dropping poisoned buffer.\n");
++		/* recycle the descriptor buffer. */
++		sync_descbuffer_for_device(ring, meta->dmaaddr,
++					   ring->rx_buffersize);
++		goto drop;
++	}
+ 	if (unlikely(len > ring->rx_buffersize)) {
+ 		/* The data did not fit into one descriptor buffer
+ 		 * and is split over multiple buffers.
 
 
