@@ -1,87 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755884AbZEFJyQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757690AbZEFJza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755884AbZEFJyQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 05:54:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbZEFJyA
+	id S1757690AbZEFJza (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 05:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752981AbZEFJzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 05:54:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:46677 "EHLO mx3.mail.elte.hu"
+	Wed, 6 May 2009 05:55:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41084 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752981AbZEFJx7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 05:53:59 -0400
-Date: Wed, 6 May 2009 11:53:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: "Alan D. Brunelle" <Alan.Brunelle@hp.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <srostedt@redhat.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>
-Subject: Re: [PATCH] blktrace: correct remap names
-Message-ID: <20090506095343.GA15323@elte.hu>
-References: <20090430133627.D217.A69D9226@jp.fujitsu.com> <49F9D82D.50901@hp.com> <49F9D906.40300@hp.com> <49FE8165.80709@cn.fujitsu.com>
+	id S1752710AbZEFJzU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 05:55:20 -0400
+Message-ID: <4A015C69.7010600@redhat.com>
+Date: Wed, 06 May 2009 12:46:17 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49FE8165.80709@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Rik van Riel <riel@redhat.com>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       aarcange@redhat.com, chrisw@redhat.com, alan@lxorguk.ukuu.org.uk,
+       device@lanana.org, linux-mm@kvack.org, hugh@veritas.com,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 2/6] ksm: dont allow overlap memory addresses registrations.
+References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <4A00DD4F.8010101@redhat.com>
+In-Reply-To: <4A00DD4F.8010101@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Rik van Riel wrote:
+> Izik Eidus wrote:
+>> subjects say it all.
+>
+> Not a very useful commit message.
+>
+> This makes me wonder, though.
+>
+> What happens if a user mmaps a 30MB memory region, registers it
+> with KSM and then unmaps the middle 10MB?
 
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
+User cant break 30MB into smaller one.
+That mean that when you regisiter memory region that is X mb size, you 
+can only remove it (as a whole), or add new region.
+This should answer the next question you had about why i have just the 
+start address for removing the regions.
 
-> > Subject: [PATCH] blktrace: correct remap names
-> > 
-> > This attempts to clarify names utilized during block I/O remap operations
-> > (partition, volume manager). It correctly matches up the /from/ information for both device & sector. This takes in the concept from osaki Motohiro and extends it to include better naming for the "device_from" field.
-> > 
-> 
-> I also noticed this..
-> 
-> > Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > Cc: Li Zefan <lizf@cn.fujitsu.com>
-> > Cc: Jens Axboe <jens.axboe@oracle.com>
-> > Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-> > Signed-off-by: Alan D. Brunelle <alan.brunelle@hp.com>
-> > ---
-> >  include/linux/blktrace_api.h |    4 ++--
-> >  include/trace/block.h        |    4 ++--
-> >  kernel/trace/blktrace.c      |   21 +++++++++++----------
-> >  3 files changed, 15 insertions(+), 14 deletions(-)
-> > 
-> > diff --git a/include/linux/blktrace_api.h b/include/linux/blktrace_api.h
-> > index d960889..da1a14e 100644
-> > --- a/include/linux/blktrace_api.h
-> > +++ b/include/linux/blktrace_api.h
-> > @@ -116,9 +116,9 @@ struct blk_io_trace {
-> >   * The remap event
-> >   */
-> >  struct blk_io_trace_remap {
-> > -	__be32 device;
-> >  	__be32 device_from;
-> > -	__be64 sector;
-> > +	__be32 device_to;
-> > +	__be64 sector_from;
-> >  };
-> >  
-> 
-> If we are really fine with this change, then:
-> 
-> Reviewed-by: Li Zefan <lizf@cn.fujitsu.com>
+>
+>> Signed-off-by: Izik Eidus <ieidus@redhat.com>
+>
+> except for the commit message, Acked-by: Rik van Riel <riel@redhat.com>
+>
 
-is it acceptable to break the sector output ordering of all past 
-blktrace+blkparse binaries, as far as remap events go?
-
-	Ingo
