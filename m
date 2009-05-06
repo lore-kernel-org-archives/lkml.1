@@ -1,59 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756948AbZEFIkQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758787AbZEFIko@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756948AbZEFIkQ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 04:40:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZEFIkA
+	id S1758787AbZEFIko (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 04:40:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbZEFIkf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 04:40:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53619 "EHLO mx2.redhat.com"
+	Wed, 6 May 2009 04:40:35 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45822 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753213AbZEFIj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 04:39:59 -0400
-Message-ID: <4A014C7B.9080702@redhat.com>
-Date: Wed, 06 May 2009 11:38:19 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1753059AbZEFIke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 04:40:34 -0400
+Date: Wed, 6 May 2009 10:40:14 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 4/4] tracing/events: fix concurrent access to
+	ftrace_events list
+Message-ID: <20090506084014.GD28675@elte.hu>
+References: <4A00F6AD.2070008@cn.fujitsu.com> <4A00F709.3080800@cn.fujitsu.com> <20090506052730.GA5986@nowhere>
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       aarcange@redhat.com, chrisw@redhat.com, alan@lxorguk.ukuu.org.uk,
-       device@lanana.org, linux-mm@kvack.org, hugh@veritas.com,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com>
-In-Reply-To: <4A00DF9B.1080501@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506052730.GA5986@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Izik Eidus wrote:
->> This patch change the KSM_REMOVE_MEMORY_REGION ioctl to be specific per
->> memory region (instead of flushing all the registred memory regions 
->> inside
->> the file descriptor like it happen now)
->>
->> The previoes api was:
->> user register memory regions using KSM_REGISTER_MEMORY_REGION inside 
->> the fd,
->> and then when he wanted to remove just one memory region, he had to 
->> remove them
->> all using KSM_REMOVE_MEMORY_REGION.
->>
->> This patch change this beahivor by chaning the KSM_REMOVE_MEMORY_REGION
->> ioctl to recive another paramter that it is the begining of the virtual
->> address that is wanted to be removed.
->
-> This is different from munmap and madvise, which take both
-> start address and length.
->
-> Why?
->
-It work like free, considering the fact that we dont allow memory 
-overlay in no way,
-If we have the start of the address it is enough for us to know what 
-memory we want to remove.
 
-Isnt interface for userspace that work like malloc / free is enough?
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
+
+> On Wed, May 06, 2009 at 10:33:45AM +0800, Li Zefan wrote:
+> > A module will add/remove its trace events when it gets loaded/unloaded, so
+> > the ftrace_events list is not "const", and concurrent access needs to be
+> > protected.
+> > 
+> > This patch thus fixes races between loading/unloding modules and read
+> > 'available_events' or read/write 'set_event', etc.
+> > 
+> > Below shows how to reproduce the race:
+> > 
+> >  # for ((; ;)) { cat /mnt/tracing/available_events; } > /dev/null &
+> >  # for ((; ;)) { insmod trace-events-sample.ko; rmmod sample; } &
+> > 
+> > After a while:
+> > 
+> > BUG: unable to handle kernel paging request at 0010011c
+> > IP: [<c1080f27>] t_next+0x1b/0x2d
+> > ...
+> > Call Trace:
+> >  [<c10c90e6>] ? seq_read+0x217/0x30d
+> >  [<c10c8ecf>] ? seq_read+0x0/0x30d
+> >  [<c10b4c19>] ? vfs_read+0x8f/0x136
+> >  [<c10b4fc3>] ? sys_read+0x40/0x65
+> >  [<c1002a68>] ? sysenter_do_call+0x12/0x36
+> > 
+> > [ Impact: fix races when concurrent accessing ftrace_events list ]
+> > 
+> > Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> 
+> 
+> Nice series of fixes!
+> 
+> Thanks!
+
+I've applied them to tip/tracing/events, thanks guys!
+
+	Ingo
