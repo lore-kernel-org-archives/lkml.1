@@ -1,79 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759692AbZEFNrp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759639AbZEFNvS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759692AbZEFNrp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 09:47:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755442AbZEFNrh
+	id S1759639AbZEFNvS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 09:51:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbZEFNvF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 09:47:37 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:44005 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752856AbZEFNrg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 09:47:36 -0400
-Date: Wed, 6 May 2009 09:47:34 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 10/11] ring-buffer: move big if statement down
-In-Reply-To: <20090506082447.GA28675@elte.hu>
-Message-ID: <alpine.DEB.2.00.0905060930190.3239@gandalf.stny.rr.com>
-References: <20090506042101.231470089@goodmis.org> <20090506042334.938331281@goodmis.org> <20090506082447.GA28675@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 6 May 2009 09:51:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48037 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752981AbZEFNvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 09:51:04 -0400
+Date: Wed, 6 May 2009 09:49:40 -0400
+From: Jason Baron <jbaron@redhat.com>
+To: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, fweisbec@gmail.com,
+       rostedt@goodmis.org, zhaolei@cn.fujitsu.com, laijs@cn.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>, randy.dunlap@oracle.com
+Subject: Re: [PATCH v3] ftrace: add a tracepoint for
+	__raise_softirq_irqoff()
+Message-ID: <20090506134940.GA3129@redhat.com>
+References: <49FFDF9C.7040505@cn.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <49FFDF9C.7040505@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 6 May 2009, Ingo Molnar wrote:
-
+On Tue, May 05, 2009 at 02:41:32PM +0800, Xiao Guangrong wrote:
+> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 > 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
+> This patch is modified from Mathieu Desnoyers' patch. The original patch
+> can be found here: 
+> 	http://marc.info/?l=linux-kernel&m=123791201816245&w=2
+> This tracepoint can trace the time stamp when softirq action is raised. 
 > 
-> > This patch changes it to a goto:
-> > 
-> > 	code;
-> > 
-> > 	if (cross to next page)
-> > 		goto next_page;
-> > 
-> > 	more code;
-> > 
-> > 	return;
-> > 
-> > next_page:
-> > 
-> > 	[ lots of code]
+> Changelog for v1 -> v2: 
+> 1: Use TRACE_EVENT instead of DEFINE_TRACE
+> 2: Move the tracepoint from raise_softirq_irqoff() to
+>    __raise_softirq_irqoff()
 > 
-> I have pulled it, but could you please change it to a helper 
-> function instead? There's almost never a good reason to combine 
-> 'more code' with 'lots of code' in a single function. It also 
-> documents the unlikeliness, etc.
+> Changelog for v2 -> v3: 
+> Move the definition of __raise_softifq_irqoff() to .c file when
+> CONFIG_TRACEPOINTS is enabled, to avoid recursive includes
+> 
+> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+> 
 
-As I stated in the change log, I did not want to convert it to a helper 
-function because it uses the variables created before. It would end up 
-going from:
+hi,
 
-	if (write > BUF_PAGE_SIZE)
-		goto next_page;
+Could you please add 'docbook' style comments above TRACE_EVENTi()? We
+recently added a tracepoint docbook to the -tip and it already contains
+an 'irq' chapter, so you just need to add the comments for the raise
+softirq tracepoint. Please see: 
 
+http://marc.info/?l=linux-kernel&m=124118471411710&w=2
 
-to:
+thanks,
 
-	if (write > BUF_PAGE_SIZE)
-		return rb_move_tail(cpu_buffer, length, tail,
-				    commit_page, tail_page);
+-Jason
 
-
-Although it is the "unlikely" case, it is still a fast path. It happens 
-every time a write into the page buffer crosses a page boundary. Since it 
-is only used once, gcc would hopefully inline it. If it does not, then we 
-are copying a bunch of parameters for nothing.
-
-I could still do this and see what gcc does with it.
-
--- Steve
 
