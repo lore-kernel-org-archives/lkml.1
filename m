@@ -1,98 +1,271 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754314AbZEFFTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752376AbZEFF1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754314AbZEFFTn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 01:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750901AbZEFFTd
+	id S1752376AbZEFF1p (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 01:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750789AbZEFF1g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 01:19:33 -0400
-Received: from mga07.intel.com ([143.182.124.22]:33700 "EHLO
-	azsmga101.ch.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750702AbZEFFTc (ORCPT
+	Wed, 6 May 2009 01:27:36 -0400
+Received: from ey-out-2122.google.com ([74.125.78.26]:10917 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750702AbZEFF1f (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 01:19:32 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,301,1239001200"; 
-   d="scan'208";a="139644977"
-Subject: Re: [PATCH] Fix early panic issue on machines with memless node
-From: "Zhang, Yanmin" <yanmin_zhang@linux.intel.com>
-To: Jack Steiner <steiner@sgi.com>
-Cc: David Rientjes <rientjes@google.com>, alex.shi@intel.com,
-       LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <20090505202730.GA9831@sgi.com>
-References: <1241493327.27664.17.camel@ymzhang>
-	 <alpine.DEB.2.00.0905042026010.29856@chino.kir.corp.google.com>
-	 <20090505163608.GA20385@sgi.com>
-	 <alpine.DEB.2.00.0905051250510.20021@chino.kir.corp.google.com>
-	 <20090505202730.GA9831@sgi.com>
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 06 May 2009 13:19:52 +0800
-Message-Id: <1241587192.27664.56.camel@ymzhang>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1 (2.22.1-2.fc9) 
-Content-Transfer-Encoding: 8bit
+	Wed, 6 May 2009 01:27:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=OqDH4+jPwHGnTrZIK+gbCj4zBwdEdO0w/s8TMytCuovGDDBvo86A8ad5+2JiYVkRkA
+         o7EUGD1451920crXNiA4pm1VuKa3IpvzFmzqOh6yc8272EEef2LFiHCvhNJsuRAr7gNg
+         6yX8jYKwtbd1yBxjo0m9PtqEI/DYS5qclbu4o=
+Date: Wed, 6 May 2009 07:27:31 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>, Tom Zanussi <tzanussi@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 4/4] tracing/events: fix concurrent access to
+	ftrace_events list
+Message-ID: <20090506052730.GA5986@nowhere>
+References: <4A00F6AD.2070008@cn.fujitsu.com> <4A00F709.3080800@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A00F709.3080800@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-05 at 15:27 -0500, Jack Steiner wrote:
-> On Tue, May 05, 2009 at 12:52:54PM -0700, David Rientjes wrote:
-> > On Tue, 5 May 2009, Jack Steiner wrote:
-> > 
-> > > I was able to duplicate your original problem. Your patch below solves the
-> > > problem. AFAICT, it causes no new reqgressions to the various configurations
-> > > that I'm testing. (I'll add the "mem=2G" to my configs that I test).
-> > > 
-> > 
-> > Great, it would be helpful to catch these problems before 2.6.30 is 
-> > released.  I've passed my patch along to Ingo.
-> > 
-> > > However, I see a new regression that was not present a couple of weeks ago.
-> > > Configurations that have nodes with cpus and no memory panic during
-> > > boot. This occurs both with and without your patch and is not related to "mem=".
-> > > 
-> > > I need to isolate the problem but here is the stack trace. :
-> > > 	Pid: 0, comm: swapper Not tainted 2.6.30-rc4-next-20090505-medusa #12
-> > > 	Call Trace:
-> > > 	 [<ffffffff806b919e>] early_idt_handler+0x5e/0x71
-> > > 	 [<ffffffff802920fe>] ? build_zonelists_node+0x4c/0x8d
-> > > 	 [<ffffffff8029333f>] __build_all_zonelists+0x1ae/0x55a
-> > > 	 [<ffffffff80293932>] build_all_zonelists+0x1b5/0x263
-> > > 	 [<ffffffff806b9b6e>] start_kernel+0x17a/0x3c5
-> > > 	 [<ffffffff806b9140>] ? early_idt_handler+0x0/0x71
-> > > 	 [<ffffffff806b92a7>] x86_64_start_reservations+0xae/0xb2
-> > > 	 [<ffffffff806b93fd>] x86_64_start_kernel+0x152/0x161
-> > > 
-> > 
-> > Please post your .config since it apparently differs from x86_64 defconfig 
-> > judging by my debugging symbols and also the full output of the panic.
+On Wed, May 06, 2009 at 10:33:45AM +0800, Li Zefan wrote:
+> A module will add/remove its trace events when it gets loaded/unloaded, so
+> the ftrace_events list is not "const", and concurrent access needs to be
+> protected.
 > 
-> I suspect I mislead you when I mentioned "configurations". I did not mean
-> the .config file. I use a more-or-less standard .config file.
+> This patch thus fixes races between loading/unloding modules and read
+> 'available_events' or read/write 'set_event', etc.
 > 
-> I do much of my testing on a system simulator. Using a simulator config file,
-> I specify the system configuration such as number of nodes, sockets per node,
-> cpus per socket, memory per socket, address map, boot options, etc. This
-> makes it easy to quickly test a lot of strange (but real) configurations.
+> Below shows how to reproduce the race:
 > 
-> The configuration above that is failing is a 2-socket Nehelem blade that has no
-> memory on socket 0. All memory is located on socket 1.  The panic is caused by a
-> null dereference of NODE_DATA(0).
+>  # for ((; ;)) { cat /mnt/tracing/available_events; } > /dev/null &
+>  # for ((; ;)) { insmod trace-events-sample.ko; rmmod sample; } &
 > 
-> Still looking....
-It seems in function setup_node_bootmem:
+> After a while:
+> 
+> BUG: unable to handle kernel paging request at 0010011c
+> IP: [<c1080f27>] t_next+0x1b/0x2d
+> ...
+> Call Trace:
+>  [<c10c90e6>] ? seq_read+0x217/0x30d
+>  [<c10c8ecf>] ? seq_read+0x0/0x30d
+>  [<c10b4c19>] ? vfs_read+0x8f/0x136
+>  [<c10b4fc3>] ? sys_read+0x40/0x65
+>  [<c1002a68>] ? sysenter_do_call+0x12/0x36
+> 
+> [ Impact: fix races when concurrent accessing ftrace_events list ]
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 
-        if (!end)
-                return;
 
-stops the initialization of node_data[nodeid]. Later on panic when build_zonelists
-dereference ﻿NODE_DATA(0).
+Nice series of fixes!
 
-Although a node is memoryless, but mostly it has small blocks of memory, so function
-acpi_scan_nodes marks them offline. However, if getting node info in
-acpi_numa_processor_affinity_init. the node might have no any memory, and ﻿acpi_scan_nodes
-doesn't mark it offline.
+Thanks!
 
-The logic is confusing with patch dc09855191809. Could you revert it to retest?
+Frederic.
 
+
+> ---
+>  kernel/trace/trace.h               |    1 +
+>  kernel/trace/trace_event_profile.c |   19 ++++++++++++++-----
+>  kernel/trace/trace_events.c        |   20 +++++++++++---------
+>  kernel/trace/trace_events_filter.c |   10 +++++++---
+>  4 files changed, 33 insertions(+), 17 deletions(-)
+> 
+> diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+> index 83984ab..0bba080 100644
+> --- a/kernel/trace/trace.h
+> +++ b/kernel/trace/trace.h
+> @@ -827,6 +827,7 @@ static int filter_pred_##size(struct filter_pred *pred, void *event,	\
+>  	return match;							\
+>  }
+>  
+> +extern struct mutex event_mutex;
+>  extern struct list_head ftrace_events;
+>  
+>  extern const char *__start___trace_bprintk_fmt[];
+> diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
+> index 7bf2ad6..5b5895a 100644
+> --- a/kernel/trace/trace_event_profile.c
+> +++ b/kernel/trace/trace_event_profile.c
+> @@ -10,21 +10,30 @@
+>  int ftrace_profile_enable(int event_id)
+>  {
+>  	struct ftrace_event_call *event;
+> +	int ret = -EINVAL;
+>  
+> +	mutex_lock(&event_mutex);
+>  	list_for_each_entry(event, &ftrace_events, list) {
+> -		if (event->id == event_id)
+> -			return event->profile_enable(event);
+> +		if (event->id == event_id) {
+> +			ret = event->profile_enable(event);
+> +			break;
+> +		}
+>  	}
+> +	mutex_unlock(&event_mutex);
+>  
+> -	return -EINVAL;
+> +	return ret;
+>  }
+>  
+>  void ftrace_profile_disable(int event_id)
+>  {
+>  	struct ftrace_event_call *event;
+>  
+> +	mutex_lock(&event_mutex);
+>  	list_for_each_entry(event, &ftrace_events, list) {
+> -		if (event->id == event_id)
+> -			return event->profile_disable(event);
+> +		if (event->id == event_id) {
+> +			event->profile_disable(event);
+> +			break;
+> +		}
+>  	}
+> +	mutex_unlock(&event_mutex);
+>  }
+> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> index 72d619d..ac5b1c2 100644
+> --- a/kernel/trace/trace_events.c
+> +++ b/kernel/trace/trace_events.c
+> @@ -21,7 +21,7 @@
+>  
+>  #define TRACE_SYSTEM "TRACE_SYSTEM"
+>  
+> -static DEFINE_MUTEX(event_mutex);
+> +DEFINE_MUTEX(event_mutex);
+>  
+>  LIST_HEAD(ftrace_events);
+>  
+> @@ -80,6 +80,7 @@ static void ftrace_clear_events(void)
+>  {
+>  	struct ftrace_event_call *call;
+>  
+> +	mutex_lock(&event_mutex);
+>  	list_for_each_entry(call, &ftrace_events, list) {
+>  
+>  		if (call->enabled) {
+> @@ -87,6 +88,7 @@ static void ftrace_clear_events(void)
+>  			call->unregfunc();
+>  		}
+>  	}
+> +	mutex_unlock(&event_mutex);
+>  }
+>  
+>  static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+> @@ -274,6 +276,9 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
+>  
+>  static void *t_start(struct seq_file *m, loff_t *pos)
+>  {
+> +	mutex_lock(&event_mutex);
+> +	if (*pos == 0)
+> +		m->private = ftrace_events.next;
+>  	return t_next(m, NULL, pos);
+>  }
+>  
+> @@ -303,6 +308,9 @@ s_next(struct seq_file *m, void *v, loff_t *pos)
+>  
+>  static void *s_start(struct seq_file *m, loff_t *pos)
+>  {
+> +	mutex_lock(&event_mutex);
+> +	if (*pos == 0)
+> +		m->private = ftrace_events.next;
+>  	return s_next(m, NULL, pos);
+>  }
+>  
+> @@ -319,12 +327,12 @@ static int t_show(struct seq_file *m, void *v)
+>  
+>  static void t_stop(struct seq_file *m, void *p)
+>  {
+> +	mutex_unlock(&event_mutex);
+>  }
+>  
+>  static int
+>  ftrace_event_seq_open(struct inode *inode, struct file *file)
+>  {
+> -	int ret;
+>  	const struct seq_operations *seq_ops;
+>  
+>  	if ((file->f_mode & FMODE_WRITE) &&
+> @@ -332,13 +340,7 @@ ftrace_event_seq_open(struct inode *inode, struct file *file)
+>  		ftrace_clear_events();
+>  
+>  	seq_ops = inode->i_private;
+> -	ret = seq_open(file, seq_ops);
+> -	if (!ret) {
+> -		struct seq_file *m = file->private_data;
+> -
+> -		m->private = ftrace_events.next;
+> -	}
+> -	return ret;
+> +	return seq_open(file, seq_ops);
+>  }
+>  
+>  static ssize_t
+> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
+> index 97bd140..8c62e5b 100644
+> --- a/kernel/trace/trace_events_filter.c
+> +++ b/kernel/trace/trace_events_filter.c
+> @@ -433,6 +433,7 @@ static void filter_free_subsystem_preds(struct event_subsystem *system)
+>  		filter->n_preds = 0;
+>  	}
+>  
+> +	mutex_lock(&event_mutex);
+>  	list_for_each_entry(call, &ftrace_events, list) {
+>  		if (!call->define_fields)
+>  			continue;
+> @@ -442,6 +443,7 @@ static void filter_free_subsystem_preds(struct event_subsystem *system)
+>  			remove_filter_string(call->filter);
+>  		}
+>  	}
+> +	mutex_unlock(&event_mutex);
+>  }
+>  
+>  static int filter_add_pred_fn(struct filter_parse_state *ps,
+> @@ -605,6 +607,7 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
+>  {
+>  	struct event_filter *filter = system->filter;
+>  	struct ftrace_event_call *call;
+> +	int err = 0;
+>  
+>  	if (!filter->preds) {
+>  		filter->preds = kzalloc(MAX_FILTER_PRED * sizeof(pred),
+> @@ -622,8 +625,8 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
+>  	filter->preds[filter->n_preds] = pred;
+>  	filter->n_preds++;
+>  
+> +	mutex_lock(&event_mutex);
+>  	list_for_each_entry(call, &ftrace_events, list) {
+> -		int err;
+>  
+>  		if (!call->define_fields)
+>  			continue;
+> @@ -635,12 +638,13 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
+>  		if (err) {
+>  			filter_free_subsystem_preds(system);
+>  			parse_error(ps, FILT_ERR_BAD_SUBSYS_FILTER, 0);
+> -			return err;
+> +			break;
+>  		}
+>  		replace_filter_string(call->filter, filter_string);
+>  	}
+> +	mutex_unlock(&event_mutex);
+>  
+> -	return 0;
+> +	return err;
+>  }
+>  
+>  static void parse_init(struct filter_parse_state *ps,
+> -- 
+> 1.5.4.rc3
+> 
+> 
 
