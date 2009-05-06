@@ -1,73 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbZEFIb4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758923AbZEFIeA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754637AbZEFIb4 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 04:31:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbZEFIbq
+	id S1758923AbZEFIeA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 04:34:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752478AbZEFIdv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 04:31:46 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:34044 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751619AbZEFIbp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 04:31:45 -0400
-Date: Wed, 6 May 2009 10:31:38 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linux-next@vger.kernel.org, Nicolas Pitre <nico@cam.org>,
-       Wolfram Sang <w.sang@pengutronix.de>,
-       Russell King <rmk@arm.linux.org.uk>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: linux-next: manual merge of the i2c tree with the arm-current
- tree
-Message-ID: <20090506103138.79525cd0@hyperion.delvare>
-In-Reply-To: <20090506131031.83f1b04d.sfr@canb.auug.org.au>
-References: <20090506131031.83f1b04d.sfr@canb.auug.org.au>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 6 May 2009 04:33:51 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52805 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1750938AbZEFIdu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 04:33:50 -0400
+Message-ID: <4A014BA9.9020201@cn.fujitsu.com>
+Date: Wed, 06 May 2009 16:34:49 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Vegard Nossum <vegard.nossum@gmail.com>
+CC: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
+       Yinghai Lu <yinghai@kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: printk %0*X is broken.
+References: <20090506081221.GA15317@damson.getinternet.no> <4A0149FD.3010008@cn.fujitsu.com>
+In-Reply-To: <4A0149FD.3010008@cn.fujitsu.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Stephen,
+Lai Jiangshan wrote:
+> Vegard Nossum wrote:
+>> 2009/5/6 Ingo Molnar <mingo@elte.hu>:
+>>> Cc:-ed more folks who modified lib/vsprintf.c recently.
+>>>
+>>>        Ingo
+>>>
+>>> * Yinghai Lu <yinghai@kernel.org> wrote:
+>>>
+>>>> it seems someone broke
+>>>>
+>>>> printk(   "%0*X\n", width, x);
+>>>>
+>>>> looks like 0 is dumped.
+>> After %, we look for flags. The problem is that when a flag is found, we
+>> don't advance in the format string. And thus we start looking for the
+>> precision, which is read as 0, because we are still at the 0. I think
+>> this patch should fix it.
+>>
 
-On Wed, 6 May 2009 13:10:31 +1000, Stephen Rothwell wrote:
-> Today's linux-next merge of the i2c tree got a conflict in
-> arch/arm/configs/kirkwood_defconfig arch/arm/configs/mv78xx0_defconfig
-> arch/arm/configs/orion5x_defconfig between various commits from the
-> arm-current tree and commit c637675d24618d8e0afe344096a1ad96986c4f50
-> ("i2c/chips: Move max6875 to drivers/misc/eeprom") from the i2c tree.
+No, we break out of the while loop when we can't find a flag,
+So we are at '*' after we found '0'.
+
+>> diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+>> index 7536ace..ae7d4b2 100644
+>> --- a/lib/vsprintf.c
+>> +++ b/lib/vsprintf.c
+>> @@ -800,14 +800,15 @@ static int format_decode(const char *fmt, struct printf_spec *spec)
+>>  	if (fmt != start || !*fmt)
+>>  		return fmt - start;
+>>  
+>> +	/* this skips the first '%' */
+>> +	++fmt;
+>> +
+>>  	/* Process flags */
+>>  	spec->flags = 0;
+>>  
+>> -	while (1) { /* this also skips first '%' */
+>> +	while (1) {
+>>  		bool found = true;
+>>  
+>> -		++fmt;
+>> -
+>>  		switch (*fmt) {
+>>  		case '-': spec->flags |= LEFT;    break;
+>>  		case '+': spec->flags |= PLUS;    break;
+>> @@ -819,6 +820,8 @@ static int format_decode(const char *fmt, struct printf_spec *spec)
+>>  
+>>  		if (!found)
+>>  			break;
+>> +
+>> +		++fmt;
+>>  	}
+>>
 > 
-> The latter patch changes many defconfig files. Please don't do that -
-> especially for those defconfigs that do not select the config options you
-> are changing (which is the vast majority).  This just creates conflicts
-> for no purpose at all.
-
-I don't know exactly how defconfigs are handled, but I can imagine that
-the responsible developer is running "make oldconfig" on the system in
-question from times to times and copying the result back to the
-defconfig file. The purpose of updating defconfig files is to make
-configuration option renames transparent.
-
-I can't see why defconfigs which select the option on question are
-different from defconfigs not selecting it in this respect. In both
-cases, if we don't update the file, a subsequent "make oldconfig" will
-ask about the "new" option.
-
-Or is there a specific procedure to update defconfig files which
-answers "no" to all questions by default?
-
-> It looks like the only defconfigs that may have needed updating are:
+> It seems that your patch does not change anything.
+> The code logic is still the same as before.
 > 
-> arch/mips/configs/bigsur_defconfig
-> arch/mips/configs/mtx1_defconfig
-> arch/powerpc/configs/ppc6xx_defconfig
+> Lai
 > 
-> I have dropped the changes to all the others (165 of them).  Please
-> update the patch.
-
-I have done so, sorry for the trouble.
-
--- 
-Jean Delvare
+> 
+> 
