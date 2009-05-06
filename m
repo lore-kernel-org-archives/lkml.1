@@ -1,91 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757887AbZEFB2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbZEFBgu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757887AbZEFB2U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 21:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754002AbZEFB2M
+	id S1754483AbZEFBgu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 21:36:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbZEFBgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 21:28:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54765 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751290AbZEFB2L (ORCPT
+	Tue, 5 May 2009 21:36:38 -0400
+Received: from exprod7og117.obsmtp.com ([64.18.2.6]:43816 "EHLO
+	exprod7og117.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751290AbZEFBgh convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 21:28:11 -0400
-Date: Tue, 5 May 2009 18:24:44 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: chrisw@sous-sol.org, roland@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] ptrace: ptrace_attach: check PF_KTHREAD +
- exit_state instead of ->mm
-Message-Id: <20090505182444.de4e0143.akpm@linux-foundation.org>
-In-Reply-To: <20090505235736.GA7526@redhat.com>
-References: <20090505224722.GA954@redhat.com>
-	<20090505164733.54cd4ca4.akpm@linux-foundation.org>
-	<20090505235736.GA7526@redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 5 May 2009 21:36:37 -0400
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: "Yang, Bo" <Bo.Yang@lsi.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "akpm@osdl.org" <akpm@osdl.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Austria, Winston" <Winston.Austria@lsi.com>
+Date: Tue, 5 May 2009 19:35:42 -0600
+Subject: [PATCH 6/10] scsi: megaraid_sas - Report the Unconfigured PD
+ (system PD) to OS
+Thread-Topic: [PATCH 6/10] scsi: megaraid_sas - Report the Unconfigured PD
+ (system PD) to OS
+Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQgDzPsVNAAASQyUAAAt2hQAAD+YdAAAIJO4AAAleYA
+Message-ID: <4B6A08C587958942AA3002690DD4F8C354F61C5D@cosmail02.lsi.com>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C354F61C55@cosmail02.lsi.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009 01:57:36 +0200 Oleg Nesterov <oleg@redhat.com> wrote:
+Report the Un-configured PD (system PD) to OS.
 
-> On 05/05, Andrew Morton wrote:
-> >
-> > On Wed, 6 May 2009 00:47:22 +0200
-> > Oleg Nesterov <oleg@redhat.com> wrote:
-> >
-> > > - Add PF_KTHREAD check to prevent attaching to the kernel thread
-> > >   with a borrowed ->mm.
-> > >
-> > >   With or without this change we can race with daemonize() which
-> > >   can set PF_KTHREAD or clear ->mm after ptrace_attach() does the
-> > >   check, but this doesn't matter because reparent_to_kthreadd()
-> > >   does ptrace_unlink().
-> > >
-> > > - Kill "!task->mm" check. We don't really care about ->mm != NULL,
-> > >   and the task can call exit_mm() right after we drop task_lock().
-> > >   What we need is to make sure we can't attach after exit_notify(),
-> > >   check task->exit_state != 0 instead.
-> > >
-> >
-> > These patches make a mess of utrace-core.patch.  Do we really want to do that?
-> 
-> Aaaah. Sorry! forgot to clearify...
-> 
-> These patches depend on
-> 
-> 	utrace-core-kill-exclude_xtrace-logic.patch
-> 
-> which hopefully can be folded into utrace-core.patch. In that case these
-> changes do not depend on utrace, and they can go ahead of utrace.
-> 
+Signed-off-by Bo Yang<bo.yang@lsi.com>
 
-oic.  Strange that the patches applied, but utrace didn't apply on them.
+---
+drivers/scsi/megaraid/megaraid_sas.c |   57 +++++++++++++++++++----------------
+ 1 file changed, 32 insertions(+), 25 deletions(-)
 
-I now have:
+diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
+--- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-05-04 20:24:19.000000000 -0400
++++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-05-04 20:30:02.000000000 -0400
+@@ -1114,24 +1114,45 @@ megasas_queue_command(struct scsi_cmnd *
+        return 0;
+ }
 
-#
-# ptrace
-#
-ptrace-remove-pt_dtrace-from-arch-h8300.patch
-ptrace-remove-pt_dtrace-from-avr32-mn10300-parisc-s390-sh-xtensa.patch
-ptrace-remove-pt_dtrace-from-m68k-m68knommu.patch
-ptrace-remove-pt_dtrace-from-arch-m32r.patch
-ptrace-mm_need_new_owner-use-real_parent-to-search-in-the-siblings.patch
-ptrace-tracehook_unsafe_exec-remove-the-stale-comment.patch
-ptrace-tracehook_unsafe_exec-remove-the-stale-comment-fix.patch
-ptrace-do-not-use-task-ptrace-directly-in-core-kernel.patch
-#
-# utrace
-#
-signals-tracehook_notify_jctl-change.patch
-utrace-core.patch
-utrace-core-kill-exclude_xtrace-logic.patch
-#
-ptrace-ptrace_attach-check-pf_kthread-exit_state-instead-of-mm.patch
-ptrace-cleanup-check-set-of-pt_ptraced-during-attach.patch
-ptrace-do-not-use-task_lock-for-attach.patch
-ptrace_get_task_struct-s-tasklist-rcu-make-it-static.patch
++static struct megasas_instance *megasas_lookup_instance(u16 host_no)
++{
++       int i;
++
++       for (i = 0; i < megasas_mgmt_info.max_index; i++) {
++
++               if ((megasas_mgmt_info.instance[i]) &&
++                   (megasas_mgmt_info.instance[i]->host->host_no == host_no))
++                       return megasas_mgmt_info.instance[i];
++       }
++
++       return NULL;
++}
++
+ static int megasas_slave_configure(struct scsi_device *sdev)
+ {
+-       /*
+-        * Don't export physical disk devices to the disk driver.
+-        *
+-        * FIXME: Currently we don't export them to the midlayer at all.
+-        *        That will be fixed once LSI engineers have audited the
+-        *        firmware for possible issues.
+-        */
+-       if (sdev->channel < MEGASAS_MAX_PD_CHANNELS && sdev->type == TYPE_DISK)
++       u16                     pd_index = 0;
++       struct megasas_instance *instance;
++       instance = megasas_lookup_instance(sdev->host->host_no);
++
++        /* only export system physical disk devices to the midlayer */
++       if ((sdev->channel < MEGASAS_MAX_PD_CHANNELS) &&
++                       (sdev->type == TYPE_DISK)) {
++               pd_index = (sdev->channel * MEGASAS_MAX_DEV_PER_CHANNEL) +
++                               sdev->id;
++               if ((instance->pd_list[pd_index].driveState ==
++                       MR_PD_STATE_SYSTEM)) {
++                       blk_queue_rq_timeout(sdev->request_queue,
++                                       MEGASAS_DEFAULT_CMD_TIMEOUT * HZ);
++                       return 0;
++               }
+                return -ENXIO;
++       }
 
+        /*
+         * The RAID firmware may require extended timeouts.
+         */
+-       if (sdev->channel >= MEGASAS_MAX_PD_CHANNELS)
+-               blk_queue_rq_timeout(sdev->request_queue,
+-                                    MEGASAS_DEFAULT_CMD_TIMEOUT * HZ);
++       blk_queue_rq_timeout(sdev->request_queue,
++                            MEGASAS_DEFAULT_CMD_TIMEOUT * HZ);
+        return 0;
+ }
+
+@@ -3453,20 +3474,6 @@ megasas_mgmt_fw_ioctl(struct megasas_ins
+        return error;
+ }
+
+-static struct megasas_instance *megasas_lookup_instance(u16 host_no)
+-{
+-       int i;
+-
+-       for (i = 0; i < megasas_mgmt_info.max_index; i++) {
+-
+-               if ((megasas_mgmt_info.instance[i]) &&
+-                   (megasas_mgmt_info.instance[i]->host->host_no == host_no))
+-                       return megasas_mgmt_info.instance[i];
+-       }
+-
+-       return NULL;
+-}
+-
+ static int megasas_mgmt_ioctl_fw(struct file *file, unsigned long arg)
+ {
+        struct megasas_iocpacket __user *user_ioc =
