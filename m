@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762196AbZEFWS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763632AbZEFWTz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762196AbZEFWS7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761641AbZEFVzX
+	id S1763632AbZEFWTz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:19:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761563AbZEFVzZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:55:23 -0400
-Received: from kroah.org ([198.145.64.141]:57469 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 17:55:25 -0400
+Received: from kroah.org ([198.145.64.141]:57492 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761535AbZEFVzJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:55:09 -0400
+	id S1761416AbZEFVzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:55:10 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed May  6 14:48:03 2009
-Message-Id: <20090506214803.103171041@mini.kroah.org>
+Message-Id: <20090506214803.386675010@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 14:46:24 -0700
+Date: Wed, 06 May 2009 14:46:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,14 +25,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Eric Dumazet <dada1@cosmosbay.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>, rick.jones2@hp.com,
-       brice@myri.com, Paul Mackerras <paulus@samba.org>,
-       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: [patch 56/58] sched: account system time properly
+       alan@lxorguk.ukuu.org.uk, linux-wireless@vger.kernel.org,
+       Alina Friedrichsen <x-alina@gmx.net>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Jouni Malinen <Jouni.Malinen@atheros.com>,
+       "Luis R. Rodriguez" <lrodriguez@atheros.com>
+Subject: [patch 58/58] ath9k: Fix FIF_BCN_PRBRESP_PROMISC handling
 References: <20090506214528.660389067@mini.kroah.org>
-Content-Disposition: inline; filename=sched-account-system-time-properly.patch
+Content-Disposition: inline; filename=ath9k-fix-fif_bcn_prbresp_promisc-handling.patch
 In-Reply-To: <20090506215017.GA21981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -42,55 +42,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Eric Dumazet <dada1@cosmosbay.com>
+From: Luis R. Rodriguez <lrodriguez@Atheros.com>
 
-commit f5f293a4e3d0a0c52cec31de6762c95050156516 upstream.
+This is a port of commit
+91ed19f5f66a7fe544f0ec385e981f43491d1d5a
+for 2.6.29.
 
-Andrew Gallatin reported that IRQ and SOFTIRQ times were
-sometime not reported correctly on recent kernels, and even
-bisected to commit 457533a7d3402d1d91fbc125c8bd1bd16dcd3cd4
-([PATCH] fix scaled & unscaled cputime accounting) as the first
-bad commit.
+Without this after scanning your device will set
+the association ID to something bogus and what is
+being reported is multicast/broadcast frame are not
+being received. For details see this bug report:
 
-Further analysis pointed that commit
-79741dd35713ff4f6fd0eafd59fa94e8a4ba922d ([PATCH] idle cputime
-accounting) was the real cause of the problem.
+https://bugzilla.redhat.com/show_bug.cgi?id=498502
 
-account_process_tick() was not taking into account timer IRQ
-interrupting the idle task servicing a hard or soft irq.
+>From the original commit:
 
-On mostly idle cpu, irqs were thus not accounted and top or
-mpstat could tell user/admin that cpu was 100 % idle, 0.00 %
-irq, 0.00 % softirq, while it was not.
+So that a new created IBSS network
+doesn't break on the first scan.
 
-[ Impact: fix occasionally incorrect CPU statistics in top/mpstat ]
+It seems to Sujith and me that this
+stupid code unnecessary, too.
 
-Reported-by: Andrew Gallatin <gallatin@myri.com>
-Re-reported-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Eric Dumazet <dada1@cosmosbay.com>
-Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: rick.jones2@hp.com
-Cc: brice@myri.com
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-LKML-Reference: <49F84BC1.7080602@cosmosbay.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+So remove it...
+
+Reported-by: David Woodhouse <dwmw2@infradead.org>
+Tested-by: David Woodhouse <dwmw2@infradead.org>
+Signed-off-by: Alina Friedrichsen <x-alina@gmx.net>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Jouni Malinen <Jouni.Malinen@atheros.com>
+Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/sched.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/net/wireless/ath9k/main.c |    5 -----
+ 1 file changed, 5 deletions(-)
 
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -4347,7 +4347,7 @@ void account_process_tick(struct task_st
+--- a/drivers/net/wireless/ath9k/main.c
++++ b/drivers/net/wireless/ath9k/main.c
+@@ -2300,11 +2300,6 @@ static void ath9k_configure_filter(struc
+ 	rfilt = ath_calcrxfilter(sc);
+ 	ath9k_hw_setrxfilter(sc->sc_ah, rfilt);
  
- 	if (user_tick)
- 		account_user_time(p, one_jiffy, one_jiffy_scaled);
--	else if (p != rq->idle)
-+	else if ((p != rq->idle) || (irq_count() != HARDIRQ_OFFSET))
- 		account_system_time(p, HARDIRQ_OFFSET, one_jiffy,
- 				    one_jiffy_scaled);
- 	else
+-	if (changed_flags & FIF_BCN_PRBRESP_PROMISC) {
+-		if (*total_flags & FIF_BCN_PRBRESP_PROMISC)
+-			ath9k_hw_write_associd(sc->sc_ah, ath_bcast_mac, 0);
+-	}
+-
+ 	DPRINTF(sc, ATH_DBG_CONFIG, "Set HW RX filter: 0x%x\n", sc->rx.rxfilter);
+ }
+ 
 
 
