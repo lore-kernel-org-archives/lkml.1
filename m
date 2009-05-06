@@ -1,130 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759448AbZEFN4z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760033AbZEFN5g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759448AbZEFN4z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 09:56:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756543AbZEFN4n
+	id S1760033AbZEFN5g (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 09:57:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759224AbZEFN50
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 09:56:43 -0400
-Received: from an-out-0708.google.com ([209.85.132.247]:3915 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754910AbZEFN4m (ORCPT
+	Wed, 6 May 2009 09:57:26 -0400
+Received: from rv-out-0506.google.com ([209.85.198.233]:8995 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754957AbZEFN5Y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 09:56:42 -0400
-Message-ID: <4A019717.7070806@codemonkey.ws>
-Date: Wed, 06 May 2009 08:56:39 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 6 May 2009 09:57:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=WMm9VCNWzW+qtGYTStoWpeAh4cpSvu/1hUSNO9+sMeTDZUnrseEzaLaPhRaCve2HBg
+         8r1Ni66vJ1Z0leY8TJKq0VBzJ7mYaGkhfA8l6+yF28d9d1+GGqe3Ws2LpVenoR+U4mci
+         4EPZuXZtXkCm+XId/fNDm96TZ/7vbu+BJm1Yw=
+Date: Wed, 6 May 2009 21:56:59 +0800
+From: Wu Fengguang <fengguang.wu@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "pavel@ucw.cz" <pavel@ucw.cz>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release preallocated memory
+	unnecessarily (rev. 2)
+Message-ID: <20090506135659.GB26233@localhost>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905040222.39062.rjw@sisk.pl> <20090505022427.GA10880@localhost> <200905060105.10800.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Chris Wright <chrisw@sous-sol.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com>
-In-Reply-To: <4A010927.6020207@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905060105.10800.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> Chris Wright wrote:
->   
->> * Gregory Haskins (gregory.haskins@gmail.com) wrote:
->>   
->>     
->>> So you would never have someone making a generic
->>> hypercall(KVM_HC_MMU_OP).  I agree.
->>>     
->>>       
->> Which is why I think the interface proposal you've made is wrong.
->>     
->
-> I respectfully disagree.  Its only wrong in that the name chosen for the
-> interface was perhaps too broad/vague.  I still believe the concept is
-> sound, and the general layering is appropriate. 
->
->   
->>   There's
->> already hypercall interfaces w/ specific ABI and semantic meaning (which
->> are typically called directly/indirectly from an existing pv op hook).
->>   
->>     
->
-> Yes, these are different, thus the new interface.
->
->   
->> But a free-form hypercall(unsigned long nr, unsigned long *args, size_t count)
->> means hypercall number and arg list must be the same in order for code
->> to call hypercall() in a hypervisor agnostic way.
->>   
->>     
->
-> Yes, and that is exactly the intention.  I think its perhaps the point
-> you are missing.
->
-> I am well aware that historically the things we do over a hypercall
-> interface would inherently have meaning only to a specific hypervisor
-> (e.g. KVM_HC_MMU_OPS (vector 2) via kvm_hypercall()).  However, this
-> doesn't in any way infer that it is the only use for the general
-> concept.  Its just the only way they have been exploited to date.
->
-> While I acknowledge that the hypervisor certainly must be coordinated
-> with their use, in their essence hypercalls are just another form of IO
-> joining the ranks of things like MMIO and PIO.  This is an attempt to
-> bring them out of the bowels of CONFIG_PARAVIRT to make them a first
-> class citizen. 
->
-> The thing I am building here is really not a general hypercall in the
-> broad sense.  Rather, its a subset of the hypercall vector namespace. 
-> It is designed specifically for dynamic binding a synchronous call()
-> interface to things like virtual devices, and it is therefore these
-> virtual device models that define the particular ABI within that
-> namespace.  Thus the ABI in question is explicitly independent of the
-> underlying hypervisor.  I therefore stand by the proposed design to have
-> this interface described above the hypervisor support layer (i.e.
-> pv_ops) (albeit with perhaps a better name like "dynamic hypercall" as
-> per my later discussion with Avi).
->
-> Consider PIO: The hypervisor (or hardware) and OS negotiate a port
-> address, but the two end-points are the driver and the device-model (or
-> real device).  The driver doesnt have to say:
->
-> if (kvm)
->    kvm_iowrite32(addr, ..);
-> else if (lguest)
->    lguest_iowrite32(addr, ...);
-> else
->    native_iowrite32(addr, ...);
->
-> Instead, it just says "iowrite32(addr, ...);" and the address is used to
-> route the message appropriately by the platform.  The ABI of that
-> message, however, is specific to the driver/device and is not
-> interpreted by kvm/lguest/native-hw infrastructure on the way.
->
-> Today, there is no equivelent of a platform agnostic "iowrite32()" for
-> hypercalls so the driver would look like the pseudocode above except
-> substitute with kvm_hypercall(), lguest_hypercall(), etc.  The proposal
-> is to allow the hypervisor to assign a dynamic vector to resources in
-> the backend and convey this vector to the guest (such as in PCI
-> config-space as mentioned in my example use-case).  The provides the
-> "address negotiation" function that would normally be done for something
-> like a pio port-address.   The hypervisor agnostic driver can then use
-> this globally recognized address-token coupled with other device-private
-> ABI parameters to communicate with the device.  This can all occur
-> without the core hypervisor needing to understand the details beyond the
-> addressing.
->   
+On Wed, May 06, 2009 at 07:05:09AM +0800, Rafael J. Wysocki wrote:
+> On Tuesday 05 May 2009, Wu Fengguang wrote:
+> > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > Since the hibernation code is now going to use allocations of memory
+> > > to create enough room for the image, it can also use the page frames
+> > > allocated at this stage as image page frames.  The low-level
+> > > hibernation code needs to be rearranged for this purpose, but it
+> > > allows us to avoid freeing a great number of pages and allocating
+> > > these same pages once again later, so it generally is worth doing.
+> > > 
+> > > [rev. 2: Change the strategy of preallocating memory to allocate as
+> > >  many pages as needed to get the right image size in one shot (the
+> > >  excessive allocated pages are released afterwards).]
+> > 
+> > Rafael, I tried out your patches and found doubled memory shrink speed!
+> >
+> > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
+> > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
+> 
+> Unfortunately, I'm observing a regression and a huge one.
+> 
+> On my Atom-based test box with 1 GB of RAM after a fresh boot and starting X
+> with KDE 4 there are ~256 MB free.  To create an image we need to free ~300 MB
+> and that takes ~2 s with the old code and ~15 s with the new one.
+> 
+> It helps to call shrink_all_memory() once with a sufficiently large argument
+> before the preallocation.
+[snip]
+> > At last, I'd express my major concern about the transition to preallocate
+> > based memory shrinking: will it lead to more random swapping IOs?
+> 
+> Hmm.  I don't see immediately why would it.  Maybe the regression I'm seeing
+> is related to that ...
 
-PCI already provide a hypervisor agnostic interface (via IO regions).  
-You have a mechanism for devices to discover which regions they have 
-allocated and to request remappings.  It's supported by Linux and 
-Windows.  It works on the vast majority of architectures out there today.
-
-Why reinvent the wheel?
-
-Regards,
-
-Anthony Liguori
+So you do have swap file enabled? hibernate_preallocate_memory() will
+firstly try to allocate as much pages as possible(savable+free), and
+then to free up (allocated-image_size) pages. That means *all*
+swappable pages will be swapped out in the process - that's a major
+performance regression!  And the zones are likely to be *over scanned*
+and go to *all unreclaimable* state! (Hopefully they may be already
+small at the time.)
