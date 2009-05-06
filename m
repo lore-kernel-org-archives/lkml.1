@@ -1,90 +1,270 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760673AbZEFVTS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757841AbZEFVUj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760673AbZEFVTS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 17:19:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753164AbZEFVTB
+	id S1757841AbZEFVUj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 17:20:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbZEFVU3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:19:01 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60303 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753121AbZEFVTA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:19:00 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable wakeup IRQs
-Date: Wed, 6 May 2009 23:18:22 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Arve =?iso-8859-1?q?Hj=F8nnev=E5g?= <arve@android.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com> <87y6tb3x6r.fsf@deeprootsystems.com> <871vr22upr.fsf@deeprootsystems.com>
-In-Reply-To: <871vr22upr.fsf@deeprootsystems.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Wed, 6 May 2009 17:20:29 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51759 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753164AbZEFVU1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:20:27 -0400
+Date: Wed, 6 May 2009 14:17:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Yang, Bo" <Bo.Yang@lsi.com>
+Cc: Bo.Yang@lsi.com, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Winston.Austria@lsi.com
+Subject: Re: [PATCH 2/10] scsi: megaraid_sas - Add Poll Wait mechanism to
+ MegaRAID SAS driver (PART-I)
+Message-Id: <20090506141705.5edc74d9.akpm@linux-foundation.org>
+In-Reply-To: <4B6A08C587958942AA3002690DD4F8C354F61C3E@cosmail02.lsi.com>
+References: <4B6A08C587958942AA3002690DD4F8C354F61C22@cosmail02.lsi.com>
+	<4B6A08C587958942AA3002690DD4F8C354F61C3E@cosmail02.lsi.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905062318.23572.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 May 2009, Kevin Hilman wrote:
-> Kevin Hilman <khilman@deeprootsystems.com> writes:
-> 
-> > "Rafael J. Wysocki" <rjw@sisk.pl> writes:
-> >
-> >> On Wednesday 06 May 2009, Kevin Hilman wrote:
-> 
-> [...]
-> 
-> >>> 
-> >>> [...]
-> >>> 
-> >>> >>>
-> >>> >>> If this fixes some bug then please provide a description of that bug?
-> >>> >>
-> >>> >> The bug is that on TI OMAP, interrupts that are used for wakeup events
-> >>> >> are disabled by this code causing the system to no longer wake up.
-> >>> >
-> >>> > What do you do if the interrupt triggers right after your driver has
-> >>> > returned from its late suspend hook?  
-> >>> 
-> >>> If it's a wakeup IRQ, I assume you want it to prevent suspend.
-> >>> 
-> >>> But I don't see how that can happen in the current code. IIUC, by the
-> >>> time your late suspend hook is run, your device IRQ is already
-> >>> disabled, so it won't trigger an interrupt that will be caught by
-> >>> check_wakeup_irqs() anyways.
-> >>
-> >> My understanding of __disable_irq() was that it didn't actually disable the
-> >> IRQ at the hardware level, allowing the CPU to actually receive the interrupt
-> >> and acknowledge it, but preventing the device driver for receiving it.  
-> >
-> >> Does it work differently on the affected systems?
-> >
-> > Yes.
-> >
-> > __disable_irq() calls the irq_chip's disable method which is platform
-> > specific.  On OMAP, this masks the IRQ at the hardware level
-> > preventing the CPU from seeing the interrupt.
-> 
-> Looking at x86, the i8259 disable hook also seems to mask the IRQ at
-> the PIC level.
-> 
-> The various IO-APIC irq_chips do not have a disable hook so the
-> __disable_irq() here is a NOP.
+On Tue, 5 May 2009 18:25:55 -0600
+"Yang, Bo" <Bo.Yang@lsi.com> wrote:
 
-Except that it sets IRQ_DISABLED.
+> Add Poll_wait mechanism to SAS-2 MegaRAID SAS Linux driver. Driver will wakeup poll after the driver get event from MegaRAID SAS FW.  Driver also reregisters for Event with the FW when it receives AEN.
+> 
 
-All right there.
+Seems fairly strage to be adding poll support to a scsi driver, but I
+see it isn't the first driver to do this.
 
-We can either avoid disabling wake-up interrupts, in which case we should
-drop check_wakeup_irqs() IMO, or rework things so that check_wakeup_irqs() will
-catch them.  Doing both doesn't seem to make sense to me.
+> 
+>
+> ...
+>
+> @@ -1295,13 +1301,20 @@ megasas_service_aen(struct megasas_insta
+>         /*
+>          * Don't signal app if it is just an aborted previously registered aen
+>          */
+> -       if (!cmd->abort_aen)
+> +       if ((!cmd->abort_aen) && (instance->unload == 0)) {
+> +               megasas_poll_wait_aen = 1;
+> +               wake_up(&megasas_poll_wait);
+>                 kill_fasync(&megasas_async_queue, SIGIO, POLL_IN);
+> +       }
+>         else
+>                 cmd->abort_aen = 0;
+> 
+>         instance->aen_cmd = NULL;
+>         megasas_return_cmd(instance, cmd);
+> +
+> +       if ((!cmd->abort_aen) && (instance->unload == 0)) {
+> +               megasas_aen_polling(instance);
+> +       }
 
-Which one would be the right approach, then?
+I see you're not a big fan of checkpatch, nor of kernel coding style :(
 
-Rafael
+>  }
+> 
+>  /*
+> @@ -2583,6 +2596,8 @@ megasas_probe_one(struct pci_dev *pdev,
+> 
+>         *instance->producer = 0;
+>         *instance->consumer = 0;
+> +       megasas_poll_wait_aen = 0;
+> +       instance->hotplug_wk = NULL;
+> 
+>         instance->evt_detail = pci_alloc_consistent(pdev,
+>                                                     sizeof(struct
+> @@ -2621,6 +2636,7 @@ megasas_probe_one(struct pci_dev *pdev,
+> 
+>         megasas_dbg_lvl = 0;
+>         instance->flag = 0;
+> +       instance->unload = 0;
+>         instance->last_time = 0;
+> 
+>         /*
+> @@ -2924,6 +2940,7 @@ static void __devexit megasas_detach_one
+>         struct megasas_instance *instance;
+> 
+>         instance = pci_get_drvdata(pdev);
+> +       instance->unload = 1;
+>         host = instance->host;
+> 
+>         if (poll_mode_io)
+> @@ -2932,6 +2949,15 @@ static void __devexit megasas_detach_one
+>         scsi_remove_host(instance->host);
+>         megasas_flush_cache(instance);
+>         megasas_shutdown_controller(instance, MR_DCMD_CTRL_SHUTDOWN);
+> +
+> +       /*
+> +       * cancel the delayed work if this work still in queue
+> +       */
+> +       if (instance->hotplug_wk != NULL) {
+> +               cancel_delayed_work(
+> +                       (struct delayed_work *)instance->hotplug_wk);
+
+whah?  Can't do that!  cancel_delayed_work() will do del_timer_sync()
+on megasas_instance.flag and will crash.
+
+> +                       
+
+> +               flush_scheduled_work();
+> +       }
+>         tasklet_kill(&instance->isr_tasklet);
+> 
+>         /*
+> @@ -3027,6 +3053,19 @@ static int megasas_mgmt_fasync(int fd, s
+>  }
+> 
+>  /**
+> + * megasas_mgmt_poll -  char node "poll" entry point
+> + * */
+> +static unsigned int megasas_mgmt_poll(struct file *file, poll_table *wait)
+> +{
+> +       unsigned int mask = 0;
+> +       poll_wait(file, &megasas_poll_wait, wait);
+> +       if (megasas_poll_wait_aen) {
+> +               mask |=   (POLLIN | POLLRDNORM);
+> +       }
+> +       return mask;
+> +}
+> +
+> +/**
+>   * megasas_mgmt_fw_ioctl -     Issues management ioctls to FW
+>   * @instance:                  Adapter soft state
+>   * @argp:                      User's ioctl packet
+> @@ -3348,6 +3387,7 @@ static const struct file_operations mega
+>         .open = megasas_mgmt_open,
+>         .fasync = megasas_mgmt_fasync,
+>         .unlocked_ioctl = megasas_mgmt_ioctl,
+> +       .poll = megasas_mgmt_poll,
+>  #ifdef CONFIG_COMPAT
+>         .compat_ioctl = megasas_mgmt_compat_ioctl,
+>  #endif
+> @@ -3462,6 +3502,100 @@ out:
+>         return retval;
+>  }
+> 
+> +static void
+> +megasas_scsi_scan_host(struct work_struct *work)
+> +{
+> +       struct megasas_aen_event *ev = container_of(work,
+> +               struct megasas_aen_event, hotplug_work);
+> +       struct megasas_instance *instance = ev->instance;
+> +
+> +       instance->hotplug_wk = NULL;
+> +       if (!instance) {
+
+oh come on.  If this test returns true then the preceding statement
+just oopsed the kernel.
+
+> +               printk(KERN_ERR "%s: invalid instance!\n", __FUNCTION__);
+> +               kfree(ev);
+> +               return;
+> +       }
+> +
+> +       printk(KERN_INFO "%s[%d]: scanning ...\n",
+> +               __FUNCTION__, instance->host->host_no);
+> +       scsi_scan_host(instance->host);
+> +       kfree(ev);
+> +}
+> +
+> +static void
+> +megasas_aen_polling(struct megasas_instance *instance)
+> +{
+> +       union megasas_evt_class_locale class_locale;
+> +       int doscan = 0;
+> +       u32 seq_num;
+> +       int error;
+> +
+> +       if (instance->evt_detail) {
+> +               printk(KERN_INFO "%s[%d]: event code 0x%04x\n", __FUNCTION__,
+
+Users of checkpatch know to use __func__.
+
+> +                       instance->host->host_no, instance->evt_detail->code);
+> +
+> +               switch (instance->evt_detail->code) {
+> +
+> +               case MR_EVT_LD_CREATED:
+> +               case MR_EVT_PD_INSERTED:
+> +               case MR_EVT_LD_DELETED:
+> +               case MR_EVT_LD_OFFLINE:
+> +               case MR_EVT_CFG_CLEARED:
+> +               case MR_EVT_PD_REMOVED:
+> +               case MR_EVT_FOREIGN_CFG_IMPORTED:
+> +               case MR_EVT_LD_STATE_CHANGE:
+> +               case MR_EVT_CTRL_HOST_BUS_SCAN_REQUESTED:
+> +                       doscan = 1;
+> +                       break;
+> +               default:
+> +                       doscan = 0;
+> +                       break;
+> +               }
+> +       } else {
+> +               printk(KERN_ERR "%s[%d]: invalid evt_detail!\n",
+> +                       __FUNCTION__, instance->host->host_no);
+> +               return;
+> +       }
+> +
+> +       if (doscan) {
+> +               struct megasas_aen_event *ev;
+> +               ev = kzalloc(sizeof(*ev), GFP_ATOMIC);
+> +               if (!ev) {
+> +                       printk(KERN_ERR "%s: out of memory\n", __FUNCTION__);
+> +               } else {
+> +                       ev->instance = instance;
+> +                       instance->hotplug_wk = &ev->hotplug_work;
+> +                       INIT_WORK(&ev->hotplug_work, megasas_scsi_scan_host);
+> +                       schedule_delayed_work(
+> +                               (struct delayed_work *)&ev->hotplug_work, 0);
+> +               }
+> +       }
+> +
+> +       seq_num = instance->evt_detail->seq_num + 1;
+> +
+> +       /**
+> +       * Register AEN with FW for latest sequence number plus 1
+> +       **/
+
+The /** token is used to introduce a kerneldoc comment.  This is not a
+kerneldoc comment.
+
+> +       class_locale.members.reserved = 0;
+> +       class_locale.members.locale = MR_EVT_LOCALE_ALL;
+> +       class_locale.members.class = MR_EVT_CLASS_DEBUG;
+> +
+> +       if ( instance->aen_cmd != NULL ) {
+> +               return ;
+> +       }
+> +
+> +       mutex_lock(&instance->aen_mutex);
+> +       error = megasas_register_aen(instance, seq_num,
+> +                               class_locale.word);
+> +       mutex_unlock(&instance->aen_mutex);
+> +
+> +       if (error)
+> +               printk(KERN_ERR "%s[%d]: register aen failed error %x\n",
+> +                        __FUNCTION__, instance->host->host_no, error);
+> +}
+> +
+> +
+>
+> ...
+>
+> @@ -1118,8 +1134,10 @@ struct megasas_instance {
+> 
+>         struct megasas_instance_template *instancet;
+>         struct tasklet_struct isr_tasklet;
+> +       struct work_struct *hotplug_wk;
+
+"hotplug_work"
+
+> 
+>         u8 flag;
+> +       u8 unload;
+>         unsigned long last_time;
+> 
+>         struct timer_list io_completion_timer;
