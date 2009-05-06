@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761351AbZEFUqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760547AbZEFUpG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761351AbZEFUqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761047AbZEFUjo
+	id S1760547AbZEFUpG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:45:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760972AbZEFUjh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:39:44 -0400
-Received: from kroah.org ([198.145.64.141]:34075 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 16:39:37 -0400
+Received: from kroah.org ([198.145.64.141]:34039 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761236AbZEFUjm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:39:42 -0400
+	id S1761248AbZEFUjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 16:39:36 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Wed May  6 13:31:31 2009
-Message-Id: <20090506203131.683958194@blue.kroah.org>
+Message-Id: <20090506203131.240511961@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 13:30:28 -0700
+Date: Wed, 06 May 2009 13:30:26 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jussi Kivilinna <jussi.kivilinna@mbnet.fi>,
-       "John W. Linville" <linville@tuxdriver.com>,
+       alan@lxorguk.ukuu.org.uk, Lennert Buytenhek <buytenh@marvell.com>,
+       "David S. Miller" <davem@davemloft.net>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 18/18] rndis_wlan: fix initialization order for workqueue&workers
+Subject: [patch 16/18] mv643xx_eth: 64bit mib counter read fix
 References: <20090506203010.615363711@blue.kroah.org>
-Content-Disposition: inline; filename=rndis_wlan-fix-initialization-order-for-workqueue-workers.patch
+Content-Disposition: inline; filename=mv643xx_eth-64bit-mib-counter-read-fix.patch
 In-Reply-To: <20090506203353.GA14624@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,64 +40,48 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
+From: Lennert Buytenhek <buytenh@wantstofly.org>
 
-commit e805e4d0b53506dff4255a2792483f094e7fcd2c upstream.
+commit 93af7aca44f0e82e67bda10a0fb73d383edcc8bd upstream.
 
-rndis_wext_link_change() might be called from rndis_command() at
-initialization stage and priv->workqueue/priv->work have not been
-initialized yet. This causes invalid opcode at rndis_wext_bind on
-some brands of bcm4320.
+On several mv643xx_eth hardware versions, the two 64bit mib counters
+for 'good octets received' and 'good octets sent' are actually 32bit
+counters, and reading from the upper half of the register has the same
+effect as reading from the lower half of the register: an atomic
+read-and-clear of the entire 32bit counter value.  This can under heavy
+traffic occasionally lead to small numbers being added to the upper
+half of the 64bit mib counter even though no 32bit wrap has occured.
 
-Fix by initializing workqueue/workers in rndis_wext_bind() before
-rndis_command is used.
+Since we poll the mib counters at least every 30 seconds anyway, we
+might as well just skip the reads of the upper halves of the hardware
+counters without breaking the stats, which this patch does.
 
-This bug has existed since 2.6.25, reported at:
-	http://bugzilla.kernel.org/show_bug.cgi?id=12794
-
-Signed-off-by: Jussi Kivilinna <jussi.kivilinna@mbnet.fi>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
+Cc: stable@kernel.org
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/rndis_wlan.c |   14 ++++++++++----
- 1 file changed, 10 insertions(+), 4 deletions(-)
+ drivers/net/mv643xx_eth.c |    2 --
+ 1 file changed, 2 deletions(-)
 
---- a/drivers/net/wireless/rndis_wlan.c
-+++ b/drivers/net/wireless/rndis_wlan.c
-@@ -2556,6 +2556,11 @@ static int rndis_wext_bind(struct usbnet
- 	mutex_init(&priv->command_lock);
- 	spin_lock_init(&priv->stats_lock);
+--- a/drivers/net/mv643xx_eth.c
++++ b/drivers/net/mv643xx_eth.c
+@@ -1060,7 +1060,6 @@ static void mib_counters_update(struct m
+ 	struct mib_counters *p = &mp->mib_counters;
  
-+	/* because rndis_command() sleeps we need to use workqueue */
-+	priv->workqueue = create_singlethread_workqueue("rndis_wlan");
-+	INIT_WORK(&priv->work, rndis_wext_worker);
-+	INIT_DELAYED_WORK(&priv->stats_work, rndis_update_wireless_stats);
-+
- 	/* try bind rndis_host */
- 	retval = generic_rndis_bind(usbdev, intf, FLAG_RNDIS_PHYM_WIRELESS);
- 	if (retval < 0)
-@@ -2600,16 +2605,17 @@ static int rndis_wext_bind(struct usbnet
- 	disassociate(usbdev, 1);
- 	netif_carrier_off(usbdev->net);
- 
--	/* because rndis_command() sleeps we need to use workqueue */
--	priv->workqueue = create_singlethread_workqueue("rndis_wlan");
--	INIT_DELAYED_WORK(&priv->stats_work, rndis_update_wireless_stats);
- 	queue_delayed_work(priv->workqueue, &priv->stats_work,
- 		round_jiffies_relative(STATS_UPDATE_JIFFIES));
--	INIT_WORK(&priv->work, rndis_wext_worker);
- 
- 	return 0;
- 
- fail:
-+	cancel_delayed_work_sync(&priv->stats_work);
-+	cancel_work_sync(&priv->work);
-+	flush_workqueue(priv->workqueue);
-+	destroy_workqueue(priv->workqueue);
-+
- 	kfree(priv);
- 	return retval;
- }
+ 	p->good_octets_received += mib_read(mp, 0x00);
+-	p->good_octets_received += (u64)mib_read(mp, 0x04) << 32;
+ 	p->bad_octets_received += mib_read(mp, 0x08);
+ 	p->internal_mac_transmit_err += mib_read(mp, 0x0c);
+ 	p->good_frames_received += mib_read(mp, 0x10);
+@@ -1074,7 +1073,6 @@ static void mib_counters_update(struct m
+ 	p->frames_512_to_1023_octets += mib_read(mp, 0x30);
+ 	p->frames_1024_to_max_octets += mib_read(mp, 0x34);
+ 	p->good_octets_sent += mib_read(mp, 0x38);
+-	p->good_octets_sent += (u64)mib_read(mp, 0x3c) << 32;
+ 	p->good_frames_sent += mib_read(mp, 0x40);
+ 	p->excessive_collision += mib_read(mp, 0x44);
+ 	p->multicast_frames_sent += mib_read(mp, 0x48);
 
 
