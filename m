@@ -1,77 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759589AbZEFPti@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759386AbZEFPxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759589AbZEFPti (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 11:49:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756382AbZEFPt1
+	id S1759386AbZEFPxZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 11:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754115AbZEFPxQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 11:49:27 -0400
-Received: from outbound-mail-152.bluehost.com ([67.222.39.32]:45449 "HELO
-	outbound-mail-152.bluehost.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753949AbZEFPt0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 11:49:26 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
-	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
-	b=p0/7cypRuEnAO4H0y6hxtuWH8jamOxe1Jc/s0c5VHSUXbOmnnaDscdKQlajkkQgZLllYrp/B7+rrwq9USrQcqaySnPJaprMo9klK5w8AhNTV4M7lU8bVjANG1aEHdee4;
-Date: Wed, 6 May 2009 08:48:45 -0700
-From: Jesse Barnes <jbarnes@virtuousgeek.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-Subject: Re: [PATCH 4/4] x86/pci: update pirq_enable_irq to setup io apic
- routing -v2
-Message-ID: <20090506084845.48e0818c@hobbes>
-In-Reply-To: <20090506124558.GC19541@elte.hu>
-References: <49F8B2D9.3080903@kernel.org>
-	<49F9600A.7000705@kernel.org>
-	<49FC8696.4020603@kernel.org>
-	<20090506124558.GC19541@elte.hu>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	Wed, 6 May 2009 11:53:16 -0400
+Received: from cmpxchg.org ([85.214.51.133]:52768 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753184AbZEFPxP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 11:53:15 -0400
+Date: Wed, 6 May 2009 17:50:43 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, hartleys@visionengravers.com,
+       mcrapet@gmail.com, linux@arm.linux.org.uk, fred99@carolina.rr.com,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+Subject: Re: [PATCH] Double check memmap is actually valid with a memmap has unexpected holes
+Message-ID: <20090506155043.GA3084@cmpxchg.org>
+References: <20090505082944.GA25904@csn.ul.ie> <20090505110653.GA16649@cmpxchg.org> <20090506143059.GB20709@csn.ul.ie>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506143059.GB20709@csn.ul.ie>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009 14:45:58 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+On Wed, May 06, 2009 at 03:31:00PM +0100, Mel Gorman wrote:
+> On Tue, May 05, 2009 at 01:06:53PM +0200, Johannes Weiner wrote:
+> > Hi Mel,
+> > 
+> > On Tue, May 05, 2009 at 09:29:44AM +0100, Mel Gorman wrote:
+> > > pfn_valid() is meant to be able to tell if a given PFN has valid memmap
+> > > associated with it or not. In FLATMEM, it is expected that holes always
+> > > have valid memmap as long as there is valid PFNs either side of the hole.
+> > > In SPARSEMEM, it is assumed that a valid section has a memmap for the
+> > > entire section.
+> > > 
+> > > However, ARM and maybe other embedded architectures in the future free
+> > > memmap backing holes to save memory on the assumption the memmap is never
+> > > used. The page_zone() linkages are then broken even though pfn_valid()
+> > > returns true. A walker of the full memmap in this case must do additional
+> > > check to ensure the memmap they are looking at is sane by making sure the
+> > > zone and PFN linkages are still valid. This is expensive, but walkers of
+> > > the full memmap are extremely rare.
+> > > 
+> > > This was caught before for FLATMEM and hacked around but it hits again
+> > > for SPARSEMEM because the page_zone() linkages can look ok where the PFN
+> > > linkages are totally screwed. This looks like a hatchet job but the reality
+> > > is that any clean solution would end up consuming all the memory saved
+> > > by punching these unexpected holes in the memmap. For example, we tried
+> > > marking the memmap within the section invalid but the section size exceeds
+> > > the size of the hole in most cases so pfn_valid() starts returning false
+> > > where valid memmap exists. Shrinking the size of the section would increase
+> > > memory consumption offsetting the gains.
+> > > 
+> > > This patch identifies when an architecture is punching unexpected holes
+> > > in the memmap that the memory model cannot automatically detect. When set,
+> > > walkers of the full memmap must call memmap_valid_within() for each PFN and
+> > > passing in what it expects the page and zone to be for that PFN. If it finds
+> > > the linkages to be broken, it assumes the memmap is invalid for that PFN.
+> > > 
+> > > Signed-off-by: Mel Gorman <mel@csn.ul.ie>
+> > 
+> > I think we also need to fix up show_mem(). 
+> 
+> As it turns out, ARM has its own show_mem(). I don't see how, but ARM
+> must not be using lib/show_mem.c even though it compiles it.
 
-> 
-> * Yinghai Lu <yinghai@kernel.org> wrote:
-> 
-> > so we could set io apic routing only when enable device irq.
-> > 
-> > also could make setup_IO_APIC_irqs and setup_ioapic_dest only handle
-> > first ioapic...
-> > 
-> > v2: remove one one not needed style change.
-> >     merge the patch only setup io_apic for acpi on in
-> > setup_IO_APIC_irqs
-> > 
-> > [ Impact: make mptable irq enable more like acpi is used, and
-> > numa_irq_desc could get correct node when acpi=off ]
-> > 
-> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+It's some linker magic for lib/.  It compiles both but treats the
+library version as weak symbol (or something).
+
+But with the zone-walking show_mem, I think it should be able to use
+the generic version.
+
+> > Attached is a
+> > compile-tested patch, please have a look.  I am not sure about memory
+> > hotplug issues but on a quick glance the vmstat stuff seems to be
+> > optimistic as well.
 > > 
 > > ---
-> >  arch/x86/kernel/apic/io_apic.c |  148
-> > ++++++++++++++++++++---------------------
-> > arch/x86/pci/irq.c             |   84 ++++++++--------------- 2
-> > files changed, 103 insertions(+), 129 deletions(-)
+> > From: Johannes Weiner <hannes@cmpxchg.org>
+> > Subject: lib: adjust show_mem() to support memmap holes
+> > 
+> > Some architectures free the backing of mem_map holes.  pfn_valid() is
+> > not able to report this properly, so a stronger check is needed if the
+> > caller is about to use the page descriptor derived from a pfn.
+> > 
+> > Change the node walking to zone walking and use memmap_valid_within()
+> > to check for holes.  This is reliable as it additionally checks for
+> > page_zone() and page_to_pfn() coherency.
+> > 
+> > Not-yet-signed-off-by: Johannes Weiner <hannes@cmpxchg.org>
+> > ---
+> >  lib/show_mem.c |   21 +++++++++------------
+> >  1 files changed, 9 insertions(+), 12 deletions(-)
+> > 
+> > diff --git a/lib/show_mem.c b/lib/show_mem.c
+> > index 238e72a..ed3c3ec 100644
+> > --- a/lib/show_mem.c
+> > +++ b/lib/show_mem.c
+> > @@ -11,29 +11,27 @@
+> >  
+> >  void show_mem(void)
+> >  {
+> > -	pg_data_t *pgdat;
+> >  	unsigned long total = 0, reserved = 0, shared = 0,
+> >  		nonshared = 0, highmem = 0;
+> > +	struct zone *zone;
+> >  
+> >  	printk(KERN_INFO "Mem-Info:\n");
+> >  	show_free_areas();
+> >  
+> > -	for_each_online_pgdat(pgdat) {
+> > -		unsigned long i, flags;
+> > +	for_each_populated_zone(zone) {
+> > +		unsigned long start = zone->zone_start_pfn;
+> > +		unsigned long end = start + zone->spanned_pages;
 > 
-> Ok, i guess this makes sense with acpi-less bootup modes.
+> The patch appears to be doing two things
 > 
-> There's hefty impact on io_apic.c and pci/irq.c as well. The io-apic 
-> code already has a fair amount of changes queued up. Jesse: do you 
-> have pci/irq.c changes queued up? If you agree with the patch, how 
-> should we handle this?
+> o Scanning zones instead of pgdats
+> o Adding the use of memmap_valid_within()
+> 
+> Scanning zones instead of pgdats seems like a good idea on its own and should
+> be split out for separate consideration.
 
-No I don't have anything recent...  and since this stuff is intertwined
-with the io_apic changes I'm fine with it going through you guys.
+Good idea.  Will do.
 
--- 
-Jesse Barnes, Intel Open Source Technology Center
+> > +		unsigned long pfn;
+> >  
+> > -		pgdat_resize_lock(pgdat, &flags);
+> 
+> How sure are you about removing the acquisition of this lock?  If anything,
+> it appears that pagetypeinfo_showblockcount_print() should be taking this lock.
+
+I'm completely unsure about it.
+
+<adds memory hotplug guys to CC>
+
+> > -		for (i = 0; i < pgdat->node_spanned_pages; i++) {
+> > -			struct page *page;
+> > -			unsigned long pfn = pgdat->node_start_pfn + i;
+> > +		for (pfn = start; pfn < end; pfn++) {
+> > +			struct page *page = pfn_to_page(pfn);
+> >  
+> 
+> You need to check pfn_valid() before using pfn_to_page().
+> 
+> > -			if (unlikely(!(i % MAX_ORDER_NR_PAGES)))
+> > +			if (unlikely(!(pfn % MAX_ORDER_NR_PAGES)))
+> >  				touch_nmi_watchdog();
+> >  
+> > -			if (!pfn_valid(pfn))
+> > +			if (!memmap_valid_within(pfn, page, zone))
+> >  				continue;
+> >  
+> 
+> You need both the pfn_valid() check and the memmap_valid_within() as
+> memmap_valid_within() unconditionally returns 1 for most architectures. If
+> you applied this patch as-is, memory holes in a zone will cause big problems -
+> random results at best and invalid memory references at worst.
+
+Ah, zone holes.  More reading up needed.  Thanks, Mel.
+
+	Hannes
