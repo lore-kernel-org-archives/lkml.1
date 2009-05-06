@@ -1,115 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754936AbZEFOYx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759968AbZEFO1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754936AbZEFOYx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 10:24:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZEFOYl
+	id S1759968AbZEFO1z (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 10:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754230AbZEFO1q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 10:24:41 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63653 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751667AbZEFOYl (ORCPT
+	Wed, 6 May 2009 10:27:46 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:52530 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754133AbZEFO1q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 10:24:41 -0400
-Date: Wed, 6 May 2009 10:24:40 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       jaswinder@kernel.org, jaswinderrajput@gmail.com, tglx@linutronix.de,
-       mingo@elte.hu
-cc: linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/core] tracing: trace_output.c, fix false positive
- compiler warning
-In-Reply-To: <tip-48dd0fed90e2b1f1ba87401439b85942181c6df3@git.kernel.org>
-Message-ID: <alpine.DEB.2.00.0905061018260.3239@gandalf.stny.rr.com>
-References: <new-submission> <tip-48dd0fed90e2b1f1ba87401439b85942181c6df3@git.kernel.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 6 May 2009 10:27:46 -0400
+Date: Wed, 6 May 2009 15:25:25 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Andrea Arcangeli <aarcange@redhat.com>
+cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       chrisw@redhat.com, alan@lxorguk.ukuu.org.uk, device@lanana.org,
+       linux-mm@kvack.org, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
+In-Reply-To: <20090506133434.GX16078@random.random>
+Message-ID: <Pine.LNX.4.64.0905061453320.21067@blonde.anvils>
+References: <1241475935-21162-1-git-send-email-ieidus@redhat.com>
+ <1241475935-21162-2-git-send-email-ieidus@redhat.com>
+ <1241475935-21162-3-git-send-email-ieidus@redhat.com>
+ <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com>
+ <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils>
+ <20090506133434.GX16078@random.random>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Wed, 6 May 2009, tip-bot for Jaswinder Singh Rajput wrote:
-
-> Commit-ID:  48dd0fed90e2b1f1ba87401439b85942181c6df3
-> Gitweb:     http://git.kernel.org/tip/48dd0fed90e2b1f1ba87401439b85942181c6df3
-> Author:     Jaswinder Singh Rajput <jaswinder@kernel.org>
-> AuthorDate: Wed, 6 May 2009 15:45:45 +0530
-> Committer:  Ingo Molnar <mingo@elte.hu>
-> CommitDate: Wed, 6 May 2009 14:19:16 +0200
+On Wed, 6 May 2009, Andrea Arcangeli wrote:
+> On Wed, May 06, 2009 at 12:16:52PM +0100, Hugh Dickins wrote:
+> > I'm very much with those who suggested an madvise(), for which Chris
+> > prepared a patch.  I know Andrea felt uneasy with an madvise() going
+> > to a possibly-configured-out-or-never-loaded module, but it is just
+> > advice, so I don't have a problem with that myself, so long as it
+> > is documented in the manpage.
 > 
-> tracing: trace_output.c, fix false positive compiler warning
+> I don't have so much of a problem with that, but there are a couple of
+> differences: normally madvise doesn't depend on the admin to start
+> some kernel thread to be meaningful, and normally madvise isn't a
+> privileged operation, see below.
 > 
-> This compiler warning:
+> > Whereas I do worry just what capability should be required for this:
+> > can't a greedy app simply fork itself, touch all its pages, and thus
+> > lock itself into memory in this way?  And I do worry about the cpu
 > 
->   CC      kernel/trace/trace_output.o
->  kernel/trace/trace_output.c: In function ?register_ftrace_event?:
->  kernel/trace/trace_output.c:544: warning: ?list? may be used uninitialized in this function
-> 
-> Is wrong as 'list' is always initialized - but GCC (4.3.2) does not
-> recognize this relationship properly.
-> 
-> Work around the warning by initializing the variable to NULL.
-> 
-> [ Impact: fix false positive compiler warning ]
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> Acked-by: Steven Rostedt <rostedt@goodmis.org>
-> LKML-Reference: <new-submission>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> 
-> 
-> ---
->  kernel/trace/trace_output.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-> index 5fc51f0..8bd9a2c 100644
-> --- a/kernel/trace/trace_output.c
-> +++ b/kernel/trace/trace_output.c
-> @@ -541,7 +541,7 @@ int register_ftrace_event(struct trace_event *event)
->  	INIT_LIST_HEAD(&event->list);
->  
->  	if (!event->type) {
-> -		struct list_head *list;
-> +		struct list_head *list = NULL;
+> KSM pages are supposed to be swappable in the long run so let's think
+> longer term.
 
-Actually this is the wrong place to initialize. The correct place is in 
-the function that is expected to.
+And in the interim, insist on capable(CAP_IPC_LOCK)?
+If that's okay for KVM's usage, that's fine by me for now.
 
->  
->  		if (next_event_type > FTRACE_MAX_EVENT) {
->  
+Whether not having privilege means it should fail or silently ignore
+the advice it's been given, I'm not sure: fail appears more helpful, but
+silently ignore may fit better with whether module has been loaded yet
+(we can keep a list of what's registered, for when module is loaded).
 
-Could you test this patch instead:
+> 
+> > cost of all the scanning, if it were to get used more generally -
+> > it would be a pity if we just advised complainers to tune it out.
+> 
+> Clearly if tons of apps maliciously register themself in ksm, they'll
+> waste tons of CPU for no good, they'll just populate the unstable tree
+> with pages that are all equal except for the last 4 bytes slowing down
+> KSM for nothing.
 
-tracing: quiet gcc compile warning
+You're right to be concerned about the malicious, but I was thinking
+rather of apps just wanting to say they may contain a goodly number
+of duplicate pages, and wanting to register themselves for merging,
+no malice intended.
 
-Some versions of gcc can not catch the fact that the list variable in 
-register_ftrace_event is initialized. There's one place in the logic that 
-is a bit complex. The trace_search_list function that initializes the list 
-will not initialize it on error. But that's OK, because the caller checks 
-for error and will not use the list variable if there is one. Some 
-versions of gcc miss this.
+If only for my hacked-up testing, I'm interested in having a workable
+system on which every process has opted the whole of its address space
+into this merging: never be optimal, but I'd like workable.
 
-[ Impact: quiet gcc from complaining about an unused variable ]
+> This is also why it's good to have a /dev/ksm ioctl
+> that the admin can allow only certain users to use for registering
+> virtual ranges (for example only the kvm/qemu user or all users in
+> scientific environments). Otherwise we'd need some kind of permissions
+> settings in sysfs with some API that certainly is less intuitive than
+> chown/chmod on /dev/ksm. We just can't allow madvise to succeed on any
+> luser registering itself in KSM, so if it was madvise, it shall return
+> -EPERM somehow sometime.
 
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+I don't see a role for /dev/ksm any more.  I'm glad the administrative
+tunables have now been switched over to sysfs, and think that should be
+used for these restrictions too.
 
-diff --git a/kernel/trace/trace_output.c b/kernel/trace/trace_output.c
-index 5fc51f0..e949cf6 100644
---- a/kernel/trace/trace_output.c
-+++ b/kernel/trace/trace_output.c
-@@ -506,8 +506,10 @@ static int trace_search_list(struct list_head **list)
- 	}
- 
- 	/* Did we used up all 65 thousand events??? */
--	if ((last + 1) > FTRACE_MAX_EVENT)
-+	if ((last + 1) > FTRACE_MAX_EVENT) {
-+		*list = NULL;
- 		return 0;
-+	}
- 
- 	*list = &e->list;
- 	return last + 1;
+And please don't think of non-KVM users of KSM as malicious lusers!
+
+> 
+> > I'm still working my way through ksm.c, and not gone back to look at
+> > Chris's madvise patch, but doubt it will be sufficient.  There's an
+> > interesting difference between what you're doing in ksm.c, and how
+> > madvise usually behaves, regarding unmapped areas: madvice doesn't
+> > usually apply to an unmapped area, and goes away with an area when
+> > it is unmapped; whereas in KSM's case, the advice applies to whatever
+> > happens to get mapped in the area specified, persisting across unmaps.
+> 
+> Given the apps using KSM tends to be quite special, the fact it's
+> sticky, it doesn't go away with munmap isn't big deal, quite to the
+> contrary those apps will likely have an easier time thanks to the
+> registration not going away over munmap/mmap, without requiring
+> reloading of malloc/new calls.
+
+I don't have a fixed view on this: I'm open to it behaving differently
+in this way (SuS on madvise certainly doesn't prohibit it), but suspect
+we might end up better off behaving consistently.
+
+> 
+> To skip over holes during virtual scans we just vma->vm_next.
+
+Is that in updates yet to come?  I see things like
+	for (pages_count = 0; pages_count < slot->npages; ++pages_count)
+and
+		ksm_scan->page_index++;
+which will, of course, eventually get across any hole and move into
+vma->vm_next, but take vastly longer to do so than necessary.
+
+> 
+> > But I do appreciate the separation you've kept so far,
+> > and wouldn't want to tie it all together too closely.
+> 
+> The above plus the fact it remains self contained without making the
+> VM any more complicated, gives some value.
+
+Yes, that's admirable, and shouldn't be discarded lightly.
+But we do also need to be careful about letting subsystems go their
+own way.  I was _very_ pleased to find it all sited in mm/, rather
+than hidden away elsewhere, as I'd originally feared.
+
+> Even swapping I'd like to
+> add it without VM specific knowledge about KSM. tmpfs has an easier
+> time because it has its own vma type, here we've KSM pages mixed
+> inside regular anonymous !vma->vm_file regions and !vm_ops.
+
+Well, whatever works out simplest, probably.  I think there's a good
+chance that doing it with tmpfs pages will work out simplest, but
+perfectly possible also that that's a no-go for some reason.
+
+> 
+> > p.s.  I wish you'd chosen different name than KSM - the kernel
+> > has supported shared memory for many years - and notice ksm.c itself
+> > says "Memory merging driver".  "Merge" would indeed have been a less
+> > ambiguous term than "Share", but I think too late to change that now
+> > - except possibly in the MADV_ flag names?
+> 
+> I don't actually care about names, so I leave this to other to discuss.
+
+Hugh
