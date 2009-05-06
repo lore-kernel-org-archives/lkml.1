@@ -1,45 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760046AbZEFNyU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760053AbZEFNz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760046AbZEFNyU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 09:54:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755137AbZEFNyG
+	id S1760053AbZEFNz2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 09:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756360AbZEFNzS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 09:54:06 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:52017 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753778AbZEFNyF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 09:54:05 -0400
-Date: Wed, 6 May 2009 14:28:33 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Andrea Arcangeli <aarcange@redhat.com>
-cc: Rik van Riel <riel@redhat.com>, Izik Eidus <ieidus@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       chrisw@redhat.com, alan@lxorguk.ukuu.org.uk, device@lanana.org,
-       linux-mm@kvack.org, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 2/6] ksm: dont allow overlap memory addresses registrations.
-In-Reply-To: <20090506131735.GW16078@random.random>
-Message-ID: <Pine.LNX.4.64.0905061424480.19190@blonde.anvils>
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com>
- <1241475935-21162-2-git-send-email-ieidus@redhat.com>
- <1241475935-21162-3-git-send-email-ieidus@redhat.com> <4A00DD4F.8010101@redhat.com>
- <4A015C69.7010600@redhat.com> <4A0181EA.3070600@redhat.com>
- <20090506131735.GW16078@random.random>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 6 May 2009 09:55:18 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:39156 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754910AbZEFNzQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 09:55:16 -0400
+Subject: Re: [PATCH, RFC] sputrace: use the generic event tracer
+From: Steven Rostedt <srostedt@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Christoph Hellwig <hch@lst.de>, Arnd Bergmann <arnd@arndb.de>,
+       Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org, Fr?d?ric Weisbecker <fweisbec@gmail.com>
+In-Reply-To: <20090506112301.GK25203@elte.hu>
+References: <20090506102918.GA23278@lst.de> <20090506105748.GE25203@elte.hu>
+	 <20090506110258.GA24850@lst.de>  <20090506112301.GK25203@elte.hu>
+Content-Type: text/plain
+Organization: Red Hat
+Date: Wed, 06 May 2009 09:54:49 -0400
+Message-Id: <1241618089.11379.22.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009, Andrea Arcangeli wrote:
+
+On Wed, 2009-05-06 at 13:23 +0200, Ingo Molnar wrote:
+
+> > > > +# magic for the trace events
+> > > > +CFLAGS_sched.o := -I$(src)
+> > > 
+> > > Steve, i'm wondering whether this type of Makefile hackery (caused 
+> > > by modular tracepoints) could be eliminated ...
+> > 
+> > We would just have to include the header file with "" instead of 
+> > <>. But I remember Steve not liking this when we talked about it.
 > 
-> For example for the swapping of KSM pages we've been thinking of using
-> external rmap hooks to avoid the VM to know anything specific to KSM
-> pages but to still allow their unmapping and swap.
+> Yeah. But changing Makefiles isnt particularly clean either ...
+> 
+> And adding -I$(src) can have side-effects: we often have a local 
+> foo.h while an include/linux/foo.h as well.
 
-There may prove to be various reasons why it wouldn't work out in practice;
-but when thinking of swapping them, it is worth considering if those KSM
-pages can just be assigned to a tmpfs file, then leave the swapping to that.
+That still would not conflict, because
 
-Hugh
+#include "foo.h"
+
+will not include "linux/foo.h" and
+
+#include <linux/foo.h>
+
+will not include a local foo.h, unless there's also a local "linux"
+directory with a foo.h in it.
+
+
+The Makefile hack has to do with being able to have the "foo.h" file
+with the TRACE_EVENTs someplace other than include/trace.
+
+If the "foo.h" is in include/trace.h we do not need to include this
+hack. But because the include/trace/define_trace.h needs to include the
+"foo.h" file recursively, it must be able to find it. If we do not add a
+search path, include/trace/define_trace.h will not look in the other
+locations.
+
+Note, as Christoph did, we only need to add the include path to the file
+that defines "CREATE_TRACE_POINTS". Which is only one file.
+
+CFLAGS_sched.o := -I$(src)
+
+Only touches the sched.c file in that directory (Note, for those reading
+this thread out of context, this is not the same file as kernel/sched.c)
+
+-- Steve
+
+
+
+
