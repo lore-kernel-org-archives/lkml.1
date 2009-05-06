@@ -1,104 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759627AbZEFMQY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759879AbZEFMRB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759627AbZEFMQY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 08:16:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbZEFMQP
+	id S1759879AbZEFMRB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 08:17:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757941AbZEFMQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 08:16:15 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:47517 "EHLO mx3.mail.elte.hu"
+	Wed, 6 May 2009 08:16:52 -0400
+Received: from wine.ocn.ne.jp ([122.1.235.145]:56934 "EHLO smtp.wine.ocn.ne.jp"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753198AbZEFMQO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 08:16:14 -0400
-Date: Wed, 6 May 2009 14:15:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Thomas Gleixner <tglx@linutronix.de>, Theodore Tso <tytso@mit.edu>,
-       Arnaldo Carvalho de Melo <acme@redhat.com>, zippel@linux-m68k.org,
-       linux-kbuild@vger.kernel.org, Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 0/7] kconfig: more featured minimum module configs
-Message-ID: <20090506121502.GT25203@elte.hu>
-References: <20090430185022.122124349@goodmis.org> <20090430191001.GA14108@elte.hu> <alpine.DEB.2.00.0904301854230.20374@gandalf.stny.rr.com> <20090501120100.GC24706@elte.hu> <alpine.DEB.2.00.0905011926330.20374@gandalf.stny.rr.com>
-MIME-Version: 1.0
+	id S1754471AbZEFMQv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 08:16:51 -0400
+To: pavel@ucw.cz
+Cc: jmorris@namei.org, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [TOMOYO 1/2] tomoyo: add Documentation/tomoyo.txt
+From: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+References: <200904130204.n3D24JNk095583@www262.sakura.ne.jp>
+	<20090501102438.GA7470@elf.ucw.cz>
+	<200905012207.BFC60616.QStOHOMJFOLFFV@I-love.SAKURA.ne.jp>
+	<20090503215615.GA1368@ucw.cz>
+	<200905041524.GGH52160.FFFVMSJOOLtHOQ@I-love.SAKURA.ne.jp>
+In-Reply-To: <200905041524.GGH52160.FFFVMSJOOLtHOQ@I-love.SAKURA.ne.jp>
+Message-Id: <200905062116.HCI09807.VOFFHFSMOLOtQJ@I-love.SAKURA.ne.jp>
+X-Mailer: Winbiff [Version 2.51 PL2]
+X-Accept-Language: ja,en,zh
+Date: Wed, 6 May 2009 21:16:51 +0900
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0905011926330.20374@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Tetsuo Handa wrote:
+> TOMOYO has cursors used for resuming list traversal from arbitrary elements.
+> I tried to add refcounter to each element, but the code became too ugly to
+> maintain. Thus, I simplified list traversal by guaranteeing all elements
+> pointed by cursors are permanent. As of now, we can't release memory used by
+> the deleted element because we don't manage the list of cursors to make sure
+> that there is no cursor which refers the deleted element.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Just for information, I tried to implement some garbage collector.
+http://svn.sourceforge.jp/cgi-bin/viewcvs.cgi/trunk/2.2.x/tomoyo-lsm/patches/tomoyo-gc.patch?view=
+markup&revision=2506&root=tomoyo
+Not checked the patch for details, but I think it is less ugly than
+my previous implementation.
 
-> 
-> 
-> On Fri, 1 May 2009, Ingo Molnar wrote:
-> 
-> > 
-> > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > 
-> > > On Thu, 30 Apr 2009, Ingo Molnar wrote:
-> > > 
-> > > > * Steven Rostedt <rostedt@goodmis.org> wrote:
-> > > > 
-> > > > > This set of patches adds on top of my previous post.
-> > > > > 
-> > > > > It fixes CONFIG_IKCONFIG when CONFIG_IKCONFIG_PROC is not set.
-> > > > >  (gcc optimizes the config out!)
-> > > > > 
-> > > > > As a request from Ingo, it now enables IKCONFIG and will also use 
-> > > > > various locations to find a config to base against.
-> > > > 
-> > > > hm, now 'make localyesconfig' done on a Fedora distro kernel 
-> > > > produces something very close to an allyesconfig:
-> > > > 
-> > > >  -rw-rw-r-- 1 mingo mingo 91930 2009-04-30 20:03 .config
-> > > >  aldebaran:~/linux/linux> grep =y .config | wc -l
-> > > >  3398
-> > > > 
-> > > > is that expected?
-> > > 
-> > > What config did it use? If it uses an allyesconfig that was 
-> > > already made then it will not disable anything.
-> > 
-> > i used a regular config - then i also tried an allnoconfig - but no 
-> > change in the result, bloated .config.
-> 
-> Could you send me the config it used (it should print out which 
-> one it used) and the output of lsmod. Then I can test it locally.
+Rough estimate is shown below.
 
-'make allnoconfig' plus the module list i sent in a previous mail:
 
-aldebaran:~/linux/linux> lsmod
-Module                  Size  Used by
-sunrpc                253904  1 
-ipv6                  349568  50 
-cpufreq_ondemand       73248  0 
-acpi_cpufreq           75408  0 
-freq_table             70400  2 cpufreq_ondemand,acpi_cpufreq
-dm_multipath           82256  0 
-i2c_i801               75932  0 
-i2c_core               87192  1 i2c_i801
-serio_raw              71556  0 
-pcspkr                 68352  0 
-pata_jmicron           69504  0 
-iTCO_wdt               78208  0 
-shpchp                 99160  0 
-iTCO_vendor_support    68868  1 iTCO_wdt
-igb                   144412  0 
-dca                    71976  1 igb
-pata_acpi              70528  0 
-ata_generic            71428  0 
+(1) Current implementation, booted CentOS 5.3 with learning mode.
 
-	Ingo
+Memory: 492736k/524288k available (4730k kernel code, 30668k reserved, 4947k data, 1668k init, 0k 
+highmem)
+
+# ccs-savepolicy -u
+Shared:      135168
+Private:     208896
+Dynamic:        704
+Total:       344768
+
+
+(2a) With the patch above, booted CentOS 5.3 with learning mode.
+
+Memory: 492736k/524288k available (4732k kernel code, 30676k reserved, 4953k data, 1668k init, 0k 
+highmem)
+
+# ccs-savepolicy -u
+Shared:      333280
+Private:     200000
+Dynamic:        704
+Total:       533984
+
+(2b) With the patch above, removed policy as much as possible after (2a).
+
+# ccs-savepolicy -u
+Shared:        2400
+Private:       1120
+Dynamic:        704
+Total:         4224
+
+
+The difference comes from mainly how TOMOYO keeps string data.
+
+Case 1 embeds multiple strings into kmalloc(PAGE_SIZE), but can't kfree().
+By not implementing garbage collector, we can save about 200kB of RAM
+if an administrator does not delete current policy.
+
+Case 2a and 2b use kstrdup() for each string, and can kfree().
+By implementing garbage collector, we can release about 520kB of RAM
+if an administrator completely deletes current policy.
+
+Please remember that in case 1, reloading the policy which was loaded in the
+past will not consume memory (because it simply clears is_deleted flag instead
+of allocating memory).
+The amount of memory finally saved depends on how large policy changes occur.
