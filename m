@@ -1,55 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759637AbZEFNWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759520AbZEFNaA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759637AbZEFNWe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 09:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755353AbZEFNWZ
+	id S1759520AbZEFNaA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 09:30:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbZEFN3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 09:22:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45362 "EHLO mx2.redhat.com"
+	Wed, 6 May 2009 09:29:51 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55408 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754210AbZEFNWZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 09:22:25 -0400
-Date: Wed, 6 May 2009 15:17:35 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, chrisw@redhat.com,
-       alan@lxorguk.ukuu.org.uk, device@lanana.org, linux-mm@kvack.org,
-       hugh@veritas.com, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 2/6] ksm: dont allow overlap memory addresses
-	registrations.
-Message-ID: <20090506131735.GW16078@random.random>
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <4A00DD4F.8010101@redhat.com> <4A015C69.7010600@redhat.com> <4A0181EA.3070600@redhat.com>
+	id S1752355AbZEFN3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 09:29:50 -0400
+Date: Wed, 6 May 2009 09:28:22 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, dhaval@linux.vnet.ibm.com,
+       snitzer@redhat.com, dm-devel@redhat.com, jens.axboe@oracle.com,
+       agk@redhat.com, paolo.valente@unimore.it, fernando@oss.ntt.co.jp,
+       jmoyer@redhat.com, fchecconi@gmail.com,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       righi.andrea@gmail.com
+Subject: Re: IO scheduler based IO Controller V2
+Message-ID: <20090506132822.GA8180@redhat.com>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <20090506034118.GC4416@balbir.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A0181EA.3070600@redhat.com>
+In-Reply-To: <20090506034118.GC4416@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 08:26:18AM -0400, Rik van Riel wrote:
-> The user can break up the underlying VMAs though.
->
-> I am just wondering out loud if we really want two
-> VMA-like objects in the kernel, the VMA itself and
-> a separate KSM object, with different semantics.
->
-> Maybe this is fine, but I do think it's a question
-> that needs to be thought about.
+On Wed, May 06, 2009 at 09:11:18AM +0530, Balbir Singh wrote:
+> * Andrew Morton <akpm@linux-foundation.org> [2009-05-05 13:24:41]:
+> 
+> > On Tue,  5 May 2009 15:58:27 -0400
+> > Vivek Goyal <vgoyal@redhat.com> wrote:
+> > 
+> > > 
+> > > Hi All,
+> > > 
+> > > Here is the V2 of the IO controller patches generated on top of 2.6.30-rc4.
+> > > ...
+> > > Currently primarily two other IO controller proposals are out there.
+> > > 
+> > > dm-ioband
+> > > ---------
+> > > This patch set is from Ryo Tsuruta from valinux.
+> > > ...
+> > > IO-throttling
+> > > -------------
+> > > This patch set is from Andrea Righi provides max bandwidth controller.
+> > 
+> > I'm thinking we need to lock you guys in a room and come back in 15 minutes.
+> > 
+> > Seriously, how are we to resolve this?  We could lock me in a room and
+> > cmoe back in 15 days, but there's no reason to believe that I'd emerge
+> > with the best answer.
+> >
+> 
+> We are planning an IO mini-summit prior to the kernel summit
+> (hopefully we'll all be able to attend and decide).
 
-If we want to keep KVM self contained we need a separate object. If we
-want to merge part of KVM into the kernel VM core, then it can use the
-vma and use madvise or better its own syscall (usually madvise doesn't
-depend on admin starting kernel threads) or similar and the semantics
-will change slightly. From a practical point of view I don't think
-there's much difference and it can be done later if we change our
-mind, given the low amount of apps that uses KVM (but for those few
-apps like KVM, KSM can save tons of memory).
+Hi Balbir,
 
-For example for the swapping of KSM pages we've been thinking of using
-external rmap hooks to avoid the VM to know anything specific to KSM
-pages but to still allow their unmapping and swap. Otherwise if there
-are other modules like KVM that wants to extend the VM they'll also
-have to add their own PG_ bitflags just for allow the swapping of
-their own pages in the VM LRUs etc..
+Mini summit is still few months away. I think a better idea would be to
+try to thrash out the details here on lkml and try to reach to some
+conclusion.
+
+Its a complicated problem and there are no simple and easy answers. If we
+can't reach a conclusion here, I am skeptical that mini summit will serve
+that purpose.
+
+Thanks
+Vivek
