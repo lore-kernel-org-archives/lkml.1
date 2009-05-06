@@ -1,156 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756082AbZEFEY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757040AbZEFEZq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756082AbZEFEY7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 00:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752360AbZEFEXj
+	id S1757040AbZEFEZq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 00:25:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752471AbZEFEXk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 00:23:39 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:39805 "EHLO
+	Wed, 6 May 2009 00:23:40 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:56422 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750980AbZEFEXe (ORCPT
+	with ESMTP id S1751005AbZEFEXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 May 2009 00:23:34 -0400
-Message-Id: <20090506042333.838488694@goodmis.org>
+Message-Id: <20090506042334.036756181@goodmis.org>
 References: <20090506042101.231470089@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 06 May 2009 00:21:06 -0400
+Date: Wed, 06 May 2009 00:21:07 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 05/11] ring-buffer: record page entries in buffer page descriptor
-Content-Disposition: inline; filename=0005-ring-buffer-record-page-entries-in-buffer-page-desc.patch
+Subject: [PATCH 06/11] ring-buffer: have read page swap increment counter with page entries
+Content-Disposition: inline; filename=0006-ring-buffer-have-read-page-swap-increment-counter-w.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-Currently, when the ring buffer writer overflows the buffer and must
-write over non consumed data, we increment the overrun counter by
-reading the entries on the page we are about to overwrite. This reads
-the entries one by one.
+In the swap page ring buffer code that is used by the ftrace splice code,
+we scan the page to increment the counter of entries read.
 
-This is not very effecient. This patch adds another entry counter
-into each buffer page descriptor that keeps track of the number of
-entries on the page. Now on overwrite, the overrun counter simply
-needs to add the number of entries that is on the page it is about
-to overwrite.
+With the number of entries already in the page we simply need to add it.
 
-[ Impact: speed up of ring buffer in overwrite mode ]
+[ Impact: speed up reading page from ring buffer ]
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/ring_buffer.c |   39 +++++++++++++--------------------------
- 1 files changed, 13 insertions(+), 26 deletions(-)
+ kernel/trace/ring_buffer.c |   28 +++-------------------------
+ 1 files changed, 3 insertions(+), 25 deletions(-)
 
 diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index c792ea8..342eacc 100644
+index 342eacc..9e42a74 100644
 --- a/kernel/trace/ring_buffer.c
 +++ b/kernel/trace/ring_buffer.c
-@@ -321,9 +321,10 @@ struct buffer_data_page {
- };
- 
- struct buffer_page {
-+	struct list_head list;		/* list of buffer pages */
- 	local_t		 write;		/* index for next write */
- 	unsigned	 read;		/* index for next read */
--	struct list_head list;		/* list of free pages */
-+	local_t		 entries;	/* entries on this page */
- 	struct buffer_data_page *page;	/* Actual data page */
- };
- 
-@@ -977,30 +978,6 @@ static inline unsigned rb_head_size(struct ring_buffer_per_cpu *cpu_buffer)
- 	return rb_page_commit(cpu_buffer->head_page);
+@@ -2785,28 +2785,6 @@ out:
  }
+ EXPORT_SYMBOL_GPL(ring_buffer_swap_cpu);
  
--/*
-- * When the tail hits the head and the buffer is in overwrite mode,
-- * the head jumps to the next page and all content on the previous
-- * page is discarded. But before doing so, we update the overrun
-- * variable of the buffer.
-- */
--static void rb_update_overflow(struct ring_buffer_per_cpu *cpu_buffer)
+-static void rb_remove_entries(struct ring_buffer_per_cpu *cpu_buffer,
+-			      struct buffer_data_page *bpage,
+-			      unsigned int offset)
 -{
 -	struct ring_buffer_event *event;
 -	unsigned long head;
 -
--	for (head = 0; head < rb_head_size(cpu_buffer);
+-	__raw_spin_lock(&cpu_buffer->lock);
+-	for (head = offset; head < local_read(&bpage->commit);
 -	     head += rb_event_length(event)) {
 -
--		event = __rb_page_index(cpu_buffer->head_page, head);
+-		event = __rb_data_page_index(bpage, head);
 -		if (RB_WARN_ON(cpu_buffer, rb_null_event(event)))
 -			return;
 -		/* Only count data entries */
 -		if (event->type_len > RINGBUF_TYPE_DATA_TYPE_LEN_MAX)
 -			continue;
--		cpu_buffer->overrun++;
+-		cpu_buffer->read++;
 -	}
+-	__raw_spin_unlock(&cpu_buffer->lock);
 -}
 -
- static inline void rb_inc_page(struct ring_buffer_per_cpu *cpu_buffer,
- 			       struct buffer_page **bpage)
- {
-@@ -1253,7 +1230,8 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 			/* tail_page has not moved yet? */
- 			if (tail_page == cpu_buffer->tail_page) {
- 				/* count overflows */
--				rb_update_overflow(cpu_buffer);
-+				cpu_buffer->overrun +=
-+					local_read(&head_page->entries);
- 
- 				rb_inc_page(cpu_buffer, &head_page);
- 				cpu_buffer->head_page = head_page;
-@@ -1268,6 +1246,7 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 		 */
- 		if (tail_page == cpu_buffer->tail_page) {
- 			local_set(&next_page->write, 0);
-+			local_set(&next_page->entries, 0);
- 			local_set(&next_page->page->commit, 0);
- 			cpu_buffer->tail_page = next_page;
- 
-@@ -1313,6 +1292,10 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
- 	event = __rb_page_index(tail_page, tail);
- 	rb_update_event(event, type, length);
- 
-+	/* The passed in type is zero for DATA */
-+	if (likely(!type))
-+		local_inc(&tail_page->entries);
+ /**
+  * ring_buffer_alloc_read_page - allocate a page to read from buffer
+  * @buffer: the buffer to allocate for.
+@@ -2977,6 +2955,9 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
+ 		/* we copied everything to the beginning */
+ 		read = 0;
+ 	} else {
++		/* update the entry counter */
++		cpu_buffer->read += local_read(&reader->entries);
 +
- 	/*
- 	 * If this is a commit and the tail is zero, then update
- 	 * this page's time stamp.
-@@ -2183,6 +2166,7 @@ rb_get_reader_page(struct ring_buffer_per_cpu *cpu_buffer)
- 	cpu_buffer->reader_page->list.prev = reader->list.prev;
- 
- 	local_set(&cpu_buffer->reader_page->write, 0);
-+	local_set(&cpu_buffer->reader_page->entries, 0);
- 	local_set(&cpu_buffer->reader_page->page->commit, 0);
- 
- 	/* Make the reader page now replace the head */
-@@ -2629,6 +2613,7 @@ rb_reset_cpu(struct ring_buffer_per_cpu *cpu_buffer)
- 	cpu_buffer->head_page
- 		= list_entry(cpu_buffer->pages.next, struct buffer_page, list);
- 	local_set(&cpu_buffer->head_page->write, 0);
-+	local_set(&cpu_buffer->head_page->entries, 0);
- 	local_set(&cpu_buffer->head_page->page->commit, 0);
- 
- 	cpu_buffer->head_page->read = 0;
-@@ -2638,6 +2623,7 @@ rb_reset_cpu(struct ring_buffer_per_cpu *cpu_buffer)
- 
- 	INIT_LIST_HEAD(&cpu_buffer->reader_page->list);
- 	local_set(&cpu_buffer->reader_page->write, 0);
-+	local_set(&cpu_buffer->reader_page->entries, 0);
- 	local_set(&cpu_buffer->reader_page->page->commit, 0);
- 	cpu_buffer->reader_page->read = 0;
- 
-@@ -2996,6 +2982,7 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
+ 		/* swap the pages */
+ 		rb_init_page(bpage);
  		bpage = reader->page;
- 		reader->page = *data_page;
- 		local_set(&reader->write, 0);
-+		local_set(&reader->entries, 0);
+@@ -2985,9 +2966,6 @@ int ring_buffer_read_page(struct ring_buffer *buffer,
+ 		local_set(&reader->entries, 0);
  		reader->read = 0;
  		*data_page = bpage;
+-
+-		/* update the entry counter */
+-		rb_remove_entries(cpu_buffer, bpage, read);
+ 	}
+ 	ret = read;
  
 -- 
 1.6.2.4
