@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760230AbZEFPJ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760418AbZEFPKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760230AbZEFPJ2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 11:09:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756696AbZEFPJQ
+	id S1760418AbZEFPKX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 11:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758432AbZEFPKF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 11:09:16 -0400
-Received: from hera.kernel.org ([140.211.167.34]:35775 "EHLO hera.kernel.org"
+	Wed, 6 May 2009 11:10:05 -0400
+Received: from hera.kernel.org ([140.211.167.34]:57501 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756543AbZEFPJN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 11:09:13 -0400
-Message-ID: <4A01A784.2050407@kernel.org>
-Date: Wed, 06 May 2009 08:06:44 -0700
+	id S1757731AbZEFPKE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 11:10:04 -0400
+Message-ID: <4A01A7C8.5090701@kernel.org>
+Date: Wed, 06 May 2009 08:07:52 -0700
 From: Yinghai Lu <yinghai@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
@@ -23,7 +23,7 @@ CC: Jesse Barnes <jesse.barnes@intel.com>,
        Thomas Gleixner <tglx@linutronix.de>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
        linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: [PATCH 1/2] x86: reserve range near the ram
+Subject: [PATCH 1/2] x86/pci: make pci_mem_start to be aligned only -v5
 References: <49EF9C10.6090107@kernel.org> <20090422154900.08f8f366@hobbes> <49EFBB0E.3030401@kernel.org> <20090422180505.2518e837@hobbes> <49EFCE15.3030605@kernel.org> <20090423132202.GB13984@jurassic.park.msu.ru> <49F08580.9050407@kernel.org> <20090423221936.GA24171@jurassic.park.msu.ru> <49F13690.3080902@kernel.org> <20090505115248.63d112f4@hobbes> <20090506123346.GA19541@elte.hu>
 In-Reply-To: <20090506123346.GA19541@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
@@ -32,73 +32,48 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Linus Torvalds <torvalds@linux-foundation.org>
 
+don't need to reserved one round after the gapstart.
 
-The point is to take all RAM resources we have, and 
-_after_ we've added all the resources we've seen in the E820 tree, we then 
-_also_ try to add fake reserved entries for any "round up to X" at the end 
-of the RAM resources.
+because have round up in via reserve stolen ram already.
 
-[ Impact: protect stolen RAM ]
+[Impact: make more big space below 4g for assigning to unassigned pci devices]
 
-Acked-by: Jesse Barnes <jesse.barnes@intel.com>
+Reported-by: Yannick <yannick.roehlly@free.fr>
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Acked-by: Jesse Barnes <jesse.barnes@intel.com>
 
 ---
- arch/x86/kernel/e820.c |   35 +++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
+ arch/x86/kernel/e820.c |   11 +++--------
+ 1 file changed, 3 insertions(+), 8 deletions(-)
 
 Index: linux-2.6/arch/x86/kernel/e820.c
 ===================================================================
 --- linux-2.6.orig/arch/x86/kernel/e820.c
 +++ linux-2.6/arch/x86/kernel/e820.c
-@@ -1370,6 +1370,23 @@ void __init e820_reserve_resources(void)
- 	}
- }
- 
-+/* How much should we pad RAM ending depending on where it is? */
-+static unsigned long ram_alignment(resource_size_t pos)
-+{
-+	unsigned long mb = pos >> 20;
-+
-+	/* To 64kB in the first megabyte */
-+	if (!mb)
-+		return 64*1024;
-+
-+	/* To 1MB in the first 16MB */
-+	if (mb < 16)
-+		return 1024*1024;
-+
-+	/* To 32MB for anything above that */
-+	return 32*1024*1024;
-+}
-+
- void __init e820_reserve_resources_late(void)
+@@ -617,7 +617,7 @@ __init int e820_search_gap(unsigned long
+  */
+ __init void e820_setup_gap(void)
  {
- 	int i;
-@@ -1381,6 +1398,24 @@ void __init e820_reserve_resources_late(
- 			insert_resource_expand_to_fit(&iomem_resource, res);
- 		res++;
- 	}
-+
-+	/*
-+	 * Try to bump up RAM regions to reasonable boundaries to
-+	 * avoid stolen RAM
-+	 */
-+	for (i = 0; i < e820.nr_map; i++) {
-+		struct e820entry *entry = &e820_saved.map[i];
-+		resource_size_t start, end;
-+
-+		if (entry->type != E820_RAM)
-+			continue;
-+		start = entry->addr + entry->size;
-+		end = round_up(start, ram_alignment(start));
-+		if (start == end)
-+			continue;
-+		reserve_region_with_split(&iomem_resource, start,
-+						  end - 1, "RAM buffer");
-+	}
- }
+-	unsigned long gapstart, gapsize, round;
++	unsigned long gapstart, gapsize;
+ 	int found;
  
- char *__init default_machine_specific_memory_setup(void)
+ 	gapstart = 0x10000000;
+@@ -635,14 +635,9 @@ __init void e820_setup_gap(void)
+ #endif
+ 
+ 	/*
+-	 * See how much we want to round up: start off with
+-	 * rounding to the next 1MB area.
++	 * e820_reserve_resources_late protect stolen RAM already
+ 	 */
+-	round = 0x100000;
+-	while ((gapsize >> 4) > round)
+-		round += round;
+-	/* Fun with two's complement */
+-	pci_mem_start = (gapstart + round) & -round;
++	pci_mem_start = gapstart;
+ 
+ 	printk(KERN_INFO
+ 	       "Allocating PCI resources starting at %lx (gap: %lx:%lx)\n",
