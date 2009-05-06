@@ -1,91 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbZEFGvr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756152AbZEFGyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757490AbZEFGvr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 02:51:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZEFGvi
+	id S1756152AbZEFGyc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 02:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZEFGyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 02:51:38 -0400
-Received: from qw-out-2122.google.com ([74.125.92.26]:48173 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752357AbZEFGvi (ORCPT
+	Wed, 6 May 2009 02:54:21 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:36451 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750789AbZEFGyU convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 02:51:38 -0400
+	Wed, 6 May 2009 02:54:20 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=Bh7ca0LVt95XdvIq7AvqdPrYtPVGpeyTWoTn1TE4Dxmo8m3MBjs5mO1eHUuXhic2Fd
-         Z4TAkUndY/i9JvK9JtNW1PETIs8graAs+y41bvDGE5pjIanw9MS/I3CdPMoFOP2lYauZ
-         asPy52uyc/mTbPyYP4/KqmwOiVZT4OBlYOvLk=
-Date: Wed, 6 May 2009 15:51:45 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Cyrill Gorcunov <gorcunov@openvz.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, LMMML <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH -mmotm] mm: setup_per_zone_inactive_ratio - fix comment
- and make it __init
-Message-Id: <20090506155145.e657b271.minchan.kim@barrios-desktop>
-In-Reply-To: <20090506061923.GA4865@lenovo>
-References: <20090506061923.GA4865@lenovo>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XRvMYuGPEGe8j/909szW+VpTzllLOZV4Lmg714Aa10kNWM28r6s0bxf8Mbsx3nytO4
+         8YqVwe0BUwNflCZpf4ZxgxY+30inTPxeDdkVhyEfLxafpDPjynMHzfwdC3g5S5MTZiKq
+         bfepbavPa1AhrN7N0WNkchyfiHROr/UfVEOqQ=
+MIME-Version: 1.0
+In-Reply-To: <20090506064529.GA14326@avionic-design.de>
+References: <1241006627-22811-1-git-send-email-thierry.reding@avionic-design.de>
+	 <5d5443650904290623n3712cd7dja653a139cff2cf6d@mail.gmail.com>
+	 <483a38b80904291835p51044741p9bd83d33a40031c@mail.gmail.com>
+	 <20090504113751.GA22603@avionic-design.de>
+	 <5d5443650905040503n501e3b47qc890dc4c71a85b1c@mail.gmail.com>
+	 <20090504145700.GA875@avionic-design.de>
+	 <483a38b80905052125r76358182g7ce6b890c921b655@mail.gmail.com>
+	 <20090506064529.GA14326@avionic-design.de>
+Date: Wed, 6 May 2009 15:54:20 +0900
+Message-ID: <483a38b80905052354m221ddc03tcbe9d35ee902b467@mail.gmail.com>
+Subject: Re: [PATCH] input: Add support for the TSC2003 controller.
+From: Kwangwoo Lee <kwangwoo.lee@gmail.com>
+To: Thierry Reding <thierry.reding@avionic-design.de>
+Cc: Trilok Soni <soni.trilok@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009 10:19:23 +0400
-Cyrill Gorcunov <gorcunov@openvz.org> wrote:
+On Wed, May 6, 2009 at 3:45 PM, Thierry Reding
+<thierry.reding@avionic-design.de> wrote:
+> * Kwangwoo Lee wrote:
+> [...]
+>> Thanks for the patch. It looks good. :)
+>> The code in the patch is already merged in the main kernel tree.
+>>
+>> @@ -235,7 +245,7 @@ static irqreturn_t tsc2007_irq(int irq, void *handle)
+>>       spin_lock_irqsave(&ts->lock, flags);
+>>
+>>       if (likely(ts->get_pendown_state())) {
+>> -             disable_irq(ts->irq);
+>> +             disable_irq_nosync(ts->irq);
+>>               hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_DELAY),
+>>                                       HRTIMER_MODE_REL);
+>>       }
+>
+> Oh, I hadn't noticed. I diffed against 2.6.30-rc4. Do you want me to send a
+> new patch or will you just rip that piece out?
 
-> The caller of setup_per_zone_inactive_ratio is module_init function.
-
-__init :)
-
-> No need to keep the callee after is completed as well.
-> Also fix a comment.
-> 
-> CC: David Rientjes <rientjes@google.com>
-> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
-I guess the comment was a typo. 
-
-> ---
->  mm/page_alloc.c |    4 +---
->  1 file changed, 1 insertion(+), 3 deletions(-)
-> 
-> Index: linux-2.6.git/mm/page_alloc.c
-> =====================================================================
-> --- linux-2.6.git.orig/mm/page_alloc.c
-> +++ linux-2.6.git/mm/page_alloc.c
-> @@ -4540,8 +4540,6 @@ void setup_per_zone_pages_min(void)
->  }
->  
->  /**
-> - * setup_per_zone_inactive_ratio - called when min_free_kbytes changes.
-> - *
->   * The inactive anon list should be small enough that the VM never has to
->   * do too much work, but large enough that each inactive page has a chance
->   * to be referenced again before it is swapped out.
-> @@ -4562,7 +4560,7 @@ void setup_per_zone_pages_min(void)
->   *    1TB     101        10GB
->   *   10TB     320        32GB
->   */
-> -static void setup_per_zone_inactive_ratio(void)
-> +static void __init setup_per_zone_inactive_ratio(void)
->  {
->  	struct zone *zone;
->  
-> 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
-
+Send fixed patch with your Signed-off-by line.
 
 -- 
-Kinds Regards
-Minchan Kim
+Kwangwoo Lee <kwangwoo.lee@gmail.com>
