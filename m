@@ -1,89 +1,245 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760265AbZEFOrt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760324AbZEFOtT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760265AbZEFOrt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 10:47:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759563AbZEFOr0
+	id S1760324AbZEFOtT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 10:49:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759921AbZEFOs7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 10:47:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53099 "EHLO mx2.redhat.com"
+	Wed, 6 May 2009 10:48:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53135 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759069AbZEFOrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 10:47:25 -0400
-Date: Wed, 6 May 2009 16:45:58 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       chrisw@redhat.com, alan@lxorguk.ukuu.org.uk, device@lanana.org,
-       linux-mm@kvack.org, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-Message-ID: <20090506144558.GZ16078@random.random>
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com> <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils> <20090506133434.GX16078@random.random> <Pine.LNX.4.64.0905061453320.21067@blonde.anvils>
+	id S1759069AbZEFOs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 10:48:57 -0400
+Date: Wed, 6 May 2009 16:46:25 +0200
+From: Jiri Pirko <jpirko@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, davem@davemloft.net,
+       shemminger@linux-foundation.org, bridge@lists.linux-foundation.org,
+       fubar@us.ibm.com, bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
+Subject: [PATCH net-next] net: bridge: use device address list instead of
+	dev_addr (repost)
+Message-ID: <20090506144624.GI28637@psychotron.englab.brq.redhat.com>
+References: <20090313183303.GF3436@psychotron.englab.brq.redhat.com> <20090415081720.GA21342@psychotron.englab.brq.redhat.com> <20090415082118.GC21342@psychotron.englab.brq.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0905061453320.21067@blonde.anvils>
+In-Reply-To: <20090415082118.GC21342@psychotron.englab.brq.redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 03:25:25PM +0100, Hugh Dickins wrote:
-> And in the interim, insist on capable(CAP_IPC_LOCK)?
-> If that's okay for KVM's usage, that's fine by me for now.
+(repost, no modifications)
 
-KVM has been in the kernel for years without being able to swap
-reliably (if any spte mapped any anon page) and yet it didn't require
-capable(CAP_IPC_LOCK).
+This patch changes the handling of mac addresses of bridge port devices. Now
+it uses previously introduced list of device addresses. It allows the bridge to
+know more then one local mac address per port which is mandatory for the right
+work in some cases.
 
-Sure if we were to use the madvise syscall we'd be forced to make it
-fail with -EPERM without capable(CAP_IPC_LOCK) but with the /dev/ksm
-permissions I don't see big deal, it's definitely not worth requiring
-userland changes given we'll make the ksm pages swappable later.
+Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+---
+ net/bridge/br_fdb.c     |  101 ++++++++++++++++++++++++++++++----------------
+ net/bridge/br_if.c      |    2 +-
+ net/bridge/br_notify.c  |    2 +-
+ net/bridge/br_private.h |    4 +-
+ 4 files changed, 70 insertions(+), 39 deletions(-)
 
-> Whether not having privilege means it should fail or silently ignore
-> the advice it's been given, I'm not sure: fail appears more helpful, but
-
-Fail surely is more helpful. The app is free to ignore the failure of
-course! But there's no reason to forbid the app to know about it. Not
-checking the 'rax' value when 'call' returns is good and fast enough.
-
-> silently ignore may fit better with whether module has been loaded yet
-> (we can keep a list of what's registered, for when module is loaded).
-
-NOTE: it will not fail if the module isn't loaded yet. It must
-succeed! Otherwise it would also need to fail after it succeeded if we
-unload the module later...
-
-> You're right to be concerned about the malicious, but I was thinking
-> rather of apps just wanting to say they may contain a goodly number
-> of duplicate pages, and wanting to register themselves for merging,
-> no malice intended.
-
-NOTE: it's not big deal if all users can register, admin still can
-kill them and kksmd reschedule fine and it won't ever be noticeable. I
-just think it's nicer if you don't give /dev/ksm to the whole world in
-a system where you only use KSM for the KVM virtual machines and you
-have lusers in the same system doing other stuff in the host. But
-perhaps you're right and it's not worth ever returning -EPERM.
-
-> If only for my hacked-up testing, I'm interested in having a workable
-> system on which every process has opted the whole of its address space
-> into this merging: never be optimal, but I'd like workable.
-
-That's doable sure.
-
-> And please don't think of non-KVM users of KSM as malicious lusers!
-
-Sure not as we've provided feedback on non-KVM users too. Like I
-already mentioned in previous email in scientific environments where
-there's no malicious luser, ksm should be chowned 777 and given to
-everyone.
-
-> Is that in updates yet to come?  I see things like
-> 	for (pages_count = 0; pages_count < slot->npages; ++pages_count)
-> and
-> 		ksm_scan->page_index++;
-> which will, of course, eventually get across any hole and move into
-> vma->vm_next, but take vastly longer to do so than necessary.
-
-Update is yet to come, but this isn't relevant for the API.
+diff --git a/net/bridge/br_fdb.c b/net/bridge/br_fdb.c
+index a48f5ef..1e63f76 100644
+--- a/net/bridge/br_fdb.c
++++ b/net/bridge/br_fdb.c
+@@ -77,10 +77,26 @@ static inline void fdb_delete(struct net_bridge_fdb_entry *f)
+ 	br_fdb_put(f);
+ }
+ 
+-void br_fdb_changeaddr(struct net_bridge_port *p, const unsigned char *newaddr)
++static bool another_port_has_addr(const struct net_bridge_port *p,
++				  struct net_bridge_fdb_entry *f)
++{
++	struct net_bridge *br = p->br;
++	struct net_bridge_port *op;
++
++	list_for_each_entry(op, &br->port_list, list) {
++		if (op != p && is_etherdev_addr(op->dev, f->addr.addr)) {
++			f->dst = op;
++			return 1;
++		}
++	}
++	return 0;
++}
++
++void br_fdb_changeaddr(struct net_bridge_port *p, struct net_device *dev)
+ {
+ 	struct net_bridge *br = p->br;
+ 	int i;
++	struct netdev_hw_addr *ha;
+ 
+ 	spin_lock_bh(&br->hash_lock);
+ 
+@@ -92,26 +108,23 @@ void br_fdb_changeaddr(struct net_bridge_port *p, const unsigned char *newaddr)
+ 
+ 			f = hlist_entry(h, struct net_bridge_fdb_entry, hlist);
+ 			if (f->dst == p && f->is_local) {
+-				/* maybe another port has same hw addr? */
+-				struct net_bridge_port *op;
+-				list_for_each_entry(op, &br->port_list, list) {
+-					if (op != p &&
+-					    !compare_ether_addr(op->dev->dev_addr,
+-								f->addr.addr)) {
+-						f->dst = op;
+-						goto insert;
+-					}
+-				}
+-
+-				/* delete old one */
+-				fdb_delete(f);
+-				goto insert;
++				/*
++				 * maybe another port has same hw addr?,
++				 * if not then delete it
++				 */
++				if (!another_port_has_addr(p, f))
++					fdb_delete(f);
+ 			}
+ 		}
+ 	}
+- insert:
+-	/* insert new address,  may fail if invalid address or dup. */
+-	fdb_insert(br, p, newaddr);
++
++	/* insert device addresses, may fail if invalid address. */
++
++	rcu_read_lock();
++	for_each_dev_addr(dev, ha) {
++		fdb_insert(br, p, ha->addr);
++	}
++	rcu_read_unlock();
+ 
+ 	spin_unlock_bh(&br->hash_lock);
+ }
+@@ -189,20 +202,9 @@ void br_fdb_delete_by_port(struct net_bridge *br,
+ 			 * then when one port is deleted, assign
+ 			 * the local entry to other port
+ 			 */
+-			if (f->is_local) {
+-				struct net_bridge_port *op;
+-				list_for_each_entry(op, &br->port_list, list) {
+-					if (op != p &&
+-					    !compare_ether_addr(op->dev->dev_addr,
+-								f->addr.addr)) {
+-						f->dst = op;
+-						goto skip_delete;
+-					}
+-				}
+-			}
+-
+-			fdb_delete(f);
+-		skip_delete: ;
++			if (!f->is_local ||
++			    !another_port_has_addr(p, f))
++				fdb_delete(f);
+ 		}
+ 	}
+ 	spin_unlock_bh(&br->hash_lock);
+@@ -338,7 +340,7 @@ static struct net_bridge_fdb_entry *fdb_create(struct hlist_head *head,
+ }
+ 
+ static int fdb_insert(struct net_bridge *br, struct net_bridge_port *source,
+-		  const unsigned char *addr)
++		      const unsigned char *addr)
+ {
+ 	struct hlist_head *head = &br->hash[br_mac_hash(addr)];
+ 	struct net_bridge_fdb_entry *fdb;
+@@ -366,13 +368,42 @@ static int fdb_insert(struct net_bridge *br, struct net_bridge_port *source,
+ 	return 0;
+ }
+ 
++static int fdb_insert_dev(struct net_bridge *br, struct net_bridge_port *source,
++			  struct net_device *dev)
++{
++	struct netdev_hw_addr *ha, *ha2;
++	struct net_bridge_fdb_entry *fdb;
++	struct hlist_head *head;
++	int ret = 0;
++
++	rcu_read_lock();
++	for_each_dev_addr(dev, ha) {
++		ret = fdb_insert(br, source, ha->addr);
++		if (ret)
++			goto unroll;
++	}
++	goto unlock;
++unroll:
++	for_each_dev_addr(dev, ha2) {
++		if (ha2 == ha)
++			break;
++		head = &br->hash[br_mac_hash(ha2->addr)];
++		fdb = fdb_find(head, ha2->addr);
++		if (fdb && fdb->is_local)
++			fdb_delete(fdb);
++	}
++unlock:
++	rcu_read_unlock();
++	return ret;
++}
++
+ int br_fdb_insert(struct net_bridge *br, struct net_bridge_port *source,
+-		  const unsigned char *addr)
++		  struct net_device *dev)
+ {
+ 	int ret;
+ 
+ 	spin_lock_bh(&br->hash_lock);
+-	ret = fdb_insert(br, source, addr);
++	ret = fdb_insert_dev(br, source, dev);
+ 	spin_unlock_bh(&br->hash_lock);
+ 	return ret;
+ }
+diff --git a/net/bridge/br_if.c b/net/bridge/br_if.c
+index 8a96672..789cb30 100644
+--- a/net/bridge/br_if.c
++++ b/net/bridge/br_if.c
+@@ -392,7 +392,7 @@ int br_add_if(struct net_bridge *br, struct net_device *dev)
+ 	if (err)
+ 		goto err0;
+ 
+-	err = br_fdb_insert(br, p, dev->dev_addr);
++	err = br_fdb_insert(br, p, dev);
+ 	if (err)
+ 		goto err1;
+ 
+diff --git a/net/bridge/br_notify.c b/net/bridge/br_notify.c
+index 763a3ec..1423541 100644
+--- a/net/bridge/br_notify.c
++++ b/net/bridge/br_notify.c
+@@ -48,7 +48,7 @@ static int br_device_event(struct notifier_block *unused, unsigned long event, v
+ 
+ 	case NETDEV_CHANGEADDR:
+ 		spin_lock_bh(&br->lock);
+-		br_fdb_changeaddr(p, dev->dev_addr);
++		br_fdb_changeaddr(p, dev);
+ 		br_stp_recalculate_bridge_id(br);
+ 		spin_unlock_bh(&br->lock);
+ 		break;
+diff --git a/net/bridge/br_private.h b/net/bridge/br_private.h
+index b6c3b71..65ffe3d 100644
+--- a/net/bridge/br_private.h
++++ b/net/bridge/br_private.h
+@@ -148,7 +148,7 @@ extern int br_fdb_init(void);
+ extern void br_fdb_fini(void);
+ extern void br_fdb_flush(struct net_bridge *br);
+ extern void br_fdb_changeaddr(struct net_bridge_port *p,
+-			      const unsigned char *newaddr);
++			      struct net_device *dev);
+ extern void br_fdb_cleanup(unsigned long arg);
+ extern void br_fdb_delete_by_port(struct net_bridge *br,
+ 				  const struct net_bridge_port *p, int do_all);
+@@ -161,7 +161,7 @@ extern int br_fdb_fillbuf(struct net_bridge *br, void *buf,
+ 			  unsigned long count, unsigned long off);
+ extern int br_fdb_insert(struct net_bridge *br,
+ 			 struct net_bridge_port *source,
+-			 const unsigned char *addr);
++			 struct net_device *dev);
+ extern void br_fdb_update(struct net_bridge *br,
+ 			  struct net_bridge_port *source,
+ 			  const unsigned char *addr);
