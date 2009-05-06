@@ -1,77 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753656AbZEFHUM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757405AbZEFHU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753656AbZEFHUM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 03:20:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751310AbZEFHT6
+	id S1757405AbZEFHU6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 03:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752990AbZEFHUp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 03:19:58 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:34391 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751014AbZEFHT5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 03:19:57 -0400
-Date: Wed, 6 May 2009 09:18:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       Vegard Nossum <vegard.nossum@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: printk %0*X is broken.
-Message-ID: <20090506071839.GA14412@elte.hu>
-References: <4A0136F4.4010504@kernel.org>
+	Wed, 6 May 2009 03:20:45 -0400
+Received: from smtp10.mail.tnz.yahoo.co.jp ([203.216.226.138]:22085 "HELO
+	smtp10.mail.tnz.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751014AbZEFHUo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 03:20:44 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 May 2009 03:20:43 EDT
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=yj20050223; d=yahoo.co.jp;
+  h=Received:X-Apparently-From:Message-ID:From:To:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE;
+  b=VXnlU8ZbPuNr3axJ2M0HOa9J4+JSGOUMFvK8NIn0tuylMfZi/k+Hgo88sZUFS9eJKSNnIlzpq6srVY6axFbREDzjkxHVr4rTKE6OgKz1znVjL9NTDAItDkkt60duNYD0  ;
+X-Apparently-From: <n0diamond@yahoo.co.jp>
+Message-ID: <8690A202112B4316A178F6DD0AD7E394@DIAMOND8600>
+From: "Norman Diamond" <n0diamond@yahoo.co.jp>
+To: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
+Subject: Adaptec driver crashes (1/3 and 2/3)
+Date: Wed, 6 May 2009 16:13:49 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A0136F4.4010504@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-2022-jp";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The easiest 100% reproducible way to crash a Linux system is as follows.
 
-Cc:-ed more folks who modified lib/vsprintf.c recently.
+Insert either an Adaptec 1460 PCMCIA card or Adaptec 1480 CardBus card. 
+Remove the card.  Insert the card again.  Even if you knew to set the 
+console to a text mode terminal first (since Linux doesn't give Blue Screens 
+of Death otherwise), you still won't get a dump.  Not much to go on without 
+a dump, but at least it's 100% repro.
 
-	Ingo
+It doesn't happen with a NinjaSCSI card.  Insert card, access SCSI disk, 
+remove card, insert card again, access SCSI disk again, remove card, insert 
+again, no problem.  So there's something about two Adaptec drivers. 
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
-
-> it seems someone broke 
-> 
-> printk(   "%0*X\n", width, x);
-> 
-> looks like 0 is dumped.
-> 
-> YH
-> 
-> [    0.000000] MTRR variable ranges enabled:
-> [    0.000000]   0 base 0   00000000 mask FF0 00000000 write-back
-> [    0.000000]   1 base 10  00000000 mask FFF 80000000 write-back
-> [    0.000000]   2 base 0   80000000 mask FFF 80000000 uncachable
-> [    0.000000]   3 base 0   7F800000 mask FFF FF800000 uncachable
-> 
-> 
-> code:
->         for (i = 0; i < num_var_ranges; ++i) {
->                 if (mtrr_state.var_ranges[i].mask_lo & (1 << 11))
->                         printk(KERN_DEBUG "  %u base %0*X%05X000 mask %0*X%05X000 %s\n",
->                                i,
->                                high_width,
->                                mtrr_state.var_ranges[i].base_hi,
->                                mtrr_state.var_ranges[i].base_lo >> 12,
->                                high_width,
->                                mtrr_state.var_ranges[i].mask_hi,
->                                mtrr_state.var_ranges[i].mask_lo >> 12,
->                                mtrr_attrib_to_str(mtrr_state.var_ranges[i].base_lo & 0xff));
->                 else
->                         printk(KERN_DEBUG "  %u disabled\n", i);
->         }
-> 
+--------------------------------------
+Power up the Internet with Yahoo! Toolbar.
+http://pr.mail.yahoo.co.jp/toolbar/
