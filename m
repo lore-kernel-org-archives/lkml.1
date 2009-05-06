@@ -1,57 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754961AbZEFIh6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756948AbZEFIkQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754961AbZEFIh6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 04:37:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752637AbZEFIht
+	id S1756948AbZEFIkQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 04:40:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753559AbZEFIkA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 04:37:49 -0400
-Received: from mail.gmx.net ([213.165.64.20]:48127 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1752346AbZEFIht (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 04:37:49 -0400
-X-Authenticated: #14349625
-X-Provags-ID: V01U2FsdGVkX19wpjcTNvhwtv4koh0R2J3dOc7LSHmcbwUAZLo3Hf
-	tioag3h5MFx9cj
-Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
-From: Mike Galbraith <efault@gmx.de>
-To: Martin Knoblauch <knobi@knobisoft.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>, viro@ZenIV.linux.org.uk,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org, tigran@aivazian.fsnet.co.uk
-In-Reply-To: <957194.27869.qm@web32605.mail.mud.yahoo.com>
-References: <409142.83316.qm@web32605.mail.mud.yahoo.com>
-	 <20090428182837.62c51f26.akpm@linux-foundation.org>
-	 <1240977096.5478.3.camel@marge.simson.net>
-	 <20090429011755.c141c599.akpm@linux-foundation.org>
-	 <20090429120827.GI8633@ZenIV.linux.org.uk>
-	 <1241014725.15095.19.camel@marge.simson.net>
-	 <20090505154911.e0309a4f.akpm@linux-foundation.org>
-	 <1241585140.5196.28.camel@marge.simson.net>
-	 <957194.27869.qm@web32605.mail.mud.yahoo.com>
-Content-Type: text/plain
-Date: Wed, 06 May 2009 10:37:45 +0200
-Message-Id: <1241599065.18090.18.camel@marge.simson.net>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.1.1 
+	Wed, 6 May 2009 04:40:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53619 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753213AbZEFIj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 04:39:59 -0400
+Message-ID: <4A014C7B.9080702@redhat.com>
+Date: Wed, 06 May 2009 11:38:19 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+MIME-Version: 1.0
+To: Rik van Riel <riel@redhat.com>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       aarcange@redhat.com, chrisw@redhat.com, alan@lxorguk.ukuu.org.uk,
+       device@lanana.org, linux-mm@kvack.org, hugh@veritas.com,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
+References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com>
+In-Reply-To: <4A00DF9B.1080501@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.66
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-06 at 00:55 -0700, Martin Knoblauch wrote:
+Rik van Riel wrote:
+> Izik Eidus wrote:
+>> This patch change the KSM_REMOVE_MEMORY_REGION ioctl to be specific per
+>> memory region (instead of flushing all the registred memory regions 
+>> inside
+>> the file descriptor like it happen now)
+>>
+>> The previoes api was:
+>> user register memory regions using KSM_REGISTER_MEMORY_REGION inside 
+>> the fd,
+>> and then when he wanted to remove just one memory region, he had to 
+>> remove them
+>> all using KSM_REMOVE_MEMORY_REGION.
+>>
+>> This patch change this beahivor by chaning the KSM_REMOVE_MEMORY_REGION
+>> ioctl to recive another paramter that it is the begining of the virtual
+>> address that is wanted to be removed.
+>
+> This is different from munmap and madvise, which take both
+> start address and length.
+>
+> Why?
+>
+It work like free, considering the fact that we dont allow memory 
+overlay in no way,
+If we have the start of the address it is enough for us to know what 
+memory we want to remove.
 
->  just to bring this back to my problem :-)
-
-Good idea :-)
-
->  Last week I reported that the "new" sysfs entry in /proc/mounts already comes out of initrd. Does this ring a bell?
-> 
-> http://lkml.indiana.edu/hypermail/linux/kernel/0904.3/03048.html
-
-Nope, no bells.
-
-The only thing I can suggest is that you try a bisection.
-
-	-Mike
-
+Isnt interface for userspace that work like malloc / free is enough?
