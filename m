@@ -1,110 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754004AbZEFEn2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754540AbZEFEpz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754004AbZEFEn2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 00:43:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZEFEnT
+	id S1754540AbZEFEpz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 00:45:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751005AbZEFEpq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 00:43:19 -0400
-Received: from [192.16.179.4] ([192.16.179.4]:36568 "EHLO sh.osrg.net"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750789AbZEFEnR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 00:43:17 -0400
-Date: Wed, 6 May 2009 13:39:57 +0900
-To: optimusgd@gmail.com
-Cc: aradford@gmail.com, grundler@google.com, fujita.tomonori@lab.ntt.co.jp,
-       rjw@sisk.pl, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org
-Subject: Re: [Bug #13001] PCI-DMA: Out of IOMMU space
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <db2b43030905042246j770578e0xeb8d8ce8c01853d6@mail.gmail.com>
-References: <da824cf30905041858t2cbd0fa2x4075f387973e2700@mail.gmail.com>
-	<b1bc6a000905042131t3656f14arc98dc4a518543a86@mail.gmail.com>
-	<db2b43030905042246j770578e0xeb8d8ce8c01853d6@mail.gmail.com>
+	Wed, 6 May 2009 00:45:46 -0400
+Received: from mail.gmx.net ([213.165.64.20]:56904 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1750770AbZEFEpp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 00:45:45 -0400
+X-Authenticated: #14349625
+X-Provags-ID: V01U2FsdGVkX1+FSxczghOF/1ad7tHm3Kg+6VhZqB4xpDHcWn0FUl
+	3hkV/NOLw7ne1u
+Subject: Re: Analyzed/Solved: Booting 2.6.30-rc2-git7 very slow
+From: Mike Galbraith <efault@gmx.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: viro@ZenIV.linux.org.uk, knobi@knobisoft.de, rjw@sisk.pl,
+       linux-kernel@vger.kernel.org, tigran@aivazian.fsnet.co.uk
+In-Reply-To: <20090505154911.e0309a4f.akpm@linux-foundation.org>
+References: <409142.83316.qm@web32605.mail.mud.yahoo.com>
+	 <20090428182837.62c51f26.akpm@linux-foundation.org>
+	 <1240977096.5478.3.camel@marge.simson.net>
+	 <20090429011755.c141c599.akpm@linux-foundation.org>
+	 <20090429120827.GI8633@ZenIV.linux.org.uk>
+	 <1241014725.15095.19.camel@marge.simson.net>
+	 <20090505154911.e0309a4f.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Wed, 06 May 2009 06:45:40 +0200
+Message-Id: <1241585140.5196.28.camel@marge.simson.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090506134045Y.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 06 May 2009 13:39:58 +0900 (JST)
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.57
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 5 May 2009 10:46:16 +0500
-**UNKNOWN CHARSET** <optimusgd@gmail.com> wrote:
+On Tue, 2009-05-05 at 15:49 -0700, Andrew Morton wrote:
+> On Wed, 29 Apr 2009 16:18:45 +0200
+> Mike Galbraith <efault@gmx.de> wrote:
+> 
+> > On Wed, 2009-04-29 at 13:08 +0100, Al Viro wrote:
+> > > On Wed, Apr 29, 2009 at 01:17:55AM -0700, Andrew Morton wrote:
+> > > 
+> > > > > > > Questions remains: was this intentional? It breaks existing userspace and should therefore be considered a regression - right? On the other hand, it will never be a problem for RHEL-4/5 kernels, unless the change in 2.6.29 gets backported. Any ideas?
+> > > > > > 
+> > > > > > afaik that was unintentional and was probably a mistake.
+> > > > > > 
+> > > > > > I wonder how we did that.
+> > > > > 
+> > > > > <paste>
+> > > > > > [hotplug]# grep sysfs /proc/mounts
+> > > > > > none /sys sysfs rw,relatime 0 0
+> > > > > > /sys /sys sysfs rw,relatime 0 0
+> > > > > 
+> > > > > ___(I wonder how the heck that is accomplished)
+> > > > 
+> > > > Beats me.  I'm not seeing likely changes in fs/proc/base.c or around
+> > > > show_mountinfo().  Maybe sysfs broke in an ingenious way.  (hopefully
+> > > > cc's viro).
+> > > 
+> > > Er...  Somebody mounting sysfs twice?  From some init script and from
+> > > /etc/fstab, perhaps?  That definitely looks like two mount(2) had to
+> > > have been done to cause that...
+> > 
+> > Yeah, but how does one go about doing that?
+> > 
+> > Using mount -f, I can convince mount to succeed, but I still have only
+> > one entry in /proc/mounts, despite what my mount binary imagines.
+> > 
+> > marge:..sys/vm # grep sysfs /proc/mounts
+> > sysfs /sys sysfs rw,relatime 0 0
+> > 
+> > marge:..sys/vm # mount|grep sysfs
+> > sysfs on /sys type sysfs (rw)
+> > sys on /sys type sysfs (rw)
+> > /sys on /sys type sysfs (rw)
+> > 
+> 
+> So /proc/mounts is OK and /etc/mtab is wrong?
+> 
+> Obvious next step is to strace `mount -f', see what's happening around
+> sys_mount(), please.
 
-> Full dmesg there: http://bugzilla.kernel.org/attachment.cgi?id=21222
-> Got this:
-> ------------[ cut here ]------------
-> WARNING: at fs/namei.c:1251 lookup_one_len+0xe9/0x100()
-> Hardware name: HP xw9400 Workstation
-> Modules linked in: fuse nfs auth_rpcgss lockd sunrpc scsi_wait_scan
-> usbhid ohci_hcd usb_storage usb_libusual ehci_hcd usbcore
-> Pid: 2717, comm: mount Not tainted 2.6.30-rc4-git1 #1
-> Call Trace:
->  [<ffffffff8023ceca>] ? warn_slowpath+0xea/0x160
->  [<ffffffff80564d06>] ? printk+0x4e/0x58
->  [<ffffffff8032daea>] ? prepare_error_buf+0x51a/0x610
->  [<ffffffff802a0cfe>] ? new_slab+0x1ee/0x330
->  [<ffffffff8032dcc1>] ? reiserfs_info+0x71/0xa0
->  [<ffffffff802b3df9>] ? lookup_one_len+0xe9/0x100
->  [<ffffffff8033eaed>] ? reiserfs_xattr_init+0x3d/0xb0
->  [<ffffffff8032c4e3>] ? reiserfs_fill_super+0x663/0xb50
->  [<ffffffff805678f2>] ? __down_write_nested+0xb2/0xc0
->  [<ffffffff802a39e5>] ? kmem_cache_alloc+0x65/0xa0
->  [<ffffffff802acb22>] ? sget+0x3c2/0x410
->  [<ffffffff802ace94>] ? get_sb_bdev+0x174/0x1a0
->  [<ffffffff8032be80>] ? reiserfs_fill_super+0x0/0xb50
->  [<ffffffff802ab926>] ? vfs_kern_mount+0x56/0xd0
->  [<ffffffff802aba03>] ? do_kern_mount+0x53/0x120
->  [<ffffffff802c474a>] ? do_mount+0x2ba/0x8c0
->  [<ffffffff805691c8>] ? bad_gs+0xc34/0x1e0c
->  [<ffffffff802c4e1d>] ? sys_mount+0xcd/0x100
->  [<ffffffff8020b4eb>] ? system_call_fastpath+0x16/0x1b
-> ---[ end trace 93edef2de057a0ed ]---
+Well, there is no syscall with -f.
 
-I think that this is a known issue.
+I was trying various mount options to see if I could find a way to
+create bogons that could confuse scripts.  I could create bogons
+in /etc/mtab with -f, or bogons in /proc/mounts by using --move.  I
+could re-create the exact reported data with a combination of mount -n
+and mount --move.  I could not get a double /proc/mounts entry without
+--move, and that seems unlikely to appear in boot scripts.  So I still
+wonder how the heck it was accomplished.
 
+I also now wonder why you can --move mounts on top of one another, but
+beck with it, ignorance conserves braincells I may some day need :)
 
-> ------------[ cut here ]------------
-> WARNING: at lib/dma-debug.c:625 check_unmap+0x3b3/0x610()
-> Hardware name: HP xw9400 Workstation
-> forcedeth 0000:00:09.0: DMA-API: device driver frees DMA memory with
-> wrong function [device address=0x0000000023780c02] [size=42 bytes]
-> [mapped as single] [unmapped as page]
-> Modules linked in: nfsd exportfs iptable_filter iptable_mangle
-> ip_tables x_tables snd_seq snd_seq_device vboxnetflt vboxdrv
-> snd_hda_codec_realtek snd_hda_intel snd_hda_codec nvidia(P) snd_pcm
-> snd_timer snd firewire_ohci firewire_core soundcore snd_page_alloc
-> tpm_infineon tpm forcedeth floppy tpm_bios fuse nfs auth_rpcgss lockd
-> sunrpc scsi_wait_scan usbhid ohci_hcd usb_storage usb_libusual
-> ehci_hcd usbcore
-> Pid: 0, comm: swapper Tainted: P        W  2.6.30-rc4-git1 #1
-> Call Trace:
->  <IRQ>  [<ffffffff8023ceca>] ? warn_slowpath+0xea/0x160
->  [<ffffffff80231ad7>] ? task_rq_lock+0x47/0x90
->  [<ffffffff8029b287>] ? dma_pool_alloc+0x1b7/0x2d0
->  [<ffffffffa0059692>] ? ohci_urb_enqueue+0x1a2/0x980 [ohci_hcd]
->  [<ffffffff80231a63>] ? __wake_up+0x43/0x70
->  [<ffffffff802343f4>] ? find_busiest_group+0x244/0x920
->  [<ffffffffa00073b7>] ? usb_hcd_submit_urb+0x117/0xa40 [usbcore]
->  [<ffffffff803f0bb3>] ? check_unmap+0x3b3/0x610
->  [<ffffffff803f0e58>] ? debug_dma_unmap_page+0x48/0x50
->  [<ffffffffa014e639>] ? nv_tx_done_optimized+0xd9/0x2c0 [forcedeth]
->  [<ffffffffa0151346>] ? nv_napi_poll+0x76/0x630 [forcedeth]
->  [<ffffffff80256a1b>] ? hrtimer_get_next_event+0xdb/0xf0
->  [<ffffffff804dcc47>] ? net_rx_action+0x87/0x130
->  [<ffffffff802421fb>] ? __do_softirq+0x7b/0x110
->  [<ffffffff8020c56c>] ? call_softirq+0x1c/0x30
->  [<ffffffff8020e315>] ? do_softirq+0x35/0x80
->  [<ffffffff80242055>] ? irq_exit+0x95/0xa0
->  [<ffffffff8020db05>] ? do_IRQ+0x85/0xf0
->  [<ffffffff8020be13>] ? ret_from_intr+0x0/0xa
->  <EOI>  [<ffffffff80213182>] ? default_idle+0x42/0x50
->  [<ffffffff802131c4>] ? c1e_idle+0x34/0x100
->  [<ffffffff80258279>] ? __atomic_notifier_call_chain+0x19/0x50
->  [<ffffffff8020a09a>] ? cpu_idle+0x5a/0xc0
-> ---[ end trace 93edef2de057a0ee ]---
+	-Mike
 
-Can you submit a bug report to netdev@vger.kernel.org? Well, I think
-that the driver just uses pci_unmap_page for the areas mapped via
-pci_map_single. That's not nice but causes no harm.
