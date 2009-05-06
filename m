@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762017AbZEFV5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761301AbZEFV45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762017AbZEFV5X (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 17:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761407AbZEFVy1
+	id S1761301AbZEFV45 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 17:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761400AbZEFVy0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:54:27 -0400
-Received: from kroah.org ([198.145.64.141]:56953 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 17:54:26 -0400
+Received: from kroah.org ([198.145.64.141]:56926 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760095AbZEFVyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:54:24 -0400
+	id S1761166AbZEFVyW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:54:22 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed May  6 14:47:56 2009
-Message-Id: <20090506214756.305441008@mini.kroah.org>
+Message-Id: <20090506214756.029181948@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 14:45:36 -0700
+Date: Wed, 06 May 2009 14:45:34 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Avi Kivity <avi@redhat.com>,
-       Chris Wright <chrisw@sous-sol.org>
-Subject: [patch 08/58] KVM: MMU: Fix off-by-one calculating large page count
+       alan@lxorguk.ukuu.org.uk, Karsten Wiese <fzu@wemgehoertderstaat.de>,
+       Takashi Iwai <tiwai@suse.de>, Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 06/58] ALSA: us122l: add snd_us122l_free()
 References: <20090506214528.660389067@mini.kroah.org>
-Content-Disposition: inline; filename=kvm-mmu-fix-off-by-one-calculating-large-page-count.patch
+Content-Disposition: inline; filename=alsa-us122l-add-snd_us122l_free.patch
 In-Reply-To: <20090506215017.GA21981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,45 +39,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Avi Kivity <avi@redhat.com>
+From: Karsten Wiese <fzu@wemgehoertderstaat.de>
 
-upstream commit: 99894a799f09cf9e28296bb16e75bd5830fd2c4e
+upstream commit: 5d4af1be06affa2b42cdf59cd376752be1f934b3
 
-The large page initialization code concludes there are two large pages spanned
-by a slot covering 1 (small) page starting at gfn 1.  This is incorrect, and
-also results in incorrect write_count initialization in some cases (base = 1,
-npages = 513 for example).
+Use it to clean up snd_us122l_card_used[].
 
+Without patch unplugging of an US122L soundcard didn't reset the
+corresponding element of snd_us122l_card_used[] to 0.
+The (SNDRV_CARDS + 1)th plugging in did not result in creating the soundcard
+device anymore.
+Index values supplied with the modprobe command line were not used correctly
+anymore after the first unplugging of an US122L.
+
+Signed-off-by: Karsten Wiese <fzu@wemgehoertderstaat.de>
 Cc: stable@kernel.org
-Signed-off-by: Avi Kivity <avi@redhat.com>
+Signed-off-by: Takashi Iwai <tiwai@suse.de>
+[chrisw: backport to 2.6.29]
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 ---
- virt/kvm/kvm_main.c |    8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ sound/usb/usx2y/us122l.c |   12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -964,6 +964,7 @@ int __kvm_set_memory_region(struct kvm *
- 	int r;
- 	gfn_t base_gfn;
- 	unsigned long npages;
-+	int largepages;
- 	unsigned long i;
- 	struct kvm_memory_slot *memslot;
- 	struct kvm_memory_slot old, new;
-@@ -1039,11 +1040,8 @@ int __kvm_set_memory_region(struct kvm *
- 			new.userspace_addr = 0;
+--- a/sound/usb/usx2y/us122l.c
++++ b/sound/usb/usx2y/us122l.c
+@@ -478,6 +478,14 @@ static bool us122l_create_card(struct sn
+ 	return true;
+ }
+ 
++static void snd_us122l_free(struct snd_card *card)
++{
++	struct us122l	*us122l = US122L(card);
++	int		index = us122l->chip.index;
++	if (index >= 0  &&  index < SNDRV_CARDS)
++		snd_us122l_card_used[index] = 0;
++}
++
+ static struct snd_card *usx2y_create_card(struct usb_device *device)
+ {
+ 	int		dev;
+@@ -492,7 +500,7 @@ static struct snd_card *usx2y_create_car
+ 	if (!card)
+ 		return NULL;
+ 	snd_us122l_card_used[US122L(card)->chip.index = dev] = 1;
+-
++	card->private_free = snd_us122l_free;
+ 	US122L(card)->chip.dev = device;
+ 	US122L(card)->chip.card = card;
+ 	mutex_init(&US122L(card)->mutex);
+@@ -575,7 +583,7 @@ static void snd_us122l_disconnect(struct
  	}
- 	if (npages && !new.lpage_info) {
--		int largepages = npages / KVM_PAGES_PER_HPAGE;
--		if (npages % KVM_PAGES_PER_HPAGE)
--			largepages++;
--		if (base_gfn % KVM_PAGES_PER_HPAGE)
--			largepages++;
-+		largepages = 1 + (base_gfn + npages - 1) / KVM_PAGES_PER_HPAGE;
-+		largepages -= base_gfn / KVM_PAGES_PER_HPAGE;
  
- 		new.lpage_info = vmalloc(largepages * sizeof(*new.lpage_info));
+ 	usb_put_intf(intf);
+-	usb_put_dev(US122L(card)->chip.dev);
++	usb_put_dev(us122l->chip.dev);
  
+ 	while (atomic_read(&us122l->mmap_count))
+ 		msleep(500);
 
 
