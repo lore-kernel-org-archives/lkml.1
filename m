@@ -1,91 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759077AbZEFUBv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758380AbZEFUIR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759077AbZEFUBv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:01:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755783AbZEFUBj
+	id S1758380AbZEFUIR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:08:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754954AbZEFUIB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:01:39 -0400
-Received: from smtp-out002.kontent.com ([81.88.40.216]:56431 "EHLO
-	smtp-out002.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755544AbZEFUBi (ORCPT
+	Wed, 6 May 2009 16:08:01 -0400
+Received: from fk-out-0910.google.com ([209.85.128.188]:59670 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754892AbZEFUIA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:01:38 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: Re: [PATCH 5/5] usb_debug: EXPERIMENTAL - poll hcd device to force writes
-Date: Wed, 6 May 2009 22:01:42 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Jason Wessel <jason.wessel@windriver.com>, greg@kroah.com,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <Pine.LNX.4.44L0.0905061447500.4430-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.0905061447500.4430-100000@iolanthe.rowland.org>
+	Wed, 6 May 2009 16:08:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=dH3JIze+tbguOZn5246r0m5qX0xX6xGJBh6A7NdI7gWF8x/B9pdVEpa6WMMLYT0A2p
+         hmf+SP+6SL2534UmrTzkF6dSYIJAzppcvnwJZ4uBq+ZYHb0egDPV+4xRCHHT7+BkbK05
+         oWhHCe1ZbABJTpmmuFoXQbvBF/C4zmvstx/NU=
+Date: Wed, 6 May 2009 22:07:53 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
+       m-ikeda@ds.jp.nec.com, peterz@infradead.org
+Subject: Re: IO scheduler based IO Controller V2
+Message-ID: <20090506200751.GA4282@linux>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <20090506023332.GA1212@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905062201.42965.oliver@neukum.org>
+In-Reply-To: <20090506023332.GA1212@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Mittwoch, 6. Mai 2009 21:24:56 schrieb Alan Stern:
-> On Wed, 6 May 2009, Oliver Neukum wrote:
+On Tue, May 05, 2009 at 10:33:32PM -0400, Vivek Goyal wrote:
+> On Tue, May 05, 2009 at 01:24:41PM -0700, Andrew Morton wrote:
+> > On Tue,  5 May 2009 15:58:27 -0400
+> > Vivek Goyal <vgoyal@redhat.com> wrote:
+> > 
+> > > 
+> > > Hi All,
+> > > 
+> > > Here is the V2 of the IO controller patches generated on top of 2.6.30-rc4.
+> > > ...
+> > > Currently primarily two other IO controller proposals are out there.
+> > > 
+> > > dm-ioband
+> > > ---------
+> > > This patch set is from Ryo Tsuruta from valinux.
+> > > ...
+> > > IO-throttling
+> > > -------------
+> > > This patch set is from Andrea Righi provides max bandwidth controller.
+> > 
+> > I'm thinking we need to lock you guys in a room and come back in 15 minutes.
+> > 
+> > Seriously, how are we to resolve this?  We could lock me in a room and
+> > cmoe back in 15 days, but there's no reason to believe that I'd emerge
+> > with the best answer.
+> > 
+> > I tend to think that a cgroup-based controller is the way to go. 
+> > Anything else will need to be wired up to cgroups _anyway_, and that
+> > might end up messy.
+> 
+> Hi Andrew,
+> 
+> Sorry, did not get what do you mean by cgroup based controller? If you
+> mean that we use cgroups for grouping tasks for controlling IO, then both
+> IO scheduler based controller as well as io throttling proposal do that.
+> dm-ioband also supports that up to some extent but it requires extra step of
+> transferring cgroup grouping information to dm-ioband device using dm-tools.
+> 
+> But if you meant that io-throttle patches, then I think it solves only
+> part of the problem and that is max bw control. It does not offer minimum
+> BW/minimum disk share gurantees as offered by proportional BW control.
+> 
+> IOW, it supports upper limit control and does not support a work conserving
+> IO controller which lets a group use the whole BW if competing groups are
+> not present. IMHO, proportional BW control is an important feature which
+> we will need and IIUC, io-throttle patches can't be easily extended to support
+> proportional BW control, OTOH, one should be able to extend IO scheduler
+> based proportional weight controller to also support max bw control. 
 
-> A little thought yielded the following algorithm.  It assumes there is
-> a fixed set of URBs allocated, unlike what you have done.  Does it make
+Well, IMHO the big concern is at which level we want to implement the
+logic of control: IO scheduler, when the IO requests are already
+submitted and need to be dispatched, or at high level when the
+applications generates IO requests (or maybe both).
 
-No, it does not ;-) Your approach is more general than you think.
-The only important constraint is that the number of URBs in flight
-be limited. It doesn't matter when they are allocated.
+And, as pointed by Andrew, do everything by a cgroup-based controller.
 
-> sense to take this approach?
+The other features, proportional BW, throttling, take the current ioprio
+model in account, etc. are implementation details and any of the
+proposed solutions can be extended to support all these features. I
+mean, io-throttle can be extended to support proportional BW (for a
+certain perspective it is already provided by the throttling water mark
+in v16), as well as the IO scheduler based controller can be extended to
+support absolute BW limits. The same for dm-ioband. I don't think
+there're huge obstacle to merge the functionalities in this sense.
 
-Yes.
+> 
+> Andrea, last time you were planning to have a look at my patches and see
+> if max bw controller can be implemented there. I got a feeling that it
+> should not be too difficult to implement it there. We already have the
+> hierarchical tree of io queues and groups in elevator layer and we run
+> BFQ (WF2Q+) algorithm to select next queue to dispatch the IO from. It is
+> just a matter of also keeping track of IO rate per queue/group and we should
+> be easily be able to delay the dispatch of IO from a queue if its group has
+> crossed the specified max bw.
 
-> Let N be the total number of URBs allocated, each capable of holding up
-> to B bytes.  Let NIF be the number of URBs in flight at any time, so
-> the number of available URBs is N - NIF.  The number of available bytes
-> might be < (N - NIF)*B because the next URB might be partially full.
->
-> P is an adjustable parameter of the algorithm.  For simplicity you can
-> take P = 1, but increasing P (any value below N is okay) would yield
-> reduced latency at the cost of more partially-filled URB submissions
-> (so possibly reduced throughput).
->
->     Write routine:
-> 	Copy bytes into the available URB buffers, submitting URBs as
-> 	they get filled.  At the end, if the next URB is partially full
-> 	then submit it only if NIF < P.
+Yes, sorry for my late, I quickly tested your patchset, but I still need
+to understand many details of your solution. In the next days I'll
+re-read everything carefully and I'll try to do a detailed review of
+your patchset (just re-building the kernel with your patchset applied).
 
-I did so. In principle. I am leaving the iteration to the tty layer.
+> 
+> This should lead to less code and reduced complextiy (compared with the
+> case where we do max bw control with io-throttling patches and proportional
+> BW control using IO scheduler based control patches).
 
->     Completion routine:
-> 	If the next URB to send is partially filled, submit it.
+mmmh... changing the logic at the elevator and all IO schedulers doesn't
+sound like reduced complexity and less code changed. With io-throttle we
+just need to place the cgroup_io_throttle() hook in the right functions
+where we want to apply throttling. This is a quite easy approach to
+extend the IO control also to logical devices (more in general devices
+that use their own make_request_fn) or even network-attached devices, as
+well as networking filesystems, etc.
 
-Much easier if P = N - 1
+But I may be wrong. As I said I still need to review in the details your
+solution.
 
->     write_room routine:
-> 	Return the actual number of bytes remaining in the available
-> 	URBs, but no more than (N-P)*B.
+>  
+> So do you think that it would make sense to do max BW control along with
+> proportional weight IO controller at IO scheduler? If yes, then we can
+> work together and continue to develop this patchset to also support max
+> bw control and meet your requirements and drop the io-throttling patches.
 
-Yes.
+It is surely worth to be explored. Honestly, I don't know if it would be
+a better solution or not. Probably comparing some results with different
+IO workloads is the best way to proceed and decide which is the right
+way to go. This is necessary IMHO, before totally dropping one solution
+or another.
 
-> How does that sound?  Converting \n to \r\n will add some complication
-> but not too much.
->
-> Allocating URBs on the fly adds a lot of complication.  There has to be
-> a minimum number of pre-allocated URBs; otherwise write_room could
+> 
+> The only thing which concerns me is the fact that IO scheduler does not
+> have the view of higher level logical device. So if somebody has setup a
+> software RAID and wants to put max BW limit on software raid device, this
+> solution will not work. One shall have to live with max bw limits on 
+> individual disks (where io scheduler is actually running). Do your patches
+> allow to put limit on software RAID devices also? 
 
-Why? You can always calculate with the number of URBs you'd
-allocate as a maximum.
+No, but as said above my patchset provides the interfaces to apply the
+IO control and accounting wherever we want. At the moment there's just
+one interface, cgroup_io_throttle().
 
-> never return a positive value.  If you allocate additional URBs
-> later on, when would you free them?
-
-Like you free all URBs, on completion.
-
-	Regards
-		Oliver
-
+-Andrea
