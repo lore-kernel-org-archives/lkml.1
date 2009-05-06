@@ -1,242 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbZEFF3Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752358AbZEFFh0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753094AbZEFF3Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 01:29:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750702AbZEFF3Q
+	id S1752358AbZEFFh0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 01:37:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbZEFFhK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 01:29:16 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:65387 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750789AbZEFF3P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 01:29:15 -0400
-Message-ID: <4A012061.6010400@cn.fujitsu.com>
-Date: Wed, 06 May 2009 13:30:09 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Wed, 6 May 2009 01:37:10 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44502 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751310AbZEFFhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 01:37:08 -0400
+Date: Wed, 6 May 2009 07:33:18 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [FOR REVIEW, PATCH 0/2] do_wait() cleanups.
+Message-ID: <20090506053318.GA31977@redhat.com>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH v2] tracing/events: fix concurrent access to ftrace_events
- list
-References: <4A00F6AD.2070008@cn.fujitsu.com> <4A00F709.3080800@cn.fujitsu.com>
-In-Reply-To: <4A00F709.3080800@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A module will add/remove its trace events when it gets loaded/unloaded, so
-the ftrace_events list is not "const", and concurrent access needs to be
-protected.
+While this is not strictly necessary, I'd like to also cleanup do_wait/etc
+before changing ptrace internals. Just because this code is still hardly
+readable, imho. And we are going to complicate this code a little bit.
 
-This patch thus fixes races between loading/unloding modules and read
-'available_events' or read/write 'set_event', etc.
+This trivial change nearly killed me. I didn't expect I will spent all
+night doing this!!!
 
-Below shows how to reproduce the race:
+The patch is not tested, I am sending it for the early review, because
+before I do the next changes I'd like to know your opinion: do you agree
+with this patch "in general" ?
 
- # for ((; ;)) { cat /mnt/tracing/available_events; } > /dev/null &
- # for ((; ;)) { insmod trace-events-sample.ko; rmmod sample; } &
+If yes, I'll send the next trivial cleanups on top:
 
-After a while:
+	- factor out getrusage() code
 
-BUG: unable to handle kernel paging request at 0010011c
-IP: [<c1080f27>] t_next+0x1b/0x2d
-...
-Call Trace:
- [<c10c90e6>] ? seq_read+0x217/0x30d
- [<c10c8ecf>] ? seq_read+0x0/0x30d
- [<c10b4c19>] ? vfs_read+0x8f/0x136
- [<c10b4fc3>] ? sys_read+0x40/0x65
- [<c1002a68>] ? sysenter_do_call+0x12/0x36
+	- factor out infop filling
 
-Changelog v1 -> v2:
-- Fix deadlock when writing invalid pred into subsystem filter.
+	- simplify retval/notask_error interaction
 
-[ Impact: fix races when concurrent accessing ftrace_events list ]
+	- perhaps some small simplifications in do_wait's callers
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/trace.h               |    1 +
- kernel/trace/trace_event_profile.c |   19 ++++++++++++++-----
- kernel/trace/trace_events.c        |   20 +++++++++++---------
- kernel/trace/trace_events_filter.c |    5 +++++
- 4 files changed, 31 insertions(+), 14 deletions(-)
+Naming. I agree in advance with any changes you suggest, and this is
+another reason I am sending it early.
 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 83984ab..0bba080 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -827,6 +827,7 @@ static int filter_pred_##size(struct filter_pred *pred, void *event,	\
- 	return match;							\
- }
- 
-+extern struct mutex event_mutex;
- extern struct list_head ftrace_events;
- 
- extern const char *__start___trace_bprintk_fmt[];
-diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
-index 7bf2ad6..5b5895a 100644
---- a/kernel/trace/trace_event_profile.c
-+++ b/kernel/trace/trace_event_profile.c
-@@ -10,21 +10,30 @@
- int ftrace_profile_enable(int event_id)
- {
- 	struct ftrace_event_call *event;
-+	int ret = -EINVAL;
- 
-+	mutex_lock(&event_mutex);
- 	list_for_each_entry(event, &ftrace_events, list) {
--		if (event->id == event_id)
--			return event->profile_enable(event);
-+		if (event->id == event_id) {
-+			ret = event->profile_enable(event);
-+			break;
-+		}
- 	}
-+	mutex_unlock(&event_mutex);
- 
--	return -EINVAL;
-+	return ret;
- }
- 
- void ftrace_profile_disable(int event_id)
- {
- 	struct ftrace_event_call *event;
- 
-+	mutex_lock(&event_mutex);
- 	list_for_each_entry(event, &ftrace_events, list) {
--		if (event->id == event_id)
--			return event->profile_disable(event);
-+		if (event->id == event_id) {
-+			event->profile_disable(event);
-+			break;
-+		}
- 	}
-+	mutex_unlock(&event_mutex);
- }
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 72d619d..ac5b1c2 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -21,7 +21,7 @@
- 
- #define TRACE_SYSTEM "TRACE_SYSTEM"
- 
--static DEFINE_MUTEX(event_mutex);
-+DEFINE_MUTEX(event_mutex);
- 
- LIST_HEAD(ftrace_events);
- 
-@@ -80,6 +80,7 @@ static void ftrace_clear_events(void)
- {
- 	struct ftrace_event_call *call;
- 
-+	mutex_lock(&event_mutex);
- 	list_for_each_entry(call, &ftrace_events, list) {
- 
- 		if (call->enabled) {
-@@ -87,6 +88,7 @@ static void ftrace_clear_events(void)
- 			call->unregfunc();
- 		}
- 	}
-+	mutex_unlock(&event_mutex);
- }
- 
- static void ftrace_event_enable_disable(struct ftrace_event_call *call,
-@@ -274,6 +276,9 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
- 
- static void *t_start(struct seq_file *m, loff_t *pos)
- {
-+	mutex_lock(&event_mutex);
-+	if (*pos == 0)
-+		m->private = ftrace_events.next;
- 	return t_next(m, NULL, pos);
- }
- 
-@@ -303,6 +308,9 @@ s_next(struct seq_file *m, void *v, loff_t *pos)
- 
- static void *s_start(struct seq_file *m, loff_t *pos)
- {
-+	mutex_lock(&event_mutex);
-+	if (*pos == 0)
-+		m->private = ftrace_events.next;
- 	return s_next(m, NULL, pos);
- }
- 
-@@ -319,12 +327,12 @@ static int t_show(struct seq_file *m, void *v)
- 
- static void t_stop(struct seq_file *m, void *p)
- {
-+	mutex_unlock(&event_mutex);
- }
- 
- static int
- ftrace_event_seq_open(struct inode *inode, struct file *file)
- {
--	int ret;
- 	const struct seq_operations *seq_ops;
- 
- 	if ((file->f_mode & FMODE_WRITE) &&
-@@ -332,13 +340,7 @@ ftrace_event_seq_open(struct inode *inode, struct file *file)
- 		ftrace_clear_events();
- 
- 	seq_ops = inode->i_private;
--	ret = seq_open(file, seq_ops);
--	if (!ret) {
--		struct seq_file *m = file->private_data;
--
--		m->private = ftrace_events.next;
--	}
--	return ret;
-+	return seq_open(file, seq_ops);
- }
- 
- static ssize_t
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 97bd140..de1f821 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -433,6 +433,7 @@ static void filter_free_subsystem_preds(struct event_subsystem *system)
- 		filter->n_preds = 0;
- 	}
- 
-+	mutex_lock(&event_mutex);
- 	list_for_each_entry(call, &ftrace_events, list) {
- 		if (!call->define_fields)
- 			continue;
-@@ -442,6 +443,7 @@ static void filter_free_subsystem_preds(struct event_subsystem *system)
- 			remove_filter_string(call->filter);
- 		}
- 	}
-+	mutex_unlock(&event_mutex);
- }
- 
- static int filter_add_pred_fn(struct filter_parse_state *ps,
-@@ -622,6 +624,7 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
- 	filter->preds[filter->n_preds] = pred;
- 	filter->n_preds++;
- 
-+	mutex_lock(&event_mutex);
- 	list_for_each_entry(call, &ftrace_events, list) {
- 		int err;
- 
-@@ -633,12 +636,14 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
- 
- 		err = filter_add_pred(ps, call, pred);
- 		if (err) {
-+			mutex_unlock(&event_mutex);
- 			filter_free_subsystem_preds(system);
- 			parse_error(ps, FILT_ERR_BAD_SUBSYS_FILTER, 0);
- 			return err;
- 		}
- 		replace_filter_string(call->filter, filter_string);
- 	}
-+	mutex_unlock(&event_mutex);
- 
- 	return 0;
- }
--- 
-1.5.4.rc3
+
+
+Also. This is completely off-topic wrt ptrace cleanups, but if we
+change do_wait() now perhaps it makes sense to optimize do_wait()
+in PIDTYPE_PID case. In this case we do not need to scan the lists,
+we can inspect the task directly. This change should be simple, but
+it will increase .text. Do you think it makes sense?
+
+
+I do not plan any other cleanups before changing ptrace internals.
+
+Oleg.
+
