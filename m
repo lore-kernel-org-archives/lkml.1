@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760421AbZEFOvT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760600AbZEFOvu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760421AbZEFOvT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 10:51:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760295AbZEFOtH
+	id S1760600AbZEFOvu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 10:51:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760262AbZEFOtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 10:49:07 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:47670 "EHLO crca.org.au"
+	Wed, 6 May 2009 10:49:09 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:58124 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758525AbZEFOs5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 10:48:57 -0400
+	id S1759563AbZEFOs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 10:48:58 -0400
 X-Bogosity: Ham, spamicity=0.000000
 From: Nigel Cunningham <nigel@tuxonice.net>
 To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        tuxonice-devel@lists.tuxonice.net
 Cc: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 10/19] TuxOnIce: Storage manager support.
-Date: Thu,  7 May 2009 00:39:06 +1000
-Message-Id: <1241620755-22133-11-git-send-email-nigel@tuxonice.net>
+Subject: [PATCH 2/19] TuxOnIce: GEMS support.
+Date: Thu,  7 May 2009 00:38:58 +1000
+Message-Id: <1241620755-22133-3-git-send-email-nigel@tuxonice.net>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
@@ -24,361 +24,70 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add support for a userspace storage manager. This can be used - for
-example - to provide nbd support, establishing a connection when we
-begin to hibernate or resume and reestablishing the connection after the
-atomic restore at resume time.
+This patch adds support for finding pages on the LRU being used by GEMS,
+so that TuxOnIce can ensure they're atomically copied rather than being
+saved prior to the atomic copy like most other LRU pages.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- include/linux/netlink.h         |    1 +
- kernel/power/Makefile           |    2 +-
- kernel/power/tuxonice_storage.c |  282 +++++++++++++++++++++++++++++++++++++++
- kernel/power/tuxonice_storage.h |   10 ++
- 4 files changed, 294 insertions(+), 1 deletions(-)
- create mode 100644 kernel/power/tuxonice_storage.c
+ drivers/gpu/drm/drm_gem.c |    3 ++-
+ include/linux/fs.h        |    2 ++
+ include/linux/mm.h        |    1 +
+ mm/shmem.c                |    2 ++
+ 4 files changed, 7 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/netlink.h b/include/linux/netlink.h
-index 5ba398e..d597e15 100644
---- a/include/linux/netlink.h
-+++ b/include/linux/netlink.h
-@@ -24,6 +24,7 @@
- /* leave room for NETLINK_DM (DM Events) */
- #define NETLINK_SCSITRANSPORT	18	/* SCSI Transports */
- #define NETLINK_ECRYPTFS	19
-+#define NETLINK_TOI_USM		21	/* Userspace storage manager */
+diff --git a/drivers/gpu/drm/drm_gem.c b/drivers/gpu/drm/drm_gem.c
+index 4984aa8..c69b548 100644
+--- a/drivers/gpu/drm/drm_gem.c
++++ b/drivers/gpu/drm/drm_gem.c
+@@ -136,7 +136,8 @@ drm_gem_object_alloc(struct drm_device *dev, size_t size)
+ 	obj = kcalloc(1, sizeof(*obj), GFP_KERNEL);
  
- #define MAX_LINKS 32		
+ 	obj->dev = dev;
+-	obj->filp = shmem_file_setup("drm mm object", size, VM_NORESERVE);
++	obj->filp = shmem_file_setup("drm mm object", size,
++			VM_NORESERVE | VM_ATOMIC_COPY);
+ 	if (IS_ERR(obj->filp)) {
+ 		kfree(obj);
+ 		return NULL;
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 5bed436..344b1ca 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -231,6 +231,8 @@ struct inodes_stat_t {
+ #define S_NOCMTIME	128	/* Do not update file c/mtime */
+ #define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
+ #define S_PRIVATE	512	/* Inode is fs-internal */
++#define S_ATOMIC_COPY	1024	/* Pages mapped with this inode need to be
++				   atomically copied (gem) */
  
-diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-index 180b89a..9ad139e 100644
---- a/kernel/power/Makefile
-+++ b/kernel/power/Makefile
-@@ -11,7 +11,7 @@ tuxonice_core-objs := tuxonice_modules.o tuxonice_sysfs.o tuxonice_highlevel.o \
- obj-$(CONFIG_TOI)		+= tuxonice_builtin.o
+ /*
+  * Note that nosuid etc flags are inode-specific: setting some file-system
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index bff1f0d..3daeccb 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -105,6 +105,7 @@ extern unsigned int kobjsize(const void *objp);
+ #define VM_MIXEDMAP	0x10000000	/* Can contain "struct page" and pure PFN pages */
+ #define VM_SAO		0x20000000	/* Strong Access Ordering (powerpc) */
+ #define VM_PFN_AT_MMAP	0x40000000	/* PFNMAP vma that is fully mapped at mmap time */
++#define VM_ATOMIC_COPY	0x80000000	/* TuxOnIce should atomically copy */
  
- ifdef CONFIG_NET
--tuxonice_core-objs		+= tuxonice_netlink.o
-+tuxonice_core-objs		+= tuxonice_storage.o tuxonice_netlink.o
- endif
+ #ifndef VM_STACK_DEFAULT_FLAGS		/* arch can override this */
+ #define VM_STACK_DEFAULT_FLAGS VM_DATA_DEFAULT_FLAGS
+diff --git a/mm/shmem.c b/mm/shmem.c
+index b25f95c..4908d20 100644
+--- a/mm/shmem.c
++++ b/mm/shmem.c
+@@ -1557,6 +1557,8 @@ static struct inode *shmem_get_inode(struct super_block *sb, int mode,
+ 		memset(info, 0, (char *)inode - (char *)info);
+ 		spin_lock_init(&info->lock);
+ 		info->flags = flags & VM_NORESERVE;
++		if (flags & VM_ATOMIC_COPY)
++			inode->i_flags |= S_ATOMIC_COPY;
+ 		INIT_LIST_HEAD(&info->swaplist);
  
- obj-$(CONFIG_TOI_CORE)		+= tuxonice_core.o
-diff --git a/kernel/power/tuxonice_storage.c b/kernel/power/tuxonice_storage.c
-new file mode 100644
-index 0000000..5dafc95
---- /dev/null
-+++ b/kernel/power/tuxonice_storage.c
-@@ -0,0 +1,282 @@
-+/*
-+ * kernel/power/tuxonice_storage.c
-+ *
-+ * Copyright (C) 2005-2008 Nigel Cunningham (nigel at tuxonice net)
-+ *
-+ * This file is released under the GPLv2.
-+ *
-+ * Routines for talking to a userspace program that manages storage.
-+ *
-+ * The kernel side:
-+ * - starts the userspace program;
-+ * - sends messages telling it when to open and close the connection;
-+ * - tells it when to quit;
-+ *
-+ * The user space side:
-+ * - passes messages regarding status;
-+ *
-+ */
-+
-+#include <linux/suspend.h>
-+#include <linux/freezer.h>
-+
-+#include "tuxonice_sysfs.h"
-+#include "tuxonice_modules.h"
-+#include "tuxonice_netlink.h"
-+#include "tuxonice_storage.h"
-+#include "tuxonice_ui.h"
-+
-+static struct user_helper_data usm_helper_data;
-+static struct toi_module_ops usm_ops;
-+static int message_received, usm_prepare_count;
-+static int storage_manager_last_action, storage_manager_action;
-+
-+static int usm_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
-+{
-+	int type;
-+	int *data;
-+
-+	type = nlh->nlmsg_type;
-+
-+	/* A control message: ignore them */
-+	if (type < NETLINK_MSG_BASE)
-+		return 0;
-+
-+	/* Unknown message: reply with EINVAL */
-+	if (type >= USM_MSG_MAX)
-+		return -EINVAL;
-+
-+	/* All operations require privileges, even GET */
-+	if (security_netlink_recv(skb, CAP_NET_ADMIN))
-+		return -EPERM;
-+
-+	/* Only allow one task to receive NOFREEZE privileges */
-+	if (type == NETLINK_MSG_NOFREEZE_ME && usm_helper_data.pid != -1)
-+		return -EBUSY;
-+
-+	data = (int *) NLMSG_DATA(nlh);
-+
-+	switch (type) {
-+	case USM_MSG_SUCCESS:
-+	case USM_MSG_FAILED:
-+		message_received = type;
-+		complete(&usm_helper_data.wait_for_process);
-+		break;
-+	default:
-+		printk(KERN_INFO "Storage manager doesn't recognise "
-+				"message %d.\n", type);
-+	}
-+
-+	return 1;
-+}
-+
-+#ifdef CONFIG_NET
-+static int activations;
-+
-+int toi_activate_storage(int force)
-+{
-+	int tries = 1;
-+
-+	if (usm_helper_data.pid == -1 || !usm_ops.enabled)
-+		return 0;
-+
-+	message_received = 0;
-+	activations++;
-+
-+	if (activations > 1 && !force)
-+		return 0;
-+
-+	while ((!message_received || message_received == USM_MSG_FAILED) &&
-+			tries < 2) {
-+		toi_prepare_status(DONT_CLEAR_BAR, "Activate storage attempt "
-+				"%d.\n", tries);
-+
-+		init_completion(&usm_helper_data.wait_for_process);
-+
-+		toi_send_netlink_message(&usm_helper_data,
-+			USM_MSG_CONNECT,
-+			NULL, 0);
-+
-+		/* Wait 2 seconds for the userspace process to make contact */
-+		wait_for_completion_timeout(&usm_helper_data.wait_for_process,
-+				2*HZ);
-+
-+		tries++;
-+	}
-+
-+	return 0;
-+}
-+
-+int toi_deactivate_storage(int force)
-+{
-+	if (usm_helper_data.pid == -1 || !usm_ops.enabled)
-+		return 0;
-+
-+	message_received = 0;
-+	activations--;
-+
-+	if (activations && !force)
-+		return 0;
-+
-+	init_completion(&usm_helper_data.wait_for_process);
-+
-+	toi_send_netlink_message(&usm_helper_data,
-+			USM_MSG_DISCONNECT,
-+			NULL, 0);
-+
-+	wait_for_completion_timeout(&usm_helper_data.wait_for_process, 2*HZ);
-+
-+	if (!message_received || message_received == USM_MSG_FAILED) {
-+		printk(KERN_INFO "Returning failure disconnecting storage.\n");
-+		return 1;
-+	}
-+
-+	return 0;
-+}
-+#endif
-+
-+static void storage_manager_simulate(void)
-+{
-+	printk(KERN_INFO "--- Storage manager simulate ---\n");
-+	toi_prepare_usm();
-+	schedule();
-+	printk(KERN_INFO "--- Activate storage 1 ---\n");
-+	toi_activate_storage(1);
-+	schedule();
-+	printk(KERN_INFO "--- Deactivate storage 1 ---\n");
-+	toi_deactivate_storage(1);
-+	schedule();
-+	printk(KERN_INFO "--- Cleanup usm ---\n");
-+	toi_cleanup_usm();
-+	schedule();
-+	printk(KERN_INFO "--- Storage manager simulate ends ---\n");
-+}
-+
-+static int usm_storage_needed(void)
-+{
-+	return strlen(usm_helper_data.program);
-+}
-+
-+static int usm_save_config_info(char *buf)
-+{
-+	int len = strlen(usm_helper_data.program);
-+	memcpy(buf, usm_helper_data.program, len);
-+	return len;
-+}
-+
-+static void usm_load_config_info(char *buf, int size)
-+{
-+	/* Don't load the saved path if one has already been set */
-+	if (usm_helper_data.program[0])
-+		return;
-+
-+	memcpy(usm_helper_data.program, buf, size);
-+}
-+
-+static int usm_memory_needed(void)
-+{
-+	/* ball park figure of 32 pages */
-+	return 32 * PAGE_SIZE;
-+}
-+
-+/* toi_prepare_usm
-+ */
-+int toi_prepare_usm(void)
-+{
-+	usm_prepare_count++;
-+
-+	if (usm_prepare_count > 1 || !usm_ops.enabled)
-+		return 0;
-+
-+	usm_helper_data.pid = -1;
-+
-+	if (!*usm_helper_data.program)
-+		return 0;
-+
-+	toi_netlink_setup(&usm_helper_data);
-+
-+	if (usm_helper_data.pid == -1)
-+		printk(KERN_INFO "TuxOnIce Storage Manager wanted, but couldn't"
-+				" start it.\n");
-+
-+	toi_activate_storage(0);
-+
-+	return usm_helper_data.pid != -1;
-+}
-+
-+void toi_cleanup_usm(void)
-+{
-+	usm_prepare_count--;
-+
-+	if (usm_helper_data.pid > -1 && !usm_prepare_count) {
-+		toi_deactivate_storage(0);
-+		toi_netlink_close(&usm_helper_data);
-+	}
-+}
-+
-+static void storage_manager_activate(void)
-+{
-+	if (storage_manager_action == storage_manager_last_action)
-+		return;
-+
-+	if (storage_manager_action)
-+		toi_prepare_usm();
-+	else
-+		toi_cleanup_usm();
-+
-+	storage_manager_last_action = storage_manager_action;
-+}
-+
-+/*
-+ * User interface specific /sys/power/tuxonice entries.
-+ */
-+
-+static struct toi_sysfs_data sysfs_params[] = {
-+	SYSFS_NONE("simulate_atomic_copy", storage_manager_simulate),
-+	SYSFS_INT("enabled", SYSFS_RW, &usm_ops.enabled, 0, 1, 0, NULL),
-+	SYSFS_STRING("program", SYSFS_RW, usm_helper_data.program, 254, 0,
-+		NULL),
-+	SYSFS_INT("activate_storage", SYSFS_RW , &storage_manager_action, 0, 1,
-+			0, storage_manager_activate)
-+};
-+
-+static struct toi_module_ops usm_ops = {
-+	.type				= MISC_MODULE,
-+	.name				= "usm",
-+	.directory			= "storage_manager",
-+	.module				= THIS_MODULE,
-+	.storage_needed			= usm_storage_needed,
-+	.save_config_info		= usm_save_config_info,
-+	.load_config_info		= usm_load_config_info,
-+	.memory_needed			= usm_memory_needed,
-+
-+	.sysfs_data			= sysfs_params,
-+	.num_sysfs_entries		= sizeof(sysfs_params) /
-+		sizeof(struct toi_sysfs_data),
-+};
-+
-+/* toi_usm_sysfs_init
-+ * Description: Boot time initialisation for user interface.
-+ */
-+int toi_usm_init(void)
-+{
-+	usm_helper_data.nl = NULL;
-+	usm_helper_data.program[0] = '\0';
-+	usm_helper_data.pid = -1;
-+	usm_helper_data.skb_size = 0;
-+	usm_helper_data.pool_limit = 6;
-+	usm_helper_data.netlink_id = NETLINK_TOI_USM;
-+	usm_helper_data.name = "userspace storage manager";
-+	usm_helper_data.rcv_msg = usm_user_rcv_msg;
-+	usm_helper_data.interface_version = 2;
-+	usm_helper_data.must_init = 0;
-+	init_completion(&usm_helper_data.wait_for_process);
-+
-+	return toi_register_module(&usm_ops);
-+}
-+
-+void toi_usm_exit(void)
-+{
-+	toi_netlink_close_complete(&usm_helper_data);
-+	toi_unregister_module(&usm_ops);
-+}
-diff --git a/kernel/power/tuxonice_storage.h b/kernel/power/tuxonice_storage.h
-index af48608..24f8e8a 100644
---- a/kernel/power/tuxonice_storage.h
-+++ b/kernel/power/tuxonice_storage.h
-@@ -6,6 +6,15 @@
-  * This file is released under the GPLv2.
-  */
- 
-+#ifdef CONFIG_NET
-+int toi_prepare_usm(void);
-+void toi_cleanup_usm(void);
-+
-+int toi_activate_storage(int force);
-+int toi_deactivate_storage(int force);
-+extern int toi_usm_init(void);
-+extern void toi_usm_exit(void);
-+#else
- static inline int toi_usm_init(void) { return 0; }
- static inline void toi_usm_exit(void) { }
- 
-@@ -21,6 +30,7 @@ static inline int toi_deactivate_storage(int force)
- 
- static inline int toi_prepare_usm(void) { return 0; }
- static inline void toi_cleanup_usm(void) { }
-+#endif
- 
- enum {
- 	USM_MSG_BASE = 0x10,
+ 		switch (mode & S_IFMT) {
 -- 
 1.5.6.3
 
