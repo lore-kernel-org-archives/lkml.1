@@ -1,54 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759945AbZEFMwd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759393AbZEFM4W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759945AbZEFMwd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 08:52:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757266AbZEFMwW
+	id S1759393AbZEFM4W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 08:56:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756948AbZEFM4J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 08:52:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49595 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755684AbZEFMwV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 08:52:21 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH v2] crypto: add ctr(aes) test vectors
-Date: Wed, 6 May 2009 08:51:33 -0400
-User-Agent: KMail/1.11.2 (Linux/2.6.29.1-102.fc11.x86_64; KDE/4.2.2; x86_64; ; )
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>
-References: <200904282118.22823.jarod@redhat.com> <200905051042.58929.jarod@redhat.com> <20090506093021.GA31073@gondor.apana.org.au>
-In-Reply-To: <20090506093021.GA31073@gondor.apana.org.au>
+	Wed, 6 May 2009 08:56:09 -0400
+Received: from an-out-0708.google.com ([209.85.132.246]:51508 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754936AbZEFM4G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 08:56:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=mNBTdwj7w8wP4nwF8tC/NUgIIl0CY9mBOc5SGt3zxjRJ15CBvJ6UkqXZLvONudit6a
+         6Gjh0q/JijMbHi20vkw/huYTSvlgmxvPVRczPVb0zch3rPmnCURKm22IrrmPQ9vQZ+ge
+         rNSy1zUTJfHouMWWqjlLHGd+eoAZwGIlYyk8c=
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+Date: Wed, 6 May 2009 08:56:05 -0400
+Message-ID: <e6e2252e0905060556i78481be5va8c84635e4c8e227@mail.gmail.com>
+Subject: Configuring a PPP Half Bridge/IP Passthru
+From: Andrew Watts <systemstalker@gmail.com>
+To: linux-ppp@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905060851.34129.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 May 2009 05:30:21 Herbert Xu wrote:
-> On Tue, May 05, 2009 at 10:42:58AM -0400, Jarod Wilson wrote:
-> > 
-> > Now with multi-block test vectors, all from SP800-38A, Appendix F.5.
-> > Also added ctr(aes) to case 10 in tcrypt.
-> > 
-> > Quickly smoke-tested in fips mode, got back "alg_test: alg
-> > ctr(aes-x86_64) (ctr(aes)) self-test passed".
-> > 
-> > Signed-off-by: Jarod Wilson <jarod@redhat.com>
-> 
-> It didn't build because you forgot to change the RFC3686 dec
-> vector name.  I've fixed it for you.  Please test your patches
-> in future.
+Hi,
 
-Gah, apologies. Tested it in that other kernel tree I needed to
-get this done for, then neglected to do so for cryptodev.
+Im trying to create a PPP Half-Bridge/ZIPB/IP-Passthru so that I can
+pass through my public IP address to a device connected to the
+ethernet interface of a device that uses a 3G modem for connectivity.
+This product exists but I want to do it with my own hardware.  I have
+an NSLU2 that I have connected to a 3G cellular into the USB port, I
+then want to take the IP address from the resulting PPP and give it to
+an embedded device so that it has a publicly routable IP address that
+can be accessed directly.  Cradlepoint has such a device, I want to do
+the exact same thing just with Linux :).  The link below explains what
+I am try to do as well including the product in question.  I cant
+bridge a PPP interface to an Ethernet interface, if I had to do that
+where would I start to make modifications to the kernel?
 
-Thanks for the fixage.
+http://store.drwireless.com/crceippabrad.html
 
--- 
-Jarod Wilson
-jarod@redhat.com
+Anyone have any Idea how I might do that?
