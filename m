@@ -1,67 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754781AbZEFAK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZEFAN7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754781AbZEFAK5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 20:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZEFAKq
+	id S1755482AbZEFAN7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 20:13:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752726AbZEFANu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 20:10:46 -0400
-Received: from exprod7og118.obsmtp.com ([64.18.2.8]:39561 "EHLO
-	exprod7og118.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752923AbZEFAKp convert rfc822-to-8bit (ORCPT
+	Tue, 5 May 2009 20:13:50 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:58468 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752700AbZEFANu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 20:10:45 -0400
-X-Greylist: delayed 864 seconds by postgrey-1.27 at vger.kernel.org; Tue, 05 May 2009 20:10:45 EDT
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Austria, Winston" <Winston.Austria@lsi.com>
-Date: Tue, 5 May 2009 17:55:24 -0600
-Subject: [PATCH 1/10] scsi: megaraid_sas - tape drive support fix
-Thread-Topic: [PATCH 1/10] scsi: megaraid_sas - tape drive support fix
-Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQgDzPsVNA=
-Message-ID: <4B6A08C587958942AA3002690DD4F8C354F61C22@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C33A07FB03@cosmail02.lsi.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 5 May 2009 20:13:50 -0400
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Arve =?iso-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable wakeup IRQs
+References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
+	<d6200be20905051358m34c2be02ped84ad4158cd9865@mail.gmail.com>
+	<87eiv35eg6.fsf@deeprootsystems.com> <200905060127.24777.rjw@sisk.pl>
+From: Kevin Hilman <khilman@deeprootsystems.com>
+Organization: Deep Root Systems, LLC
+Date: Tue, 05 May 2009 17:13:48 -0700
+In-Reply-To: <200905060127.24777.rjw@sisk.pl> (Rafael J. Wysocki's message of "Wed\, 6 May 2009 01\:27\:23 +0200")
+Message-ID: <87y6tb3x6r.fsf@deeprootsystems.com>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add the Tape drive fix to the megaraid_sas driver: If the command is for the tape device, set the FW pthru timeout to the os layer timeout value.
+"Rafael J. Wysocki" <rjw@sisk.pl> writes:
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+> On Wednesday 06 May 2009, Kevin Hilman wrote:
+>> Arve Hjønnevåg <arve@android.com> writes:
+>> 
+>> > On Tue, May 5, 2009 at 8:52 AM, Kevin Hilman
+>> > <khilman@deeprootsystems.com> wrote:
+>> >> Andrew Morton <akpm@linux-foundation.org> writes:
+>> >>
+>> >>> On Mon,  4 May 2009 17:27:04 -0700 Kevin Hilman <khilman@deeprootsystems.com> wrote:
+>> >>>
+>> >>>> Interrupts that are flagged as wakeup sources via set_irq_wake()
+>> >>>> should not be disabled for suspend.
+>> >>>>
+>> >>>
+>> >>> Why not?
+>> >>>
+>> >>
+>> >> If an interrupt is a wakeup source, and it is disabled at the chip
+>> >> level, it will no longer generate interrupts, and thus no longer wake
+>> >> up the system.
+>> >>
+>> >> I'd be interested in hearing why wakeup interrupts should be disabled
+>> >> during suspend.
+>
+> That depends on whether or not they are used for anything else than wake-up.
+>
+>> 
+>> [...]
+>> 
+>> >>>
+>> >>> If this fixes some bug then please provide a description of that bug?
+>> >>
+>> >> The bug is that on TI OMAP, interrupts that are used for wakeup events
+>> >> are disabled by this code causing the system to no longer wake up.
+>> >
+>> > What do you do if the interrupt triggers right after your driver has
+>> > returned from its late suspend hook?  
+>> 
+>> If it's a wakeup IRQ, I assume you want it to prevent suspend.
+>> 
+>> But I don't see how that can happen in the current code. IIUC, by the
+>> time your late suspend hook is run, your device IRQ is already
+>> disabled, so it won't trigger an interrupt that will be caught by
+>> check_wakeup_irqs() anyways.
+>
+> My understanding of __disable_irq() was that it didn't actually disable the
+> IRQ at the hardware level, allowing the CPU to actually receive the interrupt
+> and acknowledge it, but preventing the device driver for receiving it.  
 
----
-drivers/scsi/megaraid/megaraid_sas.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+Hmm, that's not normally what I think of as disabled.  ;)
 
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-05-04 20:06:29.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-05-04 20:08:26.000000000 -0400
-@@ -687,6 +687,17 @@ megasas_build_dcdb(struct megasas_instan
-        memcpy(pthru->cdb, scp->cmnd, scp->cmd_len);
+> Does it work differently on the affected systems?
 
-        /*
-+       * If the command is for the tape device, set the
-+       * pthru timeout to the os layer timeout value.
-+       */
-+       if (scp->device->type == TYPE_TAPE) {
-+               if ((scp->request->timeout / HZ) > 0xFFFF)
-+                       pthru->timeout = 0xFFFF;
-+               else
-+                       pthru->timeout = scp->request->timeout / HZ;
-+       }
-+
-+       /*
-         * Construct SGL
-         */
-        if (IS_DMA64) {
+Yes.
+
+__disable_irq() calls the irq_chip's disable method which is platform
+specific.  On OMAP, this masks the IRQ at the hardware level
+preventing the CPU from seeing the interrupt.
+
+Kevin
+
+
