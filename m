@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752358AbZEFFh0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752752AbZEFFhm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752358AbZEFFh0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 01:37:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751469AbZEFFhK
+	id S1752752AbZEFFhm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 01:37:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZEFFhO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 01:37:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44502 "EHLO mx2.redhat.com"
+	Wed, 6 May 2009 01:37:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44503 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751310AbZEFFhI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 01:37:08 -0400
-Date: Wed, 6 May 2009 07:33:18 +0200
+	id S1752813AbZEFFhM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 01:37:12 -0400
+Date: Wed, 6 May 2009 07:33:22 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: Roland McGrath <roland@redhat.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: [FOR REVIEW, PATCH 0/2] do_wait() cleanups.
-Message-ID: <20090506053318.GA31977@redhat.com>
+Subject: [FOR REVIEW, PATCH 1/2] shift "ptrace implies WUNTRACED" from
+	ptrace_do_wait() to wait_task_stopped()
+Message-ID: <20090506053322.GA31981@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -23,40 +24,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While this is not strictly necessary, I'd like to also cleanup do_wait/etc
-before changing ptrace internals. Just because this code is still hardly
-readable, imho. And we are going to complicate this code a little bit.
+No functional changes, preparation for the next patch.
 
-This trivial change nearly killed me. I didn't expect I will spent all
-night doing this!!!
+ptrace_do_wait() adds WUNTRACED to options for wait_task_stopped()
+which should always accept the stopped tracee, even if do_wait() was
+called without WUNTRACED.
 
-The patch is not tested, I am sending it for the early review, because
-before I do the next changes I'd like to know your opinion: do you agree
-with this patch "in general" ?
+Change wait_task_stopped() to check "ptrace || WUNTRACED" instead.
+This makes the code more explicit, and "int options" argument becomes
+const in do_wait() pathes.
 
-If yes, I'll send the next trivial cleanups on top:
+Signed-off-by: Oleg Nesterov <oleg@redhat.com>
+---
 
-	- factor out getrusage() code
+ kernel/exit.c |    8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-	- factor out infop filling
-
-	- simplify retval/notask_error interaction
-
-	- perhaps some small simplifications in do_wait's callers
-
-Naming. I agree in advance with any changes you suggest, and this is
-another reason I am sending it early.
-
-
-
-Also. This is completely off-topic wrt ptrace cleanups, but if we
-change do_wait() now perhaps it makes sense to optimize do_wait()
-in PIDTYPE_PID case. In this case we do not need to scan the lists,
-we can inspect the task directly. This change should be simple, but
-it will increase .text. Do you think it makes sense?
-
-
-I do not plan any other cleanups before changing ptrace internals.
-
-Oleg.
+--- PTRACE/kernel/exit.c~1_WUNTRACED	2009-05-03 23:24:14.000000000 +0200
++++ PTRACE/kernel/exit.c	2009-05-06 01:48:51.000000000 +0200
+@@ -1330,7 +1330,8 @@ static int wait_task_stopped(int ptrace,
+ 	uid_t uid = 0; /* unneeded, required by compiler */
+ 	pid_t pid;
+ 
+-	if (!(options & WUNTRACED))
++	/* Traditionally we see ptrace'd stopped tasks regardless of options */
++	if (!ptrace && !(options & WUNTRACED))
+ 		return 0;
+ 
+ 	exit_code = 0;
+@@ -1548,11 +1549,6 @@ static int ptrace_do_wait(struct task_st
+ {
+ 	struct task_struct *p;
+ 
+-	/*
+-	 * Traditionally we see ptrace'd stopped tasks regardless of options.
+-	 */
+-	options |= WUNTRACED;
+-
+ 	list_for_each_entry(p, &tsk->ptraced, ptrace_entry) {
+ 		int ret = wait_consider_task(tsk, 1, p, notask_error,
+ 					     type, pid, options,
 
