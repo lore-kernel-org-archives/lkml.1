@@ -1,111 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759512AbZEFP3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbZEFPaU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759512AbZEFP3k (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 11:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753584AbZEFP3a
+	id S1757380AbZEFPaU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 11:30:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755087AbZEFPaD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 11:29:30 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:42952 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751973AbZEFP33 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 11:29:29 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Wed, 6 May 2009 08:24:53 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Gregory Haskins <ghaskins@novell.com>
-cc: viro@ZenIV.linux.org.uk, kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       avi@redhat.com
-Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via eventfd-notification
- interface
-In-Reply-To: <4A0175F0.1090705@novell.com>
-Message-ID: <alpine.DEB.1.10.0905060818000.32007@makko.or.mcafeemobile.com>
-References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A0175F0.1090705@novell.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Wed, 6 May 2009 11:30:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44153 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753584AbZEFPaA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 11:30:00 -0400
+Message-ID: <4A01AC5E.6000906@redhat.com>
+Date: Wed, 06 May 2009 18:27:26 +0300
+From: Izik Eidus <ieidus@redhat.com>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Hugh Dickins <hugh@veritas.com>
+CC: Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, aarcange@redhat.com, chrisw@redhat.com,
+       alan@lxorguk.ukuu.org.uk, device@lanana.org, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
+References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com> <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils>
+In-Reply-To: <Pine.LNX.4.64.0905061110470.3519@blonde.anvils>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009, Gregory Haskins wrote:
+Hugh Dickins wrote:
+>
+> If KSM is to behave in the usual madvise way, it'll need to be informed
+> of unmaps.  And I suspect it may need to be informed of them, even if we
+> let it continue to apply to empty address space.  Because even with your
+> more limited unsigned int nrpages interface, the caller can specify an
+> enormous range on 64-bit, and ksm.c be fully occupied just incrementing
+> from one absent page to the next. 
 
-> Al, Davide,
-> 
-> Gregory Haskins wrote:
-> > +
-> > +int
-> > +kvm_irqfd(struct kvm *kvm, int gsi, int flags)
-> > +{
-> > +	struct _irqfd *irqfd;
-> > +	struct file *file = NULL;
-> > +	int fd = -1;
-> > +	int ret;
-> > +
-> > +	irqfd = kzalloc(sizeof(*irqfd), GFP_KERNEL);
-> > +	if (!irqfd)
-> > +		return -ENOMEM;
-> > +
-> > +	irqfd->kvm = kvm;
-> > +	irqfd->gsi = gsi;
-> > +	INIT_LIST_HEAD(&irqfd->list);
-> > +	INIT_WORK(&irqfd->work, irqfd_inject);
-> > +
-> > +	/*
-> > +	 * We re-use eventfd for irqfd, and therefore will embed the eventfd
-> > +	 * lifetime in the irqfd.
-> > +	 */
-> > +	file = eventfd_file_create(0, 0);
-> > +	if (IS_ERR(file)) {
-> > +		ret = PTR_ERR(file);
-> > +		goto fail;
-> > +	}
-> > +
-> > +	irqfd->file = file;
-> > +
-> > +	/*
-> > +	 * Install our own custom wake-up handling so we are notified via
-> > +	 * a callback whenever someone signals the underlying eventfd
-> > +	 */
-> > +	init_waitqueue_func_entry(&irqfd->wait, irqfd_wakeup);
-> > +	init_poll_funcptr(&irqfd->pt, irqfd_ptable_queue_proc);
-> > +
-> > +	ret = file->f_op->poll(file, &irqfd->pt);
-> > +	if (ret < 0)
-> > +		goto fail;
-> > +
-> > +	mutex_lock(&kvm->lock);
-> > +	list_add_tail(&irqfd->list, &kvm->irqfds);
-> > +	mutex_unlock(&kvm->lock);
-> > +
-> > +	ret = get_unused_fd();
-> > +	if (ret < 0)
-> > +		goto fail;
-> > +
-> > +	fd = ret;
-> > +
-> > +	fd_install(fd, file);
-> >   
-> 
-> Can you comment on whether this function needs to take an additional
-> reference on file here?  (one for the one held by userspace/fd, and the
-> other for irqfd->file)  My instinct is telling me this may be currently
-> broken, but I am not sure.
+That is a good point that i didnt think about it.
+It is possible to make ksm "unmaped memory" aware by using find_vma(), 
+and skipped non mapped area.
+But that start to look bad... (I can make that just by every place that 
+if_present_pte() fail, and then dont even hurt the scaning performence, 
+beacuse i will just check it when the first virtual address is not present)
 
-I don't know exactly how it is used, but looks broken. If the fd is 
-returned to userspace, and userspace closes the fd, you will leak the 
-irqfd*. If you do an extra fget(), you will never know if the userspace 
-closed the last-1 instance of the eventfd file*.
-What is likely needed, is add a callback to eventfd_file_create(), so that 
-the eventfd can call your callback on ->release, and give you a chance to 
-perform proper cleanup of the irqfd*.
+But why not go go step by step?
+We can first start with this ioctl interface, later when we add swapping 
+to the pages, we can have madvice, and still (probably easily) support 
+the ioctls by just calling from inside ksm the madvice functions for 
+that specific address)
 
+I want to see ksm use madvice, but i believe it require some more 
+changes to mm/*.c, so it probably better to start with merging it when 
+it doesnt touch alot of stuff outisde ksm.c, and then to add swapping 
+and after that add madvice support (when the pages are swappable, 
+everyone can use it)
 
+What you think about that?
 
-- Davide
-
+>  mmap's vma ranges confine the space
+> to be searched, and instantiated pagetables confine it further: I think
+> you're either going to need to rely upon those to confine your search
+> area, or else enhance your own data structures to confine it.
+>
+> But I do appreciate the separation you've kept so far,
+> and wouldn't want to tie it all together too closely.
+>
+> Hugh
+>
+> p.s.  I wish you'd chosen different name than KSM - the kernel
+> has supported shared memory for many years - and notice ksm.c itself
+> says "Memory merging driver".  "Merge" would indeed have been a less
+> ambiguous term than "Share", but I think too late to change that now
+> - except possibly in the MADV_ flag names?
+>   
 
