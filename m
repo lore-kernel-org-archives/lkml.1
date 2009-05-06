@@ -1,26 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758762AbZEFH2U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZEFHas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758762AbZEFH2U (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 03:28:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752797AbZEFH2J
+	id S1756081AbZEFHas (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 03:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZEFHai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 03:28:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44417 "EHLO mx2.mail.elte.hu"
+	Wed, 6 May 2009 03:30:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:52712 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751014AbZEFH2I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 03:28:08 -0400
-Date: Wed, 6 May 2009 09:27:56 +0200
+	id S1752381AbZEFHah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 03:30:37 -0400
+Date: Wed, 6 May 2009 09:30:25 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [FOR REVIEW, PATCH 2/2] introduce "struct wait_opts" to
-	simplify do_wait() pathes
-Message-ID: <20090506072756.GA17457@elte.hu>
-References: <20090506053324.GA31988@redhat.com>
+To: Jason Wessel <jason.wessel@windriver.com>
+Cc: greg@kroah.com, linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/5] usb,early_printk: insert cr prior to nl as needed
+Message-ID: <20090506073025.GB17457@elte.hu>
+References: <1241575205-12199-1-git-send-email-jason.wessel@windriver.com> <1241575205-12199-2-git-send-email-jason.wessel@windriver.com> <1241575205-12199-3-git-send-email-jason.wessel@windriver.com> <1241575205-12199-4-git-send-email-jason.wessel@windriver.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090506053324.GA31988@redhat.com>
+In-Reply-To: <1241575205-12199-4-git-send-email-jason.wessel@windriver.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,139 +34,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Oleg Nesterov <oleg@redhat.com> wrote:
+* Jason Wessel <jason.wessel@windriver.com> wrote:
 
-> Introduce "struct wait_opts" which holds the parameters for misc 
-> helpers in do_wait() pathes.
+> The rs232 drivers send a carriage return prior to a new line in the
+> early printk code.
 > 
-> This adds 17 lines to kernel/exit.c, but saves 256 bytes from .o 
-> and imho makes the code much more readable.
+> The usb debug driver should do the same because you want to be able to
+> use the same terminal programs and tools for analysis of early printk
+> data.
 > 
-> (untested, not signed)
-> 
->  kernel/exit.c |  211 +++++++++++++++++++++++++++++++---------------------------
->  1 file changed, 114 insertions(+), 97 deletions(-)
+> Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
+> ---
+>  arch/x86/kernel/early_printk.c |   22 ++++++++++++++++------
+>  1 files changed, 16 insertions(+), 6 deletions(-)
 
-> +struct wait_opts {
-> +	enum pid_type		wtype;
-> +	struct pid		*wpid;
-> +	int			wflags;
-> +
-> +	struct siginfo __user	*winfo;
-> +	int __user		*wstat;
-> +	struct rusage __user	*wrusage;
-> +
-> +	int			notask_error;
-> +};
+hm, would be better to carry this in the x86 tree - where most of 
+the early-debug functionality has been authored and maintained. 
 
-Nice idea!
-
-One small nit with the definition above: when using vertical spacing 
-(which really looks nice) we tend to put the asterix to the type 
-itself, not to the variable. I.e.:
-
-	enum pid_type		wtype;
-	struct pid *		wpid;
-	int			wflags;
-
-( This is done to separate the field name from the type - the 
-  pointer nature of the field is part of the type, not part of the
-  name. )
-
-It's impressive how well the function prototypes get compressed and 
-cleaned up by this helper structure:
-
-> -static int eligible_child(enum pid_type type, struct pid *pid, int options,
-> -			  struct task_struct *p)
-> +static int eligible_child(struct wait_opts *wopts, struct task_struct *p)
-
-> -static int wait_noreap_copyout(struct task_struct *p, pid_t pid, uid_t uid,
-> -			       int why, int status,
-> -			       struct siginfo __user *infop,
-> -			       struct rusage __user *rusagep)
-> +static int wait_noreap_copyout(struct wait_opts *wopts, struct task_struct *p,
-> +				pid_t pid, uid_t uid, int why, int status)
-
-> -static int wait_task_zombie(struct task_struct *p, int options,
-> -			    struct siginfo __user *infop,
-> -			    int __user *stat_addr, struct rusage __user *ru)
-> +static int wait_task_zombie(struct wait_opts *wopts, struct task_struct *p)
-
-> -static int wait_task_stopped(int ptrace, struct task_struct *p,
-> -			     int options, struct siginfo __user *infop,
-> -			     int __user *stat_addr, struct rusage __user *ru)
-> +static int wait_task_stopped(struct wait_opts *wopts,
-> +				int ptrace, struct task_struct *p)
-
-> -static int wait_task_continued(struct task_struct *p, int options,
-> -			       struct siginfo __user *infop,
-> -			       int __user *stat_addr, struct rusage __user *ru)
-> +static int wait_task_continued(struct wait_opts *wopts, struct task_struct *p)
-
-> -static int wait_consider_task(struct task_struct *parent, int ptrace,
-> -			      struct task_struct *p, int *notask_error,
-> -			      enum pid_type type, struct pid *pid, int options,
-> -			      struct siginfo __user *infop,
-> -			      int __user *stat_addr, struct rusage __user *ru)
-> +static int wait_consider_task(struct wait_opts *wopts, struct task_struct *parent,
-> +				int ptrace, struct task_struct *p)
-
-> -static int do_wait_thread(struct task_struct *tsk, int *notask_error,
-> -			  enum pid_type type, struct pid *pid, int options,
-> -			  struct siginfo __user *infop, int __user *stat_addr,
-> -			  struct rusage __user *ru)
-> +static int do_wait_thread(struct wait_opts *wopts, struct task_struct *tsk)
-
-> -static int ptrace_do_wait(struct task_struct *tsk, int *notask_error,
-> -			  enum pid_type type, struct pid *pid, int options,
-> -			  struct siginfo __user *infop, int __user *stat_addr,
-> -			  struct rusage __user *ru)
-> +static int ptrace_do_wait(struct wait_opts *wopts, struct task_struct *tsk)
-
-> -static long do_wait(enum pid_type type, struct pid *pid, int options,
-> -		    struct siginfo __user *infop, int __user *stat_addr,
-> -		    struct rusage __user *ru)
-> +static long do_wait(struct wait_opts *wopts)
-
-One small (style) detail here as well:
-
-> -	ret = do_wait(type, pid, options, infop, NULL, ru);
-> +
-> +	wopts.wtype = type;
-> +	wopts.wpid = pid;
-> +	wopts.wflags = options;
-> +
-> +	wopts.winfo = infop;
-> +	wopts.wstat = NULL;
-> +	wopts.wrusage = ru;
-> +
-> +	ret = do_wait(&wopts);
-
-it makes sense to write this as:
-
-> +	wopts.wtype	= type;
-> +	wopts.wpid	= pid;
-> +	wopts.wflags	= options;
-> +
-> +	wopts.winfo	= infop;
-> +	wopts.wstat	= NULL;
-> +	wopts.wrusage	= ru;
-> +
-> +	ret = do_wait(&wopts);
-
-(and in other places as well). Vertical spacing for assignments 
-looks messy if done for 1-3 assignment lines, but in the case above 
-we've got 6 of them so it has a nice vertical structure already that 
-helps readability.
-
-Regarding the patch itself: i guess we could do it as-is - but if 
-you think there's regression risks, a safer approach would be to 
-create 5-6 patches to build up all the structure parameters one by 
-one. Such a series is a lot easier to check (and a lot easier to 
-bisect to).
-
-Anyway ... provided you give it some testing:
-
-Reviewed-by: Ingo Molnar <mingo@elte.hu>
+Greg, is that fine with you?
 
 	Ingo
