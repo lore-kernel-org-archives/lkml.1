@@ -1,69 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759854AbZEFNe7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759401AbZEFNhb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759854AbZEFNe7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 09:34:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbZEFNes
+	id S1759401AbZEFNhb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 09:37:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbZEFNhW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 09:34:48 -0400
-Received: from smtp-out003.kontent.com ([81.88.40.217]:33612 "EHLO
-	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753577AbZEFNer (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 09:34:47 -0400
-From: Oliver Neukum <oliver@neukum.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] usb: use memdup_user()
-Date: Wed, 6 May 2009 15:34:52 +0200
-User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
-Cc: David Brownell <david-b@pacbell.net>, Li Hong <lihong.hi@gmail.com>,
-       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-References: <3a3680030905030900x672af596mc2ebc3c38f119c92@mail.gmail.com> <200905051244.01698.oliver@neukum.org> <20090505102253.6993f381.akpm@linux-foundation.org>
-In-Reply-To: <20090505102253.6993f381.akpm@linux-foundation.org>
+	Wed, 6 May 2009 09:37:22 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45787 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751667AbZEFNhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 09:37:21 -0400
+Date: Wed, 6 May 2009 15:34:34 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       chrisw@redhat.com, alan@lxorguk.ukuu.org.uk, device@lanana.org,
+       linux-mm@kvack.org, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
+Message-ID: <20090506133434.GX16078@random.random>
+References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com> <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905061534.53521.oliver@neukum.org>
+In-Reply-To: <Pine.LNX.4.64.0905061110470.3519@blonde.anvils>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Am Dienstag, 5. Mai 2009 19:22:53 schrieb Andrew Morton:
-> On Tue, 5 May 2009 12:44:01 +0200 Oliver Neukum <oliver@neukum.org> wrote:
+On Wed, May 06, 2009 at 12:16:52PM +0100, Hugh Dickins wrote:
+> I'm very much with those who suggested an madvise(), for which Chris
+> prepared a patch.  I know Andrea felt uneasy with an madvise() going
+> to a possibly-configured-out-or-never-loaded module, but it is just
+> advice, so I don't have a problem with that myself, so long as it
+> is documented in the manpage.
 
-> > USB drivers are interface level yet some functions, reset and power
-> > management, are on a device level. As it is unpredictable whether
-> > a driver will share a device with a storage driver, all USB drivers as
-> > far as these functions are concerned must be considered block device
-> > drivers. That's the reason GFP_NOIO is so prevalent in USB.
->
-> There must be some particular action which flips the thread of control
-> from one state to the other.  eg, taking of a lock.
+I don't have so much of a problem with that, but there are a couple of
+differences: normally madvise doesn't depend on the admin to start
+some kernel thread to be meaningful, and normally madvise isn't a
+privileged operation, see below.
 
-Basically assigning an interface to the storage or ub driver.
+> Whereas I do worry just what capability should be required for this:
+> can't a greedy app simply fork itself, touch all its pages, and thus
+> lock itself into memory in this way?  And I do worry about the cpu
 
-> > > I wonder how hard it would be to add runtime debugging checks?  If
-> >
-> > I'd prefer compile time checks. Ideally we'd annotate a function with an
-> > attribute making the compiler barf if copy_to/from_user or an
-> > inappropriate kmalloc is used. It can't be perfect due to function
-> > pointers, but it would be a good start.
->
-> I don't think that would have enough coverage - bugs in this area tend
-> to come from calling some function which looks innocent, but which
-> calls some function which calls some function which calls some function
-> which uses GFP_KERNEL.
->
-> And then there's stuff like "usb takes a mutex which is also taken by
-> some other thread which does a GFP_KERNEL allocation while holding that
-> mutex".
+KSM pages are supposed to be swappable in the long run so let's think
+longer term.
 
-Yes, but to catch that you'd have to teach lockdep about those functions
-whose locks are dangerous to share with respect to memory allocation.
-Is there another way to do that besides labelling dangerous methods?
+> cost of all the scanning, if it were to get used more generally -
+> it would be a pity if we just advised complainers to tune it out.
 
-	Regards
-		Oliver
+Clearly if tons of apps maliciously register themself in ksm, they'll
+waste tons of CPU for no good, they'll just populate the unstable tree
+with pages that are all equal except for the last 4 bytes slowing down
+KSM for nothing. This is also why it's good to have a /dev/ksm ioctl
+that the admin can allow only certain users to use for registering
+virtual ranges (for example only the kvm/qemu user or all users in
+scientific environments). Otherwise we'd need some kind of permissions
+settings in sysfs with some API that certainly is less intuitive than
+chown/chmod on /dev/ksm. We just can't allow madvise to succeed on any
+luser registering itself in KSM, so if it was madvise, it shall return
+-EPERM somehow sometime.
 
+> I'm still working my way through ksm.c, and not gone back to look at
+> Chris's madvise patch, but doubt it will be sufficient.  There's an
+> interesting difference between what you're doing in ksm.c, and how
+> madvise usually behaves, regarding unmapped areas: madvice doesn't
+> usually apply to an unmapped area, and goes away with an area when
+> it is unmapped; whereas in KSM's case, the advice applies to whatever
+> happens to get mapped in the area specified, persisting across unmaps.
 
+Given the apps using KSM tends to be quite special, the fact it's
+sticky, it doesn't go away with munmap isn't big deal, quite to the
+contrary those apps will likely have an easier time thanks to the
+registration not going away over munmap/mmap, without requiring
+reloading of malloc/new calls.
+
+To skip over holes during virtual scans we just vma->vm_next.
+
+> But I do appreciate the separation you've kept so far,
+> and wouldn't want to tie it all together too closely.
+
+The above plus the fact it remains self contained without making the
+VM any more complicated, gives some value. Even swapping I'd like to
+add it without VM specific knowledge about KSM. tmpfs has an easier
+time because it has its own vma type, here we've KSM pages mixed
+inside regular anonymous !vma->vm_file regions and !vm_ops.
+
+> p.s.  I wish you'd chosen different name than KSM - the kernel
+> has supported shared memory for many years - and notice ksm.c itself
+> says "Memory merging driver".  "Merge" would indeed have been a less
+> ambiguous term than "Share", but I think too late to change that now
+> - except possibly in the MADV_ flag names?
+
+I don't actually care about names, so I leave this to other to discuss.
