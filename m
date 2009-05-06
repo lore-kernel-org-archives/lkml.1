@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761037AbZEFVqV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757692AbZEFVxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761037AbZEFVqV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 17:46:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754702AbZEFVqL
+	id S1757692AbZEFVxj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 17:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbZEFVx0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:46:11 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:9633 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751098AbZEFVqJ (ORCPT
+	Wed, 6 May 2009 17:53:26 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:64628 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754544AbZEFVxZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:46:09 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=Ar2KMOx4aReyeTxrq5BCWRCD7yovLpJwS9mhTxXqY182VRvuyHOwIeC97BzhcJDUL
-	AfSvtZxR6MA1taTttiB4g==
+	Wed, 6 May 2009 17:53:25 -0400
+Message-ID: <4A020726.3020009@oracle.com>
+Date: Wed, 06 May 2009 14:54:46 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-In-Reply-To: <20090506212913.GC4861@elte.hu>
-References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
-	 <20090228030413.5B915FC3DA@magilla.sf.frob.com>
-	 <alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
-	 <alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
-	 <20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
-	 <alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
-	 <904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
-	 <20090506212913.GC4861@elte.hu>
-Date: Wed, 6 May 2009 14:46:02 -0700
-Message-ID: <904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
-Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-From: =?UTF-8?B?TWFya3VzIEd1dHNjaGtlICjpoaflrZ/li6Qp?= 
-	<markus@google.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       linux-mips@linux-mips.org, sparclinux@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Content-Type: text/plain; charset=UTF-8
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+       dm-devel@redhat.com
+Subject: [PATCH -next] dm-table: fix printk formats
+References: <20090506172653.2f1bbedd.sfr@canb.auug.org.au>
+In-Reply-To: <20090506172653.2f1bbedd.sfr@canb.auug.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+X-Source-IP: abhmt006.oracle.com [141.146.116.15]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010204.4A0206BE.02C4:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 6, 2009 at 14:29, Ingo Molnar <mingo@elte.hu> wrote:
-> That's a pretty interesting usage. What would be fallback mode you
-> are using if the kernel doesnt have seccomp built in? Completely
-> non-sandboxed? Or a ptrace/PTRACE_SYSCALL based sandbox?
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Ptrace has performance and/or reliability problems when used to
-sandbox threaded applications due to potential race conditions when
-inspecting system call arguments. We hope that we can avoid this
-problem with seccomp. It is very attractive that kernel automatically
-terminates any application that violates the very well-defined
-constraints of the sandbox.
+Fix printk format warnings:
 
-In general, we are currently exploring different options based on
-general availability, functionality, and complexity of implementation.
-Seccomp is a good middle ground that we expect to be able to use in
-the medium term to provide an acceptable solution for a large segment
-of Linux users. Although the restriction to just four unfiltered
-system calls is painful.
+drivers/md/dm-table.c:408: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'sector_t'
+drivers/md/dm-table.c:414: warning: format '%lu' expects type 'long unsigned int', but argument 3 has type 'sector_t'
 
-We are still discussing what fallback options we have, and they are
-likely on different schedules.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: dm-devel@redhat.com
+---
+ drivers/md/dm-table.c |   10 ++++++----
+ 1 file changed, 6 insertions(+), 4 deletions(-)
 
-For instance, on platforms that have AppArmor or SELinux, we might be
-able to use them as part of our sandboxing solution. Although we are
-still investigating whether they meet all of our needs.
-
-
-Markus
+--- linux-next-20090506.orig/drivers/md/dm-table.c
++++ linux-next-20090506/drivers/md/dm-table.c
+@@ -405,14 +405,16 @@ static int device_area_is_valid(struct d
+ 		return 1;
+ 
+ 	if (start & (hardsect_size_sectors - 1)) {
+-		DMWARN("%s: start=%lu not aligned to h/w sector of %s",
+-		       dm_device_name(ti->table->md), start, bdevname(bdev, b));
++		DMWARN("%s: start=%llu not aligned to h/w sector of %s",
++		       dm_device_name(ti->table->md),
++		       (unsigned long long)start, bdevname(bdev, b));
+ 		return 0;
+ 	}
+ 
+ 	if (len & (hardsect_size_sectors - 1)) {
+-		DMWARN("%s: len=%lu not aligned to h/w sector size %hu of %s",
+-		       dm_device_name(ti->table->md), len,
++		DMWARN("%s: len=%llu not aligned to h/w sector size %hu of %s",
++		       dm_device_name(ti->table->md),
++		       (unsigned long long)len,
+ 		       ti->limits.hardsect_size, bdevname(bdev, b));
+ 		return 0;
+ 	}
