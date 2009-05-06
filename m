@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763632AbZEFWTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763587AbZEFWTb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763632AbZEFWTz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761563AbZEFVzZ
+	id S1763587AbZEFWTb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:19:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761623AbZEFVzY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:55:25 -0400
-Received: from kroah.org ([198.145.64.141]:57492 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 17:55:24 -0400
+Received: from kroah.org ([198.145.64.141]:57488 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761416AbZEFVzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1761572AbZEFVzK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 May 2009 17:55:10 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed May  6 14:48:03 2009
-Message-Id: <20090506214803.386675010@mini.kroah.org>
+Message-Id: <20090506214803.260186241@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 14:46:26 -0700
+Date: Wed, 06 May 2009 14:46:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,14 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-wireless@vger.kernel.org,
-       Alina Friedrichsen <x-alina@gmx.net>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       Jouni Malinen <Jouni.Malinen@atheros.com>,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: [patch 58/58] ath9k: Fix FIF_BCN_PRBRESP_PROMISC handling
+       alan@lxorguk.ukuu.org.uk, Stuart Bennett <stuart@freedesktop.org>,
+       Pekka Paalanen <pq@iki.fi>, Steven Rostedt <rostedt@goodmis.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [patch 57/58] tracing: x86, mmiotrace: fix range test
 References: <20090506214528.660389067@mini.kroah.org>
-Content-Disposition: inline; filename=ath9k-fix-fif_bcn_prbresp_promisc-handling.patch
+Content-Disposition: inline; filename=tracing-x86-mmiotrace-fix-range-test.patch
 In-Reply-To: <20090506215017.GA21981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -42,54 +40,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Luis R. Rodriguez <lrodriguez@Atheros.com>
+From: Stuart Bennett <stuart@freedesktop.org>
 
-This is a port of commit
-91ed19f5f66a7fe544f0ec385e981f43491d1d5a
-for 2.6.29.
+commit 33015c85995716d03f6293346cf05a1908b0fb9a upstream.
 
-Without this after scanning your device will set
-the association ID to something bogus and what is
-being reported is multicast/broadcast frame are not
-being received. For details see this bug report:
+Matching on (addr == (p->addr + p->len)) causes problems when mappings
+are adjacent.
 
-https://bugzilla.redhat.com/show_bug.cgi?id=498502
+[ Impact: fix mmiotrace confusion on adjacent iomaps ]
 
->From the original commit:
-
-So that a new created IBSS network
-doesn't break on the first scan.
-
-It seems to Sujith and me that this
-stupid code unnecessary, too.
-
-So remove it...
-
-Reported-by: David Woodhouse <dwmw2@infradead.org>
-Tested-by: David Woodhouse <dwmw2@infradead.org>
-Signed-off-by: Alina Friedrichsen <x-alina@gmx.net>
-Signed-off-by: John W. Linville <linville@tuxdriver.com>
-Signed-off-by: Jouni Malinen <Jouni.Malinen@atheros.com>
-Signed-off-by: Luis R. Rodriguez <lrodriguez@atheros.com>
+Signed-off-by: Stuart Bennett <stuart@freedesktop.org>
+Acked-by: Pekka Paalanen <pq@iki.fi>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+LKML-Reference: <1240946271-7083-2-git-send-email-stuart@freedesktop.org>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/wireless/ath9k/main.c |    5 -----
- 1 file changed, 5 deletions(-)
+ arch/x86/mm/kmmio.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/drivers/net/wireless/ath9k/main.c
-+++ b/drivers/net/wireless/ath9k/main.c
-@@ -2300,11 +2300,6 @@ static void ath9k_configure_filter(struc
- 	rfilt = ath_calcrxfilter(sc);
- 	ath9k_hw_setrxfilter(sc->sc_ah, rfilt);
- 
--	if (changed_flags & FIF_BCN_PRBRESP_PROMISC) {
--		if (*total_flags & FIF_BCN_PRBRESP_PROMISC)
--			ath9k_hw_write_associd(sc->sc_ah, ath_bcast_mac, 0);
--	}
--
- 	DPRINTF(sc, ATH_DBG_CONFIG, "Set HW RX filter: 0x%x\n", sc->rx.rxfilter);
- }
- 
+--- a/arch/x86/mm/kmmio.c
++++ b/arch/x86/mm/kmmio.c
+@@ -87,7 +87,7 @@ static struct kmmio_probe *get_kmmio_pro
+ {
+ 	struct kmmio_probe *p;
+ 	list_for_each_entry_rcu(p, &kmmio_probes, list) {
+-		if (addr >= p->addr && addr <= (p->addr + p->len))
++		if (addr >= p->addr && addr < (p->addr + p->len))
+ 			return p;
+ 	}
+ 	return NULL;
 
 
