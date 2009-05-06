@@ -1,50 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760368AbZEFQEU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760055AbZEFQHn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760368AbZEFQEU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 12:04:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756781AbZEFQEG
+	id S1760055AbZEFQHn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 12:07:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752911AbZEFQHd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 12:04:06 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:40175 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756811AbZEFQEE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 12:04:04 -0400
-Message-ID: <4A01B54D.90301@oracle.com>
-Date: Wed, 06 May 2009 09:05:33 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 6 May 2009 12:07:33 -0400
+Received: from sous-sol.org ([216.99.217.87]:59869 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1753184AbZEFQHc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 12:07:32 -0400
+Date: Wed, 6 May 2009 09:07:12 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+Message-ID: <20090506160712.GW3036@sequoia.sous-sol.org>
+References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com>
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       Jan Kara <jack@suse.cz>
-Subject: Re: linux-next: Tree for May 6 (fs/quota)
-References: <20090506172653.2f1bbedd.sfr@canb.auug.org.au>
-In-Reply-To: <20090506172653.2f1bbedd.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt006.oracle.com [141.146.116.15]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010203.4A01B4E9.00CB:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A018DF2.6010301@novell.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Stephen Rothwell wrote:
-> Hi all,
+* Gregory Haskins (ghaskins@novell.com) wrote:
+> Chris Wright wrote:
+> > VF drivers can also have this issue (and typically use mmio).
+> > I at least have a better idea what your proposal is, thanks for
+> > explanation.  Are you able to demonstrate concrete benefit with it yet
+> > (improved latency numbers for example)?
 > 
-> Changes since 20090505:
+> I had a test-harness/numbers for this kind of thing, but its a bit
+> crufty since its from ~1.5 years ago.  I will dig it up, update it, and
+> generate/post new numbers.
 
+That would be useful, because I keep coming back to pio and shared
+page(s) when think of why not to do this.  Seems I'm not alone in that.
 
-When
-# CONFIG_QUOTA is not set
-CONFIG_QUOTACTL=y
-CONFIG_XFS_QUOTA=y
-
-fs/quota/quota.c:163: error: redefinition of 'sync_quota_sb'
-include/linux/quotaops.h:338: error: previous definition of 'sync_quota_sb' was here
-
-
--- 
-~Randy
+thanks,
+-chris
