@@ -1,75 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbZEFQ3y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbZEFQgE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755449AbZEFQ3y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 12:29:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753778AbZEFQ3p
+	id S1756382AbZEFQgE (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 12:36:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbZEFQfw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 12:29:45 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:42946 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753559AbZEFQ3o (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 12:29:44 -0400
-Date: Wed, 6 May 2009 17:26:55 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Izik Eidus <ieidus@redhat.com>
-cc: Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, aarcange@redhat.com, chrisw@redhat.com,
-       alan@lxorguk.ukuu.org.uk, device@lanana.org, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-In-Reply-To: <4A01AC5E.6000906@redhat.com>
-Message-ID: <Pine.LNX.4.64.0905061706590.4005@blonde.anvils>
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com>
- <1241475935-21162-2-git-send-email-ieidus@redhat.com>
- <1241475935-21162-3-git-send-email-ieidus@redhat.com>
- <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com>
- <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils>
- <4A01AC5E.6000906@redhat.com>
+	Wed, 6 May 2009 12:35:52 -0400
+Received: from waste.org ([66.93.16.53]:35285 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750912AbZEFQfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 12:35:51 -0400
+Date: Wed, 6 May 2009 11:25:43 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
+       security@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged processes
+Message-ID: <20090506162543.GT31071@waste.org>
+References: <alpine.LFD.2.01.0905041159480.4983@localhost.localdomain> <20090504125124.0f469970@infradead.org> <m1vdogbows.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0905041514350.4983@localhost.localdomain> <20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu> <m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu> <20090505202219.GL31071@waste.org> <20090506103034.GA25203@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506103034.GA25203@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009, Izik Eidus wrote:
-> 
-> We can first start with this ioctl interface, later when we add swapping to
-> the pages, we can have madvice, and still (probably easily) support the ioctls
-> by just calling from inside ksm the madvice functions for that specific
-> address)
-> 
-> I want to see ksm use madvice, but i believe it require some more changes to
-> mm/*.c, so it probably better to start with merging it when it doesnt touch
-> alot of stuff outisde ksm.c, and then to add swapping and after that add
-> madvice support (when the pages are swappable, everyone can use it)
-> 
-> What you think about that?
+On Wed, May 06, 2009 at 12:30:34PM +0200, Ingo Molnar wrote:
+> (Also, obviously "only" covering 95% of the Linux systems has its 
+> use as well. Most other architectures have their own cycle counters 
+> as well.)
 
-I think it's the wrong order to follow.
+X86 might be 95% of desktop. But it's a small fraction of Linux
+systems once you count cell phones, video players, TVs, cameras, GPS
+devices, cars, routers, etc. almost none of which are x86-based. In
+fact, just Linux cell phones (with about an 8% share of a 1.2billion
+devices per year market) dwarf Linux desktops (maybe 5% of a
+200m/y market).
 
-The /dev/ksm interface is fine for your use while it's out of tree,
-but we want to get the user interface right when bringing it into
-mainline.  I recall Chris being very clear on that too.
-
-Changing from /dev/ksm to madvise() is not a lot of work, it's mainly
-a matter of deleting code, and tidying up interfaces which would need
-more work anyway (I haven't commented on your curious -EPERMs yet!).
-
-It doesn't involve whether you've enabled swapping or not - let's
-forget the CAP_IPC_LOCK idea, and delegate that issue to limitation
-via sysfs, along with the ability to limit wild overuse of the feature
-- permissions on a sysfs node or something else?
-
-It does nudge towards making some decisions which need to be made
-anyway - that tends to be what a correct interface forces upon you.
-Like the issue of whether to go on covering unmapped areas or not -
-though possibly we could put off that decision, if it's doc'ed
-for now.
-
-And if it only covers mapped areas, then there will need to be a
-VM_flag for it, mainly so mm can call into ksm.c when it's unmapped;
-but I don't see it sinking hooks deeply into mm/*.c.
-
-Hugh
+-- 
+Mathematics is the supreme nostalgia of our time.
