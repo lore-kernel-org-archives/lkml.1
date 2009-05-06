@@ -1,95 +1,127 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759401AbZEFNhb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756695AbZEFNo7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759401AbZEFNhb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 09:37:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754133AbZEFNhW
+	id S1756695AbZEFNo7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 09:44:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754851AbZEFNot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 09:37:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45787 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751667AbZEFNhV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 09:37:21 -0400
-Date: Wed, 6 May 2009 15:34:34 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Izik Eidus <ieidus@redhat.com>, Rik van Riel <riel@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       chrisw@redhat.com, alan@lxorguk.ukuu.org.uk, device@lanana.org,
-       linux-mm@kvack.org, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-Message-ID: <20090506133434.GX16078@random.random>
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com> <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils>
+	Wed, 6 May 2009 09:44:49 -0400
+Received: from mail-qy0-f125.google.com ([209.85.221.125]:59228 "EHLO
+	mail-qy0-f125.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753855AbZEFNor convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 09:44:47 -0400
+X-Greylist: delayed 379 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 May 2009 09:44:47 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=UwHL5FiTJr18ml52mqbY9y6SJiGkBKb6LnqfbVcRE1EduIYz8yD55gV5BYx3Sxrr9M
+         pCB2Zq8qk9iVTIqtJ7KgjAUkUdMuntaQ7oO+guZjgePhCj6ptFxSU7sxat7yAhwzte09
+         /U3SaSi06t9r7CctyP8HU0Id0IZzAiLxuYpo0=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0905061110470.3519@blonde.anvils>
+In-Reply-To: <4A012C64.1020101@samsung.com>
+References: <4A012C64.1020101@samsung.com>
+Date: Wed, 6 May 2009 19:08:25 +0530
+Message-ID: <5d5443650905060638l52b3c17dle0d138b689a23252@mail.gmail.com>
+Subject: Re: Input: add MAX7359 key switch controller driver
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Kim Kyuwon <q1.kim@samsung.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>,
+       Marek Szyprowski <m.szyprowski@samsung.com>, linux-i2c@vger.kernel.org,
+       Jean Delvare <khali@linux-fr.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 12:16:52PM +0100, Hugh Dickins wrote:
-> I'm very much with those who suggested an madvise(), for which Chris
-> prepared a patch.  I know Andrea felt uneasy with an madvise() going
-> to a possibly-configured-out-or-never-loaded module, but it is just
-> advice, so I don't have a problem with that myself, so long as it
-> is documented in the manpage.
+Hi Kim,
 
-I don't have so much of a problem with that, but there are a couple of
-differences: normally madvise doesn't depend on the admin to start
-some kernel thread to be meaningful, and normally madvise isn't a
-privileged operation, see below.
+On Wed, May 6, 2009 at 11:51 AM, Kim Kyuwon <q1.kim@samsung.com> wrote:
+> The Maxim MAX7359 is a I2C interfaced key switch controller which provides microprocessors with management of up to 64 key switches.
+> This patch adds support for the MAX7359 key switch controller.
+>
 
-> Whereas I do worry just what capability should be required for this:
-> can't a greedy app simply fork itself, touch all its pages, and thus
-> lock itself into memory in this way?  And I do worry about the cpu
+Could you please restrict the commit text line to 80/72 columns? It
+will look good.
 
-KSM pages are supposed to be swappable in the long run so let's think
-longer term.
+> +static irqreturn_t max7359_interrupt(int irq, void *dev_id)
+> +{
+> +       struct max7359_keypad *keypad = (struct max7359_keypad *) dev_id;
 
-> cost of all the scanning, if it were to get used more generally -
-> it would be a pity if we just advised complainers to tune it out.
+No need of casting. Please remove.
 
-Clearly if tons of apps maliciously register themself in ksm, they'll
-waste tons of CPU for no good, they'll just populate the unstable tree
-with pages that are all equal except for the last 4 bytes slowing down
-KSM for nothing. This is also why it's good to have a /dev/ksm ioctl
-that the admin can allow only certain users to use for registering
-virtual ranges (for example only the kvm/qemu user or all users in
-scientific environments). Otherwise we'd need some kind of permissions
-settings in sysfs with some API that certainly is less intuitive than
-chown/chmod on /dev/ksm. We just can't allow madvise to succeed on any
-luser registering itself in KSM, so if it was madvise, it shall return
--EPERM somehow sometime.
+> +
+> +       if (!work_pending(&keypad->work)) {
+> +               disable_irq_nosync(keypad->irq);
+> +               schedule_work(&keypad->work);
+> +       } else {
+> +               dev_err(&keypad->client->dev,
+> +                               "Another job is currently pending \n");
+> +       }
+> +
+> +       return IRQ_HANDLED;
+> +}
+> +
 
-> I'm still working my way through ksm.c, and not gone back to look at
-> Chris's madvise patch, but doubt it will be sufficient.  There's an
-> interesting difference between what you're doing in ksm.c, and how
-> madvise usually behaves, regarding unmapped areas: madvice doesn't
-> usually apply to an unmapped area, and goes away with an area when
-> it is unmapped; whereas in KSM's case, the advice applies to whatever
-> happens to get mapped in the area specified, persisting across unmaps.
+> +
+> +static int __devinit max7359_probe(struct i2c_client *client,
+> +                                       const struct i2c_device_id *id)
 
-Given the apps using KSM tends to be quite special, the fact it's
-sticky, it doesn't go away with munmap isn't big deal, quite to the
-contrary those apps will likely have an easier time thanks to the
-registration not going away over munmap/mmap, without requiring
-reloading of malloc/new calls.
+You may want to remove __devinit as it is i2c client driver . I have
+added linux-i2c for i2c
+specific review.
 
-To skip over holes during virtual scans we just vma->vm_next.
+> +static int max7359_suspend(struct i2c_client *client, pm_message_t mesg)
+> +{
+> +       /* If no keys are pressed, enter sleep mode for 8192 ms */
+> +       max7359_write_reg(client, MAX7359_REG_SLEEP, 0x01);
+> +
+> +       return 0;
+> +}
+> +
+> +static int max7359_resume(struct i2c_client *client)
+> +{
+> +       /* Restore the default setting (autosleep for 256 ms) */
+> +       max7359_write_reg(client, MAX7359_REG_SLEEP, 0x07);
+> +
+> +       return 0;
+> +}
 
-> But I do appreciate the separation you've kept so far,
-> and wouldn't want to tie it all together too closely.
+Protect these two function with #ifdef CONFIG_PM please.
 
-The above plus the fact it remains self contained without making the
-VM any more complicated, gives some value. Even swapping I'd like to
-add it without VM specific knowledge about KSM. tmpfs has an easier
-time because it has its own vma type, here we've KSM pages mixed
-inside regular anonymous !vma->vm_file regions and !vm_ops.
+> +
 
-> p.s.  I wish you'd chosen different name than KSM - the kernel
-> has supported shared memory for many years - and notice ksm.c itself
-> says "Memory merging driver".  "Merge" would indeed have been a less
-> ambiguous term than "Share", but I think too late to change that now
-> - except possibly in the MADV_ flag names?
+> +
+> +static struct i2c_driver max7359_i2c_driver = {
+> +       .driver = {
+> +               .name = "max7359",
+> +       },
+> +       .probe          = max7359_probe,
+> +       .remove         = __exit_p(max7359_remove),
 
-I don't actually care about names, so I leave this to other to discuss.
+
+> +};
+> +
+> +
+> +MODULE_AUTHOR("Kim Kyuwon <q1.kim@samsung.com>");
+> +MODULE_DESCRIPTION("MAX7359 Key Switch Controller Driver");
+> +MODULE_LICENSE("GPL v2");
+
+MODULE_ALIAS ??
+
+> diff --git a/include/linux/max7359_keypad.h b/include/linux/max7359_keypad.h
+
+> +
+> +#define KEY(row, col, val)     (((row) << 28) | ((col) << 24) | (val))
+
+Looks like this macro is highly used by many input drivers, anyone
+looking at it to place it at common location?
+
+
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
