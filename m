@@ -1,57 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758697AbZEFIN0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758811AbZEFINr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758697AbZEFIN0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 04:13:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZEFIMU
+	id S1758811AbZEFINr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 04:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754471AbZEFIM3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 04:12:20 -0400
-Received: from araneidae.co.uk ([62.3.233.233]:3703 "EHLO araneidae.co.uk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754028AbZEFIMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 04:12:18 -0400
-X-Greylist: delayed 2409 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 May 2009 04:12:18 EDT
-Date: Wed, 6 May 2009 08:32:09 +0100 (BST)
-From: Michael Abbott <michael@araneidae.co.uk>
-To: linux-i2c@vger.kernel.org
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.29.2] PXA I2C: Define log level for i2c PXA error report
-Message-ID: <Pine.LNX.4.64.0905060829580.24668@venus.araneidae.co.uk>
+	Wed, 6 May 2009 04:12:29 -0400
+Received: from mail-ew0-f224.google.com ([209.85.219.224]:51920 "EHLO
+	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751843AbZEFIM0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 04:12:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:in-reply-to:user-agent;
+        b=rk2J+nci448bNsqYSQIUrlKGmARdiE5XR1LlcNEqGJzIj/SEA5WaCawe+m/9UNRVuV
+         /JlfNi9kNVykFgpk/6DQbp6ZjEIRdiR2axmSGgYT8mdZLHZSqWo8tLMQUnAD2KKpZd49
+         Dpb16nics/nx3pbr/208Q0jri1ChJIabi3z2w=
+Date: Wed, 6 May 2009 10:12:21 +0200
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yinghai@kernel.org>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: printk %0*X is broken.
+Message-ID: <20090506081221.GA15317@damson.getinternet.no>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506071839.GA14412@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All the i2c pxa error messages should probably be KERN_DEBUG
+2009/5/6 Ingo Molnar <mingo@elte.hu>:
+>
+> Cc:-ed more folks who modified lib/vsprintf.c recently.
+>
+>        Ingo
+>
+> * Yinghai Lu <yinghai@kernel.org> wrote:
+>
+>> it seems someone broke
+>>
+>> printk(   "%0*X\n", width, x);
+>>
+>> looks like 0 is dumped.
 
-At least, all the printk messages should have a log level specfied,
-and KERN_DEBUG seems appropriate.
+After %, we look for flags. The problem is that when a flag is found, we
+don't advance in the format string. And thus we start looking for the
+precision, which is read as 0, because we are still at the 0. I think
+this patch should fix it.
 
-Signed-off-by: Michael Abbott <michael.abbott@diamond.ac.uk>
----
- drivers/i2c/busses/i2c-pxa.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/drivers/i2c/busses/i2c-pxa.c b/drivers/i2c/busses/i2c-pxa.c
-index bdb1f75..8cb9160 100644
---- a/drivers/i2c/busses/i2c-pxa.c
-+++ b/drivers/i2c/busses/i2c-pxa.c
-@@ -210,11 +210,11 @@ static irqreturn_t i2c_pxa_handler(int this_irq, void *dev_id);
- static void i2c_pxa_scream_blue_murder(struct pxa_i2c *i2c, const char *why)
- {
- 	unsigned int i;
--	printk("i2c: error: %s\n", why);
--	printk("i2c: msg_num: %d msg_idx: %d msg_ptr: %d\n",
-+	printk(KERN_DEBUG "i2c: error: %s\n", why);
-+	printk(KERN_DEBUG "i2c: msg_num: %d msg_idx: %d msg_ptr: %d\n",
- 		i2c->msg_num, i2c->msg_idx, i2c->msg_ptr);
--	printk("i2c: ICR: %08x ISR: %08x\n"
--	       "i2c: log: ", readl(_ICR(i2c)), readl(_ISR(i2c)));
-+	printk(KERN_DEBUG "i2c: ICR: %08x ISR: %08x\n"
-+	       KERN_DEBUG "i2c: log: ", readl(_ICR(i2c)), readl(_ISR(i2c)));
- 	for (i = 0; i < i2c->irqlogidx; i++)
- 		printk("[%08x:%08x] ", i2c->isrlog[i], i2c->icrlog[i]);
- 	printk("\n");
--- 
-1.6.1.3
-
+diff --git a/lib/vsprintf.c b/lib/vsprintf.c
+index 7536ace..ae7d4b2 100644
+--- a/lib/vsprintf.c
++++ b/lib/vsprintf.c
+@@ -800,14 +800,15 @@ static int format_decode(const char *fmt, struct printf_spec *spec)
+ 	if (fmt != start || !*fmt)
+ 		return fmt - start;
+ 
++	/* this skips the first '%' */
++	++fmt;
++
+ 	/* Process flags */
+ 	spec->flags = 0;
+ 
+-	while (1) { /* this also skips first '%' */
++	while (1) {
+ 		bool found = true;
+ 
+-		++fmt;
+-
+ 		switch (*fmt) {
+ 		case '-': spec->flags |= LEFT;    break;
+ 		case '+': spec->flags |= PLUS;    break;
+@@ -819,6 +820,8 @@ static int format_decode(const char *fmt, struct printf_spec *spec)
+ 
+ 		if (!found)
+ 			break;
++
++		++fmt;
+ 	}
+ 
+ 	/* get field width */
