@@ -1,113 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763664AbZEFWUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761723AbZEFVzx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763664AbZEFWUx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761048AbZEFWBG
+	id S1761723AbZEFVzx (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 17:55:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761350AbZEFVyX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 18:01:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44652 "EHLO mx2.redhat.com"
+	Wed, 6 May 2009 17:54:23 -0400
+Received: from kroah.org ([198.145.64.141]:56901 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761801AbZEFWBE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 18:01:04 -0400
-Date: Wed, 6 May 2009 17:58:33 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: "IKEDA, Munehiro" <m-ikeda@ds.jp.nec.com>
-Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 18/18] io-controller: Debug hierarchical IO scheduling
-Message-ID: <20090506215833.GK8180@redhat.com>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-19-git-send-email-vgoyal@redhat.com> <4A0203DB.1090809@ds.jp.nec.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A0203DB.1090809@ds.jp.nec.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1761259AbZEFVyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:54:20 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed May  6 14:47:55 2009
+Message-Id: <20090506214755.728747673@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Wed, 06 May 2009 14:45:32 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk,
+       Francesco Gringoli <francesco.gringoli@ing.unibs.it>,
+       Michael Buesch <mb@bu3sch.de>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       Chris Wright <chrisw@sous-sol.org>
+Subject: [patch 04/58] b43: Refresh RX poison on buffer recycling
+References: <20090506214528.660389067@mini.kroah.org>
+Content-Disposition: inline; filename=b43-refresh-rx-poison-on-buffer-recycling.patch
+In-Reply-To: <20090506215017.GA21981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 05:40:43PM -0400, IKEDA, Munehiro wrote:
-> Hi Vivek,
-> 
-> Patching and compilation error occurred on the 18/18 patch.
-> I know this is a patch for debug but report them in case.
-> 
-> 
-> Vivek Goyal wrote:
-> > @@ -2203,6 +2241,25 @@ EXPORT_SYMBOL(elv_get_slice_idle);
-> >  void elv_ioq_served(struct io_queue *ioq, bfq_service_t served)
-> >  {
-> >  	entity_served(&ioq->entity, served, ioq->nr_sectors);
-> 
-> Patch failed due to this line.  I guess this should be
-> 
-> 	entity_served(&ioq->entity, served);
-> 
-> 
-> > +
-> > +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
-> > +		{
-> > +			struct elv_fq_data *efqd = ioq->efqd;
-> > +			char path[128];
-> > +			struct io_group *iog = ioq_to_io_group(ioq);
-> > +			io_group_path(iog, path, sizeof(path));
-> > +			elv_log_ioq(efqd, ioq, "ioq served: QSt=0x%lx QSs=0x%lx"
-> > +				" QTt=0x%lx QTs=0x%lx grp=%s GTt=0x%lx "
-> > +				" GTs=0x%lx rq_queued=%d",
-> > +				served, ioq->nr_sectors,
-> > +				ioq->entity.total_service,
-> > +				ioq->entity.total_sector_service,
-> > +				path,
-> > +				iog->entity.total_service,
-> > +				iog->entity.total_sector_service,
-> > +				ioq->nr_queued);
-> > +		}
-> > +#endif
-> >  }
-> 
-> Because
->   io_entity::total_service
-> and
->   io_entity::total_sector_service
-> are not defined, compilation failed if CONFIG_DEBUG_GROUP_IOSCHED=y
-> here. (and everywhere referencing entity.total_service or  entity.total_sector_service)
-> They need to be defined like:
-> 
-> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-> index 1ea4ff3..6d0a735 100644
-> --- a/block/elevator-fq.h
-> +++ b/block/elevator-fq.h
-> @@ -147,6 +147,10 @@ struct io_entity {
->         unsigned short ioprio_class, new_ioprio_class;
->  
->         int ioprio_changed;
-> +
-> +#ifdef CONFIG_DEBUG_GROUP_IOSCHED
-> +       unsigned long total_service, total_sector_service;
-> +#endif
->  };
->  
->  /*
-> 
-> Unfortunately I couldn't figure out where and how the members
-> should be calculated, sorry.
+2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
-Hi Ikeda,
+------------------
 
-I think there is some issue with applying the patch. I think you have
-forgotten to apply following patch and that's why seeing all the issues.
+From: Michael Buesch <mb@bu3sch.de>
 
-"io-controller: Export disk time used and nr sectors dipatched through
-cgroups"
+upstream commit: cf68636a9773aa97915497fe54fa4a51e3f08f3a
 
-This patch changes elv_ioq_served() at the same time introduced additional
-field of total_sector_service etc.
+The RX buffer poison needs to be refreshed, if we recycle an RX buffer,
+because it might be (partially) overwritten by some DMA operations.
 
-Thanks
-Vivek
+Cc: stable@kernel.org
+Cc: Francesco Gringoli <francesco.gringoli@ing.unibs.it>
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Chris Wright <chrisw@sous-sol.org>
+---
+ drivers/net/wireless/b43/dma.c |   21 +++++++++++----------
+ 1 file changed, 11 insertions(+), 10 deletions(-)
+
+--- a/drivers/net/wireless/b43/dma.c
++++ b/drivers/net/wireless/b43/dma.c
+@@ -1496,20 +1496,16 @@ static void dma_rx(struct b43_dmaring *r
+ 			len = le16_to_cpu(rxhdr->frame_len);
+ 		} while (len == 0 && i++ < 5);
+ 		if (unlikely(len == 0)) {
+-			/* recycle the descriptor buffer. */
+-			sync_descbuffer_for_device(ring, meta->dmaaddr,
+-						   ring->rx_buffersize);
+-			goto drop;
++			dmaaddr = meta->dmaaddr;
++			goto drop_recycle_buffer;
+ 		}
+ 	}
+ 	if (unlikely(b43_rx_buffer_is_poisoned(ring, skb))) {
+ 		/* Something went wrong with the DMA.
+ 		 * The device did not touch the buffer and did not overwrite the poison. */
+ 		b43dbg(ring->dev->wl, "DMA RX: Dropping poisoned buffer.\n");
+-		/* recycle the descriptor buffer. */
+-		sync_descbuffer_for_device(ring, meta->dmaaddr,
+-					   ring->rx_buffersize);
+-		goto drop;
++		dmaaddr = meta->dmaaddr;
++		goto drop_recycle_buffer;
+ 	}
+ 	if (unlikely(len > ring->rx_buffersize)) {
+ 		/* The data did not fit into one descriptor buffer
+@@ -1523,6 +1519,7 @@ static void dma_rx(struct b43_dmaring *r
+ 		while (1) {
+ 			desc = ops->idx2desc(ring, *slot, &meta);
+ 			/* recycle the descriptor buffer. */
++			b43_poison_rx_buffer(ring, meta->skb);
+ 			sync_descbuffer_for_device(ring, meta->dmaaddr,
+ 						   ring->rx_buffersize);
+ 			*slot = next_slot(ring, *slot);
+@@ -1541,8 +1538,7 @@ static void dma_rx(struct b43_dmaring *r
+ 	err = setup_rx_descbuffer(ring, desc, meta, GFP_ATOMIC);
+ 	if (unlikely(err)) {
+ 		b43dbg(ring->dev->wl, "DMA RX: setup_rx_descbuffer() failed\n");
+-		sync_descbuffer_for_device(ring, dmaaddr, ring->rx_buffersize);
+-		goto drop;
++		goto drop_recycle_buffer;
+ 	}
+ 
+ 	unmap_descbuffer(ring, dmaaddr, ring->rx_buffersize, 0);
+@@ -1552,6 +1548,11 @@ static void dma_rx(struct b43_dmaring *r
+ 	b43_rx(ring->dev, skb, rxhdr);
+ drop:
+ 	return;
++
++drop_recycle_buffer:
++	/* Poison and recycle the RX buffer. */
++	b43_poison_rx_buffer(ring, skb);
++	sync_descbuffer_for_device(ring, dmaaddr, ring->rx_buffersize);
+ }
+ 
+ void b43_dma_rx(struct b43_dmaring *ring)
+
+
