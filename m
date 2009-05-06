@@ -1,61 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760320AbZEFQvn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760262AbZEFQwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760320AbZEFQvn (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 12:51:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbZEFQvc
+	id S1760262AbZEFQwf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 12:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755420AbZEFQwX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 12:51:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35050 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751186AbZEFQvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 12:51:31 -0400
-Date: Wed, 6 May 2009 09:49:45 -0700
-From: Chris Wright <chrisw@redhat.com>
-To: Hugh Dickins <hugh@veritas.com>
-Cc: Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, chrisw@redhat.com,
-       alan@lxorguk.ukuu.org.uk, device@lanana.org, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-Message-ID: <20090506164945.GD15712@x200.localdomain>
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com> <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils> <20090506133434.GX16078@random.random> <4A019719.7030504@redhat.com> <Pine.LNX.4.64.0905061739540.5934@blonde.anvils>
+	Wed, 6 May 2009 12:52:23 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:53607 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751733AbZEFQwW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 12:52:22 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Gregory Haskins <ghaskins@novell.com>
+Subject: Re: [RFC PATCH 1/3] add generic hypercall support
+Date: Wed, 6 May 2009 18:52:15 +0200
+User-Agent: KMail/1.9.9
+Cc: Anthony Liguori <anthony@codemonkey.ws>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, avi@redhat.com
+References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A019614.9080702@codemonkey.ws> <4A01A9C5.5010601@novell.com>
+In-Reply-To: <4A01A9C5.5010601@novell.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.64.0905061739540.5934@blonde.anvils>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905061852.15931.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19EPDl2DXClE04QtRfrLOAu0vl0qQV+NVM17wW
+ 7GDtlJvSo7b1n/sLBu7705D8hj0nbTj5Pm6vVxKrPZ+M8UFWB/
+ 2wA4OdCL83I7pjBQ2/4gQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Hugh Dickins (hugh@veritas.com) wrote:
-> On Wed, 6 May 2009, Izik Eidus wrote:
-> > Andrea Arcangeli wrote:
-> > > On Wed, May 06, 2009 at 12:16:52PM +0100, Hugh Dickins wrote:
-> > >   
-> > >
-> > > > p.s.  I wish you'd chosen different name than KSM - the kernel
-> > > > has supported shared memory for many years - and notice ksm.c itself
-> > > > says "Memory merging driver".  "Merge" would indeed have been a less
-> > > > ambiguous term than "Share", but I think too late to change that now
-> > > > - except possibly in the MADV_ flag names?
-> > > >     
-> > >
-> > > I don't actually care about names, so I leave this to other to discuss.
-> > >   
-> > Well, There is no real problem changing the name, any suggestions?
-> 
-> mm/merge.c or mm/mmerge.c: the module formerly known as KSM ?
+On Wednesday 06 May 2009, Gregory Haskins wrote:
+ 
+> Ok, so we would
+> need to come up with these pio_calls for x86, and no other arch can use
+> the infrastructure (but wait, PPC can use PCI too, so how does that
+> work? It must be either MMIO emulation or its not supported?  That puts
+> us back to square one).
 
-I like merge.  For madvise() approach I had used:
+PowerPC already has an abstraction for PIO and MMIO because certain
+broken hardware chips don't do what they should, see
+arch/powerpc/platforms/cell/io-workarounds.c for the only current user.
+If you need to, you could do the same on x86 (or generalize the code),
+but please don't add another level of indirection on top of this.
 
-+#define MADV_SHAREABLE 12              /* can share identical pages */
-+#define MADV_UNSHAREABLE 13            /* can not share identical pages
-
-But those are maybe better put as MADV_(UN)MERGEABLE (gets a bit confusing when
-you talk of merging vmas ;-)
-*/
-
-thanks,
--chris
+	Arnd <><
