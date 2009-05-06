@@ -1,57 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759874AbZEFQvR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760320AbZEFQvn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759874AbZEFQvR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 12:51:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbZEFQvB
+	id S1760320AbZEFQvn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 12:51:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751733AbZEFQvc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 12:51:01 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:58901 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753559AbZEFQvA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 12:51:00 -0400
-Message-ID: <4A01BFCE.6020908@oracle.com>
-Date: Wed, 06 May 2009 09:50:22 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Wed, 6 May 2009 12:51:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35050 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751186AbZEFQvb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 12:51:31 -0400
+Date: Wed, 6 May 2009 09:49:45 -0700
+From: Chris Wright <chrisw@redhat.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Izik Eidus <ieidus@redhat.com>, Andrea Arcangeli <aarcange@redhat.com>,
+       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, chrisw@redhat.com,
+       alan@lxorguk.ukuu.org.uk, device@lanana.org, linux-mm@kvack.org,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
+Message-ID: <20090506164945.GD15712@x200.localdomain>
+References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com> <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils> <20090506133434.GX16078@random.random> <4A019719.7030504@redhat.com> <Pine.LNX.4.64.0905061739540.5934@blonde.anvils>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-CC: akpm@linux-foundation.org, Jeremy Fitzhardinge <jeremy@xensource.com>,
-       Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
-       xen-devel@lists.xensource.com
-Subject: [PATCH] xen: use header for EXPORT_SYMBOL_GPL
-References: <200905060438.n464cWFU025212@imap1.linux-foundation.org>
-In-Reply-To: <200905060438.n464cWFU025212@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt004.oracle.com [141.146.116.13]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010209.4A01BF68.027E:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0905061739540.5934@blonde.anvils>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+* Hugh Dickins (hugh@veritas.com) wrote:
+> On Wed, 6 May 2009, Izik Eidus wrote:
+> > Andrea Arcangeli wrote:
+> > > On Wed, May 06, 2009 at 12:16:52PM +0100, Hugh Dickins wrote:
+> > >   
+> > >
+> > > > p.s.  I wish you'd chosen different name than KSM - the kernel
+> > > > has supported shared memory for many years - and notice ksm.c itself
+> > > > says "Memory merging driver".  "Merge" would indeed have been a less
+> > > > ambiguous term than "Share", but I think too late to change that now
+> > > > - except possibly in the MADV_ flag names?
+> > > >     
+> > >
+> > > I don't actually care about names, so I leave this to other to discuss.
+> > >   
+> > Well, There is no real problem changing the name, any suggestions?
+> 
+> mm/merge.c or mm/mmerge.c: the module formerly known as KSM ?
 
-mmu.c needs to #include module.h to prevent these warnings:
+I like merge.  For madvise() approach I had used:
 
-arch/x86/xen/mmu.c:239: warning: data definition has no type or storage class
-arch/x86/xen/mmu.c:239: warning: type defaults to 'int' in declaration of 'EXPORT_SYMBOL_GPL'
-arch/x86/xen/mmu.c:239: warning: parameter names (without types) in function declaration
++#define MADV_SHAREABLE 12              /* can share identical pages */
++#define MADV_UNSHAREABLE 13            /* can not share identical pages
 
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- arch/x86/xen/mmu.c |    1 +
- 1 file changed, 1 insertion(+)
+But those are maybe better put as MADV_(UN)MERGEABLE (gets a bit confusing when
+you talk of merging vmas ;-)
+*/
 
---- mmotm-2009-0505-2119.orig/arch/x86/xen/mmu.c
-+++ mmotm-2009-0505-2119/arch/x86/xen/mmu.c
-@@ -42,6 +42,7 @@
- #include <linux/highmem.h>
- #include <linux/debugfs.h>
- #include <linux/bug.h>
-+#include <linux/module.h>
- 
- #include <asm/pgtable.h>
- #include <asm/tlbflush.h>
+thanks,
+-chris
