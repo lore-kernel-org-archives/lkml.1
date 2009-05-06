@@ -1,147 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756399AbZEFCna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755933AbZEFDKs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756399AbZEFCna (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 22:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZEFCnV
+	id S1755933AbZEFDKs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 23:10:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751907AbZEFDKj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 22:43:21 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:60806 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751346AbZEFCnV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 22:43:21 -0400
-Date: Tue, 5 May 2009 22:43:20 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Li Zefan <lizf@cn.fujitsu.com>
-cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Tom Zanussi <tzanussi@gmail.com>
-Subject: Re: [PATCH 3/4] tracing/events: fix memory leak when unloading
- module
-In-Reply-To: <4A00F6E0.3040503@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0905052243000.3239@gandalf.stny.rr.com>
-References: <4A00F6AD.2070008@cn.fujitsu.com> <4A00F6E0.3040503@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 5 May 2009 23:10:39 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:44120 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751759AbZEFDKi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 23:10:38 -0400
+Date: Wed, 6 May 2009 13:10:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: linux-next@vger.kernel.org, Nicolas Pitre <nico@cam.org>,
+       Wolfram Sang <w.sang@pengutronix.de>,
+       Russell King <rmk@arm.linux.org.uk>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: linux-next: manual merge of the i2c tree with the arm-current tree
+Message-Id: <20090506131031.83f1b04d.sfr@canb.auug.org.au>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Wed__6_May_2009_13_10_31_+1000_rQ+.KXA1JuZXkPTU"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+--Signature=_Wed__6_May_2009_13_10_31_+1000_rQ+.KXA1JuZXkPTU
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+Hi Jean,
 
+Today's linux-next merge of the i2c tree got a conflict in
+arch/arm/configs/kirkwood_defconfig arch/arm/configs/mv78xx0_defconfig
+arch/arm/configs/orion5x_defconfig between various commits from the
+arm-current tree and commit c637675d24618d8e0afe344096a1ad96986c4f50
+("i2c/chips: Move max6875 to drivers/misc/eeprom") from the i2c tree.
 
-On Wed, 6 May 2009, Li Zefan wrote:
+The latter patch changes many defconfig files. Please don't do that -
+especially for those defconfigs that do not select the config options you
+are changing (which is the vast majority).  This just creates conflicts
+for no purpose at all.  It looks like the only defconfigs that may have
+needed updating are:
 
-> When unloading a module, memory allocated by init_preds() and
-> trace_define_field() is not freed.
-> 
-> [ Impact: fix memory leak ]
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+arch/mips/configs/bigsur_defconfig
+arch/mips/configs/mtx1_defconfig
+arch/powerpc/configs/ppc6xx_defconfig
 
-Nice catch!
+I have dropped the changes to all the others (165 of them).  Please
+update the patch.
 
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- Steve
+--Signature=_Wed__6_May_2009_13_10_31_+1000_rQ+.KXA1JuZXkPTU
+Content-Type: application/pgp-signature
 
-> ---
->  include/linux/ftrace_event.h       |    1 +
->  kernel/trace/trace_events.c        |   18 ++++++++++++++++++
->  kernel/trace/trace_events_filter.c |   22 +++++++++++++++-------
->  3 files changed, 34 insertions(+), 7 deletions(-)
-> 
-> diff --git a/include/linux/ftrace_event.h b/include/linux/ftrace_event.h
-> index 5fff40c..662c1be 100644
-> --- a/include/linux/ftrace_event.h
-> +++ b/include/linux/ftrace_event.h
-> @@ -116,6 +116,7 @@ struct ftrace_event_call {
->  #define MAX_FILTER_STR_VAL	128
->  
->  extern int init_preds(struct ftrace_event_call *call);
-> +extern void destroy_preds(struct ftrace_event_call *call);
->  extern int filter_match_preds(struct ftrace_event_call *call, void *rec);
->  extern int filter_current_check_discard(struct ftrace_event_call *call,
->  					void *rec,
-> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> index 9998cc8..72d619d 100644
-> --- a/kernel/trace/trace_events.c
-> +++ b/kernel/trace/trace_events.c
-> @@ -60,6 +60,22 @@ err:
->  }
->  EXPORT_SYMBOL_GPL(trace_define_field);
->  
-> +#ifdef CONFIG_MODULES
-> +
-> +static void trace_destroy_fields(struct ftrace_event_call *call)
-> +{
-> +	struct ftrace_event_field *field, *next;
-> +
-> +	list_for_each_entry_safe(field, next, &call->fields, link) {
-> +		list_del(&field->link);
-> +		kfree(field->type);
-> +		kfree(field->name);
-> +		kfree(field);
-> +	}
-> +}
-> +
-> +#endif /* CONFIG_MODULES */
-> +
->  static void ftrace_clear_events(void)
->  {
->  	struct ftrace_event_call *call;
-> @@ -925,6 +941,8 @@ static void trace_module_remove_events(struct module *mod)
->  				unregister_ftrace_event(call->event);
->  			debugfs_remove_recursive(call->dir);
->  			list_del(&call->list);
-> +			trace_destroy_fields(call);
-> +			destroy_preds(call);
->  		}
->  	}
->  
-> diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-> index ac30de3..97bd140 100644
-> --- a/kernel/trace/trace_events_filter.c
-> +++ b/kernel/trace/trace_events_filter.c
-> @@ -371,6 +371,20 @@ static void filter_disable_preds(struct ftrace_event_call *call)
->  		filter->preds[i]->fn = filter_pred_none;
->  }
->  
-> +void destroy_preds(struct ftrace_event_call *call)
-> +{
-> +	struct event_filter *filter = call->filter;
-> +	int i;
-> +
-> +	for (i = 0; i < MAX_FILTER_PRED; i++) {
-> +		if (filter->preds[i])
-> +			filter_free_pred(filter->preds[i]);
-> +	}
-> +	kfree(filter->preds);
-> +	kfree(filter);
-> +	call->filter = NULL;
-> +}
-> +
->  int init_preds(struct ftrace_event_call *call)
->  {
->  	struct event_filter *filter;
-> @@ -399,13 +413,7 @@ int init_preds(struct ftrace_event_call *call)
->  	return 0;
->  
->  oom:
-> -	for (i = 0; i < MAX_FILTER_PRED; i++) {
-> -		if (filter->preds[i])
-> -			filter_free_pred(filter->preds[i]);
-> -	}
-> -	kfree(filter->preds);
-> -	kfree(call->filter);
-> -	call->filter = NULL;
-> +	destroy_preds(call);
->  
->  	return -ENOMEM;
->  }
-> -- 
-> 1.5.4.rc3
-> 
-> 
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoA/6gACgkQjjKRsyhoI8zbWACfYxvTv66nJ+QfoDzK96SrWeH9
+SaoAoKEFpQuCF1aqD9VPKEcRhqGOFK+W
+=J6gp
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__6_May_2009_13_10_31_+1000_rQ+.KXA1JuZXkPTU--
