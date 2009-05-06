@@ -1,20 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763469AbZEFWRi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762101AbZEFWSI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763469AbZEFWRi (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:17:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761508AbZEFVzT
+	id S1762101AbZEFWSI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:18:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761634AbZEFVzV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:55:19 -0400
-Received: from kroah.org ([198.145.64.141]:57430 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 17:55:21 -0400
+Received: from kroah.org ([198.145.64.141]:57435 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761583AbZEFVzG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:55:06 -0400
+	id S1761551AbZEFVzH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:55:07 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed May  6 14:48:02 2009
-Message-Id: <20090506214802.691243407@mini.kroah.org>
+Message-Id: <20090506214802.822370816@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 14:46:21 -0700
+Date: Wed, 06 May 2009 14:46:22 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org, Greg KH <greg@kroah.com>
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,10 +25,13 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Mel Gorman <mel@csn.ul.ie>
-Subject: [patch 53/58] Ignore madvise(MADV_WILLNEED) for hugetlbfs-backed regions
+       alan@lxorguk.ukuu.org.uk,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Eric B Munson <ebmunson@us.ibm.com>, Mel Gorman <mel@csn.ul.ie>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [patch 54/58] mm: fix Committed_AS underflow on large NR_CPUS environment
 References: <20090506214528.660389067@mini.kroah.org>
-Content-Disposition: inline; filename=ignore-madvise-for-hugetlbfs-backed-regions.patch
+Content-Disposition: inline; filename=committed_as-for-2.6.29.2.patch
 In-Reply-To: <20090506215017.GA21981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,47 +41,224 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mel Gorman <mel@csn.ul.ie>
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 
-commit a425a638c858fd10370b573bde81df3ba500e271 upstream.
+commit 00a62ce91e554198ef28234c91c36f850f5a3bc9 upstream
 
-madvise(MADV_WILLNEED) forces page cache readahead on a range of memory
-backed by a file.  The assumption is made that the page required is
-order-0 and "normal" page cache.
+The Committed_AS field can underflow in certain situations:
 
-On hugetlbfs, this assumption is not true and order-0 pages are
-allocated and inserted into the hugetlbfs page cache.  This leaks
-hugetlbfs page reservations and can cause BUGs to trigger related to
-corrupted page tables.
+>         # while true; do cat /proc/meminfo  | grep _AS; sleep 1; done | uniq -c
+>               1 Committed_AS: 18446744073709323392 kB
+>              11 Committed_AS: 18446744073709455488 kB
+>               6 Committed_AS:    35136 kB
+>               5 Committed_AS: 18446744073709454400 kB
+>               7 Committed_AS:    35904 kB
+>               3 Committed_AS: 18446744073709453248 kB
+>               2 Committed_AS:    34752 kB
+>               9 Committed_AS: 18446744073709453248 kB
+>               8 Committed_AS:    34752 kB
+>               3 Committed_AS: 18446744073709320960 kB
+>               7 Committed_AS: 18446744073709454080 kB
+>               3 Committed_AS: 18446744073709320960 kB
+>               5 Committed_AS: 18446744073709454080 kB
+>               6 Committed_AS: 18446744073709320960 kB
 
-This patch causes MADV_WILLNEED to be ignored for hugetlbfs-backed
-regions.
+Because NR_CPUS can be greater than 1000 and meminfo_proc_show() does
+not check for underflow.
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-Cc: stable@kernel.org
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+But NR_CPUS proportional isn't good calculation.  In general,
+possibility of lock contention is proportional to the number of online
+cpus, not theorical maximum cpus (NR_CPUS).
+
+The current kernel has generic percpu-counter stuff.  using it is right
+way.  it makes code simplify and percpu_counter_read_positive() don't
+make underflow issue.
+
+Reported-by: Dave Hansen <dave@linux.vnet.ibm.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Eric B Munson <ebmunson@us.ibm.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- mm/madvise.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
+ fs/proc/meminfo.c    |    2 +-
+ include/linux/mman.h |    9 +++------
+ mm/mmap.c            |   12 ++++++------
+ mm/nommu.c           |   13 +++++++------
+ mm/swap.c            |   46 ----------------------------------------------
+ 5 files changed, 17 insertions(+), 65 deletions(-)
 
---- a/mm/madvise.c
-+++ b/mm/madvise.c
-@@ -112,6 +112,14 @@ static long madvise_willneed(struct vm_a
- 	if (!file)
- 		return -EBADF;
+--- a/fs/proc/meminfo.c
++++ b/fs/proc/meminfo.c
+@@ -35,7 +35,7 @@ static int meminfo_proc_show(struct seq_
+ #define K(x) ((x) << (PAGE_SHIFT - 10))
+ 	si_meminfo(&i);
+ 	si_swapinfo(&i);
+-	committed = atomic_long_read(&vm_committed_space);
++	committed = percpu_counter_read_positive(&vm_committed_as);
+ 	allowed = ((totalram_pages - hugetlb_total_pages())
+ 		* sysctl_overcommit_ratio / 100) + total_swap_pages;
  
-+	/*
-+	 * Page cache readahead assumes page cache pages are order-0 which
-+	 * is not the case for hugetlbfs. Do not give a bad return value
-+	 * but ignore the advice.
-+	 */
-+	if (vma->vm_flags & VM_HUGETLB)
-+		return 0;
-+
- 	if (file->f_mapping->a_ops->get_xip_mem) {
- 		/* no bad return value, but ignore advice */
+--- a/include/linux/mman.h
++++ b/include/linux/mman.h
+@@ -12,21 +12,18 @@
+ 
+ #ifdef __KERNEL__
+ #include <linux/mm.h>
++#include <linux/percpu_counter.h>
+ 
+ #include <asm/atomic.h>
+ 
+ extern int sysctl_overcommit_memory;
+ extern int sysctl_overcommit_ratio;
+-extern atomic_long_t vm_committed_space;
++extern struct percpu_counter vm_committed_as;
+ 
+-#ifdef CONFIG_SMP
+-extern void vm_acct_memory(long pages);
+-#else
+ static inline void vm_acct_memory(long pages)
+ {
+-	atomic_long_add(pages, &vm_committed_space);
++	percpu_counter_add(&vm_committed_as, pages);
+ }
+-#endif
+ 
+ static inline void vm_unacct_memory(long pages)
+ {
+--- a/mm/mmap.c
++++ b/mm/mmap.c
+@@ -84,7 +84,7 @@ EXPORT_SYMBOL(vm_get_page_prot);
+ int sysctl_overcommit_memory = OVERCOMMIT_GUESS;  /* heuristic overcommit */
+ int sysctl_overcommit_ratio = 50;	/* default is 50% */
+ int sysctl_max_map_count __read_mostly = DEFAULT_MAX_MAP_COUNT;
+-atomic_long_t vm_committed_space = ATOMIC_LONG_INIT(0);
++struct percpu_counter vm_committed_as;
+ 
+ /*
+  * Check that a process has enough memory to allocate a new virtual
+@@ -178,11 +178,7 @@ int __vm_enough_memory(struct mm_struct 
+ 	if (mm)
+ 		allowed -= mm->total_vm / 32;
+ 
+-	/*
+-	 * cast `allowed' as a signed long because vm_committed_space
+-	 * sometimes has a negative value
+-	 */
+-	if (atomic_long_read(&vm_committed_space) < (long)allowed)
++	if (percpu_counter_read_positive(&vm_committed_as) < allowed)
  		return 0;
+ error:
+ 	vm_unacct_memory(pages);
+@@ -2477,6 +2473,10 @@ void mm_drop_all_locks(struct mm_struct 
+  */
+ void __init mmap_init(void)
+ {
++	int ret;
++
++	ret = percpu_counter_init(&vm_committed_as, 0);
++	VM_BUG_ON(ret);
+ 	vm_area_cachep = kmem_cache_create("vm_area_struct",
+ 			sizeof(struct vm_area_struct), 0,
+ 			SLAB_PANIC, NULL);
+--- a/mm/nommu.c
++++ b/mm/nommu.c
+@@ -62,7 +62,7 @@ void *high_memory;
+ struct page *mem_map;
+ unsigned long max_mapnr;
+ unsigned long num_physpages;
+-atomic_long_t vm_committed_space = ATOMIC_LONG_INIT(0);
++struct percpu_counter vm_committed_as;
+ int sysctl_overcommit_memory = OVERCOMMIT_GUESS; /* heuristic overcommit */
+ int sysctl_overcommit_ratio = 50; /* default is 50% */
+ int sysctl_max_map_count = DEFAULT_MAX_MAP_COUNT;
+@@ -463,6 +463,10 @@ SYSCALL_DEFINE1(brk, unsigned long, brk)
+  */
+ void __init mmap_init(void)
+ {
++	int ret;
++
++	ret = percpu_counter_init(&vm_committed_as, 0);
++	VM_BUG_ON(ret);
+ 	vm_region_jar = kmem_cache_create("vm_region_jar",
+ 					  sizeof(struct vm_region), 0,
+ 					  SLAB_PANIC, NULL);
+@@ -1849,12 +1853,9 @@ int __vm_enough_memory(struct mm_struct 
+ 	if (mm)
+ 		allowed -= mm->total_vm / 32;
+ 
+-	/*
+-	 * cast `allowed' as a signed long because vm_committed_space
+-	 * sometimes has a negative value
+-	 */
+-	if (atomic_long_read(&vm_committed_space) < (long)allowed)
++	if (percpu_counter_read_positive(&vm_committed_as) < allowed)
+ 		return 0;
++
+ error:
+ 	vm_unacct_memory(pages);
+ 
+--- a/mm/swap.c
++++ b/mm/swap.c
+@@ -514,49 +514,6 @@ unsigned pagevec_lookup_tag(struct pagev
+ 
+ EXPORT_SYMBOL(pagevec_lookup_tag);
+ 
+-#ifdef CONFIG_SMP
+-/*
+- * We tolerate a little inaccuracy to avoid ping-ponging the counter between
+- * CPUs
+- */
+-#define ACCT_THRESHOLD	max(16, NR_CPUS * 2)
+-
+-static DEFINE_PER_CPU(long, committed_space);
+-
+-void vm_acct_memory(long pages)
+-{
+-	long *local;
+-
+-	preempt_disable();
+-	local = &__get_cpu_var(committed_space);
+-	*local += pages;
+-	if (*local > ACCT_THRESHOLD || *local < -ACCT_THRESHOLD) {
+-		atomic_long_add(*local, &vm_committed_space);
+-		*local = 0;
+-	}
+-	preempt_enable();
+-}
+-
+-#ifdef CONFIG_HOTPLUG_CPU
+-
+-/* Drop the CPU's cached committed space back into the central pool. */
+-static int cpu_swap_callback(struct notifier_block *nfb,
+-			     unsigned long action,
+-			     void *hcpu)
+-{
+-	long *committed;
+-
+-	committed = &per_cpu(committed_space, (long)hcpu);
+-	if (action == CPU_DEAD || action == CPU_DEAD_FROZEN) {
+-		atomic_long_add(*committed, &vm_committed_space);
+-		*committed = 0;
+-		drain_cpu_pagevecs((long)hcpu);
+-	}
+-	return NOTIFY_OK;
+-}
+-#endif /* CONFIG_HOTPLUG_CPU */
+-#endif /* CONFIG_SMP */
+-
+ /*
+  * Perform any setup for the swap system
+  */
+@@ -577,7 +534,4 @@ void __init swap_setup(void)
+ 	 * Right now other parts of the system means that we
+ 	 * _really_ don't want to cluster much more
+ 	 */
+-#ifdef CONFIG_HOTPLUG_CPU
+-	hotcpu_notifier(cpu_swap_callback, 0);
+-#endif
+ }
 
 
