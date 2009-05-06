@@ -1,72 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758272AbZEFJU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757085AbZEFJai@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758272AbZEFJU3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 05:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753614AbZEFJUU
+	id S1757085AbZEFJai (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 05:30:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbZEFJa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 05:20:20 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:43969 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753382AbZEFJUT convert rfc822-to-8bit (ORCPT
+	Wed, 6 May 2009 05:30:28 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:56996 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753059AbZEFJa1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 05:20:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=NHSytnWoSLHvIcrn/IDPi66Ys2pfrBS+EKmjhvvjLZH1/PsIEOCgLRR3u56G7oWUhW
-         cDQbEioN3tT3qDJwcTzhuSCJcskoWb/Lt5oFEwDM+X3nrrjBvWiufiyL3y3TD7fTQ++6
-         e88SZ6iMwqmHVYRJFvLvTehlP+V5Ni7NR8Sx0=
+	Wed, 6 May 2009 05:30:27 -0400
+Date: Wed, 6 May 2009 17:30:21 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Jarod Wilson <jarod@redhat.com>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Neil Horman <nhorman@tuxdriver.com>
+Subject: Re: [PATCH v2] crypto: add ctr(aes) test vectors
+Message-ID: <20090506093021.GA31073@gondor.apana.org.au>
+References: <200904282118.22823.jarod@redhat.com> <20090505131835.GA18659@gondor.apana.org.au> <200905050955.24743.jarod@redhat.com> <200905051042.58929.jarod@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <4A014BA9.9020201@cn.fujitsu.com>
-References: <20090506081221.GA15317@damson.getinternet.no>
-	 <4A0149FD.3010008@cn.fujitsu.com> <4A014BA9.9020201@cn.fujitsu.com>
-Date: Wed, 6 May 2009 11:20:17 +0200
-Message-ID: <19f34abd0905060220l2dc241b2j45e4bd127bacade3@mail.gmail.com>
-Subject: Re: printk %0*X is broken.
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: Lai Jiangshan <laijs@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       Yinghai Lu <yinghai@kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905051042.58929.jarod@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/6 Li Zefan <lizf@cn.fujitsu.com>:
->> Vegard Nossum wrote:
->>> 2009/5/6 Ingo Molnar <mingo@elte.hu>:
->>>> Cc:-ed more folks who modified lib/vsprintf.c recently.
->>>>
->>>>        Ingo
->>>>
->>>> * Yinghai Lu <yinghai@kernel.org> wrote:
->>>>
->>>>> it seems someone broke
->>>>>
->>>>> printk(   "%0*X\n", width, x);
->>>>>
->>>>> looks like 0 is dumped.
->>> After %, we look for flags. The problem is that when a flag is found, we
->>> don't advance in the format string. And thus we start looking for the
->>> precision, which is read as 0, because we are still at the 0. I think
->>> this patch should fix it.
->>>
->
-> No, we break out of the while loop when we can't find a flag,
-> So we are at '*' after we found '0'.
+On Tue, May 05, 2009 at 10:42:58AM -0400, Jarod Wilson wrote:
+> 
+> Now with multi-block test vectors, all from SP800-38A, Appendix F.5.
+> Also added ctr(aes) to case 10 in tcrypt.
+> 
+> Quickly smoke-tested in fips mode, got back "alg_test: alg
+> ctr(aes-x86_64) (ctr(aes)) self-test passed".
+> 
+> Signed-off-by: Jarod Wilson <jarod@redhat.com>
 
-> Lai Jiangshan wrote:
->> It seems that your patch does not change anything.
->> The code logic is still the same as before.
+It didn't build because you forgot to change the RFC3686 dec
+vector name.  I've fixed it for you.  Please test your patches
+in future.
 
-Oh really? So sorry, I didn't look close enough :-(
-
-
-Vegard
+Thanks,
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
