@@ -1,54 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761698AbZEFUqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761770AbZEFUrP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761698AbZEFUqs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761426AbZEFUlM
+	id S1761770AbZEFUrP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:47:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760672AbZEFUm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:41:12 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59833 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761408AbZEFUlL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:41:11 -0400
+	Wed, 6 May 2009 16:42:59 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:44696 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761595AbZEFUm5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 16:42:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=C2NGxezQmaip1GIkzi8xdJtvIBx1FPC1IuX8X1u7ZhshT4r12UCnCBhUW2hMuoRhxD
+         ZUPwCTavvi4MU44EKRr+V7b3bs8T4uiybcJ48nvbxak+kj+mGYWvYJrxYyYYigHaNxXG
+         BiqyM1ca0f7QdXH7Oz5N85kM6J2GCv4GReGck=
+Date: Wed, 6 May 2009 22:42:51 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Vivek Goyal <vgoyal@redhat.com>, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, agk@redhat.com,
+       dm-devel@redhat.com, snitzer@redhat.com, m-ikeda@ds.jp.nec.com
+Subject: Re: IO scheduler based IO Controller V2
+Message-ID: <20090506204249.GB4282@linux>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <1241562049.11059.921.camel@twins> <20090506034254.GD4416@balbir.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-X-Fcc: ~/Mail/linus
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-Subject: Re: [PATCH] x86: ptrace debugreg checks rewrite
-In-Reply-To: Ingo Molnar's message of  Wednesday, 6 May 2009 11:56:29 +0200 <20090506095629.GC15323@elte.hu>
-References: <20090504001601.GL16631@x200.localdomain>
-	<20090504002431.GA17556@x200.localdomain>
-	<20090506095629.GC15323@elte.hu>
-X-Shopping-List: (1) Pelvic clairvoyant assumptions
-   (2) Regimented nutrition bacon
-   (3) Fatuous intrusions
-   (4) Cadaverous citations
-Message-Id: <20090506203852.D9AC9FC39E@magilla.sf.frob.com>
-Date: Wed,  6 May 2009 13:38:52 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20090506034254.GD4416@balbir.in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > On Mon, May 04, 2009 at 04:16:01AM +0400, Alexey Dobriyan wrote:
-> > > +static int ptrace_check_debugreg(int _32bit,
-> > > +				 unsigned long dr0, unsigned long dr1,
-> > > +				 unsigned long dr2, unsigned long dr3,
-> > > +				 unsigned long dr6, unsigned long dr7)
-> > > +{
-> > > +	/* Breakpoint type: 00: --x, 01: -w-, 10: undefined, 11: rw- */
-> > > +	unsigned int rw[4];
-> > > +	/* Breakpoint length: 00: 1 byte, 01: 2 bytes, 10: 8 bytes, 11: bytes */
-> > 								        4 bytes, of course
+On Wed, May 06, 2009 at 09:12:54AM +0530, Balbir Singh wrote:
+> * Peter Zijlstra <peterz@infradead.org> [2009-05-06 00:20:49]:
 > 
-> Roland, Oleg, do you have any pending/planned changes in this area?
+> > On Tue, 2009-05-05 at 13:24 -0700, Andrew Morton wrote:
+> > > On Tue,  5 May 2009 15:58:27 -0400
+> > > Vivek Goyal <vgoyal@redhat.com> wrote:
+> > > 
+> > > > 
+> > > > Hi All,
+> > > > 
+> > > > Here is the V2 of the IO controller patches generated on top of 2.6.30-rc4.
+> > > > ...
+> > > > Currently primarily two other IO controller proposals are out there.
+> > > > 
+> > > > dm-ioband
+> > > > ---------
+> > > > This patch set is from Ryo Tsuruta from valinux.
+> > > > ...
+> > > > IO-throttling
+> > > > -------------
+> > > > This patch set is from Andrea Righi provides max bandwidth controller.
+> > > 
+> > > I'm thinking we need to lock you guys in a room and come back in 15 minutes.
+> > > 
+> > > Seriously, how are we to resolve this?  We could lock me in a room and
+> > > cmoe back in 15 days, but there's no reason to believe that I'd emerge
+> > > with the best answer.
+> > > 
+> > > I tend to think that a cgroup-based controller is the way to go. 
+> > > Anything else will need to be wired up to cgroups _anyway_, and that
+> > > might end up messy.
+> > 
+> > FWIW I subscribe to the io-scheduler faith as opposed to the
+> > device-mapper cult ;-)
+> > 
+> > Also, I don't think a simple throttle will be very useful, a more mature
+> > solution should cater to more use cases.
+> >
+> 
+> I tend to agree, unless Andrea can prove us wrong. I don't think
+> throttling a task (not letting it consume CPU, memory when its IO
+> quota is exceeded) is a good idea. I've asked that question to Andrea
+> a few times, but got no response.
 
-I don't.  I expect the only future work on this arch debugreg stuff to be
-via the hw_breakpoint work, extending that and/or building new things on it.
+Sorry Balbir, I probably missed your question. Or replied in a different
+thread maybe...
 
+Actually we could allow an offending cgroup to continue to submit IO
+requests without throttling it directly. But if we don't want to waste
+the memory with pending IO requests or pending writeback pages, we need
+to block it sooner or later.
 
-Thanks,
-Roland
+Instead of directly throttle the offending applications, we could block
+them when we hit a max limit of requests or dirty pages, i.e. something
+like congestion_wait(), but that's the same, no? the difference is that
+in this case throttling is asynchronous. Or am I oversimplifying it?
+
+As an example, with writeback IO io-throttle doesn't throttle the IO
+requests directly, each request instead receives a deadline (depending
+on the BW limit) and it's added into a rbtree. Then all the requests are
+dispatched asynchronously using a kernel thread (kiothrottled) only when
+the deadline is expired.
+
+OK, there's a lot of space for improvements: provide many kernel threads
+per block device, multiple queues/rbtrees, etc., but this is actually a
+way to apply throttling asynchronously. The fact is that if I don't
+apply the throttling also in balance_dirty_pages() (and I did so in the
+last io-throttle version) or add a max limit of requests the rbtree
+increases indefinitely...
+
+That should be very similar to the proportional BW solution allocating a
+quota of nr_requests per block device and per cgroup.
+
+-Andrea
