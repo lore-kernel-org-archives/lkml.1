@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761016AbZEFOyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760948AbZEFOzU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761016AbZEFOyv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 10:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760258AbZEFOtg
+	id S1760948AbZEFOzU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 10:55:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760376AbZEFOth
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 10:49:36 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:47434 "EHLO crca.org.au"
+	Wed, 6 May 2009 10:49:37 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:59280 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759306AbZEFOs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1760228AbZEFOs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 May 2009 10:48:59 -0400
 X-Bogosity: Ham, spamicity=0.000000
 From: Nigel Cunningham <nigel@tuxonice.net>
 To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        tuxonice-devel@lists.tuxonice.net
 Cc: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 1/19] TuxOnIce: Documentation
-Date: Thu,  7 May 2009 00:38:57 +1000
-Message-Id: <1241620755-22133-2-git-send-email-nigel@tuxonice.net>
+Subject: [PATCH 15/19] TuxOnIce: Userspace user interface support.
+Date: Thu,  7 May 2009 00:39:11 +1000
+Message-Id: <1241620755-22133-16-git-send-email-nigel@tuxonice.net>
 X-Mailer: git-send-email 1.5.6.3
 In-Reply-To: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
@@ -24,1449 +24,741 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch creates new Documentation/power files for describing
-TuxOnIce, and a MAINTAINERS entry for the code.
+Provide support for a userspace user interface helper, via which
+progress can be displayed and the user can modify settings for powering
+down or rebooting, cancel hibernation / resuming and interactively debug
+the software.
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
 ---
- Documentation/power/tuxonice-internals.txt |  477 ++++++++++++++
- Documentation/power/tuxonice.txt           |  924 ++++++++++++++++++++++++++++
- MAINTAINERS                                |    7 +
- 3 files changed, 1408 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/power/tuxonice-internals.txt
- create mode 100644 Documentation/power/tuxonice.txt
+ include/linux/netlink.h        |    1 +
+ kernel/power/Kconfig           |   17 +
+ kernel/power/Makefile          |    2 +
+ kernel/power/tuxonice_userui.c |  662 ++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 682 insertions(+), 0 deletions(-)
+ create mode 100644 kernel/power/tuxonice_userui.c
 
-diff --git a/Documentation/power/tuxonice-internals.txt b/Documentation/power/tuxonice-internals.txt
-new file mode 100644
-index 0000000..7a96186
---- /dev/null
-+++ b/Documentation/power/tuxonice-internals.txt
-@@ -0,0 +1,477 @@
-+		   TuxOnIce 3.0 Internal Documentation.
-+			Updated to 26 March 2009
-+
-+1.  Introduction.
-+
-+    TuxOnIce 3.0 is an addition to the Linux Kernel, designed to
-+    allow the user to quickly shutdown and quickly boot a computer, without
-+    needing to close documents or programs. It is equivalent to the
-+    hibernate facility in some laptops. This implementation, however,
-+    requires no special BIOS or hardware support.
-+
-+    The code in these files is based upon the original implementation
-+    prepared by Gabor Kuti and additional work by Pavel Machek and a
-+    host of others. This code has been substantially reworked by Nigel
-+    Cunningham, again with the help and testing of many others, not the
-+    least of whom is Michael Frank. At its heart, however, the operation is
-+    essentially the same as Gabor's version.
-+
-+2.  Overview of operation.
-+
-+    The basic sequence of operations is as follows:
-+
-+	a. Quiesce all other activity.
-+	b. Ensure enough memory and storage space are available, and attempt
-+	   to free memory/storage if necessary.
-+	c. Allocate the required memory and storage space.
-+	d. Write the image.
-+	e. Power down.
-+
-+    There are a number of complicating factors which mean that things are
-+    not as simple as the above would imply, however...
-+
-+    o The activity of each process must be stopped at a point where it will
-+    not be holding locks necessary for saving the image, or unexpectedly
-+    restart operations due to something like a timeout and thereby make
-+    our image inconsistent.
-+
-+    o It is desirous that we sync outstanding I/O to disk before calculating
-+    image statistics. This reduces corruption if one should suspend but
-+    then not resume, and also makes later parts of the operation safer (see
-+    below).
-+
-+    o We need to get as close as we can to an atomic copy of the data.
-+    Inconsistencies in the image will result in inconsistent memory contents at
-+    resume time, and thus in instability of the system and/or file system
-+    corruption. This would appear to imply a maximum image size of one half of
-+    the amount of RAM, but we have a solution... (again, below).
-+
-+    o In 2.6, we choose to play nicely with the other suspend-to-disk
-+    implementations.
-+
-+3.  Detailed description of internals.
-+
-+    a. Quiescing activity.
-+
-+    Safely quiescing the system is achieved using three separate but related
-+    aspects.
-+
-+    First, we note that the vast majority of processes don't need to run during
-+    suspend. They can be 'frozen'. We therefore implement a refrigerator
-+    routine, which processes enter and in which they remain until the cycle is
-+    complete. Processes enter the refrigerator via try_to_freeze() invocations
-+    at appropriate places.  A process cannot be frozen in any old place. It
-+    must not be holding locks that will be needed for writing the image or
-+    freezing other processes. For this reason, userspace processes generally
-+    enter the refrigerator via the signal handling code, and kernel threads at
-+    the place in their event loops where they drop locks and yield to other
-+    processes or sleep.
-+
-+    The task of freezing processes is complicated by the fact that there can be
-+    interdependencies between processes. Freezing process A before process B may
-+    mean that process B cannot be frozen, because it stops at waiting for
-+    process A rather than in the refrigerator. This issue is seen where
-+    userspace waits on freezeable kernel threads or fuse filesystem threads. To
-+    address this issue, we implement the following algorithm for quiescing
-+    activity:
-+
-+	- Freeze filesystems (including fuse - userspace programs starting
-+		new requests are immediately frozen; programs already running
-+		requests complete their work before being frozen in the next
-+		step)
-+	- Freeze userspace
-+	- Thaw filesystems (this is safe now that userspace is frozen and no
-+		fuse requests are outstanding).
-+	- Invoke sys_sync (noop on fuse).
-+	- Freeze filesystems
-+	- Freeze kernel threads
-+
-+    If we need to free memory, we thaw kernel threads and filesystems, but not
-+    userspace. We can then free caches without worrying about deadlocks due to
-+    swap files being on frozen filesystems or such like.
-+
-+    b. Ensure enough memory & storage are available.
-+
-+    We have a number of constraints to meet in order to be able to successfully
-+    suspend and resume.
-+
-+    First, the image will be written in two parts, described below. One of these
-+    parts needs to have an atomic copy made, which of course implies a maximum
-+    size of one half of the amount of system memory. The other part ('pageset')
-+    is not atomically copied, and can therefore be as large or small as desired.
-+
-+    Second, we have constraints on the amount of storage available. In these
-+    calculations, we may also consider any compression that will be done. The
-+    cryptoapi module allows the user to configure an expected compression ratio.
-+
-+    Third, the user can specify an arbitrary limit on the image size, in
-+    megabytes. This limit is treated as a soft limit, so that we don't fail the
-+    attempt to suspend if we cannot meet this constraint.
-+
-+    c. Allocate the required memory and storage space.
-+
-+    Having done the initial freeze, we determine whether the above constraints
-+    are met, and seek to allocate the metadata for the image. If the constraints
-+    are not met, or we fail to allocate the required space for the metadata, we
-+    seek to free the amount of memory that we calculate is needed and try again.
-+    We allow up to four iterations of this loop before aborting the cycle. If we
-+    do fail, it should only be because of a bug in TuxOnIce's calculations.
-+
-+    These steps are merged together in the prepare_image function, found in
-+    prepare_image.c. The functions are merged because of the cyclical nature
-+    of the problem of calculating how much memory and storage is needed. Since
-+    the data structures containing the information about the image must
-+    themselves take memory and use storage, the amount of memory and storage
-+    required changes as we prepare the image. Since the changes are not large,
-+    only one or two iterations will be required to achieve a solution.
-+
-+    The recursive nature of the algorithm is miminised by keeping user space
-+    frozen while preparing the image, and by the fact that our records of which
-+    pages are to be saved and which pageset they are saved in use bitmaps (so
-+    that changes in number or fragmentation of the pages to be saved don't
-+    feedback via changes in the amount of memory needed for metadata). The
-+    recursiveness is thus limited to any extra slab pages allocated to store the
-+    extents that record storage used, and the effects of seeking to free memory.
-+
-+    d. Write the image.
-+
-+    We previously mentioned the need to create an atomic copy of the data, and
-+    the half-of-memory limitation that is implied in this. This limitation is
-+    circumvented by dividing the memory to be saved into two parts, called
-+    pagesets.
-+
-+    Pageset2 contains most of the page cache - the pages on the active and
-+    inactive LRU lists that aren't needed or modified while TuxOnIce is
-+    running, so they can be safely written without an atomic copy. They are
-+    therefore saved first and reloaded last. While saving these pages,
-+    TuxOnIce carefully ensures that the work of writing the pages doesn't make
-+    the image inconsistent. With the support for Kernel (Video) Mode Setting
-+    going into the kernel at the time of writing, we need to check for pages
-+    on the LRU that are used by KMS, and exclude them from pageset2. They are
-+    atomically copied as part of pageset 1.
-+
-+    Once pageset2 has been saved, we prepare to do the atomic copy of remaining
-+    memory. As part of the preparation, we power down drivers, thereby providing
-+    them with the opportunity to have their state recorded in the image. The
-+    amount of memory allocated by drivers for this is usually negligible, but if
-+    DRI is in use, video drivers may require significants amounts. Ideally we
-+    would be able to query drivers while preparing the image as to the amount of
-+    memory they will need. Unfortunately no such mechanism exists at the time of
-+    writing. For this reason, TuxOnIce allows the user to set an
-+    'extra_pages_allowance', which is used to seek to ensure sufficient memory
-+    is available for drivers at this point. TuxOnIce also lets the user set this
-+    value to 0. In this case, a test driver suspend is done while preparing the
-+    image, and the difference (plus a margin) used instead. TuxOnIce will also
-+    automatically restart the hibernation process (twice at most) if it finds
-+    that the extra pages allowance is not sufficient. It will then use what was
-+    actually needed (plus a margin, again). Failure to hibernate should thus
-+    be an extremely rare occurence.
-+
-+    Having suspended the drivers, we save the CPU context before making an
-+    atomic copy of pageset1, resuming the drivers and saving the atomic copy.
-+    After saving the two pagesets, we just need to save our metadata before
-+    powering down.
-+
-+    As we mentioned earlier, the contents of pageset2 pages aren't needed once
-+    they've been saved. We therefore use them as the destination of our atomic
-+    copy. In the unlikely event that pageset1 is larger, extra pages are
-+    allocated while the image is being prepared. This is normally only a real
-+    possibility when the system has just been booted and the page cache is
-+    small.
-+
-+    This is where we need to be careful about syncing, however. Pageset2 will
-+    probably contain filesystem meta data. If this is overwritten with pageset1
-+    and then a sync occurs, the filesystem will be corrupted - at least until
-+    resume time and another sync of the restored data. Since there is a
-+    possibility that the user might not resume or (may it never be!) that
-+    TuxOnIce might oops, we do our utmost to avoid syncing filesystems after
-+    copying pageset1.
-+
-+    e. Power down.
-+
-+    Powering down uses standard kernel routines. TuxOnIce supports powering down
-+    using the ACPI S3, S4 and S5 methods or the kernel's non-ACPI power-off.
-+    Supporting suspend to ram (S3) as a power off option might sound strange,
-+    but it allows the user to quickly get their system up and running again if
-+    the battery doesn't run out (we just need to re-read the overwritten pages)
-+    and if the battery does run out (or the user removes power), they can still
-+    resume.
-+
-+4.  Data Structures.
-+
-+    TuxOnIce uses three main structures to store its metadata and configuration
-+    information:
-+
-+    a) Pageflags bitmaps.
-+
-+    TuxOnIce records which pages will be in pageset1, pageset2, the destination
-+    of the atomic copy and the source of the atomically restored image using
-+    bitmaps. The code used is that written for swsusp, with small improvements
-+    to match TuxOnIce's requirements.
-+
-+    The pageset1 bitmap is thus easily stored in the image header for use at
-+    resume time.
-+
-+    As mentioned above, using bitmaps also means that the amount of memory and
-+    storage required for recording the above information is constant. This
-+    greatly simplifies the work of preparing the image. In earlier versions of
-+    TuxOnIce, extents were used to record which pages would be stored. In that
-+    case, however, eating memory could result in greater fragmentation of the
-+    lists of pages, which in turn required more memory to store the extents and
-+    more storage in the image header. These could in turn require further
-+    freeing of memory, and another iteration. All of this complexity is removed
-+    by having bitmaps.
-+
-+    Bitmaps also make a lot of sense because TuxOnIce only ever iterates
-+    through the lists. There is therefore no cost to not being able to find the
-+    nth page in order 0 time. We only need to worry about the cost of finding
-+    the n+1th page, given the location of the nth page. Bitwise optimisations
-+    help here.
-+
-+    b) Extents for block data.
-+
-+    TuxOnIce supports writing the image to multiple block devices. In the case
-+    of swap, multiple partitions and/or files may be in use, and we happily use
-+    them all (with the exception of compcache pages, which we allocate but do
-+    not use). This use of multiple block devices is accomplished as follows:
-+
-+    Whatever the actual source of the allocated storage, the destination of the
-+    image can be viewed in terms of one or more block devices, and on each
-+    device, a list of sectors. To simplify matters, we only use contiguous,
-+    PAGE_SIZE aligned sectors, like the swap code does.
-+
-+    Since sector numbers on each bdev may well not start at 0, it makes much
-+    more sense to use extents here. Contiguous ranges of pages can thus be
-+    represented in the extents by contiguous values.
-+
-+    Variations in block size are taken account of in transforming this data
-+    into the parameters for bio submission.
-+
-+    We can thus implement a layer of abstraction wherein the core of TuxOnIce
-+    doesn't have to worry about which device we're currently writing to or
-+    where in the device we are. It simply requests that the next page in the
-+    pageset or header be written, leaving the details to this lower layer.
-+    The lower layer remembers where in the sequence of devices and blocks each
-+    pageset starts. The header always starts at the beginning of the allocated
-+    storage.
-+
-+    So extents are:
-+
-+    struct extent {
-+      unsigned long minimum, maximum;
-+      struct extent *next;
-+    }
-+
-+    These are combined into chains of extents for a device:
-+
-+    struct extent_chain {
-+      int size; /* size of the extent ie sum (max-min+1) */
-+      int allocs, frees;
-+      char *name;
-+      struct extent *first, *last_touched;
-+    };
-+
-+    For each bdev, we need to store a little more info:
-+
-+    struct suspend_bdev_info {
-+       struct block_device *bdev;
-+       dev_t dev_t;
-+       int bmap_shift;
-+       int blocks_per_page;
-+    };
-+
-+    The dev_t is used to identify the device in the stored image. As a result,
-+    we expect devices at resume time to have the same major and minor numbers
-+    as they had while suspending.  This is primarily a concern where the user
-+    utilises LVM for storage, as they will need to dmsetup their partitions in
-+    such a way as to maintain this consistency at resume time.
-+
-+    bmap_shift and blocks_per_page apply the effects of variations in blocks
-+    per page settings for the filesystem and underlying bdev. For most
-+    filesystems, these are the same, but for xfs, they can have independant
-+    values.
-+
-+    Combining these two structures together, we have everything we need to
-+    record what devices and what blocks on each device are being used to
-+    store the image, and to submit i/o using bio_submit.
-+
-+    The last elements in the picture are a means of recording how the storage
-+    is being used.
-+
-+    We do this first and foremost by implementing a layer of abstraction on
-+    top of the devices and extent chains which allows us to view however many
-+    devices there might be as one long storage tape, with a single 'head' that
-+    tracks a 'current position' on the tape:
-+
-+    struct extent_iterate_state {
-+      struct extent_chain *chains;
-+      int num_chains;
-+      int current_chain;
-+      struct extent *current_extent;
-+      unsigned long current_offset;
-+    };
-+
-+    That is, *chains points to an array of size num_chains of extent chains.
-+    For the filewriter, this is always a single chain. For the swapwriter, the
-+    array is of size MAX_SWAPFILES.
-+
-+    current_chain, current_extent and current_offset thus point to the current
-+    index in the chains array (and into a matching array of struct
-+    suspend_bdev_info), the current extent in that chain (to optimise access),
-+    and the current value in the offset.
-+
-+    The image is divided into three parts:
-+    - The header
-+    - Pageset 1
-+    - Pageset 2
-+
-+    The header always starts at the first device and first block. We know its
-+    size before we begin to save the image because we carefully account for
-+    everything that will be stored in it.
-+
-+    The second pageset (LRU) is stored first. It begins on the next page after
-+    the end of the header.
-+
-+    The first pageset is stored second. It's start location is only known once
-+    pageset2 has been saved, since pageset2 may be compressed as it is written.
-+    This location is thus recorded at the end of saving pageset2. It is page
-+    aligned also.
-+
-+    Since this information is needed at resume time, and the location of extents
-+    in memory will differ at resume time, this needs to be stored in a portable
-+    way:
-+
-+    struct extent_iterate_saved_state {
-+        int chain_num;
-+        int extent_num;
-+        unsigned long offset;
-+    };
-+
-+    We can thus implement a layer of abstraction wherein the core of TuxOnIce
-+    doesn't have to worry about which device we're currently writing to or
-+    where in the device we are. It simply requests that the next page in the
-+    pageset or header be written, leaving the details to this layer, and
-+    invokes the routines to remember and restore the position, without having
-+    to worry about the details of how the data is arranged on disk or such like.
-+
-+    c) Modules
-+
-+    One aim in designing TuxOnIce was to make it flexible. We wanted to allow
-+    for the implementation of different methods of transforming a page to be
-+    written to disk and different methods of getting the pages stored.
-+
-+    In early versions (the betas and perhaps Suspend1), compression support was
-+    inlined in the image writing code, and the data structures and code for
-+    managing swap were intertwined with the rest of the code. A number of people
-+    had expressed interest in implementing image encryption, and alternative
-+    methods of storing the image.
-+
-+    In order to achieve this, TuxOnIce was given a modular design.
-+
-+    A module is a single file which encapsulates the functionality needed
-+    to transform a pageset of data (encryption or compression, for example),
-+    or to write the pageset to a device. The former type of module is called
-+    a 'page-transformer', the later a 'writer'.
-+
-+    Modules are linked together in pipeline fashion. There may be zero or more
-+    page transformers in a pipeline, and there is always exactly one writer.
-+    The pipeline follows this pattern:
-+
-+		---------------------------------
-+		|          TuxOnIce Core        |
-+		---------------------------------
-+				|
-+				|
-+		---------------------------------
-+		|	Page transformer 1	|
-+		---------------------------------
-+				|
-+				|
-+		---------------------------------
-+		|	Page transformer 2	|
-+		---------------------------------
-+				|
-+				|
-+		---------------------------------
-+		|            Writer		|
-+		---------------------------------
-+
-+    During the writing of an image, the core code feeds pages one at a time
-+    to the first module. This module performs whatever transformations it
-+    implements on the incoming data, completely consuming the incoming data and
-+    feeding output in a similar manner to the next module.
-+
-+    All routines are SMP safe, and the final result of the transformations is
-+    written with an index (provided by the core) and size of the output by the
-+    writer. As a result, we can have multithreaded I/O without needing to
-+    worry about the sequence in which pages are written (or read).
-+
-+    During reading, the pipeline works in the reverse direction. The core code
-+    calls the first module with the address of a buffer which should be filled.
-+    (Note that the buffer size is always PAGE_SIZE at this time). This module
-+    will in turn request data from the next module and so on down until the
-+    writer is made to read from the stored image.
-+
-+    Part of definition of the structure of a module thus looks like this:
-+
-+        int (*rw_init) (int rw, int stream_number);
-+        int (*rw_cleanup) (int rw);
-+        int (*write_chunk) (struct page *buffer_page);
-+        int (*read_chunk) (struct page *buffer_page, int sync);
-+
-+    It should be noted that the _cleanup routine may be called before the
-+    full stream of data has been read or written. While writing the image,
-+    the user may (depending upon settings) choose to abort suspending, and
-+    if we are in the midst of writing the last portion of the image, a portion
-+    of the second pageset may be reread. This may also happen if an error
-+    occurs and we seek to abort the process of writing the image.
-+
-+    The modular design is also useful in a number of other ways. It provides
-+    a means where by we can add support for:
-+
-+    - providing overall initialisation and cleanup routines;
-+    - serialising configuration information in the image header;
-+    - providing debugging information to the user;
-+    - determining memory and image storage requirements;
-+    - dis/enabling components at run-time;
-+    - configuring the module (see below);
-+
-+    ...and routines for writers specific to their work:
-+    - Parsing a resume= location;
-+    - Determining whether an image exists;
-+    - Marking a resume as having been attempted;
-+    - Invalidating an image;
-+
-+    Since some parts of the core - the user interface and storage manager
-+    support - have use for some of these functions, they are registered as
-+    'miscellaneous' modules as well.
-+
-+    d) Sysfs data structures.
-+
-+    This brings us naturally to support for configuring TuxOnIce. We desired to
-+    provide a way to make TuxOnIce as flexible and configurable as possible.
-+    The user shouldn't have to reboot just because they want to now hibernate to
-+    a file instead of a partition, for example.
-+
-+    To accomplish this, TuxOnIce implements a very generic means whereby the
-+    core and modules can register new sysfs entries. All TuxOnIce entries use
-+    a single _store and _show routine, both of which are found in
-+    tuxonice_sysfs.c in the kernel/power directory. These routines handle the
-+    most common operations - getting and setting the values of bits, integers,
-+    longs, unsigned longs and strings in one place, and allow overrides for
-+    customised get and set options as well as side-effect routines for all
-+    reads and writes.
-+
-+    When combined with some simple macros, a new sysfs entry can then be defined
-+    in just a couple of lines:
-+
-+        SYSFS_INT("progress_granularity", SYSFS_RW, &progress_granularity, 1,
-+                        2048, 0, NULL),
-+
-+    This defines a sysfs entry named "progress_granularity" which is rw and
-+    allows the user to access an integer stored at &progress_granularity, giving
-+    it a value between 1 and 2048 inclusive.
-+
-+    Sysfs entries are registered under /sys/power/tuxonice, and entries for
-+    modules are located in a subdirectory named after the module.
-+
-diff --git a/Documentation/power/tuxonice.txt b/Documentation/power/tuxonice.txt
-new file mode 100644
-index 0000000..bfc0df5
---- /dev/null
-+++ b/Documentation/power/tuxonice.txt
-@@ -0,0 +1,924 @@
-+	--- TuxOnIce, version 3.0 ---
-+
-+1.  What is it?
-+2.  Why would you want it?
-+3.  What do you need to use it?
-+4.  Why not just use the version already in the kernel?
-+5.  How do you use it?
-+6.  What do all those entries in /sys/power/tuxonice do?
-+7.  How do you get support?
-+8.  I think I've found a bug. What should I do?
-+9.  When will XXX be supported?
-+10  How does it work?
-+11. Who wrote TuxOnIce?
-+
-+1. What is it?
-+
-+   Imagine you're sitting at your computer, working away. For some reason, you
-+   need to turn off your computer for a while - perhaps it's time to go home
-+   for the day. When you come back to your computer next, you're going to want
-+   to carry on where you left off. Now imagine that you could push a button and
-+   have your computer store the contents of its memory to disk and power down.
-+   Then, when you next start up your computer, it loads that image back into
-+   memory and you can carry on from where you were, just as if you'd never
-+   turned the computer off. You have far less time to start up, no reopening of
-+   applications or finding what directory you put that file in yesterday.
-+   That's what TuxOnIce does.
-+
-+   TuxOnIce has a long heritage. It began life as work by Gabor Kuti, who,
-+   with some help from Pavel Machek, got an early version going in 1999. The
-+   project was then taken over by Florent Chabaud while still in alpha version
-+   numbers. Nigel Cunningham came on the scene when Florent was unable to
-+   continue, moving the project into betas, then 1.0, 2.0 and so on up to
-+   the present series. During the 2.0 series, the name was contracted to
-+   Suspend2 and the website suspend2.net created. Beginning around July 2007,
-+   a transition to calling the software TuxOnIce was made, to seek to help
-+   make it clear that TuxOnIce is more concerned with hibernation than suspend
-+   to ram.
-+
-+   Pavel Machek's swsusp code, which was merged around 2.5.17 retains the
-+   original name, and was essentially a fork of the beta code until Rafael
-+   Wysocki came on the scene in 2005 and began to improve it further.
-+
-+2. Why would you want it?
-+
-+   Why wouldn't you want it?
-+
-+   Being able to save the state of your system and quickly restore it improves
-+   your productivity - you get a useful system in far less time than through
-+   the normal boot process. You also get to be completely 'green', using zero
-+   power, or as close to that as possible (the computer may still provide
-+   minimal power to some devices, so they can initiate a power on, but that
-+   will be the same amount of power as would be used if you told the computer
-+   to shutdown.
-+
-+3. What do you need to use it?
-+
-+   a. Kernel Support.
-+
-+   i) The TuxOnIce patch.
-+
-+   TuxOnIce is part of the Linux Kernel. This version is not part of Linus's
-+   2.6 tree at the moment, so you will need to download the kernel source and
-+   apply the latest patch. Having done that, enable the appropriate options in
-+   make [menu|x]config (under Power Management Options - look for "Enhanced
-+   Hibernation"), compile and install your kernel. TuxOnIce works with SMP,
-+   Highmem, preemption, fuse filesystems, x86-32, PPC and x86_64.
-+
-+   TuxOnIce patches are available from http://tuxonice.net.
-+
-+   ii) Compression support.
-+
-+   Compression support is implemented via the cryptoapi. You will therefore want
-+   to select any Cryptoapi transforms that you want to use on your image from
-+   the Cryptoapi menu while configuring your kernel. We recommend the use of the
-+   LZO compression method - it is very fast and still achieves good compression.
-+
-+   You can also tell TuxOnIce to write its image to an encrypted and/or
-+   compressed filesystem/swap partition. In that case, you don't need to do
-+   anything special for TuxOnIce when it comes to kernel configuration.
-+
-+   iii) Configuring other options.
-+
-+   While you're configuring your kernel, try to configure as much as possible
-+   to build as modules. We recommend this because there are a number of drivers
-+   that are still in the process of implementing proper power management
-+   support. In those cases, the best way to work around their current lack is
-+   to build them as modules and remove the modules while hibernating. You might
-+   also bug the driver authors to get their support up to speed, or even help!
-+
-+   b. Storage.
-+
-+   i) Swap.
-+
-+   TuxOnIce can store the hibernation image in your swap partition, a swap file or
-+   a combination thereof. Whichever combination you choose, you will probably
-+   want to create enough swap space to store the largest image you could have,
-+   plus the space you'd normally use for swap. A good rule of thumb would be
-+   to calculate the amount of swap you'd want without using TuxOnIce, and then
-+   add the amount of memory you have. This swapspace can be arranged in any way
-+   you'd like. It can be in one partition or file, or spread over a number. The
-+   only requirement is that they be active when you start a hibernation cycle.
-+
-+   There is one exception to this requirement. TuxOnIce has the ability to turn
-+   on one swap file or partition at the start of hibernating and turn it back off
-+   at the end. If you want to ensure you have enough memory to store a image
-+   when your memory is fully used, you might want to make one swap partition or
-+   file for 'normal' use, and another for TuxOnIce to activate & deactivate
-+   automatically. (Further details below).
-+
-+   ii) Normal files.
-+
-+   TuxOnIce includes a 'file allocator'. The file allocator can store your
-+   image in a simple file. Since Linux has the concept of everything being a
-+   file, this is more powerful than it initially sounds. If, for example, you
-+   were to set up a network block device file, you could hibernate to a network
-+   server. This has been tested and works to a point, but nbd itself isn't
-+   stateless enough for our purposes.
-+
-+   Take extra care when setting up the file allocator. If you just type
-+   commands without thinking and then try to hibernate, you could cause
-+   irreversible corruption on your filesystems! Make sure you have backups.
-+
-+   Most people will only want to hibernate to a local file. To achieve that, do
-+   something along the lines of:
-+
-+   echo "TuxOnIce" > /hibernation-file
-+   dd if=/dev/zero bs=1M count=512 >> hibernation-file
-+
-+   This will create a 512MB file called /hibernation-file. To get TuxOnIce to use
-+   it:
-+
-+   echo /hibernation-file > /sys/power/tuxonice/file/target
-+
-+   Then
-+
-+   cat /sys/power/tuxonice/resume
-+
-+   Put the results of this into your bootloader's configuration (see also step
-+   C, below):
-+
-+   ---EXAMPLE-ONLY-DON'T-COPY-AND-PASTE---
-+   # cat /sys/power/tuxonice/resume
-+   file:/dev/hda2:0x1e001
-+
-+   In this example, we would edit the append= line of our lilo.conf|menu.lst
-+   so that it included:
-+
-+   resume=file:/dev/hda2:0x1e001
-+   ---EXAMPLE-ONLY-DON'T-COPY-AND-PASTE---
-+
-+   For those who are thinking 'Could I make the file sparse?', the answer is
-+   'No!'. At the moment, there is no way for TuxOnIce to fill in the holes in
-+   a sparse file while hibernating. In the longer term (post merge!), I'd like
-+   to change things so that the file could be dynamically resized and have
-+   holes filled as needed. Right now, however, that's not possible and not a
-+   priority.
-+
-+   c. Bootloader configuration.
-+
-+   Using TuxOnIce also requires that you add an extra parameter to
-+   your lilo.conf or equivalent. Here's an example for a swap partition:
-+
-+   append="resume=swap:/dev/hda1"
-+
-+   This would tell TuxOnIce that /dev/hda1 is a swap partition you
-+   have. TuxOnIce will use the swap signature of this partition as a
-+   pointer to your data when you hibernate. This means that (in this example)
-+   /dev/hda1 doesn't need to be _the_ swap partition where all of your data
-+   is actually stored. It just needs to be a swap partition that has a
-+   valid signature.
-+
-+   You don't need to have a swap partition for this purpose. TuxOnIce
-+   can also use a swap file, but usage is a little more complex. Having made
-+   your swap file, turn it on and do
-+
-+   cat /sys/power/tuxonice/swap/headerlocations
-+
-+   (this assumes you've already compiled your kernel with TuxOnIce
-+   support and booted it). The results of the cat command will tell you
-+   what you need to put in lilo.conf:
-+
-+   For swap partitions like /dev/hda1, simply use resume=/dev/hda1.
-+   For swapfile `swapfile`, use resume=swap:/dev/hda2:0x242d.
-+
-+   If the swapfile changes for any reason (it is moved to a different
-+   location, it is deleted and recreated, or the filesystem is
-+   defragmented) then you will have to check
-+   /sys/power/tuxonice/swap/headerlocations for a new resume_block value.
-+
-+   Once you've compiled and installed the kernel and adjusted your bootloader
-+   configuration, you should only need to reboot for the most basic part
-+   of TuxOnIce to be ready.
-+
-+   If you only compile in the swap allocator, or only compile in the file
-+   allocator, you don't need to add the "swap:" part of the resume=
-+   parameters above. resume=/dev/hda2:0x242d will work just as well. If you
-+   have compiled both and your storage is on swap, you can also use this
-+   format (the swap allocator is the default allocator).
-+
-+   When compiling your kernel, one of the options in the 'Power Management
-+   Support' menu, just above the 'Enhanced Hibernation (TuxOnIce)' entry is
-+   called 'Default resume partition'. This can be used to set a default value
-+   for the resume= parameter.
-+
-+   d. The hibernate script.
-+
-+   Since the driver model in 2.6 kernels is still being developed, you may need
-+   to do more than just configure TuxOnIce. Users of TuxOnIce usually start the
-+   process via a script which prepares for the hibernation cycle, tells the
-+   kernel to do its stuff and then restore things afterwards. This script might
-+   involve:
-+
-+   - Switching to a text console and back if X doesn't like the video card
-+     status on resume.
-+   - Un/reloading drivers that don't play well with hibernation.
-+
-+   Note that you might not be able to unload some drivers if there are
-+   processes using them. You might have to kill off processes that hold
-+   devices open. Hint: if your X server accesses an USB mouse, doing a
-+   'chvt' to a text console releases the device and you can unload the
-+   module.
-+
-+   Check out the latest script (available on tuxonice.net).
-+
-+   e. The userspace user interface.
-+
-+   TuxOnIce has very limited support for displaying status if you only apply
-+   the kernel patch - it can printk messages, but that is all. In addition,
-+   some of the functions mentioned in this document (such as cancelling a cycle
-+   or performing interactive debugging) are unavailable. To utilise these
-+   functions, or simply get a nice display, you need the 'userui' component.
-+   Userui comes in three flavours, usplash, fbsplash and text. Text should
-+   work on any console. Usplash and fbsplash require the appropriate
-+   (distro specific?) support.
-+
-+   To utilise a userui, TuxOnIce just needs to be told where to find the
-+   userspace binary:
-+
-+   echo "/usr/local/sbin/tuxoniceui_fbsplash" > /sys/power/tuxonice/user_interface/program
-+
-+   The hibernate script can do this for you, and a default value for this
-+   setting can be configured when compiling the kernel. This path is also
-+   stored in the image header, so if you have an initrd or initramfs, you can
-+   use the userui during the first part of resuming (prior to the atomic
-+   restore) by putting the binary in the same path in your initrd/ramfs.
-+   Alternatively, you can put it in a different location and do an echo
-+   similar to the above prior to the echo > do_resume. The value saved in the
-+   image header will then be ignored.
-+
-+4. Why not just use the version already in the kernel?
-+
-+   The version in the vanilla kernel has a number of drawbacks. The most
-+   serious of these are:
-+	- it has a maximum image size of 1/2 total memory;
-+	- it doesn't allocate storage until after it has snapshotted memory.
-+	  This means that you can't be sure hibernating will work until you
-+	  see it start to write the image;
-+	- it does not allow you to press escape to cancel a cycle;
-+	- it does not allow you to press escape to cancel resuming;
-+	- it does not allow you to automatically swapon a file when
-+	  starting a cycle;
-+	- it does not allow you to use multiple swap partitions or files;
-+	- it does not allow you to use ordinary files;
-+	- it just invalidates an image and continues to boot if you
-+	  accidentally boot the wrong kernel after hibernating;
-+	- it doesn't support any sort of nice display while hibernating;
-+	- it is moving toward requiring that you have an initrd/initramfs
-+	  to ever have a hope of resuming (uswsusp). While uswsusp will
-+	  address some of the concerns above, it won't address all of them,
-+          and will be more complicated to get set up;
-+        - it doesn't have support for suspend-to-both (write a hibernation
-+	  image, then suspend to ram; I think this is known as ReadySafe
-+	  under M$).
-+
-+5. How do you use it?
-+
-+   A hibernation cycle can be started directly by doing:
-+
-+	echo > /sys/power/tuxonice/do_hibernate
-+
-+   In practice, though, you'll probably want to use the hibernate script
-+   to unload modules, configure the kernel the way you like it and so on.
-+   In that case, you'd do (as root):
-+
-+	hibernate
-+
-+   See the hibernate script's man page for more details on the options it
-+   takes.
-+
-+   If you're using the text or splash user interface modules, one feature of
-+   TuxOnIce that you might find useful is that you can press Escape at any time
-+   during hibernating, and the process will be aborted.
-+
-+   Due to the way hibernation works, this means you'll have your system back and
-+   perfectly usable almost instantly. The only exception is when it's at the
-+   very end of writing the image. Then it will need to reload a small (usually
-+   4-50MBs, depending upon the image characteristics) portion first.
-+
-+   Likewise, when resuming, you can press escape and resuming will be aborted.
-+   The computer will then powerdown again according to settings at that time for
-+   the powerdown method or rebooting.
-+
-+   You can change the settings for powering down while the image is being
-+   written by pressing 'R' to toggle rebooting and 'O' to toggle between
-+   suspending to ram and powering down completely).
-+
-+   If you run into problems with resuming, adding the "noresume" option to
-+   the kernel command line will let you skip the resume step and recover your
-+   system. This option shouldn't normally be needed, because TuxOnIce modifies
-+   the image header prior to the atomic restore, and will thus prompt you
-+   if it detects that you've tried to resume an image before (this flag is
-+   removed if you press Escape to cancel a resume, so you won't be prompted
-+   then).
-+
-+   Recent kernels (2.6.24 onwards) add support for resuming from a different
-+   kernel to the one that was hibernated (thanks to Rafael for his work on
-+   this - I've just embraced and enhanced the support for TuxOnIce). This
-+   should further reduce the need for you to use the noresume option.
-+
-+6. What do all those entries in /sys/power/tuxonice do?
-+
-+   /sys/power/tuxonice is the directory which contains files you can use to
-+   tune and configure TuxOnIce to your liking. The exact contents of
-+   the directory will depend upon the version of TuxOnIce you're
-+   running and the options you selected at compile time. In the following
-+   descriptions, names in brackets refer to compile time options.
-+   (Note that they're all dependant upon you having selected CONFIG_TUXONICE
-+   in the first place!).
-+
-+   Since the values of these settings can open potential security risks, the
-+   writeable ones are accessible only to the root user. You may want to
-+   configure sudo to allow you to invoke your hibernate script as an ordinary
-+   user.
-+
-+   - alt_resume_param
-+
-+   Instead of powering down after writing a hibernation image, TuxOnIce
-+   supports resuming from a different image. This entry lets you set the
-+   location of the signature for that image (the resume= value you'd use
-+   for it). Using an alternate image and keep_image mode, you can do things
-+   like using an alternate image to power down an uninterruptible power
-+   supply.
-+
-+   - block_io/target_outstanding_io
-+
-+   This value controls the amount of memory that the block I/O code says it
-+   needs when the core code is calculating how much memory is needed for
-+   hibernating and for resuming. It doesn't directly control the amount of
-+   I/O that is submitted at any one time - that depends on the amount of
-+   available memory (we may have more available than we asked for), the
-+   throughput that is being achieved and the ability of the CPU to keep up
-+   with disk throughput (particularly where we're compressing pages).
-+
-+   - compression/algorithm
-+
-+   Set the cryptoapi algorithm used for compressing the image.
-+
-+   - compression/expected_compression
-+
-+   These values allow you to set an expected compression ratio, which TuxOnice
-+   will use in calculating whether it meets constraints on the image size. If
-+   this expected compression ratio is not attained, the hibernation cycle will
-+   abort, so it is wise to allow some spare. You can see what compression
-+   ratio is achieved in the logs after hibernating.
-+
-+   - debug_info:
-+
-+   This file returns information about your configuration that may be helpful
-+   in diagnosing problems with hibernating.
-+
-+   - did_suspend_to_both:
-+
-+   This file can be used when you hibernate with powerdown method 3 (ie suspend
-+   to ram after writing the image). There can be two outcomes in this case. We
-+   can resume from the suspend-to-ram before the battery runs out, or we can run
-+   out of juice and and up resuming like normal. This entry lets you find out,
-+   post resume, which way we went. If the value is 1, we resumed from suspend
-+   to ram. This can be useful when actions need to be run post suspend-to-ram
-+   that don't need to be run if we did the normal resume from power off.
-+
-+   - do_hibernate:
-+
-+   When anything is written to this file, the kernel side of TuxOnIce will
-+   begin to attempt to write an image to disk and power down. You'll normally
-+   want to run the hibernate script instead, to get modules unloaded first.
-+
-+   - do_resume:
-+
-+   When anything is written to this file TuxOnIce will attempt to read and
-+   restore an image. If there is no image, it will return almost immediately.
-+   If an image exists, the echo > will never return. Instead, the original
-+   kernel context will be restored and the original echo > do_hibernate will
-+   return.
-+
-+   - */enabled
-+
-+   These option can be used to temporarily disable various parts of TuxOnIce.
-+
-+   - extra_pages_allowance
-+
-+   When TuxOnIce does its atomic copy, it calls the driver model suspend
-+   and resume methods. If you have DRI enabled with a driver such as fglrx,
-+   this can result in the driver allocating a substantial amount of memory
-+   for storing its state. Extra_pages_allowance tells TuxOnIce how much
-+   extra memory it should ensure is available for those allocations. If
-+   your attempts at hibernating end with a message in dmesg indicating that
-+   insufficient extra pages were allowed, you need to increase this value.
-+
-+   - file/target:
-+
-+   Read this value to get the current setting. Write to it to point TuxOnice
-+   at a new storage location for the file allocator. See section 3.b.ii above
-+   for details of how to set up the file allocator.
-+
-+   - freezer_test
-+
-+   This entry can be used to get TuxOnIce to just test the freezer and prepare
-+   an image without actually doing a hibernation cycle. It is useful for
-+   diagnosing freezing and image preparation issues.
-+
-+   - full_pageset2
-+
-+   TuxOnIce divides the pages that are stored in an image into two sets. The
-+   difference between the two sets is that pages in pageset 1 are atomically
-+   copied, and pages in pageset 2 are written to disk without being copied
-+   first. A page CAN be written to disk without being copied first if and only
-+   if its contents will not be modified or used at any time after userspace
-+   processes are frozen. A page MUST be in pageset 1 if its contents are
-+   modified or used at any time after userspace processes have been frozen.
-+
-+   Normally (ie if this option is enabled), TuxOnIce will put all pages on the
-+   per-zone LRUs in pageset2, then remove those pages used by any userspace
-+   user interface helper and TuxOnIce storage manager that are running,
-+   together with pages used by the GEM memory manager introduced around 2.6.28
-+   kernels.
-+
-+   If this option is disabled, a much more conservative approach will be taken.
-+   The only pages in pageset2 will be those belonging to userspace processes,
-+   with the exclusion of those belonging to the TuxOnIce userspace helpers
-+   mentioned above. This will result in a much smaller pageset2, and will
-+   therefore result in smaller images than are possible with this option
-+   enabled.
-+
-+   - ignore_rootfs
-+
-+   TuxOnIce records which device is mounted as the root filesystem when
-+   writing the hibernation image. It will normally check at resume time that
-+   this device isn't already mounted - that would be a cause of filesystem
-+   corruption. In some particular cases (RAM based root filesystems), you
-+   might want to disable this check. This option allows you to do that.
-+
-+   - image_exists:
-+
-+   Can be used in a script to determine whether a valid image exists at the
-+   location currently pointed to by resume=. Returns up to three lines.
-+   The first is whether an image exists (-1 for unsure, otherwise 0 or 1).
-+   If an image eixsts, additional lines will return the machine and version.
-+   Echoing anything to this entry removes any current image.
-+
-+   - image_size_limit:
-+
-+   The maximum size of hibernation image written to disk, measured in megabytes
-+   (1024*1024).
-+
-+   - last_result:
-+
-+   The result of the last hibernation cycle, as defined in
-+   include/linux/suspend-debug.h with the values SUSPEND_ABORTED to
-+   SUSPEND_KEPT_IMAGE. This is a bitmask.
-+
-+   - late_cpu_hotplug:
-+
-+   This sysfs entry controls whether cpu hotplugging is done - as normal - just
-+   before (unplug) and after (replug) the atomic copy/restore (so that all
-+   CPUs/cores are available for multithreaded I/O). The alternative is to
-+   unplug all secondary CPUs/cores at the start of hibernating/resuming, and
-+   replug them at the end of resuming. No multithreaded I/O will be possible in
-+   this configuration, but the odd machine has been reported to require it.
-+
-+   - lid_file:
-+
-+   This determines which ACPI button file we look in to determine whether the
-+   lid is open or closed after resuming from suspend to disk or power off.
-+   If the entry is set to "lid/LID", we'll open /proc/acpi/button/lid/LID/state
-+   and check its contents at the appropriate moment. See post_wake_state below
-+   for more details on how this entry is used.
-+
-+   - log_everything (CONFIG_PM_DEBUG):
-+
-+   Setting this option results in all messages printed being logged. Normally,
-+   only a subset are logged, so as to not slow the process and not clutter the
-+   logs. Useful for debugging. It can be toggled during a cycle by pressing
-+   'L'.
-+
-+   - no_load_direct:
-+
-+   This is a debugging option. If, when loading the atomically copied pages of
-+   an image, TuxOnIce finds that the destination address for a page is free,
-+   it will normally allocate the image, load the data directly into that
-+   address and skip it in the atomic restore. If this option is disabled, the
-+   page will be loaded somewhere else and atomically restored like other pages.
-+
-+   - no_flusher_thread:
-+
-+   When doing multithreaded I/O (see below), the first online CPU can be used
-+   to _just_ submit compressed pages when writing the image, rather than
-+   compressing and submitting data. This option is normally disabled, but has
-+   been included because Nigel would like to see whether it will be more useful
-+   as the number of cores/cpus in computers increases.
-+
-+   - no_multithreaded_io:
-+
-+   TuxOnIce will normally create one thread per cpu/core on your computer,
-+   each of which will then perform I/O. This will generally result in
-+   throughput that's the maximum the storage medium can handle. There
-+   shouldn't be any reason to disable multithreaded I/O now, but this option
-+   has been retained for debugging purposes.
-+
-+   - no_pageset2
-+
-+   See the entry for full_pageset2 above for an explanation of pagesets.
-+   Enabling this option causes TuxOnIce to do an atomic copy of all pages,
-+   thereby limiting the maximum image size to 1/2 of memory, as swsusp does.
-+
-+   - no_pageset2_if_unneeded
-+
-+   See the entry for full_pageset2 above for an explanation of pagesets.
-+   Enabling this option causes TuxOnIce to act like no_pageset2 was enabled
-+   if and only it isn't needed anyway. This option may still make TuxOnIce
-+   less reliable because pageset2 pages are normally used to store the
-+   atomic copy - drivers that want to do allocations of larger amounts of
-+   memory in one shot will be more likely to find that those amounts aren't
-+   available if this option is enabled.
-+
-+   - pause_between_steps (CONFIG_PM_DEBUG):
-+
-+   This option is used during debugging, to make TuxOnIce pause between
-+   each step of the process. It is ignored when the nice display is on.
-+
-+   - post_wake_state:
-+
-+   TuxOnIce provides support for automatically waking after a user-selected
-+   delay, and using a different powerdown method if the lid is still closed.
-+   (Yes, we're assuming a laptop).  This entry lets you choose what state
-+   should be entered next. The values are those described under
-+   powerdown_method, below. It can be used to suspend to RAM after hibernating,
-+   then powerdown properly (say) 20 minutes. It can also be used to power down
-+   properly, then wake at (say) 6.30am and suspend to RAM until you're ready
-+   to use the machine.
-+
-+   - powerdown_method:
-+
-+   Used to select a method by which TuxOnIce should powerdown after writing the
-+   image. Currently:
-+
-+   0: Don't use ACPI to power off.
-+   3: Attempt to enter Suspend-to-ram.
-+   4: Attempt to enter ACPI S4 mode.
-+   5: Attempt to power down via ACPI S5 mode.
-+
-+   Note that these options are highly dependant upon your hardware & software:
-+
-+   3: When succesful, your machine suspends to ram instead of powering off.
-+      The advantage of using this mode is that it doesn't matter whether your
-+      battery has enough charge to make it through to your next resume. If it
-+      lasts, you will simply resume from suspend to ram (and the image on disk
-+      will be discarded). If the battery runs out, you will resume from disk
-+      instead. The disadvantage is that it takes longer than a normal
-+      suspend-to-ram to enter the state, since the suspend-to-disk image needs
-+      to be written first.
-+   4/5: When successful, your machine will be off and comsume (almost) no power.
-+      But it might still react to some external events like opening the lid or
-+      trafic on  a network or usb device. For the bios, resume is then the same
-+      as warm boot, similar to a situation where you used the command `reboot'
-+      to reboot your machine. If your machine has problems on warm boot or if
-+      you want to protect your machine with the bios password, this is probably
-+      not the right choice. Mode 4 may be necessary on some machines where ACPI
-+      wake up methods need to be run to properly reinitialise hardware after a
-+      hibernation cycle.
-+   0: Switch the machine completely off. The only possible wakeup is the power
-+      button. For the bios, resume is then the same as a cold boot, in
-+      particular you would  have to provide your bios boot password if your
-+      machine uses that feature for booting.
-+
-+   - progressbar_granularity_limit:
-+
-+   This option can be used to limit the granularity of the progress bar
-+   displayed with a bootsplash screen. The value is the maximum number of
-+   steps. That is, 10 will make the progress bar jump in 10% increments.
-+
-+   - reboot:
-+
-+   This option causes TuxOnIce to reboot rather than powering down
-+   at the end of saving an image. It can be toggled during a cycle by pressing
-+   'R'.
-+
-+   - resume:
-+
-+   This sysfs entry can be used to read and set the location in which TuxOnIce
-+   will look for the signature of an image - the value set using resume= at
-+   boot time or CONFIG_PM_STD_PARTITION ("Default resume partition"). By
-+   writing to this file as well as modifying your bootloader's configuration
-+   file (eg menu.lst), you can set or reset the location of your image or the
-+   method of storing the image without rebooting.
-+
-+   - replace_swsusp (CONFIG_TOI_REPLACE_SWSUSP):
-+
-+   This option makes
-+
-+     echo disk > /sys/power/state
-+
-+   activate TuxOnIce instead of swsusp. Regardless of whether this option is
-+   enabled, any invocation of swsusp's resume time trigger will cause TuxOnIce
-+   to check for an image too. This is due to the fact that at resume time, we
-+   can't know whether this option was enabled until we see if an image is there
-+   for us to resume from. (And when an image exists, we don't care whether we
-+   did replace swsusp anyway - we just want to resume).
-+
-+   - resume_commandline:
-+
-+   This entry can be read after resuming to see the commandline that was used
-+   when resuming began. You might use this to set up two bootloader entries
-+   that are the same apart from the fact that one includes a extra append=
-+   argument "at_work=1". You could then grep resume_commandline in your
-+   post-resume scripts and configure networking (for example) differently
-+   depending upon whether you're at home or work. resume_commandline can be
-+   set to arbitrary text if you wish to remove sensitive contents.
-+
-+   - swap/swapfilename:
-+
-+   This entry is used to specify the swapfile or partition that
-+   TuxOnIce will attempt to swapon/swapoff automatically. Thus, if
-+   I normally use /dev/hda1 for swap, and want to use /dev/hda2 for specifically
-+   for my hibernation image, I would
-+
-+   echo /dev/hda2 > /sys/power/tuxonice/swap/swapfile
-+
-+   /dev/hda2 would then be automatically swapon'd and swapoff'd. Note that the
-+   swapon and swapoff occur while other processes are frozen (including kswapd)
-+   so this swap file will not be used up when attempting to free memory. The
-+   parition/file is also given the highest priority, so other swapfiles/partitions
-+   will only be used to save the image when this one is filled.
-+
-+   The value of this file is used by headerlocations along with any currently
-+   activated swapfiles/partitions.
-+
-+   - swap/headerlocations:
-+
-+   This option tells you the resume= options to use for swap devices you
-+   currently have activated. It is particularly useful when you only want to
-+   use a swap file to store your image. See above for further details.
-+
-+   - test_bio
-+
-+   This is a debugging option. When enabled, TuxOnIce will not hibernate.
-+   Instead, when asked to write an image, it will skip the atomic copy,
-+   just doing the writing of the image and then returning control to the
-+   user at the point where it would have powered off. This is useful for
-+   testing throughput in different configurations.
-+
-+   - test_filter_speed
-+
-+   This is a debugging option. When enabled, TuxOnIce will not hibernate.
-+   Instead, when asked to write an image, it will not write anything or do
-+   an atomic copy, but will only run any enabled compression algorithm on the
-+   data that would have been written (the source pages of the atomic copy in
-+   the case of pageset 1). This is useful for comparing the performance of
-+   compression algorithms and for determining the extent to which an upgrade
-+   to your storage method would improve hibernation speed.
-+
-+   - user_interface/debug_sections (CONFIG_PM_DEBUG):
-+
-+   This value, together with the console log level, controls what debugging
-+   information is displayed. The console log level determines the level of
-+   detail, and this value determines what detail is displayed. This value is
-+   a bit vector, and the meaning of the bits can be found in the kernel tree
-+   in include/linux/tuxonice.h. It can be overridden using the kernel's
-+   command line option suspend_dbg.
-+
-+   - user_interface/default_console_level (CONFIG_PM_DEBUG):
-+
-+   This determines the value of the console log level at the start of a
-+   hibernation cycle. If debugging is compiled in, the console log level can be
-+   changed during a cycle by pressing the digit keys. Meanings are:
-+
-+   0: Nice display.
-+   1: Nice display plus numerical progress.
-+   2: Errors only.
-+   3: Low level debugging info.
-+   4: Medium level debugging info.
-+   5: High level debugging info.
-+   6: Verbose debugging info.
-+
-+   - user_interface/enable_escape:
-+
-+   Setting this to "1" will enable you abort a hibernation cycle or resuming by
-+   pressing escape, "0" (default) disables this feature. Note that enabling
-+   this option means that you cannot initiate a hibernation cycle and then walk
-+   away from your computer, expecting it to be secure. With feature disabled,
-+   you can validly have this expectation once TuxOnice begins to write the
-+   image to disk. (Prior to this point, it is possible that TuxOnice might
-+   about because of failure to freeze all processes or because constraints
-+   on its ability to save the image are not met).
-+
-+   - user_interface/program
-+
-+   This entry is used to tell TuxOnice what userspace program to use for
-+   providing a user interface while hibernating. The program uses a netlink
-+   socket to pass messages back and forward to the kernel, allowing all of the
-+   functions formerly implemented in the kernel user interface components.
-+
-+   - version:
-+
-+   The version of TuxOnIce you have compiled into the currently running kernel.
-+
-+   - wake_alarm_dir:
-+
-+   As mentioned above (post_wake_state), TuxOnIce supports automatically waking
-+   after some delay. This entry allows you to select which wake alarm to use.
-+   It should contain the value "rtc0" if you're wanting to use
-+   /sys/class/rtc/rtc0.
-+
-+   - wake_delay:
-+
-+   This value determines the delay from the end of writing the image until the
-+   wake alarm is triggered. You can set an absolute time by writing the desired
-+   time into /sys/class/rtc/<wake_alarm_dir>/wakealarm and leaving these values
-+   empty.
-+
-+   Note that for the wakeup to actually occur, you may need to modify entries
-+   in /proc/acpi/wakeup. This is done by echoing the name of the button in the
-+   first column (eg PBTN) into the file.
-+
-+7. How do you get support?
-+
-+   Glad you asked. TuxOnIce is being actively maintained and supported
-+   by Nigel (the guy doing most of the kernel coding at the moment), Bernard
-+   (who maintains the hibernate script and userspace user interface components)
-+   and its users.
-+
-+   Resources availble include HowTos, FAQs and a Wiki, all available via
-+   tuxonice.net.  You can find the mailing lists there.
-+
-+8. I think I've found a bug. What should I do?
-+
-+   By far and a way, the most common problems people have with TuxOnIce
-+   related to drivers not having adequate power management support. In this
-+   case, it is not a bug with TuxOnIce, but we can still help you. As we
-+   mentioned above, such issues can usually be worked around by building the
-+   functionality as modules and unloading them while hibernating. Please visit
-+   the Wiki for up-to-date lists of known issues and work arounds.
-+
-+   If this information doesn't help, try running:
-+
-+   hibernate --bug-report
-+
-+   ..and sending the output to the users mailing list.
-+
-+   Good information on how to provide us with useful information from an
-+   oops is found in the file REPORTING-BUGS, in the top level directory
-+   of the kernel tree. If you get an oops, please especially note the
-+   information about running what is printed on the screen through ksymoops.
-+   The raw information is useless.
-+
-+9. When will XXX be supported?
-+
-+   If there's a feature missing from TuxOnIce that you'd like, feel free to
-+   ask. We try to be obliging, within reason.
-+
-+   Patches are welcome. Please send to the list.
-+
-+10. How does it work?
-+
-+   TuxOnIce does its work in a number of steps.
-+
-+   a. Freezing system activity.
-+
-+   The first main stage in hibernating is to stop all other activity. This is
-+   achieved in stages. Processes are considered in fours groups, which we will
-+   describe in reverse order for clarity's sake: Threads with the PF_NOFREEZE
-+   flag, kernel threads without this flag, userspace processes with the
-+   PF_SYNCTHREAD flag and all other processes. The first set (PF_NOFREEZE) are
-+   untouched by the refrigerator code. They are allowed to run during hibernating
-+   and resuming, and are used to support user interaction, storage access or the
-+   like. Other kernel threads (those unneeded while hibernating) are frozen last.
-+   This leaves us with userspace processes that need to be frozen. When a
-+   process enters one of the *_sync system calls, we set a PF_SYNCTHREAD flag on
-+   that process for the duration of that call. Processes that have this flag are
-+   frozen after processes without it, so that we can seek to ensure that dirty
-+   data is synced to disk as quickly as possible in a situation where other
-+   processes may be submitting writes at the same time. Freezing the processes
-+   that are submitting data stops new I/O from being submitted. Syncthreads can
-+   then cleanly finish their work. So the order is:
-+
-+   - Userspace processes without PF_SYNCTHREAD or PF_NOFREEZE;
-+   - Userspace processes with PF_SYNCTHREAD (they won't have NOFREEZE);
-+   - Kernel processes without PF_NOFREEZE.
-+
-+   b. Eating memory.
-+
-+   For a successful hibernation cycle, you need to have enough disk space to store the
-+   image and enough memory for the various limitations of TuxOnIce's
-+   algorithm. You can also specify a maximum image size. In order to attain
-+   to those constraints, TuxOnIce may 'eat' memory. If, after freezing
-+   processes, the constraints aren't met, TuxOnIce will thaw all the
-+   other processes and begin to eat memory until its calculations indicate
-+   the constraints are met. It will then freeze processes again and recheck
-+   its calculations.
-+
-+   c. Allocation of storage.
-+
-+   Next, TuxOnIce allocates the storage that will be used to save
-+   the image.
-+
-+   The core of TuxOnIce knows nothing about how or where pages are stored. We
-+   therefore request the active allocator (remember you might have compiled in
-+   more than one!) to allocate enough storage for our expect image size. If
-+   this request cannot be fulfilled, we eat more memory and try again. If it
-+   is fulfiled, we seek to allocate additional storage, just in case our
-+   expected compression ratio (if any) isn't achieved. This time, however, we
-+   just continue if we can't allocate enough storage.
-+
-+   If these calls to our allocator change the characteristics of the image
-+   such that we haven't allocated enough memory, we also loop. (The allocator
-+   may well need to allocate space for its storage information).
-+
-+   d. Write the first part of the image.
-+
-+   TuxOnIce stores the image in two sets of pages called 'pagesets'.
-+   Pageset 2 contains pages on the active and inactive lists; essentially
-+   the page cache. Pageset 1 contains all other pages, including the kernel.
-+   We use two pagesets for one important reason: We need to make an atomic copy
-+   of the kernel to ensure consistency of the image. Without a second pageset,
-+   that would limit us to an image that was at most half the amount of memory
-+   available. Using two pagesets allows us to store a full image. Since pageset
-+   2 pages won't be needed in saving pageset 1, we first save pageset 2 pages.
-+   We can then make our atomic copy of the remaining pages using both pageset 2
-+   pages and any other pages that are free. While saving both pagesets, we are
-+   careful not to corrupt the image. Among other things, we use lowlevel block
-+   I/O routines that don't change the pagecache contents.
-+
-+   The next step, then, is writing pageset 2.
-+
-+   e. Suspending drivers and storing processor context.
-+
-+   Having written pageset2, TuxOnIce calls the power management functions to
-+   notify drivers of the hibernation, and saves the processor state in preparation
-+   for the atomic copy of memory we are about to make.
-+
-+   f. Atomic copy.
-+
-+   At this stage, everything else but the TuxOnIce code is halted. Processes
-+   are frozen or idling, drivers are quiesced and have stored (ideally and where
-+   necessary) their configuration in memory we are about to atomically copy.
-+   In our lowlevel architecture specific code, we have saved the CPU state.
-+   We can therefore now do our atomic copy before resuming drivers etc.
-+
-+   g. Save the atomic copy (pageset 1).
-+
-+   TuxOnice can then write the atomic copy of the remaining pages. Since we
-+   have copied the pages into other locations, we can continue to use the
-+   normal block I/O routines without fear of corruption our image.
-+
-+   f. Save the image header.
-+
-+   Nearly there! We save our settings and other parameters needed for
-+   reloading pageset 1 in an 'image header'. We also tell our allocator to
-+   serialise its data at this stage, so that it can reread the image at resume
-+   time.
-+
-+   g. Set the image header.
-+
-+   Finally, we edit the header at our resume= location. The signature is
-+   changed by the allocator to reflect the fact that an image exists, and to
-+   point to the start of that data if necessary (swap allocator).
-+
-+   h. Power down.
-+
-+   Or reboot if we're debugging and the appropriate option is selected.
-+
-+   Whew!
-+
-+   Reloading the image.
-+   --------------------
-+
-+   Reloading the image is essentially the reverse of all the above. We load
-+   our copy of pageset 1, being careful to choose locations that aren't going
-+   to be overwritten as we copy it back (We start very early in the boot
-+   process, so there are no other processes to quiesce here). We then copy
-+   pageset 1 back to its original location in memory and restore the process
-+   context. We are now running with the original kernel. Next, we reload the
-+   pageset 2 pages, free the memory and swap used by TuxOnIce, restore
-+   the pageset header and restart processes. Sounds easy in comparison to
-+   hibernating, doesn't it!
-+
-+   There is of course more to TuxOnIce than this, but this explanation
-+   should be a good start. If there's interest, I'll write further
-+   documentation on range pages and the low level I/O.
-+
-+11. Who wrote TuxOnIce?
-+
-+   (Answer based on the writings of Florent Chabaud, credits in files and
-+   Nigel's limited knowledge; apologies to anyone missed out!)
-+
-+   The main developers of TuxOnIce have been...
-+
-+   Gabor Kuti
-+   Pavel Machek
-+   Florent Chabaud
-+   Bernard Blackham
-+   Nigel Cunningham
-+
-+   Significant portions of swsusp, the code in the vanilla kernel which
-+   TuxOnIce enhances, have been worked on by Rafael Wysocki. Thanks should
-+   also be expressed to him.
-+
-+   The above mentioned developers have been aided in their efforts by a host
-+   of hundreds, if not thousands of testers and people who have submitted bug
-+   fixes & suggestions. Of special note are the efforts of Michael Frank, who
-+   had his computers repetitively hibernate and resume for literally tens of
-+   thousands of cycles and developed scripts to stress the system and test
-+   TuxOnIce far beyond the point most of us (Nigel included!) would consider
-+   testing. His efforts have contributed as much to TuxOnIce as any of the
-+   names above.
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 2b349ba..d43cd3a 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -5630,6 +5630,13 @@ S:	Maintained
- F:	drivers/tc/
- F:	include/linux/tc.h
+diff --git a/include/linux/netlink.h b/include/linux/netlink.h
+index d597e15..f220828 100644
+--- a/include/linux/netlink.h
++++ b/include/linux/netlink.h
+@@ -24,6 +24,7 @@
+ /* leave room for NETLINK_DM (DM Events) */
+ #define NETLINK_SCSITRANSPORT	18	/* SCSI Transports */
+ #define NETLINK_ECRYPTFS	19
++#define NETLINK_TOI_USERUI	20	/* TuxOnIce's userui */
+ #define NETLINK_TOI_USM		21	/* Userspace storage manager */
  
-+TUXONICE (ENHANCED HIBERNATION)
-+P:	Nigel Cunningham
-+M:	nigel@tuxonice.net
-+L:	tuxonice-devel@tuxonice.net
-+W:	http://tuxonice.net
-+S:	Maintained
+ #define MAX_LINKS 32		
+diff --git a/kernel/power/Kconfig b/kernel/power/Kconfig
+index d8e62b6..f669cdd 100644
+--- a/kernel/power/Kconfig
++++ b/kernel/power/Kconfig
+@@ -227,6 +227,23 @@ menuconfig TOI_CORE
+ 	comment "No compression support available without Cryptoapi support."
+ 		depends on TOI_CORE && !CRYPTO
+ 
++	config TOI_USERUI
++		bool "Userspace User Interface support"
++		depends on TOI_CORE && NET && (VT || SERIAL_CONSOLE)
++		default y
++		---help---
++		  This option enabled support for a userspace based user interface
++		  to TuxOnIce, which allows you to have a nice display while suspending
++		  and resuming, and also enables features such as pressing escape to
++		  cancel a cycle or interactive debugging.
 +
- U14-34F SCSI DRIVER
- P:	Dario Ballabio
- M:	ballabio_dario@emc.com
++	config TOI_USERUI_DEFAULT_PATH
++		string "Default userui program location"
++		default "/usr/local/sbin/tuxoniceui_text"
++		depends on TOI_USERUI
++		---help---
++		  This entry allows you to specify a default path to the userui binary.
++
+ 	config TOI_KEEP_IMAGE
+ 		bool "Allow Keep Image Mode"
+ 		depends on TOI_CORE
+diff --git a/kernel/power/Makefile b/kernel/power/Makefile
+index 9f6d06f..d67a242 100644
+--- a/kernel/power/Makefile
++++ b/kernel/power/Makefile
+@@ -20,6 +20,8 @@ obj-$(CONFIG_TOI_CRYPTO)	+= tuxonice_compress.o
+ obj-$(CONFIG_TOI_SWAP)		+= tuxonice_block_io.o tuxonice_swap.o
+ obj-$(CONFIG_TOI_FILE)		+= tuxonice_block_io.o tuxonice_file.o
+ 
++obj-$(CONFIG_TOI_USERUI)	+= tuxonice_userui.o
++
+ obj-$(CONFIG_PM)		+= main.o
+ obj-$(CONFIG_PM_SLEEP)		+= console.o
+ obj-$(CONFIG_FREEZER)		+= process.o
+diff --git a/kernel/power/tuxonice_userui.c b/kernel/power/tuxonice_userui.c
+new file mode 100644
+index 0000000..c7b1053
+--- /dev/null
++++ b/kernel/power/tuxonice_userui.c
+@@ -0,0 +1,662 @@
++/*
++ * kernel/power/user_ui.c
++ *
++ * Copyright (C) 2005-2007 Bernard Blackham
++ * Copyright (C) 2002-2008 Nigel Cunningham (nigel at tuxonice net)
++ *
++ * This file is released under the GPLv2.
++ *
++ * Routines for TuxOnIce's user interface.
++ *
++ * The user interface code talks to a userspace program via a
++ * netlink socket.
++ *
++ * The kernel side:
++ * - starts the userui program;
++ * - sends text messages and progress bar status;
++ *
++ * The user space side:
++ * - passes messages regarding user requests (abort, toggle reboot etc)
++ *
++ */
++
++#define __KERNEL_SYSCALLS__
++
++#include <linux/suspend.h>
++#include <linux/freezer.h>
++#include <linux/console.h>
++#include <linux/ctype.h>
++#include <linux/tty.h>
++#include <linux/vt_kern.h>
++#include <linux/reboot.h>
++#include <linux/kmod.h>
++#include <linux/security.h>
++#include <linux/syscalls.h>
++
++#include "tuxonice_sysfs.h"
++#include "tuxonice_modules.h"
++#include "tuxonice.h"
++#include "tuxonice_ui.h"
++#include "tuxonice_netlink.h"
++#include "tuxonice_power_off.h"
++
++static char local_printf_buf[1024];	/* Same as printk - should be safe */
++
++static struct user_helper_data ui_helper_data;
++static struct toi_module_ops userui_ops;
++static int orig_kmsg;
++
++static char lastheader[512];
++static int lastheader_message_len;
++static int ui_helper_changed; /* Used at resume-time so don't overwrite value
++				set from initrd/ramfs. */
++
++/* Number of distinct progress amounts that userspace can display */
++static int progress_granularity = 30;
++
++static DECLARE_WAIT_QUEUE_HEAD(userui_wait_for_key);
++
++/**
++ * ui_nl_set_state - Update toi_action based on a message from userui.
++ *
++ * @n: The bit (1 << bit) to set.
++ */
++static void ui_nl_set_state(int n)
++{
++	/* Only let them change certain settings */
++	static const u32 toi_action_mask =
++		(1 << TOI_REBOOT) | (1 << TOI_PAUSE) |
++		(1 << TOI_LOGALL) |
++		(1 << TOI_SINGLESTEP) |
++		(1 << TOI_PAUSE_NEAR_PAGESET_END);
++
++	toi_bkd.toi_action = (toi_bkd.toi_action & (~toi_action_mask)) |
++		(n & toi_action_mask);
++
++	if (!test_action_state(TOI_PAUSE) &&
++			!test_action_state(TOI_SINGLESTEP))
++		wake_up_interruptible(&userui_wait_for_key);
++}
++
++/**
++ * userui_post_atomic_restore - Tell userui that atomic restore just happened.
++ *
++ * Tell userui that atomic restore just occured, so that it can do things like
++ * redrawing the screen, re-getting settings and so on.
++ */
++static void userui_post_atomic_restore(void)
++{
++	toi_send_netlink_message(&ui_helper_data,
++			USERUI_MSG_POST_ATOMIC_RESTORE, NULL, 0);
++}
++
++/**
++ * userui_storage_needed - Report how much memory in image header is needed.
++ */
++static int userui_storage_needed(void)
++{
++	return sizeof(ui_helper_data.program) + 1 + sizeof(int);
++}
++
++/**
++ * userui_save_config_info - Fill buffer with config info for image header.
++ *
++ * @buf: Buffer into which to put the config info we want to save.
++ */
++static int userui_save_config_info(char *buf)
++{
++	*((int *) buf) = progress_granularity;
++	memcpy(buf + sizeof(int), ui_helper_data.program,
++			sizeof(ui_helper_data.program));
++	return sizeof(ui_helper_data.program) + sizeof(int) + 1;
++}
++
++/**
++ * userui_load_config_info - Restore config info from buffer.
++ *
++ * @buf: Buffer containing header info loaded.
++ * @size: Size of data loaded for this module.
++ */
++static void userui_load_config_info(char *buf, int size)
++{
++	progress_granularity = *((int *) buf);
++	size -= sizeof(int);
++
++	/* Don't load the saved path if one has already been set */
++	if (ui_helper_changed)
++		return;
++
++	if (size > sizeof(ui_helper_data.program))
++		size = sizeof(ui_helper_data.program);
++
++	memcpy(ui_helper_data.program, buf + sizeof(int), size);
++	ui_helper_data.program[sizeof(ui_helper_data.program)-1] = '\0';
++}
++
++/**
++ * set_ui_program_set: Record that userui program was changed.
++ *
++ * Side effect routine for when the userui program is set. In an initrd or
++ * ramfs, the user may set a location for the userui program. If this happens,
++ * we don't want to reload the value that was saved in the image header. This
++ * routine allows us to flag that we shouldn't restore the program name from
++ * the image header.
++ */
++static void set_ui_program_set(void)
++{
++	ui_helper_changed = 1;
++}
++
++/**
++ * userui_memory_needed - Tell core how much memory to reserve for us.
++ */
++static int userui_memory_needed(void)
++{
++	/* ball park figure of 128 pages */
++	return 128 * PAGE_SIZE;
++}
++
++/**
++ * userui_update_status - Update the progress bar and (if on) in-bar message.
++ *
++ * @value: Current progress percentage numerator.
++ * @maximum: Current progress percentage denominator.
++ * @fmt: Message to be displayed in the middle of the progress bar.
++ *
++ * Note that a NULL message does not mean that any previous message is erased!
++ * For that, you need toi_prepare_status with clearbar on.
++ *
++ * Returns an unsigned long, being the next numerator (as determined by the
++ * maximum and progress granularity) where status needs to be updated.
++ * This is to reduce unnecessary calls to update_status.
++ */
++static u32 userui_update_status(u32 value, u32 maximum, const char *fmt, ...)
++{
++	static u32 last_step = 9999;
++	struct userui_msg_params msg;
++	u32 this_step, next_update;
++	int bitshift;
++
++	if (ui_helper_data.pid == -1)
++		return 0;
++
++	if ((!maximum) || (!progress_granularity))
++		return maximum;
++
++	if (value < 0)
++		value = 0;
++
++	if (value > maximum)
++		value = maximum;
++
++	/* Try to avoid math problems - we can't do 64 bit math here
++	 * (and shouldn't need it - anyone got screen resolution
++	 * of 65536 pixels or more?) */
++	bitshift = fls(maximum) - 16;
++	if (bitshift > 0) {
++		u32 temp_maximum = maximum >> bitshift;
++		u32 temp_value = value >> bitshift;
++		this_step = (u32)
++			(temp_value * progress_granularity / temp_maximum);
++		next_update = (((this_step + 1) * temp_maximum /
++					progress_granularity) + 1) << bitshift;
++	} else {
++		this_step = (u32) (value * progress_granularity / maximum);
++		next_update = ((this_step + 1) * maximum /
++				progress_granularity) + 1;
++	}
++
++	if (this_step == last_step)
++		return next_update;
++
++	memset(&msg, 0, sizeof(msg));
++
++	msg.a = this_step;
++	msg.b = progress_granularity;
++
++	if (fmt) {
++		va_list args;
++		va_start(args, fmt);
++		vsnprintf(msg.text, sizeof(msg.text), fmt, args);
++		va_end(args);
++		msg.text[sizeof(msg.text)-1] = '\0';
++	}
++
++	toi_send_netlink_message(&ui_helper_data, USERUI_MSG_PROGRESS,
++			&msg, sizeof(msg));
++	last_step = this_step;
++
++	return next_update;
++}
++
++/**
++ * userui_message - Display a message without necessarily logging it.
++ *
++ * @section: Type of message. Messages can be filtered by type.
++ * @level: Degree of importance of the message. Lower values = higher priority.
++ * @normally_logged: Whether logged even if log_everything is off.
++ * @fmt: Message (and parameters).
++ *
++ * This function is intended to do the same job as printk, but without normally
++ * logging what is printed. The point is to be able to get debugging info on
++ * screen without filling the logs with "1/534. ^M 2/534^M. 3/534^M"
++ *
++ * It may be called from an interrupt context - can't sleep!
++ */
++static void userui_message(u32 section, u32 level, u32 normally_logged,
++		const char *fmt, ...)
++{
++	struct userui_msg_params msg;
++
++	if ((level) && (level > console_loglevel))
++		return;
++
++	memset(&msg, 0, sizeof(msg));
++
++	msg.a = section;
++	msg.b = level;
++	msg.c = normally_logged;
++
++	if (fmt) {
++		va_list args;
++		va_start(args, fmt);
++		vsnprintf(msg.text, sizeof(msg.text), fmt, args);
++		va_end(args);
++		msg.text[sizeof(msg.text)-1] = '\0';
++	}
++
++	if (test_action_state(TOI_LOGALL))
++		printk(KERN_INFO "%s\n", msg.text);
++
++	toi_send_netlink_message(&ui_helper_data, USERUI_MSG_MESSAGE,
++			&msg, sizeof(msg));
++}
++
++/**
++ * wait_for_key_via_userui - Wait for userui to receive a keypress.
++ */
++static void wait_for_key_via_userui(void)
++{
++	DECLARE_WAITQUEUE(wait, current);
++
++	add_wait_queue(&userui_wait_for_key, &wait);
++	set_current_state(TASK_INTERRUPTIBLE);
++
++	interruptible_sleep_on(&userui_wait_for_key);
++
++	set_current_state(TASK_RUNNING);
++	remove_wait_queue(&userui_wait_for_key, &wait);
++}
++
++/**
++ * userui_prepare_status - Display high level messages.
++ *
++ * @clearbar: Whether to clear the progress bar.
++ * @fmt...: New message for the title.
++ *
++ * Prepare the 'nice display', drawing the header and version, along with the
++ * current action and perhaps also resetting the progress bar.
++ */
++static void userui_prepare_status(int clearbar, const char *fmt, ...)
++{
++	va_list args;
++
++	if (fmt) {
++		va_start(args, fmt);
++		lastheader_message_len = vsnprintf(lastheader, 512, fmt, args);
++		va_end(args);
++	}
++
++	if (clearbar)
++		toi_update_status(0, 1, NULL);
++
++	if (ui_helper_data.pid == -1)
++		printk(KERN_EMERG "%s\n", lastheader);
++	else
++		toi_message(0, TOI_STATUS, 1, lastheader, NULL);
++}
++
++/**
++ * toi_wait_for_keypress - Wait for keypress via userui.
++ *
++ * @timeout: Maximum time to wait.
++ *
++ * Wait for a keypress from userui.
++ *
++ * FIXME: Implement timeout?
++ */
++static char userui_wait_for_keypress(int timeout)
++{
++	char key = '\0';
++
++	if (ui_helper_data.pid != -1) {
++		wait_for_key_via_userui();
++		key = ' ';
++	}
++
++	return key;
++}
++
++/**
++ * userui_abort_hibernate - Abort a cycle & tell user if they didn't request it.
++ *
++ * @result_code: Reason why we're aborting (1 << bit).
++ * @fmt: Message to display if telling the user what's going on.
++ *
++ * Abort a cycle. If this wasn't at the user's request (and we're displaying
++ * output), tell the user why and wait for them to acknowledge the message.
++ */
++static void userui_abort_hibernate(int result_code, const char *fmt, ...)
++{
++	va_list args;
++	int printed_len = 0;
++
++	set_result_state(result_code);
++
++	if (test_result_state(TOI_ABORTED))
++		return;
++
++	set_result_state(TOI_ABORTED);
++
++	if (test_result_state(TOI_ABORT_REQUESTED))
++		return;
++
++	va_start(args, fmt);
++	printed_len = vsnprintf(local_printf_buf,  sizeof(local_printf_buf),
++			fmt, args);
++	va_end(args);
++	if (ui_helper_data.pid != -1)
++		printed_len = sprintf(local_printf_buf + printed_len,
++					" (Press SPACE to continue)");
++
++	toi_prepare_status(CLEAR_BAR, "%s", local_printf_buf);
++
++	if (ui_helper_data.pid != -1)
++		userui_wait_for_keypress(0);
++}
++
++/**
++ * request_abort_hibernate - Abort hibernating or resuming at user request.
++ *
++ * Handle the user requesting the cancellation of a hibernation or resume by
++ * pressing escape.
++ */
++static void request_abort_hibernate(void)
++{
++	if (test_result_state(TOI_ABORT_REQUESTED))
++		return;
++
++	if (test_toi_state(TOI_NOW_RESUMING)) {
++		toi_prepare_status(CLEAR_BAR, "Escape pressed. "
++					"Powering down again.");
++		set_toi_state(TOI_STOP_RESUME);
++		while (!test_toi_state(TOI_IO_STOPPED))
++			schedule();
++		if (toiActiveAllocator->mark_resume_attempted)
++			toiActiveAllocator->mark_resume_attempted(0);
++		toi_power_down();
++	}
++
++	toi_prepare_status(CLEAR_BAR, "--- ESCAPE PRESSED :"
++					" ABORTING HIBERNATION ---");
++	set_abort_result(TOI_ABORT_REQUESTED);
++	wake_up_interruptible(&userui_wait_for_key);
++}
++
++/**
++ * userui_user_rcv_msg - Receive a netlink message from userui.
++ *
++ * @skb: skb received.
++ * @nlh: Netlink header received.
++ */
++static int userui_user_rcv_msg(struct sk_buff *skb, struct nlmsghdr *nlh)
++{
++	int type;
++	int *data;
++
++	type = nlh->nlmsg_type;
++
++	/* A control message: ignore them */
++	if (type < NETLINK_MSG_BASE)
++		return 0;
++
++	/* Unknown message: reply with EINVAL */
++	if (type >= USERUI_MSG_MAX)
++		return -EINVAL;
++
++	/* All operations require privileges, even GET */
++	if (security_netlink_recv(skb, CAP_NET_ADMIN))
++		return -EPERM;
++
++	/* Only allow one task to receive NOFREEZE privileges */
++	if (type == NETLINK_MSG_NOFREEZE_ME && ui_helper_data.pid != -1) {
++		printk(KERN_INFO "Got NOFREEZE_ME request when "
++			"ui_helper_data.pid is %d.\n", ui_helper_data.pid);
++		return -EBUSY;
++	}
++
++	data = (int *) NLMSG_DATA(nlh);
++
++	switch (type) {
++	case USERUI_MSG_ABORT:
++		request_abort_hibernate();
++		return 0;
++	case USERUI_MSG_GET_STATE:
++		toi_send_netlink_message(&ui_helper_data,
++				USERUI_MSG_GET_STATE, &toi_bkd.toi_action,
++				sizeof(toi_bkd.toi_action));
++		return 0;
++	case USERUI_MSG_GET_DEBUG_STATE:
++		toi_send_netlink_message(&ui_helper_data,
++				USERUI_MSG_GET_DEBUG_STATE,
++				&toi_bkd.toi_debug_state,
++				sizeof(toi_bkd.toi_debug_state));
++		return 0;
++	case USERUI_MSG_SET_STATE:
++		if (nlh->nlmsg_len < NLMSG_LENGTH(sizeof(int)))
++			return -EINVAL;
++		ui_nl_set_state(*data);
++		return 0;
++	case USERUI_MSG_SET_DEBUG_STATE:
++		if (nlh->nlmsg_len < NLMSG_LENGTH(sizeof(int)))
++			return -EINVAL;
++		toi_bkd.toi_debug_state = (*data);
++		return 0;
++	case USERUI_MSG_SPACE:
++		wake_up_interruptible(&userui_wait_for_key);
++		return 0;
++	case USERUI_MSG_GET_POWERDOWN_METHOD:
++		toi_send_netlink_message(&ui_helper_data,
++				USERUI_MSG_GET_POWERDOWN_METHOD,
++				&toi_poweroff_method,
++				sizeof(toi_poweroff_method));
++		return 0;
++	case USERUI_MSG_SET_POWERDOWN_METHOD:
++		if (nlh->nlmsg_len != NLMSG_LENGTH(sizeof(char)))
++			return -EINVAL;
++		toi_poweroff_method = (unsigned long)(*data);
++		return 0;
++	case USERUI_MSG_GET_LOGLEVEL:
++		toi_send_netlink_message(&ui_helper_data,
++				USERUI_MSG_GET_LOGLEVEL,
++				&toi_bkd.toi_default_console_level,
++				sizeof(toi_bkd.toi_default_console_level));
++		return 0;
++	case USERUI_MSG_SET_LOGLEVEL:
++		if (nlh->nlmsg_len < NLMSG_LENGTH(sizeof(int)))
++			return -EINVAL;
++		toi_bkd.toi_default_console_level = (*data);
++		return 0;
++	case USERUI_MSG_PRINTK:
++		printk(KERN_INFO "%s", (char *) data);
++		return 0;
++	}
++
++	/* Unhandled here */
++	return 1;
++}
++
++/**
++ * userui_cond_pause - Possibly pause at user request.
++ *
++ * @pause: Whether to pause or just display the message.
++ * @message: Message to display at the start of pausing.
++ *
++ * Potentially pause and wait for the user to tell us to continue. We normally
++ * only pause when @pause is set. While paused, the user can do things like
++ * changing the loglevel, toggling the display of debugging sections and such
++ * like.
++ */
++static void userui_cond_pause(int pause, char *message)
++{
++	int displayed_message = 0, last_key = 0;
++
++	while (last_key != 32 &&
++		ui_helper_data.pid != -1 &&
++		((test_action_state(TOI_PAUSE) && pause) ||
++		 (test_action_state(TOI_SINGLESTEP)))) {
++		if (!displayed_message) {
++			toi_prepare_status(DONT_CLEAR_BAR,
++			   "%s Press SPACE to continue.%s",
++			   message ? message : "",
++			   (test_action_state(TOI_SINGLESTEP)) ?
++			   " Single step on." : "");
++			displayed_message = 1;
++		}
++		last_key = userui_wait_for_keypress(0);
++	}
++	schedule();
++}
++
++/**
++ * userui_prepare_console - Prepare the console for use.
++ *
++ * Prepare a console for use, saving current kmsg settings and attempting to
++ * start userui. Console loglevel changes are handled by userui.
++ */
++static void userui_prepare_console(void)
++{
++	orig_kmsg = kmsg_redirect;
++	kmsg_redirect = fg_console + 1;
++
++	ui_helper_data.pid = -1;
++
++	if (!userui_ops.enabled) {
++		printk(KERN_INFO "TuxOnIce: Userui disabled.\n");
++		return;
++	}
++
++	if (*ui_helper_data.program)
++		toi_netlink_setup(&ui_helper_data);
++	else
++		printk(KERN_INFO "TuxOnIce: Userui program not configured.\n");
++}
++
++/**
++ * userui_cleanup_console - Cleanup after a cycle.
++ *
++ * Tell userui to cleanup, and restore kmsg_redirect to its original value.
++ */
++
++static void userui_cleanup_console(void)
++{
++	if (ui_helper_data.pid > -1)
++		toi_netlink_close(&ui_helper_data);
++
++	kmsg_redirect = orig_kmsg;
++}
++
++/*
++ * User interface specific /sys/power/tuxonice entries.
++ */
++
++static struct toi_sysfs_data sysfs_params[] = {
++#if defined(CONFIG_NET) && defined(CONFIG_SYSFS)
++	SYSFS_BIT("enable_escape", SYSFS_RW, &toi_bkd.toi_action,
++			TOI_CAN_CANCEL, 0),
++	SYSFS_BIT("pause_between_steps", SYSFS_RW, &toi_bkd.toi_action,
++			TOI_PAUSE, 0),
++	SYSFS_INT("enabled", SYSFS_RW, &userui_ops.enabled, 0, 1, 0, NULL),
++	SYSFS_INT("progress_granularity", SYSFS_RW, &progress_granularity, 1,
++			2048, 0, NULL),
++	SYSFS_STRING("program", SYSFS_RW, ui_helper_data.program, 255, 0,
++			set_ui_program_set),
++	SYSFS_INT("debug", SYSFS_RW, &ui_helper_data.debug, 0, 1, 0, NULL)
++#endif
++};
++
++static struct toi_module_ops userui_ops = {
++	.type				= MISC_MODULE,
++	.name				= "userui",
++	.shared_directory		= "user_interface",
++	.module				= THIS_MODULE,
++	.storage_needed			= userui_storage_needed,
++	.save_config_info		= userui_save_config_info,
++	.load_config_info		= userui_load_config_info,
++	.memory_needed			= userui_memory_needed,
++	.sysfs_data			= sysfs_params,
++	.num_sysfs_entries		= sizeof(sysfs_params) /
++		sizeof(struct toi_sysfs_data),
++};
++
++static struct ui_ops my_ui_ops = {
++	.post_atomic_restore		= userui_post_atomic_restore,
++	.update_status			= userui_update_status,
++	.message			= userui_message,
++	.prepare_status			= userui_prepare_status,
++	.abort				= userui_abort_hibernate,
++	.cond_pause			= userui_cond_pause,
++	.prepare			= userui_prepare_console,
++	.cleanup			= userui_cleanup_console,
++	.wait_for_key			= userui_wait_for_keypress,
++};
++
++/**
++ * toi_user_ui_init - Boot time initialisation for user interface.
++ *
++ * Invoked from the core init routine.
++ */
++static __init int toi_user_ui_init(void)
++{
++	int result;
++
++	ui_helper_data.nl = NULL;
++	strncpy(ui_helper_data.program, CONFIG_TOI_USERUI_DEFAULT_PATH, 255);
++	ui_helper_data.pid = -1;
++	ui_helper_data.skb_size = sizeof(struct userui_msg_params);
++	ui_helper_data.pool_limit = 6;
++	ui_helper_data.netlink_id = NETLINK_TOI_USERUI;
++	ui_helper_data.name = "userspace ui";
++	ui_helper_data.rcv_msg = userui_user_rcv_msg;
++	ui_helper_data.interface_version = 8;
++	ui_helper_data.must_init = 0;
++	ui_helper_data.not_ready = userui_cleanup_console;
++	init_completion(&ui_helper_data.wait_for_process);
++	result = toi_register_module(&userui_ops);
++	if (!result)
++		result = toi_register_ui_ops(&my_ui_ops);
++	if (result)
++		toi_unregister_module(&userui_ops);
++
++	return result;
++}
++
++#ifdef MODULE
++/**
++ * toi_user_ui_ext - Cleanup code for if the core is unloaded.
++ */
++static __exit void toi_user_ui_exit(void)
++{
++	toi_netlink_close_complete(&ui_helper_data);
++	toi_remove_ui_ops(&my_ui_ops);
++	toi_unregister_module(&userui_ops);
++}
++
++module_init(toi_user_ui_init);
++module_exit(toi_user_ui_exit);
++MODULE_AUTHOR("Nigel Cunningham");
++MODULE_DESCRIPTION("TuxOnIce Userui Support");
++MODULE_LICENSE("GPL");
++#else
++late_initcall(toi_user_ui_init);
++#endif
 -- 
 1.5.6.3
 
