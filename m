@@ -1,51 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757088AbZEFHMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbZEFHOn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757088AbZEFHMm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 03:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752856AbZEFHMd
+	id S1756459AbZEFHOn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 03:14:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbZEFHOe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 03:12:33 -0400
-Received: from an-out-0708.google.com ([209.85.132.251]:62574 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752046AbZEFHMd (ORCPT
+	Wed, 6 May 2009 03:14:34 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:44507 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751020AbZEFHOe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 03:12:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ApjAYitQO+MR+mClWwgoB4FglijTp/xsiT9yzpEFMd98gGlmqRMWDY4Md4NoGWIMpk
-         31JsVaAU1p9Vr6Tl9XRvzWCEGv+i6Jk0KqO5HTcxxkY3FK3AkwLGnWl4V6SuceOyXOT2
-         LTHRPqGIw7f83ii15waofw1cjzb2lyfwNdEmU=
-Date: Wed, 6 May 2009 11:12:28 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Minchan Kim <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, LMMML <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH -mmotm] mm: setup_per_zone_inactive_ratio - fix comment
-	and make it __init
-Message-ID: <20090506071228.GD4865@lenovo>
-References: <20090506061923.GA4865@lenovo> <20090506155145.e657b271.minchan.kim@barrios-desktop> <20090506070323.GC4865@lenovo>
+	Wed, 6 May 2009 03:14:34 -0400
+Date: Wed, 6 May 2009 03:14:01 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ptrace_get_task_struct: s/tasklist/rcu/, make it static
+Message-ID: <20090506071400.GB3223@infradead.org>
+References: <20090505232820.GA4377@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090506070323.GC4865@lenovo>
+In-Reply-To: <20090505232820.GA4377@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Cyrill Gorcunov - Wed, May 06, 2009 at 11:03:23AM +0400]
-... 
-| Thanks Minchan. Actually it's not a typo :)
-| module_init function is supposed to be __initcall
-| function anyway. But it's confusing I could fix
-| changelog.
-| 
-| 	-- Cyrill
+On Wed, May 06, 2009 at 01:28:20AM +0200, Oleg Nesterov wrote:
+> - Use rcu_read_lock() instead of tasklist_lock to find/get the task
+>   in ptrace_get_task_struct().
+> 
+> - Make it static, it has no callers outside of ptrace.c.
 
-Andrew, could you s/module_init/__init/ in changelog
-please?
+FYI, there are a couple of other functions in ptrace.c that can be
+static now that everyone uses the common sys_ptrace implementation,
+e.g. ptrace_traceme and ptrace_attach.
 
-	-- Cyrill
+> - The comment doesn't match the reality, this helper does not do
+>   any checks. Beacuse it is really trivial and static I removed the
+>   whole comment.
+
+Yeah, when I added the helper it did those checks and it was non-static
+for the various arch ptrace implementations.  Now that it's a private
+helper with just two callers not doing much anymore it's not needed.
+
