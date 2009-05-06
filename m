@@ -1,104 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760087AbZEFMWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759987AbZEFMXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760087AbZEFMWZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 08:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760061AbZEFMWA
+	id S1759987AbZEFMXV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 08:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759401AbZEFMXH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 08:22:00 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36054 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760073AbZEFMV7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 08:21:59 -0400
-Date: Wed, 6 May 2009 12:19:54 GMT
-From: tip-bot for Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, mathieu.desnoyers@polymtl.ca, hpa@zytor.com,
-       mingo@redhat.com, lizf@cn.fujitsu.com, xiaoguangrong@cn.fujitsu.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, mathieu.desnoyers@polymtl.ca,
-       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com, tglx@linutronix.de,
-       xiaoguangrong@cn.fujitsu.com, mingo@elte.hu
-In-Reply-To: <49FFFDB7.1050402@cn.fujitsu.com>
-References: <49FFFDB7.1050402@cn.fujitsu.com>
-Subject: [tip:tracing/core] tracepoint: trace_sched_migrate_task(): remove parameter
-Message-ID: <tip-de1d7286060430e79a1d50ad6e5fee8fe863c5f6@git.kernel.org>
-Git-Commit-ID: de1d7286060430e79a1d50ad6e5fee8fe863c5f6
-X-Mailer: tip-git-log-daemon
+	Wed, 6 May 2009 08:23:07 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:46070 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754210AbZEFMXG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 08:23:06 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [KVM PATCH v5 0/2] irqfd
+To: kvm@vger.kernel.org
+Cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org
+Date: Wed, 06 May 2009 08:22:55 -0400
+Message-ID: <20090506121333.31350.39889.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 06 May 2009 12:20:00 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  de1d7286060430e79a1d50ad6e5fee8fe863c5f6
-Gitweb:     http://git.kernel.org/tip/de1d7286060430e79a1d50ad6e5fee8fe863c5f6
-Author:     Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-AuthorDate: Tue, 5 May 2009 16:49:59 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 6 May 2009 12:15:51 +0200
+(Applies to kvm.git:66b0aed4, plus you will also need Davide Libenzi's
+eventfd_file_create() patch, which you can find here:
 
-tracepoint: trace_sched_migrate_task(): remove parameter
+http://www.mail-archive.com/kvm@vger.kernel.org/msg13923.html
 
-The orig_cpu parameter in trace_sched_migrate_task() is not necessary,
-it can be got by using task_cpu(p) in the probe.
+You can find my complete tree with kvm.git, Davide's patch, and this series
+here:
 
-[ Impact: micro-optimization ]
+http://git.kernel.org/?p=linux/kernel/git/ghaskins/vbus/linux-2.6.git;a=shortlog;h=irqfd
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-[ modified from Mathieu's patch. The original patch is at:
-  http://marc.info/?l=linux-kernel&m=123791201716239&w=2 ]
-Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-Cc: fweisbec@gmail.com
-Cc: rostedt@goodmis.org
-Cc: Li Zefan <lizf@cn.fujitsu.com>
-Cc: zhaolei@cn.fujitsu.com
-Cc: laijs@cn.fujitsu.com
-LKML-Reference: <49FFFDB7.1050402@cn.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+----------------------
 
+irqfd, v5
+
+This series implements a mechanism called "irqfd".  It lets you create
+an eventfd based file-desriptor to inject interrupts to a kvm guest. For
+more details, please see the prologue for patch 2/2.
+
+I am reasonably satisfied with this series, so Avi please consider for
+inclusion contingent on Davide formally submitting his eventfd_file_create()
+patch (and pending any new review comments, of course).
+
+[ Changelog:
+
+   v5:
+        *) Added padding to the ioctl structure
+        *) Added proper ref-count increment to the file before returning
+           success. (Needs review by Al Viro, Davide Libenzi)
+        *) Cleaned up error-handling path to make sure we remove ourself
+           from the waitq if necessary.
+        *) Make sure we only add ourselves to kvm->irqfds if successful
+           creating the irqfd in the first place.
+        *) Rebased to kvm.git:66b0aed4 
+
+   v4:
+        *) Changed allocation model to create the new fd last, after
+           we get past the last potential error point by using Davide's
+           new eventfd_file_create interface (Al Viro, Davide Libenzi)
+	*) We no longer export sys_eventfd2() since it is replaced
+           functionally with eventfd_file_create();
+        *) Rebased to kvm.git:7da2e3ba
+
+   v3:
+        *) The kernel now allocates the eventfd (need to export sys_eventfd2)
+        *) Added a flags field for future expansion to kvm_irqfd()
+        *) We properly toggle the irq level 1+0.
+        *) We re-use the USERSPACE_SRC_ID instead of creating our own
+        *) Properly check for failures establishing a poll-table with eventfd
+	*) Fixed fd/file leaks on failure
+	*) Rebased to lateste kvm.git::41b76d8d04
+
+   v2:
+	*) Dropped notifier_chain based callbacks in favor of
+	   wait_queue_t::func and file::poll based callbacks (Thanks to
+	   Davide for the suggestion)
+
+   v1:
+        *) Initial release
+
+--------
+
+We do not have a user of this interface in this series, though note
+future version of virtual-bus (v4 and above) will be based on this.
+
+Note that this series requires userspace patches for qemu-kvm.git, v3, which
+you can find here: http://patchwork.kernel.org/patch/20213/
+
+-Greg
 
 ---
- include/trace/events/sched.h |    6 +++---
- kernel/sched.c               |    2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
-index ffa1cab..dd4033c 100644
---- a/include/trace/events/sched.h
-+++ b/include/trace/events/sched.h
-@@ -180,9 +180,9 @@ TRACE_EVENT(sched_switch,
-  */
- TRACE_EVENT(sched_migrate_task,
- 
--	TP_PROTO(struct task_struct *p, int orig_cpu, int dest_cpu),
-+	TP_PROTO(struct task_struct *p, int dest_cpu),
- 
--	TP_ARGS(p, orig_cpu, dest_cpu),
-+	TP_ARGS(p, dest_cpu),
- 
- 	TP_STRUCT__entry(
- 		__array(	char,	comm,	TASK_COMM_LEN	)
-@@ -196,7 +196,7 @@ TRACE_EVENT(sched_migrate_task,
- 		memcpy(__entry->comm, p->comm, TASK_COMM_LEN);
- 		__entry->pid		= p->pid;
- 		__entry->prio		= p->prio;
--		__entry->orig_cpu	= orig_cpu;
-+		__entry->orig_cpu	= task_cpu(p);
- 		__entry->dest_cpu	= dest_cpu;
- 	),
- 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 9f7ffd0..9cdedbd 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -1954,7 +1954,7 @@ void set_task_cpu(struct task_struct *p, unsigned int new_cpu)
- 
- 	clock_offset = old_rq->clock - new_rq->clock;
- 
--	trace_sched_migrate_task(p, task_cpu(p), new_cpu);
-+	trace_sched_migrate_task(p, new_cpu);
- 
- #ifdef CONFIG_SCHEDSTATS
- 	if (p->se.wait_start)
+Gregory Haskins (2):
+      kvm: add support for irqfd via eventfd-notification interface
+      eventfd: export eventfd interfaces for module use
+
+
+ arch/x86/kvm/Makefile    |    2 -
+ arch/x86/kvm/x86.c       |    1 
+ fs/eventfd.c             |    4 +
+ include/linux/kvm.h      |    8 ++
+ include/linux/kvm_host.h |    4 +
+ virt/kvm/irqfd.c         |  163 ++++++++++++++++++++++++++++++++++++++++++++++
+ virt/kvm/kvm_main.c      |   11 +++
+ 7 files changed, 192 insertions(+), 1 deletions(-)
+ create mode 100644 virt/kvm/irqfd.c
+
+-- 
+
