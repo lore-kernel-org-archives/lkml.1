@@ -1,66 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758873AbZEFHWr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759077AbZEFHXA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758873AbZEFHWr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 03:22:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753413AbZEFHWe
+	id S1759077AbZEFHXA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 03:23:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758769AbZEFHWj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 03:22:34 -0400
-Received: from sous-sol.org ([216.99.217.87]:33103 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1752381AbZEFHWd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 03:22:33 -0400
-Date: Wed, 6 May 2009 00:22:12 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Chris Wright <chrisw@sous-sol.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-Message-ID: <20090506072212.GV3036@sequoia.sous-sol.org>
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com>
+	Wed, 6 May 2009 03:22:39 -0400
+Received: from smtp11.mail.tnz.yahoo.co.jp ([203.216.226.139]:34927 "HELO
+	smtp11.mail.tnz.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1758498AbZEFHWi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 03:22:38 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=yj20050223; d=yahoo.co.jp;
+  h=Received:X-Apparently-From:Message-ID:From:To:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE;
+  b=C/vkOlJguP9Dwaxi7FbFynMr7fdbgue0vTjOqS8osRoDTGHo81N4rH9i3DuUjsxQ9tUpM+WKlL6vMXW2LLKsQM63/9UuNSz5cnesm7nHHHwGWWGbdsbxe3R15okhnYNd  ;
+X-Apparently-From: <n0diamond@yahoo.co.jp>
+Message-ID: <BB8F41726E2941CEB399F732BB3ED9E5@DIAMOND8600>
+From: "Norman Diamond" <n0diamond@yahoo.co.jp>
+To: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
+Subject: sg timeout problem
+Date: Wed, 6 May 2009 16:15:45 +0900
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A010927.6020207@novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-2022-jp";
+	reply-type=original
+Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Gregory Haskins (ghaskins@novell.com) wrote:
-> Chris Wright wrote:
-> > But a free-form hypercall(unsigned long nr, unsigned long *args, size_t count)
-> > means hypercall number and arg list must be the same in order for code
-> > to call hypercall() in a hypervisor agnostic way.
-> 
-> Yes, and that is exactly the intention.  I think its perhaps the point
-> you are missing.
+struct sg_io_hdr sg_io;
+[...]
+sg_io.timeout = UINT_MAX;
+[...]
+ioctl(fd, SG_IO, &sg_io);
 
-Yes, I was reading this as purely any hypercall, but it seems a bit
-more like:
- pv_io_ops->iomap()
- pv_io_ops->ioread()
- pv_io_ops->iowrite()
+As far as I can tell, if sg is running on top of LIBATA, the infinite
+timeout is honoured.
 
-<snip>
-> Today, there is no equivelent of a platform agnostic "iowrite32()" for
-> hypercalls so the driver would look like the pseudocode above except
-> substitute with kvm_hypercall(), lguest_hypercall(), etc.  The proposal
-> is to allow the hypervisor to assign a dynamic vector to resources in
-> the backend and convey this vector to the guest (such as in PCI
-> config-space as mentioned in my example use-case).  The provides the
-> "address negotiation" function that would normally be done for something
-> like a pio port-address.   The hypervisor agnostic driver can then use
-> this globally recognized address-token coupled with other device-private
-> ABI parameters to communicate with the device.  This can all occur
-> without the core hypervisor needing to understand the details beyond the
-> addressing.
+But if sg is running on top of an actual SCSI driver, someone aborts the
+ioctl after 3 seconds.  The ioctl returns success even though the operation
+didn't complete.  I tried this with two Adaptec drivers and one NinjaSCSI 
+driver with 100% repro.
 
-VF drivers can also have this issue (and typically use mmio).
-I at least have a better idea what your proposal is, thanks for
-explanation.  Are you able to demonstrate concrete benefit with it yet
-(improved latency numbers for example)?
+What am I missing?  I need the call to run to completion. 
 
-thanks,
--chris
+--------------------------------------
+Power up the Internet with Yahoo! Toolbar.
+http://pr.mail.yahoo.co.jp/toolbar/
