@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762200AbZEFWAm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762301AbZEFWBu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762200AbZEFWAm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:00:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761428AbZEFVye
+	id S1762301AbZEFWBu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:01:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761414AbZEFVyh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:54:34 -0400
-Received: from kroah.org ([198.145.64.141]:57022 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 17:54:37 -0400
+Received: from kroah.org ([198.145.64.141]:57050 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761396AbZEFVya (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:54:30 -0400
+	id S1760832AbZEFVyd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:54:33 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed May  6 14:47:57 2009
-Message-Id: <20090506214757.329306892@mini.kroah.org>
+Message-Id: <20090506214757.757278050@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 14:45:43 -0700
+Date: Wed, 06 May 2009 14:45:46 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Tejun Heo <tj@kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 15/58] block: include empty disks in /proc/diskstats
+       alan@lxorguk.ukuu.org.uk, Yu Zhao <yu.zhao@intel.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: [patch 18/58] PCI: fix incorrect mask of PM No_Soft_Reset bit
 References: <20090506214528.660389067@mini.kroah.org>
-Content-Disposition: inline; filename=block-include-empty-disks-in-proc-diskstats.patch
+Content-Disposition: inline; filename=pci-fix-incorrect-mask-of-pm-no_soft_reset-bit.patch
 In-Reply-To: <20090506215017.GA21981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,81 +39,29 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Tejun Heo <tj@kernel.org>
+From: Yu Zhao <yu.zhao@intel.com>
 
-commit 71982a409f12c50d011325a4471aa20666bb908d upstream.
+commit 998dd7c719f62dcfa91d7bf7f4eb9c160e03d817 upstream.
 
-/proc/diskstats used to show stats for all disks whether they're
-zero-sized or not and their non-zero partitions.  Commit
-074a7aca7afa6f230104e8e65eba3420263714a5 accidentally changed the
-behavior such that it doesn't print out zero sized disks.  This patch
-implements DISK_PITER_INCL_EMPTY_PART0 flag to partition iterator and
-uses it in diskstats_show() such that empty part0 is shown in
-/proc/diskstats.
-
-Reported and bisectd by Dianel Collins.
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Daniel Collins <solemnwarning@solemnwarning.no-ip.org>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Reviewed-by: Matthew Wilcox <matthew@wil.cx>
+Signed-off-by: Yu Zhao <yu.zhao@intel.com>
+Signed-off-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- block/genhd.c         |   12 ++++++++----
- include/linux/genhd.h |    1 +
- 2 files changed, 9 insertions(+), 4 deletions(-)
+ include/linux/pci_regs.h |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/block/genhd.c
-+++ b/block/genhd.c
-@@ -98,7 +98,7 @@ void disk_part_iter_init(struct disk_par
- 
- 	if (flags & DISK_PITER_REVERSE)
- 		piter->idx = ptbl->len - 1;
--	else if (flags & DISK_PITER_INCL_PART0)
-+	else if (flags & (DISK_PITER_INCL_PART0 | DISK_PITER_INCL_EMPTY_PART0))
- 		piter->idx = 0;
- 	else
- 		piter->idx = 1;
-@@ -134,7 +134,8 @@ struct hd_struct *disk_part_iter_next(st
- 	/* determine iteration parameters */
- 	if (piter->flags & DISK_PITER_REVERSE) {
- 		inc = -1;
--		if (piter->flags & DISK_PITER_INCL_PART0)
-+		if (piter->flags & (DISK_PITER_INCL_PART0 |
-+				    DISK_PITER_INCL_EMPTY_PART0))
- 			end = -1;
- 		else
- 			end = 0;
-@@ -150,7 +151,10 @@ struct hd_struct *disk_part_iter_next(st
- 		part = rcu_dereference(ptbl->part[piter->idx]);
- 		if (!part)
- 			continue;
--		if (!(piter->flags & DISK_PITER_INCL_EMPTY) && !part->nr_sects)
-+		if (!part->nr_sects &&
-+		    !(piter->flags & DISK_PITER_INCL_EMPTY) &&
-+		    !(piter->flags & DISK_PITER_INCL_EMPTY_PART0 &&
-+		      piter->idx == 0))
- 			continue;
- 
- 		get_device(part_to_dev(part));
-@@ -1011,7 +1015,7 @@ static int diskstats_show(struct seq_fil
- 				"\n\n");
- 	*/
-  
--	disk_part_iter_init(&piter, gp, DISK_PITER_INCL_PART0);
-+	disk_part_iter_init(&piter, gp, DISK_PITER_INCL_EMPTY_PART0);
- 	while ((hd = disk_part_iter_next(&piter))) {
- 		cpu = part_stat_lock();
- 		part_round_stats(cpu, hd);
---- a/include/linux/genhd.h
-+++ b/include/linux/genhd.h
-@@ -214,6 +214,7 @@ static inline void disk_put_part(struct 
- #define DISK_PITER_REVERSE	(1 << 0) /* iterate in the reverse direction */
- #define DISK_PITER_INCL_EMPTY	(1 << 1) /* include 0-sized parts */
- #define DISK_PITER_INCL_PART0	(1 << 2) /* include partition 0 */
-+#define DISK_PITER_INCL_EMPTY_PART0 (1 << 3) /* include empty partition 0 */
- 
- struct disk_part_iter {
- 	struct gendisk		*disk;
+--- a/include/linux/pci_regs.h
++++ b/include/linux/pci_regs.h
+@@ -235,7 +235,7 @@
+ #define  PCI_PM_CAP_PME_SHIFT	11	/* Start of the PME Mask in PMC */
+ #define PCI_PM_CTRL		4	/* PM control and status register */
+ #define  PCI_PM_CTRL_STATE_MASK	0x0003	/* Current power state (D0 to D3) */
+-#define  PCI_PM_CTRL_NO_SOFT_RESET	0x0004	/* No reset for D3hot->D0 */
++#define  PCI_PM_CTRL_NO_SOFT_RESET	0x0008	/* No reset for D3hot->D0 */
+ #define  PCI_PM_CTRL_PME_ENABLE	0x0100	/* PME pin enable */
+ #define  PCI_PM_CTRL_DATA_SEL_MASK	0x1e00	/* Data select (??) */
+ #define  PCI_PM_CTRL_DATA_SCALE_MASK	0x6000	/* Data scale (??) */
 
 
