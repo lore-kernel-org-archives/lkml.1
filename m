@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760547AbZEFUpG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761234AbZEFUpq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760547AbZEFUpG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:45:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760972AbZEFUjh
+	id S1761234AbZEFUpq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:45:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761249AbZEFUjk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:39:37 -0400
-Received: from kroah.org ([198.145.64.141]:34039 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 16:39:40 -0400
+Received: from kroah.org ([198.145.64.141]:34058 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761248AbZEFUjg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:39:36 -0400
+	id S1761150AbZEFUjj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 16:39:39 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Wed May  6 13:31:31 2009
-Message-Id: <20090506203131.240511961@blue.kroah.org>
+Message-Id: <20090506203131.460521212@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 13:30:26 -0700
+Date: Wed, 06 May 2009 13:30:27 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Lennert Buytenhek <buytenh@marvell.com>,
-       "David S. Miller" <davem@davemloft.net>,
+       alan@lxorguk.ukuu.org.uk, Arjan van de Ven <arjan@linux.intel.com>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 16/18] mv643xx_eth: 64bit mib counter read fix
+Subject: [patch 17/18] proc: avoid information leaks to non-privileged processes
 References: <20090506203010.615363711@blue.kroah.org>
-Content-Disposition: inline; filename=mv643xx_eth-64bit-mib-counter-read-fix.patch
+Content-Disposition: inline; filename=proc-avoid-information-leaks-to-non-privileged-processes.patch
 In-Reply-To: <20090506203353.GA14624@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,48 +40,100 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Lennert Buytenhek <buytenh@wantstofly.org>
+From: Jake Edge <jake@lwn.net>
 
-commit 93af7aca44f0e82e67bda10a0fb73d383edcc8bd upstream.
+commit f83ce3e6b02d5e48b3a43b001390e2b58820389d upstream.
 
-On several mv643xx_eth hardware versions, the two 64bit mib counters
-for 'good octets received' and 'good octets sent' are actually 32bit
-counters, and reading from the upper half of the register has the same
-effect as reading from the lower half of the register: an atomic
-read-and-clear of the entire 32bit counter value.  This can under heavy
-traffic occasionally lead to small numbers being added to the upper
-half of the 64bit mib counter even though no 32bit wrap has occured.
+By using the same test as is used for /proc/pid/maps and /proc/pid/smaps,
+only allow processes that can ptrace() a given process to see information
+that might be used to bypass address space layout randomization (ASLR).
+These include eip, esp, wchan, and start_stack in /proc/pid/stat as well
+as the non-symbolic output from /proc/pid/wchan.
 
-Since we poll the mib counters at least every 30 seconds anyway, we
-might as well just skip the reads of the upper halves of the hardware
-counters without breaking the stats, which this patch does.
+ASLR can be bypassed by sampling eip as shown by the proof-of-concept
+code at http://code.google.com/p/fuzzyaslr/ As part of a presentation
+(http://www.cr0.org/paper/to-jt-linux-alsr-leak.pdf) esp and wchan were
+also noted as possibly usable information leaks as well.  The
+start_stack address also leaks potentially useful information.
 
-Signed-off-by: Lennert Buytenhek <buytenh@marvell.com>
-Cc: stable@kernel.org
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Cc: Stable Team <stable@kernel.org>
+Signed-off-by: Jake Edge <jake@lwn.net>
+Acked-by: Arjan van de Ven <arjan@linux.intel.com>
+Acked-by: "Eric W. Biederman" <ebiederm@xmission.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/mv643xx_eth.c |    2 --
- 1 file changed, 2 deletions(-)
+ fs/proc/array.c |   13 +++++++++----
+ fs/proc/base.c  |    5 ++++-
+ 2 files changed, 13 insertions(+), 5 deletions(-)
 
---- a/drivers/net/mv643xx_eth.c
-+++ b/drivers/net/mv643xx_eth.c
-@@ -1060,7 +1060,6 @@ static void mib_counters_update(struct m
- 	struct mib_counters *p = &mp->mib_counters;
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -80,6 +80,7 @@
+ #include <linux/delayacct.h>
+ #include <linux/seq_file.h>
+ #include <linux/pid_namespace.h>
++#include <linux/ptrace.h>
+ #include <linux/tracehook.h>
  
- 	p->good_octets_received += mib_read(mp, 0x00);
--	p->good_octets_received += (u64)mib_read(mp, 0x04) << 32;
- 	p->bad_octets_received += mib_read(mp, 0x08);
- 	p->internal_mac_transmit_err += mib_read(mp, 0x0c);
- 	p->good_frames_received += mib_read(mp, 0x10);
-@@ -1074,7 +1073,6 @@ static void mib_counters_update(struct m
- 	p->frames_512_to_1023_octets += mib_read(mp, 0x30);
- 	p->frames_1024_to_max_octets += mib_read(mp, 0x34);
- 	p->good_octets_sent += mib_read(mp, 0x38);
--	p->good_octets_sent += (u64)mib_read(mp, 0x3c) << 32;
- 	p->good_frames_sent += mib_read(mp, 0x40);
- 	p->excessive_collision += mib_read(mp, 0x44);
- 	p->multicast_frames_sent += mib_read(mp, 0x48);
+ #include <asm/pgtable.h>
+@@ -347,6 +348,7 @@ static int do_task_stat(struct seq_file 
+ 	char state;
+ 	pid_t ppid = 0, pgid = -1, sid = -1;
+ 	int num_threads = 0;
++	int permitted;
+ 	struct mm_struct *mm;
+ 	unsigned long long start_time;
+ 	unsigned long cmin_flt = 0, cmaj_flt = 0;
+@@ -359,11 +361,14 @@ static int do_task_stat(struct seq_file 
+ 
+ 	state = *get_task_state(task);
+ 	vsize = eip = esp = 0;
++	permitted = ptrace_may_access(task, PTRACE_MODE_READ);
+ 	mm = get_task_mm(task);
+ 	if (mm) {
+ 		vsize = task_vsize(mm);
+-		eip = KSTK_EIP(task);
+-		esp = KSTK_ESP(task);
++		if (permitted) {
++			eip = KSTK_EIP(task);
++			esp = KSTK_ESP(task);
++		}
+ 	}
+ 
+ 	get_task_comm(tcomm, task);
+@@ -419,7 +424,7 @@ static int do_task_stat(struct seq_file 
+ 		unlock_task_sighand(task, &flags);
+ 	}
+ 
+-	if (!whole || num_threads < 2)
++	if (permitted && (!whole || num_threads < 2))
+ 		wchan = get_wchan(task);
+ 	if (!whole) {
+ 		min_flt = task->min_flt;
+@@ -471,7 +476,7 @@ static int do_task_stat(struct seq_file 
+ 		rsslim,
+ 		mm ? mm->start_code : 0,
+ 		mm ? mm->end_code : 0,
+-		mm ? mm->start_stack : 0,
++		(permitted && mm) ? mm->start_stack : 0,
+ 		esp,
+ 		eip,
+ 		/* The signal information here is obsolete.
+--- a/fs/proc/base.c
++++ b/fs/proc/base.c
+@@ -327,7 +327,10 @@ static int proc_pid_wchan(struct task_st
+ 	wchan = get_wchan(task);
+ 
+ 	if (lookup_symbol_name(wchan, symname) < 0)
+-		return sprintf(buffer, "%lu", wchan);
++		if (!ptrace_may_access(task, PTRACE_MODE_READ))
++			return 0;
++		else
++			return sprintf(buffer, "%lu", wchan);
+ 	else
+ 		return sprintf(buffer, "%s", symname);
+ }
 
 
