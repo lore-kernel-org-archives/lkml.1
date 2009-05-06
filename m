@@ -1,53 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760262AbZEFQwf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760283AbZEFQws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760262AbZEFQwf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 12:52:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755420AbZEFQwX
+	id S1760283AbZEFQws (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 12:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760205AbZEFQwb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 12:52:23 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:53607 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751733AbZEFQwW (ORCPT
+	Wed, 6 May 2009 12:52:31 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44047 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760381AbZEFQwa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 12:52:22 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Gregory Haskins <ghaskins@novell.com>
-Subject: Re: [RFC PATCH 1/3] add generic hypercall support
-Date: Wed, 6 May 2009 18:52:15 +0200
-User-Agent: KMail/1.9.9
-Cc: Anthony Liguori <anthony@codemonkey.ws>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, avi@redhat.com
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A019614.9080702@codemonkey.ws> <4A01A9C5.5010601@novell.com>
-In-Reply-To: <4A01A9C5.5010601@novell.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Wed, 6 May 2009 12:52:30 -0400
+Date: Wed, 6 May 2009 18:52:26 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Andrey Borzenkov <arvidjaar@mail.ru>
+Cc: Matthew Garrett <mjg59@srcf.ucam.org>, linux-acpi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: Bank screen after resume on Dell XPS M1330
+Message-ID: <20090506165226.GA9072@elf.ucw.cz>
+References: <200905031111.50789.arvidjaar@mail.ru> <200905040627.36297.arvidjaar@mail.ru> <20090505194902.GC1379@ucw.cz> <200905061955.13161.arvidjaar@mail.ru>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905061852.15931.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19EPDl2DXClE04QtRfrLOAu0vl0qQV+NVM17wW
- 7GDtlJvSo7b1n/sLBu7705D8hj0nbTj5Pm6vVxKrPZ+M8UFWB/
- 2wA4OdCL83I7pjBQ2/4gQ==
+In-Reply-To: <200905061955.13161.arvidjaar@mail.ru>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 May 2009, Gregory Haskins wrote:
- 
-> Ok, so we would
-> need to come up with these pio_calls for x86, and no other arch can use
-> the infrastructure (but wait, PPC can use PCI too, so how does that
-> work? It must be either MMIO emulation or its not supported?  That puts
-> us back to square one).
+On Wed 2009-05-06 19:55:10, Andrey Borzenkov wrote:
+> On Tuesday 05 of May 2009 23:49:02 Pavel Machek wrote:
+> > On Mon 2009-05-04 06:27:35, Andrey Borzenkov wrote:
+> > > On Sunday 03 of May 2009 15:56:03 Matthew Garrett wrote:
+> > > > On Sun, May 03, 2009 at 03:43:28PM +0400, Andrey Borzenkov wrote:
+> > > > > On Sunday 03 of May 2009 14:59:32 Matthew Garrett wrote:
+> > > > > > On Sun, May 03, 2009 at 11:11:47AM +0400, Andrey Borzenkov 
+> wrote:
+> > > > > > > 01:00.0 VGA compatible controller: nVidia Corporation
+> > > > > > > GeForce 8400M GS (rev a1)
+> > > > > >
+> > > > > > We don't know how to reinitialise nvidia graphics hardware.
+> > > > >
+> > > > > Just in case - same issue also after resume from hibernation. I
+> > > > > was under impression, that hibernation does not have these
+> > > > > issues as card goes via normal POST routine.
+> > > >
+> > > > Hm. That sounds a bit weirder.
+> > >
+> > > Is it worth further debugging? Anything I can provide?
+> >
+> > Try it with minimum config, init=/bin/bash? Switch to plain vga
+> > console?
+> 
+> As stated in my first mail, that is exactly what I started with :)
 
-PowerPC already has an abstraction for PIO and MMIO because certain
-broken hardware chips don't do what they should, see
-arch/powerpc/platforms/cell/io-workarounds.c for the only current user.
-If you need to, you could do the same on x86 (or generalize the code),
-but please don't add another level of indirection on top of this.
-
-	Arnd <><
+Ok, ok, and even that failed with hibernation?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
