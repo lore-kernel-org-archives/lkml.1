@@ -1,151 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbZEFEYo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbZEFEY0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754456AbZEFEYo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 00:24:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752103AbZEFEXi
+	id S1753874AbZEFEY0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 00:24:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751875AbZEFEXh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 00:23:38 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:56412 "EHLO
+	Wed, 6 May 2009 00:23:37 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:39798 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750938AbZEFEXe (ORCPT
+	with ESMTP id S1750917AbZEFEXe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 May 2009 00:23:34 -0400
-Message-Id: <20090506042333.631773425@goodmis.org>
+Message-Id: <20090506042333.402933098@goodmis.org>
 References: <20090506042101.231470089@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Wed, 06 May 2009 00:21:05 -0400
+Date: Wed, 06 May 2009 00:21:04 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Frederic Weisbecker <fweisbec@gmail.com>
-Subject: [PATCH 04/11] ring-buffer: convert cpu buffer entries to local_t
-Content-Disposition: inline; filename=0004-ring-buffer-convert-cpu-buffer-entries-to-local_t.patch
+Subject: [PATCH 03/11] tracing: export stats of ring buffers to userspace
+Content-Disposition: inline; filename=0003-tracing-export-stats-of-ring-buffers-to-userspace.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-The entries counter in cpu buffer is not atomic. It can be updated by
-other interrupts or from another CPU (readers).
+This patch adds stats to the ftrace ring buffers:
 
-But making entries into "atomic_t" causes an atomic operation that can
-hurt performance. Instead we convert it to a local_t that will increment
-a counter with a local CPU atomic operation (if the arch supports it).
+ # cat /debugfs/tracing/per_cpu/cpu0/stats
+ entries: 42360
+ overrun: 30509326
+ commit overrun: 0
+ nmi dropped: 0
 
-Instead of fighting with readers and overwrites that decrement the counter,
-I added a "read" counter. Every time a reader reads an entry it is
-incremented.
+Where entries are the total number of data entries in the buffer.
 
-We already have a overrun counter and with that, the entries counter and
-the read counter, we can calculate the total number of entries in the
-buffer with:
+overrun is the number of entries not consumed and were overwritten by
+the writer.
 
-  (entries - overrun) - read
+commit overrun is the number of entries dropped due to nested writers
+wrapping the buffer before the initial writer finished the commit.
 
-As long as the total number of entries in the ring buffer is less than
-the word size, this will work. But since the entries counter was previously
-a long, this is no different than what we had before.
+nmi dropped is the number of entries dropped due to the ring buffer
+lock being held when an nmi was going to write to the ring buffer.
+Note, this field will be meaningless and will go away when the ring
+buffer becomes lockless.
 
-Thanks to Andrew Morton for pointing out in the first version that
-atomic_t does not replace unsigned long. I switched to atomic_long_t
-even though it is signed. A negative count is most likely a bug.
-
-[ Impact: keep accurate count of cpu buffer entries ]
+[ Impact: let userspace know what is happening in the ring buffers ]
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/trace/ring_buffer.c |   21 ++++++++++++---------
- 1 files changed, 12 insertions(+), 9 deletions(-)
+ kernel/trace/trace.c |   42 ++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 42 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-index 26e1359..c792ea8 100644
---- a/kernel/trace/ring_buffer.c
-+++ b/kernel/trace/ring_buffer.c
-@@ -405,7 +405,8 @@ struct ring_buffer_per_cpu {
- 	unsigned long			nmi_dropped;
- 	unsigned long			commit_overrun;
- 	unsigned long			overrun;
--	unsigned long			entries;
-+	unsigned long			read;
-+	local_t				entries;
- 	u64				write_stamp;
- 	u64				read_stamp;
- 	atomic_t			record_disabled;
-@@ -997,7 +998,6 @@ static void rb_update_overflow(struct ring_buffer_per_cpu *cpu_buffer)
- 		if (event->type_len > RINGBUF_TYPE_DATA_TYPE_LEN_MAX)
- 			continue;
- 		cpu_buffer->overrun++;
--		cpu_buffer->entries--;
- 	}
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index f5427e0..74df029 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -3595,6 +3595,45 @@ static const struct file_operations tracing_buffers_fops = {
+ 	.llseek		= no_llseek,
+ };
+ 
++static ssize_t
++tracing_stats_read(struct file *filp, char __user *ubuf,
++		   size_t count, loff_t *ppos)
++{
++	unsigned long cpu = (unsigned long)filp->private_data;
++	struct trace_array *tr = &global_trace;
++	struct trace_seq *s;
++	unsigned long cnt;
++
++	s = kmalloc(sizeof(*s), GFP_ATOMIC);
++	if (!s)
++		return ENOMEM;
++
++	trace_seq_init(s);
++
++	cnt = ring_buffer_entries_cpu(tr->buffer, cpu);
++	trace_seq_printf(s, "entries: %ld\n", cnt);
++
++	cnt = ring_buffer_overrun_cpu(tr->buffer, cpu);
++	trace_seq_printf(s, "overrun: %ld\n", cnt);
++
++	cnt = ring_buffer_commit_overrun_cpu(tr->buffer, cpu);
++	trace_seq_printf(s, "commit overrun: %ld\n", cnt);
++
++	cnt = ring_buffer_nmi_dropped_cpu(tr->buffer, cpu);
++	trace_seq_printf(s, "nmi dropped: %ld\n", cnt);
++
++	count = simple_read_from_buffer(ubuf, count, ppos, s->buffer, s->len);
++
++	kfree(s);
++
++	return count;
++}
++
++static const struct file_operations tracing_stats_fops = {
++	.open		= tracing_open_generic,
++	.read		= tracing_stats_read,
++};
++
+ #ifdef CONFIG_DYNAMIC_FTRACE
+ 
+ int __weak ftrace_arch_read_dyn_info(char *buf, int size)
+@@ -3708,6 +3747,9 @@ static void tracing_init_debugfs_percpu(long cpu)
+ 
+ 	trace_create_file("trace_pipe_raw", 0444, d_cpu,
+ 			(void *) cpu, &tracing_buffers_fops);
++
++	trace_create_file("stats", 0444, d_cpu,
++			(void *) cpu, &tracing_stats_fops);
  }
  
-@@ -1588,7 +1588,7 @@ EXPORT_SYMBOL_GPL(ring_buffer_lock_reserve);
- static void rb_commit(struct ring_buffer_per_cpu *cpu_buffer,
- 		      struct ring_buffer_event *event)
- {
--	cpu_buffer->entries++;
-+	local_inc(&cpu_buffer->entries);
- 
- 	/* Only process further if we own the commit */
- 	if (!rb_is_commit(cpu_buffer, event))
-@@ -1722,7 +1722,7 @@ void ring_buffer_discard_commit(struct ring_buffer *buffer,
- 	 * The commit is still visible by the reader, so we
- 	 * must increment entries.
- 	 */
--	cpu_buffer->entries++;
-+	local_inc(&cpu_buffer->entries);
-  out:
- 	/*
- 	 * If a write came in and pushed the tail page
-@@ -1902,7 +1902,8 @@ unsigned long ring_buffer_entries_cpu(struct ring_buffer *buffer, int cpu)
- 		return 0;
- 
- 	cpu_buffer = buffer->buffers[cpu];
--	ret = cpu_buffer->entries;
-+	ret = (local_read(&cpu_buffer->entries) - cpu_buffer->overrun)
-+		- cpu_buffer->read;
- 
- 	return ret;
- }
-@@ -1985,7 +1986,8 @@ unsigned long ring_buffer_entries(struct ring_buffer *buffer)
- 	/* if you care about this being correct, lock the buffer */
- 	for_each_buffer_cpu(buffer, cpu) {
- 		cpu_buffer = buffer->buffers[cpu];
--		entries += cpu_buffer->entries;
-+		entries += (local_read(&cpu_buffer->entries) -
-+			    cpu_buffer->overrun) - cpu_buffer->read;
- 	}
- 
- 	return entries;
-@@ -2225,7 +2227,7 @@ static void rb_advance_reader(struct ring_buffer_per_cpu *cpu_buffer)
- 
- 	if (event->type_len <= RINGBUF_TYPE_DATA_TYPE_LEN_MAX
- 			|| rb_discarded_event(event))
--		cpu_buffer->entries--;
-+		cpu_buffer->read++;
- 
- 	rb_update_read_stamp(cpu_buffer, event);
- 
-@@ -2642,7 +2644,8 @@ rb_reset_cpu(struct ring_buffer_per_cpu *cpu_buffer)
- 	cpu_buffer->nmi_dropped = 0;
- 	cpu_buffer->commit_overrun = 0;
- 	cpu_buffer->overrun = 0;
--	cpu_buffer->entries = 0;
-+	cpu_buffer->read = 0;
-+	local_set(&cpu_buffer->entries, 0);
- 
- 	cpu_buffer->write_stamp = 0;
- 	cpu_buffer->read_stamp = 0;
-@@ -2813,7 +2816,7 @@ static void rb_remove_entries(struct ring_buffer_per_cpu *cpu_buffer,
- 		/* Only count data entries */
- 		if (event->type_len > RINGBUF_TYPE_DATA_TYPE_LEN_MAX)
- 			continue;
--		cpu_buffer->entries--;
-+		cpu_buffer->read++;
- 	}
- 	__raw_spin_unlock(&cpu_buffer->lock);
- }
+ #ifdef CONFIG_FTRACE_SELFTEST
 -- 
 1.6.2.4
 
