@@ -1,87 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758847AbZEFVdy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbZEFVeu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758847AbZEFVdy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 17:33:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753858AbZEFVdo
+	id S1757594AbZEFVeu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 17:34:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbZEFVem
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:33:44 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:37382 "EHLO mx2.suse.de"
+	Wed, 6 May 2009 17:34:42 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:33146 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750754AbZEFVdn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:33:43 -0400
-Date: Wed, 6 May 2009 14:30:10 -0700
-From: Greg KH <gregkh@suse.de>
-To: =?utf-8?B?WzZdW01lZSBFd11bzrxdICEhISAtLSBYS0ogfHwgbWluZGxlc3MgOkQ=?= 
-	<xiaokj@gmail.com>
-Cc: Oliver Neukum <oliver@neukum.name>, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Yet another Conexant Clone to add to cdc-acm.c
-Message-ID: <20090506213010.GA18387@suse.de>
-References: <2e609cef0905060747m281c15e8ybc8e20f9d4993178@mail.gmail.com> <20090506145832.GE3478@suse.de> <2e609cef0905061401n2412c448k755a152917f4b9d6@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2e609cef0905061401n2412c448k755a152917f4b9d6@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1752248AbZEFVel (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:34:41 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [PATCH 9/19] TuxOnIce: Netlink support.
+From: Nigel Cunningham <nigel@tuxonice.net>
+Reply-To: nigel@tuxonice.net
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       tuxonice-devel@lists.tuxonice.net
+In-Reply-To: <20090506210330.GA29496@uranus.ravnborg.org>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	 <1241620755-22133-10-git-send-email-nigel@tuxonice.net>
+	 <20090506210330.GA29496@uranus.ravnborg.org>
+Content-Type: text/plain
+Date: Thu, 07 May 2009 07:35:38 +1000
+Message-Id: <1241645738.19600.97.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 05:01:22AM +0800, [6][Mee Ew][μ] !!! -- XKJ || mindless :D wrote:
-> 2009/5/6 Greg KH <gregkh@suse.de>:
-> > On Wed, May 06, 2009 at 10:47:14PM +0800, [6][Mee Ew][μ] !!! -- XKJ || mindless :D wrote:
-> >> Dear Mighty Ones,
-> >>
-> >> Please be gentle with me. This is my first time...
-> >>
-> >> Shiro / Aztech (Singapore) has completely cloned the Conexant USB
-> >> MODEM RD02-D400 and called it their UM-3100.
-> >> With the errors, of course.
-> >>
-> >> I am trying my best to follow procedures here (as google tells,
-> >> though), so if I am not right, please feel free to hurl insults back
-> >> to this mailbox.
-> >
-> > Minor thing to change, we need a "Signed-off-by:" line, as per the
-> > instructions in the file Documentation/SubmittingPatches.
-> >
-> > Care to add that to the patch description and resend the whole thing so
-> > that we can apply it?
-> >
-> > thanks,
-> >
-> > greg k-h
+Hi Sam.
+
+On Wed, 2009-05-06 at 23:03 +0200, Sam Ravnborg wrote:
+> On Thu, May 07, 2009 at 12:39:05AM +1000, Nigel Cunningham wrote:
+> > This patch adds support for communicating with a userspace helper via a
+> > netlink socket. It is used by the userspace user interface support and
+> > by the storage manager support.
+> > 
+> > Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
+> > ---
+> >  kernel/power/Makefile           |    4 +
+> >  kernel/power/tuxonice_netlink.c |  339 +++++++++++++++++++++++++++++++++++++++
+> >  2 files changed, 343 insertions(+), 0 deletions(-)
+> >  create mode 100644 kernel/power/tuxonice_netlink.c
+> > 
+> > diff --git a/kernel/power/Makefile b/kernel/power/Makefile
+> > index 07efc8a..180b89a 100644
+> > --- a/kernel/power/Makefile
+> > +++ b/kernel/power/Makefile
+> > @@ -10,6 +10,10 @@ tuxonice_core-objs := tuxonice_modules.o tuxonice_sysfs.o tuxonice_highlevel.o \
+> >  
+> >  obj-$(CONFIG_TOI)		+= tuxonice_builtin.o
+> >  
+> > +ifdef CONFIG_NET
+> > +tuxonice_core-objs		+= tuxonice_netlink.o
+> > +endif
 > 
-> Understood. I have added you again, this time, because Mr Oliver
-> Neukum's email bounced on me the last time.
+> If you replace tuxonice_core-objs with tuxonice_core-y in your MAkefile the
+> above can be simplified to:
+> tuxonice_core-$(CONFIG_NET) += tuxonice_netlink.o
 > 
-> This patch adds another quirky Conexant USB Modem Clone to usb cdc-acm.c
-> 
-> This is to be applied to latest git. (Got off the website...)
-> 
-> Signed-off-by: Xiao Kaijian <xiaokj@gmail.com>
+> (On the assumption that CONFIG_NET is a bool)
 
-Ah, better, but your email client seems to have eaten all of the tabs
-and spit out spaces instead.  Care to read
-Documentation/email_clients.txt and try it again?
+Thanks for the review.
 
-> --- a/drivers/usb/class/cdc-acm.c       2009-05-06 22:06:27.556488116 +0800
-> +++ b/drivers/usb/class/cdc-acm.c       2009-05-06 22:12:56.648401202 +0800
-> @@ -1375,6 +1375,13 @@ static struct usb_device_id acm_ids[] = {
->        { USB_DEVICE(0x0572, 0x1324), /* Conexant USB MODEM RD02-D400 */
->        .driver_info = NO_UNION_NORMAL, /* has no union descriptor */
->        },
-> +       { USB_DEVICE(0x0572, 0x1328), /* Shiro / Aztech USB MODEM UM-3100 */
-> +        .driver_info = NO_UNION_NORMAL, /* has no union descriptor.
-> +                                          This is basically a clone of
-> +                                          Conexant USB MODEM RD02-D400.
-> +                                          Seems like NO_UNION_ _IS_ becoming
-> +                                          NORMAL... */
+I have support for building tuxonice as modules that I'm not asking to
+be merged (at least not yet - it adds too many symbol exports at the
+moment). As a result, I did the simplification but left the
+tuxonice_core_objs definition. Is that what you'd do?
 
-Is the commentary really needed here?  The majority of devices do not
-need this quirk, so i don't think it's really "normal"...
+Regards,
 
-thanks,
+Nigel
 
-greg k-h
