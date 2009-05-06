@@ -1,103 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbZEFIND@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758697AbZEFIN0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757451AbZEFIND (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 04:13:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752940AbZEFIMQ
+	id S1758697AbZEFIN0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 04:13:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755864AbZEFIMU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 04:12:16 -0400
-Received: from araneidae.co.uk ([62.3.233.233]:3701 "EHLO araneidae.co.uk"
+	Wed, 6 May 2009 04:12:20 -0400
+Received: from araneidae.co.uk ([62.3.233.233]:3703 "EHLO araneidae.co.uk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755730AbZEFIMO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 04:12:14 -0400
-Date: Wed, 6 May 2009 08:29:52 +0100 (BST)
+	id S1754028AbZEFIMS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 04:12:18 -0400
+X-Greylist: delayed 2409 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 May 2009 04:12:18 EDT
+Date: Wed, 6 May 2009 08:32:09 +0100 (BST)
 From: Michael Abbott <michael@araneidae.co.uk>
-To: lm-sensors@lm-sensors.org
+To: linux-i2c@vger.kernel.org
 cc: linux-kernel@vger.kernel.org
-Subject: [PATCH 2.6.29.2] Add low_power support for adm1021 driver.
-Message-ID: <Pine.LNX.4.64.0905060826530.24668@venus.araneidae.co.uk>
+Subject: [PATCH 2.6.29.2] PXA I2C: Define log level for i2c PXA error report
+Message-ID: <Pine.LNX.4.64.0905060829580.24668@venus.araneidae.co.uk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Occasionally it is helpful to be able to turn a temperature sensor off
-(for example if it's making unwanted electrical noise).  This patch
-adds a sysfs node to put any adm1021 compatible device into low power mode.
+All the i2c pxa error messages should probably be KERN_DEBUG
 
-In low power mode a special single-shot command is required to take a 
-measurement: this is not implemented in this patch.
+At least, all the printk messages should have a log level specfied,
+and KERN_DEBUG seems appropriate.
 
 Signed-off-by: Michael Abbott <michael.abbott@diamond.ac.uk>
 ---
- drivers/hwmon/adm1021.c |   33 +++++++++++++++++++++++++++++++++
- 1 files changed, 33 insertions(+), 0 deletions(-)
+ drivers/i2c/busses/i2c-pxa.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/hwmon/adm1021.c b/drivers/hwmon/adm1021.c
-index b11e06f..ba7a423 100644
---- a/drivers/hwmon/adm1021.c
-+++ b/drivers/hwmon/adm1021.c
-@@ -83,6 +83,7 @@ struct adm1021_data {
- 
- 	struct mutex update_lock;
- 	char valid;		/* !=0 if following fields are valid */
-+	char low_power;		/* !=0 if device in low power mode */
- 	unsigned long last_updated;	/* In jiffies */
- 
- 	s8 temp_max[2];		/* Register values */
-@@ -216,6 +217,35 @@ static ssize_t set_temp_min(struct device *dev,
- 	return count;
- }
- 
-+static ssize_t show_low_power(
-+	struct device *dev, struct device_attribute *devattr, char *buf)
-+{
-+	struct adm1021_data *data = adm1021_update_device(dev);
-+	return sprintf(buf, "%d\n", data->low_power);
-+}
-+
-+static ssize_t set_low_power(
-+	struct device *dev, struct device_attribute *devattr,
-+	const char *buf, size_t count)
-+{
-+	struct i2c_client *client = to_i2c_client(dev);
-+	struct adm1021_data *data = i2c_get_clientdata(client);
-+	int low_power = simple_strtol(buf, NULL, 10) != 0;
-+	mutex_lock(&data->update_lock);
-+
-+	if (low_power != data->low_power) {
-+		int config = i2c_smbus_read_byte_data(
-+			client, ADM1021_REG_CONFIG_R);
-+		data->low_power = low_power;
-+		i2c_smbus_write_byte_data(client, ADM1021_REG_CONFIG_W,
-+			(config & 0xBF) | (low_power << 6));
-+	}
-+	mutex_unlock(&data->update_lock);
-+
-+	return count;
-+}
-+
-+
- static SENSOR_DEVICE_ATTR(temp1_input, S_IRUGO, show_temp, NULL, 0);
- static SENSOR_DEVICE_ATTR(temp1_max, S_IWUSR | S_IRUGO, show_temp_max,
- 			  set_temp_max, 0);
-@@ -233,6 +263,8 @@ static SENSOR_DEVICE_ATTR(temp2_min_alarm, S_IRUGO, show_alarm, NULL, 3);
- static SENSOR_DEVICE_ATTR(temp2_fault, S_IRUGO, show_alarm, NULL, 2);
- 
- static DEVICE_ATTR(alarms, S_IRUGO, show_alarms, NULL);
-+static DEVICE_ATTR(
-+	low_power, S_IWUSR | S_IRUGO, show_low_power, set_low_power);
- 
- static struct attribute *adm1021_attributes[] = {
- 	&sensor_dev_attr_temp1_max.dev_attr.attr,
-@@ -247,6 +279,7 @@ static struct attribute *adm1021_attributes[] = {
- 	&sensor_dev_attr_temp2_min_alarm.dev_attr.attr,
- 	&sensor_dev_attr_temp2_fault.dev_attr.attr,
- 	&dev_attr_alarms.attr,
-+	&dev_attr_low_power.attr,
- 	NULL
- };
- 
+diff --git a/drivers/i2c/busses/i2c-pxa.c b/drivers/i2c/busses/i2c-pxa.c
+index bdb1f75..8cb9160 100644
+--- a/drivers/i2c/busses/i2c-pxa.c
++++ b/drivers/i2c/busses/i2c-pxa.c
+@@ -210,11 +210,11 @@ static irqreturn_t i2c_pxa_handler(int this_irq, void *dev_id);
+ static void i2c_pxa_scream_blue_murder(struct pxa_i2c *i2c, const char *why)
+ {
+ 	unsigned int i;
+-	printk("i2c: error: %s\n", why);
+-	printk("i2c: msg_num: %d msg_idx: %d msg_ptr: %d\n",
++	printk(KERN_DEBUG "i2c: error: %s\n", why);
++	printk(KERN_DEBUG "i2c: msg_num: %d msg_idx: %d msg_ptr: %d\n",
+ 		i2c->msg_num, i2c->msg_idx, i2c->msg_ptr);
+-	printk("i2c: ICR: %08x ISR: %08x\n"
+-	       "i2c: log: ", readl(_ICR(i2c)), readl(_ISR(i2c)));
++	printk(KERN_DEBUG "i2c: ICR: %08x ISR: %08x\n"
++	       KERN_DEBUG "i2c: log: ", readl(_ICR(i2c)), readl(_ISR(i2c)));
+ 	for (i = 0; i < i2c->irqlogidx; i++)
+ 		printk("[%08x:%08x] ", i2c->isrlog[i], i2c->icrlog[i]);
+ 	printk("\n");
 -- 
 1.6.1.3
 
