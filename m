@@ -1,139 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbZEFIMJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754147AbZEFIMf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753577AbZEFIMJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 04:12:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbZEFILw
+	id S1754147AbZEFIMf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 04:12:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755821AbZEFIMO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 04:11:52 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:58679 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751021AbZEFILv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 04:11:51 -0400
-Message-ID: <4A014619.1040000@cn.fujitsu.com>
-Date: Wed, 06 May 2009 16:11:05 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Wed, 6 May 2009 04:12:14 -0400
+Received: from araneidae.co.uk ([62.3.233.233]:3700 "EHLO araneidae.co.uk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753691AbZEFIMI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 04:12:08 -0400
+X-Greylist: delayed 2524 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 May 2009 04:12:07 EDT
+Date: Wed, 6 May 2009 08:33:29 +0100 (BST)
+From: Michael Abbott <michael@araneidae.co.uk>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 2.6.29.2] XCEP PXA255 Processor Board
+Message-ID: <Pine.LNX.4.64.0905060832110.24668@venus.araneidae.co.uk>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: IO scheduler based IO Controller V2
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1241553525-28095-1-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> Hi All,
-> 
-> Here is the V2 of the IO controller patches generated on top of 2.6.30-rc4.
-> First version of the patches was posted here.
+XCEP PXA255 Processor Board (new architecture)
 
-Hi Vivek,
+Adds support for the XCEP processor from IskraTel.  This is a small
+single board computer with an ARM XScale PXA255 processor, 32M flash,
+64M RAM and an SMSC LAN91C111 network device.
 
-I did some simple test for V2, and triggered an kernel panic.
-The following script can reproduce this bug. It seems that the cgroup
-is already removed, but IO Controller still try to access into it.
+This board is used in a series of electron beam position monitors used
+in synchrotron light sources world wide.
 
-#!/bin/sh
-echo 1 > /proc/sys/vm/drop_caches
-mkdir /cgroup 2> /dev/null
-mount -t cgroup -o io,blkio io /cgroup
-mkdir /cgroup/test1
-mkdir /cgroup/test2
-echo 100 > /cgroup/test1/io.weight
-echo 500 > /cgroup/test2/io.weight
+Signed-off-by: Michael Abbott <michael.abbott@diamond.ac.uk>
+---
+ arch/arm/mach-pxa/Kconfig  |    6 ++
+ arch/arm/mach-pxa/Makefile |    1 +
+ arch/arm/mach-pxa/xcep.c   |  203 ++++++++++++++++++++++++++++++++++++++++++++
+ drivers/net/smc91x.h       |    5 +
+ 4 files changed, 215 insertions(+), 0 deletions(-)
+ create mode 100644 arch/arm/mach-pxa/xcep.c
 
-./rwio -w -f 2000M.1 &  //do async write
-pid1=$!
-echo $pid1 > /cgroup/test1/tasks
-
-./rwio -w -f 2000M.2 &
-pid2=$!
-echo $pid2 > /cgroup/test2/tasks
-
-sleep 10
-kill -9 $pid1
-kill -9 $pid2
-sleep 1
-
-echo ======
-cat /cgroup/test1/io.disk_time
-cat /cgroup/test2/io.disk_time
-
-echo ======
-cat /cgroup/test1/io.disk_sectors
-cat /cgroup/test2/io.disk_sectors
-
-rmdir /cgroup/test1
-rmdir /cgroup/test2
-umount /cgroup
-rmdir /cgroup
-
-
-BUG: unable to handle kernel NULL pointer dereferec
-IP: [<c0448c24>] cgroup_path+0xc/0x97
-*pde = 64d2d067
-Oops: 0000 [#1] SMP
-last sysfs file: /sys/block/md0/range
-Modules linked in: ipv6 cpufreq_ondemand acpi_cpufreq dm_mirror dm_multipath sbd
-Pid: 132, comm: kblockd/0 Not tainted (2.6.30-rc4-Vivek-V2 #1) Veriton M460
-EIP: 0060:[<c0448c24>] EFLAGS: 00010086 CPU: 0
-EIP is at cgroup_path+0xc/0x97
-EAX: 00000100 EBX: f60adca0 ECX: 00000080 EDX: f709fe28
-ESI: f60adca8 EDI: f709fe28 EBP: 00000100 ESP: f709fdf0
- DS: 007b ES: 007b FS: 00d8 GS: 0000 SS: 0068
-Process kblockd/0 (pid: 132, ti=f709f000 task=f70a8f60 task.ti=f709f000)
-Stack:
- f709fe28 f68c5698 f60adca0 f60adca8 f709fe28 f68de801 c04f5389 00000080
- f68de800 f7094d0c f6a29118 f68bde00 00000016 c04f5e8d c04f5340 00000080
- c0579fec f68c5e94 00000082 c042edb4 f68c5fd4 f68c5fd4 c080b520 00000082
-Call Trace:
- [<c04f5389>] ? io_group_path+0x6d/0x89
- [<c04f5e8d>] ? elv_ioq_served+0x2a/0x7a
- [<c04f5340>] ? io_group_path+0x24/0x89
- [<c0579fec>] ? ide_build_dmatable+0xda/0x130
- [<c042edb4>] ? lock_timer_base+0x19/0x35
- [<c042ef0c>] ? mod_timer+0x9f/0xa8
- [<c04fdee6>] ? __delay+0x6/0x7
- [<c057364f>] ? ide_execute_command+0x5d/0x71
- [<c0579d4f>] ? ide_dma_intr+0x0/0x99
- [<c0576496>] ? do_rw_taskfile+0x201/0x213
- [<c04f6daa>] ? __elv_ioq_slice_expired+0x212/0x25e
- [<c04f7e15>] ? elv_fq_select_ioq+0x121/0x184
- [<c04e8a2f>] ? elv_select_sched_queue+0x1e/0x2e
- [<c04f439c>] ? cfq_dispatch_requests+0xaa/0x238
- [<c04e7e67>] ? elv_next_request+0x152/0x15f
- [<c04240c2>] ? dequeue_task_fair+0x16/0x2d
- [<c0572f49>] ? do_ide_request+0x10f/0x4c8
- [<c0642d44>] ? __schedule+0x845/0x893
- [<c042edb4>] ? lock_timer_base+0x19/0x35
- [<c042f1be>] ? del_timer+0x41/0x47
- [<c04ea5c6>] ? __generic_unplug_device+0x23/0x25
- [<c04f530d>] ? elv_kick_queue+0x19/0x28
- [<c0434b77>] ? worker_thread+0x11f/0x19e
- [<c04f52f4>] ? elv_kick_queue+0x0/0x28
- [<c0436ffc>] ? autoremove_wake_function+0x0/0x2d
- [<c0434a58>] ? worker_thread+0x0/0x19e
- [<c0436f3b>] ? kthread+0x42/0x67
- [<c0436ef9>] ? kthread+0x0/0x67
- [<c040326f>] ? kernel_thread_helper+0x7/0x10
-Code: c0 84 c0 74 0e 89 d8 e8 7c e9 fd ff eb 05 bf fd ff ff ff e8 c0 ea ff ff 8
-EIP: [<c0448c24>] cgroup_path+0xc/0x97 SS:ESP 0068:f709fdf0
-CR2: 000000000000011c
----[ end trace 2d4bc25a2c33e394 ]---
-
+diff --git a/arch/arm/mach-pxa/Kconfig b/arch/arm/mach-pxa/Kconfig
+index 8eea730..738cc98 100644
+--- a/arch/arm/mach-pxa/Kconfig
++++ b/arch/arm/mach-pxa/Kconfig
+@@ -395,6 +395,12 @@ config MACH_EZX_E2
+ 	default y
+ 	depends on PXA_EZX
+ 
++config MACH_XCEP
++	bool "Iskratel Electronics XCEP"
++	select PXA25x
++	select MTD_PHYSMAP
++	select PXA_SSP
++
+ endmenu
+ 
+ config PXA25x
+diff --git a/arch/arm/mach-pxa/Makefile b/arch/arm/mach-pxa/Makefile
+index 7b28bb5..d9890a7 100644
+--- a/arch/arm/mach-pxa/Makefile
++++ b/arch/arm/mach-pxa/Makefile
+@@ -71,6 +71,7 @@ obj-$(CONFIG_MACH_CM_X300)      += cm-x300.o
+ obj-$(CONFIG_PXA_EZX)           += ezx.o
+ 
+ obj-$(CONFIG_MACH_INTELMOTE2)   += imote2.o
++obj-$(CONFIG_MACH_XCEP)         += xcep.o
+ 
+ # Support for blinky lights
+ led-y := leds.o
+diff --git a/arch/arm/mach-pxa/xcep.c b/arch/arm/mach-pxa/xcep.c
+new file mode 100644
+index 0000000..7a02416
+--- /dev/null
++++ b/arch/arm/mach-pxa/xcep.c
+@@ -0,0 +1,203 @@
++/*
++ *  linux/arch/arm/mach-pxa/xcep.c
++ *
++ *  Support for the Iskratel Electronics XCEP platform.
++ *
++ *  Author:     Ales Bardorfer <ales@i-tech.si>
++ *  Updates by: Matej Kenda <matej.kenda@hermes-softlab.com>
++ *  Created:    June 2006
++ *  Copyright:  (C) 2006 Instrumentation Technologies
++ *
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License version 2 as
++ *  published by the Free Software Foundation.
++ */
++
++#include <linux/module.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/platform_device.h>
++#include <linux/sysdev.h>
++#include <linux/major.h>
++#include <linux/fb.h>
++#include <linux/interrupt.h>
++#include <linux/mtd/mtd.h>
++#include <linux/mtd/partitions.h>
++#include <linux/mtd/physmap.h>
++#include <linux/i2c.h>
++
++#include <asm/setup.h>
++#include <asm/memory.h>
++#include <asm/mach-types.h>
++#include <mach/hardware.h>
++#include <asm/irq.h>
++#include <asm/sizes.h>
++
++#include <asm/mach/arch.h>
++#include <asm/mach/map.h>
++#include <asm/mach/irq.h>
++#include <asm/mach/flash.h>
++
++#include <mach/pxa-regs.h>
++#include <mach/pxa2xx-regs.h>
++#include <mach/pxa2xx-gpio.h>
++#include <mach/udc.h>
++#include <mach/irda.h>
++#include <mach/pxafb.h>
++#include <mach/mmc.h>
++#include <mach/i2c.h>
++
++#include "generic.h"
++
++
++#define XCEP_ETH_PHYS	0x0c000300
++#define XCEP_ETH_END    0x0c0fffff
++#define XCEP_ETH_IRQ	0
++
++/*  XCEP CPLD base */
++#define XCEP_CPLD_BASE  0xf0000000
++
++
++
++static struct mtd_partition xcep_partitions[] = {
++	{
++		.name =		"Bootloader",
++		.size =		0x00040000,
++		.offset =	0,
++		.mask_flags =	MTD_WRITEABLE  /* force read-only */
++	}, {
++		.name =		"Bootloader ENV",
++		.size =		0x00040000,
++		.offset =	0x00040000,
++		.mask_flags =	MTD_WRITEABLE  /* force read-only */
++	}, {
++		.name =		"Kernel",
++		.size =		0x00100000,
++		.offset =	0x00080000,
++	}, {
++		.name =		"Rescue fs",
++		.size =		0x00280000,
++		.offset =	0x00180000,
++	}, {
++		.name =		"Filesystem",
++		.size =		MTDPART_SIZ_FULL,
++		.offset =	0x00400000
++	}
++};
++
++static struct physmap_flash_data xcep_flash_data[] = {
++	{
++		.width		= 4,		/* bankwidth in bytes */
++		.parts		= xcep_partitions,
++		.nr_parts	= ARRAY_SIZE(xcep_partitions)
++	}
++};
++
++static struct resource flash_resource = {
++	.start	= PXA_CS0_PHYS,
++	.end	= PXA_CS0_PHYS + SZ_32M - 1,
++	.flags	= IORESOURCE_MEM,
++};
++
++static struct platform_device flash_device = {
++	.name	= "physmap-flash",
++	.id	= 0,
++	.dev 	= {
++		.platform_data = xcep_flash_data,
++	},
++	.resource = &flash_resource,
++	.num_resources = 1,
++};
++
++
++
++static struct resource smc91x_resources[] = {
++	[0] = {
++		.name	= "smc91x-regs",
++		.start	= XCEP_ETH_PHYS,
++		.end	= XCEP_ETH_END,
++		.flags	= IORESOURCE_MEM,
++	},
++	[1] = {
++		.start	= IRQ_GPIO(XCEP_ETH_IRQ),
++		.end	= IRQ_GPIO(XCEP_ETH_IRQ),
++		.flags	= IORESOURCE_IRQ,
++	},
++	[2] = {
++		.name	= "smc91x-attrib",
++		.start	= 0x0e000000,
++		.end	= 0x0e0fffff,
++		.flags	= IORESOURCE_MEM,
++	},
++};
++
++static struct platform_device smc91x_device = {
++	.name		= "smc91x",
++	.id		= -1,
++	.num_resources	= ARRAY_SIZE(smc91x_resources),
++	.resource	= smc91x_resources,
++};
++
++
++static struct map_desc xcep_io_desc[] __initdata = {
++  	{	/* CPLD */
++		.virtual	= XCEP_CPLD_BASE,
++		.pfn		= __phys_to_pfn(0x10000000),
++		.length		= 0x00000100,
++		.type		= MT_DEVICE
++	}
++};
++
++
++static struct platform_device *devices[] __initdata = {
++	&flash_device,
++	&smc91x_device,
++};
++
++/*
++ * We have to state that there are HWMON devices on the I2C bus on XCEP.
++ * Drivers for HWMON verify capabilities of the adapter when loading and
++ * refuse to attach if the adapter doesn't support HWMON class of devices.
++ * See also Documentation/i2c/porting-clients.
++ */
++static struct i2c_pxa_platform_data xcep_i2c_platform_data  = {
++	.class = I2C_CLASS_HWMON
++};
++
++static void __init xcep_init_vlio(void)
++{
++	/* See Intel XScale Developer's Guide for details */
++	/* Set RDF and RDN to appropriate values (chip select 3 (smc91x)) */
++	MSC1 = (MSC1 & 0xffff) | 0xD5540000;
++	/* Set RDF and RDN to appropriate values (chip select 5 (fpga)) */
++	MSC2 = (MSC2 & 0xffff) | 0x72A00000;
++}
++
++static void __init xcep_init(void)
++{
++	xcep_init_vlio();
++
++	platform_add_devices(ARRAY_AND_SIZE(devices));
++	pxa_set_i2c_info(&xcep_i2c_platform_data);
++}
++
++static void __init xcep_map_io(void)
++{
++	pxa_map_io();
++	iotable_init(ARRAY_AND_SIZE(xcep_io_desc));
++
++	/* This is for the SMC chip select */
++	pxa_gpio_mode(GPIO79_nCS_3_MD);
++
++}
++
++MACHINE_START(XCEP, "Iskratel XCEP")
++	.phys_io	= 0x80000000,
++	.io_pg_offst	= 0xf8000000,
++	.boot_params	= 0xa0000100,
++	.init_machine	= xcep_init,
++	.map_io		= xcep_map_io,
++	.init_irq	= pxa25x_init_irq,
++	.timer		= &pxa_timer,
++MACHINE_END
+diff --git a/drivers/net/smc91x.h b/drivers/net/smc91x.h
+index c4ccd12..2c4a1b2 100644
+--- a/drivers/net/smc91x.h
++++ b/drivers/net/smc91x.h
+@@ -431,6 +431,11 @@ static inline void LPD7_SMC_outsw (unsigned char* a, int r,
+ 
+ #endif
+ 
++#if defined(CONFIG_MACH_XCEP)
++#define SMC_USE_PXA_DMA		1
++#endif
++
++
+ 
+ /* store this information for the driver.. */
+ struct smc_local {
 -- 
-Regards
-Gui Jianfeng
-
+1.6.1.3
 
