@@ -1,76 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758827AbZEFRBJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759413AbZEFRC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758827AbZEFRBJ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 13:01:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754547AbZEFRAz
+	id S1759413AbZEFRC1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 13:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754159AbZEFRCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 13:00:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50086 "EHLO mx2.redhat.com"
+	Wed, 6 May 2009 13:02:13 -0400
+Received: from kroah.org ([198.145.64.141]:40536 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753559AbZEFRAy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 13:00:54 -0400
-Message-ID: <4A01C1AD.9060802@redhat.com>
-Date: Wed, 06 May 2009 19:58:21 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1753112AbZEFRCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 13:02:13 -0400
+Date: Wed, 6 May 2009 09:37:31 -0700
+From: Greg KH <greg@kroah.com>
+To: Greg KH <gregkh@suse.de>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>, cl@linux-foundation.org,
+       mel@csn.ul.ie, Stefan Lippers-Hollmann <s.L-H@gmx.de>,
+       linux-kernel@vger.kernel.org, dave@linux.vnet.ibm.com,
+       ebmunson@us.ibm.com, akpm@linux-foundation.org, stable@kernel.org
+Subject: Re: [stable] patch
+	mm-fix-committed_as-underflow-on-large-nr_cpus-environment.patch
+	added to 2.6.29-stable tree
+Message-ID: <20090506163731.GA3764@kroah.com>
+References: <20090504220454.3F71148FB8@coco.kroah.org> <200905052036.24106.s.L-H@gmx.de> <20090505221403.GA4714@suse.de> <2f11576a0905051526j73dd1570nb440e4b78e3b35a9@mail.gmail.com> <20090505225932.GA4982@suse.de> <2f11576a0905051612p140e077fva214e954273a39df@mail.gmail.com> <20090506062058.GA6916@suse.de>
 MIME-Version: 1.0
-To: Hugh Dickins <hugh@veritas.com>
-CC: Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, aarcange@redhat.com, chrisw@redhat.com,
-       alan@lxorguk.ukuu.org.uk, device@lanana.org, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com> <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils> <4A01AC5E.6000906@redhat.com> <Pine.LNX.4.64.0905061706590.4005@blonde.anvils>
-In-Reply-To: <Pine.LNX.4.64.0905061706590.4005@blonde.anvils>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506062058.GA6916@suse.de>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hugh Dickins wrote:
-> On Wed, 6 May 2009, Izik Eidus wrote:
->   
->> We can first start with this ioctl interface, later when we add swapping to
->> the pages, we can have madvice, and still (probably easily) support the ioctls
->> by just calling from inside ksm the madvice functions for that specific
->> address)
->>
->> I want to see ksm use madvice, but i believe it require some more changes to
->> mm/*.c, so it probably better to start with merging it when it doesnt touch
->> alot of stuff outisde ksm.c, and then to add swapping and after that add
->> madvice support (when the pages are swappable, everyone can use it)
->>
->> What you think about that?
->>     
->
-> I think it's the wrong order to follow.
->
-> The /dev/ksm interface is fine for your use while it's out of tree,
-> but we want to get the user interface right when bringing it into
-> mainline.  I recall Chris being very clear on that too.
->
-> Changing from /dev/ksm to madvise() is not a lot of work, it's mainly
-> a matter of deleting code, and tidying up interfaces which would need
-> more work anyway (I haven't commented on your curious -EPERMs yet!).
->
-> It doesn't involve whether you've enabled swapping or not - let's
-> forget the CAP_IPC_LOCK idea, and delegate that issue to limitation
-> via sysfs, along with the ability to limit wild overuse of the feature
-> - permissions on a sysfs node or something else?
->
-> It does nudge towards making some decisions which need to be made
-> anyway - that tends to be what a correct interface forces upon you.
-> Like the issue of whether to go on covering unmapped areas or not -
-> though possibly we could put off that decision, if it's doc'ed
-> for now.
->
-> And if it only covers mapped areas, then there will need to be a
-> VM_flag for it, mainly so mm can call into ksm.c when it's unmapped;
-> but I don't see it sinking hooks deeply into mm/*.c.
->
-> Hugh
->   
-Ok, i give up, lets move to madvice(), i will write a patch that move 
-the whole thing into madvice after i finish here something, but that 
-ofcurse only if Andrea agree for the move?
+On Tue, May 05, 2009 at 11:20:58PM -0700, Greg KH wrote:
+> On Wed, May 06, 2009 at 08:12:21AM +0900, KOSAKI Motohiro wrote:
+> > > On Wed, May 06, 2009 at 07:26:51AM +0900, KOSAKI Motohiro wrote:
+> > >> Could you please post oops log?
+> > >> current mmotm (include this patch) works fine on my x86_64 box. Then,
+> > >> I have no hint now ;-)
+> > >
+> > > Attached is a picture of the oops.
+> > >
+> > > Hope this helps,
+> > 
+> > OK, the reason is 99% mis-applied patch. I've made rebased patch.
+> > 
+> > in my environment
+> > 
+> > 2.6.29.2 + original patch:  panic
+> > 2.6.29.2 + rebased patch:  works well
+> > 
+> > Could you please try it?
+> 
+> thank you for looking into this, I'll try it out tomorrow morning and
+> let you know how it goes.
+
+Yes, this works!
+
+Thanks so much for working so quickly to resolve this.  I've added the
+updated patch to the .29-stable queue.
+
+greg k-h
