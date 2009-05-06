@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761326AbZEFUkX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932086AbZEFUkn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761326AbZEFUkX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:40:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760967AbZEFUi4
+	id S932086AbZEFUkn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:40:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761053AbZEFUjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:38:56 -0400
-Received: from kroah.org ([198.145.64.141]:33853 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 16:39:00 -0400
+Received: from kroah.org ([198.145.64.141]:33876 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760897AbZEFUiy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:38:54 -0400
-X-Mailbox-Line: From greg@blue.kroah.org Wed May  6 13:31:28 2009
-Message-Id: <20090506203128.745694671@blue.kroah.org>
+	id S1761096AbZEFUi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 16:38:58 -0400
+X-Mailbox-Line: From greg@blue.kroah.org Wed May  6 13:31:29 2009
+Message-Id: <20090506203128.969540094@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 13:30:15 -0700
+Date: Wed, 06 May 2009 13:30:16 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org, jejb@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Michael Buesch <mb@bu3sch.de>,
+       alan@lxorguk.ukuu.org.uk,
+       Francesco Gringoli <francesco.gringoli@ing.unibs.it>,
+       Michael Buesch <mb@bu3sch.de>,
        "John W. Linville" <linville@tuxdriver.com>,
        Chris Wright <chrisw@sous-sol.org>, Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 05/18] b43: Poison RX buffers
+Subject: [patch 06/18] b43: Refresh RX poison on buffer recycling
 References: <20090506203010.615363711@blue.kroah.org>
-Content-Disposition: inline; filename=b43-poison-rx-buffers.patch
+Content-Disposition: inline; filename=b43-refresh-rx-poison-on-buffer-recycling.patch
 In-Reply-To: <20090506203353.GA14624@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -42,114 +44,77 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Michael Buesch <mb@bu3sch.de>
 
-upstream commit: ec9a1d8c13e36440eda0f3c79b8149080e3ab5ba
+upstream commit: cf68636a9773aa97915497fe54fa4a51e3f08f3a
 
-This patch adds poisoning and sanity checking to the RX DMA buffers.
-This is used for protection against buggy hardware/firmware that raises
-RX interrupts without doing an actual DMA transfer.
-
-This mechanism protects against rare "bad packets" (due to uninitialized skb data)
-and rare kernel crashes due to uninitialized RX headers.
-
-The poison is selected to not match on valid frames and to be cheap for checking.
-
-The poison check mechanism _might_ trigger incorrectly, if we are voluntarily
-receiving frames with bad PLCP headers. However, this is nonfatal, because the
-chance of such a match is basically zero and in case it happens it just results
-in dropping the packet.
-Bad-PLCP RX defaults to off, and you should leave it off unless you want to listen
-to the latest news broadcasted by your microwave oven.
-
-This patch also moves the initialization of the RX-header "length" field in front of
-the mapping of the DMA buffer. The CPU should not touch the buffer after we mapped it.
+The RX buffer poison needs to be refreshed, if we recycle an RX buffer,
+because it might be (partially) overwritten by some DMA operations.
 
 Cc: stable@kernel.org
-Reported-by: Francesco Gringoli <francesco.gringoli@ing.unibs.it>
+Cc: Francesco Gringoli <francesco.gringoli@ing.unibs.it>
 Signed-off-by: Michael Buesch <mb@bu3sch.de>
 Signed-off-by: John W. Linville <linville@tuxdriver.com>
 Signed-off-by: Chris Wright <chrisw@sous-sol.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 ---
- drivers/net/wireless/b43/dma.c |   37 +++++++++++++++++++++++++++++++++----
- 1 file changed, 33 insertions(+), 4 deletions(-)
+ drivers/net/wireless/b43/dma.c |   21 +++++++++++----------
+ 1 file changed, 11 insertions(+), 10 deletions(-)
 
 --- a/drivers/net/wireless/b43/dma.c
 +++ b/drivers/net/wireless/b43/dma.c
-@@ -551,11 +551,32 @@ address_error:
- 	return 1;
- }
- 
-+static bool b43_rx_buffer_is_poisoned(struct b43_dmaring *ring, struct sk_buff *skb)
-+{
-+	unsigned char *f = skb->data + ring->frameoffset;
-+
-+	return ((f[0] & f[1] & f[2] & f[3] & f[4] & f[5] & f[6] & f[7]) == 0xFF);
-+}
-+
-+static void b43_poison_rx_buffer(struct b43_dmaring *ring, struct sk_buff *skb)
-+{
-+	struct b43_rxhdr_fw4 *rxhdr;
-+	unsigned char *frame;
-+
-+	/* This poisons the RX buffer to detect DMA failures. */
-+
-+	rxhdr = (struct b43_rxhdr_fw4 *)(skb->data);
-+	rxhdr->frame_len = 0;
-+
-+	B43_WARN_ON(ring->rx_buffersize < ring->frameoffset + sizeof(struct b43_plcp_hdr6) + 2);
-+	frame = skb->data + ring->frameoffset;
-+	memset(frame, 0xFF, sizeof(struct b43_plcp_hdr6) + 2 /* padding */);
-+}
-+
- static int setup_rx_descbuffer(struct b43_dmaring *ring,
- 			       struct b43_dmadesc_generic *desc,
- 			       struct b43_dmadesc_meta *meta, gfp_t gfp_flags)
- {
--	struct b43_rxhdr_fw4 *rxhdr;
- 	dma_addr_t dmaaddr;
- 	struct sk_buff *skb;
- 
-@@ -564,6 +585,7 @@ static int setup_rx_descbuffer(struct b4
- 	skb = __dev_alloc_skb(ring->rx_buffersize, gfp_flags);
- 	if (unlikely(!skb))
- 		return -ENOMEM;
-+	b43_poison_rx_buffer(ring, skb);
- 	dmaaddr = map_descbuffer(ring, skb->data, ring->rx_buffersize, 0);
- 	if (b43_dma_mapping_error(ring, dmaaddr, ring->rx_buffersize, 0)) {
- 		/* ugh. try to realloc in zone_dma */
-@@ -574,6 +596,7 @@ static int setup_rx_descbuffer(struct b4
- 		skb = __dev_alloc_skb(ring->rx_buffersize, gfp_flags);
- 		if (unlikely(!skb))
- 			return -ENOMEM;
-+		b43_poison_rx_buffer(ring, skb);
- 		dmaaddr = map_descbuffer(ring, skb->data,
- 					 ring->rx_buffersize, 0);
- 	}
-@@ -589,9 +612,6 @@ static int setup_rx_descbuffer(struct b4
- 	ring->ops->fill_descriptor(ring, desc, dmaaddr,
- 				   ring->rx_buffersize, 0, 0, 0);
- 
--	rxhdr = (struct b43_rxhdr_fw4 *)(skb->data);
--	rxhdr->frame_len = 0;
--
- 	return 0;
- }
- 
-@@ -1484,6 +1504,15 @@ static void dma_rx(struct b43_dmaring *r
- 			goto drop;
+@@ -1498,20 +1498,16 @@ static void dma_rx(struct b43_dmaring *r
+ 			len = le16_to_cpu(rxhdr->frame_len);
+ 		} while (len == 0 && i++ < 5);
+ 		if (unlikely(len == 0)) {
+-			/* recycle the descriptor buffer. */
+-			sync_descbuffer_for_device(ring, meta->dmaaddr,
+-						   ring->rx_buffersize);
+-			goto drop;
++			dmaaddr = meta->dmaaddr;
++			goto drop_recycle_buffer;
  		}
  	}
-+	if (unlikely(b43_rx_buffer_is_poisoned(ring, skb))) {
-+		/* Something went wrong with the DMA.
-+		 * The device did not touch the buffer and did not overwrite the poison. */
-+		b43dbg(ring->dev->wl, "DMA RX: Dropping poisoned buffer.\n");
-+		/* recycle the descriptor buffer. */
-+		sync_descbuffer_for_device(ring, meta->dmaaddr,
-+					   ring->rx_buffersize);
-+		goto drop;
-+	}
+ 	if (unlikely(b43_rx_buffer_is_poisoned(ring, skb))) {
+ 		/* Something went wrong with the DMA.
+ 		 * The device did not touch the buffer and did not overwrite the poison. */
+ 		b43dbg(ring->dev->wl, "DMA RX: Dropping poisoned buffer.\n");
+-		/* recycle the descriptor buffer. */
+-		sync_descbuffer_for_device(ring, meta->dmaaddr,
+-					   ring->rx_buffersize);
+-		goto drop;
++		dmaaddr = meta->dmaaddr;
++		goto drop_recycle_buffer;
+ 	}
  	if (unlikely(len > ring->rx_buffersize)) {
  		/* The data did not fit into one descriptor buffer
- 		 * and is split over multiple buffers.
+@@ -1525,6 +1521,7 @@ static void dma_rx(struct b43_dmaring *r
+ 		while (1) {
+ 			desc = ops->idx2desc(ring, *slot, &meta);
+ 			/* recycle the descriptor buffer. */
++			b43_poison_rx_buffer(ring, meta->skb);
+ 			sync_descbuffer_for_device(ring, meta->dmaaddr,
+ 						   ring->rx_buffersize);
+ 			*slot = next_slot(ring, *slot);
+@@ -1543,8 +1540,7 @@ static void dma_rx(struct b43_dmaring *r
+ 	err = setup_rx_descbuffer(ring, desc, meta, GFP_ATOMIC);
+ 	if (unlikely(err)) {
+ 		b43dbg(ring->dev->wl, "DMA RX: setup_rx_descbuffer() failed\n");
+-		sync_descbuffer_for_device(ring, dmaaddr, ring->rx_buffersize);
+-		goto drop;
++		goto drop_recycle_buffer;
+ 	}
+ 
+ 	unmap_descbuffer(ring, dmaaddr, ring->rx_buffersize, 0);
+@@ -1554,6 +1550,11 @@ static void dma_rx(struct b43_dmaring *r
+ 	b43_rx(ring->dev, skb, rxhdr);
+ drop:
+ 	return;
++
++drop_recycle_buffer:
++	/* Poison and recycle the RX buffer. */
++	b43_poison_rx_buffer(ring, skb);
++	sync_descbuffer_for_device(ring, dmaaddr, ring->rx_buffersize);
+ }
+ 
+ void b43_dma_rx(struct b43_dmaring *ring)
 
 
