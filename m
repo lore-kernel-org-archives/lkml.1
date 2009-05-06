@@ -1,76 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758458AbZEFMrL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759191AbZEFMr4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758458AbZEFMrL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 08:47:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbZEFMqz
+	id S1759191AbZEFMr4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 08:47:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753627AbZEFMrr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 08:46:55 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36478 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752509AbZEFMqy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 08:46:54 -0400
-Message-ID: <4A0184F7.7070309@redhat.com>
-Date: Wed, 06 May 2009 15:39:19 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 6 May 2009 08:47:47 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:46545 "EHLO
+	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753614AbZEFMrq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 08:47:46 -0400
+X-BigFish: VPS3(zzzz1202hzzz32i43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KJ83JA-04-ZDD-01
+From: Robert Richter <robert.richter@amd.com>
+To: Andi Kleen <andi@firstfloor.org>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>, LKML <linux-kernel@vger.kernel.org>,
+       oprofile-list <oprofile-list@lists.sourceforge.net>
+Subject: [PATCH 0/2] oprofile: introduce module parameter oprofile.cpu_type
+Date: Wed, 6 May 2009 14:39:12 +0200
+Message-ID: <1241613554-31539-1-git-send-email-robert.richter@amd.com>
+X-Mailer: git-send-email 1.6.1.3
+X-OriginalArrivalTime: 06 May 2009 12:47:34.0971 (UTC) FILETIME=[D430E0B0:01C9CE48]
 MIME-Version: 1.0
-To: Rik van Riel <riel@redhat.com>
-CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       aarcange@redhat.com, chrisw@redhat.com, alan@lxorguk.ukuu.org.uk,
-       device@lanana.org, linux-mm@kvack.org, hugh@veritas.com,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 2/6] ksm: dont allow overlap memory addresses registrations.
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <4A00DD4F.8010101@redhat.com> <4A015C69.7010600@redhat.com> <4A0181EA.3070600@redhat.com>
-In-Reply-To: <4A0181EA.3070600@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rik van Riel wrote:
-> Izik Eidus wrote:
->> Rik van Riel wrote:
->>> Izik Eidus wrote:
->>>> subjects say it all.
->>>
->>> Not a very useful commit message.
->>>
->>> This makes me wonder, though.
->>>
->>> What happens if a user mmaps a 30MB memory region, registers it
->>> with KSM and then unmaps the middle 10MB?
->>
->> User cant break 30MB into smaller one.
->
-> The user can break up the underlying VMAs though.
+The current userland does not yet fully support all cpu types
+implemented in the kernel. With the module parameter oprofile.cpu_type
+a certain cpu type can be reported to the oprofile userland and thus
+makes the kernel usable with current distros.
 
-So? KSM work on contigiouns virtual address, if user will break its 
-virtual address and will leave it to be registered inside ksm
-get_user_pages() will just fail, and ksm will skip scanning this 
-addresses...
+The event table may not match fully, so care must be taken when using
+this parameter.
 
-Normal usage of ksm is:
+See also this description:
 
-1) Allocating big chunck of memory.
+ oprofile.cpu_type=      Force an oprofile cpu type
+                 This might be useful if you have an older oprofile
+                 userland or if you want common events.
+                 Format: { archperfmon | core_2 }
+                 archperfmon: [X86] Force use of architectural
+                         perfmon on Intel CPUs instead of the
+                         CPU specific event set.
+                 core_2: [X86] On Intel systems: report core_2 CPU.
 
-2) registering it inside ksm
+Together with Andi's patches the patch set is also in this tree:
 
-3) free the memory and remove it from ksm...
+ git://git.kernel.org/pub/scm/linux/kernel/git/rric/oprofile.git fixes
 
->
-> I am just wondering out loud if we really want two
-> VMA-like objects in the kernel, the VMA itself and
-> a separate KSM object, with different semantics. 
->
-> Maybe this is fine, but I do think it's a question
-> that needs to be thought about.
+The fixes are intended for v2.6.30.
 
+Andi, please let me now if this works for you and if things can go
+upstream this way.
 
-Yea, we had some talk about that issue, considering the fact that user 
-register its memory using ioctl and not systemcall, and considering the 
-fact that ksm is loadable module that the kernel doesnt depend on,
+-Robert
 
-How would you prefer to see the interface?
 
 
