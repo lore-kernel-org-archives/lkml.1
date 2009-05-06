@@ -1,91 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761198AbZEFUxx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760591AbZEFUzD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761198AbZEFUxx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:53:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753679AbZEFUxn
+	id S1760591AbZEFUzD (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:55:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758855AbZEFUyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:53:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:39484 "EHLO mx3.mail.elte.hu"
+	Wed, 6 May 2009 16:54:50 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:60202 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752772AbZEFUxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:53:42 -0400
-Date: Wed, 6 May 2009 22:51:45 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Matt Mackall <mpm@selenic.com>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
-       security@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [patch] random: make get_random_int() more random
-Message-ID: <20090506205145.GA1908@elte.hu>
-References: <20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu> <m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu> <20090505202219.GL31071@waste.org> <20090506103034.GA25203@elte.hu> <20090506162543.GT31071@waste.org> <alpine.LFD.2.01.0905060942340.4983@localhost.localdomain> <20090506200954.GA21484@elte.hu> <20090506204156.GB31071@waste.org>
+	id S1757468AbZEFUyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 16:54:49 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Wu Fengguang <fengguang.wu@gmail.com>
+Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release preallocated memory unnecessarily (rev. 2)
+Date: Wed, 6 May 2009 22:54:09 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "pavel@ucw.cz" <pavel@ucw.cz>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905060105.10800.rjw@sisk.pl> <20090506135659.GB26233@localhost>
+In-Reply-To: <20090506135659.GB26233@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090506204156.GB31071@waste.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200905062254.10227.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Matt Mackall <mpm@selenic.com> wrote:
-
-> On Wed, May 06, 2009 at 10:09:54PM +0200, Ingo Molnar wrote:
-> > I then ran the FIPS randomness test over the first 20,000 bits [2.5K 
-> > data], which it passed:
+On Wednesday 06 May 2009, Wu Fengguang wrote:
+> On Wed, May 06, 2009 at 07:05:09AM +0800, Rafael J. Wysocki wrote:
+> > On Tuesday 05 May 2009, Wu Fengguang wrote:
+> > > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > Since the hibernation code is now going to use allocations of memory
+> > > > to create enough room for the image, it can also use the page frames
+> > > > allocated at this stage as image page frames.  The low-level
+> > > > hibernation code needs to be rearranged for this purpose, but it
+> > > > allows us to avoid freeing a great number of pages and allocating
+> > > > these same pages once again later, so it generally is worth doing.
+> > > > 
+> > > > [rev. 2: Change the strategy of preallocating memory to allocate as
+> > > >  many pages as needed to get the right image size in one shot (the
+> > > >  excessive allocated pages are released afterwards).]
+> > > 
+> > > Rafael, I tried out your patches and found doubled memory shrink speed!
+> > >
+> > > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
+> > > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
+> > 
+> > Unfortunately, I'm observing a regression and a huge one.
+> > 
+> > On my Atom-based test box with 1 GB of RAM after a fresh boot and starting X
+> > with KDE 4 there are ~256 MB free.  To create an image we need to free ~300 MB
+> > and that takes ~2 s with the old code and ~15 s with the new one.
+> > 
+> > It helps to call shrink_all_memory() once with a sufficiently large argument
+> > before the preallocation.
+> [snip]
+> > > At last, I'd express my major concern about the transition to preallocate
+> > > based memory shrinking: will it lead to more random swapping IOs?
+> > 
+> > Hmm.  I don't see immediately why would it.  Maybe the regression I'm seeing
+> > is related to that ...
 > 
-> That's proves nothing except that you have no idea what you're 
-> talking about. People regularly break things that FIPS gives 
-> flying colors. FIPS is nothing but a statistical sanity-check.
+> So you do have swap file enabled? hibernate_preallocate_memory() will
+> firstly try to allocate as much pages as possible(savable+free), and
+> then to free up (allocated-image_size) pages.
 
-The current code didnt even pass the FIPS test, due to:
+No.  It's going to allocate (total RAM - anticipated image size) and then free
+up (allocated-image_size) pages.
 
-           <...>-1739  [000]   112.487579: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487583: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487584: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487585: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487586: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487588: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487589: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487590: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487592: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487593: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487594: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487595: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487597: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487598: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487599: sys_prctl: get_random_int(): d1f8a190
-           <...>-1739  [000]   112.487601: sys_prctl: get_random_int(): d1f8a190
+If we consider maximum image sizes, that means allocating slightly more than
+50% of RAM, so it really shouldn't regress that much IMO.
 
-Linus's patch is a marked improvement, and it is really what we need 
-here mostly.
-
-We cannot afford true physical randomness (it's too expensive to get 
-and not all hw has it), and even a 'good' PRNG is pretty expensive. 
-Performance is the main reason why the networking stack has its own 
-fast hack.
-
-> Do you need this to be publicly broken again by someone who 
-> actually knows something about cryptanalysis before you'll accept 
-> that it's a bad idea? If so, then please move the code out of 
-> random.c, so that I don't have to share in your embarassment a 
-> second time.
-
-I see your flame, but what's your technical point?
-
-	Ingo
+Thanks,
+Rafael
