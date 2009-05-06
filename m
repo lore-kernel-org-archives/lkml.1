@@ -1,68 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbZEFLop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759427AbZEFLpb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758497AbZEFLop (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 07:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755370AbZEFLoe
+	id S1759427AbZEFLpb (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 07:45:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759144AbZEFLon
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 07:44:34 -0400
-Received: from verein.lst.de ([213.95.11.210]:49381 "EHLO verein.lst.de"
+	Wed, 6 May 2009 07:44:43 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:56045 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752455AbZEFLod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 07:44:33 -0400
-Date: Wed, 6 May 2009 13:44:15 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: Theodore Tso <tytso@mit.edu>, Ingo Molnar <mingo@elte.hu>,
-       Christoph Hellwig <hch@lst.de>, linux-kernel@vger.kernel.org,
-       Fr?d?ric Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, linux-ext4@vger.kernel.org
-Subject: Re: [PATCH] ext4/jbd2: remove stray markers
-Message-ID: <20090506114415.GA26947@lst.de>
-References: <20090506104436.GA24047@lst.de> <20090506110354.GG25203@elte.hu> <20090506114051.GA4964@mit.edu>
-Mime-Version: 1.0
+	id S1759137AbZEFLom (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 07:44:42 -0400
+Date: Wed, 6 May 2009 13:44:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andreas Herrmann <andreas.herrmann3@amd.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Thomas Gleixner <tglx@linutronix.de>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] x86: introduce cpuinfo->cpu_node_id to reflect
+	topology of multi-node CPU
+Message-ID: <20090506114423.GM25203@elte.hu>
+References: <20090504173330.GF28728@alberich.amd.com> <20090504173450.GG28728@alberich.amd.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090506114051.GA4964@mit.edu>
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: 0 () 
+In-Reply-To: <20090504173450.GG28728@alberich.amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 07:40:51AM -0400, Theodore Tso wrote:
-> My complaint with Cristoph's
 
-Christoph, still :)
+* Andreas Herrmann <andreas.herrmann3@amd.com> wrote:
 
-> is that it will conflict with patches I
-> have pending which replaces the markers with tracepoints --- and I
-> *am* using the tracepoints actively.  The only reason why these
-> patches aren't in -stable is they have a dependency one of Rostedt's
-> changes.  (Not a syntactic dependency, but if we merge in the wrong
-> order, and the rcu_read_lock/unlock() calls aren't around the
-> TP_PRINTK callpoint, then in certain CONFIG_PREEMPT configurations and
-> if there is more than one active ext4 filesystem while the ext4 or
-> jbd2 tracepoints are active, there's a potential race.)
-
-Also without Steve's updates you can't actually use them in a module.
-
-> My plan was to wait for the tracing patches to get pushed during the
-> 2.6.31 merge tree, at which point I would then push my changes which
-> replace the markers with TRACE_EVENT changes.  So no matter which way
-> we do this, the ext4 markers will be gone by the end of the 2.6.31
-> merge window.
+> Signed-off-by: Andreas Herrmann <andreas.herrmann3@amd.com>
+> ---
+>  arch/x86/include/asm/processor.h |    2 ++
+>  arch/x86/kernel/cpu/common.c     |    2 ++
+>  arch/x86/kernel/cpu/proc.c       |    1 +
+>  arch/x86/kernel/smpboot.c        |    5 ++++-
+>  4 files changed, 9 insertions(+), 1 deletions(-)
 > 
-> Christoph, if you have some desire to completely remove the
-> CONFIG_MARKERS support code, and I'm holding up your ability to do
-> work, I can take the ext4 TRACE_EVENT patches, and queue them up in
-> tip/tracing.  It's less work than if we take your markers removal
-> patches, since then I would have to resolve all of the conflicts with
-> my patches which replace all of the ext4 and jbd2 markers with
-> TRACE_EVENTS macros.
+> diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+> index 0b2fab0..b49d72b 100644
+> --- a/arch/x86/include/asm/processor.h
+> +++ b/arch/x86/include/asm/processor.h
+> @@ -106,6 +106,8 @@ struct cpuinfo_x86 {
+>  	u16			booted_cores;
+>  	/* Physical processor id: */
+>  	u16			phys_proc_id;
+> +	/* Node id in case of multi-node processor: */
+> +	u16			cpu_node_id;
 
-I was planning to do make sure it's all gone.  Once we are into the
-2.6.31 merge dinwo I fear that the final patches will miss the window
-due to all these interdependencies.  But Ingo didn't seem to be too
-interested in taking the other patches that would be required for it,
-so I guess I'll try to somehow get it done in the merge window and
-otherwise we'll have to wait for 2.6.32.
+btw., do you have any plans to propagate this information into the 
+scheduler domains tree?
 
+Another level of domains, to cover the two internal nodes, would do 
+the trick nicely and automatically. This would work even if the BIOS 
+does not provide information and we have to go to lowlevel registers 
+or CPUID to recover it.
+
+This can be done even if there's no SRAT. (there's no SRAT because 
+say due to interleaving there's no real NUMA structure of memory. 
+But there's still CPU scheduling differences worth expressing.)
+
+	Ingo
