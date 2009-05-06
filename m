@@ -1,42 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760048AbZEFMV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759757AbZEFMVo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760048AbZEFMV7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 08:21:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760030AbZEFMVp
-	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 08:21:45 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38139 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760018AbZEFMVo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1759757AbZEFMVo (ORCPT <rfc822;w@1wt.eu>);
 	Wed, 6 May 2009 08:21:44 -0400
-Message-ID: <4A0180AB.20108@redhat.com>
-Date: Wed, 06 May 2009 08:20:59 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759160AbZEFMVd
+	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Wed, 6 May 2009 08:21:33 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36045 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756034AbZEFMVc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 08:21:32 -0400
+Date: Wed, 6 May 2009 12:20:05 GMT
+From: tip-bot for Nikanth Karthikesan <knikanth@suse.de>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       knikanth@suse.de, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       knikanth@suse.de, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <200905040908.27299.knikanth@suse.de>
+References: <200905040908.27299.knikanth@suse.de>
+Subject: [tip:x86/urgent] x86: Fix a typo in a printk message
+Message-ID: <tip-e0e5ea3268db428d19e1c5fa00e6f583861cbdbd@git.kernel.org>
+Git-Commit-ID: e0e5ea3268db428d19e1c5fa00e6f583861cbdbd
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, mingo@redhat.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] x86: 46 bit PAE support
-References: <20090505172856.6820db22@cuia.bos.redhat.com> <4A00ED83.1030700@zytor.com>
-In-Reply-To: <4A00ED83.1030700@zytor.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 06 May 2009 12:20:07 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Rik van Riel wrote:
->> Testing: booted it on an x86-64 system with 6GB RAM.  Did you really think
->> I had access to a system with 64TB of RAM? :)
-> 
-> No, but it would be good if we could test it under Qemu or KVM with an
-> appropriately set up sparse memory map.
+Commit-ID:  e0e5ea3268db428d19e1c5fa00e6f583861cbdbd
+Gitweb:     http://git.kernel.org/tip/e0e5ea3268db428d19e1c5fa00e6f583861cbdbd
+Author:     Nikanth Karthikesan <knikanth@suse.de>
+AuthorDate: Mon, 4 May 2009 09:08:26 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 6 May 2009 12:23:12 +0200
 
-I don't have a system with 1TB either, which is how much space
-the memmap[] would take...
+x86: Fix a typo in a printk message
 
--- 
-All rights reversed.
+[ Impact: printk message cleanup ]
+
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+LKML-Reference: <200905040908.27299.knikanth@suse.de>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/mm/srat_32.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/mm/srat_32.c b/arch/x86/mm/srat_32.c
+index 16ae70f..29a0e37 100644
+--- a/arch/x86/mm/srat_32.c
++++ b/arch/x86/mm/srat_32.c
+@@ -216,7 +216,7 @@ int __init get_memcfg_from_srat(void)
+ 
+ 	if (num_memory_chunks == 0) {
+ 		printk(KERN_WARNING
+-			 "could not finy any ACPI SRAT memory areas.\n");
++			 "could not find any ACPI SRAT memory areas.\n");
+ 		goto out_fail;
+ 	}
+ 
