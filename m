@@ -1,49 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757085AbZEFJai@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756725AbZEFJdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757085AbZEFJai (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 05:30:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbZEFJa2
+	id S1756725AbZEFJdT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 05:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753577AbZEFJdK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 05:30:28 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:56996 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753059AbZEFJa1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 05:30:27 -0400
-Date: Wed, 6 May 2009 17:30:21 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jarod Wilson <jarod@redhat.com>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>
-Subject: Re: [PATCH v2] crypto: add ctr(aes) test vectors
-Message-ID: <20090506093021.GA31073@gondor.apana.org.au>
-References: <200904282118.22823.jarod@redhat.com> <20090505131835.GA18659@gondor.apana.org.au> <200905050955.24743.jarod@redhat.com> <200905051042.58929.jarod@redhat.com>
+	Wed, 6 May 2009 05:33:10 -0400
+Received: from smtp4.welho.com ([213.243.153.38]:41095 "EHLO smtp4.welho.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752710AbZEFJdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 05:33:09 -0400
+Date: Wed, 6 May 2009 12:33:07 +0300
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] w1-gpio: add external pull-up enable callback
+Message-ID: <20090506093307.GC17782@sci.fi>
+Mail-Followup-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
+	Daniel Mack <daniel@caiaq.de>, linux-kernel@vger.kernel.org
+References: <1241527413-22920-1-git-send-email-daniel@caiaq.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <200905051042.58929.jarod@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1241527413-22920-1-git-send-email-daniel@caiaq.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 10:42:58AM -0400, Jarod Wilson wrote:
+On Tue, May 05, 2009 at 02:43:33PM +0200, Daniel Mack wrote:
+> On embedded devices, sleep mode conditions can be tricky to handle,
+> Especially when processors tend to pull-down the w1 bus during sleep.
+> Bus slaves (such as the ds2760) may interpret this as a reason for
+> power-down conditions and entirely switch off the device.
 > 
-> Now with multi-block test vectors, all from SP800-38A, Appendix F.5.
-> Also added ctr(aes) to case 10 in tcrypt.
-> 
-> Quickly smoke-tested in fips mode, got back "alg_test: alg
-> ctr(aes-x86_64) (ctr(aes)) self-test passed".
-> 
-> Signed-off-by: Jarod Wilson <jarod@redhat.com>
+> This patch adds a callback function pointer to let users switch on and
+> off the external pull-up resistor. This lets the outside world know
+> whether the processor is currently actively driving the bus or not.
 
-It didn't build because you forgot to change the RFC3686 dec
-vector name.  I've fixed it for you.  Please test your patches
-in future.
+Looks simple enough but I wonder if you could just do this from the
+platform code. I suppose the downside would be that you would enable the
+pullup even if w1-gpio is not loaded.
 
-Thanks,
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Ville Syrjälä
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
