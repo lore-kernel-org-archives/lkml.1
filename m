@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932160AbZEFUnz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761480AbZEFUna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932160AbZEFUnz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:43:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759941AbZEFUja
+	id S1761480AbZEFUna (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761000AbZEFUj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:39:30 -0400
-Received: from kroah.org ([198.145.64.141]:34006 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 16:39:28 -0400
+Received: from kroah.org ([198.145.64.141]:33991 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761215AbZEFUj3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:39:29 -0400
+	id S1761219AbZEFUj0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 16:39:26 -0400
 X-Mailbox-Line: From greg@blue.kroah.org Wed May  6 13:31:30 2009
-Message-Id: <20090506203130.784258238@blue.kroah.org>
+Message-Id: <20090506203130.559938098@blue.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 13:30:24 -0700
+Date: Wed, 06 May 2009 13:30:23 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, John Stultz <johnstul@us.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
        Greg Kroah-Hartman <gregkh@suse.de>
-Subject: [patch 14/18] clockevents: prevent endless loop in tick_handle_periodic()
+Subject: [patch 13/18] USB: serial: fix lifetime and locking problems
 References: <20090506203010.615363711@blue.kroah.org>
-Content-Disposition: inline; filename=clockevents-prevent-endless-loop-in-tick_handle_periodic.patch
+Content-Disposition: inline; filename=usb-serial-fix-lifetime-and-locking-problems.patch
 In-Reply-To: <20090506203353.GA14624@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,57 +39,276 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: john stultz <johnstul@us.ibm.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 74a03b69d1b5ce00a568e142ca97e76b7f5239c6 upstream.
+This is commit 2d93148ab6988cad872e65d694c95e8944e1b626 back-ported to
+2.6.27.
 
-tick_handle_periodic() can lock up hard when a one shot clock event
-device is used in combination with jiffies clocksource.
+This patch (as1229-1) fixes a few lifetime and locking problems in the
+usb-serial driver.  The main symptom is that an invalid kevent is
+created when the serial device is unplugged while a connection is
+active.
 
-Avoid an endless loop issue by requiring that a highres valid
-clocksource be installed before we call tick_periodic() in a loop when
-using ONESHOT mode. The result is we will only increment jiffies once
-per interrupt until a continuous hardware clocksource is available.
+	Ports should be unregistered when device is disconnected,
+	not when the parent usb_serial structure is deallocated.
 
-Without this, we can run into a endless loop, where each cycle through
-the loop, jiffies is updated which increments time by tick_period or
-more (due to clock steering), which can cause the event programming to
-think the next event was before the newly incremented time and fail
-causing tick_periodic() to be called again and the whole process loops
-forever.
+	Each open file should hold a reference to the corresponding
+	port structure, and the reference should be released when
+	the file is closed.
 
-[ Impact: prevent hard lock up ]
+	serial->disc_mutex should be acquired in serial_open(), to
+	resolve the classic race between open and disconnect.
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: stable@kernel.org
+	serial_close() doesn't need to hold both serial->disc_mutex
+	and port->mutex at the same time.
+
+	Release the subdriver's module reference only after releasing
+	all the other references, in case one of the release routines
+	needs to invoke some code in the subdriver module.
+
+	Replace a call to flush_scheduled_work() (which is prone to
+	deadlocks) with cancel_work_sync().  Also, add a call to
+	cancel_work_sync() in the disconnect routine.
+
+	Reduce the scope of serial->disc_mutex in serial_disconnect().
+	The only place it really needs to protect is where the
+	"disconnected" flag is set.
+
+	Call the shutdown method from within serial_disconnect()
+	instead of destroy_serial(), because some subdrivers expect
+	the port data structures still to be in existence when
+	their shutdown method runs.
+
+This fixes the bug reported in
+
+	http://bugs.freedesktop.org/show_bug.cgi?id=20703
+
+
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- kernel/time/tick-common.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/usb/serial/usb-serial.c |   97 +++++++++++++++++++++++++++-------------
+ 1 file changed, 67 insertions(+), 30 deletions(-)
 
---- a/kernel/time/tick-common.c
-+++ b/kernel/time/tick-common.c
-@@ -93,7 +93,17 @@ void tick_handle_periodic(struct clock_e
- 	for (;;) {
- 		if (!clockevents_program_event(dev, next, ktime_get()))
- 			return;
--		tick_periodic(cpu);
-+		/*
-+		 * Have to be careful here. If we're in oneshot mode,
-+		 * before we call tick_periodic() in a loop, we need
-+		 * to be sure we're using a real hardware clocksource.
-+		 * Otherwise we could get trapped in an infinite
-+		 * loop, as the tick_periodic() increments jiffies,
-+		 * when then will increment time, posibly causing
-+		 * the loop to trigger again and again.
-+		 */
-+		if (timekeeping_valid_for_hres())
-+			tick_periodic(cpu);
- 		next = ktime_add(next, tick_period);
+--- a/drivers/usb/serial/usb-serial.c
++++ b/drivers/usb/serial/usb-serial.c
+@@ -136,22 +136,10 @@ static void destroy_serial(struct kref *
+ 
+ 	dbg("%s - %s", __func__, serial->type->description);
+ 
+-	serial->type->shutdown(serial);
+-
+ 	/* return the minor range that this device had */
+ 	if (serial->minor != SERIAL_TTY_NO_MINOR)
+ 		return_serial(serial);
+ 
+-	for (i = 0; i < serial->num_ports; ++i)
+-		serial->port[i]->port.count = 0;
+-
+-	/* the ports are cleaned up and released in port_release() */
+-	for (i = 0; i < serial->num_ports; ++i)
+-		if (serial->port[i]->dev.parent != NULL) {
+-			device_unregister(&serial->port[i]->dev);
+-			serial->port[i] = NULL;
+-		}
+-
+ 	/* If this is a "fake" port, we have to clean it up here, as it will
+ 	 * not get cleaned up in port_release() as it was never registered with
+ 	 * the driver core */
+@@ -186,7 +174,7 @@ static int serial_open (struct tty_struc
+ 	struct usb_serial *serial;
+ 	struct usb_serial_port *port;
+ 	unsigned int portNumber;
+-	int retval;
++	int retval = 0;
+ 
+ 	dbg("%s", __func__);
+ 
+@@ -197,16 +185,24 @@ static int serial_open (struct tty_struc
+ 		return -ENODEV;
  	}
+ 
++	mutex_lock(&serial->disc_mutex);
+ 	portNumber = tty->index - serial->minor;
+ 	port = serial->port[portNumber];
+-	if (!port) {
++	if (!port || serial->disconnected)
+ 		retval = -ENODEV;
+-		goto bailout_kref_put;
+-	}
++	else
++		get_device(&port->dev);
++	/*
++	 * Note: Our locking order requirement does not allow port->mutex
++	 * to be acquired while serial->disc_mutex is held.
++	 */
++	mutex_unlock(&serial->disc_mutex);
++	if (retval)
++		goto bailout_serial_put;
+ 
+ 	if (mutex_lock_interruptible(&port->mutex)) {
+ 		retval = -ERESTARTSYS;
+-		goto bailout_kref_put;
++		goto bailout_port_put;
+ 	}
+ 
+ 	++port->port.count;
+@@ -226,14 +222,20 @@ static int serial_open (struct tty_struc
+ 			goto bailout_mutex_unlock;
+ 		}
+ 
+-		retval = usb_autopm_get_interface(serial->interface);
++		mutex_lock(&serial->disc_mutex);
++		if (serial->disconnected)
++			retval = -ENODEV;
++		else
++			retval = usb_autopm_get_interface(serial->interface);
+ 		if (retval)
+ 			goto bailout_module_put;
++
+ 		/* only call the device specific open if this
+ 		 * is the first time the port is opened */
+ 		retval = serial->type->open(tty, port, filp);
+ 		if (retval)
+ 			goto bailout_interface_put;
++		mutex_unlock(&serial->disc_mutex);
+ 	}
+ 
+ 	mutex_unlock(&port->mutex);
+@@ -242,13 +244,16 @@ static int serial_open (struct tty_struc
+ bailout_interface_put:
+ 	usb_autopm_put_interface(serial->interface);
+ bailout_module_put:
++	mutex_unlock(&serial->disc_mutex);
+ 	module_put(serial->type->driver.owner);
+ bailout_mutex_unlock:
+ 	port->port.count = 0;
+ 	tty->driver_data = NULL;
+ 	port->port.tty = NULL;
+ 	mutex_unlock(&port->mutex);
+-bailout_kref_put:
++bailout_port_put:
++	put_device(&port->dev);
++bailout_serial_put:
+ 	usb_serial_put(serial);
+ 	return retval;
+ }
+@@ -256,6 +261,9 @@ bailout_kref_put:
+ static void serial_close(struct tty_struct *tty, struct file *filp)
+ {
+ 	struct usb_serial_port *port = tty->driver_data;
++	struct usb_serial *serial;
++	struct module *owner;
++	int count;
+ 
+ 	if (!port)
+ 		return;
+@@ -263,6 +271,8 @@ static void serial_close(struct tty_stru
+ 	dbg("%s - port %d", __func__, port->number);
+ 
+ 	mutex_lock(&port->mutex);
++	serial = port->serial;
++	owner = serial->type->driver.owner;
+ 
+ 	if (port->port.count == 0) {
+ 		mutex_unlock(&port->mutex);
+@@ -273,7 +283,7 @@ static void serial_close(struct tty_stru
+ 	if (port->port.count == 0)
+ 		/* only call the device specific close if this
+ 		 * port is being closed by the last owner */
+-		port->serial->type->close(tty, port, filp);
++		serial->type->close(tty, port, filp);
+ 
+ 	if (port->port.count == (port->console? 1 : 0)) {
+ 		if (port->port.tty) {
+@@ -283,16 +293,22 @@ static void serial_close(struct tty_stru
+ 		}
+ 	}
+ 
+-	if (port->port.count == 0) {
+-		mutex_lock(&port->serial->disc_mutex);
+-		if (!port->serial->disconnected)
+-			usb_autopm_put_interface(port->serial->interface);
+-		mutex_unlock(&port->serial->disc_mutex);
+-		module_put(port->serial->type->driver.owner);
++	count = port->port.count;
++	mutex_unlock(&port->mutex);
++	put_device(&port->dev);
++
++	/* Mustn't dereference port any more */
++	if (count == 0) {
++		mutex_lock(&serial->disc_mutex);
++		if (!serial->disconnected)
++			usb_autopm_put_interface(serial->interface);
++		mutex_unlock(&serial->disc_mutex);
+ 	}
++	usb_serial_put(serial);
+ 
+-	mutex_unlock(&port->mutex);
+-	usb_serial_put(port->serial);
++	/* Mustn't dereference serial any more */
++	if (count == 0)
++		module_put(owner);
+ }
+ 
+ static int serial_write(struct tty_struct *tty, const unsigned char *buf,
+@@ -544,7 +560,13 @@ static void kill_traffic(struct usb_seri
+ 
+ static void port_free(struct usb_serial_port *port)
+ {
++	/*
++	 * Stop all the traffic before cancelling the work, so that
++	 * nobody will restart it by calling usb_serial_port_softint.
++	 */
+ 	kill_traffic(port);
++	cancel_work_sync(&port->work);
++
+ 	usb_free_urb(port->read_urb);
+ 	usb_free_urb(port->write_urb);
+ 	usb_free_urb(port->interrupt_in_urb);
+@@ -553,7 +575,6 @@ static void port_free(struct usb_serial_
+ 	kfree(port->bulk_out_buffer);
+ 	kfree(port->interrupt_in_buffer);
+ 	kfree(port->interrupt_out_buffer);
+-	flush_scheduled_work();		/* port->work */
+ 	kfree(port);
+ }
+ 
+@@ -1037,17 +1058,33 @@ void usb_serial_disconnect(struct usb_in
+ 	usb_set_intfdata(interface, NULL);
+ 	/* must set a flag, to signal subdrivers */
+ 	serial->disconnected = 1;
++	mutex_unlock(&serial->disc_mutex);
++
++	/* Unfortunately, many of the sub-drivers expect the port structures
++	 * to exist when their shutdown method is called, so we have to go
++	 * through this awkward two-step unregistration procedure.
++	 */
+ 	for (i = 0; i < serial->num_ports; ++i) {
+ 		port = serial->port[i];
+ 		if (port) {
+ 			if (port->port.tty)
+ 				tty_hangup(port->port.tty);
+ 			kill_traffic(port);
++			cancel_work_sync(&port->work);
++			device_del(&port->dev);
+ 		}
+ 	}
++	serial->type->shutdown(serial);
++	for (i = 0; i < serial->num_ports; ++i) {
++		port = serial->port[i];
++		if (port) {
++			put_device(&port->dev);
++			serial->port[i] = NULL;
++		}
++	}
++
+ 	/* let the last holder of this object
+ 	 * cause it to be cleaned up */
+-	mutex_unlock(&serial->disc_mutex);
+ 	usb_serial_put(serial);
+ 	dev_info(dev, "device disconnected\n");
  }
 
 
