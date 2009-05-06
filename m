@@ -1,41 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763975AbZEFWYl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763908AbZEFWZA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763975AbZEFWYl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:24:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763941AbZEFWYJ
+	id S1763908AbZEFWZA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:25:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763284AbZEFWYN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 18:24:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43380 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763921AbZEFWYI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 18:24:08 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090506112459.5edd0902.akpm@linux-foundation.org>
-References: <20090506112459.5edd0902.akpm@linux-foundation.org> <20090502163423.GA1633@linux.vnet.ibm.com> <12234.1241558327@redhat.com> <20090506120909.GR25203@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, Ingo Molnar <mingo@elte.hu>,
-       paulmck@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       niv@us.ibm.com, dvhltc@us.ibm.com, lethal@linux-sh.org,
-       kernel@wantstofly.org, matthew@wil.cx
-Subject: Re: [PATCH] v4 RCU: the bloatwatch edition
-Date: Wed, 06 May 2009 23:22:54 +0100
-Message-ID: <11979.1241648574@redhat.com>
+	Wed, 6 May 2009 18:24:13 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:48849 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762138AbZEFWYL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 18:24:11 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 5/5] usb_debug: EXPERIMENTAL - poll hcd device to force writes
+Date: Thu, 7 May 2009 00:24:16 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jason Wessel <jason.wessel@windriver.com>, greg@kroah.com,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0905061614320.4430-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0905061614320.4430-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905070024.16982.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
+Am Mittwoch, 6. Mai 2009 22:24:13 schrieb Alan Stern:
+> On Wed, 6 May 2009, Oliver Neukum wrote:
+> > Am Mittwoch, 6. Mai 2009 21:24:56 schrieb Alan Stern:
+> > > On Wed, 6 May 2009, Oliver Neukum wrote:
+> > >
+> > > A little thought yielded the following algorithm.  It assumes there is
+> > > a fixed set of URBs allocated, unlike what you have done.  Does it make
+> >
+> > No, it does not ;-) Your approach is more general than you think.
+> > The only important constraint is that the number of URBs in flight
+> > be limited. It doesn't matter when they are allocated.
+>
+> You're optimistically assuming that URB allocations will succeed.  I
+> guess that's okay -- dropping characters when there's insufficient
+> memory seems like a good thing to do.
 
-> More like "concerns".  It's unobvious to me that the modest .text
-> savings justify the costs of an additional RCU implementation.  Where
-> those costs include
+I also have to assume submission works.
 
-It may be more than just modest .text savings.  Being optimised to be as
-simple as possible, and to only support one CPU, it may be quicker too.  I'm
-not sure how best to benchmark it though.
+> What's the point of that "reserve_buffer" thing?  Why not just use the
+> next URB's transfer buffer?
 
-David
+I am toying with the idea of reusing the last URB.
+
+On a fundamental note, thinking about this in terms of numbers of URBs
+is strictly speaking wrong. We need to limit data in flight. For efficiency
+we should make buffers as large as possible within that limit.
+
+	Regards
+		Oliver
+
