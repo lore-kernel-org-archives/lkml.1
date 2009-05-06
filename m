@@ -1,83 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbZEFI3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbZEFI3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757490AbZEFI3K (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 04:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752259AbZEFI2y
+	id S1758213AbZEFI3l (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 04:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754390AbZEFI3b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 04:28:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37537 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751619AbZEFI2x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 04:28:53 -0400
-Date: Wed, 6 May 2009 10:28:34 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 00/11] [GIT PULL] tracing/ring-buffer: various updates
-Message-ID: <20090506082834.GC28675@elte.hu>
-References: <20090506042101.231470089@goodmis.org>
+	Wed, 6 May 2009 04:29:31 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62468 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752478AbZEFI3b (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 04:29:31 -0400
+Message-ID: <4A014A9D.8000903@cn.fujitsu.com>
+Date: Wed, 06 May 2009 16:30:21 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
+To: Yinghai Lu <yinghai@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>, Zhaolei <zhaolei@cn.fujitsu.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Vegard Nossum <vegard.nossum@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: printk %0*X is broken.
+References: <4A0136F4.4010504@kernel.org> <20090506071839.GA14412@elte.hu>
+In-Reply-To: <20090506071839.GA14412@elte.hu>
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090506042101.231470089@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+> Cc:-ed more folks who modified lib/vsprintf.c recently.
+> 
+> 	Ingo
+> 
+> * Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+>> it seems someone broke 
+>>
+>> printk(   "%0*X\n", width, x);
+>>
+>> looks like 0 is dumped.
+>>
+>> YH
+>>
+>> [    0.000000] MTRR variable ranges enabled:
+>> [    0.000000]   0 base 0   00000000 mask FF0 00000000 write-back
+>> [    0.000000]   1 base 10  00000000 mask FFF 80000000 write-back
+>> [    0.000000]   2 base 0   80000000 mask FFF 80000000 uncachable
+>> [    0.000000]   3 base 0   7F800000 mask FFF FF800000 uncachable
+>>
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+2.6.30-rc4-tip, the output of my box:
 
-> Ingo,
-> 
-> I rebased again (using ftrace-2 now) and made some minor clean
-> ups to the patches, as well as added several new ones.
-> 
-> The last patch of the series adds a benchmark/tester for the 
-> ring buffer. It creates a producer and consumer and measures the time
-> and number of entries recorded. It prints out the results via
-> pr_info every 10 seconds.
-> 
-> Please pull the latest tip/tracing/ftrace-2 tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace-2
-> 
-> 
-> Steven Rostedt (10):
->       ring-buffer: export symbols
->       ring-buffer: add counters for commit overrun and nmi dropped entries
->       tracing: export stats of ring buffers to userspace
->       ring-buffer: convert cpu buffer entries to local_t
->       ring-buffer: record page entries in buffer page descriptor
->       ring-buffer: have read page swap increment counter with page entries
->       ring-buffer: disable writers when resetting buffers
->       tracing: use proper export symbol for tracing api
->       ring-buffer: move big if statement down
->       ring-buffer: add benchmark and tester
-> 
-> Tim Abbott (1):
->       ftrace: use .sched.text, not .text.sched in recordmcount.pl
-> 
-> ----
->  include/linux/ring_buffer.h          |    2 +
->  kernel/trace/Kconfig                 |   16 ++
->  kernel/trace/Makefile                |    1 +
->  kernel/trace/ring_buffer.c           |  339 ++++++++++++++++--------------
->  kernel/trace/ring_buffer_benchmark.c |  379 ++++++++++++++++++++++++++++++++++
->  kernel/trace/trace.c                 |   48 ++++-
->  scripts/recordmcount.pl              |    6 +-
->  7 files changed, 628 insertions(+), 163 deletions(-)
+high_width: 1
+MTRR variable ranges enabled:
+  0 base 000000000 mask FC0000000 write-back
+  1 base 03C000000 mask FFC000000 uncachable
+  2 base 0D0000000 mask FF8000000 write-combining
 
-Pulled, thanks Steve!
+Is it possible that high_width is negative in your output?
+If high_width == -3, we can get exactly the same output with yours.
 
-	Ingo
+>>
+>> code:
+>>         for (i = 0; i < num_var_ranges; ++i) {
+>>                 if (mtrr_state.var_ranges[i].mask_lo & (1 << 11))
+>>                         printk(KERN_DEBUG "  %u base %0*X%05X000 mask %0*X%05X000 %s\n",
+>>                                i,
+>>                                high_width,
+>>                                mtrr_state.var_ranges[i].base_hi,
+>>                                mtrr_state.var_ranges[i].base_lo >> 12,
+>>                                high_width,
+>>                                mtrr_state.var_ranges[i].mask_hi,
+>>                                mtrr_state.var_ranges[i].mask_lo >> 12,
+>>                                mtrr_attrib_to_str(mtrr_state.var_ranges[i].base_lo & 0xff));
+>>                 else
+>>                         printk(KERN_DEBUG "  %u disabled\n", i);
+>>         }
+>>
+> 
+> 
