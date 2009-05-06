@@ -1,49 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759203AbZEFAvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757848AbZEFA5S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759203AbZEFAvX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 20:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754336AbZEFAvO
+	id S1757848AbZEFA5S (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 20:57:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753476AbZEFA5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 20:51:14 -0400
-Received: from mga09.intel.com ([134.134.136.24]:56479 "EHLO mga09.intel.com"
+	Tue, 5 May 2009 20:57:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58545 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753476AbZEFAvO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 20:51:14 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,300,1239001200"; 
-   d="scan'208";a="512842704"
-Date: Wed, 6 May 2009 08:51:02 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "arjan@infradead.org" <arjan@infradead.org>,
-       "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>
-Subject: Re: kexec defunct -- sd-async-shutdown [mmotm 2009-04-30-17-55]
-Message-ID: <20090506005101.GA25287@sli10-desk.sh.intel.com>
-References: <200905010114.n411EV3X022247@imap1.linux-foundation.org> <4A000891.3070109@gmail.com>
+	id S1752021AbZEFA5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 20:57:01 -0400
+Message-ID: <4A00DF9B.1080501@redhat.com>
+Date: Tue, 05 May 2009 20:53:47 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A000891.3070109@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Izik Eidus <ieidus@redhat.com>
+CC: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       aarcange@redhat.com, chrisw@redhat.com, alan@lxorguk.ukuu.org.uk,
+       device@lanana.org, linux-mm@kvack.org, hugh@veritas.com,
+       nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
+References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com>
+In-Reply-To: <1241475935-21162-4-git-send-email-ieidus@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 05:36:17PM +0800, Jiri Slaby wrote:
-> On 05/01/2009 02:55 AM, akpm@linux-foundation.org wrote:
-> > The mm-of-the-moment snapshot 2009-04-30-17-55 has been uploaded to
-> ...
-> > sd-async-shutdown.patch
+Izik Eidus wrote:
+> This patch change the KSM_REMOVE_MEMORY_REGION ioctl to be specific per
+> memory region (instead of flushing all the registred memory regions inside
+> the file descriptor like it happen now)
 > 
-> Hi,
+> The previoes api was:
+> user register memory regions using KSM_REGISTER_MEMORY_REGION inside the fd,
+> and then when he wanted to remove just one memory region, he had to remove them
+> all using KSM_REMOVE_MEMORY_REGION.
 > 
-> this one causes kexec to hang.
-Can you give more info about the hang, like the log? Is patch
-synchronize-device-shutdown.patch applied? kexec takes the same way
-to shutdown device, so does shutdown work in the system?
+> This patch change this beahivor by chaning the KSM_REMOVE_MEMORY_REGION
+> ioctl to recive another paramter that it is the begining of the virtual
+> address that is wanted to be removed.
 
-Thanks,
-Shaohua
+This is different from munmap and madvise, which take both
+start address and length.
+
+Why?
+
+-- 
+All rights reversed.
