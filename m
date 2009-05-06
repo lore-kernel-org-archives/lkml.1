@@ -1,75 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbZEFMgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759196AbZEFMkU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760127AbZEFMgZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 08:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760084AbZEFMfK
+	id S1759196AbZEFMkU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 08:40:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754086AbZEFMkG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 08:35:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39906 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760041AbZEFMfH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 08:35:07 -0400
-Date: Wed, 6 May 2009 14:33:46 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jesse Barnes <jesse.barnes@intel.com>
-Cc: Yinghai Lu <yinghai@kernel.org>,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org, yannick.roehlly@free.fr
-Subject: Re: [PATCH 1/4] pci/x86: don't assume pref memio are 64bit -v4
-Message-ID: <20090506123346.GA19541@elte.hu>
-References: <49EF9C10.6090107@kernel.org> <20090422154900.08f8f366@hobbes> <49EFBB0E.3030401@kernel.org> <20090422180505.2518e837@hobbes> <49EFCE15.3030605@kernel.org> <20090423132202.GB13984@jurassic.park.msu.ru> <49F08580.9050407@kernel.org> <20090423221936.GA24171@jurassic.park.msu.ru> <49F13690.3080902@kernel.org> <20090505115248.63d112f4@hobbes>
-MIME-Version: 1.0
+	Wed, 6 May 2009 08:40:06 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:58836 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754049AbZEFMkF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 08:40:05 -0400
+Date: Wed, 6 May 2009 14:42:14 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jan Beulich <jbeulich@novell.com>
+Cc: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org,
+       hpa@zytor.com
+Subject: Re: [PATCH] x86-64: fix build with older binutils
+Message-ID: <20090506124214.GA26100@uranus.ravnborg.org>
+References: <4A0055B3.76EA.0078.0@novell.com> <20090505163930.GA18579@uranus.ravnborg.org> <4A015158.76EA.0078.0@novell.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090505115248.63d112f4@hobbes>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4A015158.76EA.0078.0@novell.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Jan.
 
-* Jesse Barnes <jesse.barnes@intel.com> wrote:
-
-> On Thu, 23 Apr 2009 20:48:32 -0700
-> Yinghai Lu <yinghai@kernel.org> wrote:
+On Wed, May 06, 2009 at 07:59:04AM +0100, Jan Beulich wrote:
+> >>> Sam Ravnborg <sam@ravnborg.org> 05.05.09 18:39 >>>
+> >I like the way your patch simplies the linker scrip for x86.
+> >We have recently merged the linker scripts for 32 and 64 bit,
+> >and I tried to apply your patch on top of the unified version.
+> >(Applied manually obviously).
+> >
+> >With a 64 bit defconfig build I got:
+> >/home/sam/x-tools/x86_64-unknown-linux-gnu/bin/x86_64-unknown-linux-gnu-ld: section .vsyscall_0 [00000000016c6000 -> >00000000016c60e7] overlaps section .init.rodata [00000000016c5a00 -> 00000000016c6348]
+> >make[1]: *** [.tmp_vmlinux1] Error 1
+> >
+> >I did not try to build a kernel with your original patch.
+> >
+> >Can you spot anything obvious wrong in my patch.
+> >It is on top of x86/kbuild in -tip.
 > 
-> > 
-> > we should not assign 64bit range to pci device that only take 32bit
-> > pref
-> > 
-> > try to set IORESOURCE_MEM_64 in 64bit resource of
-> > pci_device/pci_bridge and make the bus resource only have that bit
-> > set when all device under that do support 64bit pref mem then use
-> > that flag to allocate resource in wanted area
-> > 
-> > v2: fix b_res->flags and logic and passing result.
-> > v3: split iomem to iomem32, iomem64, and iomem64 will take
-> > IORESOURCE_MEM_64 V4: according to Ivan
-> >     make it support x86 only, by PCIBIOS_MAX_MEM_32
-> >     double check if the bridge does support pref mem64 with
-> > write/read UPPER32
-> > 
-> > [Impact: do assign wrong range to device that doesn't support it]
-> 
-> Thanks a lot Yinghai & Ivan, I applied 1 & 2 (the other 2 e820 
-> patches should go through Ingo), they're in my linux-next branch.
+> Yeah, the placement of .init.start appears to be wrong - it should the
+> SMP/x86-64 case of the per-CPU segment, and it should also be the
+> one getting the :init attached. Hopefully that won't get us back to the
+> binutils problem I was originally encountering - what is the extra .init.start
+> section good for anyway?
 
-/me wakes up
+.init.start is there so __init_begin is not an absolute symbol to support
+a relocable kernel.
+I named the section .init.stat because we have the
 
-Yinghai, mind resending those two, with Jesse's Ack included as 
-well?
+    PERCPU_VADDR(0, :percpu)
 
-	Ingo
+stuff inbetween this and .init.text
+
+
+
+> And why does __init_end continue to live
+> outside of any section (this sort of thing causes problems with
+> CONFIG_RELOCATABLE and older binutils afair, as such symbols get
+> marked absolute by the latter)?
+
+Talking about this snippet where __init_end is inside
+a .init.end output section.
+
+        /* freed after init ends here */
+        .init.end : AT(ADDR(.init.end) - LOAD_OFFSET) {
+                __init_end = .;
+        }
+
+This was copied from 32 bit verbatim.
+
+I would love to stick it inside one of the already defined sections.
+But to minimize chrunch when we merged I kept the 32 bit layout.
+
+> Btw., why is .data.nosave being placed differently for 32- and 64-bit?
+
+A merge artifact - again to try to minimize changes - plus the fact that
+on 64 we added it to a specific segment whereas we did not do so in 32 bit.
+
+And I'm yet to fully understand the use of segments so I am reluctant
+to touch it for now.
+
+If you feel inclined it would be great if you could give the merged
+linker script an overhaul. There is obviously stuff to be simplified and
+I have limited time to do so atm.
+
+	Sam
