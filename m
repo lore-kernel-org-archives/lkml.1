@@ -1,87 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760591AbZEFUzD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761297AbZEFU5F@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760591AbZEFUzD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 16:55:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758855AbZEFUyu
+	id S1761297AbZEFU5F (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 16:57:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759223AbZEFU4w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 16:54:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60202 "EHLO ogre.sisk.pl"
+	Wed, 6 May 2009 16:56:52 -0400
+Received: from waste.org ([66.93.16.53]:47659 "EHLO waste.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757468AbZEFUyt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 16:54:49 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Wu Fengguang <fengguang.wu@gmail.com>
-Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release preallocated memory unnecessarily (rev. 2)
-Date: Wed, 6 May 2009 22:54:09 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "pavel@ucw.cz" <pavel@ucw.cz>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905060105.10800.rjw@sisk.pl> <20090506135659.GB26233@localhost>
-In-Reply-To: <20090506135659.GB26233@localhost>
+	id S1756466AbZEFU4v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 16:56:51 -0400
+Date: Wed, 6 May 2009 15:52:43 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
+       security@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged processes
+Message-ID: <20090506205243.GC31071@waste.org>
+References: <m1vdogbows.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0905041514350.4983@localhost.localdomain> <20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu> <m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu> <20090505202219.GL31071@waste.org> <20090506103034.GA25203@elte.hu> <20090506162543.GT31071@waste.org> <20090506202517.GA27544@elte.hu>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905062254.10227.rjw@sisk.pl>
+In-Reply-To: <20090506202517.GA27544@elte.hu>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 06 May 2009, Wu Fengguang wrote:
-> On Wed, May 06, 2009 at 07:05:09AM +0800, Rafael J. Wysocki wrote:
-> > On Tuesday 05 May 2009, Wu Fengguang wrote:
-> > > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
-> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > > 
-> > > > Since the hibernation code is now going to use allocations of memory
-> > > > to create enough room for the image, it can also use the page frames
-> > > > allocated at this stage as image page frames.  The low-level
-> > > > hibernation code needs to be rearranged for this purpose, but it
-> > > > allows us to avoid freeing a great number of pages and allocating
-> > > > these same pages once again later, so it generally is worth doing.
-> > > > 
-> > > > [rev. 2: Change the strategy of preallocating memory to allocate as
-> > > >  many pages as needed to get the right image size in one shot (the
-> > > >  excessive allocated pages are released afterwards).]
-> > > 
-> > > Rafael, I tried out your patches and found doubled memory shrink speed!
-> > >
-> > > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
-> > > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
-> > 
-> > Unfortunately, I'm observing a regression and a huge one.
-> > 
-> > On my Atom-based test box with 1 GB of RAM after a fresh boot and starting X
-> > with KDE 4 there are ~256 MB free.  To create an image we need to free ~300 MB
-> > and that takes ~2 s with the old code and ~15 s with the new one.
-> > 
-> > It helps to call shrink_all_memory() once with a sufficiently large argument
-> > before the preallocation.
-> [snip]
-> > > At last, I'd express my major concern about the transition to preallocate
-> > > based memory shrinking: will it lead to more random swapping IOs?
-> > 
-> > Hmm.  I don't see immediately why would it.  Maybe the regression I'm seeing
-> > is related to that ...
+On Wed, May 06, 2009 at 10:25:17PM +0200, Ingo Molnar wrote:
 > 
-> So you do have swap file enabled? hibernate_preallocate_memory() will
-> firstly try to allocate as much pages as possible(savable+free), and
-> then to free up (allocated-image_size) pages.
+> * Matt Mackall <mpm@selenic.com> wrote:
+> 
+> > On Wed, May 06, 2009 at 12:30:34PM +0200, Ingo Molnar wrote:
+> > > (Also, obviously "only" covering 95% of the Linux systems has its 
+> > > use as well. Most other architectures have their own cycle counters 
+> > > as well.)
+> > 
+> > X86 might be 95% of desktop. But it's a small fraction of Linux 
+> > systems once you count cell phones, video players, TVs, cameras, 
+> > GPS devices, cars, routers, etc. almost none of which are 
+> > x86-based. In fact, just Linux cell phones (with about an 8% share 
+> > of a 1.2billion devices per year market) dwarf Linux desktops 
+> > (maybe 5% of a 200m/y market).
+> 
+> Firstly, the cycle counter is just one out of several layers there. 
+> So it's a hyperbole to suggest that i'm somehow not caring about 
+> architectures that dont have a cycle counter. I'm simply making use 
+> of a cheaply accessed and fast-changing variable on hw that has it.
 
-No.  It's going to allocate (total RAM - anticipated image size) and then free
-up (allocated-image_size) pages.
+Whatever, I've never argued against TSC being beneficial. But it sure
+as hell is not sufficient. Your original claim that this attack was
+not possible in your original code: still bogus.
+ 
+> Also, are those systems really going to be attacked locally, 
+> brute-forcing a PRNG? 
 
-If we consider maximum image sizes, that means allocating slightly more than
-50% of RAM, so it really shouldn't regress that much IMO.
+Yes[1], even though my point was mostly to shoot down your bogus
+statistic for reasons unrelated to this discussion. If you want to
+make a new claim that '95% of Linux systems interesting to Ingo are
+x86', I won't argue with that.
 
-Thanks,
-Rafael
+[1] 95% of security holes are caused by developer failures of imagination.
+-- 
+Mathematics is the supreme nostalgia of our time.
