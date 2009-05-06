@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760209AbZEFQqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759874AbZEFQvR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760209AbZEFQqm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 12:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbZEFQqb
+	id S1759874AbZEFQvR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 12:51:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753570AbZEFQvB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 12:46:31 -0400
-Received: from mail.gmx.net ([213.165.64.20]:41853 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1750868AbZEFQqa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 12:46:30 -0400
-X-Authenticated: #1587495
-X-Provags-ID: V01U2FsdGVkX1/Dw/4zE4/DdwRFGsgRht67n2ch99hnvp1VsFnTOz
-	lRKiGR314L/TAc
-From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: patch mm-fix-committed_as-underflow-on-large-nr_cpus-environment.patch added to 2.6.29-stable tree
-Date: Wed, 6 May 2009 18:46:19 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-2.slh.6-sidux-amd64; KDE/4.2.2; x86_64; ; )
-Cc: Greg KH <gregkh@suse.de>, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, cl@linux-foundation.org,
-       dave@linux.vnet.ibm.com, ebmunson@us.ibm.com, mel@csn.ul.ie,
-       stable@kernel.org
-References: <20090504220454.3F71148FB8@coco.kroah.org> <20090505225932.GA4982@suse.de> <2f11576a0905051612p140e077fva214e954273a39df@mail.gmail.com>
-In-Reply-To: <2f11576a0905051612p140e077fva214e954273a39df@mail.gmail.com>
+	Wed, 6 May 2009 12:51:01 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:58901 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753559AbZEFQvA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 12:51:00 -0400
+Message-ID: <4A01BFCE.6020908@oracle.com>
+Date: Wed, 06 May 2009 09:50:22 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: multipart/signed;
-  boundary="nextPart1420212.tFuVaQ5p5F";
-  protocol="application/pgp-signature";
-  micalg=pgp-sha1
+To: linux-kernel@vger.kernel.org
+CC: akpm@linux-foundation.org, Jeremy Fitzhardinge <jeremy@xensource.com>,
+       Chris Wright <chrisw@sous-sol.org>, virtualization@lists.osdl.org,
+       xen-devel@lists.xensource.com
+Subject: [PATCH] xen: use header for EXPORT_SYMBOL_GPL
+References: <200905060438.n464cWFU025212@imap1.linux-foundation.org>
+In-Reply-To: <200905060438.n464cWFU025212@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <200905061846.21126.s.L-H@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.58
+X-Source-IP: abhmt004.oracle.com [141.146.116.13]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010209.4A01BF68.027E:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---nextPart1420212.tFuVaQ5p5F
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Hi
+mmu.c needs to #include module.h to prevent these warnings:
 
-On Mittwoch, 6. Mai 2009, KOSAKI Motohiro wrote:
-> > On Wed, May 06, 2009 at 07:26:51AM +0900, KOSAKI Motohiro wrote:
-> >> Could you please post oops log?
-> >> current mmotm (include this patch) works fine on my x86_64 box. Then,
-> >> I have no hint now ;-)
-> >
-> > Attached is a picture of the oops.
-> >
-> > Hope this helps,
->=20
-> OK, the reason is 99% mis-applied patch. I've made rebased patch.
->=20
-> in my environment
->=20
-> 2.6.29.2 + original patch:  panic
-> 2.6.29.2 + rebased patch:  works well
->=20
-> Could you please try it?
+arch/x86/xen/mmu.c:239: warning: data definition has no type or storage class
+arch/x86/xen/mmu.c:239: warning: type defaults to 'int' in declaration of 'EXPORT_SYMBOL_GPL'
+arch/x86/xen/mmu.c:239: warning: parameter names (without types) in function declaration
 
-This patch seems to fix the problems, it's working without any issues on=20
-all systems I could test so far.
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ arch/x86/xen/mmu.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-Thank you
-	Stefan Lippers-Hollmann
-
---nextPart1420212.tFuVaQ5p5F
-Content-Type: application/pgp-signature; name=signature.asc 
-Content-Description: This is a digitally signed message part.
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkoBvt0ACgkQORbEMfgJlPYUtgCcCfoyOgF2TIsBslRTBG6GhYgE
-dg0AmgJnpoOX2XoEfXmaTiANk+Ikck0V
-=L5Vs
------END PGP SIGNATURE-----
-
---nextPart1420212.tFuVaQ5p5F--
+--- mmotm-2009-0505-2119.orig/arch/x86/xen/mmu.c
++++ mmotm-2009-0505-2119/arch/x86/xen/mmu.c
+@@ -42,6 +42,7 @@
+ #include <linux/highmem.h>
+ #include <linux/debugfs.h>
+ #include <linux/bug.h>
++#include <linux/module.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
