@@ -1,252 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbZEFCc6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbZEFCfs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758877AbZEFCc6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 22:32:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbZEFCcs
+	id S1756962AbZEFCfs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 22:35:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753329AbZEFCfj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 22:32:48 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60313 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752700AbZEFCcr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 22:32:47 -0400
-Message-ID: <4A00F709.3080800@cn.fujitsu.com>
-Date: Wed, 06 May 2009 10:33:45 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 5 May 2009 22:35:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36302 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753038AbZEFCfi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 5 May 2009 22:35:38 -0400
+Date: Tue, 5 May 2009 22:33:32 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, peterz@infradead.org
+Subject: Re: IO scheduler based IO Controller V2
+Message-ID: <20090506023332.GA1212@redhat.com>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>, Tom Zanussi <tzanussi@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: [PATCH 4/4] tracing/events: fix concurrent access to ftrace_events
- list
-References: <4A00F6AD.2070008@cn.fujitsu.com>
-In-Reply-To: <4A00F6AD.2070008@cn.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090505132441.1705bfad.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A module will add/remove its trace events when it gets loaded/unloaded, so
-the ftrace_events list is not "const", and concurrent access needs to be
-protected.
+On Tue, May 05, 2009 at 01:24:41PM -0700, Andrew Morton wrote:
+> On Tue,  5 May 2009 15:58:27 -0400
+> Vivek Goyal <vgoyal@redhat.com> wrote:
+> 
+> > 
+> > Hi All,
+> > 
+> > Here is the V2 of the IO controller patches generated on top of 2.6.30-rc4.
+> > ...
+> > Currently primarily two other IO controller proposals are out there.
+> > 
+> > dm-ioband
+> > ---------
+> > This patch set is from Ryo Tsuruta from valinux.
+> > ...
+> > IO-throttling
+> > -------------
+> > This patch set is from Andrea Righi provides max bandwidth controller.
+> 
+> I'm thinking we need to lock you guys in a room and come back in 15 minutes.
+> 
+> Seriously, how are we to resolve this?  We could lock me in a room and
+> cmoe back in 15 days, but there's no reason to believe that I'd emerge
+> with the best answer.
+> 
+> I tend to think that a cgroup-based controller is the way to go. 
+> Anything else will need to be wired up to cgroups _anyway_, and that
+> might end up messy.
 
-This patch thus fixes races between loading/unloding modules and read
-'available_events' or read/write 'set_event', etc.
+Hi Andrew,
 
-Below shows how to reproduce the race:
+Sorry, did not get what do you mean by cgroup based controller? If you
+mean that we use cgroups for grouping tasks for controlling IO, then both
+IO scheduler based controller as well as io throttling proposal do that.
+dm-ioband also supports that up to some extent but it requires extra step of
+transferring cgroup grouping information to dm-ioband device using dm-tools.
 
- # for ((; ;)) { cat /mnt/tracing/available_events; } > /dev/null &
- # for ((; ;)) { insmod trace-events-sample.ko; rmmod sample; } &
+But if you meant that io-throttle patches, then I think it solves only
+part of the problem and that is max bw control. It does not offer minimum
+BW/minimum disk share gurantees as offered by proportional BW control.
 
-After a while:
+IOW, it supports upper limit control and does not support a work conserving
+IO controller which lets a group use the whole BW if competing groups are
+not present. IMHO, proportional BW control is an important feature which
+we will need and IIUC, io-throttle patches can't be easily extended to support
+proportional BW control, OTOH, one should be able to extend IO scheduler
+based proportional weight controller to also support max bw control. 
 
-BUG: unable to handle kernel paging request at 0010011c
-IP: [<c1080f27>] t_next+0x1b/0x2d
-...
-Call Trace:
- [<c10c90e6>] ? seq_read+0x217/0x30d
- [<c10c8ecf>] ? seq_read+0x0/0x30d
- [<c10b4c19>] ? vfs_read+0x8f/0x136
- [<c10b4fc3>] ? sys_read+0x40/0x65
- [<c1002a68>] ? sysenter_do_call+0x12/0x36
+Andrea, last time you were planning to have a look at my patches and see
+if max bw controller can be implemented there. I got a feeling that it
+should not be too difficult to implement it there. We already have the
+hierarchical tree of io queues and groups in elevator layer and we run
+BFQ (WF2Q+) algorithm to select next queue to dispatch the IO from. It is
+just a matter of also keeping track of IO rate per queue/group and we should
+be easily be able to delay the dispatch of IO from a queue if its group has
+crossed the specified max bw.
 
-[ Impact: fix races when concurrent accessing ftrace_events list ]
+This should lead to less code and reduced complextiy (compared with the
+case where we do max bw control with io-throttling patches and proportional
+BW control using IO scheduler based control patches).
+ 
+So do you think that it would make sense to do max BW control along with
+proportional weight IO controller at IO scheduler? If yes, then we can
+work together and continue to develop this patchset to also support max
+bw control and meet your requirements and drop the io-throttling patches.
 
-Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
----
- kernel/trace/trace.h               |    1 +
- kernel/trace/trace_event_profile.c |   19 ++++++++++++++-----
- kernel/trace/trace_events.c        |   20 +++++++++++---------
- kernel/trace/trace_events_filter.c |   10 +++++++---
- 4 files changed, 33 insertions(+), 17 deletions(-)
+The only thing which concerns me is the fact that IO scheduler does not
+have the view of higher level logical device. So if somebody has setup a
+software RAID and wants to put max BW limit on software raid device, this
+solution will not work. One shall have to live with max bw limits on 
+individual disks (where io scheduler is actually running). Do your patches
+allow to put limit on software RAID devices also? 
 
-diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
-index 83984ab..0bba080 100644
---- a/kernel/trace/trace.h
-+++ b/kernel/trace/trace.h
-@@ -827,6 +827,7 @@ static int filter_pred_##size(struct filter_pred *pred, void *event,	\
- 	return match;							\
- }
- 
-+extern struct mutex event_mutex;
- extern struct list_head ftrace_events;
- 
- extern const char *__start___trace_bprintk_fmt[];
-diff --git a/kernel/trace/trace_event_profile.c b/kernel/trace/trace_event_profile.c
-index 7bf2ad6..5b5895a 100644
---- a/kernel/trace/trace_event_profile.c
-+++ b/kernel/trace/trace_event_profile.c
-@@ -10,21 +10,30 @@
- int ftrace_profile_enable(int event_id)
- {
- 	struct ftrace_event_call *event;
-+	int ret = -EINVAL;
- 
-+	mutex_lock(&event_mutex);
- 	list_for_each_entry(event, &ftrace_events, list) {
--		if (event->id == event_id)
--			return event->profile_enable(event);
-+		if (event->id == event_id) {
-+			ret = event->profile_enable(event);
-+			break;
-+		}
- 	}
-+	mutex_unlock(&event_mutex);
- 
--	return -EINVAL;
-+	return ret;
- }
- 
- void ftrace_profile_disable(int event_id)
- {
- 	struct ftrace_event_call *event;
- 
-+	mutex_lock(&event_mutex);
- 	list_for_each_entry(event, &ftrace_events, list) {
--		if (event->id == event_id)
--			return event->profile_disable(event);
-+		if (event->id == event_id) {
-+			event->profile_disable(event);
-+			break;
-+		}
- 	}
-+	mutex_unlock(&event_mutex);
- }
-diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 72d619d..ac5b1c2 100644
---- a/kernel/trace/trace_events.c
-+++ b/kernel/trace/trace_events.c
-@@ -21,7 +21,7 @@
- 
- #define TRACE_SYSTEM "TRACE_SYSTEM"
- 
--static DEFINE_MUTEX(event_mutex);
-+DEFINE_MUTEX(event_mutex);
- 
- LIST_HEAD(ftrace_events);
- 
-@@ -80,6 +80,7 @@ static void ftrace_clear_events(void)
- {
- 	struct ftrace_event_call *call;
- 
-+	mutex_lock(&event_mutex);
- 	list_for_each_entry(call, &ftrace_events, list) {
- 
- 		if (call->enabled) {
-@@ -87,6 +88,7 @@ static void ftrace_clear_events(void)
- 			call->unregfunc();
- 		}
- 	}
-+	mutex_unlock(&event_mutex);
- }
- 
- static void ftrace_event_enable_disable(struct ftrace_event_call *call,
-@@ -274,6 +276,9 @@ t_next(struct seq_file *m, void *v, loff_t *pos)
- 
- static void *t_start(struct seq_file *m, loff_t *pos)
- {
-+	mutex_lock(&event_mutex);
-+	if (*pos == 0)
-+		m->private = ftrace_events.next;
- 	return t_next(m, NULL, pos);
- }
- 
-@@ -303,6 +308,9 @@ s_next(struct seq_file *m, void *v, loff_t *pos)
- 
- static void *s_start(struct seq_file *m, loff_t *pos)
- {
-+	mutex_lock(&event_mutex);
-+	if (*pos == 0)
-+		m->private = ftrace_events.next;
- 	return s_next(m, NULL, pos);
- }
- 
-@@ -319,12 +327,12 @@ static int t_show(struct seq_file *m, void *v)
- 
- static void t_stop(struct seq_file *m, void *p)
- {
-+	mutex_unlock(&event_mutex);
- }
- 
- static int
- ftrace_event_seq_open(struct inode *inode, struct file *file)
- {
--	int ret;
- 	const struct seq_operations *seq_ops;
- 
- 	if ((file->f_mode & FMODE_WRITE) &&
-@@ -332,13 +340,7 @@ ftrace_event_seq_open(struct inode *inode, struct file *file)
- 		ftrace_clear_events();
- 
- 	seq_ops = inode->i_private;
--	ret = seq_open(file, seq_ops);
--	if (!ret) {
--		struct seq_file *m = file->private_data;
--
--		m->private = ftrace_events.next;
--	}
--	return ret;
-+	return seq_open(file, seq_ops);
- }
- 
- static ssize_t
-diff --git a/kernel/trace/trace_events_filter.c b/kernel/trace/trace_events_filter.c
-index 97bd140..8c62e5b 100644
---- a/kernel/trace/trace_events_filter.c
-+++ b/kernel/trace/trace_events_filter.c
-@@ -433,6 +433,7 @@ static void filter_free_subsystem_preds(struct event_subsystem *system)
- 		filter->n_preds = 0;
- 	}
- 
-+	mutex_lock(&event_mutex);
- 	list_for_each_entry(call, &ftrace_events, list) {
- 		if (!call->define_fields)
- 			continue;
-@@ -442,6 +443,7 @@ static void filter_free_subsystem_preds(struct event_subsystem *system)
- 			remove_filter_string(call->filter);
- 		}
- 	}
-+	mutex_unlock(&event_mutex);
- }
- 
- static int filter_add_pred_fn(struct filter_parse_state *ps,
-@@ -605,6 +607,7 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
- {
- 	struct event_filter *filter = system->filter;
- 	struct ftrace_event_call *call;
-+	int err = 0;
- 
- 	if (!filter->preds) {
- 		filter->preds = kzalloc(MAX_FILTER_PRED * sizeof(pred),
-@@ -622,8 +625,8 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
- 	filter->preds[filter->n_preds] = pred;
- 	filter->n_preds++;
- 
-+	mutex_lock(&event_mutex);
- 	list_for_each_entry(call, &ftrace_events, list) {
--		int err;
- 
- 		if (!call->define_fields)
- 			continue;
-@@ -635,12 +638,13 @@ static int filter_add_subsystem_pred(struct filter_parse_state *ps,
- 		if (err) {
- 			filter_free_subsystem_preds(system);
- 			parse_error(ps, FILT_ERR_BAD_SUBSYS_FILTER, 0);
--			return err;
-+			break;
- 		}
- 		replace_filter_string(call->filter, filter_string);
- 	}
-+	mutex_unlock(&event_mutex);
- 
--	return 0;
-+	return err;
- }
- 
- static void parse_init(struct filter_parse_state *ps,
--- 
-1.5.4.rc3
+Ryo, dm-ioband breaks the notion of classes and priority of CFQ because
+of FIFO dispatch of buffered bios. Apart from that it tries to provide
+fairness in terms of actual IO done and that would mean a seeky workload
+will can use disk for much longer to get equivalent IO done and slow down
+other applications. Implementing IO controller at IO scheduler level gives
+us tigher control. Will it not meet your requirements? If you got specific
+concerns with IO scheduler based contol patches, please highlight these and
+we will see how these can be addressed.
 
-
+Thanks
+Vivek
