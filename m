@@ -1,316 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755482AbZEFBZJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754483AbZEFB0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755482AbZEFBZJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 5 May 2009 21:25:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753090AbZEFBYy
+	id S1754483AbZEFB0v (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 5 May 2009 21:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752969AbZEFB0l
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 21:24:54 -0400
-Received: from exprod7og112.obsmtp.com ([64.18.2.177]:44581 "EHLO
-	exprod7og112.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752774AbZEFBYw convert rfc822-to-8bit (ORCPT
+	Tue, 5 May 2009 21:26:41 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:33420 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751290AbZEFB0l convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 21:24:52 -0400
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: "Yang, Bo" <Bo.Yang@lsi.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "akpm@osdl.org" <akpm@osdl.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Austria, Winston" <Winston.Austria@lsi.com>
-Date: Tue, 5 May 2009 19:24:07 -0600
-Subject: [PATCH 5/10] scsi: megaraid_sas - Fixed load/unload issue and Fire
- the system pd DCDB cmd to MegaRAID SAS FW to get the system PDs
-Thread-Topic: [PATCH 5/10] scsi: megaraid_sas - Fixed load/unload issue and
- Fire the system pd DCDB cmd to MegaRAID SAS FW to get the system PDs
-Thread-Index: AciIcSnS7H5xFQtCQzyNHR19nlBrTUImYsQgDzPsVNAAASQyUAAAt2hQAAD+YdAAAIJO4A==
-Message-ID: <4B6A08C587958942AA3002690DD4F8C354F61C55@cosmail02.lsi.com>
-In-Reply-To: <4B6A08C587958942AA3002690DD4F8C354F61C50@cosmail02.lsi.com>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 5 May 2009 21:26:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Qsei117IJKagkBuY1ffm6FcaeF2mQW8lyMAH1sL4npaW4yCzfPE7QAUr106oZnKZHQ
+         GV/x5JswBF+sW+F1Zaxk6VFrI08OeWX7cqqklPQzLOiNtz8jCeNybWar9126DbeLk7uV
+         B/nEL9ulrgF/AwQaVAD5dbV7niUbzEj7ZHjhU=
 MIME-Version: 1.0
+In-Reply-To: <13a12eea0905040618u7fc48755hdbc3ea6d87c4d68c@mail.gmail.com>
+References: <2891419e0905040356x53643144of77eeaa8c210dce7@mail.gmail.com>
+	 <13a12eea0905040618u7fc48755hdbc3ea6d87c4d68c@mail.gmail.com>
+Date: Wed, 6 May 2009 10:26:39 +0900
+Message-ID: <2891419e0905051826p77cf211fmf5a6a0b8c65f5342@mail.gmail.com>
+Subject: Re: [PATCH 0/2] range-bw : Another I/O scheduling policy of dm-ioband 
+	(v1)
+From: Dong-Jae Kang <baramsori72@gmail.com>
+To: Chris Snook <chris.snook@gmail.com>
+Cc: Ryo Tsuruta <ryov@valinux.co.jp>, righi.andrea@gmail.com,
+       menage@google.com, balbir@linux.vnet.ibm.com,
+       guijianfeng@cn.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com,
+       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
+       chlunde@ping.uio.no, dave@linux.vnet.ibm.com, dpshah@google.com,
+       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, taka@valinux.co.jp,
+       lizf@cn.fujitsu.com, matt@bluehost.com, dradford@bluehost.com,
+       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
+       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
+       yoshikawa.takuya@oss.ntt.co.jp, nauman@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, containers@lists.linux-foundation.org,
+       linux-kernel@vger.kernel.org, corsetproject@googlegroups.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fixed the Driver load / Unload issue and Fire the system PD DCDB cmd to MegaRAID SAS FW to get the system PDs List
+Hi, Chris Snook
 
-Signed-off-by Bo Yang<bo.yang@lsi.com>
+2009/5/4 Chris Snook <chris.snook@gmail.com>:
+> On Mon, May 4, 2009 at 6:56 AM, Dong-Jae Kang <baramsori72@gmail.com> wrote:
+>> range-bw has two kinds of operation modes, min-max and max mode.
+>> Min-max mode is to supports guaranteeing the minimum I/O requirement
+>> and limitation of unnecessary I/O bandwidth at the same time. And max
+>> mode is to support only limitation. So in case of min-max mode, you
+>> need to configure min-bw and max-bw values and in case of max mode,
+>> configure only max-bw.
+>
+> Please forgive me if I missed a previous discussion, but how is max
+> mode different from min-max mode with a minimum of zero?  I understand
+> that there may be some special-case optimizations you can do
+> internally, but it's unclear to me why you need two different
+> interfaces.
+>
 
----
-drivers/scsi/megaraid/megaraid_sas.c |  105 +++++++++++++++++++++++++++++++++--
- drivers/scsi/megaraid/megaraid_sas.h |   83 +++++++++++++++++++++++++++
- 2 files changed, 183 insertions(+), 5 deletions(-)
+Thank you for your good comments,
 
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.c      2009-05-04 20:21:03.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.c       2009-05-04 20:22:17.000000000 -0400
-@@ -1686,7 +1686,7 @@ megasas_transition_to_ready(struct megas
+As you asked,
+max mode is actually same with min-max mode with a zero minimum value.
+It is only to consider the aspect of user interface now.
+the reason is as below
+according to the usage case, some users may be interested in
+guranteeing the minimum BW
+and limitation of maximum BW at the same time (the  basic
+fuctionalilty of range-bw), but, some
+users can be interested in only limitation of BW to reserve the BW for
+another service.
 
-                                writel(
-                                  MFI_INIT_CLEAR_HANDSHAKE|MFI_INIT_HOTPLUG,
--                                 &instance->reg_set->reserved_0[0]);
-+                                 &instance->reg_set->outbound_scratch_pad);
-                        } else {
-                                writel(
-                                    MFI_INIT_CLEAR_HANDSHAKE|MFI_INIT_HOTPLUG,
-@@ -1703,7 +1703,7 @@ megasas_transition_to_ready(struct megas
-                        (instance->pdev->device ==
-                                PCI_DEVICE_ID_LSI_SAS0071SKINNY)) {
-                                writel(MFI_INIT_HOTPLUG,
--                               &instance->reg_set->reserved_0[0]);
-+                               &instance->reg_set->outbound_scratch_pad);
-                        } else
-                                writel(MFI_INIT_HOTPLUG,
-                                        &instance->reg_set->inbound_doorbell);
-@@ -1722,7 +1722,7 @@ megasas_transition_to_ready(struct megas
-                                (instance->pdev->device ==
-                                PCI_DEVICE_ID_LSI_SAS0071SKINNY)) {
-                                writel(MFI_RESET_FLAGS,
--                               &instance->reg_set->reserved_0[0]);
-+                               &instance->reg_set->outbound_scratch_pad);
-                        } else
-                                writel(MFI_RESET_FLAGS,
-                                &instance->reg_set->inbound_doorbell);
-@@ -2031,6 +2031,97 @@ static int megasas_alloc_cmds(struct meg
-        return 0;
- }
+actually, I was overlooking that users are confused with the two kinds
+of interface
 
-+/*
-+ * megasas_get_pd_list_info -  Returns FW's pd_list structure
-+ * @instance:                          Adapter soft state
-+ * @pd_list:                           pd_list structure
-+ *
-+ * Issues an internal command (DCMD) to get the FW's controller PD
-+ * list structure.  This information is mainly used to find out SYSTEM
-+ * supported by the FW.
-+ */
-+static int
-+megasas_get_pd_list(struct megasas_instance *instance)
-+{
-+       int ret = 0, pd_index = 0;
-+       struct megasas_cmd *cmd;
-+       struct megasas_dcmd_frame *dcmd;
-+       struct MR_PD_LIST *ci;
-+       struct MR_PD_ADDRESS *pd_addr;
-+       dma_addr_t ci_h = 0;
-+
-+       cmd = megasas_get_cmd(instance);
-+
-+       if (!cmd) {
-+               printk(KERN_DEBUG "megasas (get_pd_list): Failed to get cmd\n");
-+               return -ENOMEM;
-+       }
-+
-+       dcmd = &cmd->frame->dcmd;
-+
-+       ci = pci_alloc_consistent(instance->pdev,
-+                 MEGASAS_MAX_PD * sizeof(struct MR_PD_LIST), &ci_h);
-+
-+       if (!ci) {
-+               printk(KERN_DEBUG "Failed to alloc mem for pd_list\n");
-+               megasas_return_cmd(instance, cmd);
-+               return -ENOMEM;
-+       }
-+
-+       memset(ci, 0, sizeof(*ci));
-+       memset(dcmd->mbox.b, 0, MFI_MBOX_SIZE);
-+
-+       dcmd->mbox.b[0] = MR_PD_QUERY_TYPE_EXPOSED_TO_HOST;
-+       dcmd->mbox.b[1] = 0;
-+       dcmd->cmd = MFI_CMD_DCMD;
-+       dcmd->cmd_status = 0xFF;
-+       dcmd->sge_count = 1;
-+       dcmd->flags = MFI_FRAME_DIR_READ;
-+       dcmd->timeout = 0;
-+       dcmd->data_xfer_len = MEGASAS_MAX_PD * sizeof(struct MR_PD_LIST);
-+       dcmd->opcode = MR_DCMD_PD_LIST_QUERY;
-+       dcmd->sgl.sge32[0].phys_addr = ci_h;
-+       dcmd->sgl.sge32[0].length = MEGASAS_MAX_PD * sizeof(struct MR_PD_LIST);
-+
-+       if (!megasas_issue_polled(instance, cmd)) {
-+               ret = 0;
-+       } else {
-+               ret = -1;
-+       }
-+
-+       /*
-+       * the following function will get the instance PD LIST.
-+       */
-+
-+       pd_addr = ci->addr;
-+
-+       if ( ret == 0 &&
-+               (ci->count <
-+                 (MEGASAS_MAX_PD_CHANNELS * MEGASAS_MAX_DEV_PER_CHANNEL))) {
-+
-+               memset(instance->pd_list, 0,
-+                       MEGASAS_MAX_PD * sizeof(struct megasas_pd_list));
-+
-+               for (pd_index = 0; pd_index < ci->count; pd_index++) {
-+
-+                       instance->pd_list[pd_addr->deviceId].tid        =
-+                                                       pd_addr->deviceId;
-+                       instance->pd_list[pd_addr->deviceId].driveType  =
-+                                                       pd_addr->scsiDevType;
-+                       instance->pd_list[pd_addr->deviceId].driveState =
-+                                                       MR_PD_STATE_SYSTEM;
-+                       pd_addr++;
-+               }
-+       }
-+
-+       pci_free_consistent(instance->pdev,
-+                               MEGASAS_MAX_PD * sizeof(struct MR_PD_LIST),
-+                               ci, ci_h);
-+       megasas_return_cmd(instance, cmd);
-+
-+       return ret;
-+}
-+
- /**
-  * megasas_get_controller_info -       Returns FW's controller structure
-  * @instance:                          Adapter soft state
-@@ -2310,8 +2401,8 @@ static int megasas_init_mfi(struct megas
-        reply_q_sz = context_sz * (instance->max_fw_cmds + 1);
+So, your comments will be related with my future work :)
+if two kinds of mode is confused or unnecessary to people,
+I will re-consider about supporting the unified interfaces as you pointed
+or I try to optimize the scheduling policy for max mode.
+and this work will be applied in next release of range-bw.
 
-        instance->reply_queue = pci_alloc_consistent(instance->pdev,
--                                                    reply_q_sz,
--                                                    &instance->reply_queue_h);
-+                                               reply_q_sz,
-+                                               &instance->reply_queue_h);
+Thank you, Chris Snook
 
-        if (!instance->reply_queue) {
-                printk(KERN_DEBUG "megasas: Out of DMA mem for reply queue\n");
-@@ -2321,6 +2412,10 @@ static int megasas_init_mfi(struct megas
-        if (megasas_issue_init_mfi(instance))
-                goto fail_fw_init;
-
-+       memset(instance->pd_list, 0 ,
-+               (MEGASAS_MAX_PD * sizeof(struct megasas_pd_list)));
-+       megasas_get_pd_list(instance);
-+
-        ctrl_info = kmalloc(sizeof(struct megasas_ctrl_info), GFP_KERNEL);
-
-        /*
-diff -rupN linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h
---- linux-2.6.28_orig/drivers/scsi/megaraid/megaraid_sas.h      2009-05-04 20:21:05.000000000 -0400
-+++ linux-2.6.28_new/drivers/scsi/megaraid/megaraid_sas.h       2009-05-04 20:00:32.000000000 -0400
-@@ -133,6 +133,7 @@
- #define MR_DCMD_CLUSTER                                0x08000000
- #define MR_DCMD_CLUSTER_RESET_ALL              0x08010100
- #define MR_DCMD_CLUSTER_RESET_LD               0x08010200
-+#define MR_DCMD_PD_LIST_QUERY                   0x02010100
-
- #define MR_EVT_CFG_CLEARED                     0x0004
-
-@@ -264,10 +265,89 @@ enum MR_EVT_ARGS {
-        MR_EVT_ARGS_STR,
-        MR_EVT_ARGS_TIME,
-        MR_EVT_ARGS_ECC,
-+       MR_EVT_ARGS_LD_PROP,
-+       MR_EVT_ARGS_PD_SPARE,
-+       MR_EVT_ARGS_PD_INDEX,
-+       MR_EVT_ARGS_DIAG_PASS,
-+       MR_EVT_ARGS_DIAG_FAIL,
-+       MR_EVT_ARGS_PD_LBA_LBA,
-+       MR_EVT_ARGS_PORT_PHY,
-+       MR_EVT_ARGS_PD_MISSING,
-+       MR_EVT_ARGS_PD_ADDRESS,
-+       MR_EVT_ARGS_BITMAP,
-+       MR_EVT_ARGS_CONNECTOR,
-+       MR_EVT_ARGS_PD_PD,
-+       MR_EVT_ARGS_PD_FRU,
-+       MR_EVT_ARGS_PD_PATHINFO,
-+       MR_EVT_ARGS_PD_POWER_STATE,
-+       MR_EVT_ARGS_GENERIC,
-+};
-
-+/*
-+ * define constants for device list query options
-+ */
-+enum MR_PD_QUERY_TYPE {
-+       MR_PD_QUERY_TYPE_ALL                = 0,
-+       MR_PD_QUERY_TYPE_STATE              = 1,
-+       MR_PD_QUERY_TYPE_POWER_STATE        = 2,
-+       MR_PD_QUERY_TYPE_MEDIA_TYPE         = 3,
-+       MR_PD_QUERY_TYPE_SPEED              = 4,
-+       MR_PD_QUERY_TYPE_EXPOSED_TO_HOST    = 5,
-+} __attribute__ ((packed));
-+
-+enum MR_PD_STATE {
-+       MR_PD_STATE_UNCONFIGURED_GOOD   = 0x00,
-+       MR_PD_STATE_UNCONFIGURED_BAD    = 0x01,
-+       MR_PD_STATE_HOT_SPARE           = 0x02,
-+       MR_PD_STATE_OFFLINE             = 0x10,
-+       MR_PD_STATE_FAILED              = 0x11,
-+       MR_PD_STATE_REBUILD             = 0x14,
-+       MR_PD_STATE_ONLINE              = 0x18,
-+       MR_PD_STATE_COPYBACK            = 0x20,
-+       MR_PD_STATE_SYSTEM              = 0x40,
- };
-
- /*
-+ * defines the physical drive address structure
-+ */
-+struct MR_PD_ADDRESS {
-+       u16     deviceId;
-+       u16     enclDeviceId;
-+
-+       union {
-+               struct {
-+                       u8  enclIndex;
-+                       u8  slotNumber;
-+               } mrPdAddress;
-+               struct {
-+                       u8  enclPosition;
-+                       u8  enclConnectorIndex;
-+               } mrEnclAddress;
-+       };
-+       u8      scsiDevType;
-+       union {
-+               u8      connectedPortBitmap;
-+               u8      connectedPortNumbers;
-+       };
-+       u64     sasAddr[2];
-+} __attribute__ ((packed));
-+
-+/*
-+ * defines the physical drive list structure
-+ */
-+struct MR_PD_LIST {
-+       u32             size;
-+       u32             count;
-+       struct MR_PD_ADDRESS   addr[1];
-+} __attribute__ ((packed));
-+
-+struct megasas_pd_list {
-+       u16             tid;
-+       u8             driveType;
-+       u8             driveState;
-+} __attribute__ ((packed));
-+
-+/*
-  * SAS controller properties
-  */
- struct megasas_ctrl_prop {
-@@ -553,6 +633,8 @@ struct megasas_ctrl_info {
- #define MEGASAS_DEFAULT_INIT_ID                        -1
- #define MEGASAS_MAX_LUN                                8
- #define MEGASAS_MAX_LD                         64
-+#define MEGASAS_MAX_PD                          (MEGASAS_MAX_PD_CHANNELS * \
-+                                               MEGASAS_MAX_DEV_PER_CHANNEL)
-
- #define MEGASAS_DBG_LVL                                1
-
-@@ -1104,6 +1186,7 @@ struct megasas_instance {
-
-        unsigned long base_addr;
-        struct megasas_register_set __iomem *reg_set;
-+       struct megasas_pd_list          pd_list[MEGASAS_MAX_PD];
-
-        s8 init_id;
-
+-- 
+Best Regards,
+Dong-Jae Kang
