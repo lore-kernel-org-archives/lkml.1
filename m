@@ -1,59 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761727AbZEFWw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758668AbZEFW74@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761727AbZEFWw5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:52:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758488AbZEFWvS
+	id S1758668AbZEFW74 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:59:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752098AbZEFW7r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 18:51:18 -0400
-Received: from e4.ny.us.ibm.com ([32.97.182.144]:55986 "EHLO e4.ny.us.ibm.com"
+	Wed, 6 May 2009 18:59:47 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:40283 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758144AbZEFWvQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 18:51:16 -0400
-Date: Wed, 6 May 2009 15:51:15 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: David Howells <dhowells@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, niv@us.ibm.com, dvhltc@us.ibm.com,
-       lethal@linux-sh.org, kernel@wantstofly.org, matthew@wil.cx
-Subject: Re: [PATCH] v4 RCU: the bloatwatch edition
-Message-ID: <20090506225115.GM6771@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090506112459.5edd0902.akpm@linux-foundation.org> <20090502163423.GA1633@linux.vnet.ibm.com> <12234.1241558327@redhat.com> <20090506120909.GR25203@elte.hu> <11979.1241648574@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <11979.1241648574@redhat.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1751515AbZEFW7r (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 18:59:47 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [RFC][PATCH 1/5] PM/Freezer: Disable OOM killer when tasks are
+ frozen
+From: Nigel Cunningham <nigel@tuxonice.net>
+Reply-To: nigel@tuxonice.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <200905070041.04787.rjw@sisk.pl>
+References: <200905070040.08561.rjw@sisk.pl>
+	 <200905070041.04787.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Thu, 07 May 2009 09:00:43 +1000
+Message-Id: <1241650843.19600.124.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 11:22:54PM +0100, David Howells wrote:
-> Andrew Morton <akpm@linux-foundation.org> wrote:
+Hi.
+
+On Thu, 2009-05-07 at 00:41 +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
 > 
-> > More like "concerns".  It's unobvious to me that the modest .text
-> > savings justify the costs of an additional RCU implementation.  Where
-> > those costs include
+> The OOM killer is not really going to work while tasks are frozen, so
+> we can just give up calling it in that case.
 > 
-> It may be more than just modest .text savings.  Being optimised to be as
-> simple as possible, and to only support one CPU, it may be quicker too.  I'm
-> not sure how best to benchmark it though.
+> This will allow us to safely use memory allocations for decreasing
+> the number of saveable pages in the hibernation core code instead of
+> using any artificial memory shriking mechanisms for this purpose.
 
-The read side is unchanged, but the update side is another story, given
-that synchronize_rcu()'s latency decreases from multiple milliseconds
-to the sub-microsecond range:
+Should we disable the warning that the nopage path gives if tasks are
+frozen? I'm in two minds - if you get problems as a result, it might
+help to diagnose them. On the other hand, you don't want tons of
+warnings due to the hibernation code trying to allocate memory it can't
+get. In TuxOnIce, I currently do all allocations with __GFP_NOWARN.
 
-	void synchronize_rcu(void)
-	{
-		unsigned long flags;
+Regards,
 
-		local_irq_save(flags);
-		rcu_ctrlblk.completed++;
-		local_irq_restore(flags);
-	}
+Nigel
 
-So boot speed is one possible metric, depending on how many synchronize_rcu()
-invocations are in your arch's boot path.  It appears that x86 has a
-fair number.  ;-)
-
-							Thanx, Paul
