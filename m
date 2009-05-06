@@ -1,336 +1,493 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757968AbZEGAB6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759599AbZEGACV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757968AbZEGAB6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 20:01:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751384AbZEGABt
+	id S1759599AbZEGACV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 20:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbZEGACG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 20:01:49 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:55337 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751242AbZEGABs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 20:01:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=to:cc:subject:from:date:message-id:user-agent:mime-version
-         :content-type;
-        b=YzrbZEzYkCPhIeTrYjPJbkEv5KL/u9iIu5XtG+OtoGrojHIS7RxZpk9upf1Vxct6CO
-         Lk/z7TEGHSl52YL3OWXCVktcvMD/a/bPhJ9VAA3Qdurlhy7thgq6HzXTduzSBYpiDeNt
-         RI/ie05+w6F8SiYZviXy8/stluQH2pEyaWoJM=
-To: linux-kernel@vger.kernel.org
-Cc: Greg KH <greg@kroah.com>, Ian Abbott <abbotti@mev.co.uk>
-Subject: comedi: some questions 
-From: Alexis Berlemont <alexis.berlemont@gmail.com>
-Date: Thu, 07 May 2009 02:01:42 +0200
-Message-ID: <87zldpeq6x.fsf@free.fr>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.3 (gnu/linux)
+	Wed, 6 May 2009 20:02:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:57426 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755421AbZEGACE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 20:02:04 -0400
+Date: Wed, 6 May 2009 16:59:49 -0700
+From: Chris Wright <chrisw@redhat.com>
+To: Izik Eidus <ieidus@redhat.com>
+Cc: Hugh Dickins <hugh@veritas.com>, Rik van Riel <riel@redhat.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       aarcange@redhat.com, chrisw@redhat.com, alan@lxorguk.ukuu.org.uk,
+       device@lanana.org, linux-mm@kvack.org, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
+Message-ID: <20090506235949.GC16870@x200.localdomain>
+References: <1241475935-21162-1-git-send-email-ieidus@redhat.com> <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com> <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils> <4A01AC5E.6000906@redhat.com> <Pine.LNX.4.64.0905061706590.4005@blonde.anvils> <4A01C1AD.9060802@redhat.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="=-=-="
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A01C1AD.9060802@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---=-=-=
+* Izik Eidus (ieidus@redhat.com) wrote:
+> Ok, i give up, lets move to madvice(), i will write a patch that move  
+> the whole thing into madvice after i finish here something, but that  
+> ofcurse only if Andrea agree for the move?
 
-Hi,
+Here's where I left off last time (refreshed against a current mmotm).
 
-Please find attached a patch related with the Comedi layer. This patch
-is just a proposal (among two) to change the way the ranges tables are
-managed. 
-
-I first tried to send it to the Comedi community three weeks ago:
-http://groups.google.com/group/comedi_list/browse_thread/thread/85be8195ddf52896
-
-One week after my first mail, Ian Abott told me the Comedi CVS tree
-would not integrate any code change other than bug fix; he redirected
-me to the linux-next mailing list. According to him, the clean up
-effort should be hosted on the staging area of the linux-next tree. 
-
-Then, I sent the patches (adapted for the linux-next git tree) to the
-linux-next mailing list:
-http://marc.info/?l=linux-next&m=124078248400745&w=2
-
-Greg KH asked me to send them to the Comedi community before asking
-for integration into the staging area (which I already did). After a
-few mails, it became clear that the suitable procedure was to send
-patches to the Comedi mailing-list and CC Greg KH. Thus, with the
-Comedi maintainers' agreements, GKH will integrate them. 
-
-I am kind of puzzled. That is why I thought mailing the LKML might be
-interesting. 
-
-It seems like the original Comedi developers (the ones who maintain
-the original CVS tree) do not seem involved in the developments for
-the integration of Comedi into mainstream. However, any contribution
-must go through them. That might slow down the evolutions. No ? 
-
-By the way, I have been waiting for one more week and I still have no
-feedback on my little proposals which are, I think, meaningless
-compared to other issues (kcomedilib, buffer management, user
-interfaces, etc.). I should ask once more.
-
-That leads to the last point which I do not understand: Comedi is
-supposed to undergo a host of changes before considering integration
-into mainline (here is a mail which lists some of them:
-http://lkml.org/lkml/2009/2/9/335). That should imply many
-incompatibilities with the original Comedi tree; so why keeping
-coherency with upstream?
-
-Alexis.
-
-
---=-=-=
-Content-Type: text/x-diff
-Content-Disposition: inline;
- filename=0001-Introduce-a-container-structure-for-ranges-so-as-to.patch
-Content-Description: proposal 1
-
->From 12b57a9ece86c658fc84db4c635d69d2f7e9638f Mon Sep 17 00:00:00 2001
-From: Alexis Berlemont <alexis.berlemont@gmail.com>
-Date: Sun, 26 Apr 2009 00:51:43 +0200
-Subject: [PATCH] Introduce a container structure for ranges so as to handle global
- range tables and per channel range tables
+It needs to get converted to vma rather than still scanning via slots.
+It's got locking issues (I think this can be remedied w/ vma
+conversion).  I think the scan list would be ->mm and each ->mm we'd
+scan the vma's that are marked VM_MERGEABLE or whatever.
 
 ---
- drivers/staging/comedi/comedi_fops.c |   11 +++--
- drivers/staging/comedi/comedidev.h   |   75 +++++++++++++++++++++++++++++++++-
- drivers/staging/comedi/drivers.c     |    5 +-
- drivers/staging/comedi/range.c       |   64 +++++++++++------------------
- 4 files changed, 107 insertions(+), 48 deletions(-)
+ include/asm-generic/mman.h |    2 
+ include/linux/ksm.h        |   41 ---------
+ include/linux/miscdevice.h |    1 
+ mm/ksm.c                   |  205 ++-------------------------------------------
+ mm/madvise.c               |   29 ++++++
+ 5 files changed, 46 insertions(+), 232 deletions(-)
 
-diff --git a/drivers/staging/comedi/comedi_fops.c b/drivers/staging/comedi/comedi_fops.c
-index bb4a289..c71ddf6 100644
---- a/drivers/staging/comedi/comedi_fops.c
-+++ b/drivers/staging/comedi/comedi_fops.c
-@@ -419,7 +419,7 @@ static int do_subdinfo_ioctl(struct comedi_device *dev, struct comedi_subdinfo *
- 		us->maxdata = s->maxdata;
- 		if (s->range_table) {
- 			us->range_type =
--			    (i << 24) | (0 << 16) | (s->range_table->length);
-+			    (i << 24) | (0 << 16) | get_range_table(s, 0)->length;
- 		} else {
- 			us->range_type = 0;	/* XXX */
- 		}
-@@ -437,7 +437,8 @@ static int do_subdinfo_ioctl(struct comedi_device *dev, struct comedi_subdinfo *
- 			us->subd_flags |= SDF_MAXDATA;
- 		if (s->flaglist)
- 			us->subd_flags |= SDF_FLAGS;
--		if (s->range_table_list)
-+		if (s->range_table && 
-+		    (s->range_table->mode & COMEDI_PERCHAN_LRANGE) != 0)
- 			us->subd_flags |= SDF_RANGETYPE;
- 		if (s->do_cmd)
- 			us->subd_flags |= SDF_CMD;
-@@ -503,13 +504,15 @@ static int do_chaninfo_ioctl(struct comedi_device *dev, struct comedi_chaninfo *
- 	if (it.rangelist) {
- 		int i;
+--- a/include/asm-generic/mman.h
++++ b/include/asm-generic/mman.h
+@@ -34,6 +34,8 @@
+ #define MADV_REMOVE	9		/* remove these pages & resources */
+ #define MADV_DONTFORK	10		/* don't inherit across fork */
+ #define MADV_DOFORK	11		/* do inherit across fork */
++#define MADV_SHAREABLE	12		/* can share identical pages */
++#define MADV_UNSHAREABLE 13		/* can not share identical pages */
  
--		if (!s->range_table_list)
-+ 		if(s->range_table == NULL ||
-+ 		   (s->range_table->mode & COMEDI_PERCHAN_LRANGE) == 0)
- 			return -EINVAL;
-+
- 		for (i = 0; i < s->n_chan; i++) {
- 			int x;
+ /* compatibility flags */
+ #define MAP_FILE	0
+--- a/include/linux/ksm.h
++++ b/include/linux/ksm.h
+@@ -1,46 +1,9 @@
+ #ifndef __LINUX_KSM_H
+ #define __LINUX_KSM_H
  
- 			x = (dev->minor << 28) | (it.subdev << 24) | (i << 16) |
--			    (s->range_table_list[i]->length);
-+				get_range_table(s, i)->length;
- 			put_user(x, it.rangelist + i);
- 		}
- #if 0
-diff --git a/drivers/staging/comedi/comedidev.h b/drivers/staging/comedi/comedidev.h
-index 753d3ab..4c67058 100644
---- a/drivers/staging/comedi/comedidev.h
-+++ b/drivers/staging/comedi/comedidev.h
-@@ -149,8 +149,7 @@ struct comedi_subdevice {
+-/*
+- * Userspace interface for /dev/ksm - kvm shared memory
+- */
+-
+-#include <linux/types.h>
+-#include <linux/ioctl.h>
+-
+-#define KSM_API_VERSION 1
+-
+ #define ksm_control_flags_run 1
  
- 	unsigned int settling_time_0;
+-/* for KSM_REGISTER_MEMORY_REGION */
+-struct ksm_memory_region {
+-	__u32 npages; /* number of pages to share */
+-	__u32 pad;
+-	__u64 addr; /* the begining of the virtual address */
+-	__u64 reserved_bits;
+-};
+-
+-#define KSMIO 0xAB
+-
+-/* ioctls for /dev/ksm */
+-
+-#define KSM_GET_API_VERSION              _IO(KSMIO,   0x00)
+-/*
+- * KSM_CREATE_SHARED_MEMORY_AREA - create the shared memory reagion fd
+- */
+-#define KSM_CREATE_SHARED_MEMORY_AREA    _IO(KSMIO,   0x01) /* return SMA fd */
+-
+-/* ioctls for SMA fds */
+-
+-/*
+- * KSM_REGISTER_MEMORY_REGION - register virtual address memory area to be
+- * scanned by kvm.
+- */
+-#define KSM_REGISTER_MEMORY_REGION       _IOW(KSMIO,  0x20,\
+-					      struct ksm_memory_region)
+-/*
+- * KSM_REMOVE_MEMORY_REGION - remove virtual address memory area from ksm.
+- */
+-#define KSM_REMOVE_MEMORY_REGION         _IO(KSMIO,   0x21)
++long ksm_register_memory(struct vm_area_struct *, unsigned long, unsigned long);
++long ksm_unregister_memory(struct vm_area_struct *, unsigned long, unsigned long);
  
--	const struct comedi_lrange *range_table;
--	const struct comedi_lrange *const *range_table_list;
-+	struct comedi_crange *range_table;
+ #endif
+--- a/include/linux/miscdevice.h
++++ b/include/linux/miscdevice.h
+@@ -30,7 +30,6 @@
+ #define HPET_MINOR		228
+ #define FUSE_MINOR		229
+ #define KVM_MINOR		232
+-#define KSM_MINOR		234
+ #define MISC_DYNAMIC_MINOR	255
  
- 	unsigned int *chanlist;	/* driver-owned chanlist (not used) */
- 
-@@ -411,6 +410,78 @@ struct comedi_lrange {
- 	struct comedi_krange range[GCC_ZERO_LENGTH_ARRAY];
+ struct device;
+--- a/mm/ksm.c
++++ b/mm/ksm.c
+@@ -17,7 +17,6 @@
+ #include <linux/errno.h>
+ #include <linux/mm.h>
+ #include <linux/fs.h>
+-#include <linux/miscdevice.h>
+ #include <linux/vmalloc.h>
+ #include <linux/file.h>
+ #include <linux/mman.h>
+@@ -58,21 +57,11 @@ module_param(regions_per_fd, int, 0);
+  */
+ struct ksm_mem_slot {
+ 	struct list_head link;
+-	struct list_head sma_link;
+ 	struct mm_struct *mm;
+ 	unsigned long addr;	/* the begining of the virtual address */
+ 	unsigned npages;	/* number of pages to share */
  };
  
-+#define COMEDI_PERCHAN_LRANGE	0x80000000
-+
-+struct comedi_crange {
-+	unsigned int mode;
-+	struct comedi_lrange *list[0];
-+};
-+
-+/* For static configuration (global declaration) */
-+#define COMEDI_GLOBAL_RNG(x) {			\
-+	.mode = 0,				\
-+	.list = {&(x)}, }
-+
-+/* For dynamic confiugration */
-+static inline int setup_global_range_table(struct comedi_subdevice * subd,
-+					   struct comedi_lrange *lrng)
-+{
-+	subd->range_table = kmalloc(sizeof(struct comedi_crange) +
-+				    sizeof(struct comedi_lrange *), 
-+				    GFP_KERNEL);
-+
-+	if(subd->range_table == NULL)
-+		return -ENOMEM;
-+
-+	subd->range_table->mode = 0;
-+	subd->range_table->list[0] = lrng;
-+	
-+	return 0;
-+}
-+
-+static inline int alloc_perchan_range_table(struct comedi_subdevice * subd)
-+{
-+	subd->range_table = kmalloc(sizeof(struct comedi_crange) +
-+				    sizeof(struct comedi_lrange *) * 
-+				    subd->n_chan, 
-+				    GFP_KERNEL);
-+
-+	if(subd->range_table == NULL)
-+		return -ENOMEM;
-+
-+	memset(subd->range_table, 0,
-+	       sizeof(struct comedi_crange) +
-+	       sizeof(struct comedi_lrange *) * subd->n_chan);
-+	
-+	subd->range_table->mode = COMEDI_PERCHAN_LRANGE;
-+	
-+	return 0;
-+}
-+
-+static inline int set_range_table(struct comedi_subdevice *subd,
-+				  unsigned int chan_idx,
-+				  struct comedi_lrange *lrng)
-+{
-+	if(subd->range_table == NULL)
-+		return -EINVAL;
-+
-+	chan_idx = (subd->range_table->mode & COMEDI_PERCHAN_LRANGE) ?
-+		chan_idx : 0;
-+	subd->range_table->list[chan_idx] = lrng;
-+
-+	return 0;
-+}
-+
-+static inline 
-+struct comedi_lrange *get_range_table(struct comedi_subdevice *subd,
-+				      unsigned int chan_idx)
-+{
-+	chan_idx = (subd->range_table->mode & COMEDI_PERCHAN_LRANGE) ?
-+		chan_idx : 0;
-+	return subd->range_table->list[chan_idx];
-+}
-+				  
-+
- /* some silly little inline functions */
- 
- static inline int alloc_subdevices(struct comedi_device *dev,
-diff --git a/drivers/staging/comedi/drivers.c b/drivers/staging/comedi/drivers.c
-index cabbf09..c0bcff3 100644
---- a/drivers/staging/comedi/drivers.c
-+++ b/drivers/staging/comedi/drivers.c
-@@ -273,8 +273,9 @@ static int postconfig(struct comedi_device *dev)
- 			comedi_alloc_subdevice_minor(dev, s);
- 		}
- 
--		if (!s->range_table && !s->range_table_list)
--			s->range_table = &range_unknown;
-+		if (!s->range_table)
-+			setup_global_range_table
-+				(s, (struct comedi_lrange *)&range_unknown);
- 
- 		if (!s->insn_read && s->insn_bits)
- 			s->insn_read = insn_rw_emulate_bits;
-diff --git a/drivers/staging/comedi/range.c b/drivers/staging/comedi/range.c
-index d09f0bb..04f7b89 100644
---- a/drivers/staging/comedi/range.c
-+++ b/drivers/staging/comedi/range.c
-@@ -61,15 +61,11 @@ int do_rangeinfo_ioctl(struct comedi_device *dev, struct comedi_rangeinfo *arg)
- 	if (subd >= dev->n_subdevices)
- 		return -EINVAL;
- 	s = dev->subdevices + subd;
--	if (s->range_table) {
--		lr = s->range_table;
--	} else if (s->range_table_list) {
--		if (chan >= s->n_chan)
--			return -EINVAL;
--		lr = s->range_table_list[chan];
--	} else {
--		return -EINVAL;
--	}
-+
-+ 	if (s->range_table == NULL || chan >= s->n_chan)
-+ 		return -EINVAL;
-+ 	else
-+ 		lr = get_range_table(s, chan);
- 
- 	if (RANGE_LENGTH(it.range_type) != lr->length) {
- 		DPRINTK("wrong length %d should be %d (0x%08x)\n",
-@@ -125,36 +121,24 @@ int check_chanlist(struct comedi_subdevice *s, int n, unsigned int *chanlist)
- 	int i;
- 	int chan;
- 
--	if (s->range_table) {
--		for (i = 0; i < n; i++)
--			if (CR_CHAN(chanlist[i]) >= s->n_chan ||
--				CR_RANGE(chanlist[i]) >= s->range_table->length
--				|| aref_invalid(s, chanlist[i])) {
--				rt_printk
--					("bad chanlist[%d]=0x%08x n_chan=%d range length=%d\n",
--					i, chanlist[i], s->n_chan,
--					s->range_table->length);
--#if 0
--				for (i = 0; i < n; i++)
--					printk("[%d]=0x%08x\n", i, chanlist[i]);
--#endif
--				return -EINVAL;
--			}
--	} else if (s->range_table_list) {
--		for (i = 0; i < n; i++) {
--			chan = CR_CHAN(chanlist[i]);
--			if (chan >= s->n_chan ||
--				CR_RANGE(chanlist[i]) >=
--				s->range_table_list[chan]->length
--				|| aref_invalid(s, chanlist[i])) {
--				rt_printk("bad chanlist[%d]=0x%08x\n", i,
--					chanlist[i]);
--				return -EINVAL;
--			}
--		}
--	} else {
--		rt_printk("comedi: (bug) no range type list!\n");
--		return -EINVAL;
--	}
-+ 	if (s->range_table == NULL) {
-+  		rt_printk("comedi: (bug) no range type list!\n");
-+  		return -EINVAL;
-+  	}
-+ 	
-+ 	for (i = 0; i < n; i++) {
-+ 
-+ 		chan = CR_CHAN(chanlist[i]);
-+ 
-+ 		if (chan >= s->n_chan ||
-+ 		    CR_RANGE(chanlist[i]) >= get_range_table(s, chan)->length || 
-+ 		    aref_invalid(s, chanlist[i])) {
-+ 			
-+ 			rt_printk("bad chanlist[%d]=0x%08x\n", 
-+ 				  i, chanlist[i]);
-+ 			return -EINVAL;
-+ 		}
-+ 	}
-+
+-/*
+- * ksm_sma - shared memory area, each process have its own sma that contain the
+- * information about the slots that it own
+- */
+-struct ksm_sma {
+-	struct list_head sma_slots;
+-	int nregions;
+-};
+-
+ /**
+  * struct ksm_scan - cursor for scanning
+  * @slot_index: the current slot we are scanning
+@@ -459,85 +448,35 @@ static inline int is_intersecting_addres
  	return 0;
  }
--- 
-1.6.2.4
-
-
---=-=-=--
+ 
+-/*
+- * is_overlap_mem - check if there is overlapping with memory that was already
+- * registred.
+- *
+- * note - this function must to be called under slots_lock
+- */
+-static int is_overlap_mem(struct ksm_memory_region *mem)
+-{
+-	struct ksm_mem_slot *slot;
+-
+-	list_for_each_entry(slot, &slots, link) {
+-		unsigned long mem_end;
+-		unsigned long slot_end;
+-
+-		cond_resched();
+-
+-		if (current->mm != slot->mm)
+-			continue;
+-
+-		mem_end = mem->addr + (unsigned long)mem->npages * PAGE_SIZE;
+-		slot_end = slot->addr + (unsigned long)slot->npages * PAGE_SIZE;
+-
+-		if (is_intersecting_address(mem->addr, slot->addr, slot_end) ||
+-		    is_intersecting_address(mem_end - 1, slot->addr, slot_end))
+-			return 1;
+-		if (is_intersecting_address(slot->addr, mem->addr, mem_end) ||
+-		    is_intersecting_address(slot_end - 1, mem->addr, mem_end))
+-			return 1;
+-	}
+-
+-	return 0;
+-}
++long ksm_register_memory(struct vm_area_struct *vma, unsigned long start,
++			 unsigned long end)
+ 
+-static int ksm_sma_ioctl_register_memory_region(struct ksm_sma *ksm_sma,
+-						struct ksm_memory_region *mem)
+ {
+ 	struct ksm_mem_slot *slot;
++	int npages = (end - start) >> PAGE_SHIFT;
+ 	int ret = -EPERM;
+ 
+-	if (!mem->npages)
+-		goto out;
+-
+-	down_write(&slots_lock);
+-
+-	if ((ksm_sma->nregions + 1) > regions_per_fd) {
+-		ret = -EBUSY;
+-		goto out_unlock;
+-	}
+-
+-	if (is_overlap_mem(mem))
+-		goto out_unlock;
+-
+ 	slot = kzalloc(sizeof(struct ksm_mem_slot), GFP_KERNEL);
+ 	if (!slot) {
+ 		ret = -ENOMEM;
+-		goto out_unlock;
++		goto out;
+ 	}
+ 
+-	/*
+-	 * We will hold refernce to the task_mm untill the file descriptor
+-	 * will be closed, or KSM_REMOVE_MEMORY_REGION will be called.
+-	 */
+ 	slot->mm = get_task_mm(current);
+ 	if (!slot->mm)
+ 		goto out_free;
+-	slot->addr = mem->addr;
+-	slot->npages = mem->npages;
++	slot->addr = start;
++	slot->npages = npages;
++
++	down_write(&slots_lock);
+ 
+ 	list_add_tail(&slot->link, &slots);
+-	list_add_tail(&slot->sma_link, &ksm_sma->sma_slots);
+-	ksm_sma->nregions++;
+ 
+ 	up_write(&slots_lock);
+ 	return 0;
+ 
+ out_free:
+ 	kfree(slot);
+-out_unlock:
+-	up_write(&slots_lock);
+ out:
+ 	return ret;
+ }
+@@ -554,20 +493,18 @@ static void remove_slot_from_hash_and_tr
+ 	list_del(&slot->link);
+ }
+ 
+-static int ksm_sma_ioctl_remove_memory_region(struct ksm_sma *ksm_sma,
+-					      unsigned long addr)
++long ksm_unregister_memory(struct vm_area_struct *vma, unsigned long start,
++			   unsigned long end)
+ {
+ 	int ret = -EFAULT;
+ 	struct ksm_mem_slot *slot, *node;
+ 
+ 	down_write(&slots_lock);
+-	list_for_each_entry_safe(slot, node, &ksm_sma->sma_slots, sma_link) {
+-		if (addr == slot->addr) {
++	list_for_each_entry_safe(slot, node, &slots, link) {
++		if (vma->vm_mm == slot->mm && start == slot->addr) {
+ 			remove_slot_from_hash_and_tree(slot);
+ 			mmput(slot->mm);
+-			list_del(&slot->sma_link);
+ 			kfree(slot);
+-			ksm_sma->nregions--;
+ 			ret = 0;
+ 		}
+ 	}
+@@ -575,52 +512,6 @@ static int ksm_sma_ioctl_remove_memory_r
+ 	return ret;
+ }
+ 
+-static int ksm_sma_release(struct inode *inode, struct file *filp)
+-{
+-	struct ksm_mem_slot *slot, *node;
+-	struct ksm_sma *ksm_sma = filp->private_data;
+-
+-	down_write(&slots_lock);
+-	list_for_each_entry_safe(slot, node, &ksm_sma->sma_slots, sma_link) {
+-		remove_slot_from_hash_and_tree(slot);
+-		mmput(slot->mm);
+-		list_del(&slot->sma_link);
+-		kfree(slot);
+-	}
+-	up_write(&slots_lock);
+-
+-	kfree(ksm_sma);
+-	return 0;
+-}
+-
+-static long ksm_sma_ioctl(struct file *filp,
+-			  unsigned int ioctl, unsigned long arg)
+-{
+-	struct ksm_sma *sma = filp->private_data;
+-	void __user *argp = (void __user *)arg;
+-	int r = EINVAL;
+-
+-	switch (ioctl) {
+-	case KSM_REGISTER_MEMORY_REGION: {
+-		struct ksm_memory_region ksm_memory_region;
+-
+-		r = -EFAULT;
+-		if (copy_from_user(&ksm_memory_region, argp,
+-				   sizeof(ksm_memory_region)))
+-			goto out;
+-		r = ksm_sma_ioctl_register_memory_region(sma,
+-							 &ksm_memory_region);
+-		break;
+-	}
+-	case KSM_REMOVE_MEMORY_REGION:
+-		r = ksm_sma_ioctl_remove_memory_region(sma, arg);
+-		break;
+-	}
+-
+-out:
+-	return r;
+-}
+-
+ static int memcmp_pages(struct page *page1, struct page *page2)
+ {
+ 	char *addr1, *addr2;
+@@ -1437,67 +1328,6 @@ out:
+ 	return ret;
+ }
+ 
+-static const struct file_operations ksm_sma_fops = {
+-	.release        = ksm_sma_release,
+-	.unlocked_ioctl = ksm_sma_ioctl,
+-	.compat_ioctl   = ksm_sma_ioctl,
+-};
+-
+-static int ksm_dev_ioctl_create_shared_memory_area(void)
+-{
+-	int fd = -1;
+-	struct ksm_sma *ksm_sma;
+-
+-	ksm_sma = kmalloc(sizeof(struct ksm_sma), GFP_KERNEL);
+-	if (!ksm_sma) {
+-		fd = -ENOMEM;
+-		goto out;
+-	}
+-
+-	INIT_LIST_HEAD(&ksm_sma->sma_slots);
+-	ksm_sma->nregions = 0;
+-
+-	fd = anon_inode_getfd("ksm-sma", &ksm_sma_fops, ksm_sma, 0);
+-	if (fd < 0)
+-		goto out_free;
+-
+-	return fd;
+-out_free:
+-	kfree(ksm_sma);
+-out:
+-	return fd;
+-}
+-
+-static long ksm_dev_ioctl(struct file *filp,
+-			  unsigned int ioctl, unsigned long arg)
+-{
+-	long r = -EINVAL;
+-
+-	switch (ioctl) {
+-	case KSM_GET_API_VERSION:
+-		r = KSM_API_VERSION;
+-		break;
+-	case KSM_CREATE_SHARED_MEMORY_AREA:
+-		r = ksm_dev_ioctl_create_shared_memory_area();
+-		break;
+-	default:
+-		break;
+-	}
+-	return r;
+-}
+-
+-static const struct file_operations ksm_chardev_ops = {
+-	.unlocked_ioctl = ksm_dev_ioctl,
+-	.compat_ioctl   = ksm_dev_ioctl,
+-	.owner          = THIS_MODULE,
+-};
+-
+-static struct miscdevice ksm_dev = {
+-	KSM_MINOR,
+-	"ksm",
+-	&ksm_chardev_ops,
+-};
+-
+ int ksm_scan_thread(void *nothing)
+ {
+ 	while (!kthread_should_stop()) {
+@@ -1708,23 +1538,15 @@ static int __init ksm_init(void)
+ 		goto out_free2;
+ 	}
+ 
+-	r = misc_register(&ksm_dev);
+-	if (r) {
+-		printk(KERN_ERR "ksm: misc device register failed\n");
+-		goto out_free3;
+-	}
+-
+ 	r = sysfs_create_group(mm_kobj, &ksm_attr_group);
+ 	if (r) {
+ 		printk(KERN_ERR "ksm: register sysfs failed\n");
+-		goto out_free4;
++		goto out_free3;
+ 	}
+ 
+ 	printk(KERN_WARNING "ksm loaded\n");
+ 	return 0;
+ 
+-out_free4:
+-	misc_deregister(&ksm_dev);
+ out_free3:
+ 	kthread_stop(ksm_thread);
+ out_free2:
+@@ -1738,7 +1560,6 @@ out:
+ static void __exit ksm_exit(void)
+ {
+ 	sysfs_remove_group(mm_kobj, &ksm_attr_group);
+-	misc_deregister(&ksm_dev);
+ 	ksmd_flags = ksm_control_flags_run;
+ 	kthread_stop(ksm_thread);
+ 	rmap_hash_free();
+--- a/mm/madvise.c
++++ b/mm/madvise.c
+@@ -11,6 +11,7 @@
+ #include <linux/mempolicy.h>
+ #include <linux/hugetlb.h>
+ #include <linux/sched.h>
++#include <linux/ksm.h>
+ 
+ /*
+  * Any behaviour which results in changes to the vma->vm_flags needs to
+@@ -23,6 +24,8 @@ static int madvise_need_mmap_write(int b
+ 	case MADV_REMOVE:
+ 	case MADV_WILLNEED:
+ 	case MADV_DONTNEED:
++	case MADV_SHAREABLE:
++	case MADV_UNSHAREABLE:
+ 		return 0;
+ 	default:
+ 		/* be safe, default to 1. list exceptions explicitly */
+@@ -207,6 +210,26 @@ static long madvise_remove(struct vm_are
+ 	return error;
+ }
+ 
++/*
++ * Application allows pages to be shared with other pages of identical
++ * content.
++ *
++ */
++static long madvise_shareable(struct vm_area_struct *vma,
++				struct vm_area_struct **prev,
++				unsigned long start, unsigned long end,
++				int behavior)
++{
++	switch (behavior) {
++	case MADV_SHAREABLE:
++		return ksm_register_memory(vma, start, end);
++	case MADV_UNSHAREABLE:
++		return ksm_unregister_memory(vma, start, end);
++	default:
++		return -EINVAL;
++	}
++}
++
+ static long
+ madvise_vma(struct vm_area_struct *vma, struct vm_area_struct **prev,
+ 		unsigned long start, unsigned long end, int behavior)
+@@ -237,6 +260,10 @@ madvise_vma(struct vm_area_struct *vma, 
+ 		error = madvise_dontneed(vma, prev, start, end);
+ 		break;
+ 
++	case MADV_SHAREABLE:
++	case MADV_UNSHAREABLE:
++		error = madvise_shareable(vma, prev, start, end, behavior);
++		break;
+ 	default:
+ 		error = -EINVAL;
+ 		break;
+@@ -268,6 +295,8 @@ madvise_vma(struct vm_area_struct *vma, 
+  *		so the kernel can free resources associated with it.
+  *  MADV_REMOVE - the application wants to free up the given range of
+  *		pages and associated backing store.
++ *  MADV_SHAREABLE - the application agrees that pages in the given
++ *		range can be shared w/ other pages of identical content.
+  *
+  * return values:
+  *  zero    - success
