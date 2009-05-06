@@ -1,109 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754115AbZEFIB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755955AbZEFIC3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754115AbZEFIB5 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 04:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752700AbZEFIBq
+	id S1755955AbZEFIC3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 04:02:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757061AbZEFIBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 04:01:46 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:32881 "EHLO mx3.mail.elte.hu"
+	Wed, 6 May 2009 04:01:52 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:59184 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752032AbZEFIBp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 04:01:45 -0400
-Date: Wed, 6 May 2009 10:00:50 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, Roland McGrath <roland@redhat.com>,
-       linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 3/3a] ptrace: add _ptrace_may_access()
-Message-ID: <20090506080050.GF17457@elte.hu>
-References: <20090505224729.GA965@redhat.com>
+	id S1757567AbZEFIBv convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 04:01:51 -0400
+From: "Gadiyar, Anand" <gadiyar@ti.com>
+To: Jarkko Lavinen <jarkko.lavinen@nokia.com>
+CC: "pierre@ossman.eu" <pierre@ossman.eu>, Tony Lindgren <tony@atomide.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "linux-omap@vger.kernel.org" <linux-omap@vger.kernel.org>
+Date: Wed, 6 May 2009 13:31:29 +0530
+Subject: RE: [PATCH] OMAP: HSMMC: Do not enable buffer ready interrupt if
+	using DMA
+Thread-Topic: [PATCH] OMAP: HSMMC: Do not enable buffer ready interrupt if
+	using DMA
+Thread-Index: AcnNZ/m5/8MKE+GxRGWQOER2Yy6DygAuIxug
+Message-ID: <5A47E75E594F054BAF48C5E4FC4B92AB030555A1A2@dbde02.ent.ti.com>
+In-Reply-To: <20090505095721.GA12287@angel.research.nokia.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090505224729.GA965@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, May 5, 2009, Jarkko Lavinen wrote: 
+> On Tue, Apr 21, 2009 at 09:39:22AM +0200, ext Gadiyar, Anand wrote:
+> > From: Anand Gadiyar <gadiyar@ti.com>
+> > 
+> > OMAP: HSMMC: Do not enable buffer ready interrupt if using DMA
+> > 
+> > This considerably reduces the number of interrupts during a transfer
+> > and ought to result in some power saving.
+> 
+> I tried the patch with reading from the raw mmc block device to
+> /dev/null with dd (with bs 32k and 1M).  I cannot see any
+> difference in interrupt count from /proc/interrupts or in read
+> speed. At least the patch works. Cpu was 34340es3.
+> 
+> I also trid without the patch just disabling the Buffer
+> Read/write Ready bits from INT_EN_MASK which is then written to
+> both MMCHS_IE and MMCHS_ISE.  Still no change in read speed nor
+> mmc irq count.
+> 
+> Cheers
+> Jarkko Lavinen
 
-* Oleg Nesterov <oleg@redhat.com> wrote:
+I discovered this while doing MMC writes. I did not check if there
+was any difference during a read. I notice you have only tested with
+MMC reads.
 
-> +	task_lock(task);
->  	retval = __ptrace_may_access(task, PTRACE_MODE_ATTACH);
-> +	task_unlock(task);
->  	if (retval)
-> -		goto bad;
-> +		goto unlock_creds;
+Here's what I get with and without the patch.
 
-Hm, that's a bit ugly - why dont you reuse ptrace_may_access(), 
-which does much of this already?
+- Anand
 
-That way we could save a little bit of code size.
+Without patch
+/ # mount -t vfat /dev/mmcblk0 /mnt/mmc
+/ # cat /proc/interrupts | grep mmc
+ 83:         90        INTC  mmc0
+384:          1     twl4030  mmc0
+/ # dd if=/dev/zero of=/mnt/mmc/32kbs.txt bs=32k count=1000
+1000+0 records in
+1000+0 records out
+/ # cat /proc/interrupts | grep mmc
+ 83:       3760        INTC  mmc0
+384:          1     twl4030  mmc0
+/ # dd if=/dev/zero of=/mnt/mmc/1Mbs.txt bs=1M count=32
+32+0 records in
+32+0 records out
+/ # cat /proc/interrupts | grep mmc
+ 83:       7570        INTC  mmc0
+384:          1     twl4030  mmc0
+/ # ls -l /mnt/mmc
+-rwxr-xr-x    1 root     root     33554432 Dec 31 18:03 1Mbs.txt
+-rwxr-xr-x    1 root     root     32768000 Dec 31 18:03 32kbs.txt
+/ # umount /mnt/mmc
 
-Something like the patch below allows the reuse of the locked 
-version of __ptrace_may_access and pushes the int->bool conversion 
-into an inline.
 
-Note that this will also be a micro-optimization: the compiler will 
-be able to eliminate the inlined negation in the call sites (most of 
-which use the value directly) - and thus we save the negation.
-
-( Untested - if you test it then it has my signoff. Patch also does 
-  a small cleanup in _ptrace_may_access() )
-
-Hm?
-
-	Ingo
-
-diff --git a/include/linux/ptrace.h b/include/linux/ptrace.h
-index 59e133d..2cc01ec 100644
---- a/include/linux/ptrace.h
-+++ b/include/linux/ptrace.h
-@@ -99,8 +99,13 @@ extern void exit_ptrace(struct task_struct *tracer);
- #define PTRACE_MODE_ATTACH 2
- /* Returns 0 on success, -errno on denial. */
- extern int __ptrace_may_access(struct task_struct *task, unsigned int mode);
--/* Returns true on success, false on denial. */
--extern bool ptrace_may_access(struct task_struct *task, unsigned int mode);
-+/* Also takes the task lock: */
-+extern int _ptrace_may_access(struct task_struct *task, unsigned int mode);
-+/* True on success, false on denial: */
-+static inline bool ptrace_may_access(struct task_struct *task, unsigned int mode)
-+{
-+	return !_ptrace_may_access(task, mode);
-+}
- 
- static inline int ptrace_reparented(struct task_struct *child)
- {
-diff --git a/kernel/ptrace.c b/kernel/ptrace.c
-index e950805..f7efcc9 100644
---- a/kernel/ptrace.c
-+++ b/kernel/ptrace.c
-@@ -155,13 +155,15 @@ int __ptrace_may_access(struct task_struct *task, unsigned int mode)
- 	return security_ptrace_may_access(task, mode);
- }
- 
--bool ptrace_may_access(struct task_struct *task, unsigned int mode)
-+int _ptrace_may_access(struct task_struct *task, unsigned int mode)
- {
- 	int err;
-+
- 	task_lock(task);
- 	err = __ptrace_may_access(task, mode);
- 	task_unlock(task);
--	return !err;
-+
-+	return err;
- }
- 
- int ptrace_attach(struct task_struct *task)
+With patch
+/ # mount -t vfat /dev/mmcblk0 /mnt/mmc
+/ # cat /proc/interrupts | grep mmc
+ 83:         67        INTC  mmc0
+384:          0     twl4030  mmc0
+/ # dd if=/dev/zero of=/mnt/mmc/32kbs.txt bs=32k count=1000
+1000+0 records in
+1000+0 records out
+/ # cat /proc/interrupts | grep mmc
+ 83:       3103        INTC  mmc0
+384:          0     twl4030  mmc0
+/ # dd if=/dev/zero of=/mnt/mmc/1Mbs.txt bs=1M count=32
+32+0 records in
+32+0 records out
+/ # cat /proc/interrupts | grep mmc
+ 83:       6170        INTC  mmc0
+384:          0     twl4030  mmc0
+/ # ls -l /mnt/mmc
+-rwxr-xr-x    1 root     root     33554432 Dec 31 18:01 1Mbs.txt
+-rwxr-xr-x    1 root     root     32768000 Dec 31 18:00 32kbs.txt
+/ # umount /mnt/mmc
