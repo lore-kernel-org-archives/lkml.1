@@ -1,56 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758739AbZEFLo7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758525AbZEFLyq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758739AbZEFLo7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 07:44:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759198AbZEFLoi
+	id S1758525AbZEFLyq (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 07:54:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755351AbZEFLyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 07:44:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47297 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758432AbZEFLoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 07:44:37 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090505151520.070c84c1.akpm@linux-foundation.org>
-References: <20090505151520.070c84c1.akpm@linux-foundation.org> <20090505212638.17034.10989.stgit@warthog.procyon.org.uk> <20090505212648.17034.18375.stgit@warthog.procyon.org.uk>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: dhowells@redhat.com, torvalds@linux-foundation.org, npiggin@suse.de,
-       gerg@snapgear.com, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] NOMMU: Make the initial mmap allocation excess behaviour Kconfig configurable
-Date: Wed, 06 May 2009 12:42:41 +0100
-Message-ID: <23252.1241610161@redhat.com>
+	Wed, 6 May 2009 07:54:35 -0400
+Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:59474 "EHLO
+	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754851AbZEFLyf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 07:54:35 -0400
+Subject: Re: [PATCH] do_wait: do take security_task_wait() into account
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: James Morris <jmorris@namei.org>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       David Howells <dhowells@redhat.com>, Eric Paris <eparis@parisplace.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.LRH.2.00.0905010851270.28491@tundra.namei.org>
+References: <20090428223025.GA11997@redhat.com>
+	 <20090428233305.GA14221@redhat.com> <20090429160123.GA4591@redhat.com>
+	 <alpine.LRH.2.00.0905010851270.28491@tundra.namei.org>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Wed, 06 May 2009 07:46:47 -0400
+Message-Id: <1241610407.27629.8.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton <akpm@linux-foundation.org> wrote:
-
-> Nasty problem.
-
-Yes.  That's part of the fun of the NOMMU world.  It has many of the same
-problems as the MMU world - just more exaggerated.
-
-> > -int sysctl_nr_trim_pages = 1; /* page trimming behaviour */
-> > +int sysctl_nr_trim_pages = CONFIG_NOMMU_INITIAL_TRIM_EXCESS;
-> >  int heap_stack_gap = 0;
-> >  
+On Fri, 2009-05-01 at 08:51 +1000, James Morris wrote:
+> On Wed, 29 Apr 2009, Oleg Nesterov wrote:
 > 
-> But there's a risk of -ENOMEM regression on other system here?
-
-There shouldn't be (assuming you mean with this patch), the default is the
-same as the original value.
-
-> It's unlikely to be a huge problem for real-world embedded developers,
-> as long as they know about this change.  And because you set the
-> Kconfig default to "no change" then I guess they'll be none the wiser.
+> > I was never able to understand what should we actually do when
+> > security_task_wait() fails, but the current code doesn't look right.
+> > 
+> > If ->task_wait() returns the error, we update *notask_error correctly.
+> > But then we either reap the child (despite the fact this was forbidden)
+> > or clear *notask_error (and hide the securiy policy problems).
+> > 
+> > This patch assumes that "stolen by ptrace" doesn't matter. If selinux
+> > denies the child we should ignore it but make sure we report -EACCESS
+> > instead of -ECHLD if there are no other eligible children.
+> > 
+> > Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 > 
-> I think that patches 2 and 3 (and #1 unless I reorder and redo things)
-> are 2.6.30 material.  Agree?
+> Applied to: 
+> git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
 
-Assuming you mean go in before 2.6.30 is cut, then yes.  If you want, I can
-reorder the patches to put #1 last.
+FWIW, I confirmed that this corrected a FAIL in the ltp selinux
+testsuite (wait test).
 
-David
+Tested-by:  Stephen Smalley <sds@tycho.nsa.gov>
+
+-- 
+Stephen Smalley
+National Security Agency
+
