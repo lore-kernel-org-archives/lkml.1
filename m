@@ -1,79 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761115AbZEFXEl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757270AbZEFXTr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761115AbZEFXEl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 19:04:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752447AbZEFXEc
+	id S1757270AbZEFXTr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 19:19:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751420AbZEFXTi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 19:04:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42155 "EHLO mx2.redhat.com"
+	Wed, 6 May 2009 19:19:38 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50489 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751915AbZEFXEb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 19:04:31 -0400
-Message-ID: <4A0216CA.3070106@ds.jp.nec.com>
-Date: Wed, 06 May 2009 19:01:30 -0400
-From: "IKEDA, Munehiro" <m-ikeda@ds.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20090105)
+	id S1751041AbZEFXTi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 19:19:38 -0400
+Date: Thu, 7 May 2009 01:13:32 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
+       James Morris <jmorris@namei.org>
+Subject: Re: [PATCH 3/3] ptrace: do not use task_lock() for attach
+Message-ID: <20090506231332.GA3756@redhat.com>
+References: <20090505224729.GA965@redhat.com> <20090506224650.GZ3036@sequoia.sous-sol.org>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 18/18] io-controller: Debug hierarchical IO scheduling
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-19-git-send-email-vgoyal@redhat.com> <4A0203DB.1090809@ds.jp.nec.com> <20090506215833.GK8180@redhat.com> <4A020CD5.2000308@ds.jp.nec.com> <20090506222458.GM8180@redhat.com>
-In-Reply-To: <20090506222458.GM8180@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506224650.GZ3036@sequoia.sous-sol.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Wed, May 06, 2009 at 06:19:01PM -0400, IKEDA, Munehiro wrote:
->> Hi,
->>
->> Vivek Goyal wrote:
->>> Hi Ikeda,
->>>
->>> I think there is some issue with applying the patch. I think you have
->>> forgotten to apply following patch and that's why seeing all the issues.
->>>
->>> "io-controller: Export disk time used and nr sectors dipatched through
->>> cgroups"
->>>
->>> This patch changes elv_ioq_served() at the same time introduced additional
->>> field of total_sector_service etc.
->>>
->>> Thanks
->>> Vivek
->> Oh!  you are right.  I missed it because it is out of the
->> thread...
-> 
-> That's strange. In "mutt" I see this patch (patch number 7) as part of the
-> thread. Which mail client are you using. Not sure if it is mail client
-> specific thing or some issue with my way of using "git-send-email".
-> 
-> Thanks
-> Vivek
+On 05/06, Chris Wright wrote:
+>
+> * Oleg Nesterov (oleg@redhat.com) wrote:
+> > +	write_lock_irq(&tasklist_lock);
+> >  	retval = -EPERM;
+> >  	if (unlikely(task->exit_state))
+> > -		goto bad;
+> > +		goto unlock_tasklist;
+> >  	if (task->ptrace)
+> > -		goto bad;
+> > +		goto unlock_tasklist;
+>
+> So, task->ptrace now protected by tasklist_lock to keep concurrent tracers
+> from both attaching to same task?
 
-I'm using a little bit old Thunderbird (ver.2.0.0).
-I believe you are completely doing right because In-Reply-To
-in the mail header of patch #7 correctly points the first
-mail.
+Yes,
 
-The mail of patch #7 seems to have slightly earlier time stamp
-than the first mail.  Poor Thunderbird might be confused by this,
-in my wild guess.
+> (re-oredered)
+>
+> What do you think?
 
-Sorry for confusing you.
+I think I need your help!
 
+> What does this do for setprocattr()?
+>
+>                 task_lock(p);
+>                 tracer = tracehook_tracer_task(p);
+>                 if (tracer)
+>                         ptsid = task_sid(tracer);
+>                 task_unlock(p);
+>
+> Looks like it is racy.
 
--- 
-IKEDA, Munehiro
-  NEC Corporation of America
-    m-ikeda@ds.jp.nec.com
+Looks like you are right, but I don't understand selinux at all.
+
+> cpu1 (tracer)				cpu2 (tracee, changing sid)
+> -------------				---------------------------
+> task_lock(tracee);
+> __ptrace_may_access(tracee, ATTACH);
+> task_unlock(tracee);
+> 					task_lock(tracee)
+> <security check passes>			tracer = tracehook_tracer_task(tracee);
+> 					if (tracer) <-- NULL, !tracee->ptrace
+> 					...
+> 					update sid w/out checking against tracer
+> write_lock_irq(&tasklist_lock);
+> ...
+> tracee->ptrace = PT_PTRACED;
+> ...
+> now we are tracing task w/ a sid
+> that we didn't authorize to trace
+
+But this can happen without this change too?
+
+- cpu2 takes task_lock(), tracehook_tracer_task() returns NULL because
+  we are not traced yet.
+
+- cpu1 does ptrace_attach() and succeds, because cpu2 didn't update sid
+  yet
+
+- cpu2 continues, it doesn't check avc_has_perm() (tracer == 0) and
+  updates sid.
+
+No?
+
+Shouldn't selinux_setprocattr() take ->cred_exec_mutex, like we do in
+selinux_bprm_set_creds() path?
+
+Oleg.
 
