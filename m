@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761898AbZEFWwX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762148AbZEFWwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761898AbZEFWwX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:52:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbZEFWu4
+	id S1762148AbZEFWwl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753884AbZEFWu4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Wed, 6 May 2009 18:50:56 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:60879 "EHLO ogre.sisk.pl"
+Received: from ogre.sisk.pl ([217.79.144.158]:60883 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752610AbZEFWuy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1752717AbZEFWuy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 6 May 2009 18:50:54 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [RFC][PATCH 3/5] PM/Hibernate: Move memory shrinking to snapshot.c (rev. 2)
-Date: Thu, 7 May 2009 00:42:58 +0200
+Subject: [RFC][PATCH 4/5] PM/Hibernate: Rework shrinking of memory
+Date: Thu, 7 May 2009 00:44:13 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
 Cc: Wu Fengguang <fengguang.wu@intel.com>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -25,198 +25,107 @@ Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905070042.59533.rjw@sisk.pl>
+Message-Id: <200905070044.13857.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-The next patch is going to modify the memory shrinking code so that
-it will make memory allocations to free memory instead of using an
-artificial memory shrinking mechanism for that.  For this purpose it
-is convenient to move swsusp_shrink_memory() from
-kernel/power/swsusp.c to kernel/power/snapshot.c, because the new
-memory-shrinking code is going to use things that are local to
-kernel/power/snapshot.c .
+Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
+just once to make some room for the image and then allocates memory
+to apply more pressure to the memory management subsystem, if
+necessary.
 
-[rev. 2: Make some functions static and remove their headers from
- kernel/power/power.h]
+Unfortunately, we don't seem to be able to drop shrink_all_memory()
+entirely just yet, because that would lead to huge performance
+regressions in some test cases.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-Acked-by: Pavel Machek <pavel@ucw.cz>
 ---
- kernel/power/power.h    |    4 --
- kernel/power/snapshot.c |   80 ++++++++++++++++++++++++++++++++++++++++++++++--
- kernel/power/swsusp.c   |   76 ---------------------------------------------
- 3 files changed, 79 insertions(+), 81 deletions(-)
+ kernel/power/snapshot.c |  145 ++++++++++++++++++++++++++++++++----------------
+ 1 file changed, 98 insertions(+), 47 deletions(-)
 
 Index: linux-2.6/kernel/power/snapshot.c
 ===================================================================
 --- linux-2.6.orig/kernel/power/snapshot.c
 +++ linux-2.6/kernel/power/snapshot.c
-@@ -39,6 +39,14 @@ static int swsusp_page_is_free(struct pa
- static void swsusp_set_page_forbidden(struct page *);
- static void swsusp_unset_page_forbidden(struct page *);
- 
-+/*
-+ * Preferred image size in bytes (tunable via /sys/power/image_size).
-+ * When it is set to N, swsusp will do its best to ensure the image
-+ * size will not exceed N bytes, but if that is impossible, it will
-+ * try to create the smallest image possible.
-+ */
-+unsigned long image_size = 500 * 1024 * 1024;
-+
- /* List of PBEs needed for restoring the pages that were allocated before
-  * the suspend and included in the suspend image, but have also been
-  * allocated by the "resume" kernel, so their contents cannot be written
-@@ -840,7 +848,7 @@ static struct page *saveable_highmem_pag
-  *	pages.
-  */
- 
--unsigned int count_highmem_pages(void)
-+static unsigned int count_highmem_pages(void)
- {
- 	struct zone *zone;
- 	unsigned int n = 0;
-@@ -902,7 +910,7 @@ static struct page *saveable_page(struct
-  *	pages.
-  */
- 
--unsigned int count_data_pages(void)
-+static unsigned int count_data_pages(void)
- {
- 	struct zone *zone;
- 	unsigned long pfn, max_zone_pfn;
-@@ -1058,6 +1066,74 @@ void swsusp_free(void)
+@@ -1066,69 +1066,120 @@ void swsusp_free(void)
  	buffer = NULL;
  }
  
-+/**
-+ *	swsusp_shrink_memory -  Try to free as much memory as needed
-+ *
-+ *	... but do not OOM-kill anyone
-+ *
-+ *	Notice: all userland should be stopped before it is called, or
-+ *	livelock is possible.
-+ */
++/* Helper functions used for the shrinking of memory. */
 +
-+#define SHRINK_BITE	10000
-+static inline unsigned long __shrink_memory(long tmp)
-+{
-+	if (tmp > SHRINK_BITE)
-+		tmp = SHRINK_BITE;
-+	return shrink_all_memory(tmp);
-+}
-+
-+int swsusp_shrink_memory(void)
-+{
-+	long tmp;
-+	struct zone *zone;
-+	unsigned long pages = 0;
-+	unsigned int i = 0;
-+	char *p = "-\\|/";
-+	struct timeval start, stop;
-+
-+	printk(KERN_INFO "PM: Shrinking memory...  ");
-+	do_gettimeofday(&start);
-+	do {
-+		long size, highmem_size;
-+
-+		highmem_size = count_highmem_pages();
-+		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
-+		tmp = size;
-+		size += highmem_size;
-+		for_each_populated_zone(zone) {
-+			tmp += snapshot_additional_pages(zone);
-+			if (is_highmem(zone)) {
-+				highmem_size -=
-+					zone_page_state(zone, NR_FREE_PAGES);
-+			} else {
-+				tmp -= zone_page_state(zone, NR_FREE_PAGES);
-+				tmp += zone->lowmem_reserve[ZONE_NORMAL];
-+			}
-+		}
-+
-+		if (highmem_size < 0)
-+			highmem_size = 0;
-+
-+		tmp += highmem_size;
-+		if (tmp > 0) {
-+			tmp = __shrink_memory(tmp);
-+			if (!tmp)
-+				return -ENOMEM;
-+			pages += tmp;
-+		} else if (size > image_size / PAGE_SIZE) {
-+			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
-+			pages += tmp;
-+		}
-+		printk("\b%c", p[i++%4]);
-+	} while (tmp > 0);
-+	do_gettimeofday(&stop);
-+	printk("\bdone (%lu pages freed)\n", pages);
-+	swsusp_show_speed(&start, &stop, pages, "Freed");
-+
-+	return 0;
-+}
-+
- #ifdef CONFIG_HIGHMEM
  /**
-   *	count_pages_for_highmem - compute the number of non-highmem pages
-Index: linux-2.6/kernel/power/swsusp.c
-===================================================================
---- linux-2.6.orig/kernel/power/swsusp.c
-+++ linux-2.6/kernel/power/swsusp.c
-@@ -55,14 +55,6 @@
- 
- #include "power.h"
- 
--/*
-- * Preferred image size in bytes (tunable via /sys/power/image_size).
-- * When it is set to N, swsusp will do its best to ensure the image
-- * size will not exceed N bytes, but if that is impossible, it will
-- * try to create the smallest image possible.
-- */
--unsigned long image_size = 500 * 1024 * 1024;
--
- int in_suspend __nosavedata = 0;
- 
- /**
-@@ -195,74 +187,6 @@ void swsusp_show_speed(struct timeval *s
- 			kps / 1000, (kps % 1000) / 10);
- }
- 
--/**
 - *	swsusp_shrink_memory -  Try to free as much memory as needed
 - *
 - *	... but do not OOM-kill anyone
-- *
++ * preallocate_image_memory - Allocate given number of page frames
++ * @nr_pages: Number of page frames to allocate
+  *
 - *	Notice: all userland should be stopped before it is called, or
 - *	livelock is possible.
-- */
++ * Return value: Number of page frames actually allocated
+  */
 -
 -#define SHRINK_BITE	10000
 -static inline unsigned long __shrink_memory(long tmp)
--{
++static unsigned long preallocate_image_memory(unsigned long nr_pages)
+ {
 -	if (tmp > SHRINK_BITE)
 -		tmp = SHRINK_BITE;
 -	return shrink_all_memory(tmp);
--}
--
--int swsusp_shrink_memory(void)
--{
++	unsigned long nr_alloc = 0;
++
++	while (nr_pages-- > 0) {
++		struct page *page;
++
++		page = alloc_image_page(GFP_KERNEL | __GFP_NOWARN);
++		if (!page)
++			break;
++		nr_alloc++;
++	}
++
++	return nr_alloc;
+ }
+ 
++/**
++ * swsusp_shrink_memory -  Make the kernel release as much memory as needed
++ *
++ * To create a hibernation image it is necessary to make a copy of every page
++ * frame in use.  We also need a number of page frames to be free during
++ * hibernation for allocations made while saving the image and for device
++ * drivers, in case they need to allocate memory from their hibernation
++ * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
++ * respectively, both of which are rough estimates).  To make this happen, we
++ * compute the total number of available page frames and allocate at least
++ *
++ * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
++ *
++ * of them, which corresponds to the maximum size of a hibernation image.
++ *
++ * If image_size is set below the number following from the above formula,
++ * the preallocation of memory is continued until the total number of page
++ * frames in use is below the requested image size or it is impossible to
++ * allocate more memory, whichever happens first.
++ */
+ int swsusp_shrink_memory(void)
+ {
 -	long tmp;
--	struct zone *zone;
+ 	struct zone *zone;
 -	unsigned long pages = 0;
 -	unsigned int i = 0;
 -	char *p = "-\\|/";
--	struct timeval start, stop;
--
++	unsigned long saveable, size, max_size, count, pages = 0;
+ 	struct timeval start, stop;
++	int error = 0;
+ 
 -	printk(KERN_INFO "PM: Shrinking memory...  ");
--	do_gettimeofday(&start);
++	printk(KERN_INFO "PM: Shrinking memory ... ");
+ 	do_gettimeofday(&start);
 -	do {
 -		long size, highmem_size;
--
+ 
 -		highmem_size = count_highmem_pages();
 -		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
 -		tmp = size;
@@ -231,10 +140,36 @@ Index: linux-2.6/kernel/power/swsusp.c
 -				tmp += zone->lowmem_reserve[ZONE_NORMAL];
 -			}
 -		}
--
++	/* Count the number of saveable data pages. */
++	saveable = count_data_pages() + count_highmem_pages();
++
++	/*
++	 * Compute the total number of page frames we can use (count) and the
++	 * number of pages needed for image metadata (size).
++	 */
++	count = saveable;
++	size = 0;
++	for_each_populated_zone(zone) {
++		size += snapshot_additional_pages(zone);
++		count += zone_page_state(zone, NR_FREE_PAGES);
++		if (!is_highmem(zone))
++			count -= zone->lowmem_reserve[ZONE_NORMAL];
++	}
+ 
 -		if (highmem_size < 0)
 -			highmem_size = 0;
--
++	/* Compute the maximum number of saveable pages to leave in memory. */
++	max_size = (count - (size + PAGES_FOR_IO)) / 2 - 2 * SPARE_PAGES;
++	size = DIV_ROUND_UP(image_size, PAGE_SIZE);
++	if (size > max_size)
++		size = max_size;
++	/*
++	 * If the maximum is not lesser than the current number of saveable
++	 * pages in memory, we don't need to do anything more.
++	 */
++	if (size >= saveable)
++		goto out;
+ 
 -		tmp += highmem_size;
 -		if (tmp > 0) {
 -			tmp = __shrink_memory(tmp);
@@ -247,42 +182,39 @@ Index: linux-2.6/kernel/power/swsusp.c
 -		}
 -		printk("\b%c", p[i++%4]);
 -	} while (tmp > 0);
--	do_gettimeofday(&stop);
++	/*
++	 * Let the memory management subsystem know that we're going to need a
++	 * large number of page frames to allocate and make it free some memory.
++	 * NOTE: If this is not done, performance is heavily affected in some
++	 * test cases.
++	 */
++	shrink_all_memory(saveable - size);
++
++	/*
++	 * The number of saveable pages in memory was too high, so apply some
++	 * pressure to decrease it.  First, make room for the largest possible
++	 * image and fail if that doesn't work.  Next, try to decrease the size
++	 * of the image as much as indicated by image_size.
++	 */
++	count -= max_size;
++	pages = preallocate_image_memory(count);
++	if (pages < count)
++		error = -ENOMEM;
++	else
++		pages += preallocate_image_memory(max_size - size);
++
++	/* Release all of the preallocated page frames. */
++	swsusp_free();
++
++	if (error) {
++		printk(KERN_CONT "\n");
++		return error;
++	}
++
++ out:
+ 	do_gettimeofday(&stop);
 -	printk("\bdone (%lu pages freed)\n", pages);
--	swsusp_show_speed(&start, &stop, pages, "Freed");
--
--	return 0;
--}
--
- /*
-  * Platforms, like ACPI, may want us to save some memory used by them during
-  * hibernation and to restore the contents of this memory during the subsequent
-Index: linux-2.6/kernel/power/power.h
-===================================================================
---- linux-2.6.orig/kernel/power/power.h
-+++ linux-2.6/kernel/power/power.h
-@@ -74,7 +74,7 @@ extern asmlinkage int swsusp_arch_resume
++	printk(KERN_CONT "done (preallocated %lu free pages)\n", pages);
+ 	swsusp_show_speed(&start, &stop, pages, "Freed");
  
- extern int create_basic_memory_bitmaps(void);
- extern void free_basic_memory_bitmaps(void);
--extern unsigned int count_data_pages(void);
-+extern int swsusp_shrink_memory(void);
- 
- /**
-  *	Auxiliary structure used for reading the snapshot image data and
-@@ -149,7 +149,6 @@ extern int swsusp_swap_in_use(void);
- 
- /* kernel/power/disk.c */
- extern int swsusp_check(void);
--extern int swsusp_shrink_memory(void);
- extern void swsusp_free(void);
- extern int swsusp_read(unsigned int *flags_p);
- extern int swsusp_write(unsigned int flags);
-@@ -176,7 +175,6 @@ extern int pm_notifier_call_chain(unsign
- #endif
- 
- #ifdef CONFIG_HIGHMEM
--unsigned int count_highmem_pages(void);
- int restore_highmem(void);
- #else
- static inline unsigned int count_highmem_pages(void) { return 0; }
+ 	return 0;
