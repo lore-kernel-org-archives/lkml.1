@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762314AbZEFWJH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761647AbZEFWJz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762314AbZEFWJH (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:09:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761526AbZEFVyx
+	id S1761647AbZEFWJz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:09:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761539AbZEFVyz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:54:53 -0400
-Received: from kroah.org ([198.145.64.141]:57228 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 17:54:55 -0400
+Received: from kroah.org ([198.145.64.141]:57249 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761396AbZEFVys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:54:48 -0400
+	id S1761491AbZEFVyu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:54:50 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed May  6 14:48:00 2009
-Message-Id: <20090506214759.983540885@mini.kroah.org>
+Message-Id: <20090506214800.297187308@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 14:46:02 -0700
+Date: Wed, 06 May 2009 14:46:04 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Hugh Dickins <hugh@veritas.com>
-Subject: [patch 34/58] fix setuid sometimes doesnt
+       alan@lxorguk.ukuu.org.uk, David Howells <dhowells@redhat.com>,
+       Hugh Dickins <hugh@veritas.com>
+Subject: [patch 36/58] Annotate struct fs_structs usage count restriction
 References: <20090506214528.660389067@mini.kroah.org>
-Content-Disposition: inline; filename=fix-setuid-sometimes-doesn-t.patch
+Content-Disposition: inline; filename=annotate-struct-fs_struct-s-usage-count-restriction.patch
 In-Reply-To: <20090506215017.GA21981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,104 +39,37 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Hugh Dickins <hugh@veritas.com>
+From: David Howells <dhowells@redhat.com>
 
-commit e426b64c412aaa3e9eb3e4b261dc5be0d5a83e78 upstream.
+commit 795e2fe0a3b69dbc040d7efcf517e0cbad6901d0 upstream.
 
-Joe Malicki reports that setuid sometimes doesn't: very rarely,
-a setuid root program does not get root euid; and, by the way,
-they have a health check running lsof every few minutes.
+Annotate struct fs_struct's usage count to indicate the restrictions upon it.
+It may not be incremented, except by clone(CLONE_FS), as this affects the
+check in check_unsafe_exec() in fs/exec.c.
 
-Right, check_unsafe_exec() notes whether the files_struct is being
-shared by more threads than will get killed by the exec, and if so
-sets LSM_UNSAFE_SHARE to make bprm_set_creds() careful about euid.
-But /proc/<pid>/fd and /proc/<pid>/fdinfo lookups make transient
-use of get_files_struct(), which also raises that sharing count.
-
-There's a rather simple fix for this: exec's check on files->count
-has been redundant ever since 2.6.1 made it unshare_files() (except
-while compat_do_execve() omitted to do so) - just remove that check.
-
-[Note to -stable: this patch will not apply before 2.6.29: earlier
-releases should just remove the files->count line from unsafe_exec().]
-
-Reported-by: Joe Malicki <jmalicki@metacarta.com>
-Narrowed-down-by: Michael Itz <mitz@metacarta.com>
-Tested-by: Joe Malicki <jmalicki@metacarta.com>
+Signed-off-by: David Howells <dhowells@redhat.com>
 Signed-off-by: Hugh Dickins <hugh@veritas.com>
 Cc: stable@kernel.org
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/compat.c   |    2 +-
- fs/exec.c     |   10 +++-------
- fs/internal.h |    2 +-
- 3 files changed, 5 insertions(+), 9 deletions(-)
+ include/linux/fs_struct.h |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
---- a/fs/compat.c
-+++ b/fs/compat.c
-@@ -1412,7 +1412,7 @@ int compat_do_execve(char * filename,
- 	bprm->cred = prepare_exec_creds();
- 	if (!bprm->cred)
- 		goto out_unlock;
--	check_unsafe_exec(bprm, current->files);
-+	check_unsafe_exec(bprm);
+--- a/include/linux/fs_struct.h
++++ b/include/linux/fs_struct.h
+@@ -4,7 +4,10 @@
+ #include <linux/path.h>
  
- 	file = open_exec(filename);
- 	retval = PTR_ERR(file);
---- a/fs/exec.c
-+++ b/fs/exec.c
-@@ -1049,28 +1049,24 @@ EXPORT_SYMBOL(install_exec_creds);
-  * - the caller must hold current->cred_exec_mutex to protect against
-  *   PTRACE_ATTACH
-  */
--void check_unsafe_exec(struct linux_binprm *bprm, struct files_struct *files)
-+void check_unsafe_exec(struct linux_binprm *bprm)
- {
- 	struct task_struct *p = current, *t;
- 	unsigned long flags;
--	unsigned n_fs, n_files, n_sighand;
-+	unsigned n_fs, n_sighand;
- 
- 	bprm->unsafe = tracehook_unsafe_exec(p);
- 
- 	n_fs = 1;
--	n_files = 1;
- 	n_sighand = 1;
- 	lock_task_sighand(p, &flags);
- 	for (t = next_thread(p); t != p; t = next_thread(t)) {
- 		if (t->fs == p->fs)
- 			n_fs++;
--		if (t->files == files)
--			n_files++;
- 		n_sighand++;
- 	}
- 
- 	if (atomic_read(&p->fs->count) > n_fs ||
--	    atomic_read(&p->files->count) > n_files ||
- 	    atomic_read(&p->sighand->count) > n_sighand)
- 		bprm->unsafe |= LSM_UNSAFE_SHARE;
- 
-@@ -1289,7 +1285,7 @@ int do_execve(char * filename,
- 	bprm->cred = prepare_exec_creds();
- 	if (!bprm->cred)
- 		goto out_unlock;
--	check_unsafe_exec(bprm, displaced);
-+	check_unsafe_exec(bprm);
- 
- 	file = open_exec(filename);
- 	retval = PTR_ERR(file);
---- a/fs/internal.h
-+++ b/fs/internal.h
-@@ -43,7 +43,7 @@ extern void __init chrdev_init(void);
- /*
-  * exec.c
-  */
--extern void check_unsafe_exec(struct linux_binprm *, struct files_struct *);
-+extern void check_unsafe_exec(struct linux_binprm *);
- 
- /*
-  * namespace.c
+ struct fs_struct {
+-	atomic_t count;
++	atomic_t count;	/* This usage count is used by check_unsafe_exec() for
++			 * security checking purposes - therefore it may not be
++			 * incremented, except by clone(CLONE_FS).
++			 */
+ 	rwlock_t lock;
+ 	int umask;
+ 	struct path root, pwd;
 
 
