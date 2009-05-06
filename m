@@ -1,79 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758953AbZEFION@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756352AbZEFIRW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758953AbZEFION (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 04:14:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757237AbZEFIMy
+	id S1756352AbZEFIRW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 04:17:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751978AbZEFIRI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 04:12:54 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:51032 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757379AbZEFIMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 04:12:52 -0400
-Date: Wed, 6 May 2009 10:12:25 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, jdike@addtoit.com,
-       utrace-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC, PATCH 0/2] utrace/ptrace: simplify/cleanup ptrace attach
-Message-ID: <20090506081225.GD8098@elte.hu>
-References: <20090503185537.GA17071@redhat.com> <20090504184951.623CEFC32F@magilla.sf.frob.com> <20090504193016.GA17076@redhat.com> <20090504194348.BC0EBFC32F@magilla.sf.frob.com> <20090504163154.f3672a83.akpm@linux-foundation.org> <20090505230642.GA980@redhat.com>
+	Wed, 6 May 2009 04:17:08 -0400
+Received: from [212.69.161.110] ([212.69.161.110]:56984 "EHLO
+	mail09.linbit.com" rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org
+	with ESMTP id S1751660AbZEFIRF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 04:17:05 -0400
+From: Philipp Reisner <philipp.reisner@linbit.com>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Subject: Re: [PATCH 00/16] DRBD: a block device for HA clusters
+Date: Wed, 6 May 2009 10:17:56 +0200
+User-Agent: KMail/1.11.0 (Linux/2.6.27-9-generic; KDE/4.2.0; i686; ; )
+Cc: david@lang.hm, Willy Tarreau <w@1wt.eu>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
+       Neil Brown <neilb@suse.de>, Sam Ravnborg <sam@ravnborg.org>,
+       Dave Jones <davej@redhat.com>, Nikanth Karthikesan <knikanth@suse.de>,
+       "Lars Marowsky-Bree" <lmb@suse.de>, Kyle Moffett <kyle@moffetthome.net>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>
+References: <1241090812-13516-1-git-send-email-philipp.reisner@linbit.com> <200905052345.20515.philipp.reisner@linbit.com> <1241560437.3312.159.camel@mulgrave.int.hansenpartnership.com>
+In-Reply-To: <1241560437.3312.159.camel@mulgrave.int.hansenpartnership.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090505230642.GA980@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200905061017.56836.philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+[...]
+>
+> Well, you have to agree that during a resync from the activity log,
+> which plays up the primary disk from one end to another, the secondary
+> is completely corrupt if a primary failure occurs before the resync
+> completes.  That's something that's triggered by a network outage, and
+> so is a far more common event than cascading dual failures.  It's all
+> really a question of where you focus your effort to eliminate the corner
+> cases.
+>
 
-* Oleg Nesterov <oleg@redhat.com> wrote:
+I fully agree. Just not not leave this unanswered: With DRBD we provide
+a snapshot-resync-target handler. By using LVM's snapshotting
+mechanism a snapshot is taken before it becomes resync-target. In
+case the resync completes gracefully, the snapshot is automatically
+removed.
 
-> On 05/04, Andrew Morton wrote:
-> >
-> > On Mon,  4 May 2009 12:43:48 -0700 (PDT)
-> > Roland McGrath <roland@redhat.com> wrote:
-> >
-> > > I guess we should take Andrew's advice on this.  To me, it 
-> > > makes most sense just to order the -mm patches so utrace comes 
-> > > later, and replace the utrace patch as necessary with a 
-> > > compatible version.  Perhaps things would be simpler if we 
-> > > made a separate standalone series or git tree (tip/ptrace?) 
-> > > for ptrace cleanups.
-> >
-> > Staging the utrace patch at end-of-series would make sense if 
-> > utrace is not on track for a 2.6.31 merge.
-> >
-> > And afaict, this is indeed the case - things seem to have gone a 
-> > bit quiet on the utrace front lately.
-> 
-> The only goal of current ptrace cleanups is to simplify the 
-> "ptrace over utrace" change (hopefully they make sense by 
-> themselves though).
-> 
-> I am obviously biased, but imho the only real problem with 
-> utrace-ptrace.patch is the current ptrace code which needs 
-> cleanups.
+Which is still inferior to a full transaction log on the secondary.
 
-Yes. But realize the fundamental reason for that: _without_ 
-ptrace-over-utrace the utrace core code is a big chunk of dead code 
-only used on the fringes. I see and agree with all the future uses 
-of utrace, but it's easy to be problem-free if a facility is not 
-used by anything significant.
+-Phil
 
-So a clean ptrace-over-utrace plugin is absolutely needed for utrace 
-to go upstream in v2.6.31. The ftrace plugin alone does not justify 
-it. The real prize here is a (much!) cleaner ptrace code. Once 
-ptrace is driven via utrace and it works, its value (and trust 
-level) will skyrocket.
-
-	Ingo
