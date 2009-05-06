@@ -1,89 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760115AbZEFSrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759484AbZEFTCQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760115AbZEFSrj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 14:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758709AbZEFSr3
+	id S1759484AbZEFTCQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 15:02:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbZEFTCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 14:47:29 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:56586 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754390AbZEFSr2 (ORCPT
+	Wed, 6 May 2009 15:02:00 -0400
+Received: from caramon.arm.linux.org.uk ([78.32.30.218]:33444 "EHLO
+	caramon.arm.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751486AbZEFTB7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 14:47:28 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=message-id:date:from:user-agent:mime-version:to:cc:subject:
-	references:in-reply-to:content-type:
-	content-transfer-encoding:x-system-of-record;
-	b=MK56kkDJrh34xsuf4i5UaDn/lYJC5eMCKhMAF5e2hySTm3c2LtvFe/XpEClZgJLre
-	/Za5fGCcRrSEWoZRv0FlQ==
-Message-ID: <4A01DB33.4060103@google.com>
-Date: Wed, 06 May 2009 11:47:15 -0700
-From: Divyesh Shah <dpshah@google.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Wed, 6 May 2009 15:01:59 -0400
+Date: Wed, 6 May 2009 20:01:10 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Jean Delvare <khali@linux-fr.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Nicolas Pitre <nico@cam.org>, Wolfram Sang <w.sang@pengutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: manual merge of the i2c tree with the arm-current
+	tree
+Message-ID: <20090506190110.GB6897@flint.arm.linux.org.uk>
+References: <20090506131031.83f1b04d.sfr@canb.auug.org.au> <20090506071547.GA29466@flint.arm.linux.org.uk> <20090506092559.2d9e53cb@hyperion.delvare>
 MIME-Version: 1.0
-To: balbir@linux.vnet.ibm.com
-CC: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Vivek Goyal <vgoyal@redhat.com>, nauman@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com
-Subject: Re: IO scheduler based IO Controller V2
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <1241562049.11059.921.camel@twins> <20090506034254.GD4416@balbir.in.ibm.com>
-In-Reply-To: <20090506034254.GD4416@balbir.in.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506092559.2d9e53cb@hyperion.delvare>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> * Peter Zijlstra <peterz@infradead.org> [2009-05-06 00:20:49]:
+On Wed, May 06, 2009 at 09:25:59AM +0200, Jean Delvare wrote:
+> Hi Russell,
 > 
->> On Tue, 2009-05-05 at 13:24 -0700, Andrew Morton wrote:
->>> On Tue,  5 May 2009 15:58:27 -0400
->>> Vivek Goyal <vgoyal@redhat.com> wrote:
->>>
->>>> Hi All,
->>>>
->>>> Here is the V2 of the IO controller patches generated on top of 2.6.30-rc4.
->>>> ...
->>>> Currently primarily two other IO controller proposals are out there.
->>>>
->>>> dm-ioband
->>>> ---------
->>>> This patch set is from Ryo Tsuruta from valinux.
->>>> ...
->>>> IO-throttling
->>>> -------------
->>>> This patch set is from Andrea Righi provides max bandwidth controller.
->>> I'm thinking we need to lock you guys in a room and come back in 15 minutes.
->>>
->>> Seriously, how are we to resolve this?  We could lock me in a room and
->>> cmoe back in 15 days, but there's no reason to believe that I'd emerge
->>> with the best answer.
->>>
->>> I tend to think that a cgroup-based controller is the way to go. 
->>> Anything else will need to be wired up to cgroups _anyway_, and that
->>> might end up messy.
->> FWIW I subscribe to the io-scheduler faith as opposed to the
->> device-mapper cult ;-)
->>
->> Also, I don't think a simple throttle will be very useful, a more mature
->> solution should cater to more use cases.
->>
+> On Wed, 6 May 2009 08:15:48 +0100, Russell King wrote:
+> > Since defconfig updates are always going to create lots of noise, and
+> > the files are normally out of date, the *only* sensible way to handle
+> > updates is to have one tree dealing with them per architecture.
+> > 
+> > Spreading them across multiple trees and then expecting merges to sort
+> > out the resulting mess is unreasonable; they just change far too much
+> > when updates happen.  Moreover, defconfig updates should be in their
+> > own separate commit and not combined with other changes.
 > 
-> I tend to agree, unless Andrea can prove us wrong. I don't think
-> throttling a task (not letting it consume CPU, memory when its IO
-> quota is exceeded) is a good idea. I've asked that question to Andrea
-> a few times, but got no response.
+> I fail to see how you can handle configuration option renames
+> gracefully with your proposed model.
 
-I agree with what Balbir said about the effects of throttling on memory and cpu usage of that task.
-Nauman and I have been working on Vivek's set of patches (which also includes some patches by Nauman) and have been testing and developing on top of that. I've found this solution to be the one that takes us closest to a complete solution. This approach works well under the assumption that the queues are backlogged and in the limited testing that we've done so far doesn't fare that badly when they are not backlogged (though there is definitely room to improve there).
-With buffered writes, when the queues are not backlogged I think it might be useful to explore into vm space and see if we can do something there w/o any impact to the tasks mem or cpu usage. I don't have any brilliant ideas on this now but want to get people thinking about this.
+That's not the point I'm making.  The point I'm making is about the
+merge issues which is the BIG and I mean BIG as in 1000ft tall
+letters BIG problem with scattering defconfig patches everywhere.
 
+The reality of defconfigs is that they're normally months out of date
+with respect to the current kernel, and are occasionally updated by
+the platform maintainers on an occasional basis (as has happened with
+Nicolas' change which your tree has clashed with.)
+
+I've heard it argued that the only people who should ever touch defconfig
+files are the platform maintainers themselves.  What I'm suggesting is
+one step closer to sanity than that position - having the arch maintainer
+responsible for dealing with all changes to those files, thereby providing
+a centralised point for synchronising and co-ordinating all defconfig
+updates.
+
+If you think you have a better solution (no, throwing them into your own
+I2C tree is NOT a solution - it's a cause of major problems) then please
+state it.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
