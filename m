@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762505AbZEFWEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761649AbZEFWEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762505AbZEFWEA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:04:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760976AbZEFVyl
+	id S1761649AbZEFWEt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759831AbZEFVyn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:54:41 -0400
-Received: from kroah.org ([198.145.64.141]:57111 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 17:54:43 -0400
+Received: from kroah.org ([198.145.64.141]:57133 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761406AbZEFVyi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:54:38 -0400
+	id S1761396AbZEFVyk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:54:40 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Wed May  6 14:47:58 2009
-Message-Id: <20090506214758.482021836@mini.kroah.org>
+Message-Id: <20090506214758.773043321@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 14:45:51 -0700
+Date: Wed, 06 May 2009 14:45:53 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,10 +26,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk,
-       Mark Brown <broonie@opensource.wolfsonmicro.com>
-Subject: [patch 23/58] ASoC: Fix offset of freqmode in WM8580 PLL configuration
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [patch 25/58] bio: fix memcpy corruption in bio_copy_user_iov()
 References: <20090506214528.660389067@mini.kroah.org>
-Content-Disposition: inline; filename=asoc-fix-offset-of-freqmode-in-wm8580-pll-configuration.patch
+Content-Disposition: inline; filename=bio-fix-memcpy-corruption-in-bio_copy_user_iov.patch
 In-Reply-To: <20090506215017.GA21981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,27 +40,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-commit ce88168f5b5eca7f40394fa6b05ae29f4b685569 upstream.
+commit 69838727bcd819a8fd73a88447801221788b0c6d upstream.
 
-Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+st driver uses blk_rq_map_user() in order to just build a request out
+of page frames. In this case, map_data->offset is a non zero value and
+iov[0].iov_base is NULL. We need to increase nr_pages for that.
+
+Cc: stable@kernel.org
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- sound/soc/codecs/wm8580.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/bio.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
---- a/sound/soc/codecs/wm8580.c
-+++ b/sound/soc/codecs/wm8580.c
-@@ -533,7 +533,7 @@ static int wm8580_set_dai_pll(struct snd
- 	reg = wm8580_read(codec, WM8580_PLLA4 + offset);
- 	reg &= ~0x3f;
- 	reg |= pll_div.prescale | pll_div.postscale << 1 |
--		pll_div.freqmode << 4;
-+		pll_div.freqmode << 3;
+--- a/fs/bio.c
++++ b/fs/bio.c
+@@ -806,6 +806,9 @@ struct bio *bio_copy_user_iov(struct req
+ 		len += iov[i].iov_len;
+ 	}
  
- 	wm8580_write(codec, WM8580_PLLA4 + offset, reg);
- 
++	if (offset)
++		nr_pages++;
++
+ 	bmd = bio_alloc_map_data(nr_pages, iov_count, gfp_mask);
+ 	if (!bmd)
+ 		return ERR_PTR(-ENOMEM);
 
 
