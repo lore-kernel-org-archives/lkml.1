@@ -1,400 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760653AbZEFOwK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760823AbZEFOwo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760653AbZEFOwK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 10:52:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760300AbZEFOtK
+	id S1760823AbZEFOwo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 10:52:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760312AbZEFOtM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 10:49:10 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:34670 "EHLO crca.org.au"
+	Wed, 6 May 2009 10:49:12 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:32856 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759463AbZEFOs6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 10:48:58 -0400
+	id S1759990AbZEFOs7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 10:48:59 -0400
 X-Bogosity: Ham, spamicity=0.000000
 From: Nigel Cunningham <nigel@tuxonice.net>
 To: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
        tuxonice-devel@lists.tuxonice.net
 Cc: Nigel Cunningham <nigel@tuxonice.net>
-Subject: [PATCH 9/19] TuxOnIce: Netlink support.
-Date: Thu,  7 May 2009 00:39:05 +1000
-Message-Id: <1241620755-22133-10-git-send-email-nigel@tuxonice.net>
+Subject: [RFC] TuxOnIce
+Date: Thu,  7 May 2009 00:38:56 +1000
+Message-Id: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 X-Mailer: git-send-email 1.5.6.3
-In-Reply-To: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds support for communicating with a userspace helper via a
-netlink socket. It is used by the userspace user interface support and
-by the storage manager support.
+I'd like to submit TuxOnIce for review, with a view to seeking to get it
+merged, perhaps in 2.6.31 or .32 (depending upon what needs work before
+it can be merged) and the willingness of those who matter.
+
+To briefly summarise the advantages to merging TuxOnIce:
+
+- Support for multiple swap devices
+- Support for non-swap (an ordinary file can be used)
+- Uses cryptoapi (LZO support, more than 2x speed of uncompressed data!)
+- Asynchronous I/O, readahead, multithreaded. Get the maximum throughput
+  possible with your hardware.
+- Userspace user interface that lets you abort hibernating and abort
+  resuming, get nice progress display etc.
+- 8 years of testing and improvement.
+- Full image of memory (LRU pages that don't need to be atomically
+  copied are saved prior to the atomic copy, then used as the
+  destination of the atomic copy).
+- Support for resuming a different image after writing an image - makes
+  powering down a UPS after writing an image doable.
+- Simple to set up (works without any userspace binaries, uses existing
+  resume= and noresume commandline parameters).
 
 Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
----
- kernel/power/Makefile           |    4 +
- kernel/power/tuxonice_netlink.c |  339 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 343 insertions(+), 0 deletions(-)
- create mode 100644 kernel/power/tuxonice_netlink.c
 
-diff --git a/kernel/power/Makefile b/kernel/power/Makefile
-index 07efc8a..180b89a 100644
---- a/kernel/power/Makefile
-+++ b/kernel/power/Makefile
-@@ -10,6 +10,10 @@ tuxonice_core-objs := tuxonice_modules.o tuxonice_sysfs.o tuxonice_highlevel.o \
- 
- obj-$(CONFIG_TOI)		+= tuxonice_builtin.o
- 
-+ifdef CONFIG_NET
-+tuxonice_core-objs		+= tuxonice_netlink.o
-+endif
-+
- obj-$(CONFIG_TOI_CORE)		+= tuxonice_core.o
- 
- obj-$(CONFIG_PM)		+= main.o
-diff --git a/kernel/power/tuxonice_netlink.c b/kernel/power/tuxonice_netlink.c
-new file mode 100644
-index 0000000..c394f79
---- /dev/null
-+++ b/kernel/power/tuxonice_netlink.c
-@@ -0,0 +1,339 @@
-+/*
-+ * kernel/power/tuxonice_netlink.c
-+ *
-+ * Copyright (C) 2004-2008 Nigel Cunningham (nigel at tuxonice net)
-+ *
-+ * This file is released under the GPLv2.
-+ *
-+ * Functions for communicating with a userspace helper via netlink.
-+ */
-+
-+
-+#include <linux/suspend.h>
-+#include "tuxonice_netlink.h"
-+#include "tuxonice.h"
-+#include "tuxonice_modules.h"
-+#include "tuxonice_alloc.h"
-+
-+static struct user_helper_data *uhd_list;
-+
-+/*
-+ * Refill our pool of SKBs for use in emergencies (eg, when eating memory and
-+ * none can be allocated).
-+ */
-+static void toi_fill_skb_pool(struct user_helper_data *uhd)
-+{
-+	while (uhd->pool_level < uhd->pool_limit) {
-+		struct sk_buff *new_skb =
-+			alloc_skb(NLMSG_SPACE(uhd->skb_size), TOI_ATOMIC_GFP);
-+
-+		if (!new_skb)
-+			break;
-+
-+		new_skb->next = uhd->emerg_skbs;
-+		uhd->emerg_skbs = new_skb;
-+		uhd->pool_level++;
-+	}
-+}
-+
-+/*
-+ * Try to allocate a single skb. If we can't get one, try to use one from
-+ * our pool.
-+ */
-+static struct sk_buff *toi_get_skb(struct user_helper_data *uhd)
-+{
-+	struct sk_buff *skb =
-+		alloc_skb(NLMSG_SPACE(uhd->skb_size), TOI_ATOMIC_GFP);
-+
-+	if (skb)
-+		return skb;
-+
-+	skb = uhd->emerg_skbs;
-+	if (skb) {
-+		uhd->pool_level--;
-+		uhd->emerg_skbs = skb->next;
-+		skb->next = NULL;
-+	}
-+
-+	return skb;
-+}
-+
-+static void put_skb(struct user_helper_data *uhd, struct sk_buff *skb)
-+{
-+	if (uhd->pool_level < uhd->pool_limit) {
-+		skb->next = uhd->emerg_skbs;
-+		uhd->emerg_skbs = skb;
-+	} else
-+		kfree_skb(skb);
-+}
-+
-+void toi_send_netlink_message(struct user_helper_data *uhd,
-+		int type, void *params, size_t len)
-+{
-+	struct sk_buff *skb;
-+	struct nlmsghdr *nlh;
-+	void *dest;
-+	struct task_struct *t;
-+
-+	if (uhd->pid == -1)
-+		return;
-+
-+	if (uhd->debug)
-+		printk(KERN_ERR "toi_send_netlink_message: Send "
-+				"message type %d.\n", type);
-+
-+	skb = toi_get_skb(uhd);
-+	if (!skb) {
-+		printk(KERN_INFO "toi_netlink: Can't allocate skb!\n");
-+		return;
-+	}
-+
-+	/* NLMSG_PUT contains a hidden goto nlmsg_failure */
-+	nlh = NLMSG_PUT(skb, 0, uhd->sock_seq, type, len);
-+	uhd->sock_seq++;
-+
-+	dest = NLMSG_DATA(nlh);
-+	if (params && len > 0)
-+		memcpy(dest, params, len);
-+
-+	netlink_unicast(uhd->nl, skb, uhd->pid, 0);
-+
-+	read_lock(&tasklist_lock);
-+	t = find_task_by_pid_type_ns(PIDTYPE_PID, uhd->pid, &init_pid_ns);
-+	if (!t) {
-+		read_unlock(&tasklist_lock);
-+		if (uhd->pid > -1)
-+			printk(KERN_INFO "Hmm. Can't find the userspace task"
-+				" %d.\n", uhd->pid);
-+		return;
-+	}
-+	wake_up_process(t);
-+	read_unlock(&tasklist_lock);
-+
-+	yield();
-+
-+	return;
-+
-+nlmsg_failure:
-+	if (skb)
-+		put_skb(uhd, skb);
-+
-+	if (uhd->debug)
-+		printk(KERN_ERR "toi_send_netlink_message: Failed to send "
-+				"message type %d.\n", type);
-+}
-+
-+static void send_whether_debugging(struct user_helper_data *uhd)
-+{
-+	static u8 is_debugging = 1;
-+
-+	toi_send_netlink_message(uhd, NETLINK_MSG_IS_DEBUGGING,
-+			&is_debugging, sizeof(u8));
-+}
-+
-+/*
-+ * Set the PF_NOFREEZE flag on the given process to ensure it can run whilst we
-+ * are hibernating.
-+ */
-+static int nl_set_nofreeze(struct user_helper_data *uhd, __u32 pid)
-+{
-+	struct task_struct *t;
-+
-+	if (uhd->debug)
-+		printk(KERN_ERR "nl_set_nofreeze for pid %d.\n", pid);
-+
-+	read_lock(&tasklist_lock);
-+	t = find_task_by_pid_type_ns(PIDTYPE_PID, pid, &init_pid_ns);
-+	if (!t) {
-+		read_unlock(&tasklist_lock);
-+		printk(KERN_INFO "Strange. Can't find the userspace task %d.\n",
-+				pid);
-+		return -EINVAL;
-+	}
-+
-+	t->flags |= PF_NOFREEZE;
-+
-+	read_unlock(&tasklist_lock);
-+	uhd->pid = pid;
-+
-+	toi_send_netlink_message(uhd, NETLINK_MSG_NOFREEZE_ACK, NULL, 0);
-+
-+	return 0;
-+}
-+
-+/*
-+ * Called when the userspace process has informed us that it's ready to roll.
-+ */
-+static int nl_ready(struct user_helper_data *uhd, u32 version)
-+{
-+	if (version != uhd->interface_version) {
-+		printk(KERN_INFO "%s userspace process using invalid interface"
-+				" version (%d - kernel wants %d). Trying to "
-+				"continue without it.\n",
-+				uhd->name, version, uhd->interface_version);
-+		if (uhd->not_ready)
-+			uhd->not_ready();
-+		return -EINVAL;
-+	}
-+
-+	complete(&uhd->wait_for_process);
-+
-+	return 0;
-+}
-+
-+void toi_netlink_close_complete(struct user_helper_data *uhd)
-+{
-+	if (uhd->nl) {
-+		netlink_kernel_release(uhd->nl);
-+		uhd->nl = NULL;
-+	}
-+
-+	while (uhd->emerg_skbs) {
-+		struct sk_buff *next = uhd->emerg_skbs->next;
-+		kfree_skb(uhd->emerg_skbs);
-+		uhd->emerg_skbs = next;
-+	}
-+
-+	uhd->pid = -1;
-+}
-+
-+static int toi_nl_gen_rcv_msg(struct user_helper_data *uhd,
-+		struct sk_buff *skb, struct nlmsghdr *nlh)
-+{
-+	int type = nlh->nlmsg_type;
-+	int *data;
-+	int err;
-+
-+	if (uhd->debug)
-+		printk(KERN_ERR "toi_user_rcv_skb: Received message %d.\n",
-+				type);
-+
-+	/* Let the more specific handler go first. It returns
-+	 * 1 for valid messages that it doesn't know. */
-+	err = uhd->rcv_msg(skb, nlh);
-+	if (err != 1)
-+		return err;
-+
-+	/* Only allow one task to receive NOFREEZE privileges */
-+	if (type == NETLINK_MSG_NOFREEZE_ME && uhd->pid != -1) {
-+		printk(KERN_INFO "Received extra nofreeze me requests.\n");
-+		return -EBUSY;
-+	}
-+
-+	data = NLMSG_DATA(nlh);
-+
-+	switch (type) {
-+	case NETLINK_MSG_NOFREEZE_ME:
-+		return nl_set_nofreeze(uhd, nlh->nlmsg_pid);
-+	case NETLINK_MSG_GET_DEBUGGING:
-+		send_whether_debugging(uhd);
-+		return 0;
-+	case NETLINK_MSG_READY:
-+		if (nlh->nlmsg_len != NLMSG_LENGTH(sizeof(u32))) {
-+			printk(KERN_INFO "Invalid ready mesage.\n");
-+			if (uhd->not_ready)
-+				uhd->not_ready();
-+			return -EINVAL;
-+		}
-+		return nl_ready(uhd, (u32) *data);
-+	case NETLINK_MSG_CLEANUP:
-+		toi_netlink_close_complete(uhd);
-+		return 0;
-+	}
-+
-+	return -EINVAL;
-+}
-+
-+static void toi_user_rcv_skb(struct sk_buff *skb)
-+{
-+	int err;
-+	struct nlmsghdr *nlh;
-+	struct user_helper_data *uhd = uhd_list;
-+
-+	while (uhd && uhd->netlink_id != skb->sk->sk_protocol)
-+		uhd = uhd->next;
-+
-+	if (!uhd)
-+		return;
-+
-+	while (skb->len >= NLMSG_SPACE(0)) {
-+		u32 rlen;
-+
-+		nlh = (struct nlmsghdr *) skb->data;
-+		if (nlh->nlmsg_len < sizeof(*nlh) || skb->len < nlh->nlmsg_len)
-+			return;
-+
-+		rlen = NLMSG_ALIGN(nlh->nlmsg_len);
-+		if (rlen > skb->len)
-+			rlen = skb->len;
-+
-+		err = toi_nl_gen_rcv_msg(uhd, skb, nlh);
-+		if (err)
-+			netlink_ack(skb, nlh, err);
-+		else if (nlh->nlmsg_flags & NLM_F_ACK)
-+			netlink_ack(skb, nlh, 0);
-+		skb_pull(skb, rlen);
-+	}
-+}
-+
-+static int netlink_prepare(struct user_helper_data *uhd)
-+{
-+	uhd->next = uhd_list;
-+	uhd_list = uhd;
-+
-+	uhd->sock_seq = 0x42c0ffee;
-+	uhd->nl = netlink_kernel_create(&init_net, uhd->netlink_id, 0,
-+			toi_user_rcv_skb, NULL, THIS_MODULE);
-+	if (!uhd->nl) {
-+		printk(KERN_INFO "Failed to allocate netlink socket for %s.\n",
-+				uhd->name);
-+		return -ENOMEM;
-+	}
-+
-+	toi_fill_skb_pool(uhd);
-+
-+	return 0;
-+}
-+
-+void toi_netlink_close(struct user_helper_data *uhd)
-+{
-+	struct task_struct *t;
-+
-+	read_lock(&tasklist_lock);
-+	t = find_task_by_pid_type_ns(PIDTYPE_PID, uhd->pid, &init_pid_ns);
-+	if (t)
-+		t->flags &= ~PF_NOFREEZE;
-+	read_unlock(&tasklist_lock);
-+
-+	toi_send_netlink_message(uhd, NETLINK_MSG_CLEANUP, NULL, 0);
-+}
-+
-+int toi_netlink_setup(struct user_helper_data *uhd)
-+{
-+	/* In case userui didn't cleanup properly on us */
-+	toi_netlink_close_complete(uhd);
-+
-+	if (netlink_prepare(uhd) < 0) {
-+		printk(KERN_INFO "Netlink prepare failed.\n");
-+		return 1;
-+	}
-+
-+	if (toi_launch_userspace_program(uhd->program, uhd->netlink_id,
-+				UMH_WAIT_EXEC, uhd->debug) < 0) {
-+		printk(KERN_INFO "Launch userspace program failed.\n");
-+		toi_netlink_close_complete(uhd);
-+		return 1;
-+	}
-+
-+	/* Wait 2 seconds for the userspace process to make contact */
-+	wait_for_completion_timeout(&uhd->wait_for_process, 2*HZ);
-+
-+	if (uhd->pid == -1) {
-+		printk(KERN_INFO "%s: Failed to contact userspace process.\n",
-+				uhd->name);
-+		toi_netlink_close_complete(uhd);
-+		return 1;
-+	}
-+
-+	return 0;
-+}
--- 
-1.5.6.3
 
