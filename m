@@ -1,76 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760341AbZEFSfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760687AbZEFSjR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760341AbZEFSfk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 14:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753865AbZEFSf2
+	id S1760687AbZEFSjR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 14:39:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754076AbZEFSjB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 14:35:28 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:35088 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751677AbZEFSf2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 14:35:28 -0400
-Date: Wed, 6 May 2009 11:31:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Oliver Neukum <oliver@neukum.org>
-Cc: david-b@pacbell.net, lihong.hi@gmail.com, linux-usb@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] usb: use memdup_user()
-Message-Id: <20090506113117.ba254f75.akpm@linux-foundation.org>
-In-Reply-To: <200905061534.53521.oliver@neukum.org>
-References: <3a3680030905030900x672af596mc2ebc3c38f119c92@mail.gmail.com>
-	<200905051244.01698.oliver@neukum.org>
-	<20090505102253.6993f381.akpm@linux-foundation.org>
-	<200905061534.53521.oliver@neukum.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 6 May 2009 14:39:01 -0400
+Received: from web50106.mail.re2.yahoo.com ([206.190.38.34]:34472 "HELO
+	web50106.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1752274AbZEFSjA convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 14:39:00 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=4P90j1O009tipi41ZPnTUqOtH7qEIQGAp3qnH1UHgRJ6ODVxsn7VHZXzf0vzue+vAPztQ1cA1nqX/2/RPRZevZ4wR7b/0dlTlKCz6ROPBPc9E7kKOgGO86bkR8U6HKK/g9dhSJ/Ll7uRRW+WS9BS0DWw0xdfWtDgXSfZhcDqeV8=;
+Message-ID: <195072.53660.qm@web50106.mail.re2.yahoo.com>
+X-YMail-OSG: eToYjygVM1lpLmO_rLjtK4jbwfiYFSPRQfA.95A2BYZY943728m9vhGz6666W_vmpP8T_Xizm4hc718pNJ8c_fdokYamXr1RVeNBtte11cWp43sI7jWm3DR1GsMbkVZ6BmsPzgt3b1r4OVTLL9jZotCJQ_rNRfXQEjA7e0zaskhRROam3pGl7mWb3s0dRKRRA0ey8BYR8BQOyFtKBDmbSDLz13xCTSJQGKGijd0m2cCtbrNJ7mv6FtN579GfnzWQmHqw9G4K2FpDgTcabwE9RbbB_waX6r52AA56Kh5YTLJVm4WmrAPErDu4EnHa0EZO
+X-Mailer: YahooMailClassic/5.3.9 YahooMailWebService/0.7.289.10
+Date: Wed, 6 May 2009 11:38:59 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Subject: Re: [PATCH 09/21] amd64_edac: assign DRAM chip select base and mask in a family-specific way
+To: Mauro Carvalho Chehab <mchehab@redhat.com>
+Cc: Borislav Petkov <borislav.petkov@amd.com>, akpm@linux-foundation.org,
+       greg@kroah.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
+       dougthompson@xmission.com, linux-kernel@vger.kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009 15:34:52 +0200
-Oliver Neukum <oliver@neukum.org> wrote:
 
-> Am Dienstag, 5. Mai 2009 19:22:53 schrieb Andrew Morton:
-> > On Tue, 5 May 2009 12:44:01 +0200 Oliver Neukum <oliver@neukum.org> wrote:
+- On Tue, 5/5/09, Mauro Carvalho Chehab <mchehab@redhat.com> wrote:
+
+> From: Mauro Carvalho Chehab <mchehab@redhat.com>
+> Subject: Re: [PATCH 09/21] amd64_edac: assign DRAM chip select base and mask in a family-specific way
+> To: "Doug Thompson" <norsk5@yahoo.com>
+> Cc: "Borislav Petkov" <borislav.petkov@amd.com>, akpm@linux-foundation.org, greg@kroah.com, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com, dougthompson@xmission.com, linux-kernel@vger.kernel.org
+> Date: Tuesday, May 5, 2009, 3:39 PM
+> Em Tue, 5 May 2009 12:28:01 -0700
+> (PDT)
+> Doug Thompson <norsk5@yahoo.com>
+> escreveu:
+
+> > BACKGROUND: The error checking of the pci config space
+> read was added during the time when the kernel couldn't read
+> the extended 4k config space via the AMD IOConfig port
+> access function (12 bits of offset) not via MMCONFIG. 
 > 
-> > > USB drivers are interface level yet some functions, reset and power
-> > > management, are on a device level. As it is unpredictable whether
-> > > a driver will share a device with a storage driver, all USB drivers as
-> > > far as these functions are concerned must be considered block device
-> > > drivers. That's the reason GFP_NOIO is so prevalent in USB.
-> >
-> > There must be some particular action which flips the thread of control
-> > from one state to the other.  eg, taking of a lock.
+> As this is unlikely to happen, I would also replace the:
+>     if (err != 0)
 > 
-> Basically assigning an interface to the storage or ub driver.
-
-That's hardly enough information for anyone to understand what you
-mean :(
-
-Oh well, doesn't matter.
-
-> > > > I wonder how hard it would be to add runtime debugging checks?  If
-> > >
-> > > I'd prefer compile time checks. Ideally we'd annotate a function with an
-> > > attribute making the compiler barf if copy_to/from_user or an
-> > > inappropriate kmalloc is used. It can't be perfect due to function
-> > > pointers, but it would be a good start.
-> >
-> > I don't think that would have enough coverage - bugs in this area tend
-> > to come from calling some function which looks innocent, but which
-> > calls some function which calls some function which calls some function
-> > which uses GFP_KERNEL.
-> >
-> > And then there's stuff like "usb takes a mutex which is also taken by
-> > some other thread which does a GFP_KERNEL allocation while holding that
-> > mutex".
+> by:
+>     if (unlikely(err))
 > 
-> Yes, but to catch that you'd have to teach lockdep about those functions
-> whose locks are dangerous to share with respect to memory allocation.
-> Is there another way to do that besides labelling dangerous methods?
+> in order to optimize the tests a little bit, avoiding the
+> risk of cache flushes due to the branches.
+> 
+> Cheers,
+> Mauro
+> 
 
-Adding lockdep annotation to the locks, I guess.  Probably a new kind of
-annotation.
+when the driver is configured without DEBUG config flag on, the statement becomes:
+
+    if (exp)
+         ;
+
+which with a good optimizer the code disappears altogether in the production condition. Only with DEBUGGING on will these outputs be generated.
+
+thanks for the extra review eyes
+
+doug t
+
