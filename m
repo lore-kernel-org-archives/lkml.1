@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762873AbZEFWIg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762314AbZEFWJH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762873AbZEFWIg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 18:08:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761509AbZEFVyw
+	id S1762314AbZEFWJH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 18:09:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761526AbZEFVyx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 17:54:52 -0400
-Received: from kroah.org ([198.145.64.141]:57223 "EHLO coco.kroah.org"
+	Wed, 6 May 2009 17:54:53 -0400
+Received: from kroah.org ([198.145.64.141]:57228 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761487AbZEFVyr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 17:54:47 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Wed May  6 14:47:59 2009
-Message-Id: <20090506214759.861567558@mini.kroah.org>
+	id S1761396AbZEFVys (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 17:54:48 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Wed May  6 14:48:00 2009
+Message-Id: <20090506214759.983540885@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Wed, 06 May 2009 14:46:01 -0700
+Date: Wed, 06 May 2009 14:46:02 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,9 +26,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Hugh Dickins <hugh@veritas.com>
-Subject: [patch 33/58] compat_do_execve should unshare_files
+Subject: [patch 34/58] fix setuid sometimes doesnt
 References: <20090506214528.660389067@mini.kroah.org>
-Content-Disposition: inline; filename=compat_do_execve-should-unshare_files.patch
+Content-Disposition: inline; filename=fix-setuid-sometimes-doesn-t.patch
 In-Reply-To: <20090506215017.GA21981@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,68 +40,102 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Hugh Dickins <hugh@veritas.com>
 
-commit 53e9309e01277ec99c38e84e0ca16921287cf470 upstream.
+commit e426b64c412aaa3e9eb3e4b261dc5be0d5a83e78 upstream.
 
-2.6.26's commit fd8328be874f4190a811c58cd4778ec2c74d2c05
-"sanitize handling of shared descriptor tables in failing execve()"
-moved the unshare_files() from flush_old_exec() and several binfmts
-to the head of do_execve(); but forgot to make the same change to
-compat_do_execve(), leaving a CLONE_FILES files_struct shared across
-exec from a 32-bit process on a 64-bit kernel.
+Joe Malicki reports that setuid sometimes doesn't: very rarely,
+a setuid root program does not get root euid; and, by the way,
+they have a health check running lsof every few minutes.
 
-It's arguable whether the files_struct really ought to be unshared
-across exec; but 2.6.1 made that so to stop the loading binary's fd
-leaking into other threads, and a 32-bit process on a 64-bit kernel
-ought to behave in the same way as 32 on 32 and 64 on 64.
+Right, check_unsafe_exec() notes whether the files_struct is being
+shared by more threads than will get killed by the exec, and if so
+sets LSM_UNSAFE_SHARE to make bprm_set_creds() careful about euid.
+But /proc/<pid>/fd and /proc/<pid>/fdinfo lookups make transient
+use of get_files_struct(), which also raises that sharing count.
 
+There's a rather simple fix for this: exec's check on files->count
+has been redundant ever since 2.6.1 made it unshare_files() (except
+while compat_do_execve() omitted to do so) - just remove that check.
+
+[Note to -stable: this patch will not apply before 2.6.29: earlier
+releases should just remove the files->count line from unsafe_exec().]
+
+Reported-by: Joe Malicki <jmalicki@metacarta.com>
+Narrowed-down-by: Michael Itz <mitz@metacarta.com>
+Tested-by: Joe Malicki <jmalicki@metacarta.com>
 Signed-off-by: Hugh Dickins <hugh@veritas.com>
 Cc: stable@kernel.org
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/compat.c |   12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ fs/compat.c   |    2 +-
+ fs/exec.c     |   10 +++-------
+ fs/internal.h |    2 +-
+ 3 files changed, 5 insertions(+), 9 deletions(-)
 
 --- a/fs/compat.c
 +++ b/fs/compat.c
-@@ -1392,12 +1392,17 @@ int compat_do_execve(char * filename,
+@@ -1412,7 +1412,7 @@ int compat_do_execve(char * filename,
+ 	bprm->cred = prepare_exec_creds();
+ 	if (!bprm->cred)
+ 		goto out_unlock;
+-	check_unsafe_exec(bprm, current->files);
++	check_unsafe_exec(bprm);
+ 
+ 	file = open_exec(filename);
+ 	retval = PTR_ERR(file);
+--- a/fs/exec.c
++++ b/fs/exec.c
+@@ -1049,28 +1049,24 @@ EXPORT_SYMBOL(install_exec_creds);
+  * - the caller must hold current->cred_exec_mutex to protect against
+  *   PTRACE_ATTACH
+  */
+-void check_unsafe_exec(struct linux_binprm *bprm, struct files_struct *files)
++void check_unsafe_exec(struct linux_binprm *bprm)
  {
- 	struct linux_binprm *bprm;
- 	struct file *file;
-+	struct files_struct *displaced;
- 	int retval;
+ 	struct task_struct *p = current, *t;
+ 	unsigned long flags;
+-	unsigned n_fs, n_files, n_sighand;
++	unsigned n_fs, n_sighand;
  
-+	retval = unshare_files(&displaced);
-+	if (retval)
-+		goto out_ret;
-+
- 	retval = -ENOMEM;
- 	bprm = kzalloc(sizeof(*bprm), GFP_KERNEL);
- 	if (!bprm)
--		goto out_ret;
-+		goto out_files;
+ 	bprm->unsafe = tracehook_unsafe_exec(p);
  
- 	retval = mutex_lock_interruptible(&current->cred_exec_mutex);
- 	if (retval < 0)
-@@ -1457,6 +1462,8 @@ int compat_do_execve(char * filename,
- 	mutex_unlock(&current->cred_exec_mutex);
- 	acct_update_integrals(current);
- 	free_bprm(bprm);
-+	if (displaced)
-+		put_files_struct(displaced);
- 	return retval;
+ 	n_fs = 1;
+-	n_files = 1;
+ 	n_sighand = 1;
+ 	lock_task_sighand(p, &flags);
+ 	for (t = next_thread(p); t != p; t = next_thread(t)) {
+ 		if (t->fs == p->fs)
+ 			n_fs++;
+-		if (t->files == files)
+-			n_files++;
+ 		n_sighand++;
+ 	}
  
- out:
-@@ -1475,6 +1482,9 @@ out_unlock:
- out_free:
- 	free_bprm(bprm);
+ 	if (atomic_read(&p->fs->count) > n_fs ||
+-	    atomic_read(&p->files->count) > n_files ||
+ 	    atomic_read(&p->sighand->count) > n_sighand)
+ 		bprm->unsafe |= LSM_UNSAFE_SHARE;
  
-+out_files:
-+	if (displaced)
-+		reset_files_struct(displaced);
- out_ret:
- 	return retval;
- }
+@@ -1289,7 +1285,7 @@ int do_execve(char * filename,
+ 	bprm->cred = prepare_exec_creds();
+ 	if (!bprm->cred)
+ 		goto out_unlock;
+-	check_unsafe_exec(bprm, displaced);
++	check_unsafe_exec(bprm);
+ 
+ 	file = open_exec(filename);
+ 	retval = PTR_ERR(file);
+--- a/fs/internal.h
++++ b/fs/internal.h
+@@ -43,7 +43,7 @@ extern void __init chrdev_init(void);
+ /*
+  * exec.c
+  */
+-extern void check_unsafe_exec(struct linux_binprm *, struct files_struct *);
++extern void check_unsafe_exec(struct linux_binprm *);
+ 
+ /*
+  * namespace.c
 
 
