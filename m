@@ -1,118 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759266AbZEFLfa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759316AbZEFLgH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759266AbZEFLfa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 07:35:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbZEFLfU
+	id S1759316AbZEFLgH (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 07:36:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754383AbZEFLfv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 07:35:20 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:58883 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752455AbZEFLfT (ORCPT
+	Wed, 6 May 2009 07:35:51 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:50901 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758198AbZEFLfu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 07:35:19 -0400
-Message-ID: <4A0175F0.1090705@novell.com>
-Date: Wed, 06 May 2009 07:35:12 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Wed, 6 May 2009 07:35:50 -0400
+Date: Wed, 6 May 2009 13:35:50 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Karel Zak <kzak@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+       util-linux-ng@vger.kernel.org
+Subject: [PATCH] fix blkid.h include
+Message-ID: <20090506113550.GQ15802@pengutronix.de>
+References: <20090505214214.GC4460@nb.net.home>
 MIME-Version: 1.0
-To: viro@ZenIV.linux.org.uk, davidel@xmailserver.org
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org, avi@redhat.com
-Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via eventfd-notification
- interface
-References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net>
-In-Reply-To: <20090504175750.26758.7023.stgit@dev.haskins.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig6D65FF0EC681F0CE221A4209"
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090505214214.GC4460@nb.net.home>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 13:34:50 up 77 days,  3:28, 25 users,  load average: 0.14, 0.05,
+	0.16
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: rsc@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig6D65FF0EC681F0CE221A4209
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+When building util-linux-ng-2.15, I get this:
 
-Al, Davide,
+make[3]: Entering directory `/ptx/work/octopus/WORK_2_B/rsc/svn/oselas/bsp/OSELAS.BSP-Pengutronix-AllYes-trunk/platform-phyCORE-PXA270.PCM990/build-target/util-linux-ng-2.15/mount'
+arm-iwmmx-linux-gnueabi-gcc -std=gnu99 -DHAVE_CONFIG_H -I. -I..  -include ../config.h -I../include -DLOCALEDIR=\"/usr/share/locale\" -isystem /home/rsc/svn/oselas/bsp/OSELAS.BSP-Pengutronix-AllYes-trunk/platform-phyCORE-PXA270.PCM990/sysroot-target/include -isystem /home/rsc/svn/oselas/bsp/OSELAS.BSP-Pengutronix-AllYes-trunk/platform-phyCORE-PXA270.PCM990/sysroot-target/usr/include  -fsigned-char  -I/home/rsc/svn/oselas/bsp/OSELAS.BSP-Pengutronix-AllYes-trunk/platform-phyCORE-PXA270.PCM990/sysroot-target/usr/include    -g -O2 -MT mount-fsprobe.o -MD -MP -MF .deps/mount-fsprobe.Tpo -c -o mount-fsprobe.o `test -f '../lib/fsprobe.c' || echo './'`../lib/fsprobe.c
+../lib/fsprobe.c:10:19: error: blkid.h: No such file or directory
 
-Gregory Haskins wrote:
-> +
-> +int
-> +kvm_irqfd(struct kvm *kvm, int gsi, int flags)
-> +{
-> +	struct _irqfd *irqfd;
-> +	struct file *file =3D NULL;
-> +	int fd =3D -1;
-> +	int ret;
-> +
-> +	irqfd =3D kzalloc(sizeof(*irqfd), GFP_KERNEL);
-> +	if (!irqfd)
-> +		return -ENOMEM;
-> +
-> +	irqfd->kvm =3D kvm;
-> +	irqfd->gsi =3D gsi;
-> +	INIT_LIST_HEAD(&irqfd->list);
-> +	INIT_WORK(&irqfd->work, irqfd_inject);
-> +
-> +	/*
-> +	 * We re-use eventfd for irqfd, and therefore will embed the eventfd
-> +	 * lifetime in the irqfd.
-> +	 */
-> +	file =3D eventfd_file_create(0, 0);
-> +	if (IS_ERR(file)) {
-> +		ret =3D PTR_ERR(file);
-> +		goto fail;
-> +	}
-> +
-> +	irqfd->file =3D file;
-> +
-> +	/*
-> +	 * Install our own custom wake-up handling so we are notified via
-> +	 * a callback whenever someone signals the underlying eventfd
-> +	 */
-> +	init_waitqueue_func_entry(&irqfd->wait, irqfd_wakeup);
-> +	init_poll_funcptr(&irqfd->pt, irqfd_ptable_queue_proc);
-> +
-> +	ret =3D file->f_op->poll(file, &irqfd->pt);
-> +	if (ret < 0)
-> +		goto fail;
-> +
-> +	mutex_lock(&kvm->lock);
-> +	list_add_tail(&irqfd->list, &kvm->irqfds);
-> +	mutex_unlock(&kvm->lock);
-> +
-> +	ret =3D get_unused_fd();
-> +	if (ret < 0)
-> +		goto fail;
-> +
-> +	fd =3D ret;
-> +
-> +	fd_install(fd, file);
->  =20
+The reason is that blkid.h comes from e2fsutils, which install the header file
+into /usr/include/blkid/blkid.h; /usr/include is also what the .pc file
+specifies for the include path for the CFLAGS. So IMHO the patch below must be
+applied to make it work.
 
-Can you comment on whether this function needs to take an additional
-reference on file here?  (one for the one held by userspace/fd, and the
-other for irqfd->file)  My instinct is telling me this may be currently
-broken, but I am not sure.
+If this is not acceptable, a little bit more configure magic would be necessary.
 
--Greg
+Signed-off-by: Robert Schwebel <r.schwebel@pengutronix.de>
 
+---
+ lib/fsprobe.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
+Index: util-linux-ng-2.15/lib/fsprobe.c
+===================================================================
+--- util-linux-ng-2.15.orig/lib/fsprobe.c
++++ util-linux-ng-2.15/lib/fsprobe.c
+@@ -7,7 +7,7 @@
+ #include <sys/types.h>
+ #include <stdlib.h>
+ 
+-#include <blkid.h>
++#include <blkid/blkid.h>
+ 
+ #include "blkdev.h"
+ #include "canonicalize.h"
 
-
---------------enig6D65FF0EC681F0CE221A4209
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkoBdfAACgkQlOSOBdgZUxnsOgCeMqqoaOz7pV0mNOTdCUUw0Afq
-IQIAoI2NjqPIkDhy1KJl470ZdcsWP3S8
-=51jv
------END PGP SIGNATURE-----
-
---------------enig6D65FF0EC681F0CE221A4209--
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
