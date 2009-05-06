@@ -1,103 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758124AbZEFNK7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759045AbZEFNSA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758124AbZEFNK7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 09:10:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756557AbZEFNKu
+	id S1759045AbZEFNSA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 09:18:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753655AbZEFNRt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 09:10:50 -0400
-Received: from extu-mxob-2.symantec.com ([216.10.194.135]:47487 "EHLO
-	extu-mxob-2.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755650AbZEFNKt (ORCPT
+	Wed, 6 May 2009 09:17:49 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:43571 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752856AbZEFNRr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 09:10:49 -0400
-Date: Wed, 6 May 2009 12:16:52 +0100 (BST)
-From: Hugh Dickins <hugh@veritas.com>
-X-X-Sender: hugh@blonde.anvils
-To: Izik Eidus <ieidus@redhat.com>
-cc: Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, aarcange@redhat.com, chrisw@redhat.com,
-       alan@lxorguk.ukuu.org.uk, device@lanana.org, linux-mm@kvack.org,
-       nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-In-Reply-To: <4A014C7B.9080702@redhat.com>
-Message-ID: <Pine.LNX.4.64.0905061110470.3519@blonde.anvils>
-References: <1241475935-21162-1-git-send-email-ieidus@redhat.com>
- <1241475935-21162-2-git-send-email-ieidus@redhat.com>
- <1241475935-21162-3-git-send-email-ieidus@redhat.com>
- <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com>
- <4A014C7B.9080702@redhat.com>
+	Wed, 6 May 2009 09:17:47 -0400
+Message-ID: <4A018DF2.6010301@novell.com>
+Date: Wed, 06 May 2009 09:17:38 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Gregory Haskins <gregory.haskins@gmail.com>, Avi Kivity <avi@redhat.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org>
+In-Reply-To: <20090506072212.GV3036@sequoia.sous-sol.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig03409896EE9ACA4014921DE9"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009, Izik Eidus wrote:
-> Rik van Riel wrote:
-> >
-> > This is different from munmap and madvise, which take both
-> > start address and length.
-> >
-> > Why?
-> >
-> It work like free, considering the fact that we dont allow memory overlay in
-> no way,
-> If we have the start of the address it is enough for us to know what memory we
-> want to remove.
-> 
-> Isnt interface for userspace that work like malloc / free is enough?
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig03409896EE9ACA4014921DE9
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I'm afraid not.
+Chris Wright wrote:
+> * Gregory Haskins (ghaskins@novell.com) wrote:
+>  =20
+>> Chris Wright wrote:
+>>    =20
+>>> But a free-form hypercall(unsigned long nr, unsigned long *args, size=
+_t count)
+>>> means hypercall number and arg list must be the same in order for cod=
+e
+>>> to call hypercall() in a hypervisor agnostic way.
+>>>      =20
+>> Yes, and that is exactly the intention.  I think its perhaps the point=
 
-There's an (addr, length) consistency throughout the mm system calls -
-mmap munmap mlock munlock mprotect msync madvise, even mincore and mremap
-- that we ought not to depart from lightly.  And those (addr, length)s
-are allowed to break into and span the original mmaps (excepting mremap).
+>> you are missing.
+>>    =20
+>
+> Yes, I was reading this as purely any hypercall, but it seems a bit
+> more like:
+>  pv_io_ops->iomap()
+>  pv_io_ops->ioread()
+>  pv_io_ops->iowrite()
+>  =20
 
-Getting an fd from /dev/ksm, using that in an ioctl to get another fd
-(eh?), using that in a further ioctl to specify an addr and number of
-pages, may well have been a good interface for getting this working out
-of tree, as an adjunct of KVM.  But you've done too well at selling KSM
-as more generally useful than that: it is good work, I'm liking it, but
-if it's going to mainline, then it needs an appropriate user interface.
+Right.
 
-I'm very much with those who suggested an madvise(), for which Chris
-prepared a patch.  I know Andrea felt uneasy with an madvise() going
-to a possibly-configured-out-or-never-loaded module, but it is just
-advice, so I don't have a problem with that myself, so long as it
-is documented in the manpage.
+> <snip>
+>  =20
+>> Today, there is no equivelent of a platform agnostic "iowrite32()" for=
 
-Whereas I do worry just what capability should be required for this:
-can't a greedy app simply fork itself, touch all its pages, and thus
-lock itself into memory in this way?  And I do worry about the cpu
-cost of all the scanning, if it were to get used more generally -
-it would be a pity if we just advised complainers to tune it out.
+>> hypercalls so the driver would look like the pseudocode above except
+>> substitute with kvm_hypercall(), lguest_hypercall(), etc.  The proposa=
+l
+>> is to allow the hypervisor to assign a dynamic vector to resources in
+>> the backend and convey this vector to the guest (such as in PCI
+>> config-space as mentioned in my example use-case).  The provides the
+>> "address negotiation" function that would normally be done for somethi=
+ng
+>> like a pio port-address.   The hypervisor agnostic driver can then use=
 
-I'm still working my way through ksm.c, and not gone back to look at
-Chris's madvise patch, but doubt it will be sufficient.  There's an
-interesting difference between what you're doing in ksm.c, and how
-madvise usually behaves, regarding unmapped areas: madvice doesn't
-usually apply to an unmapped area, and goes away with an area when
-it is unmapped; whereas in KSM's case, the advice applies to whatever
-happens to get mapped in the area specified, persisting across unmaps.
+>> this globally recognized address-token coupled with other device-priva=
+te
+>> ABI parameters to communicate with the device.  This can all occur
+>> without the core hypervisor needing to understand the details beyond t=
+he
+>> addressing.
+>>    =20
+>
+> VF drivers can also have this issue (and typically use mmio).
+> I at least have a better idea what your proposal is, thanks for
+> explanation.  Are you able to demonstrate concrete benefit with it yet
+> (improved latency numbers for example)?
+>  =20
 
-If KSM is to behave in the usual madvise way, it'll need to be informed
-of unmaps.  And I suspect it may need to be informed of them, even if we
-let it continue to apply to empty address space.  Because even with your
-more limited unsigned int nrpages interface, the caller can specify an
-enormous range on 64-bit, and ksm.c be fully occupied just incrementing
-from one absent page to the next.  mmap's vma ranges confine the space
-to be searched, and instantiated pagetables confine it further: I think
-you're either going to need to rely upon those to confine your search
-area, or else enhance your own data structures to confine it.
+I had a test-harness/numbers for this kind of thing, but its a bit
+crufty since its from ~1.5 years ago.  I will dig it up, update it, and
+generate/post new numbers.
 
-But I do appreciate the separation you've kept so far,
-and wouldn't want to tie it all together too closely.
+Thanks Chris,
+-Greg
 
-Hugh
 
-p.s.  I wish you'd chosen different name than KSM - the kernel
-has supported shared memory for many years - and notice ksm.c itself
-says "Memory merging driver".  "Merge" would indeed have been a less
-ambiguous term than "Share", but I think too late to change that now
-- except possibly in the MADV_ flag names?
+
+--------------enig03409896EE9ACA4014921DE9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkoBjfIACgkQlOSOBdgZUxlBkACfa34bmCmX02A6/wjjyOAd93Pk
+m9kAnAjSZv8wpWi6TsI9te8qiy7nym4s
+=bFzj
+-----END PGP SIGNATURE-----
+
+--------------enig03409896EE9ACA4014921DE9--
