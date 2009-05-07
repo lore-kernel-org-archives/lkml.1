@@ -1,51 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762424AbZEGN67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762293AbZEGN6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762424AbZEGN67 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 09:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759030AbZEGNuu
+	id S1762293AbZEGN6g (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 09:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758432AbZEGNus
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 09:50:50 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60358 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757164AbZEGNuc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 09:50:32 -0400
-Date: Thu, 7 May 2009 15:49:35 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
-       Li Wei <W.Li@Sun.COM>, Michael Ellerman <michaele@au1.ibm.com>
-Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
-Message-ID: <20090507134935.GA28015@elte.hu>
-References: <20090507124556.041286732@linux.vnet.ibm.com> <20090507124558.618214093@linux.vnet.ibm.com> <20090507134610.GN28398@elte.hu>
+	Thu, 7 May 2009 09:50:48 -0400
+Received: from wa4ehsobe004.messaging.microsoft.com ([216.32.181.14]:52131
+	"EHLO WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757916AbZEGNu3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 09:50:29 -0400
+X-BigFish: VPS-12(zz154dM111aL4015Lzz1202hzzz32i63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KJA12V-01-QXI-01
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: <akpm@linux-foundation.org>, <greg@kroah.com>, <mingo@elte.hu>
+CC: <norsk5@yahoo.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
+       <mchehab@redhat.com>, <aris@redhat.com>, edt@aei.ca,
+       <linux-kernel@vger.kernel.org>,
+       Borislav Petkov <borislav.petkov@amd.com>
+Subject: [RFC PATCH 00/21 v3] amd64_edac: EDAC module for AMD64
+Date: Thu, 7 May 2009 15:49:22 +0200
+Message-ID: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com>
+X-Mailer: git-send-email 1.6.2.4
+X-OriginalArrivalTime: 07 May 2009 13:49:47.0734 (UTC) FILETIME=[AF810F60:01C9CF1A]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507134610.GN28398@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-* Ingo Molnar <mingo@elte.hu> wrote:
+here's v3 of the EDAC module for AMD k8, Fam10h and Fam11h processors.
+Among the changes from the previous version are a split of the
+driver into several .c files based on functionality, removal of
+StinkyIdentifiers and bunch of cleanups all over the place.
 
-> > +config GCOV_PROFILE_ALL
-> > +	bool "Profile entire Kernel"
-> > +	depends on GCOV_KERNEL
-> > +	depends on S390 || X86_32
-> 
-> 64-bit x86 support is a must-have before we can think about 
-> upstreaming any of this.
+Thanks again to all the reviewers for their constructive comments, as
+always give it a good stare and flame away :).
 
-ok, the next patch does this so this hurdle is met :-)
+There's also a git repo with the patchset based on Linus' branch from
+yesterday:
 
-	Ingo
+git://git.kernel.org/pub/scm/linux/kernel/git/bp/amd64_edac.git
+
+Changelog:
+
+- v2:
+Highlights are the addition of two helpers to read/write MSRs on several
+CPUs, denoted by a cpumask and using an array of MSR values per-CPU, as
+hpa suggested. Since IMHO they look generic enough I've added them to
+arch/x86/lib/msr-on-cpu.c (now renamed to msr.c).
+
+Thanks,
+Boris.
+
+
+ arch/x86/include/asm/msr.h          |   21 +
+ arch/x86/lib/Makefile               |    2 +-
+ arch/x86/lib/msr-on-cpu.c           |   97 -
+ arch/x86/lib/msr.c                  |  152 ++
+ drivers/edac/Kconfig                |   26 +
+ drivers/edac/Makefile               |   13 +
+ drivers/edac/amd64_edac.c           | 3759 +++++++++++++++++++++++++++++++++++
+ drivers/edac/amd64_edac.h           |  951 +++++++++
+ drivers/edac/amd64_edac_dbg.c       |  291 +++
+ drivers/edac/amd64_edac_err_types.c |  163 ++
+ drivers/edac/amd64_edac_inj.c       |  203 ++
+ 11 files changed, 5580 insertions(+), 98 deletions(-)
+
