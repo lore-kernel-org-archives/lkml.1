@@ -1,86 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbZEGMAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761647AbZEGMBl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757272AbZEGMAb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 08:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZEGMAT
+	id S1761647AbZEGMBl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 08:01:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZEGMBc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 08:00:19 -0400
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:24118
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1752474AbZEGMAS convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 08:00:18 -0400
-X-BigFish: VPS-18(zz1432R98dR1805M936fJzz1202hzzz32i6bh15fn43j62h)
-X-Spam-TCS-SCL: 1:0
-X-FB-SS: 5,
-X-WSS-ID: 0KJ9W07-04-FZ9-01
-Date: Thu, 7 May 2009 14:00:08 +0200
-From: Joerg Roedel <joerg.roedel@amd.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, mingo@redhat.com, airlied@linux.ie
-Subject: Re: IOMMU and graphics cards
-Message-ID: <20090507120007.GG4059@amd.com>
-References: <20090428160448.GA17438@amd.com> <20090507164742V.fujita.tomonori@lab.ntt.co.jp> <20090507100114.GF4059@amd.com> <20090507191724N.fujita.tomonori@lab.ntt.co.jp>
+	Thu, 7 May 2009 08:01:32 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:52971 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752474AbZEGMBa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 08:01:30 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=k1gfpn8hEokZGOVzkZpn+Xxzn51/GDGRe6N7/BlLmFfdWrMvCPE4rL1AanS0iH2Y+U
+         LiGy0PJsGlG45vvIHe3qo/wmbVYlswSqgQoT/00o3z0FE9LNlmfVqxlhPZKGNs/+/uQS
+         1E94g8zOOXrQW2Z/V2RittEulvIFQX1l86ppo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <20090507191724N.fujita.tomonori@lab.ntt.co.jp>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 07 May 2009 12:00:08.0547 (UTC) FILETIME=[5E00CB30:01C9CF0B]
+In-Reply-To: <20090507104635.GG16078@random.random>
+References: <4A00DD4F.8010101@redhat.com> <4A0181EA.3070600@redhat.com>
+	 <20090506131735.GW16078@random.random>
+	 <Pine.LNX.4.64.0905061424480.19190@blonde.anvils>
+	 <20090506140904.GY16078@random.random>
+	 <20090506152100.41266e4c@lxorguk.ukuu.org.uk>
+	 <Pine.LNX.4.64.0905061532240.25289@blonde.anvils>
+	 <20090506145641.GA16078@random.random>
+	 <20090507085547.24efb60f.minchan.kim@barrios-desktop>
+	 <20090507104635.GG16078@random.random>
+Date: Thu, 7 May 2009 21:01:30 +0900
+Message-ID: <44c63dc40905070501j1a468e16yde46403da19460e6@mail.gmail.com>
+Subject: Re: [PATCH 2/6] ksm: dont allow overlap memory addresses 
+	registrations.
+From: Minchan Kim <barrioskmc@gmail.com>
+To: Andrea Arcangeli <aarcange@redhat.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>, Hugh Dickins <hugh@veritas.com>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, Rik van Riel <riel@redhat.com>,
+       Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, chrisw@redhat.com, device@lanana.org,
+       linux-mm@kvack.org, nickpiggin@yahoo.com.au
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 07:23:33PM +0900, FUJITA Tomonori wrote:
-> On Thu, 7 May 2009 12:01:14 +0200
-> Joerg Roedel <joerg.roedel@amd.com> wrote:
-> 
-> > > Do you meant that AMD IOMMU code use the bitmap each device to manage
-> > > address space so enlarging the DMA address space wastes memory?
-> > 
-> > Its not only the bitmap. There are also the page tables that would waste
-> > memory if the aperture in the AMD IOMMU driver is enlarged to, say, 4GB.
-> > Most devices don't need such a large amount of DMA address space. As I
-> > found out VT-d does not have this problem because they implemented
-> > another allocator which can cover all possible memory.
-> > For the AMD IOMMU I currently implement a kind of a dynamically growing
-> > bitmap allocator to fix this problem.
-> 
-> Yeah, I know the deference. Well, I like the AMD IOMMU driver's
-> property that dma mapping doesn't fail in OOM but I understand why you
-> want such daynamically growing.
+>> Many embedded system is so I/O bouneded that we can use much CPU time in there.
+>
+> Embedded systems with >4G of ram should run 64bit these days, so I
+> don't see a problem.
 
-Well, I will try to minimize the impact. Current plan is to preallocate
-bitmap and page tables for 128MB of DMA address space. Everything beyond
-that will be allocated on demand.
+What I mean is that many embedded applications don't use so much cpu
+time that we can use extra cpu time to scan identical pages for KSM.
+:)
 
-> > > >  But unless this problem isn't solved the
-> > > > drivers won't be fixed, I guess.
-> > > > I guess the DRM code in the kernel may have the same problem with IOMMU
-> > > > enabled?
-> > > 
-> > > Looks like the DRM code uses the DMA API.
-> > 
-> > The proprietary drivers make problems so far. For the ATI one I am in
-> > contact with the developers to try to fix it. But I can't do anything
-> > about the other proprietary driver I am aware of :-(
-> 
-> I don't know anything about the graphic drivers but are there any
-> other proprietary drivers except for ATI and AMD? Fixing only two
-> drivers to make the majority happy?
+>> One more thing about interface.
+>>
+>> Ksm map regions are dynamic characteritic ?
+>> I mean sometime A application calls ioctl(0x800000, 0x10000) and sometime it calls ioctl(0xb7000000, 0x20000);
+>> Of course, It depends on application's behavior.
+>
+> Looks like the ioctl API is going away in favour of madvise so it'll
+> function like madvise, if you munmap the region the KSM registration
+> will go away.
+>
+>> ex) echo 'pid 0x8050000 0x100000' > sysfs or procfs or cgroup.
+>
+> This was answered by Chris, and surely this is feasible, as it is
+> feasible for kksmd to scan the whole system regardless of any
+> madvise. Some sysfs mangling should allow it.
+>
+> However regardless of the highmem issue (this applies to 64bit systems
+> too) you've to keep in mind that for kksmd to keep track all pages
+> under scan it has to build rbtree and allocate rmap_items and
+> tree_items for each page tracked, those objects take some memory, so
+> if there's not much ram sharing you may waste more memory in the kksmd
+> allocations than in the amount of memory actually freed by KSM. This
+> is why it's better to selectively only register ranges that we know in
+> advance there's an high probability to free memory.
 
-At least Nvidia comes to my mind. Not sure about other graphic card
-vendors...
+Indeed.
 
-Joerg
+This interface can use for just simple test and profiling.
+If it don't add memory pressure and latency, we can use it without
+modifying source code.
+Unfortunately, it's not in usual case. ;-)
+
+So if KSM can provide profiling information, we can tune easily than now.
+
+ex)
+pfn : 0x12, shared [pid 103, vaddr 0x80010000] [pid 201, vaddr 0x800ac000] .....
+pfn : 0x301, shared [pid 103, vaddr 0x80020000] [pid 203, vaddr
+0x801ac000] .....
+...
+...
+
+If KSM can provide this profiling information, firstly we try to use
+ksm without madive and next we can add madvise call on most like
+sharable vma range using profiling data.
+
+> Thanks!
+> Andrea
+>
+
+
 
 -- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
-
+Thanks,
+Minchan Kim
