@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZEGUZs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762754AbZEGU0K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755907AbZEGUZs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 16:25:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762013AbZEGUZ3
+	id S1762754AbZEGU0K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 16:26:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760507AbZEGUZe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 16:25:29 -0400
-Received: from sous-sol.org ([216.99.217.87]:60328 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761977AbZEGUZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 16:25:27 -0400
-Date: Thu, 7 May 2009 13:25:06 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Cc: Chris Wright <chrisw@sous-sol.org>, Gregory Haskins <ghaskins@novell.com>,
-       Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-Message-ID: <20090507202506.GG3036@sequoia.sous-sol.org>
-References: <4A032390.6030100@gmail.com> <4A032472.4030106@redhat.com> <4A03259B.3050500@gmail.com> <4A032771.6050703@redhat.com> <4A032A74.2020809@novell.com> <4A032FDD.8020209@redhat.com> <20090507190751.GE3036@sequoia.sous-sol.org> <4A033281.8050002@novell.com> <20090507192145.GF3036@sequoia.sous-sol.org> <4A033685.7070802@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A033685.7070802@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 7 May 2009 16:25:34 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51547 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1762091AbZEGUZb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 16:25:31 -0400
+Date: Thu, 7 May 2009 21:24:28 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Christoph Lameter <cl@linux.com>
+Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Alok Kataria <akataria@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Reduce the default HZ value
+Message-ID: <20090507212428.2fbe5cfa@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.DEB.1.10.0905071555040.14051@qirst.com>
+References: <1241462661.412.8.camel@alok-dev1>
+	<4A00ADDE.9000908@zytor.com>
+	<1241560625.8665.17.camel@alok-dev1>
+	<alpine.DEB.1.10.0905071010170.24528@qirst.com>
+	<1241716053.6311.1514.camel@laptop>
+	<1241716422.6311.1524.camel@laptop>
+	<1241716718.6311.1531.camel@laptop>
+	<20090507173608.GC6693@linux.vnet.ibm.com>
+	<1241717904.6311.1558.camel@laptop>
+	<20090507180112.GE6693@linux.vnet.ibm.com>
+	<alpine.DEB.1.10.0905071404390.22107@qirst.com>
+	<20090507205357.1be739e1@lxorguk.ukuu.org.uk>
+	<alpine.DEB.1.10.0905071555040.14051@qirst.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Gregory Haskins (gregory.haskins@gmail.com) wrote:
-> What I am not clear on is how you would know to flag the address to
-> begin with.
+> Reducing the number of application interruptions by a factor of 10 is not
+> pointless. The lower HZ becomes the more useless it will become for the
+> users of jiffies because they will have to create timers and use time
+> intervals if the HZ intervals become too large.
 
-That's why I mentioned pv_io_ops->iomap() earlier.  Something I'd expect
-would get called on IORESOURCE_PVIO type.  This isn't really transparent
-though (only virtio devices basically), kind of like you're saying below.
+More like "the more your performance goes down the toilet" - as
+everything is rounded up.
 
-> Here's a thought: "PV" drivers can flag the IO (e.g. virtio-pci knows it
-> would never be a real device).  This means we route any io requests from
-> virtio-pci though pv_io_ops->mmio(), but not unflagged addresses.  This
-> is not as slick as boosting *everyones* mmio speed as Avi's original
-> idea would have, but it is perhaps a good tradeoff between the entirely
-> new namespace created by my original dynhc() proposal and leaving them
-> all PF based.
->
-> This way, its just like using my dynhc() proposal except the mmio-addr
-> is the substitute address-token (instead of the dynhc-vector). 
-> Additionally, if you do not PV the kernel the IO_COND/pv_io_op is
-> ignored and it just slow-paths through the PF as it does today.  Dynhc()
-> would be dependent  on pv_ops.
-> 
-> Thoughts?
+If you want to follow that argument set the default HZ to 1. Then see if
+it has any side effects.
+
+Given HZ=1 doesn't work, its fairly clear that all you are doing is
+frobbing pointlessly with defaults that have been evolved over about 15
+years because they work.
+
+Whereas if you make jiffies jiffies() and it reads a timer it puts the
+pain in the right place and you can begin to make actual progress to
+making things work properly.
