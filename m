@@ -1,81 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763146AbZEGWPl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763040AbZEGWQf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763146AbZEGWPl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 18:15:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZEGWP3
+	id S1763040AbZEGWQf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 18:16:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752941AbZEGWQZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 18:15:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39100 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762821AbZEGWP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 18:15:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
+	Thu, 7 May 2009 18:16:25 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:55685 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752188AbZEGWQX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 18:16:23 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=n+s8L9ERoU8h/8NeqwuRjy2Le5EYsHBvwPS14pcWCe7gqU7ZC7PpdFeyCs2wpHpUi
+	MijNBfiU4/+tWq/dKhmUg==
+Date: Thu, 7 May 2009 15:16:17 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Fri, 8 May 2009 00:14:48 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: David Rientjes <rientjes@google.com>, fengguang.wu@intel.com,
-       linux-pm@lists.linux-foundation.org, pavel@ucw.cz,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
+cc: rjw@sisk.pl, fengguang.wu@intel.com, linux-pm@lists.linux-foundation.org,
+       pavel@ucw.cz, torvalds@linux-foundation.org, jens.axboe@oracle.com,
        alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
        kernel-testers@vger.kernel.org
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <alpine.DEB.2.00.0905071417160.24417@chino.kir.corp.google.com> <20090507145041.9b59f4eb.akpm@linux-foundation.org>
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
 In-Reply-To: <20090507145041.9b59f4eb.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.2.00.0905071508190.2164@chino.kir.corp.google.com>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072218.50782.rjw@sisk.pl> <alpine.DEB.2.00.0905071321440.646@chino.kir.corp.google.com> <200905072238.14558.rjw@sisk.pl> <20090507135615.e7db550d.akpm@linux-foundation.org>
+ <alpine.DEB.2.00.0905071417160.24417@chino.kir.corp.google.com> <20090507145041.9b59f4eb.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905080014.49426.rjw@sisk.pl>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 May 2009, Andrew Morton wrote:
-> On Thu, 7 May 2009 14:25:23 -0700 (PDT)
-> David Rientjes <rientjes@google.com> wrote:
-> 
-> > On Thu, 7 May 2009, Andrew Morton wrote:
-> > 
-> > > > > All of your tasks are in D state other than kthreads, right?  That means 
-> > > > > they won't be in the oom killer (thus no zones are oom locked), so you can 
-> > > > > easily do this
-> > > > > 
-> > > > > 	struct zone *z;
-> > > > > 	for_each_populated_zone(z)
-> > > > > 		zone_set_flag(z, ZONE_OOM_LOCKED);
-> > > > > 
-> > > > > and then
-> > > > > 
-> > > > > 	for_each_populated_zone(z)
-> > > > > 		zone_clear_flag(z, ZONE_OOM_LOCKED);
-> > > > > 
-> > > > > The serialization is done with trylocks so this will never invoke the oom 
-> > > > > killer because all zones in the allocator's zonelist will be oom locked.
-> > > > > 
-> > > > > Why does this not work for you?
-> > > > 
-> > > > Well, it might work too, but why are you insisting?  How's it better than
-> > > > __GFP_NO_OOM_KILL, actually?
-> > > > 
-> > > > Andrew, what do you think about this?
-> > > 
-> > > I don't think I understand the proposal.  Is it to provide a means by
-> > > which PM can go in and set a state bit against each and every zone?  If
-> > > so, that's still a global boolean, only messier.
-> > > 
-> > 
-> > Why can't it be global while preallocating memory for hibernation since 
-> > nothing but kthreads could allocate at this point and if the system is oom 
-> > then the oom killer wouldn't be able to do anything anyway since it can't 
-> > kill them?
-> 
-> - globals are bad
-> 
+On Thu, 7 May 2009, Andrew Morton wrote:
+
 > - the standard way of controlling memory allocator behaviour is via
 >   the gfp_t.  Bypassing that is an unusual step and needs a higher
 >   level of justification, which I'm not seeing here.
 > 
+
+The standard way of controlling the oom killer behavior for a zone is via 
+the ZONE_OOM_LOCKED bit.
+
 > - if we do this via an unusual global, we reduce the chances that
 >   another subsytem could use the new feature.
 > 
@@ -83,6 +53,15 @@ On Thursday 07 May 2009, Andrew Morton wrote:
 >   there.  checkpoint-restart, virtual machines, ballooning memory
 >   drivers, kexec loading, etc.
 > 
+
+There's two separate issues here: the use of ZONE_OOM_LOCKED to control 
+whether or not to invoke the oom killer for a specific zone (which is 
+already its only function), and the fact that in this case we're doing it 
+for all zones.  It seems like you're concerned with the latter, but the 
+distinction in the hibernation case is that no memory freeing would be 
+possible as the result of the oom killer for _all_ zones, so it makes 
+sense to lock them all out.
+
 > > The fact is that _all_ allocations here are implicitly __GFP_NO_OOM_KILL 
 > > whether it specifies it or not since the oom killer would simply kill a 
 > > task in D state which can't exit or free memory and subsequent allocations 
@@ -95,17 +74,17 @@ On Thursday 07 May 2009, Andrew Morton wrote:
 > All the above is specific to the PM application only, when userspace
 > tasks are stopped.
 > 
-> 
+
+I'm not arguing that the only way we can ever implement __GFP_NO_OOM_KILL 
+is for the entire system: we can set ZONE_OOM_LOCKED for only the zones in 
+the zonelist that are passed to the page allocator.  For this particular 
+purpose, that is naturally all zones; for other future use cases it may be 
+chosen only to lock out the zones we're allowed to allocate from in that 
+context.
+
 > It might well end up that stopping userspace (beforehand or before
 > oom-killing) is a hard requirement for reliably disabling the
 > oom-killer.
 
-In fact I think it is and that's why I wanted to make that freezer-dependent.
-
-IOW, you need to freeze the user space totally before trying to disable the
-OOM killer.  Reversely, if you _have_ frozen the user space totally, the OOM
-killer won't really help, so why let it run at all in that situation?
-
-FWIW, I've just posted updated patchset with the first patch replaced with
-the one introducing __GFP_NO_OOM_KILL, but perhaps I should use the
-freezer-based one after all?
+Yes, globally, but future use cases may disable only specific zones such 
+as with memory hot-remove.
