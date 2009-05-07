@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764537AbZEHAdu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764579AbZEHAef@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764537AbZEHAdu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:33:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757677AbZEHAK4
+	id S1764579AbZEHAef (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:34:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759896AbZEHAK6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:56 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52720
+	Thu, 7 May 2009 20:10:58 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52718
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755276AbZEHAJ6 (ORCPT
+	with ESMTP id S1755047AbZEHAJ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 20:09:58 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -15,102 +15,87 @@ To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
+       Juan Quintela <quintela@redhat.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 08/11] xen/swiotlb: use dma_alloc_from_coherent to get device coherent memory
-Date: Thu,  7 May 2009 14:45:34 -0700
-Message-Id: <1241732737-7669-9-git-send-email-jeremy@goop.org>
+Subject: [PATCH 02/16] xen dom0: Initialize xenbus for dom0.
+Date: Thu,  7 May 2009 14:10:39 -0700
+Message-Id: <1241730653-4688-3-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241732737-7669-1-git-send-email-jeremy@goop.org>
-References: <1241732737-7669-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241730653-4688-1-git-send-email-jeremy@goop.org>
+References: <1241730653-4688-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+From: Juan Quintela <quintela@redhat.com>
 
-Impact: cleanup
+Impact: initialize Xenbus
 
-This avoids the previous hack of replicating struct dma_coherent_mem.
+Do initial xenbus/xenstore setup in dom0.  In dom0 we need to actually
+allocate the xenstore resources, rather than being given them from
+outside.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Juan Quintela <quintela@redhat.com>
 ---
- drivers/pci/xen-iommu.c |   39 ++++++++-------------------------------
- 1 files changed, 8 insertions(+), 31 deletions(-)
+ drivers/xen/xenbus/xenbus_probe.c |   30 +++++++++++++++++++++++++++++-
+ 1 files changed, 29 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
-index e7a22f1..32a8b49 100644
---- a/drivers/pci/xen-iommu.c
-+++ b/drivers/pci/xen-iommu.c
-@@ -34,14 +34,6 @@ do {							\
- 	(unsigned long long)addr + size);		\
- } while (0)
- 
--struct dma_coherent_mem {
--	void		*virt_base;
--	u32		device_base;
--	int		size;
--	int		flags;
--	unsigned long	*bitmap;
--};
--
- static inline int address_needs_mapping(struct device *hwdev,
- 						dma_addr_t addr)
+diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
+index d42e25d..6a05725 100644
+--- a/drivers/xen/xenbus/xenbus_probe.c
++++ b/drivers/xen/xenbus/xenbus_probe.c
+@@ -780,6 +780,7 @@ void xenbus_probe(struct work_struct *unused)
+ static int __init xenbus_probe_init(void)
  {
-@@ -151,7 +143,6 @@ static void *xen_alloc_coherent(struct device *dev, size_t size,
- 				dma_addr_t *dma_handle, gfp_t gfp)
- {
- 	void *ret;
--	struct dma_coherent_mem *mem = dev ? dev->dma_mem : NULL;
- 	unsigned int order = get_order(size);
- 	unsigned long vstart;
- 	u64 mask;
-@@ -159,18 +150,8 @@ static void *xen_alloc_coherent(struct device *dev, size_t size,
- 	/* ignore region specifiers */
- 	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM);
+ 	int err = 0;
++	unsigned long page = 0;
  
--	if (mem) {
--		int page = bitmap_find_free_region(mem->bitmap, mem->size,
--						     order);
--		if (page >= 0) {
--			*dma_handle = mem->device_base + (page << PAGE_SHIFT);
--			ret = mem->virt_base + (page << PAGE_SHIFT);
--			memset(ret, 0, size);
--			return ret;
--		}
--		if (mem->flags & DMA_MEMORY_EXCLUSIVE)
--			return NULL;
--	}
-+	if (dma_alloc_from_coherent(dev, size, dma_handle, &ret))
-+		return ret;
+ 	DPRINTK("");
  
- 	if (dev == NULL || (dev->coherent_dma_mask < 0xffffffff))
- 		gfp |= GFP_DMA;
-@@ -196,19 +177,15 @@ static void *xen_alloc_coherent(struct device *dev, size_t size,
- }
- 
- static void xen_free_coherent(struct device *dev, size_t size,
--			 void *vaddr, dma_addr_t dma_addr)
-+			      void *vaddr, dma_addr_t dma_addr)
- {
--	struct dma_coherent_mem *mem = dev ? dev->dma_mem : NULL;
- 	int order = get_order(size);
- 
--	if (mem && vaddr >= mem->virt_base &&
--	    vaddr < (mem->virt_base + (mem->size << PAGE_SHIFT))) {
--		int page = (vaddr - mem->virt_base) >> PAGE_SHIFT;
--		bitmap_release_region(mem->bitmap, page, order);
--	} else {
--		xen_destroy_contiguous_region((unsigned long)vaddr, order);
--		free_pages((unsigned long)vaddr, order);
--	}
-+	if (dma_release_from_coherent(dev, order, vaddr))
-+		return;
+@@ -800,7 +801,31 @@ static int __init xenbus_probe_init(void)
+ 	 * Domain0 doesn't have a store_evtchn or store_mfn yet.
+ 	 */
+ 	if (xen_initial_domain()) {
+-		/* dom0 not yet supported */
++		struct evtchn_alloc_unbound alloc_unbound;
 +
-+	xen_destroy_contiguous_region((unsigned long)vaddr, order);
-+	free_pages((unsigned long)vaddr, order);
++		/* Allocate Xenstore page */
++		page = get_zeroed_page(GFP_KERNEL);
++		if (!page)
++			return -ENOMEM;
++
++		xen_store_mfn = xen_start_info->store_mfn =
++			pfn_to_mfn(virt_to_phys((void *)page) >>
++				   PAGE_SHIFT);
++
++		/* Next allocate a local port which xenstored can bind to */
++		alloc_unbound.dom        = DOMID_SELF;
++		alloc_unbound.remote_dom = 0;
++
++		err = HYPERVISOR_event_channel_op(EVTCHNOP_alloc_unbound,
++						  &alloc_unbound);
++		if (err == -ENOSYS)
++			goto out_unreg_front;
++
++		BUG_ON(err);
++		xen_store_evtchn = xen_start_info->store_evtchn =
++			alloc_unbound.port;
++
++		xen_store_interface = mfn_to_virt(xen_store_mfn);
+ 	} else {
+ 		xenstored_ready = 1;
+ 		xen_store_evtchn = xen_start_info->store_evtchn;
+@@ -836,6 +861,9 @@ static int __init xenbus_probe_init(void)
+ 	bus_unregister(&xenbus_frontend.bus);
+ 
+   out_error:
++	if (page != 0)
++		free_page(page);
++
+ 	return err;
  }
  
- static dma_addr_t xen_swiotlb_map_single(struct device *dev, phys_addr_t paddr,
 -- 
 1.6.0.6
 
