@@ -1,55 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756912AbZEGIR0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754406AbZEGITH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756912AbZEGIR0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 04:17:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZEGIRM
+	id S1754406AbZEGITH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 04:19:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751667AbZEGISu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 04:17:12 -0400
-Received: from out02.mta.xmission.com ([166.70.13.232]:40613 "EHLO
-	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751689AbZEGIRK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 04:17:10 -0400
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Jan Blunck <jblunck@suse.de>
-References: <1241097822.2516.3.camel@poy>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Thu, 07 May 2009 01:17:05 -0700
-In-Reply-To: <1241097822.2516.3.camel@poy> (Kay Sievers's message of "Thu\, 30 Apr 2009 15\:23\:42 +0200")
-Message-ID: <m1vdodnx8e.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 7 May 2009 04:18:50 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37731 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751094AbZEGISt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 04:18:49 -0400
+Date: Thu, 7 May 2009 10:17:48 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Roland McGrath <roland@redhat.com>
+Cc: Oleg Nesterov <oleg@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 3/3a] ptrace: add _ptrace_may_access()
+Message-ID: <20090507081748.GB12285@elte.hu>
+References: <20090505224729.GA965@redhat.com> <20090506080050.GF17457@elte.hu> <20090506203224.684C7FC39E@magilla.sf.frob.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: kay.sievers@vrfy.org, jblunck@suse.de, greg@kroah.com, linux-kernel@vger.kernel.org
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Kay Sievers <kay.sievers@vrfy.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
-	*      [score: 0.1828]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.0 T_TooManySym_01 4+ unique symbols in subject
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
+Content-Disposition: inline
+In-Reply-To: <20090506203224.684C7FC39E@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Have I read the summary of this properly?
+* Roland McGrath <roland@redhat.com> wrote:
 
-sysfs is slow.
-udev is slow.
+> > Something like the patch below allows the reuse of the locked 
+> > version of __ptrace_may_access and pushes the int->bool 
+> > conversion into an inline.
+> 
+> I think it would be cleaner and safe/simple enough to invert the 
+> public ptrace_may_access() to just return the int and invert the ! 
+> on all the callers (all one in fs/proc/task_mmu.c and all four in 
+> fs/proc/base.c).
 
-Let's bloat the kernel to solve that problem?
+hm, i considered that briefly and rejected the idea because 
+something that says 'may' in its name is generally assumed to be a 
+logic function-ish thing.
 
-Eric
+I.e. in such case: ptrace_may_access() or task_is_traced() people 
+sub-consciously assume that 0 means "no", non-0 means "yes". So in 
+that sense i liked the bool wrapper and preserved that in the 
+inline.
+
+We do have the retval==0-means-success convention in a number of 
+APIs, but APIs that include a verb in their names assert some sort 
+of property all have bool behavior.
+
+(The underscore itself signals some special property - so there the 
+deviation from the usual conventions isnt a big problem.)
+
+This might sound like a nuance, but it really matters in the grand 
+scheme of things. So IMHO inverting the logic is a step backwards - 
+beyond the needless churn as well that it causes in various 
+subsystems.
+
+	Ingo
