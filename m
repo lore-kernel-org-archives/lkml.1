@@ -1,58 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760396AbZEGQnk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759175AbZEGQsf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760396AbZEGQnk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 12:43:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZEGQnb
+	id S1759175AbZEGQsf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 12:48:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754099AbZEGQs0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 12:43:31 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:45113 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752299AbZEGQna (ORCPT
+	Thu, 7 May 2009 12:48:26 -0400
+Received: from ti-out-0910.google.com ([209.85.142.186]:39844 "EHLO
+	ti-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751845AbZEGQsZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 12:43:30 -0400
-Date: Thu, 7 May 2009 12:32:40 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-cc: Peter Zijlstra <peterz@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class
- citizen
-In-Reply-To: <1241712000.18617.7.camel@lts-notebook>
-Message-ID: <alpine.DEB.1.10.0905071231090.10171@qirst.com>
-References: <20090430072057.GA4663@eskimo.com>  <20090430174536.d0f438dd.akpm@linux-foundation.org>  <20090430205936.0f8b29fc@riellaptop.surriel.com>  <20090430181340.6f07421d.akpm@linux-foundation.org>  <20090430215034.4748e615@riellaptop.surriel.com> 
- <20090430195439.e02edc26.akpm@linux-foundation.org>  <49FB01C1.6050204@redhat.com>  <20090501123541.7983a8ae.akpm@linux-foundation.org>  <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins>  <20090507121101.GB20934@localhost> 
- <alpine.DEB.1.10.0905070935530.24528@qirst.com>  <1241705702.11251.156.camel@twins>  <alpine.DEB.1.10.0905071016410.24528@qirst.com> <1241712000.18617.7.camel@lts-notebook>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 7 May 2009 12:48:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=ugmu+CekeCdR2KzorUUNj13cHDYeJ85VRPC3m0ChghLiPiZboS3NLqJoBHIXFt12mE
+         VoUejCpCIjSBMMVIj5qKuOldY7/RREbGkv25SEfordSv1iV7asYycbfaI8U13CIK5Rod
+         i758CVdjW4zZA2Ap2pudDQU/QOxKEp1GyKBvg=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090506213010.GA18387@suse.de>
+References: <2e609cef0905060747m281c15e8ybc8e20f9d4993178@mail.gmail.com>
+	 <20090506145832.GE3478@suse.de>
+	 <2e609cef0905061401n2412c448k755a152917f4b9d6@mail.gmail.com>
+	 <20090506213010.GA18387@suse.de>
+Date: Fri, 8 May 2009 00:48:23 +0800
+Message-ID: <2e609cef0905070948x5bd5dbd0i2dbe7b4fb02c18b7@mail.gmail.com>
+Subject: Re: [PATCH] Yet another Conexant Clone to add to cdc-acm.c
+From: =?UTF-8?B?WzZdW01lZSBFd11bzrxdICEhISAtLSBYS0ogfHwgbWluZGxlc3MgOkQ=?= 
+	<xiaokj@gmail.com>
+To: Greg KH <gregkh@suse.de>
+Cc: Oliver Neukum <oliver@neukum.name>, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009, Lee Schermerhorn wrote:
-
-> > Another possibility may be to put the exec pages on the mlock list
-> > and scan the list if under extreme duress?
+>> This patch adds another quirky Conexant USB Modem Clone to usb cdc-acm.c
+>>
+>> This is to be applied to latest git. (Got off the website...)
+>>
+>> Signed-off-by: Xiao Kaijian <xiaokj@gmail.com>
 >
-> Actually, you don't need to go thru the overhead of mucking with the
-> PG_mlocked flag which incurs the rmap walk on unlock, etc.  If one sets
-> the the AS_UNEVICTABLE flag, the pages will be shuffled off the the
-> unevictable LRU iff we ever try to reclaim them.  And, we do have the
-> function to scan the unevictable lru to "rescue" pages in a given
-> mapping should we want to bring them back under extreme load.  We'd need
-> to remove the AS_UNEVICTABLE flag, first.  This is how
-> SHM_LOCK/SHM_UNLOCK works.
+> Ah, better, but your email client seems to have eaten all of the tabs
+> and spit out spaces instead.  Care to read
+> Documentation/email_clients.txt and try it again?
+>
+>> --- a/drivers/usb/class/cdc-acm.c       2009-05-06 22:06:27.556488116 +0800
+>> +++ b/drivers/usb/class/cdc-acm.c       2009-05-06 22:12:56.648401202 +0800
+>> @@ -1375,6 +1375,13 @@ static struct usb_device_id acm_ids[] = {
+>>        { USB_DEVICE(0x0572, 0x1324), /* Conexant USB MODEM RD02-D400 */
+>>        .driver_info = NO_UNION_NORMAL, /* has no union descriptor */
+>>        },
+>> +       { USB_DEVICE(0x0572, 0x1328), /* Shiro / Aztech USB MODEM UM-3100 */
+>> +        .driver_info = NO_UNION_NORMAL, /* has no union descriptor.
+>> +                                          This is basically a clone of
+>> +                                          Conexant USB MODEM RD02-D400.
+>> +                                          Seems like NO_UNION_ _IS_ becoming
+>> +                                          NORMAL... */
+>
+> Is the commentary really needed here?  The majority of devices do not
+> need this quirk, so i don't think it's really "normal"...
+>
+> thanks,
+>
+> greg k-h
 
-We need some way to control this. If there would be a way to simply switch
-off eviction of exec pages (via /proc/sys/vm/never_reclaim_exec_pages or
-so) I'd use it.
+Retry attempt 2: terse mode
 
+I sincerely hope this is finally ok. After much testing on gmail, here it is.
+I have verified that it is still applicable to git too.
+Thank you for your on-going guidance, even over the huge time zone difference.
 
+***********************
+For those uninterested in the personal dialogue above, here it is:
+***********************
+
+This patch adds another quirky Conexant USB Modem Clone to usb cdc-acm.c
+
+This is to be applied to latest git. (Got off the website...)
+
+Signed-off-by: Xiao Kaijian <xiaokj@gmail.com>
+
+--- a/drivers/usb/class/cdc-acm.c	2009-05-06 22:06:27.556488116 +0800
++++ b/drivers/usb/class/cdc-acm.c	2009-05-06 22:12:56.648401202 +0800
+@@ -1375,6 +1375,13 @@ static struct usb_device_id acm_ids[] = {
+ 	{ USB_DEVICE(0x0572, 0x1324), /* Conexant USB MODEM RD02-D400 */
+ 	.driver_info = NO_UNION_NORMAL, /* has no union descriptor */
+ 	},
++	{ USB_DEVICE(0x0572, 0x1328), /* Shiro / Aztech USB MODEM UM-3100 */
++	.driver_info = NO_UNION_NORMAL, /* has no union descriptor */
++	},
+ 	{ USB_DEVICE(0x22b8, 0x6425), /* Motorola MOTOMAGX phones */
+ 	},
+ 	{ USB_DEVICE(0x0572, 0x1329), /* Hummingbird huc56s (Conexant) */
