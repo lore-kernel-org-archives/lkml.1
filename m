@@ -1,83 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760179AbZEGVha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759154AbZEGVk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760179AbZEGVha (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 17:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752007AbZEGVhT
+	id S1759154AbZEGVk1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 17:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751378AbZEGVkP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 17:37:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38861 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751837AbZEGVhR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 17:37:17 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Thu, 7 May 2009 23:36:10 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com,
-       linux-pm@lists.linux-foundation.org, pavel@ucw.cz,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <20090507135615.e7db550d.akpm@linux-foundation.org> <alpine.DEB.2.00.0905071417160.24417@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0905071417160.24417@chino.kir.corp.google.com>
+	Thu, 7 May 2009 17:40:15 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:44958 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751298AbZEGVkO convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 17:40:14 -0400
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905072336.11383.rjw@sisk.pl>
+In-Reply-To: <Pine.LNX.4.44L0.0905071714220.4812-100000@iolanthe.rowland.org>
+References: <ac3eb2510905071335l473e30d3jbabb62d471607b8d@mail.gmail.com> 
+	<Pine.LNX.4.44L0.0905071714220.4812-100000@iolanthe.rowland.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Thu, 7 May 2009 23:39:53 +0200
+Message-ID: <ac3eb2510905071439j7736711axc729008923435cea@mail.gmail.com>
+Subject: Re: usbfs, claiming entire usb devices
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       Pantelis Koukousoulas <pktoss@gmail.com>,
+       USB list <linux-usb@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 May 2009, David Rientjes wrote:
-> On Thu, 7 May 2009, Andrew Morton wrote:
-> 
-> > > > All of your tasks are in D state other than kthreads, right?  That means 
-> > > > they won't be in the oom killer (thus no zones are oom locked), so you can 
-> > > > easily do this
-> > > > 
-> > > > 	struct zone *z;
-> > > > 	for_each_populated_zone(z)
-> > > > 		zone_set_flag(z, ZONE_OOM_LOCKED);
-> > > > 
-> > > > and then
-> > > > 
-> > > > 	for_each_populated_zone(z)
-> > > > 		zone_clear_flag(z, ZONE_OOM_LOCKED);
-> > > > 
-> > > > The serialization is done with trylocks so this will never invoke the oom 
-> > > > killer because all zones in the allocator's zonelist will be oom locked.
-> > > > 
-> > > > Why does this not work for you?
-> > > 
-> > > Well, it might work too, but why are you insisting?  How's it better than
-> > > __GFP_NO_OOM_KILL, actually?
-> > > 
-> > > Andrew, what do you think about this?
-> > 
-> > I don't think I understand the proposal.  Is it to provide a means by
-> > which PM can go in and set a state bit against each and every zone?  If
-> > so, that's still a global boolean, only messier.
-> > 
-> 
-> Why can't it be global while preallocating memory for hibernation since 
-> nothing but kthreads could allocate at this point and if the system is oom 
-> then the oom killer wouldn't be able to do anything anyway since it can't 
-> kill them?
-> 
-> The fact is that _all_ allocations here are implicitly __GFP_NO_OOM_KILL 
-> whether it specifies it or not since the oom killer would simply kill a 
-> task in D state which can't exit or free memory and subsequent allocations 
-> would make the oom killer a no-op because there's an eligible task with 
-> TIF_MEMDIE set.  The only thing you're saving with __GFP_NO_OOM_KILL is 
-> calling the oom killer in a first place and killing an unresponsive task 
+On Thu, May 7, 2009 at 23:18, Alan Stern <stern@rowland.harvard.edu> wrote:
+> On Thu, 7 May 2009, Kay Sievers wrote:
+>> On Thu, May 7, 2009 at 21:55, Alan Stern <stern@rowland.harvard.edu> wrote:
+>> > There is a proposal afoot to give user programs the ability to claim
+>> > ownership of an entire USB device, rather than just individual
+>> > interfaces.  In fact, we'd like processes to be able to own whatever
+>> > device gets plugged into a particular port on a particular hub.
+>> >
+>> > The question is how the API should work.  A simple approach is to have
+>> > a sysfs or usbfs file correspond to each port; when a process opens the
+>> > file it would be granted ownership of any device plugged into that
+>> > port.  Since the file is automatically closed when the process ends, we
+>> > wouldn't have to worry about ownership never getting released.
+>> >
+>> > But there's a snag.  When a process goes to open the usbfs file for a
+>> > device, the kernel needs to know whether or not the process owns that
+>> > device.  In other words, we need to figure out whether or not the
+>> > process has opened the corresponding port file.
+>> >
+>> > Is there a simple way to do this?  Is it reasonable to search through
+>> > all the process's fd's, looking for one that matches a particular
+>> > inode?
+>> >
+>> > Or would a completely different API approach be better?
+>>
+>> You have one file per device, and that file has normal unix file
+>> permissions. Userspace can grant access to that file by ownership or
+>> by adding an ACL. What else do we need?
+>
+> We need the ability to prevent the kernel from automatically
+> configuring a device.  We need the ability to prevent kernel drivers
+> from binding to a device before userspace programs get a chance.
+>
+>>  Why would the kernel care who
+>> opened the file, when the one was able to get through the normal file
+>> access check?
+>
+> Access checks can't be used, because programs want to stake their claim
+> to the device (and its file) even before the device has been plugged
+> in.  So there's no file and no ACL to set.
 
-That's exactly what we're trying to do.  We don't want tasks to get killed just
-because we're freeing memory for hibernation image.
+I see.
 
-> but that would have to happen anyway when thawed since the system is oom 
-> (or otherwise lockup for GFP_KERNEL with order < PAGE_ALLOC_COSTLY_ORDER).
+Can't userspace just unbind a possible driver, which is supported by
+libusub? Other such use-cases do that, like the UPS userspace drivers,
+which just unbind the device from a possible in-kernel driver to take
+it over.
 
-Are you sure?  The image memory is freed before thawing tasks.
+Or is that a specific requirement where things would go wrong when the
+kernel binds to a device first?
+
+Kay
