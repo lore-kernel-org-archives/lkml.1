@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759826AbZEGNvd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760267AbZEGNvx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759826AbZEGNvd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 09:51:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758024AbZEGNuN
+	id S1760267AbZEGNvx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 09:51:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757380AbZEGNuP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 09:50:13 -0400
-Received: from wa4ehsobe004.messaging.microsoft.com ([216.32.181.14]:51520
-	"EHLO WA4EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754292AbZEGNuD (ORCPT
+	Thu, 7 May 2009 09:50:15 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:53913 "EHLO
+	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757839AbZEGNuD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 09:50:03 -0400
-X-BigFish: VPS-13(zz14c3M936eQzz1202hzzz32i64h)
-X-Spam-TCS-SCL: 3:0
-X-FB-SS: 5,
-X-WSS-ID: 0KJA130-01-QXO-01
+X-BigFish: VPS3(zzzz1202hzzz32i43j66h)
+X-Spam-TCS-SCL: 5:0
+X-WSS-ID: 0KJA12W-02-CKZ-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: <akpm@linux-foundation.org>, <greg@kroah.com>, <mingo@elte.hu>
 CC: <norsk5@yahoo.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
@@ -21,13 +20,13 @@ CC: <norsk5@yahoo.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
        <linux-kernel@vger.kernel.org>,
        Doug Thompson <dougthompson@xmission.com>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 11/21] amd64_edac: assign DRAM chip select base and mask in a family-specific way
-Date: Thu, 7 May 2009 15:49:33 +0200
-Message-ID: <1241704183-29223-12-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 03/21] amd64_edac: add debugging/testing code
+Date: Thu, 7 May 2009 15:49:25 +0200
+Message-ID: <1241704183-29223-4-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com>
 References: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 07 May 2009 13:49:53.0515 (UTC) FILETIME=[B2F32BB0:01C9CF1A]
+X-OriginalArrivalTime: 07 May 2009 13:49:49.0203 (UTC) FILETIME=[B0613630:01C9CF1A]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,176 +35,312 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Doug Thompson <dougthompson@xmission.com>
 
-Reviewed-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+This is for dumping different registers and testing the address mapping
+logic using the ECC syndromes.
+
+Borislav: split sysfs attrs per file
+
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |  154 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 154 insertions(+), 0 deletions(-)
+ drivers/edac/amd64_edac_dbg.c |  288 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 288 insertions(+), 0 deletions(-)
+ create mode 100644 drivers/edac/amd64_edac_dbg.c
 
-diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index 91f414e..0e6a44c 100644
---- a/drivers/edac/amd64_edac.c
-+++ b/drivers/edac/amd64_edac.c
-@@ -923,4 +923,158 @@ static void amd64_read_dbam_reg(struct amd64_pvt *pvt)
- 	}
- }
- 
+diff --git a/drivers/edac/amd64_edac_dbg.c b/drivers/edac/amd64_edac_dbg.c
+new file mode 100644
+index 0000000..3741af9
+--- /dev/null
++++ b/drivers/edac/amd64_edac_dbg.c
+@@ -0,0 +1,288 @@
++#include "amd64_edac.h"
++
 +/*
-+ * amd64_set_dct_base_and_mask(pvt)
++ * amd64_nbea_store
 + *
-+ *	NOTE: CPU Revision Dependent code: Rev E and Rev F
++ * 	Accept a hex value and store it into the virutal error
++ *	register file, field:	nbeal and nbeah
 + *
-+ *	Set the DCSB and DCSM mask values depending on the CPU revision value.
-+ *	Also set the shift factor for the DCSB and DCSM values.
++ *	Assume virtual error values have already been set for:
++ *		NBSL, NBSH and NBCFG
 + *
-+ *	->dcs_mask_notused, REV E:
-+ *
-+ *	To find the max InputAddr for the csrow, start with the base
-+ *	address and set all bits that are "don't care" bits in the test at
-+ *	the start of section 3.5.4 (p. 84).
-+ *
-+ *	The "don't care" bits are all set bits in the mask and
-+ *	all bits in the gaps between bit ranges [35-25] and [19-13].
-+ *	The value REV_E_DCS_NOTUSED_BITS represents bits [24-20] and [12-0],
-+ *	which are all bits in the above-mentioned gaps.
-+ *
-+ *	->dcs_mask_notused, REV F and later:
-+ *
-+ *	To find the max InputAddr for the csrow, start with the base
-+ *	address and set all bits that are "don't care" bits in the test at
-+ *	the start of NPT section 4.5.4 (p. 87).
-+ *
-+ *	The "don't care" bits are all set bits in the mask and
-+ *	all bits in the gaps between bit ranges [36-27] and [21-13].
-+ *
-+ *	The value REV_F_F1Xh_DCS_NOTUSED_BITS represents bits [26-22] and
-+ *	[12-0], which are all bits in the above-mentioned gaps.
++ *	Then proceed to map the error values to a:
++ *		MC, CSROW and CHANNEL
 + */
-+static void amd64_set_dct_base_and_mask(struct amd64_pvt *pvt)
++static ssize_t amd64_nbea_store(struct mem_ctl_info *mci,
++					const char *data, size_t count)
 +{
-+	if (pvt->ext_model >= OPTERON_CPU_REV_F) {
-+		pvt->dcsb_base        = REV_F_F1Xh_DCSB_BASE_BITS;
-+		pvt->dcsm_mask        = REV_F_F1Xh_DCSM_MASK_BITS;
-+		pvt->dcs_mask_notused    = REV_F_F1Xh_DCS_NOTUSED_BITS;
-+		pvt->dcs_shift        = REV_F_F1Xh_DCS_SHIFT;
++	struct amd64_pvt *pvt = mci->pvt_info;
++	unsigned long long value;
++	int rc;
 +
-+		switch (boot_cpu_data.x86) {
-+		case 0xf:
-+			pvt->num_dcsm = REV_F_DCSM_COUNT;
-+			break;
++	rc = strict_strtoull(data, 16, &value);
++	if (rc != -EINVAL) {
++		debugf0("%s() received NBEA= 0x%llx\n", __func__, value);
 +
-+		case 0x10:
-+			pvt->num_dcsm = F10_DCSM_COUNT;
-+			break;
++		/* place the value into the virtual error packet */
++		pvt->ctl_error_info.nbeal = (u32) value;
++		value >>= 32;
++		pvt->ctl_error_info.nbeah = (u32) value;
 +
-+		case 0x11:
-+			pvt->num_dcsm = F11_DCSM_COUNT;
-+			break;
++		/* Process the Mapping request */
++		/* TODO: Add race preventation */
++		amd64_process_error_info(mci, &pvt->ctl_error_info, 1);
 +
-+		default:
-+			amd64_printk(KERN_ERR, "Unsupported family!\n");
-+			break;
-+		}
-+	} else {
-+		pvt->dcsb_base        = REV_E_DCSB_BASE_BITS;
-+		pvt->dcsm_mask        = REV_E_DCSM_MASK_BITS;
-+		pvt->dcs_mask_notused    = REV_E_DCS_NOTUSED_BITS;
-+		pvt->dcs_shift        = REV_E_DCS_SHIFT;
-+		pvt->num_dcsm        = REV_E_DCSM_COUNT;
++		return count;
 +	}
++	return rc;
 +}
 +
 +/*
-+ * amd64_read_dct_base_mask
++ * amd64_nbea_show
 + *
-+ *	Function 2 Offset F10_DCSB0
-+ *	Read in the DCS Base and DCS Mask hw registers
++ *	display back what the last NBEA address was written
 + */
-+static void amd64_read_dct_base_mask(struct amd64_pvt *pvt)
++static ssize_t amd64_nbea_show(struct mem_ctl_info *mci, char *data)
 +{
-+	int cs;
-+	int err;
-+	int reg;
++	struct amd64_pvt *pvt = mci->pvt_info;
++	u64 value;
 +
-+	debugf0("%s()\n", __func__);
++	value = pvt->ctl_error_info.nbeah;
++	value <<= 32;
++	value |= pvt->ctl_error_info.nbeal;
 +
-+	amd64_set_dct_base_and_mask(pvt);
-+
-+	for (cs = 0; cs < CHIPSELECT_COUNT; cs++) {
-+		reg = K8_DCSB0 + (cs * 4);
-+		err = pci_read_config_dword(pvt->dram_f2_ctl, reg,
-+						&pvt->dcsb0[cs]);
-+		if (unlikely(err))
-+			debugf0("%s() Reading K8_DCSB0[%d] failed\n",
-+				__func__, cs);
-+		else
-+			debugf0("  DCSB0[%d]=0x%08x reg: F2x%x\n",
-+				cs, pvt->dcsb0[cs], reg);
-+
-+		/* If DCT are NOT ganged, then read in DCT1's base */
-+		if (boot_cpu_data.x86 >= 0x10 && !dct_ganging_enabled(pvt)) {
-+			reg = F10_DCSB1 + (cs * 4);
-+			err = pci_read_config_dword(pvt->dram_f2_ctl, reg,
-+							&pvt->dcsb1[cs]);
-+			if (err != 0)
-+				debugf0("%s() Reading F10_DCSB1[%d] failed\n",
-+					__func__, cs);
-+			else
-+				debugf0("  DCSB1[%d]=0x%08x reg: F2x%x\n",
-+					cs, pvt->dcsb1[cs], reg);
-+		} else {
-+			pvt->dcsb1[cs] = 0;
-+		}
-+	}
-+
-+	for (cs = 0; cs < pvt->num_dcsm; cs++) {
-+		reg = K8_DCSB0 + (cs * 4);
-+		err = pci_read_config_dword(pvt->dram_f2_ctl, reg,
-+					&pvt->dcsm0[cs]);
-+		if (unlikely(err))
-+			debugf0("%s() Reading K8_DCSM0 failed\n", __func__);
-+		else
-+			debugf0("    DCSM0[%d]=0x%08x reg: F2x%x\n",
-+				cs, pvt->dcsm0[cs], reg);
-+
-+		/* If DCT are NOT ganged, then read in DCT1's mask */
-+		if (boot_cpu_data.x86 >= 0x10 && !dct_ganging_enabled(pvt)) {
-+			reg = F10_DCSM1 + (cs * 4);
-+			err = pci_read_config_dword(pvt->dram_f2_ctl, reg,
-+					&pvt->dcsm1[cs]);
-+			if (unlikely(err))
-+				debugf0("%s() Reading F10_DCSM1[%d] failed\n",
-+					__func__, cs);
-+			else
-+				debugf0("    DCSM1[%d]=0x%08x reg: F2x%x\n",
-+					cs, pvt->dcsm1[cs], reg);
-+		} else
-+			pvt->dcsm1[cs] = 0;
-+	}
++	return sprintf(data, "%llx\n", value);
 +}
 +
-+static enum mem_type amd64_determine_memory_type(struct amd64_pvt *pvt)
++/*
++ * amd64_nbsl_store
++ *
++ *	accept and store the NBSL value user desires
++ */
++static ssize_t amd64_nbsl_store(struct mem_ctl_info *mci,
++					const char *data, size_t count)
 +{
-+	enum mem_type type;
++	struct amd64_pvt *pvt = mci->pvt_info;
++	unsigned long value;
++	int rc;
 +
-+	if (boot_cpu_data.x86 >= 0x10 || pvt->ext_model >= OPTERON_CPU_REV_F) {
-+		/* Rev F and later */
-+		type = (pvt->dclr0 & BIT(16)) ? MEM_DDR2 : MEM_RDDR2;
-+	} else {
-+		/* Rev E and earlier */
-+		type = (pvt->dclr0 & BIT(18)) ? MEM_DDR : MEM_RDDR;
++	rc = strict_strtoul(data, 16, &value);
++	if (rc != -EINVAL) {
++		debugf0("%s() received NBSL= 0x%lx\n", __func__, value);
++
++		/* place the NBSL value into the virtual error packet */
++		pvt->ctl_error_info.nbsl = (u32) value;
++
++		return count;
 +	}
-+
-+	debugf1("  Memory type is: %s\n",
-+		(type == MEM_DDR2) ? "MEM_DDR2" :
-+		(type == MEM_RDDR2) ? "MEM_RDDR2" :
-+		(type == MEM_DDR) ? "MEM_DDR" : "MEM_RDDR");
-+
-+	return type;
++	return rc;
 +}
 +
- 
++/*
++ * amd64_nbsl_show
++ *
++ *	display back what the last NBSL value written
++ */
++static ssize_t amd64_nbsl_show(struct mem_ctl_info *mci, char *data)
++{
++	struct amd64_pvt *pvt = mci->pvt_info;
++	u32 value;
++
++	value = pvt->ctl_error_info.nbsl;
++
++	return sprintf(data, "%x\n", value);
++}
++
++/*
++ * amd64_nbsh_store
++ *
++ *	accept and store the NBSH value user desires
++ */
++static ssize_t amd64_nbsh_store(struct mem_ctl_info *mci,
++					const char *data, size_t count)
++{
++	struct amd64_pvt *pvt = mci->pvt_info;
++	unsigned long value;
++	int rc;
++
++	rc = strict_strtoul(data, 16, &value);
++	if (rc != -EINVAL) {
++		debugf0("%s() received NBSL= 0x%lx\n", __func__, value);
++
++		/* place the NBSL value into the virtual error packet */
++		pvt->ctl_error_info.nbsh = (u32) value;
++
++		return count;
++	}
++	return rc;
++}
++
++/*
++ * amd64_nbsh_show
++ *
++ *	display back what the last NBSL value written
++ */
++static ssize_t amd64_nbsh_show(struct mem_ctl_info *mci, char *data)
++{
++	struct amd64_pvt *pvt = mci->pvt_info;
++	u32 value;
++
++	value = pvt->ctl_error_info.nbsh;
++
++	return sprintf(data, "%x\n", value);
++}
++
++/*
++ * amd64_nbcfg_store
++ *
++ *	accept and store the NBSL value user desires
++ */
++static ssize_t amd64_nbcfg_store(struct mem_ctl_info *mci,
++					const char *data, size_t count)
++{
++	struct amd64_pvt *pvt = mci->pvt_info;
++	unsigned long value;
++	int rc;
++
++	rc = strict_strtoul(data, 16, &value);
++	if (rc != -EINVAL) {
++		debugf0("%s() received NBCFG= 0x%lx\n", __func__, value);
++
++		/* place the NBSL value into the virtual error packet */
++		pvt->ctl_error_info.nbcfg = (u32) value;
++
++		return count;
++	}
++	return rc;
++}
++
++/*
++ *	Various show routines for the controls of a MCI
++ */
++static ssize_t amd64_nbcfg_show(struct mem_ctl_info *mci, char *data)
++{
++	struct amd64_pvt *pvt = mci->pvt_info;
++
++	return sprintf(data, "%x\n",
++		pvt->ctl_error_info.nbcfg);
++}
++
++
++static ssize_t amd64_dhar_show(struct mem_ctl_info *mci, char *data)
++{
++	struct amd64_pvt *pvt = mci->pvt_info;
++
++	return sprintf(data, "%x\n", pvt->dhar);
++}
++
++
++static ssize_t amd64_dbam_show(struct mem_ctl_info *mci, char *data)
++{
++	struct amd64_pvt *pvt = mci->pvt_info;
++
++	return sprintf(data, "%x\n", pvt->dbam0);
++}
++
++
++static ssize_t amd64_topmem_show(struct mem_ctl_info *mci, char *data)
++{
++	struct amd64_pvt *pvt = mci->pvt_info;
++
++	return sprintf(data, "%llx\n", pvt->top_mem);
++}
++
++
++static ssize_t amd64_topmem2_show(struct mem_ctl_info *mci, char *data)
++{
++	struct amd64_pvt *pvt = mci->pvt_info;
++
++	return sprintf(data, "%llx\n", pvt->top_mem2);
++}
++
++static ssize_t amd64_hole_show(struct mem_ctl_info *mci, char *data)
++{
++	u64 hole_base = 0;
++	u64 hole_offset = 0;
++	u64 hole_size = 0;
++
++	amd64_get_dram_hole_info(mci, &hole_base, &hole_offset, &hole_size);
++
++	return sprintf(data, "%llx %llx %llx\n", hole_base, hole_offset,
++						 hole_size);
++}
++
++struct mcidev_sysfs_attribute amd64_dbg_attrs[] = {
++
++	{
++		.attr = {
++			.name = "zctl_nbea",
++			.mode = (S_IRUGO | S_IWUSR)
++		},
++		.show = amd64_nbea_show,
++		.store = amd64_nbea_store,
++	},
++	{
++		.attr = {
++			.name = "zctl_nbsl",
++			.mode = (S_IRUGO | S_IWUSR)
++		},
++		.show = amd64_nbsl_show,
++		.store = amd64_nbsl_store,
++	},
++	{
++		.attr = {
++			.name = "zctl_nbsh",
++			.mode = (S_IRUGO | S_IWUSR)
++		},
++		.show = amd64_nbsh_show,
++		.store = amd64_nbsh_store,
++	},
++	{
++		.attr = {
++			.name = "zctl_nbcfg",
++			.mode = (S_IRUGO | S_IWUSR)
++		},
++		.show = amd64_nbcfg_show,
++		.store = amd64_nbcfg_store,
++	},
++	{
++		.attr = {
++			.name = "zhw_dhar",
++			.mode = (S_IRUGO)
++		},
++		.show = amd64_dhar_show,
++		.store = NULL,
++	},
++	{
++		.attr = {
++			.name = "zhw_dbam",
++			.mode = (S_IRUGO)
++		},
++		.show = amd64_dbam_show,
++		.store = NULL,
++	},
++	{
++		.attr = {
++			.name = "zhw_topmem",
++			.mode = (S_IRUGO)
++		},
++		.show = amd64_topmem_show,
++		.store = NULL,
++	},
++	{
++		.attr = {
++			.name = "zhw_topmem2",
++			.mode = (S_IRUGO)
++		},
++		.show = amd64_topmem2_show,
++		.store = NULL,
++	},
++	{
++		.attr = {
++			.name = "zhw_hole",
++			.mode = (S_IRUGO)
++		},
++		.show = amd64_hole_show,
++		.store = NULL,
++	},
++};
 -- 
 1.6.2.4
 
