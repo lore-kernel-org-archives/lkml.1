@@ -1,47 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761585AbZEGSeZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761053AbZEGSgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761585AbZEGSeZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 14:34:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757807AbZEGSd5
+	id S1761053AbZEGSgr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 14:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbZEGSgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 14:33:57 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:60597 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755943AbZEGSd4 (ORCPT
+	Thu, 7 May 2009 14:36:38 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:44076
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751251AbZEGSgh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 14:33:56 -0400
-Date: Thu, 7 May 2009 13:55:08 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Alok Kataria <akataria@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-In-Reply-To: <1241718925.6311.1586.camel@laptop>
-Message-ID: <alpine.DEB.1.10.0905071352140.22107@qirst.com>
-References: <1241462661.412.8.camel@alok-dev1>  <4A00ADDE.9000908@zytor.com>  <1241560625.8665.17.camel@alok-dev1>  <alpine.DEB.1.10.0905071010170.24528@qirst.com>  <1241716053.6311.1514.camel@laptop> <1241716422.6311.1524.camel@laptop> 
- <alpine.DEB.1.10.0905071317270.22107@qirst.com>  <1241717849.6311.1554.camel@laptop>  <alpine.DEB.1.10.0905071332280.22107@qirst.com> <1241718925.6311.1586.camel@laptop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 7 May 2009 14:36:37 -0400
+Date: Thu, 07 May 2009 11:36:32 -0700 (PDT)
+Message-Id: <20090507.113632.210373283.davem@davemloft.net>
+To: dwmw2@infradead.org
+Cc: joerg.roedel@amd.com, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       mingo@redhat.com, airlied@linux.ie
+Subject: Re: IOMMU and graphics cards
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1241691721.3531.73.camel@macbook.infradead.org>
+References: <20090507164742V.fujita.tomonori@lab.ntt.co.jp>
+	<20090507100114.GF4059@amd.com>
+	<1241691721.3531.73.camel@macbook.infradead.org>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009, Peter Zijlstra wrote:
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Thu, 07 May 2009 11:22:01 +0100
 
-> > If there is a single process running on a processor and no other process
-> > is contending then there is no need to do involuntary preemption.
->
-> Sure, and CONFIG_SCHED_HRTICK does that, the trick is getting it to not
-> hurt others.
+> On Thu, 2009-05-07 at 12:01 +0200, Joerg Roedel wrote:
+>> > Looks like the DRM code uses the DMA API.
+>> 
+>> The proprietary drivers make problems so far. For the ATI one I am in
+>> contact with the developers to try to fix it. But I can't do anything
+>> about the other proprietary driver I am aware of :-(
+> 
+> I see no harm in "breaking" code which was already broken. If that's the
+> only reason we're enabling the graphics workaround, let's turn it off.
 
-If other processors are scheduled on the processor then an IPI could
-notify the scheduler over there to start timer interrupts for preemption
-again.
+Seriously, this is an enormous price to pay just for one bad apple
+proprietary driver.
 
-I still see timer interrupts ongoing even with CONFIG_SCHED_HRTICK.
+I can't believe the level of concessions some people are suggesting.
 
+Let's not make IOMMU's basically useless by working around one broken
+driver.
+
+Proper interfaces for what this driver is trying to do have existed in
+the kernel for 10+ years.  There are no excuses, and it's time for
+Nvidia to get with the game plan.
