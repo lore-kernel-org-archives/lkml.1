@@ -1,64 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753937AbZEGT1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761315AbZEGT2M@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753937AbZEGT1t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 15:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750912AbZEGT1i
+	id S1761315AbZEGT2M (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 15:28:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755209AbZEGT1t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 15:27:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41657 "EHLO mx2.redhat.com"
+	Thu, 7 May 2009 15:27:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38228 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751970AbZEGT1i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 15:27:38 -0400
-Message-ID: <4A0335CB.5010408@redhat.com>
-Date: Thu, 07 May 2009 22:26:03 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1753525AbZEGT1s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 15:27:48 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Thu, 7 May 2009 21:27:11 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Matt Price <moptop99@gmail.com>, linux-kernel@vger.kernel.org,
+       Nigel Cunningham <nigel@tuxonice.net>, Pavel Machek <pavel@ucw.cz>,
+       linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <200905072022.15202.rjw@sisk.pl> <b637ec0b0905071157x2d6f050aqcb825241c51ccb84@mail.gmail.com>
+In-Reply-To: <b637ec0b0905071157x2d6f050aqcb825241c51ccb84@mail.gmail.com>
 MIME-Version: 1.0
-To: Chris Wright <chrisw@sous-sol.org>
-CC: Gregory Haskins <ghaskins@novell.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <4A031471.7000406@novell.com> <4A0322F1.2000905@redhat.com> <4A032390.6030100@gmail.com> <4A032472.4030106@redhat.com> <4A03259B.3050500@gmail.com> <4A032771.6050703@redhat.com> <4A032A74.2020809@novell.com> <4A032FDD.8020209@redhat.com> <20090507190751.GE3036@sequoia.sous-sol.org> <4A033281.8050002@novell.com> <20090507192145.GF3036@sequoia.sous-sol.org>
-In-Reply-To: <20090507192145.GF3036@sequoia.sous-sol.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905072127.11995.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Wright wrote:
-> * Gregory Haskins (ghaskins@novell.com) wrote:
->   
->> Chris Wright wrote:
->>     
->>> * Avi Kivity (avi@redhat.com) wrote:
->>>       
->>>> Gregory Haskins wrote:
->>>>         
->>>>> Cool,  I will code this up and submit it.  While Im at it, Ill run it
->>>>> through the "nullio" ringer, too. ;)  It would be cool to see the
->>>>> pv-mmio hit that 2.07us number.  I can't think of any reason why this
->>>>> will not be the case.
->>>>>       
->>>>>           
->>>> Don't - it's broken.  It will also catch device assignment mmio and  
->>>> hypercall them.
->>>>         
->>> Not necessarily.  It just needs to be creative w/ IO_COND
->>>       
->> Hi Chris,
->>    Could you elaborate?  How would you know which pages to hypercall and
->> which to let PF?
->>     
->
-> Was just thinking of some ugly mangling of the addr (I'm not entirely
-> sure what would work best).
->   
+On Thursday 07 May 2009, Fabio Comolli wrote:
+> On Thu, May 7, 2009 at 8:22 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Thursday 07 May 2009, Matt Price wrote:
+> >> On Thu, May 7, 2009 at 1:45 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> >> > On Thursday 07 May 2009, U Kuehn wrote:
+> >> >> Pavel Machek wrote:
+> >> >> >> T
+> >> > Also, as you can see from my previous message, I'm not a big fan of fighting
+> >> > over this once again.  Lets try to work together to do something productive
+> >> > instead, shall we?
+> >> >
+> >>
+> >> thank you rafael.  i would really like to see the fighting stop, too.
+> >> Perhaps the best palce to start would be to look directly at the
+> >> patches and, if there are weaknesses, discuss how to improve them?
+> >
+> > Yes, I've talked about that already with Nigel and there's a kind of a plan.
+> >
+> 
+> Well, if I may jump in I suggest you start with the full-memory image
+> functionality. This is in my opinion the biggest advantage in tuxonice
+> vs. uswsusp.
 
-I think we just past the "too complicated" threshold.
+In fact I agree, but there's a catch.  The way in which TuxOnIce operates LRU
+pages is based on some assumptions that may or may not be satisfied in future,
+so if we decide to merge it, then we'll have to make sure these assumptions
+will be satisfied.  That in turn is going to require quite some discussion I
+guess.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+We'll see how the things work out.
 
+Thanks,
+Rafael
