@@ -1,178 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761158AbZEGBsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756918AbZEGBsj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761158AbZEGBsT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 21:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbZEGBsD
+	id S1756918AbZEGBsj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 21:48:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756559AbZEGBs1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 21:48:03 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:59714 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752375AbZEGBsB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 21:48:01 -0400
-Date: Thu, 07 May 2009 10:48:01 +0900 (JST)
-Message-Id: <20090507.104801.104058628.ryov@valinux.co.jp>
-To: righi.andrea@gmail.com
-Cc: vgoyal@redhat.com, akpm@linux-foundation.org, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
-       m-ikeda@ds.jp.nec.com, peterz@infradead.org
-Subject: Re: IO scheduler based IO Controller V2
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <20090506223512.GE4282@linux>
-References: <20090506213453.GC4282@linux>
-	<20090506215235.GJ8180@redhat.com>
-	<20090506223512.GE4282@linux>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 6 May 2009 21:48:27 -0400
+Received: from mail.windriver.com ([147.11.1.11]:35224 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754357AbZEGBs0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 21:48:26 -0400
+From: Harry Ciao <qingtao.cao@windriver.com>
+To: norsk5@yahoo.com, bluesmoke-devel@lists.sourceforge.net
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: [v0 PATCH 1/1] Use dev_name() for AMD8111/AMD8131 EDAC driver
+Date: Thu,  7 May 2009 09:47:38 +0800
+Message-Id: <1241660858-21105-2-git-send-email-qingtao.cao@windriver.com>
+X-Mailer: git-send-email 1.5.6.2
+In-Reply-To: <1241660858-21105-1-git-send-email-qingtao.cao@windriver.com>
+References: <1241660858-21105-1-git-send-email-qingtao.cao@windriver.com>
+X-OriginalArrivalTime: 07 May 2009 01:47:10.0749 (UTC) FILETIME=[BCBA2CD0:01C9CEB5]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Andrea Righi <righi.andrea@gmail.com>
-Subject: Re: IO scheduler based IO Controller V2
-Date: Thu, 7 May 2009 00:35:13 +0200
+The device structure no longer has bus_id member, dev_name() should
+be used for AMD8111 & AMD8131 EDAC driver instead. Also, their Makefile 
+entries are lost, add them.
 
-> On Wed, May 06, 2009 at 05:52:35PM -0400, Vivek Goyal wrote:
-> > On Wed, May 06, 2009 at 11:34:54PM +0200, Andrea Righi wrote:
-> > > On Wed, May 06, 2009 at 04:32:28PM -0400, Vivek Goyal wrote:
-> > > > Hi Andrea and others,
-> > > > 
-> > > > I always had this doubt in mind that any kind of 2nd level controller will
-> > > > have no idea about underlying IO scheduler queues/semantics. So while it
-> > > > can implement a particular cgroup policy (max bw like io-throttle or
-> > > > proportional bw like dm-ioband) but there are high chances that it will
-> > > > break IO scheduler's semantics in one way or other.
-> > > > 
-> > > > I had already sent out the results for dm-ioband in a separate thread.
-> > > > 
-> > > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg07258.html
-> > > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg07573.html
-> > > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08177.html
-> > > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08345.html
-> > > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08355.html
-> > > > 
-> > > > Here are some basic results with io-throttle. Andrea, please let me know
-> > > > if you think this is procedural problem. Playing with io-throttle patches
-> > > > for the first time.
-> > > > 
-> > > > I took V16 of your patches and trying it out with 2.6.30-rc4 with CFQ
-> > > > scheduler.
-> > > > 
-> > > > I have got one SATA drive with one partition on it.
-> > > > 
-> > > > I am trying to create one cgroup and assignn 8MB/s limit to it and launch
-> > > > on RT prio 0 task and one BE prio 7 task and see how this 8MB/s is divided
-> > > > between these tasks. Following are the results.
-> > > > 
-> > > > Following is my test script.
-> > > > 
-> > > > *******************************************************************
-> > > > #!/bin/bash
-> > > > 
-> > > > mount /dev/sdb1 /mnt/sdb
-> > > > 
-> > > > mount -t cgroup -o blockio blockio /cgroup/iot/
-> > > > mkdir -p /cgroup/iot/test1 /cgroup/iot/test2
-> > > > 
-> > > > # Set bw limit of 8 MB/ps on sdb
-> > > > echo "/dev/sdb:$((8 * 1024 * 1024)):0:0" >
-> > > > /cgroup/iot/test1/blockio.bandwidth-max
-> > > > 
-> > > > sync
-> > > > echo 3 > /proc/sys/vm/drop_caches
-> > > > 
-> > > > echo $$ > /cgroup/iot/test1/tasks
-> > > > 
-> > > > # Launch a normal prio reader.
-> > > > ionice -c 2 -n 7 dd if=/mnt/sdb/zerofile1 of=/dev/zero &
-> > > > pid1=$!
-> > > > echo $pid1
-> > > > 
-> > > > # Launch an RT reader  
-> > > > ionice -c 1 -n 0 dd if=/mnt/sdb/zerofile2 of=/dev/zero &
-> > > > pid2=$!
-> > > > echo $pid2
-> > > > 
-> > > > wait $pid2
-> > > > echo "RT task finished"
-> > > > **********************************************************************
-> > > > 
-> > > > Test1
-> > > > =====
-> > > > Test two readers (one RT class and one BE class) and see how BW is
-> > > > allocated with-in cgroup
-> > > > 
-> > > > With io-throttle patches
-> > > > ------------------------
-> > > > - Two readers, first BE prio 7, second RT prio 0
-> > > > 
-> > > > 234179072 bytes (234 MB) copied, 55.8482 s, 4.2 MB/s
-> > > > 234179072 bytes (234 MB) copied, 55.8975 s, 4.2 MB/s
-> > > > RT task finished
-> > > > 
-> > > > Note: See, there is no difference in the performance of RT or BE task.
-> > > > Looks like these got throttled equally.
-> > > 
-> > > OK, this is coherent with the current io-throttle implementation. IO
-> > > requests are throttled without the concept of the ioprio model.
-> > > 
-> > > We could try to distribute the throttle using a function of each task's
-> > > ioprio, but ok, the obvious drawback is that it totally breaks the logic
-> > > used by the underlying layers.
-> > > 
-> > > BTW, I'm wondering, is it a very critical issue? I would say why not to
-> > > move the RT task to a different cgroup with unlimited BW? or limited BW
-> > > but with other tasks running at the same IO priority...
-> > 
-> > So one of hypothetical use case probably  could be following. Somebody
-> > is having a hosted server and customers are going to get there
-> > applications running in a particular cgroup with a limit on max bw.
-> > 
-> > 			root
-> > 		  /      |      \
-> > 	     cust1      cust2   cust3
-> > 	   (20 MB/s)  (40MB/s)  (30MB/s)
-> > 
-> > Now all three customers will run their own applications/virtual machines
-> > in their respective groups with upper limits. Will we say to these that
-> > all your tasks will be considered as same class and same prio level.
-> > 
-> > Assume cust1 is running a hypothetical application which creates multiple
-> > threads and assigns these threads different priorities based on its needs
-> > at run time. How would we handle this thing?
-> > 
-> > You can't collect all the RT tasks from all customers and move these to a
-> > single cgroup. Or ask customers to separate out their tasks based on
-> > priority level and give them multiple groups of different priority.
-> 
-> Clear.
-> 
-> Unfortunately, I think, with absolute BW limits at a certain point, if
-> we hit the limit, we need to block the IO request. That's the same
-> either, when we dispatch or submit the request. And the risk is to break
-> the logic of the IO priorities and fall in the classic priority
-> inversion problem.
-> 
-> The difference is that probably working at the CFQ level gives a better
-> control so we can handle these cases appropriately and avoid the
-> priority inversion problems.
-> 
-> Thanks,
-> -Andrea
+Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
+---
+ drivers/edac/Makefile       |    2 ++
+ drivers/edac/amd8111_edac.c |    4 ++--
+ drivers/edac/amd8131_edac.c |    2 +-
+ 3 files changed, 5 insertions(+), 3 deletions(-)
 
-If RT tasks in cust1 issue IOs intensively, are IOs issued from BE
-tasks running on cust2 and cust3 suppressed and cust1 can use whole
-bandwidth?
-I think that CFQ's class and priority should be preserved within a
-given bandwidth to each cgroup.
+diff --git a/drivers/edac/Makefile b/drivers/edac/Makefile
+index a5fdcf0..5907681 100644
+--- a/drivers/edac/Makefile
++++ b/drivers/edac/Makefile
+@@ -35,3 +35,5 @@ obj-$(CONFIG_EDAC_MPC85XX)		+= mpc85xx_edac.o
+ obj-$(CONFIG_EDAC_MV64X60)		+= mv64x60_edac.o
+ obj-$(CONFIG_EDAC_CELL)			+= cell_edac.o
+ obj-$(CONFIG_EDAC_PPC4XX)		+= ppc4xx_edac.o
++obj-$(CONFIG_EDAC_AMD8111)		+= amd8111_edac.o
++obj-$(CONFIG_EDAC_AMD8131)		+= amd8131_edac.o
+diff --git a/drivers/edac/amd8111_edac.c b/drivers/edac/amd8111_edac.c
+index 6146921..2cb58ef 100644
+--- a/drivers/edac/amd8111_edac.c
++++ b/drivers/edac/amd8111_edac.c
+@@ -389,7 +389,7 @@ static int amd8111_dev_probe(struct pci_dev *dev,
+ 	dev_info->edac_dev->dev = &dev_info->dev->dev;
+ 	dev_info->edac_dev->mod_name = AMD8111_EDAC_MOD_STR;
+ 	dev_info->edac_dev->ctl_name = dev_info->ctl_name;
+-	dev_info->edac_dev->dev_name = dev_info->dev->dev.bus_id;
++	dev_info->edac_dev->dev_name = dev_name(&dev_info->dev->dev);
+ 
+ 	if (edac_op_state == EDAC_OPSTATE_POLL)
+ 		dev_info->edac_dev->edac_check = dev_info->check;
+@@ -473,7 +473,7 @@ static int amd8111_pci_probe(struct pci_dev *dev,
+ 	pci_info->edac_dev->dev = &pci_info->dev->dev;
+ 	pci_info->edac_dev->mod_name = AMD8111_EDAC_MOD_STR;
+ 	pci_info->edac_dev->ctl_name = pci_info->ctl_name;
+-	pci_info->edac_dev->dev_name = pci_info->dev->dev.bus_id;
++	pci_info->edac_dev->dev_name = dev_name(&pci_info->dev->dev);
+ 
+ 	if (edac_op_state == EDAC_OPSTATE_POLL)
+ 		pci_info->edac_dev->edac_check = pci_info->check;
+diff --git a/drivers/edac/amd8131_edac.c b/drivers/edac/amd8131_edac.c
+index c083b31..b432d60 100644
+--- a/drivers/edac/amd8131_edac.c
++++ b/drivers/edac/amd8131_edac.c
+@@ -287,7 +287,7 @@ static int amd8131_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	dev_info->edac_dev->dev = &dev_info->dev->dev;
+ 	dev_info->edac_dev->mod_name = AMD8131_EDAC_MOD_STR;
+ 	dev_info->edac_dev->ctl_name = dev_info->ctl_name;
+-	dev_info->edac_dev->dev_name = dev_info->dev->dev.bus_id;
++	dev_info->edac_dev->dev_name = dev_name(&dev_info->dev->dev);
+ 
+ 	if (edac_op_state == EDAC_OPSTATE_POLL)
+ 		dev_info->edac_dev->edac_check = amd8131_chipset.check;
+-- 
+1.5.6.2
 
-Thanks,
-Ryo Tsuruta
