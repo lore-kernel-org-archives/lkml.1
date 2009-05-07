@@ -1,48 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761697AbZEGCXc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758930AbZEGCkf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761697AbZEGCXc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 22:23:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbZEGCXX
+	id S1758930AbZEGCkf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 22:40:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbZEGCkZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 22:23:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40482 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751469AbZEGCXW (ORCPT
+	Wed, 6 May 2009 22:40:25 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:40346 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752425AbZEGCkZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 22:23:22 -0400
-Date: Wed, 6 May 2009 19:25:38 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Jan Blunck <jblunck@suse.de>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev
- tmpfs
-Message-ID: <20090506192538.4966c283@infradead.org>
-In-Reply-To: <ac3eb2510905061908u7acbd1b2nf991aa85e1517fe4@mail.gmail.com>
-References: <1241097822.2516.3.camel@poy>
-	<20090506184122.721c890d@infradead.org>
-	<ac3eb2510905061908u7acbd1b2nf991aa85e1517fe4@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Wed, 6 May 2009 22:40:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=URN+PtBdG9KvUVOYnpVOunUtVKnKFKQ304M+RXxiNdyigfL1M7FNsmsGHBxjG2h88a
+         dxfJao57J2c6gOM6d4PbVwBUbEf/TNNaUtNiQ9KIRb1BOHz4WI9FTYdTmpPo/VJtPqZH
+         nu89Vb9+1BBorU2kAqSiYmpSp8JGgAXOObALI=
+Date: Thu, 7 May 2009 11:40:16 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>, <linux-mm@kvack.org>
+Subject: Re: [PATCH 4/7] proc: export more page flags in /proc/kpageflags
+Message-Id: <20090507114016.40ee6577.minchan.kim@barrios-desktop>
+In-Reply-To: <20090507014914.364045992@intel.com>
+References: <20090507012116.996644836@intel.com>
+	<20090507014914.364045992@intel.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009 04:08:33 +0200
-Kay Sievers <kay.sievers@vrfy.org> wrote:
-> 
-> How will you solve the dynamic device numbers? They are a complete
-> reality today.
+On Thu, 07 May 2009 09:21:21 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-not for storage though... and for the rest udev is fast enough in
-practice....
+> +	 * pseudo flags for the well known (anonymous) memory mapped pages
+> +	 */
+> +	if (!PageSlab(page) && page_mapped(page))
+> +		u |= 1 << KPF_MMAP;
+> +	if (PageAnon(page))
+> +		u |= 1 << KPF_ANON;
+
+Why do you check PageSlab on user pages ?
+Is there any case that PageSlab == true && page_mapped == true ?
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Kinds Regards
+Minchan Kim
