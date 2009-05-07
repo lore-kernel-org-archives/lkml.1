@@ -1,54 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756382AbZEGXMo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754911AbZEGXOV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756382AbZEGXMo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 19:12:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZEGXMa
+	id S1754911AbZEGXOV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 19:14:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZEGXOK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 19:12:30 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:34147 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756891AbZEGXM2 convert rfc822-to-8bit (ORCPT
+	Thu, 7 May 2009 19:14:10 -0400
+Received: from outbound-mail-101.bluehost.com ([69.89.22.11]:41380 "HELO
+	outbound-mail-101.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751586AbZEGXOJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 19:12:28 -0400
-MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.44L0.0905071843100.3868-100000@netrider.rowland.org>
-References: <ac3eb2510905071439j7736711axc729008923435cea@mail.gmail.com> 
-	<Pine.LNX.4.44L0.0905071843100.3868-100000@netrider.rowland.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Fri, 8 May 2009 01:12:07 +0200
-Message-ID: <ac3eb2510905071612v61a27760hffc684ee87df9249@mail.gmail.com>
-Subject: Re: usbfs, claiming entire usb devices
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       Pantelis Koukousoulas <pktoss@gmail.com>,
-       USB list <linux-usb@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 7 May 2009 19:14:09 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=oXtZVVNVGt6xLIfdmRRJAY/ZRpmvGn684+fKE3CCbY2n0f+SW22LwHkJLtF5WmnjTw9CrmYf4u75BQC3Jbnt7/P6sf0pgeQmJBU+FNWYZf70IlPbb7GoTKcJnYrNEDkO;
+Date: Thu, 7 May 2009 16:14:06 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: nigel@tuxonice.net
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Fabio Comolli <fabio.comolli@gmail.com>,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Message-ID: <20090507161406.35d953df@jbarnes-g45>
+In-Reply-To: <1241728860.19600.207.camel@nigel-laptop>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	<200905072022.15202.rjw@sisk.pl>
+	<b637ec0b0905071157x2d6f050aqcb825241c51ccb84@mail.gmail.com>
+	<200905072127.11995.rjw@sisk.pl>
+	<1241728860.19600.207.camel@nigel-laptop>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 8, 2009 at 00:47, Alan Stern <stern@rowland.harvard.edu> wrote:
+On Fri, 08 May 2009 06:41:00 +1000
+Nigel Cunningham <nigel@tuxonice.net> wrote:
 
->> Or is that a specific requirement where things would go wrong when the
->> kernel binds to a device first?
->
-> You've got it.  Sometimes devices are in a very precarious state (such
-> as during a firmware update) and they need to go into a particular
-> configuration.  Letting the kernel install some random configuration at
-> such times doesn't work.
+> Hi.
+> 
+> On Thu, 2009-05-07 at 21:27 +0200, Rafael J. Wysocki wrote:
+> > In fact I agree, but there's a catch.  The way in which TuxOnIce
+> > operates LRU pages is based on some assumptions that may or may not
+> > be satisfied in future, so if we decide to merge it, then we'll
+> > have to make sure these assumptions will be satisfied.  That in
+> > turn is going to require quite some discussion I guess.
+> 
+> Agreed. That's why I've got that GEMS patch - it's putting pages on
+> the LRU that don't satisfy the former assumptions: they are used
+> during hibernating and need to be atomically copied. If there are
+> further developments in that area, I would hope we could just extend
+> what's been done with GEMS.
 
-I see.
+Another option here would be to suspend all DRM operations earlier.
+The suspend hook for i915 already does this, but maybe it needs to
+happen sooner?  We'll probably want a generic DRM suspend hook soon too
+(as the radeon memory manager lands) to shut down GPU activity in the
+suspend and hibernate cases.
 
-You mentioned earlier, that you would need to match the holder of the
-"lock" and the one that accesses the device?
-
-Wouldn't it be sufficient already, if you can take a "lock" at the
-specific port, that prevents the kernel to access the device when it
-shows up?
-
-You thought of supporting a number of different users, with different
-uids, or would that be a root-only action?
+All that assumes I understand what's going on here though. :)  It
+appears you delay saving the GEM (just GEM by the way, for Graphics/GPU
+Execution Manager) backing store until late to avoid having the pages
+move around out from under you?
 
 Thanks,
-Kay
+Jesse
