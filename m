@@ -1,50 +1,195 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760246AbZEGJDr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbZEGJFJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760246AbZEGJDr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 05:03:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbZEGJDf
+	id S1760001AbZEGJFJ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 05:05:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755732AbZEGJE4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 05:03:35 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:56721 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752298AbZEGJDe (ORCPT
+	Thu, 7 May 2009 05:04:56 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:45535 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755586AbZEGJEz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 05:03:34 -0400
+	Thu, 7 May 2009 05:04:55 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=nWBys7liLuQN/zGup7ANukLkFT4BOTTrY9RGTRMh8xnCSfWXzgq+HoPpVP0TYEXA57
-         274OulA3gCkqc6HSl0Z5fcIwWNmxGTufvJs60El09U5n6tSs3AN8I/6K1wE3VlEfO2TA
-         OdEaMVI1Uq4xqUc0ueIgI+ygUl2AP+OSJzTV0=
-Message-ID: <4A02A3E1.90706@gmail.com>
-Date: Thu, 07 May 2009 11:03:29 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.7 Thunderbird/3.0b2
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=hA+cZv2zuuMSHwpaRwh9YQ2U8HhDNZLkJ5vvFhHU7pezKHwOaKQ9srTGxCIWo/D1+Z
+         cr8Mw9I/KYiE2jvsJUDJeJCRjWQTj5qaJHPhYZ+AU20J7ru/38uhgRigcvUDM8iC3SO4
+         qBnzKm+/O+VDQWao896s73Z8gJneVlHoG9oko=
+Date: Thu, 7 May 2009 11:04:50 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
+       m-ikeda@ds.jp.nec.com, peterz@infradead.org
+Subject: Re: IO scheduler based IO Controller V2
+Message-ID: <20090507090450.GA4613@linux>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <20090506023332.GA1212@redhat.com> <20090506203228.GH8180@redhat.com> <20090506213453.GC4282@linux> <20090506215235.GJ8180@redhat.com>
 MIME-Version: 1.0
-To: Yang Hongyang <yanghy@cn.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] remove DMA_nBIT_MASK macro
-References: <20090507141114M.fujita.tomonori@lab.ntt.co.jp> <20090506223452.65e545d8.akpm@linux-foundation.org> <4A029BE1.4090309@cn.fujitsu.com> <4A029FD1.1050007@gmail.com> <4A02A2D8.4090209@cn.fujitsu.com>
-In-Reply-To: <4A02A2D8.4090209@cn.fujitsu.com>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506215235.GJ8180@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/07/2009 10:59 AM, Yang Hongyang wrote:
-> Jiri Slaby wrote:
->> Something like an irq flags deprecation in the past:
->> http://lwn.net/Articles/229673/
->> ?
+On Wed, May 06, 2009 at 05:52:35PM -0400, Vivek Goyal wrote:
+> > > Without io-throttle patches
+> > > ---------------------------
+> > > - Two readers, first BE prio 7, second BE prio 0
+> > > 
+> > > 234179072 bytes (234 MB) copied, 4.12074 s, 56.8 MB/s
+> > > High prio reader finished
+> > > 234179072 bytes (234 MB) copied, 5.36023 s, 43.7 MB/s
+> > > 
+> > > Note: There is no service differentiation between prio 0 and prio 7 task
+> > >       with io-throttle patches.
+> > > 
+> > > Test 3
+> > > ======
+> > > - Run the one RT reader and one BE reader in root cgroup without any
+> > >   limitations. I guess this should mean unlimited BW and behavior should
+> > >   be same as with CFQ without io-throttling patches.
+> > > 
+> > > With io-throttle patches
+> > > =========================
+> > > Ran the test 4 times because I was getting different results in different
+> > > runs.
+> > > 
+> > > - Two readers, one RT prio 0  other BE prio 7
+> > > 
+> > > 234179072 bytes (234 MB) copied, 2.74604 s, 85.3 MB/s
+> > > 234179072 bytes (234 MB) copied, 5.20995 s, 44.9 MB/s
+> > > RT task finished
+> > > 
+> > > 234179072 bytes (234 MB) copied, 4.54417 s, 51.5 MB/s
+> > > RT task finished
+> > > 234179072 bytes (234 MB) copied, 5.23396 s, 44.7 MB/s
+> > > 
+> > > 234179072 bytes (234 MB) copied, 5.17727 s, 45.2 MB/s
+> > > RT task finished
+> > > 234179072 bytes (234 MB) copied, 5.25894 s, 44.5 MB/s
+> > > 
+> > > 234179072 bytes (234 MB) copied, 2.74141 s, 85.4 MB/s
+> > > 234179072 bytes (234 MB) copied, 5.20536 s, 45.0 MB/s
+> > > RT task finished
+> > > 
+> > > Note: Out of 4 runs, looks like twice it is complete priority inversion
+> > >       and RT task finished after BE task. Rest of the two times, the
+> > >       difference between BW of RT and BE task is much less as compared to
+> > >       without patches. In fact once it was almost same.
+> > 
+> > This is strange. If you don't set any limit there shouldn't be any
+> > difference respect to the other case (without io-throttle patches).
+> > 
+> > At worst a small overhead given by the task_to_iothrottle(), under
+> > rcu_read_lock(). I'll repeat this test ASAP and see if I'll be able to
+> > reproduce this strange behaviour.
 > 
-> good catch,but this need to be modified (add one line is enough)to cause their use to
-> cause __deprecated warnings.
+> Ya, I also found this strange. At least in root group there should not be
+> any behavior change (at max one might expect little drop in throughput
+> because of extra code).
 
-I'm lost, that inline does it, right?
+Hi Vivek,
+
+I'm not able to reproduce the strange behaviour above.
+
+Which commands are you running exactly? is the system isolated (stupid
+question) no cron or background tasks doing IO during the tests?
+
+Following the script I've used:
+
+$ cat test.sh
+#!/bin/sh
+echo 3 > /proc/sys/vm/drop_caches
+ionice -c 1 -n 0 dd if=bigfile1 of=/dev/null bs=1M 2>&1 | sed "s/\(.*\)/RT: \1/" &
+cat /proc/$!/cgroup | sed "s/\(.*\)/RT: \1/"
+ionice -c 2 -n 7 dd if=bigfile2 of=/dev/null bs=1M 2>&1 | sed "s/\(.*\)/BE: \1/" &
+cat /proc/$!/cgroup | sed "s/\(.*\)/BE: \1/"
+for i in 1 2; do
+	wait
+done
+
+And the results on my PC:
+
+2.6.30-rc4
+~~~~~~~~~~
+$ sudo sh test.sh | sort
+BE: 234+0 records in
+BE: 234+0 records out
+BE: 245366784 bytes (245 MB) copied, 21.3406 s, 11.5 MB/s
+RT: 234+0 records in
+RT: 234+0 records out
+RT: 245366784 bytes (245 MB) copied, 11.989 s, 20.5 MB/s
+$ sudo sh test.sh | sort
+BE: 234+0 records in
+BE: 234+0 records out
+BE: 245366784 bytes (245 MB) copied, 23.4436 s, 10.5 MB/s
+RT: 234+0 records in
+RT: 234+0 records out
+RT: 245366784 bytes (245 MB) copied, 11.9555 s, 20.5 MB/s
+$ sudo sh test.sh | sort
+BE: 234+0 records in
+BE: 234+0 records out
+BE: 245366784 bytes (245 MB) copied, 21.622 s, 11.3 MB/s
+RT: 234+0 records in
+RT: 234+0 records out
+RT: 245366784 bytes (245 MB) copied, 11.9856 s, 20.5 MB/s
+$ sudo sh test.sh | sort
+BE: 234+0 records in
+BE: 234+0 records out
+BE: 245366784 bytes (245 MB) copied, 21.5664 s, 11.4 MB/s
+RT: 234+0 records in
+RT: 234+0 records out
+RT: 245366784 bytes (245 MB) copied, 11.8522 s, 20.7 MB/s
+
+2.6.30-rc4 + io-throttle, no BW limit, both tasks in the root cgroup
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+$ sudo sh ./test.sh | sort
+BE: 234+0 records in
+BE: 234+0 records out
+BE: 245366784 bytes (245 MB) copied, 23.6739 s, 10.4 MB/s
+BE: cgroup 4:blockio:/
+RT: 234+0 records in
+RT: 234+0 records out
+RT: 245366784 bytes (245 MB) copied, 12.2853 s, 20.0 MB/s
+RT: 4:blockio:/
+$ sudo sh ./test.sh | sort
+BE: 234+0 records in
+BE: 234+0 records out
+BE: 245366784 bytes (245 MB) copied, 23.7483 s, 10.3 MB/s
+BE: cgroup 4:blockio:/
+RT: 234+0 records in
+RT: 234+0 records out
+RT: 245366784 bytes (245 MB) copied, 12.3597 s, 19.9 MB/s
+RT: 4:blockio:/
+$ sudo sh ./test.sh | sort
+BE: 234+0 records in
+BE: 234+0 records out
+BE: 245366784 bytes (245 MB) copied, 23.6843 s, 10.4 MB/s
+BE: cgroup 4:blockio:/
+RT: 234+0 records in
+RT: 234+0 records out
+RT: 245366784 bytes (245 MB) copied, 12.4886 s, 19.6 MB/s
+RT: 4:blockio:/
+$ sudo sh ./test.sh | sort
+BE: 234+0 records in
+BE: 234+0 records out
+BE: 245366784 bytes (245 MB) copied, 23.8621 s, 10.3 MB/s
+BE: cgroup 4:blockio:/
+RT: 234+0 records in
+RT: 234+0 records out
+RT: 245366784 bytes (245 MB) copied, 12.6737 s, 19.4 MB/s
+RT: 4:blockio:/
+
+The difference seems to be just the expected overhead.
+
+-Andrea
