@@ -1,57 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757508AbZEGC5L@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760430AbZEGDFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757508AbZEGC5L (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 22:57:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752425AbZEGC44
+	id S1760430AbZEGDFs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 23:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbZEGDFi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 22:56:56 -0400
-Received: from 170-23.widener.edu ([147.31.170.23]:41103 "EHLO
-	naruto.cs.widener.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752447AbZEGC44 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 22:56:56 -0400
-X-Greylist: delayed 1497 seconds by postgrey-1.27 at vger.kernel.org; Wed, 06 May 2009 22:56:55 EDT
-From: Samuel Bronson <naesten@gmail.com>
-To: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org
-Cc: linux-kernel@vger.kernel.org, Samuel Bronson <naesten@gmail.com>
-Subject: [PATCH] x86: vm86() defaults to returning VM86_SIGNAL -- make this explicit
-Date: Wed,  6 May 2009 22:27:55 -0400
-Message-Id: <1241663275-31491-1-git-send-email-naesten@gmail.com>
-X-Mailer: git-send-email 1.6.3.rc3.24.g6ffd5
+	Wed, 6 May 2009 23:05:38 -0400
+Received: from mga14.intel.com ([143.182.124.37]:23559 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752601AbZEGDFi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 23:05:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,306,1239001200"; 
+   d="scan'208";a="140058471"
+Date: Thu, 7 May 2009 11:05:16 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Matt Mackall <mpm@selenic.com>, Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 4/7] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090507030516.GA12763@localhost>
+References: <20090507114016.40ee6577.minchan.kim@barrios-desktop> <20090507024656.GA12828@localhost> <20090507114804.2666.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090507114804.2666.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This code has apparently used "0" and not VM86_SIGNAL since Linux
-1.1.9, when Linus added VM86_SIGNAL to vm86.h. This patch changes the
-code to use the symbolic name.
+On Thu, May 07, 2009 at 10:48:55AM +0800, KOSAKI Motohiro wrote:
+> > On Thu, May 07, 2009 at 10:40:16AM +0800, Minchan Kim wrote:
+> > > On Thu, 07 May 2009 09:21:21 +0800
+> > > Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > > 
+> > > > +	 * pseudo flags for the well known (anonymous) memory mapped pages
+> > > > +	 */
+> > > > +	if (!PageSlab(page) && page_mapped(page))
+> > > > +		u |= 1 << KPF_MMAP;
+> > > > +	if (PageAnon(page))
+> > > > +		u |= 1 << KPF_ANON;
+> > > 
+> > > Why do you check PageSlab on user pages ?
+> > > Is there any case that PageSlab == true && page_mapped == true ?
+> > 
+> > Yes at least for SLUB: it reuses page->_mapcount, so page_mapped() is
+> > meaningless for slab pages.
+> 
+> this question and answer implies more comment required...
 
-The magic 0 tripped me up in trying to extend the vm86(2) manpage to
-actually explain vm86()'s interface -- my greps for VM86_SIGNAL came up
-fruitless.
+Good point. Updated comment to:
 
-Signed-off-by: Samuel Bronson <naesten@gmail.com>
----
- arch/x86/kernel/vm86_32.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+        /*
+         * pseudo flags for the well known (anonymous) memory mapped pages
+         *
+         * Note that page->_mapcount is overloaded in SLOB/SLUB/SLQB, so the
+         * simple test in page_mapped() is not enough.
+         */
+        if (!PageSlab(page) && page_mapped(page))
+                u |= 1 << KPF_MMAP;
 
-diff --git a/arch/x86/kernel/vm86_32.c b/arch/x86/kernel/vm86_32.c
-index d7ac84e..b8035a0 100644
---- a/arch/x86/kernel/vm86_32.c
-+++ b/arch/x86/kernel/vm86_32.c
-@@ -318,9 +318,9 @@ static void do_sys_vm86(struct kernel_vm86_struct *info, struct task_struct *tsk
- 	}
- 
- /*
-- * Save old state, set default return value (%ax) to 0
-+ * Save old state, set default return value (%ax) to 0 (VM86_SIGNAL)
-  */
--	info->regs32->ax = 0;
-+	info->regs32->ax = VM86_SIGNAL;
- 	tsk->thread.saved_sp0 = tsk->thread.sp0;
- 	tsk->thread.saved_fs = info->regs32->fs;
- 	tsk->thread.saved_gs = get_user_gs(info->regs32);
--- 
-1.6.3.rc3.24.g6ffd5
 
+Thanks,
+Fengguang
