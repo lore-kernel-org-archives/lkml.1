@@ -1,36 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761534AbZEGBsw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761149AbZEGBub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761534AbZEGBsw (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 21:48:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757961AbZEGBs1
+	id S1761149AbZEGBub (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 21:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755780AbZEGBuS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 21:48:27 -0400
-Received: from mail.windriver.com ([147.11.1.11]:35228 "EHLO mail.wrs.com"
+	Wed, 6 May 2009 21:50:18 -0400
+Received: from mga14.intel.com ([143.182.124.37]:35661 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755636AbZEGBs1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 21:48:27 -0400
-From: Harry Ciao <qingtao.cao@windriver.com>
-To: norsk5@yahoo.com, bluesmoke-devel@lists.sourceforge.net
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org
-Subject: [v0 PATCH 0/1] EDAC: Use dev_name() for AMD8111/AMD8131 drivers
-Date: Thu,  7 May 2009 09:47:37 +0800
-Message-Id: <1241660858-21105-1-git-send-email-qingtao.cao@windriver.com>
-X-Mailer: git-send-email 1.5.6.2
-X-OriginalArrivalTime: 07 May 2009 01:47:08.0078 (UTC) FILETIME=[BB229CE0:01C9CEB5]
+	id S1753795AbZEGBuQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 21:50:16 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,305,1239001200"; 
+   d="scan'208";a="140041739"
+Message-Id: <20090507014914.636803082@intel.com>
+References: <20090507012116.996644836@intel.com>
+User-Agent: quilt/0.46-1
+Date: Thu, 07 May 2009 09:21:23 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Wu Fengguang <fengguang.wu@intel.com>
+Cc: Matt Mackall <mpm@selenic.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+CC: Andi Kleen <andi@firstfloor.org>, <linux-mm@kvack.org>
+Subject: [PATCH 6/7] pagemap: document 9 more exported page flags
+Content-Disposition: inline; filename=kpageflags-doc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Also add short descriptions for all of the 20 exported page flags.
 
-Hi Doug,
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ Documentation/vm/pagemap.txt |   66 +++++++++++++++++++++++++++++++++
+ 1 file changed, 66 insertions(+)
 
-I found both the Makefile entries for AMD8111/AMD8131 EDAC entries 
-are simply lost, and they are still referencing obsolete "bus_id" 
-member of the device structure. 
+--- linux.orig/Documentation/vm/pagemap.txt
++++ linux/Documentation/vm/pagemap.txt
+@@ -49,6 +49,72 @@ There are three components to pagemap:
+      8. WRITEBACK
+      9. RECLAIM
+     10. BUDDY
++    11. MMAP
++    12. ANON
++    13. SWAPCACHE
++    14. SWAPBACKED
++    15. COMPOUND_HEAD
++    16. COMPOUND_TAIL
++    16. HUGE
++    18. UNEVICTABLE
++    19. HWPOISON
++    20. NOPAGE
++
++Short descriptions to the page flags:
++
++ 0. LOCKED
++    page is being locked for exclusive access, eg. by undergoing read/write IO
++
++ 7. SLAB
++    page is managed by the SLAB/SLOB/SLUB/SLQB kernel memory allocator
++    When compound page is used, SLUB/SLQB will only set this flag on the head
++    page; SLOB will not flag it at all.
++
++10. BUDDY
++    a free memory block managed by the buddy system allocator
++    The buddy system organizes free memory in blocks of various orders.
++    An order N block has 2^N physically contiguous pages, with the BUDDY flag
++    set for and _only_ for the first page.
++
++15. COMPOUND_HEAD
++16. COMPOUND_TAIL
++    A compound page with order N consists of 2^N physically contiguous pages.
++    A compound page with order 2 takes the form of "HTTT", where H donates its
++    head page and T donates its tail page(s).  The major consumers of compound
++    pages are hugeTLB pages (Documentation/vm/hugetlbpage.txt), the SLUB etc.
++    memory allocators and various device drivers. However in this interface,
++    only huge/giga pages are made visible to end users.
++17. HUGE
++    this is an integral part of a HugeTLB page
++
++19. HWPOISON
++    hardware detected memory corruption on this page: don't touch the data!
++
++20. NOPAGE
++    no page frame exists at the requested address
++
++    [IO related page flags]
++ 1. ERROR     IO error occurred
++ 3. UPTODATE  page has up-to-date data
++              ie. for file backed page: (in-memory data revision >= on-disk one)
++ 4. DIRTY     page has been written to, hence contains new data
++              ie. for file backed page: (in-memory data revision >  on-disk one)
++ 8. WRITEBACK page is being synced to disk
++
++    [LRU related page flags]
++ 5. LRU         page is in one of the LRU lists
++ 6. ACTIVE      page is in the active LRU list
++18. UNEVICTABLE page is in the unevictable (non-)LRU list
++                It is somehow pinned and not a candidate for LRU page reclaims,
++		eg. ramfs pages, shmctl(SHM_LOCK) and mlock() memory segments
++ 2. REFERENCED  page has been referenced since last LRU list enqueue/requeue
++ 9. RECLAIM     page will be reclaimed soon after its pageout IO completed
++11. MMAP        a memory mapped page
++12. ANON        a memory mapped page that is not part of a file
++13. SWAPCACHE   page is mapped to swap space, ie. has an associated swap entry
++14. SWAPBACKED  page is backed by swap/RAM
++
++The page-types tool in this directory can be used to query the above flags.
+ 
+ Using pagemap to do something useful:
+ 
 
-Please help verify these issues again and help post this patch to 
-the mm tree, thanks!
+-- 
 
-Best regards,
-
-Harry
