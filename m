@@ -1,43 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756976AbZEGOYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760307AbZEGO1W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756976AbZEGOYs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 10:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbZEGOYj
+	id S1760307AbZEGO1W (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 10:27:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752592AbZEGO1M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 10:24:39 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:42093 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751007AbZEGOYi (ORCPT
+	Thu, 7 May 2009 10:27:12 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:52172 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1751171AbZEGO1L (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 10:24:38 -0400
-Date: Thu, 7 May 2009 10:13:52 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Alok Kataria <akataria@vmware.com>
-cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-In-Reply-To: <1241560625.8665.17.camel@alok-dev1>
-Message-ID: <alpine.DEB.1.10.0905071010170.24528@qirst.com>
-References: <1241462661.412.8.camel@alok-dev1>  <4A00ADDE.9000908@zytor.com> <1241560625.8665.17.camel@alok-dev1>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 7 May 2009 10:27:11 -0400
+Date: Thu, 7 May 2009 10:27:12 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+cc: Oliver Neukum <oliver@neukum.org>,
+       Jason Wessel <jason.wessel@windriver.com>, <greg@kroah.com>,
+       <linux-usb@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/5] usb_debug: EXPERIMENTAL - poll hcd device to force
+ writes
+In-Reply-To: <20090507010634.52bef075@lxorguk.ukuu.org.uk>
+Message-ID: <Pine.LNX.4.44L0.0905071004550.3087-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I think we need to reduce the general tick frequency to be as low as
-possible. With high resolution timers the tick frequency is just the
-frequency with which the timer interrupt disturbs a running application.
+On Thu, 7 May 2009, Alan Cox wrote:
 
-Are there any benefits remaining from frequent timer interrupts? I would
-think that 60 HZ would be sufficient.
+> >     Write routine:
+> > 	Copy bytes into the available URB buffers, submitting URBs as 
+> > 	they get filled.  At the end, if the next URB is partially full 
+> > 	then submit it only if NIF < P.
+> 
+> There are good known algorithms for this and essentially the logic is
+> about speed and time estimation. You don't need to queue a partially
+> filled URB until you reach the time point that the hardware is in danger
+> of having sent everything already queued. So under load once you've
+> stuffed 4K down the pipe you know at 38400 baud that you can relax for
+> quite some time.
 
-It would be good if the kernel would be truly tickless. Scheduler events
-would be driven by the scheduling intervals and not the invokations of the
-scheduler softirq.
+Agreed.  An implicit point of my earlier message was that we might be
+able to avoid tricky time-and-speed estimates by relying on the fact
+that the USB-Serial device will NAK an URB until it has sufficient
+buffer space to accept the data (i.e., flow control is built in at the
+USB protocol level).
+
+So instead of relaxing for some difficult-to-estimate time, we can
+simply relax until the next URB completion occurs.  As long as a 
+certain minimum number of URBs are still in flight, we can assume that 
+the hardware isn't in danger of sending all the queued data.
+
+This assumption might not be valid at the start of a transfer, since 
+an URB can't complete for a minimum of 1 ms (at full speed), but it 
+should stabilize quickly.
+
+> > Allocating URBs on the fly adds a lot of complication.  There has to be 
+> > a minimum number of pre-allocated URBs; otherwise write_room could 
+> > never return a positive value.  If you allocate additional URBs 
+> > later on, when would you free them?
+> 
+> write_room can allocate URBs I think (would need to be atomic allocations)
+> 
+> 	write_room()
+> 		if no_urbs && urbs_queued < max_queued
+> 			allocate an urb
+> 		return space_in_last_urb;
+
+That would work.  It doesn't seem to be much better than allocating 
+URBs in the write routine.  After all, as long as allocations always 
+succeed the details don't matter much.
+
+A more interesting question is whether to deallocate URBs as they 
+complete or to reuse them.  A simple approach (which Oliver no doubt 
+has already considered) is:
+
+	write_complete(urb):
+		if (write_urb->transfer_length > 0)
+			submit(write_urb);
+			write_urb = urb;
+		else
+			urb_free(urb);
+
+Alan Stern
 
