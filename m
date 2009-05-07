@@ -1,63 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757997AbZEGLQj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761158AbZEGLT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757997AbZEGLQj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 07:16:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754394AbZEGLQ1
+	id S1761158AbZEGLT1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 07:19:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754683AbZEGLTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 07:16:27 -0400
-Received: from sh.osrg.net ([192.16.179.4]:53706 "EHLO sh.osrg.net"
+	Thu, 7 May 2009 07:19:15 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:50207 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753706AbZEGLQ0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 07:16:26 -0400
-Date: Thu, 7 May 2009 20:14:48 +0900
-To: mingo@elte.hu
-Cc: fujita.tomonori@lab.ntt.co.jp, airlied@linux.ie,
-       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
-       mingo@redhat.com, dwmw2@infradead.org
-Subject: Re: IOMMU and graphics cards
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090507110135.GC28398@elte.hu>
-References: <20090507100114.GF4059@amd.com>
-	<20090507191724N.fujita.tomonori@lab.ntt.co.jp>
-	<20090507110135.GC28398@elte.hu>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090507201538U.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 07 May 2009 20:14:48 +0900 (JST)
+	id S1754394AbZEGLTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 07:19:14 -0400
+Date: Thu, 7 May 2009 13:18:46 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yang Hongyang <yanghy@cn.fujitsu.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] remove DMA_nBIT_MASK macro
+Message-ID: <20090507111846.GI28398@elte.hu>
+References: <20090507141114M.fujita.tomonori@lab.ntt.co.jp> <4A0272C7.3060409@cn.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A0272C7.3060409@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009 13:01:35 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
 
-> 
-> * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-> 
-> > > The proprietary drivers make problems so far. For the ATI one I 
-> > > am in contact with the developers to try to fix it. But I can't 
-> > > do anything about the other proprietary driver I am aware of :-(
+* Yang Hongyang <yanghy@cn.fujitsu.com> wrote:
+
+> FUJITA Tomonori wrote:
+> > We replaced all DMA_nBIT_MASK macros with DMA_BIT_MASK(n) but why do
+> > we still keep DMA_nBIT_MASK macros in include/linux/dma-mapping.h?
 > > 
-> > I don't know anything about the graphic drivers but are there any 
-> > other proprietary drivers except for ATI and AMD? Fixing only two 
-> > drivers to make the majority happy?
+> > As long as these macros exist, people use them. The current git has
+> > two users and linux-next have other users.
+> > 
+> > Is it better to remove DMA_nBIT_MASK macros completely now?
+
+Can you see a way to emit build warnings? If yes then that might be 
+a better solution instead of breaking in-the-pipeline code. We 
+missed the upstream window of removing the facilities altogether, we 
+could certainly do that in the next merge window though.
+
+> CC:ingo
 > 
-> ATI ~== AMD these days. The problem is Nvidia cards stuck into AMD 
-> systems.
+> I have no objections,actually I used to remove all these defines in my
+> first commit of these patch series,but got suggestions that keep these
+> defines one more circle.Maybe it's time to remove these defines now or
+> to remove at the end of this circle?
+> 
+> Reviewed-by:yanghy@cn.fujitsu.com
 
-Oops, I meant ATI and Nvidia.
+Thanks!
 
-
-> I guess refusing those DMA accesses (and printing something 
-> meaningful and relentlessly honest so that the user knows where the 
-> problem comes from) is the proper solution.
-
-Refusing DMA means that we will break these broken drivers. That's
-what David and I like. Yeah, telling users explicitly who is to blame
-for the problem is even better.
-
-> There will be some 
-> end-user moaning, there might be distros turning off the IOMMU code 
-> summarily, but nvidia-in-AMD-box is an unfriendly alliance to begin 
-> with.
+	Ingo
