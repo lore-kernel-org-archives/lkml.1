@@ -1,113 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762321AbZEHAOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762672AbZEHAO1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762321AbZEHAOB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:14:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755587AbZEHAKF
+	id S1762672AbZEHAO1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:14:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbZEHAKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:05 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52708
+	Thu, 7 May 2009 20:10:06 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52711
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754140AbZEHAJz (ORCPT
+	with ESMTP id S1754281AbZEHAJz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 20:09:55 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Alex Nixon <alex.nixon@citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 02/11] xen: Allow unprivileged Xen domains to create iomap pages
-Date: Thu,  7 May 2009 14:45:28 -0700
-Message-Id: <1241732737-7669-3-git-send-email-jeremy@goop.org>
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: [GIT PULL] Xen core updates
+Date: Thu,  7 May 2009 13:24:54 -0700
+Message-Id: <1241727902-3176-1-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241732737-7669-1-git-send-email-jeremy@goop.org>
-References: <1241732737-7669-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alex Nixon <alex.nixon@citrix.com>
+Hi Ingo,
 
-Impact: prep for pcifront
+Here's a set of core Xen updates, which is a superset of the bugfix
+patches I posted earlier.
 
-PV DomU domains are allowed to map hardware MFNs for PCI passthrough,
-but are not generally allowed to map raw machine pages.  In particular,
-various pieces of code try to map DMI and ACPI tables in the ISA ROM
-range.  We disallow _PAGE_IOMAP for those mappings, so that they are
-redirected to a set of local zeroed pages we reserve for that purpose.
+The additional patches are:
 
-Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/xen/enlighten.c |    6 +++---
- arch/x86/xen/mmu.c       |   18 +++++++++++++++---
- 2 files changed, 18 insertions(+), 6 deletions(-)
+xen/i386: make sure initial VGA/ISA mappings are not overridden
 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 2d0341f..a4e78ae 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1000,11 +1000,11 @@ asmlinkage void __init xen_start_kernel(void)
- 
- 	/* Prevent unwanted bits from being set in PTEs. */
- 	__supported_pte_mask &= ~_PAGE_GLOBAL;
--	if (xen_initial_domain())
--		__supported_pte_mask |= _PAGE_IOMAP;
--	else
-+	if (!xen_initial_domain())
- 		__supported_pte_mask &= ~(_PAGE_PWT | _PAGE_PCD);
- 
-+	__supported_pte_mask |= _PAGE_IOMAP;
-+
- #ifdef CONFIG_X86_64
- 	/* Work out if we support NX */
- 	check_efer();
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 55da7f9..d673b03 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -49,6 +49,7 @@
- #include <asm/mmu_context.h>
- #include <asm/setup.h>
- #include <asm/paravirt.h>
-+#include <asm/e820.h>
- #include <asm/linkage.h>
- 
- #include <asm/xen/hypercall.h>
-@@ -378,7 +379,7 @@ static bool xen_page_pinned(void *ptr)
- 
- static bool xen_iomap_pte(pte_t pte)
- {
--	return xen_initial_domain() && (pte_flags(pte) & _PAGE_IOMAP);
-+	return pte_flags(pte) & _PAGE_IOMAP;
- }
- 
- static void xen_set_iomap_pte(pte_t *ptep, pte_t pteval)
-@@ -580,10 +581,21 @@ PV_CALLEE_SAVE_REGS_THUNK(xen_pgd_val);
- 
- pte_t xen_make_pte(pteval_t pte)
- {
--	if (unlikely(xen_initial_domain() && (pte & _PAGE_IOMAP)))
-+	phys_addr_t addr = (pte & PTE_PFN_MASK);
-+
-+	/*
-+	 * Unprivileged domains are allowed to do IOMAPpings for
-+	 * PCI passthrough, but not map ISA space.  The ISA
-+	 * mappings are just dummy local mappings to keep other
-+	 * parts of the kernel happy.
-+	 */
-+	if (unlikely(pte & _PAGE_IOMAP) &&
-+	    (xen_initial_domain() || addr >= ISA_END_ADDRESS)) {
- 		pte = iomap_pte(pte);
--	else
-+	} else {
-+		pte &= ~_PAGE_IOMAP;
- 		pte = pte_pfn_to_mfn(pte);
-+	}
- 
- 	return native_make_pte(pte);
- }
--- 
-1.6.0.6
+  Make sure that ISA identity mappings are not overridden by _PAGE_IOMAP
+  mappings.
 
+x86: use flush_tlb_others to implement flush_tlb_all
+
+  Paravirtualize flush_tlb_all by implementing it in terms of
+  flush_tlb_others.  This avoids some unnecessary IPIs when flushing
+  kernel mappings.
+
+xen: cache cr0 value to avoid trap'n'emulate for read_cr0
+
+  read_cr0 is used every context switch to set TS, but Xen has been
+  implementing it with a trap'n'emulate of a native "mov cr0".  This
+  adds a Xen-specific implementation of the read_cr0 pvop to avoid
+  the extra trap.
+
+
+The following changes since commit e7c064889606aab3569669078c69b87b2c527e72:
+  Jeremy Fitzhardinge (1):
+        xen: add FIX_TEXT_POKE to fixmap
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git xen-tip/core
+
+Jeremy Fitzhardinge (8):
+      xen/x86-64: fix breakpoints and hardware watchpoints
+      xen/x86-64: clean up warnings about IST-using traps
+      xen: cache cr0 value to avoid trap'n'emulate for read_cr0
+      xen: deal with NMI's use of IST too
+      xen/i386: make sure initial VGA/ISA mappings are not overridden
+      x86: use flush_tlb_others to implement flush_tlb_all
+      xen/i386: reserve Xen pagetables
+      xen: reserve Xen start_info rather than e820 reserving
+
+ arch/x86/include/asm/traps.h |    2 +
+ arch/x86/kernel/entry_64.S   |    4 +++
+ arch/x86/mm/tlb.c            |   29 ++++++++++++++--------
+ arch/x86/xen/enlighten.c     |   54 ++++++++++++++++++++++++++++++++++++++++-
+ arch/x86/xen/mmu.c           |   23 ++++++++++++++++-
+ arch/x86/xen/setup.c         |    6 ++--
+ 6 files changed, 100 insertions(+), 18 deletions(-)
+
+Thanks,
+	J
