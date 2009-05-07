@@ -1,107 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761792AbZEGV5U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762811AbZEGV6t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761792AbZEGV5U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 17:57:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753316AbZEGV5F
+	id S1762811AbZEGV6t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 17:58:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752455AbZEGV6j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 17:57:05 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:54144 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757585AbZEGV5D (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 17:57:03 -0400
-Date: Thu, 7 May 2009 14:50:41 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Rientjes <rientjes@google.com>
-Cc: rjw@sisk.pl, fengguang.wu@intel.com, linux-pm@lists.linux-foundation.org,
-       pavel@ucw.cz, torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Message-Id: <20090507145041.9b59f4eb.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0905071417160.24417@chino.kir.corp.google.com>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera>
-	<200905072218.50782.rjw@sisk.pl>
-	<alpine.DEB.2.00.0905071321440.646@chino.kir.corp.google.com>
-	<200905072238.14558.rjw@sisk.pl>
-	<20090507135615.e7db550d.akpm@linux-foundation.org>
-	<alpine.DEB.2.00.0905071417160.24417@chino.kir.corp.google.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 7 May 2009 17:58:39 -0400
+Received: from sous-sol.org ([216.99.217.87]:38500 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752187AbZEGV6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 17:58:38 -0400
+Date: Thu, 7 May 2009 14:57:12 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <ghaskins@novell.com>, Avi Kivity <avi@redhat.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+Message-ID: <20090507215712.GI3036@sequoia.sous-sol.org>
+References: <4A031471.7000406@novell.com> <20090507192145.GF3036@sequoia.sous-sol.org> <4A033685.7070802@gmail.com> <200905072254.06982.arnd@arndb.de> <4A034F0E.6010603@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A034F0E.6010603@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009 14:25:23 -0700 (PDT)
-David Rientjes <rientjes@google.com> wrote:
+* Gregory Haskins (gregory.haskins@gmail.com) wrote:
+> Arnd Bergmann wrote:
+> > pci_iomap could look at the bus device that the PCI function sits on.
+> > If it detects a PCI bridge that has a certain property (config space
+> > setting, vendor/device ID, ...), it assumes that the device itself
+> > will be emulated and it should set the address flag for IO_COND.
+> >
+> > This implies that all pass-through devices need to be on a different
+> > PCI bridge from the emulated devices, which should be fairly
+> > straightforward to enforce.
 
-> On Thu, 7 May 2009, Andrew Morton wrote:
+Hmm, this gets to the grey area of the ABI.  I think this would mean an
+upgrade of the host would suddenly break when the mgmt tool does:
+
+(qemu) pci_add pci_addr=0:6 host host=01:10.0
+
+> Thats actually a pretty good idea.
 > 
-> > > > All of your tasks are in D state other than kthreads, right?  That means 
-> > > > they won't be in the oom killer (thus no zones are oom locked), so you can 
-> > > > easily do this
-> > > > 
-> > > > 	struct zone *z;
-> > > > 	for_each_populated_zone(z)
-> > > > 		zone_set_flag(z, ZONE_OOM_LOCKED);
-> > > > 
-> > > > and then
-> > > > 
-> > > > 	for_each_populated_zone(z)
-> > > > 		zone_clear_flag(z, ZONE_OOM_LOCKED);
-> > > > 
-> > > > The serialization is done with trylocks so this will never invoke the oom 
-> > > > killer because all zones in the allocator's zonelist will be oom locked.
-> > > > 
-> > > > Why does this not work for you?
-> > > 
-> > > Well, it might work too, but why are you insisting?  How's it better than
-> > > __GFP_NO_OOM_KILL, actually?
-> > > 
-> > > Andrew, what do you think about this?
-> > 
-> > I don't think I understand the proposal.  Is it to provide a means by
-> > which PM can go in and set a state bit against each and every zone?  If
-> > so, that's still a global boolean, only messier.
-> > 
-> 
-> Why can't it be global while preallocating memory for hibernation since 
-> nothing but kthreads could allocate at this point and if the system is oom 
-> then the oom killer wouldn't be able to do anything anyway since it can't 
-> kill them?
+> Chris, is that issue with the non ioread/iowrite access of a mangled
+> pointer still an issue here?  I would think so, but I am a bit fuzzy on
+> whether there is still an issue of non-wrapped MMIO ever occuring.
 
-- globals are bad
+Arnd was saying it's a bug for other reasons, so perhaps it would work
+out fine.
 
-- the standard way of controlling memory allocator behaviour is via
-  the gfp_t.  Bypassing that is an unusual step and needs a higher
-  level of justification, which I'm not seeing here.
-
-- if we do this via an unusual global, we reduce the chances that
-  another subsytem could use the new feature.
-
-  I don't know what subsytem that might be, but I bet they're out
-  there.  checkpoint-restart, virtual machines, ballooning memory
-  drivers, kexec loading, etc.
-
-> The fact is that _all_ allocations here are implicitly __GFP_NO_OOM_KILL 
-> whether it specifies it or not since the oom killer would simply kill a 
-> task in D state which can't exit or free memory and subsequent allocations 
-> would make the oom killer a no-op because there's an eligible task with 
-> TIF_MEMDIE set.  The only thing you're saving with __GFP_NO_OOM_KILL is 
-> calling the oom killer in a first place and killing an unresponsive task 
-> but that would have to happen anyway when thawed since the system is oom 
-> (or otherwise lockup for GFP_KERNEL with order < PAGE_ALLOC_COSTLY_ORDER).
-
-All the above is specific to the PM application only, when userspace
-tasks are stopped.
-
-
-It might well end up that stopping userspace (beforehand or before
-oom-killing) is a hard requirement for reliably disabling the
-oom-killer.  Because the __GFP_NO_OOM_KILL user will be safe, but
-random other allocations from other tasks will not be.  So perhaps we
-_do_ need a global, and random userspace processes should test and
-sleep upon that global if they're heading in the direction of the
-oom-killer.
+thanks,
+-chris
