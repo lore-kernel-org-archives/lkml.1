@@ -1,78 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761422AbZEGL5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757272AbZEGMAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761422AbZEGL5x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 07:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbZEGL5k
+	id S1757272AbZEGMAb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 08:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZEGMAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 07:57:40 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:47144 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755284AbZEGL5j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 07:57:39 -0400
-Date: Thu, 7 May 2009 05:57:39 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Avi Kivity <avi@redhat.com>
-Cc: michael@ellerman.id.au, Sheng Yang <sheng@linux.intel.com>,
-       kvm@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
-       jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH] msi-x: let drivers retry when not enough vectors
-Message-ID: <20090507115739.GJ8112@parisc-linux.org>
-References: <20090507082841.GA31751@redhat.com> <200905071651.24970.sheng@linux.intel.com> <20090507092731.GH8112@parisc-linux.org> <200905071740.16190.sheng@linux.intel.com> <20090507095302.GI8112@parisc-linux.org> <1241691830.24385.6.camel@concordia> <4A02BB96.8070103@redhat.com>
+	Thu, 7 May 2009 08:00:19 -0400
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:24118
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1752474AbZEGMAS convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 08:00:18 -0400
+X-BigFish: VPS-18(zz1432R98dR1805M936fJzz1202hzzz32i6bh15fn43j62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KJ9W07-04-FZ9-01
+Date: Thu, 7 May 2009 14:00:08 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+       iommu@lists.linux-foundation.org, mingo@redhat.com, airlied@linux.ie
+Subject: Re: IOMMU and graphics cards
+Message-ID: <20090507120007.GG4059@amd.com>
+References: <20090428160448.GA17438@amd.com> <20090507164742V.fujita.tomonori@lab.ntt.co.jp> <20090507100114.GF4059@amd.com> <20090507191724N.fujita.tomonori@lab.ntt.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <4A02BB96.8070103@redhat.com>
+In-Reply-To: <20090507191724N.fujita.tomonori@lab.ntt.co.jp>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 07 May 2009 12:00:08.0547 (UTC) FILETIME=[5E00CB30:01C9CF0B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 01:44:38PM +0300, Avi Kivity wrote:
-> I imagine this loop is present in many drivers.  So why not add a helper
+On Thu, May 07, 2009 at 07:23:33PM +0900, FUJITA Tomonori wrote:
+> On Thu, 7 May 2009 12:01:14 +0200
+> Joerg Roedel <joerg.roedel@amd.com> wrote:
+> 
+> > > Do you meant that AMD IOMMU code use the bitmap each device to manage
+> > > address space so enlarging the DMA address space wastes memory?
+> > 
+> > Its not only the bitmap. There are also the page tables that would waste
+> > memory if the aperture in the AMD IOMMU driver is enlarged to, say, 4GB.
+> > Most devices don't need such a large amount of DMA address space. As I
+> > found out VT-d does not have this problem because they implemented
+> > another allocator which can cover all possible memory.
+> > For the AMD IOMMU I currently implement a kind of a dynamically growing
+> > bitmap allocator to fix this problem.
+> 
+> Yeah, I know the deference. Well, I like the AMD IOMMU driver's
+> property that dma mapping doesn't fail in OOM but I understand why you
+> want such daynamically growing.
 
-Let's look!
+Well, I will try to minimize the impact. Current plan is to preallocate
+bitmap and page tables for 128MB of DMA address space. Everything beyond
+that will be allocated on demand.
 
-arch/x86/kernel/amd_iommu_init.c : Needs an exact number of vectors.
-drivers/block/cciss.c : If it doesn't get all 4 vectors, falls back to pin mode (instead of MSI mode -- bug!)
-drivers/dma/ioat_dma.c : Falls back down to 1 vector if it can't get nvec
-drivers/infiniband/hw/mthca/mthca_main.c : Reverts to MSI if it can't get 3.
-drivers/net/benet/be_main.c : Falls back to MSI if it can't get 2.
-drivers/net/bnx2.c : Falls back to MSI if it can't get 9.
-drivers/net/bnx2x_main.c : Falls back to MSI if it can't get N.
-drivers/net/e1000e/netdev.c: Falls back to MSI if it can't get N.
-drivers/net/enic/enic_main.c: Falls back to MSI if it can't get N.
-drivers/net/forcedeth.c: Falls back to MSI if it can't get N.
-drivers/net/igb/igb_main.c: Falls back to MSI if it can't get N.
-drivers/net/igbvf/netdev.c: Falls back to MSI if it can't get 3.
-drivers/net/myri10ge/myri10ge.c: Falls back to Pin if it can't get N.
-drivers/net/netxen/netxen_nic_main.c: Falls back to MSI if it can't get N.
-drivers/net/qlge/qlge_main.c: Falls back to MSI if it can't get N.
-drivers/net/s2io.c: Falls back to MSI if it can't get N.
-drivers/net/vxge/vxge-main.c: Falls back once to a second number.
-drivers/pci/pcie/portdrv_core.c: Falls back to MSI if it can't get all of them.
-drivers/scsi/lpfc/lpfc_init.c: Falls back to MSI if it can't get N.
-drivers/scsi/mpt2sas/mpt2sas_base.c: Only allocates 1.
+> > > >  But unless this problem isn't solved the
+> > > > drivers won't be fixed, I guess.
+> > > > I guess the DRM code in the kernel may have the same problem with IOMMU
+> > > > enabled?
+> > > 
+> > > Looks like the DRM code uses the DMA API.
+> > 
+> > The proprietary drivers make problems so far. For the ATI one I am in
+> > contact with the developers to try to fix it. But I can't do anything
+> > about the other proprietary driver I am aware of :-(
+> 
+> I don't know anything about the graphic drivers but are there any
+> other proprietary drivers except for ATI and AMD? Fixing only two
+> drivers to make the majority happy?
 
-drivers/net/cxgb3/cxgb3_main.c: Actually falls back ... in a bit of a weird way.  This one could definitely do with the proposed loop.
-drivers/net/ixgbe/ixgbe_main.c: Could also be improved with this loop.
-drivers/net/mlx4/main.c: Nasty goto-based loop.
-drivers/net/niu.c: Ditto
-drivers/net/sfc/efx.c: Only falls back once.  Would benefit from loop.
-drivers/scsi/qla2xxx/qla_isr.c: Only falls back once.  Would benefit from loop.
-drivers/staging/sxg/sxg.c: /*Should try with less vector returned.*/
+At least Nvidia comes to my mind. Not sure about other graphic card
+vendors...
 
-so ... 7 drivers would benefit from this loop.  20 seem like they wouldn't.
-
-What a lot of drivers seem to do is fall back either to a single MSI or
-just pin-based interrupts when they can't get as many interrupts as they
-would like.  They don't try to get a single MSI-X interrupt.  I feel an
-update to the MSI-HOWTO coming on.
+Joerg
 
 -- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
+
