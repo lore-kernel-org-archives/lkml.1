@@ -1,412 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760818AbZEGO5h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761712AbZEGO5x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760818AbZEGO5h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 10:57:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbZEGO5V
+	id S1761712AbZEGO5x (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 10:57:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760939AbZEGO5e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 10:57:21 -0400
-Received: from exprod7og112.obsmtp.com ([64.18.2.177]:55040 "EHLO
-	exprod7og112.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752178AbZEGO5T convert rfc822-to-8bit (ORCPT
+	Thu, 7 May 2009 10:57:34 -0400
+Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:44147
+	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1761360AbZEGO5d (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 10:57:19 -0400
-From: "Yang, Bo" <Bo.Yang@lsi.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "James.Bottomley@HansenPartnership.com" 
-	<James.Bottomley@HansenPartnership.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Austria, Winston" <Winston.Austria@lsi.com>
-Date: Thu, 7 May 2009 08:56:35 -0600
-Subject: RE: [PATCH 2/10] scsi: megaraid_sas - Add Poll Wait mechanism to
- MegaRAID SAS driver (PART-I)
-Thread-Topic: [PATCH 2/10] scsi: megaraid_sas - Add Poll Wait mechanism to
- MegaRAID SAS driver (PART-I)
-Thread-Index: AcnOkH9mOGzP0JxsRiGCo7/jaaz3ZgAkY5yg
-Message-ID: <4B6A08C587958942AA3002690DD4F8C354FF72A1@cosmail02.lsi.com>
-In-Reply-To: <20090506141705.5edc74d9.akpm@linux-foundation.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Thu, 7 May 2009 10:57:33 -0400
+X-BigFish: VPS1(zz936fJzz1202hzzz32i6bh43j66h)
+X-Spam-TCS-SCL: 5:0
+X-FB-SS: 5,8,
+X-WSS-ID: 0KJA47E-02-FXW-01
+From: Mark Langsdorf <mark.langsdorf@amd.com>
+To: Joerg Roedel <joerg.roedel@amd.com>, avi@redhat.com, kvm@vger.kernel.org
+Subject: [PATCH][KVM][retry 1] Add support for Pause Filtering to AMD SVM
+Date: Thu, 7 May 2009 10:00:13 -0500
+User-Agent: KMail/1.9.10
+CC: linux-kernel@vger.kernel.org
+References: <200905050909.58583.mark.langsdorf@amd.com> <20090507135522.GJ4059@amd.com>
+In-Reply-To: <20090507135522.GJ4059@amd.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-ID: <200905071000.14038.mark.langsdorf@amd.com>
+X-OriginalArrivalTime: 07 May 2009 14:57:22.0453 (UTC) FILETIME=[204E1450:01C9CF24]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+commit 01813db8627e74018c8cec90df7e345839351f23
+Author: root <root@xendinar01.amd.com>
+Date:   Thu May 7 09:44:10 2009 -0500
 
-Thanks for the review and good catch.  The following is the changes I did:
+    New AMD processors will support the Pause Filter Feature.
+    This feature creates a new field in the VMCB called Pause
+    Filter Count.  If Pause Filter Count is greater than 0 and
+    intercepting PAUSEs is enabled, the processor will increment
+    an internal counter when a PAUSE instruction occurs instead
+    of intercepting.  When the internal counter reaches the
+    Pause Filter Count value, a PAUSE intercept will occur.
+    
+    This feature can be used to detect contended spinlocks,
+    especially when the lock holding VCPU is not scheduled.
+    Rescheduling another VCPU prevents the VCPU seeking the
+    lock from wasting its quantum by spinning idly.
+    
+    Experimental results show that most spinlocks are held
+    for less than 1000 PAUSE cycles or more than a few
+    thousand.  Default the Pause Filter Counter to 3000 to
+    detect the contended spinlocks.
+    
+    Processor support for this feature is indicated by a CPUID
+    bit.
+    
+    On a 24 core system running 4 guests each with 16 VCPUs,
+    this patch improved overall performance of each guest's
+    32 job kernbench by approximately 1%.  Further performance
+    improvement may be possible with a more sophisticated
+    yield algorithm.
+    
+    -Mark Langsdorf
+    Operating System Research Center
+    AMD
+    
+    Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
 
-1. 
-
-> +       if ((!cmd->abort_aen) && (instance->unload == 0)) {
-> +               megasas_aen_polling(instance);
-> +       }
-
-> I see you're not a big fan of checkpatch, nor of kernel coding style :(
-
-Changed to:
-+       if (!cmd->abort_aen && instance->unload == 0) {
-+               megasas_aen_polling(instance);
-+       }
-
-2.
-
-> +       /*
-> +       * cancel the delayed work if this work still in queue
-> +       */
-> +       if (instance->hotplug_wk != NULL) {
-> +               cancel_delayed_work(
-> +                       (struct delayed_work *)instance->hotplug_wk);
-
->whah?  Can't do that!  cancel_delayed_work() will do del_timer_sync()
->on megasas_instance.flag and will crash.
-
-> +                       
-
-> +               flush_scheduled_work();
-
-Changed to:
-+
-+       /*
-+       * cancel the delayed work if this work still in queue
-+       */
-+       if (instance->ev != NULL) {
-+               struct megasas_aen_event *ev = instance->ev;
-+               cancel_delayed_work(
-+                       (struct delayed_work *)&ev->hotplug_work);
-+               flush_scheduled_work();
-+               instance->ev = NULL;
-+       }
-        tasklet_kill(&instance->isr_tasklet);
-
-.....
-
-+                       ev->instance = instance;
-+                       instance->ev = ev;
-+                       INIT_WORK(&ev->hotplug_work, megasas_scsi_scan_host);
-+                       schedule_delayed_work(
-+                               (struct delayed_work *)&ev->hotplug_work, 0);
-
-
-3.
-> +       instance->hotplug_wk = NULL;
-> +       if (!instance) {
-
->oh come on.  If this test returns true then the preceding statement
->just oopsed the kernel.
-
-> +               printk(KERN_ERR "%s: invalid instance!\n", __FUNCTION__); 
-
-Changed to:
-
-+static void
-+megasas_scsi_scan_host(struct work_struct *work)
-+{
-+       struct megasas_aen_event *ev = container_of(work,
-+               struct megasas_aen_event, hotplug_work);
-+       struct megasas_instance *instance = ev->instance;
-+
-+       if (!instance) {
-+               printk(KERN_ERR "invalid instance!\n");
-+               kfree(ev);
-+               return;
-+       }
-+
-+       printk(KERN_INFO "scanning ...\n");
-+       scsi_scan_host(instance->host);
-+       kfree(ev);
-+       instance->ev = NULL;
-+}
-
-4. 
-
-> +       if (instance->evt_detail) {
-> +               printk(KERN_INFO "%s[%d]: event code 0x%04x\n", __FUNCTION__,
-
-Users of checkpatch know to use __func__.
-
-> +                       instance->host->host_no, instance->evt_detail-
-
-Changed to:
-
-+               printk(KERN_INFO "get event code 0x%04x\n",
-+                       instance->evt_detail->code); 
-
-
-5.
-
-> +
-> +       /**
-> +       * Register AEN with FW for latest sequence number plus 1
-> +       **/
-
->The /** token is used to introduce a kerneldoc comment.  This is not a
->kerneldoc comment.
-
-Changed to:
-
-+	/* Register AEN with FW for latest sequence number plus 1 */
-
-6. 
->         struct tasklet_struct isr_tasklet;
-> +       struct work_struct *hotplug_wk;
-
->"hotplug_work"
-
-+       struct megasas_aen_event *ev;
-
+diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
+index 85574b7..1fecb7e 100644
+--- a/arch/x86/include/asm/svm.h
++++ b/arch/x86/include/asm/svm.h
+@@ -57,7 +57,8 @@ struct __attribute__ ((__packed__)) vmcb_control_area {
+ 	u16 intercept_dr_write;
+ 	u32 intercept_exceptions;
+ 	u64 intercept;
+-	u8 reserved_1[44];
++	u8 reserved_1[42];
++	u16 pause_filter_count;
+ 	u64 iopm_base_pa;
+ 	u64 msrpm_base_pa;
+ 	u64 tsc_offset;
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index ef43a18..4279141 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -45,6 +45,7 @@ MODULE_LICENSE("GPL");
+ #define SVM_FEATURE_NPT  (1 << 0)
+ #define SVM_FEATURE_LBRV (1 << 1)
+ #define SVM_FEATURE_SVML (1 << 2)
++#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
  
-Thanks,
+ #define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
+ 
+@@ -575,6 +576,12 @@ static void init_vmcb(struct vcpu_svm *svm)
+ 
+ 	svm->nested_vmcb = 0;
+ 	svm->vcpu.arch.hflags = HF_GIF_MASK;
++
++	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
++		control->pause_filter_count = 5000;
++		control->intercept |= (1ULL << INTERCEPT_PAUSE);
++	}
++
+ }
+ 
+ static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
+@@ -2087,6 +2094,15 @@ static int interrupt_window_interception(struct vcpu_svm *svm,
+ 	return 1;
+ }
+ 
++static int pause_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
++{
++	/* Simple yield */
++	vcpu_put(&svm->vcpu);
++	schedule();
++	vcpu_load(&svm->vcpu);
++	return 1;
++}
++
+ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+ 				      struct kvm_run *kvm_run) = {
+ 	[SVM_EXIT_READ_CR0]           		= emulate_on_interception,
+@@ -2123,6 +2139,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+ 	[SVM_EXIT_CPUID]			= cpuid_interception,
+ 	[SVM_EXIT_IRET]                         = iret_interception,
+ 	[SVM_EXIT_INVD]                         = emulate_on_interception,
++	[SVM_EXIT_PAUSE]			= pause_interception,
+ 	[SVM_EXIT_HLT]				= halt_interception,
+ 	[SVM_EXIT_INVLPG]			= invlpg_interception,
+ 	[SVM_EXIT_INVLPGA]			= invalid_op_interception,
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 2b73e19..e2b730d 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -710,6 +710,7 @@ void vcpu_load(struct kvm_vcpu *vcpu)
+ 	kvm_arch_vcpu_load(vcpu, cpu);
+ 	put_cpu();
+ }
++EXPORT_SYMBOL_GPL(vcpu_load);
+ 
+ void vcpu_put(struct kvm_vcpu *vcpu)
+ {
+@@ -719,6 +720,7 @@ void vcpu_put(struct kvm_vcpu *vcpu)
+ 	preempt_enable();
+ 	mutex_unlock(&vcpu->mutex);
+ }
++EXPORT_SYMBOL_GPL(vcpu_put);
+ 
+ static void ack_flush(void *_completed)
+ {
 
-Bo Yang
-
------Original Message-----
-From: Andrew Morton [mailto:akpm@linux-foundation.org] 
-Sent: Wednesday, May 06, 2009 5:17 PM
-To: Yang, Bo
-Cc: Yang, Bo; James.Bottomley@HansenPartnership.com; linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org; Austria, Winston
-Subject: Re: [PATCH 2/10] scsi: megaraid_sas - Add Poll Wait mechanism to MegaRAID SAS driver (PART-I)
-
-On Tue, 5 May 2009 18:25:55 -0600
-"Yang, Bo" <Bo.Yang@lsi.com> wrote:
-
-> Add Poll_wait mechanism to SAS-2 MegaRAID SAS Linux driver. Driver will wakeup poll after the driver get event from MegaRAID SAS FW.  Driver also reregisters for Event with the FW when it receives AEN.
-> 
-
-Seems fairly strage to be adding poll support to a scsi driver, but I
-see it isn't the first driver to do this.
-
-> 
->
-> ...
->
-> @@ -1295,13 +1301,20 @@ megasas_service_aen(struct megasas_insta
->         /*
->          * Don't signal app if it is just an aborted previously registered aen
->          */
-> -       if (!cmd->abort_aen)
-> +       if ((!cmd->abort_aen) && (instance->unload == 0)) {
-> +               megasas_poll_wait_aen = 1;
-> +               wake_up(&megasas_poll_wait);
->                 kill_fasync(&megasas_async_queue, SIGIO, POLL_IN);
-> +       }
->         else
->                 cmd->abort_aen = 0;
-> 
->         instance->aen_cmd = NULL;
->         megasas_return_cmd(instance, cmd);
-> +
-> +       if ((!cmd->abort_aen) && (instance->unload == 0)) {
-> +               megasas_aen_polling(instance);
-> +       }
-
-I see you're not a big fan of checkpatch, nor of kernel coding style :(
-
->  }
-> 
->  /*
-> @@ -2583,6 +2596,8 @@ megasas_probe_one(struct pci_dev *pdev,
-> 
->         *instance->producer = 0;
->         *instance->consumer = 0;
-> +       megasas_poll_wait_aen = 0;
-> +       instance->hotplug_wk = NULL;
-> 
->         instance->evt_detail = pci_alloc_consistent(pdev,
->                                                     sizeof(struct
-> @@ -2621,6 +2636,7 @@ megasas_probe_one(struct pci_dev *pdev,
-> 
->         megasas_dbg_lvl = 0;
->         instance->flag = 0;
-> +       instance->unload = 0;
->         instance->last_time = 0;
-> 
->         /*
-> @@ -2924,6 +2940,7 @@ static void __devexit megasas_detach_one
->         struct megasas_instance *instance;
-> 
->         instance = pci_get_drvdata(pdev);
-> +       instance->unload = 1;
->         host = instance->host;
-> 
->         if (poll_mode_io)
-> @@ -2932,6 +2949,15 @@ static void __devexit megasas_detach_one
->         scsi_remove_host(instance->host);
->         megasas_flush_cache(instance);
->         megasas_shutdown_controller(instance, MR_DCMD_CTRL_SHUTDOWN);
-> +
-> +       /*
-> +       * cancel the delayed work if this work still in queue
-> +       */
-> +       if (instance->hotplug_wk != NULL) {
-> +               cancel_delayed_work(
-> +                       (struct delayed_work *)instance->hotplug_wk);
-
-whah?  Can't do that!  cancel_delayed_work() will do del_timer_sync()
-on megasas_instance.flag and will crash.
-
-> +                       
-
-> +               flush_scheduled_work();
-> +       }
->         tasklet_kill(&instance->isr_tasklet);
-> 
->         /*
-> @@ -3027,6 +3053,19 @@ static int megasas_mgmt_fasync(int fd, s
->  }
-> 
->  /**
-> + * megasas_mgmt_poll -  char node "poll" entry point
-> + * */
-> +static unsigned int megasas_mgmt_poll(struct file *file, poll_table *wait)
-> +{
-> +       unsigned int mask = 0;
-> +       poll_wait(file, &megasas_poll_wait, wait);
-> +       if (megasas_poll_wait_aen) {
-> +               mask |=   (POLLIN | POLLRDNORM);
-> +       }
-> +       return mask;
-> +}
-> +
-> +/**
->   * megasas_mgmt_fw_ioctl -     Issues management ioctls to FW
->   * @instance:                  Adapter soft state
->   * @argp:                      User's ioctl packet
-> @@ -3348,6 +3387,7 @@ static const struct file_operations mega
->         .open = megasas_mgmt_open,
->         .fasync = megasas_mgmt_fasync,
->         .unlocked_ioctl = megasas_mgmt_ioctl,
-> +       .poll = megasas_mgmt_poll,
->  #ifdef CONFIG_COMPAT
->         .compat_ioctl = megasas_mgmt_compat_ioctl,
->  #endif
-> @@ -3462,6 +3502,100 @@ out:
->         return retval;
->  }
-> 
-> +static void
-> +megasas_scsi_scan_host(struct work_struct *work)
-> +{
-> +       struct megasas_aen_event *ev = container_of(work,
-> +               struct megasas_aen_event, hotplug_work);
-> +       struct megasas_instance *instance = ev->instance;
-> +
-> +       instance->hotplug_wk = NULL;
-> +       if (!instance) {
-
-oh come on.  If this test returns true then the preceding statement
-just oopsed the kernel.
-
-> +               printk(KERN_ERR "%s: invalid instance!\n", __FUNCTION__);
-> +               kfree(ev);
-> +               return;
-> +       }
-> +
-> +       printk(KERN_INFO "%s[%d]: scanning ...\n",
-> +               __FUNCTION__, instance->host->host_no);
-> +       scsi_scan_host(instance->host);
-> +       kfree(ev);
-> +}
-> +
-> +static void
-> +megasas_aen_polling(struct megasas_instance *instance)
-> +{
-> +       union megasas_evt_class_locale class_locale;
-> +       int doscan = 0;
-> +       u32 seq_num;
-> +       int error;
-> +
-> +       if (instance->evt_detail) {
-> +               printk(KERN_INFO "%s[%d]: event code 0x%04x\n", __FUNCTION__,
-
-Users of checkpatch know to use __func__.
-
-> +                       instance->host->host_no, instance->evt_detail->code);
-> +
-> +               switch (instance->evt_detail->code) {
-> +
-> +               case MR_EVT_LD_CREATED:
-> +               case MR_EVT_PD_INSERTED:
-> +               case MR_EVT_LD_DELETED:
-> +               case MR_EVT_LD_OFFLINE:
-> +               case MR_EVT_CFG_CLEARED:
-> +               case MR_EVT_PD_REMOVED:
-> +               case MR_EVT_FOREIGN_CFG_IMPORTED:
-> +               case MR_EVT_LD_STATE_CHANGE:
-> +               case MR_EVT_CTRL_HOST_BUS_SCAN_REQUESTED:
-> +                       doscan = 1;
-> +                       break;
-> +               default:
-> +                       doscan = 0;
-> +                       break;
-> +               }
-> +       } else {
-> +               printk(KERN_ERR "%s[%d]: invalid evt_detail!\n",
-> +                       __FUNCTION__, instance->host->host_no);
-> +               return;
-> +       }
-> +
-> +       if (doscan) {
-> +               struct megasas_aen_event *ev;
-> +               ev = kzalloc(sizeof(*ev), GFP_ATOMIC);
-> +               if (!ev) {
-> +                       printk(KERN_ERR "%s: out of memory\n", __FUNCTION__);
-> +               } else {
-> +                       ev->instance = instance;
-> +                       instance->hotplug_wk = &ev->hotplug_work;
-> +                       INIT_WORK(&ev->hotplug_work, megasas_scsi_scan_host);
-> +                       schedule_delayed_work(
-> +                               (struct delayed_work *)&ev->hotplug_work, 0);
-> +               }
-> +       }
-> +
-> +       seq_num = instance->evt_detail->seq_num + 1;
-> +
-> +       /**
-> +       * Register AEN with FW for latest sequence number plus 1
-> +       **/
-
-The /** token is used to introduce a kerneldoc comment.  This is not a
-kerneldoc comment.
-
-> +       class_locale.members.reserved = 0;
-> +       class_locale.members.locale = MR_EVT_LOCALE_ALL;
-> +       class_locale.members.class = MR_EVT_CLASS_DEBUG;
-> +
-> +       if ( instance->aen_cmd != NULL ) {
-> +               return ;
-> +       }
-> +
-> +       mutex_lock(&instance->aen_mutex);
-> +       error = megasas_register_aen(instance, seq_num,
-> +                               class_locale.word);
-> +       mutex_unlock(&instance->aen_mutex);
-> +
-> +       if (error)
-> +               printk(KERN_ERR "%s[%d]: register aen failed error %x\n",
-> +                        __FUNCTION__, instance->host->host_no, error);
-> +}
-> +
-> +
->
-> ...
->
-> @@ -1118,8 +1134,10 @@ struct megasas_instance {
-> 
->         struct megasas_instance_template *instancet;
->         struct tasklet_struct isr_tasklet;
-> +       struct work_struct *hotplug_wk;
-
-"hotplug_work"
-
-> 
->         u8 flag;
-> +       u8 unload;
->         unsigned long last_time;
-> 
->         struct timer_list io_completion_timer;
