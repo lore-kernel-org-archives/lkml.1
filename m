@@ -1,101 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759679AbZEHASE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763359AbZEHASb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759679AbZEHASE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:18:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757498AbZEHAKS
+	id S1763359AbZEHASb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:18:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758594AbZEHAKT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:18 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52706
+	Thu, 7 May 2009 20:10:19 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52711
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754620AbZEHAJ4 (ORCPT
+	with ESMTP id S1754946AbZEHAJ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 20:09:56 -0400
+	Thu, 7 May 2009 20:09:58 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Alex Nixon <alex.nixon@citrix.com>,
+       Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 05/11] x86/PCI: Clean up pci_cache_line_size
-Date: Thu,  7 May 2009 14:45:31 -0700
-Message-Id: <1241732737-7669-6-git-send-email-jeremy@goop.org>
+Subject: [PATCH 06/16] xen: disable PAT
+Date: Thu,  7 May 2009 14:10:43 -0700
+Message-Id: <1241730653-4688-7-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241732737-7669-1-git-send-email-jeremy@goop.org>
-References: <1241732737-7669-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241730653-4688-1-git-send-email-jeremy@goop.org>
+References: <1241730653-4688-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alex Nixon <alex.nixon@citrix.com>
+From: Ian Campbell <ian.campbell@citrix.com>
 
-Impact: cleanup
+Impact: disable PAT under Xen
 
-Separate out x86 cache_line_size initialisation code into its own
-function (so it can be shared by Xen later in this patch series)
+Xen imposes a particular PAT layout on all paravirtual guests which
+does not match the layout Linux would like to use.
 
-Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
+Force PAT to be disabled until this is resolved.
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
 ---
- arch/x86/include/asm/pci_x86.h |    1 +
- arch/x86/pci/common.c          |   17 +++++++++++------
- 2 files changed, 12 insertions(+), 6 deletions(-)
+ arch/x86/include/asm/pat.h |    5 +++++
+ arch/x86/mm/pat.c          |    5 -----
+ arch/x86/xen/enlighten.c   |    3 +++
+ 3 files changed, 8 insertions(+), 5 deletions(-)
 
-diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
-index e60fd3e..5401ca2 100644
---- a/arch/x86/include/asm/pci_x86.h
-+++ b/arch/x86/include/asm/pci_x86.h
-@@ -45,6 +45,7 @@ enum pci_bf_sort_state {
- extern unsigned int pcibios_max_latency;
+diff --git a/arch/x86/include/asm/pat.h b/arch/x86/include/asm/pat.h
+index 2cd07b9..d434a4e 100644
+--- a/arch/x86/include/asm/pat.h
++++ b/arch/x86/include/asm/pat.h
+@@ -6,8 +6,13 @@
  
- void pcibios_resource_survey(void);
-+void pcibios_set_cache_line_size(void);
- 
- /* pci-pc.c */
- 
-diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index 8c362b9..6e736e2 100644
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -409,26 +409,31 @@ struct pci_bus * __devinit pcibios_scan_root(int busnum)
- 
- extern u8 pci_cache_line_size;
- 
--int __init pcibios_init(void)
-+void pcibios_set_cache_line_size(void)
- {
- 	struct cpuinfo_x86 *c = &boot_cpu_data;
- 
--	if (!raw_pci_ops) {
--		printk(KERN_WARNING "PCI: System does not support PCI\n");
--		return 0;
--	}
--
- 	/*
- 	 * Assume PCI cacheline size of 32 bytes for all x86s except K7/K8
- 	 * and P4. It's also good for 386/486s (which actually have 16)
- 	 * as quite a few PCI devices do not support smaller values.
- 	 */
-+
- 	pci_cache_line_size = 32 >> 2;
- 	if (c->x86 >= 6 && c->x86_vendor == X86_VENDOR_AMD)
- 		pci_cache_line_size = 64 >> 2;	/* K7 & K8 */
- 	else if (c->x86 > 6 && c->x86_vendor == X86_VENDOR_INTEL)
- 		pci_cache_line_size = 128 >> 2;	/* P4 */
-+}
-+
-+int __init pcibios_init(void)
+ #ifdef CONFIG_X86_PAT
+ extern int pat_enabled;
++extern void pat_disable(const char *reason);
+ #else
+ static const int pat_enabled;
++static inline void pat_disable(const char *reason)
 +{
-+	if (!raw_pci_ops) {
-+		printk(KERN_WARNING "PCI: System does not support PCI\n");
-+		return 0;
-+	}
++	(void)reason;
++}
+ #endif
  
-+	pcibios_set_cache_line_size();
- 	pcibios_resource_survey();
+ extern void pat_init(void);
+diff --git a/arch/x86/mm/pat.c b/arch/x86/mm/pat.c
+index 640339e..4d2a4df 100644
+--- a/arch/x86/mm/pat.c
++++ b/arch/x86/mm/pat.c
+@@ -43,11 +43,6 @@ static int __init nopat(char *str)
+ 	return 0;
+ }
+ early_param("nopat", nopat);
+-#else
+-static inline void pat_disable(const char *reason)
+-{
+-	(void)reason;
+-}
+ #endif
  
- 	if (pci_bf_sort >= pci_force_bf)
+ 
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index f917381..48c91dc 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -49,6 +49,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+ #include <asm/reboot.h>
++#include <asm/pat.h>
+ 
+ #include "xen-ops.h"
+ #include "mmu.h"
+@@ -1034,6 +1035,8 @@ asmlinkage void __init xen_start_kernel(void)
+ 		add_preferred_console("hvc", 0, NULL);
+ 	}
+ 
++	pat_disable("PAT disabled on Xen");
++
+ 	xen_raw_console_write("about to get started...\n");
+ 
+ 	/* Start the world */
 -- 
 1.6.0.6
 
