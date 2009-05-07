@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757317AbZEGNzB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760278AbZEGNz7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757317AbZEGNzB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 09:55:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756854AbZEGNuc
+	id S1760278AbZEGNz7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 09:55:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753469AbZEGNuf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 09:50:32 -0400
-Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:46223
-	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755659AbZEGNuJ (ORCPT
+	Thu, 7 May 2009 09:50:35 -0400
+Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:5112 "EHLO
+	VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755991AbZEGNuL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 09:50:09 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j61h)
-X-Spam-TCS-SCL: 0:0
+	Thu, 7 May 2009 09:50:11 -0400
+X-BigFish: VPS3(zzzz1202hzzz32i43j66h)
+X-Spam-TCS-SCL: 5:0
 X-FB-SS: 5,
-X-WSS-ID: 0KJA134-02-CLF-01
+X-WSS-ID: 0KJA137-02-CLK-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: <akpm@linux-foundation.org>, <greg@kroah.com>, <mingo@elte.hu>
 CC: <norsk5@yahoo.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
@@ -21,13 +21,13 @@ CC: <norsk5@yahoo.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
        <linux-kernel@vger.kernel.org>,
        Doug Thompson <dougthompson@xmission.com>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 17/21] amd64_edac: add ECC chipkill syndrome mapping table
-Date: Thu, 7 May 2009 15:49:39 +0200
-Message-ID: <1241704183-29223-18-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 20/21] amd64_edac: add ECC reporting initializers
+Date: Thu, 7 May 2009 15:49:42 +0200
+Message-ID: <1241704183-29223-21-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com>
 References: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 07 May 2009 13:49:56.0844 (UTC) FILETIME=[B4EF22C0:01C9CF1A]
+X-OriginalArrivalTime: 07 May 2009 13:49:58.0719 (UTC) FILETIME=[B60D3CF0:01C9CF1A]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,161 +36,293 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Doug Thompson <dougthompson@xmission.com>
 
+Borislav:
+- convert to the new {rd|wr}msr_on_cpus interfaces.
+- convert pvt->old_mcgctl to a bitmask thus saving some bytes
+
+Reviewed-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |  140 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 140 insertions(+), 0 deletions(-)
+ drivers/edac/amd64_edac.c |  246 +++++++++++++++++++++++++++++++++++++++++++++
+ drivers/edac/amd64_edac.h |    3 +-
+ 2 files changed, 248 insertions(+), 1 deletions(-)
 
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index c6c8d6b..68fc717 100644
+index 8e14fdd..af6eafd 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -2084,4 +2084,144 @@ static struct pci_dev *pci_get_related_function(unsigned int vendor,
- 	return dev;
+@@ -3026,3 +3026,249 @@ static int amd64_init_csrows(struct mem_ctl_info *mci)
+ 	return empty;
  }
  
 +/*
-+ * syndrome mapping table for ECC ChipKill devices
++ * amd64_enable_ecc_error_reporting
 + *
-+ * The comment in each row is the token (nibble) number that is in error.
-+ * The least significant nibble of the syndrome is the mask for the bits
-+ * that are in error (need to be toggled) for the particular nibble.
++ *	Only if 'ecc_enable_override' is set AND BIOS had ECC disabled,
++ *	do "we" enable it.
 + *
-+ * Each row contains 16 entries.
-+ * The first entry (0th) is the channel number for that row of syndromes.
-+ * The remaining 15 entries are the syndromes for the respective Error
-+ * bit mask index.
++ *	On each NB we need to enable the hardware to
++ *	generate and detect error events
 + *
-+ * 1st index entry is 0x0001 mask, indicating that the rightmost bit is the
-+ * bit in error.
-+ * The 2nd index entry is 0x0010 that the second bit is damaged.
-+ * The 3rd index entry is 0x0011 indicating that the rightmost 2 bits
-+ * are damaged.
-+ * Thus so on until index 15, 0x1111, whose entry has the syndrome
-+ * indicating that all 4 bits are damaged.
-+ *
-+ * A search is performed on this table looking for a given syndrome.
-+ *
-+ * See the AMD documentation for ECC syndromes. This ECC table is valid
-+ * across all the versions of the AMD64 processors.
-+ *
-+ * A fast lookup is to use the LAST four bits of the 16-bit syndrome as a
-+ * COLUMN index, then search all ROWS of that column, looking for a match
-+ * with the input syndrome. The ROW value will be the token number.
-+ *
-+ * The 0'th entry on that row, can be returned as the CHANNEL (0 or 1) of this
-+ * error.
++ *	1) NB Control Register
++ *	2) Global MCE Reporting Control Reg (MCGCTL)
 + */
-+#define NUMBER_ECC_ROWS  36
-+static const unsigned short ecc_chipkill_syndromes[NUMBER_ECC_ROWS][16] = {
-+	/* Channel 0 syndromes */
-+	{/*0*/  0, 0xe821, 0x7c32, 0x9413, 0xbb44, 0x5365, 0xc776, 0x2f57,
-+	   0xdd88, 0x35a9, 0xa1ba, 0x499b, 0x66cc, 0x8eed, 0x1afe, 0xf2df },
-+	{/*1*/  0, 0x5d31, 0xa612, 0xfb23, 0x9584, 0xc8b5, 0x3396, 0x6ea7,
-+	   0xeac8, 0xb7f9, 0x4cda, 0x11eb, 0x7f4c, 0x227d, 0xd95e, 0x846f },
-+	{/*2*/  0, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
-+	   0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x000f },
-+	{/*3*/  0, 0x2021, 0x3032, 0x1013, 0x4044, 0x6065, 0x7076, 0x5057,
-+	   0x8088, 0xa0a9, 0xb0ba, 0x909b, 0xc0cc, 0xe0ed, 0xf0fe, 0xd0df },
-+	{/*4*/  0, 0x5041, 0xa082, 0xf0c3, 0x9054, 0xc015, 0x30d6, 0x6097,
-+	   0xe0a8, 0xb0e9, 0x402a, 0x106b, 0x70fc, 0x20bd, 0xd07e, 0x803f },
-+	{/*5*/  0, 0xbe21, 0xd732, 0x6913, 0x2144, 0x9f65, 0xf676, 0x4857,
-+	   0x3288, 0x8ca9, 0xe5ba, 0x5b9b, 0x13cc, 0xaded, 0xc4fe, 0x7adf },
-+	{/*6*/  0, 0x4951, 0x8ea2, 0xc7f3, 0x5394, 0x1ac5, 0xdd36, 0x9467,
-+	   0xa1e8, 0xe8b9, 0x2f4a, 0x661b, 0xf27c, 0xbb2d, 0x7cde, 0x358f },
-+	{/*7*/  0, 0x74e1, 0x9872, 0xec93, 0xd6b4, 0xa255, 0x4ec6, 0x3a27,
-+	   0x6bd8, 0x1f39, 0xf3aa, 0x874b, 0xbd6c, 0xc98d, 0x251e, 0x51ff },
-+	{/*8*/  0, 0x15c1, 0x2a42, 0x3f83, 0xcef4, 0xdb35, 0xe4b6, 0xf177,
-+	   0x4758, 0x5299, 0x6d1a, 0x78db, 0x89ac, 0x9c6d, 0xa3ee, 0xb62f },
-+	{/*9*/  0, 0x3d01, 0x1602, 0x2b03, 0x8504, 0xb805, 0x9306, 0xae07,
-+	   0xca08, 0xf709, 0xdc0a, 0xe10b, 0x4f0c, 0x720d, 0x590e, 0x640f },
-+	{/*a*/  0, 0x9801, 0xec02, 0x7403, 0x6b04, 0xf305, 0x8706, 0x1f07,
-+	   0xbd08, 0x2509, 0x510a, 0xc90b, 0xd60c, 0x4e0d, 0x3a0e, 0xa20f },
-+	{/*b*/  0, 0xd131, 0x6212, 0xb323, 0x3884, 0xe9b5, 0x5a96, 0x8ba7,
-+	   0x1cc8, 0xcdf9, 0x7eda, 0xafeb, 0x244c, 0xf57d, 0x465e, 0x976f },
-+	{/*c*/  0, 0xe1d1, 0x7262, 0x93b3, 0xb834, 0x59e5, 0xca56, 0x2b87,
-+	   0xdc18, 0x3dc9, 0xae7a, 0x4fab, 0x542c, 0x85fd, 0x164e, 0xf79f },
-+	{/*d*/  0, 0x6051, 0xb0a2, 0xd0f3, 0x1094, 0x70c5, 0xa036, 0xc067,
-+	   0x20e8, 0x40b9, 0x904a, 0x601b, 0x307c, 0x502d, 0x80de, 0xe08f },
-+	{/*e*/  0, 0xa4c1, 0xf842, 0x5c83, 0xe6f4, 0x4235, 0x1eb6, 0xba77,
-+	   0x7b58, 0xdf99, 0x831a, 0x27db, 0x9dac, 0x396d, 0x65ee, 0xc12f },
-+	{/*f*/  0, 0x11c1, 0x2242, 0x3383, 0xc8f4, 0xd935, 0xeab6, 0xfb77,
-+	   0x4c58, 0x5d99, 0x6e1a, 0x7fdb, 0x84ac, 0x956d, 0xa6ee, 0xb72f },
-+
-+	/* Channel 1 syndromes */
-+	{/*10*/ 1, 0x45d1, 0x8a62, 0xcfb3, 0x5e34, 0x1be5, 0xd456, 0x9187,
-+	   0xa718, 0xe2c9, 0x2d7a, 0x68ab, 0xf92c, 0xbcfd, 0x734e, 0x369f },
-+	{/*11*/ 1, 0x63e1, 0xb172, 0xd293, 0x14b4, 0x7755, 0xa5c6, 0xc627,
-+	   0x28d8, 0x4b39, 0x99aa, 0xfa4b, 0x3c6c, 0x5f8d, 0x8d1e, 0xeeff },
-+	{/*12*/ 1, 0xb741, 0xd982, 0x6ec3, 0x2254, 0x9515, 0xfbd6, 0x4c97,
-+	   0x33a8, 0x84e9, 0xea2a, 0x5d6b, 0x11fc, 0xa6bd, 0xc87e, 0x7f3f },
-+	{/*13*/ 1, 0xdd41, 0x6682, 0xbbc3, 0x3554, 0xe815, 0x53d6, 0xce97,
-+	   0x1aa8, 0xc7e9, 0x7c2a, 0xa1fb, 0x2ffc, 0xf2bd, 0x497e, 0x943f },
-+	{/*14*/ 1, 0x2bd1, 0x3d62, 0x16b3, 0x4f34, 0x64e5, 0x7256, 0x5987,
-+	   0x8518, 0xaec9, 0xb87a, 0x93ab, 0xca2c, 0xe1fd, 0xf74e, 0xdc9f },
-+	{/*15*/ 1, 0x83c1, 0xc142, 0x4283, 0xa4f4, 0x2735, 0x65b6, 0xe677,
-+	   0xf858, 0x7b99, 0x391a, 0xbadb, 0x5cac, 0xdf6d, 0x9dee, 0x1e2f },
-+	{/*16*/ 1, 0x8fd1, 0xc562, 0x4ab3, 0xa934, 0x26e5, 0x6c56, 0xe387,
-+	   0xfe18, 0x71c9, 0x3b7a, 0xb4ab, 0x572c, 0xd8fd, 0x924e, 0x1d9f },
-+	{/*17*/ 1, 0x4791, 0x89e2, 0xce73, 0x5264, 0x15f5, 0xdb86, 0x9c17,
-+	   0xa3b8, 0xe429, 0x2a5a, 0x6dcb, 0xf1dc, 0xb64d, 0x783e, 0x3faf },
-+	{/*18*/ 1, 0x5781, 0xa9c2, 0xfe43, 0x92a4, 0xc525, 0x3b66, 0x6ce7,
-+	   0xe3f8, 0xb479, 0x4a3a, 0x1dbb, 0x715c, 0x26dd, 0xd89e, 0x8f1f },
-+	{/*19*/ 1, 0xbf41, 0xd582, 0x6ac3, 0x2954, 0x9615, 0xfcd6, 0x4397,
-+	   0x3ea8, 0x81e9, 0xeb2a, 0x546b, 0x17fc, 0xa8bd, 0xc27e, 0x7d3f },
-+	{/*1a*/ 1, 0x9891, 0xe1e2, 0x7273, 0x6464, 0xf7f5, 0x8586, 0x1617,
-+	   0xb8b8, 0x2b29, 0x595a, 0xcacb, 0xdcdc, 0x4f4d, 0x3d3e, 0xaeaf },
-+	{/*1b*/ 1, 0xcce1, 0x4472, 0x8893, 0xfdb4, 0x3f55, 0xb9c6, 0x7527,
-+	   0x56d8, 0x9a39, 0x12aa, 0xde4b, 0xab6c, 0x678d, 0xef1e, 0x23ff },
-+	{/*1c*/ 1, 0xa761, 0xf9b2, 0x5ed3, 0xe214, 0x4575, 0x1ba6, 0xbcc7,
-+	   0x7328, 0xd449, 0x8a9a, 0x2dfb, 0x913c, 0x365d, 0x688e, 0xcfef },
-+	{/*1d*/ 1, 0xff61, 0x55b2, 0xaad3, 0x7914, 0x8675, 0x2ca6, 0xd3c7,
-+	   0x9e28, 0x6149, 0xcb9a, 0x34fb, 0xe73c, 0x185d, 0xb28e, 0x4def },
-+	{/*1e*/ 1, 0x5451, 0xa8a2, 0xfcf3, 0x9694, 0xc2c5, 0x3e36, 0x6a67,
-+	   0xebe8, 0xbfb9, 0x434a, 0x171b, 0x7d7c, 0x292d, 0xd5de, 0x818f },
-+	{/*1f*/ 1, 0x6fc1, 0xb542, 0xda83, 0x19f4, 0x7635, 0xacb6, 0xc377,
-+	   0x2e58, 0x4199, 0x9b1a, 0xf4db, 0x37ac, 0x586d, 0x82ee, 0xed2f },
-+
-+	/* ECC bits are also in the set of tokens and they too can go bad
-+	 * first 2 cover channel 0, while the second 2 cover channel 1
-+	 */
-+	{/*20*/ 0, 0xbe01, 0xd702, 0x6903, 0x2104, 0x9f05, 0xf606, 0x4807,
-+	   0x3208, 0x8c09, 0xe50a, 0x5b0b, 0x130c, 0xad0d, 0xc40e, 0x7a0f },
-+	{/*21*/ 0, 0x4101, 0x8202, 0xc303, 0x5804, 0x1905, 0xda06, 0x9b07,
-+	   0xac08, 0xed09, 0x2e0a, 0x6f0b, 0x640c, 0xb50d, 0x760e, 0x370f },
-+	{/*22*/ 1, 0xc441, 0x4882, 0x8cc3, 0xf654, 0x3215, 0xbed6, 0x7a97,
-+	   0x5ba8, 0x9fe9, 0x132a, 0xd76b, 0xadfc, 0x69bd, 0xe57e, 0x213f },
-+	{/*23*/ 1, 0x7621, 0x9b32, 0xed13, 0xda44, 0xac65, 0x4176, 0x3757,
-+	   0x6f88, 0x19a9, 0xf4ba, 0x829b, 0xb5cc, 0xc3ed, 0x2efe, 0x58df }
-+};
- 
-+/*
-+ * get_channel_from_ecc_syndrome
-+ *
-+ *	given the syndrome argument, scan each of the channel tables
-+ *	looking for a syndrome match. Depending on which table it is
-+ *	found, return the channel number
-+ */
-+static int get_channel_from_ecc_syndrome(unsigned short syndrome)
++static void amd64_enable_ecc_error_reporting(struct mem_ctl_info *mci)
 +{
-+	int row;
-+	int column;
++	struct amd64_pvt *pvt = mci->pvt_info;
++	const cpumask_t *cpumask = cpumask_of_node(pvt->mc_node_id);
++	int idx = 0, cpu, err;
++	struct msr msrs[cpumask_weight(cpumask)];
++	u32 value;
++	u32 mask = K8_NBCTL_CECCEn | K8_NBCTL_UECCEn;
 +
-+	debugf0("%s()\n", __func__);
++	if (!ecc_enable_override)
++		return;
 +
-+	/* Determine column to scan */
-+	column = syndrome & 0xF;
++	memset(msrs, 0, sizeof(msrs));
 +
-+	/* Scan all rows, looking for syndrome, or end of table */
-+	for (row = 0; row < NUMBER_ECC_ROWS; row++) {
-+		if (ecc_chipkill_syndromes[row][column] == syndrome)
-+			return ecc_chipkill_syndromes[row][0];
++	amd64_printk(KERN_WARNING,
++		"'ecc_enable_override' parameter is active, "
++		"Enabling AMD ECC hardware now: CAUTION\n");
++
++	/* 1) read the NB Control register, and save old Enable bits */
++	err = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCTL, &value);
++	if (err != 0)
++		debugf0("%s() Reading K8_NBCTL failed\n", __func__);
++
++	/* save old value and then turn on UECCn and CECCEn bits
++	 * and write it back out, thus turning ON ECC for sure
++	 */
++	pvt->old_nbctl = value & mask;
++	pvt->nbctl_mcgctl_saved = 1;	/* Mark 'old' ECC values valid */
++
++	value |= mask;
++	pci_write_config_dword(pvt->misc_f3_ctl, K8_NBCTL, value);
++
++	debugf0("%s() Old NBCTL 0x%x New NBCTL= 0x%x\n",
++		__func__, pvt->old_nbctl, value);
++
++	/* 2) Read and save the NB Enable bit at entry. Enable the bit
++	 * then write the enabled value back to hardware
++	 */
++	rdmsr_on_cpus(cpumask, K8_MSR_MCGCTL, msrs);
++
++	for_each_cpu(cpu, cpumask) {
++		if (msrs[idx].l & K8_MSR_MCGCTL_NBE)
++			set_bit(idx, &pvt->old_mcgctl);
++
++		msrs[idx].l |= K8_MSR_MCGCTL_NBE;
++
++		debugf0("%s(), cpu%d, Old MCGCTL[NBE]=0x%x New MCGCTL=0x%x\n",
++			__func__, cpu, test_bit(idx, &pvt->old_mcgctl),
++			(unsigned int) msrs[idx].l);
++
++		idx++;
++	}
++	wrmsr_on_cpus(cpumask, K8_MSR_MCGCTL, msrs);
++
++	/* 3) Read the NB CFG to ensure DRAM ECC is on and then
++	 * keep a copy of the hw register in the control structure
++	 */
++	err = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCFG, &value);
++	if (err != 0)
++		debugf0("%s() Reading K8_NBCFG failed\n", __func__);
++
++	debugf0("%s() NBCFG(1)= 0x%x  CHIPKILL= %s ECC_ENABLE= %s\n",
++		__func__, value,
++		value & (K8_NBCFG_CHIPKILL) ? "Enabled" : "Disabled",
++		value & (K8_NBCFG_ECC_ENABLE) ? "Enabled" : "Disabled"
++		);
++
++	if (!(value & K8_NBCFG_ECC_ENABLE)) {
++		amd64_printk(KERN_WARNING,
++			"This node reports that DRAM ECC is "
++			"currently Disabled; ENABLING now\n");
++
++		/* Attempt to turn on DRAM ECC Enable */
++		value |= K8_NBCFG_ECC_ENABLE;
++		pci_write_config_dword(pvt->misc_f3_ctl, K8_NBCFG, value);
++
++		err = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCFG, &value);
++		if (err != 0)
++			debugf0("%s() Reading K8_NBCFG failed\n", __func__);
++
++		if (!(value & K8_NBCFG_ECC_ENABLE)) {
++			amd64_printk(KERN_WARNING,
++				"Hardware rejects Enabling DRAM ECC checking\n"
++				"Check memory DIMM configuration\n");
++		} else {
++			amd64_printk(KERN_DEBUG,
++				"Hardware accepted DRAM ECC Enable\n");
++		}
++	}
++	debugf0("%s() NBCFG(2)= 0x%x  CHIPKILL= %s ECC_ENABLE= %s\n",
++		__func__, value,
++		(value & K8_NBCFG_CHIPKILL) ? "Enabled" : "Disabled",
++		(value & K8_NBCFG_ECC_ENABLE) ? "Enabled" : "Disabled"
++		);
++
++	pvt->ctl_error_info.nbcfg = value;
++}
++
++/*
++ * amd64_restore_ecc_error_reporting
++ *
++ *	restore the hardware registers to their initial condition
++ *	prior to when amd64_enable_ecc_error_reporting was called
++ */
++static void amd64_restore_ecc_error_reporting(struct amd64_pvt *pvt)
++{
++	const cpumask_t *cpumask = cpumask_of_node(pvt->mc_node_id);
++	int idx = 0, cpu;
++	struct msr msrs[cpumask_weight(cpumask)];
++	u32 value;
++	u32 mask = K8_NBCTL_CECCEn | K8_NBCTL_UECCEn;
++	int err;
++
++	if (!pvt->nbctl_mcgctl_saved)
++		return;
++
++	memset(msrs, 0, sizeof(msrs));
++
++	err = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCTL, &value);
++	if (err != 0)
++		debugf0("%s() Reading K8_NBCTL failed\n", __func__);
++	value &= ~mask;
++	value |= pvt->old_nbctl;
++
++	/* restore the NB Enable MCGCTL bit */
++	pci_write_config_dword(pvt->misc_f3_ctl, K8_NBCTL, value);
++
++	rdmsr_on_cpus(cpumask, K8_MSR_MCGCTL, msrs);
++
++	for_each_cpu(cpu, cpumask) {
++		msrs[idx].l &= ~K8_MSR_MCGCTL_NBE;
++		msrs[idx].l |= test_bit(idx, &pvt->old_mcgctl) << K8_MSR_MCGCTL_NBE;
++		idx++;
 +	}
 +
-+	debugf0("%s(): syndrome(%x) not found\n", __func__, syndrome);
-+	return -1;
++	wrmsr_on_cpus(cpumask, K8_MSR_MCGCTL, msrs);
 +}
++
++static void check_mcg_ctl(void *ret)
++{
++	u64 msr_val = 0;
++	u8 nbe;
++
++	rdmsrl(MSR_IA32_MCG_CTL, msr_val);
++	nbe = msr_val & K8_MSR_MCGCTL_NBE;
++
++	debugf0("%s: core: %u, MCG_CTL: 0x%llx, NB MSR is %s\n",
++		__func__, raw_smp_processor_id(), msr_val,
++		(nbe ? "enabled" : "disabled"));
++
++	if (!nbe)
++		*(int *)ret = 0;
++}
++
++static int amd64_mcg_ctl_enabled_on_cpus(const cpumask_t *mask)
++{
++	int rc = 1;
++	preempt_disable();
++	smp_call_function_many(mask, check_mcg_ctl, &rc, 1);
++	preempt_enable();
++
++	return rc;
++}
++
++/*
++ * amd64_check_ecc_enabled
++ *
++ *	EDAC requires that the BIOS have ECC enabled before taking over the
++ *	processing of ECC errors. This is because the BIOS can properly
++ *	initialize the memory system completely.
++ *
++ *	For development and other purposes, there is a command line option
++ *	which allows for overriding this contraint. If supplied on the kernrel
++ *	command line, hardware ECC is force-enabled later in
++ *	amd64_enable_ecc_error_reporting().
++ */
++static int amd64_check_ecc_enabled(struct amd64_pvt *pvt)
++{
++	u32 value;
++	int tmp;
++	int rc = 0;
++
++	tmp = pci_read_config_dword(pvt->misc_f3_ctl, K8_NBCFG, &value);
++	if (tmp != 0)
++		debugf0("%s() Reading K8_NBCTL failed\n", __func__);
++
++	/* check MCG_CTL on all the cpus on this node */
++	rc = amd64_mcg_ctl_enabled_on_cpus(cpumask_of_node(pvt->mc_node_id));
++
++	debugf0("%s() K8_NBCFG=0x%x,  DRAM ECC is %s\n",
++		__func__, value, (value & K8_NBCFG_ECC_ENABLE ? "enabled"
++					: "disabled"));
++	if (!tmp || !rc) {
++		if (!tmp) {
++			amd64_printk(KERN_WARNING, "This node reports that "
++						   "Memory ECC is currently "
++						   "disabled.\n");
++
++			amd64_printk(KERN_WARNING, "bit 0x%lx in register "
++				"F3x%x of the MISC_CONTROL device (%s) "
++				"should be enabled\n", K8_NBCFG_ECC_ENABLE,
++				K8_NBCFG, pci_name(pvt->misc_f3_ctl));
++		}
++		if (!rc) {
++			amd64_printk(KERN_WARNING, "bit 0x%016lx in MSR 0x%08x "
++					"of node %d should be enabled\n",
++					K8_MSR_MCGCTL_NBE, MSR_IA32_MCG_CTL,
++					pvt->mc_node_id);
++		}
++		if (!ecc_enable_override) {
++			amd64_printk(KERN_WARNING, "WARNING: ECC is NOT "
++				"currently enabled by the BIOS. Module "
++				"will NOT be loaded.\n"
++				"    Either Enable ECC in the BIOS, "
++				"or use the 'ecc_enable_override' "
++				"parameter.\n"
++				"    Might be a BIOS bug, if BIOS says "
++				"ECC is enabled\n"
++				"    Use of the override can cause "
++				"unknown side effects.\n");
++			rc = -ENODEV;
++		}
++	} else {
++		amd64_printk(KERN_INFO,
++			"ECC is enabled by BIOS, Proceeding "
++			"with EDAC module initialization\n");
++
++		/* CLEAR the override, since BIOS controlled it */
++		ecc_enable_override = 0;
++	}
++
++	return rc;
++}
++
+diff --git a/drivers/edac/amd64_edac.h b/drivers/edac/amd64_edac.h
+index 5a6126c..d435ace 100644
+--- a/drivers/edac/amd64_edac.h
++++ b/drivers/edac/amd64_edac.h
+@@ -70,6 +70,7 @@
+ #include <linux/slab.h>
+ #include <linux/mmzone.h>
+ #include <linux/edac.h>
++#include <asm/msr.h>
+ #include "edac_core.h"
+ 
+ #define amd64_printk(level, fmt, arg...) \
+@@ -863,7 +864,7 @@ struct amd64_pvt {
+ 	/* Save old hw registers' values before we modified them */
+ 	u32 nbctl_mcgctl_saved;		/* When true, following 2 are valid */
+ 	u32 old_nbctl;
+-	u32 *old_mcgctl;		/* per core on this node */
++	unsigned long old_mcgctl;	/* per core on this node */
+ 
+ 	/* MC Type Index value: socket F vs Family 10h */
+ 	u32 mc_type_index;
 -- 
 1.6.2.4
 
