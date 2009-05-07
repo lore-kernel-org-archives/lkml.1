@@ -1,53 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbZEGUA3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757018AbZEGUAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754711AbZEGUA3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 16:00:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZEGUAR
+	id S1757018AbZEGUAo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 16:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbZEGUAY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 16:00:17 -0400
-Received: from mail-qy0-f129.google.com ([209.85.221.129]:53137 "EHLO
-	mail-qy0-f129.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753298AbZEGUAP convert rfc822-to-8bit (ORCPT
+	Thu, 7 May 2009 16:00:24 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42516 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754415AbZEGUAY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 16:00:15 -0400
-X-Greylist: delayed 1386 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 May 2009 16:00:15 EDT
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=pOVYwJGPPYVD/WYK/LEhATfnyqp3dY+IuNJUCYTY4NXtFA/uhrtTudB73Sg73DLzHV
-         hhL1CFfZszYfMOQiWcNllKNaFsX52H7C57rhatkFqRhFXeFTfFwiMEK/f63tywDSkW3m
-         grY/2TOx2Hq1oQD4usmg0h+vW55LWCNB3bVAI=
-MIME-Version: 1.0
-In-Reply-To: <20090507180732.27407.qmail@science.horizon.com>
-References: <4A02C2A7.4033.ED06D54@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
-	 <20090507180732.27407.qmail@science.horizon.com>
-Date: Thu, 7 May 2009 12:37:05 -0700
-X-Google-Sender-Auth: 54c4d368f9f502db
-Message-ID: <1f1b08da0905071237n565154e8x9a9619942fde7703@mail.gmail.com>
-Subject: Re: [RFC][PATCH] Adjust SHIFT_PLL to improve NTP convergence.
-From: john stultz <johnstul@us.ibm.com>
-To: George Spelvin <linux@horizon.com>
-Cc: ulrich.windl@rz.uni-regensburg.de, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, williams@redhat.com, zippel@linux-m68k.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Thu, 7 May 2009 16:00:24 -0400
+Date: Thu, 7 May 2009 12:55:26 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: chrisw@sous-sol.org, oleg@redhat.com, roland@redhat.com,
+       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
+Subject: Re: [patch 1/2] ptrace, security: rename ptrace_may_access =>
+ ptrace_access_check
+Message-Id: <20090507125526.c257c23d.akpm@linux-foundation.org>
+In-Reply-To: <20090507094947.GA4911@elte.hu>
+References: <20090506080050.GF17457@elte.hu>
+	<20090506235349.GC3756@redhat.com>
+	<20090507002133.02D05FC39E@magilla.sf.frob.com>
+	<20090507063606.GA15220@redhat.com>
+	<20090507082027.GD12285@elte.hu>
+	<20090507083102.GA20125@redhat.com>
+	<20090507083851.GA19133@elte.hu>
+	<20090507085742.GB3036@sequoia.sous-sol.org>
+	<20090507090459.GE19133@elte.hu>
+	<20090507093124.GA355@elte.hu>
+	<20090507094947.GA4911@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 7, 2009 at 11:07 AM, George Spelvin <linux@horizon.com> wrote:
-> - If there were some mechanism to make the divisor consistent across
->  boots, that would be helpful.  Imagine a file in /sys that I could
->  write with an absolute frequency at boot time as long as it was within
->  1000 ppm (0.1%) of the kernel's measurement.
->
-> Thinking about it, the third option seems the most useful.  It's
-> basically a cleaned-up tickadj.
+On Thu, 7 May 2009 11:49:47 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Indeed. Something similar to the lpj= boot option might be nice. I'll
-take a look at that.
+> The ptrace_may_access() methods are named confusingly - some 
+> variants return a bool, while the security subsystem methods have a 
+> retval convention.
+> 
+> Rename it to ptrace_access_check, to reduce the confusion factor. A 
+> followup patch eliminates the bool usage.
 
-thanks
--john
+s/may_access/access_check/ is a poor change.  The new name conveys less
+information than the old one.
+
+It's quite clear what the return value from "may_access" means.  It's
+less clear what the return value from a function called "access_check"
+means.
+
+Switching to something like ptrace_task_accessible() or
+ptrace_may_access_task() would be better.
+
+This happens quite often.  The string "check" in the name of a
+predicate function is a red flag.
