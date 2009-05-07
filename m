@@ -1,56 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762117AbZEGCKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762209AbZEGCKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762117AbZEGCKa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 22:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760203AbZEGCKK
+	id S1762209AbZEGCKo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 22:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761933AbZEGCKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 22:10:10 -0400
-Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:59729 "EHLO
-	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753358AbZEGCKJ (ORCPT
+	Wed, 6 May 2009 22:10:23 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48838 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762108AbZEGCKV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 22:10:09 -0400
-Date: Thu, 7 May 2009 11:04:36 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Christoph Hellwig <hch@lst.de>, rostedt@goodmis.org,
-       linux-kernel@vger.kernel.org, Fr?d?ric Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] sh: remove stray markers
-Message-ID: <20090507020436.GB7938@linux-sh.org>
-Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
-	Ingo Molnar <mingo@elte.hu>, Christoph Hellwig <hch@lst.de>,
-	rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-	Fr?d?ric Weisbecker <fweisbec@gmail.com>
-References: <20090506103854.GA23811@lst.de> <20090506110735.GH25203@elte.hu> <20090506111209.GA25310@lst.de> <20090506111549.GJ25203@elte.hu>
+	Wed, 6 May 2009 22:10:21 -0400
+Date: Wed, 6 May 2009 22:10:19 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: linux-kernel@vger.kernel.org
+cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/5] tracing/events: add rcu locking around trace event
+ prints
+In-Reply-To: <20090416021928.467656424@goodmis.org>
+Message-ID: <alpine.DEB.2.00.0905062207370.24643@gandalf.stny.rr.com>
+References: <20090416021830.556671772@goodmis.org> <20090416021928.467656424@goodmis.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090506111549.GJ25203@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 01:15:49PM +0200, Ingo Molnar wrote:
+
+Somehow this patch got dropped. I believe Ted's work requires it.
+
+I'm not sure if we need to include rcupdate.h or not to use 
+rcu_read_lock. I think it may be fine to include it in ftrace.h. 
+
+Jeremy, does this patch effect anything that you are doing?
+
+-- Steve
+
+On Wed, 15 Apr 2009, Steven Rostedt wrote:
+
+> From: Steven Rostedt <srostedt@redhat.com>
 > 
-> * Christoph Hellwig <hch@lst.de> wrote:
+> Some trace events need to have a way to print out data that his
+> allocated, but will be freed later. Using a function that can allocate
+> memory, and free it with call_rcu, can be useful.
 > 
-> > On Wed, May 06, 2009 at 01:07:35PM +0200, Ingo Molnar wrote:
-> > > Also, if there's some current use of these markers then it's OK 
-> > > to not do this change right now but replace them with 
-> > > tracepoints in the v2.6.31 merge window, after both the SH and 
-> > > the tracing infrastructure changes are upstream.
-> > 
-> > There's not user of these. [...]
+> This patch adds rcu locking around the print part of the TRACE_EVENT
+> macro to facilitate this.
 > 
-> I'll defer to Paul to decide whether SH needs those markers. If he 
-> added them to ease his own debugging (via whatever external 
-> approach), then that's an OK goal and we can handle this all 
-> politely without destroying functionality, in the next merge window.
+> Reported-by: Theodore Tso <tytso@mit.edu>
+> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> ---
+>  include/trace/ftrace.h |    4 ++++
+>  1 files changed, 4 insertions(+), 0 deletions(-)
 > 
-They were primarily added to aid some downstream folks that were just
-adding these on their own and generally not paying attention to where the
-markers were being placed on subsequent merges. I don't feel too strongly
-one way or the other, but as they have proven to be useful for some
-people, I would rather transition over to tracepoints during the merge
-window than kill them off prematurely.
+> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> index 60c5323..6fb06bd 100644
+> --- a/include/trace/ftrace.h
+> +++ b/include/trace/ftrace.h
+> @@ -62,7 +62,9 @@
+>   *
+>   *	field = (typeof(field))entry;
+>   *
+> + *	rcu_read_lock();
+>   *	ret = trace_seq_printf(s, <TP_printk> "\n");
+> + *	rcu_read_unlock();
+>   *	if (!ret)
+>   *		return TRACE_TYPE_PARTIAL_LINE;
+>   *
+> @@ -99,7 +101,9 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+>  									\
+>  	field = (typeof(field))entry;					\
+>  									\
+> +	rcu_read_lock();						\
+>  	ret = trace_seq_printf(s, #call ": " print);			\
+> +	rcu_read_unlock();						\
+>  	if (!ret)							\
+>  		return TRACE_TYPE_PARTIAL_LINE;				\
+>  									\
+> -- 
+> 1.6.2.1
+> 
+> -- 
+> 
