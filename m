@@ -1,92 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754529AbZEGIEj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757379AbZEGIFV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754529AbZEGIEj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 04:04:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbZEGIEV
+	id S1757379AbZEGIFV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 04:05:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZEGIEy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 04:04:21 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:54808 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752232AbZEGIET (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 04:04:19 -0400
-Message-ID: <4A029634.303@cn.fujitsu.com>
-Date: Thu, 07 May 2009 16:05:08 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Thu, 7 May 2009 04:04:54 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:40290 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751318AbZEGIEt (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 04:04:49 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=Tm4N0hULQbzQkGw1FNYvgJzAi0FvGeC2VcR6VquuN6H8NRPZtFpQccpNJ7/aSg9/If
+         eEAfd+HlnJf0dalpGtaGe26YHz2RVdKcd5BHwjWbfbgxswPzwcxVU/++qkDOpqJ2Zev4
+         b3LxQYDycIDcjWdRQ80LjOwsDKV/DTugExr/Y=
 MIME-Version: 1.0
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-CC: Vivek Goyal <vgoyal@redhat.com>, nauman@google.com, dpshah@google.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 05/18] io-controller: Common hierarchical fair queuing
- code in elevaotor layer
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-6-git-send-email-vgoyal@redhat.com> <4A0290ED.7080506@cn.fujitsu.com>
-In-Reply-To: <4A0290ED.7080506@cn.fujitsu.com>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Thu, 7 May 2009 01:04:30 -0700
+Message-ID: <43e72e890905070104u59eebcceu18718a733e388cc9@mail.gmail.com>
+Subject: New kernel recommendations for ath9k
+To: linux-wireless <linux-wireless@vger.kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gui Jianfeng wrote:
-> Vivek Goyal wrote:
->> This patch enables hierarchical fair queuing in common layer. It is
->> controlled by config option CONFIG_GROUP_IOSCHED.
-> ...
->> +}
->> +
->> +void iocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
->> +{
->> +	struct io_cgroup *iocg = cgroup_to_io_cgroup(cgroup);
->> +	struct hlist_node *n, *tmp;
->> +	struct io_group *iog;
->> +
->> +	/*
->> +	 * Since we are destroying the cgroup, there are no more tasks
->> +	 * referencing it, and all the RCU grace periods that may have
->> +	 * referenced it are ended (as the destruction of the parent
->> +	 * cgroup is RCU-safe); bgrp->group_data will not be accessed by
->> +	 * anything else and we don't need any synchronization.
->> +	 */
->> +	hlist_for_each_entry_safe(iog, n, tmp, &iocg->group_data, group_node)
->> +		io_destroy_group(iocg, iog);
->> +
->> +	BUG_ON(!hlist_empty(&iocg->group_data));
->> +
-> 
->     Hi Vivek,
-> 
->     IMHO, free_css_id() needs to be called here.
-> 
+For those not subscribed to the ath9k wiki on wireless.kernel.org [1]
+(which we recommend you do if you're a user) here's a quick note to
+let you know our latest kernel recommendations for using ath9k:
 
-Right.
+  *  >= 2.6.27.22
+  *  >= 2.6.28.10
+  *  2.6.29
 
-Though alloc_css_id() is called by cgroup core in cgroup_create(),
-free_css_id() should be called by subsystem itself.
+If you want 802.11n support or AP support you'll want at least 2.6.29.
+If you happen to have one of our new 1x1 AR9285 devices (all AR9285
+devices are 1x1) then you'll need at least 2.6.29. If you want to
+start using ath9k on APs with AHB you will need at least 2.6.30 (still
+in RC series).
 
-This is a bit strange, but it's required by memory cgroup. Normally,
-free_css_id() is called in destroy() handler, but memcg calls it
-when a mem_cgroup's refcnt goes to 0. When a cgroup is destroyed,
-the mem_cgroup won't be destroyed (refcnt > 0) if it has records on
-swap-entry.
+As usual if you happen to be stuck on older kernels for one reason or
+another you can always use compat-wireless [2] and if that happens to
+be a little too bleeding edge we have now compat-wireless releases for
+stable kernel releases, starting as of the 2.6.30-rc series [3].
 
->> +	kfree(iocg);
->> +}
->> +
->> +void io_disconnect_groups(struct elevator_queue *e)
->> +{
->> +	struct hlist_node *pos, *n;
->> +	struct io_group *iog;
->> +	struct elv_fq_data *efqd = &e->efqd;
->> +
->> +	hlist_for_each_entry_safe(iog, pos, n, &efqd->group_list,
->> +					elv_data_node) {
->> +		hlist_del(&iog->elv_data_node);
->> +
-> 
+  Luis
 
+[1] http://wireless.kernel.org/en/users/Drivers/ath9k
+[2] http://wireless.kernel.org/en/users/Download
+[3] http://wireless.kernel.org/en/users/Download/stable
