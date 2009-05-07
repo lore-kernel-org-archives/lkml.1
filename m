@@ -1,53 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762124AbZEGTzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754711AbZEGUA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762124AbZEGTzl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 15:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZEGTz0
+	id S1754711AbZEGUA3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 16:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753399AbZEGUAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 15:55:26 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:53546 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751837AbZEGTzZ (ORCPT
+	Thu, 7 May 2009 16:00:17 -0400
+Received: from mail-qy0-f129.google.com ([209.85.221.129]:53137 "EHLO
+	mail-qy0-f129.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753298AbZEGUAP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 15:55:25 -0400
-Date: Thu, 7 May 2009 15:55:22 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Kernel development list <linux-kernel@vger.kernel.org>
-cc: Pantelis Koukousoulas <pktoss@gmail.com>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: usbfs, claiming entire usb devices
-In-Reply-To: <1295ed070905071015n5a604f93je366faf55b695e47@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0905071543470.4812-100000@iolanthe.rowland.org>
+	Thu, 7 May 2009 16:00:15 -0400
+X-Greylist: delayed 1386 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 May 2009 16:00:15 EDT
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=pOVYwJGPPYVD/WYK/LEhATfnyqp3dY+IuNJUCYTY4NXtFA/uhrtTudB73Sg73DLzHV
+         hhL1CFfZszYfMOQiWcNllKNaFsX52H7C57rhatkFqRhFXeFTfFwiMEK/f63tywDSkW3m
+         grY/2TOx2Hq1oQD4usmg0h+vW55LWCNB3bVAI=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <20090507180732.27407.qmail@science.horizon.com>
+References: <4A02C2A7.4033.ED06D54@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+	 <20090507180732.27407.qmail@science.horizon.com>
+Date: Thu, 7 May 2009 12:37:05 -0700
+X-Google-Sender-Auth: 54c4d368f9f502db
+Message-ID: <1f1b08da0905071237n565154e8x9a9619942fde7703@mail.gmail.com>
+Subject: Re: [RFC][PATCH] Adjust SHIFT_PLL to improve NTP convergence.
+From: john stultz <johnstul@us.ibm.com>
+To: George Spelvin <linux@horizon.com>
+Cc: ulrich.windl@rz.uni-regensburg.de, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, williams@redhat.com, zippel@linux-m68k.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-There is a proposal afoot to give user programs the ability to claim
-ownership of an entire USB device, rather than just individual
-interfaces.  In fact, we'd like processes to be able to own whatever
-device gets plugged into a particular port on a particular hub.
+On Thu, May 7, 2009 at 11:07 AM, George Spelvin <linux@horizon.com> wrote:
+> - If there were some mechanism to make the divisor consistent across
+>  boots, that would be helpful.  Imagine a file in /sys that I could
+>  write with an absolute frequency at boot time as long as it was within
+>  1000 ppm (0.1%) of the kernel's measurement.
+>
+> Thinking about it, the third option seems the most useful.  It's
+> basically a cleaned-up tickadj.
 
-The question is how the API should work.  A simple approach is to have
-a sysfs or usbfs file correspond to each port; when a process opens the
-file it would be granted ownership of any device plugged into that
-port.  Since the file is automatically closed when the process ends, we
-wouldn't have to worry about ownership never getting released.
+Indeed. Something similar to the lpj= boot option might be nice. I'll
+take a look at that.
 
-But there's a snag.  When a process goes to open the usbfs file for a
-device, the kernel needs to know whether or not the process owns that
-device.  In other words, we need to figure out whether or not the
-process has opened the corresponding port file.
-
-Is there a simple way to do this?  Is it reasonable to search through 
-all the process's fd's, looking for one that matches a particular 
-inode?
-
-Or would a completely different API approach be better?
-
-Thanks,
-
-Alan Stern
-
+thanks
+-john
