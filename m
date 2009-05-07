@@ -1,70 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761790AbZEGOi5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757492AbZEGOoS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761790AbZEGOi5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 10:38:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbZEGOir
+	id S1757492AbZEGOoS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 10:44:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbZEGOoE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 10:38:47 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38887 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756212AbZEGOiq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 10:38:46 -0400
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
- class citizen
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <cl@linux.com>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-In-Reply-To: <alpine.DEB.1.10.0905071016410.24528@qirst.com>
-References: <20090430072057.GA4663@eskimo.com>
-	 <20090430174536.d0f438dd.akpm@linux-foundation.org>
-	 <20090430205936.0f8b29fc@riellaptop.surriel.com>
-	 <20090430181340.6f07421d.akpm@linux-foundation.org>
-	 <20090430215034.4748e615@riellaptop.surriel.com>
-	 <20090430195439.e02edc26.akpm@linux-foundation.org>
-	 <49FB01C1.6050204@redhat.com>
-	 <20090501123541.7983a8ae.akpm@linux-foundation.org>
-	 <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins>
-	 <20090507121101.GB20934@localhost>
-	 <alpine.DEB.1.10.0905070935530.24528@qirst.com>
-	 <1241705702.11251.156.camel@twins>
-	 <alpine.DEB.1.10.0905071016410.24528@qirst.com>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Thu, 07 May 2009 16:38:01 +0200
-Message-Id: <1241707081.11251.160.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 7 May 2009 10:44:04 -0400
+Received: from thunk.org ([69.25.196.29]:49318 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752178AbZEGOoD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 10:44:03 -0400
+Date: Thu, 7 May 2009 10:43:53 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Jan Blunck <jblunck@suse.de>
+Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev
+	tmpfs
+Message-ID: <20090507144353.GA7603@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Kay Sievers <kay.sievers@vrfy.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Greg KH <greg@kroah.com>, Jan Blunck <jblunck@suse.de>
+References: <1241097822.2516.3.camel@poy> <m1vdodnx8e.fsf@fess.ebiederm.org> <ac3eb2510905070228w5ecb5aa9ob24af17a91d2f231@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <ac3eb2510905070228w5ecb5aa9ob24af17a91d2f231@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-07 at 10:18 -0400, Christoph Lameter wrote:
-> On Thu, 7 May 2009, Peter Zijlstra wrote:
+On Thu, May 07, 2009 at 11:28:19AM +0200, Kay Sievers wrote:
+> On Thu, May 7, 2009 at 10:17, Eric W. Biederman <ebiederm@xmission.com> wrote:
 > 
-> > It re-instates the young bit for PROT_EXEC pages, so that they will only
-> > be paged when they are really cold, or there is severe pressure.
+> > sysfs is slow.
+> > udev is slow.
 > 
-> But they are rescanned until then. Really cold means what exactly? I do a
-> back up of a few hundred gigabytes and do not use firefox while the backup
-> is ongoing. Will the firefox pages still be in memory or not?
+> Everything is "slow" if you want to boot "fast". It's just numbers,
+> and this is more about simplicity and reliability, with just the side
+> effect that it's the fastest you can do, when you don't want to lose
+> current functionality.
 
-Likely not.
+How much of this is because, say, udev is using shell scripts as
+opposed to C?  If the answer is you lose flexibility when you do it as
+shell script fragments, I just spent 30 minutes with Alsadair chewing
+on my ear about how udev's use of shell scripts is making dm/LVM's
+life hard --- and I'll note that if we solve this problem by bloating
+the kernel, you lose flexibility *anyway* since the kernel code will
+be in C and not shell scripts.  :-)
 
-What this patch does is check the young bit on active_file scan, if its
-found to be set and the page is PROT_EXEC, put the page back on the
-active_file list, otherwise drop it to the inactive_file list.
-
-So if you haven't ran any firefox code, it should be gone from the
-active list after 2 full cycles, and from the inactive list on the first
-full inactive cycle after that.
-
-If you don't understand the patch, what are you complaining about, whats
-your point?
+						- Ted
