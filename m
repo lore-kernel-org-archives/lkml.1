@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbZEHAcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764343AbZEHAcl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932190AbZEHAcV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759932AbZEHAKx
+	id S1764343AbZEHAcl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:32:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759791AbZEHAKy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:53 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52714
+	Thu, 7 May 2009 20:10:54 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52706
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755866AbZEHAKA (ORCPT
+	with ESMTP id S1755729AbZEHAKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 20:10:00 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -16,66 +16,43 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 11/18] xen: use acpi_get_override_irq() to get triggering for legacy irqs
-Date: Thu,  7 May 2009 14:14:36 -0700
-Message-Id: <1241730883-4917-12-git-send-email-jeremy@goop.org>
+Subject: [PATCH 09/11] x86/pci: make sure _PAGE_IOMAP it set on pci mappings
+Date: Thu,  7 May 2009 14:45:35 -0700
+Message-Id: <1241732737-7669-10-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241730883-4917-1-git-send-email-jeremy@goop.org>
-References: <1241730883-4917-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241732737-7669-1-git-send-email-jeremy@goop.org>
+References: <1241732737-7669-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Impact: compatibility with legacy/ISA hardware
+Impact: bugfix
 
-We need to set up proper IO apic entries for legacy irqs, which are
-not normally configured by either normal acpi interrupt routing or
-PNP.
-
-This also generalizes the acpi interrupt setup, so we can remove it
-as a special case.
+When mapping pci space via /sys or /proc, make sure we're really
+doing a hardware mapping by setting _PAGE_IOMAP.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
 ---
- arch/x86/xen/pci.c |   24 ++++++++++--------------
- 1 files changed, 10 insertions(+), 14 deletions(-)
+ arch/x86/pci/i386.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/xen/pci.c b/arch/x86/xen/pci.c
-index e88f85e..f55532d 100644
---- a/arch/x86/xen/pci.c
-+++ b/arch/x86/xen/pci.c
-@@ -64,19 +64,15 @@ void __init xen_setup_pirqs(void)
- {
- 	int irq;
+diff --git a/arch/x86/pci/i386.c b/arch/x86/pci/i386.c
+index f1817f7..255aece 100644
+--- a/arch/x86/pci/i386.c
++++ b/arch/x86/pci/i386.c
+@@ -274,6 +274,9 @@ int pci_mmap_page_range(struct pci_dev *dev, struct vm_area_struct *vma,
+ 		return -EINVAL;
  
--#ifdef CONFIG_ACPI
--	/*
--	 * Set up acpi interrupt in acpi_gbl_FADT.sci_interrupt.
--	 */
--	if (acpi_gbl_FADT.sci_interrupt > 0) {
--		irq = xen_allocate_pirq(acpi_gbl_FADT.sci_interrupt);
--
--		printk(KERN_INFO "xen: allocated irq %d for acpi %d\n",
--		       irq, acpi_gbl_FADT.sci_interrupt);
--	}
--#endif
--
- 	/* Pre-allocate legacy irqs */
--	for (irq=0; irq < NR_IRQS_LEGACY; irq++)
--		xen_allocate_pirq(irq);
-+	for (irq=0; irq < NR_IRQS_LEGACY; irq++) {
-+		int trigger, polarity;
+ 	prot = pgprot_val(vma->vm_page_prot);
 +
-+		if (acpi_get_override_irq(irq, &trigger, &polarity) == -1)
-+			continue;
++	prot |= _PAGE_IOMAP;	/* creating a mapping for IO */
 +
-+		xen_register_gsi(irq,
-+			trigger ? ACPI_LEVEL_SENSITIVE : ACPI_EDGE_SENSITIVE,
-+			polarity ? ACPI_ACTIVE_LOW : ACPI_ACTIVE_HIGH);
-+	}
- }
+ 	if (pat_enabled && write_combine)
+ 		prot |= _PAGE_CACHE_WC;
+ 	else if (pat_enabled || boot_cpu_data.x86 > 3)
 -- 
 1.6.0.6
 
