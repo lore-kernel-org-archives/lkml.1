@@ -1,63 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761345AbZEGBoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbZEGBol@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761345AbZEGBoS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 21:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbZEGBoD
+	id S1759482AbZEGBol (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 21:44:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757485AbZEGBo2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 21:44:03 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:31310 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752375AbZEGBoB convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 21:44:01 -0400
+	Wed, 6 May 2009 21:44:28 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:37900 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759670AbZEGBo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 21:44:27 -0400
 MIME-Version: 1.0
-In-Reply-To: <4d34a0a70905061828l3e35a954k76967b30c1a241ab@mail.gmail.com>
-References: <1241483224-7113-1-git-send-email-khilman@deeprootsystems.com>
-	 <87y6tb3x6r.fsf@deeprootsystems.com>
-	 <871vr22upr.fsf@deeprootsystems.com> <200905062318.23572.rjw@sisk.pl>
-	 <87zldpu5rt.fsf@deeprootsystems.com>
-	 <d6200be20905061818h58145d5fie5c55ceaf900a196@mail.gmail.com>
-	 <4d34a0a70905061828l3e35a954k76967b30c1a241ab@mail.gmail.com>
-Date: Wed, 6 May 2009 18:44:01 -0700
-Message-ID: <d6200be20905061844q8a4945y83daa86b336dc49a@mail.gmail.com>
-Subject: Re: [PATCH] PM: suspend_device_irqs(): don't disable wakeup IRQs
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Kim Kyuwon <chammoru@gmail.com>
-Cc: Kevin Hilman <khilman@deeprootsystems.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: James Morris <jmorris@namei.org>
+X-Fcc: ~/Mail/linus
+Cc: Chris Wright <chrisw@sous-sol.org>, Oleg Nesterov <oleg@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>,
+       Stephen Smalley <sds@tycho.nsa.gov>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 3/3] ptrace: do not use task_lock() for attach
+In-Reply-To: James Morris's message of  Thursday, 7 May 2009 09:48:29 +1000 <alpine.LRH.2.00.0905070946480.22586@tundra.namei.org>
+References: <20090505224729.GA965@redhat.com>
+	<20090506224650.GZ3036@sequoia.sous-sol.org>
+	<20090506231332.GA3756@redhat.com>
+	<20090506232703.GA3036@sequoia.sous-sol.org>
+	<alpine.LRH.2.00.0905070946480.22586@tundra.namei.org>
+X-Shopping-List: (1) Indecent annoyers
+   (2) Critical onion caution
+   (3) Inelastic deception briefs
+   (4) Scandalous respectable interruptions
+   (5) Disorienting witch expulsions
+Message-Id: <20090507011716.BA522FC39E@magilla.sf.frob.com>
+Date: Wed,  6 May 2009 18:17:16 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/6 Kim Kyuwon <chammoru@gmail.com>:
-> 2009/5/7 Arve Hjønnevåg <arve@android.com>:
->> On Wed, May 6, 2009 at 5:16 PM, Kevin Hilman
->> <khilman@deeprootsystems.com> wrote:
->>> "Rafael J. Wysocki" <rjw@sisk.pl> writes:
->>>
->>>> On Wednesday 06 May 2009, Kevin Hilman wrote:
->>>>> Kevin Hilman <khilman@deeprootsystems.com> writes:
->>
->>> There is at least one problem with that which is why Kyuwon Kim added
->>> the ->disable hook to OMAP's irq_chip.  The problem is with drivers
->>> that call disable_irq() in their suspend hook, usually done to prevent
->>> the device from waking the system since on OMAP, any IRQ can be
->>> configured to wake the system.
->>>
->>
->> This does not sound correct. disable_irq_wake should be used for this.
->> A driver may need to mask its interrupt before suspending but this
->> should not also disable it as a wakeup source.
->
-> I wish I could use disable_irq_wake(), but it doesn't work in OMAP.
+> As far as I can tell, yes.
+> 
+> (Added David Howells and security folk to the cc -- please make sure at 
+> least that the LSM list is cc'd when changing code which affects LSM 
+> modules).
 
-This does not sound like a hardware problem.
+Good catch, Chris and Oleg!  This one is yet another dhowells blue plate
+special, deeply subtle change buried inside the ginormous commit d84f4f9. ;-}
+He even mentioned this one in the log:
 
--- 
-Arve Hjønnevåg
+ (a) selinux_setprocattr() no longer does its check for whether the
+	 current ptracer can access processes with the new SID inside the lock
+	 that covers getting the ptracer's SID.  Whilst this lock ensures that
+	 the check is done with the ptracer pinned, the result is only valid
+	 until the lock is released, so there's no point doing it inside the
+	 lock.
+
+Before d84f4f9, the extraction, avc check, and SID switch were all under
+task_lock().  What David's comment ignores is that "the lock that covers
+getting the ptracer's SID" (i.e. task_lock) is also the lock that excludes
+ptrace attempts, with their security checks against the (old or new) SID.
+i.e.:
+
+			if (!error)
+				tsec->sid = sid;
+			task_unlock(p);
+
+That ensured that ptrace_attach/ptrace_traceme would be seen to atomically
+check the bits that affect the SELinux ptrace controls and change the bits
+that affect "if (tracer)".
+     
+Indeed, cred_exec_mutex is the equivalent lock for that post-d84f4f9.
+
+
+Thanks,
+Roland
