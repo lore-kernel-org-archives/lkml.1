@@ -1,68 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbZEGClA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759042AbZEGCoI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbZEGClA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 22:41:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbZEGCkt
+	id S1759042AbZEGCoI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 22:44:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752775AbZEGCnz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 22:40:49 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:40346 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752425AbZEGCks (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 22:40:48 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090506192538.4966c283@infradead.org>
-References: <1241097822.2516.3.camel@poy> <20090506184122.721c890d@infradead.org> 
-	<ac3eb2510905061908u7acbd1b2nf991aa85e1517fe4@mail.gmail.com> 
-	<20090506192538.4966c283@infradead.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Thu, 7 May 2009 04:40:29 +0200
-Message-ID: <ac3eb2510905061940u9f90962uc78f4391794ae031@mail.gmail.com>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Jan Blunck <jblunck@suse.de>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 6 May 2009 22:43:55 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33680 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752447AbZEGCnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 22:43:55 -0400
+Date: Wed, 6 May 2009 22:41:29 -0400
+From: Rik van Riel <riel@redhat.com>
+To: Chris Wright <chrisw@redhat.com>
+Cc: Izik Eidus <ieidus@redhat.com>, Hugh Dickins <hugh@veritas.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       aarcange@redhat.com, chrisw@redhat.com, alan@lxorguk.ukuu.org.uk,
+       device@lanana.org, linux-mm@kvack.org, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
+Message-ID: <20090506224129.242ce9e2@riellaptop.surriel.com>
+In-Reply-To: <20090506235949.GC16870@x200.localdomain>
+References: <1241475935-21162-1-git-send-email-ieidus@redhat.com>
+	<1241475935-21162-2-git-send-email-ieidus@redhat.com>
+	<1241475935-21162-3-git-send-email-ieidus@redhat.com>
+	<1241475935-21162-4-git-send-email-ieidus@redhat.com>
+	<4A00DF9B.1080501@redhat.com>
+	<4A014C7B.9080702@redhat.com>
+	<Pine.LNX.4.64.0905061110470.3519@blonde.anvils>
+	<4A01AC5E.6000906@redhat.com>
+	<Pine.LNX.4.64.0905061706590.4005@blonde.anvils>
+	<4A01C1AD.9060802@redhat.com>
+	<20090506235949.GC16870@x200.localdomain>
+Organization: Red Hat, Inc
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 7, 2009 at 04:25, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Thu, 7 May 2009 04:08:33 +0200
-> Kay Sievers <kay.sievers@vrfy.org> wrote:
->>
->> How will you solve the dynamic device numbers? They are a complete
->> reality today.
->
-> not for storage though...
+On Wed, 6 May 2009 16:59:49 -0700
+Chris Wright <chrisw@redhat.com> wrote:
 
-Oh sure:
-  cat /sys/class/block/sd*/dev
-  259:524288
-  259:262144
-  259:786432
-  259:131072
-  259:0
-  259:393216
-  259:655360
+> * Izik Eidus (ieidus@redhat.com) wrote:
+> > Ok, i give up, lets move to madvice(), i will write a patch that
+> > move the whole thing into madvice after i finish here something,
+> > but that ofcurse only if Andrea agree for the move?
+> 
+> Here's where I left off last time (refreshed against a current mmotm).
+> 
+> It needs to get converted to vma rather than still scanning via slots.
+> It's got locking issues (I think this can be remedied w/ vma
+> conversion).  I think the scan list would be ->mm and each ->mm we'd
+> scan the vma's that are marked VM_MERGEABLE or whatever.
 
-That's the box I write this from. It's experimental now but in the
-upstream kernel. Distros want to support more than 15 partitions, so
-that will happen sooner than later.
+Doing that kind of scan would be useful for other reasons,
+too.
 
-And you may talk to the wrong rtc device, if you use static nodes, and
-so on. There are just too many things that can go wrong, and distros
-that don't have a very limited set of hardware, can not take the risk
-of a static /dev. They don't have this today, and will not go back to
-it. That's why we are coming up with this.
+For example, it is not uncommon for large database systems
+to end up having half of system memory in page tables
+occasionally, which can drive the system to swapping.
 
-> and for the rest udev is fast enough in
-> practice....
+Reclaiming some of those (file pte only) page tables would
+be a relatively simple thing to do and could really save
+such systems from the occasional swap disaster.
 
-Sure, but you still have the transition to the tmpfs /dev, and during
-that you are very limited in what you can do, and this addresses
-devtmpfs.
+The subsequent minor faults would be expensive, but not
+nearly as badly as swap disk IO...
 
-Thanks,
-Kay
+-- 
+All rights reversed.
