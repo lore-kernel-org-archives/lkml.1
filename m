@@ -1,83 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758925AbZEGPMe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761959AbZEGPNY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758925AbZEGPMe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 11:12:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754920AbZEGPMY
+	id S1761959AbZEGPNY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 11:13:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbZEGPNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 11:12:24 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:22785 "EHLO
-	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754299AbZEGPMX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 11:12:23 -0400
-X-BigFish: VPS-1(zz4015Lzz1202hzzz32i43j65h)
-X-Spam-TCS-SCL: 4:0
-X-WSS-ID: 0KJA4W3-02-GS7-01
-From: Andre Przywara <andre.przywara@amd.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: linux-kernel@vger.kernel.org, linux-serial@vger.kernel.org,
-       Andre Przywara <andre.przywara@amd.com>
-Subject: [PATCH] This patch adds the OXCB950 chip to the 8250 PCI driver.
-Date: Thu, 7 May 2009 17:13:40 +0200
-Message-ID: <1241709220-13247-1-git-send-email-andre.przywara@amd.com>
-X-Mailer: git-send-email 1.6.1.3
-X-OriginalArrivalTime: 07 May 2009 15:12:09.0483 (UTC) FILETIME=[31041DB0:01C9CF26]
-MIME-Version: 1.0
-Content-Type: text/plain
+	Thu, 7 May 2009 11:13:14 -0400
+Received: from cmpxchg.org ([85.214.51.133]:49061 "EHLO cmpxchg.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755116AbZEGPNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 11:13:13 -0400
+Date: Thu, 7 May 2009 17:10:39 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class citizen
+Message-ID: <20090507151039.GA2413@cmpxchg.org>
+References: <20090430174536.d0f438dd.akpm@linux-foundation.org> <20090430205936.0f8b29fc@riellaptop.surriel.com> <20090430181340.6f07421d.akpm@linux-foundation.org> <20090430215034.4748e615@riellaptop.surriel.com> <20090430195439.e02edc26.akpm@linux-foundation.org> <49FB01C1.6050204@redhat.com> <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090507121101.GB20934@localhost>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This adds support for the following serial controller chip:
-Oxford Semiconductor OXCB950 for PCI Cardbus interface
-http://www.transdimension.com/products/serial/OXCB950.html
+On Thu, May 07, 2009 at 08:11:01PM +0800, Wu Fengguang wrote:
+> Introduce AS_EXEC to mark executables and their linked libraries, and to
+> protect their referenced active pages from being deactivated.
+> 
+> CC: Elladan <elladan@eskimo.com>
+> CC: Nick Piggin <npiggin@suse.de>
+> CC: Johannes Weiner <hannes@cmpxchg.org>
+> CC: Christoph Lameter <cl@linux-foundation.org>
+> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> Acked-by: Peter Zijlstra <peterz@infradead.org>
+> Acked-by: Rik van Riel <riel@redhat.com>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  include/linux/pagemap.h |    1 +
+>  mm/mmap.c               |    2 ++
+>  mm/nommu.c              |    2 ++
+>  mm/vmscan.c             |   35 +++++++++++++++++++++++++++++++++--
+>  4 files changed, 38 insertions(+), 2 deletions(-)
+> 
+> --- linux.orig/include/linux/pagemap.h
+> +++ linux/include/linux/pagemap.h
+> @@ -25,6 +25,7 @@ enum mapping_flags {
+>  #ifdef CONFIG_UNEVICTABLE_LRU
+>  	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
+>  #endif
+> +	AS_EXEC		= __GFP_BITS_SHIFT + 4,	/* mapped PROT_EXEC somewhere */
+>  };
+>  
+>  static inline void mapping_set_error(struct address_space *mapping, int error)
+> --- linux.orig/mm/mmap.c
+> +++ linux/mm/mmap.c
+> @@ -1194,6 +1194,8 @@ munmap_back:
+>  			goto unmap_and_free_vma;
+>  		if (vm_flags & VM_EXECUTABLE)
+>  			added_exe_file_vma(mm);
+> +		if (vm_flags & VM_EXEC)
+> +			set_bit(AS_EXEC, &file->f_mapping->flags);
+>  	} else if (vm_flags & VM_SHARED) {
+>  		error = shmem_zero_setup(vma);
+>  		if (error)
+> --- linux.orig/mm/nommu.c
+> +++ linux/mm/nommu.c
+> @@ -1224,6 +1224,8 @@ unsigned long do_mmap_pgoff(struct file 
+>  			added_exe_file_vma(current->mm);
+>  			vma->vm_mm = current->mm;
+>  		}
+> +		if (vm_flags & VM_EXEC)
+> +			set_bit(AS_EXEC, &file->f_mapping->flags);
+>  	}
 
-on this card:
-ExSys EX-1370 1 port high-speed serial card for ExpressCard/34 slot
+I find it a bit ugly that it applies an attribute of the memory area
+(per mm) to the page cache mapping (shared).  Because this in turn
+means that the reference through a non-executable vma might get the
+pages rotated just because there is/was an executable mmap around.
 
-Signed-off-by: Andre Przywara <andre.przywara@amd.com>
----
- drivers/serial/8250_pci.c |    3 +++
- include/linux/pci_ids.h   |    2 ++
- 2 files changed, 5 insertions(+), 0 deletions(-)
+>  	down_write(&nommu_region_sem);
+> --- linux.orig/mm/vmscan.c
+> +++ linux/mm/vmscan.c
+> @@ -1230,6 +1230,7 @@ static void shrink_active_list(unsigned 
+>  	unsigned long pgmoved;
+>  	unsigned long pgscanned;
+>  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
+> +	LIST_HEAD(l_active);
+>  	LIST_HEAD(l_inactive);
+>  	struct page *page;
+>  	struct pagevec pvec;
+> @@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned 
+>  
+>  		/* page_referenced clears PageReferenced */
+>  		if (page_mapping_inuse(page) &&
+> -		    page_referenced(page, 0, sc->mem_cgroup))
+> +		    page_referenced(page, 0, sc->mem_cgroup)) {
+> +			struct address_space *mapping = page_mapping(page);
+> +
+>  			pgmoved++;
+> +			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
+> +				list_add(&page->lru, &l_active);
+> +				continue;
+> +			}
+> +		}
 
-Please apply!
+Since we walk the VMAs in page_referenced anyway, wouldn't it be
+better to check if one of them is executable?  This would even work
+for executable anon pages.  After all, there are applications that cow
+executable mappings (sbcl and other language environments that use an
+executable, run-time modified core image come to mind).
 
-Thanks,
-Andre.
-
-diff --git a/drivers/serial/8250_pci.c b/drivers/serial/8250_pci.c
-index 938bc1b..e371a9c 100644
---- a/drivers/serial/8250_pci.c
-+++ b/drivers/serial/8250_pci.c
-@@ -2776,6 +2776,9 @@ static struct pci_device_id serial_pci_tbl[] = {
- 	{	PCI_VENDOR_ID_OXSEMI, 0x950a,
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
- 		pbn_b0_2_1130000 },
-+	{	PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_C950,
-+		PCI_VENDOR_ID_OXSEMI, PCI_SUBDEVICE_ID_OXSEMI_C950, 0, 0,
-+		pbn_b0_1_921600 },
- 	{	PCI_VENDOR_ID_OXSEMI, PCI_DEVICE_ID_OXSEMI_16PCI954,
- 		PCI_ANY_ID, PCI_ANY_ID, 0, 0,
- 		pbn_b0_4_115200 },
-diff --git a/include/linux/pci_ids.h b/include/linux/pci_ids.h
-index 06ba90c..e8a6a95 100644
---- a/include/linux/pci_ids.h
-+++ b/include/linux/pci_ids.h
-@@ -1996,10 +1996,12 @@
- #define PCI_DEVICE_ID_OXSEMI_PCIe952_1_U	0xC118
- #define PCI_DEVICE_ID_OXSEMI_PCIe952_1_GU	0xC11C
- #define PCI_DEVICE_ID_OXSEMI_16PCI954	0x9501
-+#define PCI_DEVICE_ID_OXSEMI_C950	0x950B
- #define PCI_DEVICE_ID_OXSEMI_16PCI95N	0x9511
- #define PCI_DEVICE_ID_OXSEMI_16PCI954PP	0x9513
- #define PCI_DEVICE_ID_OXSEMI_16PCI952	0x9521
- #define PCI_DEVICE_ID_OXSEMI_16PCI952PP	0x9523
-+#define PCI_SUBDEVICE_ID_OXSEMI_C950	0x0001
- 
- #define PCI_VENDOR_ID_CHELSIO		0x1425
- 
--- 
-1.6.1.3
-
-
+	Hannes
