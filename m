@@ -1,42 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762722AbZEGSDF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762710AbZEGSFc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762722AbZEGSDF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 14:03:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761014AbZEGSCw
+	id S1762710AbZEGSFc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 14:05:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZEGSFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 14:02:52 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:49434 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755209AbZEGSCw (ORCPT
+	Thu, 7 May 2009 14:05:20 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55713 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752445AbZEGSFT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 14:02:52 -0400
-Date: Thu, 7 May 2009 13:20:29 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Alok Kataria <akataria@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-In-Reply-To: <1241716718.6311.1531.camel@laptop>
-Message-ID: <alpine.DEB.1.10.0905071320010.22107@qirst.com>
-References: <1241462661.412.8.camel@alok-dev1>  <4A00ADDE.9000908@zytor.com>  <1241560625.8665.17.camel@alok-dev1>  <alpine.DEB.1.10.0905071010170.24528@qirst.com>  <1241716053.6311.1514.camel@laptop>  <1241716422.6311.1524.camel@laptop>
- <1241716718.6311.1531.camel@laptop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 7 May 2009 14:05:19 -0400
+Date: Thu, 7 May 2009 10:53:49 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Matt Mackall <mpm@selenic.com>
+cc: Florian Weimer <fweimer@bfk.de>, security@kernel.org,
+       Roland McGrath <roland@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Eric Paris <eparis@redhat.com>, Jake Edge <jake@lwn.net>,
+       linux-security-module@vger.kernel.org, mingo@redhat.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Dave Jones <davej@redhat.com>, James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged
+ processes
+In-Reply-To: <20090507165545.GK31071@waste.org>
+Message-ID: <alpine.LFD.2.01.0905071040130.4983@localhost.localdomain>
+References: <20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu> <m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu> <20090505202219.GL31071@waste.org> <20090506103034.GA25203@elte.hu> <20090506162543.GT31071@waste.org>
+ <alpine.LFD.2.01.0905060942340.4983@localhost.localdomain> <20090506175717.GY31071@waste.org> <82prel54fo.fsf@mid.bfk.de> <20090507165545.GK31071@waste.org>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009, Peter Zijlstra wrote:
 
-> Another user is RCU, the grace period is tick driven, growing these
-> ticks by a factor 50 or so might require some tinkering with forced
-> grace periods when we notice our batch queues getting too long.
 
-One could also schedule RCU via hrtimers with a large fuzz period?
+On Thu, 7 May 2009, Matt Mackall wrote:
+> 
+> We have a better hash function handy, and it's only takes twice as long.
 
+Matt, I really don't like your notion of "only twice as long".
+
+I mean, really. In the kernel, we tend to never even talk about how many 
+_times_ slower something is. We talk about cycles or small percentages.
+
+The fact is, the current "get_random_int()" is a joke, and will return the 
+same value over and over again for long stretches of time. I mean, really. 
+Even people who don't care a lot would expect more than _that_ out of a 
+PRNG.
+
+And quite frankly, a lot of the users of get_random_int() probably use it 
+not as some crypto function, but as a replacement for not having to write 
+their own copy of some standard PRNG linear congruential generator.
+
+I mean, really. The virtual address randomization was never meant to be 
+"cryptographically secure" in that sense. Dammit, look at the code: it 
+only takes something like 8 bits of the results _anyway_.
+
+In other words, YOUR WHOLE ARGUMENT IS TOTALLY INSANE. You talk about 
+"cryptographically secure hashes" for some 8-bit value. Listen to 
+yourself. At that point, any cryptographer will just ridicule you. There's 
+no point in trying to break the randomness, because you'll be much better 
+off just trying a lot of different values.
+
+So Matt, get with the program already. Don't ignore the performance 
+argument by saying "it's only twice as slow". Admit it - that's just 
+idiotic.
+
+If somebody _really_ wants true randomness, teach them to use 
+"get_random_bytes()" by all means. 
+
+			Linus
