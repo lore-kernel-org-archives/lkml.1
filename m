@@ -1,155 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761712AbZEGO5x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758765AbZEGPBz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761712AbZEGO5x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 10:57:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760939AbZEGO5e
+	id S1758765AbZEGPBz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 11:01:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754232AbZEGPBp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 10:57:34 -0400
-Received: from va3ehsobe001.messaging.microsoft.com ([216.32.180.11]:44147
-	"EHLO VA3EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1761360AbZEGO5d (ORCPT
+	Thu, 7 May 2009 11:01:45 -0400
+Received: from smtp-out003.kontent.com ([81.88.40.217]:55769 "EHLO
+	smtp-out003.kontent.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753248AbZEGPBo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 10:57:33 -0400
-X-BigFish: VPS1(zz936fJzz1202hzzz32i6bh43j66h)
-X-Spam-TCS-SCL: 5:0
-X-FB-SS: 5,8,
-X-WSS-ID: 0KJA47E-02-FXW-01
-From: Mark Langsdorf <mark.langsdorf@amd.com>
-To: Joerg Roedel <joerg.roedel@amd.com>, avi@redhat.com, kvm@vger.kernel.org
-Subject: [PATCH][KVM][retry 1] Add support for Pause Filtering to AMD SVM
-Date: Thu, 7 May 2009 10:00:13 -0500
-User-Agent: KMail/1.9.10
-CC: linux-kernel@vger.kernel.org
-References: <200905050909.58583.mark.langsdorf@amd.com> <20090507135522.GJ4059@amd.com>
-In-Reply-To: <20090507135522.GJ4059@amd.com>
+	Thu, 7 May 2009 11:01:44 -0400
+From: Oliver Neukum <oliver@neukum.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Subject: Re: [PATCH 5/5] usb_debug: EXPERIMENTAL - poll hcd device to force writes
+Date: Thu, 7 May 2009 17:01:50 +0200
+User-Agent: KMail/1.10.3 (Linux/2.6.27.21-0.1-default; KDE/4.1.3; x86_64; ; )
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jason Wessel <jason.wessel@windriver.com>, greg@kroah.com,
+       linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <Pine.LNX.4.44L0.0905071029200.3087-100000@iolanthe.rowland.org>
+In-Reply-To: <Pine.LNX.4.44L0.0905071029200.3087-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-ID: <200905071000.14038.mark.langsdorf@amd.com>
-X-OriginalArrivalTime: 07 May 2009 14:57:22.0453 (UTC) FILETIME=[204E1450:01C9CF24]
+Message-Id: <200905071701.51195.oliver@neukum.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-commit 01813db8627e74018c8cec90df7e345839351f23
-Author: root <root@xendinar01.amd.com>
-Date:   Thu May 7 09:44:10 2009 -0500
+Am Donnerstag, 7. Mai 2009 16:35:57 schrieb Alan Stern:
+> On Thu, 7 May 2009, Oliver Neukum wrote:
+> > On a fundamental note, thinking about this in terms of numbers of URBs
+> > is strictly speaking wrong. We need to limit data in flight. For
+> > efficiency we should make buffers as large as possible within that limit.
+>
+> But for latency you should submit URBs as soone as possible within that
+> limit, which generally means small buffers.
 
-    New AMD processors will support the Pause Filter Feature.
-    This feature creates a new field in the VMCB called Pause
-    Filter Count.  If Pause Filter Count is greater than 0 and
-    intercepting PAUSEs is enabled, the processor will increment
-    an internal counter when a PAUSE instruction occurs instead
-    of intercepting.  When the internal counter reaches the
-    Pause Filter Count value, a PAUSE intercept will occur.
-    
-    This feature can be used to detect contended spinlocks,
-    especially when the lock holding VCPU is not scheduled.
-    Rescheduling another VCPU prevents the VCPU seeking the
-    lock from wasting its quantum by spinning idly.
-    
-    Experimental results show that most spinlocks are held
-    for less than 1000 PAUSE cycles or more than a few
-    thousand.  Default the Pause Filter Counter to 3000 to
-    detect the contended spinlocks.
-    
-    Processor support for this feature is indicated by a CPUID
-    bit.
-    
-    On a 24 core system running 4 guests each with 16 VCPUs,
-    this patch improved overall performance of each guest's
-    32 job kernbench by approximately 1%.  Further performance
-    improvement may be possible with a more sophisticated
-    yield algorithm.
-    
-    -Mark Langsdorf
-    Operating System Research Center
-    AMD
-    
-    Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+This is true only if the device's buffer would run dry. But if no URB is
+in flight, a URB should be written right away.
 
-diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
-index 85574b7..1fecb7e 100644
---- a/arch/x86/include/asm/svm.h
-+++ b/arch/x86/include/asm/svm.h
-@@ -57,7 +57,8 @@ struct __attribute__ ((__packed__)) vmcb_control_area {
- 	u16 intercept_dr_write;
- 	u32 intercept_exceptions;
- 	u64 intercept;
--	u8 reserved_1[44];
-+	u8 reserved_1[42];
-+	u16 pause_filter_count;
- 	u64 iopm_base_pa;
- 	u64 msrpm_base_pa;
- 	u64 tsc_offset;
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index ef43a18..4279141 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -45,6 +45,7 @@ MODULE_LICENSE("GPL");
- #define SVM_FEATURE_NPT  (1 << 0)
- #define SVM_FEATURE_LBRV (1 << 1)
- #define SVM_FEATURE_SVML (1 << 2)
-+#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
- 
- #define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
- 
-@@ -575,6 +576,12 @@ static void init_vmcb(struct vcpu_svm *svm)
- 
- 	svm->nested_vmcb = 0;
- 	svm->vcpu.arch.hflags = HF_GIF_MASK;
-+
-+	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
-+		control->pause_filter_count = 5000;
-+		control->intercept |= (1ULL << INTERCEPT_PAUSE);
-+	}
-+
- }
- 
- static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
-@@ -2087,6 +2094,15 @@ static int interrupt_window_interception(struct vcpu_svm *svm,
- 	return 1;
- }
- 
-+static int pause_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
-+{
-+	/* Simple yield */
-+	vcpu_put(&svm->vcpu);
-+	schedule();
-+	vcpu_load(&svm->vcpu);
-+	return 1;
-+}
-+
- static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
- 				      struct kvm_run *kvm_run) = {
- 	[SVM_EXIT_READ_CR0]           		= emulate_on_interception,
-@@ -2123,6 +2139,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
- 	[SVM_EXIT_CPUID]			= cpuid_interception,
- 	[SVM_EXIT_IRET]                         = iret_interception,
- 	[SVM_EXIT_INVD]                         = emulate_on_interception,
-+	[SVM_EXIT_PAUSE]			= pause_interception,
- 	[SVM_EXIT_HLT]				= halt_interception,
- 	[SVM_EXIT_INVLPG]			= invlpg_interception,
- 	[SVM_EXIT_INVLPGA]			= invalid_op_interception,
-diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
-index 2b73e19..e2b730d 100644
---- a/virt/kvm/kvm_main.c
-+++ b/virt/kvm/kvm_main.c
-@@ -710,6 +710,7 @@ void vcpu_load(struct kvm_vcpu *vcpu)
- 	kvm_arch_vcpu_load(vcpu, cpu);
- 	put_cpu();
- }
-+EXPORT_SYMBOL_GPL(vcpu_load);
- 
- void vcpu_put(struct kvm_vcpu *vcpu)
- {
-@@ -719,6 +720,7 @@ void vcpu_put(struct kvm_vcpu *vcpu)
- 	preempt_enable();
- 	mutex_unlock(&vcpu->mutex);
- }
-+EXPORT_SYMBOL_GPL(vcpu_put);
- 
- static void ack_flush(void *_completed)
- {
+> How about setting the upper limit to URBs in flight based on the baud
+> rate?  Faster transfers deserve more URBs, right?  Assuming some
+> minimum number of bytes per URB (4? 8?), there should be enough URBs to
+> fill a pipeline whose length is around 5 ms or so (interrupt latency).
+
+Hm, you say many URBs can complete before an interrupt handler
+can react?
+
+	Regards
+		Oliver
 
