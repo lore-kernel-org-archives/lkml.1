@@ -1,67 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbZEGHay@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756242AbZEGHkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758239AbZEGHay (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 03:30:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbZEGHao
+	id S1756242AbZEGHkq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 03:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZEGHkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 03:30:44 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57624 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753345AbZEGHan (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 03:30:43 -0400
-Date: Thu, 7 May 2009 09:30:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Paul Mundt <lethal@linux-sh.org>, Christoph Hellwig <hch@lst.de>,
-       rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       Fr?d?ric Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH] sh: remove stray markers
-Message-ID: <20090507073037.GA18125@elte.hu>
-References: <20090506103854.GA23811@lst.de> <20090506110735.GH25203@elte.hu> <20090506111209.GA25310@lst.de> <20090506111549.GJ25203@elte.hu> <20090507020436.GB7938@linux-sh.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507020436.GB7938@linux-sh.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 7 May 2009 03:40:36 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:20549 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752961AbZEGHkf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 03:40:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=eI+UiVYWH/drRXJ2r31Hd21bHKv+X4NB5Kz+ddx0D3aq+rs6j9fJREmvavhLbf2oJl
+         Zg8x3C/2dDlgliW9Sdp2JSeVfaqE7hwn8uTxeEfbzqLTJO3WBZDTVaFwHBBo9wzhtyFR
+         +YKO5A5BN0s4zwaq+JRqrM/Dd/tneUBFKMPbo=
+Subject: Re: 2.6.29 regression: left audio channel broken after resume from
+ suspend with Intel HDA
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+To: Tino Keitel <tino.keitel@gmx.de>
+Cc: linux-kernel@vger.kernel.org, Takashi Iwai <tiwai@suse.de>,
+       alsa-devel@alsa-project.org
+In-Reply-To: <20090507072352.GA6513@mac.home>
+References: <20090420194659.GA11399@dose.home.local>
+	 <s5h8wluinon.wl%tiwai@suse.de> <20090421073219.GA5866@dose.home.local>
+	 <s5hfxg2cv6m.wl%tiwai@suse.de> <20090421183936.GA21935@dose.home.local>
+	 <s5hws9a5ewr.wl%tiwai@suse.de> <20090424142113.GA18668@dose.home.local>
+	 <s5hskjy5d2t.wl%tiwai@suse.de> <20090428002309.GA29572@x61>
+	 <20090506222753.GA6728@mac.home>  <20090507072352.GA6513@mac.home>
+Content-Type: text/plain
+Date: Thu, 07 May 2009 00:40:37 -0700
+Message-Id: <1241682037.1864.4.camel@unix>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul Mundt <lethal@linux-sh.org> wrote:
-
-> On Wed, May 06, 2009 at 01:15:49PM +0200, Ingo Molnar wrote:
+On Thu, 2009-05-07 at 09:23 +0200, Tino Keitel wrote:
+> On Thu, May 07, 2009 at 00:27:53 +0200, Tino Keitel wrote:
+> > On Tue, Apr 28, 2009 at 02:23:09 +0200, Tino Keitel wrote:
 > > 
-> > * Christoph Hellwig <hch@lst.de> wrote:
+> > [...]
 > > 
-> > > On Wed, May 06, 2009 at 01:07:35PM +0200, Ingo Molnar wrote:
-> > > > Also, if there's some current use of these markers then it's OK 
-> > > > to not do this change right now but replace them with 
-> > > > tracepoints in the v2.6.31 merge window, after both the SH and 
-> > > > the tracing infrastructure changes are upstream.
-> > > 
-> > > There's not user of these. [...]
+> > > I just saw another, major problem: line in doesn't work anymore with
+> > > 2.6.29 and also 2.6.30-rc3 (no usable input level). It works with
+> > > 2.6.27.20.
 > > 
-> > I'll defer to Paul to decide whether SH needs those markers. If he 
-> > added them to ease his own debugging (via whatever external 
-> > approach), then that's an OK goal and we can handle this all 
-> > politely without destroying functionality, in the next merge window.
+> > FYI: I just tried 2.6.28 and line-in was still broken. So the last
+> > working kernel is 2.6.27.
 > 
-> They were primarily added to aid some downstream folks that were 
-> just adding these on their own and generally not paying attention 
-> to where the markers were being placed on subsequent merges. I 
-> don't feel too strongly one way or the other, but as they have 
-> proven to be useful for some people, I would rather transition 
-> over to tracepoints during the merge window than kill them off 
-> prematurely.
+> I tried this:
+> 
+> git bisect start v2.6.28 v2.6.27 sound/pci/hda/patch_sigmatel.c
+> 
+> The result is commit 4f1e6bc3646ab50b8181555ab7e6eeab68b8632a.
+> 
+> I can't use git revert because of conflicts, so I crafted the attached
+> patch against 2.6.30-rc4-00288-g413f81e, and now line-in works.
+> 
+> Regards,
+> Tino
 
-fair enough!
+It's funny you mention left audio broken
+with hda(testing out the imac91.patch,
+works good, but as soon as I boot into osx
+the left audio speaker sounds blown out)
+nice... ehhh...
 
-	Ingo
+(probably nothing of the sort, but
+you never know)
+
+Justin P. Mattock
+
+
