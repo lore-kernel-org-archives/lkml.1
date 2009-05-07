@@ -1,34 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762157AbZEGRjX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762321AbZEGRkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762157AbZEGRjX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 13:39:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755610AbZEGRjI
+	id S1762321AbZEGRkq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 13:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755610AbZEGRkg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 13:39:08 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38831 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758920AbZEGRjF (ORCPT
+	Thu, 7 May 2009 13:40:36 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33411 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755191AbZEGRkf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 13:39:05 -0400
+	Thu, 7 May 2009 13:40:35 -0400
 Subject: Re: [PATCH] x86: Reduce the default HZ value
 From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Christoph Lameter <cl@linux.com>, Alok Kataria <akataria@vmware.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
+To: Christoph Lameter <cl@linux.com>
+Cc: Alok Kataria <akataria@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
        the arch/x86 maintainers <x86@kernel.org>,
        LKML <linux-kernel@vger.kernel.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090507173608.GC6693@linux.vnet.ibm.com>
-References: <1241462661.412.8.camel@alok-dev1> <4A00ADDE.9000908@zytor.com>
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+In-Reply-To: <alpine.DEB.1.10.0905071320010.22107@qirst.com>
+References: <1241462661.412.8.camel@alok-dev1>  <4A00ADDE.9000908@zytor.com>
 	 <1241560625.8665.17.camel@alok-dev1>
 	 <alpine.DEB.1.10.0905071010170.24528@qirst.com>
-	 <1241716053.6311.1514.camel@laptop> <1241716422.6311.1524.camel@laptop>
+	 <1241716053.6311.1514.camel@laptop>  <1241716422.6311.1524.camel@laptop>
 	 <1241716718.6311.1531.camel@laptop>
-	 <20090507173608.GC6693@linux.vnet.ibm.com>
+	 <alpine.DEB.1.10.0905071320010.22107@qirst.com>
 Content-Type: text/plain
-Date: Thu, 07 May 2009 19:38:24 +0200
-Message-Id: <1241717904.6311.1558.camel@laptop>
+Date: Thu, 07 May 2009 19:39:42 +0200
+Message-Id: <1241717982.6311.1562.camel@laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
@@ -36,49 +36,18 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-07 at 10:36 -0700, Paul E. McKenney wrote:
-> On Thu, May 07, 2009 at 07:18:38PM +0200, Peter Zijlstra wrote:
-> > On Thu, 2009-05-07 at 19:13 +0200, Peter Zijlstra wrote:
-> > > On Thu, 2009-05-07 at 19:09 +0200, Peter Zijlstra wrote:
-> > > > On Thu, 2009-05-07 at 10:13 -0400, Christoph Lameter wrote:
-> > > > > I think we need to reduce the general tick frequency to be as low as
-> > > > > possible. With high resolution timers the tick frequency is just the
-> > > > > frequency with which the timer interrupt disturbs a running application.
-> > > > > 
-> > > > > Are there any benefits remaining from frequent timer interrupts? I would
-> > > > > think that 60 HZ would be sufficient.
-> > > > > 
-> > > > > It would be good if the kernel would be truly tickless. Scheduler events
-> > > > > would be driven by the scheduling intervals and not the invokations of the
-> > > > > scheduler softirq.
-> > > > 
-> > > > The only thing that's driven by the softirq is load-balancing, there's
-> > > > way more to the scheduler-tick than kicking that thing awake every so
-> > > > often.
-> > > > 
-> > > > The problem is that running the scheduler of off hrtimers is too
-> > > > expensive. We have the code, we tried it, people complained.
-> > > 
-> > > Therefore, decreasing the HZ value to say 50, we'd get a minimum
-> > > involuntary preemption granularity of 20ms, something on the high end of
-> > > barely usable.
-> > 
+On Thu, 2009-05-07 at 13:20 -0400, Christoph Lameter wrote:
+> On Thu, 7 May 2009, Peter Zijlstra wrote:
+> 
 > > Another user is RCU, the grace period is tick driven, growing these
 > > ticks by a factor 50 or so might require some tinkering with forced
 > > grace periods when we notice our batch queues getting too long.
 > 
-> One approach would be to enter nohz mode when running a CPU-bound
-> application on a CPU that had nothing else (other than the idle task)
-> on its runqueue and for which rcu_needs_cpu() returns zero.  In this
-> mode, RCU would need to be informed on each system call, perhaps with an
-> rcu_kernel_enter() and rcu_kernel_exit() that work like rcu_irq_enter()
-> and rcu_irq_exit() -- and that perhaps replace rcu_irq_enter() and
-> rcu_irq_exit().
-> 
-> Then RCU would ignore any CPU that was executing a CPU-bound application,
-> allowing the HZ to be dialed down as low as you like, or perhaps really
-> entering something like nohz mode.
+> One could also schedule RCU via hrtimers with a large fuzz period?
 
-Which would make syscall more expensive, not something you'd want to
-do :-)
+No, that's not the point, the longer these period are, the more
+callbacks you can accumulate in a period. You need a cap on the callback
+list, we already have seen DoS scenarios in this space.
+
+
 
