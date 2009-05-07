@@ -1,228 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755872AbZEGDuu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753003AbZEGEYR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755872AbZEGDuu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 23:50:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753923AbZEGDu0
+	id S1753003AbZEGEYR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 00:24:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbZEGEYA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 23:50:26 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:55698 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1752863AbZEGDuZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 23:50:25 -0400
-Message-ID: <4A025AAC.2000201@cn.fujitsu.com>
-Date: Thu, 07 May 2009 11:51:08 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 7/7] tracing: add hierarchical enabling of events
-References: <20090507031335.815354104@goodmis.org> <20090507031434.807772092@goodmis.org>
-In-Reply-To: <20090507031434.807772092@goodmis.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 7 May 2009 00:24:00 -0400
+Received: from qmta06.emeryville.ca.mail.comcast.net ([76.96.30.56]:50651 "EHLO
+	QMTA06.emeryville.ca.mail.comcast.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750861AbZEGEX7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 00:23:59 -0400
+Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
+From: Nicholas Miell <nmiell@comcast.net>
+To: Markus Gutschke =?UTF-8?Q?=28=E9=A1=A7=E5=AD=9F=E5=8B=A4=29?= 
+	<markus@google.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       linux-mips@linux-mips.org, sparclinux@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+In-Reply-To: <904b25810905061521v62b3ddd6l14deb614d203385a@mail.gmail.com>
+References: <20090228030413.5B915FC3DA@magilla.sf.frob.com>
+	 <alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
+	 <20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
+	 <alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
+	 <904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
+	 <20090506212913.GC4861@elte.hu>
+	 <904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
+	 <20090506215450.GA9537@elte.hu>
+	 <904b25810905061508n6d9cb8dbg71de5b1e0332ede7@mail.gmail.com>
+	 <20090506221319.GA11493@elte.hu>
+	 <904b25810905061521v62b3ddd6l14deb614d203385a@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Wed, 06 May 2009 21:23:57 -0700
+Message-Id: <1241670237.11500.7.camel@entropy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> With the current event directory, you can only enable individual events.
-> The file debugfs/tracing/set_event is used to be able to enable or
-> disable several events at once. But that can still be awkward.
+On Wed, 2009-05-06 at 15:21 -0700, Markus Gutschke (顧孟勤) wrote:
+> On Wed, May 6, 2009 at 15:13, Ingo Molnar <mingo@elte.hu> wrote:
+> > doing a (per arch) bitmap of harmless syscalls and replacing the
+> > mode1_syscalls[] check with that in kernel/seccomp.c would be a
+> > pretty reasonable extension. (.config controllable perhaps, for
+> > old-style-seccomp)
+> >
+> > It would probably be faster than the current loop over
+> > mode1_syscalls[] as well.
 > 
-> This patch adds hierarchical enabling of events. That is, each directory
-> in debugfs/tracing/events has an "enable" file. This file can enable
-> or disable all events within the directory and below.
+> This would be a great option to improve performance of our sandbox. I
+> can detect the availability of the new kernel API dynamically, and
+> then not intercept the bulk of the system calls. This would allow the
+> sandbox to work both with existing and with newer kernels.
 > 
->  # echo 1 > /debugfs/tracing/events/enable
+> We'll post a kernel patch for discussion in the next few days,
 > 
-> will enable all events.
-> 
->  # echo 1 > /debugfs/tracing/events/sched/enable
-> 
-> will enable all events in the sched subsystem.
-> 
->  # echo 1 > /debugfs/tracing/events/enable
->  # echo 0 > /debugfs/tracing/events/irq/enable
-> 
-> will enable all events, but then disable just the irq subsystem events.
-> 
-> When reading one of these enable files, there are four results:
-> 
->  0 - all events this file affects are disabled
->  1 - all events this file affects are enabled
->  X - there is a mixture of events enabled and disabled
->  ? - this file does not affect any event
 
-I would expect reading an enable file will let me know exactly
-which events are disabled and which are enabled.
+I suspect the correct thing to do would be to leave seccomp mode 1 alone
+and introduce a mode 2 with a less restricted set of system calls -- the
+interface was designed to be extended in this way, after all.
 
-I think this is useful especially for events/system/enable.
-
-Like this:
-
-$ cat events/irq/enable
-0 irq_handler_entry
-0 irq_handler_exit
-1 softirq_entry
-1 softirq_exit
-
-> +static ssize_t
-> +system_enable_read(struct file *filp, char __user *ubuf, size_t cnt,
-> +		   loff_t *ppos)
-> +{
-> +	const char *system = filp->private_data;
-> +	struct ftrace_event_call *call;
-> +	char buf[2];
-> +	int set = -1;
-> +	int all = 0;
-> +	int ret;
-> +
-> +	if (system[0] == '*')
-> +		all = 1;
-> +
-> +	mutex_lock(&event_mutex);
-> +	list_for_each_entry(call, &ftrace_events, list) {
-> +		if (!call->name || !call->regfunc)
-> +			continue;
-> +
-> +		if (!all && strcmp(call->system, system) != 0)
-> +			continue;
-> +
-> +		/*
-> +		 * We need to find out if all the events are set
-> +		 * or if all events or cleared, or if we have
-> +		 * a mixture.
-> +		 */
-> +		if (call->enabled) {
-> +			switch (set) {
-> +			case -1:
-> +				set = 1;
-> +				break;
-> +			case 0:
-> +				set = 2;
-> +				break;
-> +			}
-> +		} else {
-> +			switch (set) {
-> +			case -1:
-> +				set = 0;
-> +				break;
-> +			case 1:
-> +				set = 2;
-> +				break;
-> +			}
-> +		}
-> +		/*
-> +		 * If we have a mixture, no need to look further.
-> +		 */
-> +		if (set == 2)
-> +			break;
-
-How about:
-
-int set = 0;
-
-...
-set |= (1 << call->enabled);
-...
-
-set == 0: '?'
-set == 1: '0'
-set == 2: '1'
-set == 3: 'X'
-
-Will this make the code simpler? :)
-
-Or we can go even further:
-
-char result[4] = { '?', '0', '1', 'X' };
-...
-buf[0] = result[set];
-
-> +	}
-> +	mutex_unlock(&event_mutex);
-> +
-> +	buf[1] = '\n';
-> +	switch (set) {
-> +	case 0:
-> +		buf[0] = '0';
-> +		break;
-> +	case 1:
-> +		buf[0] = '1';
-> +		break;
-> +	case 2:
-> +		buf[0] = 'X';
-> +		break;
-> +	default:
-> +		buf[0] = '?';
-> +	}
-> +
-> +	ret = simple_read_from_buffer(ubuf, cnt, ppos, buf, 2);
-> +
-> +	return ret;
-> +}
-> +
-> +static ssize_t
-> +system_enable_write(struct file *filp, const char __user *ubuf, size_t cnt,
-> +		    loff_t *ppos)
-> +{
-> +	const char *system = filp->private_data;
-> +	unsigned long val;
-> +	char *command;
-> +	char buf[64];
-> +	ssize_t ret;
-> +
-> +	if (cnt >= sizeof(buf))
-> +		return -EINVAL;
-> +
-> +	if (copy_from_user(&buf, ubuf, cnt))
-> +		return -EFAULT;
-> +
-> +	buf[cnt] = 0;
-> +
-> +	ret = strict_strtoul(buf, 10, &val);
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	ret = tracing_update_buffers();
-> +	if (ret < 0)
-> +		return ret;
-> +
-> +	switch (val) {
-> +	case 0:
-> +	case 1:
-> +		break;
-> +
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	command = kstrdup(system, GFP_KERNEL);
-> +	if (!command)
-> +		return -ENOMEM;
-> +
-> +	ret = ftrace_set_clr_event(command, val);
-
-I think we should pass "sched:" or "sched:*", instead of "sched",
-the comment in ftrace_set_clr_event():
-
-         *  <name> (no ':') means all events in a subsystem with
-         *  the name <name> or any event that matches <name>
-
-> +	if (ret)
-> +		goto out_free;
-> +
-> +	ret = cnt;
-> +
-> + out_free:
-> +	kfree(command);
-> +
-> +	*ppos += cnt;
-> +
-> +	return ret;
-> +}
-> +
+-- 
+Nicholas Miell <nmiell@comcast.net>
 
