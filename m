@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763804AbZEHAV4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759454AbZEHAW2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763804AbZEHAV4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:21:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758913AbZEHAK2
+	id S1759454AbZEHAW2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:22:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbZEHAK3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:28 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52711
+	Thu, 7 May 2009 20:10:29 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52717
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756715AbZEHAKB (ORCPT
+	with ESMTP id S1755282AbZEHAKB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 20:10:01 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -15,234 +15,153 @@ To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 02/18] xen: hook io_apic read/write operations
-Date: Thu,  7 May 2009 14:14:27 -0700
-Message-Id: <1241730883-4917-3-git-send-email-jeremy@goop.org>
+Subject: [PATCH 15/16] x86: don't need "changed" parameter for set_io_bitmap()
+Date: Thu,  7 May 2009 14:10:52 -0700
+Message-Id: <1241730653-4688-16-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241730883-4917-1-git-send-email-jeremy@goop.org>
-References: <1241730883-4917-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241730653-4688-1-git-send-email-jeremy@goop.org>
+References: <1241730653-4688-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: paravirtualize io_apic_read/write
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-In Xen, writes to the IO APIC are paravirtualized via hypercalls, so
-implement the appropriate operations.
+Impact: cleanup
 
-This version of the patch just hooks the io_apic read/write functions
-directly, rather than introducing another layer of indirection.  The
-xen_initial_domain() tests compile to 0 if CONFIG_XEN_DOM0 isn't set,
-and are cheap if it is.
-
-(An alternative would be to add io_apic_ops, and point them to the Xen
-implementation as needed.  HPA deemed this extra level of indirection to
-be excessive.)
+The "changed" parameter isn't really used, so don't bother passing it.
+(xen_set_io_bitmap can keep track of it for itself, if it wants.)
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
 ---
- arch/x86/include/asm/io_apic.h |    6 ++++
- arch/x86/kernel/apic/io_apic.c |   32 ++++++++++++++++++++--
- arch/x86/xen/Makefile          |    2 +-
- arch/x86/xen/apic.c            |   57 ++++++++++++++++++++++++++++++++++++++++
- arch/x86/xen/enlighten.c       |    2 +
- arch/x86/xen/xen-ops.h         |    6 ++++
- 6 files changed, 101 insertions(+), 4 deletions(-)
- create mode 100644 arch/x86/xen/apic.c
+ arch/x86/include/asm/paravirt.h  |    6 +++---
+ arch/x86/include/asm/processor.h |    2 +-
+ arch/x86/kernel/ioport.c         |    9 +++------
+ arch/x86/kernel/process.c        |    4 ++--
+ arch/x86/xen/enlighten.c         |    5 +----
+ 5 files changed, 10 insertions(+), 16 deletions(-)
 
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index 9d826e4..894ffb8 100644
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -187,4 +187,10 @@ static inline void ioapic_init_mappings(void)	{ }
- static inline void probe_nr_irqs_gsi(void)	{ }
- #endif
+diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
+index fd2c31b..56acbe8 100644
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -157,7 +157,7 @@ struct pv_cpu_ops {
  
-+void xen_io_apic_init(void);
-+unsigned int xen_io_apic_read(unsigned apic, unsigned reg);
-+void xen_io_apic_write(unsigned int apic,
-+		       unsigned int reg, unsigned int value);
-+
-+
- #endif /* _ASM_X86_IO_APIC_H */
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 767fe7e..c8240f7 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -62,8 +62,10 @@
- #include <asm/uv/uv_hub.h>
- #include <asm/uv/uv_irq.h>
+ 	void (*set_iopl_mask)(unsigned mask);
+ 	void (*set_io_bitmap)(struct thread_struct *thread,
+-	                      int changed, unsigned long bytes_updated);
++	                      unsigned long bytes_updated);
  
-+#include <asm/xen/hypervisor.h>
- #include <asm/apic.h>
- 
-+
- #define __apicdebuginit(type) static type __init
- 
- /*
-@@ -407,14 +409,26 @@ static inline void io_apic_eoi(unsigned int apic, unsigned int vector)
- 
- static inline unsigned int io_apic_read(unsigned int apic, unsigned int reg)
- {
--	struct io_apic __iomem *io_apic = io_apic_base(apic);
-+	struct io_apic __iomem *io_apic;
-+
-+	if (xen_initial_domain())
-+		return xen_io_apic_read(apic, reg);
-+
-+	io_apic = io_apic_base(apic);
- 	writel(reg, &io_apic->index);
- 	return readl(&io_apic->data);
+ 	void (*wbinvd)(void);
+ 	void (*io_delay)(void);
+@@ -1005,9 +1005,9 @@ static inline void set_iopl_mask(unsigned mask)
  }
  
- static inline void io_apic_write(unsigned int apic, unsigned int reg, unsigned int value)
+ static inline void set_io_bitmap(struct thread_struct *thread,
+-                                 int changed, unsigned long bytes_updated)
++                                 unsigned long bytes_updated)
  {
--	struct io_apic __iomem *io_apic = io_apic_base(apic);
-+	struct io_apic __iomem *io_apic;
-+
-+	if (xen_initial_domain()) {
-+		xen_io_apic_write(apic, reg, value);
-+		return;
-+	}
-+
-+	io_apic = io_apic_base(apic);
- 	writel(reg, &io_apic->index);
- 	writel(value, &io_apic->data);
+-	PVOP_VCALL3(pv_cpu_ops.set_io_bitmap, thread, changed, bytes_updated);
++	PVOP_VCALL2(pv_cpu_ops.set_io_bitmap, thread, bytes_updated);
  }
-@@ -427,7 +441,14 @@ static inline void io_apic_write(unsigned int apic, unsigned int reg, unsigned i
-  */
- static inline void io_apic_modify(unsigned int apic, unsigned int reg, unsigned int value)
+ 
+ /* The paravirtualized I/O functions */
+diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
+index 0ed4cba..15d0769 100644
+--- a/arch/x86/include/asm/processor.h
++++ b/arch/x86/include/asm/processor.h
+@@ -539,7 +539,7 @@ static inline void native_set_iopl_mask(unsigned mask)
+ }
+ 
+ extern void native_set_io_bitmap(struct thread_struct *thread,
+-                                 int changed, unsigned long updated_bytes);
++                                 unsigned long updated_bytes);
+ 
+ static inline void
+ native_load_sp0(struct tss_struct *tss, struct thread_struct *thread)
+diff --git a/arch/x86/kernel/ioport.c b/arch/x86/kernel/ioport.c
+index 5a12c9f..642660f 100644
+--- a/arch/x86/kernel/ioport.c
++++ b/arch/x86/kernel/ioport.c
+@@ -31,7 +31,7 @@ static void set_bitmap(unsigned long *bitmap, unsigned int base,
+ }
+ 
+ void native_set_io_bitmap(struct thread_struct *t,
+-                          int changed, unsigned long bytes_updated)
++                          unsigned long bytes_updated)
  {
--	struct io_apic __iomem *io_apic = io_apic_base(apic);
-+	struct io_apic __iomem *io_apic;
-+
-+	if (xen_initial_domain()) {
-+		xen_io_apic_write(apic, reg, value);
-+		return;
+ 	struct tss_struct *tss;
+ 
+@@ -54,7 +54,6 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
+ {
+ 	struct thread_struct *t = &current->thread;
+ 	unsigned int i, max_long, bytes, bytes_updated;
+-	int changed;
+ 
+ 	if ((from + num <= from) || (from + num > IO_BITMAP_BITS))
+ 		return -EINVAL;
+@@ -75,9 +74,7 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
+ 		memset(bitmap, 0xff, IO_BITMAP_BYTES);
+ 		t->io_bitmap_ptr = bitmap;
+ 		set_thread_flag(TIF_IO_BITMAP);
+-		changed = 1;
+-	} else
+-		changed = 0;
 +	}
-+
-+	io_apic = io_apic_base(apic);
  
- 	if (sis_apic_bug)
- 		writel(reg, &io_apic->index);
-@@ -4140,6 +4161,11 @@ void __init ioapic_init_mappings(void)
- 	struct resource *ioapic_res;
- 	int i;
+ 	/*
+ 	 * do it in the per-thread copy
+@@ -104,7 +101,7 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
  
-+	if (xen_initial_domain()) {
-+		xen_io_apic_init();
-+		return;
-+	}
-+
- 	ioapic_res = ioapic_setup_resources();
- 	for (i = 0; i < nr_ioapics; i++) {
- 		if (smp_found_config) {
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index c4cda96..73ecb74 100644
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -11,4 +11,4 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
+ 	t->io_bitmap_max = bytes;
  
- obj-$(CONFIG_SMP)		+= smp.o spinlock.o
- obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
--obj-$(CONFIG_XEN_DOM0)		+= vga.o
-+obj-$(CONFIG_XEN_DOM0)		+= vga.o apic.o
-diff --git a/arch/x86/xen/apic.c b/arch/x86/xen/apic.c
-new file mode 100644
-index 0000000..17736a0
---- /dev/null
-+++ b/arch/x86/xen/apic.c
-@@ -0,0 +1,57 @@
-+#include <linux/kernel.h>
-+#include <linux/threads.h>
-+#include <linux/bitmap.h>
-+
-+#include <asm/io_apic.h>
-+#include <asm/acpi.h>
-+
-+#include <asm/xen/hypervisor.h>
-+#include <asm/xen/hypercall.h>
-+
-+#include <xen/interface/xen.h>
-+#include <xen/interface/physdev.h>
-+
-+void __init xen_io_apic_init(void)
-+{
-+	printk("xen apic init\n");
-+	dump_stack();
-+}
-+
-+unsigned int xen_io_apic_read(unsigned apic, unsigned reg)
-+{
-+	struct physdev_apic apic_op;
-+	int ret;
-+
-+	apic_op.apic_physbase = mp_ioapics[apic].apicaddr;
-+	apic_op.reg = reg;
-+	ret = HYPERVISOR_physdev_op(PHYSDEVOP_apic_read, &apic_op);
-+	if (ret)
-+		BUG();
-+	return apic_op.value;
-+}
-+
-+
-+void xen_io_apic_write(unsigned int apic, unsigned int reg, unsigned int value)
-+{
-+	struct physdev_apic apic_op;
-+
-+	apic_op.apic_physbase = mp_ioapics[apic].apicaddr;
-+	apic_op.reg = reg;
-+	apic_op.value = value;
-+	if (HYPERVISOR_physdev_op(PHYSDEVOP_apic_write, &apic_op))
-+		BUG();
-+}
-+
-+void xen_init_apic(void)
-+{
-+	if (!xen_initial_domain())
-+		return;
-+
-+#ifdef CONFIG_ACPI
-+	/*
-+	 * Pretend ACPI found our lapic even though we've disabled it,
-+ 	 * to prevent MP tables from setting up lapics.
-+ 	 */
-+	acpi_lapic = 1;
-+#endif
-+}
+-	set_io_bitmap(t, changed, bytes_updated);
++	set_io_bitmap(t, bytes_updated);
+ 
+ 	preempt_enable();
+ 
+diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
+index a0d9544..ef9b919 100644
+--- a/arch/x86/kernel/process.c
++++ b/arch/x86/kernel/process.c
+@@ -74,7 +74,7 @@ void exit_thread(void)
+ 		preempt_disable();
+ 		t->io_bitmap_ptr = NULL;
+ 		clear_thread_flag(TIF_IO_BITMAP);
+-		set_io_bitmap(t, 1, t->io_bitmap_max);
++		set_io_bitmap(t, t->io_bitmap_max);
+ 		t->io_bitmap_max = 0;
+ 		preempt_enable();
+ 		kfree(bp);
+@@ -209,7 +209,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
+ 
+ 	if (test_tsk_thread_flag(next_p, TIF_IO_BITMAP) ||
+ 	    test_tsk_thread_flag(prev_p, TIF_IO_BITMAP))
+-		set_io_bitmap(next, 1,
++		set_io_bitmap(next,
+ 		              max(prev->io_bitmap_max, next->io_bitmap_max));
+ }
+ 
 diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 2d0341f..0ce10ef 100644
+index 0cc5a3b..e231cb7 100644
 --- a/arch/x86/xen/enlighten.c
 +++ b/arch/x86/xen/enlighten.c
-@@ -1034,6 +1034,8 @@ asmlinkage void __init xen_start_kernel(void)
- 		set_iopl.iopl = 1;
- 		if (HYPERVISOR_physdev_op(PHYSDEVOP_set_iopl, &set_iopl) == -1)
- 			BUG();
-+
-+		xen_init_apic();
- 	}
- 
- 	/* set the limit of our address space */
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index 40abcef..82ba25c 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -83,6 +83,12 @@ static inline void xen_init_vga(const struct dom0_vga_console_info *info,
+@@ -570,13 +570,10 @@ static void xen_set_iopl_mask(unsigned mask)
  }
- #endif
  
-+#ifdef CONFIG_XEN_DOM0
-+void xen_init_apic(void);
-+#else
-+static inline void xen_init_apic(void) {}
-+#endif
-+
- /* Declare an asm function, along with symbols needed to make it
-    inlineable */
- #define DECL_ASM(ret, name, ...)		\
+ static void xen_set_io_bitmap(struct thread_struct *thread,
+-                              int changed, unsigned long bytes_updated)
++                              unsigned long bytes_updated)
+ {
+ 	struct physdev_set_iobitmap set_iobitmap;
+ 
+-	if (!changed)
+-		return;
+-
+ 	set_xen_guest_handle(set_iobitmap.bitmap,
+ 	                     (char *)thread->io_bitmap_ptr);
+ 	set_iobitmap.nr_ports = thread->io_bitmap_ptr ? IO_BITMAP_BITS : 0;
 -- 
 1.6.0.6
 
