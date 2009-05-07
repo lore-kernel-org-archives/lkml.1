@@ -1,70 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759898AbZEGIko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755142AbZEGIp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759898AbZEGIko (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 04:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755372AbZEGIkb
+	id S1755142AbZEGIp2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 04:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZEGIpR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 04:40:31 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:60324 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755160AbZEGIkb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 04:40:31 -0400
-Date: Thu, 7 May 2009 10:38:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [RFC PATCH 3/3a] ptrace: add _ptrace_may_access()
-Message-ID: <20090507083851.GA19133@elte.hu>
-References: <20090505224729.GA965@redhat.com> <20090506080050.GF17457@elte.hu> <20090506235349.GC3756@redhat.com> <20090507002133.02D05FC39E@magilla.sf.frob.com> <20090507063606.GA15220@redhat.com> <20090507082027.GD12285@elte.hu> <20090507083102.GA20125@redhat.com>
+	Thu, 7 May 2009 04:45:17 -0400
+Received: from rex.securecomputing.com ([203.24.151.4]:41725 "EHLO
+	cyberguard.com.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752193AbZEGIpQ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 04:45:16 -0400
+Message-ID: <4A029F9B.7060706@snapgear.com>
+Date: Thu, 07 May 2009 18:45:15 +1000
+From: Greg Ungerer <gerg@snapgear.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507083102.GA20125@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: David Howells <dhowells@redhat.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: BUG: failure at mm/nommu.c:518/add_nommu_region()
+References: <4A0227AD.9030705@snapgear.com> <4A00EF23.4050302@snapgear.com> <49FF96A7.5040401@snapgear.com> <3662.1241530861@redhat.com> <30031.1241619079@redhat.com> <17346.1241685514@redhat.com>
+In-Reply-To: <17346.1241685514@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Oleg Nesterov <oleg@redhat.com> wrote:
+Hi David,
 
-> On 05/07, Ingo Molnar wrote:
-> >
-> > * Oleg Nesterov <oleg@redhat.com> wrote:
-> >
-> > > /* the callers of ptrace_may_access should be fixed */
-> > >
-> > > 	int ptrace_may_access(struct task_struct *task, unsigned int mode)
-> >
-> > Sigh, NAK, for the reasons explained in the previous mails.
+David Howells wrote:
+> Greg Ungerer <gerg@snapgear.com> wrote:
 > 
-> Agreed, but what about security_operations->ptrace_may_access ?
+>> Yes, that fixes it :-)
 > 
-> It has the same (bad) name, but returns the error code or 0 on 
-> success.
+> Can I add your Acked-by or Tested-by?
 
-Bad code should generally be fixed, or in exceptional circumstances 
-it can tolerated if it's pre-existing bad code, but it should never 
-be propagated. It has not spread _that_ widely yet, and is isolated 
-to the security subsystem:
+Yes, absolutely:
 
- include/linux/security.h
- security/capability.c
- security/commoncap.c
- security/root_plug.c
- security/security.c
- security/selinux/hooks.c
- security/smack/smack_lsm.c
+Acked-by: Greg Ungerer <gerg@uclinux.org>
 
-	Ingo
+Regards
+Greg
+
+
+
+------------------------------------------------------------------------
+Greg Ungerer  --  Principal Engineer        EMAIL:     gerg@snapgear.com
+SnapGear Group, McAfee                      PHONE:       +61 7 3435 2888
+825 Stanley St,                             FAX:         +61 7 3891 3630
+Woolloongabba, QLD, 4102, Australia         WEB: http://www.SnapGear.com
