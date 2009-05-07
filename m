@@ -1,146 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762674AbZEGU3x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762852AbZEGUaY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762674AbZEGU3x (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 16:29:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752299AbZEGU3o
+	id S1762852AbZEGUaY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 16:30:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZEGUaF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 16:29:44 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:60653 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752187AbZEGU3n convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 16:29:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=TjuMBOFoJNZt3E88ePBdqaIrC5mszGjU6aMIhhYj/CKVhiNBIlDdwjji4iOa/HHwwR
-         Hp/47+30HnMX28wG+sItMT5lKOsBJB2EGBg6eQ3B8Je38Iw+9pkh4P0nSurRoWUdCmKl
-         u/+Vz5xDbz0JW8153crtlHxoyqUpvS/MKrLNQ=
+	Thu, 7 May 2009 16:30:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40861 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752299AbZEGUaE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 16:30:04 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -rc] [BUGFIX] kprobes: fix to use text_mutex around arm/disarm
+	kprobe
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, systemtap@sources.redhat.com,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
+Date: Thu, 07 May 2009 16:31:26 -0400
+Message-ID: <20090507203126.5399.97658.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-In-Reply-To: <1241715373.32495.21.camel@alok-dev1>
-References: <1241462661.412.8.camel@alok-dev1> <4A00ADDE.9000908@zytor.com> 
-	<1241560625.8665.17.camel@alok-dev1> <13a12eea0905070935o5abbeb49n8320d06c15b19b56@mail.gmail.com> 
-	<1241715373.32495.21.camel@alok-dev1>
-From: Chris Snook <chris.snook@gmail.com>
-Date: Thu, 7 May 2009 16:29:23 -0400
-Message-ID: <13a12eea0905071329s79fb262tf89ed901a77726ae@mail.gmail.com>
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-To: akataria@vmware.com
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "the arch/x86 maintainers" <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 7, 2009 at 12:56 PM, Alok Kataria <akataria@vmware.com> wrote:
->
-> On Thu, 2009-05-07 at 09:35 -0700, Chris Snook wrote:
->> On Tue, May 5, 2009 at 5:57 PM, Alok Kataria <akataria@vmware.com> wrote:
->> >
->> > On Tue, 2009-05-05 at 14:21 -0700, H. Peter Anvin wrote:
->> >> Alok Kataria wrote:
->> >> > Hi,
->> >> >
->> >> > Given that there were no major objections that came up regarding
->> >> > reducing the HZ value in http://lkml.org/lkml/2009/4/27/499.
->> >> >
->> >> > Below is the patch which actually reduces it, please consider for tip.
->> >> >
->> >>
->> >> What is the benefit of this?
->> >
->> > I did some experiments on linux 2.6.29 guests running on VMware and
->> > noticed that the number of timer interrupts could have some slowdown on
->> > the total throughput on the system.
->> > A simple tight loop experiment showed that with HZ=1000 we took about
->> > 264sec to complete the loop and that same loop took about 255sec with
->> > HZ=100.
->> > You can find more information here http://lkml.org/lkml/2009/4/28/401
->>
->> This is why certain niches, such as HPC users, often prefer HZ=100
->> kernels.  For the rest of us, sacrificing a few percent CPU throughput
->> for significant latency gains is well worth it.
->>
->> > And with HRT i don't see any downsides in terms of increased latencies
->> > for device timer's or anything of that sought.
->> >
->> >>
->> >> I can see at least one immediate downside: some timeout values in the
->> >> kernel are still maintained in units of HZ (like poll, I believe), and
->> >> so with a lower HZ value we'll have higher roundoff errors.
->> >
->> > If that at all is such a big problem shouldn't we think about moving to
->> > using schedule_hrtimeout for such cases rather than relying on jiffy
->> > based timeouts.
->> > The hrtimer explanation over here http://www.tglx.de/hrtimers.html
->> > also talks about where these HZ (timer wheel) based timeouts be used and
->> > shouldn't really be dependent on accurate timing.
->>
->> But your patch doesn't do this.
->
-> The reason it doesn't do it is because poll and select already use
-> hrtimer. So IMO no important subsystem relies on jiffies for wakeups.
-> Thus the latency problem is not actually present in the kernel.
+Fix kprobes to lock text_mutex around some arch_arm/disarm_kprobe() which
+are newly added by commit de5bd88d5a5cce3cacea904d3503e5ebdb3852a2.
 
-TCP/IP still uses jiffies.  There's been talk of changing that, but it
-hasn't been done yet, and it's definitely a latency-critical
-subsystem.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Jim Keniston <jkenisto@us.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
 
->>  If you want us to merge a patch that
->> makes VMware systems faster, we're a lot more likely to take it if it
->> make everyone else's systems faster, or at least not slower.
->
-> I doubt it would make any system slower, running these simple
-> experiments is not hard at all and one could run these on native system
-> too to check.
+ kernel/kprobes.c |   31 ++++++++++++++++++++++---------
+ 1 files changed, 22 insertions(+), 9 deletions(-)
 
-If this patch improves performance for both simple loops and
-transaction processing by changing a non-idiotic tuning parameter, it
-would be a first.  Can you at least run some sort of database
-benchmark to back this up?
+diff --git a/kernel/kprobes.c b/kernel/kprobes.c
+index a5e74dd..c0fa54b 100644
+--- a/kernel/kprobes.c
++++ b/kernel/kprobes.c
+@@ -319,6 +319,22 @@ struct kprobe __kprobes *get_kprobe(void *addr)
+ 	return NULL;
+ }
+ 
++/* Arm a kprobe with text_mutex */
++static void __kprobes arm_kprobe(struct kprobe *kp)
++{
++	mutex_lock(&text_mutex);
++	arch_arm_kprobe(kp);
++	mutex_unlock(&text_mutex);
++}
++
++/* Disarm a kprobe with text_mutex */
++static void __kprobes disarm_kprobe(struct kprobe *kp)
++{
++	mutex_lock(&text_mutex);
++	arch_disarm_kprobe(kp);
++	mutex_unlock(&text_mutex);
++}
++
+ /*
+  * Aggregate handlers for multiple kprobes support - these handlers
+  * take care of invoking the individual kprobe handlers on p->list
+@@ -538,7 +554,7 @@ static int __kprobes add_new_kprobe(struct kprobe *ap, struct kprobe *p)
+ 		ap->flags &= ~KPROBE_FLAG_DISABLED;
+ 		if (!kprobes_all_disarmed)
+ 			/* Arm the breakpoint again. */
+-			arch_arm_kprobe(ap);
++			arm_kprobe(ap);
+ 	}
+ 	return 0;
+ }
+@@ -789,11 +805,8 @@ static int __kprobes __unregister_kprobe_top(struct kprobe *p)
+ 		 * enabled and not gone - otherwise, the breakpoint would
+ 		 * already have been removed. We save on flushing icache.
+ 		 */
+-		if (!kprobes_all_disarmed && !kprobe_disabled(old_p)) {
+-			mutex_lock(&text_mutex);
+-			arch_disarm_kprobe(p);
+-			mutex_unlock(&text_mutex);
+-		}
++		if (!kprobes_all_disarmed && !kprobe_disabled(old_p))
++			disarm_kprobe(p);
+ 		hlist_del_rcu(&old_p->hlist);
+ 	} else {
+ 		if (p->break_handler && !kprobe_gone(p))
+@@ -810,7 +823,7 @@ noclean:
+ 		if (!kprobe_disabled(old_p)) {
+ 			try_to_disable_aggr_kprobe(old_p);
+ 			if (!kprobes_all_disarmed && kprobe_disabled(old_p))
+-				arch_disarm_kprobe(old_p);
++				disarm_kprobe(old_p);
+ 		}
+ 	}
+ 	return 0;
+@@ -1364,7 +1377,7 @@ int __kprobes disable_kprobe(struct kprobe *kp)
+ 		try_to_disable_aggr_kprobe(p);
+ 
+ 	if (!kprobes_all_disarmed && kprobe_disabled(p))
+-		arch_disarm_kprobe(p);
++		disarm_kprobe(p);
+ out:
+ 	mutex_unlock(&kprobe_mutex);
+ 	return ret;
+@@ -1393,7 +1406,7 @@ int __kprobes enable_kprobe(struct kprobe *kp)
+ 	}
+ 
+ 	if (!kprobes_all_disarmed && kprobe_disabled(p))
+-		arch_arm_kprobe(p);
++		arm_kprobe(p);
+ 
+ 	p->flags &= ~KPROBE_FLAG_DISABLED;
+ 	if (p != kp)
 
->>
->> > Also the default HZ value was 250 before this commit
->> >
->> > commit 5cb04df8d3f03e37a19f2502591a84156be71772
->> >  x86: defconfig updates
->> >
->> > And it was 250 for a very long time before that too. The commit log
->> > doesn't explain why the value was bumped up either.
->>
->> 250 was considered a compromise between 100 and 1000, but almost
->> everyone who cared just ended up using one or the other, and most of
->> them preferred 1000.
->>
->> Given your use case, what you really need to do is get Red Hat,
->> Novell, et al. on the phone and ask them to ship kernels with HZ=100,
->> because the distributions do their own thing anyway.
->
-> Yeah but I don't think there is any better platform other than LKML to
-> figure out if at all this is a problem anymore. Once we are assured that
-> a low HZ is no more a problem I don't see why would the various distros
-> not consider reducing it.
->
->>   If you can
->> figure out a way to do that without harming latency, they'll be
->> thrilled.
->
-> Why do you think it would harm latency ?
-> The sched_tick too is driven by hrtimers, if there is any specific
-> subsystem which you think still relies on jiffy we could think about
-> using hrtimer's for them too, right ?
-> I did a quick scan and the only things that rely on jiffy are the device
-> timeout's where latency is not a issue.
-> So please let me know in what cases do you think it could affect system
-> latency.
-
-If you can get TCP/IP converted, or convince me that this won't hurt
-transaction processing, I'm sold.
-
--- Chris
