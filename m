@@ -1,51 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760507AbZEGRii@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbZEGRiy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760507AbZEGRii (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 13:38:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbZEGRiU
+	id S1761596AbZEGRiy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 13:38:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761487AbZEGRib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 13:38:20 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:38799 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760507AbZEGRiT (ORCPT
+	Thu, 7 May 2009 13:38:31 -0400
+Received: from nic.NetDirect.CA ([216.16.235.2]:55969 "EHLO
+	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756716AbZEGRi3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 13:38:19 -0400
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <cl@linux.com>
-Cc: Alok Kataria <akataria@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.DEB.1.10.0905071317270.22107@qirst.com>
-References: <1241462661.412.8.camel@alok-dev1>  <4A00ADDE.9000908@zytor.com>
-	 <1241560625.8665.17.camel@alok-dev1>
-	 <alpine.DEB.1.10.0905071010170.24528@qirst.com>
-	 <1241716053.6311.1514.camel@laptop> <1241716422.6311.1524.camel@laptop>
-	 <alpine.DEB.1.10.0905071317270.22107@qirst.com>
-Content-Type: text/plain
-Date: Thu, 07 May 2009 19:37:29 +0200
-Message-Id: <1241717849.6311.1554.camel@laptop>
+	Thu, 7 May 2009 13:38:29 -0400
+X-Originating-Ip: 216.16.235.2
+Date: Thu, 7 May 2009 13:23:04 -0400
+From: Chris Frey <cdfrey@foursquare.net>
+To: Greg KH <gregkh@suse.de>, chrisw@sous-sol.org, smfrench@gmail.com,
+       jlayton@redhat.com
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: Re: [patch 00/58] 2.6.29.3-stable review
+Message-ID: <20090507172301.GA28595@foursquare.net>
+References: <20090506215017.GA21981@kroah.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090506215017.GA21981@kroah.com>
+User-Agent: Mutt/1.4.1i
+X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
+X-Net-Direct-Inc-MailScanner: Found to be clean
+X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
+	score=-4.399, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
+	BAYES_00 -2.60)
+X-Net-Direct-Inc-MailScanner-From: cdfrey@foursquare.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-07 at 13:18 -0400, Christoph Lameter wrote:
-> On Thu, 7 May 2009, Peter Zijlstra wrote:
-> 
-> > Therefore, decreasing the HZ value to say 50, we'd get a minimum
-> > involuntary preemption granularity of 20ms, something on the high end of
-> > barely usable.
-> 
-> But the schedule is activated when a process is being woken up. The main
-> use is for load balancing.
+On Wed, May 06, 2009 at 02:50:17PM -0700, Greg KH wrote:
+> This is the start of the stable review cycle for the 2.6.29.3 release.
+> There are 58 patches in this series, all will be posted as a response to
+> this one.
 
-Somehow people like involuntary preemption to happen at slightly more
-than glacial pace as well.
+Maybe I'm missing something, but I don't see any of
+the fs/cifs/connect.c security fixes from commits such as
+f083def68f84b04fe3f97312498911afce79609e.  I was hoping this would make
+it into 2.6.29.3.
 
+For reference, this was discussed on full-disclosure:
+	http://marc.info/?l=full-disclosure&m=123936563230145&w=2
+	(near the end of Andreas's post)
 
+Jeff and Steve mentioned last week that they were working on other related
+cleanups as well, that they hoped to push to stable.
+
+Thanks,
+- Chris
 
