@@ -1,109 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755892AbZEGQTm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756127AbZEGQXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755892AbZEGQTm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 12:19:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754259AbZEGQTd
+	id S1756127AbZEGQXT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 12:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbZEGQXG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 12:19:33 -0400
-Received: from wf-out-1314.google.com ([209.85.200.175]:62683 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752326AbZEGQTc (ORCPT
+	Thu, 7 May 2009 12:23:06 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:55753 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754299AbZEGQXF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 12:19:32 -0400
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] genirq: ensure IRQs are lazy disabled before suspend
-References: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com>
-	<1241655468-5750-2-git-send-email-khilman@deeprootsystems.com>
-	<20090507111548.GH28398@elte.hu>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Thu, 07 May 2009 09:19:30 -0700
-In-Reply-To: <20090507111548.GH28398@elte.hu> (Ingo Molnar's message of "Thu\, 7 May 2009 13\:15\:48 +0200")
-Message-ID: <87k54ssx65.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Thu, 7 May 2009 12:23:05 -0400
+Message-Id: <20090507162302.053953109@goodmis.org>
+References: <20090507162221.413243886@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Thu, 07 May 2009 12:22:22 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/2] ring-buffer: remove complex calculations in ring-buffer-test
+Content-Disposition: inline; filename=0001-ring-buffer-remove-complex-calculations-in-ring-buf.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> writes:
+From: Steven Rostedt <srostedt@redhat.com>
 
-> * Kevin Hilman <khilman@deeprootsystems.com> wrote:
->
+Ingo Molnar thought that the code to calculate the time in cond_resched
+is a bit too ugly and is not needed. This patch removes it and replaces
+it with a simple call to cond_resched. I kept the comment that explains
+the reason for the cond_resched.
 
-[...]
+[ Impact: remove ugly code ]
 
->> --- a/kernel/irq/manage.c
->> +++ b/kernel/irq/manage.c
->> @@ -190,6 +190,11 @@ void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
->>  		if (!desc->action || (desc->action->flags & IRQF_TIMER))
->>  			return;
->>  		desc->status |= IRQ_SUSPENDED;
->> +
->> +		/* Lazy disable: handles case where lazy disable in
->> +		 * handler doesn't happen before suspend. */
->> +		if (desc->status & IRQ_DISABLED)
->> +			desc->chip->mask(irq);
->
-> Please look at the rest of the file and follow the multi-line 
-> comment style that is used in the 29 multi-line comment instances 
-> there. (which is also what Documentation/CodingStyle specifies)
-
-Doh, sorry.  Updated patch below.
-
-Kevin
-
->From a3f359c66bd0ae1bb2603e7cf120d9d4d68591b7 Mon Sep 17 00:00:00 2001
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Date: Wed, 6 May 2009 16:00:07 -0700
-Subject: [PATCH] genirq: ensure IRQs are lazy disabled before suspend
-
-In commit 76d2160147f43f982dfe881404cfde9fd0a9da21, the default
-behavior of disable_irq() was changed to delay the disable until it is
-next handled.
-
-However, this leaves open the possibility that the system can go into
-suspend with an interrupt enabled.  For example, if a driver calls
-disable_irq() in its suspend_hook there's now a possibility that the
-system is suspended before the lazy disable happens.
-
-The result is an unwanted wakeup from suspend if the IRQ is capable of
-waking the system (common on embedded SoCs.)
-
-This patch ensures that the lazy disable is done, and masked by
-the irq_chip before the system goes into suspend.
-
-Note that even though __disable_irq() also calls irq_chip->disable, it
-is quite common for the irq_chip not to provide a disable hook in
-which case the IRQ is never masked/disabled in hardware before going
-into suspend.
-
-Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
+Reported-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- kernel/irq/manage.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
+ kernel/trace/ring_buffer_benchmark.c |   37 ++++++---------------------------
+ 1 files changed, 7 insertions(+), 30 deletions(-)
 
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 2734eca..c786820 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -190,6 +190,13 @@ void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
- 		if (!desc->action || (desc->action->flags & IRQF_TIMER))
- 			return;
- 		desc->status |= IRQ_SUSPENDED;
-+
-+		/*
-+		 * Lazy disable: handles case where lazy disable in
-+		 * handler doesn't happen before suspend.
-+		 */
-+		if (desc->status & IRQ_DISABLED)
-+			desc->chip->mask(irq);
- 	}
+diff --git a/kernel/trace/ring_buffer_benchmark.c b/kernel/trace/ring_buffer_benchmark.c
+index a26fc67..f4ceb45 100644
+--- a/kernel/trace/ring_buffer_benchmark.c
++++ b/kernel/trace/ring_buffer_benchmark.c
+@@ -185,35 +185,6 @@ static void ring_buffer_consumer(void)
+ 	complete(&read_done);
+ }
  
- 	if (!desc->depth++) {
+-/*
+- * If we are a non preempt kernel, the 10 second run will
+- * stop everything while it runs. Instead, we will call cond_resched
+- * and also add any time that was lost by a rescedule.
+- */
+-#ifdef CONFIG_PREEMPT
+-static void sched_if_needed(struct timeval *start_tv, struct timeval *end_tv)
+-{
+-}
+-#else
+-static void sched_if_needed(struct timeval *start_tv, struct timeval *end_tv)
+-{
+-	struct timeval tv;
+-
+-	cond_resched();
+-	do_gettimeofday(&tv);
+-	if (tv.tv_usec < end_tv->tv_usec) {
+-		tv.tv_usec += 1000000;
+-		tv.tv_sec--;
+-	}
+-	start_tv->tv_sec += tv.tv_sec - end_tv->tv_sec;
+-	start_tv->tv_usec += tv.tv_usec - end_tv->tv_usec;
+-	if (start_tv->tv_usec > 1000000) {
+-		start_tv->tv_usec -= 1000000;
+-		start_tv->tv_sec++;
+-	}
+-}
+-#endif
+-
+ static void ring_buffer_producer(void)
+ {
+ 	struct timeval start_tv;
+@@ -250,7 +221,13 @@ static void ring_buffer_producer(void)
+ 		if (consumer && !(++cnt % wakeup_interval))
+ 			wake_up_process(consumer);
+ 
+-		sched_if_needed(&start_tv, &end_tv);
++		/*
++		 * If we are a non preempt kernel, the 10 second run will
++		 * stop everything while it runs. Instead, we will call
++		 * cond_resched and also add any time that was lost by a
++		 * rescedule.
++		 */
++		cond_resched();
+ 
+ 	} while (end_tv.tv_sec < (start_tv.tv_sec + RUN_TIME) && !kill_test);
+ 	pr_info("End ring buffer hammer\n");
 -- 
-1.6.2.2
+1.6.2.4
 
+-- 
