@@ -1,58 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759997AbZEGLvg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756035AbZEGLxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759997AbZEGLvg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 07:51:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753065AbZEGLvY
+	id S1756035AbZEGLxw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 07:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbZEGLxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 07:51:24 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:55872 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752775AbZEGLvX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 07:51:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=X2R8BAVuoxjncR0GX13cTiBF7Rw6l066o+dtT2clat3j1qdG0wxWAnMlMEwMKyNmpl
-         kb59UrRELFdnruetLZNeZMWagOI+XTkX5G1f/2bl5U7bctJeIl8wI/BwduTYl2Z7yDyd
-         hdTwtAo/fCjidv1efCKuO/K4BJKUb76Cbc+Pw=
-MIME-Version: 1.0
-In-Reply-To: <20090506222439.GB22327@kroah.com>
-References: <20090506222439.GB22327@kroah.com>
-Date: Thu, 7 May 2009 19:51:23 +0800
-Message-ID: <a276da400905070451j550d9a9ajcdd3ab30b03278aa@mail.gmail.com>
-Subject: Re: usbutils 0.82 release
-From: Xiaofan Chen <xiaofanc@gmail.com>
-To: Greg KH <greg@kroah.com>
-Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=windows-1252
-Content-Transfer-Encoding: 8BIT
+	Thu, 7 May 2009 07:53:43 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:33446 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753471AbZEGLxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 07:53:42 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: 2.6.29 regression: left audio channel broken after resume from
+ suspend with Intel HDA
+From: Nigel Cunningham <ncunningham-lkml@crca.org.au>
+Reply-To: ncunningham-lkml@crca.org.au
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Tino Keitel <tino.keitel@gmx.de>, linux-kernel@vger.kernel.org,
+       alsa-devel@alsa-project.org
+In-Reply-To: <s5hy6t92nuz.wl%tiwai@suse.de>
+References: <20090420194659.GA11399@dose.home.local>
+	 <s5h8wluinon.wl%tiwai@suse.de> <20090421073219.GA5866@dose.home.local>
+	 <s5hfxg2cv6m.wl%tiwai@suse.de> <20090421183936.GA21935@dose.home.local>
+	 <s5hws9a5ewr.wl%tiwai@suse.de> <20090424142113.GA18668@dose.home.local>
+	 <s5hskjy5d2t.wl%tiwai@suse.de> <20090428002309.GA29572@x61>
+	 <20090506222753.GA6728@mac.home> <20090507072352.GA6513@mac.home>
+	 <s5hy6t92nuz.wl%tiwai@suse.de>
+Content-Type: text/plain
+Date: Thu, 07 May 2009 21:54:40 +1000
+Message-Id: <1241697280.19600.203.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 7, 2009 at 6:24 AM, Greg KH <greg@kroah.com> wrote:
-> Here's the 0.82 release of usbutils.
->
-> Many bugs with autoconf were resolved to hopefully make it easier for
-> distros to find where the usb.ids file is dynamically.  Wireless USB
-> device support was added, as well as other bugfixes.  The full shortlog
-> is below.
->
-> The tarballs can be downloaded from sf.net at:
->        https://sourceforge.net/project/showfiles.php?group_id=3581
->
+Hi.
 
-Not sure if this is a real problem or not. There is a compiler warning
-for gcc 4.4.0.
+On Thu, 2009-05-07 at 12:45 +0200, Takashi Iwai wrote:
+> The problem is that BIOS on your machine sets this pin both for
+> input and output.  Since it's set as input, the driver respects
+> the BIOS setup and skips to override.
 
-gcc -DHAVE_CONFIG_H -I.   -DDATADIR=\"/usr/share\"   -g -O2 -MT
-lsusb-names.o -MD -MP -MF .deps/lsusb-names.Tpo -c -o lsusb-names.o
-`test -f 'names.c' || echo './'`names.c
-names.c: In function ‘names_init’:
-names.c:803: warning: assignment makes pointer from integer without a cast
+'scuse the ignorance, but this makes me ask: Are pins logically
+unrelated to jacks? I have a Dell M1530, and it has some jacks that can
+work as either inputs or outputs. Under M$, when I plug something in, a
+dialog box pops up asking me whether I connected a mic, line in or an
+output jack (I forget the details). Sounds like Tino's problem is what
+I'd expect from my BIOS. But I'm probably completely ignorant :)
 
+Regards,
 
--- 
-Xiaofan http://mcuee.blogspot.com
+Nigel
+
