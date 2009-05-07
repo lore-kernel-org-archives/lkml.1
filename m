@@ -1,195 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbZEGJFJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759638AbZEGJGX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760001AbZEGJFJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 05:05:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755732AbZEGJE4
+	id S1759638AbZEGJGX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 05:06:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbZEGJGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 05:04:56 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:45535 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755586AbZEGJEz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 05:04:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=hA+cZv2zuuMSHwpaRwh9YQ2U8HhDNZLkJ5vvFhHU7pezKHwOaKQ9srTGxCIWo/D1+Z
-         cr8Mw9I/KYiE2jvsJUDJeJCRjWQTj5qaJHPhYZ+AU20J7ru/38uhgRigcvUDM8iC3SO4
-         qBnzKm+/O+VDQWao896s73Z8gJneVlHoG9oko=
-Date: Thu, 7 May 2009 11:04:50 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
-       m-ikeda@ds.jp.nec.com, peterz@infradead.org
-Subject: Re: IO scheduler based IO Controller V2
-Message-ID: <20090507090450.GA4613@linux>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <20090506023332.GA1212@redhat.com> <20090506203228.GH8180@redhat.com> <20090506213453.GC4282@linux> <20090506215235.GJ8180@redhat.com>
+	Thu, 7 May 2009 05:06:13 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:48637 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755372AbZEGJGM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 05:06:12 -0400
+Date: Thu, 7 May 2009 11:04:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Chris Wright <chrisw@sous-sol.org>
+Cc: Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [RFC PATCH 3/3a] ptrace: add _ptrace_may_access()
+Message-ID: <20090507090459.GE19133@elte.hu>
+References: <20090505224729.GA965@redhat.com> <20090506080050.GF17457@elte.hu> <20090506235349.GC3756@redhat.com> <20090507002133.02D05FC39E@magilla.sf.frob.com> <20090507063606.GA15220@redhat.com> <20090507082027.GD12285@elte.hu> <20090507083102.GA20125@redhat.com> <20090507083851.GA19133@elte.hu> <20090507085742.GB3036@sequoia.sous-sol.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090506215235.GJ8180@redhat.com>
+In-Reply-To: <20090507085742.GB3036@sequoia.sous-sol.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 05:52:35PM -0400, Vivek Goyal wrote:
-> > > Without io-throttle patches
-> > > ---------------------------
-> > > - Two readers, first BE prio 7, second BE prio 0
-> > > 
-> > > 234179072 bytes (234 MB) copied, 4.12074 s, 56.8 MB/s
-> > > High prio reader finished
-> > > 234179072 bytes (234 MB) copied, 5.36023 s, 43.7 MB/s
-> > > 
-> > > Note: There is no service differentiation between prio 0 and prio 7 task
-> > >       with io-throttle patches.
-> > > 
-> > > Test 3
-> > > ======
-> > > - Run the one RT reader and one BE reader in root cgroup without any
-> > >   limitations. I guess this should mean unlimited BW and behavior should
-> > >   be same as with CFQ without io-throttling patches.
-> > > 
-> > > With io-throttle patches
-> > > =========================
-> > > Ran the test 4 times because I was getting different results in different
-> > > runs.
-> > > 
-> > > - Two readers, one RT prio 0  other BE prio 7
-> > > 
-> > > 234179072 bytes (234 MB) copied, 2.74604 s, 85.3 MB/s
-> > > 234179072 bytes (234 MB) copied, 5.20995 s, 44.9 MB/s
-> > > RT task finished
-> > > 
-> > > 234179072 bytes (234 MB) copied, 4.54417 s, 51.5 MB/s
-> > > RT task finished
-> > > 234179072 bytes (234 MB) copied, 5.23396 s, 44.7 MB/s
-> > > 
-> > > 234179072 bytes (234 MB) copied, 5.17727 s, 45.2 MB/s
-> > > RT task finished
-> > > 234179072 bytes (234 MB) copied, 5.25894 s, 44.5 MB/s
-> > > 
-> > > 234179072 bytes (234 MB) copied, 2.74141 s, 85.4 MB/s
-> > > 234179072 bytes (234 MB) copied, 5.20536 s, 45.0 MB/s
-> > > RT task finished
-> > > 
-> > > Note: Out of 4 runs, looks like twice it is complete priority inversion
-> > >       and RT task finished after BE task. Rest of the two times, the
-> > >       difference between BW of RT and BE task is much less as compared to
-> > >       without patches. In fact once it was almost same.
+
+* Chris Wright <chrisw@sous-sol.org> wrote:
+
+> * Ingo Molnar (mingo@elte.hu) wrote:
+> > * Oleg Nesterov <oleg@redhat.com> wrote:
+> > > Agreed, but what about security_operations->ptrace_may_access ?
+> > > It has the same (bad) name, but returns the error code or 0 on 
+> > > success.
 > > 
-> > This is strange. If you don't set any limit there shouldn't be any
-> > difference respect to the other case (without io-throttle patches).
-> > 
-> > At worst a small overhead given by the task_to_iothrottle(), under
-> > rcu_read_lock(). I'll repeat this test ASAP and see if I'll be able to
-> > reproduce this strange behaviour.
+> > Bad code should generally be fixed, or in exceptional circumstances 
+> > it can tolerated if it's pre-existing bad code, but it should never 
+> > be propagated. It has not spread _that_ widely yet, and is isolated 
+> > to the security subsystem:
 > 
-> Ya, I also found this strange. At least in root group there should not be
-> any behavior change (at max one might expect little drop in throughput
-> because of extra code).
+> And the security hooks tend to all follow the 0 success -ve ERR on error.
 
-Hi Vivek,
+I just sent a patch (see below) that renames them to 
+ptrace_access_check().
 
-I'm not able to reproduce the strange behaviour above.
+They have no active connection to the core kernel 
+ptrace_may_access() check in any case: the methods seem to be 
+home-brewn, security-module specific checks for how wide ptrace is 
+allowed to go.
 
-Which commands are you running exactly? is the system isolated (stupid
-question) no cron or background tasks doing IO during the tests?
+The design around that code does not seem to be very consistent.
 
-Following the script I've used:
+One solution would be for the default "plain Linux" security module 
+to have a stock ->ptrace_access_check() that does the current 
+ptrace_may_access() check, and then procfs could be updated to use 
+that callback - instead of calling into the ptrace core code 
+directly.
 
-$ cat test.sh
-#!/bin/sh
-echo 3 > /proc/sys/vm/drop_caches
-ionice -c 1 -n 0 dd if=bigfile1 of=/dev/null bs=1M 2>&1 | sed "s/\(.*\)/RT: \1/" &
-cat /proc/$!/cgroup | sed "s/\(.*\)/RT: \1/"
-ionice -c 2 -n 7 dd if=bigfile2 of=/dev/null bs=1M 2>&1 | sed "s/\(.*\)/BE: \1/" &
-cat /proc/$!/cgroup | sed "s/\(.*\)/BE: \1/"
-for i in 1 2; do
-	wait
-done
+This would mean that in the end the 'may' usage is eliminated 
+altogether, and we have a clean ptrace_access_check() facility with 
+a retval convention.
 
-And the results on my PC:
+	Ingo
 
-2.6.30-rc4
-~~~~~~~~~~
-$ sudo sh test.sh | sort
-BE: 234+0 records in
-BE: 234+0 records out
-BE: 245366784 bytes (245 MB) copied, 21.3406 s, 11.5 MB/s
-RT: 234+0 records in
-RT: 234+0 records out
-RT: 245366784 bytes (245 MB) copied, 11.989 s, 20.5 MB/s
-$ sudo sh test.sh | sort
-BE: 234+0 records in
-BE: 234+0 records out
-BE: 245366784 bytes (245 MB) copied, 23.4436 s, 10.5 MB/s
-RT: 234+0 records in
-RT: 234+0 records out
-RT: 245366784 bytes (245 MB) copied, 11.9555 s, 20.5 MB/s
-$ sudo sh test.sh | sort
-BE: 234+0 records in
-BE: 234+0 records out
-BE: 245366784 bytes (245 MB) copied, 21.622 s, 11.3 MB/s
-RT: 234+0 records in
-RT: 234+0 records out
-RT: 245366784 bytes (245 MB) copied, 11.9856 s, 20.5 MB/s
-$ sudo sh test.sh | sort
-BE: 234+0 records in
-BE: 234+0 records out
-BE: 245366784 bytes (245 MB) copied, 21.5664 s, 11.4 MB/s
-RT: 234+0 records in
-RT: 234+0 records out
-RT: 245366784 bytes (245 MB) copied, 11.8522 s, 20.7 MB/s
+-------------->
+Subject: security: rename ptrace_may_access => ptrace_access_check
+From: Ingo Molnar <mingo@elte.hu>
 
-2.6.30-rc4 + io-throttle, no BW limit, both tasks in the root cgroup
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-$ sudo sh ./test.sh | sort
-BE: 234+0 records in
-BE: 234+0 records out
-BE: 245366784 bytes (245 MB) copied, 23.6739 s, 10.4 MB/s
-BE: cgroup 4:blockio:/
-RT: 234+0 records in
-RT: 234+0 records out
-RT: 245366784 bytes (245 MB) copied, 12.2853 s, 20.0 MB/s
-RT: 4:blockio:/
-$ sudo sh ./test.sh | sort
-BE: 234+0 records in
-BE: 234+0 records out
-BE: 245366784 bytes (245 MB) copied, 23.7483 s, 10.3 MB/s
-BE: cgroup 4:blockio:/
-RT: 234+0 records in
-RT: 234+0 records out
-RT: 245366784 bytes (245 MB) copied, 12.3597 s, 19.9 MB/s
-RT: 4:blockio:/
-$ sudo sh ./test.sh | sort
-BE: 234+0 records in
-BE: 234+0 records out
-BE: 245366784 bytes (245 MB) copied, 23.6843 s, 10.4 MB/s
-BE: cgroup 4:blockio:/
-RT: 234+0 records in
-RT: 234+0 records out
-RT: 245366784 bytes (245 MB) copied, 12.4886 s, 19.6 MB/s
-RT: 4:blockio:/
-$ sudo sh ./test.sh | sort
-BE: 234+0 records in
-BE: 234+0 records out
-BE: 245366784 bytes (245 MB) copied, 23.8621 s, 10.3 MB/s
-BE: cgroup 4:blockio:/
-RT: 234+0 records in
-RT: 234+0 records out
-RT: 245366784 bytes (245 MB) copied, 12.6737 s, 19.4 MB/s
-RT: 4:blockio:/
+The ->ptrace_may_access methods are named confusingly - the real
+ptrace_may_access() returns a bool, while these security checks have
+a retval convention.
 
-The difference seems to be just the expected overhead.
+Rename it to ptrace_access_check, to reduce the confusion factor.
 
--Andrea
+[ Impact: cleanup, no code changed ]
+
+Signed-off-by-if-you-test-it: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/security.h   |   14 +++++++-------
+ security/capability.c      |    2 +-
+ security/commoncap.c       |    4 ++--
+ security/root_plug.c       |    2 +-
+ security/security.c        |    4 ++--
+ security/selinux/hooks.c   |    6 +++---
+ security/smack/smack_lsm.c |    8 ++++----
+ 7 files changed, 20 insertions(+), 20 deletions(-)
+
+Index: tip/include/linux/security.h
+===================================================================
+--- tip.orig/include/linux/security.h
++++ tip/include/linux/security.h
+@@ -52,7 +52,7 @@ struct audit_krule;
+ extern int cap_capable(struct task_struct *tsk, const struct cred *cred,
+ 		       int cap, int audit);
+ extern int cap_settime(struct timespec *ts, struct timezone *tz);
+-extern int cap_ptrace_may_access(struct task_struct *child, unsigned int mode);
++extern int cap_ptrace_access_check(struct task_struct *child, unsigned int mode);
+ extern int cap_ptrace_traceme(struct task_struct *parent);
+ extern int cap_capget(struct task_struct *target, kernel_cap_t *effective, kernel_cap_t *inheritable, kernel_cap_t *permitted);
+ extern int cap_capset(struct cred *new, const struct cred *old,
+@@ -1209,7 +1209,7 @@ static inline void security_free_mnt_opt
+  *	@alter contains the flag indicating whether changes are to be made.
+  *	Return 0 if permission is granted.
+  *
+- * @ptrace_may_access:
++ * @ptrace_access_check:
+  *	Check permission before allowing the current process to trace the
+  *	@child process.
+  *	Security modules may also want to perform a process tracing check
+@@ -1224,7 +1224,7 @@ static inline void security_free_mnt_opt
+  *	Check that the @parent process has sufficient permission to trace the
+  *	current process before allowing the current process to present itself
+  *	to the @parent process for tracing.
+- *	The parent process will still have to undergo the ptrace_may_access
++ *	The parent process will still have to undergo the ptrace_access_check
+  *	checks before it is allowed to trace this one.
+  *	@parent contains the task_struct structure for debugger process.
+  *	Return 0 if permission is granted.
+@@ -1336,7 +1336,7 @@ static inline void security_free_mnt_opt
+ struct security_operations {
+ 	char name[SECURITY_NAME_MAX + 1];
+ 
+-	int (*ptrace_may_access) (struct task_struct *child, unsigned int mode);
++	int (*ptrace_access_check) (struct task_struct *child, unsigned int mode);
+ 	int (*ptrace_traceme) (struct task_struct *parent);
+ 	int (*capget) (struct task_struct *target,
+ 		       kernel_cap_t *effective,
+@@ -1617,7 +1617,7 @@ extern int security_module_enable(struct
+ extern int register_security(struct security_operations *ops);
+ 
+ /* Security operations */
+-int security_ptrace_may_access(struct task_struct *child, unsigned int mode);
++int security_ptrace_access_check(struct task_struct *child, unsigned int mode);
+ int security_ptrace_traceme(struct task_struct *parent);
+ int security_capget(struct task_struct *target,
+ 		    kernel_cap_t *effective,
+@@ -1798,10 +1798,10 @@ static inline int security_init(void)
+ 	return 0;
+ }
+ 
+-static inline int security_ptrace_may_access(struct task_struct *child,
++static inline int security_ptrace_access_check(struct task_struct *child,
+ 					     unsigned int mode)
+ {
+-	return cap_ptrace_may_access(child, mode);
++	return cap_ptrace_access_check(child, mode);
+ }
+ 
+ static inline int security_ptrace_traceme(struct task_struct *parent)
+Index: tip/security/capability.c
+===================================================================
+--- tip.orig/security/capability.c
++++ tip/security/capability.c
+@@ -867,7 +867,7 @@ struct security_operations default_secur
+ 
+ void security_fixup_ops(struct security_operations *ops)
+ {
+-	set_to_cap_if_null(ops, ptrace_may_access);
++	set_to_cap_if_null(ops, ptrace_access_check);
+ 	set_to_cap_if_null(ops, ptrace_traceme);
+ 	set_to_cap_if_null(ops, capget);
+ 	set_to_cap_if_null(ops, capset);
+Index: tip/security/commoncap.c
+===================================================================
+--- tip.orig/security/commoncap.c
++++ tip/security/commoncap.c
+@@ -79,7 +79,7 @@ int cap_settime(struct timespec *ts, str
+ }
+ 
+ /**
+- * cap_ptrace_may_access - Determine whether the current process may access
++ * cap_ptrace_access_check - Determine whether the current process may access
+  *			   another
+  * @child: The process to be accessed
+  * @mode: The mode of attachment.
+@@ -87,7 +87,7 @@ int cap_settime(struct timespec *ts, str
+  * Determine whether a process may access another, returning 0 if permission
+  * granted, -ve if denied.
+  */
+-int cap_ptrace_may_access(struct task_struct *child, unsigned int mode)
++int cap_ptrace_access_check(struct task_struct *child, unsigned int mode)
+ {
+ 	int ret = 0;
+ 
+Index: tip/security/root_plug.c
+===================================================================
+--- tip.orig/security/root_plug.c
++++ tip/security/root_plug.c
+@@ -72,7 +72,7 @@ static int rootplug_bprm_check_security 
+ 
+ static struct security_operations rootplug_security_ops = {
+ 	/* Use the capability functions for some of the hooks */
+-	.ptrace_may_access =		cap_ptrace_may_access,
++	.ptrace_access_check =		cap_ptrace_access_check,
+ 	.ptrace_traceme =		cap_ptrace_traceme,
+ 	.capget =			cap_capget,
+ 	.capset =			cap_capset,
+Index: tip/security/security.c
+===================================================================
+--- tip.orig/security/security.c
++++ tip/security/security.c
+@@ -127,9 +127,9 @@ int register_security(struct security_op
+ 
+ /* Security operations */
+ 
+-int security_ptrace_may_access(struct task_struct *child, unsigned int mode)
++int security_ptrace_access_check(struct task_struct *child, unsigned int mode)
+ {
+-	return security_ops->ptrace_may_access(child, mode);
++	return security_ops->ptrace_access_check(child, mode);
+ }
+ 
+ int security_ptrace_traceme(struct task_struct *parent)
+Index: tip/security/selinux/hooks.c
+===================================================================
+--- tip.orig/security/selinux/hooks.c
++++ tip/security/selinux/hooks.c
+@@ -1854,12 +1854,12 @@ static inline u32 open_file_to_av(struct
+ 
+ /* Hook functions begin here. */
+ 
+-static int selinux_ptrace_may_access(struct task_struct *child,
++static int selinux_ptrace_access_check(struct task_struct *child,
+ 				     unsigned int mode)
+ {
+ 	int rc;
+ 
+-	rc = cap_ptrace_may_access(child, mode);
++	rc = cap_ptrace_access_check(child, mode);
+ 	if (rc)
+ 		return rc;
+ 
+@@ -5318,7 +5318,7 @@ static int selinux_key_getsecurity(struc
+ static struct security_operations selinux_ops = {
+ 	.name =				"selinux",
+ 
+-	.ptrace_may_access =		selinux_ptrace_may_access,
++	.ptrace_access_check =		selinux_ptrace_access_check,
+ 	.ptrace_traceme =		selinux_ptrace_traceme,
+ 	.capget =			selinux_capget,
+ 	.capset =			selinux_capset,
+Index: tip/security/smack/smack_lsm.c
+===================================================================
+--- tip.orig/security/smack/smack_lsm.c
++++ tip/security/smack/smack_lsm.c
+@@ -92,7 +92,7 @@ struct inode_smack *new_inode_smack(char
+  */
+ 
+ /**
+- * smack_ptrace_may_access - Smack approval on PTRACE_ATTACH
++ * smack_ptrace_access_check - Smack approval on PTRACE_ATTACH
+  * @ctp: child task pointer
+  * @mode: ptrace attachment mode
+  *
+@@ -100,11 +100,11 @@ struct inode_smack *new_inode_smack(char
+  *
+  * Do the capability checks, and require read and write.
+  */
+-static int smack_ptrace_may_access(struct task_struct *ctp, unsigned int mode)
++static int smack_ptrace_access_check(struct task_struct *ctp, unsigned int mode)
+ {
+ 	int rc;
+ 
+-	rc = cap_ptrace_may_access(ctp, mode);
++	rc = cap_ptrace_access_check(ctp, mode);
+ 	if (rc != 0)
+ 		return rc;
+ 
+@@ -2826,7 +2826,7 @@ static void smack_release_secctx(char *s
+ struct security_operations smack_ops = {
+ 	.name =				"smack",
+ 
+-	.ptrace_may_access =		smack_ptrace_may_access,
++	.ptrace_access_check =		smack_ptrace_access_check,
+ 	.ptrace_traceme =		smack_ptrace_traceme,
+ 	.capget = 			cap_capget,
+ 	.capset = 			cap_capset,
+
