@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763153AbZEGW2u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757498AbZEGW3T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763153AbZEGW2u (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 18:28:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762990AbZEGW1N
+	id S1757498AbZEGW3T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 18:29:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763039AbZEGW1O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 18:27:13 -0400
-Received: from mga06.intel.com ([134.134.136.21]:19804 "EHLO
+	Thu, 7 May 2009 18:27:14 -0400
+Received: from mga06.intel.com ([134.134.136.21]:36123 "EHLO
 	orsmga101.jf.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753753AbZEGW1I (ORCPT
+	with ESMTP id S1753316AbZEGW1I (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 18:27:08 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.40,312,1239001200"; 
-   d="scan'208";a="410470425"
+   d="scan'208";a="410470420"
 From: "H. Peter Anvin" <hpa@linux.intel.com>
 To: linux-kernel@vger.kernel.org
 Cc: vgoyal@redhat.com, hbabu@us.ibm.com, kexec@lists.infradead.org,
        ying.huang@intel.com, mingo@elte.hu, tglx@linutronix.de,
        ebiederm@xmission.com, sam@ravnborg.org,
        "H. Peter Anvin" <hpa@zytor.com>
-Subject: [PATCH 05/14] kbuild: allow compressors (gzip, bzip2, lzma) to take multiple inputs
-Date: Thu,  7 May 2009 15:26:53 -0700
-Message-Id: <1241735222-6640-6-git-send-email-hpa@linux.intel.com>
+Subject: [PATCH 04/14] x86, boot: unify use LOAD_PHYSICAL_ADDR and LOAD_PHYSICAL_ALIGN
+Date: Thu,  7 May 2009 15:26:52 -0700
+Message-Id: <1241735222-6640-5-git-send-email-hpa@linux.intel.com>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1241735222-6640-1-git-send-email-hpa@linux.intel.com>
 References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com>
@@ -31,72 +31,139 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: H. Peter Anvin <hpa@zytor.com>
 
-Allow the compression commands in Kbuild (i.e. gzip, bzip2, lzma) to
-take multiple input files and emit the concatenated compressed
-output.  This avoids an intermediate step when a kernel image is built
-from multiple components, such as the relocatable x86-32 kernel.
+Instead of using CONFIG_PHYSICAL_ALIGN and CONFIG_PHYSICAL_START
+directly, use LOAD_PHYSICAL_ALIGN (CONFIG_PHYSICAL_ALIGN or the
+smallest valid number, whichever is greater) and LOAD_PHYSICAL_ADDR
+(CONFIG_PHYSICAL_START rounded up to the nearest alignment datum) for
+both 32 and 64-bit mode.
 
-[ Impact: new build feature, not yet used ]
+[ Impact: Avoids problems in case of kernel misconfiguration ]
 
 Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
 ---
- scripts/Makefile.lib |   11 ++++++++---
- scripts/bin_size     |    8 ++++++--
- 2 files changed, 14 insertions(+), 5 deletions(-)
+ arch/x86/boot/compressed/head_32.S |    4 ++--
+ arch/x86/boot/compressed/head_64.S |   21 +++++++++------------
+ arch/x86/boot/header.S             |    2 +-
+ arch/x86/include/asm/boot.h        |   13 +++++++++++--
+ 4 files changed, 23 insertions(+), 17 deletions(-)
 
-diff --git a/scripts/Makefile.lib b/scripts/Makefile.lib
-index 9796195..35dfdf6 100644
---- a/scripts/Makefile.lib
-+++ b/scripts/Makefile.lib
-@@ -183,7 +183,8 @@ cmd_objcopy = $(OBJCOPY) $(OBJCOPYFLAGS) $(OBJCOPYFLAGS_$(@F)) $< $@
- # ---------------------------------------------------------------------------
+diff --git a/arch/x86/boot/compressed/head_32.S b/arch/x86/boot/compressed/head_32.S
+index 31fc6dc..2d7cd0f 100644
+--- a/arch/x86/boot/compressed/head_32.S
++++ b/arch/x86/boot/compressed/head_32.S
+@@ -70,8 +70,8 @@ ENTRY(startup_32)
+ 	jbe 1f
+ 	movl %eax, %ebx
+ 1:
+-	addl $(CONFIG_PHYSICAL_ALIGN - 1), %ebx
+-	andl $(~(CONFIG_PHYSICAL_ALIGN - 1)), %ebx
++	addl $(LOAD_PHYSICAL_ALIGN - 1), %ebx
++	andl $(~(LOAD_PHYSICAL_ALIGN - 1)), %ebx
+ #else
+ 	movl $LOAD_PHYSICAL_ADDR, %ebx
+ #endif
+diff --git a/arch/x86/boot/compressed/head_64.S b/arch/x86/boot/compressed/head_64.S
+index f4ddd02..201af02 100644
+--- a/arch/x86/boot/compressed/head_64.S
++++ b/arch/x86/boot/compressed/head_64.S
+@@ -22,7 +22,6 @@
+ #include <linux/linkage.h>
+ #include <asm/segment.h>
+ #include <asm/pgtable_types.h>
+-#include <asm/page_types.h>
+ #include <asm/boot.h>
+ #include <asm/msr.h>
+ #include <asm/processor-flags.h>
+@@ -72,19 +71,17 @@ ENTRY(startup_32)
+  * contains the address where we should move the kernel image temporarily
+  * for safe in-place decompression.
+  */
+-ALIGN_MASK	= (CONFIG_PHYSICAL_ALIGN-1) | (PMD_PAGE_SIZE-1)
+-
+ #ifdef CONFIG_RELOCATABLE
+-	movl	$CONFIG_PHYSICAL_START, %eax
++	movl	$LOAD_PHYSICAL_ADDR, %eax
+ 	movl	%ebp, %ebx
+-	addl	$ALIGN_MASK, %ebx
+-	andl	$~ALIGN_MASK, %ebx
++	addl	$(LOAD_PHYSICAL_ALIGN - 1), %ebx
++	andl	$~(LOAD_PHYSICAL_ALIGN - 1), %ebx
+ 	cmpl	%ebx, %eax
+ 	jbe	1f
+ 	movl	%eax, %ebx
+ 1:
+ #else
+-	movl	$CONFIG_PHYSICAL_START, %ebx
++	movl	$LOAD_PHYSICAL_ADDR, %ebx
+ #endif
  
- quiet_cmd_gzip = GZIP    $@
--cmd_gzip = gzip -f -9 < $< > $@
-+cmd_gzip = (cat $(filter-out FORCE,$^) | gzip -f -9 > $@) || \
-+	(rm -f $@ ; false)
+ 	/* Replace the compressed data size with the uncompressed size */
+@@ -216,21 +213,21 @@ ENTRY(startup_64)
+ 	 *
+ 	 * If it is a relocatable kernel then decompress and run the kernel
+ 	 * from load address aligned to 2MB addr, otherwise decompress and
+-	 * run the kernel from CONFIG_PHYSICAL_START
++	 * run the kernel from LOAD_PHYSICAL_ADDR
+ 	 */
  
+ 	/* Start with the delta to where the kernel will run at. */
+ #ifdef CONFIG_RELOCATABLE
+ 	leaq	startup_32(%rip) /* - $startup_32 */, %rbp
+-	movq	$CONFIG_PHYSICAL_START, %rax
+-	addq	$ALIGN_MASK, %rbp
+-	andq	$~ALIGN_MASK, %rbp
++	movq	$LOAD_PHYSICAL_ADDR, %rax
++	addq	$(LOAD_PHYSICAL_ALIGN - 1), %rbp
++	andq	$~(LOAD_PHYSICAL_ALIGN - 1), %rbp
+ 	cmpq	%rbp, %rax
+ 	jbe	1f
+ 	movq	%rax, %rbp
+ 1:
+ #else
+-	movq	$CONFIG_PHYSICAL_START, %rbp
++	movq	$LOAD_PHYSICAL_ADDR, %rbp
+ #endif
+ 	movq	%rbp, %rbx
  
- # Bzip2
-@@ -193,10 +194,14 @@ cmd_gzip = gzip -f -9 < $< > $@
- size_append=$(CONFIG_SHELL) $(srctree)/scripts/bin_size
+diff --git a/arch/x86/boot/header.S b/arch/x86/boot/header.S
+index 5d84d1c..cfd3bc4 100644
+--- a/arch/x86/boot/header.S
++++ b/arch/x86/boot/header.S
+@@ -192,7 +192,7 @@ ramdisk_max:	.long 0x7fffffff
+ 					# but leave it at 2 GB to avoid
+ 					# possible bootloader bugs.
  
- quiet_cmd_bzip2 = BZIP2    $@
--cmd_bzip2 = (bzip2 -9 < $< && $(size_append) $<) > $@ || (rm -f $@ ; false)
-+cmd_bzip2 = (cat $(filter-out FORCE,$^) | \
-+	bzip2 -9 && $(size_append) $(filter-out FORCE,$^)) > $@ || \
-+	(rm -f $@ ; false)
+-kernel_alignment:  .long CONFIG_PHYSICAL_ALIGN	#physical addr alignment
++kernel_alignment:  .long LOAD_PHYSICAL_ALIGN	#physical addr alignment
+ 						#required for protected mode
+ 						#kernel
+ #ifdef CONFIG_RELOCATABLE
+diff --git a/arch/x86/include/asm/boot.h b/arch/x86/include/asm/boot.h
+index 6ba23dd..641debb 100644
+--- a/arch/x86/include/asm/boot.h
++++ b/arch/x86/include/asm/boot.h
+@@ -8,10 +8,19 @@
  
- # Lzma
- # ---------------------------------------------------------------------------
+ #ifdef __KERNEL__
  
- quiet_cmd_lzma = LZMA    $@
--cmd_lzma = (lzma -9 -c $< && $(size_append) $<) >$@ || (rm -f $@ ; false)
-+cmd_lzma = (cat $(filter-out FORCE,$^) | \
-+	lzma -9 && $(size_append) $(filter-out FORCE,$^)) > $@ || \
-+	(rm -f $@ ; false)
-diff --git a/scripts/bin_size b/scripts/bin_size
-index 43e1b36..55f2161 100644
---- a/scripts/bin_size
-+++ b/scripts/bin_size
-@@ -1,10 +1,14 @@
- #!/bin/sh
++#include <asm/page_types.h>
++
++/* Permitted physical alignment of the kernel */
++#if defined(CONFIG_X86_64) && CONFIG_PHYSICAL_ALIGN < PMD_PAGE_SIZE
++#define LOAD_PHYSICAL_ALIGN	PMD_PAGE_SIZE
++#else
++#define LOAD_PHYSICAL_ALIGN	CONFIG_PHYSICAL_ALIGN
++#endif
++
+ /* Physical address where kernel should be loaded. */
+ #define LOAD_PHYSICAL_ADDR ((CONFIG_PHYSICAL_START \
+-				+ (CONFIG_PHYSICAL_ALIGN - 1)) \
+-				& ~(CONFIG_PHYSICAL_ALIGN - 1))
++				+ (LOAD_PHYSICAL_ALIGN - 1)) \
++				& ~(LOAD_PHYSICAL_ALIGN - 1))
  
- if [ $# = 0 ] ; then
--   echo Usage: $0 file
-+   echo Usage: $0 file...
- fi
- 
--size_dec=`stat -c "%s" $1`
-+size_dec=0
-+for file; do
-+  fsize=`stat -c "%s" $file`
-+  size_dec=`expr $size_dec + $fsize`
-+done
- size_hex_echo_string=`printf "%08x" $size_dec |
-      sed 's/\(..\)\(..\)\(..\)\(..\)/\\\\x\4\\\\x\3\\\\x\2\\\\x\1/g'`
- /bin/echo -ne $size_hex_echo_string
+ #ifdef CONFIG_KERNEL_BZIP2
+ #define BOOT_HEAP_SIZE             0x400000
 -- 
 1.6.0.6
 
