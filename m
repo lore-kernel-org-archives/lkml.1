@@ -1,28 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755843AbZEGIVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759705AbZEGIXl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755843AbZEGIVj (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 04:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754243AbZEGIVX
+	id S1759705AbZEGIXl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 04:23:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757373AbZEGIXX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 04:21:23 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:39822 "EHLO mx2.mail.elte.hu"
+	Thu, 7 May 2009 04:23:23 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:40308 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750754AbZEGIVW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 04:21:22 -0400
-Date: Thu, 7 May 2009 10:20:27 +0200
+	id S1757343AbZEGIXW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 04:23:22 -0400
+Date: Thu, 7 May 2009 10:23:03 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [RFC PATCH 3/3a] ptrace: add _ptrace_may_access()
-Message-ID: <20090507082027.GD12285@elte.hu>
-References: <20090505224729.GA965@redhat.com> <20090506080050.GF17457@elte.hu> <20090506235349.GC3756@redhat.com> <20090507002133.02D05FC39E@magilla.sf.frob.com> <20090507063606.GA15220@redhat.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Li Zefan <lizf@cn.fujitsu.com>, Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH 1/7] ring-buffer: remove unneeded conditional in
+	rb_reserve_next
+Message-ID: <20090507082303.GE12285@elte.hu>
+References: <20090507031335.815354104@goodmis.org> <20090507031433.562803300@goodmis.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090507063606.GA15220@redhat.com>
+In-Reply-To: <20090507031433.562803300@goodmis.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,12 +37,23 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Oleg Nesterov <oleg@redhat.com> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> /* the callers of ptrace_may_access should be fixed */
+> From: Steven Rostedt <srostedt@redhat.com>
 > 
-> 	int ptrace_may_access(struct task_struct *task, unsigned int mode)
+> The code in __rb_reserve_next checks on page overflow if it is the
+> original commiter and then resets the page back to the original
+> setting.  Although this is fine, and the code is correct, it is
+> a bit fragil. Some experimental work I did breaks it easily.
 
-Sigh, NAK, for the reasons explained in the previous mails.
+s/fragil/fragile
+
+> The better and more robust solution is to have all commiters that
+> overflow the page, simply subtract what they added.
+> 
+> [ Impact: more robust ring buffer account management ]
+
+it's a bit faster too (eliminates two branches) - so a 
+micro-optimization as well.
 
 	Ingo
