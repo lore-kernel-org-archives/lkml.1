@@ -1,47 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbZEGMqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761159AbZEGMqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759531AbZEGMqT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 08:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZEGMqE
+	id S1761159AbZEGMqf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 08:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757899AbZEGMqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 08:46:04 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38167 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752474AbZEGMqE (ORCPT
+	Thu, 7 May 2009 08:46:09 -0400
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:43382 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756705AbZEGMqI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 08:46:04 -0400
-Date: Thu, 7 May 2009 14:01:30 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Rik van Riel <riel@redhat.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-mm@kvack.org, mingo@redhat.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] x86: 46 bit PAE support
-Message-ID: <20090507120103.GA1497@ucw.cz>
-References: <20090505172856.6820db22@cuia.bos.redhat.com> <4A00ED83.1030700@zytor.com> <4A0180AB.20108@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A0180AB.20108@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 7 May 2009 08:46:08 -0400
+Message-Id: <20090507124556.041286732@linux.vnet.ibm.com>
+User-Agent: quilt/0.48-1
+Date: Thu, 07 May 2009 14:45:56 +0200
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
+       Li Wei <W.Li@Sun.COM>, Michael Ellerman <michaele@au1.ibm.com>
+Subject: [PATCH 0/4] gcov kernel support
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed 2009-05-06 08:20:59, Rik van Riel wrote:
-> H. Peter Anvin wrote:
->> Rik van Riel wrote:
->>> Testing: booted it on an x86-64 system with 6GB RAM.  Did you really think
->>> I had access to a system with 64TB of RAM? :)
->>
->> No, but it would be good if we could test it under Qemu or KVM with an
->> appropriately set up sparse memory map.
->
-> I don't have a system with 1TB either, which is how much space
-> the memmap[] would take...
+This patchset implements support for performing kernel code coverage
+measurements based on gcc's gcov mechanism. It can be used to improve
+kernel code quality by identifying code parts which are not exercised
+during test cases. Patch base is 2.6.30-rc4.
 
-Do we really have 1 byte overhead per 64 bytes of RAM?
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Changes since last version:
+* fix return code of gcov_seq_show
+
+Patch overview:
+[PATCH 1/4] kernel: constructor support
+[PATCH 2/4] seq_file: add function to write binary data
+[PATCH 3/4] gcov: add gcov profiling infrastructure
+[PATCH 4/4] gcov: enable GCOV_PROFILE_ALL for x86_64
+
+For more information see Documentation/gcov.txt and the previous post:
+http://marc.info/?l=linux-kernel&m=123565658224661
+
