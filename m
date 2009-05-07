@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759639AbZEGLJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756451AbZEGLQU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759639AbZEGLJo (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 07:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753028AbZEGLJe
+	id S1756451AbZEGLQU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 07:16:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753706AbZEGLQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 07:09:34 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40750 "EHLO mx2.mail.elte.hu"
+	Thu, 7 May 2009 07:16:10 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:51601 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752612AbZEGLJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 07:09:33 -0400
-Date: Thu, 7 May 2009 13:09:18 +0200
+	id S1754480AbZEGLQJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 07:16:09 -0400
+Date: Thu, 7 May 2009 13:15:48 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Catalin Marinas <catalin.marinas@arm.com>
-Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
-       Sam Ravnborg <sam@ravnborg.org>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: Provide _sdata in the vmlinux_*.lds.S files
-Message-ID: <20090507110918.GF28398@elte.hu>
-References: <20090507110648.8484.38527.stgit@pc1117.cambridge.arm.com>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: linux-kernel@vger.kernel.org, linux-pm@lists.linux-foundation.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH] genirq: ensure IRQs are lazy disabled before suspend
+Message-ID: <20090507111548.GH28398@elte.hu>
+References: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com> <1241655468-5750-2-git-send-email-khilman@deeprootsystems.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090507110648.8484.38527.stgit@pc1117.cambridge.arm.com>
+In-Reply-To: <1241655468-5750-2-git-send-email-khilman@deeprootsystems.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,23 +35,50 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Catalin Marinas <catalin.marinas@arm.com> wrote:
+* Kevin Hilman <khilman@deeprootsystems.com> wrote:
 
-> _sdata is a common symbol defined by many architectures and made
-> available to the kernel via asm-generic/sections.h. Kmemleak uses this
-> symbol when scanning the data sections. The _edata symbol in
-> vmlinux_64.lds.S was also moved further down to include the
-> .data.read_mostly section.
+> In commit 76d2160147f43f982dfe881404cfde9fd0a9da21, the default
+> behavior of disable_irq() was changed to delay the disable until it is
+> next handled.
 > 
-> Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Ingo Molnar <mingo@elte.hu>
+> However, this leaves open the possibility that the system can go into
+> suspend with an interrupt enabled.  For example, if a driver calls
+> disable_irq() in its suspend_hook (for example, to prevent that device
+> IRQ from causing a system wakeup) there's now a possibility that the
+> system is suspended before the lazy disable happens.
+> 
+> The result is an unwanted wakeup from suspend if the IRQ is capable of
+> waking the system (common on embedded SoCs.)
+> 
+> This patch ensures that the lazy disable is done, and masked by
+> the irq_chip before the system goes into suspend.
+> 
+> Note that even though __disable_irq() also calls irq_chip->disable, it
+> is quite common for the irq_chip not to provide a disable hook in
+> which case the IRQ is never masked/disabled in hardware before going
+> into suspend.
+> 
+> Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
 > ---
->  arch/x86/kernel/vmlinux_32.lds.S |    1 +
->  arch/x86/kernel/vmlinux_64.lds.S |    3 ++-
->  2 files changed, 3 insertions(+), 1 deletions(-)
+>  kernel/irq/manage.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+> index 2734eca..5d2cc1c 100644
+> --- a/kernel/irq/manage.c
+> +++ b/kernel/irq/manage.c
+> @@ -190,6 +190,11 @@ void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
+>  		if (!desc->action || (desc->action->flags & IRQF_TIMER))
+>  			return;
+>  		desc->status |= IRQ_SUSPENDED;
+> +
+> +		/* Lazy disable: handles case where lazy disable in
+> +		 * handler doesn't happen before suspend. */
+> +		if (desc->status & IRQ_DISABLED)
+> +			desc->chip->mask(irq);
 
-Please do this against the latest x86 tree:
-
-  http://people.redhat.com/mingo/tip.git/README
+Please look at the rest of the file and follow the multi-line 
+comment style that is used in the 29 multi-line comment instances 
+there. (which is also what Documentation/CodingStyle specifies)
 
 	Ingo
