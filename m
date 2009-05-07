@@ -1,46 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761722AbZEGCIR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755333AbZEGCJF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761722AbZEGCIR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 22:08:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755366AbZEGCIA
+	id S1755333AbZEGCJF (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 22:09:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756678AbZEGCIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 22:08:00 -0400
-Received: from mga14.intel.com ([143.182.124.37]:13702 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753795AbZEGCIA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 22:08:00 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,305,1239001200"; 
-   d="scan'208";a="140045983"
-Date: Thu, 7 May 2009 10:07:36 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 4/7] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090507020736.GB12281@localhost>
-References: <20090507012116.996644836@intel.com> <20090507014914.364045992@intel.com> <20090507110431.b6a10746.minchan.kim@barrios-desktop>
+	Wed, 6 May 2009 22:08:54 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:55268 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757267AbZEGCIx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 22:08:53 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507110431.b6a10746.minchan.kim@barrios-desktop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090506184122.721c890d@infradead.org>
+References: <1241097822.2516.3.camel@poy> <20090506184122.721c890d@infradead.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Thu, 7 May 2009 04:08:33 +0200
+Message-ID: <ac3eb2510905061908u7acbd1b2nf991aa85e1517fe4@mail.gmail.com>
+Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
+       Jan Blunck <jblunck@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 10:04:31AM +0800, Minchan Kim wrote:
-> 
-> Hi, 
-> 
-> > +#ifdef CONFIG_MEMORY_FAILURE
-> > +	u |= kpf_copy_bit(k, KPF_HWPOISON,	PG_hwpoison);
-> > +#endif
-> 
-> Did mmtom merge memory failure feature?
+On Thu, May 7, 2009 at 03:41, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Thu, 30 Apr 2009 15:23:42 +0200
+> Kay Sievers <kay.sievers@vrfy.org> wrote:
+>
+>> From: Kay Sievers <kay.sievers@vrfy.org>
+>> Subject: driver-core: devtmpfs - driver core maintained /dev tmpfs
+>>
+>> Devtmpfs lets the kernel create a tmpfs very early at kernel
+>> initialization, before any driver core device is registered. Every
+>> device with a major/minor will have a device node created in this
+>> tmpfs instance. After the rootfs is mounted by the kernel, the
+>> populated tmpfs is mounted at /dev. In initramfs, it can be moved
+>> to the manually mounted root filesystem before /sbin/init is
+>> executed.
+>
+> so just to state the obvious: this code is not needed to boot fast.
+> It is mostly a workaround for having a bad initrd; if you don't use an
+> initrd, or if you use an initrd that's made with the right device nodes
+> in it already, you really just don't need this.
+>
+> I would much rather that you just fix your initrd... than to put this
+> sort of thing into the kernel....
 
-Maybe not yet.. but the #ifdef makes it safe :-)
+How will you solve the dynamic device numbers? They are a complete
+reality today.
+
+Thanks,
+Kay
