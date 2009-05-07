@@ -1,93 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754190AbZEGNqy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755034AbZEGNrj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754190AbZEGNqy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 09:46:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbZEGNqn
+	id S1755034AbZEGNrj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 09:47:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751712AbZEGNr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 09:46:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46235 "EHLO mx2.redhat.com"
+	Thu, 7 May 2009 09:47:26 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:49442 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751517AbZEGNqm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 09:46:42 -0400
-Date: Thu, 7 May 2009 10:46:07 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Avi Kivity <avi@redhat.com>
-Cc: Davide Libenzi <davidel@xmailserver.org>,
-       Gregory Haskins <ghaskins@novell.com>, viro@ZenIV.linux.org.uk,
-       kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via
-	eventfd-notification interface
-Message-ID: <20090507134607.GA25311@amt.cnet>
-References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A0175F0.1090705@novell.com> <alpine.DEB.1.10.0905060818000.32007@makko.or.mcafeemobile.com> <4A01AEC1.8020201@novell.com> <alpine.DEB.1.10.0905061834080.32606@makko.or.mcafeemobile.com> <4A02AE65.3000800@redhat.com>
+	id S1751566AbZEGNrZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 09:47:25 -0400
+Date: Thu, 7 May 2009 14:47:23 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix nodes_cover_memory
+Message-ID: <20090507134723.GA32409@csn.ul.ie>
+References: <4A01C08F.8020607@kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <4A02AE65.3000800@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <4A01C08F.8020607@kernel.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 12:48:21PM +0300, Avi Kivity wrote:
-> Davide Libenzi wrote:
->> On Wed, 6 May 2009, Gregory Haskins wrote:
->>
->>   
->>> I think we are ok in this regard (at least in v5) without the 
->>> callback. kvm holds irqfd, which holds eventfd.  In a normal 
->>> situation, we will
->>> have eventfd with 2 references.  If userspace closes the eventfd, it
->>> will drop 1 of the 2 eventfd file references, but the object should
->>> remain intact as long as kvm still holds it as well.  When the kvm-fd is
->>> released, we will then decouple from the eventfd->wqh and drop the last
->>> fput(), officially freeing it.
->>>
->>> Likewise, if kvm is closed before the eventfd, we will simply decouple
->>> from the wqh and fput(eventfd), leaving the last reference held by
->>> userspace until it closes as well.
->>>
->>> Let me know if you see any holes in that.
->>>     
->>
->> Looks OK, modulo my knowledge of KVM internals.
->>   
->
-> What's your take on adding irq context safe callbacks to irqfd?
->
-> To give some background here, we would like to use eventfd as a generic  
-> connector between components, so the components do not know about each  
-> other.  So far eventfd successfully abstracts among components in the  
-> same process, in different processes, and in the kernel.
->
-> eventfd_signal() can be safely called from irq context, and will wake up  
-> a waiting task.  But in some cases, if the consumer is in the kernel, it  
-> may be able to consume the event from irq context, saving a context 
-> switch.
->
-> So, will you consider patches adding this capability to eventfd?
+On Wed, May 06, 2009 at 09:53:35AM -0700, Yinghai Lu wrote:
+> 
+> found one system that missed one entry for one node in SRAT, and that SRAT is not
+> rejected by nodes_cover_memory()
+> 
+> it turns out that we can not use absent_page_in_range to calaulate
+> e820ram, bacause that will use early_node_map and that is AND result of
+> e820 and SRAT.
+> 
 
-(pasting from a separate thread)
+Correct, good spot.
 
-> That's my thinking.  PCI interrupts don't work because we need to do  
-> some hacky stuff in there, but MSI should.  Oh, and we could improve
-> UIO  
-> support for interrupts when using MSI, since there's no need to  
-> acknowledge the interrupt.
+> revert back to use e820_hole_size instead.
+> 
 
-Ok, so for INTx assigned devices all you need to do on the ACK handler
-is to re-enable the host interrupt (and set the guest interrupt line to
-low).
+I think the patch fixing this part of the problem is good, but the changelog
+could be better. It took me a while to figure out what the problem was and
+why this patch addressed it.
 
-Right now the ack comes through a kvm internal irq ack callback.
+How about something like the following?
 
-AFAICS there is no mechanism in irqfd for ACK notification, and
-interrupt injection is edge triggered.
+====
+Sanity check the e820 against the SRAT table using only information from the e820 map
 
-So for PCI INTx assigned devices (or any INTx level), you'd want to keep
-the guest interrupt high, with some way to notify the ACK.
+node_cover_memory() sanity checks the SRAT table by ensuring that all
+PXMs cover the memory reported in the e820. However, when calculating
+the size of the holes in the e820, it uses the early_node_map[] which
+contains information taken from both SRAT and e820. If the SRAT is
+missing an entry, then it is not detected that the SRAT table is
+incorrect and missing entries.
 
-Avi mentioned a separate irqfd to notify the ACK. For assigned devices,
-you could register a fd wakeup function in that fd, which replaces the
-current irq ACK callback?
+This patch uses the e820 map to calculate the holes instead of
+early_node_map[].
+====
 
+As an aside, it strikes me as odd that we discard an entire SRAT because it
+is missing an entry in the e820. The impact may only be that the affinity
+for a range of memory is incorrect, but it does not necessarily mean that the
+entire table is incorrect. The intention of the code appears to be "if there is
+any error in the SRAT, it's best ignored" though so maybe it's best left alone.
+
+> also change that difference checking to 1M instead of 4G,
+> because e820ram, and pxmram are in pages.
+> 
+
+While I agree with you, this should be a separate patch with its own
+changelog. Something like
+
+===
+Allow 1MB of slack between the e820 map and SRAT, not 4GB
+
+It is expected that there be slight differences between the e820 map and
+the SRAT table and the intention was that 1MB of slack be allowed. The
+calculation comparing e820ram and pxmram assumes the units are bytes,
+when they are in fact pages. This means 4GB of slack is being allowed,
+not 1MB. This patch makes the correct comparison
+===
+
+(1<<(20 - PAGE_SHIFT)) is a bit unreadable. At the very least, change the
+comment above from "Allow a bit of slack" to "Allow 1MB of slack" so the
+next reader knows what the intention of (1<<(20 - PAGE_SHIFT)) is.
+
+Thanks
+
+> [ Impact: reject wrong SRAT tables ]
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> 
+> ---
+>  arch/x86/mm/srat_64.c |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/mm/srat_64.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/mm/srat_64.c
+> +++ linux-2.6/arch/x86/mm/srat_64.c
+> @@ -345,9 +345,9 @@ static int __init nodes_cover_memory(con
+>  			pxmram = 0;
+>  	}
+>  
+> -	e820ram = max_pfn - absent_pages_in_range(0, max_pfn);
+> +	e820ram = max_pfn - (e820_hole_size(0, max_pfn<<PAGE_SHIFT)>>PAGE_SHIFT);
+>  	/* We seem to lose 3 pages somewhere. Allow a bit of slack. */
+> -	if ((long)(e820ram - pxmram) >= 1*1024*1024) {
+> +	if ((long)(e820ram - pxmram) >= (1<<(20 - PAGE_SHIFT))) {
+>  		printk(KERN_ERR
+>  	"SRAT: PXMs only cover %luMB of your %luMB e820 RAM. Not used.\n",
+>  			(pxmram << PAGE_SHIFT) >> 20,
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
