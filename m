@@ -1,74 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755375AbZEGN0h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757055AbZEGN2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755375AbZEGN0h (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 09:26:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753353AbZEGN02
+	id S1757055AbZEGN2S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 09:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753616AbZEGN2E
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 09:26:28 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:57191 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752589AbZEGN02 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 09:26:28 -0400
-Date: Thu, 7 May 2009 09:26:27 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 3/7] ring-buffer: make moving the tail page a separate
- function
-In-Reply-To: <20090507082717.GF12285@elte.hu>
-Message-ID: <alpine.DEB.2.00.0905070924250.32734@gandalf.stny.rr.com>
-References: <20090507031335.815354104@goodmis.org> <20090507031434.018038090@goodmis.org> <20090507082717.GF12285@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 7 May 2009 09:28:04 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35213 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753353AbZEGN2C (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 09:28:02 -0400
+Date: Thu, 7 May 2009 15:23:46 +0200
+From: Andrea Arcangeli <aarcange@redhat.com>
+To: Hugh Dickins <hugh@veritas.com>
+Cc: Chris Wright <chrisw@redhat.com>, Izik Eidus <ieidus@redhat.com>,
+       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
+       device@lanana.org, linux-mm@kvack.org, nickpiggin@yahoo.com.au
+Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
+Message-ID: <20090507132346.GA30074@random.random>
+References: <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com> <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils> <20090506133434.GX16078@random.random> <4A019719.7030504@redhat.com> <Pine.LNX.4.64.0905061739540.5934@blonde.anvils> <20090506164945.GD15712@x200.localdomain> <20090507113120.GH16078@random.random> <Pine.LNX.4.64.0905071339220.12379@blonde.anvils>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0905071339220.12379@blonde.anvils>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 07, 2009 at 02:13:31PM +0100, Hugh Dickins wrote:
+> No: "KSM" stands for "Kernel Samepage Merging", doesn't it?
+> Or maybe someone can devise a better term for the "S" of it.
+> I think we're all too familiar with "KSM" to want to outlaw that,
+> just don't dwell too much on the "Kernel Shared Memory" expansion.
 
-On Thu, 7 May 2009, Ingo Molnar wrote:
+So you suggest to keep KSM acronym but meaning Kernel Samepage
+Merging instead of Kernel Shared Memory ;).
 
+> > In addition I consistently use the term "shared KSM pages" often,
+> > should I rename all those instances to "merged pages"? I used the word
+> > 'merging' only when describing the operation KSM does when it creates
+> > shared pages, but never to name the generated pages themself.
 > 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
-> >  
-> > +static struct ring_buffer_event *
-> > +__rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
-> > +		  unsigned type, unsigned long length, u64 *ts)
-> > +{
-> > +	struct buffer_page *tail_page, *commit_page;
-> > +	struct ring_buffer_event *event;
-> > +	unsigned long tail, write;
-> > +
-> > +	commit_page = cpu_buffer->commit_page;
-> > +	/* we just need to protect against interrupts */
-> > +	barrier();
-> > +	tail_page = cpu_buffer->tail_page;
-> > +	write = local_add_return(length, &tail_page->write);
-> > +	tail = write - length;
-> > +
-> > +	/* See if we shot pass the end of this buffer page */
-> > +	if (write > BUF_PAGE_SIZE)
-> > +		return rb_move_tail(cpu_buffer, length, tail,
-> > +				    commit_page, tail_page, ts);
+> No, you and your audience and your readers will find it clearest
+> if you remark on the change in naming upfront, then get on with
+> describing it all in the way that comes most naturally to you.
+
+Actually that's what I already did yesterday, but then I thought I
+shall try to get it in sync to avoid confusion. But if KSM name is
+here to stay, I'll stick with the KSM name and perhaps a few to
+"merged pages" as you suggested.
+
+> But do sprinkle in a few "merged pages", I suggest: perhaps by
+> the time you deliver it, they'll be coming more naturally to you.
 > 
-> Nice! The __rb_reserve_next() fast-path logic became a lot clearer.
+> (Actually, "shared KSM pages" makes more sense if that "S" is not
 
-Thanks!
+ehehe ;)
 
-> 
-> The above branch might be unlikely(), right? With usual record sizes 
-> of around 40 bytes, we'll have a 100 records for every page 
-> overflow. That's i think within the reach of unlikely().
-> 
-> Depends on how much of a mess GCC makes of it though.
+> for Shared.  I keep wondering what the two "k"s in kksmd stand for.)
 
-I looked at the assembly that gcc generates, and it is fine. gcc inlines 
-the function and puts it at the end, thus it already treats it as an 
-unlikely. I would like to avoid adding unlikely annotations when possible.
-
--- Steve
-
+kernel KSM daemon.
