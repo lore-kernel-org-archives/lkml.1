@@ -1,41 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbZEGPvX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760587AbZEGPvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756383AbZEGPvX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 11:51:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZEGPvK
+	id S1760587AbZEGPvi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 11:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbZEGPv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 11:51:10 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:50491 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751693AbZEGPvJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 11:51:09 -0400
-Date: Thu, 7 May 2009 11:40:19 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Alok Kataria <akataria@vmware.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-In-Reply-To: <4A02FE91.8070006@zytor.com>
-Message-ID: <alpine.DEB.1.10.0905071136520.10171@qirst.com>
-References: <1241462661.412.8.camel@alok-dev1> <4A00ADDE.9000908@zytor.com> <1241560625.8665.17.camel@alok-dev1> <alpine.DEB.1.10.0905071010170.24528@qirst.com> <20090507161440.5b9c067d@lxorguk.ukuu.org.uk> <4A02FE91.8070006@zytor.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 7 May 2009 11:51:26 -0400
+Received: from l2mail1.panix.com ([166.84.1.75]:49504 "EHLO l2mail1.panix.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759075AbZEGPvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 11:51:25 -0400
+X-Greylist: delayed 1360 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 May 2009 11:51:25 EDT
+Date: Thu, 7 May 2009 09:28:41 -0600 (MDT)
+From: Kenneth Crudup <kenny@panix.com>
+cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net,
+       linux-kernel@vger.kernel.org
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+In-Reply-To: <20090507120948.GA1531@ucw.cz>
+Message-ID: <Pine.LNX.4.64.0905070925500.8967@hp9800.localdomain>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+ <20090507120948.GA1531@ucw.cz>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009, H. Peter Anvin wrote:
 
-> Amen.  Also, "using HZ as a unit of measurement must die, too."
+On Thu, 7 May 2009, Pavel Machek wrote:
 
-Dont think that is a problem if we had a convention of seeing 1 HZ as an
-interval of 1 ms or so.
+> Given that distros ship uswsusp already... is that really an advantage.
 
+Uswsusp has no compression. A suspend-to-disk that can take up to 5
+minutes in uswsusp takes 20 seconds with TuxOnIce. Uswsusp has no built-
+in hooks that allow me to run commands and set options during the suspend
+and resume process.
 
+	-Kenny
 
-
+-- 
+Kenneth R. Crudup  Sr. SW Engineer, Scott County Consulting, Los Angeles
+O: 3630 S. Sepulveda Blvd. #138, L.A., CA 90034-6809      (888) 454-8181
