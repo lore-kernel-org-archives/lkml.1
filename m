@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762285AbZEHANX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760349AbZEHANk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762285AbZEHANX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757185AbZEHAKB
+	id S1760349AbZEHANk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755349AbZEHAKE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:01 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52709
+	Thu, 7 May 2009 20:10:04 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52703
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754095AbZEHAJz (ORCPT
+	with ESMTP id S1753391AbZEHAJz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 20:09:55 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -15,45 +15,60 @@ To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Alex Nixon <alex.nixon@citrix.com>,
+       Jeremy Fitzhardinge <jeremy@f9-builder (none)>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 01/11] xen: Don't disable the I/O space
-Date: Thu,  7 May 2009 14:45:27 -0700
-Message-Id: <1241732737-7669-2-git-send-email-jeremy@goop.org>
+Subject: [PATCH 05/18] x86/io_apic: add get_nr_irqs_gsi()
+Date: Thu,  7 May 2009 14:14:30 -0700
+Message-Id: <1241730883-4917-6-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241732737-7669-1-git-send-email-jeremy@goop.org>
-References: <1241732737-7669-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241730883-4917-1-git-send-email-jeremy@goop.org>
+References: <1241730883-4917-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alex Nixon <alex.nixon@citrix.com>
+From: Jeremy Fitzhardinge <jeremy@f9-builder.(none)>
 
-Impact: prep for pcifront
+Impact: new interface to get max GSI
 
-If a guest domain wants to access PCI devices through the frontend
-driver (coming later in the patch series), it will need access to the
-I/O space.
+Add get_nr_irqs_gsi() to return nr_irqs_gsi.  Xen will use this to
+determine how many irqs it needs to reserve for hardware irqs.
 
-Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
 ---
- arch/x86/xen/setup.c |    3 ---
- 1 files changed, 0 insertions(+), 3 deletions(-)
+ arch/x86/include/asm/io_apic.h |    1 +
+ arch/x86/kernel/apic/io_apic.c |    5 +++++
+ 2 files changed, 6 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
-index 175396c..5f1b88c 100644
---- a/arch/x86/xen/setup.c
-+++ b/arch/x86/xen/setup.c
-@@ -230,8 +230,5 @@ void __init xen_arch_setup(void)
+diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
+index 894ffb8..2dbc1e9 100644
+--- a/arch/x86/include/asm/io_apic.h
++++ b/arch/x86/include/asm/io_apic.h
+@@ -172,6 +172,7 @@ extern void reinit_intr_remapped_IO_APIC(int intr_remapping,
+ #endif
  
- 	pm_idle = xen_idle;
+ extern void probe_nr_irqs_gsi(void);
++extern int get_nr_irqs_gsi(void);
  
--	if (!xen_initial_domain())
--		paravirt_disable_iospace();
--
- 	fiddle_vdso();
+ extern int setup_ioapic_entry(int apic, int irq,
+ 			      struct IO_APIC_route_entry *entry,
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index c8240f7..5a6a29a 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3894,6 +3894,11 @@ void __init probe_nr_irqs_gsi(void)
+ 	printk(KERN_DEBUG "nr_irqs_gsi: %d\n", nr_irqs_gsi);
  }
+ 
++int get_nr_irqs_gsi(void)
++{
++	return nr_irqs_gsi;
++}
++
+ #ifdef CONFIG_SPARSE_IRQ
+ int __init arch_probe_nr_irqs(void)
+ {
 -- 
 1.6.0.6
 
