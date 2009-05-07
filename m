@@ -1,56 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761155AbZEGLdn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761502AbZEGLjn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761155AbZEGLdn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 07:33:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbZEGLdd
+	id S1761502AbZEGLjn (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 07:39:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754085AbZEGLjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 07:33:33 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59394 "EHLO mx2.redhat.com"
+	Thu, 7 May 2009 07:39:33 -0400
+Received: from tundra.namei.org ([65.99.196.166]:44611 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751837AbZEGLdc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 07:33:32 -0400
-Date: Thu, 7 May 2009 13:31:20 +0200
-From: Andrea Arcangeli <aarcange@redhat.com>
-To: Chris Wright <chrisw@redhat.com>
-Cc: Hugh Dickins <hugh@veritas.com>, Izik Eidus <ieidus@redhat.com>,
-       Rik van Riel <riel@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk,
-       device@lanana.org, linux-mm@kvack.org, nickpiggin@yahoo.com.au
-Subject: Re: [PATCH 3/6] ksm: change the KSM_REMOVE_MEMORY_REGION ioctl.
-Message-ID: <20090507113120.GH16078@random.random>
-References: <1241475935-21162-2-git-send-email-ieidus@redhat.com> <1241475935-21162-3-git-send-email-ieidus@redhat.com> <1241475935-21162-4-git-send-email-ieidus@redhat.com> <4A00DF9B.1080501@redhat.com> <4A014C7B.9080702@redhat.com> <Pine.LNX.4.64.0905061110470.3519@blonde.anvils> <20090506133434.GX16078@random.random> <4A019719.7030504@redhat.com> <Pine.LNX.4.64.0905061739540.5934@blonde.anvils> <20090506164945.GD15712@x200.localdomain>
+	id S1753838AbZEGLjc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 07:39:32 -0400
+Date: Thu, 7 May 2009 21:37:01 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Ingo Molnar <mingo@elte.hu>
+cc: Chris Wright <chrisw@sous-sol.org>, Oleg Nesterov <oleg@redhat.com>,
+       Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ZenIV.linux.org.uk>,
+       linux-security-module@vger.kernel.org
+Subject: Re: security: rename ptrace_may_access => ptrace_access_check
+In-Reply-To: <20090507102015.GB8901@elte.hu>
+Message-ID: <alpine.LRH.2.00.0905072135580.29806@tundra.namei.org>
+References: <20090506235349.GC3756@redhat.com> <20090507002133.02D05FC39E@magilla.sf.frob.com> <20090507063606.GA15220@redhat.com> <20090507082027.GD12285@elte.hu> <20090507083102.GA20125@redhat.com> <20090507083851.GA19133@elte.hu> <20090507085742.GB3036@sequoia.sous-sol.org>
+ <20090507090459.GE19133@elte.hu> <20090507092009.GC3036@sequoia.sous-sol.org> <alpine.LRH.2.00.0905071951530.29219@tundra.namei.org> <20090507102015.GB8901@elte.hu>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090506164945.GD15712@x200.localdomain>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 09:49:45AM -0700, Chris Wright wrote:
-> I like merge.  For madvise() approach I had used:
+On Thu, 7 May 2009, Ingo Molnar wrote:
+
+> > Boot tested with SELinux.
 > 
-> +#define MADV_SHAREABLE 12              /* can share identical pages */
-> +#define MADV_UNSHAREABLE 13            /* can not share identical pages
-> 
-> But those are maybe better put as MADV_(UN)MERGEABLE (gets a bit confusing when
-> you talk of merging vmas ;-)
-> */
+> thanks! Below are the two patches i wrote and tested.
 
-What this thing does is to create shared pages by merging equal pages...
+Do you need these in your tree, or are they ok going into linux-next via 
+mine?
 
-While I don't care about the naming much myself, one problem I have is
-that I've been writing a KSM paper for linuxsymposium and I'd like to
-use a nomenclature that is in sync with how this stuff should be
-called on lkml, to avoid confusion.
 
-So should I change the simpler word KSM with "Memory Merging feature"
-all over the paper?
-
-In addition I consistently use the term "shared KSM pages" often,
-should I rename all those instances to "merged pages"? I used the word
-'merging' only when describing the operation KSM does when it creates
-shared pages, but never to name the generated pages themself.
-
-Thanks,
-Andrea
+-- 
+James Morris
+<jmorris@namei.org>
