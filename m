@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761095AbZEHAL7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761906AbZEHAMl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761095AbZEHAL7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:11:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbZEHAJ6
+	id S1761906AbZEHAMl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:12:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756502AbZEHAJ7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:09:58 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52703
+	Thu, 7 May 2009 20:09:59 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52705
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753641AbZEHAJy (ORCPT
+	with ESMTP id S1753723AbZEHAJy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 20:09:54 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -15,132 +15,88 @@ To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Alex Nixon <alex.nixon@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 03/11] Xen: Rename the balloon lock
-Date: Thu,  7 May 2009 14:45:29 -0700
-Message-Id: <1241732737-7669-4-git-send-email-jeremy@goop.org>
+Subject: [PATCH 17/18] xen/apic: checkpatch cleanups
+Date: Thu,  7 May 2009 14:14:42 -0700
+Message-Id: <1241730883-4917-18-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241732737-7669-1-git-send-email-jeremy@goop.org>
-References: <1241732737-7669-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241730883-4917-1-git-send-email-jeremy@goop.org>
+References: <1241730883-4917-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alex Nixon <alex.nixon@citrix.com>
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Impact: cleanup
+Clean up mostly whitespace issues.
 
-* xen_create_contiguous_region needs access to the balloon lock to
-  ensure memory doesn't change under its feet, so expose the balloon
-  lock
-* Change the name of the lock to xen_reservation_lock, to imply it's
-  now less-specific usage.
-
-Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/mmu.c             |    7 +++++++
- drivers/xen/balloon.c          |   15 ++++-----------
- include/xen/interface/memory.h |    8 ++++++++
- 3 files changed, 19 insertions(+), 11 deletions(-)
+ arch/x86/xen/apic.c  |    4 ++--
+ arch/x86/xen/pci.c   |    4 ++--
+ drivers/xen/events.c |    7 ++++---
+ 3 files changed, 8 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index d673b03..218cf79 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -67,6 +67,13 @@
- 
- #define MMU_UPDATE_HISTO	30
- 
-+/*
-+ * Protects atomic reservation decrease/increase against concurrent increases.
-+ * Also protects non-atomic updates of current_pages and driver_pages, and
-+ * balloon lists.
-+ */
-+DEFINE_SPINLOCK(xen_reservation_lock);
-+
- #ifdef CONFIG_XEN_DEBUG_FS
- 
- static struct {
-diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
-index efa4b36..1e7984d 100644
---- a/drivers/xen/balloon.c
-+++ b/drivers/xen/balloon.c
-@@ -84,13 +84,6 @@ static struct sys_device balloon_sysdev;
- 
- static int register_balloon(struct sys_device *sysdev);
- 
--/*
-- * Protects atomic reservation decrease/increase against concurrent increases.
-- * Also protects non-atomic updates of current_pages and driver_pages, and
-- * balloon lists.
-- */
--static DEFINE_SPINLOCK(balloon_lock);
--
- static struct balloon_stats balloon_stats;
- 
- /* We increase/decrease in batches which fit in a page */
-@@ -209,7 +202,7 @@ static int increase_reservation(unsigned long nr_pages)
- 	if (nr_pages > ARRAY_SIZE(frame_list))
- 		nr_pages = ARRAY_SIZE(frame_list);
- 
--	spin_lock_irqsave(&balloon_lock, flags);
-+	spin_lock_irqsave(&xen_reservation_lock, flags);
- 
- 	page = balloon_first_page();
- 	for (i = 0; i < nr_pages; i++) {
-@@ -267,7 +260,7 @@ static int increase_reservation(unsigned long nr_pages)
- 	totalram_pages = balloon_stats.current_pages;
- 
-  out:
--	spin_unlock_irqrestore(&balloon_lock, flags);
-+	spin_unlock_irqrestore(&xen_reservation_lock, flags);
- 
- 	return 0;
+diff --git a/arch/x86/xen/apic.c b/arch/x86/xen/apic.c
+index 3f890c4..496f07d 100644
+--- a/arch/x86/xen/apic.c
++++ b/arch/x86/xen/apic.c
+@@ -53,8 +53,8 @@ void xen_init_apic(void)
+ #ifdef CONFIG_ACPI
+ 	/*
+ 	 * Pretend ACPI found our lapic even though we've disabled it,
+- 	 * to prevent MP tables from setting up lapics.
+- 	 */
++	 * to prevent MP tables from setting up lapics.
++	 */
+ 	acpi_lapic = 1;
+ #endif
  }
-@@ -312,7 +305,7 @@ static int decrease_reservation(unsigned long nr_pages)
- 	kmap_flush_unused();
- 	flush_tlb_all();
+diff --git a/arch/x86/xen/pci.c b/arch/x86/xen/pci.c
+index 69b475b..5b9ee11 100644
+--- a/arch/x86/xen/pci.c
++++ b/arch/x86/xen/pci.c
+@@ -66,13 +66,13 @@ void __init xen_setup_pirqs(void)
+ 	int irq;
  
--	spin_lock_irqsave(&balloon_lock, flags);
-+	spin_lock_irqsave(&xen_reservation_lock, flags);
+ 	if (0 == nr_ioapics) {
+-		for (irq=0; irq < NR_IRQS_LEGACY; irq++)
++		for (irq = 0; irq < NR_IRQS_LEGACY; irq++)
+ 			xen_allocate_pirq(irq, "xt-pic");
+ 		return;
+ 	}
  
- 	/* No more mappings: invalidate P2M and add to balloon. */
- 	for (i = 0; i < nr_pages; i++) {
-@@ -329,7 +322,7 @@ static int decrease_reservation(unsigned long nr_pages)
- 	balloon_stats.current_pages -= nr_pages;
- 	totalram_pages = balloon_stats.current_pages;
+ 	/* Pre-allocate legacy irqs */
+-	for (irq=0; irq < NR_IRQS_LEGACY; irq++) {
++	for (irq = 0; irq < NR_IRQS_LEGACY; irq++) {
+ 		int trigger, polarity;
  
--	spin_unlock_irqrestore(&balloon_lock, flags);
-+	spin_unlock_irqrestore(&xen_reservation_lock, flags);
+ 		if (acpi_get_override_irq(irq, &trigger, &polarity) == -1)
+diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+index b8fd514..febab09 100644
+--- a/drivers/xen/events.c
++++ b/drivers/xen/events.c
+@@ -514,7 +514,7 @@ static int find_irq_by_gsi(unsigned gsi)
+ {
+ 	int irq;
  
- 	return need_sleep;
- }
-diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
-index f548f7c..9df4bd0 100644
---- a/include/xen/interface/memory.h
-+++ b/include/xen/interface/memory.h
-@@ -9,6 +9,8 @@
- #ifndef __XEN_PUBLIC_MEMORY_H__
- #define __XEN_PUBLIC_MEMORY_H__
+-	for(irq = 0; irq < nr_irqs; irq++) {
++	for (irq = 0; irq < nr_irqs; irq++) {
+ 		struct irq_info *info = info_for_irq(irq);
  
-+#include <linux/spinlock.h>
-+
- /*
-  * Increase or decrease the specified domain's memory reservation. Returns a
-  * -ve errcode on failure, or the # extents successfully allocated or freed.
-@@ -184,4 +186,10 @@ DEFINE_GUEST_HANDLE_STRUCT(xen_memory_map);
-  */
- #define XENMEM_machine_memory_map   10
+ 		if (info == NULL || info->type != IRQT_PIRQ)
+@@ -1181,8 +1181,9 @@ void __init xen_init_IRQ(void)
+ 	cpu_evtchn_mask_p = alloc_bootmem(size);
+ 	irq_info = alloc_bootmem(nr_irqs * sizeof(*irq_info));
  
-+/*
-+ * Prevent the balloon driver from changing the memory reservation during a driver
-+ * critical region.
-+ */
-+extern spinlock_t xen_reservation_lock;
-+
- #endif /* __XEN_PUBLIC_MEMORY_H__ */
+-	evtchn_to_irq = alloc_bootmem(NR_EVENT_CHANNELS * sizeof(*evtchn_to_irq));
+-	for(i = 0; i < NR_EVENT_CHANNELS; i++)
++	evtchn_to_irq = alloc_bootmem(NR_EVENT_CHANNELS *
++				      sizeof(*evtchn_to_irq));
++	for (i = 0; i < NR_EVENT_CHANNELS; i++)
+ 		evtchn_to_irq[i] = -1;
+ 
+ 	init_evtchn_cpu_bindings();
 -- 
 1.6.0.6
 
