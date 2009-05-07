@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762209AbZEGCKo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755683AbZEGCP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762209AbZEGCKo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 22:10:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761933AbZEGCKX
+	id S1755683AbZEGCP7 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 22:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751604AbZEGCPu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 22:10:23 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:48838 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762108AbZEGCKV (ORCPT
+	Wed, 6 May 2009 22:15:50 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:33688 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750935AbZEGCPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 22:10:21 -0400
-Date: Wed, 6 May 2009 22:10:19 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: linux-kernel@vger.kernel.org
-cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/5] tracing/events: add rcu locking around trace event
- prints
-In-Reply-To: <20090416021928.467656424@goodmis.org>
-Message-ID: <alpine.DEB.2.00.0905062207370.24643@gandalf.stny.rr.com>
-References: <20090416021830.556671772@goodmis.org> <20090416021928.467656424@goodmis.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 6 May 2009 22:15:50 -0400
+Message-ID: <4A02446F.6090303@oracle.com>
+Date: Wed, 06 May 2009 19:16:15 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, samr <sam@ravnborg.org>
+Subject: [PATCH v2] menu: fix embedded menu presentation
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt007.oracle.com [141.146.116.16]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010208.4A024406.012F:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Somehow this patch got dropped. I believe Ted's work requires it.
+The STRIP_ASM_SYMS kconfig symbol mucks up the embedded menu
+because STRIP_ASM_SYMS is in the middle of the embedded menu items
+but it does not depend on EMBEDDED.  Move it to beyond the end
+of the embedded menu so that the menu is presented correctly.
 
-I'm not sure if we need to include rcupdate.h or not to use 
-rcu_read_lock. I think it may be fine to include it in ftrace.h. 
+or if STRIP_ASM_SYMS should depend on EMBEDDED, that can also
+be fixed.
 
-Jeremy, does this patch effect anything that you are doing?
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+---
+ init/Kconfig |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
--- Steve
-
-On Wed, 15 Apr 2009, Steven Rostedt wrote:
-
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> Some trace events need to have a way to print out data that his
-> allocated, but will be freed later. Using a function that can allocate
-> memory, and free it with call_rcu, can be useful.
-> 
-> This patch adds rcu locking around the print part of the TRACE_EVENT
-> macro to facilitate this.
-> 
-> Reported-by: Theodore Tso <tytso@mit.edu>
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> ---
->  include/trace/ftrace.h |    4 ++++
->  1 files changed, 4 insertions(+), 0 deletions(-)
-> 
-> diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
-> index 60c5323..6fb06bd 100644
-> --- a/include/trace/ftrace.h
-> +++ b/include/trace/ftrace.h
-> @@ -62,7 +62,9 @@
->   *
->   *	field = (typeof(field))entry;
->   *
-> + *	rcu_read_lock();
->   *	ret = trace_seq_printf(s, <TP_printk> "\n");
-> + *	rcu_read_unlock();
->   *	if (!ret)
->   *		return TRACE_TYPE_PARTIAL_LINE;
->   *
-> @@ -99,7 +101,9 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
->  									\
->  	field = (typeof(field))entry;					\
->  									\
-> +	rcu_read_lock();						\
->  	ret = trace_seq_printf(s, #call ": " print);			\
-> +	rcu_read_unlock();						\
->  	if (!ret)							\
->  		return TRACE_TYPE_PARTIAL_LINE;				\
->  									\
-> -- 
-> 1.6.2.1
-> 
-> -- 
-> 
+--- linux-2.6.30-rc4-git3.orig/init/Kconfig
++++ linux-2.6.30-rc4-git3/init/Kconfig
+@@ -808,14 +808,6 @@ config KALLSYMS_EXTRA_PASS
+ 	   you wait for kallsyms to be fixed.
+ 
+ 
+-config STRIP_ASM_SYMS
+-	bool "Strip assembler-generated symbols during link"
+-	default n
+-	help
+-	  Strip internal assembler-generated symbols during a link (symbols
+-	  that look like '.Lxxx') so they don't pollute the output of
+-	  get_wchan() and suchlike.
+-
+ config HOTPLUG
+ 	bool "Support for hot-pluggable devices" if EMBEDDED
+ 	default y
+@@ -961,6 +953,14 @@ config SLUB_DEBUG
+ 	  SLUB sysfs support. /sys/slab will not exist and there will be
+ 	  no support for cache validation etc.
+ 
++config STRIP_ASM_SYMS
++	bool "Strip assembler-generated symbols during link"
++	default n
++	help
++	  Strip internal assembler-generated symbols during a link (symbols
++	  that look like '.Lxxx') so they don't pollute the output of
++	  get_wchan() and suchlike.
++
+ config COMPAT_BRK
+ 	bool "Disable heap randomization"
+ 	default y
