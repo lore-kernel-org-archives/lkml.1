@@ -1,59 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760889AbZEGRqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762352AbZEGRqf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760889AbZEGRqF (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 13:46:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZEGRpx
+	id S1762352AbZEGRqf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 13:46:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751845AbZEGRqZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 13:45:53 -0400
-Received: from casper.infradead.org ([85.118.1.10]:40395 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751123AbZEGRpw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 13:45:52 -0400
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <cl@linux.com>
-Cc: Alok Kataria <akataria@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.DEB.1.10.0905071318570.22107@qirst.com>
-References: <1241462661.412.8.camel@alok-dev1>  <4A00ADDE.9000908@zytor.com>
-	 <1241560625.8665.17.camel@alok-dev1>
-	 <alpine.DEB.1.10.0905071010170.24528@qirst.com>
-	 <1241716053.6311.1514.camel@laptop>
-	 <alpine.DEB.1.10.0905071318570.22107@qirst.com>
-Content-Type: text/plain
-Date: Thu, 07 May 2009 19:45:02 +0200
-Message-Id: <1241718302.6311.1573.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 7 May 2009 13:46:25 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:37670 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754005AbZEGRqY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 13:46:24 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: U Kuehn <ukuehn@acm.org>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Thu, 7 May 2009 19:45:42 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@tuxonice.net>,
+       linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net,
+       linux-kernel@vger.kernel.org
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <20090507120948.GA1531@ucw.cz> <4A03129A.90105@acm.org>
+In-Reply-To: <4A03129A.90105@acm.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905071945.45928.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-07 at 13:19 -0400, Christoph Lameter wrote:
-> On Thu, 7 May 2009, Peter Zijlstra wrote:
+On Thursday 07 May 2009, U Kuehn wrote:
+> Pavel Machek wrote:
+> >> To briefly summarise the advantages to merging TuxOnIce:
+> >>
+> >> - Support for multiple swap devices
+> >> - Support for non-swap (an ordinary file can be used)
+> >> - Uses cryptoapi (LZO support, more than 2x speed of uncompressed data!)
+> >> - Asynchronous I/O, readahead, multithreaded. Get the maximum throughput
+> >>   possible with your hardware.
+> >> - Userspace user interface that lets you abort hibernating and abort
+> >>   resuming, get nice progress display etc.
+> > 
+> > All these are either done by uswsusp already, or could be done w/o
+> > modifying kernel code.
+> > 
 > 
-> > The problem is that running the scheduler of off hrtimers is too
-> > expensive. We have the code, we tried it, people complained.
+> Given that tuxonice DOES work reliably with dm-crypt encrypted swap
+> partitions, does uswsusp offer this functionality? Looking into the docs
+> on the sourceforge site does not give any information about this point.
 > 
-> If you aggregate events into a single hrtimer event then it may work.
-> Wasnt that recently added?
+> Further, being someone with a crypto background, the userland suspend
+> helper does have some issues with the password/key handling:
+> 1) no support for keys containing a 0 byte. (cryptsetup can handle this)
+> 2) the rsa functionality seems to use the unsound practice to encrypt
+> the symmetric key directly without any padding (aka encoding in libgcrypt).
+> 
+> This is, unfortunately, something really fundamenta...
 
-No it won't, you want fairly decent involuntary preemption rate to keep
-the full service latency at a usable figure.
+I'm not sure you're totally correct, but anyway patches are welcome to improve
+it.
 
-The problem with scheduling a hrtimer along with tasks is that at high
-context switch rates the timer will never fire but you do pay the
-overhead of programming the hardware each time, something that can be
-about as expensive as the whole context switch itself.
+Also, as you can see from my previous message, I'm not a big fan of fighting
+over this once again.  Lets try to work together to do something productive
+instead, shall we?
 
-Although, I guess we could amortize that by not re-programming the timer
-when the existing timer is within a reasonable period (say 1ms) of the
-requested on.
-
-
-
+Best,
+Rafael
