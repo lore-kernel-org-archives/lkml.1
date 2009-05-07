@@ -1,61 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756068AbZEGJVk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760740AbZEGJWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756068AbZEGJVk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 05:21:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760703AbZEGJVN
+	id S1760740AbZEGJWg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 05:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbZEGJWZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 05:21:13 -0400
-Received: from sous-sol.org ([216.99.217.87]:60664 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760618AbZEGJVM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 05:21:12 -0400
-Date: Thu, 7 May 2009 02:20:09 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Chris Wright <chrisw@sous-sol.org>, Oleg Nesterov <oleg@redhat.com>,
-       Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [RFC PATCH 3/3a] ptrace: add _ptrace_may_access()
-Message-ID: <20090507092009.GC3036@sequoia.sous-sol.org>
-References: <20090505224729.GA965@redhat.com> <20090506080050.GF17457@elte.hu> <20090506235349.GC3756@redhat.com> <20090507002133.02D05FC39E@magilla.sf.frob.com> <20090507063606.GA15220@redhat.com> <20090507082027.GD12285@elte.hu> <20090507083102.GA20125@redhat.com> <20090507083851.GA19133@elte.hu> <20090507085742.GB3036@sequoia.sous-sol.org> <20090507090459.GE19133@elte.hu>
+	Thu, 7 May 2009 05:22:25 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40342 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752193AbZEGJWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 05:22:24 -0400
+Date: Thu, 7 May 2009 09:21:49 GMT
+From: tip-bot for Markus Metzger <markus.t.metzger@intel.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       markus.t.metzger@intel.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       markus.t.metzger@intel.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090403144549.794157000@intel.com>
+References: <20090403144549.794157000@intel.com>
+Subject: [tip:tracing/core] sched, hw-branch-tracer: add wait_task_context_switch() function to sched.h
+Message-ID: <tip-a26b89f05d194413c7238e0bea071054f6b5d3c8@git.kernel.org>
+Git-Commit-ID: a26b89f05d194413c7238e0bea071054f6b5d3c8
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090507090459.GE19133@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 07 May 2009 09:21:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Chris Wright <chrisw@sous-sol.org> wrote:
-> 
-> > * Ingo Molnar (mingo@elte.hu) wrote:
-> > > * Oleg Nesterov <oleg@redhat.com> wrote:
-> > > > Agreed, but what about security_operations->ptrace_may_access ?
-> > > > It has the same (bad) name, but returns the error code or 0 on 
-> > > > success.
-> > > 
-> > > Bad code should generally be fixed, or in exceptional circumstances 
-> > > it can tolerated if it's pre-existing bad code, but it should never 
-> > > be propagated. It has not spread _that_ widely yet, and is isolated 
-> > > to the security subsystem:
-> > 
-> > And the security hooks tend to all follow the 0 success -ve ERR on error.
-> 
-> I just sent a patch (see below) that renames them to 
-> ptrace_access_check().
-> 
-> They have no active connection to the core kernel 
-> ptrace_may_access() check in any case:
+Commit-ID:  a26b89f05d194413c7238e0bea071054f6b5d3c8
+Gitweb:     http://git.kernel.org/tip/a26b89f05d194413c7238e0bea071054f6b5d3c8
+Author:     Markus Metzger <markus.t.metzger@intel.com>
+AuthorDate: Fri, 3 Apr 2009 16:43:34 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 7 Apr 2009 13:36:12 +0200
 
-Not sure what you mean:
+sched, hw-branch-tracer: add wait_task_context_switch() function to sched.h
 
-ptrace_may_access
- __ptrace_may_access
-  security_ptrace_may_access
+Add a function to wait until some other task has been
+switched out at least once.
 
-Looks like your patch won't compile.
+This differs from wait_task_inactive() subtly, in that the
+latter will wait until the task has left the CPU.
 
+Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
+Cc: markus.t.metzger@gmail.com
+Cc: roland@redhat.com
+Cc: eranian@googlemail.com
+Cc: oleg@redhat.com
+Cc: juan.villacis@intel.com
+Cc: ak@linux.jf.intel.com
+LKML-Reference: <20090403144549.794157000@intel.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ include/linux/sched.h |    2 ++
+ kernel/sched.c        |   43 +++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 45 insertions(+), 0 deletions(-)
+
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index b94f354..a5b9a83 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1993,8 +1993,10 @@ extern void set_task_comm(struct task_struct *tsk, char *from);
+ extern char *get_task_comm(char *to, struct task_struct *tsk);
+ 
+ #ifdef CONFIG_SMP
++extern void wait_task_context_switch(struct task_struct *p);
+ extern unsigned long wait_task_inactive(struct task_struct *, long match_state);
+ #else
++static inline void wait_task_context_switch(struct task_struct *p) {}
+ static inline unsigned long wait_task_inactive(struct task_struct *p,
+ 					       long match_state)
+ {
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 6cc1fd5..f91bc81 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -2003,6 +2003,49 @@ migrate_task(struct task_struct *p, int dest_cpu, struct migration_req *req)
+ }
+ 
+ /*
++ * wait_task_context_switch -	wait for a thread to complete at least one
++ *				context switch.
++ *
++ * @p must not be current.
++ */
++void wait_task_context_switch(struct task_struct *p)
++{
++	unsigned long nvcsw, nivcsw, flags;
++	int running;
++	struct rq *rq;
++
++	nvcsw	= p->nvcsw;
++	nivcsw	= p->nivcsw;
++	for (;;) {
++		/*
++		 * The runqueue is assigned before the actual context
++		 * switch. We need to take the runqueue lock.
++		 *
++		 * We could check initially without the lock but it is
++		 * very likely that we need to take the lock in every
++		 * iteration.
++		 */
++		rq = task_rq_lock(p, &flags);
++		running = task_running(rq, p);
++		task_rq_unlock(rq, &flags);
++
++		if (likely(!running))
++			break;
++		/*
++		 * The switch count is incremented before the actual
++		 * context switch. We thus wait for two switches to be
++		 * sure at least one completed.
++		 */
++		if ((p->nvcsw - nvcsw) > 1)
++			break;
++		if ((p->nivcsw - nivcsw) > 1)
++			break;
++
++		cpu_relax();
++	}
++}
++
++/*
+  * wait_task_inactive - wait for a thread to unschedule.
+  *
+  * If @match_state is nonzero, it's the @p->state value just checked and
