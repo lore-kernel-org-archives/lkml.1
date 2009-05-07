@@ -1,50 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761959AbZEGRNe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762066AbZEGROq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761959AbZEGRNe (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 13:13:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756127AbZEGRNZ
+	id S1762066AbZEGROq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 13:14:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758651AbZEGROg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 13:13:25 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51420 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755523AbZEGRNY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 13:13:24 -0400
-Message-ID: <4A03164D.90203@redhat.com>
-Date: Thu, 07 May 2009 13:11:41 -0400
-From: Rik van Riel <riel@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
+	Thu, 7 May 2009 13:14:36 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:51570 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754919AbZEGROf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 13:14:35 -0400
+Subject: Re: [PATCH] x86: Reduce the default HZ value
+From: Peter Zijlstra <peterz@infradead.org>
 To: Christoph Lameter <cl@linux.com>
-CC: Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class
- citizen
-References: <20090430072057.GA4663@eskimo.com>  <20090430174536.d0f438dd.akpm@linux-foundation.org>  <20090430205936.0f8b29fc@riellaptop.surriel.com>  <20090430181340.6f07421d.akpm@linux-foundation.org>  <20090430215034.4748e615@riellaptop.surriel.com>  <20090430195439.e02edc26.akpm@linux-foundation.org>  <49FB01C1.6050204@redhat.com>  <20090501123541.7983a8ae.akpm@linux-foundation.org>  <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins>  <20090507121101.GB20934@localhost>  <alpine.DEB.1.10.0905070935530.24528@qirst.com>  <1241705702.11251.156.camel@twins>  <alpine.DEB.1.10.0905071016410.24528@qirst.com> <1241712000.18617.7.camel@lts-notebook> <alpine.DEB.1.10.0905071231090.10171@qirst.com>
-In-Reply-To: <alpine.DEB.1.10.0905071231090.10171@qirst.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Alok Kataria <akataria@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <1241716053.6311.1514.camel@laptop>
+References: <1241462661.412.8.camel@alok-dev1>  <4A00ADDE.9000908@zytor.com>
+	 <1241560625.8665.17.camel@alok-dev1>
+	 <alpine.DEB.1.10.0905071010170.24528@qirst.com>
+	 <1241716053.6311.1514.camel@laptop>
+Content-Type: text/plain
+Date: Thu, 07 May 2009 19:13:42 +0200
+Message-Id: <1241716422.6311.1524.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
+On Thu, 2009-05-07 at 19:09 +0200, Peter Zijlstra wrote:
+> On Thu, 2009-05-07 at 10:13 -0400, Christoph Lameter wrote:
+> > I think we need to reduce the general tick frequency to be as low as
+> > possible. With high resolution timers the tick frequency is just the
+> > frequency with which the timer interrupt disturbs a running application.
+> > 
+> > Are there any benefits remaining from frequent timer interrupts? I would
+> > think that 60 HZ would be sufficient.
+> > 
+> > It would be good if the kernel would be truly tickless. Scheduler events
+> > would be driven by the scheduling intervals and not the invokations of the
+> > scheduler softirq.
+> 
+> The only thing that's driven by the softirq is load-balancing, there's
+> way more to the scheduler-tick than kicking that thing awake every so
+> often.
+> 
+> The problem is that running the scheduler of off hrtimers is too
+> expensive. We have the code, we tried it, people complained.
 
-> We need some way to control this. If there would be a way to simply switch
-> off eviction of exec pages (via /proc/sys/vm/never_reclaim_exec_pages or
-> so) I'd use it.
+Therefore, decreasing the HZ value to say 50, we'd get a minimum
+involuntary preemption granularity of 20ms, something on the high end of
+barely usable.
 
-Nobody (except you) is proposing that we completely disable
-the eviction of executable pages.  I believe that your idea
-could easily lead to a denial of service attack, with a user
-creating a very large executable file and mmaping it.
 
-Giving executable pages some priority over other file cache
-pages is nowhere near as dangerous wrt. unexpected side effects
-and should work just as well.
