@@ -1,58 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760165AbZEGRiX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760507AbZEGRii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760165AbZEGRiX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 13:38:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751668AbZEGRiO
+	id S1760507AbZEGRii (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 13:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755972AbZEGRiU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 13:38:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:52342 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751123AbZEGRiO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 13:38:14 -0400
-Date: Thu, 7 May 2009 19:38:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/2] [GIT PULL] tracing/ring-buffer: updates to tip
-Message-ID: <20090507173801.GF10313@elte.hu>
-References: <20090507162221.413243886@goodmis.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507162221.413243886@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 7 May 2009 13:38:20 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38799 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760507AbZEGRiT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 13:38:19 -0400
+Subject: Re: [PATCH] x86: Reduce the default HZ value
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christoph Lameter <cl@linux.com>
+Cc: Alok Kataria <akataria@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.DEB.1.10.0905071317270.22107@qirst.com>
+References: <1241462661.412.8.camel@alok-dev1>  <4A00ADDE.9000908@zytor.com>
+	 <1241560625.8665.17.camel@alok-dev1>
+	 <alpine.DEB.1.10.0905071010170.24528@qirst.com>
+	 <1241716053.6311.1514.camel@laptop> <1241716422.6311.1524.camel@laptop>
+	 <alpine.DEB.1.10.0905071317270.22107@qirst.com>
+Content-Type: text/plain
+Date: Thu, 07 May 2009 19:37:29 +0200
+Message-Id: <1241717849.6311.1554.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 2009-05-07 at 13:18 -0400, Christoph Lameter wrote:
+> On Thu, 7 May 2009, Peter Zijlstra wrote:
+> 
+> > Therefore, decreasing the HZ value to say 50, we'd get a minimum
+> > involuntary preemption granularity of 20ms, something on the high end of
+> > barely usable.
+> 
+> But the schedule is activated when a process is being woken up. The main
+> use is for load balancing.
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+Somehow people like involuntary preemption to happen at slightly more
+than glacial pace as well.
 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Steven Rostedt (2):
->       ring-buffer: remove complex calculations in ring-buffer-test
->       tracing: append ":*" to internal setting of system events
-> 
-> ----
->  kernel/trace/ring_buffer_benchmark.c |   37 ++++++---------------------------
->  kernel/trace/trace_events.c          |    6 +++-
->  2 files changed, 11 insertions(+), 32 deletions(-)
 
-Pulled, thanks Steve!
 
-	Ingo
