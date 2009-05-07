@@ -1,55 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762479AbZEGSGt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbZEGSHo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762479AbZEGSGt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 14:06:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbZEGSGf
+	id S1756648AbZEGSHo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 14:07:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757157AbZEGSHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 14:06:35 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50617 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752278AbZEGSGd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 14:06:33 -0400
-Message-ID: <4A0322F1.2000905@redhat.com>
-Date: Thu, 07 May 2009 21:05:37 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Chris Wright <chrisw@sous-sol.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com>
-In-Reply-To: <4A031471.7000406@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Thu, 7 May 2009 14:07:34 -0400
+Received: from science.horizon.com ([192.35.100.1]:54038 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1755201AbZEGSHe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 14:07:34 -0400
+Date: 7 May 2009 14:07:32 -0400
+Message-ID: <20090507180732.27407.qmail@science.horizon.com>
+From: "George Spelvin" <linux@horizon.com>
+To: linux@horizon.com, ulrich.windl@rz.uni-regensburg.de
+Subject: Re: [RFC][PATCH] Adjust SHIFT_PLL to improve NTP convergence.
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, williams@redhat.com,
+       zippel@linux-m68k.org
+In-Reply-To: <4A02C2A7.4033.ED06D54@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> I completed the resurrection of the test and wrote up a little wiki on
-> the subject, which you can find here:
->
-> http://developer.novell.com/wiki/index.php/WhyHypercalls
->
-> Hopefully this answers Chris' "show me the numbers" and Anthony's "Why
-> reinvent the wheel?" questions.
->
-> I will include this information when I publish the updated v2 series
-> with the s/hypercall/dynhc changes.
->
-> Let me know if you have any questions.
->   
+> IMHO, the "value" of calibration during boot is dubious (unless you just
+> reboot a "hot" machine): Usually the machine is cold on reboot, and the
+> oscillators will drift a lot initially. Depending on your environment,
+> the temperatures inside your box may rise about 10°C or more within a
+> few minutes.
 
-Well, 420 ns is not to be sneezed at.
+> Maybe an experimental feature "recalibrate anytime (and as long as you'd
+> like)" would be interesting...
 
-What do you think of my mmio hypercall?  That will speed up all mmio to 
-be as fast as a hypercall, and then we can use ordinary mmio/pio writes 
-to trigger things.
+Well, a couple of points come to mind:
+- Rebooting hot is not all that unusual.  Less so that with Windows, but
+  some of us install test kernels from time to time. :-)
+- If you're calibrating the CPU against the PIT, they're often derived
+  via PLL from the same clock source, so the *ratio* is fixed, and thus
+  the calibration won't drift at all.
+- If there were some mechanism to make the divisor consistent across
+  boots, that would be helpful.  Imagine a file in /sys that I could
+  write with an absolute frequency at boot time as long as it was within
+  1000 ppm (0.1%) of the kernel's measurement.
 
--- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
-
+Thinking about it, the third option seems the most useful.  It's
+basically a cleaned-up tickadj.
