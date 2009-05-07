@@ -1,152 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757049AbZEGI1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760001AbZEGI2r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757049AbZEGI1y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 04:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZEGI1g
+	id S1760001AbZEGI2r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 04:28:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758124AbZEGI22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 04:27:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50035 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750981AbZEGI1f (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 04:27:35 -0400
-Date: Thu, 7 May 2009 10:27:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 3/7] ring-buffer: make moving the tail page a separate
-	function
-Message-ID: <20090507082717.GF12285@elte.hu>
-References: <20090507031335.815354104@goodmis.org> <20090507031434.018038090@goodmis.org>
+	Thu, 7 May 2009 04:28:28 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:57093 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1756106AbZEGI2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 04:28:25 -0400
+Message-ID: <4A029BE1.4090309@cn.fujitsu.com>
+Date: Thu, 07 May 2009 16:29:21 +0800
+From: Yang Hongyang <yanghy@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.17 (X11/20081009)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507031434.018038090@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] remove DMA_nBIT_MASK macro
+References: <20090507141114M.fujita.tomonori@lab.ntt.co.jp> <20090506223452.65e545d8.akpm@linux-foundation.org>
+In-Reply-To: <20090506223452.65e545d8.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Steven Rostedt <rostedt@goodmis.org> wrote:
-
-> From: Steven Rostedt <srostedt@redhat.com>
+Andrew Morton wrote:
+> On Thu, 7 May 2009 14:14:16 +0900 FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 > 
-> Ingo Molnar thought the code would be cleaner if we used a function call
-> instead of a goto for moving the tail page. After implementing this,
-> it seems that gcc still inlines the result and the output is pretty much
-> the same. Since this is considered a cleaner approach, might as well
-> implement it.
+>> We replaced all DMA_nBIT_MASK macros with DMA_BIT_MASK(n) but why do
+>> we still keep DMA_nBIT_MASK macros in include/linux/dma-mapping.h?
+>>
+>> As long as these macros exist, people use them. The current git has
+>> two users and linux-next have other users.
+>>
+>> Is it better to remove DMA_nBIT_MASK macros completely now?
 > 
-> [ Impact: code clean up ]
+> Yes, the plan is to remove them.
 > 
-> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> ---
->  kernel/trace/ring_buffer.c |   89 ++++++++++++++++++++++++--------------------
->  1 files changed, 49 insertions(+), 40 deletions(-)
+> Doing so will break lots and lots of out-of-tree drivers, causing
+> people some grief.  Is there any way in which we can cause their use to
+> cause __deprecated warnings for a couple of months, to give people a
+> chance to migrate?
 > 
-> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
-> index 03ed52b..3ae5ccf 100644
-> --- a/kernel/trace/ring_buffer.c
-> +++ b/kernel/trace/ring_buffer.c
-> @@ -1154,51 +1154,18 @@ static unsigned rb_calculate_event_length(unsigned length)
->  	return length;
->  }
->  
-> +
->  static struct ring_buffer_event *
-> -__rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
-> -		  unsigned type, unsigned long length, u64 *ts)
-> +rb_move_tail(struct ring_buffer_per_cpu *cpu_buffer,
-> +	     unsigned long length, unsigned long tail,
-> +	     struct buffer_page *commit_page,
-> +	     struct buffer_page *tail_page, u64 *ts)
->  {
-> -	struct buffer_page *tail_page, *head_page, *reader_page, *commit_page;
-> -	struct buffer_page *next_page;
-> -	unsigned long tail, write;
-> +	struct buffer_page *next_page, *head_page, *reader_page;
->  	struct ring_buffer *buffer = cpu_buffer->buffer;
->  	struct ring_buffer_event *event;
-> -	unsigned long flags;
->  	bool lock_taken = false;
-> -
-> -	commit_page = cpu_buffer->commit_page;
-> -	/* we just need to protect against interrupts */
-> -	barrier();
-> -	tail_page = cpu_buffer->tail_page;
-> -	write = local_add_return(length, &tail_page->write);
-> -	tail = write - length;
-> -
-> -	/* See if we shot pass the end of this buffer page */
-> -	if (write > BUF_PAGE_SIZE)
-> -		goto next_page;
-> -
-> -	/* We reserved something on the buffer */
-> -
-> -	if (RB_WARN_ON(cpu_buffer, write > BUF_PAGE_SIZE))
-> -		return NULL;
-> -
-> -	event = __rb_page_index(tail_page, tail);
-> -	rb_update_event(event, type, length);
-> -
-> -	/* The passed in type is zero for DATA */
-> -	if (likely(!type))
-> -		local_inc(&tail_page->entries);
-> -
-> -	/*
-> -	 * If this is a commit and the tail is zero, then update
-> -	 * this page's time stamp.
-> -	 */
-> -	if (!tail && rb_is_commit(cpu_buffer, event))
-> -		cpu_buffer->commit_page->page->time_stamp = *ts;
-> -
-> -	return event;
-> -
-> - next_page:
-> +	unsigned long flags;
->  
->  	next_page = tail_page;
->  
-> @@ -1318,6 +1285,48 @@ __rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
->  	return NULL;
->  }
->  
-> +static struct ring_buffer_event *
-> +__rb_reserve_next(struct ring_buffer_per_cpu *cpu_buffer,
-> +		  unsigned type, unsigned long length, u64 *ts)
-> +{
-> +	struct buffer_page *tail_page, *commit_page;
-> +	struct ring_buffer_event *event;
-> +	unsigned long tail, write;
-> +
-> +	commit_page = cpu_buffer->commit_page;
-> +	/* we just need to protect against interrupts */
-> +	barrier();
-> +	tail_page = cpu_buffer->tail_page;
-> +	write = local_add_return(length, &tail_page->write);
-> +	tail = write - length;
-> +
-> +	/* See if we shot pass the end of this buffer page */
-> +	if (write > BUF_PAGE_SIZE)
-> +		return rb_move_tail(cpu_buffer, length, tail,
-> +				    commit_page, tail_page, ts);
+> 
 
-Nice! The __rb_reserve_next() fast-path logic became a lot clearer.
+Shall we use something like below to warn people?
+#define DMA_64BIT_MASK	DMA_BIT_MASK(64);(__deprecated warnings:use DMA_BIT_MASK(64) instead) ?
 
-The above branch might be unlikely(), right? With usual record sizes 
-of around 40 bytes, we'll have a 100 records for every page 
-overflow. That's i think within the reach of unlikely().
-
-Depends on how much of a mess GCC makes of it though.
-
-	Ingo
+-- 
+Regards
+Yang Hongyang
