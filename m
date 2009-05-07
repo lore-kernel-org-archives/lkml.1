@@ -1,57 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762129AbZEGMKt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762171AbZEGML5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762129AbZEGMKt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 08:10:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761277AbZEGMKc
+	id S1762171AbZEGML5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 08:11:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755257AbZEGMLr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 08:10:32 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:35979 "EHLO ogre.sisk.pl"
+	Thu, 7 May 2009 08:11:47 -0400
+Received: from mga14.intel.com ([143.182.124.37]:7248 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761156AbZEGMKc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 08:10:32 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: nigel@tuxonice.net
-Subject: Re: [RFC][PATCH 1/5] PM/Freezer: Disable OOM killer when tasks are frozen
-Date: Thu, 7 May 2009 14:10:37 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
-References: <200905070040.08561.rjw@sisk.pl> <200905070041.04787.rjw@sisk.pl> <1241650843.19600.124.camel@nigel-laptop>
-In-Reply-To: <1241650843.19600.124.camel@nigel-laptop>
+	id S1755231AbZEGMLq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 08:11:46 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,310,1239001200"; 
+   d="scan'208";a="140196690"
+Date: Thu, 7 May 2009 20:11:01 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: [PATCH -mm] vmscan: make mapped executable pages the first class
+	citizen
+Message-ID: <20090507121101.GB20934@localhost>
+References: <20090430072057.GA4663@eskimo.com> <20090430174536.d0f438dd.akpm@linux-foundation.org> <20090430205936.0f8b29fc@riellaptop.surriel.com> <20090430181340.6f07421d.akpm@linux-foundation.org> <20090430215034.4748e615@riellaptop.surriel.com> <20090430195439.e02edc26.akpm@linux-foundation.org> <49FB01C1.6050204@redhat.com> <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905071410.37812.rjw@sisk.pl>
+In-Reply-To: <1241432635.7620.4732.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 May 2009, Nigel Cunningham wrote:
-> Hi.
+Introduce AS_EXEC to mark executables and their linked libraries, and to
+protect their referenced active pages from being deactivated.
 
-Hi,
+CC: Elladan <elladan@eskimo.com>
+CC: Nick Piggin <npiggin@suse.de>
+CC: Johannes Weiner <hannes@cmpxchg.org>
+CC: Christoph Lameter <cl@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Acked-by: Peter Zijlstra <peterz@infradead.org>
+Acked-by: Rik van Riel <riel@redhat.com>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ include/linux/pagemap.h |    1 +
+ mm/mmap.c               |    2 ++
+ mm/nommu.c              |    2 ++
+ mm/vmscan.c             |   35 +++++++++++++++++++++++++++++++++--
+ 4 files changed, 38 insertions(+), 2 deletions(-)
 
-> On Thu, 2009-05-07 at 00:41 +0200, Rafael J. Wysocki wrote:
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > The OOM killer is not really going to work while tasks are frozen, so
-> > we can just give up calling it in that case.
-> > 
-> > This will allow us to safely use memory allocations for decreasing
-> > the number of saveable pages in the hibernation core code instead of
-> > using any artificial memory shriking mechanisms for this purpose.
-> 
-> Should we disable the warning that the nopage path gives if tasks are
-> frozen? I'm in two minds - if you get problems as a result, it might
-> help to diagnose them. On the other hand, you don't want tons of
-> warnings due to the hibernation code trying to allocate memory it can't
-> get. In TuxOnIce, I currently do all allocations with __GFP_NOWARN.
-
-Yes, I use __GFP_NOWARN in the next patches too. :-)
-
-Thanks,
-Rafael
+--- linux.orig/include/linux/pagemap.h
++++ linux/include/linux/pagemap.h
+@@ -25,6 +25,7 @@ enum mapping_flags {
+ #ifdef CONFIG_UNEVICTABLE_LRU
+ 	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
+ #endif
++	AS_EXEC		= __GFP_BITS_SHIFT + 4,	/* mapped PROT_EXEC somewhere */
+ };
+ 
+ static inline void mapping_set_error(struct address_space *mapping, int error)
+--- linux.orig/mm/mmap.c
++++ linux/mm/mmap.c
+@@ -1194,6 +1194,8 @@ munmap_back:
+ 			goto unmap_and_free_vma;
+ 		if (vm_flags & VM_EXECUTABLE)
+ 			added_exe_file_vma(mm);
++		if (vm_flags & VM_EXEC)
++			set_bit(AS_EXEC, &file->f_mapping->flags);
+ 	} else if (vm_flags & VM_SHARED) {
+ 		error = shmem_zero_setup(vma);
+ 		if (error)
+--- linux.orig/mm/nommu.c
++++ linux/mm/nommu.c
+@@ -1224,6 +1224,8 @@ unsigned long do_mmap_pgoff(struct file 
+ 			added_exe_file_vma(current->mm);
+ 			vma->vm_mm = current->mm;
+ 		}
++		if (vm_flags & VM_EXEC)
++			set_bit(AS_EXEC, &file->f_mapping->flags);
+ 	}
+ 
+ 	down_write(&nommu_region_sem);
+--- linux.orig/mm/vmscan.c
++++ linux/mm/vmscan.c
+@@ -1230,6 +1230,7 @@ static void shrink_active_list(unsigned 
+ 	unsigned long pgmoved;
+ 	unsigned long pgscanned;
+ 	LIST_HEAD(l_hold);	/* The pages which were snipped off */
++	LIST_HEAD(l_active);
+ 	LIST_HEAD(l_inactive);
+ 	struct page *page;
+ 	struct pagevec pvec;
+@@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned 
+ 
+ 		/* page_referenced clears PageReferenced */
+ 		if (page_mapping_inuse(page) &&
+-		    page_referenced(page, 0, sc->mem_cgroup))
++		    page_referenced(page, 0, sc->mem_cgroup)) {
++			struct address_space *mapping = page_mapping(page);
++
+ 			pgmoved++;
++			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
++				list_add(&page->lru, &l_active);
++				continue;
++			}
++		}
+ 
+ 		list_add(&page->lru, &l_inactive);
+ 	}
+@@ -1279,7 +1287,6 @@ static void shrink_active_list(unsigned 
+ 	 * Move the pages to the [file or anon] inactive list.
+ 	 */
+ 	pagevec_init(&pvec, 1);
+-	lru = LRU_BASE + file * LRU_FILE;
+ 
+ 	spin_lock_irq(&zone->lru_lock);
+ 	/*
+@@ -1291,6 +1298,7 @@ static void shrink_active_list(unsigned 
+ 	reclaim_stat->recent_rotated[!!file] += pgmoved;
+ 
+ 	pgmoved = 0;  /* count pages moved to inactive list */
++	lru = LRU_BASE + file * LRU_FILE;
+ 	while (!list_empty(&l_inactive)) {
+ 		page = lru_to_page(&l_inactive);
+ 		prefetchw_prev_lru_page(page, &l_inactive, flags);
+@@ -1313,6 +1321,29 @@ static void shrink_active_list(unsigned 
+ 	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+ 	__count_zone_vm_events(PGREFILL, zone, pgscanned);
+ 	__count_vm_events(PGDEACTIVATE, pgmoved);
++
++	pgmoved = 0;  /* count pages moved back to active list */
++	lru = LRU_ACTIVE + file * LRU_FILE;
++	while (!list_empty(&l_active)) {
++		page = lru_to_page(&l_active);
++		prefetchw_prev_lru_page(page, &l_active, flags);
++		VM_BUG_ON(PageLRU(page));
++		SetPageLRU(page);
++		VM_BUG_ON(!PageActive(page));
++
++		list_move(&page->lru, &zone->lru[lru].list);
++		mem_cgroup_add_lru_list(page, lru);
++		pgmoved++;
++		if (!pagevec_add(&pvec, page)) {
++			spin_unlock_irq(&zone->lru_lock);
++			if (buffer_heads_over_limit)
++				pagevec_strip(&pvec);
++			__pagevec_release(&pvec);
++			spin_lock_irq(&zone->lru_lock);
++		}
++	}
++	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
++
+ 	spin_unlock_irq(&zone->lru_lock);
+ 	if (buffer_heads_over_limit)
+ 		pagevec_strip(&pvec);
