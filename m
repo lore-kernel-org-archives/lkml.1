@@ -1,66 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760959AbZEGAXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756378AbZEGAas@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760959AbZEGAXs (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 20:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760188AbZEGAXg
+	id S1756378AbZEGAas (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 20:30:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbZEGAaj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 20:23:36 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:59377 "EHLO mx1.redhat.com"
+	Wed, 6 May 2009 20:30:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48023 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760003AbZEGAXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 20:23:36 -0400
+	id S1752248AbZEGAai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 20:30:38 -0400
+Date: Thu, 7 May 2009 02:24:55 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Alexey Dobriyan <adobriyan@gmail.com>, Roland McGrath <roland@redhat.com>,
+       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org
+Subject: Re: [PATCH] x86: ptrace debugreg checks rewrite
+Message-ID: <20090507002455.GD3756@redhat.com>
+References: <20090504001601.GL16631@x200.localdomain> <20090504002431.GA17556@x200.localdomain> <20090506095629.GC15323@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: Oleg Nesterov <oleg@redhat.com>
-X-Fcc: ~/Mail/linus
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org
-Cc: Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [RFC PATCH 3/3a] ptrace: add _ptrace_may_access()
-In-Reply-To: Oleg Nesterov's message of  Thursday, 7 May 2009 01:53:49 +0200 <20090506235349.GC3756@redhat.com>
-References: <20090505224729.GA965@redhat.com>
-	<20090506080050.GF17457@elte.hu>
-	<20090506235349.GC3756@redhat.com>
-X-Windows: garbage at your fingertips.
-Message-Id: <20090507002133.02D05FC39E@magilla.sf.frob.com>
-Date: Wed,  6 May 2009 17:21:32 -0700 (PDT)
+Content-Disposition: inline
+In-Reply-To: <20090506095629.GC15323@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I was going to cleanup this later. Because I think that
-> __ptrace_may_access() should die. It has only one caller, mm_for_maps().
+On 05/06, Ingo Molnar wrote:
+>
+> * Alexey Dobriyan <adobriyan@gmail.com> wrote:
+>
+> > On Mon, May 04, 2009 at 04:16:01AM +0400, Alexey Dobriyan wrote:
+> > > +static int ptrace_check_debugreg(int _32bit,
+> > > +				 unsigned long dr0, unsigned long dr1,
+> > > +				 unsigned long dr2, unsigned long dr3,
+> > > +				 unsigned long dr6, unsigned long dr7)
+> > > +{
+> > > +	/* Breakpoint type: 00: --x, 01: -w-, 10: undefined, 11: rw- */
+> > > +	unsigned int rw[4];
+> > > +	/* Breakpoint length: 00: 1 byte, 01: 2 bytes, 10: 8 bytes, 11: bytes */
+> > 								        4 bytes, of course
+>
+> Roland, Oleg, do you have any pending/planned changes in this area?
 
-CC'ing Al Viro, who wrote mm_for_maps() (and no one has touched it since,
-see commit 831830b).
+No, I don't (and couldn't since I don't understand this code ;)
 
-> I will re-check, but it looks a bit strange. More precisely, I just
-> can't understand it. Why we can't just do
-> 
-> 	struct mm_struct *mm_for_maps(struct task_struct *task)
-> 	{
-> 		struct mm_struct *mm = get_task_mm(task);
-> 
-> 		if (mm && mm != current->mm && !ptrace_may_access()) {
-> 			mmput(mm);
-> 			mm = NULL;
-> 		}
-> 
-> 		return mm;
-> 	}
+Oleg.
 
-That seems fine to me.  I suspect the old code just predated the PF_KTHREAD
-check in get_task_mm() and excluding the borrowed-mm window races was the
-only reason for using task_lock() that way.
-
-> ? We do not care if this task exits and clears ->mm right before
-> or after ptrace_may_access(), and this is possible eith the current
-> code too once it drops tasklist.
-
-I agree.
-
-
-Thanks,
-Roland
