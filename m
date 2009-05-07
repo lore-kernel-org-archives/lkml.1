@@ -1,45 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756747AbZEGM7p@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756383AbZEGNBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756747AbZEGM7p (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 08:59:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752542AbZEGM7e
+	id S1756383AbZEGNBU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 09:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754162AbZEGNBK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 08:59:34 -0400
-Received: from eazy.amigager.de ([213.239.192.238]:55837 "EHLO
-	eazy.amigager.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752153AbZEGM7e (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 08:59:34 -0400
-Date: Thu, 7 May 2009 14:59:33 +0200
-From: Tino Keitel <tino.keitel@gmx.de>
-To: linux-kernel@vger.kernel.org
-Subject: Re: 2.6.29 regression: left audio channel broken after resume from
-	suspend with Intel HDA
-Message-ID: <20090507125933.GA4100@mac.home>
-Mail-Followup-To: linux-kernel@vger.kernel.org
-References: <20090421073219.GA5866@dose.home.local> <s5hfxg2cv6m.wl%tiwai@suse.de> <20090421183936.GA21935@dose.home.local> <s5hws9a5ewr.wl%tiwai@suse.de> <20090424142113.GA18668@dose.home.local> <s5hskjy5d2t.wl%tiwai@suse.de> <20090428002309.GA29572@x61> <20090506222753.GA6728@mac.home> <20090507072352.GA6513@mac.home> <s5hy6t92nuz.wl%tiwai@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <s5hy6t92nuz.wl%tiwai@suse.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 7 May 2009 09:01:10 -0400
+Received: from sh.osrg.net ([192.16.179.4]:53986 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753238AbZEGNBJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 09:01:09 -0400
+Date: Thu, 7 May 2009 21:59:19 +0900
+To: joerg.roedel@amd.com
+Cc: dwmw2@infradead.org, fujita.tomonori@lab.ntt.co.jp,
+       linux-kernel@vger.kernel.org, iommu@lists.linux-foundation.org,
+       mingo@redhat.com, airlied@linux.ie
+Subject: Re: IOMMU and graphics cards
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090507121535.GH4059@amd.com>
+References: <20090507100114.GF4059@amd.com>
+	<1241691721.3531.73.camel@macbook.infradead.org>
+	<20090507121535.GH4059@amd.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090507215933K.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 07 May 2009 21:59:20 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 12:45:08 +0200, Takashi Iwai wrote:
+On Thu, 7 May 2009 14:15:35 +0200
+Joerg Roedel <joerg.roedel@amd.com> wrote:
 
-[...]
+> On Thu, May 07, 2009 at 11:22:01AM +0100, David Woodhouse wrote:
+> > On Thu, 2009-05-07 at 12:01 +0200, Joerg Roedel wrote:
+> > > > Looks like the DRM code uses the DMA API.
+> > > 
+> > > The proprietary drivers make problems so far. For the ATI one I am in
+> > > contact with the developers to try to fix it. But I can't do anything
+> > > about the other proprietary driver I am aware of :-(
+> > 
+> > I see no harm in "breaking" code which was already broken. If that's the
+> > only reason we're enabling the graphics workaround, let's turn it off.
+> 
+> Well, it is not that simple. Having no workaround at all will not result
+> in working proprietary drivers. More likely is that distros just disable
+> the IOMMU because their customers want to use these drivers for working
+> 3d acceleration.
 
-> Could you try the patch below instead?
+Have you already discussed this issue with distribution people?
 
-Thanks, I'll try the patch ASAP.
+I'm not sure if they would just disable the IOMMU. They want it for
+exotic virtualization features?
 
-> The problem is that BIOS on your machine sets this pin both for
-> input and output.  Since it's set as input, the driver respects
 
-In theory, the hardware jack can be used for input _and_ output. I
-don't know if this is connected to the issue, though.
-
-Regards,
-Tino
+> As I wrote in the original mail I think we should just make sure that
+> these drivers still work with an IOMMU without disabling device
+> isolation.
