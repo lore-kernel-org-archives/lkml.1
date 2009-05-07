@@ -1,61 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762527AbZEGMgN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbZEGMoi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762527AbZEGMgN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 08:36:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759399AbZEGMfo
+	id S1756345AbZEGMoi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 08:44:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbZEGMo3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 08:35:44 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:47650 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753683AbZEGMfm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 08:35:42 -0400
-Subject: [PATCH 2/2] x86: use sparse_memory_present_with_active_regions()
- on UMA
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: mingo@elte.hu
-Cc: linux-kernel@vger.kernel.org, x86@kernel.org
-Date: Thu, 07 May 2009 15:35:42 +0300
-Message-Id: <1241699742.17846.31.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Thu, 7 May 2009 08:44:29 -0400
+Received: from hera.cwi.nl ([192.16.191.8]:61777 "EHLO hera.cwi.nl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752557AbZEGMo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 08:44:28 -0400
+X-Greylist: delayed 1961 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 May 2009 08:44:28 EDT
+Date: Thu, 7 May 2009 14:10:17 +0200
+From: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
+To: linux-kernel@vger.kernel.org
+Subject: madvise failure
+Message-ID: <20090507121012.GA17048@ub>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+In an application something like
+	p = mmap(0, sz, PROT_READ, MAP_PRIVATE, fd, 0);
+	madvise(p, sz, MADV_SEQUENTIAL);
+is done for a small number of files, each with a size of a few GB.
+A single sequential pass is done over these files - essentially a merge.
 
-There's no need to use call memory_present() manually on UMA because
-initmem_init() sets up early_node_map by calling
-e820_register_active_regions().
+On an old machine the madvise is useful, and decreases total time.
+But on a more recent machine, with more memory, the madvise makes
+things worse. There, it seems better not to reveal to the kernel
+that the data will be read sequentially.
 
-[ Impact: cleanup ]
-
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- arch/x86/mm/init_64.c |    4 ----
- 1 files changed, 0 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index ccc0e6e..5ded102 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -639,11 +639,7 @@ void __init paging_init(void)
- 	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
- 	max_zone_pfns[ZONE_NORMAL] = max_pfn;
- 
--#ifdef CONFIG_NUMA
- 	sparse_memory_present_with_active_regions(MAX_NUMNODES);
--#else
--	memory_present(0, 0, max_pfn);
--#endif
- 	sparse_init();
- 	free_area_init_nodes(max_zone_pfns);
- }
--- 
-1.5.6.3
+Timing (six files of 4GB each, quadcore Intel Q9550, 16GB memory,
+kernel 2.6.27 [Ubuntu], two other processes active):
+with madvise, 7 runs: real time varying 9m10s - 37m29s,
+without madvise, 6 runs: real time fairly constant 5m45s - 5m54s.
 
 
+Andries
 
