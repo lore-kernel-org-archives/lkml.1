@@ -1,64 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756823AbZEGUZ2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZEGUZs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756823AbZEGUZ2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 16:25:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752187AbZEGUZQ
+	id S1755907AbZEGUZs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 16:25:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762013AbZEGUZ3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 16:25:16 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:43864 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751684AbZEGUZO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 16:25:14 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=uR72zBd00vZ+bc/g+HXmUOermRGEfD8mhsI6HEXtSKAcIZMWHKLhgR3FdwrbtyzeP
-	lfYuoC6K9B0vZZKG3BfAA==
-Date: Thu, 7 May 2009 13:25:06 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-cc: Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com,
-       linux-pm@lists.linux-foundation.org, pavel@ucw.cz,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-In-Reply-To: <200905072218.50782.rjw@sisk.pl>
-Message-ID: <alpine.DEB.2.00.0905071321440.646@chino.kir.corp.google.com>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072133.48917.rjw@sisk.pl> <20090507130202.34cbe37a.akpm@linux-foundation.org> <200905072218.50782.rjw@sisk.pl>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 7 May 2009 16:25:29 -0400
+Received: from sous-sol.org ([216.99.217.87]:60328 "EHLO sequoia.sous-sol.org"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761977AbZEGUZ1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 16:25:27 -0400
+Date: Thu, 7 May 2009 13:25:06 -0700
+From: Chris Wright <chrisw@sous-sol.org>
+To: Gregory Haskins <gregory.haskins@gmail.com>
+Cc: Chris Wright <chrisw@sous-sol.org>, Gregory Haskins <ghaskins@novell.com>,
+       Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+Message-ID: <20090507202506.GG3036@sequoia.sous-sol.org>
+References: <4A032390.6030100@gmail.com> <4A032472.4030106@redhat.com> <4A03259B.3050500@gmail.com> <4A032771.6050703@redhat.com> <4A032A74.2020809@novell.com> <4A032FDD.8020209@redhat.com> <20090507190751.GE3036@sequoia.sous-sol.org> <4A033281.8050002@novell.com> <20090507192145.GF3036@sequoia.sous-sol.org> <4A033685.7070802@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A033685.7070802@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009, Rafael J. Wysocki wrote:
+* Gregory Haskins (gregory.haskins@gmail.com) wrote:
+> What I am not clear on is how you would know to flag the address to
+> begin with.
 
-> OK, let's try with __GFP_NO_OOM_KILL first.  If there's too much disagreement,
-> I'll use the freezer-based approach instead.
+That's why I mentioned pv_io_ops->iomap() earlier.  Something I'd expect
+would get called on IORESOURCE_PVIO type.  This isn't really transparent
+though (only virtio devices basically), kind of like you're saying below.
+
+> Here's a thought: "PV" drivers can flag the IO (e.g. virtio-pci knows it
+> would never be a real device).  This means we route any io requests from
+> virtio-pci though pv_io_ops->mmio(), but not unflagged addresses.  This
+> is not as slick as boosting *everyones* mmio speed as Avi's original
+> idea would have, but it is perhaps a good tradeoff between the entirely
+> new namespace created by my original dynhc() proposal and leaving them
+> all PF based.
+>
+> This way, its just like using my dynhc() proposal except the mmio-addr
+> is the substitute address-token (instead of the dynhc-vector). 
+> Additionally, if you do not PV the kernel the IO_COND/pv_io_op is
+> ignored and it just slow-paths through the PF as it does today.  Dynhc()
+> would be dependent  on pv_ops.
 > 
-
-Third time I'm going to suggest this, and I'd like a response on why it's 
-not possible instead of being ignored.
-
-All of your tasks are in D state other than kthreads, right?  That means 
-they won't be in the oom killer (thus no zones are oom locked), so you can 
-easily do this
-
-	struct zone *z;
-	for_each_populated_zone(z)
-		zone_set_flag(z, ZONE_OOM_LOCKED);
-
-and then
-
-	for_each_populated_zone(z)
-		zone_clear_flag(z, ZONE_OOM_LOCKED);
-
-The serialization is done with trylocks so this will never invoke the oom 
-killer because all zones in the allocator's zonelist will be oom locked.
-
-Why does this not work for you?
+> Thoughts?
