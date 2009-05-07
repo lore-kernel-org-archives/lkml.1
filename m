@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756345AbZEGMoi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759531AbZEGMqT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756345AbZEGMoi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 08:44:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752606AbZEGMo3
+	id S1759531AbZEGMqT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 08:46:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZEGMqE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 08:44:29 -0400
-Received: from hera.cwi.nl ([192.16.191.8]:61777 "EHLO hera.cwi.nl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752557AbZEGMo2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 08:44:28 -0400
-X-Greylist: delayed 1961 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 May 2009 08:44:28 EDT
-Date: Thu, 7 May 2009 14:10:17 +0200
-From: "Andries E. Brouwer" <Andries.Brouwer@cwi.nl>
-To: linux-kernel@vger.kernel.org
-Subject: madvise failure
-Message-ID: <20090507121012.GA17048@ub>
+	Thu, 7 May 2009 08:46:04 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:38167 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752474AbZEGMqE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 08:46:04 -0400
+Date: Thu, 7 May 2009 14:01:30 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Rik van Riel <riel@redhat.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-mm@kvack.org, mingo@redhat.com, akpm@linux-foundation.org
+Subject: Re: [PATCH] x86: 46 bit PAE support
+Message-ID: <20090507120103.GA1497@ucw.cz>
+References: <20090505172856.6820db22@cuia.bos.redhat.com> <4A00ED83.1030700@zytor.com> <4A0180AB.20108@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <4A0180AB.20108@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In an application something like
-	p = mmap(0, sz, PROT_READ, MAP_PRIVATE, fd, 0);
-	madvise(p, sz, MADV_SEQUENTIAL);
-is done for a small number of files, each with a size of a few GB.
-A single sequential pass is done over these files - essentially a merge.
+On Wed 2009-05-06 08:20:59, Rik van Riel wrote:
+> H. Peter Anvin wrote:
+>> Rik van Riel wrote:
+>>> Testing: booted it on an x86-64 system with 6GB RAM.  Did you really think
+>>> I had access to a system with 64TB of RAM? :)
+>>
+>> No, but it would be good if we could test it under Qemu or KVM with an
+>> appropriately set up sparse memory map.
+>
+> I don't have a system with 1TB either, which is how much space
+> the memmap[] would take...
 
-On an old machine the madvise is useful, and decreases total time.
-But on a more recent machine, with more memory, the madvise makes
-things worse. There, it seems better not to reveal to the kernel
-that the data will be read sequentially.
-
-Timing (six files of 4GB each, quadcore Intel Q9550, 16GB memory,
-kernel 2.6.27 [Ubuntu], two other processes active):
-with madvise, 7 runs: real time varying 9m10s - 37m29s,
-without madvise, 6 runs: real time fairly constant 5m45s - 5m54s.
-
-
-Andries
-
+Do we really have 1 byte overhead per 64 bytes of RAM?
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
