@@ -1,77 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755783AbZEGHyh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755699AbZEGIBj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755783AbZEGHyh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 03:54:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752175AbZEGHy2
+	id S1755699AbZEGIBj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 04:01:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752975AbZEGIB3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 03:54:28 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:35114 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751024AbZEGHy1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 03:54:27 -0400
-Date: Thu, 7 May 2009 09:54:17 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: Re: [FOR REVIEW, PATCH 2/2] introduce "struct wait_opts" to
-	simplify do_wait() pathes
-Message-ID: <20090507075417.GA9836@elte.hu>
-References: <20090506053324.GA31988@redhat.com> <20090506072756.GA17457@elte.hu> <20090507064120.GB15220@redhat.com>
+	Thu, 7 May 2009 04:01:29 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:44480 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752217AbZEGIB2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 04:01:28 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=P9hY1gy9V71P4o+gsW8ZHu2QTENEskCMUgojNfS5D3b+yF9g44b7mZhHj26mNYShw
+	yrYvmRzHwoz+FQ/IQSWcg==
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507064120.GB15220@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090507070312.DCC5EFC39E@magilla.sf.frob.com>
+References: <20090228030226.C0D34FC3DA@magilla.sf.frob.com>
+	 <20090228030413.5B915FC3DA@magilla.sf.frob.com>
+	 <alpine.LFD.2.00.0902271932520.3111@localhost.localdomain>
+	 <alpine.LFD.2.00.0902271948570.3111@localhost.localdomain>
+	 <20090228072554.CFEA6FC3DA@magilla.sf.frob.com>
+	 <alpine.LFD.2.00.0902280916470.3111@localhost.localdomain>
+	 <904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com>
+	 <20090506212913.GC4861@elte.hu>
+	 <904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com>
+	 <20090507070312.DCC5EFC39E@magilla.sf.frob.com>
+Date: Thu, 7 May 2009 01:01:21 -0700
+Message-ID: <904b25810905070101u5abad0dagf8642a6950b1911@mail.gmail.com>
+Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
+From: =?UTF-8?B?TWFya3VzIEd1dHNjaGtlICjpoaflrZ/li6Qp?= 
+	<markus@google.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
+       linux-kernel@vger.kernel.org, stable@kernel.org,
+       linux-mips@linux-mips.org, sparclinux@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 7, 2009 at 00:03, Roland McGrath <roland@redhat.com> wrote:
+>
+> That is not a "ptrace problem" per se at all.  It's an intrinsic problem
+> with any method based on "generic" syscall interception, if the filtering
+> and enforcement decisions depend on examining user memory.
 
-* Oleg Nesterov <oleg@redhat.com> wrote:
+Yes, this is indeed the main problem that we are aware of. It can be
+avoided by suspending all threads during user memory inspection, but
+that's a horrible price to pay (also: see below for an alternative
+approach, that could in principle be adapted to use with ptrace)
 
-> On 05/06, Ingo Molnar wrote:
-> >
-> > One small nit with the definition above: when using vertical spacing
-> > (which really looks nice) we tend to put the asterix to the type
-> > itself, not to the variable. I.e.:
-> >
-> > 	enum pid_type		wtype;
-> > 	struct pid *		wpid;
-> > 	int			wflags;
-> >
-> > ( This is done to separate the field name from the type - the
-> >   pointer nature of the field is part of the type, not part of the
-> >   name. )
-> 
-> Indeed, I like this more too. But checkpatch.pl disagrees!
+> The only reason seccomp does not have this "reliability problem" is that
+> its filtering is trivial and depends only on registers (in fact, only on
+> one register, the syscall number).
 
-That's probably a checkpatch bug mistaking * for multiplication - 
-ignore checkpatch in that case and please report it to Andy 
-Withcroft as well as well.
+Simplicity is really the beauty of seccomp. It is very easy to verify
+that it does the right thing from a security point of view, because
+any attempt to call unsafe system calls results in the kernel
+terminating the program. This is much preferable over most ptrace
+solutions which is more difficult to audit for correctness.
 
-> > Regarding the patch itself: i guess we could do it as-is - but 
-> > if you think there's regression risks, a safer approach would be 
-> > to create 5-6 patches to build up all the structure parameters 
-> > one by one.
-> 
-> Oh, I tried to do it this way first. But I got lost and decided to 
-> make a single patch. Besides, if I make 6 patches I should try to 
-> test each one...
+The downside is that the sandbox'd code needs to delegate execution of
+most of its system calls to a monitor process. This is slow and rather
+awkward. Although due to the magic of clone(), (almost) all system
+calls can in fact be serialized, sent to the monitor process, have
+their arguments safely inspected, and then executed on behalf of the
+sandbox'd process. Details are tedious but we believe they are
+solvable with current kernel APIs.
 
-One way to do it is to build-test them on a common config (say 
-64-bit defconfig), and then boot test the final result. That makes 
-it fully bisectable in 90% of the cases.
+The other issue is performance. For system calls that are known to be
+safe, we would rather not pay the penalty of redirecting them. A
+kernel patch that made seccomp more efficient for these system calls
+would be very welcome, and we will post such a patch for discussion
+shortly.
 
-But ... it's really up to you. I'd be cautious out of box, as the 
-quirk density in exit.c is still enormous and it's very easy to have 
-some unintended side-effect.
+> If you want to do checks that depend on shared or volatile state, then
+> syscall interception is really not the proper mechanism for you.
 
-	Ingo
+We agree that syscall interception is a poor abstraction level for a
+sandbox. But in the short term, we need to work with the APIs that are
+available in today's kernels. And we believe that seccomp is one of
+the more promising API that are currently available to us.
+
+
+Markus
