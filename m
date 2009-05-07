@@ -1,127 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762512AbZEGN7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932112AbZEGOAR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762512AbZEGN7q (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 09:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760147AbZEGNvv
+	id S932112AbZEGOAR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 10:00:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761737AbZEGNzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 09:51:51 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:53934 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760115AbZEGNvt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 09:51:49 -0400
-Date: Thu, 7 May 2009 09:51:48 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Li Zefan <lizf@cn.fujitsu.com>, Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 4/7] ring-buffer: change test to be more latency
- friendly
-In-Reply-To: <20090507083147.GG12285@elte.hu>
-Message-ID: <alpine.DEB.2.00.0905070927510.32734@gandalf.stny.rr.com>
-References: <20090507031335.815354104@goodmis.org> <20090507031434.214633851@goodmis.org> <20090507083147.GG12285@elte.hu>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 7 May 2009 09:55:37 -0400
+Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:11170
+	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1760658AbZEGNzf convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 09:55:35 -0400
+X-BigFish: VPS-26(zz1432R98dR1805M936fJzz1202hzzz32i6bh62h)
+X-Spam-TCS-SCL: 1:0
+X-FB-SS: 5,
+X-WSS-ID: 0KJA1C7-01-R67-01
+Date: Thu, 7 May 2009 15:55:22 +0200
+From: Joerg Roedel <joerg.roedel@amd.com>
+To: Mark Langsdorf <mark.langsdorf@amd.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][KVM] Add support for Pause Filtering to AMD SVM
+Message-ID: <20090507135522.GJ4059@amd.com>
+References: <200905050909.58583.mark.langsdorf@amd.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <200905050909.58583.mark.langsdorf@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 8BIT
+X-OriginalArrivalTime: 07 May 2009 13:55:23.0214 (UTC) FILETIME=[77773EE0:01C9CF1B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Beside the small style problem the patch looks good. Please remove this
+empty line from the patch and resubmit. Please also add avi@redhat.com
+and kvm@vger.kernel.org to the CC list.
 
-On Thu, 7 May 2009, Ingo Molnar wrote:
+Joerg
 
+On Tue, May 05, 2009 at 09:09:58AM -0500, Mark Langsdorf wrote:
+> commit 6f15c833f56267baf5abdd0fbc90a81489573053
+> Author: Mark Langsdorf <mlangsdo@wshpnow.amd.com>
+> Date:   Mon May 4 15:02:38 2009 -0500
 > 
-> * Steven Rostedt <rostedt@goodmis.org> wrote:
+>     New AMD processors will support the Pause Filter Feature.
+>     This feature creates a new field in the VMCB called Pause
+>     Filter Count.  If Pause Filter Count is greater than 0 and
+>     ntercepting PAUSEs is enabled, the processor will increment
+>     an internal counter when a PAUSE instruction occurs instead
+>     of intercepting.  When the internal counter reaches the
+>     Pause Filter Count value, a PAUSE intercept will occur.
+>     
+>     This feature can be used to detect contended spinlocks,
+>     especially when the lock holding VCPU is not scheduled.
+>     Rescheduling another VCPU prevents the VCPU seeking the
+>     lock from wasting its quantum by spinning idly.
+>     
+>     Experimental results show that most spinlocks are held
+>     for less than 1000 PAUSE cycles or more than a few
+>     thousand.  Default the Pause Filter Counter to 3000 to
+>     detect the contended spinlocks.
+>     
+>     Processor support for this feature is indicated by a CPUID
+>     bit.
+>     
+>     On a 24 core system running 4 guests each with 16 VCPUs,
+>     this patch improved overall performance of each guest's
+>     32 job kernbench by approximately 1%.  Further performance
+>     improvement may be possible with a more sophisticated
+>     yield algorithm.
+>     
+>     -Mark Langsdorf
+>     Operating System Research Center
+>     AMD
+>     
+>     Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
 > 
-> > From: Steven Rostedt <srostedt@redhat.com>
-> > 
-> > The ring buffer benchmark/test runs a producer for 10 seconds. 
-> > This is done with preemption and interrupts enabled. But if the 
-> > kernel is not compiled with CONFIG_PREEMPT, it basically stops 
-> > everything but interrupts for 10 seconds.
-> > 
-> > Although this is just a test and is not for production, this attribute
-> > can be quite annoying. It can also spawn badness elsewhere.
-> 
-> Yep, this probably explains that lockdep splat i got in a networking 
-> driver. Some functionality (a workqueue iirc) of the driver got 
-> starved and a time-out timer triggered - where lockdep caught 
-> locking badness.
+> diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
+> index 85574b7..1fecb7e 100644
+> --- a/arch/x86/include/asm/svm.h
+> +++ b/arch/x86/include/asm/svm.h
+> @@ -57,7 +57,8 @@ struct __attribute__ ((__packed__)) vmcb_control_area {
+>  	u16 intercept_dr_write;
+>  	u32 intercept_exceptions;
+>  	u64 intercept;
+> -	u8 reserved_1[44];
+> +	u8 reserved_1[42];
+> +	u16 pause_filter_count;
+>  	u64 iopm_base_pa;
+>  	u64 msrpm_base_pa;
+>  	u64 tsc_offset;
+> diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+> index ef43a18..14dab13 100644
+> --- a/arch/x86/kvm/svm.c
+> +++ b/arch/x86/kvm/svm.c
+> @@ -45,6 +45,7 @@ MODULE_LICENSE("GPL");
+>  #define SVM_FEATURE_NPT  (1 << 0)
+>  #define SVM_FEATURE_LBRV (1 << 1)
+>  #define SVM_FEATURE_SVML (1 << 2)
+> +#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
+>  
+>  #define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
+>  
+> @@ -575,6 +576,12 @@ static void init_vmcb(struct vcpu_svm *svm)
+>  
+>  	svm->nested_vmcb = 0;
+>  	svm->vcpu.arch.hflags = HF_GIF_MASK;
+> +
+> +	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
+> +		control->pause_filter_count = 5000;
+> +		control->intercept |= (1ULL << INTERCEPT_PAUSE);
+> +	}
+> +
+>  }
+>  
+>  static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
+> @@ -2087,6 +2094,15 @@ static int interrupt_window_interception(struct vcpu_svm *svm,
+>  	return 1;
+>  }
+>  
+> +static int pause_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
+> +{
+> +	/* Simple yield */
+> +	vcpu_put(&svm->vcpu);
+> +	schedule();
+> +	vcpu_load(&svm->vcpu);
+> +	return 1;
+> +}
+> +
+>  static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+>  				      struct kvm_run *kvm_run) = {
+>  	[SVM_EXIT_READ_CR0]           		= emulate_on_interception,
+> @@ -2123,6 +2139,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+>  	[SVM_EXIT_CPUID]			= cpuid_interception,
+>  	[SVM_EXIT_IRET]                         = iret_interception,
+>  	[SVM_EXIT_INVD]                         = emulate_on_interception,
+> +	[SVM_EXIT_PAUSE]			= pause_interception,
+>  	[SVM_EXIT_HLT]				= halt_interception,
+>  	[SVM_EXIT_INVLPG]			= invlpg_interception,
+>  	[SVM_EXIT_INVLPGA]			= invalid_op_interception,
+> @@ -2227,6 +2244,7 @@ static void pre_svm_run(struct vcpu_svm *svm)
+>  	if (svm->vcpu.cpu != cpu ||
+>  	    svm->asid_generation != svm_data->asid_generation)
+>  		new_asid(svm, svm_data);
+> +
+>  }
 
-We probably need to notify the network people about that.
+Minor style nit, please move this empty line from the patch.
 
-> 
-> > This patch solves the issues by calling "cond_resched" when the 
-> > system is not compiled with CONFIG_PREEMPT. It also keeps track of 
-> > the time spent to call cond_resched such that it does not go 
-> > against the time calculations. That is, if the task schedules 
-> > away, the time scheduled out is removed from the test data. Note, 
-> > this only works for non PREEMPT because we do not know when the 
-> > task is scheduled out if we have PREEMPT enabled.
-> > 
-> > [ Impact: prevent test from stopping the world for 10 seconds ]
-> > 
-> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-> > ---
-> >  kernel/trace/ring_buffer_benchmark.c |   31 +++++++++++++++++++++++++++++++
-> >  1 files changed, 31 insertions(+), 0 deletions(-)
-> > 
-> > diff --git a/kernel/trace/ring_buffer_benchmark.c b/kernel/trace/ring_buffer_benchmark.c
-> > index dcd75e9..a26fc67 100644
-> > --- a/kernel/trace/ring_buffer_benchmark.c
-> > +++ b/kernel/trace/ring_buffer_benchmark.c
-> > @@ -185,6 +185,35 @@ static void ring_buffer_consumer(void)
-> >  	complete(&read_done);
-> >  }
-> >  
-> > +/*
-> > + * If we are a non preempt kernel, the 10 second run will
-> > + * stop everything while it runs. Instead, we will call cond_resched
-> > + * and also add any time that was lost by a rescedule.
-> > + */
-> > +#ifdef CONFIG_PREEMPT
-> > +static void sched_if_needed(struct timeval *start_tv, struct timeval *end_tv)
-> > +{
-> > +}
-> > +#else
-> > +static void sched_if_needed(struct timeval *start_tv, struct timeval *end_tv)
-> > +{
-> > +	struct timeval tv;
-> > +
-> > +	cond_resched();
-> > +	do_gettimeofday(&tv);
-> > +	if (tv.tv_usec < end_tv->tv_usec) {
-> > +		tv.tv_usec += 1000000;
-> > +		tv.tv_sec--;
-> > +	}
-> > +	start_tv->tv_sec += tv.tv_sec - end_tv->tv_sec;
-> > +	start_tv->tv_usec += tv.tv_usec - end_tv->tv_usec;
-> > +	if (start_tv->tv_usec > 1000000) {
-> > +		start_tv->tv_usec -= 1000000;
-> > +		start_tv->tv_sec++;
-> > +	}
-> > +}
-> > +#endif
-> 
-> This is _way_ too ugly. Why not just add a cond_resched() to the 
-> inner loop and be done with it? cond_resched() is conditional 
-> already, so it will only schedule 'if needed'.
-> 
-> If the test's timing gets skewed, what's the big deal? If its being 
-> preempted there will be impact _anyway_. (due to cache footprint 
-> elimination, etc.) People obviously should only rely on the numbers 
-> if the system is idle.
+>  
+>  static void svm_drop_interrupt_shadow(struct kvm_vcpu *vcpu)
+> diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+> index 2b73e19..e2b730d 100644
+> --- a/virt/kvm/kvm_main.c
+> +++ b/virt/kvm/kvm_main.c
+> @@ -710,6 +710,7 @@ void vcpu_load(struct kvm_vcpu *vcpu)
+>  	kvm_arch_vcpu_load(vcpu, cpu);
+>  	put_cpu();
+>  }
+> +EXPORT_SYMBOL_GPL(vcpu_load);
+>  
+>  void vcpu_put(struct kvm_vcpu *vcpu)
+>  {
+> @@ -719,6 +720,7 @@ void vcpu_put(struct kvm_vcpu *vcpu)
+>  	preempt_enable();
+>  	mutex_unlock(&vcpu->mutex);
+>  }
+> +EXPORT_SYMBOL_GPL(vcpu_put);
+>  
+>  static void ack_flush(void *_completed)
+>  {
 
-OK, I'll nuke it. I find that the writer is more affected by the reader. 
-With this code, I get the same timings as if I run it with reader 
-disabled.
-
-But it is more a way to see how a change may affect the buffering than to 
-really time the buffering itself. If that was the case, I would have added 
-preemption around the timings.
-
--- Steve
+-- 
+           | Advanced Micro Devices GmbH
+ Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
+ System    | 
+ Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+ Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+           | Registergericht München, HRB Nr. 43632
 
