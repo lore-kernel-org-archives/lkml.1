@@ -1,47 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762949AbZEGWBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932155AbZEGWDZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762949AbZEGWBb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 18:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762814AbZEGWBB
+	id S932155AbZEGWDZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 18:03:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754220AbZEGWDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 18:01:01 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60556 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762949AbZEGWBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 18:01:01 -0400
-Date: Fri, 8 May 2009 00:00:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: akpm@linux-foundation.org, greg@kroah.com, norsk5@yahoo.com,
-       tglx@linutronix.de, hpa@zytor.com, mchehab@redhat.com, aris@redhat.com,
-       edt@aei.ca, linux-kernel@vger.kernel.org,
-       Doug Thompson <dougthompson@xmission.com>
-Subject: Re: [PATCH 20/21] amd64_edac: add ECC reporting initializers
-Message-ID: <20090507220021.GC28770@elte.hu>
-References: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com> <1241704183-29223-21-git-send-email-borislav.petkov@amd.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241704183-29223-21-git-send-email-borislav.petkov@amd.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Thu, 7 May 2009 18:03:13 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:53514
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753753AbZEGWDM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 18:03:12 -0400
+Date: Thu, 07 May 2009 15:03:07 -0700 (PDT)
+Message-Id: <20090507.150307.195857213.davem@davemloft.net>
+To: shemminger@linux-foundation.org
+Cc: jpirko@redhat.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jgarzik@pobox.com, bridge@lists.linux-foundation.org, fubar@us.ibm.com,
+       bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
+Subject: Re: [PATCH net-next] net: bridge: use device address list instead
+ of dev_addr (repost)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090506122645.456d9af4@nehalam>
+References: <20090415082118.GC21342@psychotron.englab.brq.redhat.com>
+	<20090506144624.GI28637@psychotron.englab.brq.redhat.com>
+	<20090506122645.456d9af4@nehalam>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Stephen Hemminger <shemminger@linux-foundation.org>
+Date: Wed, 6 May 2009 12:26:45 -0700
 
-Ok, this #20 patch - and most of the other 19 have problems with 
-similar patterns as #21. Please apply those concepts to all patches. 
-Those issues are enough work cut out i think - i'll review your next 
-series in detail again.
+> Won't this all break spanning tree which expects 1:1 relationship
+> between address and port.
 
-Thanks,
-
-	Ingo
+Indeed, this could be a fundamental issue with this change.
