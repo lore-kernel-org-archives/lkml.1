@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762811AbZEGWBK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762949AbZEGWBb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762811AbZEGWBK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 18:01:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758770AbZEGWA4
+	id S1762949AbZEGWBb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 18:01:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762814AbZEGWBB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 18:00:56 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44769 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754502AbZEGWAz (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 18:00:55 -0400
-Date: Thu, 7 May 2009 14:57:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Harry Ciao <qingtao.cao@windriver.com>
-Cc: norsk5@yahoo.com, bluesmoke-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [v0 PATCH 1/1] Use dev_name() for AMD8111/AMD8131 EDAC driver
-Message-Id: <20090507145722.b2d89e11.akpm@linux-foundation.org>
-In-Reply-To: <1241660858-21105-2-git-send-email-qingtao.cao@windriver.com>
-References: <1241660858-21105-1-git-send-email-qingtao.cao@windriver.com>
-	<1241660858-21105-2-git-send-email-qingtao.cao@windriver.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 7 May 2009 18:01:01 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:60556 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762949AbZEGWBB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 18:01:01 -0400
+Date: Fri, 8 May 2009 00:00:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: akpm@linux-foundation.org, greg@kroah.com, norsk5@yahoo.com,
+       tglx@linutronix.de, hpa@zytor.com, mchehab@redhat.com, aris@redhat.com,
+       edt@aei.ca, linux-kernel@vger.kernel.org,
+       Doug Thompson <dougthompson@xmission.com>
+Subject: Re: [PATCH 20/21] amd64_edac: add ECC reporting initializers
+Message-ID: <20090507220021.GC28770@elte.hu>
+References: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com> <1241704183-29223-21-git-send-email-borislav.petkov@amd.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241704183-29223-21-git-send-email-borislav.petkov@amd.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu,  7 May 2009 09:47:38 +0800
-Harry Ciao <qingtao.cao@windriver.com> wrote:
 
-> The device structure no longer has bus_id member, dev_name() should
-> be used for AMD8111 & AMD8131 EDAC driver instead. Also, their Makefile 
-> entries are lost, add them.
-> 
-> Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
-> ---
->  drivers/edac/Makefile       |    2 ++
->  drivers/edac/amd8111_edac.c |    4 ++--
->  drivers/edac/amd8131_edac.c |    2 +-
->  3 files changed, 5 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/edac/Makefile b/drivers/edac/Makefile
-> index a5fdcf0..5907681 100644
-> --- a/drivers/edac/Makefile
-> +++ b/drivers/edac/Makefile
-> @@ -35,3 +35,5 @@ obj-$(CONFIG_EDAC_MPC85XX)		+= mpc85xx_edac.o
->  obj-$(CONFIG_EDAC_MV64X60)		+= mv64x60_edac.o
->  obj-$(CONFIG_EDAC_CELL)			+= cell_edac.o
->  obj-$(CONFIG_EDAC_PPC4XX)		+= ppc4xx_edac.o
-> +obj-$(CONFIG_EDAC_AMD8111)		+= amd8111_edac.o
-> +obj-$(CONFIG_EDAC_AMD8131)		+= amd8131_edac.o
+Ok, this #20 patch - and most of the other 19 have problems with 
+similar patterns as #21. Please apply those concepts to all patches. 
+Those issues are enough work cut out i think - i'll review your next 
+series in detail again.
 
-hm, I wonder how that happened.
+Thanks,
 
-The drivers break x86-64 allmodconfig:
-
-drivers/edac/amd8111_edac.c: In function 'amd8111_lpc_bridge_init':
-drivers/edac/amd8111_edac.c:260: error: implicit declaration of function '__do_inb'
-drivers/edac/amd8111_edac.c:274: error: implicit declaration of function '__do_outb'
-
+	Ingo
