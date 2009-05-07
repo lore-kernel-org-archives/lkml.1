@@ -1,121 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761959AbZEGPNY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762157AbZEGPNk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761959AbZEGPNY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 11:13:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755195AbZEGPNO
+	id S1762157AbZEGPNk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 11:13:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762024AbZEGPNV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 11:13:14 -0400
-Received: from cmpxchg.org ([85.214.51.133]:49061 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755116AbZEGPNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 11:13:13 -0400
-Date: Thu, 7 May 2009 17:10:39 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class citizen
-Message-ID: <20090507151039.GA2413@cmpxchg.org>
-References: <20090430174536.d0f438dd.akpm@linux-foundation.org> <20090430205936.0f8b29fc@riellaptop.surriel.com> <20090430181340.6f07421d.akpm@linux-foundation.org> <20090430215034.4748e615@riellaptop.surriel.com> <20090430195439.e02edc26.akpm@linux-foundation.org> <49FB01C1.6050204@redhat.com> <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost>
+	Thu, 7 May 2009 11:13:21 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:57390 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1761451AbZEGPNU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 11:13:20 -0400
+Date: Thu, 7 May 2009 16:12:32 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Christoph Lameter <cl@linux.com>
+Cc: akataria@vmware.com, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Reduce the default HZ value
+Message-ID: <20090507161232.6e33df34@lxorguk.ukuu.org.uk>
+In-Reply-To: <alpine.DEB.1.10.0905071004100.24528@qirst.com>
+References: <1241462661.412.8.camel@alok-dev1>
+	<4A00ADDE.9000908@zytor.com>
+	<20090505224417.0f00c2f0@lxorguk.ukuu.org.uk>
+	<1241561394.8665.31.camel@alok-dev1>
+	<20090505233339.542880f8@lxorguk.ukuu.org.uk>
+	<alpine.DEB.1.10.0905071004100.24528@qirst.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507121101.GB20934@localhost>
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 08:11:01PM +0800, Wu Fengguang wrote:
-> Introduce AS_EXEC to mark executables and their linked libraries, and to
-> protect their referenced active pages from being deactivated.
+On Thu, 7 May 2009 10:09:56 -0400 (EDT)
+Christoph Lameter <cl@linux.com> wrote:
+
+> On Tue, 5 May 2009, Alan Cox wrote:
 > 
-> CC: Elladan <elladan@eskimo.com>
-> CC: Nick Piggin <npiggin@suse.de>
-> CC: Johannes Weiner <hannes@cmpxchg.org>
-> CC: Christoph Lameter <cl@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Acked-by: Peter Zijlstra <peterz@infradead.org>
-> Acked-by: Rik van Riel <riel@redhat.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  include/linux/pagemap.h |    1 +
->  mm/mmap.c               |    2 ++
->  mm/nommu.c              |    2 ++
->  mm/vmscan.c             |   35 +++++++++++++++++++++++++++++++++--
->  4 files changed, 38 insertions(+), 2 deletions(-)
+> > HZ on a tickless system has no meaningful relationship to wakup rates -
+> > which are what I assume you actually care about.
 > 
-> --- linux.orig/include/linux/pagemap.h
-> +++ linux/include/linux/pagemap.h
-> @@ -25,6 +25,7 @@ enum mapping_flags {
->  #ifdef CONFIG_UNEVICTABLE_LRU
->  	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
->  #endif
-> +	AS_EXEC		= __GFP_BITS_SHIFT + 4,	/* mapped PROT_EXEC somewhere */
->  };
->  
->  static inline void mapping_set_error(struct address_space *mapping, int error)
-> --- linux.orig/mm/mmap.c
-> +++ linux/mm/mmap.c
-> @@ -1194,6 +1194,8 @@ munmap_back:
->  			goto unmap_and_free_vma;
->  		if (vm_flags & VM_EXECUTABLE)
->  			added_exe_file_vma(mm);
-> +		if (vm_flags & VM_EXEC)
-> +			set_bit(AS_EXEC, &file->f_mapping->flags);
->  	} else if (vm_flags & VM_SHARED) {
->  		error = shmem_zero_setup(vma);
->  		if (error)
-> --- linux.orig/mm/nommu.c
-> +++ linux/mm/nommu.c
-> @@ -1224,6 +1224,8 @@ unsigned long do_mmap_pgoff(struct file 
->  			added_exe_file_vma(current->mm);
->  			vma->vm_mm = current->mm;
->  		}
-> +		if (vm_flags & VM_EXEC)
-> +			set_bit(AS_EXEC, &file->f_mapping->flags);
->  	}
+> Linux is not tickless. It only switches off ticks if a processor is idle.
 
-I find it a bit ugly that it applies an attribute of the memory area
-(per mm) to the page cache mapping (shared).  Because this in turn
-means that the reference through a non-executable vma might get the
-pages rotated just because there is/was an executable mmap around.
+Hooray - finally someone admits the *real* problem here, and for power
+management too. Otherwise known as "referencing jiffies as a variable must
+die"
 
->  	down_write(&nommu_region_sem);
-> --- linux.orig/mm/vmscan.c
-> +++ linux/mm/vmscan.c
-> @@ -1230,6 +1230,7 @@ static void shrink_active_list(unsigned 
->  	unsigned long pgmoved;
->  	unsigned long pgscanned;
->  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
-> +	LIST_HEAD(l_active);
->  	LIST_HEAD(l_inactive);
->  	struct page *page;
->  	struct pagevec pvec;
-> @@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned 
->  
->  		/* page_referenced clears PageReferenced */
->  		if (page_mapping_inuse(page) &&
-> -		    page_referenced(page, 0, sc->mem_cgroup))
-> +		    page_referenced(page, 0, sc->mem_cgroup)) {
-> +			struct address_space *mapping = page_mapping(page);
-> +
->  			pgmoved++;
-> +			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
-> +				list_add(&page->lru, &l_active);
-> +				continue;
-> +			}
-> +		}
-
-Since we walk the VMAs in page_referenced anyway, wouldn't it be
-better to check if one of them is executable?  This would even work
-for executable anon pages.  After all, there are applications that cow
-executable mappings (sbcl and other language environments that use an
-executable, run-time modified core image come to mind).
-
-	Hannes
+Alan
