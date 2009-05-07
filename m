@@ -1,97 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762306AbZEGTFx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762765AbZEGTGr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762306AbZEGTFx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 15:05:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZEGTFm
+	id S1762765AbZEGTGr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 15:06:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754412AbZEGTGg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 15:05:42 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:12968 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752217AbZEGTFl (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 15:05:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type;
-        b=ognt9IwPHwdPCg8LwU1aBljTUreMXOylIr5aVULRMwDzz+qMC4r3QFXQ/+tZ7YIH6i
-         qd6/BKlV9Fix+VsYgXHqwQ8N1HcFsCfmM7EcUT+3+5JQtr5ZJcYnzR7kPHVNVUT4B5jO
-         vSzpIATZj7zbS0kvj16cWJ1uNN1qnuXIbhy0Q=
-Message-ID: <4A033101.8050106@gmail.com>
-Date: Thu, 07 May 2009 15:05:37 -0400
-From: Gregory Haskins <gregory.haskins@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Thu, 7 May 2009 15:06:36 -0400
+Received: from e6.ny.us.ibm.com ([32.97.182.146]:50895 "EHLO e6.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754220AbZEGTGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 15:06:36 -0400
+Date: Thu, 7 May 2009 12:06:32 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Christoph Lameter <cl@linux.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, Alok Kataria <akataria@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] x86: Reduce the default HZ value
+Message-ID: <20090507190632.GG6693@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <4A00ADDE.9000908@zytor.com> <1241560625.8665.17.camel@alok-dev1> <alpine.DEB.1.10.0905071010170.24528@qirst.com> <1241716053.6311.1514.camel@laptop> <1241716422.6311.1524.camel@laptop> <1241716718.6311.1531.camel@laptop> <20090507173608.GC6693@linux.vnet.ibm.com> <1241717904.6311.1558.camel@laptop> <20090507180112.GE6693@linux.vnet.ibm.com> <alpine.DEB.1.10.0905071404390.22107@qirst.com>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, Chris Wright <chrisw@sous-sol.org>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com> <4A0322F1.2000905@redhat.com> <4A032390.6030100@gmail.com> <4A032472.4030106@redhat.com> <4A03259B.3050500@gmail.com> <4A032771.6050703@redhat.com> <4A032A74.2020809@novell.com> <4A032FDD.8020209@redhat.com>
-In-Reply-To: <4A032FDD.8020209@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig8A92B64E4BBD4E63F5B93E75"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.1.10.0905071404390.22107@qirst.com>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig8A92B64E4BBD4E63F5B93E75
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Thu, May 07, 2009 at 02:12:15PM -0400, Christoph Lameter wrote:
+> To get back to the main point: I agree with Alok that the default HZ needs
+> to be as low as possible. The remaining justification is the load
+> balancing and possible context switching between multiple tasks contenting
+> for a processor.
+> 
+> Is it enough if this occurs 100 times per second?
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->> Avi Kivity wrote:
->> =20
->>> Gregory Haskins wrote:
->>>   =20
->>>> I guess technically mmio can just be a simple access of the page whi=
-ch
->>>> would be problematic to trap locally without a PF.  However it seems=
+I am sorry, I got into solution mode too quickly in my earlier posts.
 
->>>> that most mmio always passes through a ioread()/iowrite() call so th=
-is
->>>> is perhaps the hook point.  If we set the stake in the ground that
->>>> mmios
->>>> that go through some other mechanism like PFs can just hit the "slow=
+As long as you have enough memory for the callbacks, and as long
+as you don't mind things like netfilter changes taking longer, RCU
+doesn't much care what value HZ has.
 
->>>> path" are an acceptable casualty, I think we can make that work.
->>>>        =20
->>> That's my thinking exactly.
->>>    =20
->>
->> Cool,  I will code this up and submit it.  While Im at it, Ill run it
->> through the "nullio" ringer, too. ;)  It would be cool to see the
->> pv-mmio hit that 2.07us number.  I can't think of any reason why this
->> will not be the case.
->>  =20
->
-> Don't - it's broken.  It will also catch device assignment mmio and
-> hypercall them.
->
-Ah.  Crap.
+> If so then we should change the default in kernel/Kconfig.hz.
 
-Would you be conducive if I continue along with the dynhc() approach then=
-?
+But some workloads and users do care deeply about memory size and
+netfilter-change speed, of course.  So perhaps HPC workloads need
+a different default HZ value.
 
--Greg
-
-
---------------enig8A92B64E4BBD4E63F5B93E75
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkoDMQIACgkQP5K2CMvXmqFktQCfQUag7h9x1kKLhBAHsURnFFM/
-8gQAni1KrTBCauqMA8WN7btr21AtdF73
-=PtDi
------END PGP SIGNATURE-----
-
---------------enig8A92B64E4BBD4E63F5B93E75--
+						Thanx, Paul
