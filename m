@@ -1,76 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759482AbZEGBol@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761158AbZEGBsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759482AbZEGBol (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 21:44:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757485AbZEGBo2
+	id S1761158AbZEGBsT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 21:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754357AbZEGBsD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 21:44:28 -0400
-Received: from mx1.redhat.com ([66.187.233.31]:37900 "EHLO mx1.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759670AbZEGBo1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 21:44:27 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 6 May 2009 21:48:03 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:59714 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752375AbZEGBsB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 21:48:01 -0400
+Date: Thu, 07 May 2009 10:48:01 +0900 (JST)
+Message-Id: <20090507.104801.104058628.ryov@valinux.co.jp>
+To: righi.andrea@gmail.com
+Cc: vgoyal@redhat.com, akpm@linux-foundation.org, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
+       m-ikeda@ds.jp.nec.com, peterz@infradead.org
+Subject: Re: IO scheduler based IO Controller V2
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090506223512.GE4282@linux>
+References: <20090506213453.GC4282@linux>
+	<20090506215235.GJ8180@redhat.com>
+	<20090506223512.GE4282@linux>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-From: Roland McGrath <roland@redhat.com>
-To: James Morris <jmorris@namei.org>
-X-Fcc: ~/Mail/linus
-Cc: Chris Wright <chrisw@sous-sol.org>, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 3/3] ptrace: do not use task_lock() for attach
-In-Reply-To: James Morris's message of  Thursday, 7 May 2009 09:48:29 +1000 <alpine.LRH.2.00.0905070946480.22586@tundra.namei.org>
-References: <20090505224729.GA965@redhat.com>
-	<20090506224650.GZ3036@sequoia.sous-sol.org>
-	<20090506231332.GA3756@redhat.com>
-	<20090506232703.GA3036@sequoia.sous-sol.org>
-	<alpine.LRH.2.00.0905070946480.22586@tundra.namei.org>
-X-Shopping-List: (1) Indecent annoyers
-   (2) Critical onion caution
-   (3) Inelastic deception briefs
-   (4) Scandalous respectable interruptions
-   (5) Disorienting witch expulsions
-Message-Id: <20090507011716.BA522FC39E@magilla.sf.frob.com>
-Date: Wed,  6 May 2009 18:17:16 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> As far as I can tell, yes.
+From: Andrea Righi <righi.andrea@gmail.com>
+Subject: Re: IO scheduler based IO Controller V2
+Date: Thu, 7 May 2009 00:35:13 +0200
+
+> On Wed, May 06, 2009 at 05:52:35PM -0400, Vivek Goyal wrote:
+> > On Wed, May 06, 2009 at 11:34:54PM +0200, Andrea Righi wrote:
+> > > On Wed, May 06, 2009 at 04:32:28PM -0400, Vivek Goyal wrote:
+> > > > Hi Andrea and others,
+> > > > 
+> > > > I always had this doubt in mind that any kind of 2nd level controller will
+> > > > have no idea about underlying IO scheduler queues/semantics. So while it
+> > > > can implement a particular cgroup policy (max bw like io-throttle or
+> > > > proportional bw like dm-ioband) but there are high chances that it will
+> > > > break IO scheduler's semantics in one way or other.
+> > > > 
+> > > > I had already sent out the results for dm-ioband in a separate thread.
+> > > > 
+> > > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg07258.html
+> > > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg07573.html
+> > > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08177.html
+> > > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08345.html
+> > > > http://linux.derkeiler.com/Mailing-Lists/Kernel/2009-04/msg08355.html
+> > > > 
+> > > > Here are some basic results with io-throttle. Andrea, please let me know
+> > > > if you think this is procedural problem. Playing with io-throttle patches
+> > > > for the first time.
+> > > > 
+> > > > I took V16 of your patches and trying it out with 2.6.30-rc4 with CFQ
+> > > > scheduler.
+> > > > 
+> > > > I have got one SATA drive with one partition on it.
+> > > > 
+> > > > I am trying to create one cgroup and assignn 8MB/s limit to it and launch
+> > > > on RT prio 0 task and one BE prio 7 task and see how this 8MB/s is divided
+> > > > between these tasks. Following are the results.
+> > > > 
+> > > > Following is my test script.
+> > > > 
+> > > > *******************************************************************
+> > > > #!/bin/bash
+> > > > 
+> > > > mount /dev/sdb1 /mnt/sdb
+> > > > 
+> > > > mount -t cgroup -o blockio blockio /cgroup/iot/
+> > > > mkdir -p /cgroup/iot/test1 /cgroup/iot/test2
+> > > > 
+> > > > # Set bw limit of 8 MB/ps on sdb
+> > > > echo "/dev/sdb:$((8 * 1024 * 1024)):0:0" >
+> > > > /cgroup/iot/test1/blockio.bandwidth-max
+> > > > 
+> > > > sync
+> > > > echo 3 > /proc/sys/vm/drop_caches
+> > > > 
+> > > > echo $$ > /cgroup/iot/test1/tasks
+> > > > 
+> > > > # Launch a normal prio reader.
+> > > > ionice -c 2 -n 7 dd if=/mnt/sdb/zerofile1 of=/dev/zero &
+> > > > pid1=$!
+> > > > echo $pid1
+> > > > 
+> > > > # Launch an RT reader  
+> > > > ionice -c 1 -n 0 dd if=/mnt/sdb/zerofile2 of=/dev/zero &
+> > > > pid2=$!
+> > > > echo $pid2
+> > > > 
+> > > > wait $pid2
+> > > > echo "RT task finished"
+> > > > **********************************************************************
+> > > > 
+> > > > Test1
+> > > > =====
+> > > > Test two readers (one RT class and one BE class) and see how BW is
+> > > > allocated with-in cgroup
+> > > > 
+> > > > With io-throttle patches
+> > > > ------------------------
+> > > > - Two readers, first BE prio 7, second RT prio 0
+> > > > 
+> > > > 234179072 bytes (234 MB) copied, 55.8482 s, 4.2 MB/s
+> > > > 234179072 bytes (234 MB) copied, 55.8975 s, 4.2 MB/s
+> > > > RT task finished
+> > > > 
+> > > > Note: See, there is no difference in the performance of RT or BE task.
+> > > > Looks like these got throttled equally.
+> > > 
+> > > OK, this is coherent with the current io-throttle implementation. IO
+> > > requests are throttled without the concept of the ioprio model.
+> > > 
+> > > We could try to distribute the throttle using a function of each task's
+> > > ioprio, but ok, the obvious drawback is that it totally breaks the logic
+> > > used by the underlying layers.
+> > > 
+> > > BTW, I'm wondering, is it a very critical issue? I would say why not to
+> > > move the RT task to a different cgroup with unlimited BW? or limited BW
+> > > but with other tasks running at the same IO priority...
+> > 
+> > So one of hypothetical use case probably  could be following. Somebody
+> > is having a hosted server and customers are going to get there
+> > applications running in a particular cgroup with a limit on max bw.
+> > 
+> > 			root
+> > 		  /      |      \
+> > 	     cust1      cust2   cust3
+> > 	   (20 MB/s)  (40MB/s)  (30MB/s)
+> > 
+> > Now all three customers will run their own applications/virtual machines
+> > in their respective groups with upper limits. Will we say to these that
+> > all your tasks will be considered as same class and same prio level.
+> > 
+> > Assume cust1 is running a hypothetical application which creates multiple
+> > threads and assigns these threads different priorities based on its needs
+> > at run time. How would we handle this thing?
+> > 
+> > You can't collect all the RT tasks from all customers and move these to a
+> > single cgroup. Or ask customers to separate out their tasks based on
+> > priority level and give them multiple groups of different priority.
 > 
-> (Added David Howells and security folk to the cc -- please make sure at 
-> least that the LSM list is cc'd when changing code which affects LSM 
-> modules).
+> Clear.
+> 
+> Unfortunately, I think, with absolute BW limits at a certain point, if
+> we hit the limit, we need to block the IO request. That's the same
+> either, when we dispatch or submit the request. And the risk is to break
+> the logic of the IO priorities and fall in the classic priority
+> inversion problem.
+> 
+> The difference is that probably working at the CFQ level gives a better
+> control so we can handle these cases appropriately and avoid the
+> priority inversion problems.
+> 
+> Thanks,
+> -Andrea
 
-Good catch, Chris and Oleg!  This one is yet another dhowells blue plate
-special, deeply subtle change buried inside the ginormous commit d84f4f9. ;-}
-He even mentioned this one in the log:
-
- (a) selinux_setprocattr() no longer does its check for whether the
-	 current ptracer can access processes with the new SID inside the lock
-	 that covers getting the ptracer's SID.  Whilst this lock ensures that
-	 the check is done with the ptracer pinned, the result is only valid
-	 until the lock is released, so there's no point doing it inside the
-	 lock.
-
-Before d84f4f9, the extraction, avc check, and SID switch were all under
-task_lock().  What David's comment ignores is that "the lock that covers
-getting the ptracer's SID" (i.e. task_lock) is also the lock that excludes
-ptrace attempts, with their security checks against the (old or new) SID.
-i.e.:
-
-			if (!error)
-				tsec->sid = sid;
-			task_unlock(p);
-
-That ensured that ptrace_attach/ptrace_traceme would be seen to atomically
-check the bits that affect the SELinux ptrace controls and change the bits
-that affect "if (tracer)".
-     
-Indeed, cred_exec_mutex is the equivalent lock for that post-d84f4f9.
-
+If RT tasks in cust1 issue IOs intensively, are IOs issued from BE
+tasks running on cust2 and cust3 suppressed and cust1 can use whole
+bandwidth?
+I think that CFQ's class and priority should be preserved within a
+given bandwidth to each cgroup.
 
 Thanks,
-Roland
+Ryo Tsuruta
