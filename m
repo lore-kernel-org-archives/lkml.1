@@ -1,68 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755975AbZEGPXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759704AbZEGP0X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755975AbZEGPXq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 11:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754856AbZEGPXh
+	id S1759704AbZEGP0X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 11:26:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZEGP0J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 11:23:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50648 "EHLO mx2.redhat.com"
+	Thu, 7 May 2009 11:26:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50701 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754526AbZEGPXh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 11:23:37 -0400
-Message-ID: <4A02FC78.8070401@redhat.com>
-Date: Thu, 07 May 2009 11:21:28 -0400
-From: Rik van Riel <riel@redhat.com>
+	id S1754060AbZEGP0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 11:26:07 -0400
+Message-ID: <4A02FD8D.50002@redhat.com>
+Date: Thu, 07 May 2009 18:26:05 +0300
+From: Avi Kivity <avi@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Johannes Weiner <hannes@cmpxchg.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class
- citizen
-References: <20090430174536.d0f438dd.akpm@linux-foundation.org>	 <20090430205936.0f8b29fc@riellaptop.surriel.com>	 <20090430181340.6f07421d.akpm@linux-foundation.org>	 <20090430215034.4748e615@riellaptop.surriel.com>	 <20090430195439.e02edc26.akpm@linux-foundation.org>	 <49FB01C1.6050204@redhat.com>	 <20090501123541.7983a8ae.akpm@linux-foundation.org>	 <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins>	 <20090507121101.GB20934@localhost>  <20090507151039.GA2413@cmpxchg.org> <1241709466.11251.164.camel@twins>
-In-Reply-To: <1241709466.11251.164.camel@twins>
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Marcelo Tosatti <mtosatti@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>, viro@ZenIV.linux.org.uk,
+       kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via eventfd-notification
+ interface
+References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A0175F0.1090705@novell.com> <alpine.DEB.1.10.0905060818000.32007@makko.or.mcafeemobile.com> <4A01AEC1.8020201@novell.com> <alpine.DEB.1.10.0905061834080.32606@makko.or.mcafeemobile.com> <4A02AE65.3000800@redhat.com> <20090507134607.GA25311@amt.cnet> <4A02E9C5.7020704@novell.com> <4A02F160.7080907@redhat.com> <4A02F63B.60104@novell.com>
+In-Reply-To: <4A02F63B.60104@novell.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
-> On Thu, 2009-05-07 at 17:10 +0200, Johannes Weiner wrote:
-> 
->>> @@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned 
->>>  
->>>  		/* page_referenced clears PageReferenced */
->>>  		if (page_mapping_inuse(page) &&
->>> -		    page_referenced(page, 0, sc->mem_cgroup))
->>> +		    page_referenced(page, 0, sc->mem_cgroup)) {
->>> +			struct address_space *mapping = page_mapping(page);
->>> +
->>>  			pgmoved++;
->>> +			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
->>> +				list_add(&page->lru, &l_active);
->>> +				continue;
->>> +			}
->>> +		}
->> Since we walk the VMAs in page_referenced anyway, wouldn't it be
->> better to check if one of them is executable?  This would even work
->> for executable anon pages.  After all, there are applications that cow
->> executable mappings (sbcl and other language environments that use an
->> executable, run-time modified core image come to mind).
-> 
-> Hmm, like provide a vm_flags mask along to page_referenced() to only
-> account matching vmas... seems like a sensible idea.
+Gregory Haskins wrote:
 
-Not for anon pages, though, because JVMs could have way too many
-executable anonymous segments, which would make us run into the
-scalability problems again.
+  
 
-Lets leave this just to the file side of the LRUs, because that
-is where we have the streaming IO problem.
+>> This is my preferred option.  For a virtio-net-server in the kernel,
+>> we'd service its eventfd in qemu, raising and lowering the pci
+>> interrupt in the traditional way.
+>>
+>> But we'd still need to know when to lower the interrupt.  How?
+>>     
+>
+> IIUC, isn't that  usually device/subsystem specific, and out of scope of
+> the GSI delivery vehicle?  For instance, most devices I have seen with
+> level ints have a register in their device register namespace for acking
+> the int.  
+
+Yes it is.
+
+> As an aside, this is what causes some of the grief in dealing
+> with shared interrupts like KVM pass-through and/or threaded-isrs:  
+> There isn't a standardized way to ACK them.
+>   
+
+So we'd need a side channel to tell userspace to lower the irq.  Another 
+eventfd likely.
+
+Note we don't support device assignment for devices with shared interrupts.
+
+> You may also see some generalization of masking/acking in things like
+> the MSI-X table.  But again, this would be out of scope of the general
+> GSI delivery path IIUC.
+>
+> I understand that there is a feedback mechanism in the ioapic model for
+> calling back on acknowledgment of the interrupt.  But I am not sure what
+> is how the real hardware works normally, and therefore I am not
+> convinced that is something we need to feed all the way back (i.e. via
+> irqfd or whatever).  In the interest of full disclosure, its been a few
+> years since I studied the xAPIC docs, so I might be out to lunch on that
+> assertion. ;)
+>   
+
+Right, that ack thing is completely internal, used for catching up on 
+time drift, and for shutting down level triggered assigned interrupts.
+
+-- 
+error compiling committee.c: too many arguments to function
+
