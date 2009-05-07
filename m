@@ -1,90 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757547AbZEGGwc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755448AbZEGGyu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757547AbZEGGwc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 02:52:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755219AbZEGGvU
+	id S1755448AbZEGGyu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 02:54:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752078AbZEGGyk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 02:51:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36271 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755366AbZEGGvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 02:51:19 -0400
-Date: Thu, 7 May 2009 08:46:41 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
-       Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5] do_wait: simplify retval/tsk_result/notask_error mess
-Message-ID: <20090507064641.GA15864@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 7 May 2009 02:54:40 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:23990 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751318AbZEGGyj (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 02:54:39 -0400
+Date: Thu, 7 May 2009 08:54:18 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org,
+       Nicolas Pitre <nico@cam.org>, Wolfram Sang <w.sang@pengutronix.de>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: linux-next: manual merge of the i2c tree with the arm-current 
+ tree
+Message-ID: <20090507085418.3f5206a3@hyperion.delvare>
+In-Reply-To: <20090506190110.GB6897@flint.arm.linux.org.uk>
+References: <20090506131031.83f1b04d.sfr@canb.auug.org.au>
+	<20090506071547.GA29466@flint.arm.linux.org.uk>
+	<20090506092559.2d9e53cb@hyperion.delvare>
+	<20090506190110.GB6897@flint.arm.linux.org.uk>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now that we don't pass &retval down to other helpers we can simplify
-the code more.
+Hi Russell,
 
-- kill tsk_result, just use retval
+On Wed, 6 May 2009 20:01:10 +0100, Russell King wrote:
+> On Wed, May 06, 2009 at 09:25:59AM +0200, Jean Delvare wrote:
+> > On Wed, 6 May 2009 08:15:48 +0100, Russell King wrote:
+> > > Since defconfig updates are always going to create lots of noise, and
+> > > the files are normally out of date, the *only* sensible way to handle
+> > > updates is to have one tree dealing with them per architecture.
+> > > 
+> > > Spreading them across multiple trees and then expecting merges to sort
+> > > out the resulting mess is unreasonable; they just change far too much
+> > > when updates happen.  Moreover, defconfig updates should be in their
+> > > own separate commit and not combined with other changes.
+> > 
+> > I fail to see how you can handle configuration option renames
+> > gracefully with your proposed model.
+> 
+> That's not the point I'm making.  The point I'm making is about the
+> merge issues which is the BIG and I mean BIG as in 1000ft tall
+> letters BIG problem with scattering defconfig patches everywhere.
+> 
+> The reality of defconfigs is that they're normally months out of date
+> with respect to the current kernel, and are occasionally updated by
+> the platform maintainers on an occasional basis (as has happened with
+> Nicolas' change which your tree has clashed with.)
+> 
+> I've heard it argued that the only people who should ever touch defconfig
+> files are the platform maintainers themselves.  What I'm suggesting is
+> one step closer to sanity than that position - having the arch maintainer
+> responsible for dealing with all changes to those files, thereby providing
+> a centralised point for synchronising and co-ordinating all defconfig
+> updates.
+> 
+> If you think you have a better solution (no, throwing them into your own
+> I2C tree is NOT a solution - it's a cause of major problems) then please
+> state it.
 
-- add the "notask" label right after the main loop, and
-  s/got end/goto notask/ after the fastpath pid check.
+Thanks for the explanation, I understand your point. I was updating the
+defconfigs to make the maintainer's lives easier. If this has the
+opposite effect, I'll just stop doing it, that's less work for me.
 
-  This way we don't need to initialize retval before this
-  check and the code becomes a bit more clean, if this pid
-  has no attached tasks we should just skip the list search.
-
-Signed-off-by: Oleg Nesterov <oleg@redhat.com>
----
-
- kernel/exit.c |   20 ++++++++------------
- 1 file changed, 8 insertions(+), 12 deletions(-)
-
---- PTRACE/kernel/exit.c~3_RETVAL	2009-05-07 04:37:49.000000000 +0200
-+++ PTRACE/kernel/exit.c	2009-05-07 05:09:51.000000000 +0200
-@@ -1576,27 +1576,22 @@ repeat:
- 	 * might later match our criteria, even if we are not able to reap
- 	 * it yet.
- 	 */
--	retval = wo->notask_error = -ECHILD;
-+	wo->notask_error = -ECHILD;
- 	if ((wo->wo_type < PIDTYPE_MAX) &&
- 	   (!wo->wo_pid || hlist_empty(&wo->wo_pid->tasks[wo->wo_type])))
--		goto end;
-+		goto notask;
- 
- 	current->state = TASK_INTERRUPTIBLE;
- 	read_lock(&tasklist_lock);
- 	tsk = current;
- 	do {
--		int tsk_result = do_wait_thread(wo, tsk);
--
--		if (!tsk_result)
--			tsk_result = ptrace_do_wait(wo, tsk);
-+		retval = do_wait_thread(wo, tsk);
-+		if (retval)
-+			goto end;
- 
--		if (tsk_result) {
--			/*
--			 * tasklist_lock is unlocked and we have a final result.
--			 */
--			retval = tsk_result;
-+		retval = ptrace_do_wait(wo, tsk);
-+		if (retval)
- 			goto end;
--		}
- 
- 		if (wo->wo_flags & __WNOTHREAD)
- 			break;
-@@ -1605,6 +1600,7 @@ repeat:
- 	} while (tsk != current);
- 	read_unlock(&tasklist_lock);
- 
-+notask:
- 	retval = wo->notask_error;
- 	if (!retval && !(wo->wo_flags & WNOHANG)) {
- 		retval = -ERESTARTSYS;
-
+-- 
+Jean Delvare
