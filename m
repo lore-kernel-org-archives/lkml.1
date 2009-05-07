@@ -1,67 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbZEGIKA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759485AbZEGIKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbZEGIKA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 04:10:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZEGIJm
+	id S1759485AbZEGIKg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 04:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZEGIKM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 04:09:42 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:33421 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750954AbZEGIJk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 04:09:40 -0400
-Date: Thu, 7 May 2009 10:09:14 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Li Zefan <lizf@cn.fujitsu.com>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tzanussi@gmail.com, a.p.zijlstra@chello.nl, fweisbec@gmail.com,
-       rostedt@goodmis.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:tracing/core] tracing/events: fix concurrent access to
-	ftrace_events list
-Message-ID: <20090507080914.GA12285@elte.hu>
-References: <4A00F709.3080800@cn.fujitsu.com> <tip-20c8928abe70e204bd077ab6cfe23002d7788983@git.kernel.org> <4A028993.7020509@cn.fujitsu.com>
+	Thu, 7 May 2009 04:10:12 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:32453 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759286AbZEGIKK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 04:10:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:from:date:message-id:subject:to:cc:content-type
+         :content-transfer-encoding;
+        b=Y/aDOqz5QeLwk4Fb7lkpTAxUgiYWX0J3S2iSqL1/7JXUXjk1IiWic9VIxYfIUbM2ri
+         dwF7gBDTni5hfJWZoQEAKDYMMvPoh+cepp30cmGw1QuiJA+ii8qOevpT04uuH7qzv7oM
+         /ImKvK+inZkT3VO0g3FkVWRTKaWSgo9gYP4TU=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A028993.7020509@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Thu, 7 May 2009 01:09:50 -0700
+Message-ID: <43e72e890905070109m9c75ea3jc4eda264ba9aaa1@mail.gmail.com>
+Subject: [ANN] Linux wireless backports page and release for 2.6.30-rc4
+To: linux-wireless <linux-wireless@vger.kernel.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The stable kernel series Linux wireless backports was announced a
+couple of weeks ago [1]. These will keep on moving forward and to
+follow them you can subscribe to the respective new wiki page for this
+[2]. The latest release (just uploaded) is for 2.6.30-rc4:
 
-* Li Zefan <lizf@cn.fujitsu.com> wrote:
+http://www.orbit-lab.org/kernel/compat-wireless-2.6-stable/v2.6.30/compat-wireless-2.6.30-rc4.tar.bz2
 
-> tip-bot for Li Zefan wrote:
-> > Commit-ID:  20c8928abe70e204bd077ab6cfe23002d7788983
-> > Gitweb:     http://git.kernel.org/tip/20c8928abe70e204bd077ab6cfe23002d7788983
-> > Author:     Li Zefan <lizf@cn.fujitsu.com>
-> > AuthorDate: Wed, 6 May 2009 10:33:45 +0800
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Wed, 6 May 2009 10:38:19 +0200
-> > 
-> > tracing/events: fix concurrent access to ftrace_events list
-> > 
-> 
-> There is a deadlock in this patch, and I sent out a v2 patch and
-> expected it to be applied:
-> 	http://lkml.org/lkml/2009/5/6/26
+I've actually tested this on 2.6.27 with both ath5k and ath9k.
 
-ah, i probably already had the first one applied.
+  Luis
 
-> Below is a fix on top of this patch. Sorry for my carelessness.
-
-thanks, applied. No need to be sorry!
-
-btw., we might want to add self-tests for filter functionality too 
-perhaps?
-
-	Ingo
+[1] http://marc.info/?l=linux-wireless&m=123915293222504&w=2
+[2] http://wireless.kernel.org/en/users/Download/stable
