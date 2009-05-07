@@ -1,103 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756793AbZEGQg0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbZEGQh7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756793AbZEGQg0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 12:36:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754768AbZEGQgR
+	id S1759384AbZEGQh7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 12:37:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbZEGQhu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 12:36:17 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:43303 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752299AbZEGQgQ convert rfc822-to-8bit (ORCPT
+	Thu, 7 May 2009 12:37:50 -0400
+Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:46434 "EHLO
+	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754130AbZEGQht (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 12:36:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=f0Lxh4m3LWKknWRXzdoqAPQ7NA9BYZFydf+OVvBEhECzDQaT0zUIEmj6XbCvufEwp1
-         SQ0/W95QbkhpzJ2sQ+2KqULQ/jt6SXZXKb5eSd545oxPUBAFspkOLahoFZEWBgwkbwuG
-         X7YDbD7QpQ7ADK8WxktOV3ZaBbKySHpbpyMGg=
-MIME-Version: 1.0
-In-Reply-To: <1241560625.8665.17.camel@alok-dev1>
-References: <1241462661.412.8.camel@alok-dev1> <4A00ADDE.9000908@zytor.com> 
-	<1241560625.8665.17.camel@alok-dev1>
-From: Chris Snook <chris.snook@gmail.com>
-Date: Thu, 7 May 2009 12:35:56 -0400
-Message-ID: <13a12eea0905070935o5abbeb49n8320d06c15b19b56@mail.gmail.com>
+	Thu, 7 May 2009 12:37:49 -0400
 Subject: Re: [PATCH] x86: Reduce the default HZ value
-To: akataria@vmware.com
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       "the arch/x86 maintainers" <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+From: Alok Kataria <akataria@vmware.com>
+Reply-To: akataria@vmware.com
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Christoph Lameter <cl@linux.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090507161440.5b9c067d@lxorguk.ukuu.org.uk>
+References: <1241462661.412.8.camel@alok-dev1>	<4A00ADDE.9000908@zytor.com>
+	 <1241560625.8665.17.camel@alok-dev1>
+	 <alpine.DEB.1.10.0905071010170.24528@qirst.com>
+	 <20090507161440.5b9c067d@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Organization: VMware INC.
+Date: Thu, 07 May 2009 09:37:50 -0700
+Message-Id: <1241714270.32495.6.camel@alok-dev1>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 5, 2009 at 5:57 PM, Alok Kataria <akataria@vmware.com> wrote:
->
-> On Tue, 2009-05-05 at 14:21 -0700, H. Peter Anvin wrote:
->> Alok Kataria wrote:
->> > Hi,
->> >
->> > Given that there were no major objections that came up regarding
->> > reducing the HZ value in http://lkml.org/lkml/2009/4/27/499.
->> >
->> > Below is the patch which actually reduces it, please consider for tip.
->> >
->>
->> What is the benefit of this?
->
-> I did some experiments on linux 2.6.29 guests running on VMware and
-> noticed that the number of timer interrupts could have some slowdown on
-> the total throughput on the system.
-> A simple tight loop experiment showed that with HZ=1000 we took about
-> 264sec to complete the loop and that same loop took about 255sec with
-> HZ=100.
-> You can find more information here http://lkml.org/lkml/2009/4/28/401
 
-This is why certain niches, such as HPC users, often prefer HZ=100
-kernels.  For the rest of us, sacrificing a few percent CPU throughput
-for significant latency gains is well worth it.
+On Thu, 2009-05-07 at 08:14 -0700, Alan Cox wrote:
+> On Thu, 7 May 2009 10:13:52 -0400 (EDT)
+> Christoph Lameter <cl@linux.com> wrote:
+> 
+> > I think we need to reduce the general tick frequency to be as low as
+> > possible. With high resolution timers the tick frequency is just the
+> > frequency with which the timer interrupt disturbs a running application.
+> > 
+> > Are there any benefits remaining from frequent timer interrupts? I would
+> > think that 60 HZ would be sufficient.
+> 
+> 50 works for various european video apps, 60 breaks, 60 works for various
+> US video apps, 50 breaks. Now that may have changed with all the select
+> stuff being hrtimer based (which I'd missed).
 
-> And with HRT i don't see any downsides in terms of increased latencies
-> for device timer's or anything of that sought.
->
->>
->> I can see at least one immediate downside: some timeout values in the
->> kernel are still maintained in units of HZ (like poll, I believe), and
->> so with a lower HZ value we'll have higher roundoff errors.
->
-> If that at all is such a big problem shouldn't we think about moving to
-> using schedule_hrtimeout for such cases rather than relying on jiffy
-> based timeouts.
-> The hrtimer explanation over here http://www.tglx.de/hrtimers.html
-> also talks about where these HZ (timer wheel) based timeouts be used and
-> shouldn't really be dependent on accurate timing.
+I would have assumed whatever timeout mechanism the video apps use
+should have already been converted to hrtimers ? Or are you saying that
+they use select stuff which is already hrtimer based and so there
+shouldn't be any problem now for video apps ? 
 
-But your patch doesn't do this.  If you want us to merge a patch that
-makes VMware systems faster, we're a lot more likely to take it if it
-make everyone else's systems faster, or at least not slower.
+> 
+> The tick also still appears to be involved in ntp and in cpu stats where
+> a 50Hz tick would mean only 25Hz accuracy on CPU usage etc
+> 
 
-> Also the default HZ value was 250 before this commit
->
-> commit 5cb04df8d3f03e37a19f2502591a84156be71772
->  x86: defconfig updates
->
-> And it was 250 for a very long time before that too. The commit log
-> doesn't explain why the value was bumped up either.
-
-250 was considered a compromise between 100 and 1000, but almost
-everyone who cared just ended up using one or the other, and most of
-them preferred 1000.
-
-Given your use case, what you really need to do is get Red Hat,
-Novell, et al. on the phone and ask them to ship kernels with HZ=100,
-because the distributions do their own thing anyway.  If you can
-figure out a way to do that without harming latency, they'll be
-thrilled.
-
--- Chris
