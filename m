@@ -1,44 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762795AbZEGJeJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762838AbZEGJei@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762795AbZEGJeJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 05:34:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762301AbZEGJ2m
+	id S1762838AbZEGJei (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 05:34:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761899AbZEGJ3W
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 05:28:42 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:59334 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761445AbZEGJ2l (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 05:28:41 -0400
+	Thu, 7 May 2009 05:29:22 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:57174 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1761326AbZEGJ3V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 05:29:21 -0400
+Date: Thu, 7 May 2009 11:27:57 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: Re: [patch] security: rename ptrace_may_access =>
+	ptrace_access_check
+Message-ID: <20090507092757.GA32526@elte.hu>
+References: <20090505224729.GA965@redhat.com> <20090506080050.GF17457@elte.hu> <20090506235349.GC3756@redhat.com> <20090507002133.02D05FC39E@magilla.sf.frob.com> <20090507063606.GA15220@redhat.com> <20090507082027.GD12285@elte.hu> <20090507083102.GA20125@redhat.com> <20090507083851.GA19133@elte.hu> <20090507084943.GB19133@elte.hu> <20090507091917.GA23110@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <m1vdodnx8e.fsf@fess.ebiederm.org>
-References: <1241097822.2516.3.camel@poy> <m1vdodnx8e.fsf@fess.ebiederm.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Thu, 7 May 2009 11:28:19 +0200
-Message-ID: <ac3eb2510905070228w5ecb5aa9ob24af17a91d2f231@mail.gmail.com>
-Subject: Re: [PATCH] driver-core: devtmpfs - driver core maintained /dev tmpfs
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Jan Blunck <jblunck@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090507091917.GA23110@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 7, 2009 at 10:17, Eric W. Biederman <ebiederm@xmission.com> wrote:
 
-> sysfs is slow.
-> udev is slow.
+* Oleg Nesterov <oleg@redhat.com> wrote:
 
-Everything is "slow" if you want to boot "fast". It's just numbers,
-and this is more about simplicity and reliability, with just the side
-effect that it's the fastest you can do, when you don't want to lose
-current functionality.
+> On 05/07, Ingo Molnar wrote:
+> >
+> > * Ingo Molnar <mingo@elte.hu> wrote:
+> > Subject: security: rename ptrace_may_access => ptrace_access_check
+> > From: Ingo Molnar <mingo@elte.hu>
+> >
+> > The ->ptrace_may_access() methods are named confusingly - the real 
+> > ptrace_may_access() returns a bool, while these security checks have 
+> > a retval convention.
+> > 
+> > Rename it to ptrace_access_check, to reduce the confusion factor.
+> 
+> Great. Now we can rename (and fix the callers of) ptrace.c:ptrace_may_access()
+> accordingly.
+> 
+> But,
+> 
+> > -static inline int security_ptrace_may_access(struct task_struct *child,
+> > +static inline int security_ptrace_access_check(struct task_struct *child,
+> >  					     unsigned int mode)
+> 
+> You seem to forgot to update the callers of this helper.
 
-> Let's bloat the kernel to solve that problem?
+Did i mention that it's completely untested :) Yeah, i'd suggest to 
+push this naming down the whole ptrace_may_access landscape, and 
+eliminate the bool. In two separate patches: first the rename, then 
+the bool-elimination (which is more dangerous).
 
-You want to add namespaces for devices to it?
-
-Thanks,
-Kay
+	Ingo
