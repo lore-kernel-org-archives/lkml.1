@@ -1,67 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756749AbZEGXZ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbZEGXbq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756749AbZEGXZ0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 19:25:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbZEGXZM
+	id S1755276AbZEGXbq (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 19:31:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbZEGXbh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 19:25:12 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:39456 "EHLO ogre.sisk.pl"
+	Thu, 7 May 2009 19:31:37 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:45195 "EHLO crca.org.au"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751084AbZEGXZK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 19:25:10 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Fri, 8 May 2009 01:24:18 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: rientjes@google.com, fengguang.wu@intel.com,
-       linux-pm@lists.linux-foundation.org, pavel@ucw.cz,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905080050.41973.rjw@sisk.pl> <20090507161508.42f586ef.akpm@linux-foundation.org>
-In-Reply-To: <20090507161508.42f586ef.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	id S1751284AbZEGXbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 19:31:36 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+From: Nigel Cunningham <nigel@tuxonice.net>
+Reply-To: nigel@tuxonice.net
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Fabio Comolli <fabio.comolli@gmail.com>,
+       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
+       linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
+In-Reply-To: <20090507161406.35d953df@jbarnes-g45>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	 <200905072022.15202.rjw@sisk.pl>
+	 <b637ec0b0905071157x2d6f050aqcb825241c51ccb84@mail.gmail.com>
+	 <200905072127.11995.rjw@sisk.pl> <1241728860.19600.207.camel@nigel-laptop>
+	 <20090507161406.35d953df@jbarnes-g45>
+Content-Type: text/plain
+Date: Fri, 08 May 2009 09:32:34 +1000
+Message-Id: <1241739155.19600.233.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905080124.19794.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 May 2009, Andrew Morton wrote:
-> On Fri, 8 May 2009 00:50:41 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> 
-> > On Friday 08 May 2009, Andrew Morton wrote:
-> > > On Fri, 8 May 2009 00:14:48 +0200
-> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > > 
-> > > > IOW, you need to freeze the user space totally before trying to disable the
-> > > > OOM killer.
-> > > 
-> > > Not necessarily.  We only need to take action if a task is about to
-> > > start oom-killing - presumably by taking a nap.
-> > > 
-> > > If a process is sitting there happily computing pi then we can leave it
-> > > running.
-> > 
-> > Well, the point is we don't really know what the task is going to do next.
-> > Is it going to continue computing pi, or is it going to execl(huge_binary), for
-> > example?
-> > 
-> > If we knew what tasks were going to do in advance, the whole freezing wouldn't
-> > really be necessary. :-)
-> 
-> argh.  Third time:
-> 
-> - if the task is computing pi, let it do so.
-> 
-> - if the task tries to allocate memory and succeeds, let it proceed.
-> 
-> - if the task tries to allocate memory and fails and then tries to invoke
->   the oom-killer, stop the task.
+Hi.
 
-Understood.
+On Thu, 2009-05-07 at 16:14 -0700, Jesse Barnes wrote:
+> On Fri, 08 May 2009 06:41:00 +1000
+> Nigel Cunningham <nigel@tuxonice.net> wrote:
+> 
+> > Hi.
+> > 
+> > On Thu, 2009-05-07 at 21:27 +0200, Rafael J. Wysocki wrote:
+> > > In fact I agree, but there's a catch.  The way in which TuxOnIce
+> > > operates LRU pages is based on some assumptions that may or may not
+> > > be satisfied in future, so if we decide to merge it, then we'll
+> > > have to make sure these assumptions will be satisfied.  That in
+> > > turn is going to require quite some discussion I guess.
+> > 
+> > Agreed. That's why I've got that GEMS patch - it's putting pages on
+> > the LRU that don't satisfy the former assumptions: they are used
+> > during hibernating and need to be atomically copied. If there are
+> > further developments in that area, I would hope we could just extend
+> > what's been done with GEMS.
+> 
+> Another option here would be to suspend all DRM operations earlier.
+> The suspend hook for i915 already does this, but maybe it needs to
+> happen sooner?  We'll probably want a generic DRM suspend hook soon too
+> (as the radeon memory manager lands) to shut down GPU activity in the
+> suspend and hibernate cases.
+> 
+> All that assumes I understand what's going on here though. :)  It
+> appears you delay saving the GEM (just GEM by the way, for Graphics/GPU
+> Execution Manager) backing store until late to avoid having the pages
+> move around out from under you?
+
+Yeah. TuxOnIce saves some pages without doing an atomic copy of them. Up
+'til now, the algorithm has been LRU pages - pages used for TuxOnIce's
+userspace helpers. With GEM, we also need to make sure GEM pages are
+atomically copied and so also 'subtract' them from the list of pages
+that aren't atomically copied.
+
+It's no great problem to do this, so I wouldn't ask you to change GEM to
+suspend DRM operations earlier. It's more important that GEM doesn't
+allocate extra pages unexpectedly - and I don't think that's likely
+anyway since we've switched away from X. This is important because
+TuxOnIce depends (for reliability) on having memory usage being
+predictable much more than swsusp and uswsusp do. (Larger images, less
+free RAM to begin with).
+
+Regards,
+
+Nigel
+
