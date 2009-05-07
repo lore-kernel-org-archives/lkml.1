@@ -1,118 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761285AbZEGMcT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762189AbZEGMfH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761285AbZEGMcT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 08:32:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbZEGMcH
+	id S1762189AbZEGMfH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 08:35:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755007AbZEGMey
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 08:32:07 -0400
-Received: from trinity.fluff.org ([89.16.178.74]:58040 "EHLO trinity.fluff.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755007AbZEGMcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 08:32:06 -0400
-Date: Thu, 7 May 2009 13:31:57 +0100
-From: Ben Dooks <ben-linux@fluff.org>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>
-Subject: Re: [PATCH] [drivers] [SPI] SPI_GPIO: add support for controllers with missing MISO pin
-Message-ID: <20090507123157.GU32548@trinity.fluff.org>
-References: <E4D3F24EA6C9E54F817833EAE0D912AC02243DBF8C@bssrvexch01.BS.local>
+	Thu, 7 May 2009 08:34:54 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:40262 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754428AbZEGMex (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 08:34:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=QeQVRMudHkXqEHsIyg8BZBiS04s3XyBJ9XgCC27244Ofm3R1um6jGwKnN3gAWzePkX
+         1MRxRe6RsHRY7SPhVYWBmYrPXVOMLH9TYAkcJjLv43f+kPBqfWlqd2TYsxL7T0loDxkD
+         7usN9RFcxb5MUd2lU/TBS+V8Ovl+2BEiZO5kQ=
+Date: Thu, 7 May 2009 20:34:44 +0800
+From: Wu Fengguang <fengguang.wu@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "pavel@ucw.cz" <pavel@ucw.cz>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH 5/5] PM/Hibernate: Do not release preallocated memory
+	unnecessarily (rev. 2)
+Message-ID: <20090507123444.GB25048@localhost>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905062254.10227.rjw@sisk.pl> <20090507015803.GA12281@localhost> <200905071420.43491.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <E4D3F24EA6C9E54F817833EAE0D912AC02243DBF8C@bssrvexch01.BS.local>
-X-Disclaimer: These are my views alone.
-X-URL: http://www.fluff.org/
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <200905071420.43491.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 02:24:11PM +0200, Marek Szyprowski wrote:
-> There are some boards that do not strictly follow SPI standard and use only 3 wires (SCLK, MOSI, SS) for connecting some simple auxiliary chips and controls them with GPIO based 'spi controller'. In this configuration the MISO line is missing (it is not required if the chip does not transfer any data back to host). The example of such board is a NCP ARM S3C64XX based machine. This patch adds support for such non-standard configuration in GPIO-based SPI controller.
-
-Please wrap your descriptions to 77 or less characters per line.
- 
-> Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+On Thu, May 07, 2009 at 02:20:42PM +0200, Rafael J. Wysocki wrote:
+> On Thursday 07 May 2009, Wu Fengguang wrote:
+> > On Thu, May 07, 2009 at 04:54:09AM +0800, Rafael J. Wysocki wrote:
+> > > On Wednesday 06 May 2009, Wu Fengguang wrote:
+> > > > On Wed, May 06, 2009 at 07:05:09AM +0800, Rafael J. Wysocki wrote:
+> > > > > On Tuesday 05 May 2009, Wu Fengguang wrote:
+> > > > > > On Mon, May 04, 2009 at 08:22:38AM +0800, Rafael J. Wysocki wrote:
+> > > > > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > > > > 
+> > > > > > > Since the hibernation code is now going to use allocations of memory
+> > > > > > > to create enough room for the image, it can also use the page frames
+> > > > > > > allocated at this stage as image page frames.  The low-level
+> > > > > > > hibernation code needs to be rearranged for this purpose, but it
+> > > > > > > allows us to avoid freeing a great number of pages and allocating
+> > > > > > > these same pages once again later, so it generally is worth doing.
+> > > > > > > 
+> > > > > > > [rev. 2: Change the strategy of preallocating memory to allocate as
+> > > > > > >  many pages as needed to get the right image size in one shot (the
+> > > > > > >  excessive allocated pages are released afterwards).]
+> > > > > > 
+> > > > > > Rafael, I tried out your patches and found doubled memory shrink speed!
+> > > > > >
+> > > > > > [  579.641781] PM: Preallocating image memory ... done (allocated 383900 pages, 128000 image pages kept)
+> > > > > > [  583.087875] PM: Allocated 1535600 kbytes in 3.43 seconds (447.69 MB/s)
+> > > > > 
+> > > > > Unfortunately, I'm observing a regression and a huge one.
+> > > > > 
+> > > > > On my Atom-based test box with 1 GB of RAM after a fresh boot and starting X
+> > > > > with KDE 4 there are ~256 MB free.  To create an image we need to free ~300 MB
+> > > > > and that takes ~2 s with the old code and ~15 s with the new one.
+> > > > > 
+> > > > > It helps to call shrink_all_memory() once with a sufficiently large argument
+> > > > > before the preallocation.
+> > > > [snip]
+> > > > > > At last, I'd express my major concern about the transition to preallocate
+> > > > > > based memory shrinking: will it lead to more random swapping IOs?
+> > > > > 
+> > > > > Hmm.  I don't see immediately why would it.  Maybe the regression I'm seeing
+> > > > > is related to that ...
+> > > > 
+> > > > So you do have swap file enabled? hibernate_preallocate_memory() will
+> > > > firstly try to allocate as much pages as possible(savable+free), and
+> > > > then to free up (allocated-image_size) pages.
+> > > 
+> > > No.  It's going to allocate (total RAM - anticipated image size) and then free
+> > > up (allocated-image_size) pages.
+> > 
+> > Ah yes - I didn't notice that count was subtracted here:
+> > 
+> >         for (count -= size; count > 0; count--) {
+> > 
+> > Make "count -= size" a standalone line to make that more obvious?
 > 
-> --- 
-> 
-> diff --git a/drivers/spi/spi_gpio.c b/drivers/spi/spi_gpio.c
-> index 26bd03e..5b75601 100644
-> --- a/drivers/spi/spi_gpio.c
-> +++ b/drivers/spi/spi_gpio.c
-> @@ -114,7 +114,10 @@ static inline void setmosi(const struct spi_device *spi, int is_on)
->  
->  static inline int getmiso(const struct spi_device *spi)
->  {
-> -	return !!gpio_get_value(SPI_MISO_GPIO);
-> +	if (SPI_MISO_GPIO)
-> +		return !!gpio_get_value(SPI_MISO_GPIO);
-> +	else
-> +		return 0;
->  }
+> That should be clear in the new patches:
+> http://patchwork.kernel.org/patch/22193/
+> http://patchwork.kernel.org/patch/22191/
 
-Is zero a good approximation for 'no gpio' ?
-  
->  #undef pdata
-> @@ -243,9 +246,11 @@ spi_gpio_request(struct spi_gpio_platform_data *pdata, const char *label)
->  	if (value)
->  		goto done;
->  
-> -	value = spi_gpio_alloc(SPI_MISO_GPIO, label, true);
-> -	if (value)
-> -		goto free_mosi;
-> +	if (SPI_MISO_GPIO) {
-> +		value = spi_gpio_alloc(SPI_MISO_GPIO, label, true);
-> +		if (value)
-> +			goto free_mosi;
-> +	}
->  
->  	value = spi_gpio_alloc(SPI_SCK_GPIO, label, false);
->  	if (value)
-> @@ -254,7 +259,8 @@ spi_gpio_request(struct spi_gpio_platform_data *pdata, const char *label)
->  	goto done;
->  
->  free_miso:
-> -	gpio_free(SPI_MISO_GPIO);
-> +	if (SPI_MISO_GPIO)
-> +		gpio_free(SPI_MISO_GPIO);
->  free_mosi:
->  	gpio_free(SPI_MOSI_GPIO);
->  done:
-> @@ -308,7 +314,8 @@ static int __init spi_gpio_probe(struct platform_device *pdev)
->  	if (status < 0) {
->  		spi_master_put(spi_gpio->bitbang.master);
->  gpio_free:
-> -		gpio_free(SPI_MISO_GPIO);
-> +		if (SPI_MISO_GPIO)
-> +			gpio_free(SPI_MISO_GPIO);
->  		gpio_free(SPI_MOSI_GPIO);
->  		gpio_free(SPI_SCK_GPIO);
->  		spi_master_put(master);
-> @@ -332,7 +339,8 @@ static int __exit spi_gpio_remove(struct platform_device *pdev)
->  
->  	platform_set_drvdata(pdev, NULL);
->  
-> -	gpio_free(SPI_MISO_GPIO);
-> +	if (SPI_MISO_GPIO)
-> +		gpio_free(SPI_MISO_GPIO);
->  	gpio_free(SPI_MOSI_GPIO);
->  	gpio_free(SPI_SCK_GPIO);
-> 
-> 
-> -------------------------------------------------------------------
-> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
-> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
-> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
-
--- 
--- 
-Ben
-
-Q:      What's a light-year?
-A:      One-third less calories than a regular year.
-
+Yes, thanks! That's much better :)
