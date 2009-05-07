@@ -1,346 +1,380 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760267AbZEGNvx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760724AbZEGNwg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760267AbZEGNvx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 09:51:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757380AbZEGNuP
+	id S1760724AbZEGNwg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 09:52:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756786AbZEGNuT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 09:50:15 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:53913 "EHLO
-	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757839AbZEGNuD (ORCPT
+	Thu, 7 May 2009 09:50:19 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:54095 "EHLO
+	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756184AbZEGNuE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 09:50:03 -0400
-X-BigFish: VPS3(zzzz1202hzzz32i43j66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0KJA12W-02-CKZ-01
+	Thu, 7 May 2009 09:50:04 -0400
+X-BigFish: VPS3(zzzz1202hzzz32i43j62h)
+X-Spam-TCS-SCL: 1:0
+X-WSS-ID: 0KJA12W-02-CL0-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: <akpm@linux-foundation.org>, <greg@kroah.com>, <mingo@elte.hu>
 CC: <norsk5@yahoo.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
        <mchehab@redhat.com>, <aris@redhat.com>, edt@aei.ca,
        <linux-kernel@vger.kernel.org>,
-       Doug Thompson <dougthompson@xmission.com>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 03/21] amd64_edac: add debugging/testing code
-Date: Thu, 7 May 2009 15:49:25 +0200
-Message-ID: <1241704183-29223-4-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 01/21] x86: add methods for writing of an MSR on several CPUs
+Date: Thu, 7 May 2009 15:49:23 +0200
+Message-ID: <1241704183-29223-2-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com>
 References: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 07 May 2009 13:49:49.0203 (UTC) FILETIME=[B0613630:01C9CF1A]
+X-OriginalArrivalTime: 07 May 2009 13:49:48.0172 (UTC) FILETIME=[AFC3E4C0:01C9CF1A]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Doug Thompson <dougthompson@xmission.com>
+Add a struct representing a 64bit MSR pair consisting of a low and high
+register part.
 
-This is for dumping different registers and testing the address mapping
-logic using the ECC syndromes.
+Also, rename msr-on-cpu.c to msr.c accordingly.
 
-Borislav: split sysfs attrs per file
-
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+Reviewed-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac_dbg.c |  288 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 288 insertions(+), 0 deletions(-)
- create mode 100644 drivers/edac/amd64_edac_dbg.c
+ arch/x86/include/asm/msr.h |   21 ++++++
+ arch/x86/lib/Makefile      |    2 +-
+ arch/x86/lib/msr-on-cpu.c  |   97 ----------------------------
+ arch/x86/lib/msr.c         |  152 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 174 insertions(+), 98 deletions(-)
+ delete mode 100644 arch/x86/lib/msr-on-cpu.c
+ create mode 100644 arch/x86/lib/msr.c
 
-diff --git a/drivers/edac/amd64_edac_dbg.c b/drivers/edac/amd64_edac_dbg.c
-new file mode 100644
-index 0000000..3741af9
---- /dev/null
-+++ b/drivers/edac/amd64_edac_dbg.c
-@@ -0,0 +1,288 @@
-+#include "amd64_edac.h"
-+
-+/*
-+ * amd64_nbea_store
-+ *
-+ * 	Accept a hex value and store it into the virutal error
-+ *	register file, field:	nbeal and nbeah
-+ *
-+ *	Assume virtual error values have already been set for:
-+ *		NBSL, NBSH and NBCFG
-+ *
-+ *	Then proceed to map the error values to a:
-+ *		MC, CSROW and CHANNEL
-+ */
-+static ssize_t amd64_nbea_store(struct mem_ctl_info *mci,
-+					const char *data, size_t count)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	unsigned long long value;
-+	int rc;
-+
-+	rc = strict_strtoull(data, 16, &value);
-+	if (rc != -EINVAL) {
-+		debugf0("%s() received NBEA= 0x%llx\n", __func__, value);
-+
-+		/* place the value into the virtual error packet */
-+		pvt->ctl_error_info.nbeal = (u32) value;
-+		value >>= 32;
-+		pvt->ctl_error_info.nbeah = (u32) value;
-+
-+		/* Process the Mapping request */
-+		/* TODO: Add race preventation */
-+		amd64_process_error_info(mci, &pvt->ctl_error_info, 1);
-+
-+		return count;
-+	}
-+	return rc;
-+}
-+
-+/*
-+ * amd64_nbea_show
-+ *
-+ *	display back what the last NBEA address was written
-+ */
-+static ssize_t amd64_nbea_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	u64 value;
-+
-+	value = pvt->ctl_error_info.nbeah;
-+	value <<= 32;
-+	value |= pvt->ctl_error_info.nbeal;
-+
-+	return sprintf(data, "%llx\n", value);
-+}
-+
-+/*
-+ * amd64_nbsl_store
-+ *
-+ *	accept and store the NBSL value user desires
-+ */
-+static ssize_t amd64_nbsl_store(struct mem_ctl_info *mci,
-+					const char *data, size_t count)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	unsigned long value;
-+	int rc;
-+
-+	rc = strict_strtoul(data, 16, &value);
-+	if (rc != -EINVAL) {
-+		debugf0("%s() received NBSL= 0x%lx\n", __func__, value);
-+
-+		/* place the NBSL value into the virtual error packet */
-+		pvt->ctl_error_info.nbsl = (u32) value;
-+
-+		return count;
-+	}
-+	return rc;
-+}
-+
-+/*
-+ * amd64_nbsl_show
-+ *
-+ *	display back what the last NBSL value written
-+ */
-+static ssize_t amd64_nbsl_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	u32 value;
-+
-+	value = pvt->ctl_error_info.nbsl;
-+
-+	return sprintf(data, "%x\n", value);
-+}
-+
-+/*
-+ * amd64_nbsh_store
-+ *
-+ *	accept and store the NBSH value user desires
-+ */
-+static ssize_t amd64_nbsh_store(struct mem_ctl_info *mci,
-+					const char *data, size_t count)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	unsigned long value;
-+	int rc;
-+
-+	rc = strict_strtoul(data, 16, &value);
-+	if (rc != -EINVAL) {
-+		debugf0("%s() received NBSL= 0x%lx\n", __func__, value);
-+
-+		/* place the NBSL value into the virtual error packet */
-+		pvt->ctl_error_info.nbsh = (u32) value;
-+
-+		return count;
-+	}
-+	return rc;
-+}
-+
-+/*
-+ * amd64_nbsh_show
-+ *
-+ *	display back what the last NBSL value written
-+ */
-+static ssize_t amd64_nbsh_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	u32 value;
-+
-+	value = pvt->ctl_error_info.nbsh;
-+
-+	return sprintf(data, "%x\n", value);
-+}
-+
-+/*
-+ * amd64_nbcfg_store
-+ *
-+ *	accept and store the NBSL value user desires
-+ */
-+static ssize_t amd64_nbcfg_store(struct mem_ctl_info *mci,
-+					const char *data, size_t count)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	unsigned long value;
-+	int rc;
-+
-+	rc = strict_strtoul(data, 16, &value);
-+	if (rc != -EINVAL) {
-+		debugf0("%s() received NBCFG= 0x%lx\n", __func__, value);
-+
-+		/* place the NBSL value into the virtual error packet */
-+		pvt->ctl_error_info.nbcfg = (u32) value;
-+
-+		return count;
-+	}
-+	return rc;
-+}
-+
-+/*
-+ *	Various show routines for the controls of a MCI
-+ */
-+static ssize_t amd64_nbcfg_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%x\n",
-+		pvt->ctl_error_info.nbcfg);
-+}
-+
-+
-+static ssize_t amd64_dhar_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%x\n", pvt->dhar);
-+}
-+
-+
-+static ssize_t amd64_dbam_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%x\n", pvt->dbam0);
-+}
-+
-+
-+static ssize_t amd64_topmem_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%llx\n", pvt->top_mem);
-+}
-+
-+
-+static ssize_t amd64_topmem2_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%llx\n", pvt->top_mem2);
-+}
-+
-+static ssize_t amd64_hole_show(struct mem_ctl_info *mci, char *data)
-+{
-+	u64 hole_base = 0;
-+	u64 hole_offset = 0;
-+	u64 hole_size = 0;
-+
-+	amd64_get_dram_hole_info(mci, &hole_base, &hole_offset, &hole_size);
-+
-+	return sprintf(data, "%llx %llx %llx\n", hole_base, hole_offset,
-+						 hole_size);
-+}
-+
-+struct mcidev_sysfs_attribute amd64_dbg_attrs[] = {
-+
-+	{
-+		.attr = {
-+			.name = "zctl_nbea",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = amd64_nbea_show,
-+		.store = amd64_nbea_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "zctl_nbsl",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = amd64_nbsl_show,
-+		.store = amd64_nbsl_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "zctl_nbsh",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = amd64_nbsh_show,
-+		.store = amd64_nbsh_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "zctl_nbcfg",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = amd64_nbcfg_show,
-+		.store = amd64_nbcfg_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "zhw_dhar",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_dhar_show,
-+		.store = NULL,
-+	},
-+	{
-+		.attr = {
-+			.name = "zhw_dbam",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_dbam_show,
-+		.store = NULL,
-+	},
-+	{
-+		.attr = {
-+			.name = "zhw_topmem",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_topmem_show,
-+		.store = NULL,
-+	},
-+	{
-+		.attr = {
-+			.name = "zhw_topmem2",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_topmem2_show,
-+		.store = NULL,
-+	},
-+	{
-+		.attr = {
-+			.name = "zhw_hole",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_hole_show,
-+		.store = NULL,
-+	},
+diff --git a/arch/x86/include/asm/msr.h b/arch/x86/include/asm/msr.h
+index 638bf62..624c895 100644
+--- a/arch/x86/include/asm/msr.h
++++ b/arch/x86/include/asm/msr.h
+@@ -2,6 +2,7 @@
+ #define _ASM_X86_MSR_H
+ 
+ #include <asm/msr-index.h>
++#include <asm/cpumask.h>
+ 
+ #ifndef __ASSEMBLY__
+ # include <linux/types.h>
+@@ -13,6 +14,16 @@
+ #include <asm/asm.h>
+ #include <asm/errno.h>
+ 
++struct msr {
++	union {
++		struct {
++			u32 l;
++			u32 h;
++		};
++		u64 q;
++	};
 +};
++
+ static inline unsigned long long native_read_tscp(unsigned int *aux)
+ {
+ 	unsigned long low, high;
+@@ -216,6 +227,8 @@ do {                                                            \
+ #ifdef CONFIG_SMP
+ int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
+ int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
++int rdmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs);
++int wrmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs);
+ int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h);
+ int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h);
+ #else  /*  CONFIG_SMP  */
+@@ -229,6 +242,14 @@ static inline int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
+ 	wrmsr(msr_no, l, h);
+ 	return 0;
+ }
++static inline int rdmsr_on_cpus(const cpumask_t *m, u32 msr_no, struct msr **msrs)
++{
++	return rdmsr_on_cpu(msr_no, &(msrs[0].l), &(msrs[0].h));
++}
++static inline int wrmsr_on_cpus(const cpumask_t *m, u32 msr_no, struct msr **msrs)
++{
++	return wrmsr_on_cpu(msr_no, msrs[0].l, msrs[0].h);
++}
+ static inline int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no,
+ 				    u32 *l, u32 *h)
+ {
+diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
+index 55e11aa..f9d3563 100644
+--- a/arch/x86/lib/Makefile
++++ b/arch/x86/lib/Makefile
+@@ -2,7 +2,7 @@
+ # Makefile for x86 specific library files.
+ #
+ 
+-obj-$(CONFIG_SMP) := msr-on-cpu.o
++obj-$(CONFIG_SMP) := msr.o
+ 
+ lib-y := delay.o
+ lib-y += thunk_$(BITS).o
+diff --git a/arch/x86/lib/msr-on-cpu.c b/arch/x86/lib/msr-on-cpu.c
+deleted file mode 100644
+index 321cf72..0000000
+--- a/arch/x86/lib/msr-on-cpu.c
++++ /dev/null
+@@ -1,97 +0,0 @@
+-#include <linux/module.h>
+-#include <linux/preempt.h>
+-#include <linux/smp.h>
+-#include <asm/msr.h>
+-
+-struct msr_info {
+-	u32 msr_no;
+-	u32 l, h;
+-	int err;
+-};
+-
+-static void __rdmsr_on_cpu(void *info)
+-{
+-	struct msr_info *rv = info;
+-
+-	rdmsr(rv->msr_no, rv->l, rv->h);
+-}
+-
+-static void __wrmsr_on_cpu(void *info)
+-{
+-	struct msr_info *rv = info;
+-
+-	wrmsr(rv->msr_no, rv->l, rv->h);
+-}
+-
+-int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
+-{
+-	int err;
+-	struct msr_info rv;
+-
+-	rv.msr_no = msr_no;
+-	err = smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 1);
+-	*l = rv.l;
+-	*h = rv.h;
+-
+-	return err;
+-}
+-
+-int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
+-{
+-	int err;
+-	struct msr_info rv;
+-
+-	rv.msr_no = msr_no;
+-	rv.l = l;
+-	rv.h = h;
+-	err = smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 1);
+-
+-	return err;
+-}
+-
+-/* These "safe" variants are slower and should be used when the target MSR
+-   may not actually exist. */
+-static void __rdmsr_safe_on_cpu(void *info)
+-{
+-	struct msr_info *rv = info;
+-
+-	rv->err = rdmsr_safe(rv->msr_no, &rv->l, &rv->h);
+-}
+-
+-static void __wrmsr_safe_on_cpu(void *info)
+-{
+-	struct msr_info *rv = info;
+-
+-	rv->err = wrmsr_safe(rv->msr_no, rv->l, rv->h);
+-}
+-
+-int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
+-{
+-	int err;
+-	struct msr_info rv;
+-
+-	rv.msr_no = msr_no;
+-	err = smp_call_function_single(cpu, __rdmsr_safe_on_cpu, &rv, 1);
+-	*l = rv.l;
+-	*h = rv.h;
+-
+-	return err ? err : rv.err;
+-}
+-
+-int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
+-{
+-	int err;
+-	struct msr_info rv;
+-
+-	rv.msr_no = msr_no;
+-	rv.l = l;
+-	rv.h = h;
+-	err = smp_call_function_single(cpu, __wrmsr_safe_on_cpu, &rv, 1);
+-
+-	return err ? err : rv.err;
+-}
+-
+-EXPORT_SYMBOL(rdmsr_on_cpu);
+-EXPORT_SYMBOL(wrmsr_on_cpu);
+-EXPORT_SYMBOL(rdmsr_safe_on_cpu);
+-EXPORT_SYMBOL(wrmsr_safe_on_cpu);
+diff --git a/arch/x86/lib/msr.c b/arch/x86/lib/msr.c
+new file mode 100644
+index 0000000..0641498
+--- /dev/null
++++ b/arch/x86/lib/msr.c
+@@ -0,0 +1,152 @@
++#include <linux/module.h>
++#include <linux/preempt.h>
++#include <linux/smp.h>
++#include <asm/msr.h>
++
++struct msr_info {
++	u32 msr_no;
++	u32 l, h;
++	int err;
++};
++
++static void __rdmsr_on_cpu(void *info)
++{
++	struct msr_info *rv = info;
++
++	rdmsr(rv->msr_no, rv->l, rv->h);
++}
++
++static void __wrmsr_on_cpu(void *info)
++{
++	struct msr_info *rv = info;
++
++	wrmsr(rv->msr_no, rv->l, rv->h);
++}
++
++int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
++{
++	int err;
++	struct msr_info rv;
++
++	rv.msr_no = msr_no;
++	err = smp_call_function_single(cpu, __rdmsr_on_cpu, &rv, 1);
++	*l = rv.l;
++	*h = rv.h;
++
++	return err;
++}
++
++int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
++{
++	int err;
++	struct msr_info rv;
++
++	rv.msr_no = msr_no;
++	rv.l = l;
++	rv.h = h;
++	err = smp_call_function_single(cpu, __wrmsr_on_cpu, &rv, 1);
++
++	return err;
++}
++
++/* rdmsr on a bunch of CPUs
++ *
++ * @mask:	which CPUs
++ * @msr_no:	which MSR
++ * @msrs:	array of MSR values
++ *
++ * Returns:
++ * 0 - success
++ * <0 - read failed on at least one CPU (latter in the mask)
++ */
++int rdmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs)
++{
++	struct msr *reg;
++	int cpu, tmp, err = 0;
++	int off = cpumask_first(mask);
++
++	for_each_cpu(cpu, mask) {
++		reg = &msrs[cpu - off];
++
++		tmp = rdmsr_on_cpu(cpu, msr_no, &reg->l, &reg->h);
++		if (tmp)
++			err = tmp;
++	}
++	return err;
++}
++
++/*
++ * wrmsr of a bunch of CPUs
++ *
++ * @mask:	which CPUs
++ * @msr_no:	which MSR
++ * @msrs:	array of MSR values
++  *
++ * Returns:
++ * 0 - success
++ * <0 - write failed on at least one CPU (latter in the mask)
++ */
++int wrmsr_on_cpus(const cpumask_t *mask, u32 msr_no, struct msr *msrs)
++{
++	struct msr reg;
++	int cpu, tmp, err = 0;
++	int off = cpumask_first(mask);
++
++	for_each_cpu(cpu, mask) {
++		reg = msrs[cpu - off];
++
++		tmp = wrmsr_on_cpu(cpu, msr_no, reg.l, reg.h);
++		if (tmp)
++			err = tmp;
++	}
++	return err;
++}
++
++/* These "safe" variants are slower and should be used when the target MSR
++   may not actually exist. */
++static void __rdmsr_safe_on_cpu(void *info)
++{
++	struct msr_info *rv = info;
++
++	rv->err = rdmsr_safe(rv->msr_no, &rv->l, &rv->h);
++}
++
++static void __wrmsr_safe_on_cpu(void *info)
++{
++	struct msr_info *rv = info;
++
++	rv->err = wrmsr_safe(rv->msr_no, rv->l, rv->h);
++}
++
++int rdmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
++{
++	int err;
++	struct msr_info rv;
++
++	rv.msr_no = msr_no;
++	err = smp_call_function_single(cpu, __rdmsr_safe_on_cpu, &rv, 1);
++	*l = rv.l;
++	*h = rv.h;
++
++	return err ? err : rv.err;
++}
++
++int wrmsr_safe_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
++{
++	int err;
++	struct msr_info rv;
++
++	rv.msr_no = msr_no;
++	rv.l = l;
++	rv.h = h;
++	err = smp_call_function_single(cpu, __wrmsr_safe_on_cpu, &rv, 1);
++
++	return err ? err : rv.err;
++}
++
++EXPORT_SYMBOL(rdmsr_on_cpu);
++EXPORT_SYMBOL(wrmsr_on_cpu);
++EXPORT_SYMBOL(rdmsr_on_cpus);
++EXPORT_SYMBOL(wrmsr_on_cpus);
++EXPORT_SYMBOL(rdmsr_safe_on_cpu);
++EXPORT_SYMBOL(wrmsr_safe_on_cpu);
 -- 
 1.6.2.4
 
