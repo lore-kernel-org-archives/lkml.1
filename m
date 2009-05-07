@@ -1,82 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbZEGHnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbZEGHoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758246AbZEGHnf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 03:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753005AbZEGHn0
+	id S1757915AbZEGHoA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 03:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbZEGHnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 03:43:26 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:51608 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751954AbZEGHnZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 03:43:25 -0400
-Message-ID: <4A0290ED.7080506@cn.fujitsu.com>
-Date: Thu, 07 May 2009 15:42:37 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 05/18] io-controller: Common hierarchical fair queuing
- code in elevaotor layer
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-6-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1241553525-28095-6-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 7 May 2009 03:43:49 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:48196 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753005AbZEGHnr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 03:43:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:reply-to:to:cc:content-type:date:message-id
+         :mime-version:x-mailer:content-transfer-encoding;
+        b=gSXud+Pr3f6oxRotWBS4ft8u2y6YgMXQr0TVGvnSb+qlrforjethIh5E/u9d1j/gAR
+         GRu50BWbi6myt0kzrl/gb3lqf/wL+bP64cGR9DdNivzmzIKkdfOV0DrgxyjejqjI/rhn
+         mvPTh9bWgfciTwhp7Vkv9tC9lW1+Chfk+0q/w=
+Subject: Linux ATA Trim support
+From: Clive Wagenaar <clivewagenaar@gmail.com>
+Reply-To: clivewagenaar@gmail.com
+To: kernel-team@lists.ubuntu.com
+Cc: lkml <linux-kernel@vger.kernel.org>, Theodore Tso <tytso@mit.edu>,
+       Chris Mason <chris.mason@oracle.com>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       tim gardner <tim.gardner@canonical.com>
+Content-Type: text/plain
+Date: Thu, 07 May 2009 08:43:43 +0100
+Message-Id: <1241682223.3759.67.camel@9200>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> This patch enables hierarchical fair queuing in common layer. It is
-> controlled by config option CONFIG_GROUP_IOSCHED.
-...
-> +}
-> +
-> +void iocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
-> +{
-> +	struct io_cgroup *iocg = cgroup_to_io_cgroup(cgroup);
-> +	struct hlist_node *n, *tmp;
-> +	struct io_group *iog;
-> +
-> +	/*
-> +	 * Since we are destroying the cgroup, there are no more tasks
-> +	 * referencing it, and all the RCU grace periods that may have
-> +	 * referenced it are ended (as the destruction of the parent
-> +	 * cgroup is RCU-safe); bgrp->group_data will not be accessed by
-> +	 * anything else and we don't need any synchronization.
-> +	 */
-> +	hlist_for_each_entry_safe(iog, n, tmp, &iocg->group_data, group_node)
-> +		io_destroy_group(iocg, iog);
-> +
-> +	BUG_ON(!hlist_empty(&iocg->group_data));
-> +
+Hi Ubuntu kernel Devs
 
-    Hi Vivek,
+Could you please advise your thoughts on ATA Trim support in the 9.10,
+Karmic, kernel for SSD drives.
+I am not very clued in as to how far the patches have gotten in the
+mainline kernel of Linus, but I do believe people are working on it and
+it is close now.
 
-    IMHO, free_css_id() needs to be called here.
+I recently bought a OCZ Vertex 120G SSD drive, as they are the first SSD
+manufacturer to be publicly building tools for ATA trim and have
+indicated that they will have experimental ATA trim support for Linux in
+their next firmware update expected with 2 weeks.
+(Bootchart has 9.04 Juanty booting in 10 seconds off the single ssd of
+OCZ)
 
-> +	kfree(iocg);
-> +}
-> +
-> +void io_disconnect_groups(struct elevator_queue *e)
-> +{
-> +	struct hlist_node *pos, *n;
-> +	struct io_group *iog;
-> +	struct elv_fq_data *efqd = &e->efqd;
-> +
-> +	hlist_for_each_entry_safe(iog, pos, n, &efqd->group_list,
-> +					elv_data_node) {
-> +		hlist_del(&iog->elv_data_node);
-> +
+As Windows Vista and 7 do not have ATA trim support yet, they have built
+a exe tool that can be run by Windows uses that trims the SSD, so far it
+works reliably on 32 bit versions of windows. linux uses cant use this
+tool on EXT2/3/4 etc FS from within windows, so a native solution in the
+kernel is the best way to go for Linux.
+
+OCZ appear to be very proactive with support for ATA Trim, as this is
+VERY important on SSD drives if one does not periodically want to
+re-flash ones drive and then restore a image/re-install.
+
+Some info on trim:
+http://www.anandtech.com/storage/showdoc.aspx?i=3531&p=10
+
+Please note that this Trim issue affects all SDD including that ones
+used by Theodore Ts'o and Linus himself. (Intel X25-M)
+Once the drive has had data written to most its 'sectors', write speed
+will drop off drastically and until we have ata trim the only solution
+is to re-flash the drive.
+
+I am happy to re-flash my drive periodically, but for our Ubuntu for
+humans, it will be great to have ATA trim in Karmic natively.
+
+I do know the standard is still being finalized, but OCZ are being
+proactive, the mainline kernel guys are too, so I hoping Ubuntu can be
+too.
+
+
+If any one has PPA kernels or Linux trim tools that they need me to test
+on my OCZ drive, please do not hesitate to ask, I am more than willing
+to beta test this ATA trim under Linux.
+(I went for the OCZ vertex vs X25-M of Intel, due to the fact that OCZ
+are proactive in their forums and incorporating user feedback into their
+firmware, plus actively working on ATA trim, for both Windows and Linux)
+
+
+Thanks for your time
 
 -- 
-Regards
-Gui Jianfeng
+clivewagenaar@gmail.com
+
+System Powered by:
+Ubuntu/Debian/Gnu/Linux
+Distro: Jaunty 9.04
+Kernel: 2.6.30-rc4-generic
+File System: Ext4
+Gnu+Linux user #419390
+Ubuntu user #1072
 
