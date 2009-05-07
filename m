@@ -1,72 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759388AbZEGVnr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760179AbZEGVqx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759388AbZEGVnr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 17:43:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752188AbZEGVni
+	id S1760179AbZEGVqx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 17:46:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752860AbZEGVqm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 17:43:38 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44326 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751119AbZEGVnh (ORCPT
+	Thu, 7 May 2009 17:46:42 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:53202 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751444AbZEGVql (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 17:43:37 -0400
-Date: Thu, 7 May 2009 23:42:55 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: U Kuehn <ukuehn@acm.org>
-Cc: Nigel Cunningham <nigel@tuxonice.net>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Message-ID: <20090507214255.GA14611@elf.ucw.cz>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <20090507120948.GA1531@ucw.cz> <4A03129A.90105@acm.org>
+	Thu, 7 May 2009 17:46:41 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=XAUSmj2+SvJmHk6HE/NKKU803slYwkeJFbR1wXvvPdsjbI/QCmVpVPwo3wsWsQmwX
+	6MZrONe4iXqTarz6FRSWg==
+Date: Thu, 7 May 2009 14:46:34 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com,
+       linux-pm@lists.linux-foundation.org, pavel@ucw.cz,
+       torvalds@linux-foundation.org, jens.axboe@oracle.com,
+       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+In-Reply-To: <200905072336.11383.rjw@sisk.pl>
+Message-ID: <alpine.DEB.2.00.0905071439370.24404@chino.kir.corp.google.com>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <20090507135615.e7db550d.akpm@linux-foundation.org> <alpine.DEB.2.00.0905071417160.24417@chino.kir.corp.google.com> <200905072336.11383.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A03129A.90105@acm.org>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Thu, 7 May 2009, Rafael J. Wysocki wrote:
 
-> >> - Support for multiple swap devices
-> >> - Support for non-swap (an ordinary file can be used)
-> >> - Uses cryptoapi (LZO support, more than 2x speed of uncompressed data!)
-> >> - Asynchronous I/O, readahead, multithreaded. Get the maximum throughput
-> >>   possible with your hardware.
-> >> - Userspace user interface that lets you abort hibernating and abort
-> >>   resuming, get nice progress display etc.
-> > 
-> > All these are either done by uswsusp already, or could be done w/o
-> > modifying kernel code.
+> > The fact is that _all_ allocations here are implicitly __GFP_NO_OOM_KILL 
+> > whether it specifies it or not since the oom killer would simply kill a 
+> > task in D state which can't exit or free memory and subsequent allocations 
+> > would make the oom killer a no-op because there's an eligible task with 
+> > TIF_MEMDIE set.  The only thing you're saving with __GFP_NO_OOM_KILL is 
+> > calling the oom killer in a first place and killing an unresponsive task 
 > 
-> Given that tuxonice DOES work reliably with dm-crypt encrypted swap
-> partitions, does uswsusp offer this functionality? Looking into the docs
-> on the sourceforge site does not give any information about this
-> - point.
+> That's exactly what we're trying to do.  We don't want tasks to get killed just
+> because we're freeing memory for hibernation image.
+> 
 
-uswsusp does not care what kind of device it writes on, so yes,
-dm-crypt works. IIRC seife was working on some YaST scripts so that
-setting it up was easy for users.
+Then, again, why can't you just lock out the oom killer as I suggested if 
+__GFP_NO_OOM_KILL is actually implied for all allocations when 
+preallocating?  It prevents adding an unnecessary gfp flag, sprinkling it 
+around in the hibernation code, and a comment would actually explain why 
+it's the right thing to do (i.e. no other threads other than kthreads 
+could possibly be executing the oom killer and if they are oom then we'll 
+have to kill a userspace task anyway when thawed).
 
-> Further, being someone with a crypto background, the userland suspend
-> helper does have some issues with the password/key handling:
-> 1) no support for keys containing a 0 byte. (cryptsetup can handle
-> this)
+> > but that would have to happen anyway when thawed since the system is oom 
+> > (or otherwise lockup for GFP_KERNEL with order < PAGE_ALLOC_COSTLY_ORDER).
+> 
+> Are you sure?  The image memory is freed before thawing tasks.
+> 
 
-"passwords containing 0 byte" ? Is that a big deal? How would user
-enter such password?
-
-> 2) the rsa functionality seems to use the unsound practice to encrypt
-> the symmetric key directly without any padding (aka encoding in libgcrypt).
-
-If this is easy to fix, can you tell me what to do?
-
-Otherwise, can you write a short note to bugtraq? Having bad crypto in
-uswsusp would indeed be very very bad.
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+If you try to allocate any non-__GFP_NORETRY memory such as GFP_KERNEL 
+with order < PAGE_ALLOC_COSTLY_ORDER and direct reclaim cannot free memory 
+(and the oom killer is implicitly a no-op whether you specify 
+__GFP_NO_OOM_KILL or not), then you could loop endlessly in the page 
+allocator.  When allocating GFP_IMAGE you need to ensure that can't happen 
+and __GFP_NORETRY may not be your best option because it could fail 
+unnecessarily when reclaim could have helped.
