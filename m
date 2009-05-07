@@ -1,155 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754501AbZEGEr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752822AbZEGFMU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754501AbZEGEr0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 00:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750883AbZEGErR
+	id S1752822AbZEGFMU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 01:12:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751451AbZEGFMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 00:47:17 -0400
-Received: from mail-qy0-f125.google.com ([209.85.221.125]:50878 "EHLO
-	mail-qy0-f125.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750861AbZEGErQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 00:47:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=s7Tc6WQjnm25Dr4GcoODrxjoChI2wXuZLiGwrjNkFNtUX9IXSs0A+T1e40ovyDI3Ol
-         NDNdqVONT/nSUMEqGXDsW9fJuYciO9nStDcBe45oTB2GcOYeRemTRghOCLt/28od+sWx
-         dJxONa5PSMUNMr6Dq7WgI0hMvP1dXW5zvjgeI=
+	Thu, 7 May 2009 01:12:00 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47958 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751365AbZEGFMA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 01:12:00 -0400
+From: Neil Brown <neilb@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 7 May 2009 15:12:06 +1000
 MIME-Version: 1.0
-Date: Thu, 7 May 2009 13:47:16 +0900
-Message-ID: <90b950fc0905062147w4673308ak54b9d8e348c23ad9@mail.gmail.com>
-Subject: [PATCH] Alpha Channel support for Samsung SoC Framebuffer driver.
-From: InKi Dae <daeinki@gmail.com>
-To: ben-linux@fluff.org, linux-fbdev-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18946.28070.563110.755463@notabene.brown>
+Cc: linux-raid@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PULL REQUEST] md updates for 2.6.30
+X-Mailer: VM 7.19 under Emacs 21.4.1
+X-face: [Gw_3E*Gng}4rRrKRYotwlE?.2|**#s9D<ml'fY1Vw+@XfR[fRCsUoP?K6bt3YD\ui5Fh?f
+	LONpR';(ql)VM_TQ/<l_^D3~B:z$\YC7gUCuC=sYm/80G=$tt"98mr8(l))QzVKCk$6~gldn~*FK9x
+	8`;pM{3S8679sP+MbP,72<3_PIH-$I&iaiIb|hV1d%cYg))BmI)AZ
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch supports ARGB1888 and ARGB4888 for Samsung SoC Framebuffer
-driver. (s3c-fb.c)
 
-ARGB1888 and ARGB4888 is decided by var->transp.length and this
-variable is set by s3c_fb_check_var().
-In s3c_fb_check_var(), if var->vits_per_pixel is 25 or 28, then
-var->transp.length would be 1 or 3.
-Therefore alpha mode(ARGB1888 or ARGB4888) could be decided through
-that variable.
+Hi,
+  a few more fixes for md.  A couple relate to v.large raid10 arrays.
+  several are tagged for -stable.
 
+Thanks,
+NeilBrown
 
-For using alpha mode, you need setting the following:
-This code should be added to your machine code as platform data.
+ 
 
-static struct s3c_fb_pd_win xxx_fb_win0 = {
-	/* this is to ensure we use win0 */
-	.win_mode = {
-		.pixclock		= (8+8+8+240)*(38+4+38+400),
-		.left_margin	= 8,
-		.right_margin	= 8,
-		.upper_margin	= 38,
-		.lower_margin	= 38,
-		.hsync_len		= 8,
-		.vsync_len		= 4,
-		.xres			= 240,
-		.yres			= 400,
-	},
-	.max_bpp		= 32,
-	.default_bpp	= 24,
-};
+The following changes since commit b4348f32dae3cb6eb4bc21c7ed8f76c0b11e9d6a:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://oss.sgi.com/xfs/xfs
 
-static struct s3c_fb_pd_win xxx_fb_win1 = {
-	.win_mode = {
-		.pixclock		= (8+8+8+240)*(38+4+38+400),
-		.left_margin	= 8,
-		.right_margin	= 8,
-		.upper_margin	= 38,
-		.lower_margin	= 38,
-		.hsync_len		= 8,
-		.vsync_len		= 4,
-		.xres			= 240,
-		.yres			= 400,
-	},
-	.max_bpp		= 32,
-	.default_bpp	= 28,
-};
+are available in the git repository at:
 
+  git://neil.brown.name/md for-linus
 
-static struct s3c_fb_platdata xxx_lcd_pdata __initdata = {
-	.win[0]		= &ncp_fb_win0,
-	.win[1]		= &ncp_fb_win1,
-	.vidcon0	= VIDCON0_VIDOUT_RGB | VIDCON0_PNRMODE_RGB,
-	.vidcon1	= VIDCON1_INV_HSYNC | VIDCON1_INV_VSYNC,
-	.setup_gpio	= xxx_fb_gpio_setup,
-};
+Jan Engelhardt (1):
+      md: constify VFTs
 
-s3c_fb_set_platdata(&xxx_lcd_pdata);
+NeilBrown (6):
+      md: fix loading of out-of-date bitmap.
+      md/raid10: don't clear bitmap during recovery if array will still be degraded.
+      md: fix some (more) errors with bitmaps on devices larger than 2TB.
+      md: tidy up status_resync to handle large arrays.
+      md: remove ability to explicit set an inactive array to 'clean'.
+      md: remove rd%d links immediately after stopping an array.
 
-
-Above code sets pixelformat for window0 layer to RGB888 and window1
-layer to ARGB4888.
-I'll look forward to applying to mainline.
-
-signed-off-by: InKi Dae. <inki.dae@samsung.com>
-
-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-diff --git a/drivers/video/s3c-fb.c b/drivers/video/s3c-fb.c
-index e0e7899..55d2298 100644
---- a/drivers/video/s3c-fb.c
-+++ b/drivers/video/s3c-fb.c
-@@ -358,9 +358,16 @@ static int s3c_fb_set_par(struct fb_info *info)
- writel(data, regs + VIDOSD_B(win_no));
-
- data = var->xres * var->yres;
-+
-+ u32 osdc_data = 0;
-+
-+ osdc_data = VIDISD14C_ALPHA1_R(0xf) |
-+  VIDISD14C_ALPHA1_G(0xf) |
-+  VIDISD14C_ALPHA1_B(0xf);
-+
- if (s3c_fb_has_osd_d(win_no)) {
-  writel(data, regs + VIDOSD_D(win_no));
--  writel(0, regs + VIDOSD_C(win_no));
-+  writel(osdc_data, regs + VIDOSD_C(win_no));
- } else
-  writel(data, regs + VIDOSD_C(win_no));
-
-@@ -409,8 +416,12 @@ static int s3c_fb_set_par(struct fb_info *info)
-    data |= WINCON1_BPPMODE_19BPP_A1666;
-   else
-    data |= WINCON1_BPPMODE_18BPP_666;
--  } else if (var->transp.length != 0)
--   data |= WINCON1_BPPMODE_25BPP_A1888;
-+  } else if (var->transp.length == 1)
-+   data |= WINCON1_BPPMODE_25BPP_A1888
-+    | WINCON1_BLD_PIX;
-+  else if (var->transp.length == 4)
-+   data |= WINCON1_BPPMODE_28BPP_A4888
-+    | WINCON1_BLD_PIX | WINCON1_ALPHA_SEL;
-  else
-   data |= WINCON0_BPPMODE_24BPP_888;
-
-@@ -418,6 +429,20 @@ static int s3c_fb_set_par(struct fb_info *info)
-  break;
- }
-
-+ /* It has no color key control register for window0 */
-+ if (win_no > 0) {
-+  u32 keycon0_data = 0, keycon1_data = 0;
-+
-+  keycon0_data = ~(WxKEYCON0_KEYBL_EN |
-+    WxKEYCON0_KEYEN_F |
-+    WxKEYCON0_DIRCON) | WxKEYCON0_COMPKEY(0);
-+
-+  keycon1_data = WxKEYCON1_COLVAL(0xffffff);
-+
-+  writel(keycon0_data, regs + WxKEYCONy(win_no-1, 0));
-+  writel(keycon1_data, regs + WxKEYCONy(win_no-1, 1));
-+ }
-+
- writel(data, regs + WINCON(win_no));
- writel(0x0, regs + WINxMAP(win_no));
+ drivers/md/bitmap.c |   29 +++++++++++----------
+ drivers/md/md.c     |   70 ++++++++++++++++++++++++++++----------------------
+ drivers/md/raid10.c |   12 ++++----
+ 3 files changed, 60 insertions(+), 51 deletions(-)
