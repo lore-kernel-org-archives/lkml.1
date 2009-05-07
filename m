@@ -1,85 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755276AbZEGXbq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbZEGXd0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755276AbZEGXbq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 19:31:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbZEGXbh
+	id S1755824AbZEGXd0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 19:33:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZEGXdR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 19:31:37 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:45195 "EHLO crca.org.au"
+	Thu, 7 May 2009 19:33:17 -0400
+Received: from sandeen.net ([209.173.210.139]:15713 "EHLO mail.sandeen.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751284AbZEGXbg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 19:31:36 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Fabio Comolli <fabio.comolli@gmail.com>,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
-In-Reply-To: <20090507161406.35d953df@jbarnes-g45>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	 <200905072022.15202.rjw@sisk.pl>
-	 <b637ec0b0905071157x2d6f050aqcb825241c51ccb84@mail.gmail.com>
-	 <200905072127.11995.rjw@sisk.pl> <1241728860.19600.207.camel@nigel-laptop>
-	 <20090507161406.35d953df@jbarnes-g45>
-Content-Type: text/plain
-Date: Fri, 08 May 2009 09:32:34 +1000
-Message-Id: <1241739155.19600.233.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	id S1752875AbZEGXdQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 19:33:16 -0400
+Message-ID: <4A036FBC.9020201@sandeen.net>
+Date: Thu, 07 May 2009 18:33:16 -0500
+From: Eric Sandeen <sandeen@sandeen.net>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+MIME-Version: 1.0
+To: Alexander Beregalov <a.beregalov@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>, xfs@oss.sgi.com
+Subject: Re: 2.6.30-rc4: xfs_fsr hangs
+References: <a4423d670905011333s664115bdh1d72392897567c1d@mail.gmail.com>
+In-Reply-To: <a4423d670905011333s664115bdh1d72392897567c1d@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Thu, 2009-05-07 at 16:14 -0700, Jesse Barnes wrote:
-> On Fri, 08 May 2009 06:41:00 +1000
-> Nigel Cunningham <nigel@tuxonice.net> wrote:
+Alexander Beregalov wrote:
+> # xfs_db -r /dev/sdc1
+> xfs_db> frag
+> actual 23805, ideal 22890, fragmentation factor 3.84%
+> # xfs_fsr -v /dev/sdc1
+> /mnt/c start inode=0
+> ino=158
+> extents before:3 after:1 DONE ino=158
 > 
-> > Hi.
-> > 
-> > On Thu, 2009-05-07 at 21:27 +0200, Rafael J. Wysocki wrote:
-> > > In fact I agree, but there's a catch.  The way in which TuxOnIce
-> > > operates LRU pages is based on some assumptions that may or may not
-> > > be satisfied in future, so if we decide to merge it, then we'll
-> > > have to make sure these assumptions will be satisfied.  That in
-> > > turn is going to require quite some discussion I guess.
-> > 
-> > Agreed. That's why I've got that GEMS patch - it's putting pages on
-> > the LRU that don't satisfy the former assumptions: they are used
-> > during hibernating and need to be atomically copied. If there are
-> > further developments in that area, I would hope we could just extend
-> > what's been done with GEMS.
-> 
-> Another option here would be to suspend all DRM operations earlier.
-> The suspend hook for i915 already does this, but maybe it needs to
-> happen sooner?  We'll probably want a generic DRM suspend hook soon too
-> (as the radeon memory manager lands) to shut down GPU activity in the
-> suspend and hibernate cases.
-> 
-> All that assumes I understand what's going on here though. :)  It
-> appears you delay saving the GEM (just GEM by the way, for Graphics/GPU
-> Execution Manager) backing store until late to avoid having the pages
-> move around out from under you?
+>  then it hangs
 
-Yeah. TuxOnIce saves some pages without doing an atomic copy of them. Up
-'til now, the algorithm has been LRU pages - pages used for TuxOnIce's
-userspace helpers. With GEM, we also need to make sure GEM pages are
-atomically copied and so also 'subtract' them from the list of pages
-that aren't atomically copied.
+Ok, yep with the testcase I proposed I see this on the fedora
+2.6.30-rc4.git3 x86 kernel as well:
 
-It's no great problem to do this, so I wouldn't ask you to change GEM to
-suspend DRM operations earlier. It's more important that GEM doesn't
-allocate extra pages unexpectedly - and I don't think that's likely
-anyway since we've switched away from X. This is important because
-TuxOnIce depends (for reliability) on having memory usage being
-predictable much more than swsusp and uswsusp do. (Larger images, less
-free RAM to begin with).
+# for I in `seq 10 -1 0`; do
+ dd if=/dev/zero of=fragfile bs=4k count=1 seek=$I conv=notrunc oflag=sync
+done
 
-Regards,
+# xfs_fsr fragfile
 
-Nigel
+=====================================
+[ BUG: bad unlock balance detected! ]
+-------------------------------------
+xfs_fsr/1459 is trying to release lock (&(&ip->i_iolock)->mr_lock) at:
+[<e248dedb>] xfs_iunlock+0x2c/0x92 [xfs]
+but there are no more locks to release!
 
+other info that might help us debug this:
+no locks held by xfs_fsr/1459.
+
+stack backtrace:
+Pid: 1459, comm: xfs_fsr Not tainted 2.6.30-0.78.rc4.git3.fc12.i586 #1
+Call Trace:
+ [<c07e2f2e>] ? printk+0x22/0x3c
+ [<c0465f34>] print_unlock_inbalance_bug+0xb3/0xd1
+ [<e248dedb>] ? xfs_iunlock+0x2c/0x92 [xfs]
+ [<c04661e2>] lock_release+0xd0/0x1a6
+ [<c04571ce>] up_write+0x29/0x50
+ [<e248dedb>] xfs_iunlock+0x2c/0x92 [xfs]
+ [<e2496bdb>] xfs_swap_extents+0x427/0x4cc [xfs]
+ [<e2496d5a>] xfs_swapext+0xda/0x11c [xfs]
+ [<c0a4586d>] ? kobject_uevent_init+0x30/0x6d
+ [<e24b2386>] xfs_file_ioctl+0x4ac/0x67e [xfs]
+ [<c0592f00>] ? avc_has_perm_noaudit+0x3b1/0x3cc
+ [<e24b1eda>] ? xfs_file_ioctl+0x0/0x67e [xfs]
+ [<c04ec8fa>] vfs_ioctl+0x29/0x91
+ [<c04ecdf8>] do_vfs_ioctl+0x496/0x4e3
+ [<c0a4586d>] ? kobject_uevent_init+0x30/0x6d
+ [<c05946b7>] ? selinux_file_ioctl+0x4d/0x62
+ [<c0a4586d>] ? kobject_uevent_init+0x30/0x6d
+ [<c04ece9a>] sys_ioctl+0x55/0x86
+ [<c040c6cb>] ? syscall_trace_enter+0xea/0x10f
+ [<c040419c>] syscall_call+0x7/0xb
+ [<c0a4586d>] ? kobject_uevent_init+0x30/0x6d
+
+there are 2 subsequent unlocks for the same inode:
+
+1:
+xfs_iunlock: ip ca2304c0 ino 132  flags 0x5
+Pid: 3648, comm: xfs_fsr Not tainted 2.6.30-0.78.rc4.git3.fc12.i586 #1
+Call Trace:
+ [<e3a81ee7>] xfs_iunlock+0x38/0xb9 [xfs]
+ [<e3a82404>] xfs_iput+0x20/0x40 [xfs]
+ [<e3a8793b>] xfs_inode_item_unlock+0x82/0x97 [xfs]
+ [<e3a9a288>] xfs_trans_unlock_chunk+0x96/0xe1 [xfs]
+ [<e3a9a37a>] xfs_trans_unlock_items+0x4f/0xd4 [xfs]
+ [<e3a985a9>] _xfs_trans_commit+0x275/0x307 [xfs]
+ [<e3a8ac27>] xfs_swap_extents+0x403/0x4cc [xfs]
+ [<e3a8adca>] xfs_swapext+0xda/0x11c [xfs]
+ [<e3aa63f6>] xfs_file_ioctl+0x4ac/0x67e [xfs]
+ [<c04ec8fa>] vfs_ioctl+0x29/0x91
+ [<c04ecdf8>] do_vfs_ioctl+0x496/0x4e3
+ [<c04ece9a>] sys_ioctl+0x55/0x86
+ [<c040419c>] syscall_call+0x7/0xb
+
+2:
+xfs_iunlock: ip ca230980 ino 131  flags 0x5
+Pid: 3648, comm: xfs_fsr Not tainted 2.6.30-0.78.rc4.git3.fc12.i586 #1
+Call Trace:
+ [<e3a81ee7>] xfs_iunlock+0x38/0xb9 [xfs]
+ [<e3a8ac4b>] xfs_swap_extents+0x427/0x4cc [xfs]
+ [<e3a8adca>] xfs_swapext+0xda/0x11c [xfs]
+ [<e3aa63f6>] xfs_file_ioctl+0x4ac/0x67e [xfs]
+ [<c04ec8fa>] vfs_ioctl+0x29/0x91
+ [<c04ecdf8>] do_vfs_ioctl+0x496/0x4e3
+ [<c04ece9a>] sys_ioctl+0x55/0x86
+ [<c040419c>] syscall_call+0x7/0xb
+
+Looking into it ... not sure offhand what caused this.
+
+-Eric
