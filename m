@@ -1,65 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759156AbZEGRT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932178AbZEGRVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759156AbZEGRT1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 13:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754292AbZEGRTS
+	id S932178AbZEGRVV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 13:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756514AbZEGRVJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 13:19:18 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49855 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753990AbZEGRTR (ORCPT
+	Thu, 7 May 2009 13:21:09 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:14185 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754292AbZEGRVI convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 13:19:17 -0400
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <cl@linux.com>
-Cc: Alok Kataria <akataria@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-In-Reply-To: <1241716422.6311.1524.camel@laptop>
-References: <1241462661.412.8.camel@alok-dev1>  <4A00ADDE.9000908@zytor.com>
-	 <1241560625.8665.17.camel@alok-dev1>
-	 <alpine.DEB.1.10.0905071010170.24528@qirst.com>
-	 <1241716053.6311.1514.camel@laptop>  <1241716422.6311.1524.camel@laptop>
-Content-Type: text/plain
-Date: Thu, 07 May 2009 19:18:38 +0200
-Message-Id: <1241716718.6311.1531.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 May 2009 13:21:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=l3vZ1OB5gEquItoPB26s6mU9MyHDq8gv5W9wYCKzPKPd/01mr7KRvkhNd3kKJVzcbL
+         IMfYMyU5FxR4MigKd750m6HG7TaVXvEAHm9z3CREL6xX18PlOv5PU8uWEnfjDf2YZJCO
+         yK2QzVbshbsoonquD1DYW/6+xKDfBhDgOVAyw=
+MIME-Version: 1.0
+In-Reply-To: <4A02B1CA.3060708@hiramoto.org>
+References: <43e72e890905070104u59eebcceu18718a733e388cc9@mail.gmail.com> 
+	<4A02B1CA.3060708@hiramoto.org>
+From: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Date: Thu, 7 May 2009 10:20:48 -0700
+Message-ID: <43e72e890905071020v26857c52p3abea96be04ef1d9@mail.gmail.com>
+Subject: Re: [ath9k-devel] New kernel recommendations for ath9k
+To: Karl Hiramoto <karl@hiramoto.org>
+Cc: linux-wireless <linux-wireless@vger.kernel.org>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Gabor Juhos <juhosg@openwrt.org>, Felix Fietkau <nbd@openwrt.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-07 at 19:13 +0200, Peter Zijlstra wrote:
-> On Thu, 2009-05-07 at 19:09 +0200, Peter Zijlstra wrote:
-> > On Thu, 2009-05-07 at 10:13 -0400, Christoph Lameter wrote:
-> > > I think we need to reduce the general tick frequency to be as low as
-> > > possible. With high resolution timers the tick frequency is just the
-> > > frequency with which the timer interrupt disturbs a running application.
-> > > 
-> > > Are there any benefits remaining from frequent timer interrupts? I would
-> > > think that 60 HZ would be sufficient.
-> > > 
-> > > It would be good if the kernel would be truly tickless. Scheduler events
-> > > would be driven by the scheduling intervals and not the invokations of the
-> > > scheduler softirq.
-> > 
-> > The only thing that's driven by the softirq is load-balancing, there's
-> > way more to the scheduler-tick than kicking that thing awake every so
-> > often.
-> > 
-> > The problem is that running the scheduler of off hrtimers is too
-> > expensive. We have the code, we tried it, people complained.
-> 
-> Therefore, decreasing the HZ value to say 50, we'd get a minimum
-> involuntary preemption granularity of 20ms, something on the high end of
-> barely usable.
+On Thu, May 7, 2009 at 3:02 AM, Karl Hiramoto <karl@hiramoto.org> wrote:
+> Luis R. Rodriguez wrote:
+>>
+>> For those not subscribed to the ath9k wiki on wireless.kernel.org [1]
+>> (which we recommend you do if you're a user) here's a quick note to
+>> let you know our latest kernel recommendations for using ath9k:
+>>
+>>  *  >= 2.6.27.22
+>>  *  >= 2.6.28.10
+>>  *  2.6.29
+>>
+>> If you want 802.11n support or AP support you'll want at least 2.6.29.
+>> If you happen to have one of our new 1x1 AR9285 devices (all AR9285
+>> devices are 1x1) then you'll need at least 2.6.29. If you want to
+>> start using ath9k on APs with AHB you will need at least 2.6.30 (still
+>> in RC series).
+>>
+>> As usual if you happen to be stuck on older kernels for one reason or
+>> another you can always use compat-wireless [2] and if that happens to
+>> be a little too bleeding edge we have now compat-wireless releases for
+>> stable kernel releases, starting as of the 2.6.30-rc series [3].
+>>
+>>  Luis
+>>
+>> [1] http://wireless.kernel.org/en/users/Drivers/ath9k
+>> [2] http://wireless.kernel.org/en/users/Download
+>> [3] http://wireless.kernel.org/en/users/Download/stable
+>>
+>
+> Thanks for the update.  If i want to use multiple AP's with Ath9k it it
+> still best to use wireless-testing?  Is multiple AP support in 2.6.30-rc
+> series net-next or wireless-next?
 
-Another user is RCU, the grace period is tick driven, growing these
-ticks by a factor 50 or so might require some tinkering with forced
-grace periods when we notice our batch queues getting too long.
+Yeah wireless-testing is best for that. I should also mention that if
+you want to use AP mode you want to be at least on 2.6.29 (your own
+kernel, not the compat-wireless one) if you care about Power Save
+buffering on the AP as otherwise even if you use a compat-wireless
+with code from > 2.6.29 those frames will be dropped. IIRC its due to
+the way we use skb->cb for this and there not being a clean way to
+backport this (so we just drop them).
 
+  Luis
