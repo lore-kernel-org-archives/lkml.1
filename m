@@ -1,132 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760740AbZEGJWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761187AbZEGJWx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760740AbZEGJWg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 05:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751837AbZEGJWZ
+	id S1761187AbZEGJWx (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 05:22:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760814AbZEGJWi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 05:22:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40342 "EHLO hera.kernel.org"
+	Thu, 7 May 2009 05:22:38 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40354 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752193AbZEGJWY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 05:22:24 -0400
-Date: Thu, 7 May 2009 09:21:49 GMT
+	id S1760350AbZEGJWg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 05:22:36 -0400
+Date: Thu, 7 May 2009 09:22:11 GMT
 From: tip-bot for Markus Metzger <markus.t.metzger@intel.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       markus.t.metzger@intel.com, tglx@linutronix.de, mingo@elte.hu
+       markus.t.metzger@intel.com, oleg@redhat.com, tglx@linutronix.de,
+       mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       markus.t.metzger@intel.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090403144549.794157000@intel.com>
-References: <20090403144549.794157000@intel.com>
-Subject: [tip:tracing/core] sched, hw-branch-tracer: add wait_task_context_switch() function to sched.h
-Message-ID: <tip-a26b89f05d194413c7238e0bea071054f6b5d3c8@git.kernel.org>
-Git-Commit-ID: a26b89f05d194413c7238e0bea071054f6b5d3c8
+       markus.t.metzger@intel.com, tglx@linutronix.de, oleg@redhat.com,
+       mingo@elte.hu
+In-Reply-To: <20090403144551.919636000@intel.com>
+References: <20090403144551.919636000@intel.com>
+Subject: [tip:tracing/core] x86, bts: wait until traced task has been scheduled out
+Message-ID: <tip-8d99b3ac2726e5edd97ad147fa5c1f2acb63a745@git.kernel.org>
+Git-Commit-ID: 8d99b3ac2726e5edd97ad147fa5c1f2acb63a745
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 07 May 2009 09:21:51 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 07 May 2009 09:22:12 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  a26b89f05d194413c7238e0bea071054f6b5d3c8
-Gitweb:     http://git.kernel.org/tip/a26b89f05d194413c7238e0bea071054f6b5d3c8
+Commit-ID:  8d99b3ac2726e5edd97ad147fa5c1f2acb63a745
+Gitweb:     http://git.kernel.org/tip/8d99b3ac2726e5edd97ad147fa5c1f2acb63a745
 Author:     Markus Metzger <markus.t.metzger@intel.com>
-AuthorDate: Fri, 3 Apr 2009 16:43:34 +0200
+AuthorDate: Fri, 3 Apr 2009 16:43:36 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 7 Apr 2009 13:36:12 +0200
+CommitDate: Tue, 7 Apr 2009 13:36:15 +0200
 
-sched, hw-branch-tracer: add wait_task_context_switch() function to sched.h
+x86, bts: wait until traced task has been scheduled out
 
-Add a function to wait until some other task has been
-switched out at least once.
+In order to stop branch tracing for a running task, we need to first
+clear the branch tracing control bits before we may free the tracing
+buffer.
 
-This differs from wait_task_inactive() subtly, in that the
-latter will wait until the task has left the CPU.
+If the traced task is running, the cpu might still trace that task
+after the branch trace control bits have cleared.
 
+Wait until the traced task has been scheduled out before proceeding.
+
+A similar problem affects the task debug store context. We first remove
+the context, then we need to wait until the task has been scheduled
+out before we can free the context memory.
+
+Reviewed-by: Oleg Nesterov <oleg@redhat.com>
 Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
-Cc: markus.t.metzger@gmail.com
 Cc: roland@redhat.com
 Cc: eranian@googlemail.com
-Cc: oleg@redhat.com
 Cc: juan.villacis@intel.com
 Cc: ak@linux.jf.intel.com
-LKML-Reference: <20090403144549.794157000@intel.com>
+LKML-Reference: <20090403144551.919636000@intel.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- include/linux/sched.h |    2 ++
- kernel/sched.c        |   43 +++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 45 insertions(+), 0 deletions(-)
+ arch/x86/kernel/ds.c |   23 +++++++++++++++++++----
+ 1 files changed, 19 insertions(+), 4 deletions(-)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index b94f354..a5b9a83 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1993,8 +1993,10 @@ extern void set_task_comm(struct task_struct *tsk, char *from);
- extern char *get_task_comm(char *to, struct task_struct *tsk);
+diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
+index c730155..5cd137a 100644
+--- a/arch/x86/kernel/ds.c
++++ b/arch/x86/kernel/ds.c
+@@ -299,6 +299,7 @@ static inline struct ds_context *ds_get_context(struct task_struct *task)
  
- #ifdef CONFIG_SMP
-+extern void wait_task_context_switch(struct task_struct *p);
- extern unsigned long wait_task_inactive(struct task_struct *, long match_state);
- #else
-+static inline void wait_task_context_switch(struct task_struct *p) {}
- static inline unsigned long wait_task_inactive(struct task_struct *p,
- 					       long match_state)
+ static inline void ds_put_context(struct ds_context *context)
  {
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 6cc1fd5..f91bc81 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -2003,6 +2003,49 @@ migrate_task(struct task_struct *p, int dest_cpu, struct migration_req *req)
++	struct task_struct *task;
+ 	unsigned long irq;
+ 
+ 	if (!context)
+@@ -313,14 +314,20 @@ static inline void ds_put_context(struct ds_context *context)
+ 
+ 	*(context->this) = NULL;
+ 
+-	if (context->task)
+-		clear_tsk_thread_flag(context->task, TIF_DS_AREA_MSR);
++	task = context->task;
++
++	if (task)
++		clear_tsk_thread_flag(task, TIF_DS_AREA_MSR);
+ 
+-	if (!context->task || (context->task == current))
++	if (!task || (task == current))
+ 		wrmsrl(MSR_IA32_DS_AREA, 0);
+ 
+ 	spin_unlock_irqrestore(&ds_lock, irq);
+ 
++	/* The context might still be in use for context switching. */
++	if (task && (task != current))
++		wait_task_context_switch(task);
++
+ 	kfree(context);
  }
  
- /*
-+ * wait_task_context_switch -	wait for a thread to complete at least one
-+ *				context switch.
-+ *
-+ * @p must not be current.
-+ */
-+void wait_task_context_switch(struct task_struct *p)
-+{
-+	unsigned long nvcsw, nivcsw, flags;
-+	int running;
-+	struct rq *rq;
+@@ -781,15 +788,23 @@ struct pebs_tracer *ds_request_pebs(struct task_struct *task,
+ 
+ void ds_release_bts(struct bts_tracer *tracer)
+ {
++	struct task_struct *task;
 +
-+	nvcsw	= p->nvcsw;
-+	nivcsw	= p->nivcsw;
-+	for (;;) {
-+		/*
-+		 * The runqueue is assigned before the actual context
-+		 * switch. We need to take the runqueue lock.
-+		 *
-+		 * We could check initially without the lock but it is
-+		 * very likely that we need to take the lock in every
-+		 * iteration.
-+		 */
-+		rq = task_rq_lock(p, &flags);
-+		running = task_running(rq, p);
-+		task_rq_unlock(rq, &flags);
+ 	if (!tracer)
+ 		return;
+ 
++	task = tracer->ds.context->task;
 +
-+		if (likely(!running))
-+			break;
-+		/*
-+		 * The switch count is incremented before the actual
-+		 * context switch. We thus wait for two switches to be
-+		 * sure at least one completed.
-+		 */
-+		if ((p->nvcsw - nvcsw) > 1)
-+			break;
-+		if ((p->nivcsw - nivcsw) > 1)
-+			break;
+ 	ds_suspend_bts(tracer);
+ 
+ 	WARN_ON_ONCE(tracer->ds.context->bts_master != tracer);
+ 	tracer->ds.context->bts_master = NULL;
+ 
+-	put_tracer(tracer->ds.context->task);
++	/* Make sure tracing stopped and the tracer is not in use. */
++	if (task && (task != current))
++		wait_task_context_switch(task);
 +
-+		cpu_relax();
-+	}
-+}
-+
-+/*
-  * wait_task_inactive - wait for a thread to unschedule.
-  *
-  * If @match_state is nonzero, it's the @p->state value just checked and
++	put_tracer(task);
+ 	ds_put_context(tracer->ds.context);
+ 
+ 	kfree(tracer);
