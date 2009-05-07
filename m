@@ -1,71 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758420AbZEGOrU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbZEGOrf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758420AbZEGOrU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 10:47:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZEGOrJ
+	id S1756224AbZEGOrf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 10:47:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756284AbZEGOrO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 10:47:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50422 "EHLO mx2.redhat.com"
+	Thu, 7 May 2009 10:47:14 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:45914 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752592AbZEGOrG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 10:47:06 -0400
-Date: Thu, 7 May 2009 10:45:01 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
-       m-ikeda@ds.jp.nec.com, peterz@infradead.org
-Subject: Re: IO scheduler based IO Controller V2
-Message-ID: <20090507144501.GB9463@redhat.com>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <20090506023332.GA1212@redhat.com> <20090506203228.GH8180@redhat.com> <20090506213453.GC4282@linux> <20090506215235.GJ8180@redhat.com> <20090507090450.GA4613@linux> <20090507141126.GA9463@redhat.com>
+	id S1755724AbZEGOrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 10:47:13 -0400
+Date: Thu, 7 May 2009 15:47:11 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix nodes_cover_memory
+Message-ID: <20090507144710.GB20099@csn.ul.ie>
+References: <4A01C08F.8020607@kernel.org> <20090507134723.GA32409@csn.ul.ie> <20090507142121.GL481@elte.hu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <20090507141126.GA9463@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090507142121.GL481@elte.hu>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 10:11:26AM -0400, Vivek Goyal wrote:
-
-[..]
-> [root@chilli io-throttle-tests]# ./andrea-test-script.sh 
-> RT: 223+1 records in
-> RT: 223+1 records out
-> RT: 234179072 bytes (234 MB) copied, 0.988448 s, 237 MB/s
-> BE: 223+1 records in
-> BE: 223+1 records out
-> BE: 234179072 bytes (234 MB) copied, 1.93885 s, 121 MB/s
+On Thu, May 07, 2009 at 04:21:21PM +0200, Ingo Molnar wrote:
 > 
-> So I am still seeing the issue with differnt kind of disks also. At this point
-> of time I am really not sure why I am seeing such results.
+> * Mel Gorman <mel@csn.ul.ie> wrote:
+> 
+> > On Wed, May 06, 2009 at 09:53:35AM -0700, Yinghai Lu wrote:
+> > > 
+> > > found one system that missed one entry for one node in SRAT, and that SRAT is not
+> > > rejected by nodes_cover_memory()
+> > > 
+> > > it turns out that we can not use absent_page_in_range to calaulate
+> > > e820ram, bacause that will use early_node_map and that is AND result of
+> > > e820 and SRAT.
+> > > 
+> > 
+> > Correct, good spot.
+> > 
+> > > revert back to use e820_hole_size instead.
+> > > 
+> > 
+> > I think the patch fixing this part of the problem is good, but the changelog
+> > could be better. It took me a while to figure out what the problem was and
+> > why this patch addressed it.
+> > 
+> > How about something like the following?
+> > 
+> > ====
+> > Sanity check the e820 against the SRAT table using only information from the e820 map
+> > 
+> > node_cover_memory() sanity checks the SRAT table by ensuring that all
+> > PXMs cover the memory reported in the e820. However, when calculating
+> > the size of the holes in the e820, it uses the early_node_map[] which
+> > contains information taken from both SRAT and e820. If the SRAT is
+> > missing an entry, then it is not detected that the SRAT table is
+> > incorrect and missing entries.
+> > 
+> > This patch uses the e820 map to calculate the holes instead of
+> > early_node_map[].
+> > ====
+> > 
+> > As an aside, it strikes me as odd that we discard an entire SRAT because it
+> > is missing an entry in the e820. The impact may only be that the affinity
+> > for a range of memory is incorrect, but it does not necessarily mean that the
+> > entire table is incorrect. The intention of the code appears to be "if there is
+> > any error in the SRAT, it's best ignored" though so maybe it's best left alone.
+> > 
+> > > also change that difference checking to 1M instead of 4G,
+> > > because e820ram, and pxmram are in pages.
+> > > 
+> > 
+> > While I agree with you, this should be a separate patch with its own
+> > changelog. Something like
+> > 
+> > ===
+> > Allow 1MB of slack between the e820 map and SRAT, not 4GB
+> > 
+> > It is expected that there be slight differences between the e820 map and
+> > the SRAT table and the intention was that 1MB of slack be allowed. The
+> > calculation comparing e820ram and pxmram assumes the units are bytes,
+> > when they are in fact pages. This means 4GB of slack is being allowed,
+> > not 1MB. This patch makes the correct comparison
+> > ===
+> > 
+> > (1<<(20 - PAGE_SHIFT)) is a bit unreadable. At the very least, change the
+> > comment above from "Allow a bit of slack" to "Allow 1MB of slack" so the
+> > next reader knows what the intention of (1<<(20 - PAGE_SHIFT)) is.
+> > 
+> > Thanks
+> 
+> thanks Mel!
+> 
+> Yinghai, mind resending the patch as two patches, with Mel's 
+> changelogs in place and with Mel's Acked-by as well?
+> 
 
-Hold on. I think I found the culprit here. I was thinking that what is
-the difference between two setups and realized that with vanilla kernels
-I had done "make defconfig" and with io-throttle kernels I had used an
-old config of my and did "make oldconfig". So basically config files
-were differnt.
+My bad for leaving it out, but yes. Assuming there are two patches with the
+updated changelog, I'm fine with adding the
 
-I now used the same config file and issues seems to have gone away. I
-will look into why an old config file can force such kind of issues.
+Acked-by: Mel Gorman <mel@csn.ul.ie>
 
-So now we are left with the issue of loosing the notion of priority and
-class with-in cgroup. In fact on bigger systems we will probably run into
-issues of kiothrottled scalability as single thread is trying to cater to
-all the disks.
-
-If we do max bw control at IO scheduler level, then I think we should be able
-to control max bw while maintaining the notion of priority and class with-in
-cgroup. Also there are multiple pdflush threads and jens seems to be pushing
-flusher threads per bdi which will help us achieve greater scalability and
-don't have to replicate that infrastructure for kiothrottled also.
-
-Thanks
-Vivek
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
