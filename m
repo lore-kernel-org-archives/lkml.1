@@ -1,71 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761542AbZEGMaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761285AbZEGMcT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761542AbZEGMaM (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 08:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755007AbZEGM34
+	id S1761285AbZEGMcT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 08:32:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbZEGMcH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 08:29:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:47496 "EHLO mx2.redhat.com"
+	Thu, 7 May 2009 08:32:07 -0400
+Received: from trinity.fluff.org ([89.16.178.74]:58040 "EHLO trinity.fluff.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752606AbZEGM3z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 08:29:55 -0400
-Message-ID: <4A02D40D.7060307@redhat.com>
-Date: Thu, 07 May 2009 15:29:01 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1755007AbZEGMcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 08:32:06 -0400
+Date: Thu, 7 May 2009 13:31:57 +0100
+From: Ben Dooks <ben-linux@fluff.org>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>,
+       "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>
+Subject: Re: [PATCH] [drivers] [SPI] SPI_GPIO: add support for controllers with missing MISO pin
+Message-ID: <20090507123157.GU32548@trinity.fluff.org>
+References: <E4D3F24EA6C9E54F817833EAE0D912AC02243DBF8C@bssrvexch01.BS.local>
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Chris Wright <chrisw@sous-sol.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com>
-In-Reply-To: <4A018DF2.6010301@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E4D3F24EA6C9E54F817833EAE0D912AC02243DBF8C@bssrvexch01.BS.local>
+X-Disclaimer: These are my views alone.
+X-URL: http://www.fluff.org/
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> Chris Wright wrote:
->   
->> * Gregory Haskins (ghaskins@novell.com) wrote:
->>   
->>     
->>> Chris Wright wrote:
->>>     
->>>       
->>>> But a free-form hypercall(unsigned long nr, unsigned long *args, size_t count)
->>>> means hypercall number and arg list must be the same in order for code
->>>> to call hypercall() in a hypervisor agnostic way.
->>>>       
->>>>         
->>> Yes, and that is exactly the intention.  I think its perhaps the point
->>> you are missing.
->>>     
->>>       
->> Yes, I was reading this as purely any hypercall, but it seems a bit
->> more like:
->>  pv_io_ops->iomap()
->>  pv_io_ops->ioread()
->>  pv_io_ops->iowrite()
->>   
->>     
->
-> Right.
->   
+On Thu, May 07, 2009 at 02:24:11PM +0200, Marek Szyprowski wrote:
+> There are some boards that do not strictly follow SPI standard and use only 3 wires (SCLK, MOSI, SS) for connecting some simple auxiliary chips and controls them with GPIO based 'spi controller'. In this configuration the MISO line is missing (it is not required if the chip does not transfer any data back to host). The example of such board is a NCP ARM S3C64XX based machine. This patch adds support for such non-standard configuration in GPIO-based SPI controller.
 
-Hmm, reminds me of something I thought of a while back.
+Please wrap your descriptions to 77 or less characters per line.
+ 
+> Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
+> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> 
+> --- 
+> 
+> diff --git a/drivers/spi/spi_gpio.c b/drivers/spi/spi_gpio.c
+> index 26bd03e..5b75601 100644
+> --- a/drivers/spi/spi_gpio.c
+> +++ b/drivers/spi/spi_gpio.c
+> @@ -114,7 +114,10 @@ static inline void setmosi(const struct spi_device *spi, int is_on)
+>  
+>  static inline int getmiso(const struct spi_device *spi)
+>  {
+> -	return !!gpio_get_value(SPI_MISO_GPIO);
+> +	if (SPI_MISO_GPIO)
+> +		return !!gpio_get_value(SPI_MISO_GPIO);
+> +	else
+> +		return 0;
+>  }
 
-We could implement an 'mmio hypercall' that does mmio reads/writes via a 
-hypercall instead of an mmio operation.  That will speed up mmio for 
-emulated devices (say, e1000).  It's easy to hook into Linux 
-(readl/writel), is pci-friendly, non-x86 friendly, etc.
-
-It also makes the device work when hypercall support is not available 
-(qemu/tcg); you simply fall back on mmio.
+Is zero a good approximation for 'no gpio' ?
+  
+>  #undef pdata
+> @@ -243,9 +246,11 @@ spi_gpio_request(struct spi_gpio_platform_data *pdata, const char *label)
+>  	if (value)
+>  		goto done;
+>  
+> -	value = spi_gpio_alloc(SPI_MISO_GPIO, label, true);
+> -	if (value)
+> -		goto free_mosi;
+> +	if (SPI_MISO_GPIO) {
+> +		value = spi_gpio_alloc(SPI_MISO_GPIO, label, true);
+> +		if (value)
+> +			goto free_mosi;
+> +	}
+>  
+>  	value = spi_gpio_alloc(SPI_SCK_GPIO, label, false);
+>  	if (value)
+> @@ -254,7 +259,8 @@ spi_gpio_request(struct spi_gpio_platform_data *pdata, const char *label)
+>  	goto done;
+>  
+>  free_miso:
+> -	gpio_free(SPI_MISO_GPIO);
+> +	if (SPI_MISO_GPIO)
+> +		gpio_free(SPI_MISO_GPIO);
+>  free_mosi:
+>  	gpio_free(SPI_MOSI_GPIO);
+>  done:
+> @@ -308,7 +314,8 @@ static int __init spi_gpio_probe(struct platform_device *pdev)
+>  	if (status < 0) {
+>  		spi_master_put(spi_gpio->bitbang.master);
+>  gpio_free:
+> -		gpio_free(SPI_MISO_GPIO);
+> +		if (SPI_MISO_GPIO)
+> +			gpio_free(SPI_MISO_GPIO);
+>  		gpio_free(SPI_MOSI_GPIO);
+>  		gpio_free(SPI_SCK_GPIO);
+>  		spi_master_put(master);
+> @@ -332,7 +339,8 @@ static int __exit spi_gpio_remove(struct platform_device *pdev)
+>  
+>  	platform_set_drvdata(pdev, NULL);
+>  
+> -	gpio_free(SPI_MISO_GPIO);
+> +	if (SPI_MISO_GPIO)
+> +		gpio_free(SPI_MISO_GPIO);
+>  	gpio_free(SPI_MOSI_GPIO);
+>  	gpio_free(SPI_SCK_GPIO);
+> 
+> 
+> -------------------------------------------------------------------
+> List admin: http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm-kernel
+> FAQ:        http://www.arm.linux.org.uk/mailinglists/faq.php
+> Etiquette:  http://www.arm.linux.org.uk/mailinglists/etiquette.php
 
 -- 
-error compiling committee.c: too many arguments to function
+-- 
+Ben
+
+Q:      What's a light-year?
+A:      One-third less calories than a regular year.
 
