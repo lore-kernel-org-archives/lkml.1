@@ -1,78 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759704AbZEGP0X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760573AbZEGP37@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759704AbZEGP0X (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 11:26:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZEGP0J
+	id S1760573AbZEGP37 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 11:29:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZEGP3t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 11:26:09 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50701 "EHLO mx2.redhat.com"
+	Thu, 7 May 2009 11:29:49 -0400
+Received: from mx01.bfk.de ([193.227.124.2]:47106 "EHLO mx01.bfk.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754060AbZEGP0H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 11:26:07 -0400
-Message-ID: <4A02FD8D.50002@redhat.com>
-Date: Thu, 07 May 2009 18:26:05 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1752592AbZEGP3s convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 11:29:48 -0400
+X-Greylist: delayed 684 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 May 2009 11:29:47 EDT
+To: Matt Mackall <mpm@selenic.com>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
+       security@kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
+       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       Dave Jones <davej@redhat.com>
+Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged processes
+References: <m1vdogbows.fsf@fess.ebiederm.org>
+	<alpine.LFD.2.01.0905041514350.4983@localhost.localdomain>
+	<20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu>
+	<m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu>
+	<20090505202219.GL31071@waste.org> <20090506103034.GA25203@elte.hu>
+	<20090506162543.GT31071@waste.org>
+	<alpine.LFD.2.01.0905060942340.4983@localhost.localdomain>
+	<20090506175717.GY31071@waste.org>
+From: Florian Weimer <fweimer@bfk.de>
+Date: Thu, 07 May 2009 17:16:27 +0200
+In-Reply-To: <20090506175717.GY31071@waste.org> (Matt Mackall's message of "Wed, 6 May 2009 12:57:17 -0500")
+Message-ID: <82prel54fo.fsf@mid.bfk.de>
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>, viro@ZenIV.linux.org.uk,
-       kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via eventfd-notification
- interface
-References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A0175F0.1090705@novell.com> <alpine.DEB.1.10.0905060818000.32007@makko.or.mcafeemobile.com> <4A01AEC1.8020201@novell.com> <alpine.DEB.1.10.0905061834080.32606@makko.or.mcafeemobile.com> <4A02AE65.3000800@redhat.com> <20090507134607.GA25311@amt.cnet> <4A02E9C5.7020704@novell.com> <4A02F160.7080907@redhat.com> <4A02F63B.60104@novell.com>
-In-Reply-To: <4A02F63B.60104@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
+* Matt Mackall:
 
-  
-
->> This is my preferred option.  For a virtio-net-server in the kernel,
->> we'd service its eventfd in qemu, raising and lowering the pci
->> interrupt in the traditional way.
->>
->> But we'd still need to know when to lower the interrupt.  How?
->>     
+> On Wed, May 06, 2009 at 09:48:20AM -0700, Linus Torvalds wrote:
+>> 
+>> Matt, are you willing to ack my suggested patch which adds history to the 
+>> mix? Did somebody test that? I have this memory of there being an 
+>> "exploit" program to show the non-randomness of the values, but I can't 
+>> recall details, and would really want to get a second opinion from 
+>> somebody who cares about PRNG's.
 >
-> IIUC, isn't that  usually device/subsystem specific, and out of scope of
-> the GSI delivery vehicle?  For instance, most devices I have seen with
-> level ints have a register in their device register namespace for acking
-> the int.  
+> I still don't like it. I bounced it off some folks on the adversarial
+> side of things and they didn't think it looked strong enough either.
+> Full MD5 collisions can be generated about as fast as they can be
+> checked, which makes _reduced strength_ MD4 not much better than an
+> LFSR in terms of attack potential.
 
-Yes it is.
+Well, with periodic reseeding, even that shouldn't be a problem.  You
+don't need collision resistance at all, so those MD5 attacks don't
+tell you anything about the difficulty of state recovery/prediction
+attacks on your variant.  (The trouble with hash functions is that
+they haven't got any secrets to work from.  With seeded PRNGs, this is
+obviously different.)
 
-> As an aside, this is what causes some of the grief in dealing
-> with shared interrupts like KVM pass-through and/or threaded-isrs:  
-> There isn't a standardized way to ACK them.
->   
+On the other hand, most people who need a quick, unpredictable source
+of randomness seem to use RC4 with a random key initialized from a
+more costly source.  (If you're paranoid, you should discard the first
+few hundred bytes.)  The nice thing is that you can use a well-tested
+primitive, unchanged, so it's easier to avoid nasty suprises.
 
-So we'd need a side channel to tell userspace to lower the irq.  Another 
-eventfd likely.
-
-Note we don't support device assignment for devices with shared interrupts.
-
-> You may also see some generalization of masking/acking in things like
-> the MSI-X table.  But again, this would be out of scope of the general
-> GSI delivery path IIUC.
->
-> I understand that there is a feedback mechanism in the ioapic model for
-> calling back on acknowledgment of the interrupt.  But I am not sure what
-> is how the real hardware works normally, and therefore I am not
-> convinced that is something we need to feed all the way back (i.e. via
-> irqfd or whatever).  In the interest of full disclosure, its been a few
-> years since I studied the xAPIC docs, so I might be out to lunch on that
-> assertion. ;)
->   
-
-Right, that ack thing is completely internal, used for catching up on 
-time drift, and for shutting down level triggered assigned interrupts.
+Oh, and you should really, really ditch that Tausworthe generator (in
+lib/random32.c).
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Florian Weimer                <fweimer@bfk.de>
+BFK edv-consulting GmbH       http://www.bfk.de/
+Kriegsstraﬂe 100              tel: +49-721-96201-1
+D-76133 Karlsruhe             fax: +49-721-96201-99
