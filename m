@@ -1,66 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761104AbZEGRKZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761472AbZEGRLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761104AbZEGRKZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 13:10:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbZEGRKK
+	id S1761472AbZEGRLU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 13:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755304AbZEGRLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 13:10:10 -0400
-Received: from casper.infradead.org ([85.118.1.10]:49150 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755123AbZEGRKJ (ORCPT
+	Thu, 7 May 2009 13:11:11 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:39169 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753469AbZEGRLK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 13:10:09 -0400
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-From: Peter Zijlstra <peterz@infradead.org>
-To: Christoph Lameter <cl@linux.com>
-Cc: Alok Kataria <akataria@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	Thu, 7 May 2009 13:11:10 -0400
+Date: Thu, 7 May 2009 18:09:09 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Christoph Lameter <cl@linux.com>,
+       Alok Kataria <akataria@vmware.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
        the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <alpine.DEB.1.10.0905071010170.24528@qirst.com>
-References: <1241462661.412.8.camel@alok-dev1>  <4A00ADDE.9000908@zytor.com>
-	 <1241560625.8665.17.camel@alok-dev1>
-	 <alpine.DEB.1.10.0905071010170.24528@qirst.com>
-Content-Type: text/plain
-Date: Thu, 07 May 2009 19:07:33 +0200
-Message-Id: <1241716053.6311.1514.camel@laptop>
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Reduce the default HZ value
+Message-ID: <20090507180909.4b0a8672@lxorguk.ukuu.org.uk>
+In-Reply-To: <4A031269.3000603@garzik.org>
+References: <1241462661.412.8.camel@alok-dev1>
+	<4A00ADDE.9000908@zytor.com>
+	<1241560625.8665.17.camel@alok-dev1>
+	<alpine.DEB.1.10.0905071010170.24528@qirst.com>
+	<20090507161440.5b9c067d@lxorguk.ukuu.org.uk>
+	<4A02FE91.8070006@zytor.com>
+	<4A031269.3000603@garzik.org>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-07 at 10:13 -0400, Christoph Lameter wrote:
-> I think we need to reduce the general tick frequency to be as low as
-> possible. With high resolution timers the tick frequency is just the
-> frequency with which the timer interrupt disturbs a running application.
+On Thu, 07 May 2009 12:55:05 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
+
+> H. Peter Anvin wrote:
+> > Alan Cox wrote:
+> >> Hooray - finally someone admits the *real* problem here, and for power
+> >> management too. Otherwise known as "referencing jiffies as a variable must
+> >> die"
+> > 
+> > Amen.  Also, "using HZ as a unit of measurement must die, too."
 > 
-> Are there any benefits remaining from frequent timer interrupts? I would
-> think that 60 HZ would be sufficient.
+> Love to -- now, what will it be replaced with?
 > 
-> It would be good if the kernel would be truly tickless. Scheduler events
-> would be driven by the scheduling intervals and not the invokations of the
-> scheduler softirq.
+> grep for 'deadline' in drivers/ata/libata* to find an example not so 
+> easily converted away from jiffies.
 
-The only thing that's driven by the softirq is load-balancing, there's
-way more to the scheduler-tick than kicking that thing awake every so
-often.
+I don't see any.
 
-The problem is that running the scheduler of off hrtimers is too
-expensive. We have the code, we tried it, people complained.
+I do see a complicated interface that appears to actually really want to
+implement
 
-Another random user that relies on the jiffy tick is
-CLOCK_THREAD_CPUTIME_ID posix timers, although I'm planning to convert
-that to hrtimers some time in the future.
+		add_timer(&foo->expiry_timer);
 
-We also use the scheduler tick to generate a somewhat coupled time
-source from flaky TSCs -- reducing HZ decreases the accuracy. This is
-something only fixable in hardware by providing a proper (and cheap)
-high resolution clock source -- nehalem class machines have such a
-thing, provided you stick to one (maybe two) sockets [s390, ppc64 and
-sparc64 also rule].
+and checks against the timer completing. In fact it looks as if all the
+stuff in there is really down to
 
+		add a timer
+		check if it expired
+		check how long until it expires
+		delete it
 
+And you might as well measure that in HZ=1000's better known as
+"milliseconds"
 
