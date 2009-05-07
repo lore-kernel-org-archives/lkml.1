@@ -1,123 +1,412 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760689AbZEGOzK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760818AbZEGO5h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760689AbZEGOzK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 10:55:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752337AbZEGOyz
+	id S1760818AbZEGO5h (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 10:57:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754526AbZEGO5V
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 10:54:55 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:52527 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751007AbZEGOyz (ORCPT
+	Thu, 7 May 2009 10:57:21 -0400
+Received: from exprod7og112.obsmtp.com ([64.18.2.177]:55040 "EHLO
+	exprod7og112.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752178AbZEGO5T convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 10:54:55 -0400
-Message-ID: <4A02F63B.60104@novell.com>
-Date: Thu, 07 May 2009 10:54:51 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Thu, 7 May 2009 10:57:19 -0400
+From: "Yang, Bo" <Bo.Yang@lsi.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+CC: "James.Bottomley@HansenPartnership.com" 
+	<James.Bottomley@HansenPartnership.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Austria, Winston" <Winston.Austria@lsi.com>
+Date: Thu, 7 May 2009 08:56:35 -0600
+Subject: RE: [PATCH 2/10] scsi: megaraid_sas - Add Poll Wait mechanism to
+ MegaRAID SAS driver (PART-I)
+Thread-Topic: [PATCH 2/10] scsi: megaraid_sas - Add Poll Wait mechanism to
+ MegaRAID SAS driver (PART-I)
+Thread-Index: AcnOkH9mOGzP0JxsRiGCo7/jaaz3ZgAkY5yg
+Message-ID: <4B6A08C587958942AA3002690DD4F8C354FF72A1@cosmail02.lsi.com>
+In-Reply-To: <20090506141705.5edc74d9.akpm@linux-foundation.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>,
-       Davide Libenzi <davidel@xmailserver.org>, viro@ZenIV.linux.org.uk,
-       kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via eventfd-notification
- interface
-References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A0175F0.1090705@novell.com> <alpine.DEB.1.10.0905060818000.32007@makko.or.mcafeemobile.com> <4A01AEC1.8020201@novell.com> <alpine.DEB.1.10.0905061834080.32606@makko.or.mcafeemobile.com> <4A02AE65.3000800@redhat.com> <20090507134607.GA25311@amt.cnet> <4A02E9C5.7020704@novell.com> <4A02F160.7080907@redhat.com>
-In-Reply-To: <4A02F160.7080907@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig9406DB23D9EC2EE661F9CCFE"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig9406DB23D9EC2EE661F9CCFE
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Andrew,
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->> One thing I was thinking here was that I could create a flag for the
->> kvm_irqfd() function for something like "KVM_IRQFD_MODE_CLEAR".  This
->> flag when specified at creation time will cause the event to execute a=
+Thanks for the review and good catch.  The following is the changes I did:
 
->> clear operation instead of a set when triggered.  That way, the defaul=
-t
->> mode is an edge-triggered set.  The non-default mode is to trigger a
->> clear.  Level-triggered ints could therefore create two irqfds, one fo=
-r
->> raising, the other for clearing.
->>  =20
+1. 
+
+> +       if ((!cmd->abort_aen) && (instance->unload == 0)) {
+> +               megasas_aen_polling(instance);
+> +       }
+
+> I see you're not a big fan of checkpatch, nor of kernel coding style :(
+
+Changed to:
++       if (!cmd->abort_aen && instance->unload == 0) {
++               megasas_aen_polling(instance);
++       }
+
+2.
+
+> +       /*
+> +       * cancel the delayed work if this work still in queue
+> +       */
+> +       if (instance->hotplug_wk != NULL) {
+> +               cancel_delayed_work(
+> +                       (struct delayed_work *)instance->hotplug_wk);
+
+>whah?  Can't do that!  cancel_delayed_work() will do del_timer_sync()
+>on megasas_instance.flag and will crash.
+
+> +                       
+
+> +               flush_scheduled_work();
+
+Changed to:
++
++       /*
++       * cancel the delayed work if this work still in queue
++       */
++       if (instance->ev != NULL) {
++               struct megasas_aen_event *ev = instance->ev;
++               cancel_delayed_work(
++                       (struct delayed_work *)&ev->hotplug_work);
++               flush_scheduled_work();
++               instance->ev = NULL;
++       }
+        tasklet_kill(&instance->isr_tasklet);
+
+.....
+
++                       ev->instance = instance;
++                       instance->ev = ev;
++                       INIT_WORK(&ev->hotplug_work, megasas_scsi_scan_host);
++                       schedule_delayed_work(
++                               (struct delayed_work *)&ev->hotplug_work, 0);
+
+
+3.
+> +       instance->hotplug_wk = NULL;
+> +       if (!instance) {
+
+>oh come on.  If this test returns true then the preceding statement
+>just oopsed the kernel.
+
+> +               printk(KERN_ERR "%s: invalid instance!\n", __FUNCTION__); 
+
+Changed to:
+
++static void
++megasas_scsi_scan_host(struct work_struct *work)
++{
++       struct megasas_aen_event *ev = container_of(work,
++               struct megasas_aen_event, hotplug_work);
++       struct megasas_instance *instance = ev->instance;
++
++       if (!instance) {
++               printk(KERN_ERR "invalid instance!\n");
++               kfree(ev);
++               return;
++       }
++
++       printk(KERN_INFO "scanning ...\n");
++       scsi_scan_host(instance->host);
++       kfree(ev);
++       instance->ev = NULL;
++}
+
+4. 
+
+> +       if (instance->evt_detail) {
+> +               printk(KERN_INFO "%s[%d]: event code 0x%04x\n", __FUNCTION__,
+
+Users of checkpatch know to use __func__.
+
+> +                       instance->host->host_no, instance->evt_detail-
+
+Changed to:
+
++               printk(KERN_INFO "get event code 0x%04x\n",
++                       instance->evt_detail->code); 
+
+
+5.
+
+> +
+> +       /**
+> +       * Register AEN with FW for latest sequence number plus 1
+> +       **/
+
+>The /** token is used to introduce a kerneldoc comment.  This is not a
+>kerneldoc comment.
+
+Changed to:
+
++	/* Register AEN with FW for latest sequence number plus 1 */
+
+6. 
+>         struct tasklet_struct isr_tasklet;
+> +       struct work_struct *hotplug_wk;
+
+>"hotplug_work"
+
++       struct megasas_aen_event *ev;
+
+ 
+Thanks,
+
+Bo Yang
+
+-----Original Message-----
+From: Andrew Morton [mailto:akpm@linux-foundation.org] 
+Sent: Wednesday, May 06, 2009 5:17 PM
+To: Yang, Bo
+Cc: Yang, Bo; James.Bottomley@HansenPartnership.com; linux-scsi@vger.kernel.org; linux-kernel@vger.kernel.org; Austria, Winston
+Subject: Re: [PATCH 2/10] scsi: megaraid_sas - Add Poll Wait mechanism to MegaRAID SAS driver (PART-I)
+
+On Tue, 5 May 2009 18:25:55 -0600
+"Yang, Bo" <Bo.Yang@lsi.com> wrote:
+
+> Add Poll_wait mechanism to SAS-2 MegaRAID SAS Linux driver. Driver will wakeup poll after the driver get event from MegaRAID SAS FW.  Driver also reregisters for Event with the FW when it receives AEN.
+> 
+
+Seems fairly strage to be adding poll support to a scsi driver, but I
+see it isn't the first driver to do this.
+
+> 
 >
-> That's my second choice option.
+> ...
 >
->> An alternative is to abandon the use of eventfd, and allow the irqfd t=
-o
->> be a first-class anon-fd.  The parameters passed to the write/signal()=
+> @@ -1295,13 +1301,20 @@ megasas_service_aen(struct megasas_insta
+>         /*
+>          * Don't signal app if it is just an aborted previously registered aen
+>          */
+> -       if (!cmd->abort_aen)
+> +       if ((!cmd->abort_aen) && (instance->unload == 0)) {
+> +               megasas_poll_wait_aen = 1;
+> +               wake_up(&megasas_poll_wait);
+>                 kill_fasync(&megasas_async_queue, SIGIO, POLL_IN);
+> +       }
+>         else
+>                 cmd->abort_aen = 0;
+> 
+>         instance->aen_cmd = NULL;
+>         megasas_return_cmd(instance, cmd);
+> +
+> +       if ((!cmd->abort_aen) && (instance->unload == 0)) {
+> +               megasas_aen_polling(instance);
+> +       }
 
->> function could then indicate the desired level.  The disadvantage woul=
-d
->> be that it would not be compatible with eventfd, so we would need to
->> decide if the tradeoff is worth it.
->>  =20
+I see you're not a big fan of checkpatch, nor of kernel coding style :(
+
+>  }
+> 
+>  /*
+> @@ -2583,6 +2596,8 @@ megasas_probe_one(struct pci_dev *pdev,
+> 
+>         *instance->producer = 0;
+>         *instance->consumer = 0;
+> +       megasas_poll_wait_aen = 0;
+> +       instance->hotplug_wk = NULL;
+> 
+>         instance->evt_detail = pci_alloc_consistent(pdev,
+>                                                     sizeof(struct
+> @@ -2621,6 +2636,7 @@ megasas_probe_one(struct pci_dev *pdev,
+> 
+>         megasas_dbg_lvl = 0;
+>         instance->flag = 0;
+> +       instance->unload = 0;
+>         instance->last_time = 0;
+> 
+>         /*
+> @@ -2924,6 +2940,7 @@ static void __devexit megasas_detach_one
+>         struct megasas_instance *instance;
+> 
+>         instance = pci_get_drvdata(pdev);
+> +       instance->unload = 1;
+>         host = instance->host;
+> 
+>         if (poll_mode_io)
+> @@ -2932,6 +2949,15 @@ static void __devexit megasas_detach_one
+>         scsi_remove_host(instance->host);
+>         megasas_flush_cache(instance);
+>         megasas_shutdown_controller(instance, MR_DCMD_CTRL_SHUTDOWN);
+> +
+> +       /*
+> +       * cancel the delayed work if this work still in queue
+> +       */
+> +       if (instance->hotplug_wk != NULL) {
+> +               cancel_delayed_work(
+> +                       (struct delayed_work *)instance->hotplug_wk);
+
+whah?  Can't do that!  cancel_delayed_work() will do del_timer_sync()
+on megasas_instance.flag and will crash.
+
+> +                       
+
+> +               flush_scheduled_work();
+> +       }
+>         tasklet_kill(&instance->isr_tasklet);
+> 
+>         /*
+> @@ -3027,6 +3053,19 @@ static int megasas_mgmt_fasync(int fd, s
+>  }
+> 
+>  /**
+> + * megasas_mgmt_poll -  char node "poll" entry point
+> + * */
+> +static unsigned int megasas_mgmt_poll(struct file *file, poll_table *wait)
+> +{
+> +       unsigned int mask = 0;
+> +       poll_wait(file, &megasas_poll_wait, wait);
+> +       if (megasas_poll_wait_aen) {
+> +               mask |=   (POLLIN | POLLRDNORM);
+> +       }
+> +       return mask;
+> +}
+> +
+> +/**
+>   * megasas_mgmt_fw_ioctl -     Issues management ioctls to FW
+>   * @instance:                  Adapter soft state
+>   * @argp:                      User's ioctl packet
+> @@ -3348,6 +3387,7 @@ static const struct file_operations mega
+>         .open = megasas_mgmt_open,
+>         .fasync = megasas_mgmt_fasync,
+>         .unlocked_ioctl = megasas_mgmt_ioctl,
+> +       .poll = megasas_mgmt_poll,
+>  #ifdef CONFIG_COMPAT
+>         .compat_ioctl = megasas_mgmt_compat_ioctl,
+>  #endif
+> @@ -3462,6 +3502,100 @@ out:
+>         return retval;
+>  }
+> 
+> +static void
+> +megasas_scsi_scan_host(struct work_struct *work)
+> +{
+> +       struct megasas_aen_event *ev = container_of(work,
+> +               struct megasas_aen_event, hotplug_work);
+> +       struct megasas_instance *instance = ev->instance;
+> +
+> +       instance->hotplug_wk = NULL;
+> +       if (!instance) {
+
+oh come on.  If this test returns true then the preceding statement
+just oopsed the kernel.
+
+> +               printk(KERN_ERR "%s: invalid instance!\n", __FUNCTION__);
+> +               kfree(ev);
+> +               return;
+> +       }
+> +
+> +       printk(KERN_INFO "%s[%d]: scanning ...\n",
+> +               __FUNCTION__, instance->host->host_no);
+> +       scsi_scan_host(instance->host);
+> +       kfree(ev);
+> +}
+> +
+> +static void
+> +megasas_aen_polling(struct megasas_instance *instance)
+> +{
+> +       union megasas_evt_class_locale class_locale;
+> +       int doscan = 0;
+> +       u32 seq_num;
+> +       int error;
+> +
+> +       if (instance->evt_detail) {
+> +               printk(KERN_INFO "%s[%d]: event code 0x%04x\n", __FUNCTION__,
+
+Users of checkpatch know to use __func__.
+
+> +                       instance->host->host_no, instance->evt_detail->code);
+> +
+> +               switch (instance->evt_detail->code) {
+> +
+> +               case MR_EVT_LD_CREATED:
+> +               case MR_EVT_PD_INSERTED:
+> +               case MR_EVT_LD_DELETED:
+> +               case MR_EVT_LD_OFFLINE:
+> +               case MR_EVT_CFG_CLEARED:
+> +               case MR_EVT_PD_REMOVED:
+> +               case MR_EVT_FOREIGN_CFG_IMPORTED:
+> +               case MR_EVT_LD_STATE_CHANGE:
+> +               case MR_EVT_CTRL_HOST_BUS_SCAN_REQUESTED:
+> +                       doscan = 1;
+> +                       break;
+> +               default:
+> +                       doscan = 0;
+> +                       break;
+> +               }
+> +       } else {
+> +               printk(KERN_ERR "%s[%d]: invalid evt_detail!\n",
+> +                       __FUNCTION__, instance->host->host_no);
+> +               return;
+> +       }
+> +
+> +       if (doscan) {
+> +               struct megasas_aen_event *ev;
+> +               ev = kzalloc(sizeof(*ev), GFP_ATOMIC);
+> +               if (!ev) {
+> +                       printk(KERN_ERR "%s: out of memory\n", __FUNCTION__);
+> +               } else {
+> +                       ev->instance = instance;
+> +                       instance->hotplug_wk = &ev->hotplug_work;
+> +                       INIT_WORK(&ev->hotplug_work, megasas_scsi_scan_host);
+> +                       schedule_delayed_work(
+> +                               (struct delayed_work *)&ev->hotplug_work, 0);
+> +               }
+> +       }
+> +
+> +       seq_num = instance->evt_detail->seq_num + 1;
+> +
+> +       /**
+> +       * Register AEN with FW for latest sequence number plus 1
+> +       **/
+
+The /** token is used to introduce a kerneldoc comment.  This is not a
+kerneldoc comment.
+
+> +       class_locale.members.reserved = 0;
+> +       class_locale.members.locale = MR_EVT_LOCALE_ALL;
+> +       class_locale.members.class = MR_EVT_CLASS_DEBUG;
+> +
+> +       if ( instance->aen_cmd != NULL ) {
+> +               return ;
+> +       }
+> +
+> +       mutex_lock(&instance->aen_mutex);
+> +       error = megasas_register_aen(instance, seq_num,
+> +                               class_locale.word);
+> +       mutex_unlock(&instance->aen_mutex);
+> +
+> +       if (error)
+> +               printk(KERN_ERR "%s[%d]: register aen failed error %x\n",
+> +                        __FUNCTION__, instance->host->host_no, error);
+> +}
+> +
+> +
 >
-> I would really like to keep using eventfd.  Which is why I asked
-> Davide about the prospects of direct callbacks (vs wakeups).
-
-I saw that request.  That would be ideal.
-
+> ...
 >
->> OTOH, I suspect level triggered interrupts will be primarily in the
->> legacy domain, so perhaps we do not need to worry about it too much.
->> Therefore, another option is that we *could* simply set the stake in t=
-he
->> ground that legacy/level cannot use irqfd.
->>  =20
->
-> This is my preferred option.  For a virtio-net-server in the kernel,
-> we'd service its eventfd in qemu, raising and lowering the pci
-> interrupt in the traditional way.
->
-> But we'd still need to know when to lower the interrupt.  How?
+> @@ -1118,8 +1134,10 @@ struct megasas_instance {
+> 
+>         struct megasas_instance_template *instancet;
+>         struct tasklet_struct isr_tasklet;
+> +       struct work_struct *hotplug_wk;
 
-IIUC, isn't that  usually device/subsystem specific, and out of scope of
-the GSI delivery vehicle?  For instance, most devices I have seen with
-level ints have a register in their device register namespace for acking
-the int.  As an aside, this is what causes some of the grief in dealing
-with shared interrupts like KVM pass-through and/or threaded-isrs: =20
-There isn't a standardized way to ACK them.
+"hotplug_work"
 
-You may also see some generalization of masking/acking in things like
-the MSI-X table.  But again, this would be out of scope of the general
-GSI delivery path IIUC.
-
-I understand that there is a feedback mechanism in the ioapic model for
-calling back on acknowledgment of the interrupt.  But I am not sure what
-is how the real hardware works normally, and therefore I am not
-convinced that is something we need to feed all the way back (i.e. via
-irqfd or whatever).  In the interest of full disclosure, its been a few
-years since I studied the xAPIC docs, so I might be out to lunch on that
-assertion. ;)
-
--Greg
-
-
-
-
---------------enig9406DB23D9EC2EE661F9CCFE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkoC9jsACgkQlOSOBdgZUxkyDgCggbdz/ZPYzDdwWxiHnN0kU46s
-/2AAn0RHMk/I5hik1ajMVbcdcOi8XtQr
-=x7nZ
------END PGP SIGNATURE-----
-
---------------enig9406DB23D9EC2EE661F9CCFE--
+> 
+>         u8 flag;
+> +       u8 unload;
+>         unsigned long last_time;
+> 
+>         struct timer_list io_completion_timer;
