@@ -1,226 +1,146 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760858AbZEHALm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761095AbZEHAL7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760858AbZEHALm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:11:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755134AbZEHAJ5
+	id S1761095AbZEHAL7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:11:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755548AbZEHAJ6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:09:57 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52692
+	Thu, 7 May 2009 20:09:58 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52703
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753554AbZEHAJx (ORCPT
+	with ESMTP id S1753641AbZEHAJy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 20:09:53 -0400
+	Thu, 7 May 2009 20:09:54 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Alex Nixon <alex.nixon@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 11/16] xen: allow enable use of VGA console on dom0
-Date: Thu,  7 May 2009 14:10:48 -0700
-Message-Id: <1241730653-4688-12-git-send-email-jeremy@goop.org>
+Subject: [PATCH 03/11] Xen: Rename the balloon lock
+Date: Thu,  7 May 2009 14:45:29 -0700
+Message-Id: <1241732737-7669-4-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241730653-4688-1-git-send-email-jeremy@goop.org>
-References: <1241730653-4688-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241732737-7669-1-git-send-email-jeremy@goop.org>
+References: <1241732737-7669-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: make VGA console work in dom0
+From: Alex Nixon <alex.nixon@citrix.com>
 
-Get the information about the VGA console hardware from Xen, and put
-it into the form the bootloader normally generates, so that the rest
-of the kernel can deal with VGA as usual.
+Impact: cleanup
 
+* xen_create_contiguous_region needs access to the balloon lock to
+  ensure memory doesn't change under its feet, so expose the balloon
+  lock
+* Change the name of the lock to xen_reservation_lock, to imply it's
+  now less-specific usage.
+
+Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/Makefile       |    3 +-
- arch/x86/xen/enlighten.c    |   10 ++++++
- arch/x86/xen/vga.c          |   67 +++++++++++++++++++++++++++++++++++++++++++
- arch/x86/xen/xen-ops.h      |   11 +++++++
- include/xen/interface/xen.h |   39 +++++++++++++++++++++++++
- 5 files changed, 129 insertions(+), 1 deletions(-)
- create mode 100644 arch/x86/xen/vga.c
+ arch/x86/xen/mmu.c             |    7 +++++++
+ drivers/xen/balloon.c          |   15 ++++-----------
+ include/xen/interface/memory.h |    8 ++++++++
+ 3 files changed, 19 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index 3b767d0..c4cda96 100644
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -10,4 +10,5 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
- 			grant-table.o suspend.o
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index d673b03..218cf79 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -67,6 +67,13 @@
  
- obj-$(CONFIG_SMP)		+= smp.o spinlock.o
--obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
-\ No newline at end of file
-+obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
-+obj-$(CONFIG_XEN_DOM0)		+= vga.o
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 4b52f4c..ece141c 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1042,6 +1042,16 @@ asmlinkage void __init xen_start_kernel(void)
- 		add_preferred_console("xenboot", 0, NULL);
- 		add_preferred_console("tty", 0, NULL);
- 		add_preferred_console("hvc", 0, NULL);
-+
-+		boot_params.screen_info.orig_video_isVGA = 0;
-+	} else {
-+		const struct dom0_vga_console_info *info =
-+			(void *)((char *)xen_start_info +
-+			         xen_start_info->console.dom0.info_off);
-+
-+		xen_init_vga(info, xen_start_info->console.dom0.info_size);
-+		xen_start_info->console.domU.mfn = 0;
-+		xen_start_info->console.domU.evtchn = 0;
- 	}
+ #define MMU_UPDATE_HISTO	30
  
- 	pat_disable("PAT disabled on Xen");
-diff --git a/arch/x86/xen/vga.c b/arch/x86/xen/vga.c
-new file mode 100644
-index 0000000..f2fca2c
---- /dev/null
-+++ b/arch/x86/xen/vga.c
-@@ -0,0 +1,67 @@
-+#include <linux/screen_info.h>
-+#include <linux/init.h>
++/*
++ * Protects atomic reservation decrease/increase against concurrent increases.
++ * Also protects non-atomic updates of current_pages and driver_pages, and
++ * balloon lists.
++ */
++DEFINE_SPINLOCK(xen_reservation_lock);
 +
-+#include <asm/bootparam.h>
-+#include <asm/setup.h>
-+
-+#include <xen/interface/xen.h>
-+
-+#include "xen-ops.h"
-+
-+void __init xen_init_vga(const struct dom0_vga_console_info *info, size_t size)
-+{
-+	struct screen_info *screen_info = &boot_params.screen_info;
-+
-+	/* This is drawn from a dump from vgacon:startup in
-+	 * standard Linux. */
-+	screen_info->orig_video_mode = 3;
-+	screen_info->orig_video_isVGA = 1;
-+	screen_info->orig_video_lines = 25;
-+	screen_info->orig_video_cols = 80;
-+	screen_info->orig_video_ega_bx = 3;
-+	screen_info->orig_video_points = 16;
-+	screen_info->orig_y = screen_info->orig_video_lines - 1;
-+
-+	switch (info->video_type) {
-+	case XEN_VGATYPE_TEXT_MODE_3:
-+		if (size < offsetof(struct dom0_vga_console_info, u.text_mode_3)
-+		           + sizeof(info->u.text_mode_3))
-+			break;
-+		screen_info->orig_video_lines = info->u.text_mode_3.rows;
-+		screen_info->orig_video_cols = info->u.text_mode_3.columns;
-+		screen_info->orig_x = info->u.text_mode_3.cursor_x;
-+		screen_info->orig_y = info->u.text_mode_3.cursor_y;
-+		screen_info->orig_video_points =
-+			info->u.text_mode_3.font_height;
-+		break;
-+
-+	case XEN_VGATYPE_VESA_LFB:
-+		if (size < offsetof(struct dom0_vga_console_info,
-+		                    u.vesa_lfb.gbl_caps))
-+			break;
-+		screen_info->orig_video_isVGA = VIDEO_TYPE_VLFB;
-+		screen_info->lfb_width = info->u.vesa_lfb.width;
-+		screen_info->lfb_height = info->u.vesa_lfb.height;
-+		screen_info->lfb_depth = info->u.vesa_lfb.bits_per_pixel;
-+		screen_info->lfb_base = info->u.vesa_lfb.lfb_base;
-+		screen_info->lfb_size = info->u.vesa_lfb.lfb_size;
-+		screen_info->lfb_linelength = info->u.vesa_lfb.bytes_per_line;
-+		screen_info->red_size = info->u.vesa_lfb.red_size;
-+		screen_info->red_pos = info->u.vesa_lfb.red_pos;
-+		screen_info->green_size = info->u.vesa_lfb.green_size;
-+		screen_info->green_pos = info->u.vesa_lfb.green_pos;
-+		screen_info->blue_size = info->u.vesa_lfb.blue_size;
-+		screen_info->blue_pos = info->u.vesa_lfb.blue_pos;
-+		screen_info->rsvd_size = info->u.vesa_lfb.rsvd_size;
-+		screen_info->rsvd_pos = info->u.vesa_lfb.rsvd_pos;
-+		if (size >= offsetof(struct dom0_vga_console_info,
-+		                     u.vesa_lfb.gbl_caps)
-+		            + sizeof(info->u.vesa_lfb.gbl_caps))
-+			screen_info->capabilities = info->u.vesa_lfb.gbl_caps;
-+		if (size >= offsetof(struct dom0_vga_console_info,
-+		                     u.vesa_lfb.mode_attrs)
-+		            + sizeof(info->u.vesa_lfb.mode_attrs))
-+			screen_info->vesa_attributes = info->u.vesa_lfb.mode_attrs;
-+		break;
-+	}
-+}
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index 6ff6203..40abcef 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -72,6 +72,17 @@ static inline void xen_smp_init(void) {}
- #endif
+ #ifdef CONFIG_XEN_DEBUG_FS
  
+ static struct {
+diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
+index efa4b36..1e7984d 100644
+--- a/drivers/xen/balloon.c
++++ b/drivers/xen/balloon.c
+@@ -84,13 +84,6 @@ static struct sys_device balloon_sysdev;
  
-+struct dom0_vga_console_info;
-+
-+#ifdef CONFIG_XEN_DOM0
-+void xen_init_vga(const struct dom0_vga_console_info *, size_t size);
-+#else
-+static inline void xen_init_vga(const struct dom0_vga_console_info *info,
-+				size_t size)
-+{
-+}
-+#endif
-+
- /* Declare an asm function, along with symbols needed to make it
-    inlineable */
- #define DECL_ASM(ret, name, ...)		\
-diff --git a/include/xen/interface/xen.h b/include/xen/interface/xen.h
-index 18b5599..6c0af21 100644
---- a/include/xen/interface/xen.h
-+++ b/include/xen/interface/xen.h
-@@ -449,6 +449,45 @@ struct start_info {
- 	int8_t cmd_line[MAX_GUEST_CMDLINE];
- };
+ static int register_balloon(struct sys_device *sysdev);
  
-+struct dom0_vga_console_info {
-+    uint8_t video_type; /* DOM0_VGA_CONSOLE_??? */
-+#define XEN_VGATYPE_TEXT_MODE_3 0x03
-+#define XEN_VGATYPE_VESA_LFB    0x23
+-/*
+- * Protects atomic reservation decrease/increase against concurrent increases.
+- * Also protects non-atomic updates of current_pages and driver_pages, and
+- * balloon lists.
+- */
+-static DEFINE_SPINLOCK(balloon_lock);
+-
+ static struct balloon_stats balloon_stats;
+ 
+ /* We increase/decrease in batches which fit in a page */
+@@ -209,7 +202,7 @@ static int increase_reservation(unsigned long nr_pages)
+ 	if (nr_pages > ARRAY_SIZE(frame_list))
+ 		nr_pages = ARRAY_SIZE(frame_list);
+ 
+-	spin_lock_irqsave(&balloon_lock, flags);
++	spin_lock_irqsave(&xen_reservation_lock, flags);
+ 
+ 	page = balloon_first_page();
+ 	for (i = 0; i < nr_pages; i++) {
+@@ -267,7 +260,7 @@ static int increase_reservation(unsigned long nr_pages)
+ 	totalram_pages = balloon_stats.current_pages;
+ 
+  out:
+-	spin_unlock_irqrestore(&balloon_lock, flags);
++	spin_unlock_irqrestore(&xen_reservation_lock, flags);
+ 
+ 	return 0;
+ }
+@@ -312,7 +305,7 @@ static int decrease_reservation(unsigned long nr_pages)
+ 	kmap_flush_unused();
+ 	flush_tlb_all();
+ 
+-	spin_lock_irqsave(&balloon_lock, flags);
++	spin_lock_irqsave(&xen_reservation_lock, flags);
+ 
+ 	/* No more mappings: invalidate P2M and add to balloon. */
+ 	for (i = 0; i < nr_pages; i++) {
+@@ -329,7 +322,7 @@ static int decrease_reservation(unsigned long nr_pages)
+ 	balloon_stats.current_pages -= nr_pages;
+ 	totalram_pages = balloon_stats.current_pages;
+ 
+-	spin_unlock_irqrestore(&balloon_lock, flags);
++	spin_unlock_irqrestore(&xen_reservation_lock, flags);
+ 
+ 	return need_sleep;
+ }
+diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
+index f548f7c..9df4bd0 100644
+--- a/include/xen/interface/memory.h
++++ b/include/xen/interface/memory.h
+@@ -9,6 +9,8 @@
+ #ifndef __XEN_PUBLIC_MEMORY_H__
+ #define __XEN_PUBLIC_MEMORY_H__
+ 
++#include <linux/spinlock.h>
 +
-+    union {
-+        struct {
-+            /* Font height, in pixels. */
-+            uint16_t font_height;
-+            /* Cursor location (column, row). */
-+            uint16_t cursor_x, cursor_y;
-+            /* Number of rows and columns (dimensions in characters). */
-+            uint16_t rows, columns;
-+        } text_mode_3;
+ /*
+  * Increase or decrease the specified domain's memory reservation. Returns a
+  * -ve errcode on failure, or the # extents successfully allocated or freed.
+@@ -184,4 +186,10 @@ DEFINE_GUEST_HANDLE_STRUCT(xen_memory_map);
+  */
+ #define XENMEM_machine_memory_map   10
+ 
++/*
++ * Prevent the balloon driver from changing the memory reservation during a driver
++ * critical region.
++ */
++extern spinlock_t xen_reservation_lock;
 +
-+        struct {
-+            /* Width and height, in pixels. */
-+            uint16_t width, height;
-+            /* Bytes per scan line. */
-+            uint16_t bytes_per_line;
-+            /* Bits per pixel. */
-+            uint16_t bits_per_pixel;
-+            /* LFB physical address, and size (in units of 64kB). */
-+            uint32_t lfb_base;
-+            uint32_t lfb_size;
-+            /* RGB mask offsets and sizes, as defined by VBE 1.2+ */
-+            uint8_t  red_pos, red_size;
-+            uint8_t  green_pos, green_size;
-+            uint8_t  blue_pos, blue_size;
-+            uint8_t  rsvd_pos, rsvd_size;
-+
-+            /* VESA capabilities (offset 0xa, VESA command 0x4f00). */
-+            uint32_t gbl_caps;
-+            /* Mode attributes (offset 0x0, VESA command 0x4f01). */
-+            uint16_t mode_attrs;
-+        } vesa_lfb;
-+    } u;
-+};
-+
- /* These flags are passed in the 'flags' field of start_info_t. */
- #define SIF_PRIVILEGED    (1<<0)  /* Is the domain privileged? */
- #define SIF_INITDOMAIN    (1<<1)  /* Is this the initial control domain? */
+ #endif /* __XEN_PUBLIC_MEMORY_H__ */
 -- 
 1.6.0.6
 
