@@ -1,56 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761224AbZEGO3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759399AbZEGOeZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761224AbZEGO3t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 10:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757055AbZEGO3j
+	id S1759399AbZEGOeZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 10:34:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZEGOeM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 10:29:39 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:48135 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756884AbZEGO3i (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 10:29:38 -0400
-Date: Thu, 7 May 2009 10:18:47 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class
- citizen
-In-Reply-To: <1241705702.11251.156.camel@twins>
-Message-ID: <alpine.DEB.1.10.0905071016410.24528@qirst.com>
-References: <20090430072057.GA4663@eskimo.com>  <20090430174536.d0f438dd.akpm@linux-foundation.org>  <20090430205936.0f8b29fc@riellaptop.surriel.com>  <20090430181340.6f07421d.akpm@linux-foundation.org>  <20090430215034.4748e615@riellaptop.surriel.com> 
- <20090430195439.e02edc26.akpm@linux-foundation.org>  <49FB01C1.6050204@redhat.com>  <20090501123541.7983a8ae.akpm@linux-foundation.org>  <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins>  <20090507121101.GB20934@localhost> 
- <alpine.DEB.1.10.0905070935530.24528@qirst.com> <1241705702.11251.156.camel@twins>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 7 May 2009 10:34:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44542 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752196AbZEGOeL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 10:34:11 -0400
+Message-ID: <4A02F160.7080907@redhat.com>
+Date: Thu, 07 May 2009 17:34:08 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Marcelo Tosatti <mtosatti@redhat.com>,
+       Davide Libenzi <davidel@xmailserver.org>, viro@ZenIV.linux.org.uk,
+       kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via eventfd-notification
+ interface
+References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A0175F0.1090705@novell.com> <alpine.DEB.1.10.0905060818000.32007@makko.or.mcafeemobile.com> <4A01AEC1.8020201@novell.com> <alpine.DEB.1.10.0905061834080.32606@makko.or.mcafeemobile.com> <4A02AE65.3000800@redhat.com> <20090507134607.GA25311@amt.cnet> <4A02E9C5.7020704@novell.com>
+In-Reply-To: <4A02E9C5.7020704@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009, Peter Zijlstra wrote:
+Gregory Haskins wrote:
+> One thing I was thinking here was that I could create a flag for the
+> kvm_irqfd() function for something like "KVM_IRQFD_MODE_CLEAR".  This
+> flag when specified at creation time will cause the event to execute a
+> clear operation instead of a set when triggered.  That way, the default
+> mode is an edge-triggered set.  The non-default mode is to trigger a
+> clear.  Level-triggered ints could therefore create two irqfds, one for
+> raising, the other for clearing.
+>   
 
-> It re-instates the young bit for PROT_EXEC pages, so that they will only
-> be paged when they are really cold, or there is severe pressure.
+That's my second choice option.
 
-But they are rescanned until then. Really cold means what exactly? I do a
-back up of a few hundred gigabytes and do not use firefox while the backup
-is ongoing. Will the firefox pages still be in memory or not?
+> An alternative is to abandon the use of eventfd, and allow the irqfd to
+> be a first-class anon-fd.  The parameters passed to the write/signal()
+> function could then indicate the desired level.  The disadvantage would
+> be that it would not be compatible with eventfd, so we would need to
+> decide if the tradeoff is worth it.
+>   
 
-> This simply gives them an edge over regular data. I don't think the
-> extra scanning is a problem, since you rarely have huge amounts of
-> executable pages around.
->
-> mlock()'ing all code just doesn't sound like a good alternative.
+I would really like to keep using eventfd.  Which is why I asked Davide 
+about the prospects of direct callbacks (vs wakeups).
 
-Another possibility may be to put the exec pages on the mlock list
-and scan the list if under extreme duress?
+> OTOH, I suspect level triggered interrupts will be primarily in the
+> legacy domain, so perhaps we do not need to worry about it too much. 
+> Therefore, another option is that we *could* simply set the stake in the
+> ground that legacy/level cannot use irqfd.
+>   
+
+This is my preferred option.  For a virtio-net-server in the kernel, 
+we'd service its eventfd in qemu, raising and lowering the pci interrupt 
+in the traditional way.
+
+But we'd still need to know when to lower the interrupt.  How?
+
+-- 
+error compiling committee.c: too many arguments to function
 
