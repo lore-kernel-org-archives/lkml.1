@@ -1,58 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755349AbZEGXou@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755587AbZEGXzc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755349AbZEGXou (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 19:44:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752807AbZEGXoi
+	id S1755587AbZEGXzc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 19:55:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZEGXzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 19:44:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:57498 "EHLO mx2.redhat.com"
+	Thu, 7 May 2009 19:55:14 -0400
+Received: from ozlabs.org ([203.10.76.45]:56199 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751298AbZEGXoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 19:44:37 -0400
-Date: Thu, 7 May 2009 20:43:11 -0300
-From: Marcelo Tosatti <mtosatti@redhat.com>
-To: Gregory Haskins <ghaskins@novell.com>
-Cc: Chris Wright <chrisw@sous-sol.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-Message-ID: <20090507234311.GA9517@amt.cnet>
-References: <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com> <20090507233503.GA9103@amt.cnet>
+	id S1752604AbZEGXzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 19:55:12 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: virtualization@lists.linux-foundation.org
+Subject: Re: [PATCH] msi-x: let drivers retry when not enough vectors
+Date: Fri, 8 May 2009 09:25:00 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Sheng Yang <sheng@linux.intel.com>, Matthew Wilcox <matthew@wil.cx>,
+       kvm@vger.kernel.org, "Michael S. Tsirkin" <mst@redhat.com>,
+       linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+       jbarnes@virtuousgeek.org, Matthew Wilcox <willy@linux.intel.com>
+References: <20090507082841.GA31751@redhat.com> <20090507095302.GI8112@parisc-linux.org> <200905071819.54426.sheng@linux.intel.com>
+In-Reply-To: <200905071819.54426.sheng@linux.intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090507233503.GA9103@amt.cnet>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Message-Id: <200905080925.01398.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 08:35:03PM -0300, Marcelo Tosatti wrote:
-> Also for PIO/MMIO you're adding this unoptimized lookup to the 
-> measurement:
-> 
->         pio_dev = vcpu_find_pio_dev(vcpu, port, size, !in);
->         if (pio_dev) {
->                 kernel_pio(pio_dev, vcpu, vcpu->arch.pio_data);
->                 complete_pio(vcpu); 
->                 return 1;
->         }
-> 
-> Whereas for hypercall measurement you don't. I believe a fair comparison
-> would be have a shared guest/host memory area where you store guest/host
-> TSC values and then do, on guest:
-> 
-> 	rdtscll(&shared_area->guest_tsc);
-> 	pio/mmio/hypercall
-> 	... back to host
-> 	rdtscll(&shared_area->host_tsc);
-> 
-> And then calculate the difference (minus guests TSC_OFFSET of course)?
+On Thu, 7 May 2009 07:49:53 pm Sheng Yang wrote:
+> On Thursday 07 May 2009 17:53:02 Matthew Wilcox wrote:
+> > Here's a good example.  Let's suppose you have a driver which supports
+> > two different models of cards, one has 16 MSI-X interrupts, the other
+> > has 10.  You can call pci_enable_msix() asking for 16 vectors.  If your
+> > card is model A, you get 16 interrupts.  If your card is model B, it says
+> > "you can have 10".
 
-Test Machine: Dell Precision 490 - 4-way SMP (2x2) x86_64 "Woodcrest"
-Core2 Xeon 5130 @2.00Ghz, 4GB RAM.
+Sheng is absolutely right, that's a horrid API.
 
-Also it would be interesting to see the MMIO comparison with EPT/NPT,
-it probably sucks much less than what you're seeing.
+If it actually enabled that number and returned it, it might make sense (cf. 
+write() returning less bytes than you give it).  But overloading the return 
+value to save an explicit call is just ugly; it's not worth saving a few lines 
+of code at cost of making all the drivers subtle and tricksy.
 
+Fail with -ENOSPC or something.
+
+Rusty.
