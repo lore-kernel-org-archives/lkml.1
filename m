@@ -1,72 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758119AbZEGKfW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756783AbZEGKid@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758119AbZEGKfW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 06:35:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbZEGKfA
+	id S1756783AbZEGKid (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 06:38:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbZEGKiW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 06:35:00 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44243 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751521AbZEGKe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 06:34:59 -0400
-Date: Thu, 7 May 2009 13:32:31 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Sheng Yang <sheng@linux.intel.com>
-Cc: Matthew Wilcox <matthew@wil.cx>, kvm@vger.kernel.org,
-       jbarnes@virtuousgeek.org, linux-kernel@vger.kernel.org,
-       linux-pci@vger.kernel.org, Matthew Wilcox <willy@linux.intel.com>,
-       virtualization@lists.linux-foundation.org
-Subject: Re: [PATCH] msi-x: let drivers retry when not enough vectors
-Message-ID: <20090507103231.GG32039@redhat.com>
-References: <20090507082841.GA31751@redhat.com> <200905071740.16190.sheng@linux.intel.com> <20090507095302.GI8112@parisc-linux.org> <200905071819.54426.sheng@linux.intel.com>
+	Thu, 7 May 2009 06:38:22 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:60126 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750981AbZEGKiV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 06:38:21 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: Re: [PATCH -tip 1/5] add asm-generic/dma-mappig.h
+Date: Thu, 7 May 2009 12:38:04 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tony.luck@intel.com,
+       linux-ia64@vger.kernel.org
+References: <1241670948-5818-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1241670948-5818-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1241670948-5818-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <200905071819.54426.sheng@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905071238.05110.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX19Xz1McUxcltYpsZ0hkPkDwtZSc11QcrTEMi2z
+ yT/9u+2Di49ztq/Z2hTJ04ib3O/HcgBnfUNxKvIzHWRBqIre0C
+ neZ2+6jfBxotqJyqKI9Lw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 06:19:53PM +0800, Sheng Yang wrote:
-> On Thursday 07 May 2009 17:53:02 Matthew Wilcox wrote:
-> > On Thu, May 07, 2009 at 05:40:15PM +0800, Sheng Yang wrote:
-> > > It's indeed weird. Why the semantic of pci_enable_msix can be changed to
-> > > "enable msix, or tell me how many vector do you have"? You can simply
-> > > call pci_msix_table_size() to get what you want, also without any more
-> > > work, no? I can't understand...
-> >
-> > Here's a good example.  Let's suppose you have a driver which supports
-> > two different models of cards, one has 16 MSI-X interrupts, the other
-> > has 10.  You can call pci_enable_msix() asking for 16 vectors.  If your
-> > card is model A, you get 16 interrupts.  If your card is model B, it says
-> > "you can have 10".
-> >
-> > This is less work in the driver (since it must implement falling back to
-> > a smaller number of interrupts *anyway*) than interrogating the card to
-> > find out how many interrupts there are, then requesting the right number,
-> > and still having the fallback path which is going to be less tested.
+On Thursday 07 May 2009, FUJITA Tomonori wrote:
+> This header file provides some generic dma mapping function
+> definitions for the users of struct dma_map_ops.
 > 
-> Yeah, partly understand now.
-> 
-> But the confusing of return value is not that pleasure compared to this 
-> benefit. And even you have to fall back if return > 0 anyway, but in the past, 
-> you just need fall back once at most; but now you may fall back twice.
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
-I don't think that's right - you might not be able to get the
-number of interrupts that pci_enable_msix reported.
+I'm currently trying to add asm-generic variants for all of
+the common headers. One of my goals there is to make them
+as complete as possible, i.e. if a header file in asm-generic
+has the same name as one in any of the architectures, it should
+IMHO provide the same (full) API.
 
-> This 
-> make thing more complex - you need either two ifs or a simple loop. And just 
-> one "if" can deal with it before. All that required is one call for 
-> pci_msix_table_size(), and I believe most driver would like to know how much 
-> vector it have before it fill the vectors, so mostly no extra cost. But for 
-> this ambiguous return meaning, you have to add more code for fall back - yes, 
-> the driver may can assert that the positive return value always would be irq 
-> numbers if it call pci_msix_table_size() before, but is it safe in logic?
+I would therefore suggest that you either rename the file to
+something like dma-mapping-common.h or add some template
+functions that can be overriden per architecture, like
 
-If you know how many vectors the card has, then the only failure mode
-is when you are out of irqs. No change there.
+#ifndef dma_get_ops
+static inline struct dma_map_ops *get_dma_ops(struct device *dev)
+{
+	return dma_ops;
+}
+#endif
+#ifndef dma_alloc_coherent
+/*
+ * to be defined out of line
+ */
+extern void *dma_alloc_coherent(struct device *dev, size_t size,
+		dma_addr_t *dma_handle, gfp_t gfp);
+#endif
 
--- 
-MST
+Then an architecture can opt-in to do things like:
+
+#define dma_get_ops dma_get_ops
+static inline struct dma_map_ops *get_dma_ops(struct device *dev)
+{
+	return dev->archdata.dma_ops;
+}
+
+before the #include <asm-generic/dma-mapping.h>
+
+> +static inline dma_addr_t dma_map_single_attrs(struct device *dev, void *ptr,
+> +					      size_t size,
+> +					      enum dma_data_direction dir,
+> +					      struct dma_attrs *attrs)
+> +{
+> +	struct dma_map_ops *ops = get_dma_ops(dev);
+> +	dma_addr_t addr;
+> +
+> +	kmemcheck_mark_initialized(ptr, size);
+> +	BUG_ON(!valid_dma_direction(dir));
+> +	addr = ops->map_page(dev, virt_to_page(ptr),
+> +			     (unsigned long)ptr & ~PAGE_MASK, size,
+> +			     dir, NULL);
+> +	debug_dma_map_page(dev, virt_to_page(ptr),
+> +			   (unsigned long)ptr & ~PAGE_MASK, size,
+> +			   dir, addr, true);
+> +	return addr;
+> +}
+
+You are not passing the dma_attrs down here, which I think you need to,
+if any of the architectures using this file want to support DMA attributes.
+
+> +
+> +static inline void dma_unmap_single_attrs(struct device *dev, dma_addr_t addr,
+> +					  size_t size,
+> +					  enum dma_data_direction dir,
+> +					  struct dma_attrs *attrs)
+> +{
+> +	struct dma_map_ops *ops = get_dma_ops(dev);
+> +
+> +	BUG_ON(!valid_dma_direction(dir));
+> +	if (ops->unmap_page)
+> +		ops->unmap_page(dev, addr, size, dir, NULL);
+> +	debug_dma_unmap_page(dev, addr, size, dir, true);
+> +}
+
+same here and in the next few functions.
+
+	Arnd <><
