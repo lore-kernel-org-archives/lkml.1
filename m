@@ -1,60 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760871AbZEGPcW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754421AbZEGPik@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760871AbZEGPcW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 11:32:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759396AbZEGPcF
+	id S1754421AbZEGPik (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 11:38:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754060AbZEGPia
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 11:32:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48864 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755383AbZEGPcE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 11:32:04 -0400
-Message-ID: <4A02FE91.8070006@zytor.com>
-Date: Thu, 07 May 2009 08:30:25 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Thu, 7 May 2009 11:38:30 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37937 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752078AbZEGPi3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 11:38:29 -0400
+Date: Thu, 7 May 2009 11:36:42 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
+       m-ikeda@ds.jp.nec.com, peterz@infradead.org
+Subject: Re: IO scheduler based IO Controller V2
+Message-ID: <20090507153642.GC9463@redhat.com>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <20090506023332.GA1212@redhat.com> <20090506203228.GH8180@redhat.com> <20090506213453.GC4282@linux> <20090506215235.GJ8180@redhat.com> <20090507090450.GA4613@linux> <20090507141126.GA9463@redhat.com> <20090507144501.GB9463@redhat.com>
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Christoph Lameter <cl@linux.com>, Alok Kataria <akataria@vmware.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-References: <1241462661.412.8.camel@alok-dev1>	<4A00ADDE.9000908@zytor.com>	<1241560625.8665.17.camel@alok-dev1>	<alpine.DEB.1.10.0905071010170.24528@qirst.com> <20090507161440.5b9c067d@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090507161440.5b9c067d@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090507144501.GB9463@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Thu, 7 May 2009 10:13:52 -0400 (EDT)
-> Christoph Lameter <cl@linux.com> wrote:
+On Thu, May 07, 2009 at 10:45:01AM -0400, Vivek Goyal wrote:
+> On Thu, May 07, 2009 at 10:11:26AM -0400, Vivek Goyal wrote:
 > 
->> I think we need to reduce the general tick frequency to be as low as
->> possible. With high resolution timers the tick frequency is just the
->> frequency with which the timer interrupt disturbs a running application.
->>
->> Are there any benefits remaining from frequent timer interrupts? I would
->> think that 60 HZ would be sufficient.
+> [..]
+> > [root@chilli io-throttle-tests]# ./andrea-test-script.sh 
+> > RT: 223+1 records in
+> > RT: 223+1 records out
+> > RT: 234179072 bytes (234 MB) copied, 0.988448 s, 237 MB/s
+> > BE: 223+1 records in
+> > BE: 223+1 records out
+> > BE: 234179072 bytes (234 MB) copied, 1.93885 s, 121 MB/s
+> > 
+> > So I am still seeing the issue with differnt kind of disks also. At this point
+> > of time I am really not sure why I am seeing such results.
 > 
-> 50 works for various european video apps, 60 breaks, 60 works for various
-> US video apps, 50 breaks. Now that may have changed with all the select
-> stuff being hrtimer based (which I'd missed).
+> Hold on. I think I found the culprit here. I was thinking that what is
+> the difference between two setups and realized that with vanilla kernels
+> I had done "make defconfig" and with io-throttle kernels I had used an
+> old config of my and did "make oldconfig". So basically config files
+> were differnt.
+> 
+> I now used the same config file and issues seems to have gone away. I
+> will look into why an old config file can force such kind of issues.
+> 
 
-Hence 300 Hz.  ;)
+Hmm.., my old config had "AS" as default scheduler that's why I was seeing
+the strange issue of RT task finishing after BE. My apologies for that. I
+somehow assumed that CFQ is default scheduler in my config.
 
-> Hooray - finally someone admits the *real* problem here, and for power
-> management too. Otherwise known as "referencing jiffies as a variable must
-> die"
+So I have re-run the test to see if we are still seeing the issue of
+loosing priority and class with-in cgroup. And we still do..
 
-Amen.  Also, "using HZ as a unit of measurement must die, too."
+2.6.30-rc4 with io-throttle patches
+===================================
+Test1
+=====
+- Two readers, one BE prio 0 and other BE prio 7 in a cgroup limited with
+  8MB/s BW.
 
-	-hpa
+234179072 bytes (234 MB) copied, 55.8448 s, 4.2 MB/s
+prio 0 task finished
+234179072 bytes (234 MB) copied, 55.8878 s, 4.2 MB/s
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Test2
+=====
+- Two readers, one RT prio 0 and other BE prio 7 in a cgroup limited with
+  8MB/s BW.
 
+234179072 bytes (234 MB) copied, 55.8876 s, 4.2 MB/s
+234179072 bytes (234 MB) copied, 55.8984 s, 4.2 MB/s
+RT task finished
+
+Test3
+=====
+- Reader Starvation
+- I created a cgroup with BW limit of 64MB/s. First I just run the reader
+  alone and then I run reader along with 4 writers 4 times. 
+
+Reader alone
+234179072 bytes (234 MB) copied, 3.71796 s, 63.0 MB/s
+
+Reader with 4 writers
+---------------------
+First run
+234179072 bytes (234 MB) copied, 30.394 s, 7.7 MB/s 
+
+Second run
+234179072 bytes (234 MB) copied, 26.9607 s, 8.7 MB/s
+
+Third run
+234179072 bytes (234 MB) copied, 37.3515 s, 6.3 MB/s
+
+Fourth run
+234179072 bytes (234 MB) copied, 36.817 s, 6.4 MB/s
+
+Note that out of 64MB/s limit of this cgroup, reader does not get even
+1/5 of the BW. In normal systems, readers are advantaged and reader gets
+its job done much faster even in presence of multiple writers.   
+
+Vanilla 2.6.30-rc4
+==================
+
+Test3
+=====
+Reader alone
+234179072 bytes (234 MB) copied, 2.52195 s, 92.9 MB/s
+
+Reader with 4 writers
+---------------------
+First run
+234179072 bytes (234 MB) copied, 4.39929 s, 53.2 MB/s
+
+Second run
+234179072 bytes (234 MB) copied, 4.55929 s, 51.4 MB/s
+
+Third run
+234179072 bytes (234 MB) copied, 4.79855 s, 48.8 MB/s
+
+Fourth run
+234179072 bytes (234 MB) copied, 4.5069 s, 52.0 MB/s
+
+Notice, that without any writers we seem to be having BW of 92MB/s and
+more than 50% of that BW is still assigned to reader in presence of
+writers. Compare this with io-throttle cgroup of 64MB/s where reader
+struggles to get 10-15% of BW. 
+
+So any 2nd level control will break the notion and assumptions of
+underlying IO scheduler. We should probably do control at IO scheduler
+level to make sure we don't run into such issues while getting
+hierarchical fair share for groups.
+
+Thanks
+Vivek
+
+> So now we are left with the issue of loosing the notion of priority and
+> class with-in cgroup. In fact on bigger systems we will probably run into > issues of kiothrottled scalability as single thread is trying to cater to
+> all the disks.
+> 
+> If we do max bw control at IO scheduler level, then I think we should be able
+> to control max bw while maintaining the notion of priority and class with-in
+> cgroup. Also there are multiple pdflush threads and jens seems to be pushing
+> flusher threads per bdi which will help us achieve greater scalability and
+> don't have to replicate that infrastructure for kiothrottled also.
+> 
+> Thanks
+> Vivek
