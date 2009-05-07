@@ -1,100 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757915AbZEGHoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758246AbZEGHoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757915AbZEGHoA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 03:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753897AbZEGHnt
+	id S1758246AbZEGHoX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 03:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758912AbZEGHn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 03:43:49 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:48196 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753005AbZEGHnr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 03:43:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:content-type:date:message-id
-         :mime-version:x-mailer:content-transfer-encoding;
-        b=gSXud+Pr3f6oxRotWBS4ft8u2y6YgMXQr0TVGvnSb+qlrforjethIh5E/u9d1j/gAR
-         GRu50BWbi6myt0kzrl/gb3lqf/wL+bP64cGR9DdNivzmzIKkdfOV0DrgxyjejqjI/rhn
-         mvPTh9bWgfciTwhp7Vkv9tC9lW1+Chfk+0q/w=
-Subject: Linux ATA Trim support
-From: Clive Wagenaar <clivewagenaar@gmail.com>
-Reply-To: clivewagenaar@gmail.com
-To: kernel-team@lists.ubuntu.com
-Cc: lkml <linux-kernel@vger.kernel.org>, Theodore Tso <tytso@mit.edu>,
-       Chris Mason <chris.mason@oracle.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       tim gardner <tim.gardner@canonical.com>
-Content-Type: text/plain
-Date: Thu, 07 May 2009 08:43:43 +0100
-Message-Id: <1241682223.3759.67.camel@9200>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 May 2009 03:43:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51571 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757739AbZEGHn6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 03:43:58 -0400
+Date: Thu, 7 May 2009 09:40:03 +0200
+From: Oleg Nesterov <oleg@redhat.com>
+To: Roland McGrath <roland@redhat.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [FOR REVIEW, PATCH 2/2] introduce "struct wait_opts" to
+	simplify do_wait() pathes
+Message-ID: <20090507074003.GA17688@redhat.com>
+References: <20090506053324.GA31988@redhat.com> <20090506200949.4FF6CFC39E@magilla.sf.frob.com> <20090507064559.GC15220@redhat.com> <20090507072003.8E0ACFC39E@magilla.sf.frob.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090507072003.8E0ACFC39E@magilla.sf.frob.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ubuntu kernel Devs
+On 05/07, Roland McGrath wrote:
+>
+> > Yes, I considered this option too. But since (I hope) you do not have
+> > a strong opinion on this, I'd prefer to keep the code as is. This way
+> > do_wait() looks more symmetrical wrt to other helpers. And we don't
+> > copy args twice.
+>
+> I don't feel strongly.  But I do think that those two repeated assignment
+> blocks are more to read and harder to read, and more error-prone for drift
+> in future changes (vs prototype changes getting quick compilation errors).
+> do_wait() is not "another helper", it's the main function.
 
-Could you please advise your thoughts on ATA Trim support in the 9.10,
-Karmic, kernel for SSD drives.
-I am not very clued in as to how far the patches have gotten in the
-mainline kernel of Linus, but I do believe people are working on it and
-it is close now.
+I must admit, I do not agree. I feel the opposite. Yes we have 2 repeated
+assignment blocks, but there are not exactly equal, and imho the difference
+is more visible this way.
 
-I recently bought a OCZ Vertex 120G SSD drive, as they are the first SSD
-manufacturer to be publicly building tools for ATA trim and have
-indicated that they will have experimental ATA trim support for Linux in
-their next firmware update expected with 2 weeks.
-(Bootchart has 9.04 Juanty booting in 10 seconds off the single ssd of
-OCZ)
+That said. This is not the technical issue, I can't "prove" I am right and
+of course I may be wrong. I think we should follow the "maintaner is always
+right" rule ;)
 
-As Windows Vista and 7 do not have ATA trim support yet, they have built
-a exe tool that can be run by Windows uses that trims the SSD, so far it
-works reliably on 32 bit versions of windows. linux uses cant use this
-tool on EXT2/3/4 etc FS from within windows, so a native solution in the
-kernel is the best way to go for Linux.
+I'll send this change as another cleanup on top of the new series.
 
-OCZ appear to be very proactive with support for ATA Trim, as this is
-VERY important on SSD drives if one does not periodically want to
-re-flash ones drive and then restore a image/re-install.
+OK ?
 
-Some info on trim:
-http://www.anandtech.com/storage/showdoc.aspx?i=3531&p=10
+> On machines
+> with 6 argument registers (everything but x86-32?), the compiler probably
+> does fine making the callers' register shuffling be free.  On x86-32, a few
+> cache-hot stack stores and loads are in the tiny noise vs the whole cost of
+> this hairy syscall, and IMHO don't compare to source maintainability issues.
 
-Please note that this Trim issue affects all SDD including that ones
-used by Theodore Ts'o and Linus himself. (Intel X25-M)
-Once the drive has had data written to most its 'sectors', write speed
-will drop off drastically and until we have ata trim the only solution
-is to re-flash the drive.
+Yes, I agree.
 
-I am happy to re-flash my drive periodically, but for our Ubuntu for
-humans, it will be great to have ATA trim in Karmic natively.
-
-I do know the standard is still being finalized, but OCZ are being
-proactive, the mainline kernel guys are too, so I hoping Ubuntu can be
-too.
-
-
-If any one has PPA kernels or Linux trim tools that they need me to test
-on my OCZ drive, please do not hesitate to ask, I am more than willing
-to beta test this ATA trim under Linux.
-(I went for the OCZ vertex vs X25-M of Intel, due to the fact that OCZ
-are proactive in their forums and incorporating user feedback into their
-firmware, plus actively working on ATA trim, for both Windows and Linux)
-
-
-Thanks for your time
-
--- 
-clivewagenaar@gmail.com
-
-System Powered by:
-Ubuntu/Debian/Gnu/Linux
-Distro: Jaunty 9.04
-Kernel: 2.6.30-rc4-generic
-File System: Ext4
-Gnu+Linux user #419390
-Ubuntu user #1072
+Oleg.
 
