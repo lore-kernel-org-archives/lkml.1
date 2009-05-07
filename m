@@ -1,42 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759933AbZEGI7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760246AbZEGJDr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759933AbZEGI7H (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 04:59:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbZEGI6y
+	id S1760246AbZEGJDr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 05:03:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755586AbZEGJDf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 04:58:54 -0400
-Received: from sous-sol.org ([216.99.217.87]:37685 "EHLO sequoia.sous-sol.org"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1754245AbZEGI6y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 04:58:54 -0400
-Date: Thu, 7 May 2009 01:57:42 -0700
-From: Chris Wright <chrisw@sous-sol.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [RFC PATCH 3/3a] ptrace: add _ptrace_may_access()
-Message-ID: <20090507085742.GB3036@sequoia.sous-sol.org>
-References: <20090505224729.GA965@redhat.com> <20090506080050.GF17457@elte.hu> <20090506235349.GC3756@redhat.com> <20090507002133.02D05FC39E@magilla.sf.frob.com> <20090507063606.GA15220@redhat.com> <20090507082027.GD12285@elte.hu> <20090507083102.GA20125@redhat.com> <20090507083851.GA19133@elte.hu>
+	Thu, 7 May 2009 05:03:35 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:56721 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752298AbZEGJDe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 05:03:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=nWBys7liLuQN/zGup7ANukLkFT4BOTTrY9RGTRMh8xnCSfWXzgq+HoPpVP0TYEXA57
+         274OulA3gCkqc6HSl0Z5fcIwWNmxGTufvJs60El09U5n6tSs3AN8I/6K1wE3VlEfO2TA
+         OdEaMVI1Uq4xqUc0ueIgI+ygUl2AP+OSJzTV0=
+Message-ID: <4A02A3E1.90706@gmail.com>
+Date: Thu, 07 May 2009 11:03:29 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.7 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507083851.GA19133@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Yang Hongyang <yanghy@cn.fujitsu.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] remove DMA_nBIT_MASK macro
+References: <20090507141114M.fujita.tomonori@lab.ntt.co.jp> <20090506223452.65e545d8.akpm@linux-foundation.org> <4A029BE1.4090309@cn.fujitsu.com> <4A029FD1.1050007@gmail.com> <4A02A2D8.4090209@cn.fujitsu.com>
+In-Reply-To: <4A02A2D8.4090209@cn.fujitsu.com>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> * Oleg Nesterov <oleg@redhat.com> wrote:
-> > Agreed, but what about security_operations->ptrace_may_access ?
-> > It has the same (bad) name, but returns the error code or 0 on 
-> > success.
+On 05/07/2009 10:59 AM, Yang Hongyang wrote:
+> Jiri Slaby wrote:
+>> Something like an irq flags deprecation in the past:
+>> http://lwn.net/Articles/229673/
+>> ?
 > 
-> Bad code should generally be fixed, or in exceptional circumstances 
-> it can tolerated if it's pre-existing bad code, but it should never 
-> be propagated. It has not spread _that_ widely yet, and is isolated 
-> to the security subsystem:
+> good catch,but this need to be modified (add one line is enough)to cause their use to
+> cause __deprecated warnings.
 
-And the security hooks tend to all follow the 0 success -ve ERR on error.
+I'm lost, that inline does it, right?
