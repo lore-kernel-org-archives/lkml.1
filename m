@@ -1,97 +1,332 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761909AbZEGR5Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753409AbZEGR6p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761909AbZEGR5Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 13:57:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbZEGR5P
+	id S1753409AbZEGR6p (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 13:58:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754392AbZEGR6c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 13:57:15 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:58002 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755185AbZEGR5O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 13:57:14 -0400
-Message-ID: <4A03209E.4070603@garzik.org>
-Date: Thu, 07 May 2009 13:55:42 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Christoph Lameter <cl@linux.com>,
-       Alok Kataria <akataria@vmware.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-References: <1241462661.412.8.camel@alok-dev1>	<4A00ADDE.9000908@zytor.com>	<1241560625.8665.17.camel@alok-dev1>	<alpine.DEB.1.10.0905071010170.24528@qirst.com>	<20090507161440.5b9c067d@lxorguk.ukuu.org.uk>	<4A02FE91.8070006@zytor.com>	<4A031269.3000603@garzik.org> <20090507180909.4b0a8672@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090507180909.4b0a8672@lxorguk.ukuu.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Thu, 7 May 2009 13:58:32 -0400
+Received: from mx32b01.es6.egwn.net ([195.10.6.123]:56446 "EHLO
+	mx1.es6.egwn.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752498AbZEGR6b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 13:58:31 -0400
+Date: Thu, 7 May 2009 19:58:27 +0200
+From: Matthias Saou 
+	<thias@spam.spam.spam.spam.spam.spam.spam.egg.and.spam.freshrpms.net>
+To: linux-kernel@vger.kernel.org, Linux Netdev List <netdev@vger.kernel.org>
+Subject: Re: Wrong network usage reported by /proc
+Message-ID: <20090507195827.3bbdb4ff@python3.es.egwn.lan>
+In-Reply-To: <49FFFE2D.9080509@cosmosbay.com>
+References: <20090504171408.3e13822c@python3.es.egwn.lan>
+	<49FF2BB2.4030700@cosmosbay.com>
+	<20090504211151.74622f29@python3.es.egwn.lan>
+	<20090505050435.GK570@1wt.eu>
+	<49FFCD08.7050600@cosmosbay.com>
+	<20090505055032.GA29582@1wt.eu>
+	<20090505100939.1e0932c4@python3.es.egwn.lan>
+	<49FFFE2D.9080509@cosmosbay.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="MP_/Jaz4MsxH5DQQEvSLTy5sJoD"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alan Cox wrote:
-> On Thu, 07 May 2009 12:55:05 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
-> 
->> H. Peter Anvin wrote:
->>> Alan Cox wrote:
->>>> Hooray - finally someone admits the *real* problem here, and for power
->>>> management too. Otherwise known as "referencing jiffies as a variable must
->>>> die"
->>> Amen.  Also, "using HZ as a unit of measurement must die, too."
->> Love to -- now, what will it be replaced with?
->>
->> grep for 'deadline' in drivers/ata/libata* to find an example not so 
->> easily converted away from jiffies.
-> 
-> I don't see any.
-> 
-> I do see a complicated interface that appears to actually really want to
-> implement
-> 
-> 		add_timer(&foo->expiry_timer);
-> 
-> and checks against the timer completing. In fact it looks as if all the
-> stuff in there is really down to
-> 
-> 		add a timer
-> 		check if it expired
-> 		check how long until it expires
-> 		delete it
+--MP_/Jaz4MsxH5DQQEvSLTy5sJoD
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-This is why I mentioned this example... because it's not as easy as you 
-seem to think it is :)
+Eric Dumazet wrote :
 
-We care only about a decreasing time interval.  This interval is passed 
-to register polling functions (bitbang no longer than <this> amount of 
-time), as well as _cumulatively_ affecting the entire EH [sub-]process.
+> Matthias Saou a =E9crit :
+> > Willy Tarreau wrote :
+> >=20
+> >> On Tue, May 05, 2009 at 07:22:16AM +0200, Eric Dumazet wrote:
+> >>> Willy Tarreau a =E9crit :
+> >>>> On Mon, May 04, 2009 at 09:11:51PM +0200, Matthias Saou wrote:
+> >>>>> Eric Dumazet wrote :
+> >>>>>
+> >>>>>> Matthias Saou a =E9crit :
+> >>>>>>> Hi,
+> >>>>>>>
+> >>>>>>> I'm posting here as a last resort. I've got lots of heavily used =
+RHEL5
+> >>>>>>> servers (2.6.18 based) that are reporting all sorts of impossible
+> >>>>>>> network usage values through /proc, leading to unrealistic snmp/c=
+acti
+> >>>>>>> graphs where the outgoing bandwidth used it higher than the physi=
+cal
+> >>>>>>> interface's maximum speed.
+> >>>>>>>
+> >>>>>>> For some details and a test script which compares values from /pr=
+oc
+> >>>>>>> with values from tcpdump :
+> >>>>>>> https://bugzilla.redhat.com/show_bug.cgi?id=3D489541
+> >>>>>>>
+> >>>>>>> The values collected using tcpdump always seem realistic and matc=
+h the
+> >>>>>>> values seen on the remote network equipments. So my obvious concl=
+usion
+> >>>>>>> (but possibly wrong given my limited knowledge) is that something=
+ is
+> >>>>>>> wrong in the kernel, since it's the one exposing the /proc interf=
+ace.
+> >>>>>>>
+> >>>>>>> I've reproduced what seems to be the same problem on recent kerne=
+ls,
+> >>>>>>> including the 2.6.27.21-170.2.56.fc10.x86_64 I'm running right no=
+w. The
+> >>>>>>> simple python script available here allows to see it quite easily=
+ :
+> >>>>>>> https://www.redhat.com/archives/rhelv5-list/2009-February/msg0016=
+6.html
+> >>>>>>>
+> >>>>>>>  * I run the script on my Workstation, I have an FTP server enabl=
+ed
+> >>>>>>>  * I download a DVD ISO from a remote workstation : The values ma=
+tch
+> >>>>>>>  * I start ping floods from remote workstations : The values repo=
+rted
+> >>>>>>>    by /proc are much higher than the ones reported by tcpdump. I =
+used
+> >>>>>>>    "ping -s 500 -f myworkstation" from two remote workstations
+> >>>>>>>
+> >>>>>>> If there's anything flawed in my debugging, I'd love to have some=
+one
+> >>>>>>> point it out to me. TIA to anyone willing to have a look.
+> >>>>>>>
+> >>>>>>> Matthias
+> >>>>>>>
+> >>>>>> I could not reproduce this here... what kind of NIC are you using =
+on
+> >>>>>> affected systems ? Some ethernet drivers report stats from card it=
+self,
+> >>>>>> and I remember seeing some strange stats on some hardware, but I c=
+annot
+> >>>>>> remember which one it was (we were reading NULL values instead of
+> >>>>>> real ones, once in a while, maybe it was a firmware issue...)
+> >>>>> My workstation has a Broadcom BCM5752 (tg3 module). The servers whi=
+ch
+> >>>>> are most affected have Intel 82571EB (e1000e). But the issue is that
+> >>>>> with /proc, the values are a lot _higher_ than with tcpdump, and the
+> >>>>> tcpdump values seem to be the correct ones.
+> >>>> the e1000 chip reports stats every 2 seconds. So you have to collect
+> >>>> stats every 2 seconds otherwise you get "camel-looking" stats.
+> >>>>
+> >>> I looked at e1000e driver, and apparently tx_packets & tx_bytes are c=
+omputed
+> >>> by the TX completion routine, not by the chip.
+> >> Ah I thought that was the chip which returned those stats every 2 seco=
+nds,
+> >> otherwise I don't see the reason to delay their reporting. Wait, I'm s=
+peaking
+> >> about e1000, never tried e1000e. Maybe there have been changes there. =
+Anyway,
+> >> Matthias talked about RHEL5's 2.6.18 in which I don't think there was =
+e1000e.
+> >>
+> >> Anyway we did not get any concrete data for now, so it's hard to tell =
+(I
+> >> haven't copy-pasted the links above in my browser yet).
+> >=20
+> > If you need any more data, please just ask. What makes me wonder most,
+> > though, is that tcpdump and iptraf report what seem to be correct
+> > bandwidth values (they seem to use the same low level access for their
+> > counters) whereas snmp and ifconfig (which seem to use /proc for
+> > theirs) report unrealistically high values.
+> >=20
+> > The tcpdump vs. /proc would be the first thing to look at, since it
+> > might give hints as to where the problem might lie, no?
+> >=20
+> > From there, I could collect any data one might find relevant to
+> > diagnose further.
+> >=20
+> > I'm attaching the simple python script I've used for testing.
+> >=20
+> > Matthias
+> >=20
+> >=20
+>=20
+> Your python script is buggy, since space after ':' is optional
+[...]
 
-A timer-based solution, in addition to being an ugly hack, would imply 
-replacing a simple variable with _at least_ two spinlocks, plus a timer 
-callback function that simply says "I expired".  With loops such as
+You are right. The script isn't mine originally. I've reviewed and
+modified an updated version, attached to this email, which should fix
+this as well as other issues, and be more readable.
 
-	max_msecs = calc_deadline(overall_deadline, ...)
-	while (!(register & bit))
-		msleep(1)
-		max_msecs--
-		register = readl(...)
+I've re-done some testing and it seems like I'm not able to reproduce
+the problem except on the 32bit RHEL5.2 servers where it's VERY
+noticeable.
 
-must be converted to the more-complex timer-based solution.		
+Sample output :
+TCPDUMP: 82189861266 (56100271 packets)
+PROC:    764627087298 (59162342 packets)
 
-libata would be happy to use milliseconds rather than jiffies; the unit 
-does not matter.  What matters is calculating our progress versus the 
-clock tick, as spread across multiple functions, multiple contexts, and 
-register polling loops.
+Yes, /proc/net/dev is reporting nearly 10 times more bytes than the sum
+of what tcpdump reports in its "length x" fields. This is about what I
+see on my snmp graphs : little more than 100Mbps reported from the
+switch when the server reports 1Gbps.
 
-The current code is a -lot- more simple than checking "is timer 
-expired?" all over the code, given that any sort of timer-based function 
-implies dealing with additional concurrency issues -- a complication the 
-libata EH does not need.
+The Red Hat bugzilla entry has been updated, and the issue is surely
+better off tracked there. My current guess would also be a bug in the
+e1000e module...
 
-	Jeff
+But if this rings a bell to anyone, please poke me! The module I'm using
+is this one :
+
+filename:       /lib/modules/2.6.18-92.1.10.el5PAE/kernel/drivers/net/e1000=
+e/e1000e.ko
+version:        0.2.0
+license:        GPL
+description:    Intel(R) PRO/1000 Network Driver
+author:         Intel Corporation, <linux.nics@intel.com>
+srcversion:     7DD4D251CA27FFAE6342F30
+
+Thanks all for your feedback and sorry for the wrong initial script.
+
+Matthias
+
+--=20
+Clean custom Red Hat Linux rpm packages : http://freshrpms.net/
+Fedora release 10 (Cambridge) - Linux kernel
+2.6.27.21-170.2.56.fc10.x86_64 Load : 0.34 0.21 0.19
+
+--MP_/Jaz4MsxH5DQQEvSLTy5sJoD
+Content-Type: text/x-python
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=monitor.py
+
+#!/usr/bin/python
+#
+# Simple script to print out realtime byte and packet traffic count on an
+# interface using both tcpdump output and /proc/net/dev content
+#
+# Last change : 20090507
+#
+
+import re
+import time
+import thread
+import getopt
+import signal
+import sys
+from subprocess import Popen, PIPE, STDOUT
+
+# TODO print not refreshing correctly
+
+# tx[0] are tx_bytes
+# tx[1] are tx_packets
+def get_tx_from_tcpdump(interface, tx):
+    command = Popen(['tcpdump', '-n', '-e', '-p', '-l', '-v', '-i',
+                     interface], stdout=PIPE, stderr=PIPE,
+                     bufsize=1) # line buffering, optimizes a lot
+    while 1:
+        line = command.stdout.readline()
+        if not line:
+            # time.sleep(1)
+            continue
+        # Extract the nnn from the ", length nnn)" part of the line
+        bytes_pattern = re.search('length (\d+)', line)
+
+        if bytes_pattern:
+            tx[0] += int(bytes_pattern.group(1))
+            tx[1] += 1
+        else:
+            # ARP packet or other output... could be 28 + 14, but just ignore
+            bytes = 0
+
+        # Don't wait
+        #time.sleep(1)
+
+# tx[0] are tx_bytes
+# tx[1] are tx_packets
+def get_tx_from_proc(interface, tx):
+    wrap = 2**32
+    # Get the initial values
+    tx_bytes_prev, tx_packets_prev = read_proc_tx(interface)
+    # Something went wrong...
+    if tx_bytes_prev is None or tx_packets_prev is None:
+        s = ("Could not read data from /proc/net/dev. "
+             "I was looking for the interface %s." % interface)
+        tx[0] = s
+        return None
+    # Main loop to update tx data values
+    while(1):
+        tx_bytes, tx_packets = read_proc_tx(interface)
+        # Get the difference wrt the previous poll
+        tx_bytes_diff = tx_bytes - tx_bytes_prev
+        tx_packets_diff = tx_packets - tx_packets_prev
+        # Check for an eventual wrap and re-ajust
+        if tx_bytes_diff < 0:
+            tx_bytes_diff = (wrap - (tx[0] % wrap)) + tx_bytes
+            print "*** Bytes wrap! (from %s to %s)" % (tx_bytes_prev, tx_bytes)
+        if tx_packets_diff < 0:
+            tx_packets_diff = (wrap - (tx[1] % wrap)) + tx_packets
+        # Update our counters
+        tx[0] += tx_bytes_diff
+        tx[1] += tx_packets_diff
+        tx_bytes_prev = tx_bytes
+        tx_packets_prev = tx_packets
+        # Wait
+        time.sleep(1)
+
+# Return an array of tx[bytes, packets]
+def read_proc_tx(interface):
+    f = open('/proc/net/dev')
+    for line in f:
+        values = line.split(":")
+        i = values[0].replace(' ', '')
+        if interface == i:
+            tx = [int(values[1].split()[8]), int(values[1].split()[9])]
+            f.close()
+            return tx
+    f.close()
+
+def signal_handler(signum, frame):
+    sys.exit(0)
+
+def main(interface):
+    signal.signal(signal.SIGINT, signal_handler)
+
+    tx_tcpdump = [0, 0]
+    tx_proc = [0, 0]
+
+    thread.start_new_thread(get_tx_from_tcpdump, (interface, tx_tcpdump))
+    thread.start_new_thread(get_tx_from_proc, (interface, tx_proc))
+
+    while 1:
+        tcpdump_bytes = tx_tcpdump[0]
+        tcpdump_packets = tx_tcpdump[1]
+        proc_bytes = tx_proc[0]
+        proc_packets = tx_proc[1]
+
+        if type(proc_bytes) == type('0'):
+            print "Error: %s" % proc_bytes
+            sys.exit(0)
+        s = "TCPDUMP: %d (%d packets)\nPROC:    %d (%d packets)" % (
+                tcpdump_bytes, tcpdump_packets, proc_bytes, proc_packets )
+        print s
+        time.sleep(1)
+
+def usage():
+    print "Usage: monitor -i <interface> (e.g. eth0)"
+
+if __name__ == "__main__":
+    interface = None
+    ip = None
+    opts, args = getopt.getopt(sys.argv[1:], "hi:", ["help"])
+    for o, a in opts:
+        if o == '-i':
+            interface = a
+        elif o in ['-h', '--help']:
+            usage()
+            sys.exit()
+    if not interface:
+        usage()
+        sys.exit()
+
+    main(interface)
 
 
-
+--MP_/Jaz4MsxH5DQQEvSLTy5sJoD--
