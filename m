@@ -1,47 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759104AbZEGPrb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760281AbZEGPrt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759104AbZEGPrb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 11:47:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbZEGPrU
+	id S1760281AbZEGPrt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 11:47:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756429AbZEGPrX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 11:47:20 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:53802 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752078AbZEGPrT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 11:47:19 -0400
-Date: Thu, 7 May 2009 11:36:25 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class
- citizen
-In-Reply-To: <1241707081.11251.160.camel@twins>
-Message-ID: <alpine.DEB.1.10.0905071120110.10171@qirst.com>
-References: <20090430072057.GA4663@eskimo.com>  <20090430174536.d0f438dd.akpm@linux-foundation.org>  <20090430205936.0f8b29fc@riellaptop.surriel.com>  <20090430181340.6f07421d.akpm@linux-foundation.org>  <20090430215034.4748e615@riellaptop.surriel.com> 
- <20090430195439.e02edc26.akpm@linux-foundation.org>  <49FB01C1.6050204@redhat.com>  <20090501123541.7983a8ae.akpm@linux-foundation.org>  <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins>  <20090507121101.GB20934@localhost> 
- <alpine.DEB.1.10.0905070935530.24528@qirst.com>  <1241705702.11251.156.camel@twins>  <alpine.DEB.1.10.0905071016410.24528@qirst.com> <1241707081.11251.160.camel@twins>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 7 May 2009 11:47:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49653 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755972AbZEGPrW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 11:47:22 -0400
+Message-ID: <4A030287.8010104@redhat.com>
+Date: Thu, 07 May 2009 18:47:19 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Gregory Haskins <ghaskins@novell.com>, viro@ZenIV.linux.org.uk,
+       kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via eventfd-notification
+ interface
+References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A0175F0.1090705@novell.com> <alpine.DEB.1.10.0905060818000.32007@makko.or.mcafeemobile.com> <4A01AEC1.8020201@novell.com> <alpine.DEB.1.10.0905061834080.32606@makko.or.mcafeemobile.com> <4A02AE65.3000800@redhat.com> <alpine.DEB.1.10.0905070744490.30708@makko.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0905070744490.30708@makko.or.mcafeemobile.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009, Peter Zijlstra wrote:
+Davide Libenzi wrote:
+>   
+>> What's your take on adding irq context safe callbacks to irqfd?
+>>
+>> To give some background here, we would like to use eventfd as a generic
+>> connector between components, so the components do not know about each other.
+>> So far eventfd successfully abstracts among components in the same process, in
+>> different processes, and in the kernel.
+>>
+>> eventfd_signal() can be safely called from irq context, and will wake up a
+>> waiting task.  But in some cases, if the consumer is in the kernel, it may be
+>> able to consume the event from irq context, saving a context switch.
+>>
+>> So, will you consider patches adding this capability to eventfd?
+>>     
+>
+> Maybe I got lost in the thread, but inside the kernel we have 
+> callback-based wakeup since long time. This is what epoll uses, when 
+> hooking into the file* f_op->poll() subsystem.
+> Did you mean something else?
+>   
 
-> So if you haven't ran any firefox code, it should be gone from the
-> active list after 2 full cycles, and from the inactive list on the first
-> full inactive cycle after that.
+Do you mean wait_queue_t::func?
 
-So some incremental changes. I still want to use firefox after my backup
-without having to wait 5 minutes while its paging exec pages back in.
+-- 
+error compiling committee.c: too many arguments to function
 
