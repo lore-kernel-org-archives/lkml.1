@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753524AbZEGNwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760658AbZEGNww@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753524AbZEGNwT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 09:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758104AbZEGNuR
+	id S1760658AbZEGNww (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 09:52:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756556AbZEGNuV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 09:50:17 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:53992 "EHLO
-	IE1EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755034AbZEGNuE (ORCPT
+	Thu, 7 May 2009 09:50:21 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:46161
+	"EHLO WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1757582AbZEGNuF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 09:50:04 -0400
-X-BigFish: VPS-8(zz936eQzz1202hzzz32i65h)
-X-Spam-TCS-SCL: 4:0
-X-FB-SS: 7,
-X-WSS-ID: 0KJA12Z-01-QXN-01
+	Thu, 7 May 2009 09:50:05 -0400
+X-BigFish: VPS3(zzzz1202hzzz32i43j66h)
+X-Spam-TCS-SCL: 5:0
+X-FB-SS: 5,
+X-WSS-ID: 0KJA132-01-QXR-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: <akpm@linux-foundation.org>, <greg@kroah.com>, <mingo@elte.hu>
 CC: <norsk5@yahoo.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
@@ -21,13 +21,13 @@ CC: <norsk5@yahoo.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
        <linux-kernel@vger.kernel.org>,
        Doug Thompson <dougthompson@xmission.com>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 07/21] amd64_edac: add sys addr to memory controller mapping helpers
-Date: Thu, 7 May 2009 15:49:29 +0200
-Message-ID: <1241704183-29223-8-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 14/21] amd64_edac: add F10h-and-later methods-p2
+Date: Thu, 7 May 2009 15:49:36 +0200
+Message-ID: <1241704183-29223-15-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com>
 References: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 07 May 2009 13:49:51.0172 (UTC) FILETIME=[B18DA840:01C9CF1A]
+X-OriginalArrivalTime: 07 May 2009 13:49:55.0062 (UTC) FILETIME=[B3DF3960:01C9CF1A]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -36,185 +36,242 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Doug Thompson <dougthompson@xmission.com>
 
+Borislav: remove StinkyIdentifiers, trivially simplify code.
+
 Reviewed-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |  164 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 164 insertions(+), 0 deletions(-)
+ drivers/edac/amd64_edac.c |  219 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 219 insertions(+), 0 deletions(-)
 
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index df72ecc..44aa102 100644
+index 2aa3065..3dc04c0 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -132,3 +132,167 @@ static int amd64_get_scrub_rate(struct mem_ctl_info *mci, u32 *bw)
- 	return status;
+@@ -1506,3 +1506,222 @@ static void f10_read_dram_base_limit(struct amd64_pvt *pvt, int dram)
+ 	pvt->dram_limit[dram] =
+ 		((((u64) high_limit << 32) + (u64) low_limit) << 8) | (0xFF);
  }
- 
-+/*
-+ * amd64_map_to_dcs_mask
-+ *
-+ *	Map from a CSROW entry to the mask entry that operates on it
-+ */
-+static inline u32 amd64_map_to_dcs_mask(struct amd64_pvt *pvt, int csrow)
-+{
-+	return csrow >> (pvt->num_dcsm >> 3);
-+}
 +
 +/*
-+ * amd64_get_dct_base()
-+ *
-+ *	getter function to return the 'base' address the i'th CS entry
-+ *	of the 'dct' DRAM controller
++ * f10_read_dram_ctl_register
++ *	Read DRAM Controller Select registers for the F10 that are NOT
++ *	in the K8 series
 + */
-+static u32 amd64_get_dct_base(struct amd64_pvt *pvt, int dct, int csrow)
++static void f10_read_dram_ctl_register(struct amd64_pvt *pvt)
 +{
-+	if (dct == 0)
-+		return pvt->dcsb0[csrow];
++	int err;
++
++	err = pci_read_config_dword(pvt->dram_f2_ctl,
++				F10_DCTL_SEL_LOW,
++				&pvt->dram_ctl_select_low);
++	if (err != 0) {
++		debugf0("%s() Reading F10_DCTL_SEL_LOW failed\n", __func__);
++	} else {
++		debugf0("%s() DRAM_DCTL_SEL_LOW=0x%x  DctSelBaseAddr=0x%x\n",
++				__func__,
++				pvt->dram_ctl_select_low,
++				dct_sel_baseaddr(pvt));
++
++		debugf0("  DRAM DCTs are=%s DRAM Is=%s DRAM-Ctl-"
++				"sel-hi-range=%s\n",
++				(dct_ganging_enabled(pvt) ? "GANGED "
++							: "NOT GANGED "),
++				(dct_dram_enabled(pvt) ? "Enabled "
++							: "Disabled "),
++				(dct_high_range_enabled(pvt) ? "Enabled "
++							: "Disabled "));
++
++		debugf0("  DctDatIntLv=%s  MemCleared=%s "
++				"DctSelIntLvAddr=0x%x\n",
++				(dct_data_interleave_enabled(pvt) ? "Enabled "
++							: "Disabled"),
++				(dct_memory_cleared(pvt) ? "True " : "False "),
++				dct_sel_interleave_addr(pvt));
++	}
++
++	err = pci_read_config_dword(pvt->dram_f2_ctl,
++				F10_DCTL_SEL_HIGH,
++				&pvt->dram_ctl_select_high);
++	if (err != 0)
++		debugf0("%s() Reading F10_DCTL_SEL_HIGH failed\n",
++			__func__);
++	debugf0("%s() DRAM_CTL_SELECT_HIGH=0x%x\n", __func__,
++			pvt->dram_ctl_select_high);
++}
++
++static u32 f10_determine_channel(struct amd64_pvt *pvt, u64 sys_addr,
++				int hi_range_sel, u32 intlv_en)
++{
++	u32 cs, temp, dct_sel_high = (pvt->dram_ctl_select_low >> 1) & 1;
++
++	if (dct_ganging_enabled(pvt))
++		cs = 0;
++	else if (hi_range_sel)
++		cs = dct_sel_high;
++	else if (dct_interleave_enabled(pvt)) {
++		if (dct_sel_interleave_addr(pvt) == 0)
++			cs = sys_addr >> 6 & 1;
++		else if ((dct_sel_interleave_addr(pvt) >> 1) & 1) {
++			temp = popcnt((u32) ((sys_addr >> 16) & 0x1F)) % 2;
++
++			if (dct_sel_interleave_addr(pvt) & 1)
++				cs = (sys_addr >> 9 & 1) ^ temp;
++			else
++				cs = (sys_addr >> 6 & 1) ^ temp;
++		} else if (intlv_en & 4)
++			cs = sys_addr >> 15 & 1;
++		else if (intlv_en & 2)
++			cs = sys_addr >> 14 & 1;
++		else if (intlv_en & 1)
++			cs = sys_addr >> 13 & 1;
++		else
++			cs = sys_addr >> 12 & 1;
++	} else if (dct_high_range_enabled(pvt) && !dct_ganging_enabled(pvt))
++		cs = ~dct_sel_high & 1;
 +	else
-+		return pvt->dcsb1[csrow];
++		cs = 0;
++
++	return cs;
++}
++
++static inline u32 f10_map_intlv_en_to_shift(u32 intlv_en)
++{
++	if (intlv_en == 1)
++		return 1;
++	else if (intlv_en == 3)
++		return 2;
++	else if (intlv_en == 7)
++		return 3;
++
++	return 0;
++}
++
++static inline u64 f10_determine_base_addr_offset(u64 sys_addr, int hi_range_sel,
++						 u32 dct_sel_base_addr,
++						 u64 dct_sel_base_off,
++						 u32 hole_en, u32 hole_off,
++						 u64 dram_base)
++{
++	u64 chan_off;
++
++	if (hi_range_sel) {
++		if ((!dct_sel_base_addr & 0xFFFF0000) &&
++		   (hole_en & 1) && (sys_addr >= 0x100000000ULL))
++			chan_off = hole_off << 16;
++		else
++			chan_off = dct_sel_base_off;
++	} else {
++		if ((hole_en & 1) && (sys_addr >= 0x100000000ULL))
++			chan_off = hole_off << 16;
++		else
++			chan_off = dram_base & 0xFFFFF8000000ULL;
++	}
++
++	return (sys_addr & 0x0000FFFFFFFFFFC0ULL) -
++			(chan_off & 0x0000FFFFFF800000ULL);
++}
++
++/* Hack for the time being - Can we get this from BIOS?? */
++#define	CH0SPARE_RANK	0
++#define	CH1SPARE_RANK	1
++
++/*
++ * f10_process_possible_spare
++ *
++ *	checks if the csrow passed in is marked as SPARED, if so
++ *	returns the new spare row
++ */
++static inline int f10_process_possible_spare(int csrow,
++				u32 cs, struct amd64_pvt *pvt)
++{
++	u32 swap_done;
++	u32 bad_dram_cs;
++
++	/* Depending on channel, isolate respective SPARING info */
++	if (cs) {
++		swap_done = F10_ONLINE_SPARE_SWAPDONE1(pvt->online_spare);
++		bad_dram_cs = F10_ONLINE_SPARE_BADDRAM_CS1(pvt->online_spare);
++		if (swap_done && (csrow == bad_dram_cs))
++			csrow = CH1SPARE_RANK;
++	} else {
++		swap_done = F10_ONLINE_SPARE_SWAPDONE0(pvt->online_spare);
++		bad_dram_cs = F10_ONLINE_SPARE_BADDRAM_CS0(pvt->online_spare);
++		if (swap_done && (csrow == bad_dram_cs))
++			csrow = CH0SPARE_RANK;
++	}
++	return csrow;
 +}
 +
 +/*
-+ * amd64_get_dct_mask()
++ * f10_lookup_addr_in_dct
 + *
-+ *	getter function to return the 'mask' address the i'th CS entry.
-+ *	This getter function is needed because there different number
-+ *	of DCSM registers on Rev E and prior vs Rev F and later
++ *	Iterate over the DRAM DCT "base" and "mask" registers looking for
++ *	a SystemAddr match on the specified 'ChannelSelect' and 'NodeID'
++ *
++ * Return:
++ *	-EINVAL:  NOT FOUND
++ *	0..csrow = Chip-Select Row
 + */
-+static u32 amd64_get_dct_mask(struct amd64_pvt *pvt, int dct, int csrow)
++static int f10_lookup_addr_in_dct(u32 in_addr, u32 nid, u32 cs)
 +{
-+	if (dct == 0)
-+		return pvt->dcsm0[amd64_map_to_dcs_mask(pvt, csrow)];
-+	else
-+		return pvt->dcsm1[amd64_map_to_dcs_mask(pvt, csrow)];
-+}
-+
-+
-+/*
-+ * amd64_get_base_and_limit()
-+ *
-+ * In *base and *limit, pass back the full 40-bit base and limit physical
-+ * addresses for the node given by node_id.  This information is obtained from
-+ * DRAM Base (section 3.4.4.1) and DRAM Limit (section 3.4.4.2) registers. The
-+ * base and limit addresses are of type SysAddr, as defined at the start of
-+ * section 3.4.4 (p. 70).  They are the lowest and highest physical addresses
-+ * in the address range they represent.
-+ */
-+static void amd64_get_base_and_limit(struct amd64_pvt *pvt, int node_id,
-+			       u64 *base, u64 *limit)
-+{
-+	*base = pvt->dram_base[node_id];
-+	*limit = pvt->dram_limit[node_id];
-+}
-+
-+/*
-+ * Return 1 if the SysAddr given by sys_addr matches the base/limit associated
-+ * with node_id
-+ */
-+static int amd64_base_limit_match(struct amd64_pvt *pvt,
-+					u64 sys_addr, int node_id)
-+{
-+	u64 base, limit, addr;
-+
-+	amd64_get_base_and_limit(pvt, node_id, &base, &limit);
-+
-+	/* The K8 treats this as a 40-bit value.  However, bits 63-40 will be
-+	 * all ones if the most significant implemented address bit is 1.
-+	 * Here we discard bits 63-40.  See section 3.4.2 of AMD publication
-+	 * 24592: AMD x86-64 Architecture Programmer's Manual Volume 1
-+	 * Application Programming.
-+	 */
-+	addr = sys_addr & 0x000000ffffffffffull;
-+
-+	return (addr >= base) && (addr <= limit);
-+}
-+
-+/* find_mc_by_sys_addr
-+ *
-+ *	Attempt to map a SysAddr to a node.
-+ *
-+ *	On success, return a pointer to the mem_ctl_info structure for
-+ *	the node that the SysAddr maps to.
-+ *
-+ *	On failure, return NULL
-+ */
-+static struct mem_ctl_info *find_mc_by_sys_addr(struct mem_ctl_info *mci,
-+						u64 sys_addr)
-+{
++	struct mem_ctl_info *mci;
 +	struct amd64_pvt *pvt;
-+	int node_id;
-+	u32 intlv_en, bits;
++	u32 cs_base, cs_mask;
++	int cs_found = -EINVAL;
++	int csrow;
 +
-+	/*
-+	 * Here we use the DRAM Base (section 3.4.4.1) and DRAM Limit (section
-+	 * 3.4.4.2) registers to map the SysAddr to a node ID.
-+	 */
++	mci = mci_lookup[nid];
++	if (!mci)
++		return cs_found;
++
 +	pvt = mci->pvt_info;
 +
-+	/* The value of this field should be the same for all DRAM Base
-+	 * registers.  Therefore we arbitrarily choose to read it from the
-+	 * register for node 0.
-+	 */
-+	intlv_en = pvt->dram_IntlvEn[0];
++	debugf1("%s() InputAddr=0x%x  channelselect=%d\n",
++			__func__, in_addr, cs);
 +
-+	if (intlv_en == 0) {
-+		debugf2("%s(): node interleaving disabled\n", __func__);
-+		for (node_id = 0; ; ) {
-+			if (amd64_base_limit_match(pvt, sys_addr, node_id))
-+				break;
++	for (csrow = 0; csrow < CHIPSELECT_COUNT; csrow++) {
 +
-+			if (++node_id >= DRAM_REG_COUNT) {
-+				debugf2("%s(): sys_addr 0x%lx "
-+					"does not match any node\n", __func__,
-+					(unsigned long)sys_addr);
-+				return NULL;
-+			}
-+		}
++		cs_base = amd64_get_dct_base(pvt, cs, csrow);
++		if (!(cs_base & K8_DCSB_CS_ENABLE))
++			continue;
 +
-+		goto found;
-+	}
++		/* We have an ENABLED CSROW, Isolate just the MASK
++		 * bits of the target: 28:19 and 13:5, which map to
++		 * 36:27 and 21:13 of the actual address
++		 */
++		cs_base &= REV_F_F1Xh_DCSB_BASE_BITS;
 +
-+	if (unlikely((intlv_en != (0x01 << 8)) &&
-+		     (intlv_en != (0x03 << 8)) && (intlv_en != (0x07 << 8)))) {
-+		amd64_printk(KERN_WARNING,
-+			  "%s(): junk value of 0x%x extracted from IntlvEn "
-+			  "field of DRAM Base Register for node 0: This "
-+			  "probably indicates a BIOS bug.\n", __func__,
-+			  intlv_en);
-+		return NULL;
-+	}
++		/* Get the DCT Mask, and ENABLE the reserved bits:
++		 * 18:16 and 4:0 to become ON. Then mask off bits
++		 * 28:0 (36:8)
++		 */
++		cs_mask = amd64_get_dct_mask(pvt, cs, csrow);
 +
-+	debugf2("%s(): node interleaving enabled\n", __func__);
-+	bits = (((u32) sys_addr) >> 12) & intlv_en;
++		debugf1("    CSROW=%d CSBase=0x%x RAW CSMask=0x%x\n",
++				csrow, cs_base, cs_mask);
 +
-+	for (node_id = 0; ; ) {
-+		if ((pvt->dram_limit[node_id] & intlv_en) == bits)
-+			break;	/* intlv_sel field matches */
++		cs_mask = (cs_mask | 0x0007C01F) & 0x1FFFFFFF;
 +
-+		if (++node_id >= DRAM_REG_COUNT) {
-+			debugf2("%s(): sys_addr 0x%lx does not match any "
-+				"node\n", __func__, (unsigned long)sys_addr);
-+			return NULL;
++		debugf1("              Final CSMask=0x%x\n", cs_mask);
++		debugf1("    (InputAddr & ~CSMask)=0x%x "
++				"(CSBase & ~CSMask)=0x%x\n",
++				(in_addr & ~cs_mask), (cs_base & ~cs_mask));
++
++		/* Perform the lookup MATCH operation */
++		if ((in_addr & ~cs_mask) == (cs_base & ~cs_mask)) {
++			cs_found = f10_process_possible_spare(csrow,
++							cs, pvt);
++
++			debugf1(" MATCH csrow=%d\n", cs_found);
++			break;
 +		}
 +	}
-+
-+	/* sanity test for sys_addr */
-+	if (unlikely(!amd64_base_limit_match(pvt, sys_addr, node_id))) {
-+		amd64_printk(KERN_WARNING,
-+			  "%s(): sys_addr 0x%lx falls outside base/limit "
-+			  "address range for node %d with node interleaving "
-+			  "enabled.\n", __func__, (unsigned long)sys_addr,
-+			  node_id);
-+		return NULL;
-+	}
-+
-+found:
-+	debugf2("%s(): sys_addr 0x%lx matches node %d\n", __func__,
-+		(unsigned long)sys_addr, node_id);
-+
-+	return edac_mc_find(node_id);
++	return cs_found;
 +}
++
++
 -- 
 1.6.2.4
 
