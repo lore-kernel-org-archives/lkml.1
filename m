@@ -1,117 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763883AbZEHA3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764211AbZEHA3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763883AbZEHA3T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759531AbZEHAKr
+	id S1764211AbZEHA3l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759657AbZEHAKt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:47 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52721
+	Thu, 7 May 2009 20:10:49 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52719
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756884AbZEHAKD (ORCPT
+	with ESMTP id S1756757AbZEHAKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 20:10:03 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 2/5] x86: split out core __math_state_restore
-Date: Thu,  7 May 2009 13:32:50 -0700
-Message-Id: <1241728373-3537-3-git-send-email-jeremy@goop.org>
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: [GIT PULL] xen: dom0 support for PCI access
+Date: Thu,  7 May 2009 14:45:26 -0700
+Message-Id: <1241732737-7669-1-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241728373-3537-1-git-send-email-jeremy@goop.org>
-References: <1241728373-3537-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Hi Ingo,
 
-Split the core fpu state restoration out into __math_state_restore, which
-assumes that cr0.TS is clear and that the fpu context has been initialized.
+This branch allows a Xen dom0 kernel to access PCI devices properly.  Mostly
+this involves making sure that memory being used for DMA is both
+logically contigious in the kernel's pseudo-physical memory and physically
+contigious in machine memory.
 
-This will be used during context switch.  There are two reasons this is
-desireable:
+Again, this is pretty much unchanged from the last time I posted it.
 
-- There's a small clarification.  When __switch_to() calls math_state_restore,
-  it relies on the fact that tsk_used_math() returns true, and so will
-  never do a blocking init_fpu().  __math_state_restore() does not have
-  (or need) that logic, so the question never arises.
+The following changes since commit 0c96e43850feb7c7c4a4950f24533491fbd63b5a:
+  Jeremy Fitzhardinge (1):
+        xen: checkpatch cleanups
 
-- It allows the clts() to be moved earler in __switch_to() so it can be performed
-  while cpu context updates are batched (will be done in a later patch).
+are available in the git repository at:
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/include/asm/i387.h |    1 +
- arch/x86/kernel/traps.c     |   33 +++++++++++++++++++++++----------
- 2 files changed, 24 insertions(+), 10 deletions(-)
+  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git xen-tip/dom0/pci
 
-diff --git a/arch/x86/include/asm/i387.h b/arch/x86/include/asm/i387.h
-index 63d1850..6eda5d2 100644
---- a/arch/x86/include/asm/i387.h
-+++ b/arch/x86/include/asm/i387.h
-@@ -26,6 +26,7 @@ extern void fpu_init(void);
- extern void mxcsr_feature_mask_init(void);
- extern int init_fpu(struct task_struct *child);
- extern asmlinkage void math_state_restore(void);
-+extern void __math_state_restore(void);
- extern void init_thread_xstate(void);
- extern int dump_fpu(struct pt_regs *, struct user_i387_struct *);
- 
-diff --git a/arch/x86/kernel/traps.c b/arch/x86/kernel/traps.c
-index f07ada4..4ea50f7 100644
---- a/arch/x86/kernel/traps.c
-+++ b/arch/x86/kernel/traps.c
-@@ -814,6 +814,28 @@ asmlinkage void __attribute__((weak)) mce_threshold_interrupt(void)
- #endif
- 
- /*
-+ * __math_state_restore assumes that cr0.TS is already clear and the
-+ * fpu state is all ready for use.  Used during context switch.
-+ */
-+inline void __math_state_restore(void)
-+{
-+	struct thread_info *thread = current_thread_info();
-+	struct task_struct *tsk = thread->task;
-+
-+	/*
-+	 * Paranoid restore. send a SIGSEGV if we fail to restore the state.
-+	 */
-+	if (unlikely(restore_fpu_checking(tsk))) {
-+		stts();
-+		force_sig(SIGSEGV, tsk);
-+		return;
-+	}
-+
-+	thread->status |= TS_USEDFPU;	/* So we fnsave on switch_to() */
-+	tsk->fpu_counter++;
-+}
-+
-+/*
-  * 'math_state_restore()' saves the current math information in the
-  * old math state array, and gets the new ones from the current task
-  *
-@@ -844,17 +866,8 @@ asmlinkage void math_state_restore(void)
- 	}
- 
- 	clts();				/* Allow maths ops (or we recurse) */
--	/*
--	 * Paranoid restore. send a SIGSEGV if we fail to restore the state.
--	 */
--	if (unlikely(restore_fpu_checking(tsk))) {
--		stts();
--		force_sig(SIGSEGV, tsk);
--		return;
--	}
- 
--	thread->status |= TS_USEDFPU;	/* So we fnsave on switch_to() */
--	tsk->fpu_counter++;
-+	__math_state_restore();
- }
- EXPORT_SYMBOL_GPL(math_state_restore);
- 
--- 
-1.6.0.6
+Alex Nixon (7):
+      xen: Don't disable the I/O space
+      xen: Allow unprivileged Xen domains to create iomap pages
+      Xen: Rename the balloon lock
+      xen: Add xen_create_contiguous_region
+      x86/PCI: Clean up pci_cache_line_size
+      x86/PCI: Enable scanning of all pci functions
+      Xen/x86/PCI: Add support for the Xen PCI subsytem
 
+Jeremy Fitzhardinge (4):
+      xen/swiotlb: use dma_alloc_from_coherent to get device coherent memory
+      x86/pci: make sure _PAGE_IOMAP it set on pci mappings
+      xen/pci: clean up Kconfig a bit
+      xen: checkpatch cleanups
+
+ arch/x86/Kconfig                 |    4 +
+ arch/x86/include/asm/io.h        |    2 +
+ arch/x86/include/asm/pci.h       |    8 +-
+ arch/x86/include/asm/pci_x86.h   |    2 +
+ arch/x86/include/asm/xen/iommu.h |   12 ++
+ arch/x86/kernel/pci-dma.c        |    3 +
+ arch/x86/pci/Makefile            |    1 +
+ arch/x86/pci/common.c            |   18 ++-
+ arch/x86/pci/i386.c              |    3 +
+ arch/x86/pci/init.c              |    6 +
+ arch/x86/pci/xen.c               |   51 +++++++
+ arch/x86/xen/Kconfig             |    2 +
+ arch/x86/xen/enlighten.c         |    6 +-
+ arch/x86/xen/mmu.c               |  225 ++++++++++++++++++++++++++++++-
+ arch/x86/xen/setup.c             |    3 -
+ drivers/pci/Makefile             |    2 +
+ drivers/pci/xen-iommu.c          |  279 ++++++++++++++++++++++++++++++++++++++
+ drivers/xen/balloon.c            |   15 +--
+ include/xen/interface/memory.h   |   50 +++++++
+ include/xen/xen-ops.h            |    6 +
+ 20 files changed, 671 insertions(+), 27 deletions(-)
+ create mode 100644 arch/x86/include/asm/xen/iommu.h
+ create mode 100644 arch/x86/pci/xen.c
+ create mode 100644 drivers/pci/xen-iommu.c
+
+Thanks,
+	J
