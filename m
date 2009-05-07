@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756935AbZEGGwP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758574AbZEGGwt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756935AbZEGGwP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 02:52:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753318AbZEGGvT
+	id S1758574AbZEGGwt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 02:52:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbZEGGvj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 02:51:19 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36270 "EHLO mx2.redhat.com"
+	Thu, 7 May 2009 02:51:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58719 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755241AbZEGGvT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 02:51:19 -0400
-Date: Thu, 7 May 2009 08:46:46 +0200
+	id S1753858AbZEGGvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 02:51:39 -0400
+Date: Thu, 7 May 2009 08:46:50 +0200
 From: Oleg Nesterov <oleg@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
        Vitaly Mayatskikh <vmayatsk@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 4/5] do_wait: kill the old BUG_ON, use while_each_thread()
-Message-ID: <20090507064646.GA15871@redhat.com>
+Subject: [PATCH 5/5] do_wait: fix the theoretical race with stop/trace/cont
+Message-ID: <20090507064650.GA15878@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,29 +24,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-do_wait() does BUG_ON(tsk->signal != current->signal), this looks like
-a raher obsolete check. At least, I don't think do_wait() is the best
-place to verify that all threads have the same ->signal. Remove it.
+do_wait:
 
-Also, change the code to use while_each_thread().
+	current->state = TASK_INTERRUPTIBLE;
+
+	read_lock(&tasklist_lock);
+	... search for the task to reap ...
+
+In theory, the ->state changing can leak into the critical section.
+Since the child can change its status under read_lock(tasklist) in
+parallel (finish_stop/ptrace_stop), we can miss the wakeup if
+__wake_up_parent() sees us in TASK_RUNNING state. Add the barrier.
+
+Also, use __set_current_state() to set TASK_RUNNING.
 
 Signed-off-by: Oleg Nesterov <oleg@redhat.com>
 ---
 
- kernel/exit.c |    4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ kernel/exit.c |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
---- PTRACE/kernel/exit.c~4_WHILE	2009-05-07 05:09:51.000000000 +0200
-+++ PTRACE/kernel/exit.c	2009-05-07 05:34:40.000000000 +0200
-@@ -1595,9 +1595,7 @@ repeat:
+--- PTRACE/kernel/exit.c~5_MB	2009-05-07 05:34:40.000000000 +0200
++++ PTRACE/kernel/exit.c	2009-05-07 05:43:06.000000000 +0200
+@@ -1581,7 +1581,7 @@ repeat:
+ 	   (!wo->wo_pid || hlist_empty(&wo->wo_pid->tasks[wo->wo_type])))
+ 		goto notask;
  
- 		if (wo->wo_flags & __WNOTHREAD)
- 			break;
--		tsk = next_thread(tsk);
--		BUG_ON(tsk->signal != current->signal);
--	} while (tsk != current);
-+	} while_each_thread(current, tsk);
- 	read_unlock(&tasklist_lock);
- 
- notask:
+-	current->state = TASK_INTERRUPTIBLE;
++	set_current_state(TASK_INTERRUPTIBLE);
+ 	read_lock(&tasklist_lock);
+ 	tsk = current;
+ 	do {
+@@ -1608,7 +1608,7 @@ notask:
+ 		}
+ 	}
+ end:
+-	current->state = TASK_RUNNING;
++	__set_current_state(TASK_RUNNING);
+ 	remove_wait_queue(&current->signal->wait_chldexit,&wait);
+ 	if (wo->wo_info) {
+ 		struct siginfo __user *infop = wo->wo_info;
 
