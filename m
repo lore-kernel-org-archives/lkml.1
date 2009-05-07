@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763161AbZEGUfk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763197AbZEGUgA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763161AbZEGUfk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 16:35:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754258AbZEGUf3
+	id S1763197AbZEGUgA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 16:36:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762761AbZEGUfs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 16:35:29 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:45917 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752875AbZEGUf2 convert rfc822-to-8bit (ORCPT
+	Thu, 7 May 2009 16:35:48 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:40451 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754392AbZEGUfr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 16:35:28 -0400
+	Thu, 7 May 2009 16:35:47 -0400
+Date: Thu, 7 May 2009 22:35:18 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: David Rientjes <rientjes@google.com>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com,
+       linux-pm@lists.linux-foundation.org, torvalds@linux-foundation.org,
+       jens.axboe@oracle.com, alan-jenkins@tuffmail.co.uk,
+       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+Message-ID: <20090507203518.GA1652@ucw.cz>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072133.48917.rjw@sisk.pl> <20090507130202.34cbe37a.akpm@linux-foundation.org> <200905072218.50782.rjw@sisk.pl> <alpine.DEB.2.00.0905071321440.646@chino.kir.corp.google.com>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.44L0.0905071543470.4812-100000@iolanthe.rowland.org>
-References: <1295ed070905071015n5a604f93je366faf55b695e47@mail.gmail.com> 
-	<Pine.LNX.4.44L0.0905071543470.4812-100000@iolanthe.rowland.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Thu, 7 May 2009 22:35:07 +0200
-Message-ID: <ac3eb2510905071335l473e30d3jbabb62d471607b8d@mail.gmail.com>
-Subject: Re: usbfs, claiming entire usb devices
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       Pantelis Koukousoulas <pktoss@gmail.com>,
-       USB list <linux-usb@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0905071321440.646@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 7, 2009 at 21:55, Alan Stern <stern@rowland.harvard.edu> wrote:
-> There is a proposal afoot to give user programs the ability to claim
-> ownership of an entire USB device, rather than just individual
-> interfaces.  In fact, we'd like processes to be able to own whatever
-> device gets plugged into a particular port on a particular hub.
->
-> The question is how the API should work.  A simple approach is to have
-> a sysfs or usbfs file correspond to each port; when a process opens the
-> file it would be granted ownership of any device plugged into that
-> port.  Since the file is automatically closed when the process ends, we
-> wouldn't have to worry about ownership never getting released.
->
-> But there's a snag.  When a process goes to open the usbfs file for a
-> device, the kernel needs to know whether or not the process owns that
-> device.  In other words, we need to figure out whether or not the
-> process has opened the corresponding port file.
->
-> Is there a simple way to do this?  Is it reasonable to search through
-> all the process's fd's, looking for one that matches a particular
-> inode?
->
-> Or would a completely different API approach be better?
+On Thu 2009-05-07 13:25:06, David Rientjes wrote:
+> On Thu, 7 May 2009, Rafael J. Wysocki wrote:
+> 
+> > OK, let's try with __GFP_NO_OOM_KILL first.  If there's too much disagreement,
+> > I'll use the freezer-based approach instead.
+> > 
+> 
+> Third time I'm going to suggest this, and I'd like a response on why it's 
+> not possible instead of being ignored.
+> 
+> All of your tasks are in D state other than kthreads, right?  That means 
+> they won't be in the oom killer (thus no zones are oom locked), so you can 
+> easily do this
 
-You have one file per device, and that file has normal unix file
-permissions. Userspace can grant access to that file by ownership or
-by adding an ACL. What else do we need? Why would the kernel care who
-opened the file, when the one was able to get through the normal file
-access check?
+Well, OOM killer may be running on behalf of some kthread at that
+point....? Quite unlikely, but possible AFAICT.
+									Pavel
 
-Or did you mean some magic for an entire tree of devices below some
-port? Like some sort of permission inheritance in the kernel?
-
-Kay
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
