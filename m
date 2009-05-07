@@ -1,75 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbZEGJPz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757262AbZEGJUZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759493AbZEGJPz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 05:15:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755537AbZEGJPp
+	id S1757262AbZEGJUZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 05:20:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754987AbZEGJUI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 05:15:45 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:41152 "EHLO mx3.mail.elte.hu"
+	Thu, 7 May 2009 05:20:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40205 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754385AbZEGJPo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 05:15:44 -0400
-Date: Thu, 7 May 2009 11:13:57 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>, "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       Alan Stern <stern@rowland.harvard.edu>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Oleg Nesterov <oleg@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-Subject: Re: [PATCH] x86: ptrace debugreg checks rewrite
-Message-ID: <20090507091357.GA26433@elte.hu>
-References: <20090504001601.GL16631@x200.localdomain> <20090504002431.GA17556@x200.localdomain> <20090506095629.GC15323@elte.hu> <20090506203852.D9AC9FC39E@magilla.sf.frob.com>
+	id S1752443AbZEGJUG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 05:20:06 -0400
+Date: Thu, 7 May 2009 09:19:37 GMT
+From: tip-bot for Steven Rostedt <srostedt@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rostedt@goodmis.org, lizf@cn.fujitsu.com, srostedt@redhat.com,
+       tglx@linutronix.de
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       lizf@cn.fujitsu.com, rostedt@goodmis.org, srostedt@redhat.com,
+       tglx@linutronix.de
+In-Reply-To: <49FEAFD0.30106@cn.fujitsu.com>
+References: <49FEAFD0.30106@cn.fujitsu.com>
+Subject: [tip:tracing/core] tracing: reset ring buffer when removing modules with events
+Message-ID: <tip-9456f0fa6d3cb944d3b9fc31c9a244e0362c26ea@git.kernel.org>
+Git-Commit-ID: 9456f0fa6d3cb944d3b9fc31c9a244e0362c26ea
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <20090506203852.D9AC9FC39E@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 07 May 2009 09:19:39 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  9456f0fa6d3cb944d3b9fc31c9a244e0362c26ea
+Gitweb:     http://git.kernel.org/tip/9456f0fa6d3cb944d3b9fc31c9a244e0362c26ea
+Author:     Steven Rostedt <srostedt@redhat.com>
+AuthorDate: Wed, 6 May 2009 21:54:09 -0400
+Committer:  Steven Rostedt <rostedt@goodmis.org>
+CommitDate: Wed, 6 May 2009 23:11:41 -0400
 
-* Roland McGrath <roland@redhat.com> wrote:
+tracing: reset ring buffer when removing modules with events
 
-> > > On Mon, May 04, 2009 at 04:16:01AM +0400, Alexey Dobriyan wrote:
-> > > > +static int ptrace_check_debugreg(int _32bit,
-> > > > +				 unsigned long dr0, unsigned long dr1,
-> > > > +				 unsigned long dr2, unsigned long dr3,
-> > > > +				 unsigned long dr6, unsigned long dr7)
-> > > > +{
-> > > > +	/* Breakpoint type: 00: --x, 01: -w-, 10: undefined, 11: rw- */
-> > > > +	unsigned int rw[4];
-> > > > +	/* Breakpoint length: 00: 1 byte, 01: 2 bytes, 10: 8 bytes, 11: bytes */
-> > > 								        4 bytes, of course
-> > 
-> > Roland, Oleg, do you have any pending/planned changes in this area?
-> 
-> I don't.  I expect the only future work on this arch debugreg 
-> stuff to be via the hw_breakpoint work, extending that and/or 
-> building new things on it.
+Li Zefan found that there's a race using the event ids of events and
+modules. When a module is loaded, an event id is incremented. We only
+have 16 bits for event ids (65536) and there is a possible (but highly
+unlikely) race that we could load and unload a module that registers
+events so many times that the event id counter overflows.
 
-Yes. That work, despite being in its upteenth iteration, is taking a 
-frustratingly long amount of time to get even to a minimal "review 
-passed, lets commit and test this in a tree a bit" intermediate 
-stage though.
+When it overflows, it then restarts and goes looking for available
+ids. An id is available if it was added by a module and released.
 
-I've Cc:-ed K.Prasad and Alan Stern. Roland, Oleg, would you be 
-interested in having a look at that thread, to help drive it 
-forward?
+The race is if you have one module add an id, and then is removed.
+Another module loaded can use that same event id. But if the old module
+still had events in the ring buffer, the new module's call back would
+get bogus data.  At best (and most likely) the output would just be
+garbage. But if the module for some reason used pointers (not recommended)
+then this could potentially crash.
 
-The last iteration was posted to lkml on Apr 24:
+The safest thing to do is just reset the ring buffer if a module that
+registered events is removed.
 
-  [Patch 00/12] Hardware Breakpoint Interfaces
+[ Impact: prevent unpredictable results of event id overflows ]
 
-and it has a good deal of ptrace, signal handling and other impact 
-as well.
+Reported-by: Li Zefan <lizf@cn.fujitsu.com>
+LKML-Reference: <49FEAFD0.30106@cn.fujitsu.com>
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 
-	Ingo
+
+---
+ kernel/trace/trace.c        |   10 ++++++++++
+ kernel/trace/trace.h        |    2 ++
+ kernel/trace/trace_events.c |    9 +++++++++
+ 3 files changed, 21 insertions(+), 0 deletions(-)
+
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index 4164a34..dd40d23 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -639,6 +639,16 @@ void tracing_reset_online_cpus(struct trace_array *tr)
+ 		tracing_reset(tr, cpu);
+ }
+ 
++void tracing_reset_current(int cpu)
++{
++	tracing_reset(&global_trace, cpu);
++}
++
++void tracing_reset_current_online_cpus(void)
++{
++	tracing_reset_online_cpus(&global_trace);
++}
++
+ #define SAVED_CMDLINES 128
+ #define NO_CMDLINE_MAP UINT_MAX
+ static unsigned map_pid_to_cmdline[PID_MAX_DEFAULT+1];
+diff --git a/kernel/trace/trace.h b/kernel/trace/trace.h
+index 777c6c3..ba25793 100644
+--- a/kernel/trace/trace.h
++++ b/kernel/trace/trace.h
+@@ -409,6 +409,8 @@ int tracing_is_enabled(void);
+ void trace_wake_up(void);
+ void tracing_reset(struct trace_array *tr, int cpu);
+ void tracing_reset_online_cpus(struct trace_array *tr);
++void tracing_reset_current(int cpu);
++void tracing_reset_current_online_cpus(void);
+ int tracing_open_generic(struct inode *inode, struct file *filp);
+ struct dentry *trace_create_file(const char *name,
+ 				 mode_t mode,
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 8d579ff..6d2c842 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -932,9 +932,11 @@ static void trace_module_remove_events(struct module *mod)
+ {
+ 	struct ftrace_module_file_ops *file_ops;
+ 	struct ftrace_event_call *call, *p;
++	bool found = false;
+ 
+ 	list_for_each_entry_safe(call, p, &ftrace_events, list) {
+ 		if (call->mod == mod) {
++			found = true;
+ 			if (call->enabled) {
+ 				call->enabled = 0;
+ 				call->unregfunc();
+@@ -957,6 +959,13 @@ static void trace_module_remove_events(struct module *mod)
+ 		list_del(&file_ops->list);
+ 		kfree(file_ops);
+ 	}
++
++	/*
++	 * It is safest to reset the ring buffer if the module being unloaded
++	 * registered any events.
++	 */
++	if (found)
++		tracing_reset_current_online_cpus();
+ }
+ 
+ static int trace_module_notify(struct notifier_block *self,
