@@ -1,67 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761596AbZEGRiy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762157AbZEGRjX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761596AbZEGRiy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 13:38:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761487AbZEGRib
+	id S1762157AbZEGRjX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 13:39:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755610AbZEGRjI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 13:38:31 -0400
-Received: from nic.NetDirect.CA ([216.16.235.2]:55969 "EHLO
-	rubicon.netdirect.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756716AbZEGRi3 (ORCPT
+	Thu, 7 May 2009 13:39:08 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:38831 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758920AbZEGRjF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 13:38:29 -0400
-X-Originating-Ip: 216.16.235.2
-Date: Thu, 7 May 2009 13:23:04 -0400
-From: Chris Frey <cdfrey@foursquare.net>
-To: Greg KH <gregkh@suse.de>, chrisw@sous-sol.org, smfrench@gmail.com,
-       jlayton@redhat.com
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
-       Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: Re: [patch 00/58] 2.6.29.3-stable review
-Message-ID: <20090507172301.GA28595@foursquare.net>
-References: <20090506215017.GA21981@kroah.com>
+	Thu, 7 May 2009 13:39:05 -0400
+Subject: Re: [PATCH] x86: Reduce the default HZ value
+From: Peter Zijlstra <peterz@infradead.org>
+To: paulmck@linux.vnet.ibm.com
+Cc: Christoph Lameter <cl@linux.com>, Alok Kataria <akataria@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090507173608.GC6693@linux.vnet.ibm.com>
+References: <1241462661.412.8.camel@alok-dev1> <4A00ADDE.9000908@zytor.com>
+	 <1241560625.8665.17.camel@alok-dev1>
+	 <alpine.DEB.1.10.0905071010170.24528@qirst.com>
+	 <1241716053.6311.1514.camel@laptop> <1241716422.6311.1524.camel@laptop>
+	 <1241716718.6311.1531.camel@laptop>
+	 <20090507173608.GC6693@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Thu, 07 May 2009 19:38:24 +0200
+Message-Id: <1241717904.6311.1558.camel@laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090506215017.GA21981@kroah.com>
-User-Agent: Mutt/1.4.1i
-X-Net-Direct-Inc-MailScanner-Information: Please contact the ISP for more information
-X-Net-Direct-Inc-MailScanner: Found to be clean
-X-Net-Direct-Inc-MailScanner-SpamCheck: not spam, SpamAssassin (not cached,
-	score=-4.399, required 5, autolearn=not spam, ALL_TRUSTED -1.80,
-	BAYES_00 -2.60)
-X-Net-Direct-Inc-MailScanner-From: cdfrey@foursquare.net
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 02:50:17PM -0700, Greg KH wrote:
-> This is the start of the stable review cycle for the 2.6.29.3 release.
-> There are 58 patches in this series, all will be posted as a response to
-> this one.
+On Thu, 2009-05-07 at 10:36 -0700, Paul E. McKenney wrote:
+> On Thu, May 07, 2009 at 07:18:38PM +0200, Peter Zijlstra wrote:
+> > On Thu, 2009-05-07 at 19:13 +0200, Peter Zijlstra wrote:
+> > > On Thu, 2009-05-07 at 19:09 +0200, Peter Zijlstra wrote:
+> > > > On Thu, 2009-05-07 at 10:13 -0400, Christoph Lameter wrote:
+> > > > > I think we need to reduce the general tick frequency to be as low as
+> > > > > possible. With high resolution timers the tick frequency is just the
+> > > > > frequency with which the timer interrupt disturbs a running application.
+> > > > > 
+> > > > > Are there any benefits remaining from frequent timer interrupts? I would
+> > > > > think that 60 HZ would be sufficient.
+> > > > > 
+> > > > > It would be good if the kernel would be truly tickless. Scheduler events
+> > > > > would be driven by the scheduling intervals and not the invokations of the
+> > > > > scheduler softirq.
+> > > > 
+> > > > The only thing that's driven by the softirq is load-balancing, there's
+> > > > way more to the scheduler-tick than kicking that thing awake every so
+> > > > often.
+> > > > 
+> > > > The problem is that running the scheduler of off hrtimers is too
+> > > > expensive. We have the code, we tried it, people complained.
+> > > 
+> > > Therefore, decreasing the HZ value to say 50, we'd get a minimum
+> > > involuntary preemption granularity of 20ms, something on the high end of
+> > > barely usable.
+> > 
+> > Another user is RCU, the grace period is tick driven, growing these
+> > ticks by a factor 50 or so might require some tinkering with forced
+> > grace periods when we notice our batch queues getting too long.
+> 
+> One approach would be to enter nohz mode when running a CPU-bound
+> application on a CPU that had nothing else (other than the idle task)
+> on its runqueue and for which rcu_needs_cpu() returns zero.  In this
+> mode, RCU would need to be informed on each system call, perhaps with an
+> rcu_kernel_enter() and rcu_kernel_exit() that work like rcu_irq_enter()
+> and rcu_irq_exit() -- and that perhaps replace rcu_irq_enter() and
+> rcu_irq_exit().
+> 
+> Then RCU would ignore any CPU that was executing a CPU-bound application,
+> allowing the HZ to be dialed down as low as you like, or perhaps really
+> entering something like nohz mode.
 
-Maybe I'm missing something, but I don't see any of
-the fs/cifs/connect.c security fixes from commits such as
-f083def68f84b04fe3f97312498911afce79609e.  I was hoping this would make
-it into 2.6.29.3.
-
-For reference, this was discussed on full-disclosure:
-	http://marc.info/?l=full-disclosure&m=123936563230145&w=2
-	(near the end of Andreas's post)
-
-Jeff and Steve mentioned last week that they were working on other related
-cleanups as well, that they hoped to push to stable.
-
-Thanks,
-- Chris
+Which would make syscall more expensive, not something you'd want to
+do :-)
 
