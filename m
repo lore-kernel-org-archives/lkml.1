@@ -1,75 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760945AbZEGBNC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760858AbZEGBQB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760945AbZEGBNC (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 21:13:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753847AbZEGBMw
+	id S1760858AbZEGBQB (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 21:16:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753386AbZEGBPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 21:12:52 -0400
-Received: from mailout2.samsung.com ([203.254.224.25]:59463 "EHLO
-	mailout2.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752998AbZEGBMv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 21:12:51 -0400
-Date: Thu, 07 May 2009 10:12:40 +0900
-From: Kim Kyuwon <q1.kim@samsung.com>
-Subject: [PATCH] rtc: rtc-twl4030 don't mask alarm interrupts on suspend
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: rtc-linux@googlegroups.com, OMAP <linux-omap@vger.kernel.org>,
-       David Brownell <david-b@pacbell.net>,
-       Kyungmin Park <kyungmin.park@samsung.com>, p_gortmaker@yahoo.com,
-       a.zummo@towertech.it
-Message-id: <4A023588.8080308@samsung.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-Content-transfer-encoding: 7BIT
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-X-OriginalArrivalTime: 07 May 2009 01:12:42.0012 (UTC)
- FILETIME=[EBA9F5C0:01C9CEB0]
+	Wed, 6 May 2009 21:15:51 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64545 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753358AbZEGBPv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 21:15:51 -0400
+Message-ID: <4A023670.8080306@cn.fujitsu.com>
+Date: Thu, 07 May 2009 09:16:32 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Jason Baron <jbaron@redhat.com>
+CC: linux-kernel@vger.kernel.org, mingo@elte.hu,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, fweisbec@gmail.com,
+       rostedt@goodmis.org, zhaolei@cn.fujitsu.com, laijs@cn.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>, randy.dunlap@oracle.com
+Subject: Re: [PATCH v3] ftrace: add a tracepoint for	__raise_softirq_irqoff()
+References: <49FFDF9C.7040505@cn.fujitsu.com> <20090506134940.GA3129@redhat.com>
+In-Reply-To: <20090506134940.GA3129@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi All,
 
-This patch was originally sent to linux-omap mailing list.
-(Please refer to http://markmail.org/thread/o643d7w224zo3i7n)
 
-David Brownell said, if I've tested this:
+Jason Baron wrote:
+> On Tue, May 05, 2009 at 02:41:32PM +0800, Xiao Guangrong wrote:
+>> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>>
+>> This patch is modified from Mathieu Desnoyers' patch. The original patch
+>> can be found here: 
+>> 	http://marc.info/?l=linux-kernel&m=123791201816245&w=2
+>> This tracepoint can trace the time stamp when softirq action is raised. 
+>>
+>> Changelog for v1 -> v2: 
+>> 1: Use TRACE_EVENT instead of DEFINE_TRACE
+>> 2: Move the tracepoint from raise_softirq_irqoff() to
+>>    __raise_softirq_irqoff()
+>>
+>> Changelog for v2 -> v3: 
+>> Move the definition of __raise_softifq_irqoff() to .c file when
+>> CONFIG_TRACEPOINTS is enabled, to avoid recursive includes
+>>
+>> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>> Signed-off-by: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+>>
+> 
+> hi,
+> 
+> Could you please add 'docbook' style comments above TRACE_EVENTi()? We
+> recently added a tracepoint docbook to the -tip and it already contains
+> an 'irq' chapter, so you just need to add the comments for the raise
+> softirq tracepoint. Please see: 
+> 
+> http://marc.info/?l=linux-kernel&m=124118471411710&w=2
+> 
 
- Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+Hi Jason: 
 
-Of course, I've tested.
+I will add the comments for this tracepoint. 
+thanks! 
 
-Regards,
-Kyuwon
---
-From: Kim Kyuwon <q1.kim@samsung.com>
-Subject: [PATCH] rtc: rtc-twl4030 don't mask alarm interrupts on suspend
-
-This patch enables the alarm interrupt of TWL4030 RTC to wake up the
-system from suspend. You can test this patch with following command.
-
-# echo +10 > /sys/class/rtc/rtc0/wakealarm; echo mem > /sys/power/state;
-
-Signed-off-by: Kim Kyuwon <q1.kim@samsung.com>
----
- drivers/rtc/rtc-twl4030.c |    4 +---
- 1 files changed, 1 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/rtc/rtc-twl4030.c b/drivers/rtc/rtc-twl4030.c
-index ad35f76..c185939 100644
---- a/drivers/rtc/rtc-twl4030.c
-+++ b/drivers/rtc/rtc-twl4030.c
-@@ -495,9 +495,7 @@ static int twl4030_rtc_suspend(struct platform_device *pdev, pm_message_t state)
- {
- 	irqstat = rtc_irq_bits;
- 
--	/* REVISIT alarm may need to wake us from sleep */
--	mask_rtc_irq_bit(BIT_RTC_INTERRUPTS_REG_IT_TIMER_M |
--			 BIT_RTC_INTERRUPTS_REG_IT_ALARM_M);
-+	mask_rtc_irq_bit(BIT_RTC_INTERRUPTS_REG_IT_TIMER_M);
- 	return 0;
- }
- 
--- 
-1.5.2.5
+> thanks,
+> 
+> -Jason
+> 
+> 
+> 
+> 
