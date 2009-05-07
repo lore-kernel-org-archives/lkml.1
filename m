@@ -1,109 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762799AbZEHA11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764159AbZEHA1t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762799AbZEHA11 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758842AbZEHAKl
+	id S1764159AbZEHA1t (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:27:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757937AbZEHAKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Thu, 7 May 2009 20:10:41 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52728
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52707
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757202AbZEHAKG (ORCPT
+	with ESMTP id S1754517AbZEHAKG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 20:10:06 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: [GIT PULL] xen: core dom0 support
-Date: Thu,  7 May 2009 14:10:37 -0700
-Message-Id: <1241730653-4688-1-git-send-email-jeremy@goop.org>
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 8/8] xen: reserve Xen start_info rather than e820 reserving
+Date: Thu,  7 May 2009 13:25:02 -0700
+Message-Id: <1241727902-3176-9-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1241727902-3176-1-git-send-email-jeremy@goop.org>
+References: <1241727902-3176-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-This branch has the basics of Xen dom0 support.  It is not sufficient
-to get a booting system (it implements no access to physical devices),
-but it is enough to at least get the kernel to start and print some
-console messages.
+Use reserve_early rather than e820 reservations for Xen start info and mfn->pfn
+table, so that the memory use is a bit more self-documenting.
 
-This is essentially unchanged from the last time I posted it.
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/xen/setup.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-The following changes since commit e7c064889606aab3569669078c69b87b2c527e72:
-  Jeremy Fitzhardinge (1):
-        xen: add FIX_TEXT_POKE to fixmap
+diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+index 15c6c68..ad0047f 100644
+--- a/arch/x86/xen/setup.c
++++ b/arch/x86/xen/setup.c
+@@ -61,9 +61,9 @@ char * __init xen_memory_setup(void)
+ 	 *  - xen_start_info
+ 	 * See comment above "struct start_info" in <xen/interface/xen.h>
+ 	 */
+-	e820_add_region(__pa(xen_start_info->mfn_list),
+-			xen_start_info->pt_base - xen_start_info->mfn_list,
+-			E820_RESERVED);
++	reserve_early(__pa(xen_start_info->mfn_list),
++		      __pa(xen_start_info->pt_base),
++			"XEN START INFO");
+ 
+ 	sanitize_e820_map(e820.map, ARRAY_SIZE(e820.map), &e820.nr_map);
+ 
+-- 
+1.6.0.6
 
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git xen-tip/dom0/core
-
-Christophe Saout (1):
-      paravirtualize IO permission bitmap
-
-Ian Campbell (4):
-      xen: disable PAT
-      xen/dom0: Use host E820 map
-      xen: implement XENMEM_machphys_mapping
-      xen: clear reserved bits in l3 entries given in the initial pagetables
-
-Jeremy Fitzhardinge (7):
-      xen dom0: Make hvc_xen console work for dom0.
-      xen/dom0: use _PAGE_IOMAP in ioremap to do machine mappings
-      xen: allow enable use of VGA console on dom0
-      xen/dom0: add XEN_DOM0 config option
-      x86: make /dev/mem mappings _PAGE_IOMAP
-      x86: don't need "changed" parameter for set_io_bitmap()
-      xen: checkpatch cleanups
-
-Juan Quintela (2):
-      xen dom0: Initialize xenbus for dom0.
-      xen dom0: Set up basic IO permissions for dom0.
-
-Stephen Tweedie (2):
-      xen dom0: Add support for the platform_ops hypercall
-      xen mtrr: Add mtrr_ops support for Xen mtrr
-
- arch/x86/include/asm/paravirt.h         |    9 ++
- arch/x86/include/asm/pat.h              |    5 +
- arch/x86/include/asm/processor.h        |    4 +
- arch/x86/include/asm/xen/hypercall.h    |    8 +
- arch/x86/include/asm/xen/interface.h    |    6 +-
- arch/x86/include/asm/xen/interface_32.h |    5 +
- arch/x86/include/asm/xen/interface_64.h |   13 +--
- arch/x86/include/asm/xen/page.h         |   15 +--
- arch/x86/kernel/cpu/mtrr/Makefile       |    1 +
- arch/x86/kernel/cpu/mtrr/amd.c          |    1 +
- arch/x86/kernel/cpu/mtrr/centaur.c      |    1 +
- arch/x86/kernel/cpu/mtrr/cyrix.c        |    1 +
- arch/x86/kernel/cpu/mtrr/generic.c      |    1 +
- arch/x86/kernel/cpu/mtrr/main.c         |   11 +-
- arch/x86/kernel/cpu/mtrr/mtrr.h         |    5 +
- arch/x86/kernel/cpu/mtrr/xen.c          |   56 ++++++++
- arch/x86/kernel/ioport.c                |   29 +++-
- arch/x86/kernel/paravirt.c              |    1 +
- arch/x86/kernel/process.c               |   27 +---
- arch/x86/mm/pat.c                       |    7 +-
- arch/x86/xen/Kconfig                    |   26 ++++
- arch/x86/xen/Makefile                   |    3 +-
- arch/x86/xen/enlighten.c                |   51 +++++++-
- arch/x86/xen/mmu.c                      |  123 +++++++++++++++++-
- arch/x86/xen/setup.c                    |   51 +++++++-
- arch/x86/xen/vga.c                      |   68 ++++++++++
- arch/x86/xen/xen-ops.h                  |   12 ++
- drivers/char/hvc_xen.c                  |   99 +++++++++-----
- drivers/xen/events.c                    |    2 +-
- drivers/xen/xenbus/xenbus_probe.c       |   30 ++++-
- include/xen/events.h                    |    2 +
- include/xen/interface/memory.h          |   42 ++++++
- include/xen/interface/platform.h        |  222 +++++++++++++++++++++++++++++++
- include/xen/interface/xen.h             |   41 ++++++
- 34 files changed, 873 insertions(+), 105 deletions(-)
- create mode 100644 arch/x86/kernel/cpu/mtrr/xen.c
- create mode 100644 arch/x86/xen/vga.c
- create mode 100644 include/xen/interface/platform.h
-
-Thanks,
-	J
