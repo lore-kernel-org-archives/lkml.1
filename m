@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756056AbZEGMwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760687AbZEGMyb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756056AbZEGMwT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 08:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754573AbZEGMwD
+	id S1760687AbZEGMyb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 08:54:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753238AbZEGMyV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 08:52:03 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57739 "EHLO mx2.mail.elte.hu"
+	Thu, 7 May 2009 08:54:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53672 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753238AbZEGMwB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 08:52:01 -0400
-Date: Thu, 7 May 2009 14:51:07 +0200
+	id S1753230AbZEGMyU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 08:54:20 -0400
+Date: Thu, 7 May 2009 14:53:32 +0200
 From: Ingo Molnar <mingo@elte.hu>
 To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
@@ -18,7 +18,7 @@ Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
        Rusty Russell <rusty@rustcorp.com.au>, Sam Ravnborg <sam@ravnborg.org>,
        Jeff Dike <jdike@addtoit.com>
 Subject: Re: [PATCH 1/4] kernel: constructor support
-Message-ID: <20090507125107.GL28398@elte.hu>
+Message-ID: <20090507125332.GM28398@elte.hu>
 References: <20090507124556.041286732@linux.vnet.ibm.com> <20090507124557.003153444@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -40,13 +40,21 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 * Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
 
-> +typedef void (*ctorcall_t)(void);
+> Disable constructor support for usermode Linux to prevent conflicts
+> with host glibc.
 
-that name is pretty ugly. Please change it to the usual kernel 
-convention for function pointers:
+> +++ linux-2.6.30-rc4/init/Kconfig
+> @@ -16,6 +16,11 @@ config DEFCONFIG_LIST
+>  	default "$ARCH_DEFCONFIG"
+>  	default "arch/$ARCH/defconfig"
+>  
+> +config CONSTRUCTORS
+> +	bool
+> +	depends on !UML
+> +	default y
+> +
+>  menu "General setup"
 
-	typedef void (*ctor_fn_t)(void);
-
-Thanks,
+Hm, excluding UML like that is sad. Is there no better solution?
 
 	Ingo
