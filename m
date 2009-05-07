@@ -1,167 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759454AbZEHAW2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763758AbZEHAW5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759454AbZEHAW2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:22:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbZEHAK3
+	id S1763758AbZEHAW5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:22:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759175AbZEHAKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:29 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52717
+	Thu, 7 May 2009 20:10:30 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52710
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755282AbZEHAKB (ORCPT
+	with ESMTP id S1756800AbZEHAKD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 20:10:01 -0400
+	Thu, 7 May 2009 20:10:03 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 15/16] x86: don't need "changed" parameter for set_io_bitmap()
-Date: Thu,  7 May 2009 14:10:52 -0700
-Message-Id: <1241730653-4688-16-git-send-email-jeremy@goop.org>
+Subject: [PATCH 3/5] x86-32: make sure clts is batched during context switch
+Date: Thu,  7 May 2009 13:32:51 -0700
+Message-Id: <1241728373-3537-4-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241730653-4688-1-git-send-email-jeremy@goop.org>
-References: <1241730653-4688-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241728373-3537-1-git-send-email-jeremy@goop.org>
+References: <1241728373-3537-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Impact: cleanup
+If we're preloading the fpu state during context switch, make sure the clts
+happens while we're batching the cpu context update, then do the actual
+__math_state_restore once the updates are flushed.
 
-The "changed" parameter isn't really used, so don't bother passing it.
-(xen_set_io_bitmap can keep track of it for itself, if it wants.)
+This allows more efficient context switches when running paravirtualized,
+as all the hypercalls can be folded together into one.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/paravirt.h  |    6 +++---
- arch/x86/include/asm/processor.h |    2 +-
- arch/x86/kernel/ioport.c         |    9 +++------
- arch/x86/kernel/process.c        |    4 ++--
- arch/x86/xen/enlighten.c         |    5 +----
- 5 files changed, 10 insertions(+), 16 deletions(-)
+ arch/x86/kernel/process_32.c |   27 ++++++++++++++++-----------
+ 1 files changed, 16 insertions(+), 11 deletions(-)
 
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index fd2c31b..56acbe8 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -157,7 +157,7 @@ struct pv_cpu_ops {
+diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
+index 5463858..022671c 100644
+--- a/arch/x86/kernel/process_32.c
++++ b/arch/x86/kernel/process_32.c
+@@ -353,14 +353,21 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ 				 *next = &next_p->thread;
+ 	int cpu = smp_processor_id();
+ 	struct tss_struct *tss = &per_cpu(init_tss, cpu);
++	bool preload_fpu;
  
- 	void (*set_iopl_mask)(unsigned mask);
- 	void (*set_io_bitmap)(struct thread_struct *thread,
--	                      int changed, unsigned long bytes_updated);
-+	                      unsigned long bytes_updated);
+ 	/* never put a printk in __switch_to... printk() calls wake_up*() indirectly */
  
- 	void (*wbinvd)(void);
- 	void (*io_delay)(void);
-@@ -1005,9 +1005,9 @@ static inline void set_iopl_mask(unsigned mask)
- }
+-	__unlazy_fpu(prev_p);
++	/*
++	 * If the task has used fpu the last 5 timeslices, just do a full
++	 * restore of the math state immediately to avoid the trap; the
++	 * chances of needing FPU soon are obviously high now
++	 */
++	preload_fpu = tsk_used_math(next_p) && next_p->fpu_counter > 5;
  
- static inline void set_io_bitmap(struct thread_struct *thread,
--                                 int changed, unsigned long bytes_updated)
-+                                 unsigned long bytes_updated)
- {
--	PVOP_VCALL3(pv_cpu_ops.set_io_bitmap, thread, changed, bytes_updated);
-+	PVOP_VCALL2(pv_cpu_ops.set_io_bitmap, thread, bytes_updated);
- }
++	__unlazy_fpu(prev_p);
  
- /* The paravirtualized I/O functions */
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 0ed4cba..15d0769 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -539,7 +539,7 @@ static inline void native_set_iopl_mask(unsigned mask)
- }
- 
- extern void native_set_io_bitmap(struct thread_struct *thread,
--                                 int changed, unsigned long updated_bytes);
-+                                 unsigned long updated_bytes);
- 
- static inline void
- native_load_sp0(struct tss_struct *tss, struct thread_struct *thread)
-diff --git a/arch/x86/kernel/ioport.c b/arch/x86/kernel/ioport.c
-index 5a12c9f..642660f 100644
---- a/arch/x86/kernel/ioport.c
-+++ b/arch/x86/kernel/ioport.c
-@@ -31,7 +31,7 @@ static void set_bitmap(unsigned long *bitmap, unsigned int base,
- }
- 
- void native_set_io_bitmap(struct thread_struct *t,
--                          int changed, unsigned long bytes_updated)
-+                          unsigned long bytes_updated)
- {
- 	struct tss_struct *tss;
- 
-@@ -54,7 +54,6 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
- {
- 	struct thread_struct *t = &current->thread;
- 	unsigned int i, max_long, bytes, bytes_updated;
--	int changed;
- 
- 	if ((from + num <= from) || (from + num > IO_BITMAP_BITS))
- 		return -EINVAL;
-@@ -75,9 +74,7 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
- 		memset(bitmap, 0xff, IO_BITMAP_BYTES);
- 		t->io_bitmap_ptr = bitmap;
- 		set_thread_flag(TIF_IO_BITMAP);
--		changed = 1;
--	} else
--		changed = 0;
-+	}
+ 	/* we're going to use this soon, after a few expensive things */
+-	if (next_p->fpu_counter > 5)
++	if (preload_fpu)
+ 		prefetch(next->xstate);
  
  	/*
- 	 * do it in the per-thread copy
-@@ -104,7 +101,7 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
+@@ -401,6 +408,11 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ 		     task_thread_info(next_p)->flags & _TIF_WORK_CTXSW_NEXT))
+ 		__switch_to_xtra(prev_p, next_p, tss);
  
- 	t->io_bitmap_max = bytes;
++	/* If we're going to preload the fpu context, make sure clts
++	   is run while we're batching the cpu state updates. */
++	if (preload_fpu)
++		clts();
++
+ 	/*
+ 	 * Leave lazy mode, flushing any hypercalls made here.
+ 	 * This must be done before restoring TLS segments so
+@@ -410,15 +422,8 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ 	 */
+ 	arch_end_context_switch(next_p);
  
--	set_io_bitmap(t, changed, bytes_updated);
-+	set_io_bitmap(t, bytes_updated);
+-	/* If the task has used fpu the last 5 timeslices, just do a full
+-	 * restore of the math state immediately to avoid the trap; the
+-	 * chances of needing FPU soon are obviously high now
+-	 *
+-	 * tsk_used_math() checks prevent calling math_state_restore(),
+-	 * which can sleep in the case of !tsk_used_math()
+-	 */
+-	if (tsk_used_math(next_p) && next_p->fpu_counter > 5)
+-		math_state_restore();
++	if (preload_fpu)
++		__math_state_restore();
  
- 	preempt_enable();
- 
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index a0d9544..ef9b919 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -74,7 +74,7 @@ void exit_thread(void)
- 		preempt_disable();
- 		t->io_bitmap_ptr = NULL;
- 		clear_thread_flag(TIF_IO_BITMAP);
--		set_io_bitmap(t, 1, t->io_bitmap_max);
-+		set_io_bitmap(t, t->io_bitmap_max);
- 		t->io_bitmap_max = 0;
- 		preempt_enable();
- 		kfree(bp);
-@@ -209,7 +209,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
- 
- 	if (test_tsk_thread_flag(next_p, TIF_IO_BITMAP) ||
- 	    test_tsk_thread_flag(prev_p, TIF_IO_BITMAP))
--		set_io_bitmap(next, 1,
-+		set_io_bitmap(next,
- 		              max(prev->io_bitmap_max, next->io_bitmap_max));
- }
- 
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 0cc5a3b..e231cb7 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -570,13 +570,10 @@ static void xen_set_iopl_mask(unsigned mask)
- }
- 
- static void xen_set_io_bitmap(struct thread_struct *thread,
--                              int changed, unsigned long bytes_updated)
-+                              unsigned long bytes_updated)
- {
- 	struct physdev_set_iobitmap set_iobitmap;
- 
--	if (!changed)
--		return;
--
- 	set_xen_guest_handle(set_iobitmap.bitmap,
- 	                     (char *)thread->io_bitmap_ptr);
- 	set_iobitmap.nr_ports = thread->io_bitmap_ptr ? IO_BITMAP_BITS : 0;
+ 	/*
+ 	 * Restore %gs if needed (which is common)
 -- 
 1.6.0.6
 
