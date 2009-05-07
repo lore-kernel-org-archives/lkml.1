@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756844AbZEGWob@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762964AbZEGWrU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756844AbZEGWob (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 18:44:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751558AbZEGWoV
+	id S1762964AbZEGWrU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 18:47:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752223AbZEGWrF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 18:44:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:53584 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751452AbZEGWoU (ORCPT
+	Thu, 7 May 2009 18:47:05 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:56295 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1750959AbZEGWrE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 18:44:20 -0400
-Date: Thu, 7 May 2009 15:38:24 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: rientjes@google.com, fengguang.wu@intel.com,
-       linux-pm@lists.linux-foundation.org, pavel@ucw.cz,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Message-Id: <20090507153824.df54658c.akpm@linux-foundation.org>
-In-Reply-To: <200905080014.49426.rjw@sisk.pl>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera>
-	<alpine.DEB.2.00.0905071417160.24417@chino.kir.corp.google.com>
-	<20090507145041.9b59f4eb.akpm@linux-foundation.org>
-	<200905080014.49426.rjw@sisk.pl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 7 May 2009 18:47:04 -0400
+Date: Thu, 7 May 2009 18:47:02 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Kay Sievers <kay.sievers@vrfy.org>
+cc: Kernel development list <linux-kernel@vger.kernel.org>,
+       Pantelis Koukousoulas <pktoss@gmail.com>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: usbfs, claiming entire usb devices
+In-Reply-To: <ac3eb2510905071439j7736711axc729008923435cea@mail.gmail.com>
+Message-ID: <Pine.LNX.4.44L0.0905071843100.3868-100000@netrider.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 May 2009 00:14:48 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Thu, 7 May 2009, Kay Sievers wrote:
 
-> IOW, you need to freeze the user space totally before trying to disable the
-> OOM killer.
+> >> You have one file per device, and that file has normal unix file
+> >> permissions. Userspace can grant access to that file by ownership or
+> >> by adding an ACL. What else do we need?
+> >
+> > We need the ability to prevent the kernel from automatically
+> > configuring a device.  We need the ability to prevent kernel drivers
+> > from binding to a device before userspace programs get a chance.
+> >
+> >>  Why would the kernel care who
+> >> opened the file, when the one was able to get through the normal file
+> >> access check?
+> >
+> > Access checks can't be used, because programs want to stake their claim
+> > to the device (and its file) even before the device has been plugged
+> > in.  So there's no file and no ACL to set.
+> 
+> I see.
+> 
+> Can't userspace just unbind a possible driver, which is supported by
+> libusub? Other such use-cases do that, like the UPS userspace drivers,
+> which just unbind the device from a possible in-kernel driver to take
+> it over.
+> 
+> Or is that a specific requirement where things would go wrong when the
+> kernel binds to a device first?
 
-Not necessarily.  We only need to take action if a task is about to
-start oom-killing - presumably by taking a nap.
+You've got it.  Sometimes devices are in a very precarious state (such 
+as during a firmware update) and they need to go into a particular 
+configuration.  Letting the kernel install some random configuration at 
+such times doesn't work.
 
-If a process is sitting there happily computing pi then we can leave it
-running.
+Similarly, although devices are supposed to be able to switch configs 
+at any time, in fact some buggy ones don't allow it.  And while letting 
+a kernel driver bind to a device shouldn't cause any narm, with some 
+buggy devices it does.
+
+Alan Stern
+
