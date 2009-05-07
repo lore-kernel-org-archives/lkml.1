@@ -1,65 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763004AbZEGUve@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763305AbZEGUwZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763004AbZEGUve (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 16:51:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761817AbZEGUvJ
+	id S1763305AbZEGUwZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 16:52:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbZEGUwP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 16:51:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44057 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762915AbZEGUvI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 16:51:08 -0400
-Date: Thu, 7 May 2009 13:44:10 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: fengguang.wu@intel.com, peterz@infradead.org, riel@redhat.com,
-       linux-kernel@vger.kernel.org, tytso@mit.edu, linux-mm@kvack.org,
-       elladan@eskimo.com, npiggin@suse.de, cl@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
- class citizen
-Message-Id: <20090507134410.0618b308.akpm@linux-foundation.org>
-In-Reply-To: <20090507151039.GA2413@cmpxchg.org>
-References: <20090430174536.d0f438dd.akpm@linux-foundation.org>
-	<20090430205936.0f8b29fc@riellaptop.surriel.com>
-	<20090430181340.6f07421d.akpm@linux-foundation.org>
-	<20090430215034.4748e615@riellaptop.surriel.com>
-	<20090430195439.e02edc26.akpm@linux-foundation.org>
-	<49FB01C1.6050204@redhat.com>
-	<20090501123541.7983a8ae.akpm@linux-foundation.org>
-	<20090503031539.GC5702@localhost>
-	<1241432635.7620.4732.camel@twins>
-	<20090507121101.GB20934@localhost>
-	<20090507151039.GA2413@cmpxchg.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Thu, 7 May 2009 16:52:15 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:40427 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751154AbZEGUwO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 16:52:14 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: [RFC][PATCH 4/5] PM/Hibernate: Rework shrinking of memory
+From: Nigel Cunningham <nigel@tuxonice.net>
+Reply-To: nigel@tuxonice.net
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <200905072200.30777.rjw@sisk.pl>
+References: <200905070040.08561.rjw@sisk.pl>
+	 <1241652436.19600.176.camel@nigel-laptop> <200905071418.05035.rjw@sisk.pl>
+	 <200905072200.30777.rjw@sisk.pl>
+Content-Type: text/plain
+Date: Fri, 08 May 2009 06:53:14 +1000
+Message-Id: <1241729594.19600.219.camel@nigel-laptop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009 17:10:39 +0200
-Johannes Weiner <hannes@cmpxchg.org> wrote:
+Hi.
 
-> > +++ linux/mm/nommu.c
-> > @@ -1224,6 +1224,8 @@ unsigned long do_mmap_pgoff(struct file 
-> >  			added_exe_file_vma(current->mm);
-> >  			vma->vm_mm = current->mm;
-> >  		}
-> > +		if (vm_flags & VM_EXEC)
-> > +			set_bit(AS_EXEC, &file->f_mapping->flags);
-> >  	}
+On Thu, 2009-05-07 at 22:00 +0200, Rafael J. Wysocki wrote:
+> On Thursday 07 May 2009, Rafael J. Wysocki wrote:
+> > On Thursday 07 May 2009, Nigel Cunningham wrote:
+> > > Hi.
+> > 
+> > Hi,
+> > 
+> > > On Thu, 2009-05-07 at 00:44 +0200, Rafael J. Wysocki wrote:
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
+> > > > just once to make some room for the image and then allocates memory
+> > > > to apply more pressure to the memory management subsystem, if
+> > > > necessary.
+> > > > 
+> > > > Unfortunately, we don't seem to be able to drop shrink_all_memory()
+> > > > entirely just yet, because that would lead to huge performance
+> > > > regressions in some test cases.
+> > > 
+> > > I know it doesn't fit with your current way of doing things, but have
+> > > you considered trying larger order allocations as a means of getting
+> > > memory freed?
+> > 
+> > Actually, I was thinking about that.  What's your experience with this
+> > approach?
+> > 
+> > > I have code in tuxonice_prepare_image.c (look for extra_pages_allocated) that
+> > > might be helpful for this purpose.
+> > 
+> > OK, thanks.  I'll have a look at it.
 > 
-> I find it a bit ugly that it applies an attribute of the memory area
-> (per mm) to the page cache mapping (shared).  Because this in turn
-> means that the reference through a non-executable vma might get the
-> pages rotated just because there is/was an executable mmap around.
+> I have tried it, but the results are even worse than with 0-order allocations
+> only.
+> 
+> So far, I have got the best results with shrink_all_memory() called once and
+> followed by allocating as much memory as we want to be free using 0-order
+> allocations.  Like in this patch. :-)
 
-Yes, it's not good.  That AS_EXEC bit will hang around for arbitrarily
-long periods in the inode cache.  So we'll have AS_EXEC set on an
-entire file because someone mapped some of it with PROT_EXEC half an
-hour ago.  Where's the sense in that?
+Hmm. That's surprising. It would be interesting to look at what's going
+on. Unfortunately, I just don't have the time at the moment to help.
 
+Regards,
+
+Nigel
 
