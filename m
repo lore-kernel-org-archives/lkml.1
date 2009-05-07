@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932183AbZEHAY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763559AbZEHAZe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932183AbZEHAY5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:24:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758560AbZEHAKe
+	id S1763559AbZEHAZe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:25:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753554AbZEHAKg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:34 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52725
+	Thu, 7 May 2009 20:10:36 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52712
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754199AbZEHAKF (ORCPT
+	with ESMTP id S1757260AbZEHAKF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 20:10:05 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -15,81 +15,192 @@ To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Gerd Hoffmann <kraxel@xeni.home.kraxel.org>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 14/18] xen: set pirq name to something useful.
-Date: Thu,  7 May 2009 14:14:39 -0700
-Message-Id: <1241730883-4917-15-git-send-email-jeremy@goop.org>
+Subject: [PATCH 07/16] xen/dom0: use _PAGE_IOMAP in ioremap to do machine mappings
+Date: Thu,  7 May 2009 14:10:44 -0700
+Message-Id: <1241730653-4688-8-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241730883-4917-1-git-send-email-jeremy@goop.org>
-References: <1241730883-4917-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241730653-4688-1-git-send-email-jeremy@goop.org>
+References: <1241730653-4688-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Gerd Hoffmann <kraxel@xeni.home.kraxel.org>
+Impact: allow Xen domain to map real hardware
 
-Impact: cleanup
+In a Xen domain, ioremap operates on machine addresses, not
+pseudo-physical addresses.  We use _PAGE_IOMAP to determine whether a
+mapping is intended for machine addresses.
 
-Make pirq show useful information in /proc/interrupts
-
-Signed-off-by: Gerd Hoffmann <kraxel@xeni.home.kraxel.org>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/pci.c   |    3 ++-
- drivers/xen/events.c |    4 ++--
- include/xen/events.h |    2 +-
- 3 files changed, 5 insertions(+), 4 deletions(-)
+ arch/x86/include/asm/xen/page.h |    8 +---
+ arch/x86/xen/enlighten.c        |    4 ++-
+ arch/x86/xen/mmu.c              |   69 +++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 72 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/xen/pci.c b/arch/x86/xen/pci.c
-index 502ff5f..fb3ada9 100644
---- a/arch/x86/xen/pci.c
-+++ b/arch/x86/xen/pci.c
-@@ -48,7 +48,8 @@ int xen_register_gsi(u32 gsi, int triggering, int polarity)
- 	printk(KERN_DEBUG "xen: registering gsi %u triggering %d polarity %d\n",
- 	       gsi, triggering, polarity);
- 
--	irq = xen_allocate_pirq(gsi);
-+	irq = xen_allocate_pirq(gsi, (triggering == ACPI_EDGE_SENSITIVE)
-+				     ? "ioapic-edge" : "ioapic-level");
- 
- 	printk(KERN_DEBUG "xen: --> irq=%d\n", irq);
- 
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index 64200a0..b8fd514 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -532,7 +532,7 @@ static int find_irq_by_gsi(unsigned gsi)
-  * event channel until the irq actually started up.  Return an
-  * existing irq if we've already got one for the gsi.
+diff --git a/arch/x86/include/asm/xen/page.h b/arch/x86/include/asm/xen/page.h
+index 018a0a4..bf5f7d3 100644
+--- a/arch/x86/include/asm/xen/page.h
++++ b/arch/x86/include/asm/xen/page.h
+@@ -112,13 +112,9 @@ static inline xpaddr_t machine_to_phys(xmaddr_t machine)
   */
--int xen_allocate_pirq(unsigned gsi)
-+int xen_allocate_pirq(unsigned gsi, char *name)
+ static inline unsigned long mfn_to_local_pfn(unsigned long mfn)
  {
- 	int irq;
- 	struct physdev_irq irq_op;
-@@ -554,7 +554,7 @@ int xen_allocate_pirq(unsigned gsi)
- 		irq = find_unbound_irq();
+-	extern unsigned long max_mapnr;
+ 	unsigned long pfn = mfn_to_pfn(mfn);
+-	if ((pfn < max_mapnr)
+-	    && !xen_feature(XENFEAT_auto_translated_physmap)
+-	    && (get_phys_to_machine(pfn) != mfn))
+-		return max_mapnr; /* force !pfn_valid() */
+-	/* XXX fixme; not true with sparsemem */
++	if (get_phys_to_machine(pfn) != mfn)
++		return -1; /* force !pfn_valid() */
+ 	return pfn;
+ }
  
- 	set_irq_chip_and_handler_name(irq, &xen_pirq_chip,
--				      handle_level_irq, "pirq");
-+				      handle_level_irq, name);
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index 48c91dc..72ac8a6 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -978,7 +978,9 @@ asmlinkage void __init xen_start_kernel(void)
  
- 	irq_op.irq = irq;
- 	if (HYPERVISOR_physdev_op(PHYSDEVOP_alloc_irq_vector, &irq_op)) {
-diff --git a/include/xen/events.h b/include/xen/events.h
-index 6fe4863..4b19b9c 100644
---- a/include/xen/events.h
-+++ b/include/xen/events.h
-@@ -61,7 +61,7 @@ unsigned irq_from_evtchn(unsigned int evtchn);
- /* Allocate an irq for a physical interrupt, given a gsi.  "Legacy"
-    GSIs are identity mapped; others are dynamically allocated as
-    usual. */
--int xen_allocate_pirq(unsigned gsi);
-+int xen_allocate_pirq(unsigned gsi, char *name);
+ 	/* Prevent unwanted bits from being set in PTEs. */
+ 	__supported_pte_mask &= ~_PAGE_GLOBAL;
+-	if (!xen_initial_domain())
++	if (xen_initial_domain())
++		__supported_pte_mask |= _PAGE_IOMAP;
++	else
+ 		__supported_pte_mask &= ~(_PAGE_PWT | _PAGE_PCD);
  
- /* Return vector allocated to pirq */
- int xen_vector_from_irq(unsigned pirq);
+ #ifdef CONFIG_X86_64
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 33575ec..8962bf4 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -375,6 +375,28 @@ static bool xen_page_pinned(void *ptr)
+ 	return PagePinned(page);
+ }
+ 
++static bool xen_iomap_pte(pte_t pte)
++{
++	return xen_initial_domain() && (pte_flags(pte) & _PAGE_IOMAP);
++}
++
++static void xen_set_iomap_pte(pte_t *ptep, pte_t pteval)
++{
++	struct multicall_space mcs;
++	struct mmu_update *u;
++
++	mcs = xen_mc_entry(sizeof(*u));
++	u = mcs.args;
++
++	/* ptep might be kmapped when using 32-bit HIGHPTE */
++	u->ptr = arbitrary_virt_to_machine(ptep).maddr;
++	u->val = pte_val_ma(pteval);
++
++	MULTI_mmu_update(mcs.mc, mcs.args, 1, NULL, DOMID_IO);
++
++	xen_mc_issue(PARAVIRT_LAZY_MMU);
++}
++
+ static void xen_extend_mmu_update(const struct mmu_update *update)
+ {
+ 	struct multicall_space mcs;
+@@ -451,6 +473,11 @@ void set_pte_mfn(unsigned long vaddr, unsigned long mfn, pgprot_t flags)
+ void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
+ 		    pte_t *ptep, pte_t pteval)
+ {
++	if (xen_iomap_pte(pteval)) {
++		xen_set_iomap_pte(ptep, pteval);
++		goto out;
++	}
++
+ 	ADD_STATS(set_pte_at, 1);
+ //	ADD_STATS(set_pte_at_pinned, xen_page_pinned(ptep));
+ 	ADD_STATS(set_pte_at_current, mm == current->mm);
+@@ -521,8 +548,25 @@ static pteval_t pte_pfn_to_mfn(pteval_t val)
+ 	return val;
+ }
+ 
++static pteval_t iomap_pte(pteval_t val)
++{
++	if (val & _PAGE_PRESENT) {
++		unsigned long pfn = (val & PTE_PFN_MASK) >> PAGE_SHIFT;
++		pteval_t flags = val & PTE_FLAGS_MASK;
++
++		/* We assume the pte frame number is a MFN, so
++		   just use it as-is. */
++		val = ((pteval_t)pfn << PAGE_SHIFT) | flags;
++	}
++
++	return val;
++}
++
+ pteval_t xen_pte_val(pte_t pte)
+ {
++	if (xen_initial_domain() && (pte.pte & _PAGE_IOMAP))
++		return pte.pte;
++
+ 	return pte_mfn_to_pfn(pte.pte);
+ }
+ PV_CALLEE_SAVE_REGS_THUNK(xen_pte_val);
+@@ -535,7 +579,11 @@ PV_CALLEE_SAVE_REGS_THUNK(xen_pgd_val);
+ 
+ pte_t xen_make_pte(pteval_t pte)
+ {
+-	pte = pte_pfn_to_mfn(pte);
++	if (unlikely(xen_initial_domain() && (pte & _PAGE_IOMAP)))
++		pte = iomap_pte(pte);
++	else
++		pte = pte_pfn_to_mfn(pte);
++
+ 	return native_make_pte(pte);
+ }
+ PV_CALLEE_SAVE_REGS_THUNK(xen_make_pte);
+@@ -591,6 +639,11 @@ void xen_set_pud(pud_t *ptr, pud_t val)
+ 
+ void xen_set_pte(pte_t *ptep, pte_t pte)
+ {
++	if (xen_iomap_pte(pte)) {
++		xen_set_iomap_pte(ptep, pte);
++		return;
++	}
++
+ 	ADD_STATS(pte_update, 1);
+ //	ADD_STATS(pte_update_pinned, xen_page_pinned(ptep));
+ 	ADD_STATS(pte_update_batched, paravirt_get_lazy_mode() == PARAVIRT_LAZY_MMU);
+@@ -607,6 +660,11 @@ void xen_set_pte(pte_t *ptep, pte_t pte)
+ #ifdef CONFIG_X86_PAE
+ void xen_set_pte_atomic(pte_t *ptep, pte_t pte)
+ {
++	if (xen_iomap_pte(pte)) {
++		xen_set_iomap_pte(ptep, pte);
++		return;
++	}
++
+ 	set_64bit((u64 *)ptep, native_pte_val(pte));
+ }
+ 
+@@ -1819,9 +1877,16 @@ static void xen_set_fixmap(unsigned idx, unsigned long phys, pgprot_t prot)
+ 		pte = pfn_pte(phys, prot);
+ 		break;
+ 
+-	default:
++	case FIX_PARAVIRT_BOOTMAP:
++		/* This is an MFN, but it isn't an IO mapping from the
++		   IO domain */
+ 		pte = mfn_pte(phys, prot);
+ 		break;
++
++	default:
++		/* By default, set_fixmap is used for hardware mappings */
++		pte = mfn_pte(phys, __pgprot(pgprot_val(prot) | _PAGE_IOMAP));
++		break;
+ 	}
+ 
+ 	__native_set_fixmap(idx, pte);
 -- 
 1.6.0.6
 
