@@ -1,110 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761647AbZEGMBl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760882AbZEGMKd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761647AbZEGMBl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 08:01:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753471AbZEGMBc
+	id S1760882AbZEGMKd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 08:10:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756206AbZEGMKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 08:01:32 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:52971 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752474AbZEGMBa (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 08:01:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=k1gfpn8hEokZGOVzkZpn+Xxzn51/GDGRe6N7/BlLmFfdWrMvCPE4rL1AanS0iH2Y+U
-         LiGy0PJsGlG45vvIHe3qo/wmbVYlswSqgQoT/00o3z0FE9LNlmfVqxlhPZKGNs/+/uQS
-         1E94g8zOOXrQW2Z/V2RittEulvIFQX1l86ppo=
+	Thu, 7 May 2009 08:10:23 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:35973 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755231AbZEGMKW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 08:10:22 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Matt Helsley <matthltc@us.ibm.com>
+Subject: Re: [linux-pm] [RFC][PATCH 1/5] PM/Freezer: Disable OOM killer whentasks are frozen
+Date: Thu, 7 May 2009 14:09:44 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+References: <200905070040.08561.rjw@sisk.pl> <200905070041.04787.rjw@sisk.pl> <20090507003603.GD17680@us.ibm.com>
+In-Reply-To: <20090507003603.GD17680@us.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <20090507104635.GG16078@random.random>
-References: <4A00DD4F.8010101@redhat.com> <4A0181EA.3070600@redhat.com>
-	 <20090506131735.GW16078@random.random>
-	 <Pine.LNX.4.64.0905061424480.19190@blonde.anvils>
-	 <20090506140904.GY16078@random.random>
-	 <20090506152100.41266e4c@lxorguk.ukuu.org.uk>
-	 <Pine.LNX.4.64.0905061532240.25289@blonde.anvils>
-	 <20090506145641.GA16078@random.random>
-	 <20090507085547.24efb60f.minchan.kim@barrios-desktop>
-	 <20090507104635.GG16078@random.random>
-Date: Thu, 7 May 2009 21:01:30 +0900
-Message-ID: <44c63dc40905070501j1a468e16yde46403da19460e6@mail.gmail.com>
-Subject: Re: [PATCH 2/6] ksm: dont allow overlap memory addresses 
-	registrations.
-From: Minchan Kim <barrioskmc@gmail.com>
-To: Andrea Arcangeli <aarcange@redhat.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>, Hugh Dickins <hugh@veritas.com>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>, Rik van Riel <riel@redhat.com>,
-       Izik Eidus <ieidus@redhat.com>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org, chrisw@redhat.com, device@lanana.org,
-       linux-mm@kvack.org, nickpiggin@yahoo.com.au
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905071409.45362.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Many embedded system is so I/O bouneded that we can use much CPU time in there.
->
-> Embedded systems with >4G of ram should run 64bit these days, so I
-> don't see a problem.
+On Thursday 07 May 2009, Matt Helsley wrote:
+> On Thu, May 07, 2009 at 12:41:04AM +0200, Rafael J. Wysocki wrote:
+> > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > 
+> > The OOM killer is not really going to work while tasks are frozen, so
+> > we can just give up calling it in that case.
+> > 
+> > This will allow us to safely use memory allocations for decreasing
+> > the number of saveable pages in the hibernation core code instead of
+> > using any artificial memory shriking mechanisms for this purpose.
+> > 
+> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> 
+> > ---
+> >  include/linux/freezer.h |    2 ++
+> >  kernel/power/process.c  |   12 ++++++++++++
+> >  mm/page_alloc.c         |    5 +++++
+> >  3 files changed, 19 insertions(+)
+> > 
+> > Index: linux-2.6/kernel/power/process.c
+> > ===================================================================
+> > --- linux-2.6.orig/kernel/power/process.c
+> > +++ linux-2.6/kernel/power/process.c
+> > @@ -19,6 +19,8 @@
+> >   */
+> >  #define TIMEOUT	(20 * HZ)
+> > 
+> > +static bool tasks_frozen;
+> > +
+> >  static inline int freezeable(struct task_struct * p)
+> >  {
+> >  	if ((p == current) ||
+> > @@ -120,6 +122,10 @@ int freeze_processes(void)
+> >   Exit:
+> >  	BUG_ON(in_atomic());
+> >  	printk("\n");
+> > +
+> > +	if (!error)
+> > +		tasks_frozen = true;
+> > +
+> 
+> It's not really about whether some tasks are frozen -- that can 
+> happen using the cgroup freezer too. The flag really indicates if
+> all killable tasks are frozen. That can't happen using the cgroup
+> freezer since the root cgroup can't be frozen. So I think some name changes 
+> are in order but otherwise the patch looks fine.
 
-What I mean is that many embedded applications don't use so much cpu
-time that we can use extra cpu time to scan identical pages for KSM.
-:)
+Well, as I said in the [0/5] message, I'm not sure if the patch is really
+necessary.  I'll change the names if it turns out to be.
 
->> One more thing about interface.
->>
->> Ksm map regions are dynamic characteritic ?
->> I mean sometime A application calls ioctl(0x800000, 0x10000) and sometime it calls ioctl(0xb7000000, 0x20000);
->> Of course, It depends on application's behavior.
->
-> Looks like the ioctl API is going away in favour of madvise so it'll
-> function like madvise, if you munmap the region the KSM registration
-> will go away.
->
->> ex) echo 'pid 0x8050000 0x100000' > sysfs or procfs or cgroup.
->
-> This was answered by Chris, and surely this is feasible, as it is
-> feasible for kksmd to scan the whole system regardless of any
-> madvise. Some sysfs mangling should allow it.
->
-> However regardless of the highmem issue (this applies to 64bit systems
-> too) you've to keep in mind that for kksmd to keep track all pages
-> under scan it has to build rbtree and allocate rmap_items and
-> tree_items for each page tracked, those objects take some memory, so
-> if there's not much ram sharing you may waste more memory in the kksmd
-> allocations than in the amount of memory actually freed by KSM. This
-> is why it's better to selectively only register ranges that we know in
-> advance there's an high probability to free memory.
-
-Indeed.
-
-This interface can use for just simple test and profiling.
-If it don't add memory pressure and latency, we can use it without
-modifying source code.
-Unfortunately, it's not in usual case. ;-)
-
-So if KSM can provide profiling information, we can tune easily than now.
-
-ex)
-pfn : 0x12, shared [pid 103, vaddr 0x80010000] [pid 201, vaddr 0x800ac000] .....
-pfn : 0x301, shared [pid 103, vaddr 0x80020000] [pid 203, vaddr
-0x801ac000] .....
-...
-...
-
-If KSM can provide this profiling information, firstly we try to use
-ksm without madive and next we can add madvise call on most like
-sharable vma range using profiling data.
-
-> Thanks!
-> Andrea
->
-
-
-
--- 
 Thanks,
-Minchan Kim
+Rafael
