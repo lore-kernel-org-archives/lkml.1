@@ -1,78 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760699AbZEGReh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755455AbZEGRgU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760699AbZEGReh (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 13:34:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751935AbZEGRe2
+	id S1755455AbZEGRgU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 13:36:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752278AbZEGRgL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 13:34:28 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:1466 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751735AbZEGRe2 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 13:34:28 -0400
-To: Tim Bird <tim.bird@am.sony.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: How to use a different sched_clock() for ftrace on omap?
-References: <cyZbZ-7Eg-9@gated-at.bofh.it>
-	<8763gdt37p.fsf@deeprootsystems.com> <4A03181D.50900@am.sony.com>
-From: Kevin Hilman <khilman@deeprootsystems.com>
-Organization: Deep Root Systems, LLC
-Date: Thu, 07 May 2009 10:34:26 -0700
-In-Reply-To: <4A03181D.50900@am.sony.com> (Tim Bird's message of "Thu\, 7 May 2009 10\:19\:25 -0700")
-Message-ID: <8763gcrf4t.fsf@deeprootsystems.com>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Thu, 7 May 2009 13:36:11 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:47282 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752498AbZEGRgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 13:36:10 -0400
+Date: Thu, 7 May 2009 10:36:09 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Christoph Lameter <cl@linux.com>, Alok Kataria <akataria@vmware.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
+Subject: Re: [PATCH] x86: Reduce the default HZ value
+Message-ID: <20090507173608.GC6693@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <1241462661.412.8.camel@alok-dev1> <4A00ADDE.9000908@zytor.com> <1241560625.8665.17.camel@alok-dev1> <alpine.DEB.1.10.0905071010170.24528@qirst.com> <1241716053.6311.1514.camel@laptop> <1241716422.6311.1524.camel@laptop> <1241716718.6311.1531.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241716718.6311.1531.camel@laptop>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tim Bird <tim.bird@am.sony.com> writes:
+On Thu, May 07, 2009 at 07:18:38PM +0200, Peter Zijlstra wrote:
+> On Thu, 2009-05-07 at 19:13 +0200, Peter Zijlstra wrote:
+> > On Thu, 2009-05-07 at 19:09 +0200, Peter Zijlstra wrote:
+> > > On Thu, 2009-05-07 at 10:13 -0400, Christoph Lameter wrote:
+> > > > I think we need to reduce the general tick frequency to be as low as
+> > > > possible. With high resolution timers the tick frequency is just the
+> > > > frequency with which the timer interrupt disturbs a running application.
+> > > > 
+> > > > Are there any benefits remaining from frequent timer interrupts? I would
+> > > > think that 60 HZ would be sufficient.
+> > > > 
+> > > > It would be good if the kernel would be truly tickless. Scheduler events
+> > > > would be driven by the scheduling intervals and not the invokations of the
+> > > > scheduler softirq.
+> > > 
+> > > The only thing that's driven by the softirq is load-balancing, there's
+> > > way more to the scheduler-tick than kicking that thing awake every so
+> > > often.
+> > > 
+> > > The problem is that running the scheduler of off hrtimers is too
+> > > expensive. We have the code, we tried it, people complained.
+> > 
+> > Therefore, decreasing the HZ value to say 50, we'd get a minimum
+> > involuntary preemption granularity of 20ms, something on the high end of
+> > barely usable.
+> 
+> Another user is RCU, the grace period is tick driven, growing these
+> ticks by a factor 50 or so might require some tinkering with forced
+> grace periods when we notice our batch queues getting too long.
 
-> Kevin Hilman wrote:
->> Tim Bird <tim.bird@am.sony.com> writes:
->> 
->>> Hi all,
->>>
->>> I've worked up a replacement sched_clock for ftrace on my omap platform.
->>> The current sched_clock, based on the 32K timer, has low resolution and
->>> doesn't provide very useful results.
->>>
->>> Unfortunately, I'm not sure the best way to use my special one, in place
->>> of a common one in arch/arm/plat-omap/common.c
->> 
->> Hi Tim,
->> 
->> If you're comiling mach-omap1/time.c than you've enabled the
->> higher-resolution MPU timer with CONFIG_OMAP_MPU_TIMER, right?
->
-> Yes.
->
->> In that case, you could make the one in plat-omap/common.c inside and
->> #ifndef CONFIG_OMAP_MPU_TIMER and put the new one in the MPU_TIMER
->> code.
->> 
->> To be complete, you should add the same to the mach-omap2/timer-gp.c
->> as well.
->
-> I was trying to avoid using #ifdefs, but maybe in this case it
-> makes sense.  There are tradeoffs in using the different timers
-> (nicely described in plat-omap/Kconfig help entries), so IMHO it
-> would be good to make this a config preference.
+One approach would be to enter nohz mode when running a CPU-bound
+application on a CPU that had nothing else (other than the idle task)
+on its runqueue and for which rcu_needs_cpu() returns zero.  In this
+mode, RCU would need to be informed on each system call, perhaps with an
+rcu_kernel_enter() and rcu_kernel_exit() that work like rcu_irq_enter()
+and rcu_irq_exit() -- and that perhaps replace rcu_irq_enter() and
+rcu_irq_exit().
 
-Yes, we have PM reasons for wanting to choose between the different
-timers.
+Then RCU would ignore any CPU that was executing a CPU-bound application,
+allowing the HZ to be dialed down as low as you like, or perhaps really
+entering something like nohz mode.
 
-> I'll work up a patch in this style and send it along.
-
-OK, please send it to linux-omap as well.
-
-On a related note, and not your problem here but something that would
-be nice to see is the default sched_clock implementation using the
-clocksource instead of jiffies.
-
-Then, platform code just registers its preferred clocksource and
-sched_clock() gets the same resolution as the clocksource.  Not sure
-how yet to handle clocksources being added and removed though...
-
-Kevin
+							Thanx, Paul
