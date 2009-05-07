@@ -1,50 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756378AbZEGAas@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760880AbZEGAdy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756378AbZEGAas (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 20:30:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbZEGAaj
+	id S1760880AbZEGAdy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 20:33:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbZEGAdp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 20:30:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48023 "EHLO mx2.redhat.com"
+	Wed, 6 May 2009 20:33:45 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:57397 "EHLO mx1.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752248AbZEGAai (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 20:30:38 -0400
-Date: Thu, 7 May 2009 02:24:55 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Alexey Dobriyan <adobriyan@gmail.com>, Roland McGrath <roland@redhat.com>,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org
-Subject: Re: [PATCH] x86: ptrace debugreg checks rewrite
-Message-ID: <20090507002455.GD3756@redhat.com>
-References: <20090504001601.GL16631@x200.localdomain> <20090504002431.GA17556@x200.localdomain> <20090506095629.GC15323@elte.hu>
+	id S1753121AbZEGAdo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 20:33:44 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090506095629.GC15323@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Oleg Nesterov <oleg@redhat.com>
+X-Fcc: ~/Mail/linus
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] ptrace: cleanup check/set of PT_PTRACED during
+	attach
+In-Reply-To: Oleg Nesterov's message of  Thursday, 7 May 2009 01:30:27 +0200 <20090506233027.GB3756@redhat.com>
+References: <20090505224727.GA958@redhat.com>
+	<20090506074421.GE17457@elte.hu>
+	<20090506233027.GB3756@redhat.com>
+X-Shopping-List: (1) Apathetic ashes
+   (2) Cenozoic Hydroelectric wigs
+   (3) Nylon immunizations
+   (4) Angelic helmet compassion
+   (5) Complacent absent suicides
+Message-Id: <20090507003159.73DE8FC39E@magilla.sf.frob.com>
+Date: Wed,  6 May 2009 17:31:59 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/06, Ingo Molnar wrote:
->
-> * Alexey Dobriyan <adobriyan@gmail.com> wrote:
->
-> > On Mon, May 04, 2009 at 04:16:01AM +0400, Alexey Dobriyan wrote:
-> > > +static int ptrace_check_debugreg(int _32bit,
-> > > +				 unsigned long dr0, unsigned long dr1,
-> > > +				 unsigned long dr2, unsigned long dr3,
-> > > +				 unsigned long dr6, unsigned long dr7)
-> > > +{
-> > > +	/* Breakpoint type: 00: --x, 01: -w-, 10: undefined, 11: rw- */
-> > > +	unsigned int rw[4];
-> > > +	/* Breakpoint length: 00: 1 byte, 01: 2 bytes, 10: 8 bytes, 11: bytes */
-> > 								        4 bytes, of course
->
-> Roland, Oleg, do you have any pending/planned changes in this area?
+> The only case when a task owns (iow, can change it safely) its ->ptrace
+> is: it is running _and_ traced. I think this is what the comment tried
+> to say.
 
-No, I don't (and couldn't since I don't understand this code ;)
+I think so.  I suspect it only ever referred to now-obsolete uses like
+PT_DTRACE fiddling.
 
-Oleg.
+> But this doesn't really matter, because afaics the correct comment
+> should say: the task should never touch its ->ptrace, ptracer always
+> owns it.
 
+To be clear, it should say something about how two potential ptracers
+exclude each other touching it.
+
+> There is only one exception afaics, de_thread() or do_wait() can call
+> release_task()->ptrace_unlink() and clear ->ptrace on behalve of
+> another (not ptracer) task.
+
+And ptrace_traceme().  Both of these I'd call "on behalf of the tracer",
+and that is close enough to "tracer owns it" if their rules are explained.
+(That in contrast to the old comment's suggestion that the tracee could
+touch its own unlocked.)
+
+
+Thanks,
+Roland
