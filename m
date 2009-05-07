@@ -1,50 +1,291 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756077AbZEGIqc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759958AbZEGIut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756077AbZEGIqc (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 04:46:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZEGIqT
+	id S1759958AbZEGIut (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 04:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753198AbZEGIuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 04:46:19 -0400
-Received: from an-out-0708.google.com ([209.85.132.242]:23201 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751570AbZEGIqS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 04:46:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=DEXQ56feQ2sCwG2+5a8DqBulX+C5rJgmXCwD4pbplyNTuYgkR0Iyv0HDjANctMAYlz
-         hq2Tb0pcNlceFBTDxKiDy0RnIZLJfzLGj8AaU1Q2jg7MxBKPbppgkZw+D0wKsSVXjsnZ
-         SbNdo4Z6P4iH4I+iz/2/CYfdtDQvEbHRvmX+g=
-Message-ID: <4A029FD1.1050007@gmail.com>
-Date: Thu, 07 May 2009 10:46:09 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.7 Thunderbird/3.0b2
+	Thu, 7 May 2009 04:50:39 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:57998 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751094AbZEGIuh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 04:50:37 -0400
+Date: Thu, 7 May 2009 10:49:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       Al Viro <viro@ZenIV.linux.org.uk>
+Subject: [patch] security: rename ptrace_may_access => ptrace_access_check
+Message-ID: <20090507084943.GB19133@elte.hu>
+References: <20090505224729.GA965@redhat.com> <20090506080050.GF17457@elte.hu> <20090506235349.GC3756@redhat.com> <20090507002133.02D05FC39E@magilla.sf.frob.com> <20090507063606.GA15220@redhat.com> <20090507082027.GD12285@elte.hu> <20090507083102.GA20125@redhat.com> <20090507083851.GA19133@elte.hu>
 MIME-Version: 1.0
-To: Yang Hongyang <yanghy@cn.fujitsu.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] remove DMA_nBIT_MASK macro
-References: <20090507141114M.fujita.tomonori@lab.ntt.co.jp> <20090506223452.65e545d8.akpm@linux-foundation.org> <4A029BE1.4090309@cn.fujitsu.com>
-In-Reply-To: <4A029BE1.4090309@cn.fujitsu.com>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090507083851.GA19133@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/07/2009 10:29 AM, Yang Hongyang wrote:
-> Shall we use something like below to warn people?
-> #define DMA_64BIT_MASK	DMA_BIT_MASK(64);(__deprecated warnings:use DMA_BIT_MASK(64) instead) ?
 
-Something like an irq flags deprecation in the past:
-http://lwn.net/Articles/229673/
-?
+* Ingo Molnar <mingo@elte.hu> wrote:
 
-I don't know how many in-initializer (struct x x = { DMA_64BIT_MASK } )
-users are out there though.
+> 
+> * Oleg Nesterov <oleg@redhat.com> wrote:
+> 
+> > On 05/07, Ingo Molnar wrote:
+> > >
+> > > * Oleg Nesterov <oleg@redhat.com> wrote:
+> > >
+> > > > /* the callers of ptrace_may_access should be fixed */
+> > > >
+> > > > 	int ptrace_may_access(struct task_struct *task, unsigned int mode)
+> > >
+> > > Sigh, NAK, for the reasons explained in the previous mails.
+> > 
+> > Agreed, but what about security_operations->ptrace_may_access ?
+> > 
+> > It has the same (bad) name, but returns the error code or 0 on 
+> > success.
+> 
+> Bad code should generally be fixed, or in exceptional circumstances 
+> it can tolerated if it's pre-existing bad code, but it should never 
+> be propagated. It has not spread _that_ widely yet, and is isolated 
+> to the security subsystem:
+> 
+>  include/linux/security.h
+>  security/capability.c
+>  security/commoncap.c
+>  security/root_plug.c
+>  security/security.c
+>  security/selinux/hooks.c
+>  security/smack/smack_lsm.c
+
+btw. the most logical way to fix this would be to rename it from 
+ptrace_may_access to ptrace_access_check. Takes 30 seconds to do - 
+find the (completely untested) patch for that below.
+
+	Ingo
+
+------------------->
+Subject: security: rename ptrace_may_access => ptrace_access_check
+From: Ingo Molnar <mingo@elte.hu>
+
+The ->ptrace_may_access() methods are named confusingly - the real 
+ptrace_may_access() returns a bool, while these security checks have 
+a retval convention.
+
+Rename it to ptrace_access_check, to reduce the confusion factor.
+
+[ Impact: cleanup, no code changed ]
+
+Signed-off-by-if-you-test-it: Ingo Molnar <mingo@elte.hu>
+---
+ include/linux/security.h   |   14 +++++++-------
+ security/capability.c      |    2 +-
+ security/commoncap.c       |    4 ++--
+ security/root_plug.c       |    2 +-
+ security/security.c        |    4 ++--
+ security/selinux/hooks.c   |    6 +++---
+ security/smack/smack_lsm.c |    8 ++++----
+ 7 files changed, 20 insertions(+), 20 deletions(-)
+
+Index: tip/include/linux/security.h
+===================================================================
+--- tip.orig/include/linux/security.h
++++ tip/include/linux/security.h
+@@ -52,7 +52,7 @@ struct audit_krule;
+ extern int cap_capable(struct task_struct *tsk, const struct cred *cred,
+ 		       int cap, int audit);
+ extern int cap_settime(struct timespec *ts, struct timezone *tz);
+-extern int cap_ptrace_may_access(struct task_struct *child, unsigned int mode);
++extern int cap_ptrace_access_check(struct task_struct *child, unsigned int mode);
+ extern int cap_ptrace_traceme(struct task_struct *parent);
+ extern int cap_capget(struct task_struct *target, kernel_cap_t *effective, kernel_cap_t *inheritable, kernel_cap_t *permitted);
+ extern int cap_capset(struct cred *new, const struct cred *old,
+@@ -1209,7 +1209,7 @@ static inline void security_free_mnt_opt
+  *	@alter contains the flag indicating whether changes are to be made.
+  *	Return 0 if permission is granted.
+  *
+- * @ptrace_may_access:
++ * @ptrace_access_check:
+  *	Check permission before allowing the current process to trace the
+  *	@child process.
+  *	Security modules may also want to perform a process tracing check
+@@ -1224,7 +1224,7 @@ static inline void security_free_mnt_opt
+  *	Check that the @parent process has sufficient permission to trace the
+  *	current process before allowing the current process to present itself
+  *	to the @parent process for tracing.
+- *	The parent process will still have to undergo the ptrace_may_access
++ *	The parent process will still have to undergo the ptrace_access_check
+  *	checks before it is allowed to trace this one.
+  *	@parent contains the task_struct structure for debugger process.
+  *	Return 0 if permission is granted.
+@@ -1336,7 +1336,7 @@ static inline void security_free_mnt_opt
+ struct security_operations {
+ 	char name[SECURITY_NAME_MAX + 1];
+ 
+-	int (*ptrace_may_access) (struct task_struct *child, unsigned int mode);
++	int (*ptrace_access_check) (struct task_struct *child, unsigned int mode);
+ 	int (*ptrace_traceme) (struct task_struct *parent);
+ 	int (*capget) (struct task_struct *target,
+ 		       kernel_cap_t *effective,
+@@ -1617,7 +1617,7 @@ extern int security_module_enable(struct
+ extern int register_security(struct security_operations *ops);
+ 
+ /* Security operations */
+-int security_ptrace_may_access(struct task_struct *child, unsigned int mode);
++int security_ptrace_access_check(struct task_struct *child, unsigned int mode);
+ int security_ptrace_traceme(struct task_struct *parent);
+ int security_capget(struct task_struct *target,
+ 		    kernel_cap_t *effective,
+@@ -1798,10 +1798,10 @@ static inline int security_init(void)
+ 	return 0;
+ }
+ 
+-static inline int security_ptrace_may_access(struct task_struct *child,
++static inline int security_ptrace_access_check(struct task_struct *child,
+ 					     unsigned int mode)
+ {
+-	return cap_ptrace_may_access(child, mode);
++	return cap_ptrace_access_check(child, mode);
+ }
+ 
+ static inline int security_ptrace_traceme(struct task_struct *parent)
+Index: tip/security/capability.c
+===================================================================
+--- tip.orig/security/capability.c
++++ tip/security/capability.c
+@@ -867,7 +867,7 @@ struct security_operations default_secur
+ 
+ void security_fixup_ops(struct security_operations *ops)
+ {
+-	set_to_cap_if_null(ops, ptrace_may_access);
++	set_to_cap_if_null(ops, ptrace_access_check);
+ 	set_to_cap_if_null(ops, ptrace_traceme);
+ 	set_to_cap_if_null(ops, capget);
+ 	set_to_cap_if_null(ops, capset);
+Index: tip/security/commoncap.c
+===================================================================
+--- tip.orig/security/commoncap.c
++++ tip/security/commoncap.c
+@@ -79,7 +79,7 @@ int cap_settime(struct timespec *ts, str
+ }
+ 
+ /**
+- * cap_ptrace_may_access - Determine whether the current process may access
++ * cap_ptrace_access_check - Determine whether the current process may access
+  *			   another
+  * @child: The process to be accessed
+  * @mode: The mode of attachment.
+@@ -87,7 +87,7 @@ int cap_settime(struct timespec *ts, str
+  * Determine whether a process may access another, returning 0 if permission
+  * granted, -ve if denied.
+  */
+-int cap_ptrace_may_access(struct task_struct *child, unsigned int mode)
++int cap_ptrace_access_check(struct task_struct *child, unsigned int mode)
+ {
+ 	int ret = 0;
+ 
+Index: tip/security/root_plug.c
+===================================================================
+--- tip.orig/security/root_plug.c
++++ tip/security/root_plug.c
+@@ -72,7 +72,7 @@ static int rootplug_bprm_check_security 
+ 
+ static struct security_operations rootplug_security_ops = {
+ 	/* Use the capability functions for some of the hooks */
+-	.ptrace_may_access =		cap_ptrace_may_access,
++	.ptrace_access_check =		cap_ptrace_access_check,
+ 	.ptrace_traceme =		cap_ptrace_traceme,
+ 	.capget =			cap_capget,
+ 	.capset =			cap_capset,
+Index: tip/security/security.c
+===================================================================
+--- tip.orig/security/security.c
++++ tip/security/security.c
+@@ -127,9 +127,9 @@ int register_security(struct security_op
+ 
+ /* Security operations */
+ 
+-int security_ptrace_may_access(struct task_struct *child, unsigned int mode)
++int security_ptrace_access_check(struct task_struct *child, unsigned int mode)
+ {
+-	return security_ops->ptrace_may_access(child, mode);
++	return security_ops->ptrace_access_check(child, mode);
+ }
+ 
+ int security_ptrace_traceme(struct task_struct *parent)
+Index: tip/security/selinux/hooks.c
+===================================================================
+--- tip.orig/security/selinux/hooks.c
++++ tip/security/selinux/hooks.c
+@@ -1854,12 +1854,12 @@ static inline u32 open_file_to_av(struct
+ 
+ /* Hook functions begin here. */
+ 
+-static int selinux_ptrace_may_access(struct task_struct *child,
++static int selinux_ptrace_access_check(struct task_struct *child,
+ 				     unsigned int mode)
+ {
+ 	int rc;
+ 
+-	rc = cap_ptrace_may_access(child, mode);
++	rc = cap_ptrace_access_check(child, mode);
+ 	if (rc)
+ 		return rc;
+ 
+@@ -5318,7 +5318,7 @@ static int selinux_key_getsecurity(struc
+ static struct security_operations selinux_ops = {
+ 	.name =				"selinux",
+ 
+-	.ptrace_may_access =		selinux_ptrace_may_access,
++	.ptrace_access_check =		selinux_ptrace_access_check,
+ 	.ptrace_traceme =		selinux_ptrace_traceme,
+ 	.capget =			selinux_capget,
+ 	.capset =			selinux_capset,
+Index: tip/security/smack/smack_lsm.c
+===================================================================
+--- tip.orig/security/smack/smack_lsm.c
++++ tip/security/smack/smack_lsm.c
+@@ -92,7 +92,7 @@ struct inode_smack *new_inode_smack(char
+  */
+ 
+ /**
+- * smack_ptrace_may_access - Smack approval on PTRACE_ATTACH
++ * smack_ptrace_access_check - Smack approval on PTRACE_ATTACH
+  * @ctp: child task pointer
+  * @mode: ptrace attachment mode
+  *
+@@ -100,11 +100,11 @@ struct inode_smack *new_inode_smack(char
+  *
+  * Do the capability checks, and require read and write.
+  */
+-static int smack_ptrace_may_access(struct task_struct *ctp, unsigned int mode)
++static int smack_ptrace_access_check(struct task_struct *ctp, unsigned int mode)
+ {
+ 	int rc;
+ 
+-	rc = cap_ptrace_may_access(ctp, mode);
++	rc = cap_ptrace_access_check(ctp, mode);
+ 	if (rc != 0)
+ 		return rc;
+ 
+@@ -2826,7 +2826,7 @@ static void smack_release_secctx(char *s
+ struct security_operations smack_ops = {
+ 	.name =				"smack",
+ 
+-	.ptrace_may_access =		smack_ptrace_may_access,
++	.ptrace_access_check =		smack_ptrace_access_check,
+ 	.ptrace_traceme =		smack_ptrace_traceme,
+ 	.capget = 			cap_capget,
+ 	.capset = 			cap_capset,
