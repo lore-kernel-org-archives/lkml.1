@@ -1,53 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762454AbZEGRv0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762647AbZEGRwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762454AbZEGRv0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 13:51:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760996AbZEGRuw
+	id S1762647AbZEGRwl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 13:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753268AbZEGRwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 13:50:52 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:44408 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754421AbZEGRut (ORCPT
+	Thu, 7 May 2009 13:52:32 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:44322 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752278AbZEGRwb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 13:50:49 -0400
-Date: Thu, 7 May 2009 13:40:01 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Peter Zijlstra <peterz@infradead.org>
-cc: Alok Kataria <akataria@vmware.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>,
-       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-In-Reply-To: <1241717982.6311.1562.camel@laptop>
-Message-ID: <alpine.DEB.1.10.0905071336430.22107@qirst.com>
-References: <1241462661.412.8.camel@alok-dev1>  <4A00ADDE.9000908@zytor.com>  <1241560625.8665.17.camel@alok-dev1>  <alpine.DEB.1.10.0905071010170.24528@qirst.com>  <1241716053.6311.1514.camel@laptop>  <1241716422.6311.1524.camel@laptop> 
- <1241716718.6311.1531.camel@laptop>  <alpine.DEB.1.10.0905071320010.22107@qirst.com> <1241717982.6311.1562.camel@laptop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Thu, 7 May 2009 13:52:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=woDtdgJJQJAJiQW1RLmvdIe96B+i9RD5VEBETsOdV3gt1+IHcXFdW4wmSmNHyikjAc
+         6lMb8uhLWja9UqNJT4wPnUNkkCcbYRG4Gn+xLs49GmY7+7Uf6gQKoiEaii8PiS0MIY4c
+         lKMOYddRGgLxdUz1HGAVnF2U8BJY2Ze8U6sTk=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <200905071945.45928.rjw@sisk.pl>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	 <20090507120948.GA1531@ucw.cz> <4A03129A.90105@acm.org>
+	 <200905071945.45928.rjw@sisk.pl>
+Date: Thu, 7 May 2009 13:52:28 -0400
+Message-ID: <f22f52180905071052o68e3999co8e353d46aa60b47c@mail.gmail.com>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+From: Matt Price <moptop99@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: U Kuehn <ukuehn@acm.org>, linux-pm@lists.linux-foundation.org,
+       Nigel Cunningham <nigel@tuxonice.net>,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009, Peter Zijlstra wrote:
-
-> On Thu, 2009-05-07 at 13:20 -0400, Christoph Lameter wrote:
-> > On Thu, 7 May 2009, Peter Zijlstra wrote:
-> >
-> > > Another user is RCU, the grace period is tick driven, growing these
-> > > ticks by a factor 50 or so might require some tinkering with forced
-> > > grace periods when we notice our batch queues getting too long.
-> >
-> > One could also schedule RCU via hrtimers with a large fuzz period?
+On Thu, May 7, 2009 at 1:45 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> On Thursday 07 May 2009, U Kuehn wrote:
+>> Pavel Machek wrote:
+>> >> T
+> Also, as you can see from my previous message, I'm not a big fan of fighting
+> over this once again.  Lets try to work together to do something productive
+> instead, shall we?
 >
-> No, that's not the point, the longer these period are, the more
-> callbacks you can accumulate in a period. You need a cap on the callback
-> list, we already have seen DoS scenarios in this space.
 
-At some point the RCU must run and if the callback list gets too long the
-callbacks must be processed. Thats unavoidable.
+thank you rafael.  i would really like to see the fighting stop, too.
+Perhaps the best palce to start would be to look directly at the
+patches and, if there are weaknesses, discuss how to improve them?
 
+m
 
+> Best,
+> Rafael
