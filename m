@@ -1,43 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760587AbZEGPvi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756511AbZEGP6q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760587AbZEGPvi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 11:51:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755975AbZEGPv0
+	id S1756511AbZEGP6q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 11:58:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754190AbZEGP6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 11:51:26 -0400
-Received: from l2mail1.panix.com ([166.84.1.75]:49504 "EHLO l2mail1.panix.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759075AbZEGPvZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 11:51:25 -0400
-X-Greylist: delayed 1360 seconds by postgrey-1.27 at vger.kernel.org; Thu, 07 May 2009 11:51:25 EDT
-Date: Thu, 7 May 2009 09:28:41 -0600 (MDT)
-From: Kenneth Crudup <kenny@panix.com>
-cc: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-In-Reply-To: <20090507120948.GA1531@ucw.cz>
-Message-ID: <Pine.LNX.4.64.0905070925500.8967@hp9800.localdomain>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
- <20090507120948.GA1531@ucw.cz>
+	Thu, 7 May 2009 11:58:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33363 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754202AbZEGP6d (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 11:58:33 -0400
+Date: Thu, 7 May 2009 08:55:03 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Miklos Szeredi <miklos@szeredi.hu>
+cc: jens.axboe@oracle.com, Max Kellermann <max@duempel.org>,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/3] make splice more generic
+In-Reply-To: <20090507133734.450612199@szeredi.hu>
+Message-ID: <alpine.LFD.2.01.0905070845590.4983@localhost.localdomain>
+References: <20090507133734.450612199@szeredi.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Thu, 7 May 2009, Pavel Machek wrote:
 
-> Given that distros ship uswsusp already... is that really an advantage.
+On Thu, 7 May 2009, Miklos Szeredi wrote:
+> 
+> One more generalization would be to allow splice to work on two
+> non-pipes, using an internal intermediate pipe, a-la do_splice_direct().
 
-Uswsusp has no compression. A suspend-to-disk that can take up to 5
-minutes in uswsusp takes 20 seconds with TuxOnIce. Uswsusp has no built-
-in hooks that allow me to run commands and set options during the suspend
-and resume process.
+You can't do that without some painful issues.
 
-	-Kenny
+Or rather, you can only do it trivially for the one case where we 
+_already_ do that, namely "sendfile()". That's exactly what sendfile() is 
+now.
 
--- 
-Kenneth R. Crudup  Sr. SW Engineer, Scott County Consulting, Los Angeles
-O: 3630 S. Sepulveda Blvd. #138, L.A., CA 90034-6809      (888) 454-8181
+What is so painful about it in general?
+
+Reading from a source may _destroy_ that data, and you may not be able to 
+push it back to the source. And what happens if the destination cannot 
+take it?
+
+Now, we could do a totally blocking version that simply refuses to return 
+until the destination has taken all the splice data, and maybe it would be 
+worth it as a simplified interface. But it does sound like a really ripe 
+place for deadlocks etc (set up some trivial circular thing of everybody 
+trying to pipe to each other, and all of them getting blocked on the 
+receiver, and now they are unkillable).
+
+Now, the reason it works for sendfile() is that when the source is known 
+to be in the page cache, then if the receiver doesn't take the data, we 
+know we can just drop it. But what if the source is some character device 
+driver? We can't just drop the data on a signal.
+
+So the reason splice does that pipe buffer is that the pipe itself then 
+acts as a long-term buffer _across_ the kernel returning to user space, 
+and thus allows the whole process to be interruptible.
+
+That said, maybe we could allow it in a few more cases. Or maybe people 
+think the simplification in user interfaces is worth making the IO be 
+non-interruptible (but still killable, for example, at which point the 
+buffered data really is dropped - but that's not different from having 
+the buffers in user space, so at that point it's ok).
+
+So I'm certainly willing to be convinced that it's a good idea after all, 
+it just worries me, and I wanted to point out the painful issues that 
+caused me to not allow it in general.
+
+			Linus
