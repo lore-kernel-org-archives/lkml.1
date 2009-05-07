@@ -1,301 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762314AbZEGMXU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762239AbZEGMZk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762314AbZEGMXU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 08:23:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757272AbZEGMXE
+	id S1762239AbZEGMZk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 08:25:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755866AbZEGMZa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 08:23:04 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:40547 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755304AbZEGMXB (ORCPT
+	Thu, 7 May 2009 08:25:30 -0400
+Received: from mailout2.w1.samsung.com ([210.118.77.12]:42520 "EHLO
+	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751837AbZEGMZ3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 08:23:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=UbjtCbY+qFl9SdHAaUNgyYzcnblIfnL5eUluFtoIv8o9oQ7JTpZmgJZpVBwPt5nt1Z
-         aLyqof/BDbp1UvNyjM1tL7lXTGtDW8JfVuzkBDOyNYpQm4CfFaqmvk0YiZbXZCORymPj
-         4BwI3XTajtvxl6u06NtyiXGg0qIeUWMFnKk0U=
-Date: Thu, 7 May 2009 14:22:55 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
-       m-ikeda@ds.jp.nec.com, peterz@infradead.org
-Subject: Re: IO scheduler based IO Controller V2
-Message-ID: <20090507122254.GA5892@linux>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <20090505132441.1705bfad.akpm@linux-foundation.org> <20090506023332.GA1212@redhat.com> <20090506203228.GH8180@redhat.com> <20090506213453.GC4282@linux> <20090506215235.GJ8180@redhat.com> <20090507090450.GA4613@linux>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507090450.GA4613@linux>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 7 May 2009 08:25:29 -0400
+Date: Thu, 07 May 2009 14:24:11 +0200
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: [PATCH] [drivers] [SPI] SPI_GPIO: add support for controllers with
+ missing MISO pin
+To: LKML <linux-kernel@vger.kernel.org>,
+       "linux-arm-kernel@lists.arm.linux.org.uk" 
+	<linux-arm-kernel@lists.arm.linux.org.uk>
+Cc: "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>,
+       Marek Szyprowski <m.szyprowski@samsung.com>
+Message-id: <E4D3F24EA6C9E54F817833EAE0D912AC02243DBF8C@bssrvexch01.BS.local>
+MIME-version: 1.0
+Content-type: text/plain; charset=us-ascii
+Content-language: en-US
+Content-transfer-encoding: 7BIT
+Accept-Language: en-US
+Thread-topic: [PATCH] [drivers] [SPI] SPI_GPIO: add support for controllers
+ with missing MISO pin
+Thread-index: AcnPDro/dNLLs3ilSKSkVf9W2XCLRw==
+acceptlanguage: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 11:04:50AM +0200, Andrea Righi wrote:
-> On Wed, May 06, 2009 at 05:52:35PM -0400, Vivek Goyal wrote:
-> > > > Without io-throttle patches
-> > > > ---------------------------
-> > > > - Two readers, first BE prio 7, second BE prio 0
-> > > > 
-> > > > 234179072 bytes (234 MB) copied, 4.12074 s, 56.8 MB/s
-> > > > High prio reader finished
-> > > > 234179072 bytes (234 MB) copied, 5.36023 s, 43.7 MB/s
-> > > > 
-> > > > Note: There is no service differentiation between prio 0 and prio 7 task
-> > > >       with io-throttle patches.
-> > > > 
-> > > > Test 3
-> > > > ======
-> > > > - Run the one RT reader and one BE reader in root cgroup without any
-> > > >   limitations. I guess this should mean unlimited BW and behavior should
-> > > >   be same as with CFQ without io-throttling patches.
-> > > > 
-> > > > With io-throttle patches
-> > > > =========================
-> > > > Ran the test 4 times because I was getting different results in different
-> > > > runs.
-> > > > 
-> > > > - Two readers, one RT prio 0  other BE prio 7
-> > > > 
-> > > > 234179072 bytes (234 MB) copied, 2.74604 s, 85.3 MB/s
-> > > > 234179072 bytes (234 MB) copied, 5.20995 s, 44.9 MB/s
-> > > > RT task finished
-> > > > 
-> > > > 234179072 bytes (234 MB) copied, 4.54417 s, 51.5 MB/s
-> > > > RT task finished
-> > > > 234179072 bytes (234 MB) copied, 5.23396 s, 44.7 MB/s
-> > > > 
-> > > > 234179072 bytes (234 MB) copied, 5.17727 s, 45.2 MB/s
-> > > > RT task finished
-> > > > 234179072 bytes (234 MB) copied, 5.25894 s, 44.5 MB/s
-> > > > 
-> > > > 234179072 bytes (234 MB) copied, 2.74141 s, 85.4 MB/s
-> > > > 234179072 bytes (234 MB) copied, 5.20536 s, 45.0 MB/s
-> > > > RT task finished
-> > > > 
-> > > > Note: Out of 4 runs, looks like twice it is complete priority inversion
-> > > >       and RT task finished after BE task. Rest of the two times, the
-> > > >       difference between BW of RT and BE task is much less as compared to
-> > > >       without patches. In fact once it was almost same.
-> > > 
-> > > This is strange. If you don't set any limit there shouldn't be any
-> > > difference respect to the other case (without io-throttle patches).
-> > > 
-> > > At worst a small overhead given by the task_to_iothrottle(), under
-> > > rcu_read_lock(). I'll repeat this test ASAP and see if I'll be able to
-> > > reproduce this strange behaviour.
-> > 
-> > Ya, I also found this strange. At least in root group there should not be
-> > any behavior change (at max one might expect little drop in throughput
-> > because of extra code).
-> 
-> Hi Vivek,
-> 
-> I'm not able to reproduce the strange behaviour above.
-> 
-> Which commands are you running exactly? is the system isolated (stupid
-> question) no cron or background tasks doing IO during the tests?
-> 
-> Following the script I've used:
-> 
-> $ cat test.sh
-> #!/bin/sh
-> echo 3 > /proc/sys/vm/drop_caches
-> ionice -c 1 -n 0 dd if=bigfile1 of=/dev/null bs=1M 2>&1 | sed "s/\(.*\)/RT: \1/" &
-> cat /proc/$!/cgroup | sed "s/\(.*\)/RT: \1/"
-> ionice -c 2 -n 7 dd if=bigfile2 of=/dev/null bs=1M 2>&1 | sed "s/\(.*\)/BE: \1/" &
-> cat /proc/$!/cgroup | sed "s/\(.*\)/BE: \1/"
-> for i in 1 2; do
-> 	wait
-> done
-> 
-> And the results on my PC:
-> 
-> 2.6.30-rc4
-> ~~~~~~~~~~
-> $ sudo sh test.sh | sort
-> BE: 234+0 records in
-> BE: 234+0 records out
-> BE: 245366784 bytes (245 MB) copied, 21.3406 s, 11.5 MB/s
-> RT: 234+0 records in
-> RT: 234+0 records out
-> RT: 245366784 bytes (245 MB) copied, 11.989 s, 20.5 MB/s
-> $ sudo sh test.sh | sort
-> BE: 234+0 records in
-> BE: 234+0 records out
-> BE: 245366784 bytes (245 MB) copied, 23.4436 s, 10.5 MB/s
-> RT: 234+0 records in
-> RT: 234+0 records out
-> RT: 245366784 bytes (245 MB) copied, 11.9555 s, 20.5 MB/s
-> $ sudo sh test.sh | sort
-> BE: 234+0 records in
-> BE: 234+0 records out
-> BE: 245366784 bytes (245 MB) copied, 21.622 s, 11.3 MB/s
-> RT: 234+0 records in
-> RT: 234+0 records out
-> RT: 245366784 bytes (245 MB) copied, 11.9856 s, 20.5 MB/s
-> $ sudo sh test.sh | sort
-> BE: 234+0 records in
-> BE: 234+0 records out
-> BE: 245366784 bytes (245 MB) copied, 21.5664 s, 11.4 MB/s
-> RT: 234+0 records in
-> RT: 234+0 records out
-> RT: 245366784 bytes (245 MB) copied, 11.8522 s, 20.7 MB/s
-> 
-> 2.6.30-rc4 + io-throttle, no BW limit, both tasks in the root cgroup
-> ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-> $ sudo sh ./test.sh | sort
-> BE: 234+0 records in
-> BE: 234+0 records out
-> BE: 245366784 bytes (245 MB) copied, 23.6739 s, 10.4 MB/s
-> BE: cgroup 4:blockio:/
-> RT: 234+0 records in
-> RT: 234+0 records out
-> RT: 245366784 bytes (245 MB) copied, 12.2853 s, 20.0 MB/s
-> RT: 4:blockio:/
-> $ sudo sh ./test.sh | sort
-> BE: 234+0 records in
-> BE: 234+0 records out
-> BE: 245366784 bytes (245 MB) copied, 23.7483 s, 10.3 MB/s
-> BE: cgroup 4:blockio:/
-> RT: 234+0 records in
-> RT: 234+0 records out
-> RT: 245366784 bytes (245 MB) copied, 12.3597 s, 19.9 MB/s
-> RT: 4:blockio:/
-> $ sudo sh ./test.sh | sort
-> BE: 234+0 records in
-> BE: 234+0 records out
-> BE: 245366784 bytes (245 MB) copied, 23.6843 s, 10.4 MB/s
-> BE: cgroup 4:blockio:/
-> RT: 234+0 records in
-> RT: 234+0 records out
-> RT: 245366784 bytes (245 MB) copied, 12.4886 s, 19.6 MB/s
-> RT: 4:blockio:/
-> $ sudo sh ./test.sh | sort
-> BE: 234+0 records in
-> BE: 234+0 records out
-> BE: 245366784 bytes (245 MB) copied, 23.8621 s, 10.3 MB/s
-> BE: cgroup 4:blockio:/
-> RT: 234+0 records in
-> RT: 234+0 records out
-> RT: 245366784 bytes (245 MB) copied, 12.6737 s, 19.4 MB/s
-> RT: 4:blockio:/
-> 
-> The difference seems to be just the expected overhead.
+There are some boards that do not strictly follow SPI standard and use only 3 wires (SCLK, MOSI, SS) for connecting some simple auxiliary chips and controls them with GPIO based 'spi controller'. In this configuration the MISO line is missing (it is not required if the chip does not transfer any data back to host). The example of such board is a NCP ARM S3C64XX based machine. This patch adds support for such non-standard configuration in GPIO-based SPI controller.
 
-BTW, it is possible to reduce the io-throttle overhead even more for non
-io-throttle users (also when CONFIG_CGROUP_IO_THROTTLE is enabled) using
-the trick below.
+Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
+Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
 
-2.6.30-rc4 + io-throttle + following patch, no BW limit, tasks in root cgroup
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-$ sudo sh test.sh | sort
-BE: 234+0 records in
-BE: 234+0 records out
-BE: 245366784 bytes (245 MB) copied, 17.462 s, 14.1 MB/s
-BE: 4:blockio:/
-RT: 234+0 records in
-RT: 234+0 records out
-RT: 245366784 bytes (245 MB) copied, 11.7865 s, 20.8 MB/s
-RT: 4:blockio:/
-$ sudo sh test.sh | sort
-BE: 234+0 records in
-BE: 234+0 records out
-BE: 245366784 bytes (245 MB) copied, 18.8375 s, 13.0 MB/s
-BE: 4:blockio:/
-RT: 234+0 records in
-RT: 234+0 records out
-RT: 245366784 bytes (245 MB) copied, 11.9148 s, 20.6 MB/s
-RT: 4:blockio:/
-$ sudo sh test.sh | sort
-BE: 234+0 records in
-BE: 234+0 records out
-BE: 245366784 bytes (245 MB) copied, 19.6826 s, 12.5 MB/s
-BE: 4:blockio:/
-RT: 234+0 records in
-RT: 234+0 records out
-RT: 245366784 bytes (245 MB) copied, 11.8715 s, 20.7 MB/s
-RT: 4:blockio:/
-$ sudo sh test.sh | sort
-BE: 234+0 records in
-BE: 234+0 records out
-BE: 245366784 bytes (245 MB) copied, 18.9152 s, 13.0 MB/s
-BE: 4:blockio:/
-RT: 234+0 records in
-RT: 234+0 records out
-RT: 245366784 bytes (245 MB) copied, 11.8925 s, 20.6 MB/s
-RT: 4:blockio:/
+--- 
 
-[ To be applied on top of io-throttle v16 ]
-
-Signed-off-by: Andrea Righi <righi.andrea@gmail.com>
----
- block/blk-io-throttle.c |   16 ++++++++++++++--
- 1 files changed, 14 insertions(+), 2 deletions(-)
-
-diff --git a/block/blk-io-throttle.c b/block/blk-io-throttle.c
-index e2dfd24..8b45c71 100644
---- a/block/blk-io-throttle.c
-+++ b/block/blk-io-throttle.c
-@@ -131,6 +131,14 @@ struct iothrottle_node {
- 	struct iothrottle_stat stat;
- };
+diff --git a/drivers/spi/spi_gpio.c b/drivers/spi/spi_gpio.c
+index 26bd03e..5b75601 100644
+--- a/drivers/spi/spi_gpio.c
++++ b/drivers/spi/spi_gpio.c
+@@ -114,7 +114,10 @@ static inline void setmosi(const struct spi_device *spi, int is_on)
  
-+/*
-+ * This is a trick to reduce the unneded overhead when io-throttle is not used
-+ * at all. We use a counter of the io-throttle rules; if the counter is zero,
-+ * we immediately return from the io-throttle hooks, without accounting IO and
-+ * without checking if we need to apply some limiting rules.
-+ */
-+static atomic_t iothrottle_node_count __read_mostly;
-+
- /**
-  * struct iothrottle - throttling rules for a cgroup
-  * @css: pointer to the cgroup state
-@@ -193,6 +201,7 @@ static void iothrottle_insert_node(struct iothrottle *iot,
+ static inline int getmiso(const struct spi_device *spi)
  {
- 	WARN_ON_ONCE(!cgroup_is_locked());
- 	list_add_rcu(&n->node, &iot->list);
-+	atomic_inc(&iothrottle_node_count);
+-	return !!gpio_get_value(SPI_MISO_GPIO);
++	if (SPI_MISO_GPIO)
++		return !!gpio_get_value(SPI_MISO_GPIO);
++	else
++		return 0;
  }
  
- /*
-@@ -214,6 +223,7 @@ iothrottle_delete_node(struct iothrottle *iot, struct iothrottle_node *n)
- {
- 	WARN_ON_ONCE(!cgroup_is_locked());
- 	list_del_rcu(&n->node);
-+	atomic_dec(&iothrottle_node_count);
- }
+ #undef pdata
+@@ -243,9 +246,11 @@ spi_gpio_request(struct spi_gpio_platform_data *pdata, const char *label)
+ 	if (value)
+ 		goto done;
  
- /*
-@@ -250,8 +260,10 @@ static void iothrottle_destroy(struct cgroup_subsys *ss, struct cgroup *cgrp)
- 	 * reference to the list.
- 	 */
- 	if (!list_empty(&iot->list))
--		list_for_each_entry_safe(n, p, &iot->list, node)
-+		list_for_each_entry_safe(n, p, &iot->list, node) {
- 			kfree(n);
-+			atomic_dec(&iothrottle_node_count);
-+		}
- 	kfree(iot);
- }
+-	value = spi_gpio_alloc(SPI_MISO_GPIO, label, true);
+-	if (value)
+-		goto free_mosi;
++	if (SPI_MISO_GPIO) {
++		value = spi_gpio_alloc(SPI_MISO_GPIO, label, true);
++		if (value)
++			goto free_mosi;
++	}
  
-@@ -836,7 +848,7 @@ cgroup_io_throttle(struct bio *bio, struct block_device *bdev, ssize_t bytes)
- 	unsigned long long sleep;
- 	int type, can_sleep = 1;
+ 	value = spi_gpio_alloc(SPI_SCK_GPIO, label, false);
+ 	if (value)
+@@ -254,7 +259,8 @@ spi_gpio_request(struct spi_gpio_platform_data *pdata, const char *label)
+ 	goto done;
  
--	if (iothrottle_disabled())
-+	if (iothrottle_disabled() || !atomic_read(&iothrottle_node_count))
- 		return 0;
- 	if (unlikely(!bdev))
- 		return 0;
+ free_miso:
+-	gpio_free(SPI_MISO_GPIO);
++	if (SPI_MISO_GPIO)
++		gpio_free(SPI_MISO_GPIO);
+ free_mosi:
+ 	gpio_free(SPI_MOSI_GPIO);
+ done:
+@@ -308,7 +314,8 @@ static int __init spi_gpio_probe(struct platform_device *pdev)
+ 	if (status < 0) {
+ 		spi_master_put(spi_gpio->bitbang.master);
+ gpio_free:
+-		gpio_free(SPI_MISO_GPIO);
++		if (SPI_MISO_GPIO)
++			gpio_free(SPI_MISO_GPIO);
+ 		gpio_free(SPI_MOSI_GPIO);
+ 		gpio_free(SPI_SCK_GPIO);
+ 		spi_master_put(master);
+@@ -332,7 +339,8 @@ static int __exit spi_gpio_remove(struct platform_device *pdev)
+ 
+ 	platform_set_drvdata(pdev, NULL);
+ 
+-	gpio_free(SPI_MISO_GPIO);
++	if (SPI_MISO_GPIO)
++		gpio_free(SPI_MISO_GPIO);
+ 	gpio_free(SPI_MOSI_GPIO);
+ 	gpio_free(SPI_SCK_GPIO);
+
