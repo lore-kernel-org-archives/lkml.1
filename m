@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763238AbZEHA0b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753895AbZEHA0w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763238AbZEHA0b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:26:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbZEHAKi
+	id S1753895AbZEHA0w (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:26:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756800AbZEHAKk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:38 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52703
+	Thu, 7 May 2009 20:10:40 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52709
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755756AbZEHAKG (ORCPT
+	with ESMTP id S1755787AbZEHAKG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 20:10:06 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -16,89 +16,79 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 11/11] xen: checkpatch cleanups
-Date: Thu,  7 May 2009 14:45:37 -0700
-Message-Id: <1241732737-7669-12-git-send-email-jeremy@goop.org>
+Subject: [PATCH 13/18] xen: dynamically allocate irq & event structures
+Date: Thu,  7 May 2009 14:14:38 -0700
+Message-Id: <1241730883-4917-14-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241732737-7669-1-git-send-email-jeremy@goop.org>
-References: <1241732737-7669-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241730883-4917-1-git-send-email-jeremy@goop.org>
+References: <1241730883-4917-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Mostly whitespace cleanups; one .c extern moved into a header.
+Impact: reduce memory usage
+
+Dynamically allocate the irq_info and evtchn_to_irq arrays, so that
+1) the irq_info array scales to the actual number of possible irqs,
+and 2) we don't needlessly increase the static size of the kernel
+when we aren't running under Xen.
+
+Derived on patch from Mike Travis <travis@sgi.com>.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/io.h      |    2 ++
- arch/x86/pci/common.c          |    2 +-
- arch/x86/pci/xen.c             |    3 +--
- include/xen/interface/memory.h |    4 ++--
- 4 files changed, 6 insertions(+), 5 deletions(-)
+ drivers/xen/events.c |   15 +++++++++------
+ 1 files changed, 9 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-index e5383e3..0bb9e13 100644
---- a/arch/x86/include/asm/io.h
-+++ b/arch/x86/include/asm/io.h
-@@ -7,6 +7,8 @@
- #include <asm-generic/int-ll64.h>
- #include <asm/page.h>
+diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+index 4a15326..64200a0 100644
+--- a/drivers/xen/events.c
++++ b/drivers/xen/events.c
+@@ -27,6 +27,7 @@
+ #include <linux/module.h>
+ #include <linux/string.h>
+ #include <linux/bootmem.h>
++#include <linux/irqnr.h>
  
-+extern int isapnp_disable;
-+
- #define build_mmio_read(name, size, type, reg, barrier) \
- static inline type name(const volatile void __iomem *addr) \
- { type ret; asm volatile("mov" size " %1,%0":reg (ret) \
-diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
-index 171accb..ccad323 100644
---- a/arch/x86/pci/common.c
-+++ b/arch/x86/pci/common.c
-@@ -22,7 +22,7 @@ unsigned int pci_probe = PCI_PROBE_BIOS | PCI_PROBE_CONF1 | PCI_PROBE_CONF2 |
- unsigned int pci_early_dump_regs;
- static int pci_bf_sort;
- int pci_routeirq;
--int pci_scan_all_fns = 0;
-+int pci_scan_all_fns;
- int noioapicquirk;
- #ifdef CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS
- int noioapicreroute = 0;
-diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
-index 76f803f..e134fb8 100644
---- a/arch/x86/pci/xen.c
-+++ b/arch/x86/pci/xen.c
-@@ -10,6 +10,7 @@
- #include <linux/acpi.h>
+ #include <asm/ptrace.h>
+ #include <asm/irq.h>
+@@ -91,11 +92,9 @@ struct irq_info
+ };
+ #define PIRQ_NEEDS_EOI	(1 << 0)
  
- #include <asm/pci_x86.h>
-+#include <asm/io.h>
+-static struct irq_info irq_info[NR_IRQS];
++static struct irq_info *irq_info;
  
- #include <asm/xen/hypervisor.h>
- 
-@@ -18,8 +19,6 @@ static int xen_pcifront_enable_irq(struct pci_dev *dev)
- 	return 0;
- }
- 
--extern int isapnp_disable;
--
- int __init pci_xen_init(void)
+-static int evtchn_to_irq[NR_EVENT_CHANNELS] = {
+-	[0 ... NR_EVENT_CHANNELS-1] = -1
+-};
++static int *evtchn_to_irq;
+ struct cpu_evtchn_s {
+ 	unsigned long bits[NR_EVENT_CHANNELS/BITS_PER_LONG];
+ };
+@@ -515,7 +514,7 @@ static int find_irq_by_gsi(unsigned gsi)
  {
- 	if (!xen_pv_domain() || xen_initial_domain())
-diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
-index 63abbb2..48fc968 100644
---- a/include/xen/interface/memory.h
-+++ b/include/xen/interface/memory.h
-@@ -229,8 +229,8 @@ DEFINE_GUEST_HANDLE_STRUCT(xen_memory_map);
- #define XENMEM_machine_memory_map   10
+ 	int irq;
  
- /*
-- * Prevent the balloon driver from changing the memory reservation during a driver
-- * critical region.
-+ * Prevent the balloon driver from changing the memory reservation
-+ * during a driver critical region.
-  */
- extern spinlock_t xen_reservation_lock;
+-	for(irq = 0; irq < NR_IRQS; irq++) {
++	for(irq = 0; irq < nr_irqs; irq++) {
+ 		struct irq_info *info = info_for_irq(irq);
+ 
+ 		if (info == NULL || info->type != IRQT_PIRQ)
+@@ -1180,7 +1179,11 @@ void __init xen_init_IRQ(void)
+ 	size_t size = nr_cpu_ids * sizeof(struct cpu_evtchn_s);
+ 
+ 	cpu_evtchn_mask_p = alloc_bootmem(size);
+-	BUG_ON(cpu_evtchn_mask_p == NULL);
++	irq_info = alloc_bootmem(nr_irqs * sizeof(*irq_info));
++
++	evtchn_to_irq = alloc_bootmem(NR_EVENT_CHANNELS * sizeof(*evtchn_to_irq));
++	for(i = 0; i < NR_EVENT_CHANNELS; i++)
++		evtchn_to_irq[i] = -1;
+ 
+ 	init_evtchn_cpu_bindings();
  
 -- 
 1.6.0.6
