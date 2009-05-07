@@ -1,61 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759646AbZEGOi3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761790AbZEGOi5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759646AbZEGOi3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 10:38:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754669AbZEGOiU
+	id S1761790AbZEGOi5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 10:38:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbZEGOir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 10:38:20 -0400
-Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:20380
-	"EHLO WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754464AbZEGOiT convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 10:38:19 -0400
-X-BigFish: VPS-10(zz98dR936fJzz1202hzzz32i6bh6di61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KJA3BI-01-T81-01
-Date: Thu, 7 May 2009 16:38:07 +0200
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: akpm@linux-foundation.org, greg@kroah.com, norsk5@yahoo.com,
-       tglx@linutronix.de, hpa@zytor.com, mchehab@redhat.com, aris@redhat.com,
-       edt@aei.ca, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 00/21 v3] amd64_edac: EDAC module for AMD64
-Message-ID: <20090507143807.GA15923@aftab>
-References: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com> <20090507142724.GM481@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <20090507142724.GM481@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 07 May 2009 14:38:10.0950 (UTC) FILETIME=[71F4AA60:01C9CF21]
-Content-Transfer-Encoding: 8BIT
+	Thu, 7 May 2009 10:38:47 -0400
+Received: from casper.infradead.org ([85.118.1.10]:38887 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756212AbZEGOiq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 10:38:46 -0400
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
+ class citizen
+From: Peter Zijlstra <peterz@infradead.org>
+To: Christoph Lameter <cl@linux.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+In-Reply-To: <alpine.DEB.1.10.0905071016410.24528@qirst.com>
+References: <20090430072057.GA4663@eskimo.com>
+	 <20090430174536.d0f438dd.akpm@linux-foundation.org>
+	 <20090430205936.0f8b29fc@riellaptop.surriel.com>
+	 <20090430181340.6f07421d.akpm@linux-foundation.org>
+	 <20090430215034.4748e615@riellaptop.surriel.com>
+	 <20090430195439.e02edc26.akpm@linux-foundation.org>
+	 <49FB01C1.6050204@redhat.com>
+	 <20090501123541.7983a8ae.akpm@linux-foundation.org>
+	 <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins>
+	 <20090507121101.GB20934@localhost>
+	 <alpine.DEB.1.10.0905070935530.24528@qirst.com>
+	 <1241705702.11251.156.camel@twins>
+	 <alpine.DEB.1.10.0905071016410.24528@qirst.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Thu, 07 May 2009 16:38:01 +0200
+Message-Id: <1241707081.11251.160.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Thu, 2009-05-07 at 10:18 -0400, Christoph Lameter wrote:
+> On Thu, 7 May 2009, Peter Zijlstra wrote:
+> 
+> > It re-instates the young bit for PROT_EXEC pages, so that they will only
+> > be paged when they are really cold, or there is severe pressure.
+> 
+> But they are rescanned until then. Really cold means what exactly? I do a
+> back up of a few hundred gigabytes and do not use firefox while the backup
+> is ongoing. Will the firefox pages still be in memory or not?
 
-On Thu, May 07, 2009 at 04:27:24PM +0200, Ingo Molnar wrote:
-> Regarding workflow, the arch/x86 bits look good to me now, so you've 
-> got my Acked-by for that.
+Likely not.
 
-Cool, thanks.
+What this patch does is check the young bit on active_file scan, if its
+found to be set and the page is PROT_EXEC, put the page back on the
+active_file list, otherwise drop it to the inactive_file list.
 
-Does that mean you're going to pick that one or...
+So if you haven't ran any firefox code, it should be gone from the
+active list after 2 full cycles, and from the inactive list on the first
+full inactive cycle after that.
 
-> Most of the EDAC patches are hosted in 
-> -mm, so we could carry them in the x86 tree separately as well and 
-> export it to linux-next so that -mm will have it automatically.
-
-is the bunch going through Andrew as a whole?
-
--- 
-Regards/Gruss,
-Boris.
-
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
+If you don't understand the patch, what are you complaining about, whats
+your point?
