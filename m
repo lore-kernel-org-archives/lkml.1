@@ -1,99 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764579AbZEHAef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761807AbZEHAe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764579AbZEHAef (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:34:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759896AbZEHAK6
+	id S1761807AbZEHAe4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759805AbZEHAK7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:58 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52718
+	Thu, 7 May 2009 20:10:59 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52703
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755047AbZEHAJ6 (ORCPT
+	with ESMTP id S1754928AbZEHAJ5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 20:09:58 -0400
+	Thu, 7 May 2009 20:09:57 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Juan Quintela <quintela@redhat.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 02/16] xen dom0: Initialize xenbus for dom0.
-Date: Thu,  7 May 2009 14:10:39 -0700
-Message-Id: <1241730653-4688-3-git-send-email-jeremy@goop.org>
+Subject: [PATCH 5/5] x86-64: move clts into batch cpu state updates when preloading fpu
+Date: Thu,  7 May 2009 13:32:53 -0700
+Message-Id: <1241728373-3537-6-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241730653-4688-1-git-send-email-jeremy@goop.org>
-References: <1241730653-4688-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241728373-3537-1-git-send-email-jeremy@goop.org>
+References: <1241728373-3537-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Juan Quintela <quintela@redhat.com>
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Impact: initialize Xenbus
-
-Do initial xenbus/xenstore setup in dom0.  In dom0 we need to actually
-allocate the xenstore resources, rather than being given them from
-outside.
+When a task is likely to be using the fpu, we preload its state during
+the context switch, rather than waiting for it to run an fpu instruction.
+Make sure the clts() happens while we're doing batched fpu state updates
+to optimise paravirtualized context switches.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Signed-off-by: Juan Quintela <quintela@redhat.com>
 ---
- drivers/xen/xenbus/xenbus_probe.c |   30 +++++++++++++++++++++++++++++-
- 1 files changed, 29 insertions(+), 1 deletions(-)
+ arch/x86/kernel/process_64.c |   28 +++++++++++++++++++---------
+ 1 files changed, 19 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
-index d42e25d..6a05725 100644
---- a/drivers/xen/xenbus/xenbus_probe.c
-+++ b/drivers/xen/xenbus/xenbus_probe.c
-@@ -780,6 +780,7 @@ void xenbus_probe(struct work_struct *unused)
- static int __init xenbus_probe_init(void)
- {
- 	int err = 0;
-+	unsigned long page = 0;
+diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
+index 534859b..45c5eb8 100644
+--- a/arch/x86/kernel/process_64.c
++++ b/arch/x86/kernel/process_64.c
+@@ -389,9 +389,17 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ 	int cpu = smp_processor_id();
+ 	struct tss_struct *tss = &per_cpu(init_tss, cpu);
+ 	unsigned fsindex, gsindex;
++	bool preload_fpu;
++
++	/*
++	 * If the task has used fpu the last 5 timeslices, just do a full
++	 * restore of the math state immediately to avoid the trap; the
++	 * chances of needing FPU soon are obviously high now
++	 */
++	preload_fpu = tsk_used_math(next_p) && next_p->fpu_counter > 5;
  
- 	DPRINTK("");
+ 	/* we're going to use this soon, after a few expensive things */
+-	if (next_p->fpu_counter > 5)
++	if (preload_fpu)
+ 		prefetch(next->xstate);
  
-@@ -800,7 +801,31 @@ static int __init xenbus_probe_init(void)
- 	 * Domain0 doesn't have a store_evtchn or store_mfn yet.
+ 	/*
+@@ -425,6 +433,10 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ 	/* Must be after DS reload */
+ 	unlazy_fpu(prev_p);
+ 
++	/* Make sure cpu is ready for new context */
++	if (preload_fpu)
++		clts();
++
+ 	/*
+ 	 * Leave lazy mode, flushing any hypercalls made here.
+ 	 * This must be done before restoring TLS segments so
+@@ -483,15 +495,13 @@ __switch_to(struct task_struct *prev_p, struct task_struct *next_p)
+ 		     task_thread_info(prev_p)->flags & _TIF_WORK_CTXSW_PREV))
+ 		__switch_to_xtra(prev_p, next_p, tss);
+ 
+-	/* If the task has used fpu the last 5 timeslices, just do a full
+-	 * restore of the math state immediately to avoid the trap; the
+-	 * chances of needing FPU soon are obviously high now
+-	 *
+-	 * tsk_used_math() checks prevent calling math_state_restore(),
+-	 * which can sleep in the case of !tsk_used_math()
++	/*
++	 * Preload the FPU context, now that we've determined that the
++	 * task is likely to be using it. 
  	 */
- 	if (xen_initial_domain()) {
--		/* dom0 not yet supported */
-+		struct evtchn_alloc_unbound alloc_unbound;
+-	if (tsk_used_math(next_p) && next_p->fpu_counter > 5)
+-		math_state_restore();
++	if (preload_fpu)
++		__math_state_restore();
 +
-+		/* Allocate Xenstore page */
-+		page = get_zeroed_page(GFP_KERNEL);
-+		if (!page)
-+			return -ENOMEM;
-+
-+		xen_store_mfn = xen_start_info->store_mfn =
-+			pfn_to_mfn(virt_to_phys((void *)page) >>
-+				   PAGE_SHIFT);
-+
-+		/* Next allocate a local port which xenstored can bind to */
-+		alloc_unbound.dom        = DOMID_SELF;
-+		alloc_unbound.remote_dom = 0;
-+
-+		err = HYPERVISOR_event_channel_op(EVTCHNOP_alloc_unbound,
-+						  &alloc_unbound);
-+		if (err == -ENOSYS)
-+			goto out_unreg_front;
-+
-+		BUG_ON(err);
-+		xen_store_evtchn = xen_start_info->store_evtchn =
-+			alloc_unbound.port;
-+
-+		xen_store_interface = mfn_to_virt(xen_store_mfn);
- 	} else {
- 		xenstored_ready = 1;
- 		xen_store_evtchn = xen_start_info->store_evtchn;
-@@ -836,6 +861,9 @@ static int __init xenbus_probe_init(void)
- 	bus_unregister(&xenbus_frontend.bus);
- 
-   out_error:
-+	if (page != 0)
-+		free_page(page);
-+
- 	return err;
+ 	return prev_p;
  }
  
 -- 
