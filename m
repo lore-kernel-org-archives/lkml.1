@@ -1,73 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756859AbZEGQ3K@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760039AbZEGQcU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756859AbZEGQ3K (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 12:29:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbZEGQ24
+	id S1760039AbZEGQcU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 12:32:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754501AbZEGQcJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 12:28:56 -0400
-Received: from fg-out-1718.google.com ([72.14.220.153]:17763 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753837AbZEGQ2z (ORCPT
+	Thu, 7 May 2009 12:32:09 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:39866 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753409AbZEGQcI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 12:28:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=WiM+K3sobQleNJ+VnzZZyHJoHTPemt5qoHAd1cYVKAGTqm0iFCbkjvVmV9HFGYzlEM
-         b/4A208/ECmtIIMG4W+qVnvXaCUIgFV8y5e6d1e6p9g+/+ha4On0PVqIGc7hvuruwiRc
-         MFHIoCkRw7ToTVHteIz8jo+vjvM0SGnErHVnY=
-Date: Thu, 7 May 2009 18:28:50 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 7/7] tracing: add hierarchical enabling of events
-Message-ID: <20090507162849.GB5987@nowhere>
-References: <20090507031335.815354104@goodmis.org> <20090507031434.807772092@goodmis.org>
+	Thu, 7 May 2009 12:32:08 -0400
+Date: Thu, 7 May 2009 12:32:07 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: Oliver Neukum <oliver@neukum.org>
+cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Jason Wessel <jason.wessel@windriver.com>, <greg@kroah.com>,
+       <linux-usb@vger.kernel.org>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 5/5] usb_debug: EXPERIMENTAL - poll hcd device to force
+ writes
+In-Reply-To: <200905071701.51195.oliver@neukum.org>
+Message-ID: <Pine.LNX.4.44L0.0905071229270.3151-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507031434.807772092@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 06, 2009 at 11:13:42PM -0400, Steven Rostedt wrote:
-> From: Steven Rostedt <srostedt@redhat.com>
-> 
-> With the current event directory, you can only enable individual events.
-> The file debugfs/tracing/set_event is used to be able to enable or
-> disable several events at once. But that can still be awkward.
-> 
-> This patch adds hierarchical enabling of events. That is, each directory
-> in debugfs/tracing/events has an "enable" file. This file can enable
-> or disable all events within the directory and below.
-> 
->  # echo 1 > /debugfs/tracing/events/enable
-> 
-> will enable all events.
-> 
->  # echo 1 > /debugfs/tracing/events/sched/enable
-> 
-> will enable all events in the sched subsystem.
-> 
->  # echo 1 > /debugfs/tracing/events/enable
->  # echo 0 > /debugfs/tracing/events/irq/enable
-> 
-> will enable all events, but then disable just the irq subsystem events.
-> 
-> When reading one of these enable files, there are four results:
-> 
->  0 - all events this file affects are disabled
->  1 - all events this file affects are enabled
->  X - there is a mixture of events enabled and disabled
->  ? - this file does not affect any event
+On Thu, 7 May 2009, Oliver Neukum wrote:
 
+> > How about setting the upper limit to URBs in flight based on the baud
+> > rate?  Faster transfers deserve more URBs, right?  Assuming some
+> > minimum number of bytes per URB (4? 8?), there should be enough URBs to
+> > fill a pipeline whose length is around 5 ms or so (interrupt latency).
+> 
+> Hm, you say many URBs can complete before an interrupt handler
+> can react?
 
+How long can interrupts remain disabled?  On a non-RT system, it might 
+be several milliseconds.
 
-Nice, I also planned to support hierarchical events but I'm too
-slow, thanks!
+In any case, a full-speed host controller won't issue IRQs more often 
+than once per ms.  Quite a few URBs can complete in that time.
+
+Alan Stern
 
