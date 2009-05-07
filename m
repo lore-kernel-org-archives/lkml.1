@@ -1,88 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756928AbZEGRAJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759988AbZEGREO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756928AbZEGRAJ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 13:00:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbZEGQ7y
+	id S1759988AbZEGREO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 13:04:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZEGRD4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 12:59:54 -0400
-Received: from waste.org ([66.93.16.53]:38254 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751845AbZEGQ7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 12:59:53 -0400
-Date: Thu, 7 May 2009 11:55:45 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Florian Weimer <fweimer@bfk.de>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Ingo Molnar <mingo@elte.hu>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
-       security@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged processes
-Message-ID: <20090507165545.GK31071@waste.org>
-References: <20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu> <m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu> <20090505202219.GL31071@waste.org> <20090506103034.GA25203@elte.hu> <20090506162543.GT31071@waste.org> <alpine.LFD.2.01.0905060942340.4983@localhost.localdomain> <20090506175717.GY31071@waste.org> <82prel54fo.fsf@mid.bfk.de>
+	Thu, 7 May 2009 13:03:56 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:42301 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752223AbZEGRDz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 13:03:55 -0400
+Message-ID: <4A031471.7000406@novell.com>
+Date: Thu, 07 May 2009 13:03:45 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <82prel54fo.fsf@mid.bfk.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Chris Wright <chrisw@sous-sol.org>
+CC: Gregory Haskins <gregory.haskins@gmail.com>, Avi Kivity <avi@redhat.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org>
+In-Reply-To: <20090506160712.GW3036@sequoia.sous-sol.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig71C38C45EF759E71E8C85249"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 05:16:27PM +0200, Florian Weimer wrote:
-> * Matt Mackall:
-> 
-> > On Wed, May 06, 2009 at 09:48:20AM -0700, Linus Torvalds wrote:
-> >> 
-> >> Matt, are you willing to ack my suggested patch which adds history to the 
-> >> mix? Did somebody test that? I have this memory of there being an 
-> >> "exploit" program to show the non-randomness of the values, but I can't 
-> >> recall details, and would really want to get a second opinion from 
-> >> somebody who cares about PRNG's.
-> >
-> > I still don't like it. I bounced it off some folks on the adversarial
-> > side of things and they didn't think it looked strong enough either.
-> > Full MD5 collisions can be generated about as fast as they can be
-> > checked, which makes _reduced strength_ MD4 not much better than an
-> > LFSR in terms of attack potential.
-> 
-> Well, with periodic reseeding, even that shouldn't be a problem.  You
-> don't need collision resistance at all, so those MD5 attacks don't
-> tell you anything about the difficulty of state recovery/prediction
-> attacks on your variant.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig71C38C45EF759E71E8C85249
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-It's *not* MD5. It's a reduced-round MD4. And MD4 is already many
-orders of magnitude weaker than MD5. It's so weak in fact that
-collisions can be generated in O(1)[1]. Hard to get much weaker than
-that, except by, say, using something like our reduced-round variant.
+Chris Wright wrote:
+> * Gregory Haskins (ghaskins@novell.com) wrote:
+>  =20
+>> Chris Wright wrote:
+>>    =20
+>>> VF drivers can also have this issue (and typically use mmio).
+>>> I at least have a better idea what your proposal is, thanks for
+>>> explanation.  Are you able to demonstrate concrete benefit with it ye=
+t
+>>> (improved latency numbers for example)?
+>>>      =20
+>> I had a test-harness/numbers for this kind of thing, but its a bit
+>> crufty since its from ~1.5 years ago.  I will dig it up, update it, an=
+d
+>> generate/post new numbers.
+>>    =20
+>
+> That would be useful, because I keep coming back to pio and shared
+> page(s) when think of why not to do this.  Seems I'm not alone in that.=
 
-It's not much of a stretch of the imagination to think that such an
-amazingly weak hash might reveal our hidden state quite rapidly,
-especially when used in a feedback mode.
+>
+> thanks,
+> -chris
+>  =20
 
-[1] http://eprint.iacr.org/2005/151.pdf
+I completed the resurrection of the test and wrote up a little wiki on
+the subject, which you can find here:
 
-We have a better hash function handy, and it's only takes twice as long.
+http://developer.novell.com/wiki/index.php/WhyHypercalls
 
-> On the other hand, most people who need a quick, unpredictable source
-> of randomness seem to use RC4 with a random key initialized from a
-> more costly source.
+Hopefully this answers Chris' "show me the numbers" and Anthony's "Why
+reinvent the wheel?" questions.
 
-Using a stream cipher is a fine idea. Ted and I have recently
-discussed adding this as a layer to the stock RNG. We haven't used it
-historically because of a) export restrictions and b) unsuitability of
-the cryptoapi interface.
+I will include this information when I publish the updated v2 series
+with the s/hypercall/dynhc changes.
 
-> Oh, and you should really, really ditch that Tausworthe generator (in
-> lib/random32.c).
+Let me know if you have any questions.
 
-I'm not responsible for that particular bad idea.
+-Greg
 
--- 
-Mathematics is the supreme nostalgia of our time.
+
+--------------enig71C38C45EF759E71E8C85249
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkoDFHEACgkQlOSOBdgZUxke6wCeIQUvbV4FXRQCFLmJRNO5aUjM
+HxsAnAny6yKoX5oMqCxSn+4QQWKx+uyD
+=PIrW
+-----END PGP SIGNATURE-----
+
+--------------enig71C38C45EF759E71E8C85249--
