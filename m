@@ -1,47 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755582AbZEGXVU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757618AbZEGXVj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755582AbZEGXVU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 19:21:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753330AbZEGXVH
+	id S1757618AbZEGXVj (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 19:21:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbZEGXV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 19:21:07 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:48072 "EHLO e6.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752863AbZEGXVE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 19:21:04 -0400
-Date: Thu, 7 May 2009 16:21:10 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: Eric Paris <eparis@parisplace.org>, Christoph Hellwig <hch@lst.de>,
-       Andrew Morton <akpm@osdl.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       serue@us.ibm.com, hpa@zytor.com, sukadev@us.ibm.com,
-       linux-kernel@vger.kernel.org, jbacik@redhat.com
-Subject: Re: [v3][PATCH 5/5] Merge code for single
-	andmultiple-instancemounts
-Message-ID: <20090507232110.GB27609@linux.vnet.ibm.com>
-References: <20090307180816.GA30072@us.ibm.com> <20090307181232.GF30072@us.ibm.com> <7e0fb38c0905071335g7ebe972xa82faa1161f7ff0b@mail.gmail.com> <20090507212429.GA24064@linux.vnet.ibm.com> <1241735609.2907.4.camel@dhcp231-142.rdu.redhat.com> <20090507231844.GA27609@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507231844.GA27609@linux.vnet.ibm.com>
-X-Operating-System: Linux 2.0.32 on an i486
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	Thu, 7 May 2009 19:21:28 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60096 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753330AbZEGXV1 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 19:21:27 -0400
+Date: Thu, 7 May 2009 16:15:08 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: rientjes@google.com, fengguang.wu@intel.com,
+       linux-pm@lists.linux-foundation.org, pavel@ucw.cz,
+       torvalds@linux-foundation.org, jens.axboe@oracle.com,
+       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+Message-Id: <20090507161508.42f586ef.akpm@linux-foundation.org>
+In-Reply-To: <200905080050.41973.rjw@sisk.pl>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera>
+	<200905080014.49426.rjw@sisk.pl>
+	<20090507153824.df54658c.akpm@linux-foundation.org>
+	<200905080050.41973.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-| Must be the
-| 
-| 	memset(&opts, 0, sizeof(opts));
-| 
-| in devpts_get_sb() (first statement). It should probably set the options to
-| default values for cases where 'data' is NULL.
-| 
-| For now, can you try replacing the memset with:
+On Fri, 8 May 2009 00:50:41 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-Er. I meant add following lines after the memset().
+> On Friday 08 May 2009, Andrew Morton wrote:
+> > On Fri, 8 May 2009 00:14:48 +0200
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > IOW, you need to freeze the user space totally before trying to disable the
+> > > OOM killer.
+> > 
+> > Not necessarily.  We only need to take action if a task is about to
+> > start oom-killing - presumably by taking a nap.
+> > 
+> > If a process is sitting there happily computing pi then we can leave it
+> > running.
+> 
+> Well, the point is we don't really know what the task is going to do next.
+> Is it going to continue computing pi, or is it going to execl(huge_binary), for
+> example?
+> 
+> If we knew what tasks were going to do in advance, the whole freezing wouldn't
+> really be necessary. :-)
 
-|         opts->mode    = DEVPTS_DEFAULT_MODE;
-|         opts->ptmxmode = DEVPTS_DEFAULT_PTMX_MODE;
-| 
-| Sukadev
+argh.  Third time:
+
+- if the task is computing pi, let it do so.
+
+- if the task tries to allocate memory and succeeds, let it proceed.
+
+- if the task tries to allocate memory and fails and then tries to invoke
+  the oom-killer, stop the task.
+
