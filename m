@@ -1,73 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758529AbZEGVU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753872AbZEGVYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758529AbZEGVU1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 17:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751298AbZEGVUN
+	id S1753872AbZEGVYe (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 17:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbZEGVYZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 17:20:13 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:36521 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751060AbZEGVUM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 17:20:12 -0400
-Date: Thu, 7 May 2009 23:18:59 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com,
-       norsk5@yahoo.com, tglx@linutronix.de, hpa@zytor.com, mchehab@redhat.com,
-       aris@redhat.com, edt@aei.ca, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH 00/21 v3] amd64_edac: EDAC module for AMD64
-Message-ID: <20090507211859.GA28770@elte.hu>
-References: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com> <20090507142724.GM481@elte.hu> <20090507143807.GA15923@aftab> <20090507135227.abbbc7dc.akpm@linux-foundation.org>
+	Thu, 7 May 2009 17:24:25 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:49074 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750912AbZEGVYY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 17:24:24 -0400
+Date: Thu, 7 May 2009 14:24:29 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Eric Paris <eparis@parisplace.org>
+Cc: Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@osdl.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, serue@us.ibm.com, hpa@zytor.com,
+       sukadev@us.ibm.com, linux-kernel@vger.kernel.org, eparis@redhat.com,
+       jbacik@redhat.com
+Subject: Re: [v3][PATCH 5/5] Merge code for single and multiple-instance
+	mounts
+Message-ID: <20090507212429.GA24064@linux.vnet.ibm.com>
+References: <20090307180816.GA30072@us.ibm.com> <20090307181232.GF30072@us.ibm.com> <7e0fb38c0905071335g7ebe972xa82faa1161f7ff0b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090507135227.abbbc7dc.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <7e0fb38c0905071335g7ebe972xa82faa1161f7ff0b@mail.gmail.com>
+X-Operating-System: Linux 2.0.32 on an i486
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Eric Paris [eparis@parisplace.org] wrote:
+| On Sat, Mar 7, 2009 at 2:12 PM, Sukadev Bhattiprolu
+| <sukadev@linux.vnet.ibm.com> wrote:
+| >
+| > From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+| > Subject: [v3][PATCH 5/5] Merge code for single and multiple-instance mounts
+| 
+| I just tried to load the linux-next kernel on F11 and ran into a
+| problem.  X started, I could log in, I could start programs like
+| firefox and evolution, but not gnome-terminal.  It would just flash
+| and disappear.  Running xterm resulted in a window, that I could type
+| in, but it wasn't a shell.  It didn't do anything.
+| 
+| I switched to vt2 set the display to my X session and tried to run
+| xterm.  It said something about a permission being denied, so I
+| decided to strace it.  I saw EACCESS returning from calls dealing with
+| /dev/pts/0.  This lead me to git bisect start fs/devpts from the
+| latest in linux-next as bad and 2.6.29 as good.  Couple interations
+| later and I find that this commit (1bd7903560f1f7) breaks
+| gnome-terminal xterm!
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+Interesting :-) -EACCESS makes me suspect that maybe 'mode' 'uid' or 'gid'
+mount options are wrong. Of course we would still need to understand if/
+why this patch changes the settings.
 
-> On Thu, 7 May 2009 16:38:07 +0200
-> Borislav Petkov <borislav.petkov@amd.com> wrote:
-> 
-> > Hi,
-> > 
-> > On Thu, May 07, 2009 at 04:27:24PM +0200, Ingo Molnar wrote:
-> > > Regarding workflow, the arch/x86 bits look good to me now, so you've 
-> > > got my Acked-by for that.
-> > 
-> > Cool, thanks.
-> > 
-> > Does that mean you're going to pick that one or...
-> > 
-> > > Most of the EDAC patches are hosted in 
-> > > -mm, so we could carry them in the x86 tree separately as well and 
-> > > export it to linux-next so that -mm will have it automatically.
-> > 
-> > is the bunch going through Andrew as a whole?
-> > 
-> 
-> I could.  But there's negligible overlap with other EDAC work so 
-> we might as well merge this via IngoTrees or directly from your 
-> tree.
+Can you paste the output of following commands: (both in success and failure
+cases).
 
-If Doug and you agrees too then i have no problem (at all) with 
-Borislav carrying these bits in a separate tree, as long as he also 
-opens an edac-next branch for linux-next and asks Stephen to pull 
-it, and keeps it an append-mostly tree that isnt rebased.
+	$ grep devpts /proc/mounts
 
-[ I still have to do a finegrained review of this lot, a quick look
-  suggested i'll have a few minor things to note ;) ]
+	$ ls -al /dev/pts
 
-	Ingo
+	$ stat /dev/ptmx
+
+Also, is CONFIG_DEVPTS_MULTIPLE_INSTANCES set in your .config ?
+
+With this patch, does gnome-terminal run when logged in as root ?
+
+Thanks,
+
+Sukadev
