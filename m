@@ -1,60 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762664AbZEGT3N@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762802AbZEGT3e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762664AbZEGT3N (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 15:29:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZEGT2x
+	id S1762802AbZEGT3e (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 15:29:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762673AbZEGT26
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 15:28:53 -0400
-Received: from waste.org ([66.93.16.53]:50979 "EHLO waste.org"
+	Thu, 7 May 2009 15:28:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41688 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754163AbZEGT2v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 15:28:51 -0400
-Date: Thu, 7 May 2009 14:24:32 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Arjan van de Ven <arjan@infradead.org>, Jake Edge <jake@lwn.net>,
-       security@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Dave Jones <davej@redhat.com>
-Subject: Re: [Security] [PATCH] proc: avoid information leaks to non-privileged processes
-Message-ID: <20090507192432.GN31071@waste.org>
-References: <20090505195246.GC21973@elte.hu> <20090505202219.GL31071@waste.org> <20090506103034.GA25203@elte.hu> <20090506162543.GT31071@waste.org> <alpine.LFD.2.01.0905060942340.4983@localhost.localdomain> <20090506175717.GY31071@waste.org> <20090507005016.GJ31071@waste.org> <20090507150231.GB2344@elte.hu> <20090507181434.GL31071@waste.org> <20090507184136.GB30659@elte.hu>
+	id S1761944AbZEGT24 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 15:28:56 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: linux-crypto@vger.kernel.org
+Subject: [PATCH 1/2] crypto: add infra to skip disallowed algs in fips mode
+Date: Thu, 7 May 2009 15:27:59 -0400
+User-Agent: KMail/1.11.2 (Linux/2.6.29.1-102.fc11.x86_64; KDE/4.2.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
+       Neil Horman <nhorman@tuxdriver.com>
+References: <200905071441.27093.jarod@redhat.com>
+In-Reply-To: <200905071441.27093.jarod@redhat.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090507184136.GB30659@elte.hu>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+Message-Id: <200905071527.59809.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 08:41:36PM +0200, Ingo Molnar wrote:
-> 
-> * Matt Mackall <mpm@selenic.com> wrote:
-> 
-> > > As i mentioned it in the previous mail, i'd _really_ like to 
-> > > hear your thread model and attack vector description. Does this 
-> > > overhead justify the threat? Your change will only result in 
-> > > get_random_int() not being considered fast anymore.
-> > 
-> > My threat model is that someone more clever and with a lot more 
-> > expertise attacking systems than either you or me will be able to 
-> > leverage the extreme weakness of this hash (O(1) attacks against 
-> > the *full* version!) into an attack that incrementally exposes the 
-> > hidden RNG state. I've asked a couple such people whether they 
-> > think that's likely, and they've said yes.
-> 
-> My question was whether the variant laced with the cycle counter 
-> could be exposable.
+Because all fips-allowed algorithms must be self-tested before they
+can be used, they will all have entries in testmgr.c's alg_test_descs[].
+If we add and set an additional flag for the allowed algorithms, we can
+key off of it to prevent use of any algs that aren't allowed.
 
-In my world, some machines don't have TSCs, so I think this is the
-wrong question to be asking.
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
+
+---
+ crypto/testmgr.c |    9 +++++++++
+ 1 files changed, 9 insertions(+), 0 deletions(-)
+
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index f4cc178..232f043 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -94,6 +94,7 @@ struct alg_test_desc {
+ 	const char *alg;
+ 	int (*test)(const struct alg_test_desc *desc, const char *driver,
+ 		    u32 type, u32 mask);
++	int fips_allowed;	/* set if alg is allowed in fips mode */
+ 
+ 	union {
+ 		struct aead_test_suite aead;
+@@ -2285,6 +2286,9 @@ int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
+ 		if (i < 0)
+ 			goto notest;
+ 
++		if (fips_enabled && !alg_test_descs[i].fips_allowed)
++			goto non_fips_alg;
++
+ 		rc = alg_test_cipher(alg_test_descs + i, driver, type, mask);
+ 		goto test_done;
+ 	}
+@@ -2293,6 +2297,9 @@ int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
+ 	if (i < 0)
+ 		goto notest;
+ 
++	if (fips_enabled && !alg_test_descs[i].fips_allowed)
++		goto non_fips_alg;
++
+ 	rc = alg_test_descs[i].test(alg_test_descs + i, driver,
+ 				      type, mask);
+ test_done:
+@@ -2308,5 +2315,7 @@ test_done:
+ notest:
+ 	printk(KERN_INFO "alg: No test for %s (%s)\n", alg, driver);
+ 	return 0;
++non_fips_alg:
++	return -EINVAL;
+ }
+ EXPORT_SYMBOL_GPL(alg_test);
 
 -- 
-Mathematics is the supreme nostalgia of our time.
+Jarod Wilson
+jarod@redhat.com
