@@ -1,67 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759002AbZEGUCE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761009AbZEGUFk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759002AbZEGUCE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 16:02:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754296AbZEGUBt
+	id S1761009AbZEGUFk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 16:05:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbZEGUFa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 16:01:49 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:62901 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753298AbZEGUBs convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 16:01:48 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Gregory Haskins <gregory.haskins@gmail.com>
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-Date: Thu, 7 May 2009 22:00:21 +0200
-User-Agent: KMail/1.9.9
-Cc: Avi Kivity <avi@redhat.com>, Gregory Haskins <ghaskins@novell.com>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A032472.4030106@redhat.com> <4A03259B.3050500@gmail.com>
-In-Reply-To: <4A03259B.3050500@gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Thu, 7 May 2009 16:05:30 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47921 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751378AbZEGUFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 16:05:30 -0400
+Message-ID: <4A033EAB.8010700@garzik.org>
+Date: Thu, 07 May 2009 16:03:55 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200905072200.22007.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+0tRtiPzE72Uhu33NgyxByXs4Qe5fXiPtSiRo
- L15GlsXLeqVzofPYeSGid8n09PN9T9s/YtYEhAe2ckIqNm7HvF
- oK/E4fuQ0WgihWEJGGfhw==
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: "H. Peter Anvin" <hpa@zytor.com>, Christoph Lameter <cl@linux.com>,
+       Alok Kataria <akataria@vmware.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Reduce the default HZ value
+References: <1241462661.412.8.camel@alok-dev1>	<4A00ADDE.9000908@zytor.com>	<1241560625.8665.17.camel@alok-dev1>	<alpine.DEB.1.10.0905071010170.24528@qirst.com>	<20090507161440.5b9c067d@lxorguk.ukuu.org.uk>	<4A02FE91.8070006@zytor.com>	<4A031269.3000603@garzik.org>	<20090507180909.4b0a8672@lxorguk.ukuu.org.uk>	<4A03209E.4070603@garzik.org> <20090507205101.0091eb2a@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090507205101.0091eb2a@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 May 2009, Gregory Haskins wrote:
-> I guess technically mmio can just be a simple access of the page which
-> would be problematic to trap locally without a PF.  However it seems
-> that most mmio always passes through a ioread()/iowrite() call so this
-> is perhaps the hook point.  If we set the stake in the ground that mmios
-> that go through some other mechanism like PFs can just hit the "slow
-> path" are an acceptable casualty, I think we can make that work.
+Alan Cox wrote:
+> jiffies is *really* expensive...
+
+Certainly.
+
+
+> However you don't need HZ
+
+Thus I said "libata would be happy to use milliseconds rather than 
+jiffies; the unit does not matter."
+
+All crucial constants and variables are already in useful units, and we 
+are forced to convert them to jiffies, and test against 'jiffies' global 
+var, because the API does not provide other reasonable alternatives.
+
+Pretty much all users of time -- including users of timers -- are forced 
+to convert from a useful unit of time to jiffies, because that's what 
+the API requires.
+
+
+> and you can do that really easily by making your timer switch a single
+> value to the correct state for the time and in your loops just checking
 > 
-> Thoughts?
+> 	while ( ap->reset_state == WIBBLING_RANDOMLY) {
+> 		wobble = readl(ap->ioaddr.wibble);
+> 		mdelay(1);
+> 		if (wobble & WIBBLED) {
+> 			...
+> 		}
+> 	}
 
-An mmio that goes through a PF is a bug, it's certainly broken on
-a number of platforms, so performance should not be an issue there.
+And when the deadline changes, you need mod_timer rather than a simple 
+non-global-variable increment.
 
-Note that are four commonly used interface classes for PIO/MMIO:
+And when you consider all the bits of state, spread across not only 
+libata core __but drivers as well__, a timer-based solution gets even 
+uglier.
 
-1. readl/writel: little-endian MMIO
-2. inl/outl: little-endian PIO
-3. ioread32/iowrite32: converged little-endian PIO/MMIO
-4. __raw_readl/__raw_writel: native-endian MMIO without checks
+But you're still missing the point.  jiffies are just a unit, a unit 
+forced upon us by all the time-based kernel API functions that take 
+jiffies rather than usec or msec.
 
-You don't need to worry about the __raw_* stuff, as this should never
-be used in device drivers.
+I would rather fix the API, than investigate hacky solutions that 
+complicate the code even more.
 
-As a simplification, you could mandate that all drivers that want to
-use this get converted to the ioread/iowrite class of interfaces and
-leave the others slow.
+	Jeff
 
-	Arnd <><
+
+
