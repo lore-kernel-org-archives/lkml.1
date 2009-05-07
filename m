@@ -1,26 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762007AbZEGL0j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758910AbZEGLc4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762007AbZEGL0j (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 07:26:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754421AbZEGL0a
+	id S1758910AbZEGLc4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 07:32:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbZEGLcq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 07:26:30 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:37483 "EHLO mx3.mail.elte.hu"
+	Thu, 7 May 2009 07:32:46 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35137 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753838AbZEGL03 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 07:26:29 -0400
-Date: Thu, 7 May 2009 13:26:01 +0200
+	id S1751837AbZEGLcp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 07:32:45 -0400
+Date: Thu, 7 May 2009 13:32:17 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: airlied@linux.ie, linux-kernel@vger.kernel.org,
-       iommu@lists.linux-foundation.org, mingo@redhat.com, dwmw2@infradead.org
-Subject: Re: IOMMU and graphics cards
-Message-ID: <20090507112601.GJ28398@elte.hu>
-References: <20090507100114.GF4059@amd.com> <20090507191724N.fujita.tomonori@lab.ntt.co.jp> <20090507110135.GC28398@elte.hu> <20090507201538U.fujita.tomonori@lab.ntt.co.jp>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Jeremy Fitzhardinge <jeremy@goop.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/5] tracing/events: add rcu locking around trace event
+	prints
+Message-ID: <20090507113217.GK28398@elte.hu>
+References: <20090416021830.556671772@goodmis.org> <20090416021928.467656424@goodmis.org> <alpine.DEB.2.00.0905062207370.24643@gandalf.stny.rr.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090507201538U.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <alpine.DEB.2.00.0905062207370.24643@gandalf.stny.rr.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -35,52 +40,59 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+* Steven Rostedt <rostedt@goodmis.org> wrote:
 
-> On Thu, 7 May 2009 13:01:35 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
+> Somehow this patch got dropped. I believe Ted's work requires it.
 > 
+> I'm not sure if we need to include rcupdate.h or not to use 
+> rcu_read_lock. I think it may be fine to include it in ftrace.h. 
+> 
+> Jeremy, does this patch effect anything that you are doing?
+> 
+> -- Steve
+> 
+> On Wed, 15 Apr 2009, Steven Rostedt wrote:
+> 
+> > From: Steven Rostedt <srostedt@redhat.com>
 > > 
-> > * FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
+> > Some trace events need to have a way to print out data that his
+> > allocated, but will be freed later. Using a function that can allocate
+> > memory, and free it with call_rcu, can be useful.
 > > 
-> > > > The proprietary drivers make problems so far. For the ATI one I 
-> > > > am in contact with the developers to try to fix it. But I can't 
-> > > > do anything about the other proprietary driver I am aware of :-(
-> > > 
-> > > I don't know anything about the graphic drivers but are there any 
-> > > other proprietary drivers except for ATI and AMD? Fixing only two 
-> > > drivers to make the majority happy?
+> > This patch adds rcu locking around the print part of the TRACE_EVENT
+> > macro to facilitate this.
 > > 
-> > ATI ~== AMD these days. The problem is Nvidia cards stuck into AMD 
-> > systems.
-> 
-> Oops, I meant ATI and Nvidia.
-> 
-> 
-> > I guess refusing those DMA accesses (and printing something 
-> > meaningful and relentlessly honest so that the user knows where the 
-> > problem comes from) is the proper solution.
-> 
-> Refusing DMA means that we will break these broken drivers. That's 
-> what David and I like. Yeah, telling users explicitly who is to 
-> blame for the problem is even better.
+> > Reported-by: Theodore Tso <tytso@mit.edu>
+> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> > ---
+> >  include/trace/ftrace.h |    4 ++++
+> >  1 files changed, 4 insertions(+), 0 deletions(-)
+> > 
+> > diff --git a/include/trace/ftrace.h b/include/trace/ftrace.h
+> > index 60c5323..6fb06bd 100644
+> > --- a/include/trace/ftrace.h
+> > +++ b/include/trace/ftrace.h
+> > @@ -62,7 +62,9 @@
+> >   *
+> >   *	field = (typeof(field))entry;
+> >   *
+> > + *	rcu_read_lock();
+> >   *	ret = trace_seq_printf(s, <TP_printk> "\n");
+> > + *	rcu_read_unlock();
+> >   *	if (!ret)
+> >   *		return TRACE_TYPE_PARTIAL_LINE;
+> >   *
+> > @@ -99,7 +101,9 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+> >  									\
+> >  	field = (typeof(field))entry;					\
+> >  									\
+> > +	rcu_read_lock();						\
+> >  	ret = trace_seq_printf(s, #call ": " print);			\
+> > +	rcu_read_unlock();						\
+> >  	if (!ret)							\
+> >  		return TRACE_TYPE_PARTIAL_LINE;				\
 
-If it means a non-working Xorg, then there might be nothing on the 
-screen to report - just a seemingly hung box and people will blame 
-the kernel. It might be better to just turn off all things IOMMU at 
-that point, but still allow things to continue.
-
-... which might break good drivers that relied on the IOMMU sorting 
-out 32-bit DMA space limitations.
-
-So it would be nice to make the failure mode somehow nicer. I.e. 
-test how this affects the nvidia driver. Is there something on the 
-screen to see? Could we print an URL to the Noveau driver perhaps 
-too?
-
-A bad solution in general is to crash/hang a significant proportion 
-of Linux boxes. That is a foot-in-own-mouth masochistic excercise 
-mostly, it creates a stigma for the IOMMU code, not for nvidia. So 
-the failure mode has to be well thought out.
+Hm, this patch adds usage for RCU primitives, but doesnt include 
+rcupdate.h.
 
 	Ingo
