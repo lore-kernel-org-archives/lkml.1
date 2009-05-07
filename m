@@ -1,244 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762149AbZEGJbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932205AbZEGJb6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762149AbZEGJbd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 05:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761981AbZEGJZj
+	id S932205AbZEGJb6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 05:31:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762051AbZEGJ0U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 05:25:39 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45108 "EHLO hera.kernel.org"
+	Thu, 7 May 2009 05:26:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:45163 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761852AbZEGJZg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 05:25:36 -0400
-Date: Thu, 7 May 2009 09:25:04 GMT
-From: tip-bot for Markus Metzger <markus.t.metzger@intel.com>
+	id S1762072AbZEGJ0S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 05:26:18 -0400
+Date: Thu, 7 May 2009 09:25:36 GMT
+From: tip-bot for Ingo Molnar <mingo@elte.hu>
 To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       markus.t.metzger@intel.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       markus.t.metzger@intel.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090403144607.088997000@intel.com>
-References: <20090403144607.088997000@intel.com>
-Subject: [tip:tracing/core] x86, ds: support Core i7
-Message-ID: <tip-017bc617657c928cb9a0c45a7a7e9f4e66695347@git.kernel.org>
-Git-Commit-ID: 017bc617657c928cb9a0c45a7a7e9f4e66695347
+Cc: linux-kernel@vger.kernel.org, jeremy@goop.org, hpa@zytor.com,
+       mingo@redhat.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, jeremy@goop.org,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49E4413F.7070700@goop.org>
+References: <49E4413F.7070700@goop.org>
+Subject: [tip:tracing/core] tracing: make the trace clocks available generally
+Message-ID: <tip-56449f437add737a1e5e1cb7e00f63ac8ead1938@git.kernel.org>
+Git-Commit-ID: 56449f437add737a1e5e1cb7e00f63ac8ead1938
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 07 May 2009 09:25:06 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 07 May 2009 09:25:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  017bc617657c928cb9a0c45a7a7e9f4e66695347
-Gitweb:     http://git.kernel.org/tip/017bc617657c928cb9a0c45a7a7e9f4e66695347
-Author:     Markus Metzger <markus.t.metzger@intel.com>
-AuthorDate: Fri, 3 Apr 2009 16:43:52 +0200
+Commit-ID:  56449f437add737a1e5e1cb7e00f63ac8ead1938
+Gitweb:     http://git.kernel.org/tip/56449f437add737a1e5e1cb7e00f63ac8ead1938
+Author:     Ingo Molnar <mingo@elte.hu>
+AuthorDate: Tue, 14 Apr 2009 11:24:36 +0200
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 7 Apr 2009 13:36:36 +0200
+CommitDate: Tue, 14 Apr 2009 18:35:13 +0200
 
-x86, ds: support Core i7
+tracing: make the trace clocks available generally
 
-Add debug store support for Core i7.
+Jeremy Fitzhardinge reported this build failure:
 
-Core i7 adds a reset value for each performance counter and a new
-PEBS record format.
+ LD	 .tmp_vmlinux1
+ arch/x86/kernel/built-in.o: In function `ds_take_timestamp':
+ git/linux/arch/x86/kernel/ds.c:1380: undefined reference to `trace_clock_global'
+ git/linux/arch/x86/kernel/ds.c:1380: undefined reference to `trace_clock_global'
 
-Signed-off-by: Markus Metzger <markus.t.metzger@intel.com>
-Cc: roland@redhat.com
-Cc: eranian@googlemail.com
-Cc: oleg@redhat.com
-Cc: juan.villacis@intel.com
-Cc: ak@linux.jf.intel.com
-LKML-Reference: <20090403144607.088997000@intel.com>
+Which is due to !CONFIG_TRACING && CONFIG_X86_DS=y.
+
+Expose the trace clock code to CONFIG_X86_DS as well.
+
+[ Unfortunately librarizing doesnt work well - ancient architectures
+  with no raw_local_irq_save() primitive break the build. ]
+
+Reported-by: Jeremy Fitzhardinge <jeremy@goop.org>
+LKML-Reference: <49E4413F.7070700@goop.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/include/asm/ds.h |   12 ++++++--
- arch/x86/kernel/ds.c      |   69 ++++++++++++++++++++++++++++++++++++++++----
- 2 files changed, 71 insertions(+), 10 deletions(-)
+ kernel/Makefile       |    1 +
+ kernel/trace/Makefile |    7 ++++++-
+ 2 files changed, 7 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/ds.h b/arch/x86/include/asm/ds.h
-index 149e520..70dac19 100644
---- a/arch/x86/include/asm/ds.h
-+++ b/arch/x86/include/asm/ds.h
-@@ -234,8 +234,12 @@ struct bts_trace {
- struct pebs_trace {
- 	struct ds_trace ds;
+diff --git a/kernel/Makefile b/kernel/Makefile
+index bab1dff..c8e1be5 100644
+--- a/kernel/Makefile
++++ b/kernel/Makefile
+@@ -92,6 +92,7 @@ obj-$(CONFIG_LATENCYTOP) += latencytop.o
+ obj-$(CONFIG_HAVE_GENERIC_DMA_COHERENT) += dma-coherent.o
+ obj-$(CONFIG_FUNCTION_TRACER) += trace/
+ obj-$(CONFIG_TRACING) += trace/
++obj-$(CONFIG_X86_DS) += trace/
+ obj-$(CONFIG_SMP) += sched_cpupri.o
+ obj-$(CONFIG_SLOW_WORK) += slow-work.o
  
--	/* the PEBS reset value */
--	unsigned long long reset_value;
-+	/* the number of valid counters in the below array */
-+	unsigned int counters;
+diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
+index 2630f51..ecc671e 100644
+--- a/kernel/trace/Makefile
++++ b/kernel/trace/Makefile
+@@ -15,11 +15,16 @@ ifdef CONFIG_TRACING_BRANCHES
+ KBUILD_CFLAGS += -DDISABLE_BRANCH_PROFILING
+ endif
+ 
++#
++# Make the trace clocks available generally: it's infrastructure
++# relied on by ptrace for example:
++#
++obj-y += trace_clock.o
 +
-+#define MAX_PEBS_COUNTERS 4
-+	/* the counter reset value */
-+	unsigned long long counter_reset[MAX_PEBS_COUNTERS];
- };
+ obj-$(CONFIG_FUNCTION_TRACER) += libftrace.o
+ obj-$(CONFIG_RING_BUFFER) += ring_buffer.o
  
- 
-@@ -270,9 +274,11 @@ extern int ds_reset_pebs(struct pebs_tracer *tracer);
-  * Returns 0 on success; -Eerrno on error
-  *
-  * tracer: the tracer handle returned from ds_request_pebs()
-+ * counter: the index of the counter
-  * value: the new counter reset value
-  */
--extern int ds_set_pebs_reset(struct pebs_tracer *tracer, u64 value);
-+extern int ds_set_pebs_reset(struct pebs_tracer *tracer,
-+			     unsigned int counter, u64 value);
- 
- /*
-  * Initialization
-diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
-index 4e05157..48bfe13 100644
---- a/arch/x86/kernel/ds.c
-+++ b/arch/x86/kernel/ds.c
-@@ -44,6 +44,9 @@ struct ds_configuration {
- 	/* The size of a BTS/PEBS record in bytes: */
- 	unsigned char		sizeof_rec[2];
- 
-+	/* The number of pebs counter reset values in the DS structure. */
-+	unsigned char		nr_counter_reset;
-+
- 	/* Control bit-masks indexed by enum ds_feature: */
- 	unsigned long		ctl[dsf_ctl_max];
- };
-@@ -51,7 +54,7 @@ static struct ds_configuration ds_cfg __read_mostly;
- 
- 
- /* Maximal size of a DS configuration: */
--#define MAX_SIZEOF_DS		(12 * 8)
-+#define MAX_SIZEOF_DS		0x80
- 
- /* Maximal size of a BTS record: */
- #define MAX_SIZEOF_BTS		(3 * 8)
-@@ -59,6 +62,12 @@ static struct ds_configuration ds_cfg __read_mostly;
- /* BTS and PEBS buffer alignment: */
- #define DS_ALIGNMENT		(1 << 3)
- 
-+/* Number of buffer pointers in DS: */
-+#define NUM_DS_PTR_FIELDS	8
-+
-+/* Size of a pebs reset value in DS: */
-+#define PEBS_RESET_FIELD_SIZE	8
-+
- /* Mask of control bits in the DS MSR register: */
- #define BTS_CONTROL				  \
- 	( ds_cfg.ctl[dsf_bts]			| \
-@@ -1164,9 +1173,12 @@ const struct pebs_trace *ds_read_pebs(struct pebs_tracer *tracer)
- 		return NULL;
- 
- 	ds_read_config(tracer->ds.context, &tracer->trace.ds, ds_pebs);
--	tracer->trace.reset_value =
--		*(u64 *)(tracer->ds.context->ds +
--			 (ds_cfg.sizeof_ptr_field * 8));
-+
-+	tracer->trace.counters = ds_cfg.nr_counter_reset;
-+	memcpy(tracer->trace.counter_reset,
-+	       tracer->ds.context->ds +
-+	       (NUM_DS_PTR_FIELDS * ds_cfg.sizeof_ptr_field),
-+	       ds_cfg.nr_counter_reset * PEBS_RESET_FIELD_SIZE);
- 
- 	return &tracer->trace;
- }
-@@ -1197,13 +1209,18 @@ int ds_reset_pebs(struct pebs_tracer *tracer)
- 	return 0;
- }
- 
--int ds_set_pebs_reset(struct pebs_tracer *tracer, u64 value)
-+int ds_set_pebs_reset(struct pebs_tracer *tracer,
-+		      unsigned int counter, u64 value)
- {
- 	if (!tracer)
- 		return -EINVAL;
- 
-+	if (ds_cfg.nr_counter_reset < counter)
-+		return -EINVAL;
-+
- 	*(u64 *)(tracer->ds.context->ds +
--		 (ds_cfg.sizeof_ptr_field * 8)) = value;
-+		 (NUM_DS_PTR_FIELDS * ds_cfg.sizeof_ptr_field) +
-+		 (counter * PEBS_RESET_FIELD_SIZE)) = value;
- 
- 	return 0;
- }
-@@ -1213,16 +1230,26 @@ static const struct ds_configuration ds_cfg_netburst = {
- 	.ctl[dsf_bts]		= (1 << 2) | (1 << 3),
- 	.ctl[dsf_bts_kernel]	= (1 << 5),
- 	.ctl[dsf_bts_user]	= (1 << 6),
-+	.nr_counter_reset	= 1,
- };
- static const struct ds_configuration ds_cfg_pentium_m = {
- 	.name = "Pentium M",
- 	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
-+	.nr_counter_reset	= 1,
- };
- static const struct ds_configuration ds_cfg_core2_atom = {
- 	.name = "Core 2/Atom",
- 	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
- 	.ctl[dsf_bts_kernel]	= (1 << 9),
- 	.ctl[dsf_bts_user]	= (1 << 10),
-+	.nr_counter_reset	= 1,
-+};
-+static const struct ds_configuration ds_cfg_core_i7 = {
-+	.name = "Core i7",
-+	.ctl[dsf_bts]		= (1 << 6) | (1 << 7),
-+	.ctl[dsf_bts_kernel]	= (1 << 9),
-+	.ctl[dsf_bts_user]	= (1 << 10),
-+	.nr_counter_reset	= 4,
- };
- 
- static void
-@@ -1239,6 +1266,32 @@ ds_configure(const struct ds_configuration *cfg,
- 	nr_pebs_fields = 18;
- #endif
- 
-+	/*
-+	 * Starting with version 2, architectural performance
-+	 * monitoring supports a format specifier.
-+	 */
-+	if ((cpuid_eax(0xa) & 0xff) > 1) {
-+		unsigned long perf_capabilities, format;
-+
-+		rdmsrl(MSR_IA32_PERF_CAPABILITIES, perf_capabilities);
-+
-+		format = (perf_capabilities >> 8) & 0xf;
-+
-+		switch (format) {
-+		case 0:
-+			nr_pebs_fields = 18;
-+			break;
-+		case 1:
-+			nr_pebs_fields = 22;
-+			break;
-+		default:
-+			printk(KERN_INFO
-+			       "[ds] unknown PEBS format: %lu\n", format);
-+			nr_pebs_fields = 0;
-+			break;
-+		}
-+	}
-+
- 	memset(&ds_cfg, 0, sizeof(ds_cfg));
- 	ds_cfg = *cfg;
- 
-@@ -1262,7 +1315,7 @@ ds_configure(const struct ds_configuration *cfg,
- 	printk("bts/pebs record: %u/%u bytes\n",
- 	       ds_cfg.sizeof_rec[ds_bts], ds_cfg.sizeof_rec[ds_pebs]);
- 
--	WARN_ON_ONCE(MAX_SIZEOF_DS < (12 * ds_cfg.sizeof_ptr_field));
-+	WARN_ON_ONCE(MAX_PEBS_COUNTERS < ds_cfg.nr_counter_reset);
- }
- 
- void __cpuinit ds_init_intel(struct cpuinfo_x86 *c)
-@@ -1284,6 +1337,8 @@ void __cpuinit ds_init_intel(struct cpuinfo_x86 *c)
- 			ds_configure(&ds_cfg_core2_atom, c);
- 			break;
- 		case 0x1a: /* Core i7 */
-+			ds_configure(&ds_cfg_core_i7, c);
-+			break;
- 		default:
- 			/* Sorry, don't know about them. */
- 			break;
+ obj-$(CONFIG_TRACING) += trace.o
+-obj-$(CONFIG_TRACING) += trace_clock.o
+ obj-$(CONFIG_TRACING) += trace_output.o
+ obj-$(CONFIG_TRACING) += trace_stat.o
+ obj-$(CONFIG_TRACING) += trace_printk.o
