@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755487AbZEGA6Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760958AbZEGBAA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755487AbZEGA6Y (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 20:58:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbZEGA6P
+	id S1760958AbZEGBAA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 21:00:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754057AbZEGA7w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 20:58:15 -0400
-Received: from mail.gmx.net ([213.165.64.20]:57337 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1753386AbZEGA6O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 20:58:14 -0400
-X-Authenticated: #1587495
-X-Provags-ID: V01U2FsdGVkX1/z57NZvYTzE6gHpo0gI++eEIQ5eEDFxQGucd3FY0
-	QeaZffgANHUcnW
-From: "Stefan Lippers-Hollmann" <s.L-H@gmx.de>
-To: Greg KH <gregkh@suse.de>
-Subject: Re: [patch 00/58] 2.6.29.3-stable review
-Date: Thu, 7 May 2009 02:58:10 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.29-2.slh.6-sidux-amd64; KDE/4.2.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, stable@kernel.org
-References: <20090506215017.GA21981@kroah.com>
-In-Reply-To: <20090506215017.GA21981@kroah.com>
+	Wed, 6 May 2009 20:59:52 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:56102 "EHLO e9.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753795AbZEGA7v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 6 May 2009 20:59:51 -0400
+Date: Wed, 6 May 2009 17:36:03 -0700
+From: Matt Helsley <matthltc@us.ibm.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [linux-pm] [RFC][PATCH 1/5] PM/Freezer: Disable OOM killer
+	whentasks are frozen
+Message-ID: <20090507003603.GD17680@us.ibm.com>
+References: <200905070040.08561.rjw@sisk.pl> <200905070041.04787.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905070258.13514.s.L-H@gmx.de>
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.6
+In-Reply-To: <200905070041.04787.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Thu, May 07, 2009 at 12:41:04AM +0200, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> The OOM killer is not really going to work while tasks are frozen, so
+> we can just give up calling it in that case.
+> 
+> This will allow us to safely use memory allocations for decreasing
+> the number of saveable pages in the hibernation core code instead of
+> using any artificial memory shriking mechanisms for this purpose.
+> 
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 
-On Mittwoch, 6. Mai 2009, Greg KH wrote:
-[...]
-> The whole patch series can be found in one patch at:
-> 	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.29.3-rc1.gz
 
-The actual patch seems to be missing, is there an issue with the mirroring?
+> ---
+>  include/linux/freezer.h |    2 ++
+>  kernel/power/process.c  |   12 ++++++++++++
+>  mm/page_alloc.c         |    5 +++++
+>  3 files changed, 19 insertions(+)
+> 
+> Index: linux-2.6/kernel/power/process.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/process.c
+> +++ linux-2.6/kernel/power/process.c
+> @@ -19,6 +19,8 @@
+>   */
+>  #define TIMEOUT	(20 * HZ)
+> 
+> +static bool tasks_frozen;
+> +
+>  static inline int freezeable(struct task_struct * p)
+>  {
+>  	if ((p == current) ||
+> @@ -120,6 +122,10 @@ int freeze_processes(void)
+>   Exit:
+>  	BUG_ON(in_atomic());
+>  	printk("\n");
+> +
+> +	if (!error)
+> +		tasks_frozen = true;
+> +
 
-$ LANG= wget kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.29.3-rc1.gz
---2009-05-07 00:32:03--  http://kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.29.3-rc1.gz
-Resolving kernel.org... 149.20.20.133, 204.152.191.37
-Connecting to kernel.org|149.20.20.133|:80... connected.
-HTTP request sent, awaiting response... 404 Not Found
-2009-05-07 00:32:03 ERROR 404: Not Found.
+It's not really about whether some tasks are frozen -- that can 
+happen using the cgroup freezer too. The flag really indicates if
+all killable tasks are frozen. That can't happen using the cgroup
+freezer since the root cgroup can't be frozen. So I think some name changes 
+are in order but otherwise the patch looks fine.
 
-Regards
-	Stefan Lippers-Hollmann
+Cheers,
+	-Matt Helsley
