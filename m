@@ -1,48 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759187AbZEGAR7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759993AbZEGASX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759187AbZEGAR7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 6 May 2009 20:17:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbZEGARu
+	id S1759993AbZEGASX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 6 May 2009 20:18:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758953AbZEGARx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 6 May 2009 20:17:50 -0400
-Received: from rv-out-0506.google.com ([209.85.198.236]:57057 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753358AbZEGARu (ORCPT
+	Wed, 6 May 2009 20:17:53 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:8768 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753134AbZEGARw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 6 May 2009 20:17:50 -0400
+	Wed, 6 May 2009 20:17:52 -0400
 From: Kevin Hilman <khilman@deeprootsystems.com>
 To: linux-kernel@vger.kernel.org
 Cc: linux-pm@lists.linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        Thomas Gleixner <tglx@linutronix.de>,
        Kevin Hilman <khilman@deeprootsystems.com>
-Subject: [PATCH] genirq: update irq_chip struct comment for irq_chip->disable hook
-Date: Wed,  6 May 2009 17:17:47 -0700
-Message-Id: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com>
+Subject: [PATCH] genirq: ensure IRQs are lazy disabled before suspend
+Date: Wed,  6 May 2009 17:17:48 -0700
+Message-Id: <1241655468-5750-2-git-send-email-khilman@deeprootsystems.com>
 X-Mailer: git-send-email 1.6.2.2
+In-Reply-To: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com>
+References: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The irq_chip disable hook no longer defaults to a irq_chip->unmask.
+In commit 76d2160147f43f982dfe881404cfde9fd0a9da21, the default
+behavior of disable_irq() was changed to delay the disable until it is
+next handled.
+
+However, this leaves open the possibility that the system can go into
+suspend with an interrupt enabled.  For example, if a driver calls
+disable_irq() in its suspend_hook (for example, to prevent that device
+IRQ from causing a system wakeup) there's now a possibility that the
+system is suspended before the lazy disable happens.
+
+The result is an unwanted wakeup from suspend if the IRQ is capable of
+waking the system (common on embedded SoCs.)
+
+This patch ensures that the lazy disable is done, and masked by
+the irq_chip before the system goes into suspend.
+
+Note that even though __disable_irq() also calls irq_chip->disable, it
+is quite common for the irq_chip not to provide a disable hook in
+which case the IRQ is never masked/disabled in hardware before going
+into suspend.
 
 Signed-off-by: Kevin Hilman <khilman@deeprootsystems.com>
 ---
- include/linux/irq.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ kernel/irq/manage.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-diff --git a/include/linux/irq.h b/include/linux/irq.h
-index b7cbeed..3674046 100644
---- a/include/linux/irq.h
-+++ b/include/linux/irq.h
-@@ -88,7 +88,7 @@ struct msi_desc;
-  * @startup:		start up the interrupt (defaults to ->enable if NULL)
-  * @shutdown:		shut down the interrupt (defaults to ->disable if NULL)
-  * @enable:		enable the interrupt (defaults to chip->unmask if NULL)
-- * @disable:		disable the interrupt (defaults to chip->mask if NULL)
-+ * @disable:		disable the interrupt
-  * @ack:		start of a new interrupt
-  * @mask:		mask an interrupt source
-  * @mask_ack:		ack and mask an interrupt source
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 2734eca..5d2cc1c 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -190,6 +190,11 @@ void __disable_irq(struct irq_desc *desc, unsigned int irq, bool suspend)
+ 		if (!desc->action || (desc->action->flags & IRQF_TIMER))
+ 			return;
+ 		desc->status |= IRQ_SUSPENDED;
++
++		/* Lazy disable: handles case where lazy disable in
++		 * handler doesn't happen before suspend. */
++		if (desc->status & IRQ_DISABLED)
++			desc->chip->mask(irq);
+ 	}
+ 
+ 	if (!desc->depth++) {
 -- 
 1.6.2.2
 
