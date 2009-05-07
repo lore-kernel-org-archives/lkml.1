@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759384AbZEGQh7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760396AbZEGQnk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759384AbZEGQh7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 12:37:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752832AbZEGQhu
+	id S1760396AbZEGQnk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 12:43:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZEGQnb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 12:37:50 -0400
-Received: from smtp-outbound-2.vmware.com ([65.115.85.73]:46434 "EHLO
-	smtp-outbound-2.vmware.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754130AbZEGQht (ORCPT
+	Thu, 7 May 2009 12:43:31 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:45113 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752299AbZEGQna (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 12:37:49 -0400
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-From: Alok Kataria <akataria@vmware.com>
-Reply-To: akataria@vmware.com
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Christoph Lameter <cl@linux.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090507161440.5b9c067d@lxorguk.ukuu.org.uk>
-References: <1241462661.412.8.camel@alok-dev1>	<4A00ADDE.9000908@zytor.com>
-	 <1241560625.8665.17.camel@alok-dev1>
-	 <alpine.DEB.1.10.0905071010170.24528@qirst.com>
-	 <20090507161440.5b9c067d@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Organization: VMware INC.
-Date: Thu, 07 May 2009 09:37:50 -0700
-Message-Id: <1241714270.32495.6.camel@alok-dev1>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
-Content-Transfer-Encoding: 7bit
+	Thu, 7 May 2009 12:43:30 -0400
+Date: Thu, 7 May 2009 12:32:40 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Lee Schermerhorn <Lee.Schermerhorn@hp.com>
+cc: Peter Zijlstra <peterz@infradead.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class
+ citizen
+In-Reply-To: <1241712000.18617.7.camel@lts-notebook>
+Message-ID: <alpine.DEB.1.10.0905071231090.10171@qirst.com>
+References: <20090430072057.GA4663@eskimo.com>  <20090430174536.d0f438dd.akpm@linux-foundation.org>  <20090430205936.0f8b29fc@riellaptop.surriel.com>  <20090430181340.6f07421d.akpm@linux-foundation.org>  <20090430215034.4748e615@riellaptop.surriel.com> 
+ <20090430195439.e02edc26.akpm@linux-foundation.org>  <49FB01C1.6050204@redhat.com>  <20090501123541.7983a8ae.akpm@linux-foundation.org>  <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins>  <20090507121101.GB20934@localhost> 
+ <alpine.DEB.1.10.0905070935530.24528@qirst.com>  <1241705702.11251.156.camel@twins>  <alpine.DEB.1.10.0905071016410.24528@qirst.com> <1241712000.18617.7.camel@lts-notebook>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 7 May 2009, Lee Schermerhorn wrote:
 
-On Thu, 2009-05-07 at 08:14 -0700, Alan Cox wrote:
-> On Thu, 7 May 2009 10:13:52 -0400 (EDT)
-> Christoph Lameter <cl@linux.com> wrote:
-> 
-> > I think we need to reduce the general tick frequency to be as low as
-> > possible. With high resolution timers the tick frequency is just the
-> > frequency with which the timer interrupt disturbs a running application.
-> > 
-> > Are there any benefits remaining from frequent timer interrupts? I would
-> > think that 60 HZ would be sufficient.
-> 
-> 50 works for various european video apps, 60 breaks, 60 works for various
-> US video apps, 50 breaks. Now that may have changed with all the select
-> stuff being hrtimer based (which I'd missed).
+> > Another possibility may be to put the exec pages on the mlock list
+> > and scan the list if under extreme duress?
+>
+> Actually, you don't need to go thru the overhead of mucking with the
+> PG_mlocked flag which incurs the rmap walk on unlock, etc.  If one sets
+> the the AS_UNEVICTABLE flag, the pages will be shuffled off the the
+> unevictable LRU iff we ever try to reclaim them.  And, we do have the
+> function to scan the unevictable lru to "rescue" pages in a given
+> mapping should we want to bring them back under extreme load.  We'd need
+> to remove the AS_UNEVICTABLE flag, first.  This is how
+> SHM_LOCK/SHM_UNLOCK works.
 
-I would have assumed whatever timeout mechanism the video apps use
-should have already been converted to hrtimers ? Or are you saying that
-they use select stuff which is already hrtimer based and so there
-shouldn't be any problem now for video apps ? 
+We need some way to control this. If there would be a way to simply switch
+off eviction of exec pages (via /proc/sys/vm/never_reclaim_exec_pages or
+so) I'd use it.
 
-> 
-> The tick also still appears to be involved in ntp and in cpu stats where
-> a 50Hz tick would mean only 25Hz accuracy on CPU usage etc
-> 
 
