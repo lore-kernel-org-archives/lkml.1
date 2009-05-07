@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755818AbZEHAbt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932190AbZEHAcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755818AbZEHAbt (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:31:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757042AbZEHAKw
+	id S932190AbZEHAcV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759932AbZEHAKx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:52 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52725
+	Thu, 7 May 2009 20:10:53 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52714
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755972AbZEHAKA (ORCPT
+	with ESMTP id S1755866AbZEHAKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 20:10:00 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -16,44 +16,66 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 7/8] xen/i386: reserve Xen pagetables
-Date: Thu,  7 May 2009 13:25:01 -0700
-Message-Id: <1241727902-3176-8-git-send-email-jeremy@goop.org>
+Subject: [PATCH 11/18] xen: use acpi_get_override_irq() to get triggering for legacy irqs
+Date: Thu,  7 May 2009 14:14:36 -0700
+Message-Id: <1241730883-4917-12-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241727902-3176-1-git-send-email-jeremy@goop.org>
-References: <1241727902-3176-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241730883-4917-1-git-send-email-jeremy@goop.org>
+References: <1241730883-4917-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-The Xen pagetables are no longer implicitly reserved as part of the other
-i386_start_kernel reservations, so make sure we explicitly reserve them.
-This prevents them from being released into the general kernel free page
-pool and reused.
+Impact: compatibility with legacy/ISA hardware
+
+We need to set up proper IO apic entries for legacy irqs, which are
+not normally configured by either normal acpi interrupt routing or
+PNP.
+
+This also generalizes the acpi interrupt setup, so we can remove it
+as a special case.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/mmu.c |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ arch/x86/xen/pci.c |   24 ++++++++++--------------
+ 1 files changed, 10 insertions(+), 14 deletions(-)
 
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 0e13477..801d042 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1799,6 +1799,11 @@ __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd,
+diff --git a/arch/x86/xen/pci.c b/arch/x86/xen/pci.c
+index e88f85e..f55532d 100644
+--- a/arch/x86/xen/pci.c
++++ b/arch/x86/xen/pci.c
+@@ -64,19 +64,15 @@ void __init xen_setup_pirqs(void)
+ {
+ 	int irq;
  
- 	pin_pagetable_pfn(MMUEXT_PIN_L3_TABLE, PFN_DOWN(__pa(swapper_pg_dir)));
- 
-+	reserve_early(__pa(xen_start_info->pt_base),
-+		      __pa(xen_start_info->pt_base +
-+			   xen_start_info->nr_pt_frames * PAGE_SIZE),
-+		      "XEN PAGETABLES");
+-#ifdef CONFIG_ACPI
+-	/*
+-	 * Set up acpi interrupt in acpi_gbl_FADT.sci_interrupt.
+-	 */
+-	if (acpi_gbl_FADT.sci_interrupt > 0) {
+-		irq = xen_allocate_pirq(acpi_gbl_FADT.sci_interrupt);
+-
+-		printk(KERN_INFO "xen: allocated irq %d for acpi %d\n",
+-		       irq, acpi_gbl_FADT.sci_interrupt);
+-	}
+-#endif
+-
+ 	/* Pre-allocate legacy irqs */
+-	for (irq=0; irq < NR_IRQS_LEGACY; irq++)
+-		xen_allocate_pirq(irq);
++	for (irq=0; irq < NR_IRQS_LEGACY; irq++) {
++		int trigger, polarity;
 +
- 	return swapper_pg_dir;
++		if (acpi_get_override_irq(irq, &trigger, &polarity) == -1)
++			continue;
++
++		xen_register_gsi(irq,
++			trigger ? ACPI_LEVEL_SENSITIVE : ACPI_EDGE_SENSITIVE,
++			polarity ? ACPI_ACTIVE_LOW : ACPI_ACTIVE_HIGH);
++	}
  }
- #endif	/* CONFIG_X86_64 */
 -- 
 1.6.0.6
 
