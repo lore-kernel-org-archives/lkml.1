@@ -1,84 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756580AbZEGKNT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932160AbZEGKRg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756580AbZEGKNT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 06:13:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbZEGKND
+	id S932160AbZEGKRg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 06:17:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756809AbZEGKR0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 06:13:03 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43672 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755231AbZEGKNA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 06:13:00 -0400
-Date: Thu, 7 May 2009 12:11:29 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Nicholas Miell <nmiell@comcast.net>
-Cc: Markus Gutschke =?utf-8?B?KOmhp+Wtn+WLpCk=?= <markus@google.com>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, x86@kernel.org,
-       linux-kernel@vger.kernel.org, stable@kernel.org,
-       linux-mips@linux-mips.org, sparclinux@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] x86-64: seccomp: fix 32/64 syscall hole
-Message-ID: <20090507101129.GB5978@elte.hu>
-References: <20090228072554.CFEA6FC3DA@magilla.sf.frob.com> <alpine.LFD.2.00.0902280916470.3111@localhost.localdomain> <904b25810905061146ged374f2se0afd24e9e3c1f06@mail.gmail.com> <20090506212913.GC4861@elte.hu> <904b25810905061446m73c42040nfff47c9b8950bcfa@mail.gmail.com> <20090506215450.GA9537@elte.hu> <904b25810905061508n6d9cb8dbg71de5b1e0332ede7@mail.gmail.com> <20090506221319.GA11493@elte.hu> <904b25810905061521v62b3ddd6l14deb614d203385a@mail.gmail.com> <1241670237.11500.7.camel@entropy>
+	Thu, 7 May 2009 06:17:26 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:56569 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756580AbZEGKRY convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 06:17:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=NIm7VuhPF8XopgeHZ2X2X8byV+8mVEWtfclsuM4fCiAqcvUkT4pGn8V2yA1NzzKr8p
+         /Q5jx33+A2SUGerCsua/NH0WtjUvDCqwETw7VX++4XwpzM2AkrwXZgFHZbQZvj6x4Qy6
+         ujFfA8PPr3COZ6VRqvHaBMEb7Ln6ezYlsC9zk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1241670237.11500.7.camel@entropy>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <4d34a0a70905070303r55c2c681yf58680de2f3d4a9f@mail.gmail.com>
+References: <4A012C64.1020101@samsung.com>
+	 <5d5443650905060638l52b3c17dle0d138b689a23252@mail.gmail.com>
+	 <4d34a0a70905070303r55c2c681yf58680de2f3d4a9f@mail.gmail.com>
+Date: Thu, 7 May 2009 15:47:24 +0530
+Message-ID: <5d5443650905070317pa962440kf6d416f0272decc5@mail.gmail.com>
+Subject: Re: Input: add MAX7359 key switch controller driver
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Kim Kyuwon <chammoru@gmail.com>
+Cc: Kim Kyuwon <q1.kim@samsung.com>, LKML <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>,
+       Marek Szyprowski <m.szyprowski@samsung.com>, linux-i2c@vger.kernel.org,
+       Jean Delvare <khali@linux-fr.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi Kim,
 
-* Nicholas Miell <nmiell@comcast.net> wrote:
+>>
+>> Could you please restrict the commit text line to 80/72 columns? It
+>> will look good.
+>
+> Is this restriction for commit text mandatory? It seems like I got an
+> email from Andrew Morton that my patch was wordwraped even commit
+> text.
 
-> On Wed, 2009-05-06 at 15:21 -0700, Markus Gutschke (é¡§å­Ÿå‹¤) wrote:
-> > On Wed, May 6, 2009 at 15:13, Ingo Molnar <mingo@elte.hu> wrote:
-> > > doing a (per arch) bitmap of harmless syscalls and replacing the
-> > > mode1_syscalls[] check with that in kernel/seccomp.c would be a
-> > > pretty reasonable extension. (.config controllable perhaps, for
-> > > old-style-seccomp)
-> > >
-> > > It would probably be faster than the current loop over
-> > > mode1_syscalls[] as well.
-> > 
-> > This would be a great option to improve performance of our sandbox. I
-> > can detect the availability of the new kernel API dynamically, and
-> > then not intercept the bulk of the system calls. This would allow the
-> > sandbox to work both with existing and with newer kernels.
-> > 
-> > We'll post a kernel patch for discussion in the next few days,
-> > 
-> 
-> I suspect the correct thing to do would be to leave seccomp mode 1 
-> alone and introduce a mode 2 with a less restricted set of system 
-> calls -- the interface was designed to be extended in this way, 
-> after all.
+This helps reader of the commit text to not give much stretch on his eyes :)
 
-Yes, that is what i alluded to above via the '.config controllable' 
-aspect.
+>>
+>>> +
+>>> +static int __devinit max7359_probe(struct i2c_client *client,
+>>> +                                       const struct i2c_device_id *id)
+>>
+>> You may want to remove __devinit as it is i2c client driver . I have
+>> added linux-i2c for i2c specific review.
+>
+> Actually I don't want to remove it :), Is there any reason why you think so?
 
-Mode 2 could be implemented like this: extend prctl_set_seccomp() 
-with a bitmap pointer, and copy it to a per task seccomp context 
-structure.
+Sorry I have mistaken it as __init. This is fine.
 
-a bitmap for 300 syscalls takes only about 40 bytes.
+>
+>>> +static int max7359_suspend(struct i2c_client *client, pm_message_t mesg)
+>>> +{
+>>> +       /* If no keys are pressed, enter sleep mode for 8192 ms */
+>>> +       max7359_write_reg(client, MAX7359_REG_SLEEP, 0x01);
+>>> +
+>>> +       return 0;
+>>> +}
+>>> +
+>>> +static int max7359_resume(struct i2c_client *client)
+>>> +{
+>>> +       /* Restore the default setting (autosleep for 256 ms) */
+>>> +       max7359_write_reg(client, MAX7359_REG_SLEEP, 0x07);
+>>> +
+>>> +       return 0;
+>>> +}
+>>
+>> Protect these two function with #ifdef CONFIG_PM please.
+>
+> This is what I really wanted to ask. I'm trying not to use '#ifdef'.
+> By the way, why most of drivers use protect suspend/resume functions
+> with #ifdef? Just for saving code size?
 
-Please take care to implement nesting properly: if a seccomp context 
-does a seccomp call (which mode 2 could allow), then the resulting 
-bitmap should be the logical-AND of the parent and child bitmaps. 
-There's no reason why seccomp couldnt be used in hiearachy of 
-sandboxes, in a gradually less permissive fashion.
+suspend and resume is only important if the user of this driver has
+CONFIG_PM enabled in it's
+defconfig, right? So, if CONFIG_PM is not defined suspend/resume
+should equal to NULL.
 
-	Ingo
+>>
+>>
+>>> +};
+>>> +
+>>> +
+>>> +MODULE_AUTHOR("Kim Kyuwon <q1.kim@samsung.com>");
+>>> +MODULE_DESCRIPTION("MAX7359 Key Switch Controller Driver");
+>>> +MODULE_LICENSE("GPL v2");
+>>
+>> MODULE_ALIAS ??
+>
+> In 'include/linux/module.h'
+>
+>  96 /* For userspace: you can also call me... */
+>  97 #define MODULE_ALIAS(_alias) MODULE_INFO(alias, _alias)
+>
+> From comment above, I think MODULE_ALIAS is optional. Do you still
+> think MODULE_ALIAS needs?
+>
+
+Yes, it is not __must__.
+
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
