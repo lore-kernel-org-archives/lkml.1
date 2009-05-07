@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764570AbZEHAeQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764537AbZEHAdu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764570AbZEHAeQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:34:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755276AbZEHAK5
+	id S1764537AbZEHAdu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:33:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757677AbZEHAK4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:57 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52719
+	Thu, 7 May 2009 20:10:56 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52720
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755193AbZEHAJ6 (ORCPT
+	with ESMTP id S1755276AbZEHAJ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 20:09:58 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -15,239 +15,102 @@ To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Juan Quintela <quintela@redhat.com>
-Subject: [PATCH 01/16] xen dom0: Make hvc_xen console work for dom0.
-Date: Thu,  7 May 2009 14:10:38 -0700
-Message-Id: <1241730653-4688-2-git-send-email-jeremy@goop.org>
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 08/11] xen/swiotlb: use dma_alloc_from_coherent to get device coherent memory
+Date: Thu,  7 May 2009 14:45:34 -0700
+Message-Id: <1241732737-7669-9-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241730653-4688-1-git-send-email-jeremy@goop.org>
-References: <1241730653-4688-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241732737-7669-1-git-send-email-jeremy@goop.org>
+References: <1241732737-7669-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: Add Xen dom0 console
+From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-Use the console hypercalls for dom0 console.
+Impact: cleanup
+
+This avoids the previous hack of replicating struct dma_coherent_mem.
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Signed-off-by: Juan Quintela <quintela@redhat.com>
 ---
- drivers/char/hvc_xen.c |  101 ++++++++++++++++++++++++++++++++----------------
- drivers/xen/events.c   |    2 +-
- include/xen/events.h   |    2 +
- 3 files changed, 70 insertions(+), 35 deletions(-)
+ drivers/pci/xen-iommu.c |   39 ++++++++-------------------------------
+ 1 files changed, 8 insertions(+), 31 deletions(-)
 
-diff --git a/drivers/char/hvc_xen.c b/drivers/char/hvc_xen.c
-index eba999f..81d9186 100644
---- a/drivers/char/hvc_xen.c
-+++ b/drivers/char/hvc_xen.c
-@@ -55,7 +55,7 @@ static inline void notify_daemon(void)
- 	notify_remote_via_evtchn(xen_start_info->console.domU.evtchn);
- }
+diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
+index e7a22f1..32a8b49 100644
+--- a/drivers/pci/xen-iommu.c
++++ b/drivers/pci/xen-iommu.c
+@@ -34,14 +34,6 @@ do {							\
+ 	(unsigned long long)addr + size);		\
+ } while (0)
  
--static int write_console(uint32_t vtermno, const char *data, int len)
-+static int domU_write_console(uint32_t vtermno, const char *data, int len)
- {
- 	struct xencons_interface *intf = xencons_interface();
- 	XENCONS_RING_IDX cons, prod;
-@@ -76,7 +76,7 @@ static int write_console(uint32_t vtermno, const char *data, int len)
- 	return sent;
- }
- 
--static int read_console(uint32_t vtermno, char *buf, int len)
-+static int domU_read_console(uint32_t vtermno, char *buf, int len)
- {
- 	struct xencons_interface *intf = xencons_interface();
- 	XENCONS_RING_IDX cons, prod;
-@@ -97,28 +97,63 @@ static int read_console(uint32_t vtermno, char *buf, int len)
- 	return recv;
- }
- 
--static struct hv_ops hvc_ops = {
--	.get_chars = read_console,
--	.put_chars = write_console,
-+static struct hv_ops domU_hvc_ops = {
-+	.get_chars = domU_read_console,
-+	.put_chars = domU_write_console,
- 	.notifier_add = notifier_add_irq,
- 	.notifier_del = notifier_del_irq,
- 	.notifier_hangup = notifier_hangup_irq,
- };
- 
--static int __init xen_init(void)
-+static int dom0_read_console(uint32_t vtermno, char *buf, int len)
-+{
-+	return HYPERVISOR_console_io(CONSOLEIO_read, len, buf);
-+}
-+
-+/*
-+ * Either for a dom0 to write to the system console, or a domU with a
-+ * debug version of Xen
-+ */
-+static int dom0_write_console(uint32_t vtermno, const char *str, int len)
-+{
-+	int rc = HYPERVISOR_console_io(CONSOLEIO_write, len, (char *)str);
-+	if (rc < 0)
-+		return 0;
-+
-+	return len;
-+}
-+
-+static struct hv_ops dom0_hvc_ops = {
-+	.get_chars = dom0_read_console,
-+	.put_chars = dom0_write_console,
-+	.notifier_add = notifier_add_irq,
-+	.notifier_del = notifier_del_irq,
-+	.notifier_hangup = notifier_hangup_irq,
-+};
-+
-+static int __init xen_hvc_init(void)
- {
- 	struct hvc_struct *hp;
-+	struct hv_ops *ops;
- 
--	if (!xen_pv_domain() ||
--	    xen_initial_domain() ||
--	    !xen_start_info->console.domU.evtchn)
--		return -ENODEV;
-+	if (!xen_pv_domain())
-+ 		return -ENODEV;
-+
-+	if (xen_initial_domain()) {
-+		ops = &dom0_hvc_ops;
-+		xencons_irq = bind_virq_to_irq(VIRQ_CONSOLE, 0);
-+	} else {
-+		if (!xen_start_info->console.domU.evtchn)
-+			return -ENODEV;
-+
-+		ops = &domU_hvc_ops;
-+		xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
-+	}
- 
--	xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
- 	if (xencons_irq < 0)
- 		xencons_irq = 0; /* NO_IRQ */
- 
--	hp = hvc_alloc(HVC_COOKIE, xencons_irq, &hvc_ops, 256);
-+	hp = hvc_alloc(HVC_COOKIE, xencons_irq, ops, 256);
- 	if (IS_ERR(hp))
- 		return PTR_ERR(hp);
- 
-@@ -135,7 +170,7 @@ void xen_console_resume(void)
- 		rebind_evtchn_irq(xen_start_info->console.domU.evtchn, xencons_irq);
- }
- 
--static void __exit xen_fini(void)
-+static void __exit xen_hvc_fini(void)
- {
- 	if (hvc)
- 		hvc_remove(hvc);
-@@ -143,29 +178,24 @@ static void __exit xen_fini(void)
- 
- static int xen_cons_init(void)
- {
-+	struct hv_ops *ops;
-+
- 	if (!xen_pv_domain())
- 		return 0;
- 
--	hvc_instantiate(HVC_COOKIE, 0, &hvc_ops);
-+	ops = &domU_hvc_ops;
-+	if (xen_initial_domain())
-+		ops = &dom0_hvc_ops;
-+
-+	hvc_instantiate(HVC_COOKIE, 0, ops);
-+
- 	return 0;
- }
- 
--module_init(xen_init);
--module_exit(xen_fini);
-+module_init(xen_hvc_init);
-+module_exit(xen_hvc_fini);
- console_initcall(xen_cons_init);
- 
--static void raw_console_write(const char *str, int len)
--{
--	while(len > 0) {
--		int rc = HYPERVISOR_console_io(CONSOLEIO_write, len, (char *)str);
--		if (rc <= 0)
--			break;
+-struct dma_coherent_mem {
+-	void		*virt_base;
+-	u32		device_base;
+-	int		size;
+-	int		flags;
+-	unsigned long	*bitmap;
+-};
 -
--		str += rc;
--		len -= rc;
+ static inline int address_needs_mapping(struct device *hwdev,
+ 						dma_addr_t addr)
+ {
+@@ -151,7 +143,6 @@ static void *xen_alloc_coherent(struct device *dev, size_t size,
+ 				dma_addr_t *dma_handle, gfp_t gfp)
+ {
+ 	void *ret;
+-	struct dma_coherent_mem *mem = dev ? dev->dma_mem : NULL;
+ 	unsigned int order = get_order(size);
+ 	unsigned long vstart;
+ 	u64 mask;
+@@ -159,18 +150,8 @@ static void *xen_alloc_coherent(struct device *dev, size_t size,
+ 	/* ignore region specifiers */
+ 	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM);
+ 
+-	if (mem) {
+-		int page = bitmap_find_free_region(mem->bitmap, mem->size,
+-						     order);
+-		if (page >= 0) {
+-			*dma_handle = mem->device_base + (page << PAGE_SHIFT);
+-			ret = mem->virt_base + (page << PAGE_SHIFT);
+-			memset(ret, 0, size);
+-			return ret;
+-		}
+-		if (mem->flags & DMA_MEMORY_EXCLUSIVE)
+-			return NULL;
 -	}
--}
--
- #ifdef CONFIG_EARLY_PRINTK
- static void xenboot_write_console(struct console *console, const char *string,
- 				  unsigned len)
-@@ -173,19 +203,22 @@ static void xenboot_write_console(struct console *console, const char *string,
- 	unsigned int linelen, off = 0;
- 	const char *pos;
++	if (dma_alloc_from_coherent(dev, size, dma_handle, &ret))
++		return ret;
  
--	raw_console_write(string, len);
-+	dom0_write_console(0, string, len);
-+
-+	if (xen_initial_domain())
+ 	if (dev == NULL || (dev->coherent_dma_mask < 0xffffffff))
+ 		gfp |= GFP_DMA;
+@@ -196,19 +177,15 @@ static void *xen_alloc_coherent(struct device *dev, size_t size,
+ }
+ 
+ static void xen_free_coherent(struct device *dev, size_t size,
+-			 void *vaddr, dma_addr_t dma_addr)
++			      void *vaddr, dma_addr_t dma_addr)
+ {
+-	struct dma_coherent_mem *mem = dev ? dev->dma_mem : NULL;
+ 	int order = get_order(size);
+ 
+-	if (mem && vaddr >= mem->virt_base &&
+-	    vaddr < (mem->virt_base + (mem->size << PAGE_SHIFT))) {
+-		int page = (vaddr - mem->virt_base) >> PAGE_SHIFT;
+-		bitmap_release_region(mem->bitmap, page, order);
+-	} else {
+-		xen_destroy_contiguous_region((unsigned long)vaddr, order);
+-		free_pages((unsigned long)vaddr, order);
+-	}
++	if (dma_release_from_coherent(dev, order, vaddr))
 +		return;
- 
--	write_console(0, "(early) ", 8);
-+	domU_write_console(0, "(early) ", 8);
- 	while (off < len && NULL != (pos = strchr(string+off, '\n'))) {
- 		linelen = pos-string+off;
- 		if (off + linelen > len)
- 			break;
--		write_console(0, string+off, linelen);
--		write_console(0, "\r\n", 2);
-+		domU_write_console(0, string+off, linelen);
-+		domU_write_console(0, "\r\n", 2);
- 		off += linelen + 1;
- 	}
- 	if (off < len)
--		write_console(0, string+off, len-off);
-+		domU_write_console(0, string+off, len-off);
- }
- 
- struct console xenboot_console = {
-@@ -197,7 +230,7 @@ struct console xenboot_console = {
- 
- void xen_raw_console_write(const char *str)
- {
--	raw_console_write(str, strlen(str));
-+	dom0_write_console(0, str, strlen(str));
- }
- 
- void xen_raw_printk(const char *fmt, ...)
-diff --git a/drivers/xen/events.c b/drivers/xen/events.c
-index 1cd2a0e..97f4b39 100644
---- a/drivers/xen/events.c
-+++ b/drivers/xen/events.c
-@@ -410,7 +410,7 @@ static int bind_ipi_to_irq(unsigned int ipi, unsigned int cpu)
- }
- 
- 
--static int bind_virq_to_irq(unsigned int virq, unsigned int cpu)
-+int bind_virq_to_irq(unsigned int virq, unsigned int cpu)
- {
- 	struct evtchn_bind_virq bind_virq;
- 	int evtchn, irq;
-diff --git a/include/xen/events.h b/include/xen/events.h
-index e68d59a..9f24b64 100644
---- a/include/xen/events.h
-+++ b/include/xen/events.h
-@@ -12,6 +12,8 @@ int bind_evtchn_to_irqhandler(unsigned int evtchn,
- 			      irq_handler_t handler,
- 			      unsigned long irqflags, const char *devname,
- 			      void *dev_id);
-+int bind_virq_to_irq(unsigned int virq, unsigned int cpu);
 +
- int bind_virq_to_irqhandler(unsigned int virq, unsigned int cpu,
- 			    irq_handler_t handler,
- 			    unsigned long irqflags, const char *devname,
++	xen_destroy_contiguous_region((unsigned long)vaddr, order);
++	free_pages((unsigned long)vaddr, order);
+ }
+ 
+ static dma_addr_t xen_swiotlb_map_single(struct device *dev, phys_addr_t paddr,
 -- 
 1.6.0.6
 
