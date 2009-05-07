@@ -1,120 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753332AbZEGGmB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754259AbZEGGp2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753332AbZEGGmB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 02:42:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZEGGlv
+	id S1754259AbZEGGp2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 02:45:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752178AbZEGGpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 02:41:51 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45837 "EHLO mx2.redhat.com"
+	Thu, 7 May 2009 02:45:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45897 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750938AbZEGGlv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 02:41:51 -0400
-Date: Thu, 7 May 2009 08:36:06 +0200
+	id S1751954AbZEGGpR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 02:45:17 -0400
+Date: Thu, 7 May 2009 08:41:20 +0200
 From: Oleg Nesterov <oleg@redhat.com>
-To: Roland McGrath <roland@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>
-Subject: Re: [RFC PATCH 3/3a] ptrace: add _ptrace_may_access()
-Message-ID: <20090507063606.GA15220@redhat.com>
-References: <20090505224729.GA965@redhat.com> <20090506080050.GF17457@elte.hu> <20090506235349.GC3756@redhat.com> <20090507002133.02D05FC39E@magilla.sf.frob.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [FOR REVIEW, PATCH 2/2] introduce "struct wait_opts" to
+	simplify do_wait() pathes
+Message-ID: <20090507064120.GB15220@redhat.com>
+References: <20090506053324.GA31988@redhat.com> <20090506072756.GA17457@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090507002133.02D05FC39E@magilla.sf.frob.com>
+In-Reply-To: <20090506072756.GA17457@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/06, Roland McGrath wrote:
+On 05/06, Ingo Molnar wrote:
 >
-> > I was going to cleanup this later. Because I think that
-> > __ptrace_may_access() should die. It has only one caller, mm_for_maps().
+> One small nit with the definition above: when using vertical spacing
+> (which really looks nice) we tend to put the asterix to the type
+> itself, not to the variable. I.e.:
 >
-> CC'ing Al Viro, who wrote mm_for_maps() (and no one has touched it since,
-> see commit 831830b).
+> 	enum pid_type		wtype;
+> 	struct pid *		wpid;
+> 	int			wflags;
 >
-> > I will re-check, but it looks a bit strange. More precisely, I just
-> > can't understand it. Why we can't just do
-> >
-> > 	struct mm_struct *mm_for_maps(struct task_struct *task)
-> > 	{
-> > 		struct mm_struct *mm = get_task_mm(task);
-> >
-> > 		if (mm && mm != current->mm && !ptrace_may_access()) {
-> > 			mmput(mm);
-> > 			mm = NULL;
-> > 		}
-> >
-> > 		return mm;
-> > 	}
+> ( This is done to separate the field name from the type - the
+>   pointer nature of the field is part of the type, not part of the
+>   name. )
+
+Indeed, I like this more too. But checkpatch.pl disagrees!
+
+> it makes sense to write this as:
 >
-> That seems fine to me.  I suspect the old code just predated the PF_KTHREAD
-> check in get_task_mm() and excluding the borrowed-mm window races was the
-> only reason for using task_lock() that way.
+> > +	wopts.wtype	= type;
+> > +	wopts.wpid	= pid;
+> > +	wopts.wflags	= options;
+> > +
+> > +	wopts.winfo	= infop;
+> > +	wopts.wstat	= NULL;
+> > +	wopts.wrusage	= ru;
+> > +
+> > +	ret = do_wait(&wopts);
 >
-> > ? We do not care if this task exits and clears ->mm right before
-> > or after ptrace_may_access(), and this is possible eith the current
-> > code too once it drops tasklist.
->
-> I agree.
+> (and in other places as well). Vertical spacing for assignments
+> looks messy if done for 1-3 assignment lines, but in the case above
+> we've got 6 of them so it has a nice vertical structure already that
+> helps readability.
 
-Great. Will try to make the patches soon.
+Done.
 
-And I forgot to mention, there is another reason to kill __ptrace_may_access.
-Because we can "narrow" the critical section protected by task_lock(). Not
-for performance of course, just for clarity:
+> Regarding the patch itself: i guess we could do it as-is - but if
+> you think there's regression risks, a safer approach would be to
+> create 5-6 patches to build up all the structure parameters one by
+> one.
 
-/* the callers of ptrace_may_access should be fixed */
+Oh, I tried to do it this way first. But I got lost and decided to
+make a single patch. Besides, if I make 6 patches I should try to test
+each one...
 
-	int ptrace_may_access(struct task_struct *task, unsigned int mode)
-	{
-		const struct cred *cred = current_cred(), *tcred;
-		int ret = 0;
+> Anyway ... provided you give it some testing:
 
-		/* May we inspect the given task?
-		 * This check is used both for attaching with ptrace
-		 * and for allowing access to sensitive information in /proc.
-		 *
-		 * ptrace_attach denies several cases that /proc allows
-		 * because setting up the necessary parent/child relationship
-		 * or halting the specified task is impossible.
-		 */
-		/* Don't let security modules deny introspection */
-		if (task == current)
-			return ret;
+Well, I did now. But of course this needs more testing. As you see,
+the patch is trivial, it "must" be correct. Except some silly typos
+are possible.
 
-		rcu_read_lock();
-		tcred = __task_cred(task);
-		if ((cred->uid != tcred->euid ||
-		     cred->uid != tcred->suid ||
-		     cred->uid != tcred->uid  ||
-		     cred->gid != tcred->egid ||
-		     cred->gid != tcred->sgid ||
-		     cred->gid != tcred->gid) &&
-		    !capable(CAP_SYS_PTRACE))
-			ret = -EPERM;
-		rcu_read_unlock();
-		if (ret)
-			return ret;
-/* kill rmb ? */
+> Reviewed-by: Ingo Molnar <mingo@elte.hu>
 
-		task_lock(task);
-		if (!task->mm || !get_dumpable(task->mm)) {
-			if (!capable(CAP_SYS_PTRACE))
-				ret = -EPERM;
-		task_unclock(task);
-		if (ret)
-			return ret;
-
-		return security_ptrace_may_access(task, mode);
-	}
-
-Btw, "[PATCH 3/3]" notes that security_ptrace_may_access() is called without
-task_lock(), this note "leaked" from this change in future ;)
-
-But firsty I'll try to grep/recheck this all.
+Thanks!
 
 Oleg.
 
