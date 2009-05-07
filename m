@@ -1,60 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753874AbZEGUku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763356AbZEGUlU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753874AbZEGUku (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 16:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763118AbZEGUkh
+	id S1763356AbZEGUlU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 16:41:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755724AbZEGUlI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 16:40:37 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:47160 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754517AbZEGUke (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 16:40:34 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=wBk0aiZTbAGPQ/MSQLOuz0St0ayg/38fAVqfFP8rGNz1sOvhhC8ZKINrroPFhUKiq
-	DDx/oszzixP9KSXl9UcqA==
-Date: Thu, 7 May 2009 13:40:29 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Pavel Machek <pavel@ucw.cz>
-cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com,
-       linux-pm@lists.linux-foundation.org, torvalds@linux-foundation.org,
-       jens.axboe@oracle.com, alan-jenkins@tuffmail.co.uk,
-       linux-kernel@vger.kernel.org, kernel-testers@vger.kernel.org
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-In-Reply-To: <20090507203518.GA1652@ucw.cz>
-Message-ID: <alpine.DEB.2.00.0905071337400.6598@chino.kir.corp.google.com>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905072133.48917.rjw@sisk.pl> <20090507130202.34cbe37a.akpm@linux-foundation.org> <200905072218.50782.rjw@sisk.pl> <alpine.DEB.2.00.0905071321440.646@chino.kir.corp.google.com>
- <20090507203518.GA1652@ucw.cz>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Thu, 7 May 2009 16:41:08 -0400
+Received: from mail.crca.org.au ([67.207.131.56]:41797 "EHLO crca.org.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751308AbZEGUlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 16:41:04 -0400
+X-Bogosity: Ham, spamicity=0.000000
+Subject: Re: 2.6.29 regression: left audio channel broken after resume from
+ suspend with Intel HDA
+From: Nigel Cunningham <ncunningham-lkml@crca.org.au>
+Reply-To: ncunningham-lkml@crca.org.au
+To: Takashi Iwai <tiwai@suse.de>
+Cc: Tino Keitel <tino.keitel@gmx.de>, linux-kernel@vger.kernel.org,
+       alsa-devel@alsa-project.org
+In-Reply-To: <s5hr5z12jn5.wl%tiwai@suse.de>
+References: <20090420194659.GA11399@dose.home.local>
+	 <s5h8wluinon.wl%tiwai@suse.de> <20090421073219.GA5866@dose.home.local>
+	 <s5hfxg2cv6m.wl%tiwai@suse.de> <20090421183936.GA21935@dose.home.local>
+	 <s5hws9a5ewr.wl%tiwai@suse.de> <20090424142113.GA18668@dose.home.local>
+	 <s5hskjy5d2t.wl%tiwai@suse.de> <20090428002309.GA29572@x61>
+	 <20090506222753.GA6728@mac.home> <20090507072352.GA6513@mac.home>
+	 <s5hy6t92nuz.wl%tiwai@suse.de> <1241697280.19600.203.camel@nigel-laptop>
+	 <s5hr5z12jn5.wl%tiwai@suse.de>
+Content-Type: text/plain
+Date: Fri, 08 May 2009 06:42:04 +1000
+Message-Id: <1241728924.19600.208.camel@nigel-laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009, Pavel Machek wrote:
+Hi.
 
-> > Third time I'm going to suggest this, and I'd like a response on why it's 
-> > not possible instead of being ignored.
+On Thu, 2009-05-07 at 14:16 +0200, Takashi Iwai wrote:
+> At Thu, 07 May 2009 21:54:40 +1000,
+> Nigel Cunningham wrote:
 > > 
-> > All of your tasks are in D state other than kthreads, right?  That means 
-> > they won't be in the oom killer (thus no zones are oom locked), so you can 
-> > easily do this
+> > Hi.
+> > 
+> > On Thu, 2009-05-07 at 12:45 +0200, Takashi Iwai wrote:
+> > > The problem is that BIOS on your machine sets this pin both for
+> > > input and output.  Since it's set as input, the driver respects
+> > > the BIOS setup and skips to override.
+> > 
+> > 'scuse the ignorance, but this makes me ask: Are pins logically
+> > unrelated to jacks?
 > 
-> Well, OOM killer may be running on behalf of some kthread at that
-> point....? Quite unlikely, but possible AFAICT.
+> Yes, they are.
+> 
+> > I have a Dell M1530, and it has some jacks that can
+> > work as either inputs or outputs. Under M$, when I plug something in, a
+> > dialog box pops up asking me whether I connected a mic, line in or an
+> > output jack (I forget the details). Sounds like Tino's problem is what
+> > I'd expect from my BIOS. But I'm probably completely ignorant :)
+> 
+> The problem there is that the BIOS sets the current pin direction for
+> both input and output, but you can't play and record at the same time
+> on a jack.  It's not about the capability. 
+> 
+> BIOS is supposed to set all the pins properly ready for use, but it's
+> not so on Mac.
 
-The oom killer doesn't care about the task's state, so this will be a 
-genuine oom situation where it will kill a task (one in D state since 
-kthreads are inherently immune) which will die when unfrozen.  That would 
-have had to happen anyway when all tasks wake up since the system is 
-completely out of memory (except for kswapd that is given access to memory 
-reserves because of PF_MEMALLOC) so you're not worried about completely 
-blocking out the oom killer anymore because the next kthread to invoke it 
-in such a situation will end up being a no-op because it finds a task with 
-TIF_MEMDIE set.
+Thanks! :)
+
+Nigel
+
