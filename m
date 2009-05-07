@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763538AbZEHATq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763559AbZEHAUP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763538AbZEHATq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:19:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758904AbZEHAKW
+	id S1763559AbZEHAUP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:20:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758974AbZEHAKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:10:22 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52721
+	Thu, 7 May 2009 20:10:23 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52722
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755272AbZEHAJ6 (ORCPT
+	with ESMTP id S1753554AbZEHAJ6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 7 May 2009 20:09:58 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -15,58 +15,79 @@ To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
+       Alex Nixon <alex.nixon@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 5/8] xen/i386: make sure initial VGA/ISA mappings are not overridden
-Date: Thu,  7 May 2009 13:24:59 -0700
-Message-Id: <1241727902-3176-6-git-send-email-jeremy@goop.org>
+Subject: [PATCH 06/11] x86/PCI: Enable scanning of all pci functions
+Date: Thu,  7 May 2009 14:45:32 -0700
+Message-Id: <1241732737-7669-7-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241727902-3176-1-git-send-email-jeremy@goop.org>
-References: <1241727902-3176-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1241732737-7669-1-git-send-email-jeremy@goop.org>
+References: <1241732737-7669-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+From: Alex Nixon <alex.nixon@citrix.com>
 
-arch/x86/mm/init_32.c overrides the ISA/VGA mappings with direct mappings
-which do not have _PAGE_IOMAP set, thereby making the ISA space inaccessible.
+Impact: prep for pcifront
 
-This patch adds to the existing hack to make sure the pre-constructed
-ISA mappings are not incorrectly overwritten.
+Xen may want to enable scanning of all pci functions - if for example
+the device at function 0 is not passed through to the guest, but the
+device at function 1 is.
 
-This makes 32-bit dom0 VGA work properly.
-
-Thanks to Gerd Hoffman for pointing this out.
-
+Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
 ---
- arch/x86/xen/mmu.c |   11 +++++++++--
- 1 files changed, 9 insertions(+), 2 deletions(-)
+ arch/x86/include/asm/pci.h |    8 +++++++-
+ arch/x86/pci/common.c      |    1 +
+ 2 files changed, 8 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index a96f5b9..5af62d8 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1443,10 +1443,17 @@ static void *xen_kmap_atomic_pte(struct page *page, enum km_type type)
- #ifdef CONFIG_X86_32
- static __init pte_t mask_rw_pte(pte_t *ptep, pte_t pte)
- {
--	/* If there's an existing pte, then don't allow _PAGE_RW to be set */
--	if (pte_val_ma(*ptep) & _PAGE_PRESENT)
-+	pte_t oldpte = *ptep;
-+
-+	if (pte_flags(oldpte) & _PAGE_PRESENT) {
-+		/* Don't allow existing IO mappings to be overridden */
-+		if (pte_flags(oldpte) & _PAGE_IOMAP)
-+			pte = oldpte;
-+
-+		/* Don't allow _PAGE_RW to be set on existing pte */
- 		pte = __pte_ma(((pte_val_ma(*ptep) & _PAGE_RW) | ~_PAGE_RW) &
- 			       pte_val_ma(pte));
-+	}
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+index b51a1e8..092706e 100644
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -21,6 +21,7 @@ struct pci_sysdata {
+ extern int pci_routeirq;
+ extern int noioapicquirk;
+ extern int noioapicreroute;
++extern int pci_scan_all_fns;
  
- 	return pte;
- }
+ /* scan a bus after allocating a pci_sysdata for it */
+ extern struct pci_bus *pci_scan_bus_on_node(int busno, struct pci_ops *ops,
+@@ -48,7 +49,11 @@ extern unsigned int pcibios_assign_all_busses(void);
+ #else
+ #define pcibios_assign_all_busses()	0
+ #endif
+-#define pcibios_scan_all_fns(a, b)	0
++
++static inline int pcibios_scan_all_fns(struct pci_bus *bus, int devfn)
++{
++	return pci_scan_all_fns;
++}
+ 
+ extern unsigned long pci_mem_start;
+ #define PCIBIOS_MIN_IO		0x1000
+@@ -130,6 +135,7 @@ extern void pci_iommu_alloc(void);
+ 
+ /* generic pci stuff */
+ #include <asm-generic/pci.h>
++#undef pcibios_scan_all_fns
+ 
+ #ifdef CONFIG_NUMA
+ /* Returns the node based on pci bus */
+diff --git a/arch/x86/pci/common.c b/arch/x86/pci/common.c
+index 6e736e2..171accb 100644
+--- a/arch/x86/pci/common.c
++++ b/arch/x86/pci/common.c
+@@ -22,6 +22,7 @@ unsigned int pci_probe = PCI_PROBE_BIOS | PCI_PROBE_CONF1 | PCI_PROBE_CONF2 |
+ unsigned int pci_early_dump_regs;
+ static int pci_bf_sort;
+ int pci_routeirq;
++int pci_scan_all_fns = 0;
+ int noioapicquirk;
+ #ifdef CONFIG_X86_REROUTE_FOR_BROKEN_BOOT_IRQS
+ int noioapicreroute = 0;
 -- 
 1.6.0.6
 
