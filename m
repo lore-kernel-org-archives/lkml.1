@@ -1,169 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZEHOBi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759489AbZEHOBx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756193AbZEHOBi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 10:01:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755232AbZEHOBZ
+	id S1759489AbZEHOBx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 10:01:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756213AbZEHOB0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 10:01:25 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:54758 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754934AbZEHOBY convert rfc822-to-8bit (ORCPT
+	Fri, 8 May 2009 10:01:26 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:58230 "EHLO
+	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755472AbZEHOBZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 10:01:24 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=G5zYLnFvfvFhvRGOruPjCDGq8WwPftXj6h6taJLF7YsNLDNPuDPedobQ5m+4cxfYrV
-         pk0OBGYVOVjezIWJdjPciN2ZylaG2MKRF2fx4LBzWyT6y3xPnmgXposdF9G/0Z26fmQ0
-         6IstclNhdXS19mi+LoDgtiuRkwCCxsbc1oVz0=
+	Fri, 8 May 2009 10:01:25 -0400
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+       linux-fbdev-devel@lists.sourceforge.net
+Subject: [PATCH 0/15] ps3{fb,vram,disk} patches for 2.6.31
+Date: Fri,  8 May 2009 16:01:09 +0200
+Message-Id: <1241791284-11490-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
+X-Mailer: git-send-email 1.6.2.4
 MIME-Version: 1.0
-In-Reply-To: <20090508121549.GA17077@localhost>
-References: <20090430195439.e02edc26.akpm@linux-foundation.org>
-	 <20090501123541.7983a8ae.akpm@linux-foundation.org>
-	 <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins>
-	 <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org>
-	 <1241709466.11251.164.camel@twins> <20090508041700.GC8892@localhost>
-	 <28c262360905080509q333ec8acv2d2be69d99e1dfa3@mail.gmail.com>
-	 <20090508121549.GA17077@localhost>
-Date: Fri, 8 May 2009 23:01:19 +0900
-Message-ID: <28c262360905080701h366e071cv1560b09126cbc78c@mail.gmail.com>
-Subject: Re: [RFC][PATCH] vmscan: report vm_flags in page_referenced()
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 8, 2009 at 9:15 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> On Fri, May 08, 2009 at 08:09:24PM +0800, Minchan Kim wrote:
->> On Fri, May 8, 2009 at 1:17 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
->> > On Thu, May 07, 2009 at 11:17:46PM +0800, Peter Zijlstra wrote:
->> >> On Thu, 2009-05-07 at 17:10 +0200, Johannes Weiner wrote:
->> >>
->> >> > > @@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned
->> >> > >
->> >> > >           /* page_referenced clears PageReferenced */
->> >> > >           if (page_mapping_inuse(page) &&
->> >> > > -             page_referenced(page, 0, sc->mem_cgroup))
->> >> > > +             page_referenced(page, 0, sc->mem_cgroup)) {
->> >> > > +                 struct address_space *mapping = page_mapping(page);
->> >> > > +
->> >> > >                   pgmoved++;
->> >> > > +                 if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
->> >> > > +                         list_add(&page->lru, &l_active);
->> >> > > +                         continue;
->> >> > > +                 }
->> >> > > +         }
->> >> >
->> >> > Since we walk the VMAs in page_referenced anyway, wouldn't it be
->> >> > better to check if one of them is executable?  This would even work
->> >> > for executable anon pages.  After all, there are applications that cow
->> >> > executable mappings (sbcl and other language environments that use an
->> >> > executable, run-time modified core image come to mind).
->> >>
->> >> Hmm, like provide a vm_flags mask along to page_referenced() to only
->> >> account matching vmas... seems like a sensible idea.
->> >
->> > Here is a quick patch for your opinions. Compile tested.
->> >
->> > With the added vm_flags reporting, the mlock=>unevictable logic can
->> > possibly be made more straightforward.
->> >
->> > Thanks,
->> > Fengguang
->> > ---
->> > vmscan: report vm_flags in page_referenced()
->> >
->> > This enables more informed reclaim heuristics, eg. to protect executable
->> > file pages more aggressively.
->> >
->> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
->> > ---
->> >  include/linux/rmap.h |    5 +++--
->> >  mm/rmap.c            |   30 +++++++++++++++++++++---------
->> >  mm/vmscan.c          |    7 +++++--
->> >  3 files changed, 29 insertions(+), 13 deletions(-)
->> >
->> > --- linux.orig/include/linux/rmap.h
->> > +++ linux/include/linux/rmap.h
->> > @@ -83,7 +83,8 @@ static inline void page_dup_rmap(struct
->> >  /*
->> >  * Called from mm/vmscan.c to handle paging out
->> >  */
->> > -int page_referenced(struct page *, int is_locked, struct mem_cgroup *cnt);
->> > +int page_referenced(struct page *, int is_locked,
->> > +                       struct mem_cgroup *cnt, unsigned long *vm_flags);
->> >  int try_to_unmap(struct page *, int ignore_refs);
->> >
->> >  /*
->> > @@ -128,7 +129,7 @@ int page_wrprotect(struct page *page, in
->> >  #define anon_vma_prepare(vma)  (0)
->> >  #define anon_vma_link(vma)     do {} while (0)
->> >
->> > -#define page_referenced(page,l,cnt) TestClearPageReferenced(page)
->> > +#define page_referenced(page, locked, cnt, flags) TestClearPageReferenced(page)
->> >  #define try_to_unmap(page, refs) SWAP_FAIL
->> >
->> >  static inline int page_mkclean(struct page *page)
->> > --- linux.orig/mm/rmap.c
->> > +++ linux/mm/rmap.c
->> > @@ -333,7 +333,8 @@ static int page_mapped_in_vma(struct pag
->> >  * repeatedly from either page_referenced_anon or page_referenced_file.
->> >  */
->> >  static int page_referenced_one(struct page *page,
->> > -       struct vm_area_struct *vma, unsigned int *mapcount)
->> > +                              struct vm_area_struct *vma,
->> > +                              unsigned int *mapcount)
->> >  {
->> >        struct mm_struct *mm = vma->vm_mm;
->> >        unsigned long address;
->> > @@ -385,7 +386,8 @@ out:
->> >  }
->> >
->> >  static int page_referenced_anon(struct page *page,
->> > -                               struct mem_cgroup *mem_cont)
->> > +                               struct mem_cgroup *mem_cont,
->> > +                               unsigned long *vm_flags)
->> >  {
->> >        unsigned int mapcount;
->> >        struct anon_vma *anon_vma;
->> > @@ -406,6 +408,7 @@ static int page_referenced_anon(struct p
->> >                if (mem_cont && !mm_match_cgroup(vma->vm_mm, mem_cont))
->> >                        continue;
->> >                referenced += page_referenced_one(page, vma, &mapcount);
->> > +               *vm_flags |= vma->vm_flags;
->>
->> Sometime this vma don't contain the anon page.
->> That's why we need page_check_address.
->> For such a case, wrong *vm_flag cause be harmful to reclaim.
->> It can be happen in your first class citizen patch, I think.
->
-> Yes I'm aware of that - the VMA area covers that page, but have no pte
-> actually installed for that page. That should be OK - the presentation
-> of such VMA is a good indication of it being some executable text.
->
+	Hi all,
 
-Sorry but I can't understand your point.
+Here are my PS3 patches for 2.6.31. Most of them are for ps3{vram,fb}.
+Patch 8 is a generic cleanup for Cell. Patch 15 touches ps3disk, too.
 
-This is general interface but not only executable text.
-Sometime, The information of vma which don't really have the page can
-be passed to caller.
-ex) It can be happen by COW, mremap, non-linear mapping and so on.
-but I am not sure.
-I doubt  vm_flag information is useful.
--- 
-Kinds regards,
-Minchan Kim
+  [01/15] ps3vram: Fix error path (return -EIO) for short read/write
+  [02/15] ps3vram: Use proc_create_data() instead of proc_create()
+  [03/15] ps3vram: Correct exchanged gotos in ps3vram_probe() error path
+  [04/15] ps3vram: Replace mutex by spinlock + list
+  [05/15] ps3fb: Remove useless debug checks in ps3fb_shutdown()
+  [06/15] ps3fb: Inline functions in ps3fb_probe(), to ease cleanup in the error path
+  [07/15] ps3fb: Correct handling of device opening in ps3fb_probe()
+  [08/15] powerpc/cell: Extract duplicated IOPTE_* to <asm/iommu.h>
+  [09/15] ps3fb: GPU memory mapping cleanup
+  [10/15] ps3vram: GPU memory mapping cleanup
+  [11/15] ps3fb/vram: Extract common GPU stuff into <asm/ps3gpu.h>
+  [12/15] ps3fb: Tear down FB setup during cleanup
+  [13/15] ps3vram: Remove no longer used ps3vram_priv.ddr_base
+  [14/15] ps3vram: Make ps3vram_priv.reports a void *
+  [15/15] block/ps3: remove driver_data direct access of struct device
+
+How shall we get them in? Through Ben's powerpc tree?
+
+Thanks!
+
+arch/powerpc/include/asm/ps3gpu.h         |    8 
+b/arch/powerpc/include/asm/iommu.h        |   10 
+b/arch/powerpc/include/asm/ps3.h          |    3 
+b/arch/powerpc/include/asm/ps3gpu.h       |   78 +++++++
+b/arch/powerpc/platforms/cell/iommu.c     |   10 
+b/arch/powerpc/platforms/ps3/mm.c         |    1 
+b/arch/powerpc/platforms/ps3/platform.h   |   10 
+b/arch/powerpc/platforms/ps3/setup.c      |    1 
+b/arch/powerpc/platforms/ps3/system-bus.c |    2 
+b/drivers/block/ps3disk.c                 |   18 -
+b/drivers/block/ps3vram.c                 |    2 
+b/drivers/ps3/ps3av_cmd.c                 |    3 
+b/drivers/video/ps3fb.c                   |   15 -
+drivers/block/ps3vram.c                   |  183 +++++++++---------
+drivers/video/ps3fb.c                     |  304 +++++++++++++-----------------
+15 files changed, 339 insertions(+), 309 deletions(-)
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
+
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
