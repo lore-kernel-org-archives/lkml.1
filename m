@@ -1,46 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763642AbZEHSsT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932383AbZEHSsh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763642AbZEHSsT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 14:48:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932259AbZEHSrs
+	id S932383AbZEHSsh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 14:48:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932343AbZEHSrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 14:47:48 -0400
-Received: from mail.fieldses.org ([141.211.133.115]:50972 "EHLO
-	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932372AbZEHSrr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 14:47:49 -0400
+Received: from mga02.intel.com ([134.134.136.20]:7344 "EHLO mga02.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S932371AbZEHSrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 May 2009 14:47:47 -0400
-Date: Fri, 8 May 2009 14:47:37 -0400
-To: hooanon05@yahoo.co.jp
-Cc: David Woodhouse <dwmw2@infradead.org>, Al Viro <viro@ZenIV.linux.org.uk>,
-       hch@infradead.org,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>
-Subject: Re: [PATCH v2] Fix i_mutex handling in nfsd readdir
-Message-ID: <20090508184737.GG20539@fieldses.org>
-References: <1240013753.21423.86.camel@macbook.infradead.org> <1240144069.3589.156.camel@macbook.infradead.org> <7321.1240375306@jrobl> <20090422191244.GD9541@fieldses.org> <9180.1240468823@jrobl> <20090423202705.GA31085@fieldses.org> <20090505233509.GG27790@fieldses.org> <7475.1241586545@jrobl> <20090506202050.GK9861@fieldses.org> <7342.1241671107@jrobl>
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,318,1239001200"; 
+   d="scan'208";a="410796669"
+Message-ID: <4A047E53.8040003@intel.com>
+Date: Fri, 08 May 2009 11:47:47 -0700
+From: "H. Peter Anvin" <h.peter.anvin@intel.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7342.1241671107@jrobl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-From: "J. Bruce Fields" <bfields@fieldses.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "H. Peter Anvin" <hpa@linux.intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "vgoyal@redhat.com" <vgoyal@redhat.com>,
+       "hbabu@us.ibm.com" <hbabu@us.ibm.com>,
+       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
+       "Huang, Ying" <ying.huang@intel.com>, "mingo@elte.hu" <mingo@elte.hu>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "sam@ravnborg.org" <sam@ravnborg.org>
+Subject: Re: [PATCH 00/14] RFC: x86: relocatable kernel changes
+References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com>	<m14ovwz8ua.fsf@fess.ebiederm.org> <4A03C3BB.3070401@intel.com> <m1tz3wgk3n.fsf@fess.ebiederm.org>
+In-Reply-To: <m1tz3wgk3n.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 01:38:27PM +0900, hooanon05@yahoo.co.jp wrote:
+Eric W. Biederman wrote:
 > 
-> "J. Bruce Fields":
-> > I wonder if it'd be simpler just to keep the loookup_one_len() in
-> > nfsd4_encode_dirent() and just be prepared to roll back the encoding
-> > we've already done if we find out at that point the dentry has gone
-> > negative.  Actually, that doesn't look hard.
-> > 
-> > Thanks for looking at this!
+> Perhaps we should have:
+> init_size
+> best start (As a 64bit field please)
+> optimum align  (Or we flip it around)
 > 
-> The patch looks much better than before, and more than I expected. :-)
 
-OK, thanks, I'll submit it to 2.6.30 and .29.
+Thinking about this some more, I think you have a very good idea here.
 
---b.
+Specifically, if we retcon the existing kernel_alignment field as 
+"preferred alignment" (ignoring the naming issue for a bit), we can set 
+that to 16 MB, which should give us correct behavior for all previously 
+existing bootloaders.  Then we create a new "minimum alignment" field 
+that newer bootloaders can use to relax the alignment requirement -- all 
+the way down to 4K in the case of i386.  We document this field 
+indicating that the bootloader should find the highest power of 2 <= 
+preferred alignment, but down to this number.
+
+The preferred address field becomes a readonly, advisory field; with it 
+being readonly there aren't any funny issues with a strange loader 
+writing a 64-bit address for a kernel which can't handle it (64-bit 
+loading will still need substantial protocol changes, including how to 
+find the entry point.)
+
+Does that work for you?  That *should* address all your concerns, right?
+
+	-hpa
+
