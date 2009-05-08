@@ -1,467 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762702AbZEHWnp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbZEHWrT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762702AbZEHWnp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 18:43:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753834AbZEHWnf
+	id S1755875AbZEHWrT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 18:47:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753109AbZEHWrG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 18:43:35 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33453 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753603AbZEHWnd (ORCPT
+	Fri, 8 May 2009 18:47:06 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:34285 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752954AbZEHWrD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 18:43:33 -0400
-Message-Id: <200905082241.n48Mfpdh022249@imap1.linux-foundation.org>
-Subject: mmotm 2009-05-08-15-22 uploaded
-To: mm-commits@vger.kernel.org, linux-kernel@vger.kernel.org
-From: akpm@linux-foundation.org
-Date: Fri, 08 May 2009 15:22:41 -0700
+	Fri, 8 May 2009 18:47:03 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=j2QcCOwX51a17Ivp5DvakakXvL3wHfRDAcAebfKpX3dmivWlxuT4Q5eGXjRvXk47u
+	l2S603XG8qkib9zIAh7hg==
+Date: Fri, 8 May 2009 15:46:57 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Jack Steiner <steiner@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: fix node_possible_map logic
+In-Reply-To: <4A04A854.8000901@kernel.org>
+Message-ID: <alpine.DEB.2.00.0905081545360.9440@chino.kir.corp.google.com>
+References: <4A03E285.6020000@kernel.org> <20090508205249.GA8816@sgi.com> <4A04A854.8000901@kernel.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The mm-of-the-moment snapshot 2009-05-08-15-22 has been uploaded to
+On Fri, 8 May 2009, Yinghai Lu wrote:
 
-   http://userweb.kernel.org/~akpm/mmotm/
+> Jack Steiner wrote:
+> > On Fri, May 08, 2009 at 12:43:01AM -0700, Yinghai Lu wrote:
+> >> recently there are some changes to about meaning of node_possible_map
+> >>
+> >> and it is some strange:
+> >> the node without memory would be set in node_possible_map
+> >> but some node with less NODE_MIN_SIZE will be kicked out of node_possible_map.
+> >>
+> > ...
+> > 
+> > I tried this patch on a system with
+> > 	- latest linux-next
+> > 	- 2 Nehelem sockets
+> > 	- no memory on socket 0
+> > 	- 256MB on socket 1
+> > 
+> > I still see a panic in early boot. Here is the console output:
+> > (Note - this is from a system simulator - not real hardware. However, I don't
+> > believe the problem is related to the simulator (but would never rule it out).
+> > 
+> > The panic is at least partially the result of a NULL entry in the
+> > node_data[] array.
+> > 
+> > I'll try to do more debugging later this weekend....
+> > 
+> > --- jack
+> > 
+> > --------------------
+> > 
+> > 
+> > <6>Initializing cgroup subsys cpuset
+> > <6>Initializing cgroup subsys cpu
+> > <5>Linux version 2.6.30-rc4-next-20090505-medusa (steiner@alcatraz.americas.sgi.com) (gcc version 4.2.4) #43 SMP Fri May 8 07:26:02 CDT 2009
+> > <6>Command line: root=/dev/hda2 init=/bin/bash console=ttyS0,38400n8 fprom lpj=10000 nohpet loglevel=8 iommu=off dma32_size=4096
+> > <6>KERNEL supported cpus:
+> > <6>  Intel GenuineIntel
+> > <6>  AMD AuthenticAMD
+> > <6>  Centaur CentaurHauls
+> > <6>BIOS-provided physical RAM map:
+> > <6> BIOS-e820: 0000000000000000 - 0000000000006000 (usable)
+> > <6> BIOS-e820: 0000000000006000 - 0000000000200000 (reserved)
+> > <6> BIOS-e820: 0000000000200000 - 0000000010000000 (usable)
+> > <6> BIOS-e820: 0000000080000000 - 0000000090000000 (reserved)
+> > <6> BIOS-e820: 00000000f0000000 - 00000000fc000000 (reserved)
+> > <6> BIOS-e820: 00000000fed1c000 - 00000000fed20000 (reserved)
+> > <6> BIOS-e820: 00000000fff60000 - 00000000fff6c000 (reserved)
+> > <6> BIOS-e820: 00000fe000000000 - 00000fe018000000 (reserved)
+> > <6>EFI v1.00 by SGI 
+> > <6> ACPI 2.0=0xe0200  UVsystab=0xe08c0 
+> > <6>EFI: mem00: type=7, attr=0x8, range=[0x0000000000000000-0x0000000000006000) (0MB)
+> > <6>EFI: mem01: type=5, attr=0x8000000000001000, range=[0x0000000000006000-0x00000000000b0000) (0MB)
+> > <6>EFI: mem02: type=6, attr=0x8000000000000008, range=[0x00000000000b0000-0x0000000000200000) (1MB)
+> > <6>EFI: mem03: type=7, attr=0x8, range=[0x0000000000200000-0x0000000010000000) (254MB)
+> > <6>EFI: mem04: type=6, attr=0x8000000000000001, range=[0x0000000080000000-0x0000000090000000) (256MB)
+> > <6>EFI: mem05: type=6, attr=0x8000000000000001, range=[0x00000000f0000000-0x00000000fc000000) (192MB)
+> > <6>EFI: mem06: type=6, attr=0x8000000000000001, range=[0x00000000fed1c000-0x00000000fed20000) (0MB)
+> > <6>EFI: mem07: type=6, attr=0x8000000000000001, range=[0x00000000fff60000-0x00000000fff6c000) (0MB)
+> > <6>EFI: mem08: type=11, attr=0x8000000000000001, range=[0x00000fe000000000-0x00000fe018000000) (384MB)
+> > <6>DMI not present or invalid.
+> > <6>last_pfn = 0x10000 max_arch_pfn = 0x100000000
+> > <7>MTRR default type: write-back
+> > <7>MTRR fixed ranges enabled:
+> > <7>  00000-FFFFF write-back
+> > <7>MTRR variable ranges enabled:
+> > <7>  0 base 0   F0000000 mask FFF F0000000 uncachable
+> > <7>  1 base E0  00000000 mask FF0 00000000 uncachable
+> > <7>  2 base F0  00000000 mask FF0 00000000 uncachable
+> > <7>  3 base F00 00000000 mask FF0000000000 uncachable
+> > <7>  4 disabled
+> > <7>  5 disabled
+> > <7>  6 disabled
+> > <7>  7 disabled
+> > <6>x86 PAT enabled: cpu 0, old 0x606060606060606, new 0x7010600070106
+> > <6>x2apic enabled by BIOS, switching to x2apic ops
+> > <6>init_memory_mapping: 0000000000000000-0000000010000000
+> > <7> 0000000000 - 0010000000 page 2M
+> > <7>kernel direct mapping tables up to 10000000 @ 936000-938000
+> > <4>ACPI: RSDP 00000000000e0200 00024 (v02       )
+> > <4>ACPI: XSDT 00000000000e0240 00054 (v01    SGI      UVX 00010001 FPRM 00000001)
+> > <4>ACPI: APIC 00000000000e02e0 00086 (v01    SGI      UVX 00010001 FPRM 00000001)
+> > <4>ACPI: SRAT 00000000000e0380 00078 (v01    SGI      UVX 00010001 FPRM 00000001)
+> > <4>ACPI: SLIT 00000000000e05e0 00030 (v01    SGI      UVX 00010001 FPRM 00000001)
+> > <4>ACPI: MCFG 00000000000e0640 0004C (v01    SGI      UVX 00010001 FPRM 00000001)
+> > <4>ACPI: FACP 00000000000e06a0 000F4 (v03    SGI      UVX 00030001 FPRM 00000001)
+> > <4>ACPI: DSDT 00000000000e02a0 00030 (v01    SGI      UVX 00010001 FPRM 00000001)
+> > <4>ACPI: FACS 00000000000e07a0 00040
+> > <4>ACPI: DMAR 00000000000e0860 0004C (v01    SGI      UVX 00010001 FPRM 00000001)
+> > <7>ACPI: Local APIC address 0xfee00000
+> > <6>Setting APIC routing to cluster x2apic.
+> > <6>SRAT: PXM 0 -> APIC 0 -> Node 0
+> > <6>SRAT: PXM 1 -> APIC 128 -> Node 1
+> > <6>SRAT: Node 1 PXM 1 0-fff6c000
+> > <7>NUMA: Using 63 for the hash shift.
+> > <6>Bootmem setup node 1 0000000000000000-0000000010000000
+> > <6>  NODE_DATA [0000000000935a80 - 0000000000969a7f]
+> > <6>  bootmap [000000000096a000 -  000000000096bfff] pages 2
+> > <6>(7 early reservations) ==> bootmem [0000000000 - 0010000000]
+> > <6>  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+> > <6>  #1 [0000006000 - 0000008000]       TRAMPOLINE ==> [0000006000 - 0000008000]
+> > <6>  #2 [0000200000 - 0000935a5c]    TEXT DATA BSS ==> [0000200000 - 0000935a5c]
+> > <6>  #3 [000009f000 - 00000e0900]    BIOS reserved ==> [000009f000 - 00000e0900]
+> > <6>  #4 [00000e0a68 - 0000100000]    BIOS reserved ==> [00000e0a68 - 0000100000]
+> > <6>  #5 [00000e0900 - 00000e0a68]       EFI memmap ==> [00000e0900 - 00000e0a68]
+> > <6>  #6 [0000001000 - 0000001030]        ACPI SLIT ==> [0000001000 - 0000001030]
+> > <7> [ffffe20000000000-ffffe200003fffff] PMD -> [ffff880001200000-ffff8800015fffff] on node 1
+> > <4>Zone PFN ranges:
+> > <4>  DMA      0x00000000 -> 0x00001000
+> > <4>  DMA32    0x00001000 -> 0x00100000
+> > <4>  Normal   0x00100000 -> 0x00100000
+> > <4>Movable zone start PFN for each node
+> > <4>early_node_map[2] active PFN ranges
+> > <4>    1: 0x00000000 -> 0x00000006
+> > <4>    1: 0x00000200 -> 0x00010000
+> > <7>On node 1 totalpages: 65030
+> > <7>  DMA zone: 56 pages used for memmap
+> > <7>  DMA zone: 1944 pages reserved
+> > <7>  DMA zone: 1590 pages, LIFO batch:0
+> > <7>  DMA32 zone: 840 pages used for memmap
+> > <7>  DMA32 zone: 60600 pages, LIFO batch:15
+> > <6>ACPI: PM-Timer IO Port: 0x1008
+> > <7>ACPI: Local APIC address 0xfee00000
+> > <6>Setting APIC routing to cluster x2apic.
+> > <6>ACPI: LSAPIC (acpi_id[0x00] lsapic_id[0x00] lsapic_eid[0x00] enabled)
+> > <6>ACPI: LSAPIC (acpi_id[0x01] lsapic_id[0x00] lsapic_eid[0x80] enabled)
+> > <6>ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
+> > <6>ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
+> > <6>ACPI: IOAPIC (id[0x08] address[0xfec00000] gsi_base[0])
+> > <6>IOAPIC[0]: apic_id 8, version 0, address 0xfec00000, GSI 0-23
+> > <6>ACPI: IOAPIC (id[0x09] address[0xfec80000] gsi_base[24])
+> > <6>IOAPIC[1]: apic_id 9, version 0, address 0xfec80000, GSI 24-24
+> > <6>ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 high edge)
+> > <6>ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
+> > <7>ACPI: IRQ0 used by override.
+> > <7>ACPI: IRQ2 used by override.
+> > <7>ACPI: IRQ9 used by override.
+> > <6>Using ACPI (MADT) for SMP configuration information
+> > <6>SMP: Allowing 2 CPUs, 0 hotplug CPUs
+> > <7>nr_irqs_gsi: 25
+> > <6>PM: Registered nosave memory: 0000000000006000 - 0000000000200000
+> > <6>Allocating PCI resources starting at 18000000 (gap: 10000000:70000000)
+> > <6>NR_CPUS:4096 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:2
+> 
+> looks like we handle node_online_map correctly.
+> 
+> arch/x86/mm/numa_64.c:  node_set_online(nodeid);
+> arch/x86/mm/numa_64.c:  node_set_online(0);
+> 
+> first one in setup_node_bootmem
+> second one is fallback.
+> 
+> in initmem_init in numa_64.c, before every try possible_map and online_map are cleared.
+> 
+> so somehow node_online_map is corrupted.
+> 
 
-and will soon be available at
-
-   git://git.zen-sources.org/zen/mmotm.git
-
-It contains the following patches against 2.6.30-rc4:
-
-origin.patch
-kexec-fix-crashdump-panic-with-config_kexec_jump.patch
-pxa2xx_spi-prevent-panic-case-setup-fails.patch
-repeatable-slab-corruption-with-ltp-msgctl08.patch
-linux-next.patch
-next-remove-localversion.patch
-i-need-old-gcc.patch
-slqb-fix-types.patch
-acpi-check-_pss-invalidation-when-bios-report-_pss-with-all-0x80000000.patch
-dell-laptop-fix-uninitialized-wrong-return-value.patch
-dell-wmi-mask-off-bis-provided-garbage-in-scancode-data.patch
-arch-x86-kernel-cpu-cpufreq-acpi-cpufreqc-avoid-cross-cpu-interrupts.patch
-x86-simplify-highmem-related-kconfig-entries.patch
-x86-enable-gart-iommu-only-after-setting-up-protection-methods.patch
-x86-srat-do-not-register-nodes-beyond-e820-map.patch
-agpgart-detected-ali-m-chipset-with-m1621.patch
-arm-mach-l7200-fix-spelling-of-sys_clock_off.patch
-i2c-pxac-timeouts-off-by-1.patch
-avr32-remove-obsolete-hw_interrupt_type.patch
-dm-table-fix-printk-formats.patch
-pcmcia-pccard-deadlock-fix.patch
-synchronize-device-shutdown.patch
-doc-add-documentation-for-debugfs.patch
-drm-fix-lock_test_with_return-macro.patch
-drivers-gpu-drm-i915-intel_fbc-remove-sysrq-g-handler.patch
-intelfb-fix-spelling-of-clock.patch
-drm-simplify-kcalloc-call-to-kzalloc.patch
-radio-mr800c-missing-mutex-include.patch
-v4l-dvb-cimax2c-fix-typo.patch
-dvb-core-fix-potential-mutex_unlock-without-mutex_lock-in-dvb_dvr_read.patch
-dvb-core-fix-potential-mutex_unlock-without-mutex_lock-in-dvb_dvr_read-fix.patch
-zoran-fix-error.patch
-time-move-calc_load-call-out-from-xtime_lock-protection.patch
-clocksource-sanity-check-sysfs-clocksource-changes.patch
-ia64-remove-obsolete-no_irq_type.patch
-ia64-remove-obsolete-irq_desc_t-typedef.patch
-ia64-remove-obsolete-hw_interrupt_type.patch
-input-mousedev-distinguish-a-moving-finger-from-a-tapping-finger.patch
-input-mouse-alpsc-handle-touchpoints-buttons-correctly.patch
-input-ads7846c-sparse-lock-annotation.patch
-ads7846-pin-change-interrupt-support.patch
-input-keyboard-introduce-lm8323-driver.patch
-uinput-flush-all-pending-ff-effects-before-destroying-device.patch
-input-add-wm97xx-accelerated-driver-for-avr32-at32ap700x-microprocessors.patch
-input-drivers-input-xpadc-improve-xbox-360-wireless-support-and-add-sysfs-interface.patch
-drivers-input-xpadc-improve-xbox-360-wireless-support-and-add-sysfs-interface-checkpatch-fixes.patch
-input-drivers-input-xpadc-improve-xbox-360-wireless-support-and-add-sysfs-interface-fix.patch
-input-drivers-input-xpadc-improve-xbox-360-wireless-support-and-add-sysfs-interface-add-missing-prototype-and-update-history.patch
-input-documentation-input-xpadtxt-update-for-new-driver-functionality.patch
-input-documentation-input-xpadtxt-update-for-new-driver-functionality-checkpatch-fixes.patch
-input-documentation-abi-testing-game_device-sysfs-interface-document-game_device-interface-added-to-xpad-driver.patch
-serios-async-shutdown.patch
-kernel-kallsymsc-replace-deprecated-__initcall-with-device_initcall-and-fix-whitespace.patch
-menu-fix-embedded-menu-presentation.patch
-kvm-expand-on-help-info-to-specify-kvm-intel-and-amd-module-names.patch
-leds-fix-led-bd2802-errors-while-resuming.patch
-leds-change-the-license-information.patch
-leds-add-the-sysfs-interface-into-the-leds-bd2802-driver-for-changing-wave-pattern-and-led-current.patch
-drivers-leds-leds-gpioc-fix-a-section-mismatch.patch
-pata-rb532-cf-platform_get_irq-failure-ignored.patch
-mfd-pcf50633-gpioc-add-module_license.patch
-drivers-mfd-remove-obsolete-irq_desc_t-typedef.patch
-mmc-align-data-size-for-host-which-only-supports-power-of-2-block.patch
-mmc-in-mmc_power_up-use-previously-selected-ocr-if-available.patch
-omap-hsmmc-do-not-enable-buffer-ready-interrupt-if-using-dma.patch
-mtd-flex-onenand-support.patch
-mtd-onenand-add-bbt_wait-unlock_all-as-replaceable-for-some-platform.patch
-mtd-plat_nand-add-platform-probe-remove-callbacks.patch
-mtd-plat_nand-allow-platform-to-set-partitions.patch
-mtd-update-sysfs-documentation.patch
-mtd-add-memerase64-ioctl-for-4gib-devices.patch
-mtd-compat_ioctl-cleanup.patch
-mtd-add-oob-ioctls-for-4gib-devices.patch
-mtd-delete-final-remnants-of-mtd-ioctls-from-fs-compat_ioctlc.patch
-mtd-nand-dont-walk-past-end-of-oobfree.patch
-mtd-nand-minor-davinci_nand-cleanup.patch
-mtd-nand-davinci_nand-4-bit-ecc-for-smallpage.patch
-mtd-fix-timeout-in-m25p80-driver.patch
-mtd-fix-timeout-in-m25p80-driver-fix.patch
-mtd-add-omap2-omap3-nand-driver.patch
-mtd-remove-pmcmsp-ramrootc.patch
-uwb-event_size-should-be-signed.patch
-cls_cgroup-remove-unneeded-cgroup_lock.patch
-sunrpc-align-cache_clean-works-timer.patch
-irda-new-blackfin-on-chip-sir-irda-driver.patch
-misdn-l1oip-reduce-stack-memory-footprint.patch
-isdn-get_free_devid-failure-ignored.patch
-sfc-modify-allocation-error-message.patch
-drivers-net-82596c-suppress-warnings.patch
-de2104x-support-for-systems-lacking-cache-coherence.patch
-forcedeth-fix-mac-address-detection-on-network-card-regression-in-2623.patch
-e1000e-make-e1000e-default-to-the-same-kconfig-setting-as-e1000.patch
-3x59x-fix-pci-resource-management.patch
-parisc-remove-obsolete-hw_interrupt_type.patch
-fs-remove-sparse-errors-in-proc_devtreec.patch
-pci-quirks-hp-hides-smbus-controller-in-compaq-nx9500-laptops.patch
-pci-quirks-unhide-overflow-device-on-i828675p-pe-chipsets-v2.patch
-scsi-use-the-common-hex_asc-array-rather-than-a-private-one.patch
-scsi-gdthc-use-unaligned-access-helpers.patch
-scsi-annotate-gdth_rdcap_data-gdth_rdcap16_data-endianness.patch
-sg_io-dont-perform-unneeded-copy-in-compat-code.patch
-scsi-ncr53c8xx-div-reaches-1.patch
-qla2x-fix-printk-format-warnings.patch
-scsi-pcmcia-nsp_cs-time_out-reaches-1.patch
-scsi-ses-check-name-in-enclosure_component_register-v2.patch
-scsi-tape-fix-gcc-44-warning.patch
-block-prevent-possible-io_context-refcount-overflow.patch
-fs-bioc-add-missing-__user-annotation.patch
-ramdisk-remove-long-deprecated-ramdisk=-boot-time-param.patch
-block-fix-the-bio_vec-array-index-out-of-bounds-test.patch
-wis-sony-tunerc-typo.patch
-drivers-staging-epl-do-not-use-clone_sighand-with-allow_signal.patch
-usb-imx_udc-fix-leak-in-imx_ep_alloc_request.patch
-vfs-fix-vfs_rename_dir-for-fs_rename_does_d_move-filesystems.patch
-raw-fix-rawctl-compat-ioctls-breakage-on-amd64-and-itanic.patch
-vfs-improve-comment-describing-fget_light.patch
-libfs-make-simple_read_from_buffer-conventional.patch
-fs-inodec-add-dev-id-and-inode-number-for-debugging-in-init_special_inode.patch
-xtensa-variant-specific-code.patch
-xtensa-cache-inquiry-and-unaligned-cache-handling-functions.patch
-xtensa-s6000-dma-engine-support.patch
-xtensa-allow-platform-and-variant-to-initialize-own-irq-chips.patch
-xtensa-support-s6000-gpio-irqs-and-alternate-function-selection.patch
-s6gmac-xtensa-s6000-on-chip-ethernet-driver.patch
-xtensa-s6105-specific-configuration-for-s6gmac.patch
-xtensa-enable-s6gmac-in-s6105_defconfig.patch
-xtensa-add-m41t62-rtc-to-s6105-platform.patch
-xtensa-enable-m41t80-driver-in-s6105_defconfig.patch
-mm.patch
-rtc-rtc-twl4030-dont-mask-alarm-interrupts-on-suspend.patch
-alpha-unbreak-percpu-again.patch
-fbdev-remove-outdated-advice-about-i2c-configuration.patch
-mm-disable-preemption-in-apply_to_pte_range.patch
-rtc-add-ds1685-ds1687-rtc-driver.patch
-ext2-add-blk_issue_flush-to-syncing-paths.patch
-scsi-dpt_i2o-is-bust-on-ia64.patch
-acpi-thermal-fix-off-by-1-error-in-trip-point-trigger-condition.patch
-libata-avoid-world-writable-sysfs-files.patch
-cpufreq-fix-timer-teardown-in-conservative-governor-2630-rc2.patch
-cpufreq-fix-timer-teardown-in-ondemand-governor.patch
-cpufreq-powernow-k8-cleanup-msg-if-bios-does-not-export-acpi-_pss-cpufreq-data.patch
-cpufreq-powernow-k8-determine-exact-cpu-frequency-for-hw-pstates.patch
-fs-sysfs-filec-use-create_singlethread_workqueue.patch
-drm-ignore-lvds-on-intel-graphics-systems-that-lie-about-having-it.patch
-leds-of_register_platform_driver-doesnt-exist-on-sparc64.patch
-rxrpc-fix-error-handling-for-rxrpc_alloc_connection.patch
-lockd-fix-file_locking=n-build-error.patch
-procfs-make-errno-values-consistent-when-open-pident-vs-exit2-race-occurs.patch
-drivers-scsi-ncr_d700c-fix-irq-handler-return-type.patch
-integrity-nfsd-imbalance-bug-fix.patch
-squashfs-fix-breakage-when-pagesize-blocksize.patch
-squashfs-fix-breakage-when-pagesize-blocksize-checkpatch-fixes.patch
-uml-uml-net-driver-does-not-allow-for-vlans.patch
-drivers-usb-serial-ti_usb_3410_5052c-ti_usb-returns-eio-when-reopening-the-device.patch
-xen-use-header-for-export_symbol_gpl.patch
-mm-madvisec-dont-open-code-is_vm_hugetlb_page.patch
-mm-consolidate-init_mm-definition.patch
-mm-consolidate-init_mm-definition-fix.patch
-readahead-make-mmap_miss-an-unsigned-int.patch
-readahead-move-max_sane_readahead-calls-into-force_page_cache_readahead.patch
-readahead-apply-max_sane_readahead-limit-in-ondemand_readahead.patch
-readahead-remove-one-unnecessary-radix-tree-lookup.patch
-readahead-increase-interleaved-readahead-size.patch
-readahead-remove-sync-async-readahead-call-dependency.patch
-readahead-clean-up-and-simplify-the-code-for-filemap-page-fault-readahead.patch
-readahead-sequential-mmap-readahead.patch
-readahead-enforce-full-readahead-size-on-async-mmap-readahead.patch
-readahead-record-mmap-read-around-states-in-file_ra_state.patch
-readahead-record-mmap-read-around-states-in-file_ra_state-checkpatch-fixes.patch
-radix-tree-add-radix_tree_prev_hole.patch
-readahead-move-the-random-read-case-to-bottom.patch
-readahead-introduce-context-readahead-algorithm.patch
-readahead-introduce-context-readahead-algorithm-update.patch
-readahead-remove-redundant-test-in-shrink_readahead_size_eio.patch
-readahead-enforce-full-sync-mmap-readahead-size.patch
-mm-clean-up-get_user_pages_fast-documentation.patch
-mm-clean-up-get_user_pages_fast-documentation-checkpatch-fixes.patch
-vmscan-low-order-lumpy-reclaim-also-should-use-pageout_io_sync.patch
-mm-page-writebackc-dirty-limit-type-should-be-unsigned-long.patch
-ksm-mmu_notifiers-add-set_pte_at_notify.patch
-ksm-add-get_pte-helper-function-fetching-pte-for-va.patch
-ksm-add-get_pte-helper-function-fetching-pte-for-va-fix.patch
-ksm-add-page_wrprotect-write-protecting-page.patch
-ksm-add-replace_page-change-the-page-pte-is-pointing-to.patch
-ksm-add-ksm-kernel-shared-memory-driver.patch
-ksm-add-ksm-kernel-shared-memory-driver-checkpatch-fixes.patch
-ksm-add-ksm-kernel-shared-memory-driver-fix-unsafe-pte-fetching.patch
-ksm-add-ksm-kernel-shared-memory-driver-fix.patch
-ksm-add-ksm-kernel-shared-memory-driver-limiting-the-num-of-mem-regions-user-can-register-per-fd.patch
-ksm-add-ksm-kernel-shared-memory-driver-dont-allow-overlap-memory-addresses-registrations.patch
-ksm-add-ksm-kernel-shared-memory-driver-change-the-ksm_remove_memory_region-ioctl.patch
-ksm-add-ksm-kernel-shared-memory-driver-change-the-prot-handling-to-use-the-generic-helper-functions.patch
-ksm-add-ksm-kernel-shared-memory-driver-use-another-miscdevice-minor-number.patch
-cpusets-restructure-the-function-cpuset_update_task_memory_state.patch
-cpusets-update-tasks-page-slab-spread-flags-in-time.patch
-cpusetmm-update-tasks-mems_allowed-in-time.patch
-cpusetmm-update-tasks-mems_allowed-in-time-fix.patch
-cpusetmm-update-tasks-mems_allowed-in-time-cleanup.patch
-mm-alloc_large_system_hash-check-order.patch
-page-allocator-replace-__alloc_pages_internal-with-__alloc_pages_nodemask.patch
-page-allocator-do-not-sanity-check-order-in-the-fast-path.patch
-page-allocator-do-not-sanity-check-order-in-the-fast-path-fix.patch
-page-allocator-do-not-check-numa-node-id-when-the-caller-knows-the-node-is-valid.patch
-page-allocator-check-only-once-if-the-zonelist-is-suitable-for-the-allocation.patch
-page-allocator-break-up-the-allocator-entry-point-into-fast-and-slow-paths.patch
-page-allocator-move-check-for-disabled-anti-fragmentation-out-of-fastpath.patch
-page-allocator-calculate-the-preferred-zone-for-allocation-only-once.patch
-page-allocator-calculate-the-preferred-zone-for-allocation-only-once-fix.patch
-page-allocator-calculate-the-migratetype-for-allocation-only-once.patch
-page-allocator-calculate-the-alloc_flags-for-allocation-only-once.patch
-page-allocator-remove-a-branch-by-assuming-__gfp_high-==-alloc_high.patch
-page-allocator-inline-__rmqueue_smallest.patch
-page-allocator-inline-buffered_rmqueue.patch
-page-allocator-inline-__rmqueue_fallback.patch
-page-allocator-do-not-call-get_pageblock_migratetype-more-than-necessary.patch
-page-allocator-do-not-disable-interrupts-in-free_page_mlock.patch
-page-allocator-do-not-setup-zonelist-cache-when-there-is-only-one-node.patch
-page-allocator-do-not-check-for-compound-pages-during-the-page-allocator-sanity-checks.patch
-page-allocator-use-allocation-flags-as-an-index-to-the-zone-watermark.patch
-page-allocator-update-nr_free_pages-only-as-necessary.patch
-page-allocator-update-nr_free_pages-only-as-necessary-fix.patch
-page-allocator-get-the-pageblock-migratetype-without-disabling-interrupts.patch
-page-allocator-use-a-pre-calculated-value-instead-of-num_online_nodes-in-fast-paths.patch
-page-allocator-use-a-pre-calculated-value-instead-of-num_online_nodes-in-fast-paths-do-not-override-definition-of-node_set_online-with-macro.patch
-page-allocator-slab-use-nr_online_nodes-to-check-for-a-numa-platform.patch
-page-allocator-move-free_page_mlock-to-page_allocc.patch
-page-allocator-sanity-check-order-in-the-page-allocator-slow-path.patch
-mm-use-alloc_pages_exact-in-alloc_large_system_hash-to-avoid-duplicated-logic.patch
-mm-introduce-pagehuge-for-testing-huge-gigantic-pages.patch
-slob-use-pg_slab-for-identifying-slob-pages.patch
-proc-kpagecount-kpageflags-code-cleanup.patch
-proc-export-more-page-flags-in-proc-kpageflags.patch
-pagemap-document-clarifications.patch
-pagemap-document-9-more-exported-page-flags.patch
-pagemap-add-page-types-tool.patch
-pagemap-export-pg_hwpoison.patch
-vmscan-evict-use-once-pages-first-v3.patch
-vmscan-cleanup-the-scan-batching-code.patch
-vmscan-dont-export-nr_saved_scan-in-proc-zoneinfo.patch
-vmscan-zvc-updates-in-shrink_active_list-can-be-done-once.patch
-mm-setup_per_zone_inactive_ratio-do-not-call-for-int_sqrt-if-not-needed.patch
-mm-setup_per_zone_inactive_ratio-fix-comment-and-make-it-__init.patch
-mm-introduce-follow_pte.patch
-mm-use-generic-follow_pte-in-follow_phys.patch
-mm-introduce-follow_pfn.patch
-videobuf-dma-contig-zero-copy-userptr-support-v3.patch
-frv-remove-in-kernel-strace-code.patch
-frv-implement-tif_notify_resume.patch
-frv-dont-turn-on-tif_syscall_trace-unconditionally-in-syscall-prologue.patch
-frv-implement-new-style-ptrace.patch
-frv-duplicate-output_buffer-of-e03.patch
-frv-duplicate-output_buffer-of-e03-checkpatch-fixes.patch
-alpha-remove-obsolete-hw_interrupt_type.patch
-m32r-remove-obsolete-hw_interrupt_type.patch
-m68k-count-can-reach-51-not-50.patch
-um-remove-obsolete-hw_interrupt_type.patch
-slow_work_thread-should-do-the-exclusive-wait.patch
-rework-fix-is_single_threaded.patch
-utsnameh-make-new_utsname-fields-use-the-proper-length-constant.patch
-kmap_types-make-most-arches-use-generic-header-file.patch
-atomic-only-take-lock-when-the-counter-drops-to-zero-on-up-as-well.patch
-kernel-kfifoc-replace-conditional-test-with-is_power_of_2.patch
-ntfs-use-is_power_of_2-function-for-clarity.patch
-poll-avoid-extra-wakeups-in-select-poll.patch
-headers-move-module_bug_finalize-module_bug_cleanup-definitions-into-moduleh.patch
-drbd-add-major-number-to-majorh.patch
-remove-put_cpu_no_resched.patch
-remove-put_cpu_no_resched-fix.patch
-dma-mapping-mark-dma_nbits_mask-as-deprecated.patch
-getrusage-fill-ru_maxrss-value.patch
-rb_tree-reorganize-code-in-rb_erase-for-additional-changes.patch
-rb_tree-reorganize-code-in-rb_erase-for-additional-changes-checkpatch-fixes.patch
-rb_tree-make-clear-distinction-between-two-different-cases-in-rb_erase.patch
-rb_tree-remove-redundant-if-condition-in-rb_erase.patch
-softirq-introduce-statistics-for-softirq.patch
-irqs-add-irqf_sample_random-to-the-feature-removal-scheduletxt-deprecated-list.patch
-proc-export-statistics-for-softirq-to-proc.patch
-proc-update-document-for-proc-softirqs-and-proc-stat.patch
-drivers-hwmon-coretempc-enable-the-intel-atom.patch
-flat-fix-data-sections-alignment.patch
-pci-use-pci_ioremap_bar-in-drivers-serial.patch
-kgdb-kgdboc-console-poll-hooks-for-serial_txx9-uart.patch
-serial_txx9-use-container_of-instead-of-direct-cast.patch
-icom-converting-space-to-tabs.patch
-serial-8250c-irq-handling-race-and-spurious-iir-read.patch
-serial-z85c30-bcm1480-loops-reach-1.patch
-serial-add-parameter-to-force-skipping-the-test-for-the-txen-bug.patch
-spi_bfin5xx-limit-reaches-1.patch
-spi-move-common-spi_setup-functionality-into-core.patch
-spi-move-more-spi_setup-functionality-into-core.patch
-mpc52xx_psc_spi-convert-to-cs_control-callback.patch
-pxa2xx_spi-fix-for-spi_cs_high.patch
-spi_mpc83xx-handle-other-freescale-processors.patch
-spi_mpc83xx-quieten-down-the-requested-speed-is-too-low-message.patch
-spi_mpc83xx-add-small-delay-after-asserting-chip-select-line.patch
-powerpc-86xx-add-mmc-spi-support-for-mpc8610hpcd-boards.patch
-spi_mpc83xx-fix-checkpatch-issues.patch
-spi_mpc83xx-split-mpc83xx_spi_work-into-two-routines.patch
-spi_mpc83xx-remove-dead-code.patch
-spi_mpc83xx-rename-spi_83xxc-to-spi_8xxxc.patch
-spi_mpc8xxx-s-83xx-8xxx-g.patch
-rtc-rtc-ds1742-nvram-attribute-fix.patch
-rtc-rtc-ds1307-add-ds1388.patch
-rtc-rtc-ds1307-add-ds3231.patch
-rtc-add-stand-alone-driver-for-rx8025-chip.patch
-rtc-add-stand-alone-driver-for-rx8025-chip-fix.patch
-rtc-tx4939-drop-irqf_shared.patch
-rtc-ds1553-drop-irqf_shared.patch
-rtc-make-rtc_update_irq-callable-with-irqs-enabled-v2.patch
-pca953x-support-gpiolib-gpio-naming.patch
-fbdev-generated-logo-sources-depend-on-scripts-pnmtologo.patch
-fbdev-move-logo-externs-to-header-file.patch
-fbdev-add-video-modes-for-resolutions-and-timings-of-pal-rgb.patch
-documentation-fb-vesafbtxt-fix-typo.patch
-chipsfb-remove-redundant-assignment.patch
-igafb-use-framebuffer_alloc-to-allocate-fb_info-struct.patch
-offb-use-framebuffer_alloc-to-allocate-fb_info-struct.patch
-ext2-do-not-update-mtime-of-a-moved-directory.patch
-ext3-fix-chain-verification-in-ext3_get_blocks.patch
-isofs-let-mode-and-dmode-mount-options-override-rock-ridge-mode-setting.patch
-isofs-fix-setting-of-uid-and-gid-to-0.patch
-isofs-cleanup-mount-option-processing.patch
-hfsplus-identify-journal-info-block-in-volume-header.patch
-hfsplus-fix-journal-detection.patch
-ufs-sector_t-cannot-be-negative.patch
-cgroups-make-messages-more-readable.patch
-devcgroup-skip-superfluous-checks-when-found-the-dev_all-elem.patch
-memcg-add-file-based-rss-accounting.patch
-memcg-add-file-based-rss-accounting-fix-mem_cgroup_update_mapped_file_stat-oops.patch
-memcg-remove-mem_cgroup_cache_charge_swapin.patch
-allow_signal-kill-the-bogus-mm-check-add-a-note-about-clone_sighand.patch
-ptrace-remove-pt_dtrace-from-arch-h8300.patch
-ptrace-remove-pt_dtrace-from-avr32-mn10300-parisc-s390-sh-xtensa.patch
-ptrace-remove-pt_dtrace-from-m68k-m68knommu.patch
-ptrace-remove-pt_dtrace-from-arch-m32r.patch
-ptrace-mm_need_new_owner-use-real_parent-to-search-in-the-siblings.patch
-ptrace-tracehook_unsafe_exec-remove-the-stale-comment.patch
-ptrace-tracehook_unsafe_exec-remove-the-stale-comment-fix.patch
-ptrace-do-not-use-task-ptrace-directly-in-core-kernel.patch
-ptrace-ptrace_attach-check-pf_kthread-exit_state-instead-of-mm.patch
-ptrace-cleanup-check-set-of-pt_ptraced-during-attach.patch
-ptrace-do-not-use-task_lock-for-attach.patch
-ptrace_get_task_struct-s-tasklist-rcu-make-it-static.patch
-signals-tracehook_notify_jctl-change.patch
-utrace-core.patch
-copy_process-remove-the-unneeded-clear_tsk_thread_flagtif_sigpending.patch
-elf_core_dump-use-rcu_read_lock-to-access-real_parent.patch
-shift-ptrace-implies-wuntraced-from-ptrace_do_wait-to-wait_task_stopped.patch
-introduce-struct-wait_opts-to-simplify-do_wait-pathes.patch
-do_wait-simplify-retval-tsk_result-notask_error-mess.patch
-do_wait-kill-the-old-bug_on-use-while_each_thread.patch
-do_wait-fix-the-theoretical-race-with-stop-trace-cont.patch
-kthreads-simplify-the-startup-synchronization.patch
-kthreads-rework-kthread_stop.patch
-kthreads-simplify-migration_thread-exit-path.patch
-drivers-char-memc-memory_open-cleanup-lookup-minor-device-number-from-devlist.patch
-drivers-char-memc-memory_open-cleanup-lookup-minor-device-number-from-devlist-checkpatch-fixes.patch
-char-isicom-fix-build-warning.patch
-sysctlc-remove-unused-variable.patch
-pidns-make-create_pid_namespace-accept-parent-pidns.patch
-pidns-rewrite-copy_pid_ns.patch
-utsns-extract-creeate_uts_ns.patch
-ipcns-remove-useless-get-put-while-clone_newipc.patch
-ipcns-extract-create_ipc_ns.patch
-nsproxy-extract-create_nsproxy.patch
-futex-add-requeue-pi-documentation.patch
-edac-add-cpc925-memory-controller-driver.patch
-edac-add-cpc925-memory-controller-driver-cleanup.patch
-edac-add-cpc925-memory-controller-driver-mc-check-fixup.patch
-edac-add-edac_device_alloc_index.patch
-edac-add-edac_device_alloc_index-cleanup.patch
-edac-cpc925-mc-platform-device-setup.patch
-edac-cpc925-mc-platform-device-setup-v3.patch
-kexec-sysrq-simplify-sysrq-c-handler.patch
-gru-bug-fixes-for-gru-exception-handling.patch
-gru-dump-chiplet-state.patch
-gru-dump-chiplet-state-update.patch
-gru-dynamic-allocation-of-kernel-contexts.patch
-gru-dynamic-allocation-of-kernel-contexts-update.patch
-gru-change-context-load-and-unload.patch
-gru-support-cch_allocate-for-kernel-threads.patch
-gru-change-resource-assignment-for-kernel-threads.patch
-gru-support-contexts-with-zero-dsrs-or-cbrs.patch
-gru-fix-handling-of-mesq-failures.patch
-gru-check-context-state-on-reload.patch
-gru-support-instruction-completion-interrupts.patch
-gru-support-for-asynchronous-gru-instructions.patch
-gru-support-for-asynchronous-gru-instructions-fix.patch
-gru-update-gru-kernel-self-tests.patch
-gru-update-gru-kernel-self-tests-fix.patch
-gru-update-to-rev-09-of-gru-spec.patch
-linuxpps-core-support.patch
-fsnotify-unified-filesystem-notification-backend.patch
-fsnotify-add-marks-to-inodes-so-groups-can-interpret-how-to-handle-those-inodes.patch
-fsnotify-parent-event-notification.patch
-dnotify-reimplement-dnotify-using-fsnotify.patch
-fsnotify-generic-notification-queue-and-waitq.patch
-fsnotify-include-pathnames-with-entries-when-possible.patch
-fsnotify-add-correlations-between-events.patch
-fsnotify-allow-groups-to-add-private-data-to-events.patch
-fsnotify-fsnotify-marks-on-inodes-pin-them-in-core.patch
-fsnotify-handle-filesystem-unmounts-with-fsnotify-marks.patch
-inotify-reimplement-inotify-using-fsnotify.patch
-inotify-reimplement-inotify-using-fsnotify-report-rounded-up-event-size-to-user-space.patch
-vfs-take-2add-set_page_dirty_notag.patch
-reiser4-vfs-add-super_operationssync_inodes-2.patch
-reiser4-export-remove_from_page_cache.patch
-reiser4-export-remove_from_page_cache-fix.patch
-reiser4-export-find_get_pages.patch
-reiser4.patch
-reiser4-adjust-to-the-new-aops.patch
-reiser4-adjust-to-the-new-aops-fixup.patch
-reiser4-remove-simple_prepare_write-usage.patch
-reiser4-remove-simple_prepare_write-usage-checkpatch-fixes.patch
-fs-symlink-write_begin-allocation-context-fix-reiser4-fix.patch
-reiser4-handling-error-returned-by-d_obtain_alias-fixup.patch
-reiser4-update-names-of-quota-methods.patch
-reiser4-use-set_page_dirty_notag.patch
-make-sure-nobodys-leaking-resources.patch
-journal_add_journal_head-debug.patch
-releasing-resources-with-children.patch
-make-frame_pointer-default=y.patch
-mutex-subsystem-synchro-test-module.patch
-slab-leaks3-default-y.patch
-put_bh-debug.patch
-add-debugging-aid-for-memory-initialisation-problems.patch
-shrink_slab-handle-bad-shrinkers.patch
-keep-track-of-network-interface-renaming.patch
-workaround-for-a-pci-restoring-bug.patch
-prio_tree-debugging-patch.patch
-single_open-seq_release-leak-diagnostics.patch
-add-a-refcount-check-in-dput.patch
-getblk-handle-2tb-devices.patch
-getblk-handle-2tb-devices-fix.patch
-undeprecate-pci_find_device.patch
-notify_change-callers-must-hold-i_mutex.patch
+As Jack pointed out, node 0 has no memory so there's a discrepency between 
+a node being online and having memory.  The problem here seems to be the 
+fact that NODE_DATA(0)->node_zones is NULL, which makes sense for its 
+state.
