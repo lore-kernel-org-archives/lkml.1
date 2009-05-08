@@ -1,92 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761313AbZEHIS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbZEHIT1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761313AbZEHIS6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 04:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbZEHISr
+	id S1762138AbZEHIT1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 04:19:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbZEHITM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 04:18:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51868 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756255AbZEHISp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 04:18:45 -0400
-Message-ID: <4A03EA83.6040907@redhat.com>
-Date: Fri, 08 May 2009 11:17:07 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 8 May 2009 04:19:12 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:42635 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754454AbZEHITJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 04:19:09 -0400
+Message-ID: <4A03EABF.40702@cosmosbay.com>
+Date: Fri, 08 May 2009 10:18:07 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <4A019717.7070806@codemonkey.ws> <4A01B4CF.3080706@novell.com>
-In-Reply-To: <4A01B4CF.3080706@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: "H. Peter Anvin" <hpa@linux.intel.com>, linux-kernel@vger.kernel.org,
+       vgoyal@redhat.com, hbabu@us.ibm.com, kexec@lists.infradead.org,
+       ying.huang@intel.com, mingo@elte.hu, tglx@linutronix.de,
+       ebiederm@xmission.com, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 01/14] x86, boot: align the .bss section in the decompressor
+References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com> <1241735222-6640-2-git-send-email-hpa@linux.intel.com> <20090508071759.GA12808@uranus.ravnborg.org>
+In-Reply-To: <20090508071759.GA12808@uranus.ravnborg.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 08 May 2009 10:18:08 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
-> Anthony Liguori wrote:
->   
->> Gregory Haskins wrote:
->>     
->>> Today, there is no equivelent of a platform agnostic "iowrite32()" for
->>> hypercalls so the driver would look like the pseudocode above except
->>> substitute with kvm_hypercall(), lguest_hypercall(), etc.  The proposal
->>> is to allow the hypervisor to assign a dynamic vector to resources in
->>> the backend and convey this vector to the guest (such as in PCI
->>> config-space as mentioned in my example use-case).  The provides the
->>> "address negotiation" function that would normally be done for something
->>> like a pio port-address.   The hypervisor agnostic driver can then use
->>> this globally recognized address-token coupled with other device-private
->>> ABI parameters to communicate with the device.  This can all occur
->>> without the core hypervisor needing to understand the details beyond the
->>> addressing.
->>>   
->>>       
->> PCI already provide a hypervisor agnostic interface (via IO regions). 
->> You have a mechanism for devices to discover which regions they have
->> allocated and to request remappings.  It's supported by Linux and
->> Windows.  It works on the vast majority of architectures out there today.
+Sam Ravnborg a écrit :
+> On Thu, May 07, 2009 at 03:26:49PM -0700, H. Peter Anvin wrote:
+>> From: H. Peter Anvin <hpa@zytor.com>
 >>
->> Why reinvent the wheel?
->>     
->
-> I suspect the current wheel is square.  And the air is out.  Plus its
-> pulling to the left when I accelerate, but to be fair that may be my
-> alignment....
+>> Aligning the .bss section makes it trivially faster, and makes using
+>> larger transfers for the clear slightly easier.
+>>
+>> [ Impact: trivial performance enhancement, future patch prep ]
+>>
+>> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
+>> ---
+>>  arch/x86/boot/compressed/vmlinux.lds.S |    1 +
+>>  1 files changed, 1 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/arch/x86/boot/compressed/vmlinux.lds.S b/arch/x86/boot/compressed/vmlinux.lds.S
+>> index 0d26c92..27c168d 100644
+>> --- a/arch/x86/boot/compressed/vmlinux.lds.S
+>> +++ b/arch/x86/boot/compressed/vmlinux.lds.S
+>> @@ -42,6 +42,7 @@ SECTIONS
+>>  		*(.data.*)
+>>  		_edata = . ;
+>>  	}
+>> +	. = ALIGN(32);
+> 
+> Where does this magic 32 comes from?
+> I would assume the better choice would be:
+> 	. = ALIGN(L1_CACHE_BYTES);
+> 
+> So we match the relevant CPU.
+> 
+> In general for alignmnet of output sections I see the need for:
+> 1) Function call
+> 2) L1_CACHE_BYTES
+> 3) PAGE_SIZE
+> 4) 2*PAGE_SIZE
+> 
+> But I see magic constant used here and there that does not match
+> the above (when looking at all archs).
+> So I act when I see a new 'magic' number..
+> 
 
-No, your wheel is slightly faster on the highway, but doesn't work at 
-all off-road.
+I totally agree
 
-Consider nested virtualization where the host (H) runs a guest (G1) 
-which is itself a hypervisor, running a guest (G2).  The host exposes a 
-set of virtio (V1..Vn) devices for guest G1.  Guest G1, rather than 
-creating a new virtio devices and bridging it to one of V1..Vn, assigns 
-virtio device V1 to guest G2, and prays.
+gcc itself has a strange 32 bytes alignement rule (unless using -Os) for 
+object of a >= 32 bytes size. Did you know that ?
 
-Now guest G2 issues a hypercall.  Host H traps the hypercall, sees it 
-originated in G1 while in guest mode, so it injects it into G1.  G1 
-examines the parameters but can't make any sense of them, so it returns 
-an error to G2.
+$ cat try.c
+char foo[32] = {1};
+$ gcc -O -S try.c
+        .file   "try.c"
+.globl foo
+        .data
+        .align 32            <<< HERE , what a mess >>
+        .type   foo, @object
+        .size   foo, 32
+foo:
+        .byte   1
+        .zero   31
+        .ident  "GCC: (GNU) 4.4.0"
+        .section        .note.GNU-stack,"",@progbits
 
-If this were done using mmio or pio, it would have just worked.  With 
-pio, H would have reflected the pio into G1, G1 would have done the 
-conversion from G2's port number into G1's port number and reissued the 
-pio, finally trapped by H and used to issue the I/O.  With mmio, G1 
-would have set up G2's page tables to point directly at the addresses 
-set up by H, so we would actually have a direct G2->H path.  Of course 
-we'd need an emulated iommu so all the memory references actually 
-resolve to G2's context.
 
-So the upshoot is that hypercalls for devices must not be the primary 
-method of communications; they're fine as an optimization, but we should 
-always be able to fall back on something else.  We also need to figure 
-out how G1 can stop V1 from advertising hypercall support.
+It makes many .o kernel files marked with a 2**5 alignement of .data or percpudata
+At link time, it creates many holes.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+In my opinion, gcc should have a separate option than -Os, as this as too expensive
+side effects on the code speed.
+
+I can save lot of data space if I patch gcc-4.4.0/config/i386/i386.c
+
+to :
+
+/* Compute the alignment for a static variable.
+   TYPE is the data type, and ALIGN is the alignment that
+   the object would ordinarily have.  The value of this function is used
+   instead of that alignment to align the object.  */
+
+int
+ix86_data_alignment (tree type, int align)
+{
+-  int max_align = optimize_size ? BITS_PER_WORD : MIN (256, MAX_OFILE_ALIGNMENT);
++  int max_align = BITS_PER_WORD;
+
+  if (AGGREGATE_TYPE_P (type)
+      && TYPE_SIZE (type)
+      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+      && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= (unsigned) max_align
+          || TREE_INT_CST_HIGH (TYPE_SIZE (type)))
+      && align < max_align)
+    align = max_align;
+
+  /* x86-64 ABI requires arrays greater than 16 bytes to be aligned
+     to 16byte boundary.  */
+  if (TARGET_64BIT)
+    {
+      if (AGGREGATE_TYPE_P (type)
+           && TYPE_SIZE (type)
+           && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+           && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 128
+               || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 128)
+        return 128;
+
 
