@@ -1,90 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754658AbZEHQV7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760153AbZEHQWg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754658AbZEHQV7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 12:21:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZEHQVd
+	id S1760153AbZEHQWg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 12:22:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755229AbZEHQVx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 12:21:33 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:51853 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753171AbZEHQVc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 12:21:32 -0400
-Message-Id: <20090508162131.981675126@goodmis.org>
-References: <20090508162033.397923239@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Fri, 08 May 2009 12:20:34 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 1/2] ring-buffer: replace constants with time macros in ring-buffer-benchmark
-Content-Disposition: inline; filename=0001-ring-buffer-replace-constants-with-time-macros-in-r.patch
+	Fri, 8 May 2009 12:21:53 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:52763 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754281AbZEHQVv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 12:21:51 -0400
+Message-ID: <4A045C19.4060801@garzik.org>
+Date: Fri, 08 May 2009 12:21:45 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+CC: Dan Williams <dan.j.williams@gmail.com>, linux-ide@vger.kernel.org,
+       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org, James.Bottomley@hansenpartnership.com,
+       Mauelshagen@redhat.com, dm-devel@redhat.com
+Subject: Re: [PATCHSET] block,scsi,libata: implement alt_size
+References: <1233456951-992-1-git-send-email-tj@kernel.org>	 <49F902CF.7080307@garzik.org> <49F903DD.8040707@kernel.org>	 <49FA0349.3090706@garzik.org>	 <e9c3a7c20904301415t621670a0l1bd64c7d74d369f@mail.gmail.com>	 <49FEA127.1000905@kernel.org>	 <e9c3a7c20905040948m572e23dj1aa197dbd20ff037@mail.gmail.com>	 <49FFB275.7000507@kernel.org> <e9c3a7c20905050834t79a1c03dt83df288b2f38ed76@mail.gmail.com> <4A03F7A8.9090204@kernel.org>
+In-Reply-To: <4A03F7A8.9090204@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Steven Rostedt <srostedt@redhat.com>
+Tejun Heo wrote:
+> Dan Williams wrote:
+>> On Mon, May 4, 2009 at 8:28 PM, Tejun Heo <tj@kernel.org> wrote:
+>>> Pushing this in the kernel without updating dm-raid is kind of
+>>> pointless.  Who should I be poking to get the userland part moving?
+>> Dmraid is not the only potential user.  Mdadm will also care about
+>> this as I have seen a report that points to a user having what looks
+>> like an HPA issue with an Intel(R) Matrix array.  So, there are two
+>> immediate users for this interface.  Heinz is the right person to poke
+>> for dmraid updates.  I'll handle the mdadm update.
+> 
+> Alright, then.  With Jeff's reluctant ack and scheduled mdadm update,
+> I guess this one can go upstream.  I'll refresh the patchset and
+> repost.  Umm... BTW do I have Heinz's mail address right?
 
-The use of numeric constants is discouraged. It is cleaner and more
-descriptive to use macros for constant time conversions.
+The email addr is correct according to dmraid-current.tar.bz2 (dated Sep 
+2008), at least.  I don't have any better info.
 
-This patch also removes an extra new line.
+	Jeff
 
-[ Impact: more descriptive time conversions ]
 
-Reported-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
----
- kernel/trace/ring_buffer_benchmark.c |   12 +++++++-----
- 1 files changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/kernel/trace/ring_buffer_benchmark.c b/kernel/trace/ring_buffer_benchmark.c
-index a21aa7b..7d3aef9 100644
---- a/kernel/trace/ring_buffer_benchmark.c
-+++ b/kernel/trace/ring_buffer_benchmark.c
-@@ -253,7 +253,7 @@ static void ring_buffer_producer(void)
- 	}
- 
- 	time = end_tv.tv_sec - start_tv.tv_sec;
--	time *= 1000000;
-+	time *= USEC_PER_SEC;
- 	time += (long long)((long)end_tv.tv_usec - (long)start_tv.tv_usec);
- 
- 	entries = ring_buffer_entries(buffer);
-@@ -273,7 +273,8 @@ static void ring_buffer_producer(void)
- 	pr_info("Missed:   %ld\n", missed);
- 	pr_info("Hit:      %ld\n", hit);
- 
--	do_div(time, 1000);
-+	/* Convert time from usecs to millisecs */
-+	do_div(time, USEC_PER_MSEC);
- 	if (time)
- 		hit /= (long)time;
- 	else
-@@ -282,18 +283,19 @@ static void ring_buffer_producer(void)
- 	pr_info("Entries per millisec: %ld\n", hit);
- 
- 	if (hit) {
--		avg = 1000000 / hit;
-+		/* Calculate the average time in nanosecs */
-+		avg = NSEC_PER_MSEC / hit;
- 		pr_info("%ld ns per entry\n", avg);
- 	}
- 
--
- 	if (missed) {
- 		if (time)
- 			missed /= (long)time;
- 
- 		pr_info("Total iterations per millisec: %ld\n", hit + missed);
- 
--		avg = 1000000 / (hit + missed);
-+		/* Caculate the average time in nanosecs */
-+		avg = NSEC_PER_MSEC / (hit + missed);
- 		pr_info("%ld ns per entry\n", avg);
- 	}
- }
--- 
-1.6.2.4
 
--- 
