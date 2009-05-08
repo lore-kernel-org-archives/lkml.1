@@ -1,25 +1,28 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764126AbZEHXDb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763739AbZEHXFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764126AbZEHXDb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 19:03:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889AbZEHXDW
+	id S1763739AbZEHXFX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 19:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZEHXFJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 19:03:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43831 "EHLO
+	Fri, 8 May 2009 19:05:09 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33695 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753118AbZEHXDW (ORCPT
+	by vger.kernel.org with ESMTP id S1751440AbZEHXFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 19:03:22 -0400
-Date: Fri, 8 May 2009 15:59:35 -0700
+	Fri, 8 May 2009 19:05:07 -0400
+Date: Fri, 8 May 2009 16:01:42 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: udovdh@xs4all.nl, linux-kernel@vger.kernel.org,
-       Rodolfo Giometti <giometti@linux.it>, Christoph Hellwig <hch@lst.de>
-Subject: Re: LinuxPPS status?
-Message-Id: <20090508155935.3e88e49e.akpm@linux-foundation.org>
-In-Reply-To: <20090508112722.040e99ee@lxorguk.ukuu.org.uk>
-References: <4A0406C3.7000507@xs4all.nl>
-	<20090508112722.040e99ee@lxorguk.ukuu.org.uk>
+To: Ron <ron@debian.org>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix for sched_clock() when using jiffies
+Message-Id: <20090508160142.ad89944f.akpm@linux-foundation.org>
+In-Reply-To: <20090508200444.GA22132@homer.shelbyville.oz>
+References: <20081126150645.GA28153@homer.shelbyville.oz>
+	<1227712598.4454.199.camel@twins>
+	<20081126153152.GB28153@homer.shelbyville.oz>
+	<20081128144039.GG28138@elte.hu>
+	<20090508132449.GV5417@homer.shelbyville.oz>
+	<20090508200444.GA22132@homer.shelbyville.oz>
 X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -28,33 +31,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 May 2009 11:27:22 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+On Sat, 9 May 2009 05:34:44 +0930
+Ron <ron@debian.org> wrote:
 
-> On Fri, 08 May 2009 12:17:39 +0200
-> Udo van den Heuvel <udovdh@xs4all.nl> wrote:
+>  
+> Account for the initial offset to the jiffy count.
 > 
-> > Hello,
-> > 
-> > Can anybody please give a summary of the things needing work before 
-> > LinuxPPS can go into the kernel?
-> > Andrew posted something in february but are his objections still valid?
-> > 
-> > Can we just fix the final bits and have it in the kernel whenever the 
-> > first occasion comes along?
+> Signed-off-by: Ron Lee <ron@debian.org>
 > 
-> If you are getting no feedback just submit it next merge window. Either
-> its offended nobody or they've forgotten to notice - in both cases
-> submitting it will have the desired effect.
+> ---
+>  kernel/sched_clock.c |    3 ++-
+>  1 files changed, 2 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
+> index a0b0852..a1567b1 100644
+> --- a/kernel/sched_clock.c
+> +++ b/kernel/sched_clock.c
+> @@ -37,7 +37,8 @@
+>   */
+>  unsigned long long __attribute__((weak)) sched_clock(void)
+>  {
+> -	return (unsigned long long)jiffies * (NSEC_PER_SEC / HZ);
+> +	return (unsigned long long)(jiffies - INITIAL_JIFFIES)
+> +					* (NSEC_PER_SEC / HZ);
+>  }
+>  
+>  static __read_mostly int sched_clock_running;
 
-As far as I know the master version is sitting in -mm.  This thing has
-gone on for so long and with such large intervals between activity that
-I've forgotten what the outstanding issues are, if any.
-
-I have a note here that Christoph had requested that the pps header
-file be split in some fashion (user and kernel?) but that doesn't
-appear to have happened in my copy of the patch.
-
-Probably it would be best to start again, resend the patch with 1000 cc's,
-re-review and actually get it over the line.
-
+Why?  I assume that you encountered some problem which was fixed
+by this patch.  What was that problem?
