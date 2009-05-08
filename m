@@ -1,94 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762934AbZEHMQs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757338AbZEHMTY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762934AbZEHMQs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 08:16:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760843AbZEHMQg
+	id S1757338AbZEHMTY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 08:19:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbZEHMTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 08:16:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:37260 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761945AbZEHMQe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 08:16:34 -0400
-Date: Fri, 8 May 2009 14:15:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: john stultz <johnstul@us.ibm.com>
-Cc: George Spelvin <linux@horizon.com>, ulrich.windl@rz.uni-regensburg.de,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       Clark Williams <williams@redhat.com>, zippel@linux-m68k.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [RFC][PATCH] tsc_khz= boot option to avoid TSC calibration
-	variance
-Message-ID: <20090508121521.GC18758@elte.hu>
-References: <1241742647.7518.108.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+	Fri, 8 May 2009 08:19:15 -0400
+Received: from science.horizon.com ([192.35.100.1]:28611 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752304AbZEHMTP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 08:19:15 -0400
+Date: 8 May 2009 08:19:13 -0400
+Message-ID: <20090508121913.9039.qmail@science.horizon.com>
+From: "George Spelvin" <linux@horizon.com>
+To: johnstul@us.ibm.com, linux@horizon.com
+Subject: Re: [RFC][PATCH] tsc_khz= boot option to avoid TSC calibration variance
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       ulrich.windl@rz.uni-regensburg.de, williams@redhat.com,
+       zippel@linux-m68k.org
 In-Reply-To: <1241742647.7518.108.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> To mitigate this, I wanted to provide a tsc_khz= boot option. This would
+> allow users to set the tsc_khz value at boot-up, assuming they are
+> within 1Mhz of the calibrated value (to protect against bad values).
+> Once the tsc_khz value is set in grub, the box will always boot with the
+> same value, so the NTP drift value prior to reboot will still be correct
+> after rebooting.
 
-* john stultz <johnstul@us.ibm.com> wrote:
+A run-time adjustable would be more convenient, but this is simple and works.
 
-> All, 
-> 
-> Despite recent tweaking, TSC calibration variance is still biting 
-> users who care about keeping close sync with NTP servers over 
-> reboots.
-> 
-> Here's a recent example: 
-> http://lkml.indiana.edu/hypermail/linux/kernel/0905.0/02061.html
-> 
-> The problem is, each reboot, we have to calibrate the TSC, and any 
-> error, regardless of how small, in the calibrated freq has to be 
-> corrected for by NTP. Assuming the error is within 500ppm NTP can 
-> correct this, but until it finds the proper correction value for 
-> the new TSC freq, users may see time offsets from the NTP server.
-> 
-> In my experience, its fairly easy to see 100khz variance from 
-> reboot to reboot with 2.6.30-rc.
-> 
-> While I think its worth trying to improve the calibration further, 
-> there will likely be a trade-off between very accurate calibration 
-> and fast boot times.
-> 
-> To mitigate this, I wanted to provide a tsc_khz= boot option. This 
-> would allow users to set the tsc_khz value at boot-up, assuming 
-> they are within 1Mhz of the calibrated value (to protect against 
-> bad values). Once the tsc_khz value is set in grub, the box will 
-> always boot with the same value, so the NTP drift value prior to 
-> reboot will still be correct after rebooting.
-> 
-> Thanks to George Spelvin for the idea:
-> 	http://lkml.indiana.edu/hypermail/linux/kernel/0905.0/02807.html
-> 
-> Thoughts or feedback?
-> 
-> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+The 1 MHz tolerance, however, isn't implemented right.  I can't quote
+figure out what you were trying to do; was that (x + (x/2))/1000 trying
+to round the /1000 properly?  That should be (x + 1000/2)/1000 in that
+case, which I normally write as (x/500 + 1)/2;
 
-Wouldnt it be a lot more flexible to have a sysctl for this, which 
-would be set before ntpd is started? (or which would be set by ntpd)
+But in any case, no equality comparison can possibly work; there's
+always a case where the measured value rounds to k and the correct
+value rounds to k+1.  Also, 1 MHz is a pretty wide tolerance on
+sub-GHz processors.  I'd suggest the following:
 
-The mechanism and semantics would be similar: we would _not_ expose 
-cpu_khz directly, we'd have a boot_cpu_khz value saved for sure, and 
-we'd allow the sysctl to set the cpu_khz to within 1MHz of cpu_khz - 
-and we'd re-scale the timer irq and other calibrated values 
-accordingly.
-
-Alternatively, a much simpler method: why doesnt ntpd save its own 
-notion of cpu_khz once it has reached stability, and reads cpu_khz 
-(from /proc/cpuinfo) during bootup and re-scales its initial offset 
-and phase shift accordingly, compensating for that noise? (if it's 
-within 1MHz)
-
-	Ingo
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index d57de05..d7ab640 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -825,15 +825,42 @@ static void __init init_tsc_clocksource(void)
+ 	clocksource_register(&clocksource_tsc);
+ }
+ 
++unsigned long tsc_khz_specified;
++static int __init tsc_khz_specified_setup(char *str)
++{
++	tsc_khz_specified = simple_strtoul(str, NULL, 0);
++	return 1;
++}
++
++__setup("tsc_khz=", tsc_khz_specified_setup);
++
++
+ void __init tsc_init(void)
+ {
+ 	u64 lpj;
+ 	int cpu;
++	long difference;
+ 
+ 	if (!cpu_has_tsc)
+ 		return;
+ 
+ 	tsc_khz = calibrate_tsc();
++
++	/*
+*	 * If the calibrated TSC freq and user specified TSC freq
+*	 * are close enough, pick the what the user told us.  Reject
+*	 * obviously bogus values to make the option safe to use.
++	 */
++	difference = tsc_khz - tsc_khz_specified;
++	if (difference < 0)
++		difference = -difference;
++	if (difference <= tsc_khz >> 10) {	/* 1/1024 = 976 ppm */
++		printk(KERN_INFO "Using user defined TSC freq: %lu.%03lu MHz\n",
++			tsc_khz_specified/1000,
++			tsc_khz_specified%1000);
++		tsc_khz = tsc_khz_specified;
++	}
++
+ 	cpu_khz = tsc_khz;
+ 
+ 	if (!tsc_khz) {
