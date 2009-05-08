@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753854AbZEHHQA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbZEHHS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753854AbZEHHQA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 03:16:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZEHHPv
+	id S1756289AbZEHHS1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 03:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752756AbZEHHSQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 03:15:51 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:38628 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752592AbZEHHPv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 03:15:51 -0400
-Date: Fri, 8 May 2009 09:17:59 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "H. Peter Anvin" <hpa@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, vgoyal@redhat.com, hbabu@us.ibm.com,
-       kexec@lists.infradead.org, ying.huang@intel.com, mingo@elte.hu,
-       tglx@linutronix.de, ebiederm@xmission.com,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 01/14] x86, boot: align the .bss section in the decompressor
-Message-ID: <20090508071759.GA12808@uranus.ravnborg.org>
-References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com> <1241735222-6640-2-git-send-email-hpa@linux.intel.com>
-Mime-Version: 1.0
+	Fri, 8 May 2009 03:18:16 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42289 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752592AbZEHHSP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 03:18:15 -0400
+Date: Fri, 8 May 2009 10:18:14 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: Glauber Costa <glommer@redhat.com>
+Cc: Avi Kivity <avi@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] deal with interrupt shadow state for emulated
+	instruction
+Message-ID: <20090508071814.GC25357@redhat.com>
+References: <1241548811-8138-1-git-send-email-glommer@redhat.com> <20090506080321.GU9795@redhat.com> <4A016B98.7070701@redhat.com> <20090508052511.GC5953@poweredge.glommer>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1241735222-6640-2-git-send-email-hpa@linux.intel.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090508052511.GC5953@poweredge.glommer>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 03:26:49PM -0700, H. Peter Anvin wrote:
-> From: H. Peter Anvin <hpa@zytor.com>
+On Fri, May 08, 2009 at 02:25:11AM -0300, Glauber Costa wrote:
+> On Wed, May 06, 2009 at 01:51:04PM +0300, Avi Kivity wrote:
+> > Gleb Natapov wrote:
+> >> On Tue, May 05, 2009 at 02:40:11PM -0400, Glauber Costa wrote:
+> >>   
+> >>> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+> >>> index 8e680c3..a49d07b 100644
+> >>> --- a/arch/x86/include/asm/kvm_host.h
+> >>> +++ b/arch/x86/include/asm/kvm_host.h
+> >>> @@ -510,6 +510,8 @@ struct kvm_x86_ops {
+> >>>  	void (*run)(struct kvm_vcpu *vcpu, struct kvm_run *run);
+> >>>  	int (*handle_exit)(struct kvm_run *run, struct kvm_vcpu *vcpu);
+> >>>  	void (*skip_emulated_instruction)(struct kvm_vcpu *vcpu);
+> >>> +	void (*set_interrupt_shadow)(struct kvm_vcpu *vcpu, int mask);
+> >>>     
+> >> There is .drop_interrupt_shadow() callback. The patch should remove it and
+> >> replace its use by set_interrupt_shadow().
+> >>   
+> >
+> > That would be [PATCH 1/2].
+> [PATCH 2/2]. Otherwise we will break bisectability, as the pure removal of this
+> function would lead us to a non-functioning kernel for no reason.
 > 
-> Aligning the .bss section makes it trivially faster, and makes using
-> larger transfers for the clear slightly easier.
+> Avi: if this patch is okay, please apply. I'll send another one later that replaces
+> the existing .drop_interrupt_shadow by the (then) in tree set_interrupt_shadow.
 > 
-> [ Impact: trivial performance enhancement, future patch prep ]
-> 
-> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-> ---
->  arch/x86/boot/compressed/vmlinux.lds.S |    1 +
->  1 files changed, 1 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/x86/boot/compressed/vmlinux.lds.S b/arch/x86/boot/compressed/vmlinux.lds.S
-> index 0d26c92..27c168d 100644
-> --- a/arch/x86/boot/compressed/vmlinux.lds.S
-> +++ b/arch/x86/boot/compressed/vmlinux.lds.S
-> @@ -42,6 +42,7 @@ SECTIONS
->  		*(.data.*)
->  		_edata = . ;
->  	}
-> +	. = ALIGN(32);
+It is not always easy to understand what Avi means :) but my
+interpretation was that patch 1/2 should replace drop_interrupt_shadow()
+with set_interrupt_shadow() and 2/2 should be only emulation changes.
 
-Where does this magic 32 comes from?
-I would assume the better choice would be:
-	. = ALIGN(L1_CACHE_BYTES);
-
-So we match the relevant CPU.
-
-In general for alignmnet of output sections I see the need for:
-1) Function call
-2) L1_CACHE_BYTES
-3) PAGE_SIZE
-4) 2*PAGE_SIZE
-
-But I see magic constant used here and there that does not match
-the above (when looking at all archs).
-So I act when I see a new 'magic' number..
-
-	Sam
+--
+			Gleb.
