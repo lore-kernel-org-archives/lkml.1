@@ -1,91 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756701AbZEHHS7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbZEHHbQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756701AbZEHHS7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 03:18:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754582AbZEHHSu
+	id S1753769AbZEHHbQ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 03:31:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbZEHHa6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 03:18:50 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:48433 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752756AbZEHHSt convert rfc822-to-8bit (ORCPT
+	Fri, 8 May 2009 03:30:58 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:6797 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752592AbZEHHa5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 03:18:49 -0400
-Message-Id: <4A03F947.76EA.0078.0@novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Fri, 08 May 2009 08:20:07 +0100
-From: "Jan Beulich" <jbeulich@novell.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "the arch/x86 maintainers" <x86@kernel.org>,
-       "Linus Torvalds" <torvalds@linux-foundation.org>,
-       "Xen-devel" <xen-devel@lists.xensource.com>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [PATCH 2/5] xen/x86-64: clean up warnings
-	 aboutIST-using traps
-References: <4A032EE0.9030607@goop.org>
-In-Reply-To: <4A032EE0.9030607@goop.org>
+	Fri, 8 May 2009 03:30:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=pcWyRfIdjtA88DuMQsyP6m7ojiCGoer70X3CptZkAyYzYmYhaJyCakWY64Uyybv8Ya
+         wZGKqBayFEvGMeYrxTa8zhiuxJoK508+aZ7gi/3DSqr4CUXoBm9+WmNAi/SVOvh2BskT
+         ocEMxNE76+kIBWh2LaErb9PZIPHE0mUCYsggA=
+Date: Fri, 8 May 2009 16:30:42 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
+ class citizen
+Message-Id: <20090508163042.ba4ef116.minchan.kim@barrios-desktop>
+In-Reply-To: <20090508030209.GA8892@localhost>
+References: <20090430205936.0f8b29fc@riellaptop.surriel.com>
+	<20090430181340.6f07421d.akpm@linux-foundation.org>
+	<20090430215034.4748e615@riellaptop.surriel.com>
+	<20090430195439.e02edc26.akpm@linux-foundation.org>
+	<49FB01C1.6050204@redhat.com>
+	<20090501123541.7983a8ae.akpm@linux-foundation.org>
+	<20090503031539.GC5702@localhost>
+	<1241432635.7620.4732.camel@twins>
+	<20090507121101.GB20934@localhost>
+	<20090507151039.GA2413@cmpxchg.org>
+	<20090508030209.GA8892@localhost>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Jeremy Fitzhardinge <jeremy@goop.org> 07.05.09 20:56 >>>
->Ignore known IST-using traps.  Aside from the debugger traps, they're
->low-level faults which Xen will handle for us, so the kernel needn't
->worry about them.  Keep warning in case unknown trap starts using IST.
->
->Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
->---
-> arch/x86/xen/enlighten.c |   22 ++++++++++++++++++++--
-> 1 files changed, 20 insertions(+), 2 deletions(-)
->
->diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
->index cb49f57..88f3aa4 100644
->--- a/arch/x86/xen/enlighten.c
->+++ b/arch/x86/xen/enlighten.c
->@@ -439,12 +439,30 @@ static int cvt_gate_to_trap(int vector, const gate_desc *val,
+Hi, Let me have a question. 
+
+On Fri, 8 May 2009 11:02:09 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
+
+> On Thu, May 07, 2009 at 11:10:39PM +0800, Johannes Weiner wrote:
+> > On Thu, May 07, 2009 at 08:11:01PM +0800, Wu Fengguang wrote:
+> > > Introduce AS_EXEC to mark executables and their linked libraries, and to
+> > > protect their referenced active pages from being deactivated.
+> > > 
+> > > CC: Elladan <elladan@eskimo.com>
+> > > CC: Nick Piggin <npiggin@suse.de>
+> > > CC: Johannes Weiner <hannes@cmpxchg.org>
+> > > CC: Christoph Lameter <cl@linux-foundation.org>
+> > > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > Acked-by: Peter Zijlstra <peterz@infradead.org>
+> > > Acked-by: Rik van Riel <riel@redhat.com>
+> > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > > ---
+> > >  include/linux/pagemap.h |    1 +
+> > >  mm/mmap.c               |    2 ++
+> > >  mm/nommu.c              |    2 ++
+> > >  mm/vmscan.c             |   35 +++++++++++++++++++++++++++++++++--
+> > >  4 files changed, 38 insertions(+), 2 deletions(-)
+> > > 
+> > > --- linux.orig/include/linux/pagemap.h
+> > > +++ linux/include/linux/pagemap.h
+> > > @@ -25,6 +25,7 @@ enum mapping_flags {
+> > >  #ifdef CONFIG_UNEVICTABLE_LRU
+> > >  	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
+> > >  #endif
+> > > +	AS_EXEC		= __GFP_BITS_SHIFT + 4,	/* mapped PROT_EXEC somewhere */
+> > >  };
+> > >  
+> > >  static inline void mapping_set_error(struct address_space *mapping, int error)
+> > > --- linux.orig/mm/mmap.c
+> > > +++ linux/mm/mmap.c
+> > > @@ -1194,6 +1194,8 @@ munmap_back:
+> > >  			goto unmap_and_free_vma;
+> > >  		if (vm_flags & VM_EXECUTABLE)
+> > >  			added_exe_file_vma(mm);
+> > > +		if (vm_flags & VM_EXEC)
+> > > +			set_bit(AS_EXEC, &file->f_mapping->flags);
+> > >  	} else if (vm_flags & VM_SHARED) {
+> > >  		error = shmem_zero_setup(vma);
+> > >  		if (error)
+> > > --- linux.orig/mm/nommu.c
+> > > +++ linux/mm/nommu.c
+> > > @@ -1224,6 +1224,8 @@ unsigned long do_mmap_pgoff(struct file 
+> > >  			added_exe_file_vma(current->mm);
+> > >  			vma->vm_mm = current->mm;
+> > >  		}
+> > > +		if (vm_flags & VM_EXEC)
+> > > +			set_bit(AS_EXEC, &file->f_mapping->flags);
+> > >  	}
+> > 
+> > I find it a bit ugly that it applies an attribute of the memory area
+> > (per mm) to the page cache mapping (shared).  Because this in turn
+> > means that the reference through a non-executable vma might get the
+> > pages rotated just because there is/was an executable mmap around.
 > 
-> 	addr = gate_offset(*val);
-> #ifdef CONFIG_X86_64
->+	/*
->+	 * Look for known traps using IST, and substitute them
->+	 * appropriately.  The debugger ones are the only ones we care
->+	 * about.  Xen will handle faults like double_fault and
->+	 * machine_check, so we should never see them.  Warn if
->+	 * there's an unexpected IST-using fault handler.
->+	 */
-> 	if (addr == (unsigned long)debug)
-> 		addr = (unsigned long)xen_debug;
-> 	else if (addr == (unsigned long)int3)
-> 		addr = (unsigned long)xen_int3;
->-	else
->-		WARN_ON(val->ist != 0);
->+	else if (addr == (unsigned long)double_fault ||
->+		 addr == (unsigned long)stack_segment) {
+> Right, the intention was to identify a whole executable/library file,
+> eg. /bin/bash or /lib/libc-2.9.so, covering both _text_ and _data_
+> sections.
 
-I don't think you want to exclude handling stack faults: Ordinary memory
-references using rsp or rbp as the base register will cause these instead
-of general protection faults when the resulting effective address is non-
-canonical.
+But, your patch is care just text section. 
+Do I miss something ?
 
->+		/* Don't need to handle these */
->+		return 0;
->+#ifdef CONFIG_X86_MCE
->+	} else if (addr == (unsigned long)machine_check) {
->+		return 0;
->+#endif
->+	} else {
->+		/* Some other trap using IST? */
->+		if (WARN_ON(val->ist != 0))
->+			return 0;
->+	}
-> #endif	/* CONFIG_X86_64 */
-> 	info->address = addr;
+> > >  	down_write(&nommu_region_sem);
+> > > --- linux.orig/mm/vmscan.c
+> > > +++ linux/mm/vmscan.c
+> > > @@ -1230,6 +1230,7 @@ static void shrink_active_list(unsigned 
+> > >  	unsigned long pgmoved;
+> > >  	unsigned long pgscanned;
+> > >  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
+> > > +	LIST_HEAD(l_active);
+> > >  	LIST_HEAD(l_inactive);
+> > >  	struct page *page;
+> > >  	struct pagevec pvec;
+> > > @@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned 
+> > >  
+> > >  		/* page_referenced clears PageReferenced */
+> > >  		if (page_mapping_inuse(page) &&
+> > > -		    page_referenced(page, 0, sc->mem_cgroup))
+> > > +		    page_referenced(page, 0, sc->mem_cgroup)) {
+> > > +			struct address_space *mapping = page_mapping(page);
+> > > +
+> > >  			pgmoved++;
+> > > +			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
+> > > +				list_add(&page->lru, &l_active);
+> > > +				continue;
+> > > +			}
+> > > +		}
+> > 
+> > Since we walk the VMAs in page_referenced anyway, wouldn't it be
+> > better to check if one of them is executable?  This would even work
+> > for executable anon pages.  After all, there are applications that cow
+> > executable mappings (sbcl and other language environments that use an
+> > executable, run-time modified core image come to mind).
 > 
->-- 
->1.6.0.6
+> The page_referenced() path will only cover the _text_ section.  But
 
-Jan
+Why did you said that "The page_referenced() path will only cover the ""_text_"" section" ? 
+Could you elaborate please ?
 
+> yeah, the _data_ section is more likely to grow huge in some rare cases.
+>
+> Thanks,
+> Fengguang
+> 
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+
+
+-- 
+Kinds Regards
+Minchan Kim
