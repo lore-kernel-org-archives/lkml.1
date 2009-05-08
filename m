@@ -1,90 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbZEHMsU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756948AbZEHMsg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753094AbZEHMsU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 08:48:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbZEHMsJ
+	id S1756948AbZEHMsg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 08:48:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757772AbZEHMsP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 08:48:09 -0400
-Received: from smtp02.citrix.com ([66.165.176.63]:63663 "EHLO
-	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753237AbZEHMsI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 08:48:08 -0400
-X-Greylist: delayed 574 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 May 2009 08:48:08 EDT
-X-IronPort-AV: E=Sophos;i="4.40,317,1238990400"; 
-   d="scan'208";a="50481805"
-Subject: Re: [PATCH 06/16] xen: disable PAT
-From: Ian Campbell <Ian.Campbell@eu.citrix.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
-In-Reply-To: <20090508111432.GF11596@elte.hu>
-References: <1241730653-4688-1-git-send-email-jeremy@goop.org>
-	 <1241730653-4688-7-git-send-email-jeremy@goop.org>
-	 <20090508111432.GF11596@elte.hu>
-Content-Type: text/plain
-Organization: Citrix Systems, Inc.
-Date: Fri, 8 May 2009 13:38:31 +0100
-Message-ID: <1241786311.16804.56.camel@zakaz.uk.xensource.com>
+	Fri, 8 May 2009 08:48:15 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43135 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759738AbZEHMsO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 08:48:14 -0400
+Date: Fri, 8 May 2009 08:45:42 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 05/18] io-controller: Common hierarchical fair queuing
+	code in elevaotor layer
+Message-ID: <20090508124542.GC7293@redhat.com>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-6-git-send-email-vgoyal@redhat.com> <4A0290ED.7080506@cn.fujitsu.com>
 MIME-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A0290ED.7080506@cn.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-08 at 07:14 -0400, Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Thu, May 07, 2009 at 03:42:37PM +0800, Gui Jianfeng wrote:
+> Vivek Goyal wrote:
+> > This patch enables hierarchical fair queuing in common layer. It is
+> > controlled by config option CONFIG_GROUP_IOSCHED.
+> ...
+> > +}
+> > +
+> > +void iocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
+> > +{
+> > +	struct io_cgroup *iocg = cgroup_to_io_cgroup(cgroup);
+> > +	struct hlist_node *n, *tmp;
+> > +	struct io_group *iog;
+> > +
+> > +	/*
+> > +	 * Since we are destroying the cgroup, there are no more tasks
+> > +	 * referencing it, and all the RCU grace periods that may have
+> > +	 * referenced it are ended (as the destruction of the parent
+> > +	 * cgroup is RCU-safe); bgrp->group_data will not be accessed by
+> > +	 * anything else and we don't need any synchronization.
+> > +	 */
+> > +	hlist_for_each_entry_safe(iog, n, tmp, &iocg->group_data, group_node)
+> > +		io_destroy_group(iocg, iog);
+> > +
+> > +	BUG_ON(!hlist_empty(&iocg->group_data));
+> > +
 > 
-> > From: Ian Campbell <ian.campbell@citrix.com>
-> > 
-> > Impact: disable PAT under Xen
-> > 
-> > Xen imposes a particular PAT layout on all paravirtual guests which
-> > does not match the layout Linux would like to use.
-> > 
-> > Force PAT to be disabled until this is resolved.
-> > 
-> > Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-> > Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>     Hi Vivek,
 > 
-> hm, what will the resolution be?
+>     IMHO, free_css_id() needs to be called here.
+> 
 
-Roughly speaking the kernel needs to cope with different values written
-to MSR_IA32_CR_PAT than the single hard coded value it would write
-itself if given the chance. Essentially _PAGE_CACHE_* need to become
-dynamic (or I guess we could change the native layout to match Xen's, I
-don't know why native differs from the initial state, I guess just to
-avoid using the PAT bit for some reason).
+Thanks. Sure, will do in next version.
 
-The various mappings used are:
-	PAT PCD PWT	NATIVE	XEN	BIOS	INIT
-        0   0   0	WB	WB	WB	WB
-        0   0   1	WC	WT	WT	WT
-        0   1   0	UC-	UC-	UC-	UC-
-        0   1   1	UC	UC	-	UC
-        1   0   0	-	WC	WB	WB
-        1   0   1	-	WP	WT	WT
-        1   1   0	-	-	UC-	UC-
-        1   1   1	-	-	-	UC-
-(INIT is the processors initial state and BIOS is apparently commonly
-set by the BIOS).
-
-At the time this changeset was originally written using the actual PAT
-bit (required by Xen's layout to get at WC) led to strange errors (to do
-with swap masking various bits IIRC) but I believe those have been fixed
-since by Jan Beulich.
-
-I'm not sure how _PAGE_PAT_LARGE fits in -- native cunning avoids having
-to worry about it by not using the PAT bit at all.
-
-Ian.
-
-
+Thanks
+Vivek
