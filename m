@@ -1,53 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758517AbZEHMos@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760492AbZEHMpd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758517AbZEHMos (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 08:44:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754049AbZEHMoi
+	id S1760492AbZEHMpd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 08:45:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbZEHMpX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 08:44:38 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:41283 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752603AbZEHMoh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 08:44:37 -0400
-Date: Fri, 8 May 2009 06:44:36 -0600
-From: Matthew Wilcox <matthew@wil.cx>
+	Fri, 8 May 2009 08:45:23 -0400
+Received: from mga14.intel.com ([143.182.124.37]:17954 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756213AbZEHMpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 08:45:22 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,317,1239001200"; 
+   d="scan'208";a="140688134"
+Date: Fri, 8 May 2009 20:44:33 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Yinghai Lu <yinghai@kernel.org>, linux-pci@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [GIT PULL] xen: dom0 support for PCI access
-Message-ID: <20090508124436.GT8112@parisc-linux.org>
-References: <1241732737-7669-1-git-send-email-jeremy@goop.org> <20090508111024.GD11596@elte.hu>
+Cc: =?utf-8?B?RnLDqWTDqXJpYw==?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 4/8] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090508124433.GB15949@localhost>
+References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090508111024.GD11596@elte.hu>
+In-Reply-To: <20090508114742.GB17129@elte.hu>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 01:10:24PM +0200, Ingo Molnar wrote:
-> ( Cc:-ed PCI folks. Original thread with patches is on lkml. There's
->   a few details that affect non-Xen PCI code too - and it would be
->   nice to see feedback on this general method as well, from the PCI 
->   experts . )
+Hi Ingo,
 
-I read over the top seven commits here:
-http://git.kernel.org/?p=linux/kernel/git/jeremy/xen.git;a=shortlog;h=xen-tip/dom0/pci
-and they all seem reasonable to me as far as they affect other code.
-I'm assuming that Xen people know what they're doing with respect to
-the Xen-only code ;-)
+On Fri, May 08, 2009 at 07:47:42PM +0800, Ingo Molnar wrote:
+> 
+> * Wu Fengguang <fengguang.wu@intel.com> wrote:
+> 
+> > Export all page flags faithfully in /proc/kpageflags.
+> 
+> Ongoing objection and NAK against extended haphazard exporting of 
+> kernel internals via an ad-hoc ABI via ad-hoc, privatized 
+> instrumentation that only helps the MM code and nothing else. It was 
+> a mistake to introduce the /proc/kpageflags hack a year ago, and it 
+> even more wrong today to expand on it.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+If cannot abandon it, embrace it. That's my attitude.
+
+> /proc/kpageflags should be done via the proper methods outlined in 
+> the previous mails i wrote on this topic: for example by using the 
+> 'object collections' abstraction i suggested. Clean enumeration of 
+> all pages (files, tasks, etc.) and the definition of histograms over 
+> it via free-form filter expressions is the right way to do this. It 
+> would not only help other subsystems, it would also be far more 
+> capable.
+
+For the new interfaces(files etc.) I'd very like to use the ftrace
+interface. For the existing pagemap interfaces, if they can fulfill
+their targeted tasks, why bother making the shift?
+
+When the pagemap interfaces cannot satisfy some new applications,
+and ftrace can provide a superset of the pagemap interfaces and shows
+clear advantages while meeting the new demands, then we can schedule
+tearing down of the old interface?
+
+> So this should be done in cooperation with instrumentation folks, 
+> while improving _all_ of Linux instrumentation in general. Or, if 
+> you dont have the time/interest to work with us on that, it should 
+> not be done at all. Not having the resources/interest to do 
+> something properly is not a license to introduce further 
+> instrumentation crap into Linux.
+
+I'd be glad to work with you on the 'object collections' ftrace
+interfaces.  Maybe next month. For now my time have been allocated
+for the hwpoison work, sorry!
+
+Thanks,
+Fengguang
