@@ -1,78 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbZEHU4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763657AbZEHVCE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760096AbZEHU4o (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 16:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756776AbZEHU4c
+	id S1763657AbZEHVCE (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 17:02:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757233AbZEHVBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 16:56:32 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:64168 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755502AbZEHU4b (ORCPT
+	Fri, 8 May 2009 17:01:54 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:48386 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757194AbZEHVBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 16:56:31 -0400
-Message-ID: <4A049C6B.9070000@nortel.com>
-Date: Fri, 08 May 2009 14:56:11 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org,
-       Linux Network Development list <netdev@vger.kernel.org>
-Subject: [PATCH] ipconfig: handle case of delayed DHCP server
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 8 May 2009 17:01:53 -0400
+Date: Fri, 8 May 2009 13:56:32 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: gorcunov@openvz.org, kosaki.motohiro@jp.fujitsu.com, mel@csn.ul.ie,
+       cl@linux-foundation.org, riel@redhat.com, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, rientjes@google.com
+Subject: Re: [PATCH 1/2] mm: Introduce GFP_PANIC for early-boot allocations
+Message-Id: <20090508135632.9c041339.akpm@linux-foundation.org>
+In-Reply-To: <1241795428.28600.60.camel@penberg-laptop>
+References: <1241795428.28600.60.camel@penberg-laptop>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 08 May 2009 20:56:13.0332 (UTC) FILETIME=[6C1F3D40:01C9D01F]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 08 May 2009 18:10:28 +0300
+Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
-If a DHCP server is delayed, it's possible for the client to receive the 
-DHCPOFFER after it has already sent out a new DHCPDISCOVER message from 
-a second interface.  The client then sends out a DHCPREQUEST from the 
-second interface, but the server doesn't recognize the device and 
-rejects the request.
+> +#define GFP_PANIC	(__GFP_NOFAIL | __GFP_NORETRY)
 
-This patch simply tracks the current device being configured and throws 
-away the OFFER if it is not intended for the current device.  A more 
-sophisticated approach would be to put the OFFER information into the 
-struct ic_device rather than storing it globally.
+urgh, you have to be kidding me.  This significantly worsens complexity
+and risk in core MM and it's just yuk.
 
-Signed-off-by: Chris Friesen <cfriesen@nortel.com>
+I think we can justify pulling such dopey party tricks to save
+pageframe space, or bits in page.flags and such.  But just to save a
+scrap of memory which would have been released during boot anwyay? 
+Don't think so.
 
-diff --git a/net/ipv4/ipconfig.c b/net/ipv4/ipconfig.c
-index 90d22ae..88bf051 100644
---- a/net/ipv4/ipconfig.c
-+++ b/net/ipv4/ipconfig.c
-@@ -139,6 +139,8 @@ __be32 ic_servaddr = NONE;	/* Boot server IP address */
- __be32 root_server_addr = NONE;	/* Address of NFS server */
- u8 root_server_path[256] = { 0, };	/* Path to mount as root */
- 
-+u32 ic_dev_xid;		/* Device under configuration */
-+
- /* vendor class identifier */
- static char vendor_class_identifier[253] __initdata;
- 
-@@ -932,6 +934,13 @@ static int __init ic_bootp_recv(struct sk_buff *skb, struct net_device *dev, str
- 		goto drop_unlock;
- 	}
- 
-+	/* Is it a reply for the device we are configuring? */
-+	if (b->xid != ic_dev_xid) {
-+		if (net_ratelimit())
-+			printk(KERN_ERR "DHCP/BOOTP: Ignoring delayed packet \n");
-+		goto drop_unlock;
-+	}
-+
- 	/* Parse extensions */
- 	if (ext_len >= 4 &&
- 	    !memcmp(b->exten, ic_bootp_cookie, 4)) { /* Check magic cookie */
-@@ -1115,6 +1124,9 @@ static int __init ic_dynamic(void)
- 	get_random_bytes(&timeout, sizeof(timeout));
- 	timeout = CONF_BASE_TIMEOUT + (timeout % (unsigned) CONF_TIMEOUT_RANDOM);
- 	for (;;) {
-+		/* Track the device we are configuring */
-+		ic_dev_xid = d->xid;
-+
- #ifdef IPCONFIG_BOOTP
- 		if (do_bootp && (d->able & IC_BOOTP))
- 			ic_bootp_send_if(d, jiffies - start_jiffies);
+I'd suggest panic_if_null().  Or just leave everything alone - it's
+hardly a pressing problem.
+
