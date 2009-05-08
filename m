@@ -1,80 +1,208 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbZEHJCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759210AbZEHJFG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758117AbZEHJCW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 05:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbZEHJCM
+	id S1759210AbZEHJFG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 05:05:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbZEHJEx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 05:02:12 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:42935 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754550AbZEHJCL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 05:02:11 -0400
-Subject: Re: [ath9k-devel] New kernel recommendations for ath9k
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jason Daly <jason2@primarykey.ca>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Karl Hiramoto <karl@hiramoto.org>,
-       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <6818156.7441241761835737.JavaMail.james@prod3.pk.lan>
-References: <43e72e890905070104u59eebcceu18718a733e388cc9@mail.gmail.com>
-	 <4A02B1CA.3060708@hiramoto.org>
-	 <43e72e890905071020v26857c52p3abea96be04ef1d9@mail.gmail.com>
-	 <6818156.7441241761835737.JavaMail.james@prod3.pk.lan>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-h970Vm30s6lM3LS133hW"
-Date: Fri, 08 May 2009 11:02:04 +0200
-Message-Id: <1241773324.1567.33.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Fri, 8 May 2009 05:04:53 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37545 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751394AbZEHJEw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 05:04:52 -0400
+Date: Fri, 8 May 2009 11:04:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Shaohua Li <shaohua.li@intel.com>
+Cc: lkml <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] x86 MCE: shut up lockdep warning
+Message-ID: <20090508090424.GB28455@elte.hu>
+References: <1241754429.4444.12.camel@sli10-desk.sh.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241754429.4444.12.camel@sli10-desk.sh.intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-h970Vm30s6lM3LS133hW
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Shaohua Li <shaohua.li@intel.com> wrote:
 
-On Sat, 2009-05-09 at 01:50 -0400, Jason Daly wrote:
-> Thanks for the kernel info.
->=20
-> How do you configure hostapd to work in N mode with ath9k?  Currently=20
-> the hw_mode parameter found in hostapd.conf does not accept anything=20
-> greater than g.
+> lockdep report below warning when I try to offline one cpu:
+> [  110.835487] =================================
+> [  110.835616] [ INFO: inconsistent lock state ]
+> [  110.835688] 2.6.30-rc4-00336-g8c9ed89 #52
+> [  110.835757] ---------------------------------
+> [  110.835828] inconsistent {HARDIRQ-ON-W} -> {IN-HARDIRQ-W} usage.
+> [  110.835908] swapper/0 [HC1[1]:SC0[0]:HE0:SE1] takes:
+> [  110.835982]  (cmci_discover_lock){?.+...}, at: [<ffffffff80236dc0>] cmci_clear+0x30/0x9b
+> 
+> smp_call_function_single() will disable interrupt. moving mce reenable/disable
+> to workqueue, so no irq is disabled.
+> 
+> Signed-off-by: Shaohua Li<shaohua.li@intel.com>
+> diff --git a/arch/x86/kernel/cpu/mcheck/mce_64.c b/arch/x86/kernel/cpu/mcheck/mce_64.c
+> index 6fb0b35..739c824 100644
+> --- a/arch/x86/kernel/cpu/mcheck/mce_64.c
+> +++ b/arch/x86/kernel/cpu/mcheck/mce_64.c
+> @@ -1057,30 +1057,32 @@ static __cpuinit void mce_remove_device(unsigned int cpu)
+>  }
+>  
+>  /* Make sure there are no machine checks on offlined CPUs. */
+> -static void mce_disable_cpu(void *h)
+> +static long mce_disable_cpu(void *h)
+>  {
+>  	int i;
+>  	unsigned long action = *(unsigned long *)h;
+>  
+>  	if (!mce_available(&current_cpu_data))
+> -		return;
+> +		return 0;
+>  	if (!(action & CPU_TASKS_FROZEN))
+>  		cmci_clear();
+>  	for (i = 0; i < banks; i++)
+>  		wrmsrl(MSR_IA32_MC0_CTL + i*4, 0);
+> +	return 0;
+>  }
+>  
+> -static void mce_reenable_cpu(void *h)
+> +static long mce_reenable_cpu(void *h)
+>  {
+>  	int i;
+>  	unsigned long action = *(unsigned long *)h;
+>  
+>  	if (!mce_available(&current_cpu_data))
+> -		return;
+> +		return 0;
+>  	if (!(action & CPU_TASKS_FROZEN))
+>  		cmci_reenable();
+>  	for (i = 0; i < banks; i++)
+>  		wrmsrl(MSR_IA32_MC0_CTL + i*4, bank[i]);
+> +	return 0;
+>  }
+>  
+>  /* Get notified when a cpu comes on/off. Be hotplug friendly. */
+> @@ -1106,14 +1108,14 @@ static int __cpuinit mce_cpu_callback(struct notifier_block *nfb,
+>  	case CPU_DOWN_PREPARE:
+>  	case CPU_DOWN_PREPARE_FROZEN:
+>  		del_timer_sync(t);
+> -		smp_call_function_single(cpu, mce_disable_cpu, &action, 1);
+> +		work_on_cpu(cpu, mce_disable_cpu, &action);
+>  		break;
+>  	case CPU_DOWN_FAILED:
+>  	case CPU_DOWN_FAILED_FROZEN:
+>  		t->expires = round_jiffies(jiffies +
+>  						__get_cpu_var(next_interval));
+>  		add_timer_on(t, cpu);
+> -		smp_call_function_single(cpu, mce_reenable_cpu, &action, 1);
+> +		work_on_cpu(cpu, mce_reenable_cpu, &action);
+>  		break;
 
-N isn't "greater than" G. N is more features than G. Just set the N
-options in the config file. You may need a git hostapd, I don't know for
-sure.
+No, this needs a real fix - not a 'shut up lockdep' workaround.
 
-Also, please set your clock and timezone correctly _before_ you say
-"thank you"!. You have posted on
-	Sat, 09 May 2009 01:50:12 -0400 (07:50 CEST)
+One problem is that cmci_discover_lock is taken irq-unsafe, which is 
+obviously a bad idea ...
 
-which is clearly impossible.
+Could you please try the fix for that from Hidetoshi-san, attached 
+below (also available in latest -tip).
 
-johannes
+Thanks,
 
---=-h970Vm30s6lM3LS133hW
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+	Ingo
 
------BEGIN PGP SIGNATURE-----
+------------------>
+>From e5299926d7459d9fa7c7f856983147817aedb10e Mon Sep 17 00:00:00 2001
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Date: Fri, 8 May 2009 17:28:40 +0900
+Subject: [PATCH] x86: MCE: make cmci_discover_lock irq-safe
 
-iQIcBAABAgAGBQJKA/UCAAoJEODzc/N7+QmahqgQAJnKJRl39qz78L3dQyNfus2J
-Ukho9/cYBulUcLxLbMxFb8M7FtkmHcZGZPf9w5x/l+UBU4pZuP2+1poMeRT1fq5N
-Rh/x1sU4es7+4rPigO7PNH1zgpgufO5lmLhcmPzNZWLyRc4j6XxBAk3Gxa2YeEmt
-TXfkNit/cLjeSF4s/tSzVA1OikQRN+K2oUAEt4S2sd5Ln8FGMEOXm831/390KK7e
-juC7JzSvS9XnoVWgKn5FnL4wbDBwm9LAowO/lTdHIw6xj+u7lddfBy5oOhoP+95x
-sEzm37A/FcHuD2J3qnOAGGPCR2oFJG+KlGgpu//FjtuVgdPBCgtYjCHcjzvQjst0
-Dsb0coAjuFbi7Qq6NpgRJnWJLNsqZUZPSMGQDdumaySb3rzby6MRnZ+rJmz8R5QB
-ARB+Lr29hN7t00sG7jNriAs75gwgKl3dTWzI8Sy0Gcme5GuSYL022cwV0mXkLTVy
-ap1HKddGpO6DTbv78Z4NNieyG+eW5dcO3Wey216kFjIf+ei9H1CyW0RvXrDVosBY
-0uxsR9SR/mHYC0IvXdtqBCox+9rcpCX5sgpTGHXW1jZcCNPGFNzOagjOlD93X8LT
-f93qbmuwyNZs2iDBtAHnUhZ91OTlwOKx5WbnnmsZp41CiPjiMX6LDvz1R59x2eUg
-Uw1v8zof+xl10ul3Dw+L
-=a0Cg
------END PGP SIGNATURE-----
+Lockdep reports the warning below when Li tries to offline one cpu:
 
---=-h970Vm30s6lM3LS133hW--
+[  110.835487] =================================
+[  110.835616] [ INFO: inconsistent lock state ]
+[  110.835688] 2.6.30-rc4-00336-g8c9ed89 #52
+[  110.835757] ---------------------------------
+[  110.835828] inconsistent {HARDIRQ-ON-W} -> {IN-HARDIRQ-W} usage.
+[  110.835908] swapper/0 [HC1[1]:SC0[0]:HE0:SE1] takes:
+[  110.835982]  (cmci_discover_lock){?.+...}, at: [<ffffffff80236dc0>] cmci_clear+0x30/0x9b
 
+cmci_clear() can be called via smp_call_function_single().
+
+It is better to disable interrupt while holding cmci_discover_lock,
+to turn it into an irq-safe lock - we can deadlock otherwise.
+
+[ Impact: fix possible deadlock in the MCE code ]
+
+Reported-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <4A03ED38.8000700@jp.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Reported-by: Shaohua Li<shaohua.li@intel.com>
+---
+ arch/x86/kernel/cpu/mcheck/mce_intel_64.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+index d6b72df..cef3ee3 100644
+--- a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
++++ b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
+@@ -151,10 +151,11 @@ static void print_update(char *type, int *hdr, int num)
+ static void cmci_discover(int banks, int boot)
+ {
+ 	unsigned long *owned = (void *)&__get_cpu_var(mce_banks_owned);
++	unsigned long flags;
+ 	int hdr = 0;
+ 	int i;
+ 
+-	spin_lock(&cmci_discover_lock);
++	spin_lock_irqsave(&cmci_discover_lock, flags);
+ 	for (i = 0; i < banks; i++) {
+ 		u64 val;
+ 
+@@ -184,7 +185,7 @@ static void cmci_discover(int banks, int boot)
+ 			WARN_ON(!test_bit(i, __get_cpu_var(mce_poll_banks)));
+ 		}
+ 	}
+-	spin_unlock(&cmci_discover_lock);
++	spin_unlock_irqrestore(&cmci_discover_lock, flags);
+ 	if (hdr)
+ 		printk(KERN_CONT "\n");
+ }
+@@ -211,13 +212,14 @@ void cmci_recheck(void)
+  */
+ void cmci_clear(void)
+ {
++	unsigned long flags;
+ 	int i;
+ 	int banks;
+ 	u64 val;
+ 
+ 	if (!cmci_supported(&banks))
+ 		return;
+-	spin_lock(&cmci_discover_lock);
++	spin_lock_irqsave(&cmci_discover_lock, flags);
+ 	for (i = 0; i < banks; i++) {
+ 		if (!test_bit(i, __get_cpu_var(mce_banks_owned)))
+ 			continue;
+@@ -227,7 +229,7 @@ void cmci_clear(void)
+ 		wrmsrl(MSR_IA32_MC0_CTL2 + i, val);
+ 		__clear_bit(i, __get_cpu_var(mce_banks_owned));
+ 	}
+-	spin_unlock(&cmci_discover_lock);
++	spin_unlock_irqrestore(&cmci_discover_lock, flags);
+ }
+ 
+ /*
