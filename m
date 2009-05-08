@@ -1,104 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764224AbZEHTGn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764150AbZEHTHL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764224AbZEHTGn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 15:06:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764163AbZEHTGZ
+	id S1764150AbZEHTHL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:07:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763496AbZEHTGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 15:06:25 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:32888 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763697AbZEHTGX (ORCPT
+	Fri, 8 May 2009 15:06:30 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:7205 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763004AbZEHTG3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:06:23 -0400
-Subject: Re: [RFC][PATCH] tsc_khz= boot option to avoid TSC 
- calibrationvariance
-From: john stultz <johnstul@us.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: George Spelvin <linux@horizon.com>, ulrich.windl@rz.uni-regensburg.de,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       Clark Williams <williams@redhat.com>, zippel@linux-m68k.org,
-       Linus Torvalds <torvalds@linux-foundation.org>
-In-Reply-To: <20090508121521.GC18758@elte.hu>
-References: <1241742647.7518.108.camel@localhost.localdomain>
-	 <20090508121521.GC18758@elte.hu>
-Content-Type: text/plain
-Date: Fri, 08 May 2009 12:06:12 -0700
-Message-Id: <1241809572.7297.7.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Fri, 8 May 2009 15:06:29 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
+	cc:content-type:content-transfer-encoding:x-system-of-record;
+	b=SujJ7TCCi75y3vR5U7HUo6q+n/EcuVB+hAlLDCLcRAyCoG5msYawSTH9J0FM3gmJP
+	77fQUcB1aGQGNPiM9tZBA==
+MIME-Version: 1.0
+In-Reply-To: <20090508185644.GH7293@redhat.com>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com>
+	 <4A03FF3C.4020506@cn.fujitsu.com> <20090508135724.GE7293@redhat.com>
+	 <e98e18940905081041r386e52a5q5a2b1f13f1e8c634@mail.gmail.com>
+	 <20090508185644.GH7293@redhat.com>
+Date: Fri, 8 May 2009 12:06:22 -0700
+Message-ID: <e98e18940905081206o254f3577u5909a73c98e6b24a@mail.gmail.com>
+Subject: Re: [PATCH] io-controller: Add io group reference handling for 
+	request
+From: Nauman Rafique <nauman@google.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-08 at 14:15 +0200, Ingo Molnar wrote:
-> * john stultz <johnstul@us.ibm.com> wrote:
-> 
-> > All, 
-> > 
-> > Despite recent tweaking, TSC calibration variance is still biting 
-> > users who care about keeping close sync with NTP servers over 
-> > reboots.
-> > 
-> > Here's a recent example: 
-> > http://lkml.indiana.edu/hypermail/linux/kernel/0905.0/02061.html
-> > 
-> > The problem is, each reboot, we have to calibrate the TSC, and any 
-> > error, regardless of how small, in the calibrated freq has to be 
-> > corrected for by NTP. Assuming the error is within 500ppm NTP can 
-> > correct this, but until it finds the proper correction value for 
-> > the new TSC freq, users may see time offsets from the NTP server.
-> > 
-> > In my experience, its fairly easy to see 100khz variance from 
-> > reboot to reboot with 2.6.30-rc.
-> > 
-> > While I think its worth trying to improve the calibration further, 
-> > there will likely be a trade-off between very accurate calibration 
-> > and fast boot times.
-> > 
-> > To mitigate this, I wanted to provide a tsc_khz= boot option. This 
-> > would allow users to set the tsc_khz value at boot-up, assuming 
-> > they are within 1Mhz of the calibrated value (to protect against 
-> > bad values). Once the tsc_khz value is set in grub, the box will 
-> > always boot with the same value, so the NTP drift value prior to 
-> > reboot will still be correct after rebooting.
-> > 
-> > Thanks to George Spelvin for the idea:
-> > 	http://lkml.indiana.edu/hypermail/linux/kernel/0905.0/02807.html
-> > 
-> > Thoughts or feedback?
-> > 
-> > Signed-off-by: John Stultz <johnstul@us.ibm.com>
-> 
-> Wouldnt it be a lot more flexible to have a sysctl for this, which 
-> would be set before ntpd is started? (or which would be set by ntpd)
+On Fri, May 8, 2009 at 11:56 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+> On Fri, May 08, 2009 at 10:41:01AM -0700, Nauman Rafique wrote:
+>> On Fri, May 8, 2009 at 6:57 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
+>> > On Fri, May 08, 2009 at 05:45:32PM +0800, Gui Jianfeng wrote:
+>> >> Hi Vivek,
+>> >>
+>> >> This patch adds io group reference handling when allocating
+>> >> and removing a request.
+>> >>
+>> >
+>> > Hi Gui,
+>> >
+>> > Thanks for the patch. We were thinking that requests can take a reference
+>> > on io queues and io queues can take a reference on io groups. That should
+>> > make sure that io groups don't go away as long as active requests are
+>> > present.
+>> >
+>> > But there seems to be a small window while allocating the new request
+>> > where request gets allocated from a group first and then later it is
+>> > mapped to that group and queue is created. IOW, in get_request_wait(),
+>> > we allocate a request from a particular group and set rq->rl, then
+>> > drop the queue lock and later call elv_set_request() which again maps
+>> > the request to the group saves rq->iog and creates new queue. This window
+>> > is troublesome because request can be mapped to a particular group at the
+>> > time of allocation and during set_request() it can go to a different
+>> > group as queue lock was dropped and group might have disappeared.
+>> >
+>> > In this case probably it might make sense that request also takes a
+>> > reference on groups. At the same time it looks too much that request takes
+>> > a reference on queue as well as group object. Ideas are welcome on how
+>> > to handle it...
+>>
+>> IMHO a request being allocated on the wrong cgroup should not be a big
+>> problem as such. All it means is that the request descriptor was
+>> accounted to the wrong cgroup in this particular corner case. Please
+>> correct me if I am wrong.
+>
+> I think you are right. We just need to be little careful while freeing
+> the request that associated request list might have gone away (rq->rl).
+>
+> Or we probably can think of getting rid of (rq->rl) also and while
+> freeing request determine io queue and group from rq->ioq. But somehow
+> I remember that I had to introduce rq->rl otherwise I was running into
+> issues of request being mapped to different groups at different point
+> of time hence different request list etc. Will check again..
+>>
+>> We can also get rid of rq->iog pointer too. What that means is that
+>> request is associated with ioq (rq->ioq), and we can use
+>> ioq_to_io_group() function to get the io_group. So the request would
+>> only be indirectly associated with an io_group i.e. the request is
+>> associated with an io_queue and the io_group for the request is the
+>> io_group associated with io_queue. Do you see any problems with that
+>> approach?
+>
+> Looks like this is also doable. Good idea. Can't think of why can't
+> we get rid of rq->iog and manage with rq->ioq. There are only 1-2
+> places where ioq is not setup yet and rq has been mapped to the group.
+> There we shall have to carry group information or carry bio information
+> and map it again to get group info.
+>
+> Will try to implement it and see how does it go.
 
-The difficulty is that once we've initialized the TSC clocksource and
-its in use, its difficult to just override the existing freq. This is
-partially why we disqualify the TSC if it changes freq from power
-management.
+I tried it, and it seems to work. I passed io_group around as function
+arguments, and return values before ioq was set.
 
-> The mechanism and semantics would be similar: we would _not_ expose 
-> cpu_khz directly, we'd have a boot_cpu_khz value saved for sure, and 
-> we'd allow the sysctl to set the cpu_khz to within 1MHz of cpu_khz - 
-> and we'd re-scale the timer irq and other calibrated values 
-> accordingly.
-> 
-> Alternatively, a much simpler method: why doesnt ntpd save its own 
-> notion of cpu_khz once it has reached stability, and reads cpu_khz 
-> (from /proc/cpuinfo) during bootup and re-scales its initial offset 
-> and phase shift accordingly, compensating for that noise? (if it's 
-> within 1MHz)
-
-Yea, I'm with George on this. It would be a very linux-specific cludge
-(really even further, linux-x86 specific). Further it would require NTP
-to figure out which clocksource is being used (as ACPI PM and HPET don't
-have this calibration error) before applying. 
-
-Seems poor to push the problem to NTP when the in-kernel calibration
-code is really the cause of the issue.
-
-thanks
--john
-
-
+>
+> Thanks
+> Vivek
+>
