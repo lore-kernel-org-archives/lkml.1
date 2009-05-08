@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760417AbZEHJk3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762686AbZEHJl7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760417AbZEHJk3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 05:40:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753203AbZEHJkS
+	id S1762686AbZEHJl7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 05:41:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757134AbZEHJlt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 05:40:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58702 "EHLO mx2.redhat.com"
+	Fri, 8 May 2009 05:41:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50718 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751977AbZEHJkQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 05:40:16 -0400
-Date: Fri, 8 May 2009 06:39:00 -0300
+	id S1756147AbZEHJlr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 05:41:47 -0400
+Date: Fri, 8 May 2009 06:40:48 -0300
 From: Mauro Carvalho Chehab <mchehab@redhat.com>
 To: Borislav Petkov <borislav.petkov@amd.com>
 Cc: <akpm@linux-foundation.org>, <greg@kroah.com>, <mingo@elte.hu>,
@@ -17,11 +17,12 @@ Cc: <akpm@linux-foundation.org>, <greg@kroah.com>, <mingo@elte.hu>,
        <aris@redhat.com>, edt@aei.ca, <linux-kernel@vger.kernel.org>,
        Doug Thompson <dougthompson@xmission.com>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: Re: [PATCH 15/21] amd64_edac: add F10h-and-later methods-p3
-Message-ID: <20090508063900.0bf2042a@pedra.chehab.org>
-In-Reply-To: <1241704183-29223-16-git-send-email-borislav.petkov@amd.com>
+Subject: Re: [PATCH 17/21] amd64_edac: add ECC chipkill syndrome mapping
+ table
+Message-ID: <20090508064048.3de3862c@pedra.chehab.org>
+In-Reply-To: <1241704183-29223-18-git-send-email-borislav.petkov@amd.com>
 References: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com>
-	<1241704183-29223-16-git-send-email-borislav.petkov@amd.com>
+	<1241704183-29223-18-git-send-email-borislav.petkov@amd.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -29,357 +30,169 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Em Thu, 7 May 2009 15:49:37 +0200
+Em Thu, 7 May 2009 15:49:39 +0200
 Borislav Petkov <borislav.petkov@amd.com> escreveu:
 
 > From: Doug Thompson <dougthompson@xmission.com>
-> 
-> Borislav: cleanup, remove StinkyIdentifiers, simplify logic
 > 
 > Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 > Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 
 Reviewed-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 
-
 > ---
->  drivers/edac/amd64_edac.c |  292 ++++++++++++++++++++++++++++++++++++++++++++-
->  1 files changed, 288 insertions(+), 4 deletions(-)
+>  drivers/edac/amd64_edac.c |  140 +++++++++++++++++++++++++++++++++++++++++++++
+>  1 files changed, 140 insertions(+), 0 deletions(-)
 > 
 > diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-> index 3dc04c0..a805554 100644
+> index c6c8d6b..68fc717 100644
 > --- a/drivers/edac/amd64_edac.c
 > +++ b/drivers/edac/amd64_edac.c
-> @@ -1554,6 +1554,10 @@ static void f10_read_dram_ctl_register(struct amd64_pvt *pvt)
->  			pvt->dram_ctl_select_high);
+> @@ -2084,4 +2084,144 @@ static struct pci_dev *pci_get_related_function(unsigned int vendor,
+>  	return dev;
 >  }
 >  
 > +/*
-> + * determine channel based on the interleaving mode: F10h BKDG, 2.8.9 Memory
-> + * Interleaving Modes.
-> + */
->  static u32 f10_determine_channel(struct amd64_pvt *pvt, u64 sys_addr,
->  				int hi_range_sel, u32 intlv_en)
->  {
-> @@ -1564,6 +1568,9 @@ static u32 f10_determine_channel(struct amd64_pvt *pvt, u64 sys_addr,
->  	else if (hi_range_sel)
->  		cs = dct_sel_high;
->  	else if (dct_interleave_enabled(pvt)) {
-> +		/*
-> +		 * see F2x110[DctSelIntLvAddr] - channel interleave mode
-> +		 */
->  		if (dct_sel_interleave_addr(pvt) == 0)
->  			cs = sys_addr >> 6 & 1;
->  		else if ((dct_sel_interleave_addr(pvt) >> 1) & 1) {
-> @@ -1601,22 +1608,25 @@ static inline u32 f10_map_intlv_en_to_shift(u32 intlv_en)
->  	return 0;
->  }
->  
-> -static inline u64 f10_determine_base_addr_offset(u64 sys_addr, int hi_range_sel,
-> +/*
-> + * See F10h BKDG, 2.8.10.2 DctSelBaseOffset Programming
-> + */
-> +static inline u64 f10_get_base_addr_offset(u64 sys_addr, int hi_range_sel,
->  						 u32 dct_sel_base_addr,
->  						 u64 dct_sel_base_off,
-> -						 u32 hole_en, u32 hole_off,
-> +						 u32 hole_valid, u32 hole_off,
->  						 u64 dram_base)
->  {
->  	u64 chan_off;
->  
->  	if (hi_range_sel) {
->  		if ((!dct_sel_base_addr & 0xFFFF0000) &&
-> -		   (hole_en & 1) && (sys_addr >= 0x100000000ULL))
-> +		    hole_valid && (sys_addr >= 0x100000000ULL))
->  			chan_off = hole_off << 16;
->  		else
->  			chan_off = dct_sel_base_off;
->  	} else {
-> -		if ((hole_en & 1) && (sys_addr >= 0x100000000ULL))
-> +		if (hole_valid && (sys_addr >= 0x100000000ULL))
->  			chan_off = hole_off << 16;
->  		else
->  			chan_off = dram_base & 0xFFFFF8000000ULL;
-> @@ -1724,4 +1734,278 @@ static int f10_lookup_addr_in_dct(u32 in_addr, u32 nid, u32 cs)
->  	return cs_found;
->  }
->  
-> +/*
-> + * f10_match_to_this_node
+> + * syndrome mapping table for ECC ChipKill devices
 > + *
-> + * For a given 'DramRange' value, check if 'SystemAddr' fall within this value
+> + * The comment in each row is the token (nibble) number that is in error.
+> + * The least significant nibble of the syndrome is the mask for the bits
+> + * that are in error (need to be toggled) for the particular nibble.
+> + *
+> + * Each row contains 16 entries.
+> + * The first entry (0th) is the channel number for that row of syndromes.
+> + * The remaining 15 entries are the syndromes for the respective Error
+> + * bit mask index.
+> + *
+> + * 1st index entry is 0x0001 mask, indicating that the rightmost bit is the
+> + * bit in error.
+> + * The 2nd index entry is 0x0010 that the second bit is damaged.
+> + * The 3rd index entry is 0x0011 indicating that the rightmost 2 bits
+> + * are damaged.
+> + * Thus so on until index 15, 0x1111, whose entry has the syndrome
+> + * indicating that all 4 bits are damaged.
+> + *
+> + * A search is performed on this table looking for a given syndrome.
+> + *
+> + * See the AMD documentation for ECC syndromes. This ECC table is valid
+> + * across all the versions of the AMD64 processors.
+> + *
+> + * A fast lookup is to use the LAST four bits of the 16-bit syndrome as a
+> + * COLUMN index, then search all ROWS of that column, looking for a match
+> + * with the input syndrome. The ROW value will be the token number.
+> + *
+> + * The 0'th entry on that row, can be returned as the CHANNEL (0 or 1) of this
+> + * error.
 > + */
-> +static int f10_match_to_this_node(struct amd64_pvt *pvt, int dram_range,
-> +				  u64 sys_addr, int *nid, int *chan_sel)
-> +{
-> +	int node_id, cs_found = -EINVAL, high_range = 0;
-> +	u32 intlv_en, intlv_sel, intlv_shift, hole_off;
-> +	u32 hole_valid, tmp, dct_sel_base, channel;
-> +	u64 dram_base, chan_addr;
+> +#define NUMBER_ECC_ROWS  36
+> +static const unsigned short ecc_chipkill_syndromes[NUMBER_ECC_ROWS][16] = {
+> +	/* Channel 0 syndromes */
+> +	{/*0*/  0, 0xe821, 0x7c32, 0x9413, 0xbb44, 0x5365, 0xc776, 0x2f57,
+> +	   0xdd88, 0x35a9, 0xa1ba, 0x499b, 0x66cc, 0x8eed, 0x1afe, 0xf2df },
+> +	{/*1*/  0, 0x5d31, 0xa612, 0xfb23, 0x9584, 0xc8b5, 0x3396, 0x6ea7,
+> +	   0xeac8, 0xb7f9, 0x4cda, 0x11eb, 0x7f4c, 0x227d, 0xd95e, 0x846f },
+> +	{/*2*/  0, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007,
+> +	   0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x000f },
+> +	{/*3*/  0, 0x2021, 0x3032, 0x1013, 0x4044, 0x6065, 0x7076, 0x5057,
+> +	   0x8088, 0xa0a9, 0xb0ba, 0x909b, 0xc0cc, 0xe0ed, 0xf0fe, 0xd0df },
+> +	{/*4*/  0, 0x5041, 0xa082, 0xf0c3, 0x9054, 0xc015, 0x30d6, 0x6097,
+> +	   0xe0a8, 0xb0e9, 0x402a, 0x106b, 0x70fc, 0x20bd, 0xd07e, 0x803f },
+> +	{/*5*/  0, 0xbe21, 0xd732, 0x6913, 0x2144, 0x9f65, 0xf676, 0x4857,
+> +	   0x3288, 0x8ca9, 0xe5ba, 0x5b9b, 0x13cc, 0xaded, 0xc4fe, 0x7adf },
+> +	{/*6*/  0, 0x4951, 0x8ea2, 0xc7f3, 0x5394, 0x1ac5, 0xdd36, 0x9467,
+> +	   0xa1e8, 0xe8b9, 0x2f4a, 0x661b, 0xf27c, 0xbb2d, 0x7cde, 0x358f },
+> +	{/*7*/  0, 0x74e1, 0x9872, 0xec93, 0xd6b4, 0xa255, 0x4ec6, 0x3a27,
+> +	   0x6bd8, 0x1f39, 0xf3aa, 0x874b, 0xbd6c, 0xc98d, 0x251e, 0x51ff },
+> +	{/*8*/  0, 0x15c1, 0x2a42, 0x3f83, 0xcef4, 0xdb35, 0xe4b6, 0xf177,
+> +	   0x4758, 0x5299, 0x6d1a, 0x78db, 0x89ac, 0x9c6d, 0xa3ee, 0xb62f },
+> +	{/*9*/  0, 0x3d01, 0x1602, 0x2b03, 0x8504, 0xb805, 0x9306, 0xae07,
+> +	   0xca08, 0xf709, 0xdc0a, 0xe10b, 0x4f0c, 0x720d, 0x590e, 0x640f },
+> +	{/*a*/  0, 0x9801, 0xec02, 0x7403, 0x6b04, 0xf305, 0x8706, 0x1f07,
+> +	   0xbd08, 0x2509, 0x510a, 0xc90b, 0xd60c, 0x4e0d, 0x3a0e, 0xa20f },
+> +	{/*b*/  0, 0xd131, 0x6212, 0xb323, 0x3884, 0xe9b5, 0x5a96, 0x8ba7,
+> +	   0x1cc8, 0xcdf9, 0x7eda, 0xafeb, 0x244c, 0xf57d, 0x465e, 0x976f },
+> +	{/*c*/  0, 0xe1d1, 0x7262, 0x93b3, 0xb834, 0x59e5, 0xca56, 0x2b87,
+> +	   0xdc18, 0x3dc9, 0xae7a, 0x4fab, 0x542c, 0x85fd, 0x164e, 0xf79f },
+> +	{/*d*/  0, 0x6051, 0xb0a2, 0xd0f3, 0x1094, 0x70c5, 0xa036, 0xc067,
+> +	   0x20e8, 0x40b9, 0x904a, 0x601b, 0x307c, 0x502d, 0x80de, 0xe08f },
+> +	{/*e*/  0, 0xa4c1, 0xf842, 0x5c83, 0xe6f4, 0x4235, 0x1eb6, 0xba77,
+> +	   0x7b58, 0xdf99, 0x831a, 0x27db, 0x9dac, 0x396d, 0x65ee, 0xc12f },
+> +	{/*f*/  0, 0x11c1, 0x2242, 0x3383, 0xc8f4, 0xd935, 0xeab6, 0xfb77,
+> +	   0x4c58, 0x5d99, 0x6e1a, 0x7fdb, 0x84ac, 0x956d, 0xa6ee, 0xb72f },
 > +
-> +	/* DRAM base and limit values for this DRAM instance */
-> +	dram_base = pvt->dram_base[dram_range];
-> +	intlv_en = pvt->dram_IntlvEn[dram_range];
+> +	/* Channel 1 syndromes */
+> +	{/*10*/ 1, 0x45d1, 0x8a62, 0xcfb3, 0x5e34, 0x1be5, 0xd456, 0x9187,
+> +	   0xa718, 0xe2c9, 0x2d7a, 0x68ab, 0xf92c, 0xbcfd, 0x734e, 0x369f },
+> +	{/*11*/ 1, 0x63e1, 0xb172, 0xd293, 0x14b4, 0x7755, 0xa5c6, 0xc627,
+> +	   0x28d8, 0x4b39, 0x99aa, 0xfa4b, 0x3c6c, 0x5f8d, 0x8d1e, 0xeeff },
+> +	{/*12*/ 1, 0xb741, 0xd982, 0x6ec3, 0x2254, 0x9515, 0xfbd6, 0x4c97,
+> +	   0x33a8, 0x84e9, 0xea2a, 0x5d6b, 0x11fc, 0xa6bd, 0xc87e, 0x7f3f },
+> +	{/*13*/ 1, 0xdd41, 0x6682, 0xbbc3, 0x3554, 0xe815, 0x53d6, 0xce97,
+> +	   0x1aa8, 0xc7e9, 0x7c2a, 0xa1fb, 0x2ffc, 0xf2bd, 0x497e, 0x943f },
+> +	{/*14*/ 1, 0x2bd1, 0x3d62, 0x16b3, 0x4f34, 0x64e5, 0x7256, 0x5987,
+> +	   0x8518, 0xaec9, 0xb87a, 0x93ab, 0xca2c, 0xe1fd, 0xf74e, 0xdc9f },
+> +	{/*15*/ 1, 0x83c1, 0xc142, 0x4283, 0xa4f4, 0x2735, 0x65b6, 0xe677,
+> +	   0xf858, 0x7b99, 0x391a, 0xbadb, 0x5cac, 0xdf6d, 0x9dee, 0x1e2f },
+> +	{/*16*/ 1, 0x8fd1, 0xc562, 0x4ab3, 0xa934, 0x26e5, 0x6c56, 0xe387,
+> +	   0xfe18, 0x71c9, 0x3b7a, 0xb4ab, 0x572c, 0xd8fd, 0x924e, 0x1d9f },
+> +	{/*17*/ 1, 0x4791, 0x89e2, 0xce73, 0x5264, 0x15f5, 0xdb86, 0x9c17,
+> +	   0xa3b8, 0xe429, 0x2a5a, 0x6dcb, 0xf1dc, 0xb64d, 0x783e, 0x3faf },
+> +	{/*18*/ 1, 0x5781, 0xa9c2, 0xfe43, 0x92a4, 0xc525, 0x3b66, 0x6ce7,
+> +	   0xe3f8, 0xb479, 0x4a3a, 0x1dbb, 0x715c, 0x26dd, 0xd89e, 0x8f1f },
+> +	{/*19*/ 1, 0xbf41, 0xd582, 0x6ac3, 0x2954, 0x9615, 0xfcd6, 0x4397,
+> +	   0x3ea8, 0x81e9, 0xeb2a, 0x546b, 0x17fc, 0xa8bd, 0xc27e, 0x7d3f },
+> +	{/*1a*/ 1, 0x9891, 0xe1e2, 0x7273, 0x6464, 0xf7f5, 0x8586, 0x1617,
+> +	   0xb8b8, 0x2b29, 0x595a, 0xcacb, 0xdcdc, 0x4f4d, 0x3d3e, 0xaeaf },
+> +	{/*1b*/ 1, 0xcce1, 0x4472, 0x8893, 0xfdb4, 0x3f55, 0xb9c6, 0x7527,
+> +	   0x56d8, 0x9a39, 0x12aa, 0xde4b, 0xab6c, 0x678d, 0xef1e, 0x23ff },
+> +	{/*1c*/ 1, 0xa761, 0xf9b2, 0x5ed3, 0xe214, 0x4575, 0x1ba6, 0xbcc7,
+> +	   0x7328, 0xd449, 0x8a9a, 0x2dfb, 0x913c, 0x365d, 0x688e, 0xcfef },
+> +	{/*1d*/ 1, 0xff61, 0x55b2, 0xaad3, 0x7914, 0x8675, 0x2ca6, 0xd3c7,
+> +	   0x9e28, 0x6149, 0xcb9a, 0x34fb, 0xe73c, 0x185d, 0xb28e, 0x4def },
+> +	{/*1e*/ 1, 0x5451, 0xa8a2, 0xfcf3, 0x9694, 0xc2c5, 0x3e36, 0x6a67,
+> +	   0xebe8, 0xbfb9, 0x434a, 0x171b, 0x7d7c, 0x292d, 0xd5de, 0x818f },
+> +	{/*1f*/ 1, 0x6fc1, 0xb542, 0xda83, 0x19f4, 0x7635, 0xacb6, 0xc377,
+> +	   0x2e58, 0x4199, 0x9b1a, 0xf4db, 0x37ac, 0x586d, 0x82ee, 0xed2f },
 > +
-> +	node_id = pvt->dram_DstNode[dram_range];
-> +	intlv_sel = pvt->dram_IntlvSel[dram_range];
-> +
-> +	debugf1("%s(dram=%d) Base=0x%llx SystemAddr= 0x%llx Limit=0x%llx\n",
-> +		__func__, dram_range, dram_base, sys_addr,
-> +		pvt->dram_limit[dram_range]);
-> +
-> +	/*
-> +	 * This assumes that one node's DHAR is the same as all the other
-> +	 * nodes' DHAR.
+> +	/* ECC bits are also in the set of tokens and they too can go bad
+> +	 * first 2 cover channel 0, while the second 2 cover channel 1
 > +	 */
-> +	hole_off = (pvt->dhar & 0x0000FF80);
-> +	hole_valid = (pvt->dhar & 0x1);
-> +
-> +	debugf1("   HoleOffset=0x%x  HoleValid=0x%x IntlvSel=0x%x\n",
-> +			hole_off, hole_valid, intlv_sel);
-> +
-> +	if (intlv_en ||
-> +	    (intlv_sel != ((sys_addr >> 12) & intlv_en)))
-> +		return -EINVAL;
-> +
-> +	dct_sel_base = dct_sel_baseaddr(pvt);
-> +
-> +	/*
-> +	 * check whether addresses >= DctSelBaseAddr[47:27] are to be used to
-> +	 * select between DCT0 and DCT1.
-> +	 */
-> +	if (dct_high_range_enabled(pvt) &&
-> +	   !dct_ganging_enabled(pvt) &&
-> +	   ((sys_addr >> 27) >= (dct_sel_base >> 11)))
-> +		high_range = 1;
-> +
-> +	channel = f10_determine_channel(pvt, sys_addr, high_range, intlv_en);
-> +
-> +	chan_addr = f10_get_base_addr_offset(sys_addr, high_range, dct_sel_base,
-> +					     pvt->dram_ctl_select_high << 16,
-> +					     hole_valid, hole_off, dram_base);
-> +
-> +	intlv_shift = f10_map_intlv_en_to_shift(intlv_en);
-> +
-> +	/* remove Node ID (in case of memory interleaving) */
-> +	tmp = chan_addr & 0xFC0;
-> +
-> +	chan_addr = ((chan_addr >> intlv_shift) & 0xFFFFFFFFF000ULL) | tmp;
-> +
-> +	/* remove channel interleave and hash */
-> +	if (dct_interleave_enabled(pvt) &&
-> +	   !dct_high_range_enabled(pvt) &&
-> +	   !dct_ganging_enabled(pvt)) {
-> +		if (dct_sel_interleave_addr(pvt) != 1)
-> +			chan_addr = (chan_addr >> 1) & 0xFFFFFFFFFFFFFFC0ULL;
-> +		else {
-> +			tmp = chan_addr & 0xFC0;
-> +			chan_addr = ((chan_addr & 0xFFFFFFFFFFFFC000ULL) >> 1)
-> +					| tmp;
-> +		}
-> +	}
-> +
-> +	debugf1("   (ChannelAddrLong=0x%llx) >> 8 becomes InputAddr=0x%x\n",
-> +		chan_addr, (u32)(chan_addr >> 8));
-> +
-> +	cs_found = f10_lookup_addr_in_dct(chan_addr >> 8, node_id, channel);
-> +
-> +	if (cs_found >= 0) {
-> +		*nid = node_id;
-> +		*chan_sel = channel;
-> +	}
-> +	return cs_found;
-> +}
-> +
-> +static int f10_translate_sysaddr_to_cs(struct amd64_pvt *pvt, u64 sys_addr,
-> +				       int *node, int *chan_sel)
-> +{
-> +	int dram_range, cs_found = -EINVAL;
-> +	u64 dram_base, dram_limit;
-> +
-> +	for (dram_range = 0; dram_range < DRAM_REG_COUNT; dram_range++) {
-> +
-> +		if (!pvt->dram_rw_en[dram_range])
-> +			continue;
-> +
-> +		dram_base = pvt->dram_base[dram_range];
-> +		dram_limit = pvt->dram_limit[dram_range];
-> +
-> +		if ((dram_base <= sys_addr) && (sys_addr <= dram_limit)) {
-> +
-> +			cs_found = f10_match_to_this_node(pvt, dram_range,
-> +							  sys_addr, node,
-> +							  chan_sel);
-> +			if (cs_found >= 0)
-> +				break;
-> +		}
-> +	}
-> +	return cs_found;
-> +}
-> +
-> +/*
-> + * f10_map_sysaddr_to_csrow
-> + *
-> + *	This the F10 reference code from AMD to
-> + *	map a SystemAddress to NodeID, CSROW, Channel
-> + *
-> + *	See the Family 10h BKDG (with bug fixes in the code from AMD)
-> + *
-> + *	The SystemAddress is usually an error address received from the
-> + *	hardware error detector.
-> + */
-> +static void f10_map_sysaddr_to_csrow(struct mem_ctl_info *mci,
-> +				     struct amd64_error_info_regs *info,
-> +				     u64 sys_addr)
-> +{
-> +	struct amd64_pvt *pvt = mci->pvt_info;
-> +	u32 page, offset;
-> +	unsigned short syndrome;
-> +	int nid, csrow, chan = 0;
-> +
-> +	csrow = f10_translate_sysaddr_to_cs(pvt, sys_addr, &nid, &chan);
-> +
-> +	if (csrow >= 0) {
-> +		error_address_to_page_and_offset(sys_addr, &page, &offset);
-> +
-> +		syndrome = EXTRACT_HIGH_SYNDROME(info->nbsl) << 8;
-> +		syndrome |= EXTRACT_LOW_SYNDROME(info->nbsh);
-> +
-> +		/* Is CHIPKILL ON?
-> +		 * If so, then we can attempt to use the 'syndrome' to isolate
-> +		 * which channel the error was on
-> +		 */
-> +		if (pvt->nbcfg & K8_NBCFG_CHIPKILL)
-> +			chan = get_channel_from_ecc_syndrome(syndrome);
-> +
-> +		if (chan >= 0) {
-> +			edac_mc_handle_ce(mci, page, offset, syndrome,
-> +					csrow, chan, EDAC_MOD_STR);
-> +		} else {
-> +			/* Channel is not known,
-> +			 * report all channels on this CSROW as failed.
-> +			 */
-> +			for (chan = 0; chan < mci->csrows[csrow].nr_channels;
-> +								chan++) {
-> +					edac_mc_handle_ce(mci, page, offset,
-> +							syndrome,
-> +							csrow, chan,
-> +							EDAC_MOD_STR);
-> +			}
-> +		}
-> +
-> +	} else {
-> +		edac_mc_handle_ce_no_info(mci, EDAC_MOD_STR);
-> +	}
-> +}
-> +
-> +/* map_dbam_to_csrow_size
-> + *
-> + * Input (index) is the DBAM DIMM value (1 of 4) used as an index into a
-> + * shift table (revf_quad_ddr2_shift) which starts at 128MB DIMM size.
-> + *
-> + * Index of 0 indicates an empty DIMM slot, as reported by Hardware on
-> + * empty slots.
-> + *
-> + * Normalize to 128MB by subracting 27 bit shift
-> + */
-> +static int map_dbam_to_csrow_size(int index)
-> +{
-> +	int mega_bytes = 0;
-> +
-> +	if (index > 0 && index <= DBAM_MAX_VALUE)
-> +		mega_bytes = ((128 << (revf_quad_ddr2_shift[index]-27)));
-> +
-> +	return mega_bytes;
-> +}
-> +
-> +/*
-> + * f10_debug_display_dimm_sizes
-> + *
-> + *	debug routine to display the memory sizes of a DIMM
-> + *	(ganged or not) and it CSROWs as well
-> + */
-> +static void f10_debug_display_dimm_sizes(int ctrl,
-> +					struct amd64_pvt *pvt, int ganged)
-> +{
-> +	int dimm;
-> +	int size0;
-> +	int size1;
-> +	u32 dbam;
-> +	u32 *dcsb;
-> +
-> +	debugf1("  dbam%d: 0x%8.08x  CSROW is %s\n", ctrl,
-> +			ctrl ? pvt->dbam1 : pvt->dbam0,
-> +			ganged ? "GANGED - dbam1 not used" : "NON-GANGED");
-> +
-> +	dbam = ctrl ? pvt->dbam1 : pvt->dbam0;
-> +	dcsb = ctrl ? pvt->dcsb1 : pvt->dcsb0;
-> +
-> +	/* Dump memory sizes for DIMM and its CSROWs */
-> +	for (dimm = 0; dimm < 4; dimm++) {
-> +
-> +		size0 = 0;
-> +		if (dcsb[dimm*2] & K8_DCSB_CS_ENABLE)
-> +			size0 = map_dbam_to_csrow_size(DBAM_DIMM(dimm, dbam));
-> +
-> +		size1 = 0;
-> +		if (dcsb[dimm*2 + 1] & K8_DCSB_CS_ENABLE)
-> +			size1 = map_dbam_to_csrow_size(DBAM_DIMM(dimm, dbam));
-> +
-> +		debugf1("     CTRL-%d DIMM-%d=%5dMB   CSROW-%d=%5dMB "
-> +				"CSROW-%d=%5dMB\n",
-> +				ctrl,
-> +				dimm,
-> +				size0 + size1,
-> +				dimm * 2,
-> +				size0,
-> +				dimm * 2 + 1,
-> +				size1);
-> +	}
-> +}
-> +
-> +/*
-> + * f10_probe_valid_hardware
-> + *
-> + * Very early hardware probe on pci_probe thread to determine if this module can
-> + * support the hardware.
-> + *
-> + * Return:
-> + *      0 for OK
-> + *      1 for error
-> + */
-> +static int f10_probe_valid_hardware(struct amd64_pvt *pvt)
-> +{
-> +	int rc = 0;
-> +
-> +	/*
-> +	 * If we are on a DDR3 machine, we don't know yet if
-> +	 * we support that properly at this time
-> +	 */
-> +	if ((pvt->dchr0 & F10_DCHR_Ddr3Mode) ||
-> +	    (pvt->dchr1 & F10_DCHR_Ddr3Mode)) {
-> +
-> +		amd64_printk(KERN_WARNING,
-> +			"%s() This machine is running with DDR3 memory. "
-> +			"This is not currently supported. "
-> +			"DCHR0=0x%x DCHR1=0x%x\n",
-> +			__func__, pvt->dchr0, pvt->dchr1);
-> +
-> +		amd64_printk(KERN_WARNING,
-> +			"   Contact '%s' module MAINTAINER to help add"
-> +			" support.\n",
-> +			EDAC_MOD_STR);
-> +
-> +		rc = 1;
-> +
-> +	} else {
-> +		debugf0("%s() DDR2 Memory Installed\n", __func__);
-> +	}
-> +
-> +	return rc;
-> +}
+> +	{/*20*/ 0, 0xbe01, 0xd702, 0x6903, 0x2104, 0x9f05, 0xf606, 0x4807,
+> +	   0x3208, 0x8c09, 0xe50a, 0x5b0b, 0x130c, 0xad0d, 0xc40e, 0x7a0f },
+> +	{/*21*/ 0, 0x4101, 0x8202, 0xc303, 0x5804, 0x1905, 0xda06, 0x9b07,
+> +	   0xac08, 0xed09, 0x2e0a, 0x6f0b, 0x640c, 0xb50d, 0x760e, 0x370f },
+> +	{/*22*/ 1, 0xc441, 0x4882, 0x8cc3, 0xf654, 0x3215, 0xbed6, 0x7a97,
+> +	   0x5ba8, 0x9fe9, 0x132a, 0xd76b, 0xadfc, 0x69bd, 0xe57e, 0x213f },
+> +	{/*23*/ 1, 0x7621, 0x9b32, 0xed13, 0xda44, 0xac65, 0x4176, 0x3757,
+> +	   0x6f88, 0x19a9, 0xf4ba, 0x829b, 0xb5cc, 0xc3ed, 0x2efe, 0x58df }
+> +};
 >  
+> +/*
+> + * get_channel_from_ecc_syndrome
+> + *
+> + *	given the syndrome argument, scan each of the channel tables
+> + *	looking for a syndrome match. Depending on which table it is
+> + *	found, return the channel number
+> + */
+> +static int get_channel_from_ecc_syndrome(unsigned short syndrome)
+> +{
+> +	int row;
+> +	int column;
+> +
+> +	debugf0("%s()\n", __func__);
+> +
+> +	/* Determine column to scan */
+> +	column = syndrome & 0xF;
+> +
+> +	/* Scan all rows, looking for syndrome, or end of table */
+> +	for (row = 0; row < NUMBER_ECC_ROWS; row++) {
+> +		if (ecc_chipkill_syndromes[row][column] == syndrome)
+> +			return ecc_chipkill_syndromes[row][0];
+> +	}
+> +
+> +	debugf0("%s(): syndrome(%x) not found\n", __func__, syndrome);
+> +	return -1;
+> +}
 
 
 -- 
