@@ -1,57 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762344AbZEHIUK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760535AbZEHI0d@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762344AbZEHIUK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 04:20:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbZEHITw
+	id S1760535AbZEHI0d (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 04:26:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755940AbZEHI0X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 04:19:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51883 "EHLO mx2.redhat.com"
+	Fri, 8 May 2009 04:26:23 -0400
+Received: from tundra.namei.org ([65.99.196.166]:38764 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754255AbZEHITv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 04:19:51 -0400
-Message-ID: <4A03EB00.2070203@redhat.com>
-Date: Fri, 08 May 2009 11:19:12 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1754441AbZEHI0V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 04:26:21 -0400
+Date: Fri, 8 May 2009 18:26:16 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+cc: pavel@ucw.cz, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [TOMOYO] Add garbage collector support.
+In-Reply-To: <200905080210.n482ALpZ048382@www262.sakura.ne.jp>
+Message-ID: <alpine.LRH.2.00.0905081824570.4389@tundra.namei.org>
+References: <20090501102438.GA7470@elf.ucw.cz> <200905012207.BFC60616.QStOHOMJFOLFFV@I-love.SAKURA.ne.jp> <20090503215615.GA1368@ucw.cz> <200905041524.GGH52160.FFFVMSJOOLtHOQ@I-love.SAKURA.ne.jp> <200905062116.HCI09807.VOFFHFSMOLOtQJ@I-love.SAKURA.ne.jp>
+ <200905072042.AFF10698.LJFHOOFFQtMOSV@I-love.SAKURA.ne.jp> <alpine.LRH.2.00.0905081140500.2761@tundra.namei.org> <200905080210.n482ALpZ048382@www262.sakura.ne.jp>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-To: Davide Libenzi <davidel@xmailserver.org>
-CC: Gregory Haskins <ghaskins@novell.com>, viro@ZenIV.linux.org.uk,
-       kvm@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via eventfd-notification
- interface
-References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A0175F0.1090705@novell.com> <alpine.DEB.1.10.0905060818000.32007@makko.or.mcafeemobile.com> <4A01AEC1.8020201@novell.com> <alpine.DEB.1.10.0905061834080.32606@makko.or.mcafeemobile.com> <4A02AE65.3000800@redhat.com> <alpine.DEB.1.10.0905072012460.31280@makko.or.mcafeemobile.com>
-In-Reply-To: <alpine.DEB.1.10.0905072012460.31280@makko.or.mcafeemobile.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Davide Libenzi wrote:
-> On Thu, 7 May 2009, Avi Kivity wrote:
->
->   
->> What's your take on adding irq context safe callbacks to irqfd?
->>
->> To give some background here, we would like to use eventfd as a generic
->> connector between components, so the components do not know about each other.
->> So far eventfd successfully abstracts among components in the same process, in
->> different processes, and in the kernel.
->>
->> eventfd_signal() can be safely called from irq context, and will wake up a
->> waiting task.  But in some cases, if the consumer is in the kernel, it may be
->> able to consume the event from irq context, saving a context switch.
->>
->> So, will you consider patches adding this capability to eventfd?
->>     
->
-> Since I received this one after your ACK on the capability of eventfd of 
-> triggering callbacks, I assume we're clear on this point, aren't we?
->   
+On Fri, 8 May 2009, Tetsuo Handa wrote:
 
-We are.
+> James Morris wrote:
+> > > James, it is possible to apply below commits to security-testing-2.6#next ?
+> > > I get a lot of warning messages in my environment.
+> > 
+> > Please elaborate.
+> 
+> Without commits
+> 
+>   mm: pass correct mm when growing stack
+>   Revert "kobject: don't block for each kobject_uevent".
+>   x86: clean up old gcc warnings
+> 
+> I get compiler warnings
+> 
+[...]
+
+Ok, I've merged #next with current Linus.
 
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+James Morris
+<jmorris@namei.org>
