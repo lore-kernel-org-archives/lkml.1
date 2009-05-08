@@ -1,53 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbZEHTrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761628AbZEHTuZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758208AbZEHTrW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 15:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbZEHTrN
+	id S1761628AbZEHTuZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:50:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755031AbZEHTuG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 15:47:13 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41741 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754547AbZEHTrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:47:12 -0400
-Message-ID: <4A048C11.1050702@kernel.org>
-Date: Fri, 08 May 2009 12:46:25 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 8 May 2009 15:50:06 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:61289 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754880AbZEHTuE convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 15:50:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CeClb5GG1WD3k2hpcuzMoearyOEwjBf7cUTnWr/aeOFStDLhJClhZrWi37aCPMgiLm
+         O+k3StFUy75nfD+7qHPa/qTDTkLJuvfqb65Qw/NImGSJfYyh3d8fKLmfP0QoYWb/kEma
+         0fRnmZgiQb0u9791wqKUAIJrtXfq/jPlTPTow=
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: linux-pci@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [GIT PULL] xen: dom0 support for PCI access
-References: <1241732737-7669-1-git-send-email-jeremy@goop.org> <20090508111024.GD11596@elte.hu> <20090508124436.GT8112@parisc-linux.org>
-In-Reply-To: <20090508124436.GT8112@parisc-linux.org>
+In-Reply-To: <4A048AF4.1080205@garzik.org>
+References: <c5bd819b0905081228m4ee6472bhc3968b178f038b9c@mail.gmail.com>
+	 <4A048AF4.1080205@garzik.org>
+Date: Fri, 8 May 2009 21:50:04 +0200
+Message-ID: <c5bd819b0905081250k2095beb6r1aae22fcd82ac468@mail.gmail.com>
+Subject: Re: Linux and LLVM
+From: Grozdan <neutrino8@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Matthew Wilcox wrote:
-> On Fri, May 08, 2009 at 01:10:24PM +0200, Ingo Molnar wrote:
->> ( Cc:-ed PCI folks. Original thread with patches is on lkml. There's
->>   a few details that affect non-Xen PCI code too - and it would be
->>   nice to see feedback on this general method as well, from the PCI 
->>   experts . )
-> 
-> I read over the top seven commits here:
-> http://git.kernel.org/?p=linux/kernel/git/jeremy/xen.git;a=shortlog;h=xen-tip/dom0/pci
-> and they all seem reasonable to me as far as they affect other code.
-> I'm assuming that Xen people know what they're doing with respect to
-> the Xen-only code ;-)
+2009/5/8 Jeff Garzik <jeff@garzik.org>:
+> Grozdan wrote:
+>>
+>> Hi,
+>>
+>> First, I'd like to say that I'm not interested in any holy wars,
+>> trolling, ego-boosters, or whatever, and basically want to ask a
+>> simple question and get the views of the Linux developers on it, at
+>> least from those who are interested in answering it or have time to do
+>> so as I know that most kernel devs are very busy :)
+>>
+>> Recently, FreeBSD has reported that it's slowly switching from GCC to
+>> LLVM/CLANG for compilers. What are the thoughts of the Linux kernel
+>> devs about this and do they things that it's a good idea to go in the
+>> same direction as FreeBSD (switching over to LLVM)?
+>
+> It is highly unlikely we will switch compilers away from gcc -- we have
+> enough problems just supporting multiple gcc versions.
+>
+> That said, you could join the effort to get LLVM to compile under the
+> kernel.  Here is a meta-bug for that:
+> http://llvm.org/bugs/show_bug.cgi?id=4068
+>
+> It is a moot question until LLVM can actually build a bootable kernel :)
 
-1. pcibios_set_cache_line_size looks could be __init
-2. pci_xen_init and some xen_ function all for domU aka pv? that naming looks confusing.
+Thanks for the quick answer! I was not aware that currently there's
+lots of work until CLANG can compile a bootable Linux kernel. Thanks
+for the link too. I'll dig through it
 
-YH
- 
-
+>
+> Regards,
+>
+>        Jeff
+>
+>
+>
+>
