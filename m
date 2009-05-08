@@ -1,272 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759764AbZEHSrX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932366AbZEHSrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759764AbZEHSrX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 14:47:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755154AbZEHSrO
+	id S932366AbZEHSrz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 14:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756158AbZEHSrk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 14:47:14 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53650 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754920AbZEHSrN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 14:47:13 -0400
-Date: Fri, 8 May 2009 20:46:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [GIT PULL] x86 fixes
-Message-ID: <20090508184638.GA5178@elte.hu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 8 May 2009 14:47:40 -0400
+Received: from e32.co.us.ibm.com ([32.97.110.150]:43877 "EHLO
+	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754440AbZEHSri (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 14:47:38 -0400
+Subject: Re: integrity: nfsd imbalance bug fix
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: "J. Bruce Fields" <bfields@fieldses.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       hooanon05@yahoo.co.jp, jmorris@namei.org, safford@watson.ibm.com,
+       linux-nfs@vger.kernel.org
+In-Reply-To: <20090508180730.GB20539@fieldses.org>
+References: <1240943534.4143.55.camel@dyn9002018117.watson.ibm.com>
+	 <20090429141837.beaa5d59.akpm@linux-foundation.org>
+	 <1241804120.4843.7.camel@dyn9002018117.watson.ibm.com>
+	 <20090508180730.GB20539@fieldses.org>
+Content-Type: text/plain
+Date: Fri, 08 May 2009 14:47:34 -0400
+Message-Id: <1241808454.4843.19.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus,
+On Fri, 2009-05-08 at 14:07 -0400, J. Bruce Fields wrote:
+> On Fri, May 08, 2009 at 01:35:20PM -0400, Mimi Zohar wrote:
+> > On Wed, 2009-04-29 at 14:18 -0700, Andrew Morton wrote: 
+> > > On Tue, 28 Apr 2009 14:32:14 -0400
+> > > Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > The number of calls to ima_path_check()/ima_file_free()
+> > > > should be balanced.  An extra call to fput(), indicates
+> > > > the file could have been accessed without first being
+> > > > measured.
+> > > > 
+> > > > An nfsd exported file is opened/closed by the kernel
+> > > > causing an integrity imbalance message.
+> > > > 
+> > > > - rename and export opencount_get to ima_opencount_get
+> > > > - replace ima_shm_check calls with ima_opencount_get
+> > > > - add call to increment opencount for files opened by nfsd.
+> > > > - add call to measure exported files in nfsd_permission().
+> > > > - export ima_path_check
+> > > > 
+> > > 
+> > > The patch looks fragile to me.  It sprinkles IMA-specific operations
+> > > over random unrelated subsystems.  There is hence a decent chance of
+> > > breakage in the future.
+> > > 
+> > > Suppose some other new piece of kernel code opens/closes a file.  The
+> > > developer didn't think to add the IMA hooks and whoops, we have a bug.
+> > 
+> > Agreed.  Exactly for that reason we have the imbalance message. The
+> > imbalance message is not a bug per se, but an indication that the
+> > file hasn't been integrity (permission) checked.
+> 
+> Where do I need to go to find out what this integrity checking is?  I
+> don't know the first thing about it....
+> 
+> --b.
 
-Please pull the latest x86-fixes-for-linus git tree from:
+I'd start with the patch descriptions http://lkml.org/lkml/2009/2/4/251
+and security/integrity/ima/Kconfig, which has a pointer to the initial
+paper on IMA. Documentation/ABI/testing/ima_policy contains information
+on defining a config file.
 
-   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
+Mimi
 
- Thanks,
+> > 
+> > > It would be really really better if we could add the IMA hooks in a
+> > > single place.  That might require the addition of a new function, and
+> > > that's fine.  d_instantiate_kernel() or init_file_kernel() or whatever
+> > > - that's fine.  It still has the risk that new code will forget to use
+> > > the in-kernel variant, but we have a better chance of detecting it.
+> > 
+> > Definitely. Originally the integrity checking was in inode_permission().
+> > But measuring a file requires a dentry and mount point.
+> > 
+> > I've updated the patch to fix a 'counts' error and divided the patch
+> > into two, separating the IMA code changes from the IMA calls in nfsd.
+> > 
+> > > > 
+> > > > Index: security-testing-2.6/fs/nfsd/vfs.c
+> > > > ===================================================================
+> > > > --- security-testing-2.6.orig/fs/nfsd/vfs.c
+> > > > +++ security-testing-2.6/fs/nfsd/vfs.c
+> > > > @@ -55,6 +55,7 @@
+> > > >  #include <linux/security.h>
+> > > >  #endif /* CONFIG_NFSD_V4 */
+> > > >  #include <linux/jhash.h>
+> > > > +#include <linux/ima.h>
+> > > >  
+> > > >  #include <asm/uaccess.h>
+> > > >  
+> > > > @@ -735,6 +736,8 @@ nfsd_open(struct svc_rqst *rqstp, struct
+> > > >  			    flags, cred);
+> > > >  	if (IS_ERR(*filp))
+> > > >  		host_err = PTR_ERR(*filp);
+> > > > +	else
+> > > > +		ima_opencount_get(*filp);
+> > > 
+> > > This suggests dentry_open_kernel().
+> > 
+> > Good name, but making dentry_open_kernel() the default behavior,
+> > would mask the real bug - not doing integrity (permission) checking.
+> > 
+> > > 
+> > > >  out_nfserr:
+> > > >  	err = nfserrno(host_err);
+> > > >  out:
+> > > > @@ -2096,7 +2099,13 @@ nfsd_permission(struct svc_rqst *rqstp, 
+> > > >  	if (err == -EACCES && S_ISREG(inode->i_mode) &&
+> > > >  	    acc == (NFSD_MAY_READ | NFSD_MAY_OWNER_OVERRIDE))
+> > > >  		err = inode_permission(inode, MAY_EXEC);
+> > > > +	if (err)
+> > > > +		goto nfsd_out;
+> > > >  
+> > > > +	err = ima_path_check(&exp->ex_path,
+> > > > +			     acc & (MAY_READ | MAY_WRITE | MAY_EXEC));
+> > > 
+> > > hm, dunno what to do about that.
+> > 
+> > The real problem is that this belongs in inode_permission(), but an
+> > inode is not enough.  It requires a dentry and mount point to
+> > measure the file.
+> > 
+> > > > +	return err;
+> > > > +nfsd_out:
+> > > >  	return err? nfserrno(err) : 0;
+> > > >  }
+> > > >  
+> > > > Index: security-testing-2.6/security/integrity/ima/ima_main.c
+> > > > ===================================================================
+> > > > --- security-testing-2.6.orig/security/integrity/ima/ima_main.c
+> > > > +++ security-testing-2.6/security/integrity/ima/ima_main.c
+> > > > @@ -206,6 +206,7 @@ out:
+> > > >  	kref_put(&iint->refcount, iint_free);
+> > > >  	return 0;
+> > > >  }
+> > > > +EXPORT_SYMBOL_GPL(ima_path_check);
+> > > >  
+> > > >  static int process_measurement(struct file *file, const unsigned char *filename,
+> > > >  			       int mask, int function)
+> > > > @@ -234,7 +235,16 @@ out:
+> > > >  	return rc;
+> > > >  }
+> > > >  
+> > > > -static void opencount_get(struct file *file)
+> > > > +/*
+> > > > + * ima_opencount_get - incr opencount for files opened by the kernel
+> > > > + *
+> > > > + * - IPC shm and shmat create/fput a file.
+> > > > + * - nfsd opens/closes exported files.
+> > > > + *
+> > > > + * Increment the opencount for these files to prevent unnecessary
+> > > > + * imbalance messages.
+> > > > + */
+> > > > +void ima_opencount_get(struct file *file)
+> > > >  {
+> > > >  	struct inode *inode = file->f_dentry->d_inode;
+> > > >  	struct ima_iint_cache *iint;
+> > > > @@ -248,6 +258,7 @@ static void opencount_get(struct file *f
+> > > >  	iint->opencount++;
+> > > >  	mutex_unlock(&iint->mutex);
+> > > >  }
+> > > > +EXPORT_SYMBOL_GPL(ima_opencount_get);
+> > > >  
+> > > >  /**
+> > > >   * ima_file_mmap - based on policy, collect/store measurement.
+> > > > @@ -272,18 +283,6 @@ int ima_file_mmap(struct file *file, uns
+> > > >  	return 0;
+> > > >  }
+> > > >  
+> > > > -/*
+> > > > - * ima_shm_check - IPC shm and shmat create/fput a file
+> > > > - *
+> > > > - * Maintain the opencount for these files to prevent unnecessary
+> > > > - * imbalance messages.
+> > > > - */
+> > > > -void ima_shm_check(struct file *file)
+> > > > -{
+> > > > -	opencount_get(file);
+> > > > -	return;
+> > > > -}
+> > > > -
+> > > >  /**
+> > > >   * ima_bprm_check - based on policy, collect/store measurement.
+> > > >   * @bprm: contains the linux_binprm structure
+> > > > Index: security-testing-2.6/include/linux/ima.h
+> > > > ===================================================================
+> > > > --- security-testing-2.6.orig/include/linux/ima.h
+> > > > +++ security-testing-2.6/include/linux/ima.h
+> > > > @@ -20,7 +20,7 @@ extern void ima_inode_free(struct inode 
+> > > >  extern int ima_path_check(struct path *path, int mask);
+> > > >  extern void ima_file_free(struct file *file);
+> > > >  extern int ima_file_mmap(struct file *file, unsigned long prot);
+> > > > -extern void ima_shm_check(struct file *file);
+> > > > +extern void ima_opencount_get(struct file *file);
+> > > >  
+> > > >  #else
+> > > >  static inline int ima_bprm_check(struct linux_binprm *bprm)
+> > > > @@ -53,7 +53,7 @@ static inline int ima_file_mmap(struct f
+> > > >  	return 0;
+> > > >  }
+> > > >  
+> > > > -static inline void ima_shm_check(struct file *file)
+> > > > +static inline void ima_opencount_get(struct file *file)
+> > > >  {
+> > > >  	return;
+> > > >  }
+> > > > Index: security-testing-2.6/ipc/shm.c
+> > > > ===================================================================
+> > > > --- security-testing-2.6.orig/ipc/shm.c
+> > > > +++ security-testing-2.6/ipc/shm.c
+> > > > @@ -384,7 +384,7 @@ static int newseg(struct ipc_namespace *
+> > > >  	error = PTR_ERR(file);
+> > > >  	if (IS_ERR(file))
+> > > >  		goto no_file;
+> > > > -	ima_shm_check(file);
+> > > > +	ima_opencount_get(file);
+> > > >  
+> > > >  	id = ipc_addid(&shm_ids(ns), &shp->shm_perm, ns->shm_ctlmni);
+> > > >  	if (id < 0) {
+> > > > @@ -891,7 +891,7 @@ long do_shmat(int shmid, char __user *sh
+> > > >  	file = alloc_file(path.mnt, path.dentry, f_mode, &shm_file_operations);
+> > > >  	if (!file)
+> > > >  		goto out_free;
+> > > > -	ima_shm_check(file);
+> > > > +	ima_opencount_get(file);
+> > > >  
+> > > >  	file->private_data = sfd;
+> > > >  	file->f_mapping = shp->shm_file->f_mapping;
+> > > > Index: security-testing-2.6/mm/shmem.c
+> > > > ===================================================================
+> > > > --- security-testing-2.6.orig/mm/shmem.c
+> > > > +++ security-testing-2.6/mm/shmem.c
+> > > > @@ -2680,7 +2680,7 @@ int shmem_zero_setup(struct vm_area_stru
+> > > >  	if (IS_ERR(file))
+> > > >  		return PTR_ERR(file);
+> > > >  
+> > > > -	ima_shm_check(file);
+> > > > +	ima_opencount_get(file);
+> > > >  	if (vma->vm_file)
+> > > >  		fput(vma->vm_file);
+> > > >  	vma->vm_file = file;
+> > > 
+> > > Maybe do the IMA operations in (or under) shmem_file_setup() and
+> > > hugetlb_file_setup()?
+> > 
+> > Again, that would hide the real issue of not having done integrity
+> > (permission) checking.
+> > 
+> > Mimi
+> > 
 
-	Ingo
-
------------------->
-David Rientjes (1):
-      x86, srat: do not register nodes beyond e820 map
-
-Hidetoshi Seto (1):
-      x86: MCE: make cmci_discover_lock irq-safe
-
-Huang Ying (1):
-      x86, kexec: fix crashdump panic with CONFIG_KEXEC_JUMP
-
-Jan Beulich (2):
-      x86: fix boot hang in early_reserve_e820()
-      x86-64: finish cleanup_highmaps()'s job wrt. _brk_end
-
-Jeremy Fitzhardinge (1):
-      x86: xen, i386: reserve Xen pagetables
-
-Nikanth Karthikesan (1):
-      x86: Fix a typo in a printk message
-
-
- arch/x86/kernel/cpu/mcheck/mce_intel_64.c |   10 ++++++----
- arch/x86/kernel/e820.c                    |   11 ++++++-----
- arch/x86/kernel/machine_kexec_32.c        |    4 ++--
- arch/x86/kernel/machine_kexec_64.c        |    4 ++--
- arch/x86/mm/init.c                        |   18 +++++++++++++++++-
- arch/x86/mm/srat_32.c                     |    2 +-
- arch/x86/mm/srat_64.c                     |    1 +
- arch/x86/xen/mmu.c                        |    5 +++++
- 8 files changed, 40 insertions(+), 15 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-index d6b72df..cef3ee3 100644
---- a/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-+++ b/arch/x86/kernel/cpu/mcheck/mce_intel_64.c
-@@ -151,10 +151,11 @@ static void print_update(char *type, int *hdr, int num)
- static void cmci_discover(int banks, int boot)
- {
- 	unsigned long *owned = (void *)&__get_cpu_var(mce_banks_owned);
-+	unsigned long flags;
- 	int hdr = 0;
- 	int i;
- 
--	spin_lock(&cmci_discover_lock);
-+	spin_lock_irqsave(&cmci_discover_lock, flags);
- 	for (i = 0; i < banks; i++) {
- 		u64 val;
- 
-@@ -184,7 +185,7 @@ static void cmci_discover(int banks, int boot)
- 			WARN_ON(!test_bit(i, __get_cpu_var(mce_poll_banks)));
- 		}
- 	}
--	spin_unlock(&cmci_discover_lock);
-+	spin_unlock_irqrestore(&cmci_discover_lock, flags);
- 	if (hdr)
- 		printk(KERN_CONT "\n");
- }
-@@ -211,13 +212,14 @@ void cmci_recheck(void)
-  */
- void cmci_clear(void)
- {
-+	unsigned long flags;
- 	int i;
- 	int banks;
- 	u64 val;
- 
- 	if (!cmci_supported(&banks))
- 		return;
--	spin_lock(&cmci_discover_lock);
-+	spin_lock_irqsave(&cmci_discover_lock, flags);
- 	for (i = 0; i < banks; i++) {
- 		if (!test_bit(i, __get_cpu_var(mce_banks_owned)))
- 			continue;
-@@ -227,7 +229,7 @@ void cmci_clear(void)
- 		wrmsrl(MSR_IA32_MC0_CTL2 + i, val);
- 		__clear_bit(i, __get_cpu_var(mce_banks_owned));
- 	}
--	spin_unlock(&cmci_discover_lock);
-+	spin_unlock_irqrestore(&cmci_discover_lock, flags);
- }
- 
- /*
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index ef2c356..0062813 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -1074,12 +1074,13 @@ u64 __init early_reserve_e820(u64 startt, u64 sizet, u64 align)
- 	u64 addr;
- 	u64 start;
- 
--	start = startt;
--	while (size < sizet && (start + 1))
-+	for (start = startt; ; start += size) {
- 		start = find_e820_area_size(start, &size, align);
--
--	if (size < sizet)
--		return 0;
-+		if (!(start + 1))
-+			return 0;
-+		if (size >= sizet)
-+			break;
-+	}
- 
- #ifdef CONFIG_X86_32
- 	if (start >= MAXMEM)
-diff --git a/arch/x86/kernel/machine_kexec_32.c b/arch/x86/kernel/machine_kexec_32.c
-index e7368c1..c1c429d 100644
---- a/arch/x86/kernel/machine_kexec_32.c
-+++ b/arch/x86/kernel/machine_kexec_32.c
-@@ -194,7 +194,7 @@ void machine_kexec(struct kimage *image)
- 				       unsigned int preserve_context);
- 
- #ifdef CONFIG_KEXEC_JUMP
--	if (kexec_image->preserve_context)
-+	if (image->preserve_context)
- 		save_processor_state();
- #endif
- 
-@@ -253,7 +253,7 @@ void machine_kexec(struct kimage *image)
- 					   image->preserve_context);
- 
- #ifdef CONFIG_KEXEC_JUMP
--	if (kexec_image->preserve_context)
-+	if (image->preserve_context)
- 		restore_processor_state();
- #endif
- 
-diff --git a/arch/x86/kernel/machine_kexec_64.c b/arch/x86/kernel/machine_kexec_64.c
-index 89cea4d..84c3bf2 100644
---- a/arch/x86/kernel/machine_kexec_64.c
-+++ b/arch/x86/kernel/machine_kexec_64.c
-@@ -274,7 +274,7 @@ void machine_kexec(struct kimage *image)
- 	int save_ftrace_enabled;
- 
- #ifdef CONFIG_KEXEC_JUMP
--	if (kexec_image->preserve_context)
-+	if (image->preserve_context)
- 		save_processor_state();
- #endif
- 
-@@ -333,7 +333,7 @@ void machine_kexec(struct kimage *image)
- 				       image->preserve_context);
- 
- #ifdef CONFIG_KEXEC_JUMP
--	if (kexec_image->preserve_context)
-+	if (image->preserve_context)
- 		restore_processor_state();
- #endif
- 
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index fd3da1d..ae4f7b5 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -7,6 +7,7 @@
- #include <asm/page.h>
- #include <asm/page_types.h>
- #include <asm/sections.h>
-+#include <asm/setup.h>
- #include <asm/system.h>
- #include <asm/tlbflush.h>
- 
-@@ -304,8 +305,23 @@ unsigned long __init_refok init_memory_mapping(unsigned long start,
- #endif
- 
- #ifdef CONFIG_X86_64
--	if (!after_bootmem)
-+	if (!after_bootmem && !start) {
-+		pud_t *pud;
-+		pmd_t *pmd;
-+
- 		mmu_cr4_features = read_cr4();
-+
-+		/*
-+		 * _brk_end cannot change anymore, but it and _end may be
-+		 * located on different 2M pages. cleanup_highmap(), however,
-+		 * can only consider _end when it runs, so destroy any
-+		 * mappings beyond _brk_end here.
-+		 */
-+		pud = pud_offset(pgd_offset_k(_brk_end), _brk_end);
-+		pmd = pmd_offset(pud, _brk_end - 1);
-+		while (++pmd <= pmd_offset(pud, (unsigned long)_end - 1))
-+			pmd_clear(pmd);
-+	}
- #endif
- 	__flush_tlb_all();
- 
-diff --git a/arch/x86/mm/srat_32.c b/arch/x86/mm/srat_32.c
-index 16ae70f..29a0e37 100644
---- a/arch/x86/mm/srat_32.c
-+++ b/arch/x86/mm/srat_32.c
-@@ -216,7 +216,7 @@ int __init get_memcfg_from_srat(void)
- 
- 	if (num_memory_chunks == 0) {
- 		printk(KERN_WARNING
--			 "could not finy any ACPI SRAT memory areas.\n");
-+			 "could not find any ACPI SRAT memory areas.\n");
- 		goto out_fail;
- 	}
- 
-diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
-index 33c5fa5..0176595 100644
---- a/arch/x86/mm/srat_64.c
-+++ b/arch/x86/mm/srat_64.c
-@@ -361,6 +361,7 @@ static void __init unparse_node(int node)
- {
- 	int i;
- 	node_clear(node, nodes_parsed);
-+	node_clear(node, cpu_nodes_parsed);
- 	for (i = 0; i < MAX_LOCAL_APIC; i++) {
- 		if (apicid_to_node[i] == node)
- 			apicid_to_node[i] = NUMA_NO_NODE;
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 9842b12..e25a78e 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1794,6 +1794,11 @@ __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd,
- 
- 	pin_pagetable_pfn(MMUEXT_PIN_L3_TABLE, PFN_DOWN(__pa(swapper_pg_dir)));
- 
-+	reserve_early(__pa(xen_start_info->pt_base),
-+		      __pa(xen_start_info->pt_base +
-+			   xen_start_info->nr_pt_frames * PAGE_SIZE),
-+		      "XEN PAGETABLES");
-+
- 	return swapper_pg_dir;
- }
- #endif	/* CONFIG_X86_64 */
