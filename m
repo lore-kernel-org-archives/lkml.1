@@ -1,180 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762686AbZEHJe5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762953AbZEHJfk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762686AbZEHJe5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 05:34:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755109AbZEHJeo
+	id S1762953AbZEHJfk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 05:35:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755473AbZEHJf2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 05:34:44 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:14788 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756104AbZEHJem (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 05:34:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=gun7xk8Kowmu/XSccyW+wEAo0pzfBvs1YLuHcASExe5Dbzeoa5rKzhf2KlWyVUYf1o
-         7/II17Weq5Y/1sJB/cow+jvBZPrGJ1d0k0QXOqwTXN5Zr8L9oH1g1HAbbdbaJUM/rUkQ
-         6jLUHVSPY+jxzHm6UrFuEeKvhh0daeydiuZvk=
-Date: Fri, 8 May 2009 18:34:27 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
- class citizen
-Message-Id: <20090508183427.f313770f.minchan.kim@barrios-desktop>
-In-Reply-To: <20090508080921.GA25411@localhost>
-References: <20090430215034.4748e615@riellaptop.surriel.com>
-	<20090430195439.e02edc26.akpm@linux-foundation.org>
-	<49FB01C1.6050204@redhat.com>
-	<20090501123541.7983a8ae.akpm@linux-foundation.org>
-	<20090503031539.GC5702@localhost>
-	<1241432635.7620.4732.camel@twins>
-	<20090507121101.GB20934@localhost>
-	<20090507151039.GA2413@cmpxchg.org>
-	<20090508030209.GA8892@localhost>
-	<20090508163042.ba4ef116.minchan.kim@barrios-desktop>
-	<20090508080921.GA25411@localhost>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 May 2009 05:35:28 -0400
+Received: from 8bytes.org ([88.198.83.132]:44518 "EHLO 8bytes.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755249AbZEHJf1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 05:35:27 -0400
+Date: Fri, 8 May 2009 11:35:27 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: David Miller <davem@davemloft.net>
+Cc: dwmw2@infradead.org, airlied@linux.ie, linux-kernel@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp, iommu@lists.linux-foundation.org,
+       mingo@redhat.com
+Subject: Re: IOMMU and graphics cards
+Message-ID: <20090508093526.GB13708@8bytes.org>
+References: <20090507164742V.fujita.tomonori@lab.ntt.co.jp> <20090507100114.GF4059@amd.com> <1241691721.3531.73.camel@macbook.infradead.org> <20090507.113632.210373283.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090507.113632.210373283.davem@davemloft.net>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 May 2009 16:09:21 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
-
-> On Fri, May 08, 2009 at 03:30:42PM +0800, Minchan Kim wrote:
-> > Hi, Let me have a question. 
-> > 
-> > On Fri, 8 May 2009 11:02:09 +0800
-> > Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > 
-> > > On Thu, May 07, 2009 at 11:10:39PM +0800, Johannes Weiner wrote:
-> > > > On Thu, May 07, 2009 at 08:11:01PM +0800, Wu Fengguang wrote:
-> > > > > Introduce AS_EXEC to mark executables and their linked libraries, and to
-> > > > > protect their referenced active pages from being deactivated.
-> > > > > 
-> > > > > CC: Elladan <elladan@eskimo.com>
-> > > > > CC: Nick Piggin <npiggin@suse.de>
-> > > > > CC: Johannes Weiner <hannes@cmpxchg.org>
-> > > > > CC: Christoph Lameter <cl@linux-foundation.org>
-> > > > > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > > > Acked-by: Peter Zijlstra <peterz@infradead.org>
-> > > > > Acked-by: Rik van Riel <riel@redhat.com>
-> > > > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > > > ---
-> > > > >  include/linux/pagemap.h |    1 +
-> > > > >  mm/mmap.c               |    2 ++
-> > > > >  mm/nommu.c              |    2 ++
-> > > > >  mm/vmscan.c             |   35 +++++++++++++++++++++++++++++++++--
-> > > > >  4 files changed, 38 insertions(+), 2 deletions(-)
-> > > > > 
-> > > > > --- linux.orig/include/linux/pagemap.h
-> > > > > +++ linux/include/linux/pagemap.h
-> > > > > @@ -25,6 +25,7 @@ enum mapping_flags {
-> > > > >  #ifdef CONFIG_UNEVICTABLE_LRU
-> > > > >  	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
-> > > > >  #endif
-> > > > > +	AS_EXEC		= __GFP_BITS_SHIFT + 4,	/* mapped PROT_EXEC somewhere */
-> > > > >  };
-> > > > >  
-> > > > >  static inline void mapping_set_error(struct address_space *mapping, int error)
-> > > > > --- linux.orig/mm/mmap.c
-> > > > > +++ linux/mm/mmap.c
-> > > > > @@ -1194,6 +1194,8 @@ munmap_back:
-> > > > >  			goto unmap_and_free_vma;
-> > > > >  		if (vm_flags & VM_EXECUTABLE)
-> > > > >  			added_exe_file_vma(mm);
-> > > > > +		if (vm_flags & VM_EXEC)
-> > > > > +			set_bit(AS_EXEC, &file->f_mapping->flags);
-> > > > >  	} else if (vm_flags & VM_SHARED) {
-> > > > >  		error = shmem_zero_setup(vma);
-> > > > >  		if (error)
-> > > > > --- linux.orig/mm/nommu.c
-> > > > > +++ linux/mm/nommu.c
-> > > > > @@ -1224,6 +1224,8 @@ unsigned long do_mmap_pgoff(struct file 
-> > > > >  			added_exe_file_vma(current->mm);
-> > > > >  			vma->vm_mm = current->mm;
-> > > > >  		}
-> > > > > +		if (vm_flags & VM_EXEC)
-> > > > > +			set_bit(AS_EXEC, &file->f_mapping->flags);
-> > > > >  	}
-> > > > 
-> > > > I find it a bit ugly that it applies an attribute of the memory area
-> > > > (per mm) to the page cache mapping (shared).  Because this in turn
-> > > > means that the reference through a non-executable vma might get the
-> > > > pages rotated just because there is/was an executable mmap around.
-> > > 
-> > > Right, the intention was to identify a whole executable/library file,
-> > > eg. /bin/bash or /lib/libc-2.9.so, covering both _text_ and _data_
-> > > sections.
-> > 
-> > But, your patch is care just text section. 
-> > Do I miss something ?
+On Thu, May 07, 2009 at 11:36:32AM -0700, David Miller wrote:
+> From: David Woodhouse <dwmw2@infradead.org>
+> Date: Thu, 07 May 2009 11:22:01 +0100
 > 
-> This patch actually protects the mapped pages in the whole executable
-> file.  Sorry, the title was a bit misleading..
-
-Yeah. I was confusing with title. 
-Thanks for quick reply. :)
-
-> > > > >  	down_write(&nommu_region_sem);
-> > > > > --- linux.orig/mm/vmscan.c
-> > > > > +++ linux/mm/vmscan.c
-> > > > > @@ -1230,6 +1230,7 @@ static void shrink_active_list(unsigned 
-> > > > >  	unsigned long pgmoved;
-> > > > >  	unsigned long pgscanned;
-> > > > >  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
-> > > > > +	LIST_HEAD(l_active);
-> > > > >  	LIST_HEAD(l_inactive);
-> > > > >  	struct page *page;
-> > > > >  	struct pagevec pvec;
-> > > > > @@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned 
-> > > > >  
-> > > > >  		/* page_referenced clears PageReferenced */
-> > > > >  		if (page_mapping_inuse(page) &&
-> > > > > -		    page_referenced(page, 0, sc->mem_cgroup))
-> > > > > +		    page_referenced(page, 0, sc->mem_cgroup)) {
-> > > > > +			struct address_space *mapping = page_mapping(page);
-> > > > > +
-> > > > >  			pgmoved++;
-> > > > > +			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
-> > > > > +				list_add(&page->lru, &l_active);
-> > > > > +				continue;
-> > > > > +			}
-> > > > > +		}
-> > > > 
-> > > > Since we walk the VMAs in page_referenced anyway, wouldn't it be
-> > > > better to check if one of them is executable?  This would even work
-> > > > for executable anon pages.  After all, there are applications that cow
-> > > > executable mappings (sbcl and other language environments that use an
-> > > > executable, run-time modified core image come to mind).
-> > > 
-> > > The page_referenced() path will only cover the _text_ section.  But
+> > On Thu, 2009-05-07 at 12:01 +0200, Joerg Roedel wrote:
+> >> > Looks like the DRM code uses the DMA API.
+> >> 
+> >> The proprietary drivers make problems so far. For the ATI one I am in
+> >> contact with the developers to try to fix it. But I can't do anything
+> >> about the other proprietary driver I am aware of :-(
 > > 
-> > Why did you said that "The page_referenced() path will only cover the ""_text_"" section" ? 
-> > Could you elaborate please ?
+> > I see no harm in "breaking" code which was already broken. If that's the
+> > only reason we're enabling the graphics workaround, let's turn it off.
 > 
-> I was under the wild assumption that only the _text_ section will be
-> PROT_EXEC mapped.  No?
+> Seriously, this is an enormous price to pay just for one bad apple
+> proprietary driver.
+> 
+> I can't believe the level of concessions some people are suggesting.
 
-Yes. I support your idea. 
+This concession is already in the VT-d code. And this concession is
+_enabled_ in enterprise distribtions supporting VT-d. I don't like the
+way it is implemented there and I definitly will not implement a similar
+way for the AMD IOMMU. What I try to achieve is a consistent solution
+for both IOMMUs. Having the broken drivers work on VT-d but not on
+AMD IOMMU is clearly a bad solution.
 
-> Thanks,
-> Fengguang
+The other way to achieve consistency is to remove the workaround from
+VT-d code which significantly increases the chance to get the broken
+stuff fixed. David?
 
--- 
-Kinds Regards
-Minchan Kim
+> Let's not make IOMMU's basically useless by working around one broken
+> driver.
+
+Agreed.
+
+> Proper interfaces for what this driver is trying to do have existed in
+> the kernel for 10+ years.  There are no excuses, and it's time for
+> Nvidia to get with the game plan.
+
+Agreed.
+
+Joerg
+
