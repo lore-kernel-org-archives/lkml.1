@@ -1,32 +1,27 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbZEEJkc (ORCPT <rfc822;ralf@linux-mips.org>);
-	Tue, 5 May 2009 05:40:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754438AbZEEJkN
+	id S1753596AbZEHH0W (ORCPT <rfc822;ralf@linux-mips.org>);
+	Fri, 8 May 2009 03:26:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZEHH0K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 5 May 2009 05:40:13 -0400
-Received: from hrndva-commlb.mail.rr.com ([71.74.57.9]:41333 "EHLO
-	hrndva-commlb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754456AbZEEJkL (ORCPT
+	Fri, 8 May 2009 03:26:10 -0400
+Received: from bd78cd70.virtua.com.br ([189.120.205.112]:62799 "HELO
+	bd78cd70.virtua.com.br" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with SMTP id S1751999AbZEHH0J (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 5 May 2009 05:40:11 -0400
-Message-Id: <7h9gbp$d23p7u@rrcs-agw-01b.hrndva.rr.com>
-X-Mailer: Openwave WebEngine, version 2.8.17 (webedge20-101-1107-20041027)
-From: tobacco <feetfirst@winch.twcbc.com>
-Reply-To: agtpauladams01@btinternet.com
-To: <info@org>
-Subject: Winner
-Date: Tue, 5 May 2009 4:40:10 -0500
+	Fri, 8 May 2009 03:26:09 -0400
+Message-ID: <20090508040626.4010907@ivp.com>
+Date: Fri, 8 May 2009 04:06:26 -0300
+From: "Essie Fulton" <gponcer@ivp.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Subject: Tiny helper for big growth
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1755218AbZEEJkc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+ralf=40linux-mips.org-S1753596AbZEHH0W@vger.kernel.org>
 
-Your email ID was awarded £1,000,000,00 GBP in the tobacco draw. Get back to us via 
+Penetrate her deeper http://pmi.zleikdishus.com/
 
-Name:...........................
-Country:........................
-Sex:............................
-Age/Tell Number:................
