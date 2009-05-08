@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760628AbZEHQwo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbZEHQ4v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760628AbZEHQwo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 12:52:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbZEHQwg
+	id S1759417AbZEHQ4v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 12:56:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZEHQ4j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 12:52:36 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36741 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753522AbZEHQwg (ORCPT
+	Fri, 8 May 2009 12:56:39 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:64675 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752619AbZEHQ4i convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 12:52:36 -0400
-Message-ID: <4A04633C.5090305@zytor.com>
-Date: Fri, 08 May 2009 09:52:12 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 8 May 2009 12:56:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=WadHuKGJzpd6Moxw8KRSqC2zmds6GQfbqTNkFDkXKY3XOUYXD+LIPNsxRTThs5iYib
+         mdEkG1kndsYQCYsrTkRyokZGPuJCien16q2W4Ko36jkYcNzC2Hyp+D8RMOdqVunzOLON
+         2uuriSxZhXu3Qc6NS/vKxmjwwIAZbSwwAKlOc=
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86-64: improve e820_search_gap()
-References: <4A0199B8.76EA.0078.0@novell.com> <4A03BC1A.9060605@zytor.com> <4A03F016.76EA.0078.0@novell.com>
-In-Reply-To: <4A03F016.76EA.0078.0@novell.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1241774338.1567.36.camel@johannes.local>
+References: <20090403182724.GA7364@tuxdriver.com>
+	 <1241774338.1567.36.camel@johannes.local>
+Date: Fri, 8 May 2009 19:56:38 +0300
+X-Google-Sender-Auth: d46318b670ea08c5
+Message-ID: <da94abde0905080956g3c6f49f3ta38412d886cfb2ec@mail.gmail.com>
+Subject: Re: Linux wireless mini-summit -- Berlin, June 2009
+From: Kalle Valo <kalle.valo@iki.fi>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
->>>
->> So blindly locate it somewhere else?  How is that inherently better?
->> Wouldn't a machine with hotplug memory (which doesn't bother advertising
->> that fact so we can reserve the address space) be just as likely to use
->> a sparse memory space, since one can hardly expect the hardware to pack
->> the space (packing in hardware is why PCs generally have a
->> mostly-contiguous RAM space) when the memory is hotplugged?
-> 
-> Why blindly? Aren't hotpluggable memory ranges supposed to be reserved
-> in the E820 map?
-> 
+On Fri, May 8, 2009 at 12:18 PM, Johannes Berg
+<johannes@sipsolutions.net> wrote:
+>
+>> So, here I open the floor for discussion of agenda items for our
+>> wireless meeting/hackfest.  What do we think is important to discuss
+>> face-to-face this year?  What isn't getting done?  What is getting
+>> done wrong?  What do we need that we didn't realize last year?
+>
+> I've tried to capture the discussion from here on the wiki:
+>
+> http://wireless.kernel.org/en/developers/Summits/Berlin-2009
 
-That's was my reaction too... so I guess I'm misreading the patch.
-Could you perhaps add a bit more to the description, specifically of
-what policy your patch implements.
+Good idea.
 
-	-hpa
+> Feel free to edit and add suggestions
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+What about proper roaming support? I think it will be the thing we are
+lacking after power save is finished. There was talk about having GSoC
+project, what happened to it?
 
+I'm interested about roaming, but I don't how much time if any I can
+find for implementing it. But I could make a summary of all
+discussions we have had here during the last year and maybe try to
+start some discussion at the summit. What others think?
+
+> or put yourself into "confirmed
+> attendees" (do we want that? it seemed we should say who will be there)
+
+It's nice to know in advance who will be there. So yes, at least I
+want such a list :)
+
+Kalle
