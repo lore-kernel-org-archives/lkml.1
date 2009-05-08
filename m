@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760481AbZEHRP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760479AbZEHRQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760481AbZEHRP1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 13:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbZEHRPB
+	id S1760479AbZEHRQS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 13:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbZEHRQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 13:15:01 -0400
-Received: from mail.atheros.com ([12.36.123.2]:43899 "EHLO mail.atheros.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757469AbZEHRPA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 13:15:00 -0400
-Date: Fri, 8 May 2009 10:15:14 -0700
-From: "Luis R. Rodriguez" <lrodriguez@atheros.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-CC: Jason Daly <jason2@primarykey.ca>,
-       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
-       linux-wireless <linux-wireless@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [ath9k-devel] New kernel recommendations for ath9k
-Message-ID: <20090508171514.GA8123@tesla>
-References: <43e72e890905070104u59eebcceu18718a733e388cc9@mail.gmail.com> <4A02B1CA.3060708@hiramoto.org> <43e72e890905071020v26857c52p3abea96be04ef1d9@mail.gmail.com> <6818156.7441241761835737.JavaMail.james@prod3.pk.lan> <1241773324.1567.33.camel@johannes.local>
+	Fri, 8 May 2009 13:16:03 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:37629 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753323AbZEHRQB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 13:16:01 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=HQZS4UkWenmyflqCt7j6TSQYXSu8711yljr3EyRQkBs6Wu/X5UlTNZPqQmo9yrQ4mp
+         GwrLJk9G6Llq5lC5oUASkauwbA98hZCgbpDAjHDeWMpNtGQiHhiMNpJp2gq6sdJjoYCI
+         xXWqY4af5aSds3SLel+9afsX6SgIHMKH1TNfI=
+Date: Fri, 8 May 2009 21:15:56 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: "H. Peter Anvin" <hpa@linux.intel.com>, linux-kernel@vger.kernel.org,
+       vgoyal@redhat.com, hbabu@us.ibm.com, kexec@lists.infradead.org,
+       ying.huang@intel.com, mingo@elte.hu, tglx@linutronix.de,
+       ebiederm@xmission.com, sam@ravnborg.org
+Subject: Re: [PATCH 01/14] x86, boot: align the .bss section in the
+	decompressor
+Message-ID: <20090508171556.GN6132@lenovo>
+References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com> <1241735222-6640-2-git-send-email-hpa@linux.intel.com> <20090508075354.GA6132@lenovo> <4A0465E6.9000401@zytor.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1241773324.1567.33.camel@johannes.local>
+In-Reply-To: <4A0465E6.9000401@zytor.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 02:02:04AM -0700, Johannes Berg wrote:
-> On Sat, 2009-05-09 at 01:50 -0400, Jason Daly wrote:
-> > Thanks for the kernel info.
-> >
-> > How do you configure hostapd to work in N mode with ath9k?  Currently
-> > the hw_mode parameter found in hostapd.conf does not accept anything
-> > greater than g.
-> 
-> N isn't "greater than" G. N is more features than G. Just set the N
-> options in the config file. You may need a git hostapd, I don't know for
-> sure.
-> 
-> Also, please set your clock and timezone correctly _before_ you say
-> "thank you"!. You have posted on
->         Sat, 09 May 2009 01:50:12 -0400 (07:50 CEST)
-> 
-> which is clearly impossible.
-> 
-Also check out:
+[H. Peter Anvin - Fri, May 08, 2009 at 10:03:34AM -0700]
+| Cyrill Gorcunov wrote:
+| > | 
+| > | diff --git a/arch/x86/boot/compressed/vmlinux.lds.S b/arch/x86/boot/compressed/vmlinux.lds.S
+| > | index 0d26c92..27c168d 100644
+| > | --- a/arch/x86/boot/compressed/vmlinux.lds.S
+| > | +++ b/arch/x86/boot/compressed/vmlinux.lds.S
+| > | @@ -42,6 +42,7 @@ SECTIONS
+| > |  		*(.data.*)
+| > |  		_edata = . ;
+| > |  	}
+| > | +	. = ALIGN(32);
+| > |  	.bss : {
+| > |  		_bss = . ;
+| > |  		*(.bss)
+| > | -- 
+| > | 1.6.0.6
+| > | 
+| > 
+| > Hi Peter, should not it be ALIGN(8) rather? I thought
+| > we keep these sections as tight as possible in a sake
+| > of limitation of setup code size. Perhaps I miss something.
+| > 
+| 
+| This isn't the setup code at all.  This is the actual kernel, although
+| in its compressed form.  Furthermore, this is the bss, so it doesn't
+| affect the compressed image size.
+| 
+| 	-hpa
+| 
 
-http://wireless.kernel.org/en/users/Documentation/hostapd
+yeah, unfortunately I reveal that when my mail already gone.
+though I don't understand why 32 is there... could you please?
 
-  Luis
+	-- Cyrill
