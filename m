@@ -1,153 +1,252 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755577AbZEHSFm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757589AbZEHSIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755577AbZEHSFm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 14:05:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753384AbZEHSFa
+	id S1757589AbZEHSIo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 14:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754281AbZEHSIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 14:05:30 -0400
-Received: from e7.ny.us.ibm.com ([32.97.182.137]:59371 "EHLO e7.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751994AbZEHSF2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 14:05:28 -0400
-Date: Fri, 8 May 2009 11:05:25 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Eric Dumazet <dada1@cosmosbay.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, zbr@ioremap.net, jeff.chua.linux@gmail.com,
-       paulus@samba.org, laijs@cn.fujitsu.com, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v4 somewhat-expedited "big hammer" RCU grace
-	periods
-Message-ID: <20090508180525.GK6788@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090508170815.GA9708@linux.vnet.ibm.com> <4A046BBF.9070400@cosmosbay.com>
+	Fri, 8 May 2009 14:08:35 -0400
+Received: from mail.fieldses.org ([141.211.133.115]:53273 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751677AbZEHSIe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 14:08:34 -0400
+Date: Fri, 8 May 2009 14:07:30 -0400
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       hooanon05@yahoo.co.jp, jmorris@namei.org, safford@watson.ibm.com,
+       linux-nfs@vger.kernel.org
+Subject: Re: integrity: nfsd imbalance bug fix
+Message-ID: <20090508180730.GB20539@fieldses.org>
+References: <1240943534.4143.55.camel@dyn9002018117.watson.ibm.com> <20090429141837.beaa5d59.akpm@linux-foundation.org> <1241804120.4843.7.camel@dyn9002018117.watson.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A046BBF.9070400@cosmosbay.com>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+In-Reply-To: <1241804120.4843.7.camel@dyn9002018117.watson.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 07:28:31PM +0200, Eric Dumazet wrote:
-> Paul E. McKenney a écrit :
-> > Fourth cut of "big hammer" expedited RCU grace periods.  This uses
-> > a kthread that schedules itself on all online CPUs in turn, thus
-> > forcing a grace period.  The synchronize_sched(), synchronize_rcu(),
-> > and synchronize_bh() primitives wake this kthread up and then wait for
-> > it to force the grace period.
+On Fri, May 08, 2009 at 01:35:20PM -0400, Mimi Zohar wrote:
+> On Wed, 2009-04-29 at 14:18 -0700, Andrew Morton wrote: 
+> > On Tue, 28 Apr 2009 14:32:14 -0400
+> > Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
 > > 
-> > As before, this does nothing to expedite callbacks already registered
-> > with call_rcu() or call_rcu_bh(), but there is no need to.  Just maps
-> > to synchronize_rcu() and a new synchronize_rcu_bh() on preemptable RCU,
-> > which has more complex grace-period detection -- this can be fixed later.
+> > > The number of calls to ima_path_check()/ima_file_free()
+> > > should be balanced.  An extra call to fput(), indicates
+> > > the file could have been accessed without first being
+> > > measured.
+> > > 
+> > > An nfsd exported file is opened/closed by the kernel
+> > > causing an integrity imbalance message.
+> > > 
+> > > - rename and export opencount_get to ima_opencount_get
+> > > - replace ima_shm_check calls with ima_opencount_get
+> > > - add call to increment opencount for files opened by nfsd.
+> > > - add call to measure exported files in nfsd_permission().
+> > > - export ima_path_check
+> > > 
 > > 
-> > Passes light rcutorture testing.  Grace periods take around 200
-> > microseconds on an 8-CPU Power machine.  This is a good order of magnitude
-> > better than v3, but an order of magnitude slower than v2.  Furthermore,
-> > it will get slower the more CPUs you have, and eight CPUs is not all
-> > that many these days.  So this implementation still does not cut it.
+> > The patch looks fragile to me.  It sprinkles IMA-specific operations
+> > over random unrelated subsystems.  There is hence a decent chance of
+> > breakage in the future.
 > > 
-> > Once again, I am posting this on the off-chance that I made some stupid
-> > mistake that someone might spot.  Absent that, I am taking yet another
-> > different approach, namely setting up per-CPU threads that are awakened
-> > via smp_call_function(), permitting the quiescent states to be waited
-> > for in parallel.
-> > 
+> > Suppose some other new piece of kernel code opens/closes a file.  The
+> > developer didn't think to add the IMA hooks and whoops, we have a bug.
 > 
-> I dont know, dont we have possibility one cpu is dedicated for the use
-> of a cpu hungry real time thread ?
+> Agreed.  Exactly for that reason we have the imbalance message. The
+> imbalance message is not a bug per se, but an indication that the
+> file hasn't been integrity (permission) checked.
+
+Where do I need to go to find out what this integrity checking is?  I
+don't know the first thing about it....
+
+--b.
+
 > 
-> krcu_sched_expedited() would dead lock or something ?
-
-Good point!!!
-
-One approach would be to use a prio-99 RT per-CPU thread that sleeps
-unless/until an expedited grace period is required.
-
-Aggressive real-time workloads would need to avoid doing things (like
-changing networking configuration) that require expedited grace periods.
-
-Seem reasonable?
-
-							Thanx, Paul
-
-> > Shortcomings:
-> > 
-> > o	Too slow!!!  Thinking in terms of using per-CPU kthreads.
-> > 
-> > o	The wait_event() calls result in 120-second warnings, need
-> > 	to use something like wait_event_interruptible().  There are
-> > 	probably other corner cases that need attention.
-> > 
-> > o	Does not address preemptable RCU.
-> > 
-> > Changes since v3:
-> > 
-> > o	Use a kthread that schedules itself on each CPU in turn to
-> > 	force a grace period.  The synchronize_rcu() primitive
-> > 	wakes up the kthread in order to avoid messing with affinity
-> > 	masks on user tasks.
-> > 
-> > o	Tried a number of additional variations on the v3 approach, none
-> > 	of which helped much.
-> > 
-> > Changes since v2:
-> > 
-> > o	Use reschedule IPIs rather than a softirq.
-> > 
-> > Changes since v1:
-> > 
-> > o	Added rcutorture support, and added exports required by
-> > 	rcutorture.
-> > 
-> > o	Added comment stating that smp_call_function() implies a
-> > 	memory barrier, suggested by Mathieu.
-> > 
-> > o	Added #include for delay.h.
-> > 
-> > Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> > ---
-> > 
-> >  include/linux/rcuclassic.h |   16 +++
-> >  include/linux/rcupdate.h   |   24 ++---
-> >  include/linux/rcupreempt.h |   10 ++
-> >  include/linux/rcutree.h    |   13 ++
-> >  kernel/rcupdate.c          |  103 +++++++++++++++++++++++
-> >  kernel/rcupreempt.c        |    1 
-> >  kernel/rcutorture.c        |  200 ++++++++++++++++++++++++---------------------
-> >  7 files changed, 261 insertions(+), 106 deletions(-)
-> > 
+> > It would be really really better if we could add the IMA hooks in a
+> > single place.  That might require the addition of a new function, and
+> > that's fine.  d_instantiate_kernel() or init_file_kernel() or whatever
+> > - that's fine.  It still has the risk that new code will forget to use
+> > the in-kernel variant, but we have a better chance of detecting it.
 > 
-> > +/*
-> > + * Kernel thread that processes synchronize_sched_expedited() requests.
-> > + * This is implemented as a separate kernel thread to avoid the need
-> > + * to mess with other tasks' cpumasks.
-> > + */
-> > +static int krcu_sched_expedited(void *arg)
-> > +{
-> > +	int cpu;
-> > +
-> > +	do {
-> > +		wait_event(need_sched_expedited_wq, need_sched_expedited);
-> > +		need_sched_expedited = 0;
-> > +		get_online_cpus();
-> > +		for_each_online_cpu(cpu) {
-> > +			sched_setaffinity(0, &cpumask_of_cpu(cpu));
-> > +			schedule();
+> Definitely. Originally the integrity checking was in inode_permission().
+> But measuring a file requires a dentry and mount point.
 > 
-> <<no return>>
+> I've updated the patch to fix a 'counts' error and divided the patch
+> into two, separating the IMA code changes from the IMA calls in nfsd.
 > 
-> > +		}
-> > +		put_online_cpus();
-> > +		sched_expedited_done = 1;
-> > +		wake_up(&sched_expedited_done_wq);
-> > +	} while (!kthread_should_stop());
-> > +	return 0;
-> > +}
+> > > 
+> > > Index: security-testing-2.6/fs/nfsd/vfs.c
+> > > ===================================================================
+> > > --- security-testing-2.6.orig/fs/nfsd/vfs.c
+> > > +++ security-testing-2.6/fs/nfsd/vfs.c
+> > > @@ -55,6 +55,7 @@
+> > >  #include <linux/security.h>
+> > >  #endif /* CONFIG_NFSD_V4 */
+> > >  #include <linux/jhash.h>
+> > > +#include <linux/ima.h>
+> > >  
+> > >  #include <asm/uaccess.h>
+> > >  
+> > > @@ -735,6 +736,8 @@ nfsd_open(struct svc_rqst *rqstp, struct
+> > >  			    flags, cred);
+> > >  	if (IS_ERR(*filp))
+> > >  		host_err = PTR_ERR(*filp);
+> > > +	else
+> > > +		ima_opencount_get(*filp);
+> > 
+> > This suggests dentry_open_kernel().
 > 
+> Good name, but making dentry_open_kernel() the default behavior,
+> would mask the real bug - not doing integrity (permission) checking.
+> 
+> > 
+> > >  out_nfserr:
+> > >  	err = nfserrno(host_err);
+> > >  out:
+> > > @@ -2096,7 +2099,13 @@ nfsd_permission(struct svc_rqst *rqstp, 
+> > >  	if (err == -EACCES && S_ISREG(inode->i_mode) &&
+> > >  	    acc == (NFSD_MAY_READ | NFSD_MAY_OWNER_OVERRIDE))
+> > >  		err = inode_permission(inode, MAY_EXEC);
+> > > +	if (err)
+> > > +		goto nfsd_out;
+> > >  
+> > > +	err = ima_path_check(&exp->ex_path,
+> > > +			     acc & (MAY_READ | MAY_WRITE | MAY_EXEC));
+> > 
+> > hm, dunno what to do about that.
+> 
+> The real problem is that this belongs in inode_permission(), but an
+> inode is not enough.  It requires a dentry and mount point to
+> measure the file.
+> 
+> > > +	return err;
+> > > +nfsd_out:
+> > >  	return err? nfserrno(err) : 0;
+> > >  }
+> > >  
+> > > Index: security-testing-2.6/security/integrity/ima/ima_main.c
+> > > ===================================================================
+> > > --- security-testing-2.6.orig/security/integrity/ima/ima_main.c
+> > > +++ security-testing-2.6/security/integrity/ima/ima_main.c
+> > > @@ -206,6 +206,7 @@ out:
+> > >  	kref_put(&iint->refcount, iint_free);
+> > >  	return 0;
+> > >  }
+> > > +EXPORT_SYMBOL_GPL(ima_path_check);
+> > >  
+> > >  static int process_measurement(struct file *file, const unsigned char *filename,
+> > >  			       int mask, int function)
+> > > @@ -234,7 +235,16 @@ out:
+> > >  	return rc;
+> > >  }
+> > >  
+> > > -static void opencount_get(struct file *file)
+> > > +/*
+> > > + * ima_opencount_get - incr opencount for files opened by the kernel
+> > > + *
+> > > + * - IPC shm and shmat create/fput a file.
+> > > + * - nfsd opens/closes exported files.
+> > > + *
+> > > + * Increment the opencount for these files to prevent unnecessary
+> > > + * imbalance messages.
+> > > + */
+> > > +void ima_opencount_get(struct file *file)
+> > >  {
+> > >  	struct inode *inode = file->f_dentry->d_inode;
+> > >  	struct ima_iint_cache *iint;
+> > > @@ -248,6 +258,7 @@ static void opencount_get(struct file *f
+> > >  	iint->opencount++;
+> > >  	mutex_unlock(&iint->mutex);
+> > >  }
+> > > +EXPORT_SYMBOL_GPL(ima_opencount_get);
+> > >  
+> > >  /**
+> > >   * ima_file_mmap - based on policy, collect/store measurement.
+> > > @@ -272,18 +283,6 @@ int ima_file_mmap(struct file *file, uns
+> > >  	return 0;
+> > >  }
+> > >  
+> > > -/*
+> > > - * ima_shm_check - IPC shm and shmat create/fput a file
+> > > - *
+> > > - * Maintain the opencount for these files to prevent unnecessary
+> > > - * imbalance messages.
+> > > - */
+> > > -void ima_shm_check(struct file *file)
+> > > -{
+> > > -	opencount_get(file);
+> > > -	return;
+> > > -}
+> > > -
+> > >  /**
+> > >   * ima_bprm_check - based on policy, collect/store measurement.
+> > >   * @bprm: contains the linux_binprm structure
+> > > Index: security-testing-2.6/include/linux/ima.h
+> > > ===================================================================
+> > > --- security-testing-2.6.orig/include/linux/ima.h
+> > > +++ security-testing-2.6/include/linux/ima.h
+> > > @@ -20,7 +20,7 @@ extern void ima_inode_free(struct inode 
+> > >  extern int ima_path_check(struct path *path, int mask);
+> > >  extern void ima_file_free(struct file *file);
+> > >  extern int ima_file_mmap(struct file *file, unsigned long prot);
+> > > -extern void ima_shm_check(struct file *file);
+> > > +extern void ima_opencount_get(struct file *file);
+> > >  
+> > >  #else
+> > >  static inline int ima_bprm_check(struct linux_binprm *bprm)
+> > > @@ -53,7 +53,7 @@ static inline int ima_file_mmap(struct f
+> > >  	return 0;
+> > >  }
+> > >  
+> > > -static inline void ima_shm_check(struct file *file)
+> > > +static inline void ima_opencount_get(struct file *file)
+> > >  {
+> > >  	return;
+> > >  }
+> > > Index: security-testing-2.6/ipc/shm.c
+> > > ===================================================================
+> > > --- security-testing-2.6.orig/ipc/shm.c
+> > > +++ security-testing-2.6/ipc/shm.c
+> > > @@ -384,7 +384,7 @@ static int newseg(struct ipc_namespace *
+> > >  	error = PTR_ERR(file);
+> > >  	if (IS_ERR(file))
+> > >  		goto no_file;
+> > > -	ima_shm_check(file);
+> > > +	ima_opencount_get(file);
+> > >  
+> > >  	id = ipc_addid(&shm_ids(ns), &shp->shm_perm, ns->shm_ctlmni);
+> > >  	if (id < 0) {
+> > > @@ -891,7 +891,7 @@ long do_shmat(int shmid, char __user *sh
+> > >  	file = alloc_file(path.mnt, path.dentry, f_mode, &shm_file_operations);
+> > >  	if (!file)
+> > >  		goto out_free;
+> > > -	ima_shm_check(file);
+> > > +	ima_opencount_get(file);
+> > >  
+> > >  	file->private_data = sfd;
+> > >  	file->f_mapping = shp->shm_file->f_mapping;
+> > > Index: security-testing-2.6/mm/shmem.c
+> > > ===================================================================
+> > > --- security-testing-2.6.orig/mm/shmem.c
+> > > +++ security-testing-2.6/mm/shmem.c
+> > > @@ -2680,7 +2680,7 @@ int shmem_zero_setup(struct vm_area_stru
+> > >  	if (IS_ERR(file))
+> > >  		return PTR_ERR(file);
+> > >  
+> > > -	ima_shm_check(file);
+> > > +	ima_opencount_get(file);
+> > >  	if (vma->vm_file)
+> > >  		fput(vma->vm_file);
+> > >  	vma->vm_file = file;
+> > 
+> > Maybe do the IMA operations in (or under) shmem_file_setup() and
+> > hugetlb_file_setup()?
+> 
+> Again, that would hide the real issue of not having done integrity
+> (permission) checking.
+> 
+> Mimi
 > 
