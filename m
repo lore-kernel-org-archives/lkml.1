@@ -1,73 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755851AbZEHJTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762214AbZEHJTn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755851AbZEHJTV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 05:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZEHJTB
+	id S1762214AbZEHJTn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 05:19:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757067AbZEHJTb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 05:19:01 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:46908 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752567AbZEHJTA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 05:19:00 -0400
-Subject: Re: Linux wireless mini-summit -- Berlin, June 2009
-From: Johannes Berg <johannes@sipsolutions.net>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090403182724.GA7364@tuxdriver.com> (sfid-20090403_203108_005030_BC3865B6)
-References: <20090403182724.GA7364@tuxdriver.com>
-	 (sfid-20090403_203108_005030_BC3865B6)
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-67ZG61t67jFlcYuSuV4h"
-Date: Fri, 08 May 2009 11:18:58 +0200
-Message-Id: <1241774338.1567.36.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Fri, 8 May 2009 05:19:31 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:59794 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752826AbZEHJTa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 05:19:30 -0400
+Date: Fri, 8 May 2009 11:19:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Tom Zanussi <tzanussi@gmail.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, Adam Langley <agl@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, markus@google.com
+Subject: Re: [RFC 1/1] seccomp: Add bitmask of allowed system calls.
+Message-ID: <20090508091912.GB3559@elte.hu>
+References: <396556a20805301217k293e5718h6bbf02b234897235@europa> <20090507221447.GE28770@elte.hu> <a84d7bc60905071534l1e65f216mfd9330e93e4da4e2@mail.gmail.com> <20090507230021.GC6472@nowhere> <1241760745.9416.37.camel@tropicana>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241760745.9416.37.camel@tropicana>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-67ZG61t67jFlcYuSuV4h
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+* Tom Zanussi <tzanussi@gmail.com> wrote:
 
+> I guess it would be easier for seccomp to make use of the 
+> filtering and reuse the syscall tracing facility if we added 
+> filtering to the syscall tracer first.  It would be useful to do 
+> for the syscall tracer anyway, regardless of whether it (or 
+> something similar) ended up being used by seccomp.
+> 
+> Frederic, did you have any plans for that?  If not, I can take a 
+> look when I get the chance...
 
-> So, here I open the floor for discussion of agenda items for our
-> wireless meeting/hackfest.  What do we think is important to discuss
-> face-to-face this year?  What isn't getting done?  What is getting
-> done wrong?  What do we need that we didn't realize last year?
+Doing that would be very nice and useful indeed.
 
-I've tried to capture the discussion from here on the wiki:
-
-http://wireless.kernel.org/en/developers/Summits/Berlin-2009
-
-Feel free to edit and add suggestions, or put yourself into "confirmed
-attendees" (do we want that? it seemed we should say who will be there)
-or put yourself into the section with confirmed talks :)
-
-johannes
-
---=-67ZG61t67jFlcYuSuV4h
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKA/j2AAoJEODzc/N7+QmagUkP/2b0hyHZWANxiRAIT2MX1YjL
-2ENvrUXkJLpZfKXZKdgCtADDSMuCw5SSeho+4KEhGOfJaoI6ukJpjtW2mm3vV1WE
-SkXv3V2qzn8MrRSJFpk4U7PesjrqrXYz1blLmdlyNjPXYJiaO7ONQS/9UrNw125o
-kMJCTtInmVENxRqnb55Jy/YzlbXr8bte2uxczrrHSMIGUgTFttXjvZPgWy5LXcMk
-kLR33q9oimW9b+xErghGULa72PT1ITGOXKw9nqC/y4KSavP9bROZIpv+lstWCHtD
-dG/bEE5TwBOlydu9k0zcqY7NZk4fbLQ6nWqzFoQhkqqkw8NgQQI1EuSqHdmF+hku
-RNHnhb7Em3fJq/ZVBaE1nsAKaKwLT/V4pAXxRDePx7UmMAIe63OIsdSRJYzjvLC+
-8gVaiRHr6n3vlO0JoaQpD6swo4npCpPNrXHPiHA5KWG9HiKhnicwC88bPMUpj6nB
-ABnKt/bSOMWdKVqCo7D/ZLZ3UecrujlK3NdLISAMhuaxfjs/0IYNnRx+zDF59DEO
-DaL3K6Xh/ubcQLGzCM7eg7WYnQPBbymU/Zeu/GyU+Ae/qudwGAqpr8uocvchCgdT
-H7Thmif2il8z1PukCwqSAWCFOMvtkLzj3i+ty9/f+71BtaVG6ubv0IC7cZoWppFu
-vgBBne7+L9s5Vozd7zmB
-=93Eg
------END PGP SIGNATURE-----
-
---=-67ZG61t67jFlcYuSuV4h--
-
+	Ingo
