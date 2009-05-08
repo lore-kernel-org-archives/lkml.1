@@ -1,114 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZEHNnv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757713AbZEHNqV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758141AbZEHNnv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 09:43:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbZEHNnh
+	id S1757713AbZEHNqV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 09:46:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752866AbZEHNqJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 09:43:37 -0400
-Received: from mga14.intel.com ([143.182.124.37]:49810 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758141AbZEHNng (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 09:43:36 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,317,1239001200"; 
-   d="scan'208";a="140704019"
-Date: Fri, 8 May 2009 21:43:03 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       =?utf-8?B?RnLDqWTDqXJpYw==?= Weisbecker <fweisbec@gmail.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: ftrace: concurrent accesses possible?
-Message-ID: <20090508134303.GA15127@localhost>
-References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu> <20090508125821.GC15949@localhost> <alpine.DEB.2.00.0905080908120.28378@gandalf.stny.rr.com>
+	Fri, 8 May 2009 09:46:09 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:42349 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752485AbZEHNqI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 09:46:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=FKY4QS7Zsr+7t1WZVnRoVAd+XS01NjrAIHwOOvpKOH9ZJVb9xal1879N+rqDarBKa2
+         QaNco8QDP3CEMpirVvXBGfMU2PTXa/dIlbUD6uLk4bQmpMr3HNuA3+nmF+lYJgmRtbdh
+         zhq/pRHebAinlw4YSVw1JFOLuCd0zfiwi7dLk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0905080908120.28378@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <87vdobq48p.fsf@fzidpc73.tu-graz.ac.at>
+References: <87vdobq48p.fsf@fzidpc73.tu-graz.ac.at>
+Date: Fri, 8 May 2009 14:46:05 +0100
+Message-ID: <9b2b86520905080646r85f30bcp6f50d7388d8289f5@mail.gmail.com>
+Subject: Re: Asus Eee 901Go ACPI errors on 2.6.30-rc4-git4
+From: Alan Jenkins <sourcejedi.lkml@googlemail.com>
+To: Mario Lang <mlang@tugraz.at>
+Cc: linux-kernel@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Alexey Starikovskiy <astarikovskiy@suse.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 09:17:04PM +0800, Steven Rostedt wrote:
-> 
-> On Fri, 8 May 2009, Wu Fengguang wrote:
-> 
-> > Hello,
-> > 
-> > On Fri, May 08, 2009 at 07:47:42PM +0800, Ingo Molnar wrote:
-> > > 
-> > > So this should be done in cooperation with instrumentation folks, 
-> > > while improving _all_ of Linux instrumentation in general. Or, if 
-> > > you dont have the time/interest to work with us on that, it should 
-> > > not be done at all. Not having the resources/interest to do 
-> > > something properly is not a license to introduce further 
-> > > instrumentation crap into Linux.
-> > 
-> > I have a dummy question on /debug/trace: is it possible to
-> > - use 2+ tracers concurrently?
-> 
-> Two plugins? no.
-> 
-> Two types of tracing? yes.
-> 
-> The "current_tracer" is for specific tracing purposes that like, latency 
-> tracing, function tracing and graph tracing. There are others, but they 
-> are more "themes" than tracers. The latency tracing only shows a "max 
-> latency" and does not show current traces unless they hit the max 
-> threshold. The function graph tracer has a different output format that 
-> has indentation based on the depth of the traced functions.
-> 
-> But with tracing events, we can pick and choose any event and trace them 
-> all together. You can filter them as well. For new events in the kernel, 
-> we only add them via trace events. These events show up in the plugin 
-> tracers too.
+On 5/8/09, Mario Lang <mlang@tugraz.at> wrote:
+> Hi.
+>
+> Booting 2.6.30-rc4-git4 on an Asus Eee 901Go I get the following in dmesg:
+>
+> [   27.005071] ACPI: EC: missing confirmations, switch off interrupt mode.
+> [   27.548097] ACPI Exception (evregion-0422): AE_TIME, Returned by Handler
+> for [EmbeddedControl] [20090320]
+> [   27.548139] ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.PCI0.SBRG.EC0_.BST1] (Node f7033d4c), AE_TIME
+> [   27.548280] ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.PCI0.CBST] (Node f70366f8), AE_TIME
+> [   27.548393] ACPI Error (psparse-0537): Method parse/execution failed
+> [\_SB_.PCI0.BAT0._BST] (Node f7034c48), AE_TIME
+> [   27.548521] ACPI Exception (battery-0385): AE_TIME, Evaluating _BST
+> [20090320]
 
-OK. Thanks for explaining!
+Odd.  Did this happen in 2.6.29?
 
-> > - run a system script that makes use of a tracer,
-> 
-> Sure
-> 
-> >   without disturbing the sysadmin's tracer activities?
-> 
-> Hmm, you mean have individual tracers tracing different things. We sorta 
+If so - I think there's only one significant EC change since 2.6.29,
+you could try reverting that.
 
-Right. Plus two 'instances' of the same tracer run with different options.
+34ff4dbccccce54c83b1234d39b7ad9e548a75dd "ACPI: EC: Separate delays
+for MSI hardware"
 
-> do that now, but they are more custom. That is, you can have the stack 
-> tracer running (recording max stack of the kernel) and run other tracers 
-> as well, without noticing.  But those that write to the ring buffer, only 
-> write to a single ring buffer. If another trace facility created their own 
-> ring buffer, then you could have more than one ring buffer being used. But 
-> ftrace currently uses only one (This is net exactly true, because the 
-> latency tracers have a separate ring buffer to store the max).
-
-That's OK.
-
-> > - access 1 tracer concurrently from many threads,
-> 
-> More than one reader can happen, but inside the kernel, they are 
-> serialized. When reading from the trace_pipe (consumer mode), every read 
-> will produce a different output, because the previous read was "consumed". 
-> If two threads try to read this way at the same time, they will each get a 
-> different result.
-> 
-> >   with different filter etc. options?
-> 
-> Not sure what you mean here. If you two threads filtering differently, 
-> this should be done in userspace.
-
-It's about efficiency.  Here is a use case: one have N CPUs and want
-to create N threads to query N different segments of the total memory
-via kpageflags. This ability is important for a large memory system.
-
-Thanks,
-Fengguang
-
+Alan
