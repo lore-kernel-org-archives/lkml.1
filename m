@@ -1,51 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZEHKqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbZEHKrO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755220AbZEHKqs (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 06:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbZEHKqh
+	id S1752821AbZEHKrO (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 06:47:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbZEHKq4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 06:46:37 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:18160 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751831AbZEHKqg (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 06:46:36 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=sD6JpTu6J8klkddSkkxCRdJATrZlnUuq980uJUjpLgVNRYrU8Ut9gtu8/z8bfceXwB
-         KZA4e7/eT4a2ubSY06WWPRMaBIfkn8H0cxu9GG3JOOlrplXApX5ALWdNiCFiNQDTp8RS
-         4rI+siu3heA6dSz8N09y7LaRPQqZnjCyaVRdU=
-Date: Fri, 8 May 2009 10:46:28 +0000
-From: Jarek Poplawski <jarkao2@gmail.com>
-To: "Alexander V. Lukyanov" <lav@netis.ru>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.29.1: unregister_netdevice problem
-Message-ID: <20090508104628.GA6287@ff.dom.local>
-References: <20090422055735.GA4334@night.netis.ru> <20090427054103.GA27529@night.netis.ru> <20090428125755.GA5242@night.netis.ru> <49F76BF6.4040709@gmail.com> <20090429054510.GA8267@night.netis.ru> <20090429090809.GA2995@ami.dom.local> <20090508062640.GA4555@night.netis.ru>
+	Fri, 8 May 2009 06:46:56 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36678 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754944AbZEHKqz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 06:46:55 -0400
+Date: Fri, 8 May 2009 12:46:11 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, greg@kroah.com,
+       norsk5@yahoo.com, tglx@linutronix.de, hpa@zytor.com, mchehab@redhat.com,
+       aris@redhat.com, edt@aei.ca, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 00/21 v3] amd64_edac: EDAC module for AMD64
+Message-ID: <20090508104611.GA11596@elte.hu>
+References: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com> <20090507142724.GM481@elte.hu> <20090507143807.GA15923@aftab> <20090507135227.abbbc7dc.akpm@linux-foundation.org> <20090507211859.GA28770@elte.hu> <20090508100738.GA21064@aftab>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090508062640.GA4555@night.netis.ru>
+In-Reply-To: <20090508100738.GA21064@aftab>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 10:26:40AM +0400, Alexander V. Lukyanov wrote:
-> On Wed, Apr 29, 2009 at 11:08:09AM +0200, Jarek Poplawski wrote:
-> > So looks like a regression. Alas this thing could be hard to debug and
-> > still more data is needed. For the beginning maybe: .config, dmesg,
-> > and a few SysRq logs while this happens e.g. Alt-PrtScr with t, d, w, q
-> > (gzipped or as attachments to a bugzilla report). (If it's not a big
-> > problem trying 2.6.28.9 could be helpful too.)
+
+* Borislav Petkov <borislav.petkov@amd.com> wrote:
+
+> Hi,
 > 
-> It happened again with 2.6.29.2. Here is the requested info.
+> On Thu, May 07, 2009 at 11:18:59PM +0200, Ingo Molnar wrote:
+> > 
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > On Thu, 7 May 2009 16:38:07 +0200
+> > > Borislav Petkov <borislav.petkov@amd.com> wrote:
+> > > 
+> > > > Hi,
+> > > > 
+> > > > On Thu, May 07, 2009 at 04:27:24PM +0200, Ingo Molnar wrote:
+> > > > > Regarding workflow, the arch/x86 bits look good to me now, so you've 
+> > > > > got my Acked-by for that.
+> > > > 
+> > > > Cool, thanks.
+> > > > 
+> > > > Does that mean you're going to pick that one or...
+> > > > 
+> > > > > Most of the EDAC patches are hosted in 
+> > > > > -mm, so we could carry them in the x86 tree separately as well and 
+> > > > > export it to linux-next so that -mm will have it automatically.
+> > > > 
+> > > > is the bunch going through Andrew as a whole?
+> > > > 
+> > > 
+> > > I could.  But there's negligible overlap with other EDAC work so 
+> > > we might as well merge this via IngoTrees or directly from your 
+> > > tree.
+> > 
+> > If Doug and you agrees too then i have no problem (at all) with 
+> > Borislav carrying these bits in a separate tree, as long as he also 
+> > opens an edac-next branch for linux-next and asks Stephen to pull 
+> > it, and keeps it an append-mostly tree that isnt rebased.
+> 
+> I'll still need to rebase stuff to latest Linus tree for now since 
+> we're not yet ready reorganizing/cleaning up the code. After it 
+> gets merged, I'll switch to append-only mode.
 
-I can't see anything suspicious for now, except these UDP and TCP
-warnings. Did you see similar messages with 2.6.27? Btw., could this
-eth0.987 be "connected" with any of this traffic? (IP# ?)
+that's OK! Rebasing of your own commits is fine (especially during 
+active development, and especially if there's a lot of outstanding 
+review feedback). What matters is to have an eventual cool-down so 
+that earlier commits become append-only. That makes a tree more 
+trustable - while you never know what's in a fully rebased tree.
 
-Thanks,
-Jarek P.
+	Ingo
