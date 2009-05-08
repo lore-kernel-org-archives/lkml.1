@@ -1,65 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760260AbZEHPL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760800AbZEHPLm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760260AbZEHPL0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 11:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758400AbZEHPLG
+	id S1760800AbZEHPLm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 11:11:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756178AbZEHPLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 11:11:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:32886 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753371AbZEHPLF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 11:11:05 -0400
-Date: Fri, 8 May 2009 17:10:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: ftrace 2.6.30-rc4: possible circular locking dependency
-Message-ID: <20090508151044.GC29974@elte.hu>
-References: <200905082255.BGE18711.LJQVStFHOFOOMF@I-love.SAKURA.ne.jp> <alpine.DEB.2.00.0905081000000.28378@gandalf.stny.rr.com>
+	Fri, 8 May 2009 11:11:17 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:36540 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756914AbZEHPLP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 11:11:15 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Fri, 8 May 2009 08:06:30 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Gregory Haskins <ghaskins@novell.com>
+cc: viro@ZenIV.linux.org.uk, kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com
+Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via eventfd-notification
+ interface
+In-Reply-To: <4A024214.9090002@novell.com>
+Message-ID: <alpine.DEB.1.10.0905080805510.16601@makko.or.mcafeemobile.com>
+References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A0175F0.1090705@novell.com> <alpine.DEB.1.10.0905060818000.32007@makko.or.mcafeemobile.com> <4A01AEC1.8020201@novell.com>
+ <alpine.DEB.1.10.0905061834080.32606@makko.or.mcafeemobile.com> <4A024214.9090002@novell.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0905081000000.28378@gandalf.stny.rr.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 6 May 2009, Gregory Haskins wrote:
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+> If there isn't any more feedback on the series from Al, Avi,
+> etc...please formally submit your eventfd patch so this series is
+> available for Avi to pull in for inclusion when/if he deems it fit.
 
-> 
-> Hi Tetsuo,
-> 
-> Thanks for the report. But we already have a fix for it. But the change is 
-> a bit of design change, and it is one of those things that is hard to know 
-> if we should push it up stream this late in the RCs.
-> 
-> We probably should. But the change affects two different subsystems. It 
-> affects ftrace as well as the module code. There's a bit of changes to the 
-> module code (Rusty being the maintainer) where we would be more 
-> comfortable if it goes via Rusty.
-> 
-> Rusty and Ingo,
-> 
-> What is the best way to get this change upstream?
-> 
-> Reference: http://lkml.org/lkml/2009/4/15/548
-> 
-> tip git SHA1: 93eb677d74a4f7d3edfb678c94f6c0544d9fbad2
+Did you decide you will be using those bits?
 
-Would be nice to have a non-conflicting version against latest -git 
-- which Tetsuo could test as well, and which i could apply if the 
-test is successful.
 
-	Ingo
+- Davide
+
+
