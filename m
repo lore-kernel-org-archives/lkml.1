@@ -1,113 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764150AbZEHTHL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764109AbZEHTHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764150AbZEHTHL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 15:07:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763496AbZEHTGa
+	id S1764109AbZEHTHi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763004AbZEHTG7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 15:06:30 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:7205 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1763004AbZEHTG3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:06:29 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=mime-version:in-reply-to:references:date:message-id:subject:from:to:
-	cc:content-type:content-transfer-encoding:x-system-of-record;
-	b=SujJ7TCCi75y3vR5U7HUo6q+n/EcuVB+hAlLDCLcRAyCoG5msYawSTH9J0FM3gmJP
-	77fQUcB1aGQGNPiM9tZBA==
+	Fri, 8 May 2009 15:06:59 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53135 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1763818AbZEHTG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 15:06:57 -0400
+Message-ID: <4A04829B.7040803@redhat.com>
+Date: Fri, 08 May 2009 22:06:03 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <20090508185644.GH7293@redhat.com>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com>
-	 <4A03FF3C.4020506@cn.fujitsu.com> <20090508135724.GE7293@redhat.com>
-	 <e98e18940905081041r386e52a5q5a2b1f13f1e8c634@mail.gmail.com>
-	 <20090508185644.GH7293@redhat.com>
-Date: Fri, 8 May 2009 12:06:22 -0700
-Message-ID: <e98e18940905081206o254f3577u5909a73c98e6b24a@mail.gmail.com>
-Subject: Re: [PATCH] io-controller: Add io group reference handling for 
-	request
-From: Nauman Rafique <nauman@google.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: Gregory Haskins <ghaskins@novell.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com> <20090507233503.GA9103@amt.cnet> <4A043E89.90403@novell.com> <4A044786.2080508@codemonkey.ws> <4A047EDE.2020806@redhat.com> <4A0481AC.7070409@codemonkey.ws>
+In-Reply-To: <4A0481AC.7070409@codemonkey.ws>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 8, 2009 at 11:56 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> On Fri, May 08, 2009 at 10:41:01AM -0700, Nauman Rafique wrote:
->> On Fri, May 8, 2009 at 6:57 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
->> > On Fri, May 08, 2009 at 05:45:32PM +0800, Gui Jianfeng wrote:
->> >> Hi Vivek,
->> >>
->> >> This patch adds io group reference handling when allocating
->> >> and removing a request.
->> >>
->> >
->> > Hi Gui,
->> >
->> > Thanks for the patch. We were thinking that requests can take a reference
->> > on io queues and io queues can take a reference on io groups. That should
->> > make sure that io groups don't go away as long as active requests are
->> > present.
->> >
->> > But there seems to be a small window while allocating the new request
->> > where request gets allocated from a group first and then later it is
->> > mapped to that group and queue is created. IOW, in get_request_wait(),
->> > we allocate a request from a particular group and set rq->rl, then
->> > drop the queue lock and later call elv_set_request() which again maps
->> > the request to the group saves rq->iog and creates new queue. This window
->> > is troublesome because request can be mapped to a particular group at the
->> > time of allocation and during set_request() it can go to a different
->> > group as queue lock was dropped and group might have disappeared.
->> >
->> > In this case probably it might make sense that request also takes a
->> > reference on groups. At the same time it looks too much that request takes
->> > a reference on queue as well as group object. Ideas are welcome on how
->> > to handle it...
->>
->> IMHO a request being allocated on the wrong cgroup should not be a big
->> problem as such. All it means is that the request descriptor was
->> accounted to the wrong cgroup in this particular corner case. Please
->> correct me if I am wrong.
+Anthony Liguori wrote:
+>> ia64 uses mmio to emulate pio, so the cost may be different.  I agree 
+>> on x86 it's almost negligible.
 >
-> I think you are right. We just need to be little careful while freeing
-> the request that associated request list might have gone away (rq->rl).
+> Yes, I misunderstood that they actually emulated it like that.  
+> However, ia64 has no paravirtualization support today so surely, we 
+> aren't going to be justifying this via ia64, right?
 >
-> Or we probably can think of getting rid of (rq->rl) also and while
-> freeing request determine io queue and group from rq->ioq. But somehow
-> I remember that I had to introduce rq->rl otherwise I was running into
-> issues of request being mapped to different groups at different point
-> of time hence different request list etc. Will check again..
->>
->> We can also get rid of rq->iog pointer too. What that means is that
->> request is associated with ioq (rq->ioq), and we can use
->> ioq_to_io_group() function to get the io_group. So the request would
->> only be indirectly associated with an io_group i.e. the request is
->> associated with an io_queue and the io_group for the request is the
->> io_group associated with io_queue. Do you see any problems with that
->> approach?
->
-> Looks like this is also doable. Good idea. Can't think of why can't
-> we get rid of rq->iog and manage with rq->ioq. There are only 1-2
-> places where ioq is not setup yet and rq has been mapped to the group.
-> There we shall have to carry group information or carry bio information
-> and map it again to get group info.
->
-> Will try to implement it and see how does it go.
 
-I tried it, and it seems to work. I passed io_group around as function
-arguments, and return values before ioq was set.
+Right.
 
->
-> Thanks
-> Vivek
->
+
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
+
