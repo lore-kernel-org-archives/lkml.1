@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763511AbZEHDAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761061AbZEHDBT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763511AbZEHDAr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 23:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762210AbZEHC4y
+	id S1761061AbZEHDBT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 23:01:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762263AbZEHC45
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 22:56:54 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36200 "EHLO hera.kernel.org"
+	Thu, 7 May 2009 22:56:57 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36195 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756078AbZEHC4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 22:56:14 -0400
+	id S1752373AbZEHC4N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 22:56:13 -0400
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        linux-ide@vger.kernel.org, rusty@rustcorp.com.au,
@@ -23,139 +23,85 @@ To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        schwidefsky@de.ibm.com, zaitcev@redhat.com,
        fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 10/18] amiflop: dequeue in-flight request
-Date: Fri,  8 May 2009 11:54:08 +0900
-Message-Id: <1241751256-17435-11-git-send-email-tj@kernel.org>
+Subject: [PATCH 07/18] xsysace: dequeue in-flight request
+Date: Fri,  8 May 2009 11:54:05 +0900
+Message-Id: <1241751256-17435-8-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1241751256-17435-1-git-send-email-tj@kernel.org>
 References: <1241751256-17435-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 08 May 2009 02:54:33 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 08 May 2009 02:54:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Request processing in amiflop is done sequentially in
-redo_fd_request() proper and redo_fd_request() can easily be converted
-to track in-flight request.  Remove CURRENT, track in-flight request
-directly and dequeue it when processing starts.
+xsysace already tracks in-flight request using ace->req.  Converting
+to dequeueing model is mostly a matter of adding dequeueing call after
+request fetching.  The only tricky part is handling CF removal which
+should complete both in flight and on queue requests.  Convert to
+dequeueing model.
+
+While at it, remove explicit blk_rq_cur_bytes() and use
+__blk_end_request_cur() instead.
 
 [ Impact: dequeue in-flight request ]
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Grant Likely <grant.likely@secretlab.ca>
 ---
- drivers/block/amiflop.c |   48 +++++++++++++++++++++++-----------------------
- 1 files changed, 24 insertions(+), 24 deletions(-)
+ drivers/block/xsysace.c |   19 +++++++++++++------
+ 1 files changed, 13 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/block/amiflop.c b/drivers/block/amiflop.c
-index e4a14b9..80a68b2 100644
---- a/drivers/block/amiflop.c
-+++ b/drivers/block/amiflop.c
-@@ -112,8 +112,6 @@ module_param(fd_def_df0, ulong, 0);
- MODULE_LICENSE("GPL");
- 
- static struct request_queue *floppy_queue;
--#define QUEUE (floppy_queue)
--#define CURRENT elv_next_request(floppy_queue)
- 
- /*
-  *  Macros
-@@ -1335,59 +1333,61 @@ static int get_track(int drive, int track)
- 
- static void redo_fd_request(void)
- {
-+	struct request *rq;
- 	unsigned int cnt, block, track, sector;
- 	int drive;
- 	struct amiga_floppy_struct *floppy;
- 	char *data;
- 	unsigned long flags;
-+	int err;
- 
-- repeat:
--	if (!CURRENT) {
-+next_req:
-+	rq = elv_next_request(floppy_queue);
-+	if (!rq) {
- 		/* Nothing left to do */
- 		return;
+diff --git a/drivers/block/xsysace.c b/drivers/block/xsysace.c
+index 97c99b4..edf137b 100644
+--- a/drivers/block/xsysace.c
++++ b/drivers/block/xsysace.c
+@@ -466,7 +466,8 @@ struct request *ace_get_next_request(struct request_queue * q)
+ 	while ((req = elv_next_request(q)) != NULL) {
+ 		if (blk_fs_request(req))
+ 			break;
+-		__blk_end_request_cur(req, -EIO);
++		blkdev_dequeue_request(req);
++		__blk_end_request_all(req, -EIO);
  	}
-+	blkdev_dequeue_request(rq);
- 
--	floppy = CURRENT->rq_disk->private_data;
-+	floppy = rq->rq_disk->private_data;
- 	drive = floppy - unit;
- 
-+next_segment:
- 	/* Here someone could investigate to be more efficient */
--	for (cnt = 0; cnt < blk_rq_cur_sectors(CURRENT); cnt++) {
-+	for (cnt = 0, err = 0; cnt < blk_rq_cur_sectors(rq); cnt++) {
- #ifdef DEBUG
- 		printk("fd: sector %ld + %d requested for %s\n",
--		       blk_rq_pos(CURRENT), cnt,
--		       (rq_data_dir(CURRENT) == READ) ? "read" : "write");
-+		       blk_rq_pos(rq), cnt,
-+		       (rq_data_dir(rq) == READ) ? "read" : "write");
- #endif
--		block = blk_rq_pos(CURRENT) + cnt;
-+		block = blk_rq_pos(rq) + cnt;
- 		if ((int)block > floppy->blocks) {
--			__blk_end_request_cur(CURRENT, -EIO);
--			goto repeat;
-+			err = -EIO;
-+			break;
- 		}
- 
- 		track = block / (floppy->dtype->sects * floppy->type->sect_mult);
- 		sector = block % (floppy->dtype->sects * floppy->type->sect_mult);
--		data = CURRENT->buffer + 512 * cnt;
-+		data = rq->buffer + 512 * cnt;
- #ifdef DEBUG
- 		printk("access to track %d, sector %d, with buffer at "
- 		       "0x%08lx\n", track, sector, data);
- #endif
- 
- 		if (get_track(drive, track) == -1) {
--			__blk_end_request_cur(CURRENT, -EIO);
--			goto repeat;
-+			err = -EIO;
-+			break;
- 		}
- 
--		switch (rq_data_dir(CURRENT)) {
--		case READ:
-+		if (rq_data_dir(rq) == READ) {
- 			memcpy(data, floppy->trackbuf + sector * 512, 512);
--			break;
--
--		case WRITE:
-+		} else {
- 			memcpy(floppy->trackbuf + sector * 512, data, 512);
- 
- 			/* keep the drive spinning while writes are scheduled */
- 			if (!fd_motor_on(drive)) {
--				__blk_end_request_cur(CURRENT, -EIO);
--				goto repeat;
-+				err = -EIO;
-+				break;
- 			}
- 			/*
- 			 * setup a callback to write the track buffer
-@@ -1399,12 +1399,12 @@ static void redo_fd_request(void)
- 		        /* reset the timer */
- 			mod_timer (flush_track_timer + drive, jiffies + 1);
- 			local_irq_restore(flags);
--			break;
- 		}
- 	}
- 
--	__blk_end_request_cur(CURRENT, 0);
--	goto repeat;
-+	if (__blk_end_request_cur(rq, err))
-+		goto next_segment;
-+	goto next_req;
+ 	return req;
  }
+@@ -492,9 +493,15 @@ static void ace_fsm_dostate(struct ace_device *ace)
+ 		set_capacity(ace->gd, 0);
+ 		dev_info(ace->dev, "No CF in slot\n");
  
- static void do_fd_request(struct request_queue * q)
+-		/* Drop all pending requests */
+-		while ((req = elv_next_request(ace->queue)) != NULL)
+-			__blk_end_request_cur(req, -EIO);
++		/* Drop all in-flight and pending requests */
++		if (ace->req) {
++			__blk_end_request_all(ace->req, -EIO);
++			ace->req = NULL;
++		}
++		while ((req = elv_next_request(ace->queue)) != NULL) {
++			blkdev_dequeue_request(req);
++			__blk_end_request_all(req, -EIO);
++		}
+ 
+ 		/* Drop back to IDLE state and notify waiters */
+ 		ace->fsm_state = ACE_FSM_STATE_IDLE;
+@@ -642,6 +649,7 @@ static void ace_fsm_dostate(struct ace_device *ace)
+ 			ace->fsm_state = ACE_FSM_STATE_IDLE;
+ 			break;
+ 		}
++		blkdev_dequeue_request(req);
+ 
+ 		/* Okay, it's a data request, set it up for transfer */
+ 		dev_dbg(ace->dev,
+@@ -718,8 +726,7 @@ static void ace_fsm_dostate(struct ace_device *ace)
+ 		}
+ 
+ 		/* bio finished; is there another one? */
+-		if (__blk_end_request(ace->req, 0,
+-					blk_rq_cur_bytes(ace->req))) {
++		if (__blk_end_request_cur(ace->req, 0)) {
+ 			/* dev_dbg(ace->dev, "next block; h=%u c=%u\n",
+ 			 *      blk_rq_sectors(ace->req),
+ 			 *      blk_rq_cur_sectors(ace->req));
 -- 
 1.6.0.2
 
