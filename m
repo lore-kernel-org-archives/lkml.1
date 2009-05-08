@@ -1,56 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757160AbZEHE7k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761334AbZEHFAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757160AbZEHE7k (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 00:59:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751669AbZEHE7b
+	id S1761334AbZEHFAa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 01:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbZEHFAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 00:59:31 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:54205 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751060AbZEHE7a (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 00:59:30 -0400
-Message-ID: <4A03BC1A.9060605@zytor.com>
-Date: Thu, 07 May 2009 21:59:06 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 8 May 2009 01:00:19 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33443 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751060AbZEHFAS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 01:00:18 -0400
+Message-ID: <4A03BC5C.2040303@redhat.com>
+Date: Fri, 08 May 2009 01:00:12 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090324 Fedora/3.0-2.1.beta2.fc11 Thunderbird/3.0b2
 MIME-Version: 1.0
-To: Jan Beulich <jbeulich@novell.com>
-CC: mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86-64: improve e820_search_gap()
-References: <4A0199B8.76EA.0078.0@novell.com>
-In-Reply-To: <4A0199B8.76EA.0078.0@novell.com>
-Content-Type: text/plain; charset=UTF-8
+To: Herbert Xu <herbert@gondor.apana.org.au>
+CC: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Neil Horman <nhorman@tuxdriver.com>
+Subject: [PATCH 2/2] crypto: skip algs not flagged fips_allowed in fips mode
+References: <200905071441.27093.jarod@redhat.com> <200905071527.59809.jarod@redhat.com> <20090508021233.GA20388@gondor.apana.org.au>
+In-Reply-To: <20090508021233.GA20388@gondor.apana.org.au>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> Impact: bug fix
-> 
-> Blindly putting the gap close after max_pfn is in conflict with that
-> same memory range potentially being used by hotplugged memory.
-> 
-> Also, make the function static to ensure there are no other users that
-> could depend on the previous behavior regarding the way start_addr gets
-> specified.
-> 
-> Signed-off-by: Jan Beulich <jbeulich@novell.com>
-> 
+Because all fips-allowed algorithms must be self-tested before they
+can be used, they will all have entries in testmgr.c's alg_test_descs[].
+Skip self-tests for any algs not flagged as fips_approved and return
+-EINVAL when in fips mode.
 
-So blindly locate it somewhere else?  How is that inherently better?
-Wouldn't a machine with hotplug memory (which doesn't bother advertising
-that fact so we can reserve the address space) be just as likely to use
-a sparse memory space, since one can hardly expect the hardware to pack
-the space (packing in hardware is why PCs generally have a
-mostly-contiguous RAM space) when the memory is hotplugged?
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
 
-I think I'm missing something fundamental...
+---
+ crypto/testmgr.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
 
-	-hpa
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index 51bae62..f93b26d 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -2308,6 +2308,9 @@ int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
+ 		if (i < 0)
+ 			goto notest;
+ 
++		if (fips_enabled && !alg_test_descs[i].fips_allowed)
++			goto non_fips_alg;
++
+ 		rc = alg_test_cipher(alg_test_descs + i, driver, type, mask);
+ 		goto test_done;
+ 	}
+@@ -2316,6 +2319,9 @@ int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
+ 	if (i < 0)
+ 		goto notest;
+ 
++	if (fips_enabled && !alg_test_descs[i].fips_allowed)
++		goto non_fips_alg;
++
+ 	rc = alg_test_descs[i].test(alg_test_descs + i, driver,
+ 				      type, mask);
+ test_done:
+@@ -2331,5 +2337,7 @@ test_done:
+ notest:
+ 	printk(KERN_INFO "alg: No test for %s (%s)\n", alg, driver);
+ 	return 0;
++non_fips_alg:
++	return -EINVAL;
+ }
+ EXPORT_SYMBOL_GPL(alg_test);
+
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+Jarod Wilson
+jarod@redhat.com
 
