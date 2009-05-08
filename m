@@ -1,66 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932383AbZEHSsh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764061AbZEHSs7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932383AbZEHSsh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 14:48:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932343AbZEHSrt
+	id S1764061AbZEHSs7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 14:48:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932393AbZEHSsj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 14:47:49 -0400
-Received: from mga02.intel.com ([134.134.136.20]:7344 "EHLO mga02.intel.com"
+	Fri, 8 May 2009 14:48:39 -0400
+Received: from havoc.gtf.org ([69.61.125.42]:44823 "EHLO havoc.gtf.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S932371AbZEHSrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 14:47:47 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,318,1239001200"; 
-   d="scan'208";a="410796669"
-Message-ID: <4A047E53.8040003@intel.com>
-Date: Fri, 08 May 2009 11:47:47 -0700
-From: "H. Peter Anvin" <h.peter.anvin@intel.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: "H. Peter Anvin" <hpa@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "vgoyal@redhat.com" <vgoyal@redhat.com>,
-       "hbabu@us.ibm.com" <hbabu@us.ibm.com>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-       "Huang, Ying" <ying.huang@intel.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "sam@ravnborg.org" <sam@ravnborg.org>
-Subject: Re: [PATCH 00/14] RFC: x86: relocatable kernel changes
-References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com>	<m14ovwz8ua.fsf@fess.ebiederm.org> <4A03C3BB.3070401@intel.com> <m1tz3wgk3n.fsf@fess.ebiederm.org>
-In-Reply-To: <m1tz3wgk3n.fsf@fess.ebiederm.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1763568AbZEHSsi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 14:48:38 -0400
+Date: Fri, 8 May 2009 14:48:38 -0400
+From: Jeff Garzik <jeff@garzik.org>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: viro@zeniv.linux.org.uk, mingo@elte.hu,
+       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
+Subject: [PATCH 1/2] kernel/{sched,smp}.c: fix static decl prior to struct declaration
+Message-ID: <20090508184838.GA11157@havoc.gtf.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Eric W. Biederman wrote:
-> 
-> Perhaps we should have:
-> init_size
-> best start (As a 64bit field please)
-> optimum align  (Or we flip it around)
-> 
 
-Thinking about this some more, I think you have a very good idea here.
+According to C99 6.9.2p3, any declaration "static struct foo my_foo;"
+must follow the definition of struct foo.
 
-Specifically, if we retcon the existing kernel_alignment field as 
-"preferred alignment" (ignoring the naming issue for a bit), we can set 
-that to 16 MB, which should give us correct behavior for all previously 
-existing bootloaders.  Then we create a new "minimum alignment" field 
-that newer bootloaders can use to relax the alignment requirement -- all 
-the way down to 4K in the case of i386.  We document this field 
-indicating that the bootloader should find the highest power of 2 <= 
-preferred alignment, but down to this number.
+Apparently, gcc's lack of warning is a bug.
 
-The preferred address field becomes a readonly, advisory field; with it 
-being readonly there aren't any funny issues with a strange loader 
-writing a 64-bit address for a kernel which can't handle it (64-bit 
-loading will still need substantial protocol changes, including how to 
-find the entry point.)
+Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+---
+ kernel/sched.c |   30 +++++++++++++++---------------
+ kernel/smp.c   |    4 ++--
+ 2 files changed, 17 insertions(+), 17 deletions(-)
 
-Does that work for you?  That *should* address all your concerns, right?
-
-	-hpa
-
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 26efa47..3d6b183 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -318,21 +318,6 @@ void set_tg_uid(struct user_struct *user)
+  */
+ struct task_group root_task_group;
+ 
+-#ifdef CONFIG_FAIR_GROUP_SCHED
+-/* Default task group's sched entity on each cpu */
+-static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
+-/* Default task group's cfs_rq on each cpu */
+-static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
+-#endif /* CONFIG_FAIR_GROUP_SCHED */
+-
+-#ifdef CONFIG_RT_GROUP_SCHED
+-static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
+-static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
+-#endif /* CONFIG_RT_GROUP_SCHED */
+-#else /* !CONFIG_USER_SCHED */
+-#define root_task_group init_task_group
+-#endif /* CONFIG_USER_SCHED */
+-
+ /* task_group_lock serializes add/remove of task groups and also changes to
+  * a task group's cpu shares.
+  */
+@@ -663,6 +648,21 @@ struct rq {
+ 
+ static DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
+ 
++#ifdef CONFIG_FAIR_GROUP_SCHED
++/* Default task group's sched entity on each cpu */
++static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
++/* Default task group's cfs_rq on each cpu */
++static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
++#endif /* CONFIG_FAIR_GROUP_SCHED */
++
++#ifdef CONFIG_RT_GROUP_SCHED
++static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
++static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
++#endif /* CONFIG_RT_GROUP_SCHED */
++#else /* !CONFIG_USER_SCHED */
++#define root_task_group init_task_group
++#endif /* CONFIG_USER_SCHED */
++
+ static inline void check_preempt_curr(struct rq *rq, struct task_struct *p, int sync)
+ {
+ 	rq->curr->sched_class->check_preempt_curr(rq, p, sync);
+diff --git a/kernel/smp.c b/kernel/smp.c
+index 858baac..aba7bda 100644
+--- a/kernel/smp.c
++++ b/kernel/smp.c
+@@ -12,8 +12,6 @@
+ #include <linux/smp.h>
+ #include <linux/cpu.h>
+ 
+-static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
+-
+ static struct {
+ 	struct list_head	queue;
+ 	spinlock_t		lock;
+@@ -39,6 +37,8 @@ struct call_single_queue {
+ 	spinlock_t		lock;
+ };
+ 
++static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
++
+ static DEFINE_PER_CPU(struct call_function_data, cfd_data) = {
+ 	.lock			= __SPIN_LOCK_UNLOCKED(cfd_data.lock),
+ };
