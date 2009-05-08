@@ -1,82 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757668AbZEHHeL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbZEHHii@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757668AbZEHHeL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 03:34:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755386AbZEHHd4
+	id S1757380AbZEHHii (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 03:38:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753757AbZEHHi3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 03:33:56 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:42136 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753596AbZEHHd4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 03:33:56 -0400
-Date: Fri, 8 May 2009 09:36:06 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "H. Peter Anvin" <hpa@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, vgoyal@redhat.com, hbabu@us.ibm.com,
-       kexec@lists.infradead.org, ying.huang@intel.com, mingo@elte.hu,
-       tglx@linutronix.de, ebiederm@xmission.com,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 03/14] x86, config: change defaults PHYSICAL_START and PHYSICAL_ALIGN
-Message-ID: <20090508073606.GC12808@uranus.ravnborg.org>
-References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com> <1241735222-6640-4-git-send-email-hpa@linux.intel.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241735222-6640-4-git-send-email-hpa@linux.intel.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 8 May 2009 03:38:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46642 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753596AbZEHHi2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 03:38:28 -0400
+Message-ID: <4A03E10C.60906@kernel.org>
+Date: Fri, 08 May 2009 00:36:44 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>, Mel Gorman <mel@csn.ul.ie>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 1/2] x86: Sanity check the e820 against the SRAT table using
+ e820 map only
+References: <4A01C08F.8020607@kernel.org> <20090507134723.GA32409@csn.ul.ie> <20090507142121.GL481@elte.hu>
+In-Reply-To: <20090507142121.GL481@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 03:26:51PM -0700, H. Peter Anvin wrote:
-> From: H. Peter Anvin <hpa@zytor.com>
-> 
-> Change the default for CONFIG_PHYSICAL_START to 16 MB; 4 MB if
-> EMBEDDED.  Change the default for CONFIG_PHYSICAL_ALIGN to match up
-> with a large page alignment datum (4 MB for non-PAE, 2 MB for PAE.)
-> 
-> The default of 16 MB is designed to avoid occupying ZONE_DMA, as well
-> as avoiding a 15-16 MB memory hole, which some vendors inexplicably
-> still have in their systems.
-> 
-> [ Impact: minor performance improvement, leave ZONE_DMA free ]
-> 
-> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-> ---
->  arch/x86/Kconfig |   19 +++++++++++--------
->  1 files changed, 11 insertions(+), 8 deletions(-)
-> 
-> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> index 039c3f0..13b3a5a 100644
-> --- a/arch/x86/Kconfig
-> +++ b/arch/x86/Kconfig
-> @@ -1455,17 +1455,20 @@ config KEXEC_JUMP
->  
->  config PHYSICAL_START
->  	hex "Physical address where the kernel is loaded" if (EMBEDDED || CRASH_DUMP)
-> -	default "0x1000000" if X86_NUMAQ
-> -	default "0x200000" if X86_64
-> -	default "0x100000"
-> +	default "0x400000" if EMBEDDED
-> +	default "0x1000000"
->  	---help---
->  	  This gives the physical address where the kernel is loaded.
->  
->  	  If kernel is a not relocatable (CONFIG_RELOCATABLE=n) then
->  	  bzImage will decompress itself to above physical address and
-> -	  run from there. Otherwise, bzImage will run from the address where
-> -	  it has been loaded by the boot loader and will ignore above physical
-> -	  address.
-> +	  run from there. Otherwise, bzImage will run from the either
-> +	  the above physical address or where it has been loaded by
-> +	  the boot loader, whichever is higher.
-> +
-> +	  For embedded machines with very small memory (less than
-> +	  about 24 MB) this may need to be adjusted downward from the
-> +	  default value of 0x1000000 (16 MB).
 
-But in the above you say that default is "0x400000" if EMBEDDED
-That is in contradiction with the help - no?
+node_cover_memory() sanity checks the SRAT table by ensuring that all
+PXMs cover the memory reported in the e820. However, when calculating
+the size of the holes in the e820, it uses the early_node_map[] which
+contains information taken from both SRAT and e820. If the SRAT is
+missing an entry, then it is not detected that the SRAT table is
+incorrect and missing entries.
 
-	Sam
+This patch uses the e820 map to calculate the holes instead of
+early_node_map[].
+
+comment is from Mel.
+
+[ Impact: reject wrong SRAT tables ]
+
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+
+---
+ arch/x86/mm/srat_64.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6/arch/x86/mm/srat_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/srat_64.c
++++ linux-2.6/arch/x86/mm/srat_64.c
+@@ -345,7 +345,7 @@ static int __init nodes_cover_memory(con
+ 			pxmram = 0;
+ 	}
+ 
+-	e820ram = max_pfn - absent_pages_in_range(0, max_pfn);
++	e820ram = max_pfn - (e820_hole_size(0, max_pfn<<PAGE_SHIFT)>>PAGE_SHIFT);
+ 	/* We seem to lose 3 pages somewhere. Allow a bit of slack. */
+ 	if ((long)(e820ram - pxmram) >= 1*1024*1024) {
+ 		printk(KERN_ERR
