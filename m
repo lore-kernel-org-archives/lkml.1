@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756491AbZEHS2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760979AbZEHS2g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756491AbZEHS2T (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 14:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbZEHS2G
+	id S1760979AbZEHS2g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 14:28:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759753AbZEHS2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 14:28:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53393 "EHLO hera.kernel.org"
+	Fri, 8 May 2009 14:28:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53398 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754092AbZEHS2E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 14:28:04 -0400
-Date: Fri, 8 May 2009 18:27:31 GMT
+	id S1759438AbZEHS2V (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 14:28:21 -0400
+Date: Fri, 8 May 2009 18:27:42 GMT
 From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
@@ -18,274 +18,110 @@ Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
        fweisbec@gmail.com, lizf@cn.fujitsu.com, rostedt@goodmis.org,
        tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4A03998E.3020503@cn.fujitsu.com>
-References: <4A03998E.3020503@cn.fujitsu.com>
-Subject: [tip:tracing/core] tracing/events: clean up for ftrace_set_clr_event()
-Message-ID: <tip-8f31bfe538ebafac187d2d4465a92e1d9ee6d8c2@git.kernel.org>
-Git-Commit-ID: 8f31bfe538ebafac187d2d4465a92e1d9ee6d8c2
+In-Reply-To: <4A0399A5.2080603@cn.fujitsu.com>
+References: <4A0399A5.2080603@cn.fujitsu.com>
+Subject: [tip:tracing/core] tracing/events: simplify system_enable_read()
+Message-ID: <tip-c142b15dc56ee6d55cb97a062e3c8e9c61e384c0@git.kernel.org>
+Git-Commit-ID: c142b15dc56ee6d55cb97a062e3c8e9c61e384c0
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 08 May 2009 18:27:33 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 08 May 2009 18:27:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8f31bfe538ebafac187d2d4465a92e1d9ee6d8c2
-Gitweb:     http://git.kernel.org/tip/8f31bfe538ebafac187d2d4465a92e1d9ee6d8c2
+Commit-ID:  c142b15dc56ee6d55cb97a062e3c8e9c61e384c0
+Gitweb:     http://git.kernel.org/tip/c142b15dc56ee6d55cb97a062e3c8e9c61e384c0
 Author:     Li Zefan <lizf@cn.fujitsu.com>
-AuthorDate: Fri, 8 May 2009 10:31:42 +0800
+AuthorDate: Fri, 8 May 2009 10:32:05 +0800
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 8 May 2009 14:00:35 +0200
+CommitDate: Fri, 8 May 2009 14:00:36 +0200
 
-tracing/events: clean up for ftrace_set_clr_event()
+tracing/events: simplify system_enable_read()
 
-Add a helper function __ftrace_set_clr_event(), and replace some
-ftrace_set_clr_event() calls with this helper, thus we don't need any
-kstrdup() or kmalloc().
+A smarter way to figure out the output of an enable file.
 
-As a side effect, this patch fixes an issue in self tests code, which is
-similar to the one fixed in commit d6bf81ef0f7474434c2a049e8bf3c9146a14dd96
-("tracing: append ":*" to internal setting of system events")
-
-It's a small issue and won't cause any bug in fact, but we should do things
-right anyway.
-
-[ Impact: prevent spurious event-enabling in tracing self-tests ]
+[ Impact: clean up ]
 
 Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
 Acked-by: Steven Rostedt <rostedt@goodmis.org>
 Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
-LKML-Reference: <4A03998E.3020503@cn.fujitsu.com>
+LKML-Reference: <4A0399A5.2080603@cn.fujitsu.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/trace/trace_events.c |  126 ++++++++++++++++---------------------------
- 1 files changed, 46 insertions(+), 80 deletions(-)
+ kernel/trace/trace_events.c |   40 ++++++----------------------------------
+ 1 files changed, 6 insertions(+), 34 deletions(-)
 
 diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-index 8d0fae3..45f1099 100644
+index 45f1099..df394bc 100644
 --- a/kernel/trace/trace_events.c
 +++ b/kernel/trace/trace_events.c
-@@ -111,11 +111,44 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
- 	}
- }
- 
--static int ftrace_set_clr_event(char *buf, int set)
-+/*
-+ * __ftrace_set_clr_event(NULL, NULL, NULL, set) will set/unset all events.
-+ */
-+static int __ftrace_set_clr_event(const char *match, const char *sub,
-+				  const char *event, int set)
+@@ -414,10 +414,11 @@ static ssize_t
+ system_enable_read(struct file *filp, char __user *ubuf, size_t cnt,
+ 		   loff_t *ppos)
  {
- 	struct ftrace_event_call *call;
-+	int ret;
-+
-+	mutex_lock(&event_mutex);
-+	list_for_each_entry(call, &ftrace_events, list) {
-+
-+		if (!call->name || !call->regfunc)
-+			continue;
-+
-+		if (match &&
-+		    strcmp(match, call->name) != 0 &&
-+		    strcmp(match, call->system) != 0)
-+			continue;
-+
-+		if (sub && strcmp(sub, call->system) != 0)
-+			continue;
-+
-+		if (event && strcmp(event, call->name) != 0)
-+			continue;
-+
-+		ftrace_event_enable_disable(call, set);
-+
-+		ret = 0;
-+	}
-+	mutex_unlock(&event_mutex);
-+
-+	return ret;
-+}
-+
-+static int ftrace_set_clr_event(char *buf, int set)
-+{
- 	char *event = NULL, *sub = NULL, *match;
--	int ret = -EINVAL;
- 
- 	/*
- 	 * The buf format can be <subsystem>:<event-name>
-@@ -141,30 +174,7 @@ static int ftrace_set_clr_event(char *buf, int set)
- 			event = NULL;
- 	}
- 
--	mutex_lock(&event_mutex);
--	list_for_each_entry(call, &ftrace_events, list) {
--
--		if (!call->name || !call->regfunc)
--			continue;
--
--		if (match &&
--		    strcmp(match, call->name) != 0 &&
--		    strcmp(match, call->system) != 0)
--			continue;
--
--		if (sub && strcmp(sub, call->system) != 0)
--			continue;
--
--		if (event && strcmp(event, call->name) != 0)
--			continue;
--
--		ftrace_event_enable_disable(call, set);
--
--		ret = 0;
--	}
--	mutex_unlock(&event_mutex);
--
--	return ret;
-+	return __ftrace_set_clr_event(match, sub, event, set);
- }
- 
- /* 128 should be much more than enough */
-@@ -408,18 +418,14 @@ system_enable_read(struct file *filp, char __user *ubuf, size_t cnt,
++	const char set_to_char[4] = { '?', '0', '1', 'X' };
+ 	const char *system = filp->private_data;
  	struct ftrace_event_call *call;
  	char buf[2];
- 	int set = -1;
--	int all = 0;
+-	int set = -1;
++	int set = 0;
  	int ret;
  
--	if (system[0] == '*')
--		all = 1;
--
  	mutex_lock(&event_mutex);
- 	list_for_each_entry(call, &ftrace_events, list) {
- 		if (!call->name || !call->regfunc)
- 			continue;
- 
--		if (!all && strcmp(call->system, system) != 0)
-+		if (system && strcmp(call->system, system) != 0)
- 			continue;
- 
+@@ -433,47 +434,18 @@ system_enable_read(struct file *filp, char __user *ubuf, size_t cnt,
+ 		 * or if all events or cleared, or if we have
+ 		 * a mixture.
+ 		 */
+-		if (call->enabled) {
+-			switch (set) {
+-			case -1:
+-				set = 1;
+-				break;
+-			case 0:
+-				set = 2;
+-				break;
+-			}
+-		} else {
+-			switch (set) {
+-			case -1:
+-				set = 0;
+-				break;
+-			case 1:
+-				set = 2;
+-				break;
+-			}
+-		}
++		set |= (1 << !!call->enabled);
++
  		/*
-@@ -480,7 +486,6 @@ system_enable_write(struct file *filp, const char __user *ubuf, size_t cnt,
- {
- 	const char *system = filp->private_data;
- 	unsigned long val;
--	char *command;
- 	char buf[64];
- 	ssize_t ret;
- 
-@@ -500,30 +505,16 @@ system_enable_write(struct file *filp, const char __user *ubuf, size_t cnt,
- 	if (ret < 0)
- 		return ret;
- 
--	switch (val) {
--	case 0:
--	case 1:
--		break;
--
--	default:
-+	if (val != 0 && val != 1)
- 		return -EINVAL;
--	}
- 
--	/* +3 for the ":*\0" */
--	command = kmalloc(strlen(system)+3, GFP_KERNEL);
--	if (!command)
--		return -ENOMEM;
--	sprintf(command, "%s:*", system);
--
--	ret = ftrace_set_clr_event(command, val);
-+	ret = __ftrace_set_clr_event(NULL, system, NULL, val);
- 	if (ret)
--		goto out_free;
-+		goto out;
- 
- 	ret = cnt;
- 
-- out_free:
--	kfree(command);
--
-+out:
- 	*ppos += cnt;
- 
- 	return ret;
-@@ -1181,7 +1172,7 @@ static __init int event_trace_init(void)
- 			  &ftrace_show_header_fops);
- 
- 	trace_create_file("enable", 0644, d_events,
--			  "*", &ftrace_system_enable_fops);
-+			  NULL, &ftrace_system_enable_fops);
- 
- 	for_each_event(call, __start_ftrace_events, __stop_ftrace_events) {
- 		/* The linker may leave blanks */
-@@ -1259,7 +1250,6 @@ static __init void event_trace_self_tests(void)
- {
- 	struct ftrace_event_call *call;
- 	struct event_subsystem *system;
--	char *sysname;
- 	int ret;
- 
- 	pr_info("Running tests on trace events:\n");
-@@ -1305,14 +1295,7 @@ static __init void event_trace_self_tests(void)
- 
- 		pr_info("Testing event system %s: ", system->name);
- 
--		/* ftrace_set_clr_event can modify the name passed in. */
--		sysname = kstrdup(system->name, GFP_KERNEL);
--		if (WARN_ON(!sysname)) {
--			pr_warning("Can't allocate memory, giving up!\n");
--			return;
--		}
--		ret = ftrace_set_clr_event(sysname, 1);
--		kfree(sysname);
-+		ret = __ftrace_set_clr_event(NULL, system->name, NULL, 1);
- 		if (WARN_ON_ONCE(ret)) {
- 			pr_warning("error enabling system %s\n",
- 				   system->name);
-@@ -1321,14 +1304,7 @@ static __init void event_trace_self_tests(void)
- 
- 		event_test_stuff();
- 
--		sysname = kstrdup(system->name, GFP_KERNEL);
--		if (WARN_ON(!sysname)) {
--			pr_warning("Can't allocate memory, giving up!\n");
--			return;
--		}
--		ret = ftrace_set_clr_event(sysname, 0);
--		kfree(sysname);
--
-+		ret = __ftrace_set_clr_event(NULL, system->name, NULL, 0);
- 		if (WARN_ON_ONCE(ret))
- 			pr_warning("error disabling system %s\n",
- 				   system->name);
-@@ -1341,15 +1317,8 @@ static __init void event_trace_self_tests(void)
- 	pr_info("Running tests on all trace events:\n");
- 	pr_info("Testing all events: ");
- 
--	sysname = kmalloc(4, GFP_KERNEL);
--	if (WARN_ON(!sysname)) {
--		pr_warning("Can't allocate memory, giving up!\n");
--		return;
--	}
--	memcpy(sysname, "*:*", 4);
--	ret = ftrace_set_clr_event(sysname, 1);
-+	ret = __ftrace_set_clr_event(NULL, NULL, NULL, 1);
- 	if (WARN_ON_ONCE(ret)) {
--		kfree(sysname);
- 		pr_warning("error enabling all events\n");
- 		return;
+ 		 * If we have a mixture, no need to look further.
+ 		 */
+-		if (set == 2)
++		if (set == 3)
+ 			break;
  	}
-@@ -1357,10 +1326,7 @@ static __init void event_trace_self_tests(void)
- 	event_test_stuff();
+ 	mutex_unlock(&event_mutex);
  
- 	/* reset sysname */
--	memcpy(sysname, "*:*", 4);
--	ret = ftrace_set_clr_event(sysname, 0);
--	kfree(sysname);
--
-+	ret = __ftrace_set_clr_event(NULL, NULL, NULL, 0);
- 	if (WARN_ON_ONCE(ret)) {
- 		pr_warning("error disabling all events\n");
- 		return;
++	buf[0] = set_to_char[set];
+ 	buf[1] = '\n';
+-	switch (set) {
+-	case 0:
+-		buf[0] = '0';
+-		break;
+-	case 1:
+-		buf[0] = '1';
+-		break;
+-	case 2:
+-		buf[0] = 'X';
+-		break;
+-	default:
+-		buf[0] = '?';
+-	}
+ 
+ 	ret = simple_read_from_buffer(ubuf, cnt, ppos, buf, 2);
+ 
