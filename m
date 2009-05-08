@@ -1,62 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759175AbZEHToJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbZEHTrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759175AbZEHToJ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 15:44:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbZEHTnx
+	id S1758208AbZEHTrW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbZEHTrN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 15:43:53 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:58070
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752520AbZEHTnw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:43:52 -0400
-Date: Fri, 08 May 2009 12:43:47 -0700 (PDT)
-Message-Id: <20090508.124347.142493836.davem@davemloft.net>
-To: olof@lixom.net
-Cc: subrata@linux.vnet.ibm.com, netdev@vger.kernel.org,
-       geoffrey.levand@am.sony.com, Linuxppc-dev@ozlabs.org,
-       sfr@canb.auug.org.au, linux-next@vger.kernel.org,
-       sachinp@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       themann@de.ibm.com
-Subject: Re: INET_LRO as tristate and use from modules
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090422.021218.92737677.davem@davemloft.net>
-References: <1240339984.9110.141.camel@subratamodak.linux.ibm.com>
-	<20090421193319.GB20237@lixom.net>
-	<20090422.021218.92737677.davem@davemloft.net>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 8 May 2009 15:47:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41741 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754547AbZEHTrM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 15:47:12 -0400
+Message-ID: <4A048C11.1050702@kernel.org>
+Date: Fri, 08 May 2009 12:46:25 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>, Ingo Molnar <mingo@elte.hu>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: linux-pci@vger.kernel.org, Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [GIT PULL] xen: dom0 support for PCI access
+References: <1241732737-7669-1-git-send-email-jeremy@goop.org> <20090508111024.GD11596@elte.hu> <20090508124436.GT8112@parisc-linux.org>
+In-Reply-To: <20090508124436.GT8112@parisc-linux.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: David Miller <davem@davemloft.net>
-Date: Wed, 22 Apr 2009 02:12:18 -0700 (PDT)
-
-> From: Olof Johansson <olof@lixom.net>
-> Date: Tue, 21 Apr 2009 14:33:19 -0500
+Matthew Wilcox wrote:
+> On Fri, May 08, 2009 at 01:10:24PM +0200, Ingo Molnar wrote:
+>> ( Cc:-ed PCI folks. Original thread with patches is on lkml. There's
+>>   a few details that affect non-Xen PCI code too - and it would be
+>>   nice to see feedback on this general method as well, from the PCI 
+>>   experts . )
 > 
->> On Wed, Apr 22, 2009 at 12:23:03AM +0530, Subrata Modak wrote:
->>>   MODPOST 338 modules
->>> ERROR: ".lro_receive_skb" [drivers/net/pasemi_mac_driver.ko] undefined!
->>> ERROR: ".lro_flush_all" [drivers/net/pasemi_mac_driver.ko] undefined!
->>> WARNING: modpost: Found 1 section mismatch(es).
->>> To see full details build your kernel with:
->>> 'make CONFIG_DEBUG_SECTION_MISMATCH=y'
->>> make[1]: *** [__modpost] Error 1
->>> make: *** [modules] Error 2
->> 
->> This seems to be a problem with all tristate-capable drivers that use
->> LRO (and uses select INET_LRO in their Kconfig): INET_LRO is a tristate
->> and can thus be a module. Looks like it needs to be a bool instead?
-> 
-> Yes, making this a bool would be the easiest fix.
-> 
-> By why don't we get the same problem for PHYLIB?  It's also
-> tristate and "select"'d by a whole slew of networking drivers.
+> I read over the top seven commits here:
+> http://git.kernel.org/?p=linux/kernel/git/jeremy/xen.git;a=shortlog;h=xen-tip/dom0/pci
+> and they all seem reasonable to me as far as they affect other code.
+> I'm assuming that Xen people know what they're doing with respect to
+> the Xen-only code ;-)
 
-I guess nobody has any idea...
+1. pcibios_set_cache_line_size looks could be __init
+2. pci_xen_init and some xen_ function all for domU aka pv? that naming looks confusing.
 
-I'll just make INET_LRO a bool to fix this.
+YH
+ 
+
