@@ -1,60 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759517AbZEHLWv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761210AbZEHLXi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759517AbZEHLWv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 07:22:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754475AbZEHLWj
+	id S1761210AbZEHLXi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 07:23:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753201AbZEHLX2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 07:22:39 -0400
-Received: from smtp11.mail.tnz.yahoo.co.jp ([203.216.226.139]:35979 "HELO
-	smtp11.mail.tnz.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754140AbZEHLWi (ORCPT
+	Fri, 8 May 2009 07:23:28 -0400
+Received: from mtagate4.de.ibm.com ([195.212.29.153]:54885 "EHLO
+	mtagate4.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752567AbZEHLX1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 07:22:38 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=yj20050223; d=yahoo.co.jp;
-  h=Received:X-Apparently-From:Message-ID:From:To:Cc:References:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE;
-  b=poUwuTrtJyoR9BzPqaK/+bkSAs8fI+eK4K2rVmKikHMGhfdYjZV6UYR6CWHqFowEXPdyPppgrup21c3eLZibYxhGBQ+DYa2/uexMDvQK0LDdFxAAuzyrPzXavQ5Uc/Er  ;
-X-Apparently-From: <n0diamond@yahoo.co.jp>
-Message-ID: <AB775258E58247F6A0960B1AFEC0E103@DIAMOND8600>
-From: "Norman Diamond" <n0diamond@yahoo.co.jp>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
-Cc: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
-References: <BB8F41726E2941CEB399F732BB3ED9E5@DIAMOND8600> <20090506103852.19cb69b9@lxorguk.ukuu.org.uk>
-Subject: Re: sg timeout problem
-Date: Fri, 8 May 2009 20:22:23 +0900
+	Fri, 8 May 2009 07:23:27 -0400
+Message-ID: <4A041625.5060408@linux.vnet.ibm.com>
+Date: Fri, 08 May 2009 13:23:17 +0200
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-8859-1";
-	reply-type=original
+To: Ingo Molnar <mingo@elte.hu>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
+       Li Wei <W.Li@Sun.COM>, Michael Ellerman <michaele@au1.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>, Sam Ravnborg <sam@ravnborg.org>,
+       Jeff Dike <jdike@addtoit.com>
+Subject: Re: [PATCH 1/4] kernel: constructor support
+References: <20090507124556.041286732@linux.vnet.ibm.com>  <20090507124557.003153444@linux.vnet.ibm.com>  <20090507125332.GM28398@elte.hu> <4A02E445.7070201@linux.vnet.ibm.com> <20090507134813.GO28398@elte.hu>
+In-Reply-To: <20090507134813.GO28398@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> But if sg is running on top of an actual SCSI driver, someone aborts the
->> ioctl after 3 seconds.  The ioctl returns success even though the
->> operation didn't complete.  I tried this with two Adaptec drivers and one
->> NinjaSCSI driver with 100% repro.
+Ingo Molnar wrote:
+> * Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
+>> Ingo Molnar wrote:
+>>> * Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
+>>>
+>>>> Disable constructor support for usermode Linux to prevent conflicts
+>>>> with host glibc.
+>>>> +++ linux-2.6.30-rc4/init/Kconfig
+>>>> @@ -16,6 +16,11 @@ config DEFCONFIG_LIST
+>>>>  	default "$ARCH_DEFCONFIG"
+>>>>  	default "arch/$ARCH/defconfig"
+>>>>  +config CONSTRUCTORS
+>>>> +	bool
+>>>> +	depends on !UML
+>>>> +	default y
+>>>> +
+>>>>  menu "General setup"
+>>> Hm, excluding UML like that is sad. Is there no better solution?
+>> UML is excluded because in that environment constructors are 
+>> called by the host glibc, so there is no need for kernel support 
+>> on UML (in fact it would break things).
 >>
->> What am I missing?  I need the call to run to completion.
->
-> If you set it to the max of a signed int does it behave, or to a large
-> value thats well under the limit. That will help tell if there is a
-> problem with sign handling in the scsi code somewhere or it is getting
-> multiplied up for some reason.
+>> Or were you referring to the actual way the exclusion is 
+>> implemented?
+> 
+> the way it's done is OK (there's really just UML in this situation), 
+> but the question is really, shouldnt it be possible to coverage-test 
+> UML instances 'from the inside'?
 
-I have the impression now that the drives are lying and it's not the fault
-of the drivers or cards.  The same problem occured with a fourth card and a
-non-Linux system.
+ From a mere gcov perspective, coverage-testing from the outside is 
+superior because that is the way it was meant to be run in the first place.
 
-Anyway I also tried changing the timeout to 86400000 milliseconds (one day)
-and it made no difference.  So again I stop blaming the drivers.
+> 
+> Plus, if any other kernel facility grows out of this or makes use of 
+> it, UML will be left out in the cold.
 
---------------------------------------
-Power up the Internet with Yahoo! Toolbar.
-http://pr.mail.yahoo.co.jp/toolbar/
+I'm afraid that trying to over-engineer the gcov-kernel mechanism at 
+this time might serve neither the gcov-kernel users, nor potential new 
+users. Once the base is established, it will be far easier to decide 
+which other purposes the infrastructure can serve (without completely 
+bending it).
+
