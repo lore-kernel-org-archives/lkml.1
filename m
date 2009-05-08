@@ -1,105 +1,680 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763795AbZEHTP3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763053AbZEHTSV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763795AbZEHTP3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 15:15:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbZEHTPS
+	id S1763053AbZEHTSV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:18:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753881AbZEHTSF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 15:15:18 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:54763 "EHLO mx2.mail.elte.hu"
+	Fri, 8 May 2009 15:18:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45054 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753910AbZEHTPR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:15:17 -0400
-Date: Fri, 8 May 2009 21:13:55 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
-Subject: Re: [PATCH 1/2] kernel/{sched,smp}.c: fix static decl prior to
-	struct declaration
-Message-ID: <20090508191355.GC12130@elte.hu>
-References: <20090508184838.GA11157@havoc.gtf.org> <20090508190409.GA12130@elte.hu> <4A04833B.1010209@garzik.org>
+	id S1753367AbZEHTSB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 15:18:01 -0400
+Date: Fri, 8 May 2009 15:16:49 -0400
+From: Josef Bacik <josef@redhat.com>
+To: linux-fsdevel@vger.kernel.org
+Cc: sandeen@redhat.com, linux-kernel@vger.kernel.org
+Subject: [RFC] fiemap tester
+Message-ID: <20090508191649.GG9068@unused.rdu.redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A04833B.1010209@garzik.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello,
 
-* Jeff Garzik <jeff@garzik.org> wrote:
+Here is small little program which I and Eric have been working on this week to
+better test FIEMAP, since it seems that a few of our implementations are broken.
+This program is kind if like fsx for FIEMAP, it will generate a randomly sized
+file, from 1 fs block to 2 mb, and then randomly populate that file with data,
+holes and preallocated space using fallocate.  Of course if fallocate doesn't
+work then we just don't do that.  This test will do this infinitely by default,
+only exiting if it finds an error or if its killed.  Compile like you normally
+would, unless you don't have the userspace stuff for the fallocate system call,
+in which case you need to compile with
 
-> Ingo Molnar wrote:
->> * Jeff Garzik <jeff@garzik.org> wrote:
->>
->>> According to C99 6.9.2p3, any declaration "static struct foo my_foo;"
->>> must follow the definition of struct foo.
->>>
->>> Apparently, gcc's lack of warning is a bug.
->>>
->>> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
->>
->> good spotting, i'll apply this fix, but:
->>
->>>   */
->>>  struct task_group root_task_group;
->>>  -#ifdef CONFIG_FAIR_GROUP_SCHED
->>> -/* Default task group's sched entity on each cpu */
->>> -static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
->>> -/* Default task group's cfs_rq on each cpu */
->>> -static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
->>> -#endif /* CONFIG_FAIR_GROUP_SCHED */
->>> -
->>> -#ifdef CONFIG_RT_GROUP_SCHED
->>> -static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
->>> -static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
->>> -#endif /* CONFIG_RT_GROUP_SCHED */
->>> -#else /* !CONFIG_USER_SCHED */
->>> -#define root_task_group init_task_group
->>> -#endif /* CONFIG_USER_SCHED */
->>> -
->>>  /* task_group_lock serializes add/remove of task groups and also changes to
->>
->> This block has a visible imbalance of preprocessor directives -  
->> there's a #else you moved, without moving the outermost #ifdef. My  
->> guess is that this will go down in a fireball with CONFIG_GROUP_SCHED 
->> disabled?
->
-> It seems you are correct, I missed it in my 'allmodconfig' and 
-> 'jeffs hw config' builds.
->
-> Are you fixing this up, or should I regen the patch?
+gcc -o fiemap-tester -DNO_FALLOCATE fiemap-tester.c
 
-Please resend it. That area of the code is a bit of an #ifdef maze, 
-hard to move around. (And i'd rather let you mess it up than mess it 
-up myself - then i can blame it on you and bounce it back to you for 
-fixing ;-)
+If something fails it will spit out the map it was using, the extent it was on
+when it failed and what it was expecting, and the fiemap output it currently
+has.  Also note that this will give FIEMAP a random map_length as well, so the
+fiemap output may or may not cover the entire file, so keep that in mind.
+Please test this on your FS if you implement FIEMAP and let me know if I've done
+something stupid.  I've tested this on the generic stuff (with patches to fix
+stuff) and XFS and it seems like its working properly.  Thanks,
 
-Also, a style cleanup there might help a bit: adding a bit more 
-geometric structure to the #ifdefs there might make the hierarchy 
-stand out a bit more:
+Josef
 
-# ifdef CONFIG_RT_GROUP_SCHED
-static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
-static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
-# endif /* CONFIG_RT_GROUP_SCHED */
-#else /* !CONFIG_USER_SCHED */
-# define root_task_group init_task_group
-#endif /* CONFIG_USER_SCHED */
+/*
+ * Copyright (c) 2009 Josef Bacik
+ * All Rights Reserved.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License V2
+ * as published by the Free Software Foundation.
+ *
+ * This program is distributed in the hope that it would be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write the Free Software Foundation,
+ * Inc.,  51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
 
-in such a lineup it's more apparent at a glance when a piece of code 
-gets snatched in an incomplete way.
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+#include <ctype.h>
+#include <sys/ioctl.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/vfs.h>
+#include <linux/fs.h>
+#include <linux/types.h>
+#include <linux/fiemap.h>
 
-Thanks,
+static void
+usage(void)
+{
+	printf("Usage: fiemap-tester [-m map] [-r number of runs] ");
+#ifndef NO_FALLOCATE
+	printf("[-p preallocate (1/0)] ");
+#endif
+	printf("filename\n");
+	printf("  -m map    : generate a file with the map given and test\n");
+#ifndef NO_FALLOCATE
+	printf("  -p 0/1    : turn block preallocation on or off\n");
+#endif
+	printf("  -r count  : number of runs to execute (default infinity)\n");
+	printf("  -s seed   : seed for random map generator (default 1)n");
+	printf("-m and -r cannot be used together\n");
+	exit(EXIT_FAILURE);
+}
 
-	Ingo
+static char *
+generate_file_mapping(int blocks, int prealloc)
+{
+	char *map;
+	int num_types = 2, cur_block = 0;
+	int i = 0;
+
+	map = malloc(sizeof(char) * blocks);
+	if (!map)
+		return NULL;
+
+	if (prealloc)
+		num_types++;
+
+
+	for (i = 0; i < blocks; i++) {
+		long num = random() % num_types;
+		switch (num) {
+		case 0:
+			map[cur_block] = 'D';
+			break;
+		case 1:
+			map[cur_block] = 'H';
+			break;
+		case 2:
+			map[cur_block] = 'P';
+			break;
+		}
+		cur_block++;
+	}
+
+	return map;
+}
+
+static int
+create_file_from_mapping(int fd, char *map, int blocks, int blocksize)
+{
+	int cur_offset = 0, ret = 0, bufsize;
+	char *buf;
+	int i = 0;
+
+	bufsize = sizeof(char) * blocksize;
+	buf = malloc(bufsize);
+	if (!buf)
+		return -1;
+
+	memset(buf, 'a', bufsize);
+
+	for (i = 0; i < blocks; i++) {
+		switch (map[i]) {
+		case 'D':
+			ret = write(fd, buf, bufsize);
+			if (ret < bufsize) {
+				printf("Short write\n");
+				ret = -1;
+				goto out;
+			}
+			break;
+#ifndef NO_FALLOCATE
+		case 'P':
+			ret = fallocate(fd, 0, cur_offset, blocksize);
+			if (ret < 0) {
+				printf("Error fallocating\n");
+				goto out;
+			}
+			/* fallthrough; seek to end of prealloc space */
+#endif
+		case 'H':
+			ret = lseek(fd, blocksize, SEEK_CUR);
+			if (ret == (off_t)-1) {
+				printf("Error lseeking\n");
+				ret = -1;
+				goto out;
+			}
+			break;
+		default:
+			printf("Hrm, unrecognized flag in map\n");
+			ret = -1;
+			goto out;
+		}
+		cur_offset += blocksize;
+	}
+
+	ret = 0;
+out:
+	return ret;
+}
+
+static void
+show_extent_block(struct fiemap_extent *extent, int blocksize)
+{
+	__u64	logical = extent->fe_logical;
+	__u64	phys = extent->fe_physical;
+	__u64	length = extent->fe_length;
+	int	flags = extent->fe_flags;
+
+	printf("logical: [%8llu..%8llu] phys: %8llu..%8llu "
+	       "flags: 0x%03X tot: %llu\n",
+		logical / blocksize, (logical + length - 1) / blocksize,
+		phys / blocksize, (phys + length - 1) / blocksize,
+		flags,
+		(length / blocksize));
+}
+
+static void
+show_extents(struct fiemap *fiemap, int blocksize)
+{
+	unsigned int i;
+
+	for (i = 0; i < fiemap->fm_mapped_extents; i++)
+		show_extent_block(&fiemap->fm_extents[i], blocksize);
+}
+
+static int
+check_flags(struct fiemap *fiemap, int blocksize)
+{
+	struct fiemap_extent *extent;
+	__u64 aligned_offset, aligned_length;
+	int c;
+
+	for (c = 0; c < fiemap->fm_mapped_extents; c++) {
+		extent = &fiemap->fm_extents[c];
+
+		aligned_offset = extent->fe_physical & ~((__u64)blocksize - 1);
+		aligned_length = extent->fe_length & ~((__u64)blocksize - 1);
+
+		if ((aligned_offset != extent->fe_physical ||
+		     aligned_length != extent->fe_length) &&
+		    !(extent->fe_flags & FIEMAP_EXTENT_NOT_ALIGNED)) {
+			printf("ERROR: FIEMAP_EXTENT_NOT_ALIGNED is not set "
+			       "but the extent is unaligned: %llu\n",
+			       (unsigned long long)
+			       (extent->fe_logical / blocksize));
+			return -1;
+		}
+
+		if (extent->fe_flags & FIEMAP_EXTENT_DATA_ENCRYPTED &&
+		    !(extent->fe_flags & FIEMAP_EXTENT_ENCODED)) {
+			printf("ERROR: FIEMAP_EXTENT_DATA_ENCRYPTED is set, "
+			       "but FIEMAP_EXTENT_ENCODED is not set: %llu\n",
+			       (unsigned long long)
+			       (extent->fe_logical / blocksize));
+			return -1;
+		}
+
+		if (extent->fe_flags & FIEMAP_EXTENT_NOT_ALIGNED &&
+		    aligned_offset == extent->fe_physical &&
+		    aligned_length == extent->fe_length) {
+			printf("ERROR: FIEMAP_EXTENT_NOT_ALIGNED is set but "
+			       "offset and length is blocksize aligned: "
+			       "%llu\n",
+			       (unsigned long long)
+			       (extent->fe_logical / blocksize));
+			return -1;
+		}
+
+		if (extent->fe_flags & FIEMAP_EXTENT_LAST &&
+		    c + 1 < fiemap->fm_mapped_extents) {
+			printf("ERROR: FIEMAP_EXTENT_LAST is set but there are"
+			       " more extents left: %llu\n",
+			       (unsigned long long)
+			       (extent->fe_logical / blocksize));
+			return -1;
+		}
+
+		if (extent->fe_flags & FIEMAP_EXTENT_DELALLOC &&
+		    !(extent->fe_flags & FIEMAP_EXTENT_UNKNOWN)) {
+			printf("ERROR: FIEMAP_EXTENT_DELALLOC is set but "
+			       "FIEMAP_EXTENT_UNKNOWN is not set: %llu\n",
+			       (unsigned long long)
+			       (extent->fe_logical / blocksize));
+			return -1;
+		}
+
+		if (extent->fe_flags & FIEMAP_EXTENT_DATA_INLINE &&
+		    !(extent->fe_flags & FIEMAP_EXTENT_NOT_ALIGNED)) {
+			printf("ERROR: FIEMAP_EXTENT_DATA_INLINE is set but "
+			       "FIEMAP_EXTENT_NOT_ALIGNED is not set: %llu\n",
+			       (unsigned long long)
+			       (extent->fe_logical / blocksize));
+			return -1;
+		}
+
+		if (extent->fe_flags & FIEMAP_EXTENT_DATA_TAIL &&
+		    !(extent->fe_flags & FIEMAP_EXTENT_NOT_ALIGNED)) {
+			printf("ERROR: FIEMAP_EXTENT_DATA_TAIL is set but "
+			       "FIEMAP_EXTENT_NOT_ALIGNED is not set: %llu\n",
+			       (unsigned long long)
+			       (extent->fe_logical / blocksize));
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+static int
+check_data(struct fiemap *fiemap, __u64 logical_offset, int blocksize,
+	   int last, int prealloc)
+{
+	struct fiemap_extent *extent;
+	__u64 orig_offset = logical_offset;
+	int c, found = 0;
+
+	for (c = 0; c < fiemap->fm_mapped_extents; c++) {
+		__u64 start, end;
+		extent = &fiemap->fm_extents[c];
+
+		start = extent->fe_logical;
+		end = extent->fe_logical + extent->fe_length;
+
+		if (logical_offset > end)
+			continue;
+
+		if (logical_offset + blocksize < start)
+			break;
+
+		if (logical_offset >= start &&
+		    logical_offset < end) {
+			if (prealloc &&
+			    (!extent->fe_flags & FIEMAP_EXTENT_UNWRITTEN)) {
+				printf("ERROR: preallocated extent is not "
+				       "marked with FIEMAP_EXTENT_UNWRITTEN: "
+				       "%llu\n",
+				       (unsigned long long)
+				       (start / blocksize));
+				return -1;
+			}
+
+			if (logical_offset + blocksize > end) {
+				logical_offset = end+1;
+				continue;
+			} else {
+				found = 1;
+				break;
+			}
+		}
+	}
+
+	if (!found) {
+		printf("ERROR: couldn't find extent at %llu\n",
+		       (unsigned long long)(orig_offset / blocksize));
+	} else if (last &&
+		   !(fiemap->fm_extents[c].fe_flags & FIEMAP_EXTENT_LAST)) {
+		printf("ERROR: last extent not marked as last: %llu\n",
+		       (unsigned long long)(orig_offset / blocksize));
+		found = 0;
+	}
+
+	return (!found) ? -1 : 0;
+}
+
+static int
+check_weird_fs_hole(int fd, __u64 logical_offset, int blocksize)
+{
+	static int warning_printed = 0;
+	int block, i;
+	size_t buf_len = sizeof(char) * blocksize;
+	char *buf;
+
+	block = (int)(logical_offset / blocksize);
+	if (ioctl(fd, FIBMAP, &block) < 0) {
+		perror("Can't fibmap file");
+		return -1;
+	}
+
+	if (!block) {
+		printf("ERROR: FIEMAP claimed there was data at a block "
+		       "which should be a hole, and FIBMAP confirmend that "
+		       "it is in fact a hole, so FIEMAP is wrong: %llu\n",
+		       (unsigned long long)(logical_offset / blocksize));
+		return -1;
+	}
+
+	buf = malloc(buf_len);
+	if (!buf) {
+		perror("Could not allocate temporary buffer");
+		return -1;
+	}
+
+	if (pread(fd, buf, buf_len, (off_t)logical_offset) < 0) {
+		perror("Error reading from file");
+		free(buf);
+		return -1;
+	}
+
+	for (i = 0; i < buf_len; i++) {
+		if (buf[i] != 0) {
+			printf("ERROR: FIEMAP claimed there was data (%c) at "
+			       "block %llu that should have been a hole, and "
+			       "FIBMAP confirmed that it was allocated, but "
+			       "it should be filled with 0's, but it was not "
+			       "so you have a big problem!\n",
+			       buf[i],
+			       (unsigned long long)(logical_offset / blocksize));
+			free(buf);
+			return -1;
+		}
+	}
+
+	if (warning_printed) {
+		free(buf);
+		return 0;
+	}
+
+	printf("HEY FS PERSON: your fs is weird.  I specifically wanted a\n"
+	       "hole and you allocated a block anyway.  FIBMAP confirms that\n"
+	       "you allocated a block, and the block is filled with 0's so\n"
+	       "everything is kosher, but you still allocated a block when\n"
+	       "didn't need to.  This may or may not be what you wanted,\n"
+	       "which is why I'm only printing this message once, in case\n"
+	       "you didnt do it on purpose: %llu\n",
+	       (unsigned long long)(logical_offset / blocksize));
+	warning_printed = 1;
+	free(buf);
+
+	return 0;
+}
+
+static int
+check_hole(struct fiemap *fiemap, int fd, __u64 logical_offset, int blocksize)
+{
+	struct fiemap_extent *extent;
+	__u64 orig_offset = logical_offset;
+	int c, found = 0;
+
+	for (c = 0; c < fiemap->fm_mapped_extents; c++) {
+		__u64 start, end;
+		extent = &fiemap->fm_extents[c];
+
+		start = extent->fe_logical;
+		end = extent->fe_logical + extent->fe_length;
+
+		if (logical_offset > end)
+			continue;
+		if (logical_offset + blocksize < start)
+			break;
+
+		if (logical_offset >= start &&
+		    logical_offset < end) {
+
+			if (check_weird_fs_hole(fd, logical_offset,
+						blocksize) == 0)
+				break;
+
+			printf("ERROR: found an allocated extent where a hole "
+			       "should be: %llu\n",
+			       (unsigned long long)(start / blocksize));
+			return -1;
+		}
+	}
+
+	return 0;
+}
+
+static int
+compare_fiemap_and_map(int fd, char *map, int blocks, int blocksize)
+{
+	struct fiemap *fiemap;
+	char *fiebuf;
+	int blocks_to_map, ret, cur_extent = 0, last_data;
+	__u64 map_start, map_length;
+	int i, c;
+
+	blocks_to_map = (random() % blocks) + 1;
+	fiebuf = malloc(sizeof(struct fiemap) +
+			(blocks_to_map * sizeof(struct fiemap_extent)));
+	if (!fiebuf) {
+		perror("Could not allocate fiemap buffers");
+		return -1;
+	}
+
+	fiemap = (struct fiemap *)fiebuf;
+	map_start = 0;
+	map_length = blocks_to_map * blocksize;
+
+	for (i = 0; i < blocks; i++) {
+		if (map[i] != 'H')
+			last_data = i;
+	}
+
+	fiemap->fm_flags = FIEMAP_FLAG_SYNC;
+	fiemap->fm_extent_count = blocks_to_map;
+	fiemap->fm_mapped_extents = 0;
+
+	do {
+		fiemap->fm_start = map_start;
+		fiemap->fm_length = map_length;
+
+		ret = ioctl(fd, FS_IOC_FIEMAP, (unsigned long)fiemap);
+		if (ret < 0) {
+			perror("FIEMAP ioctl failed");
+			free(fiemap);
+			return -1;
+		}
+
+		if (check_flags(fiemap, blocksize))
+			goto error;
+
+		for (i = cur_extent, c = 1; i < blocks; i++, c++) {
+			__u64 logical_offset = i * blocksize;
+
+			if (c > blocks_to_map)
+				break;
+
+			switch (map[i]) {
+			case 'D':
+				if (check_data(fiemap, logical_offset,
+					       blocksize, last_data == i, 0))
+					goto error;
+				break;
+			case 'H':
+				if (check_hole(fiemap, fd, logical_offset,
+					       blocksize))
+					goto error;
+				break;
+			case 'P':
+				if (check_data(fiemap, logical_offset,
+					       blocksize, last_data == i, 1))
+					goto error;
+				break;
+			default:
+				printf("ERROR: weird value in map: %c\n",
+				       map[i]);
+				goto error;
+			}
+		}
+		cur_extent = i;
+		map_start = i * blocksize;
+	} while (cur_extent < blocks);
+
+	ret = 0;
+	return ret;
+error:
+	printf("map is '%s'\n", map);
+	show_extents(fiemap, blocksize);
+	return -1;
+}
+
+int
+main(int argc, char **argv)
+{
+	int	blocksize = 0;	/* filesystem blocksize */
+	int	fd;		/* file descriptor */
+	int	opt;
+	int	rc;
+	char	*fname;		/* filename to map */
+	char	*map = NULL;	/* file map to generate */
+	int	runs = -1;	/* the number of runs to have */
+	int	blocks = 0;	/* the number of blocks to generate */
+	int	maxblocks = 0;	/* max # of blocks to create */
+	int	prealloc = 1;	/* whether or not to do preallocation */
+	int	seed = 1;
+
+	while ((opt = getopt(argc, argv, "m:r:s:p:")) != -1) {
+		switch(opt) {
+		case 'm':
+			map = strdup(optarg);
+			break;
+		case 'p':
+#ifndef NO_FALLOCATE
+			prealloc = atoi(optarg);;
+			break;
+#else
+			printf("Not built with preallocation support\n");
+			usage();
+#endif
+		/* sync file before mapping */
+		case 'r':
+			runs = atoi(optarg);
+			break;
+		case 's':
+			seed = atoi(optarg);
+			break;
+		default:
+			usage();
+		}
+	}
+
+	if (runs != -1 && map)
+		usage();
+
+	fname = argv[optind++];
+	if (!fname)
+		usage();
+
+	fd = open(fname, O_RDWR|O_CREAT|O_TRUNC, 0644);
+	if (fd < 0) {
+		perror("Can't open file");
+		exit(1);
+	}
+
+	if (ioctl(fd, FIGETBSZ, &blocksize) < 0) {
+		perror("Can't get filesystem block size");
+		close(fd);
+		exit(1);
+	}
+
+#ifndef NO_FALLOCATE
+	/* if fallocate passes, then we can do preallocation, else not */
+	if (prealloc) {
+		prealloc = !((int)fallocate(fd, 0, 0, blocksize));
+		if (!prealloc)
+			printf("preallocation not supported, disabling\n");
+	}
+#else
+	prealloc = 0;
+#endif
+
+	if (ftruncate(fd, 0)) {
+		perror("Can't truncate file");
+		close(fd);
+		exit(1);
+	}
+
+	if (map) {
+		blocks = strlen(map);
+		runs = 0;
+	}
+
+	srandom(seed);
+
+	/* max file size 2mb / block size */
+	maxblocks = (2 * 1024 * 1024) / blocksize;
+
+	if (runs == -1)
+		printf("Starting infinite run, if you don't see any output "
+		       "then its working properly.\n");
+	do {
+		if (!map) {
+			blocks = random() % maxblocks;
+			if (blocks == 0) {
+				printf("Skipping 0 length file\n");
+				continue;
+			}
+
+			map = generate_file_mapping(blocks, prealloc);
+			if (!map) {
+				printf("Could not create map\n");
+				exit(1);
+			}
+		}
+
+		rc = create_file_from_mapping(fd, map, blocks, blocksize);
+		if (rc) {
+			perror("Could not create file\n");
+			free(map);
+			close(fd);
+			exit(1);
+		}
+
+		rc = compare_fiemap_and_map(fd, map, blocks, blocksize);
+		if (rc) {
+			printf("Problem comparing fiemap and map\n");
+			free(map);
+			close(fd);
+			exit(1);
+		}
+
+		free(map);
+		map = NULL;
+
+		if (ftruncate(fd, 0)) {
+			perror("Could not truncate file\n");
+			close(fd);
+			exit(1);
+		}
+
+		if (lseek(fd, 0, SEEK_SET)) {
+			perror("Could not seek set\n");
+			close(fd);
+			exit(1);
+		}
+
+		if (runs) runs--;
+	} while (runs != 0);
+
+	close(fd);
+
+	return 0;
+}
