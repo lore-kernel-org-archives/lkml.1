@@ -1,88 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757553AbZEHICa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761580AbZEHICz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757553AbZEHICa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 04:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754041AbZEHICJ
+	id S1761580AbZEHICz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 04:02:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757996AbZEHICV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 04:02:09 -0400
-Received: from smtp.wellnetcz.com ([212.24.148.102]:36920 "EHLO
-	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbZEHICG (ORCPT
+	Fri, 8 May 2009 04:02:21 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:37390 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756933AbZEHICT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 04:02:06 -0400
-From: Jiri Slaby <jirislaby@gmail.com>
-To: mingo@elte.hu
-Cc: yanghy@cn.fujitsu.com, akpm@linux-foundation.org,
-       fujita.tomonori@lab.ntt.co.jp, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>
-Subject: [PATCH 1/1] DMA: mark DMA_nBITS_MASK as deprecated
-Date: Fri,  8 May 2009 10:00:38 +0200
-Message-Id: <1241769638-27301-1-git-send-email-jirislaby@gmail.com>
-X-Mailer: git-send-email 1.6.2.4
-In-Reply-To: <20090507111846.GI28398@elte.hu>
-References: <20090507111846.GI28398@elte.hu>
+	Fri, 8 May 2009 04:02:19 -0400
+Message-ID: <4A03E707.30304@monstr.eu>
+Date: Fri, 08 May 2009 10:02:15 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+MIME-Version: 1.0
+To: Linus Torvalds <torvalds@linux-foundation.org>
+CC: Linux Kernel list <linux-kernel@vger.kernel.org>,
+       John Williams <john.williams@petalogix.com>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: [GIT PULL] arch/microblaze fixes for 2.6.30-rc6
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar <mingo@elte.hu> wrote:
-> Can you see a way to emit build warnings? If yes then that might be 
-> a better solution instead of breaking in-the-pipeline code.
+Hi Linus,
 
-What about this:
---
+please pull the following changes.
 
-Mark them deprecated so that 3rd party vendors get notified about that
-before their modules break by removing those macros later.
+Thanks,
+Michal
 
-Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
----
- include/linux/dma-mapping.h |   26 ++++++++++++++------------
- 1 files changed, 14 insertions(+), 12 deletions(-)
 
-diff --git a/include/linux/dma-mapping.h b/include/linux/dma-mapping.h
-index 8083b6a..6bf3339 100644
---- a/include/linux/dma-mapping.h
-+++ b/include/linux/dma-mapping.h
-@@ -63,24 +63,26 @@ struct dma_map_ops {
- 
- #define DMA_BIT_MASK(n)	(((n) == 64) ? ~0ULL : ((1ULL<<(n))-1))
- 
-+typedef u64 DMA_DEPRECATED __deprecated;
-+
- /*
-  * NOTE: do not use the below macros in new code and do not add new definitions
-  * here.
-  *
-  * Instead, just open-code DMA_BIT_MASK(n) within your driver
-  */
--#define DMA_64BIT_MASK	DMA_BIT_MASK(64)
--#define DMA_48BIT_MASK	DMA_BIT_MASK(48)
--#define DMA_47BIT_MASK	DMA_BIT_MASK(47)
--#define DMA_40BIT_MASK	DMA_BIT_MASK(40)
--#define DMA_39BIT_MASK	DMA_BIT_MASK(39)
--#define DMA_35BIT_MASK	DMA_BIT_MASK(35)
--#define DMA_32BIT_MASK	DMA_BIT_MASK(32)
--#define DMA_31BIT_MASK	DMA_BIT_MASK(31)
--#define DMA_30BIT_MASK	DMA_BIT_MASK(30)
--#define DMA_29BIT_MASK	DMA_BIT_MASK(29)
--#define DMA_28BIT_MASK	DMA_BIT_MASK(28)
--#define DMA_24BIT_MASK	DMA_BIT_MASK(24)
-+#define DMA_64BIT_MASK	(DMA_DEPRECATED)DMA_BIT_MASK(64)
-+#define DMA_48BIT_MASK	(DMA_DEPRECATED)DMA_BIT_MASK(48)
-+#define DMA_47BIT_MASK	(DMA_DEPRECATED)DMA_BIT_MASK(47)
-+#define DMA_40BIT_MASK	(DMA_DEPRECATED)DMA_BIT_MASK(40)
-+#define DMA_39BIT_MASK	(DMA_DEPRECATED)DMA_BIT_MASK(39)
-+#define DMA_35BIT_MASK	(DMA_DEPRECATED)DMA_BIT_MASK(35)
-+#define DMA_32BIT_MASK	(DMA_DEPRECATED)DMA_BIT_MASK(32)
-+#define DMA_31BIT_MASK	(DMA_DEPRECATED)DMA_BIT_MASK(31)
-+#define DMA_30BIT_MASK	(DMA_DEPRECATED)DMA_BIT_MASK(30)
-+#define DMA_29BIT_MASK	(DMA_DEPRECATED)DMA_BIT_MASK(29)
-+#define DMA_28BIT_MASK	(DMA_DEPRECATED)DMA_BIT_MASK(28)
-+#define DMA_24BIT_MASK	(DMA_DEPRECATED)DMA_BIT_MASK(24)
- 
- #define DMA_MASK_NONE	0x0ULL
- 
+
+The following changes since commit 091438dd5668396328a3419abcbc6591159eb8d1:
+  Linus Torvalds (1):
+        Linux 2.6.30-rc4
+
+are available in the git repository at:
+
+  git://git.monstr.eu/linux-2.6-microblaze.git fixes-for-linus
+
+Michal Simek (1):
+      microblaze: Fix return value for sys_ipc
+
+Tobias Klauser (1):
+      microblaze: Storage class should be before const qualifier
+
+ arch/microblaze/kernel/cpu/cpuinfo-static.c |    4 ++--
+ arch/microblaze/kernel/sys_microblaze.c     |    2 +-
+ 2 files changed, 3 insertions(+), 3 deletions(-)
+
+
+diff --git a/arch/microblaze/kernel/cpu/cpuinfo-static.c b/arch/microblaze/kernel/cpu/cpuinfo-static.c
+index cfe44ef..450ca6b 100644
+--- a/arch/microblaze/kernel/cpu/cpuinfo-static.c
++++ b/arch/microblaze/kernel/cpu/cpuinfo-static.c
+@@ -14,8 +14,8 @@
+ #include <asm/cpuinfo.h>
+ #include <asm/pvr.h>
+
+-const static char family_string[] = CONFIG_XILINX_MICROBLAZE0_FAMILY;
+-const static char cpu_ver_string[] = CONFIG_XILINX_MICROBLAZE0_HW_VER;
++static const char family_string[] = CONFIG_XILINX_MICROBLAZE0_FAMILY;
++static const char cpu_ver_string[] = CONFIG_XILINX_MICROBLAZE0_HW_VER;
+
+ #define err_printk(x) \
+        early_printk("ERROR: Microblaze " x "- different for kernel and DTS\n");
+diff --git a/arch/microblaze/kernel/sys_microblaze.c b/arch/microblaze/kernel/sys_microblaze.c
+index ba0568c..31905ff 100644
+--- a/arch/microblaze/kernel/sys_microblaze.c
++++ b/arch/microblaze/kernel/sys_microblaze.c
+@@ -131,7 +131,7 @@ sys_ipc(uint call, int first, int second, int third, void *ptr, long fifth)
+                ret = sys_shmctl(first, second, (struct shmid_ds *) ptr);
+                break;
+        }
+-       return -EINVAL;
++       return ret;
+ }
+
+ asmlinkage int sys_vfork(struct pt_regs *regs)
+
+
+
+
 -- 
-1.6.2.4
-
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
