@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbZEHUcX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932150AbZEHUit@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757060AbZEHUcX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 16:32:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbZEHUcO
+	id S932150AbZEHUit (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 16:38:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757732AbZEHUib
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 16:32:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:36116 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754991AbZEHUcN (ORCPT
+	Fri, 8 May 2009 16:38:31 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:38380 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757953AbZEHUi3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 16:32:13 -0400
-Date: Fri, 8 May 2009 13:24:52 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: fengguang.wu@intel.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       a.p.zijlstra@chello.nl, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
-       andi@firstfloor.org, mpm@selenic.com, adobriyan@gmail.com,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 4/8] proc: export more page flags in /proc/kpageflags
-Message-Id: <20090508132452.bafa287a.akpm@linux-foundation.org>
-In-Reply-To: <20090508114742.GB17129@elte.hu>
-References: <20090508105320.316173813@intel.com>
-	<20090508111031.020574236@intel.com>
-	<20090508114742.GB17129@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 May 2009 16:38:29 -0400
+Message-Id: <20090508203827.665792546@goodmis.org>
+References: <20090508203605.361898511@goodmis.org>
+User-Agent: quilt/0.46-1
+Date: Fri, 08 May 2009 16:36:06 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: [PATCH 1/2] tracing: initialize return value for __ftrace_set_clr_event
+Content-Disposition: inline; filename=0001-tracing-initialize-return-value-for-__ftrace_set_cl.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 May 2009 13:47:42 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+From: Steven Rostedt <srostedt@redhat.com>
 
-> 
-> * Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Export all page flags faithfully in /proc/kpageflags.
-> 
-> Ongoing objection and NAK against extended haphazard exporting of 
-> kernel internals via an ad-hoc ABI via ad-hoc, privatized 
-> instrumentation that only helps the MM code and nothing else.
+Commit 8f31bfe538ebafac187d2d4465a92e1d9ee6d8c2
+tracing/events: clean up for ftrace_set_clr_event()
 
-You're a year too late.  The pagemap interface is useful.
+Moved out the code for ftrace_set_clr_event into a helper funciton but
+did not initialize the return value. As a result, we do not warn about
+a typo in the echoing of events in set_event.
 
-> /proc/kpageflags should be done via the proper methods outlined in 
-> the previous mails i wrote on this topic: for example by using the 
-> 'object collections' abstraction i suggested.
+This patch restores the old warning:
 
-What's that?
+ # echo foobar > set_event
+-bash: echo: write error: Invalid argument
 
-> So this should be done in cooperation with instrumentation folks, 
+[ Impact: restore warning of invalid entries to set_event ]
 
-Feel free to start cooperating.
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+---
+ kernel/trace/trace_events.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> while improving _all_ of Linux instrumentation in general. Or, if 
-> you dont have the time/interest to work with us on that, it should 
-> not be done at all. Not having the resources/interest to do 
-> something properly is not a license to introduce further 
-> instrumentation crap into Linux.
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index df394bc..2eecb87 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -118,7 +118,7 @@ static int __ftrace_set_clr_event(const char *match, const char *sub,
+ 				  const char *event, int set)
+ {
+ 	struct ftrace_event_call *call;
+-	int ret;
++	int ret = -EINVAL;
+ 
+ 	mutex_lock(&event_mutex);
+ 	list_for_each_entry(call, &ftrace_events, list) {
+-- 
+1.6.2.4
 
-If and when whatever-this-stuff-is is available and if it turns out to be
-usable then someone can take on the task of migrating the existing
-apgemap implementation over to use the new machinery while preserving
-existing userspace interfaces.
-
-But we shouldn't block improvements to an existing feature because
-someone might change the way that feature is implemented some time in
-the future.
+-- 
