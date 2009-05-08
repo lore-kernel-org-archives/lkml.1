@@ -1,285 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760778AbZEHCwW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761564AbZEHC4Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760778AbZEHCwW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 22:52:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755042AbZEHCwD
+	id S1761564AbZEHC4Y (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 22:56:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754042AbZEHC4L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 22:52:03 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:44496 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753762AbZEHCwB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 22:52:01 -0400
-Date: Thu, 7 May 2009 22:52:00 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Li Zefan <lizf@cn.fujitsu.com>
-cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] tracing/events: clean up for
- ftrace_set_clr_event()
-In-Reply-To: <4A03998E.3020503@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0905072248180.28378@gandalf.stny.rr.com>
-References: <4A03998E.3020503@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 7 May 2009 22:56:11 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36172 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753230AbZEHC4J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 22:56:09 -0400
+From: Tejun Heo <tj@kernel.org>
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, rusty@rustcorp.com.au,
+       James.Bottomley@HansenPartnership.com, mike.miller@hp.com,
+       donari75@gmail.com, paul.clements@steeleye.com, tim@cyberelk.net,
+       Geert.Uytterhoeven@sonycom.com, davem@davemloft.net,
+       Laurent@lvivier.info, jgarzik@pobox.com, jeremy@xensource.com,
+       grant.likely@secretlab.ca, adrian@mcmen.demon.co.uk,
+       sfr@canb.auug.org.au, bzolnier@gmail.com, petkovbb@googlemail.com,
+       sshtylyov@ru.mvista.com, oakad@yahoo.com, drzeus@drzeus.cx,
+       dwmw2@infradead.org, Markus.Lidel@shadowconnect.com, wein@de.ibm.com,
+       schwidefsky@de.ibm.com, zaitcev@redhat.com,
+       fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 02/18] mg_disk: fix queue hang / infinite retry on !fs requests
+Date: Fri,  8 May 2009 11:54:00 +0900
+Message-Id: <1241751256-17435-3-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1241751256-17435-1-git-send-email-tj@kernel.org>
+References: <1241751256-17435-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 08 May 2009 02:54:24 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Both request functions in mg_disk simply return when they encounter a
+!fs request, which means the request will never be cleared from the
+queue causing queue hang and indefinite retry of the request.  Fix it.
 
+While at it, flatten condition checks and add unlikely to !fs tests.
 
+[ Impact: fix possible queue hang / infinite retry of !fs requests ]
 
-On Fri, 8 May 2009, Li Zefan wrote:
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: unsik Kim <donari75@gmail.com>
+---
+ drivers/block/mg_disk.c |   24 +++++++++++++-----------
+ 1 files changed, 13 insertions(+), 11 deletions(-)
 
-> Add a helper function __ftrace_set_clr_event(), and replace some
-> ftrace_set_clr_event() calls with this helper, thus we don't need any
-> kstrdup() or kmalloc().
-> 
-> As a side effect, this patch fixes an issue in self tests code, which is
-> similar to the one fixed in commit d6bf81ef0f7474434c2a049e8bf3c9146a14dd96
-> ("tracing: append ":*" to internal setting of system events")
-> 
-> It's a small issue and won't cause any bug in fact, but we should do things
-> right anyway.
-> 
-> [ Impact: clean up ]
-> 
-> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
-> ---
->  kernel/trace/trace_events.c |  126 ++++++++++++++++---------------------------
->  1 files changed, 46 insertions(+), 80 deletions(-)
-> 
-> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
-> index 8d0fae3..45f1099 100644
-> --- a/kernel/trace/trace_events.c
-> +++ b/kernel/trace/trace_events.c
-> @@ -111,11 +111,44 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
->  	}
->  }
->  
-> -static int ftrace_set_clr_event(char *buf, int set)
-> +/*
-> + * __ftrace_set_clr_event(NULL, NULL, NULL, set) will set/unset all events.
-> + */
-> +static int __ftrace_set_clr_event(const char *match, const char *sub,
-> +				  const char *event, int set)
->  {
->  	struct ftrace_event_call *call;
-> +	int ret;
-> +
-> +	mutex_lock(&event_mutex);
-> +	list_for_each_entry(call, &ftrace_events, list) {
-> +
-> +		if (!call->name || !call->regfunc)
-> +			continue;
-> +
-> +		if (match &&
-> +		    strcmp(match, call->name) != 0 &&
-> +		    strcmp(match, call->system) != 0)
-> +			continue;
-> +
-> +		if (sub && strcmp(sub, call->system) != 0)
-> +			continue;
-> +
-> +		if (event && strcmp(event, call->name) != 0)
-> +			continue;
-> +
-> +		ftrace_event_enable_disable(call, set);
-> +
-> +		ret = 0;
-> +	}
-> +	mutex_unlock(&event_mutex);
-> +
-> +	return ret;
-> +}
-> +
-> +static int ftrace_set_clr_event(char *buf, int set)
-> +{
->  	char *event = NULL, *sub = NULL, *match;
-> -	int ret = -EINVAL;
->  
->  	/*
->  	 * The buf format can be <subsystem>:<event-name>
-> @@ -141,30 +174,7 @@ static int ftrace_set_clr_event(char *buf, int set)
->  			event = NULL;
->  	}
->  
-> -	mutex_lock(&event_mutex);
-> -	list_for_each_entry(call, &ftrace_events, list) {
-> -
-> -		if (!call->name || !call->regfunc)
-> -			continue;
-> -
-> -		if (match &&
-> -		    strcmp(match, call->name) != 0 &&
-> -		    strcmp(match, call->system) != 0)
-> -			continue;
-> -
-> -		if (sub && strcmp(sub, call->system) != 0)
-> -			continue;
-> -
-> -		if (event && strcmp(event, call->name) != 0)
-> -			continue;
-> -
-> -		ftrace_event_enable_disable(call, set);
-> -
-> -		ret = 0;
-> -	}
-> -	mutex_unlock(&event_mutex);
-> -
-> -	return ret;
-> +	return __ftrace_set_clr_event(match, sub, event, set);
->  }
->  
->  /* 128 should be much more than enough */
-> @@ -408,18 +418,14 @@ system_enable_read(struct file *filp, char __user *ubuf, size_t cnt,
->  	struct ftrace_event_call *call;
->  	char buf[2];
->  	int set = -1;
-> -	int all = 0;
->  	int ret;
->  
-> -	if (system[0] == '*')
-> -		all = 1;
-> -
->  	mutex_lock(&event_mutex);
->  	list_for_each_entry(call, &ftrace_events, list) {
->  		if (!call->name || !call->regfunc)
->  			continue;
->  
-> -		if (!all && strcmp(call->system, system) != 0)
-> +		if (system && strcmp(call->system, system) != 0)
->  			continue;
->  
->  		/*
-> @@ -480,7 +486,6 @@ system_enable_write(struct file *filp, const char __user *ubuf, size_t cnt,
->  {
->  	const char *system = filp->private_data;
->  	unsigned long val;
-> -	char *command;
->  	char buf[64];
->  	ssize_t ret;
->  
-> @@ -500,30 +505,16 @@ system_enable_write(struct file *filp, const char __user *ubuf, size_t cnt,
->  	if (ret < 0)
->  		return ret;
->  
-> -	switch (val) {
-> -	case 0:
-> -	case 1:
-> -		break;
-> -
-> -	default:
-> +	if (val != 0 && val != 1)
-
-What about "if (val & ~1UL)"?
-
->  		return -EINVAL;
-> -	}
->  
-> -	/* +3 for the ":*\0" */
-> -	command = kmalloc(strlen(system)+3, GFP_KERNEL);
-> -	if (!command)
-> -		return -ENOMEM;
-> -	sprintf(command, "%s:*", system);
-> -
-> -	ret = ftrace_set_clr_event(command, val);
-> +	ret = __ftrace_set_clr_event(NULL, system, NULL, val);
->  	if (ret)
-> -		goto out_free;
-> +		goto out;
->  
->  	ret = cnt;
->  
-> - out_free:
-> -	kfree(command);
-> -
-> +out:
->  	*ppos += cnt;
->  
->  	return ret;
-> @@ -1181,7 +1172,7 @@ static __init int event_trace_init(void)
->  			  &ftrace_show_header_fops);
->  
->  	trace_create_file("enable", 0644, d_events,
-> -			  "*", &ftrace_system_enable_fops);
-> +			  NULL, &ftrace_system_enable_fops);
->  
->  	for_each_event(call, __start_ftrace_events, __stop_ftrace_events) {
->  		/* The linker may leave blanks */
-> @@ -1259,7 +1250,6 @@ static __init void event_trace_self_tests(void)
->  {
->  	struct ftrace_event_call *call;
->  	struct event_subsystem *system;
-> -	char *sysname;
->  	int ret;
->  
->  	pr_info("Running tests on trace events:\n");
-> @@ -1305,14 +1295,7 @@ static __init void event_trace_self_tests(void)
->  
->  		pr_info("Testing event system %s: ", system->name);
->  
-> -		/* ftrace_set_clr_event can modify the name passed in. */
-> -		sysname = kstrdup(system->name, GFP_KERNEL);
-> -		if (WARN_ON(!sysname)) {
-> -			pr_warning("Can't allocate memory, giving up!\n");
-> -			return;
-> -		}
-> -		ret = ftrace_set_clr_event(sysname, 1);
-> -		kfree(sysname);
-> +		ret = __ftrace_set_clr_event(NULL, system->name, NULL, 1);
->  		if (WARN_ON_ONCE(ret)) {
->  			pr_warning("error enabling system %s\n",
->  				   system->name);
-> @@ -1321,14 +1304,7 @@ static __init void event_trace_self_tests(void)
->  
->  		event_test_stuff();
->  
-> -		sysname = kstrdup(system->name, GFP_KERNEL);
-> -		if (WARN_ON(!sysname)) {
-> -			pr_warning("Can't allocate memory, giving up!\n");
-> -			return;
-> -		}
-> -		ret = ftrace_set_clr_event(sysname, 0);
-> -		kfree(sysname);
-> -
-> +		ret = __ftrace_set_clr_event(NULL, system->name, NULL, 0);
->  		if (WARN_ON_ONCE(ret))
->  			pr_warning("error disabling system %s\n",
->  				   system->name);
-> @@ -1341,15 +1317,8 @@ static __init void event_trace_self_tests(void)
->  	pr_info("Running tests on all trace events:\n");
->  	pr_info("Testing all events: ");
->  
-> -	sysname = kmalloc(4, GFP_KERNEL);
-> -	if (WARN_ON(!sysname)) {
-> -		pr_warning("Can't allocate memory, giving up!\n");
-> -		return;
-> -	}
-> -	memcpy(sysname, "*:*", 4);
-> -	ret = ftrace_set_clr_event(sysname, 1);
-> +	ret = __ftrace_set_clr_event(NULL, NULL, NULL, 1);
->  	if (WARN_ON_ONCE(ret)) {
-> -		kfree(sysname);
->  		pr_warning("error enabling all events\n");
->  		return;
->  	}
-> @@ -1357,10 +1326,7 @@ static __init void event_trace_self_tests(void)
->  	event_test_stuff();
->  
->  	/* reset sysname */
-> -	memcpy(sysname, "*:*", 4);
-> -	ret = ftrace_set_clr_event(sysname, 0);
-> -	kfree(sysname);
-> -
-> +	ret = __ftrace_set_clr_event(NULL, NULL, NULL, 0);
->  	if (WARN_ON_ONCE(ret)) {
->  		pr_warning("error disabling all events\n");
->  		return;
-
-Other than my one little optimization above, it looks good.
-
--- Steve
+diff --git a/drivers/block/mg_disk.c b/drivers/block/mg_disk.c
+index 826c349..be32388 100644
+--- a/drivers/block/mg_disk.c
++++ b/drivers/block/mg_disk.c
+@@ -672,16 +672,16 @@ static void mg_request_poll(struct request_queue *q)
+ 
+ 	while ((req = elv_next_request(q)) != NULL) {
+ 		host = req->rq_disk->private_data;
+-		if (blk_fs_request(req)) {
+-			switch (rq_data_dir(req)) {
+-			case READ:
+-				mg_read(req);
+-				break;
+-			case WRITE:
+-				mg_write(req);
+-				break;
+-			}
++
++		if (unlikely(!blk_fs_request(req))) {
++			__blk_end_request_cur(req, -EIO);
++			continue;
+ 		}
++
++		if (rq_data_dir(req) == READ)
++			mg_read(req);
++		else
++			mg_write(req);
+ 	}
+ }
+ 
+@@ -766,8 +766,10 @@ static void mg_request(struct request_queue *q)
+ 			continue;
+ 		}
+ 
+-		if (!blk_fs_request(req))
+-			return;
++		if (unlikely(!blk_fs_request(req))) {
++			__blk_end_request_cur(req, -EIO);
++			continue;
++		}
+ 
+ 		if (!mg_issue_req(req, host, sect_num, sect_cnt))
+ 			return;
+-- 
+1.6.0.2
 
