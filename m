@@ -1,50 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbZEHLjF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761459AbZEHLj3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757360AbZEHLjF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 07:39:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZEHLiw
+	id S1761459AbZEHLj3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 07:39:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755642AbZEHLjR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 07:38:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:46576 "EHLO mx2.redhat.com"
+	Fri, 8 May 2009 07:39:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:42935 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752821AbZEHLiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 07:38:51 -0400
-Message-ID: <4A04196E.7090908@redhat.com>
-Date: Fri, 08 May 2009 14:37:18 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1752567AbZEHLjP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 07:39:15 -0400
+Date: Fri, 8 May 2009 13:38:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] memcg fix stale swap cache account leak v6
+Message-ID: <20090508113820.GL11596@elte.hu>
+References: <20090508140528.c34ae712.kamezawa.hiroyu@jp.fujitsu.com> <20090508140910.bb07f5c6.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Marcelo Tosatti <mtosatti@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, Chris Wright <chrisw@sous-sol.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com> <20090507233503.GA9103@amt.cnet> <20090507234311.GA9517@amt.cnet> <4A03E579.8030201@redhat.com> <20090508103253.GC3011@amt.cnet>
-In-Reply-To: <20090508103253.GC3011@amt.cnet>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090508140910.bb07f5c6.kamezawa.hiroyu@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Marcelo Tosatti wrote:
->>> Also it would be interesting to see the MMIO comparison with EPT/NPT,
->>> it probably sucks much less than what you're seeing.
->>>   
->>>       
->> Why would NPT improve mmio?  If anything, it would be worse, since the  
->> processor has to do the nested walk.
->>     
->
-> I suppose the hardware is much more efficient than walk_addr? There's
-> all this kmalloc, spinlock, etc overhead in the fault path.
->   
+x
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-mmio still has to do a walk_addr, even with npt.  We don't take the mmu 
-lock during walk_addr.
+> +struct swapio_check {
+> +	spinlock_t	lock;
+> +	void		*swap_bio_list;
+> +	struct delayed_work work;
+> +} stale_swap_check;
 
+Small nit. It's nice that you lined up the first two fields, but it 
+would be nice to line up the third one too:
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+struct swapio_check {
+	spinlock_t		lock;
+	void			*swap_bio_list;
+	struct delayed_work	work;
+} stale_swap_check;
 
+> +	while (nr--) {
+> +		cond_resched();
+> +		spin_lock_irq(&sc->lock);
+> +		bio = sc->swap_bio_list;
+
+> @@ -66,6 +190,7 @@ static void end_swap_bio_write(struct bi
+>  				(unsigned long long)bio->bi_sector);
+>  		ClearPageReclaim(page);
+>  	}
+> +	mem_cgroup_swapio_check_again(bio, page);
+
+Hm, this patch adds quite a bit of scanning overhead to 
+end_swap_bio_write(), to work around artifacts of a global LRU not 
+working well with a partitioned system's per-partition LRU needs.
+
+Isnt the right solution to have a better LRU that is aware of this, 
+instead of polling around in the hope of cleaning up stale entries?
+
+	Ingo
