@@ -1,92 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754715AbZEHI7j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758117AbZEHJCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754715AbZEHI7j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 04:59:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751394AbZEHI7a
+	id S1758117AbZEHJCW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 05:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753947AbZEHJCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 04:59:30 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:51715 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbZEHI72 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 04:59:28 -0400
-Date: Fri, 8 May 2009 10:58:05 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jan Beulich <jbeulich@novell.com>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [PATCH 2/5] xen/x86-64: clean up warnings
-	aboutIST-using traps
-Message-ID: <20090508085805.GA28455@elte.hu>
-References: <4A032EE0.9030607@goop.org> <4A03F947.76EA.0078.0@novell.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A03F947.76EA.0078.0@novell.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 8 May 2009 05:02:12 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:42935 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754550AbZEHJCL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 05:02:11 -0400
+Subject: Re: [ath9k-devel] New kernel recommendations for ath9k
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Jason Daly <jason2@primarykey.ca>
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, Karl Hiramoto <karl@hiramoto.org>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <6818156.7441241761835737.JavaMail.james@prod3.pk.lan>
+References: <43e72e890905070104u59eebcceu18718a733e388cc9@mail.gmail.com>
+	 <4A02B1CA.3060708@hiramoto.org>
+	 <43e72e890905071020v26857c52p3abea96be04ef1d9@mail.gmail.com>
+	 <6818156.7441241761835737.JavaMail.james@prod3.pk.lan>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-h970Vm30s6lM3LS133hW"
+Date: Fri, 08 May 2009 11:02:04 +0200
+Message-Id: <1241773324.1567.33.camel@johannes.local>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Jan Beulich <jbeulich@novell.com> wrote:
+--=-h970Vm30s6lM3LS133hW
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> >>> Jeremy Fitzhardinge <jeremy@goop.org> 07.05.09 20:56 >>>
-> >Ignore known IST-using traps.  Aside from the debugger traps, they're
-> >low-level faults which Xen will handle for us, so the kernel needn't
-> >worry about them.  Keep warning in case unknown trap starts using IST.
-> >
-> >Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> >---
-> > arch/x86/xen/enlighten.c |   22 ++++++++++++++++++++--
-> > 1 files changed, 20 insertions(+), 2 deletions(-)
-> >
-> >diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-> >index cb49f57..88f3aa4 100644
-> >--- a/arch/x86/xen/enlighten.c
-> >+++ b/arch/x86/xen/enlighten.c
-> >@@ -439,12 +439,30 @@ static int cvt_gate_to_trap(int vector, const gate_desc *val,
-> > 
-> > 	addr = gate_offset(*val);
-> > #ifdef CONFIG_X86_64
-> >+	/*
-> >+	 * Look for known traps using IST, and substitute them
-> >+	 * appropriately.  The debugger ones are the only ones we care
-> >+	 * about.  Xen will handle faults like double_fault and
-> >+	 * machine_check, so we should never see them.  Warn if
-> >+	 * there's an unexpected IST-using fault handler.
-> >+	 */
-> > 	if (addr == (unsigned long)debug)
-> > 		addr = (unsigned long)xen_debug;
-> > 	else if (addr == (unsigned long)int3)
-> > 		addr = (unsigned long)xen_int3;
-> >-	else
-> >-		WARN_ON(val->ist != 0);
-> >+	else if (addr == (unsigned long)double_fault ||
-> >+		 addr == (unsigned long)stack_segment) {
-> 
-> I don't think you want to exclude handling stack faults: Ordinary 
-> memory references using rsp or rbp as the base register will cause 
-> these instead of general protection faults when the resulting 
-> effective address is non- canonical.
+On Sat, 2009-05-09 at 01:50 -0400, Jason Daly wrote:
+> Thanks for the kernel info.
+>=20
+> How do you configure hostapd to work in N mode with ath9k?  Currently=20
+> the hw_mode parameter found in hostapd.conf does not accept anything=20
+> greater than g.
 
-Yes. Also, patches 1-2-3 really just do the same thing, one fixes 
-the other one. Would be nice to have a single patch for that whole 
-ugly topic of 64-bit Xen not handling ISTs properly.
+N isn't "greater than" G. N is more features than G. Just set the N
+options in the config file. You may need a git hostapd, I don't know for
+sure.
 
-If this was a CPU we'd say "sorry, dont run Linux on it then" ...
+Also, please set your clock and timezone correctly _before_ you say
+"thank you"!. You have posted on
+	Sat, 09 May 2009 01:50:12 -0400 (07:50 CEST)
 
-I've applied the reservation fix to x86/urgent, and the #5 patch to 
-x86/xen (it's more of a cleanup, not a fix for .30, right?).
+which is clearly impossible.
 
-	Ingo
+johannes
+
+--=-h970Vm30s6lM3LS133hW
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKA/UCAAoJEODzc/N7+QmahqgQAJnKJRl39qz78L3dQyNfus2J
+Ukho9/cYBulUcLxLbMxFb8M7FtkmHcZGZPf9w5x/l+UBU4pZuP2+1poMeRT1fq5N
+Rh/x1sU4es7+4rPigO7PNH1zgpgufO5lmLhcmPzNZWLyRc4j6XxBAk3Gxa2YeEmt
+TXfkNit/cLjeSF4s/tSzVA1OikQRN+K2oUAEt4S2sd5Ln8FGMEOXm831/390KK7e
+juC7JzSvS9XnoVWgKn5FnL4wbDBwm9LAowO/lTdHIw6xj+u7lddfBy5oOhoP+95x
+sEzm37A/FcHuD2J3qnOAGGPCR2oFJG+KlGgpu//FjtuVgdPBCgtYjCHcjzvQjst0
+Dsb0coAjuFbi7Qq6NpgRJnWJLNsqZUZPSMGQDdumaySb3rzby6MRnZ+rJmz8R5QB
+ARB+Lr29hN7t00sG7jNriAs75gwgKl3dTWzI8Sy0Gcme5GuSYL022cwV0mXkLTVy
+ap1HKddGpO6DTbv78Z4NNieyG+eW5dcO3Wey216kFjIf+ei9H1CyW0RvXrDVosBY
+0uxsR9SR/mHYC0IvXdtqBCox+9rcpCX5sgpTGHXW1jZcCNPGFNzOagjOlD93X8LT
+f93qbmuwyNZs2iDBtAHnUhZ91OTlwOKx5WbnnmsZp41CiPjiMX6LDvz1R59x2eUg
+Uw1v8zof+xl10ul3Dw+L
+=a0Cg
+-----END PGP SIGNATURE-----
+
+--=-h970Vm30s6lM3LS133hW--
+
