@@ -1,73 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761384AbZEHHyR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758100AbZEHH5V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761384AbZEHHyR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 03:54:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752422AbZEHHyB
+	id S1758100AbZEHH5V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 03:57:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbZEHH5G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 03:54:01 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:7963 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756104AbZEHHyA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 03:54:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=e/cLO2qeD1VKBy7BUuqpRM9LmJmnYcXFtYyzAD75tKov68wcZV5HOJ2YwAKQ9BSBl2
-         wwD+1+6Zb/gfZIbCjOyHzvniKb9oeAEfiEUvvDQaBeXSitzgI2MWJiV3G1NnEzCvY8t8
-         nB9aZEc5xdpDNsgkHjaxNiTyWayhzu7QT0z+M=
-Date: Fri, 8 May 2009 11:53:54 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: "H. Peter Anvin" <hpa@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, vgoyal@redhat.com, hbabu@us.ibm.com,
-       kexec@lists.infradead.org, ying.huang@intel.com, mingo@elte.hu,
-       tglx@linutronix.de, ebiederm@xmission.com, sam@ravnborg.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 01/14] x86, boot: align the .bss section in the
-	decompressor
-Message-ID: <20090508075354.GA6132@lenovo>
-References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com> <1241735222-6640-2-git-send-email-hpa@linux.intel.com>
+	Fri, 8 May 2009 03:57:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58043 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751057AbZEHH5E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 03:57:04 -0400
+Message-ID: <4A03E579.8030201@redhat.com>
+Date: Fri, 08 May 2009 10:55:37 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241735222-6640-2-git-send-email-hpa@linux.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Marcelo Tosatti <mtosatti@redhat.com>
+CC: Gregory Haskins <ghaskins@novell.com>, Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com> <20090507233503.GA9103@amt.cnet> <20090507234311.GA9517@amt.cnet>
+In-Reply-To: <20090507234311.GA9517@amt.cnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[H. Peter Anvin - Thu, May 07, 2009 at 03:26:49PM -0700]
-| From: H. Peter Anvin <hpa@zytor.com>
-| 
-| Aligning the .bss section makes it trivially faster, and makes using
-| larger transfers for the clear slightly easier.
-| 
-| [ Impact: trivial performance enhancement, future patch prep ]
-| 
-| Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-| ---
-|  arch/x86/boot/compressed/vmlinux.lds.S |    1 +
-|  1 files changed, 1 insertions(+), 0 deletions(-)
-| 
-| diff --git a/arch/x86/boot/compressed/vmlinux.lds.S b/arch/x86/boot/compressed/vmlinux.lds.S
-| index 0d26c92..27c168d 100644
-| --- a/arch/x86/boot/compressed/vmlinux.lds.S
-| +++ b/arch/x86/boot/compressed/vmlinux.lds.S
-| @@ -42,6 +42,7 @@ SECTIONS
-|  		*(.data.*)
-|  		_edata = . ;
-|  	}
-| +	. = ALIGN(32);
-|  	.bss : {
-|  		_bss = . ;
-|  		*(.bss)
-| -- 
-| 1.6.0.6
-| 
+Marcelo Tosatti wrote:
+> Also it would be interesting to see the MMIO comparison with EPT/NPT,
+> it probably sucks much less than what you're seeing.
+>   
 
-Hi Peter, should not it be ALIGN(8) rather? I thought
-we keep these sections as tight as possible in a sake
-of limitation of setup code size. Perhaps I miss something.
+Why would NPT improve mmio?  If anything, it would be worse, since the 
+processor has to do the nested walk.
 
-	-- Cyrill
+Of course, these are newer machines, so the absolute results as well as 
+the difference will be smaller.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+
