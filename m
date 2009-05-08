@@ -1,132 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbZEHLKD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755729AbZEHLLC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754932AbZEHLKD (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 07:10:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752887AbZEHLJu
+	id S1755729AbZEHLLC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 07:11:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZEHLKv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 07:09:50 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:49098 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752857AbZEHLJt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 07:09:49 -0400
-Message-ID: <4A0412EF.2060204@novell.com>
-Date: Fri, 08 May 2009 07:09:35 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Fri, 8 May 2009 07:10:51 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39203 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752887AbZEHLKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 07:10:49 -0400
+Date: Fri, 8 May 2009 13:10:24 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       Yinghai Lu <yinghai@kernel.org>, linux-pci@vger.kernel.org,
+       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [GIT PULL] xen: dom0 support for PCI access
+Message-ID: <20090508111024.GD11596@elte.hu>
+References: <1241732737-7669-1-git-send-email-jeremy@goop.org>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Marcelo Tosatti <mtosatti@redhat.com>, Chris Wright <chrisw@sous-sol.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com> <20090507233503.GA9103@amt.cnet> <4A03E644.5000103@redhat.com>
-In-Reply-To: <4A03E644.5000103@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig1C1A81A9DBB2FCB360BE892C"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241732737-7669-1-git-send-email-jeremy@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig1C1A81A9DBB2FCB360BE892C
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Avi Kivity wrote:
-> Marcelo Tosatti wrote:
->> I think comparison is not entirely fair. You're using
->> KVM_HC_VAPIC_POLL_IRQ ("null" hypercall) and the compiler optimizes th=
-at
->> (on Intel) to only one register read:
->>
->>         nr =3D kvm_register_read(vcpu, VCPU_REGS_RAX);
->>
->> Whereas in a real hypercall for (say) PIO you would need the address,
->> size, direction and data.
->>  =20
->
-> Well, that's probably one of the reasons pio is slower, as the cpu has
-> to set these up, and the kernel has to read them.
+( Cc:-ed PCI folks. Original thread with patches is on lkml. There's
+  a few details that affect non-Xen PCI code too - and it would be
+  nice to see feedback on this general method as well, from the PCI 
+  experts . )
 
-Right, that was the point I was trying to make.  Its real-world overhead
-to measure how long it takes KVM to go round-trip in each of the
-respective trap types.
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
->
->> Also for PIO/MMIO you're adding this unoptimized lookup to the
->> measurement:
->>
->>         pio_dev =3D vcpu_find_pio_dev(vcpu, port, size, !in);
->>         if (pio_dev) {
->>                 kernel_pio(pio_dev, vcpu, vcpu->arch.pio_data);
->>                 complete_pio(vcpu);                 return 1;
->>         }
->>  =20
->
-> Since there are only one or two elements in the list, I don't see how
-> it could be optimized.
-
-To Marcelo's point, I think he was more taking exception to the fact
-that the HC path was potentially completely optimized out if GCC was
-super-intuitive about the switch(nr) statement hitting the null vector.=20
-In theory, both the io_bus and the select(nr) are about equivalent in
-algorithmic complexity (and depth, I should say) which is why I think in
-general the test is "fair".  IOW it represents the real-world decode
-cycle function for each transport.
-
-However, if one side was artificially optimized simply due to the
-triviality of my NULLIO test, that is not fair, and that is the point I
-believe he was making.  In any case, I just wrote a new version of the
-test which hopefully addresses forces GCC to leave it as a more
-real-world decode.  (FYI: I saw no difference).  I will update the
-tarball/wiki shortly.
-
->
->> Whereas for hypercall measurement you don't. I believe a fair comparis=
-on
->> would be have a shared guest/host memory area where you store guest/ho=
-st
->> TSC values and then do, on guest:
->>
->>     rdtscll(&shared_area->guest_tsc);
->>     pio/mmio/hypercall
->>     ... back to host
->>     rdtscll(&shared_area->host_tsc);
->>
->> And then calculate the difference (minus guests TSC_OFFSET of course)?=
-
->>  =20
->
-> I don't understand why you want host tsc?  We're interested in
-> round-trip latency, so you want guest tsc all the time.
-
-Yeah, I agree.  My take is he was just trying to introduce a real
-workload so GCC wouldn't do that potential "cheater decode" in the HC
-path.  After thinking about it, however, I realized we could do that
-with a simple "state++" operation, so the new test does this in each of
-the various test's "execute" cycle.  The timing calculation remains
-unchanged.
-
--Greg
-
-
-
---------------enig1C1A81A9DBB2FCB360BE892C
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkoEEvAACgkQlOSOBdgZUxlI0wCfcqiqzObH+IA6c1O8NuTenbQM
-xzgAn3t05yeEx2JYU7y9P87g/brDF5oY
-=RjKT
------END PGP SIGNATURE-----
-
---------------enig1C1A81A9DBB2FCB360BE892C--
+> Hi Ingo,
+> 
+> This branch allows a Xen dom0 kernel to access PCI devices 
+> properly.  Mostly this involves making sure that memory being used 
+> for DMA is both logically contigious in the kernel's 
+> pseudo-physical memory and physically contigious in machine 
+> memory.
+> 
+> Again, this is pretty much unchanged from the last time I posted it.
+> 
+> The following changes since commit 0c96e43850feb7c7c4a4950f24533491fbd63b5a:
+>   Jeremy Fitzhardinge (1):
+>         xen: checkpatch cleanups
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git xen-tip/dom0/pci
+> 
+> Alex Nixon (7):
+>       xen: Don't disable the I/O space
+>       xen: Allow unprivileged Xen domains to create iomap pages
+>       Xen: Rename the balloon lock
+>       xen: Add xen_create_contiguous_region
+>       x86/PCI: Clean up pci_cache_line_size
+>       x86/PCI: Enable scanning of all pci functions
+>       Xen/x86/PCI: Add support for the Xen PCI subsytem
+> 
+> Jeremy Fitzhardinge (4):
+>       xen/swiotlb: use dma_alloc_from_coherent to get device coherent memory
+>       x86/pci: make sure _PAGE_IOMAP it set on pci mappings
+>       xen/pci: clean up Kconfig a bit
+>       xen: checkpatch cleanups
+> 
+>  arch/x86/Kconfig                 |    4 +
+>  arch/x86/include/asm/io.h        |    2 +
+>  arch/x86/include/asm/pci.h       |    8 +-
+>  arch/x86/include/asm/pci_x86.h   |    2 +
+>  arch/x86/include/asm/xen/iommu.h |   12 ++
+>  arch/x86/kernel/pci-dma.c        |    3 +
+>  arch/x86/pci/Makefile            |    1 +
+>  arch/x86/pci/common.c            |   18 ++-
+>  arch/x86/pci/i386.c              |    3 +
+>  arch/x86/pci/init.c              |    6 +
+>  arch/x86/pci/xen.c               |   51 +++++++
+>  arch/x86/xen/Kconfig             |    2 +
+>  arch/x86/xen/enlighten.c         |    6 +-
+>  arch/x86/xen/mmu.c               |  225 ++++++++++++++++++++++++++++++-
+>  arch/x86/xen/setup.c             |    3 -
+>  drivers/pci/Makefile             |    2 +
+>  drivers/pci/xen-iommu.c          |  279 ++++++++++++++++++++++++++++++++++++++
+>  drivers/xen/balloon.c            |   15 +--
+>  include/xen/interface/memory.h   |   50 +++++++
+>  include/xen/xen-ops.h            |    6 +
+>  20 files changed, 671 insertions(+), 27 deletions(-)
+>  create mode 100644 arch/x86/include/asm/xen/iommu.h
+>  create mode 100644 arch/x86/pci/xen.c
+>  create mode 100644 drivers/pci/xen-iommu.c
+> 
+> Thanks,
+> 	J
