@@ -1,136 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbZEHV66@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763643AbZEHWA1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756083AbZEHV66 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 17:58:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbZEHV6q
+	id S1763643AbZEHWA1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 18:00:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbZEHWAD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 17:58:46 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:43480 "EHLO mx2.redhat.com"
+	Fri, 8 May 2009 18:00:03 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:53370 "EHLO mail.atlantis.sk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759851AbZEHV6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 17:58:45 -0400
-Date: Fri, 8 May 2009 17:56:18 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
-       m-ikeda@ds.jp.nec.com, peterz@infradead.org
-Subject: Re: IO scheduler based IO Controller V2
-Message-ID: <20090508215618.GJ7293@redhat.com>
-References: <20090506203228.GH8180@redhat.com> <20090506213453.GC4282@linux> <20090506215235.GJ8180@redhat.com> <20090507090450.GA4613@linux> <20090507141126.GA9463@redhat.com> <20090507144501.GB9463@redhat.com> <20090507153642.GC9463@redhat.com> <20090507221900.GA29774@linux> <20090508180951.GG7293@redhat.com> <20090508200458.GA3708@linux>
+	id S1752912AbZEHWAB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 18:00:01 -0400
+X-Greylist: delayed 398 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 May 2009 18:00:00 EDT
+From: Ondrej Zary <linux@rainbow-software.org>
+To: john stultz <johnstul@us.ibm.com>
+Subject: Re: TSC marked unstable on suspend and resume
+Date: Fri, 8 May 2009 23:53:12 +0200
+User-Agent: KMail/1.9.10
+Cc: David Fries <david@fries.net>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@tglx.de>
+References: <20090221023943.GA4894@spacedout.fries.net> <20090429232523.GO2862@spacedout.fries.net> <1241062653.7270.44.camel@localhost.localdomain>
+In-Reply-To: <1241062653.7270.44.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090508200458.GA3708@linux>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905082353.15962.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 10:05:01PM +0200, Andrea Righi wrote:
+On Thursday 30 April 2009 05:37:33 john stultz wrote:
+> On Wed, 2009-04-29 at 18:25 -0500, David Fries wrote:
+> > On Wed, Apr 29, 2009 at 09:45:40AM -0700, john stultz wrote:
+> > > On Fri, Feb 20, 2009 at 7:39 PM, David Fries <david@fries.net> wrote:
+> > > > I'm getting TSC marked as unsable on hibernate to disk with
+> > > > 2.6.29-rc3. ?The last kernel I ran 2.6.24.4 ran 300+ days without a
+> > > > problem and does not loose TSC on hibernate.
+> > > >
+> > > > I'm hibernating with `echo disk > /sys/power/state`.
+> > > > These look like the relavant messages,
+> > > >
+> > > > CPU 0 irqstacks, hard=c0379000 soft=c0378000
+> > > > PID hash table entries: 1024 (order: 10, 4096 bytes)
+> > > > Fast TSC calibration using PIT
+> > > > Detected 300.705 MHz processor.
+> > > > Calibrating delay loop (skipped), value calculated using timer
+> > > > frequency.. 601.41 BogoMIPS (lpj=300705) hibernate to disk,
+> > > > Restarting tasks ... done.
+> > > > Clocksource tsc unstable (delta = 499883531 ns)
+> > >
+> > > Hmm. Seems like the clocksource watchdog is having some problem
+> > > handling state around hibernate.
+>
+> Yea. This seems to be the case here. There's watchdog code and variables
+> to handle resume properly, but there isn't a corresponding suspend hook,
+> so the resume path doesn't actually change anything.
+>
+> Here's a patch you can try, I only had time to compile test it today, so
+> its untested. Hopefully I didn't miss anything obvious.
 
-[..]
-> > Conclusion
-> > ==========
-> > It just reaffirms that with max BW control, we are not doing a fair job
-> > of throttling hence no more hold the IO scheduler properties with-in
-> > cgroup.
-> > 
-> > With proportional BW controller implemented at IO scheduler level, one
-> > can do very tight integration with IO controller and hence retain 
-> > IO scheduler behavior with-in cgroup.
-> 
-> It is worth to bug you I would say :). Results are interesting,
-> definitely. I'll check if it's possible to merge part of the io-throttle
-> max BW control in this controller and who knows if finally we'll be able
-> to converge to a common proposal...
+I have the same problem and the patch does not solve it for me too.
 
-Great, Few thoughts though.
+I noticed that after resume, ping is unable to measue short time correctly:
+64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.000 ms
 
-- What are your requirements? Do you strictly need max bw control or
-  proportional BW control will satisfy your needs? Or you need both?
+"echo tsc >/sys/devices/system/clocksource/clocksource0/current_clocksource" 
+fixes the problem until next hibernation:
+64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.223 ms
 
-- With the current algorithm BFQ (modified WF2Q+), we should be able
-  to do proportional BW division while maintaining the properties of
-  IO scheduler with-in cgroup in hiearchical manner.
- 
-  I think it can be simply enhanced to do max bw control also. That is
-  whenever a queue is selected for dispatch (from fairness point of view)
-  also check the IO rate of that group and if IO rate exceeded, expire
-  the queue immediately and fake as if queue consumed its time slice
-  which will be equivalent to throttling.
 
-  But in this simple scheme, I think throttling is still unfair with-in
-  the class. What I mean is following.
+>
+> Thomas, I suspect you intended to have something like the following?
+>
+> Signed-off-by: John Stultz <johnstul@us.ibm.com>
+>
+> diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+> index 5a40d14..450431f 100644
+> --- a/include/linux/clocksource.h
+> +++ b/include/linux/clocksource.h
+> @@ -360,6 +360,7 @@ extern void clocksource_touch_watchdog(void);
+>  extern struct clocksource* clocksource_get_next(void);
+>  extern void clocksource_change_rating(struct clocksource *cs, int rating);
+>  extern void clocksource_resume(void);
+> +extern void clocksource_suspend(void);
+>
+>  #ifdef CONFIG_GENERIC_TIME_VSYSCALL
+>  extern void update_vsyscall(struct timespec *ts, struct clocksource *c);
+> diff --git a/kernel/time/clocksource.c b/kernel/time/clocksource.c
+> index ecfd7b5..3dbe55f 100644
+> --- a/kernel/time/clocksource.c
+> +++ b/kernel/time/clocksource.c
+> @@ -236,6 +236,11 @@ static void clocksource_resume_watchdog(void)
+>  	set_bit(0, &watchdog_resumed);
+>  }
+>
+> +static void clocksource_suspend_watchdog(void)
+> +{
+> +	set_bit(1, &watchdog_resumed);
+> +}
+> +
+>  static void clocksource_check_watchdog(struct clocksource *cs)
+>  {
+>  	struct clocksource *cse;
+> @@ -278,6 +283,7 @@ static void clocksource_check_watchdog(struct
+> clocksource *cs) }
+>  	spin_unlock_irqrestore(&watchdog_lock, flags);
+>  }
+> +
+>  #else
+>  static void clocksource_check_watchdog(struct clocksource *cs)
+>  {
+> @@ -286,6 +292,7 @@ static void clocksource_check_watchdog(struct
+> clocksource *cs) }
+>
+>  static inline void clocksource_resume_watchdog(void) { }
+> +static inline void clocksource_suspend_watchdog(void) { }
+>  #endif
+>
+>  /**
+> @@ -321,6 +328,18 @@ void clocksource_touch_watchdog(void)
+>  }
+>
+>  /**
+> + * clocksource_suspend - suspend the clocksource(s)
+> + */
+> +void clocksource_suspend(void)
+> +{
+> +	unsigned long flags;
+> +
+> +	spin_lock_irqsave(&clocksource_lock, flags);
+> +	clocksource_suspend_watchdog();
+> +	spin_unlock_irqrestore(&clocksource_lock, flags);
+> +}
+> +
+> +/**
+>   * clocksource_get_next - Returns the selected clocksource
+>   *
+>   */
+> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+> index 687dff4..e39e3d3 100644
+> --- a/kernel/time/timekeeping.c
+> +++ b/kernel/time/timekeeping.c
+> @@ -368,6 +368,7 @@ static int timekeeping_suspend(struct sys_device *dev,
+> pm_message_t state)
+>
+>  	clockevents_notify(CLOCK_EVT_NOTIFY_SUSPEND, NULL);
+>
+> +	clocksource_suspend();
+>  	return 0;
+>  }
+>
 
-  if an RT task and an BE task are in same cgroup and cgroup exceeds its
-  max BW, RT task is next to be dispatched from fairness point of view and it
-  will end being throttled. This is still fine because until RT task is
-  finished, BE task will never get to run in that cgroup, so at some point
-  of time, cgroup rate will come down and RT task will get the IO done
-  meeting fairnesss and max bw constraints.
-
-  But this simple scheme does not work with-in same class. Say prio 0
-  and prio 7 BE class readers. Now we will end up throttling the guy who
-  is scheduled to go next and there is no mechanism that prio0 and prio7
-  tasks are throttled in proportionate manner.
-
-  So, we shall have to come up with something better, I think Dhaval was
-  implementing upper limit for cpu controller. May be PeterZ and Dhaval can
-  give us some pointers how did they manage to implement both proportional
-  and max bw control with the help of a single tree while maintaining the
-  notion of prio with-in cgroup.
-
-PeterZ/Dhaval  ^^^^^^^^
-
-- We should be able to get rid of reader-writer issue even with above
-  simple throttling mechanism for schedulers like deadline and AS, because at
-  elevator we see it as a single queue (for both reads and writes) and we
-  will throttle this queue. With-in queue dispatch are taken care by io
-  scheduler. So as long as IO has been queued in the queue, scheduler
-  will take care of giving advantage to readers even if throttling is
-  taking place on the queue.
-
-Why am I thinking loud? So that we know what are we trying to achieve at the
-end of the day. So at this point of time what are the advantages/disadvantages
-of doing max bw control along with proportional bw control?
-
-Advantages
-==========
-- With a combined code base, total code should be less as compared to if
-  both of them are implemented separately. 
-
-- There can be few advantages in terms of maintaining the notion of IO
-  scheduler with-in cgroup. (like RT tasks always goes first in presence
-  of BE and IDLE task etc. But simple throttling scheme will not take
-  care of fair throttling with-in class. We need a better algorithm to
-  achive that goal).
-
-- We probably will get rid of reader writer issue for single queue
-  schedulers like deadline and AS. (Need to run tests and see).
-
-Disadvantages
-=============
-- Implementation at IO scheduler/elevator layer does not cover higher
-  level logical devices. So one can do max bw control only at leaf nodes
-  where IO scheduler is running and not at intermediate logical nodes.
-   
-I personally think that proportional BW control will meet more people's
-need as compared to max bw contorl. 
-
-So far nobody has come up with a solution where a single proposal covers
-all the cases without breaking things. So personally, I want to make
-things work at least at IO scheduler level and cover as much ground as
-possible without breaking things (hardware RAID, all the direct attached
-devices etc) and then worry about higher level software devices.
-
-Thoughts?
-
-Thanks
-Vivek
+-- 
+Ondrej Zary
