@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932387AbZEHTEY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764148AbZEHTF2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932387AbZEHTEY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 15:04:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbZEHTEJ
+	id S1764148AbZEHTF2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:05:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756782AbZEHTFM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 15:04:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34647 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754701AbZEHTEH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:04:07 -0400
-Date: Fri, 8 May 2009 12:01:19 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: linux-kernel@vger.kernel.org, jens.axboe@oracle.com,
-       "Rafael J. Wysocki" <rjw@sisk.pl>
-Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone
- over NFS
-Message-Id: <20090508120119.8c93cfd7.akpm@linux-foundation.org>
-In-Reply-To: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
-References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 8 May 2009 15:05:12 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36722 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754285AbZEHTFK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 15:05:10 -0400
+Date: Fri, 8 May 2009 21:04:09 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
+Subject: Re: [PATCH 1/2] kernel/{sched,smp}.c: fix static decl prior to
+	struct declaration
+Message-ID: <20090508190409.GA12130@elte.hu>
+References: <20090508184838.GA11157@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090508184838.GA11157@havoc.gtf.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 23 Apr 2009 10:01:58 -0400
-Jeff Moyer <jmoyer@redhat.com> wrote:
 
-> Hi,
-> 
-> I've been working on CFQ improvements for interleaved I/Os between
-> processes, and noticed a regression in performance when using the
-> deadline I/O scheduler.  The test uses a server configured with a cciss
-> array and 1Gb/s ethernet.
-> 
-> The iozone command line was:
->   iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
-> 
-> The numbers in the nfsd's row represent the number of nfsd "threads".
-> These numbers (in MB/s) represent the average of 5 runs.
-> 
->                v2.6.29
-> 
-> nfsd's  |   1    |  2   |   4   |   8
-> --------+---------------+-------+------
-> deadline| 43207 | 67436 | 96289 | 107590
-> 
->               2.6.30-rc1
-> 
-> nfsd's  |   1   |   2   |   4   |   8
-> --------+---------------+-------+------
-> deadline| 43732 | 68059 | 76659 | 83231
-> 
->     2.6.30-rc3.block-for-linus
-> 
-> nfsd's  |   1   |   2   |   4   |   8
-> --------+---------------+-------+------
-> deadline| 46102 | 71151 | 83120 | 82330
-> 
-> 
-> Notice the drop for 4 and 8 threads.  It may be worth noting that the
-> default number of NFSD threads is 8.
-> 
+* Jeff Garzik <jeff@garzik.org> wrote:
 
-I guess we should ask Rafael to add this to the post-2.6.29 regression
-list.
+> According to C99 6.9.2p3, any declaration "static struct foo my_foo;"
+> must follow the definition of struct foo.
+> 
+> Apparently, gcc's lack of warning is a bug.
+> 
+> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
 
+good spotting, i'll apply this fix, but:
+
+>   */
+>  struct task_group root_task_group;
+>  
+> -#ifdef CONFIG_FAIR_GROUP_SCHED
+> -/* Default task group's sched entity on each cpu */
+> -static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
+> -/* Default task group's cfs_rq on each cpu */
+> -static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
+> -#endif /* CONFIG_FAIR_GROUP_SCHED */
+> -
+> -#ifdef CONFIG_RT_GROUP_SCHED
+> -static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
+> -static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
+> -#endif /* CONFIG_RT_GROUP_SCHED */
+> -#else /* !CONFIG_USER_SCHED */
+> -#define root_task_group init_task_group
+> -#endif /* CONFIG_USER_SCHED */
+> -
+>  /* task_group_lock serializes add/remove of task groups and also changes to
+
+This block has a visible imbalance of preprocessor directives - 
+there's a #else you moved, without moving the outermost #ifdef. My 
+guess is that this will go down in a fireball with 
+CONFIG_GROUP_SCHED disabled?
+
+	Ingo
