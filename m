@@ -1,34 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760450AbZEHJec@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762686AbZEHJe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760450AbZEHJec (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 05:34:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756104AbZEHJeW
+	id S1762686AbZEHJe5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 05:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755109AbZEHJeo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 05:34:22 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53376 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753962AbZEHJeU (ORCPT
+	Fri, 8 May 2009 05:34:44 -0400
+Received: from rv-out-0506.google.com ([209.85.198.238]:14788 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756104AbZEHJem (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 05:34:20 -0400
-Date: Fri, 8 May 2009 10:31:25 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: akataria@vmware.com
-Cc: Chris Snook <chris.snook@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-Message-ID: <20090508103125.00121311@lxorguk.ukuu.org.uk>
-In-Reply-To: <1241734784.32495.31.camel@alok-dev1>
-References: <1241462661.412.8.camel@alok-dev1>
-	<4A00ADDE.9000908@zytor.com>
-	<1241560625.8665.17.camel@alok-dev1>
-	<13a12eea0905070935o5abbeb49n8320d06c15b19b56@mail.gmail.com>
-	<1241715373.32495.21.camel@alok-dev1>
-	<13a12eea0905071329s79fb262tf89ed901a77726ae@mail.gmail.com>
-	<20090507213403.3a75a6fb@lxorguk.ukuu.org.uk>
-	<1241734784.32495.31.camel@alok-dev1>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Fri, 8 May 2009 05:34:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=gun7xk8Kowmu/XSccyW+wEAo0pzfBvs1YLuHcASExe5Dbzeoa5rKzhf2KlWyVUYf1o
+         7/II17Weq5Y/1sJB/cow+jvBZPrGJ1d0k0QXOqwTXN5Zr8L9oH1g1HAbbdbaJUM/rUkQ
+         6jLUHVSPY+jxzHm6UrFuEeKvhh0daeydiuZvk=
+Date: Fri, 8 May 2009 18:34:27 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Minchan Kim <minchan.kim@gmail.com>, Johannes Weiner <hannes@cmpxchg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
+ class citizen
+Message-Id: <20090508183427.f313770f.minchan.kim@barrios-desktop>
+In-Reply-To: <20090508080921.GA25411@localhost>
+References: <20090430215034.4748e615@riellaptop.surriel.com>
+	<20090430195439.e02edc26.akpm@linux-foundation.org>
+	<49FB01C1.6050204@redhat.com>
+	<20090501123541.7983a8ae.akpm@linux-foundation.org>
+	<20090503031539.GC5702@localhost>
+	<1241432635.7620.4732.camel@twins>
+	<20090507121101.GB20934@localhost>
+	<20090507151039.GA2413@cmpxchg.org>
+	<20090508030209.GA8892@localhost>
+	<20090508163042.ba4ef116.minchan.kim@barrios-desktop>
+	<20090508080921.GA25411@localhost>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -36,21 +52,129 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > As a side note Red Hat ships runtime configurable tick behaviour in RHEL
-> > these days. HZ is fixed but the ticks can be bunched up. That was done as
-> > a quick fix to keep stuff portable but its a lot more sensible than
-> > randomly messing with the HZ value and its not much code either.
+On Fri, 8 May 2009 16:09:21 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
+
+> On Fri, May 08, 2009 at 03:30:42PM +0800, Minchan Kim wrote:
+> > Hi, Let me have a question. 
 > > 
-> Hi Alan, 
+> > On Fri, 8 May 2009 11:02:09 +0800
+> > Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > 
+> > > On Thu, May 07, 2009 at 11:10:39PM +0800, Johannes Weiner wrote:
+> > > > On Thu, May 07, 2009 at 08:11:01PM +0800, Wu Fengguang wrote:
+> > > > > Introduce AS_EXEC to mark executables and their linked libraries, and to
+> > > > > protect their referenced active pages from being deactivated.
+> > > > > 
+> > > > > CC: Elladan <elladan@eskimo.com>
+> > > > > CC: Nick Piggin <npiggin@suse.de>
+> > > > > CC: Johannes Weiner <hannes@cmpxchg.org>
+> > > > > CC: Christoph Lameter <cl@linux-foundation.org>
+> > > > > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > > > Acked-by: Peter Zijlstra <peterz@infradead.org>
+> > > > > Acked-by: Rik van Riel <riel@redhat.com>
+> > > > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > > > > ---
+> > > > >  include/linux/pagemap.h |    1 +
+> > > > >  mm/mmap.c               |    2 ++
+> > > > >  mm/nommu.c              |    2 ++
+> > > > >  mm/vmscan.c             |   35 +++++++++++++++++++++++++++++++++--
+> > > > >  4 files changed, 38 insertions(+), 2 deletions(-)
+> > > > > 
+> > > > > --- linux.orig/include/linux/pagemap.h
+> > > > > +++ linux/include/linux/pagemap.h
+> > > > > @@ -25,6 +25,7 @@ enum mapping_flags {
+> > > > >  #ifdef CONFIG_UNEVICTABLE_LRU
+> > > > >  	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
+> > > > >  #endif
+> > > > > +	AS_EXEC		= __GFP_BITS_SHIFT + 4,	/* mapped PROT_EXEC somewhere */
+> > > > >  };
+> > > > >  
+> > > > >  static inline void mapping_set_error(struct address_space *mapping, int error)
+> > > > > --- linux.orig/mm/mmap.c
+> > > > > +++ linux/mm/mmap.c
+> > > > > @@ -1194,6 +1194,8 @@ munmap_back:
+> > > > >  			goto unmap_and_free_vma;
+> > > > >  		if (vm_flags & VM_EXECUTABLE)
+> > > > >  			added_exe_file_vma(mm);
+> > > > > +		if (vm_flags & VM_EXEC)
+> > > > > +			set_bit(AS_EXEC, &file->f_mapping->flags);
+> > > > >  	} else if (vm_flags & VM_SHARED) {
+> > > > >  		error = shmem_zero_setup(vma);
+> > > > >  		if (error)
+> > > > > --- linux.orig/mm/nommu.c
+> > > > > +++ linux/mm/nommu.c
+> > > > > @@ -1224,6 +1224,8 @@ unsigned long do_mmap_pgoff(struct file 
+> > > > >  			added_exe_file_vma(current->mm);
+> > > > >  			vma->vm_mm = current->mm;
+> > > > >  		}
+> > > > > +		if (vm_flags & VM_EXEC)
+> > > > > +			set_bit(AS_EXEC, &file->f_mapping->flags);
+> > > > >  	}
+> > > > 
+> > > > I find it a bit ugly that it applies an attribute of the memory area
+> > > > (per mm) to the page cache mapping (shared).  Because this in turn
+> > > > means that the reference through a non-executable vma might get the
+> > > > pages rotated just because there is/was an executable mmap around.
+> > > 
+> > > Right, the intention was to identify a whole executable/library file,
+> > > eg. /bin/bash or /lib/libc-2.9.so, covering both _text_ and _data_
+> > > sections.
+> > 
+> > But, your patch is care just text section. 
+> > Do I miss something ?
 > 
-> I guess you are talking about the tick_divider patch ? 
-> And that's still same as reducing the HZ value only that it can be done
-> dynamically (boot time), right ? 
+> This patch actually protects the mapped pages in the whole executable
+> file.  Sorry, the title was a bit misleading..
 
-Yes - which has the advantage that you can select different behaviours
-rather than distributions having to build with HZ=1000 either for
-compatibility or responsiveness can still allow users to drop to a lower
-HZ value if doing stuff like HPC.
+Yeah. I was confusing with title. 
+Thanks for quick reply. :)
 
-Basically it removes the need to argue about it at build time and lets
-the user decide.
+> > > > >  	down_write(&nommu_region_sem);
+> > > > > --- linux.orig/mm/vmscan.c
+> > > > > +++ linux/mm/vmscan.c
+> > > > > @@ -1230,6 +1230,7 @@ static void shrink_active_list(unsigned 
+> > > > >  	unsigned long pgmoved;
+> > > > >  	unsigned long pgscanned;
+> > > > >  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
+> > > > > +	LIST_HEAD(l_active);
+> > > > >  	LIST_HEAD(l_inactive);
+> > > > >  	struct page *page;
+> > > > >  	struct pagevec pvec;
+> > > > > @@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned 
+> > > > >  
+> > > > >  		/* page_referenced clears PageReferenced */
+> > > > >  		if (page_mapping_inuse(page) &&
+> > > > > -		    page_referenced(page, 0, sc->mem_cgroup))
+> > > > > +		    page_referenced(page, 0, sc->mem_cgroup)) {
+> > > > > +			struct address_space *mapping = page_mapping(page);
+> > > > > +
+> > > > >  			pgmoved++;
+> > > > > +			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
+> > > > > +				list_add(&page->lru, &l_active);
+> > > > > +				continue;
+> > > > > +			}
+> > > > > +		}
+> > > > 
+> > > > Since we walk the VMAs in page_referenced anyway, wouldn't it be
+> > > > better to check if one of them is executable?  This would even work
+> > > > for executable anon pages.  After all, there are applications that cow
+> > > > executable mappings (sbcl and other language environments that use an
+> > > > executable, run-time modified core image come to mind).
+> > > 
+> > > The page_referenced() path will only cover the _text_ section.  But
+> > 
+> > Why did you said that "The page_referenced() path will only cover the ""_text_"" section" ? 
+> > Could you elaborate please ?
+> 
+> I was under the wild assumption that only the _text_ section will be
+> PROT_EXEC mapped.  No?
+
+Yes. I support your idea. 
+
+> Thanks,
+> Fengguang
+
+-- 
+Kinds Regards
+Minchan Kim
