@@ -1,68 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbZEHMO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbZEHMPa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759438AbZEHMO7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 08:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZEHMOv
+	id S1760775AbZEHMPa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 08:15:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758575AbZEHMPI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 08:14:51 -0400
-Received: from mga09.intel.com ([134.134.136.24]:27530 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751207AbZEHMOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 08:14:50 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,317,1239001200"; 
-   d="scan'208";a="513736786"
-Date: Fri, 8 May 2009 20:14:48 +0800
-From: Shaohua Li <shaohua.li@intel.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] x86 MCE: shut up lockdep warning
-Message-ID: <20090508121448.GA1807@sli10-desk.sh.intel.com>
-References: <1241754429.4444.12.camel@sli10-desk.sh.intel.com> <20090508064517.GX23223@one.firstfloor.org> <20090508091015.GA2038@elte.hu> <20090508093757.GY23223@one.firstfloor.org>
+	Fri, 8 May 2009 08:15:08 -0400
+Received: from smtp.infotech.no ([82.134.31.41]:58819 "EHLO
+	elrond2.infotech.no" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758804AbZEHMPE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 08:15:04 -0400
+Message-ID: <4A042243.1010608@interlog.com>
+Date: Fri, 08 May 2009 14:14:59 +0200
+From: Douglas Gilbert <dgilbert@interlog.com>
+Reply-To: dgilbert@interlog.com
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090508093757.GY23223@one.firstfloor.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Norman Diamond <n0diamond@yahoo.co.jp>
+CC: Alan Cox <alan@lxorguk.ukuu.org.uk>, linux-kernel@vger.kernel.org,
+       linux-scsi@vger.kernel.org
+Subject: Re: sg timeout problem
+References: <BB8F41726E2941CEB399F732BB3ED9E5@DIAMOND8600> <20090506103852.19cb69b9@lxorguk.ukuu.org.uk> <AB775258E58247F6A0960B1AFEC0E103@DIAMOND8600>
+In-Reply-To: <AB775258E58247F6A0960B1AFEC0E103@DIAMOND8600>
+Content-Type: text/plain; charset=iso-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 05:37:57PM +0800, Andi Kleen wrote:
-> >  - it works around a lockdep warning
-> > 
-> >  - you did not realize the real bug while the warning was plain
+Norman Diamond wrote:
+>>> But if sg is running on top of an actual SCSI driver, someone aborts the
+>>> ioctl after 3 seconds.  The ioctl returns success even though the
+>>> operation didn't complete.  I tried this with two Adaptec drivers and 
+>>> one
+>>> NinjaSCSI driver with 100% repro.
+>>>
+>>> What am I missing?  I need the call to run to completion.
+>>
+>> If you set it to the max of a signed int does it behave, or to a large
+>> value thats well under the limit. That will help tell if there is a
+>> problem with sign handling in the scsi code somewhere or it is getting
+>> multiplied up for some reason.
 > 
-> Well I'm not sure you understood it either :)  Actually I'm pretty
-> sure you did not. It would have been good if you had awaited proper
-> review comments before commiting your patch.
+> I have the impression now that the drives are lying and it's not the fault
+> of the drivers or cards.  The same problem occured with a fourth card and a
+> non-Linux system.
 > 
-> I don't think here's really a real bug because cpu hotunplug is single threaded
-> anyways (cpu add remove lock) and we don't do multiple discoveries in parallel.
-> 
-> The reason the lock is there is only during bringup with multiple CPUs
-> doing this in parallel on initial bootup. But we can't race against cpu 
-> hotunplug there because there's not hotunplug before the system
-> is up with all configured CPUs.
-> 
-> So I think any way of shutting up lockdep is fine here and your
-> patch is overkill and disables interrupts unnecessarily. 
-yes, this isn't a real bug, but just a false warning from lockdep. It's
-my fault I didn't point this out first.
+> Anyway I also tried changing the timeout to 86400000 milliseconds (one day)
+> and it made no difference.  So again I stop blaming the drivers.
 
-> >  - plus the patch introduces a fragile (because complex)
-> >    work_on_cpu() call into the CPU hotplug path, which could have 
-> >    caused followup regressions.
-> 
-> That's a reasonable point,  but doesn't seem strong enough to
-> do full irq disabling. A better fix would be to find some other
-> way to shut off this lockdep warning for this case. Is there
-> such a way?
-I tried to assign a lockdep class to the mce lock, which is the usual
-way to avoid lockdep warning, but it appears not working here.
+Norman,
+I'm not sure what version or distro of Linux you have
+but I just did this quick test on Ubuntu 9.04 in which
+a kernel tick seems to be around 4 milliseconds:
 
-Thanks,
-Shaohua
+$  uname -a
+Linux zink 2.6.28-11-generic #42-Ubuntu SMP Fri Apr 17 01:57:59 UTC 2009 i686 
+GNU/Linux
+$
+$ modprobe scsi_debug delay=1000
+$ lsscsi -g
+[7:0:0:0]    disk    Linux    scsi_debug       0004  /dev/sdb   /dev/sg2
+
+$ time sg_readcap /dev/sg2
+Read Capacity results:
+    Last logical block address=16383 (0x3fff), Number of blocks=16384
+    Logical block length=512 bytes
+Hence:
+    Device size: 8388608 bytes, 8.0 MiB, 0.01 GB
+
+real	0m3.999s
+user	0m0.000s
+sys	0m0.000s
+$
+
+
+See 'modinfo scsi_debug' for more about the arguments to the
+scsi_debug driver. If the delay is too long then the kernel
+may timeout registering the pseudo device. I picked 4 seconds
+because you noted a failure above 3 seconds. The timeout on
+sg_inq is set at 60 seconds.
+
+Doug Gilbert
+
+
+
+
