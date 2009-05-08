@@ -1,74 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757407AbZEHLfd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757360AbZEHLjF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757407AbZEHLfd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 07:35:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752434AbZEHLfY
+	id S1757360AbZEHLjF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 07:39:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZEHLiw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 07:35:24 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:42999 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752214AbZEHLfX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 07:35:23 -0400
-Date: Fri, 8 May 2009 07:35:22 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: Li Zefan <lizf@cn.fujitsu.com>, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] tracing/events: clean up for
- ftrace_set_clr_event()
-In-Reply-To: <20090508105013.GA6417@nowhere>
-Message-ID: <alpine.DEB.2.00.0905080727290.28378@gandalf.stny.rr.com>
-References: <4A03998E.3020503@cn.fujitsu.com> <20090508105013.GA6417@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 8 May 2009 07:38:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:46576 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752821AbZEHLiv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 07:38:51 -0400
+Message-ID: <4A04196E.7090908@redhat.com>
+Date: Fri, 08 May 2009 14:37:18 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Marcelo Tosatti <mtosatti@redhat.com>
+CC: Gregory Haskins <ghaskins@novell.com>, Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com> <20090507233503.GA9103@amt.cnet> <20090507234311.GA9517@amt.cnet> <4A03E579.8030201@redhat.com> <20090508103253.GC3011@amt.cnet>
+In-Reply-To: <20090508103253.GC3011@amt.cnet>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Marcelo Tosatti wrote:
+>>> Also it would be interesting to see the MMIO comparison with EPT/NPT,
+>>> it probably sucks much less than what you're seeing.
+>>>   
+>>>       
+>> Why would NPT improve mmio?  If anything, it would be worse, since the  
+>> processor has to do the nested walk.
+>>     
+>
+> I suppose the hardware is much more efficient than walk_addr? There's
+> all this kmalloc, spinlock, etc overhead in the fault path.
+>   
 
-On Fri, 8 May 2009, Frederic Weisbecker wrote:
-> >  
-> > -static int ftrace_set_clr_event(char *buf, int set)
-> > +/*
-> > + * __ftrace_set_clr_event(NULL, NULL, NULL, set) will set/unset all events.
-> > + */
-> > +static int __ftrace_set_clr_event(const char *match, const char *sub,
-> > +				  const char *event, int set)
-> >  {
-> >  	struct ftrace_event_call *call;
-> > +	int ret;
-> > +
-> > +	mutex_lock(&event_mutex);
-> > +	list_for_each_entry(call, &ftrace_events, list) {
-> > +
-> > +		if (!call->name || !call->regfunc)
-> > +			continue;
-> > +
-> > +		if (match &&
-> > +		    strcmp(match, call->name) != 0 &&
-> > +		    strcmp(match, call->system) != 0)
-> > +			continue;
-> > +
-> > +		if (sub && strcmp(sub, call->system) != 0)
-> > +			continue;
-> > +
-> > +		if (event && strcmp(event, call->name) != 0)
-> > +			continue;
-> 
-> 
-> Neat: You can simply use !strcmp(...)
+mmio still has to do a walk_addr, even with npt.  We don't take the mmu 
+lock during walk_addr.
 
-Hehe, no he can't. It would be "strcmp(...)" for the true case. This is 
-exactly why I prefer to use "strcmp(...) != 0" over "!strcmp(...)". 
-Because, like you, I've confused "!strcmp(...)" too many times as "not a 
-match" when it in fact means "is a match".
 
-I've made this mistake enough that I've given up on using just "strcmp" or 
-"!strcmp". "strcmp() != 0" and "strcmp() == 0" show what you want much 
-better.
-
--- Steve
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
