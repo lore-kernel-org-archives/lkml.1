@@ -1,26 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762542AbZEHAh5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754772AbZEHAi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762542AbZEHAh5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:37:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762472AbZEHAR1
+	id S1754772AbZEHAi1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761550AbZEHAR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:17:27 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:48342
+	Thu, 7 May 2009 20:17:28 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:48343
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S932352AbZEHARW (ORCPT
+	with ESMTP id S932354AbZEHARX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 20:17:22 -0400
+	Thu, 7 May 2009 20:17:23 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 1/9] xen: make sure swiotlb allocation is physically contigious
-Date: Thu,  7 May 2009 17:17:14 -0700
-Message-Id: <1241741842-7966-2-git-send-email-jeremy@goop.org>
+Subject: [PATCH 2/9] xen swiotlb: fixup swiotlb is chunks smaller than MAX_CONTIG_ORDER
+Date: Thu,  7 May 2009 17:17:15 -0700
+Message-Id: <1241741842-7966-3-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1241741842-7966-1-git-send-email-jeremy@goop.org>
 References: <1241741842-7966-1-git-send-email-jeremy@goop.org>
@@ -28,138 +28,70 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: make swiotlb allocation suitable for Xen
+From: Ian Campbell <ian.campbell@citrix.com>
 
-When allocating the swiotlb buffer under Xen, make sure the memory is
-physically contiguous so that its really suitable for DMA.
+Impact: bugfix
 
-Do this by allocating the memory as usual, but then call a Xen
-function to rearrange the underlying pages to be physically
+Don't attempt to make larger memory ranges than Xen can cope with
 contiguous.
 
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- arch/x86/kernel/pci-swiotlb.c |   10 ----------
- arch/x86/xen/Makefile         |    1 +
- arch/x86/xen/pci-swiotlb.c    |   27 +++++++++++++++++++++++++++
- drivers/pci/xen-iommu.c       |   16 ++++++++++++++++
- include/xen/swiotlb.h         |    6 ++++++
- 5 files changed, 50 insertions(+), 10 deletions(-)
- create mode 100644 arch/x86/xen/pci-swiotlb.c
- create mode 100644 include/xen/swiotlb.h
+ drivers/pci/xen-iommu.c |   27 ++++++++++++++++++---------
+ 1 files changed, 18 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-index 34f12e9..bc09da7 100644
---- a/arch/x86/kernel/pci-swiotlb.c
-+++ b/arch/x86/kernel/pci-swiotlb.c
-@@ -13,16 +13,6 @@
- 
- int swiotlb __read_mostly;
- 
--void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
--{
--	return alloc_bootmem_low_pages(size);
--}
--
--void *swiotlb_alloc(unsigned order, unsigned long nslabs)
--{
--	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
--}
--
- dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
- {
- 	return paddr;
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index c4cda96..caede49 100644
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -12,3 +12,4 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
- obj-$(CONFIG_SMP)		+= smp.o spinlock.o
- obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
- obj-$(CONFIG_XEN_DOM0)		+= vga.o
-+obj-$(CONFIG_PCI_XEN)		+= pci-swiotlb.o
-\ No newline at end of file
-diff --git a/arch/x86/xen/pci-swiotlb.c b/arch/x86/xen/pci-swiotlb.c
-new file mode 100644
-index 0000000..25f0365
---- /dev/null
-+++ b/arch/x86/xen/pci-swiotlb.c
-@@ -0,0 +1,27 @@
-+#include <linux/bootmem.h>
-+#include <linux/gfp.h>
-+
-+#include <xen/swiotlb.h>
-+#include <asm/xen/hypervisor.h>
-+
-+/* 
-+ * This file defines overrides for weak functions with default
-+ * implementations in lib/swiotlb.c.
-+ */
-+
-+void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
-+{
-+	void *ret = alloc_bootmem_low_pages(size);
-+
-+	if (ret && xen_pv_domain())
-+		xen_swiotlb_fixup(ret, size, nslabs);
-+
-+	return ret;
-+}
-+
-+void *swiotlb_alloc(unsigned order, unsigned long nslabs)
-+{
-+	/* Never called on x86.  Warn, just in case. */
-+	WARN_ON(1);
-+	return NULL;
-+}
 diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
-index 32a8b49..c593058 100644
+index c593058..b9b4620 100644
 --- a/drivers/pci/xen-iommu.c
 +++ b/drivers/pci/xen-iommu.c
-@@ -12,6 +12,7 @@
- #include <xen/grant_table.h>
- #include <xen/page.h>
- #include <xen/xen-ops.h>
-+#include <xen/swiotlb.h>
+@@ -5,6 +5,7 @@
+ #include <linux/module.h>
+ #include <linux/version.h>
+ #include <linux/scatterlist.h>
++#include <linux/swiotlb.h>
+ #include <linux/io.h>
+ #include <linux/bug.h>
  
- #include <asm/iommu.h>
- #include <asm/swiotlb.h>
-@@ -34,6 +35,21 @@ do {							\
- 	(unsigned long long)addr + size);		\
+@@ -36,19 +37,27 @@ do {							\
  } while (0)
  
+ 
++static int max_dma_bits = 32;
 +
-+void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
-+{
-+	unsigned order = get_order(size);
+ void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
+ {
+-	unsigned order = get_order(size);
+-
+-	printk(KERN_DEBUG "xen_swiotlb_fixup: buf=%p size=%zu order=%u\n",
+-		buf, size, order);
+-
+-	if (WARN_ON(size != (PAGE_SIZE << order)))
+-		return;
+-
+-	if (xen_create_contiguous_region((unsigned long)buf,
+-					 order, 0xffffffff))
+-		printk(KERN_ERR "xen_create_contiguous_region failed\n");
++	int i, rc;
++	int dma_bits;
 +
-+	printk(KERN_DEBUG "xen_swiotlb_fixup: buf=%p size=%zu order=%u\n",
-+		buf, size, order);
++	printk(KERN_DEBUG "xen_swiotlb_fixup: buf=%p size=%zu\n",
++		buf, size);
 +
-+	if (WARN_ON(size != (PAGE_SIZE << order)))
-+		return;
-+
-+	if (xen_create_contiguous_region((unsigned long)buf,
-+					 order, 0xffffffff))
-+		printk(KERN_ERR "xen_create_contiguous_region failed\n");
-+}
++	dma_bits = get_order(IO_TLB_SEGSIZE << IO_TLB_SHIFT) + PAGE_SHIFT;
++	for (i = 0; i < nslabs; i += IO_TLB_SEGSIZE) {
++		do {
++			rc = xen_create_contiguous_region(
++				(unsigned long)buf + (i << IO_TLB_SHIFT),
++				get_order(IO_TLB_SEGSIZE << IO_TLB_SHIFT),
++				dma_bits);
++		} while (rc && dma_bits++ < max_dma_bits);
++		if (rc)
++			panic(KERN_ERR "xen_create_contiguous_region failed\n");
++	}
+ }
  static inline int address_needs_mapping(struct device *hwdev,
  						dma_addr_t addr)
- {
-diff --git a/include/xen/swiotlb.h b/include/xen/swiotlb.h
-new file mode 100644
-index 0000000..67b7b42
---- /dev/null
-+++ b/include/xen/swiotlb.h
-@@ -0,0 +1,6 @@
-+#ifndef _XEN_SWIOTLB_H
-+#define _XEN_SWIOTLB_H
-+
-+extern void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs);
-+
-+#endif /* _XEN_SWIOTLB_H */
 -- 
 1.6.0.6
 
