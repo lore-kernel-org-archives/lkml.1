@@ -1,53 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756002AbZEHPHT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754281AbZEHPI7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756002AbZEHPHT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 11:07:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZEHPHD
+	id S1754281AbZEHPI7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 11:08:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753206AbZEHPIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 11:07:03 -0400
-Received: from mail-qy0-f129.google.com ([209.85.221.129]:33388 "EHLO
-	mail-qy0-f129.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbZEHPG7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 11:06:59 -0400
-X-Greylist: delayed 434 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 May 2009 11:06:59 EDT
-Message-ID: <4A0448DF.90705@codemonkey.ws>
-Date: Fri, 08 May 2009 09:59:43 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
+	Fri, 8 May 2009 11:08:49 -0400
+Received: from gw.goop.org ([64.81.55.164]:44086 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751481AbZEHPIt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 11:08:49 -0400
+Message-ID: <4A044B00.7060003@goop.org>
+Date: Fri, 08 May 2009 08:08:48 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Gregory Haskins <ghaskins@novell.com>, Chris Wright <chrisw@sous-sol.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <4A02D40D.7060307@redhat.com>
-In-Reply-To: <4A02D40D.7060307@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 5/8] xen/i386: make sure initial VGA/ISA mappings are
+ not overridden
+References: <1241727902-3176-1-git-send-email-jeremy@goop.org> <1241727902-3176-6-git-send-email-jeremy@goop.org> <20090508105728.GB11596@elte.hu>
+In-Reply-To: <20090508105728.GB11596@elte.hu>
+X-Enigmail-Version: 0.95.6
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 >
-> Hmm, reminds me of something I thought of a while back.
+>   
+>> From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>>
+>> arch/x86/mm/init_32.c overrides the ISA/VGA mappings with direct mappings
+>> which do not have _PAGE_IOMAP set, thereby making the ISA space inaccessible.
+>>
+>> This patch adds to the existing hack to make sure the 
+>> pre-constructed ISA mappings are not incorrectly overwritten.
+>>
+>> This makes 32-bit dom0 VGA work properly.
+>>     
 >
-> We could implement an 'mmio hypercall' that does mmio reads/writes via 
-> a hypercall instead of an mmio operation.  That will speed up mmio for 
-> emulated devices (say, e1000).  It's easy to hook into Linux 
-> (readl/writel), is pci-friendly, non-x86 friendly, etc.
+> I'm wondering, should we add this fix to .30 as well, is there any 
+> relevancy beyond dom0?
+>   
 
-By the time you get down to userspace for an emulated device, that 2us 
-difference between mmio and hypercalls is simply not going to make a 
-difference.  I'm surprised so much effort is going into this, is there 
-any indication that this is even close to a bottleneck in any circumstance?
+No, it only matters if the ISA region is mapping real hardware.  For 
+domU we set up a set of dummy maps for ISA to mop up any stray 
+references, but they have no connection to underlying hardware.
 
-We have much, much lower hanging fruit to attack.  The basic fact that 
-we still copy data multiple times in the networking drivers is clearly 
-more significant than a few hundred nanoseconds that should occur less 
-than once per packet.
+This area is all a bit ugly, and I hope to ultimately address it by 
+making 32 and 64-bit use the same code for setting up the kernel 
+mappings (as the 64-bit code doesn't try to double-map the ISA area).
 
-Regards,
+>> Thanks to Gerd Hoffman for pointing this out.
+>>     
+>
+> Please add Reported-by lines in such cases. That way not only does 
+> the reporting get reported prominently, but the tip-bot will Cc: 
+> Gerd too on the commit notification too. (which will sometimes spur 
+> further comments - while a commit hidden somewhere might not)
+>   
 
-Anthony Liguori
+OK.  I guess Diagnosed-by: would be the most appropriate tag in this case.
+
+>> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+>>     
+>
+> Please also add impact-footers to all commits you queue up, if you 
+> want me to pull your tree directly. I can only guess at the impact 
+> of this one, is it:
+>
+> [ Impact: fix dom0-Xen-guest boot crash ]
+>
+> or:
+>
+> [ Impact: fix dom0-Xen-guest non-working VGA console ]
+>
+> ?
+>
+> (Please look at latest tip/master for examples about various impact 
+> lines, their precise format, and what we try to describe in them and 
+> how.)
+>   
+
+OK, they're footers now?
+
+Do you want me to respin these patches and repost?
+
+    J
