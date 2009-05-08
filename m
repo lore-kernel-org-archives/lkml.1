@@ -1,59 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755874AbZEHWgZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762914AbZEHWjA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755874AbZEHWgZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 18:36:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZEHWgQ
+	id S1762914AbZEHWjA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 18:39:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZEHWit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 18:36:16 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:50299 "EHLO crca.org.au"
+	Fri, 8 May 2009 18:38:49 -0400
+Received: from mail.vyatta.com ([76.74.103.46]:42497 "EHLO mail.vyatta.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752619AbZEHWgQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 18:36:16 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
-       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
-In-Reply-To: <200905082303.02677.rjw@sisk.pl>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	 <1241746459.19600.246.camel@nigel-laptop>
-	 <200905082144.57955.bzolnier@gmail.com>  <200905082303.02677.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sat, 09 May 2009 08:37:18 +1000
-Message-Id: <1241822238.19600.336.camel@nigel-laptop>
+	id S1752350AbZEHWis (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 18:38:48 -0400
+Date: Fri, 8 May 2009 15:38:42 -0700
+From: Stephen Hemminger <shemminger@vyatta.com>
+To: David Miller <davem@davemloft.net>
+Cc: jpirko@redhat.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jgarzik@pobox.com, shemminger@linux-foundation.org,
+       bridge@lists.linux-foundation.org, fubar@us.ibm.com,
+       bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
+Subject: Re: [PATCH] net: introduce a list of device addresses dev_addr_list
+ (v6)
+Message-ID: <20090508153842.65ce3bed@s6510>
+In-Reply-To: <20090505.122718.51237316.davem@davemloft.net>
+References: <20090418085848.GC3370@psychotron.englab.brq.redhat.com>
+	<20090504111417.GE3402@psychotron.englab.brq.redhat.com>
+	<20090505124827.GB3473@psychotron.englab.brq.redhat.com>
+	<20090505.122718.51237316.davem@davemloft.net>
+Organization: Vyatta
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Tue, 05 May 2009 12:27:18 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-On Fri, 2009-05-08 at 23:03 +0200, Rafael J. Wysocki wrote:
-> Also, I think we should aim at targets that are possible to achieve.
-> Namely,
-> it is clear to me that various parts of TuxOnIce will have to be reviewed and
-> commented by the memory management people, the file systems people, the
-> architecture-dependent code maintainers and so on, and it is much easier to
-> get someone to have a look at a relatively short series of patches doing one
-> specific thing at a time than to have him review an entire subsystem.
+> From: Jiri Pirko <jpirko@redhat.com>
+> Date: Tue, 5 May 2009 14:48:28 +0200
+> 
+> > This patch introduces a new list in struct net_device and brings a set of
+> > functions to handle the work with device address list. The list is a replacement
+> > for the original dev_addr field and because in some situations there is need to
+> > carry several device addresses with the net device. To be backward compatible,
+> > dev_addr is made to point to the first member of the list so original drivers
+> > sees no difference.
+> > 
+> > Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+> 
+> Applied to net-next-2.6, thanks!
+> --
+> To unsubscribe from this list: send the line "unsubscribe netdev" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Seeking review is why I've posted the code.
-
-I'm not sure what file systems people have to review in what I've
-posted.
-
-I guess the memory management part would be the separate saving of LRU
-pages and the means by which GEM pages are tracked.
-
-Re architecture dependent code maintainers: I don't know what they'd
-have to do. Nothing in arch/ is touched by the patches I posted.
-
-Regards,
-
-Nigel
-
+Not sure if this is such a good idea since the purpose of this was to fix
+a bonding/bridging interaction, but it breaks STP on bridging.
