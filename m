@@ -1,245 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757966AbZEHE4P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759804AbZEHE4c@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757966AbZEHE4P (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 00:56:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbZEHEz5
+	id S1759804AbZEHE4c (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 00:56:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754946AbZEHE4G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 00:55:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52133 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753446AbZEHEz4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 00:55:56 -0400
-Message-ID: <4A03BB57.3040807@redhat.com>
-Date: Fri, 08 May 2009 00:55:51 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090324 Fedora/3.0-2.1.beta2.fc11 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>
-CC: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>
-Subject: [PATCH 1/2] crypto: mark algs allowed in fips mode
-References: <200905071441.27093.jarod@redhat.com> <200905071527.59809.jarod@redhat.com> <20090508021233.GA20388@gondor.apana.org.au>
-In-Reply-To: <20090508021233.GA20388@gondor.apana.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 8 May 2009 00:56:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54103 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757314AbZEHE4F (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 00:56:05 -0400
+Date: Thu, 7 May 2009 21:54:27 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 4/4] ring-buffer: change WARN_ON from checking
+ preempt_count to preemptible
+Message-Id: <20090507215427.4256cc3c.akpm@linux-foundation.org>
+In-Reply-To: <20090508043331.726786617@goodmis.org>
+References: <20090508043250.372421144@goodmis.org>
+	<20090508043331.726786617@goodmis.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Set the fips_allowed flag in testmgr.c's alg_test_descs[] for algs
-that are allowed to be used when in fips mode.
+On Fri, 08 May 2009 00:32:54 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
 
-One caveat: des isn't actually allowed anymore, but des (and thus also
-ecb(des)) has to be permitted, because disallowing them results in
-des3_ede being unable to properly register (see des module init func).
+> From: Steven Rostedt <srostedt@redhat.com>
+> 
+> There's a WARN_ON in the ring buffer code that makes sure preemption
+> is disabled. It checks "!preempt_count()". But when CONFIG_PREEMPT is not
+> enabled, preempt_count() is always zero, and this will trigger the warning.
+> 
+> [ Impact: prevent false warning on non preemptible kernels ]
+> 
+> Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> ---
+>  kernel/trace/ring_buffer.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> index 3ae5ccf..3611706 100644
+> --- a/kernel/trace/ring_buffer.c
+> +++ b/kernel/trace/ring_buffer.c
+> @@ -1688,7 +1688,7 @@ void ring_buffer_discard_commit(struct ring_buffer *buffer,
+>  	 * committed yet. Thus we can assume that preemption
+>  	 * is still disabled.
+>  	 */
+> -	RB_WARN_ON(buffer, !preempt_count());
+> +	RB_WARN_ON(buffer, preemptible());
+>  
+>  	cpu = smp_processor_id();
+>  	cpu_buffer = buffer->buffers[cpu];
 
-Also, crc32 isn't technically on the fips approved list, but I think
-it gets used in various places that necessitate it being allowed.
-
-This list is based on
-http://csrc.nist.gov/groups/STM/cavp/index.html
-
-Important note: allowed/approved here does NOT mean "validated", just
-that its an alg that *could* be validated.
-
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
-
----
- crypto/testmgr.c |   23 +++++++++++++++++++++++
- 1 files changed, 23 insertions(+), 0 deletions(-)
-
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index f4cc178..51bae62 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -94,6 +94,7 @@ struct alg_test_desc {
- 	const char *alg;
- 	int (*test)(const struct alg_test_desc *desc, const char *driver,
- 		    u32 type, u32 mask);
-+	int fips_allowed;	/* set if alg is allowed in fips mode */
- 
- 	union {
- 		struct aead_test_suite aead;
-@@ -1432,6 +1433,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	{
- 		.alg = "ansi_cprng",
- 		.test = alg_test_cprng,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cprng = {
- 				.vecs = ansi_cprng_aes_tv_template,
-@@ -1441,6 +1443,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "cbc(aes)",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -1516,6 +1519,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "cbc(des3_ede)",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -1546,6 +1550,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "ccm(aes)",
- 		.test = alg_test_aead,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.aead = {
- 				.enc = {
-@@ -1561,6 +1566,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "crc32c",
- 		.test = alg_test_crc32c,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = crc32c_tv_template,
-@@ -1570,6 +1576,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "ctr(aes)",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -1615,6 +1622,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "ecb(aes)",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -1720,6 +1728,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "ecb(des)",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -1735,6 +1744,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "ecb(des3_ede)",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -1870,6 +1880,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "gcm(aes)",
- 		.test = alg_test_aead,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.aead = {
- 				.enc = {
-@@ -1912,6 +1923,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "hmac(sha1)",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = hmac_sha1_tv_template,
-@@ -1921,6 +1933,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "hmac(sha224)",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = hmac_sha224_tv_template,
-@@ -1930,6 +1943,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "hmac(sha256)",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = hmac_sha256_tv_template,
-@@ -1939,6 +1953,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "hmac(sha384)",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = hmac_sha384_tv_template,
-@@ -1948,6 +1963,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "hmac(sha512)",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = hmac_sha512_tv_template,
-@@ -2029,6 +2045,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "rfc3686(ctr(aes))",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -2044,6 +2061,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "rfc4309(ccm(aes))",
- 		.test = alg_test_aead,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.aead = {
- 				.enc = {
-@@ -2106,6 +2124,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "sha1",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = sha1_tv_template,
-@@ -2115,6 +2134,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "sha224",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = sha224_tv_template,
-@@ -2124,6 +2144,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "sha256",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = sha256_tv_template,
-@@ -2133,6 +2154,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "sha384",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = sha384_tv_template,
-@@ -2142,6 +2164,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "sha512",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = sha512_tv_template,
-
-
--- 
-Jarod Wilson
-jarod@redhat.com
-
+smp_processor_id() will warn too.
