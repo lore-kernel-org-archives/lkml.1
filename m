@@ -1,85 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763934AbZEHSu2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764159AbZEHSvU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763934AbZEHSu2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 14:50:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755267AbZEHSuQ
+	id S1764159AbZEHSvU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 14:51:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755577AbZEHSvG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 14:50:16 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:58258 "EHLO havoc.gtf.org"
+	Fri, 8 May 2009 14:51:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44918 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753522AbZEHSuP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 14:50:15 -0400
-Date: Fri, 8 May 2009 14:50:15 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: viro@zeniv.linux.org.uk, mingo@elte.hu,
-       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
-Subject: [RFC PATCH 2/2] kernel/sched.c: VLA in middle of struct
-Message-ID: <20090508185015.GA11320@havoc.gtf.org>
-References: <20090508184838.GA11157@havoc.gtf.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090508184838.GA11157@havoc.gtf.org>
-User-Agent: Mutt/1.4.2.2i
+	id S1753522AbZEHSvD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 14:51:03 -0400
+Message-ID: <4A047EDE.2020806@redhat.com>
+Date: Fri, 08 May 2009 21:50:06 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: Gregory Haskins <ghaskins@novell.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com> <20090507233503.GA9103@amt.cnet> <4A043E89.90403@novell.com> <4A044786.2080508@codemonkey.ws>
+In-Reply-To: <4A044786.2080508@codemonkey.ws>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The semantics for variable-length arrays __in the middle of structs__
-are quite muddy, and a case in sched.c presents an interesting case,
-as the preceding code comment indicates:
+Anthony Liguori wrote:
+>
+> And we're now getting close to the point where the difference is 
+> virtually meaningless.
+>
+> At .14us, in order to see 1% CPU overhead added from PIO vs HC, you 
+> need 71429 exits.
+>
 
-	/*
-	 * The cpus mask in sched_group and sched_domain hangs off
-	 the end.  * FIXME: use cpumask_var_t or dynamic percpu alloc
-	 to avoid * wasting space for nr_cpu_ids < CONFIG_NR_CPUS.  */
-	struct static_sched_group {
-		struct sched_group sg; DECLARE_BITMAP(cpus,
-		CONFIG_NR_CPUS);
-	};
+If I read things correctly, you want the difference between PIO and 
+PIOoHC, which is 210ns.  But your point stands, 50,000 exits/sec will 
+add 1% cpu overhead.
 
-	struct static_sched_domain {
-		struct sched_domain sd; DECLARE_BITMAP(span,
-		CONFIG_NR_CPUS);
-	};
+>
+> The non-x86 architecture argument isn't valid because other 
+> architectures either 1) don't use PCI at all (s390) and are already 
+> using hypercalls 2) use PCI, but do not have a dedicated hypercall 
+> instruction (PPC emb) or 3) have PIO (ia64).
 
-Both sched_group and sched_domain have the following trailing struct
-member:
+ia64 uses mmio to emulate pio, so the cost may be different.  I agree on 
+x86 it's almost negligible.
 
-	unsigned long cpumask[];
+-- 
+I have a truly marvellous patch that fixes the bug which this
+signature is too narrow to contain.
 
-So this change is intended largely to spawn a discussion, because
-I'm not sure this VLA-in-middle-of-struct behavior is guaranteed to
-always behave as expected?
-
-Maybe a C expert can say whether cpumask[0] is better than cpumask[],
-or have other comments?
-
-Obviously not to be applied...
-
-NOT-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
-----
- kernel/sched.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 3d6b183..8056d74 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7757,13 +7757,13 @@ int sched_smt_power_savings = 0, sched_mc_power_savings = 0;
-  * for nr_cpu_ids < CONFIG_NR_CPUS.
-  */
- struct static_sched_group {
--	struct sched_group sg;
- 	DECLARE_BITMAP(cpus, CONFIG_NR_CPUS);
-+	struct sched_group sg;
- };
- 
- struct static_sched_domain {
--	struct sched_domain sd;
- 	DECLARE_BITMAP(span, CONFIG_NR_CPUS);
-+	struct sched_domain sd;
- };
- 
- /*
