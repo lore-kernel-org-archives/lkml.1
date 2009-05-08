@@ -1,119 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763567AbZEHVv7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764001AbZEHVyn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763567AbZEHVv7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 17:51:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbZEHVvv
+	id S1764001AbZEHVyn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 17:54:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZEHVyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 17:51:51 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:41265 "EHLO crca.org.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753983AbZEHVvu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 17:51:50 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
-       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
-In-Reply-To: <200905081611.41865.rjw@sisk.pl>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	 <20090507215112.GC14611@elf.ucw.cz>
-	 <1241746459.19600.246.camel@nigel-laptop>  <200905081611.41865.rjw@sisk.pl>
-Content-Type: text/plain
-Date: Sat, 09 May 2009 07:52:49 +1000
-Message-Id: <1241819569.19600.281.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	Fri, 8 May 2009 17:54:35 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:65330 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751209AbZEHVye (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 17:54:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=aUbZifjOrTJ45YXqxYKut3bgywiahS5D0//CD3WspGIeisO53Ob2k6gXTCRNQH/XMt
+         JJB9SG9w7RMOWdTeB1jOoC/l4cY0VAGXK8Fpl39uV8/l1UxI6cq1o6m+Nimxli4vBOD6
+         +jGDE2kaoivJiS2O2BiKfwArypPXw2TCG8klc=
+MIME-Version: 1.0
+Date: Fri, 8 May 2009 17:54:34 -0400
+Message-ID: <6041d2000905081454x4c9d8818oaccbcd14d1f4a506@mail.gmail.com>
+Subject: Regression in 2.6.30 - /dev/pts - mount options - bisected
+From: Marc Dionne <marc.c.dionne@gmail.com>
+To: linux-kernel@vger.kernel.org, sukadev@linux.vnet.ibm.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rafael.
+I ran into a regression from 2.6.29 to 2.6.30 on a newly installed
+fedora 11 machine.  The symptom is that things that require /dev/pts
+(gnome-terminal, konsole, xterm, etc.) don't work for a regular user,
+but run fine as root.  Everything is fine with the fedora 2.6.29
+kernel or with a self-compiled 2.6.29, but fail with a recent
+2.6.30-rc.
 
-On Fri, 2009-05-08 at 16:11 +0200, Rafael J. Wysocki wrote:
-> On Friday 08 May 2009, Nigel Cunningham wrote:
-> > On Thu, 2009-05-07 at 23:51 +0200, Pavel Machek wrote:
-> > > On Thu 2009-05-07 19:42:54, Rafael J. Wysocki wrote:
-> > > > On Thursday 07 May 2009, Pavel Machek wrote:
-> > > > > Hi!
-> > > > > 
-> > > > > > I'd like to submit TuxOnIce for review, with a view to seeking to get it
-> > > > > > merged, perhaps in 2.6.31 or .32 (depending upon what needs work before
-> > > > > > it can be merged) and the willingness of those who matter.
-> > > ...
-> > > > > To summarise disadvantages:
-> > > > > 
-> > > > > - only core has 8000 LoC
-> > > > > - it does stuff that can be easily done in userspace
-> > > > >      (and that todays distros _do_ in userspace).
-> > > > > - it duplicates uswsusp functionality.
-> > > > > - compared to [u]swsusp, it received little testing
-> > > > 
-> > > > Actually, I see advantages of working together versus fighting flame wars.
-> > > > Please stop that, I'm not going to take part in it this time.
-> > > 
-> > > Ok, so what do you propose? Merging tuxonice into 2.6.32, resulting in
-> > > having swsusp,uswsusp *and* tuxonice to maintain? I hope not.
-> > > 
-> > > If we are talking about improving mainline to allow tuxonice
-> > > functionality... then yes, that sounds reasonable.
-> > 
-> > I'd like to see use have all three for one or two releases of vanilla,
-> > just to give time to work out any issues that haven't been foreseen.
-> > Once we're all that there are confident there are no regressions with
-> > TuxOnIce, I'd remove swsusp. That's my ideal plan of attack.
-> 
-> So this is an idea to replace our current hibernation implementation with
-> TuxOnIce.
+Bisection pinpoints this commit:
+http://git.kernel.org/linus/1bd7903560f1f713e85188a5aaf4d2428b6c8b50
+as the culprit, although I think that's a bit misleading.
 
-That's my ideal. I know you and Pavel don't want to see us go down that
-path, but I was asked "What do you propose?" and I answered that
-question.
+The commit moves code around, and along the way replaces this:
 
-> Which unfortunately I don't agree with.
-> 
-> I think we can get _one_ implementation out of the three, presumably keeping
-> the user space interface that will keep the current s2disk binaries happy, by
-> merging TuxOnIce code _gradually_.  No "all at once" approach, please.
-> 
-> And by "merging" I mean _exactly_ that.  Not adding new code and throwing
-> away the old one.
-> 
-> While I can work on creating one hibernation implementation by taking the
-> best ideas from all of the implementation we have at hand, I surely won't be
-> working on replacing our current code with TuxOnIce.  If that disappoints you,
-> then I'm sorry.
+  memcpy(&fsi->mount_opts, opts, sizeof(opts))
 
-But who is going to do that, and how and when. You're clearly too busy
-working on enhancements to the driver model - enhancements that are good
-and necessary (I'm not at all meaning this is bad). I'm only doing this
-in a little bit of spare time. Pavel doesn't seem to be doing it at all.
+in one function where opts is a (struct pts_mount_opts *) - 8 bytes,
+clearly an error, with
 
-And we have different ideas about how things should be done. Userspace
-vs kernel space. Providing tuning knobs vs not. And so on.
+  memcpy(&(DEVPTS_SB(s))->mount_opts, &opts, sizeof(opts));
 
-And the code includes some fundamental differences. I freeze processes
-and prepare the whole image before saving anything or doing an atomic
-copy whereas you just free memory before doing the atomic copy. You save
-everything in one part whereas I save the image in two parts. I take a
-modular approach and you have everything hardwired.
+in a different function where opts is an actual structure (24 bytes),
+which looks like what was intended.  So fixing the copy of the mount
+options triggers the problem, and the real cause is probably
+neighbouring commits in the same patch set.  I confirmed that using
+sizeof(&opts) in the above memcpy makes the problem go away (but is
+obviously not a solution).
 
-Even if we did try to merge the three implementations, there'd come a
-point where we either threw away core parts of TuxOnIce or dropped the
-whole of [u]swsusp and started again - or both.
+Note that I have CONFIG_DEVPTS_MULTIPLE_INSTANCES=y.  It may be that
+user space is doing something unusual, but it passes the test of
+"works with 2.6.29, fails with 2.6.30".
 
-It doesn't disappoint me that you don't won't to replace [u]swsusp with
-TuxOnIce. I never thought you or Pavel would want to do that.
+I wasn't able to reproduce on an other system with a similar configuration.
 
-I did hold out a little hope that you at least might be supportive
-anyway of getting TuxOnIce added into vanilla - if only so that users
-can get a better hibernation experience while we work through merging
-the three into one. I'd far rather get along well with you than have
-some sort of competitive relationship.
-
-Regards,
-
-Nigel
-
+Marc
