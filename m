@@ -1,55 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756134AbZEHG2w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757425AbZEHGjo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756134AbZEHG2w (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 02:28:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754127AbZEHG2m
+	id S1757425AbZEHGjo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 02:39:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbZEHGjf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 02:28:42 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:49137 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754116AbZEHG2m (ORCPT
+	Fri, 8 May 2009 02:39:35 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:46912 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751516AbZEHGje convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 02:28:42 -0400
-Date: Fri, 8 May 2009 02:28:19 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Felix Blyakher <felixb@sgi.com>
-Cc: xfs@oss.sgi.com, kernel-testers@vger.kernel.org,
-       linux-kernel@vger.kernel.org, a.beregalov@gmail.com
-Subject: Re: [PATCH] xfs: fix double unlock in xfs_swap_extents()
-Message-ID: <20090508062819.GB1689@infradead.org>
-References: <1241745202-7452-1-git-send-email-felixb@sgi.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 8 May 2009 02:39:34 -0400
+Message-Id: <4A03F016.76EA.0078.0@novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Fri, 08 May 2009 07:40:54 +0100
+From: "Jan Beulich" <jbeulich@novell.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: <mingo@elte.hu>, <tglx@linutronix.de>, <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86-64: improve e820_search_gap()
+References: <4A0199B8.76EA.0078.0@novell.com> <4A03BC1A.9060605@zytor.com>
+In-Reply-To: <4A03BC1A.9060605@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <1241745202-7452-1-git-send-email-felixb@sgi.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch looks good, but a little nitpick:
+>>> "H. Peter Anvin" <hpa@zytor.com> 08.05.09 06:59 >>>
+>Jan Beulich wrote:
+>> Impact: bug fix
+>> 
+>> Blindly putting the gap close after max_pfn is in conflict with that
+>> same memory range potentially being used by hotplugged memory.
+>> 
+>> Also, make the function static to ensure there are no other users that
+>> could depend on the previous behavior regarding the way start_addr gets
+>> specified.
+>> 
+>> Signed-off-by: Jan Beulich <jbeulich@novell.com>
+>> 
+>
+>So blindly locate it somewhere else?  How is that inherently better?
+>Wouldn't a machine with hotplug memory (which doesn't bother advertising
+>that fact so we can reserve the address space) be just as likely to use
+>a sparse memory space, since one can hardly expect the hardware to pack
+>the space (packing in hardware is why PCs generally have a
+>mostly-contiguous RAM space) when the memory is hotplugged?
 
-On Thu, May 07, 2009 at 08:13:22PM -0500, Felix Blyakher wrote:
->  out:
->  	kmem_free(tempifp);
->  	return error;
->  
-> +out_unlock:
-> +	xfs_iunlock(ip,  XFS_ILOCK_EXCL | XFS_IOLOCK_EXCL);
-> +	xfs_iunlock(tip, XFS_ILOCK_EXCL | XFS_IOLOCK_EXCL);
-> +	goto out;
-> +
->  out_trans_cancel:
->  	xfs_trans_cancel(tp, 0);
->  	goto out_unlock;
+Why blindly? Aren't hotpluggable memory ranges supposed to be reserved
+in the E820 map?
 
-this would be more readable as:
+Jan
 
- out_trans_cancel:
-	xfs_trans_cancel(tp, 0);
- out_unlock:
-	xfs_iunlock(ip,  XFS_ILOCK_EXCL | XFS_IOLOCK_EXCL);
-	xfs_iunlock(tip, XFS_ILOCK_EXCL | XFS_IOLOCK_EXCL);
-	goto out;
