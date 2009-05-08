@@ -1,79 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764141AbZEHTJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764034AbZEHTL0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764141AbZEHTJA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 15:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001AbZEHTIv
+	id S1764034AbZEHTL0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:11:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZEHTLR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 15:08:51 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39386 "EHLO mail.dvmed.net"
+	Fri, 8 May 2009 15:11:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:46453 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754813AbZEHTIu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:08:50 -0400
-Message-ID: <4A04833B.1010209@garzik.org>
-Date: Fri, 08 May 2009 15:08:43 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
+	id S1752520AbZEHTLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 15:11:17 -0400
+Date: Fri, 8 May 2009 21:09:44 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeff Garzik <jeff@garzik.org>, Rusty Russell <rusty@rustcorp.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
        Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
-Subject: Re: [PATCH 1/2] kernel/{sched,smp}.c: fix static decl prior to	struct
- declaration
-References: <20090508184838.GA11157@havoc.gtf.org> <20090508190409.GA12130@elte.hu>
-In-Reply-To: <20090508190409.GA12130@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+Subject: Re: [RFC PATCH 2/2] kernel/sched.c: VLA in middle of struct
+Message-ID: <20090508190944.GB12130@elte.hu>
+References: <20090508184838.GA11157@havoc.gtf.org> <20090508185015.GA11320@havoc.gtf.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090508185015.GA11320@havoc.gtf.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeff Garzik <jeff@garzik.org> wrote:
+
+* Jeff Garzik <jeff@garzik.org> wrote:
+
+> The semantics for variable-length arrays __in the middle of structs__
+> are quite muddy, and a case in sched.c presents an interesting case,
+> as the preceding code comment indicates:
 > 
->> According to C99 6.9.2p3, any declaration "static struct foo my_foo;"
->> must follow the definition of struct foo.
->>
->> Apparently, gcc's lack of warning is a bug.
->>
->> Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
+> 	/*
+> 	 * The cpus mask in sched_group and sched_domain hangs off
+> 	 the end.  * FIXME: use cpumask_var_t or dynamic percpu alloc
+> 	 to avoid * wasting space for nr_cpu_ids < CONFIG_NR_CPUS.  */
+> 	struct static_sched_group {
+> 		struct sched_group sg; DECLARE_BITMAP(cpus,
+> 		CONFIG_NR_CPUS);
+> 	};
 > 
-> good spotting, i'll apply this fix, but:
+> 	struct static_sched_domain {
+> 		struct sched_domain sd; DECLARE_BITMAP(span,
+> 		CONFIG_NR_CPUS);
+> 	};
 > 
->>   */
->>  struct task_group root_task_group;
->>  
->> -#ifdef CONFIG_FAIR_GROUP_SCHED
->> -/* Default task group's sched entity on each cpu */
->> -static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
->> -/* Default task group's cfs_rq on each cpu */
->> -static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
->> -#endif /* CONFIG_FAIR_GROUP_SCHED */
->> -
->> -#ifdef CONFIG_RT_GROUP_SCHED
->> -static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
->> -static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
->> -#endif /* CONFIG_RT_GROUP_SCHED */
->> -#else /* !CONFIG_USER_SCHED */
->> -#define root_task_group init_task_group
->> -#endif /* CONFIG_USER_SCHED */
->> -
->>  /* task_group_lock serializes add/remove of task groups and also changes to
+> Both sched_group and sched_domain have the following trailing struct
+> member:
 > 
-> This block has a visible imbalance of preprocessor directives - 
-> there's a #else you moved, without moving the outermost #ifdef. My 
-> guess is that this will go down in a fireball with 
-> CONFIG_GROUP_SCHED disabled?
+> 	unsigned long cpumask[];
+> 
+> So this change is intended largely to spawn a discussion, because
+> I'm not sure this VLA-in-middle-of-struct behavior is guaranteed to
+> always behave as expected?
+> 
+> Maybe a C expert can say whether cpumask[0] is better than cpumask[],
+> or have other comments?
 
-It seems you are correct, I missed it in my 'allmodconfig' and 'jeffs hw 
-config' builds.
+This bit of the code is a bit temporary, with a half-done cpumask 
+conversion ...
 
-Are you fixing this up, or should I regen the patch?
+I'm not convinced at all that this code wants to be converted to 
+cpuvar_t. These are all either statically percpu or dynamically 
+allocated structures, so we wont allocate NR_CPUS of them. So i'd 
+lean towards embedding a full struct cpumask and that's it.
 
-	Jeff
+That cpumask[] should probably be cpumask[0], to document the 
+aliasing to ->span and ->cpus properly.
 
+Rusty, what do you think?
 
-
+	Ingo
