@@ -1,594 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762252AbZEHD1t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762196AbZEHDar@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762252AbZEHD1t (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 23:27:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755617AbZEHD1h
+	id S1762196AbZEHDar (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 23:30:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754116AbZEHDai
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 23:27:37 -0400
-Received: from smtp107.prem.mail.sp1.yahoo.com ([98.136.44.62]:25903 "HELO
-	smtp107.prem.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1754968AbZEHD1f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 23:27:35 -0400
-X-YMail-OSG: A0OqbZ4VM1l.haRAe6wcElT9m3VX5lET424AeZhUI3OayZ1eyheCUuAZKwtUcbvdhqWBWkOryWkhxtVpN8nBkd6COwQHsISIAnvyxmiCGDP1lzhShIITs0OflPzvbLEDoRIoV5IuyaWY1eJPXr.xnHRWlat3GE9Nz4S9DSlOVxUKrem19BUBUJL_J.W2PdBeL0Of.rOcP56TTW7ePf0.jlAtZ_pK4FEqVXgh6Dx7vfVzvu437OwF9huz_sLZLr6XkwdkiYC4FXm2V0jVvZTrYKDYANu8Rt2tejr6LDgtqvnNjbuVM27qT5IjCBsOLREL3yKBUm2wnFGFlN66giNVnqqkbn3ZSsfuXw--
-X-Yahoo-Newman-Property: ymail-3
-Message-ID: <4A03A695.6050106@schaufler-ca.com>
-Date: Thu, 07 May 2009 20:27:17 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 7 May 2009 23:30:38 -0400
+Received: from mga14.intel.com ([143.182.124.37]:29550 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753787AbZEHDah (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 23:30:37 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,314,1239001200"; 
+   d="scan'208";a="140528065"
+Date: Fri, 8 May 2009 11:30:04 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Johannes Weiner <hannes@cmpxchg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
+	class citizen
+Message-ID: <20090508033004.GB8892@localhost>
+References: <20090430181340.6f07421d.akpm@linux-foundation.org> <20090430215034.4748e615@riellaptop.surriel.com> <20090430195439.e02edc26.akpm@linux-foundation.org> <49FB01C1.6050204@redhat.com> <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org> <1241709466.11251.164.camel@twins>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: James Morris <jmorris@namei.org>, Chris Wright <chrisw@sous-sol.org>,
-       Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Al Viro <viro@ZenIV.linux.org.uk>,
-       linux-security-module@vger.kernel.org
-Subject: Re: your mail
-References: <20090506235349.GC3756@redhat.com> <20090507002133.02D05FC39E@magilla.sf.frob.com> <20090507063606.GA15220@redhat.com> <20090507082027.GD12285@elte.hu> <20090507083102.GA20125@redhat.com> <20090507083851.GA19133@elte.hu> <20090507085742.GB3036@sequoia.sous-sol.org> <20090507090459.GE19133@elte.hu> <20090507092009.GC3036@sequoia.sous-sol.org> <alpine.LRH.2.00.0905071951530.29219@tundra.namei.org> <20090507102015.GB8901@elte.hu>
-In-Reply-To: <20090507102015.GB8901@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241709466.11251.164.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * James Morris <jmorris@namei.org> wrote:
->
->   
->> On Thu, 7 May 2009, Chris Wright wrote:
->>
->>     
->>> * Ingo Molnar (mingo@elte.hu) wrote:
->>>       
->> [Added LSM list to the CC; please do so whenever making changes in this 
->> area...]
->>
->>     
->>>> They have no active connection to the core kernel 
->>>> ptrace_may_access() check in any case:
->>>>         
->>> Not sure what you mean:
->>>
->>> ptrace_may_access
->>>  __ptrace_may_access
->>>   security_ptrace_may_access
->>>
->>> Looks like your patch won't compile.
->>>
->>>       
->> Below is an updated version which fixes the bug, against 
->> git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
->>
->> Boot tested with SELinux.
->>     
->
-> thanks! Below are the two patches i wrote and tested.
->   
+On Thu, May 07, 2009 at 11:17:46PM +0800, Peter Zijlstra wrote:
+> On Thu, 2009-05-07 at 17:10 +0200, Johannes Weiner wrote:
+> 
+> > > @@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned 
+> > >  
+> > >  		/* page_referenced clears PageReferenced */
+> > >  		if (page_mapping_inuse(page) &&
+> > > -		    page_referenced(page, 0, sc->mem_cgroup))
+> > > +		    page_referenced(page, 0, sc->mem_cgroup)) {
+> > > +			struct address_space *mapping = page_mapping(page);
+> > > +
+> > >  			pgmoved++;
+> > > +			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
+> > > +				list_add(&page->lru, &l_active);
+> > > +				continue;
+> > > +			}
+> > > +		}
+> > 
+> > Since we walk the VMAs in page_referenced anyway, wouldn't it be
+> > better to check if one of them is executable?  This would even work
+> > for executable anon pages.  After all, there are applications that cow
+> > executable mappings (sbcl and other language environments that use an
+> > executable, run-time modified core image come to mind).
+> 
+> Hmm, like provide a vm_flags mask along to page_referenced() to only
+> account matching vmas... seems like a sensible idea.
 
-I hate to make an assumption regarding whether or not your tests
-included Smack, so I'll ask. Does tested mean with Smack?
+I'd prefer to make vm_flags an out-param, like this:
 
-Thank you.
+-       int page_referenced(struct page *page, int is_locked,
++       int page_referenced(struct page *page, int is_locked, unsigned long *vm_flags,
+                                struct mem_cgroup *mem_cont)
 
-> 	Ingo
->
-> ----- Forwarded message from Ingo Molnar <mingo@elte.hu> -----
->
-> Date: Thu, 7 May 2009 11:49:47 +0200
-> From: Ingo Molnar <mingo@elte.hu>
-> To: Chris Wright <chrisw@sous-sol.org>
-> Subject: [patch 1/2] ptrace, security: rename ptrace_may_access =>
-> 	ptrace_access_check
-> Cc: Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>,
-> 	Andrew Morton <akpm@linux-foundation.org>,
-> 	linux-kernel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>
->
-> The ptrace_may_access() methods are named confusingly - some 
-> variants return a bool, while the security subsystem methods have a 
-> retval convention.
->
-> Rename it to ptrace_access_check, to reduce the confusion factor. A 
-> followup patch eliminates the bool usage.
->
-> [ Impact: cleanup, no code changed ]
->
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> Cc: Roland McGrath <roland@redhat.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Chris Wright <chrisw@sous-sol.org>
-> Cc: Al Viro <viro@ZenIV.linux.org.uk>
-> Cc: Oleg Nesterov <oleg@redhat.com>
-> LKML-Reference: <20090507084943.GB19133@elte.hu>
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  fs/proc/array.c            |    2 +-
->  fs/proc/base.c             |   10 +++++-----
->  fs/proc/task_mmu.c         |    2 +-
->  include/linux/ptrace.h     |    4 ++--
->  include/linux/security.h   |   14 +++++++-------
->  kernel/ptrace.c            |   10 +++++-----
->  security/capability.c      |    2 +-
->  security/commoncap.c       |    4 ++--
->  security/root_plug.c       |    2 +-
->  security/security.c        |    4 ++--
->  security/selinux/hooks.c   |    6 +++---
->  security/smack/smack_lsm.c |    8 ++++----
->  12 files changed, 34 insertions(+), 34 deletions(-)
->
-> Index: linux/fs/proc/array.c
-> ===================================================================
-> --- linux.orig/fs/proc/array.c
-> +++ linux/fs/proc/array.c
-> @@ -366,7 +366,7 @@ static int do_task_stat(struct seq_file 
->  
->  	state = *get_task_state(task);
->  	vsize = eip = esp = 0;
-> -	permitted = ptrace_may_access(task, PTRACE_MODE_READ);
-> +	permitted = ptrace_access_check(task, PTRACE_MODE_READ);
->  	mm = get_task_mm(task);
->  	if (mm) {
->  		vsize = task_vsize(mm);
-> Index: linux/fs/proc/base.c
-> ===================================================================
-> --- linux.orig/fs/proc/base.c
-> +++ linux/fs/proc/base.c
-> @@ -222,7 +222,7 @@ static int check_mem_permission(struct t
->  		rcu_read_lock();
->  		match = (tracehook_tracer_task(task) == current);
->  		rcu_read_unlock();
-> -		if (match && ptrace_may_access(task, PTRACE_MODE_ATTACH))
-> +		if (match && ptrace_access_check(task, PTRACE_MODE_ATTACH))
->  			return 0;
->  	}
->  
-> @@ -242,7 +242,7 @@ struct mm_struct *mm_for_maps(struct tas
->  	if (task->mm != mm)
->  		goto out;
->  	if (task->mm != current->mm &&
-> -	    __ptrace_may_access(task, PTRACE_MODE_READ) < 0)
-> +	    __ptrace_access_check(task, PTRACE_MODE_READ) < 0)
->  		goto out;
->  	task_unlock(task);
->  	return mm;
-> @@ -322,7 +322,7 @@ static int proc_pid_wchan(struct task_st
->  	wchan = get_wchan(task);
->  
->  	if (lookup_symbol_name(wchan, symname) < 0)
-> -		if (!ptrace_may_access(task, PTRACE_MODE_READ))
-> +		if (!ptrace_access_check(task, PTRACE_MODE_READ))
->  			return 0;
->  		else
->  			return sprintf(buffer, "%lu", wchan);
-> @@ -559,7 +559,7 @@ static int proc_fd_access_allowed(struct
->  	 */
->  	task = get_proc_task(inode);
->  	if (task) {
-> -		allowed = ptrace_may_access(task, PTRACE_MODE_READ);
-> +		allowed = ptrace_access_check(task, PTRACE_MODE_READ);
->  		put_task_struct(task);
->  	}
->  	return allowed;
-> @@ -938,7 +938,7 @@ static ssize_t environ_read(struct file 
->  	if (!task)
->  		goto out_no_task;
->  
-> -	if (!ptrace_may_access(task, PTRACE_MODE_READ))
-> +	if (!ptrace_access_check(task, PTRACE_MODE_READ))
->  		goto out;
->  
->  	ret = -ENOMEM;
-> Index: linux/fs/proc/task_mmu.c
-> ===================================================================
-> --- linux.orig/fs/proc/task_mmu.c
-> +++ linux/fs/proc/task_mmu.c
-> @@ -656,7 +656,7 @@ static ssize_t pagemap_read(struct file 
->  		goto out;
->  
->  	ret = -EACCES;
-> -	if (!ptrace_may_access(task, PTRACE_MODE_READ))
-> +	if (!ptrace_access_check(task, PTRACE_MODE_READ))
->  		goto out_task;
->  
->  	ret = -EINVAL;
-> Index: linux/include/linux/ptrace.h
-> ===================================================================
-> --- linux.orig/include/linux/ptrace.h
-> +++ linux/include/linux/ptrace.h
-> @@ -99,9 +99,9 @@ extern void ptrace_fork(struct task_stru
->  #define PTRACE_MODE_READ   1
->  #define PTRACE_MODE_ATTACH 2
->  /* Returns 0 on success, -errno on denial. */
-> -extern int __ptrace_may_access(struct task_struct *task, unsigned int mode);
-> +extern int __ptrace_access_check(struct task_struct *task, unsigned int mode);
->  /* Returns true on success, false on denial. */
-> -extern bool ptrace_may_access(struct task_struct *task, unsigned int mode);
-> +extern bool ptrace_access_check(struct task_struct *task, unsigned int mode);
->  
->  static inline int ptrace_reparented(struct task_struct *child)
->  {
-> Index: linux/include/linux/security.h
-> ===================================================================
-> --- linux.orig/include/linux/security.h
-> +++ linux/include/linux/security.h
-> @@ -52,7 +52,7 @@ struct audit_krule;
->  extern int cap_capable(struct task_struct *tsk, const struct cred *cred,
->  		       int cap, int audit);
->  extern int cap_settime(struct timespec *ts, struct timezone *tz);
-> -extern int cap_ptrace_may_access(struct task_struct *child, unsigned int mode);
-> +extern int cap_ptrace_access_check(struct task_struct *child, unsigned int mode);
->  extern int cap_ptrace_traceme(struct task_struct *parent);
->  extern int cap_capget(struct task_struct *target, kernel_cap_t *effective, kernel_cap_t *inheritable, kernel_cap_t *permitted);
->  extern int cap_capset(struct cred *new, const struct cred *old,
-> @@ -1209,7 +1209,7 @@ static inline void security_free_mnt_opt
->   *	@alter contains the flag indicating whether changes are to be made.
->   *	Return 0 if permission is granted.
->   *
-> - * @ptrace_may_access:
-> + * @ptrace_access_check:
->   *	Check permission before allowing the current process to trace the
->   *	@child process.
->   *	Security modules may also want to perform a process tracing check
-> @@ -1224,7 +1224,7 @@ static inline void security_free_mnt_opt
->   *	Check that the @parent process has sufficient permission to trace the
->   *	current process before allowing the current process to present itself
->   *	to the @parent process for tracing.
-> - *	The parent process will still have to undergo the ptrace_may_access
-> + *	The parent process will still have to undergo the ptrace_access_check
->   *	checks before it is allowed to trace this one.
->   *	@parent contains the task_struct structure for debugger process.
->   *	Return 0 if permission is granted.
-> @@ -1336,7 +1336,7 @@ static inline void security_free_mnt_opt
->  struct security_operations {
->  	char name[SECURITY_NAME_MAX + 1];
->  
-> -	int (*ptrace_may_access) (struct task_struct *child, unsigned int mode);
-> +	int (*ptrace_access_check) (struct task_struct *child, unsigned int mode);
->  	int (*ptrace_traceme) (struct task_struct *parent);
->  	int (*capget) (struct task_struct *target,
->  		       kernel_cap_t *effective,
-> @@ -1617,7 +1617,7 @@ extern int security_module_enable(struct
->  extern int register_security(struct security_operations *ops);
->  
->  /* Security operations */
-> -int security_ptrace_may_access(struct task_struct *child, unsigned int mode);
-> +int security_ptrace_access_check(struct task_struct *child, unsigned int mode);
->  int security_ptrace_traceme(struct task_struct *parent);
->  int security_capget(struct task_struct *target,
->  		    kernel_cap_t *effective,
-> @@ -1798,10 +1798,10 @@ static inline int security_init(void)
->  	return 0;
->  }
->  
-> -static inline int security_ptrace_may_access(struct task_struct *child,
-> +static inline int security_ptrace_access_check(struct task_struct *child,
->  					     unsigned int mode)
->  {
-> -	return cap_ptrace_may_access(child, mode);
-> +	return cap_ptrace_access_check(child, mode);
->  }
->  
->  static inline int security_ptrace_traceme(struct task_struct *parent)
-> Index: linux/kernel/ptrace.c
-> ===================================================================
-> --- linux.orig/kernel/ptrace.c
-> +++ linux/kernel/ptrace.c
-> @@ -127,7 +127,7 @@ int ptrace_check_attach(struct task_stru
->  	return ret;
->  }
->  
-> -int __ptrace_may_access(struct task_struct *task, unsigned int mode)
-> +int __ptrace_access_check(struct task_struct *task, unsigned int mode)
->  {
->  	const struct cred *cred = current_cred(), *tcred;
->  
-> @@ -162,14 +162,14 @@ int __ptrace_may_access(struct task_stru
->  	if (!dumpable && !capable(CAP_SYS_PTRACE))
->  		return -EPERM;
->  
-> -	return security_ptrace_may_access(task, mode);
-> +	return security_ptrace_access_check(task, mode);
->  }
->  
-> -bool ptrace_may_access(struct task_struct *task, unsigned int mode)
-> +bool ptrace_access_check(struct task_struct *task, unsigned int mode)
->  {
->  	int err;
->  	task_lock(task);
-> -	err = __ptrace_may_access(task, mode);
-> +	err = __ptrace_access_check(task, mode);
->  	task_unlock(task);
->  	return !err;
->  }
-> @@ -217,7 +217,7 @@ repeat:
->  	/* the same process cannot be attached many times */
->  	if (task->ptrace & PT_PTRACED)
->  		goto bad;
-> -	retval = __ptrace_may_access(task, PTRACE_MODE_ATTACH);
-> +	retval = __ptrace_access_check(task, PTRACE_MODE_ATTACH);
->  	if (retval)
->  		goto bad;
->  
-> Index: linux/security/capability.c
-> ===================================================================
-> --- linux.orig/security/capability.c
-> +++ linux/security/capability.c
-> @@ -863,7 +863,7 @@ struct security_operations default_secur
->  
->  void security_fixup_ops(struct security_operations *ops)
->  {
-> -	set_to_cap_if_null(ops, ptrace_may_access);
-> +	set_to_cap_if_null(ops, ptrace_access_check);
->  	set_to_cap_if_null(ops, ptrace_traceme);
->  	set_to_cap_if_null(ops, capget);
->  	set_to_cap_if_null(ops, capset);
-> Index: linux/security/commoncap.c
-> ===================================================================
-> --- linux.orig/security/commoncap.c
-> +++ linux/security/commoncap.c
-> @@ -79,7 +79,7 @@ int cap_settime(struct timespec *ts, str
->  }
->  
->  /**
-> - * cap_ptrace_may_access - Determine whether the current process may access
-> + * cap_ptrace_access_check - Determine whether the current process may access
->   *			   another
->   * @child: The process to be accessed
->   * @mode: The mode of attachment.
-> @@ -87,7 +87,7 @@ int cap_settime(struct timespec *ts, str
->   * Determine whether a process may access another, returning 0 if permission
->   * granted, -ve if denied.
->   */
-> -int cap_ptrace_may_access(struct task_struct *child, unsigned int mode)
-> +int cap_ptrace_access_check(struct task_struct *child, unsigned int mode)
->  {
->  	int ret = 0;
->  
-> Index: linux/security/root_plug.c
-> ===================================================================
-> --- linux.orig/security/root_plug.c
-> +++ linux/security/root_plug.c
-> @@ -72,7 +72,7 @@ static int rootplug_bprm_check_security 
->  
->  static struct security_operations rootplug_security_ops = {
->  	/* Use the capability functions for some of the hooks */
-> -	.ptrace_may_access =		cap_ptrace_may_access,
-> +	.ptrace_access_check =		cap_ptrace_access_check,
->  	.ptrace_traceme =		cap_ptrace_traceme,
->  	.capget =			cap_capget,
->  	.capset =			cap_capset,
-> Index: linux/security/security.c
-> ===================================================================
-> --- linux.orig/security/security.c
-> +++ linux/security/security.c
-> @@ -127,9 +127,9 @@ int register_security(struct security_op
->  
->  /* Security operations */
->  
-> -int security_ptrace_may_access(struct task_struct *child, unsigned int mode)
-> +int security_ptrace_access_check(struct task_struct *child, unsigned int mode)
->  {
-> -	return security_ops->ptrace_may_access(child, mode);
-> +	return security_ops->ptrace_access_check(child, mode);
->  }
->  
->  int security_ptrace_traceme(struct task_struct *parent)
-> Index: linux/security/selinux/hooks.c
-> ===================================================================
-> --- linux.orig/security/selinux/hooks.c
-> +++ linux/security/selinux/hooks.c
-> @@ -1854,12 +1854,12 @@ static inline u32 open_file_to_av(struct
->  
->  /* Hook functions begin here. */
->  
-> -static int selinux_ptrace_may_access(struct task_struct *child,
-> +static int selinux_ptrace_access_check(struct task_struct *child,
->  				     unsigned int mode)
->  {
->  	int rc;
->  
-> -	rc = cap_ptrace_may_access(child, mode);
-> +	rc = cap_ptrace_access_check(child, mode);
->  	if (rc)
->  		return rc;
->  
-> @@ -5318,7 +5318,7 @@ static int selinux_key_getsecurity(struc
->  static struct security_operations selinux_ops = {
->  	.name =				"selinux",
->  
-> -	.ptrace_may_access =		selinux_ptrace_may_access,
-> +	.ptrace_access_check =		selinux_ptrace_access_check,
->  	.ptrace_traceme =		selinux_ptrace_traceme,
->  	.capget =			selinux_capget,
->  	.capset =			selinux_capset,
-> Index: linux/security/smack/smack_lsm.c
-> ===================================================================
-> --- linux.orig/security/smack/smack_lsm.c
-> +++ linux/security/smack/smack_lsm.c
-> @@ -92,7 +92,7 @@ struct inode_smack *new_inode_smack(char
->   */
->  
->  /**
-> - * smack_ptrace_may_access - Smack approval on PTRACE_ATTACH
-> + * smack_ptrace_access_check - Smack approval on PTRACE_ATTACH
->   * @ctp: child task pointer
->   * @mode: ptrace attachment mode
->   *
-> @@ -100,11 +100,11 @@ struct inode_smack *new_inode_smack(char
->   *
->   * Do the capability checks, and require read and write.
->   */
-> -static int smack_ptrace_may_access(struct task_struct *ctp, unsigned int mode)
-> +static int smack_ptrace_access_check(struct task_struct *ctp, unsigned int mode)
->  {
->  	int rc;
->  
-> -	rc = cap_ptrace_may_access(ctp, mode);
-> +	rc = cap_ptrace_access_check(ctp, mode);
->  	if (rc != 0)
->  		return rc;
->  
-> @@ -2826,7 +2826,7 @@ static void smack_release_secctx(char *s
->  struct security_operations smack_ops = {
->  	.name =				"smack",
->  
-> -	.ptrace_may_access =		smack_ptrace_may_access,
-> +	.ptrace_access_check =		smack_ptrace_access_check,
->  	.ptrace_traceme =		smack_ptrace_traceme,
->  	.capget = 			cap_capget,
->  	.capset = 			cap_capset,
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-> ----- End forwarded message -----
-> ----- Forwarded message from Ingo Molnar <mingo@elte.hu> -----
->
-> Date: Thu, 7 May 2009 11:50:54 +0200
-> From: Ingo Molnar <mingo@elte.hu>
-> To: Chris Wright <chrisw@sous-sol.org>
-> Subject: [patch 2/2] ptrace: turn ptrace_access_check() into a retval
-> 	function
-> Cc: Oleg Nesterov <oleg@redhat.com>, Roland McGrath <roland@redhat.com>,
-> 	Andrew Morton <akpm@linux-foundation.org>,
-> 	linux-kernel@vger.kernel.org, Al Viro <viro@ZenIV.linux.org.uk>
->
-> ptrace_access_check() returns a bool, while most of the ptrace 
-> access check machinery works with Linux retvals (where 0 indicates 
-> success, negative indicates an error).
->
-> So eliminate the bool and invert the usage at the call sites.
->
-> ( Note: "< 0" checks are used instead of !0 checks, because that's
->   the convention for retval checks and it results in similarly fast
->   assembly code. )
->
-> [ Impact: cleanup ]
->
-> Signed-off-by: Ingo Molnar <mingo@elte.hu>
-> ---
->  fs/proc/array.c        |    2 +-
->  fs/proc/base.c         |    8 ++++----
->  fs/proc/task_mmu.c     |    2 +-
->  include/linux/ptrace.h |    2 +-
->  kernel/ptrace.c        |    6 ++++--
->  5 files changed, 11 insertions(+), 9 deletions(-)
->
-> Index: linux/fs/proc/array.c
-> ===================================================================
-> --- linux.orig/fs/proc/array.c
-> +++ linux/fs/proc/array.c
-> @@ -366,7 +366,7 @@ static int do_task_stat(struct seq_file 
->  
->  	state = *get_task_state(task);
->  	vsize = eip = esp = 0;
-> -	permitted = ptrace_access_check(task, PTRACE_MODE_READ);
-> +	permitted = !ptrace_access_check(task, PTRACE_MODE_READ);
->  	mm = get_task_mm(task);
->  	if (mm) {
->  		vsize = task_vsize(mm);
-> Index: linux/fs/proc/base.c
-> ===================================================================
-> --- linux.orig/fs/proc/base.c
-> +++ linux/fs/proc/base.c
-> @@ -222,7 +222,7 @@ static int check_mem_permission(struct t
->  		rcu_read_lock();
->  		match = (tracehook_tracer_task(task) == current);
->  		rcu_read_unlock();
-> -		if (match && ptrace_access_check(task, PTRACE_MODE_ATTACH))
-> +		if (match && !ptrace_access_check(task, PTRACE_MODE_ATTACH))
->  			return 0;
->  	}
->  
-> @@ -322,7 +322,7 @@ static int proc_pid_wchan(struct task_st
->  	wchan = get_wchan(task);
->  
->  	if (lookup_symbol_name(wchan, symname) < 0)
-> -		if (!ptrace_access_check(task, PTRACE_MODE_READ))
-> +		if (ptrace_access_check(task, PTRACE_MODE_READ) < 0)
->  			return 0;
->  		else
->  			return sprintf(buffer, "%lu", wchan);
-> @@ -559,7 +559,7 @@ static int proc_fd_access_allowed(struct
->  	 */
->  	task = get_proc_task(inode);
->  	if (task) {
-> -		allowed = ptrace_access_check(task, PTRACE_MODE_READ);
-> +		allowed = !ptrace_access_check(task, PTRACE_MODE_READ);
->  		put_task_struct(task);
->  	}
->  	return allowed;
-> @@ -938,7 +938,7 @@ static ssize_t environ_read(struct file 
->  	if (!task)
->  		goto out_no_task;
->  
-> -	if (!ptrace_access_check(task, PTRACE_MODE_READ))
-> +	if (ptrace_access_check(task, PTRACE_MODE_READ) < 0)
->  		goto out;
->  
->  	ret = -ENOMEM;
-> Index: linux/fs/proc/task_mmu.c
-> ===================================================================
-> --- linux.orig/fs/proc/task_mmu.c
-> +++ linux/fs/proc/task_mmu.c
-> @@ -656,7 +656,7 @@ static ssize_t pagemap_read(struct file 
->  		goto out;
->  
->  	ret = -EACCES;
-> -	if (!ptrace_access_check(task, PTRACE_MODE_READ))
-> +	if (ptrace_access_check(task, PTRACE_MODE_READ) < 0)
->  		goto out_task;
->  
->  	ret = -EINVAL;
-> Index: linux/include/linux/ptrace.h
-> ===================================================================
-> --- linux.orig/include/linux/ptrace.h
-> +++ linux/include/linux/ptrace.h
-> @@ -101,7 +101,7 @@ extern void ptrace_fork(struct task_stru
->  /* Returns 0 on success, -errno on denial. */
->  extern int __ptrace_access_check(struct task_struct *task, unsigned int mode);
->  /* Returns true on success, false on denial. */
-> -extern bool ptrace_access_check(struct task_struct *task, unsigned int mode);
-> +extern int ptrace_access_check(struct task_struct *task, unsigned int mode);
->  
->  static inline int ptrace_reparented(struct task_struct *child)
->  {
-> Index: linux/kernel/ptrace.c
-> ===================================================================
-> --- linux.orig/kernel/ptrace.c
-> +++ linux/kernel/ptrace.c
-> @@ -165,13 +165,15 @@ int __ptrace_access_check(struct task_st
->  	return security_ptrace_access_check(task, mode);
->  }
->  
-> -bool ptrace_access_check(struct task_struct *task, unsigned int mode)
-> +int ptrace_access_check(struct task_struct *task, unsigned int mode)
->  {
->  	int err;
-> +
->  	task_lock(task);
->  	err = __ptrace_access_check(task, mode);
->  	task_unlock(task);
-> -	return !err;
-> +
-> +	return err;
->  }
->  
->  int ptrace_attach(struct task_struct *task)
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-> ----- End forwarded message -----
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-security-module" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->
->   
+which allows reporting more versatile flags and status bits :) 
+
+Thanks,
+Fengguang
 
