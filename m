@@ -1,76 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757778AbZEHPJ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZEHPKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757778AbZEHPJ3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 11:09:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752570AbZEHPJT
+	id S1756193AbZEHPKk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 11:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753833AbZEHPKa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 11:09:19 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:44455 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751702AbZEHPJS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 11:09:18 -0400
-Date: Fri, 8 May 2009 17:08:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Roland McGrath <roland@redhat.com>
-Cc: Christoph Hellwig <hch@infradead.org>, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, jdike@addtoit.com,
-       utrace-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC, PATCH 0/2] utrace/ptrace: simplify/cleanup ptrace attach
-Message-ID: <20090508150841.GB29974@elte.hu>
-References: <20090504193016.GA17076@redhat.com> <20090504194348.BC0EBFC32F@magilla.sf.frob.com> <20090504163154.f3672a83.akpm@linux-foundation.org> <20090505230642.GA980@redhat.com> <20090506081225.GD8098@elte.hu> <20090506082300.GA16989@infradead.org> <20090506090512.GB24692@elte.hu> <20090506091115.GA24332@infradead.org> <20090506093740.GA7156@elte.hu> <20090507061343.9A986FC39E@magilla.sf.frob.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507061343.9A986FC39E@magilla.sf.frob.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 8 May 2009 11:10:30 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:51415 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752570AbZEHPK3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 11:10:29 -0400
+Subject: [PATCH 1/2] mm: Introduce GFP_PANIC for early-boot allocations
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: akpm@linux-foundation.org
+Cc: gorcunov@openvz.org, kosaki.motohiro@jp.fujitsu.com, mel@csn.ul.ie,
+       cl@linux-foundation.org, riel@redhat.com, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, rientjes@google.com
+Date: Fri, 08 May 2009 18:10:28 +0300
+Message-Id: <1241795428.28600.60.camel@penberg-laptop>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.24.3 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+From: Pekka Enberg <penberg@cs.helsinki.fi>
 
-* Roland McGrath <roland@redhat.com> wrote:
+This patch introduces a GFP_PANIC flag that can be used as an annotation
+that an early-boot call to kmalloc() or alloc_pages() is expected to
+never fail.
 
-> > It is far more efficient if Roland, Oleg (or you, if you are 
-> > interested in this stuff - which you seem to be) did RFC patches and 
-> > asked for maintainer acks, than to depend on maintainers to do it.
-> 
-> This has been on offer since the first user_regset stuff went into 
-> 2.6.25, and I think I reiterated that on linux-arch when 
-> CONFIG_HAVE_ARCH_TRACEHOOK went in.
-> 
-> What it does require is some arch person to at least show interest 
-> in seeing the patches, test-build them and/or point to usable 
-> cross compiler setups, etc.  It doesn't have to be arch 
-> maintainers, but someone at all who uses the arch and is prepared 
-> to build kernels for it.
-> 
-> In the case of arm, the fine Fedora/ARM folks had already made it 
-> easy enough for me to do two web searches and find the cross 
-> compilers, qemu settings, and system images I could get going 
-> lickety-split without even asking anyone for pointers.  But as hch 
-> noted, even doing 95% of the work myself up front (built and 
-> tested!) hasn't yet helped get any feedback.
-> 
-> For any arch where there is anyone out there but the crickets, 
-> it's easy for me to help with the actual code.  I just need a 
-> little direction on arch build setups and maybe some specific arch 
-> details questions, and a little feedback.  But where the only 
-> people you can find who've heard of an arch say, "We haven't 
-> looked what's upstream since 2.6.22 or so," I don't want to waste 
-> my time on untried patches that will just go stale without ever 
-> being compiled.
+To save one GFP flag bit, use a combination of __GFP_NOFAIL and
+__GFP_NOREPEAT to make sure we always end up in the "nopage" path of the
+page allocator if an allocation fails.
 
-that's OK. If you went so far, if you were proactive and did due 
-diligence, and nobody bothered, just push the changes into 
-linux-next and there's no valid basis for future objections against 
-those patches.
+[ gorcunov@openvz.org: initial version of the patch ]
+Cc: Christoph Lameter <cl@linux-foundation.org>
+Cc: David Rientjes <rientjes@google.com>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Cc: Rik van Riel <riel@redhat.com>
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+---
+Andrew, this one is rebased on top of -mm.
 
-	Ingo
+ include/linux/gfp.h |    1 +
+ mm/page_alloc.c     |   12 ++++++++++--
+ 2 files changed, 11 insertions(+), 2 deletions(-)
+
+diff --git a/include/linux/gfp.h b/include/linux/gfp.h
+index c7429b8..2e76e7b 100644
+--- a/include/linux/gfp.h
++++ b/include/linux/gfp.h
+@@ -71,6 +71,7 @@ struct vm_area_struct;
+ #define GFP_HIGHUSER_MOVABLE	(__GFP_WAIT | __GFP_IO | __GFP_FS | \
+ 				 __GFP_HARDWALL | __GFP_HIGHMEM | \
+ 				 __GFP_MOVABLE)
++#define GFP_PANIC	(__GFP_NOFAIL | __GFP_NORETRY)
+ 
+ #ifdef CONFIG_NUMA
+ #define GFP_THISNODE	(__GFP_THISNODE | __GFP_NOWARN | __GFP_NORETRY)
+diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+index be0ed90..eb8d953 100644
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -1516,8 +1516,11 @@ static inline int
+ should_alloc_retry(gfp_t gfp_mask, unsigned int order,
+ 				unsigned long pages_reclaimed)
+ {
+-	/* Do not loop if specifically requested */
+-	if (gfp_mask & __GFP_NORETRY)
++	/*
++	 * Do not loop if specifically requested. Note: GFP_PANIC sets both
++	 * flags.
++	 */
++	if ((gfp_mask & __GFP_NORETRY) && !(gfp_mask & __GFP_NOFAIL))
+ 		return 0;
+ 
+ 	/*
+@@ -1813,6 +1816,11 @@ rebalance:
+ 	}
+ 
+ nopage:
++	if (unlikely((gfp_mask & GFP_PANIC) == GFP_PANIC)) {
++		show_mem();
++		panic("Out of memory: %s order: %d, gfp_mask:0x%x\n",
++			p->comm, order, gfp_mask);
++	}
+ 	if (!(gfp_mask & __GFP_NOWARN) && printk_ratelimit()) {
+ 		printk(KERN_WARNING "%s: page allocation failure."
+ 			" order:%d, mode:0x%x\n",
+-- 
+1.5.6.3
+
+
+
