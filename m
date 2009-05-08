@@ -1,56 +1,138 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763733AbZEHOJV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763850AbZEHOJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763733AbZEHOJV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 10:09:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763373AbZEHOG1
+	id S1763850AbZEHOJm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 10:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763531AbZEHOHe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 10:06:27 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:56692 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1763336AbZEHOG0 (ORCPT
+	Fri, 8 May 2009 10:07:34 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:44549 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1763520AbZEHOHc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 10:06:26 -0400
-Date: Fri, 8 May 2009 10:06:27 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Kay Sievers <kay.sievers@vrfy.org>
-cc: Kernel development list <linux-kernel@vger.kernel.org>,
-       Pantelis Koukousoulas <pktoss@gmail.com>,
-       USB list <linux-usb@vger.kernel.org>
-Subject: Re: usbfs, claiming entire usb devices
-In-Reply-To: <ac3eb2510905071612v61a27760hffc684ee87df9249@mail.gmail.com>
-Message-ID: <Pine.LNX.4.44L0.0905081000140.3010-100000@iolanthe.rowland.org>
+	Fri, 8 May 2009 10:07:32 -0400
+Date: Fri, 8 May 2009 10:07:31 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: ftrace 2.6.30-rc4: possible circular locking dependency
+In-Reply-To: <200905082255.BGE18711.LJQVStFHOFOOMF@I-love.SAKURA.ne.jp>
+Message-ID: <alpine.DEB.2.00.0905081000000.28378@gandalf.stny.rr.com>
+References: <200905082255.BGE18711.LJQVStFHOFOOMF@I-love.SAKURA.ne.jp>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 May 2009, Kay Sievers wrote:
 
-> You mentioned earlier, that you would need to match the holder of the
-> "lock" and the one that accesses the device?
+Hi Tetsuo,
 
-Yes.  That is, a process shouldn't be allowed to access a locked device 
-unless that process is the lock holder.
+Thanks for the report. But we already have a fix for it. But the change is 
+a bit of design change, and it is one of those things that is hard to know 
+if we should push it up stream this late in the RCs.
 
-> Wouldn't it be sufficient already, if you can take a "lock" at the
-> specific port, that prevents the kernel to access the device when it
-> shows up?
+We probably should. But the change affects two different subsystems. It 
+affects ftrace as well as the module code. There's a bit of changes to the 
+module code (Rusty being the maintainer) where we would be more 
+comfortable if it goes via Rusty.
 
-I don't know how the people requesting this feature would feel about
-that.  They seem to want to lock out other processes as well as locking
-out the kernel.
+Rusty and Ingo,
 
-> You thought of supporting a number of different users, with different
-> uids, or would that be a root-only action?
+What is the best way to get this change upstream?
 
-A typical use case would be somebody running an emulator like QEMU.  In 
-theory there could be multiple QEMU processes running concurrently, 
-each owning a different set of ports.  The uids might be different or 
-they might all be the same.
+Reference: http://lkml.org/lkml/2009/4/15/548
 
-Setting the lock permissions would be up to userspace.
+tip git SHA1: 93eb677d74a4f7d3edfb678c94f6c0544d9fbad2
 
-Alan Stern
+-- Steve
 
+
+On Fri, 8 May 2009, Tetsuo Handa wrote:
+
+> Hello.
+> 
+> I got this.
+> 
+> [    7.153662] Write protecting the kernel read-only data: 2172k
+> [    7.155593] Testing CPA: undo c0718000-c0937000
+> [    7.156809] Testing CPA: write protecting again
+> [    7.677561] 
+> [    7.677570] =======================================================
+> [    7.678536] [ INFO: possible circular locking dependency detected ]
+> [    7.678536] 2.6.30-rc4 #1
+> [    7.678536] -------------------------------------------------------
+> [    7.678536] insmod/571 is trying to acquire lock:
+> [    7.678536]  (ftrace_lock){+.+.+.}, at: [<c048e862>] ftrace_convert_nops+0x1f/0x1dc
+> [    7.678536] 
+> [    7.678536] but task is already holding lock:
+> [    7.678536]  (module_mutex){+.+.+.}, at: [<c0472637>] sys_init_module+0x3a/0x1ff
+> [    7.678536] 
+> [    7.678536] which lock already depends on the new lock.
+> [    7.678536] 
+> [    7.678536] 
+> [    7.678536] the existing dependency chain (in reverse order) is:
+> [    7.678536] 
+> [    7.678536] -> #1 (module_mutex){+.+.+.}:
+> [    7.678536]        [<c046762e>] __lock_acquire+0x931/0xad4
+> [    7.678536]        [<c0467861>] lock_acquire+0x90/0xad
+> [    7.678536]        [<c0710d46>] __mutex_lock_common+0x3a/0x4b6
+> [    7.678536]        [<c0711269>] mutex_lock_nested+0x33/0x3b
+> [    7.678536]        [<c0470709>] module_update_tracepoints+0x15/0x6d
+> [    7.678536]        [<c048bd7c>] tracepoint_update_probes+0x1c/0x1e
+> [    7.678536]        [<c048c186>] tracepoint_probe_register+0x50/0x5f
+> [    7.678536]        [<c048e6f1>] register_ftrace_graph+0x1ec/0x245
+> [    7.678536]        [<c0493763>] trace_selftest_startup_function_graph+0x23/0x9d
+> [    7.678536]        [<c0493e38>] register_tracer+0xf7/0x1fe
+> [    7.678536]        [<c0abb66d>] init_graph_trace+0xd/0xf
+> [    7.678536]        [<c040116a>] do_one_initcall+0x78/0x1d5
+> [    7.678536]        [<c0aa26de>] kernel_init+0x13b/0x1a9
+> [    7.678536]        [<c0403f9b>] kernel_thread_helper+0x7/0x10
+> [    7.678536]        [<ffffffff>] 0xffffffff
+> [    7.678536] 
+> [    7.678536] -> #0 (ftrace_lock){+.+.+.}:
+> [    7.678536]        [<c0467540>] __lock_acquire+0x843/0xad4
+> [    7.678536]        [<c0467861>] lock_acquire+0x90/0xad
+> [    7.678536]        [<c0710d46>] __mutex_lock_common+0x3a/0x4b6
+> [    7.678536]        [<c0711269>] mutex_lock_nested+0x33/0x3b
+> [    7.678536]        [<c048e862>] ftrace_convert_nops+0x1f/0x1dc
+> [    7.678536]        [<c048ea34>] ftrace_init_module+0x15/0x17
+> [    7.678536]        [<c0471cbc>] load_module+0x1122/0x17c1
+> [    7.678536]        [<c0472661>] sys_init_module+0x64/0x1ff
+> [    7.678536]        [<c0403575>] syscall_call+0x7/0xb
+> [    7.678536]        [<ffffffff>] 0xffffffff
+> [    7.678536] 
+> [    7.678536] other info that might help us debug this:
+> [    7.678536] 
+> [    7.678536] 1 lock held by insmod/571:
+> [    7.678536]  #0:  (module_mutex){+.+.+.}, at: [<c0472637>] sys_init_module+0x3a/0x1ff
+> [    7.678536] 
+> [    7.678536] stack backtrace:
+> [    7.678536] Pid: 571, comm: insmod Not tainted 2.6.30-rc4 #1
+> [    7.678536] Call Trace:
+> [    7.678536]  [<c0465d39>] print_circular_bug_tail+0x5d/0x68
+> [    7.678536]  [<c0467540>] __lock_acquire+0x843/0xad4
+> [    7.678536]  [<c0467861>] lock_acquire+0x90/0xad
+> [    7.678536]  [<c048e862>] ? ftrace_convert_nops+0x1f/0x1dc
+> [    7.678536]  [<c0710d46>] __mutex_lock_common+0x3a/0x4b6
+> [    7.678536]  [<c048e862>] ? ftrace_convert_nops+0x1f/0x1dc
+> [    7.678536]  [<c0403fc7>] ? ftrace_call+0x5/0x8
+> [    7.678536]  [<c0711269>] mutex_lock_nested+0x33/0x3b
+> [    7.678536]  [<c048e862>] ? ftrace_convert_nops+0x1f/0x1dc
+> [    7.678536]  [<c048e862>] ftrace_convert_nops+0x1f/0x1dc
+> [    7.678536]  [<c048ea34>] ftrace_init_module+0x15/0x17
+> [    7.678536]  [<c0471cbc>] load_module+0x1122/0x17c1
+> [    7.678536]  [<c0464125>] ? debug_mutex_free_waiter+0x25/0x81
+> [    7.678536]  [<c0472661>] sys_init_module+0x64/0x1ff
+> [    7.678536]  [<c0403575>] syscall_call+0x7/0xb
+> [    7.807546] insmod used greatest stack depth: 2328 bytes left
+> [    7.912357] Fusion MPT base driver 3.04.07
+> 
+> Environment is CentOS 5.3(i686) on VMware.
+> Config is at http://I-love.SAKURA.ne.jp/tmp/config-2.6.30-rc4
+> Full message is at http://I-love.SAKURA.ne.jp/tmp/dmesg-2.6.30-rc4.txt
+> 
+> Regards.
+> 
