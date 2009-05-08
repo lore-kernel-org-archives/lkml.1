@@ -1,64 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764711AbZEHAfw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764279AbZEHAgY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764711AbZEHAfw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:35:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756799AbZEHALA
+	id S1764279AbZEHAgY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:36:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759997AbZEHALH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:11:00 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:52707
-	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754083AbZEHAJy (ORCPT
+	Thu, 7 May 2009 20:11:07 -0400
+Received: from yx-out-2324.google.com ([74.125.44.28]:43244 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759889AbZEHALG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 20:09:54 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 03/18] xen: create dummy ioapic mapping
-Date: Thu,  7 May 2009 14:14:28 -0700
-Message-Id: <1241730883-4917-4-git-send-email-jeremy@goop.org>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1241730883-4917-1-git-send-email-jeremy@goop.org>
-References: <1241730883-4917-1-git-send-email-jeremy@goop.org>
+	Thu, 7 May 2009 20:11:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YhSdD0XnrPRroK5rbuJZwEd+YGb9ppv25sGuu/PnICxkmMcIvHLCuWCH94UxnjAoHg
+         NxML9bH7KaUTVKTBxJ9YAb9nKx2vJjI+zTqaQHT3eXxliOOVr9gSpaVAfygXm5IBa6ir
+         8JedENBVnqOIGUVqMwkX5hp+OsmEHpGLHfYVI=
+MIME-Version: 1.0
+In-Reply-To: <4A03129A.90105@acm.org>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	 <20090507120948.GA1531@ucw.cz> <4A03129A.90105@acm.org>
+Date: Thu, 7 May 2009 17:11:05 -0700
+Message-ID: <faa09fad0905071711v788e847dr33cf5a2eb688c1cc@mail.gmail.com>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+From: Alex Goebel <alex.goebel@gmail.com>
+To: U Kuehn <ukuehn@acm.org>
+Cc: Pavel Machek <pavel@ucw.cz>, Nigel Cunningham <nigel@tuxonice.net>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Impact: debuggability (make failures obvious)
+> Given that tuxonice DOES work reliably with dm-crypt encrypted swap
+> partitions, does uswsusp offer this functionality? Looking into the docs
+> on the sourceforge site does not give any information about this point.
 
-We don't allow direct access to the IO apic, so make sure that any
-request to map it just "maps" non-present pages.  We should see any
-attempts at direct access explode nicely.
+Works here. Just tried (s2disk, vanilla 2.6.29). It also claims you
+can hit "Del" to abort and to that it compressed the image.
 
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/x86/xen/mmu.c |   10 ++++++++++
- 1 files changed, 10 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 55da7f9..b105b73 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1907,6 +1907,16 @@ static void xen_set_fixmap(unsigned idx, unsigned long phys, pgprot_t prot)
- 		pte = pfn_pte(phys, prot);
- 		break;
- 
-+#ifdef CONFIG_X86_IO_APIC
-+	case FIX_IO_APIC_BASE_0 ... FIX_IO_APIC_BASE_END:
-+		/*
-+		 * We just don't map the IO APIC - all access is via
-+		 * hypercalls.  Keep the address in the pte for reference.
-+		 */
-+		pte = pfn_pte(phys, PAGE_NONE);
-+		break;
-+#endif
-+
- 	case FIX_PARAVIRT_BOOTMAP:
- 		/* This is an MFN, but it isn't an IO mapping from the
- 		   IO domain */
--- 
-1.6.0.6
-
+Alex
