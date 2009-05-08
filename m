@@ -1,69 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbZEHNNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757828AbZEHNRT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753853AbZEHNNo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 09:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752486AbZEHNNe
+	id S1757828AbZEHNRT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 09:17:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751449AbZEHNRJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 09:13:34 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:59104 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751925AbZEHNNd (ORCPT
+	Fri, 8 May 2009 09:17:09 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:57771 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751207AbZEHNRI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 09:13:33 -0400
-Date: Fri, 8 May 2009 07:13:33 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: "David S. Miller" <davem@davemloft.net>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH] Fix MSI-X with NIU cards
-Message-ID: <20090508131333.GV8112@parisc-linux.org>
+	Fri, 8 May 2009 09:17:08 -0400
+Date: Fri, 8 May 2009 09:17:04 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Wu Fengguang <fengguang.wu@intel.com>
+cc: Ingo Molnar <mingo@elte.hu>,
+       =?ISO-8859-15?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: ftrace: concurrent accesses possible?
+In-Reply-To: <20090508125821.GC15949@localhost>
+Message-ID: <alpine.DEB.2.00.0905080908120.28378@gandalf.stny.rr.com>
+References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu> <20090508125821.GC15949@localhost>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-The NIU device refuses to allow accesses to MSI-X registers before MSI-X
-is enabled.  This patch fixes the problem by moving the read of the mask
-register to after MSI-X is enabled.
+On Fri, 8 May 2009, Wu Fengguang wrote:
 
-Reported-by: David S. Miller <davem@davemloft.net>
-Tested-by: David S. Miller <davem@davemloft.net>
-Reviewed-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+> Hello,
+> 
+> On Fri, May 08, 2009 at 07:47:42PM +0800, Ingo Molnar wrote:
+> > 
+> > So this should be done in cooperation with instrumentation folks, 
+> > while improving _all_ of Linux instrumentation in general. Or, if 
+> > you dont have the time/interest to work with us on that, it should 
+> > not be done at all. Not having the resources/interest to do 
+> > something properly is not a license to introduce further 
+> > instrumentation crap into Linux.
+> 
+> I have a dummy question on /debug/trace: is it possible to
+> - use 2+ tracers concurrently?
 
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 6f2e629..3627732 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -455,8 +455,6 @@ static int msix_capability_init(struct pci_dev *dev,
- 		entry->msi_attrib.default_irq = dev->irq;
- 		entry->msi_attrib.pos = pos;
- 		entry->mask_base = base;
--		entry->masked = readl(base + j * PCI_MSIX_ENTRY_SIZE +
--					PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
- 		msix_mask_irq(entry, 1);
- 
- 		list_add_tail(&entry->list, &dev->msi_list);
-@@ -493,6 +491,12 @@ static int msix_capability_init(struct pci_dev *dev,
- 	msix_set_enable(dev, 1);
- 	dev->msix_enabled = 1;
- 
-+	list_for_each_entry(entry, &dev->msi_list, list) {
-+		int vector = entry->msi_attrib.entry_nr;
-+		entry->masked = readl(base + vector * PCI_MSIX_ENTRY_SIZE +
-+					PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
-+	}
-+
- 	return 0;
- }
- 
+Two plugins? no.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Two types of tracing? yes.
+
+The "current_tracer" is for specific tracing purposes that like, latency 
+tracing, function tracing and graph tracing. There are others, but they 
+are more "themes" than tracers. The latency tracing only shows a "max 
+latency" and does not show current traces unless they hit the max 
+threshold. The function graph tracer has a different output format that 
+has indentation based on the depth of the traced functions.
+
+But with tracing events, we can pick and choose any event and trace them 
+all together. You can filter them as well. For new events in the kernel, 
+we only add them via trace events. These events show up in the plugin 
+tracers too.
+
+> - run a system script that makes use of a tracer,
+
+Sure
+
+>   without disturbing the sysadmin's tracer activities?
+
+Hmm, you mean have individual tracers tracing different things. We sorta 
+do that now, but they are more custom. That is, you can have the stack 
+tracer running (recording max stack of the kernel) and run other tracers 
+as well, without noticing.  But those that write to the ring buffer, only 
+write to a single ring buffer. If another trace facility created their own 
+ring buffer, then you could have more than one ring buffer being used. But 
+ftrace currently uses only one (This is net exactly true, because the 
+latency tracers have a separate ring buffer to store the max).
+
+> - access 1 tracer concurrently from many threads,
+
+More than one reader can happen, but inside the kernel, they are 
+serialized. When reading from the trace_pipe (consumer mode), every read 
+will produce a different output, because the previous read was "consumed". 
+If two threads try to read this way at the same time, they will each get a 
+different result.
+
+>   with different filter etc. options?
+
+Not sure what you mean here. If you two threads filtering differently, 
+this should be done in userspace.
+
+-- Steve
+
+> 
+> If not currently, will private mounts be a viable solution?
+
