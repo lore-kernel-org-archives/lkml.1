@@ -1,101 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761645AbZEHTCk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763023AbZEHTDV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761645AbZEHTCk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 15:02:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763501AbZEHTCS
+	id S1763023AbZEHTDV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:03:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757870AbZEHTDF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 15:02:18 -0400
-Received: from wa4ehsobe002.messaging.microsoft.com ([216.32.181.12]:20121
-	"EHLO WA4EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1762998AbZEHTCQ convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:02:16 -0400
-X-Greylist: delayed 905 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 May 2009 15:02:16 EDT
-X-BigFish: VPS-18(zz1432R4015L1805Mzz1202hzzz32i6bh64h)
-X-Spam-TCS-SCL: 3:0
-X-FB-SS: 5,
-X-WSS-ID: 0KJC9I6-02-GSS-01
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH][KVM][retry 2] Add support for Pause Filtering to AMD SVM
-Date: Fri, 8 May 2009 13:47:04 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C11261327303620947@sausexmb4.amd.com>
-In-Reply-To: <4A047D86.1070407@redhat.com>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH][KVM][retry 2] Add support for Pause Filtering to AMD SVM
-Thread-Index: AcnQDQYFuSF8yShmRASM/sV+ee0yDQAACb9w
-References: <200905050909.58583.mark.langsdorf@amd.com> <20090507135522.GJ4059@amd.com> <200905071000.14038.mark.langsdorf@amd.com> <200905081203.55484.mark.langsdorf@amd.com> <4A047D86.1070407@redhat.com>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Avi Kivity" <avi@redhat.com>
-CC: "Roedel, Joerg" <Joerg.Roedel@amd.com>, <kvm@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 08 May 2009 18:47:05.0198 (UTC) FILETIME=[61DFD0E0:01C9D00D]
+	Fri, 8 May 2009 15:03:05 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:48868 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754799AbZEHTDD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 15:03:03 -0400
+Subject: Re: [RFC][PATCH] tsc_khz= boot option to avoid TSC calibration 
+ variance
+From: john stultz <johnstul@us.ibm.com>
+To: George Spelvin <linux@horizon.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, tglx@linutronix.de,
+       ulrich.windl@rz.uni-regensburg.de, williams@redhat.com,
+       zippel@linux-m68k.org
+In-Reply-To: <20090508121913.9039.qmail@science.horizon.com>
+References: <20090508121913.9039.qmail@science.horizon.com>
+Content-Type: text/plain
+Date: Fri, 08 May 2009 12:02:52 -0700
+Message-Id: <1241809372.7297.3.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> What's the differences wrt retry 1?
-
-I'm using git format-patch as you requested.
- 
-> > This feature creates a new field in the VMCB called Pause
-> > Filter Count.  If Pause Filter Count is greater than 0 and
-> > intercepting PAUSEs is enabled, the processor will increment
-> > an internal counter when a PAUSE instruction occurs instead
-> > of intercepting.  When the internal counter reaches the
-> > Pause Filter Count value, a PAUSE intercept will occur.
-> >
-> > This feature can be used to detect contended spinlocks,
-> > especially when the lock holding VCPU is not scheduled.
-> > Rescheduling another VCPU prevents the VCPU seeking the
-> > lock from wasting its quantum by spinning idly.
-> >
-> > Experimental results show that most spinlocks are held
-> > for less than 1000 PAUSE cycles or more than a few
-> > thousand.  Default the Pause Filter Counter to 3000 to
-> > detect the contended spinlocks.
+On Fri, 2009-05-08 at 08:19 -0400, George Spelvin wrote:
+> > To mitigate this, I wanted to provide a tsc_khz= boot option. This would
+> > allow users to set the tsc_khz value at boot-up, assuming they are
+> > within 1Mhz of the calibrated value (to protect against bad values).
+> > Once the tsc_khz value is set in grub, the box will always boot with the
+> > same value, so the NTP drift value prior to reboot will still be correct
+> > after rebooting.
 > 
-> 3000.
-
-Thanks, I keep missing that.
- 
-> > On a 24 core system running 4 guests each with 16 VCPUs,
-> > this patch improved overall performance of each guest's
-> > 32 job kernbench by approximately 1%.  Further performance
-> > improvement may be possible with a more sophisticated
-> > yield algorithm.
-> >   
+> A run-time adjustable would be more convenient, but this is simple and works.
 > 
-> Like I mentioned earlier, I don't think schedule() does 
-> anything on CFS.
+> The 1 MHz tolerance, however, isn't implemented right.  I can't quote
+> figure out what you were trying to do; was that (x + (x/2))/1000 trying
+> to round the /1000 properly?  That should be (x + 1000/2)/1000 in that
+> case, which I normally write as (x/500 + 1)/2;
 > 
-> Try sched_yield(), but set /proc/sys/kernel/sched_compat_yield.
+> But in any case, no equality comparison can possibly work; there's
+> always a case where the measured value rounds to k and the correct
+> value rounds to k+1.  Also, 1 MHz is a pretty wide tolerance on
+> sub-GHz processors.  I'd suggest the following:
 
-Will do.
+Ah. Indeed you're right. Thanks for catching this.
+Your version is much better.
 
-> > +static int pause_interception(struct vcpu_svm *svm, struct 
-> kvm_run *kvm_run)
-> > +{
-> > +	/* Simple yield */
-> > +	vcpu_put(&svm->vcpu);
-> > +	schedule();
-> > +	vcpu_load(&svm->vcpu);
-> > +	return 1;
-> > +}
-> > +
-> >   
+-john
+
+> diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+> index d57de05..d7ab640 100644
+> --- a/arch/x86/kernel/tsc.c
+> +++ b/arch/x86/kernel/tsc.c
+> @@ -825,15 +825,42 @@ static void __init init_tsc_clocksource(void)
+>  	clocksource_register(&clocksource_tsc);
+>  }
 > 
-> You don't need to vcpu_put() and vcpu_load().  The scheduler 
-> will call them for you if/when it switches tasks.
-
-I was waiting for feedback from Ingo on that issue, but I'll
-try sched_yield() instead.
-
--Mark Langsdorf
-Operating System Research Center
-AMD
+> +unsigned long tsc_khz_specified;
+> +static int __init tsc_khz_specified_setup(char *str)
+> +{
+> +	tsc_khz_specified = simple_strtoul(str, NULL, 0);
+> +	return 1;
+> +}
+> +
+> +__setup("tsc_khz=", tsc_khz_specified_setup);
+> +
+> +
+>  void __init tsc_init(void)
+>  {
+>  	u64 lpj;
+>  	int cpu;
+> +	long difference;
+> 
+>  	if (!cpu_has_tsc)
+>  		return;
+> 
+>  	tsc_khz = calibrate_tsc();
+> +
+> +	/*
+> *	 * If the calibrated TSC freq and user specified TSC freq
+> *	 * are close enough, pick the what the user told us.  Reject
+> *	 * obviously bogus values to make the option safe to use.
+> +	 */
+> +	difference = tsc_khz - tsc_khz_specified;
+> +	if (difference < 0)
+> +		difference = -difference;
+> +	if (difference <= tsc_khz >> 10) {	/* 1/1024 = 976 ppm */
+> +		printk(KERN_INFO "Using user defined TSC freq: %lu.%03lu MHz\n",
+> +			tsc_khz_specified/1000,
+> +			tsc_khz_specified%1000);
+> +		tsc_khz = tsc_khz_specified;
+> +	}
+> +
+>  	cpu_khz = tsc_khz;
+> 
+>  	if (!tsc_khz) {
 
