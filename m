@@ -1,105 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762500AbZEHFWW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbZEHFfp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762500AbZEHFWW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 01:22:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZEHFWN
+	id S1755344AbZEHFfp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 01:35:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZEHFff
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 01:22:13 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:10094 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752052AbZEHFWM (ORCPT
+	Fri, 8 May 2009 01:35:35 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47693 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751086AbZEHFfe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 01:22:12 -0400
-Date: Fri, 08 May 2009 01:21:46 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: LKML <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Subject: Re: regression in TSC unstable?
-In-reply-to: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com>
-Message-id: <alpine.LFD.2.00.0905080117410.4710@localhost.localdomain>
-References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 8 May 2009 01:35:34 -0400
+Message-ID: <4A03C3BB.3070401@intel.com>
+Date: Thu, 07 May 2009 22:31:39 -0700
+From: "H. Peter Anvin" <h.peter.anvin@intel.com>
+Organization: Intel Corporation
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+CC: "H. Peter Anvin" <hpa@linux.intel.com>, linux-kernel@vger.kernel.org,
+       vgoyal@redhat.com, hbabu@us.ibm.com, kexec@lists.infradead.org,
+       ying.huang@intel.com, mingo@elte.hu, tglx@linutronix.de,
+       sam@ravnborg.org
+Subject: Re: [PATCH 00/14] RFC: x86: relocatable kernel changes
+References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com> <m14ovwz8ua.fsf@fess.ebiederm.org>
+In-Reply-To: <m14ovwz8ua.fsf@fess.ebiederm.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 May 2009, Steven Rostedt wrote:
+Eric W. Biederman wrote:
+> Peter do you plan to update pxelinux or other bootloaders to use the
+> relocatable kernel feature?
 
-> The ring-buffer-benchmark module creates a producer and consumer and loops 
-> on do_gettimeofday until it hits about 10 seconds. Then it calculates the 
-> number of events recorded / time running.
-> 
-> After Ingo merged Linus's latest
+Yes.
 
-merged what into what?
-are you referring to the upstream kernel or something else?
+> The direction of this patch seems reasonable.  The details are broken.
+> The common case for relocatable kernels today is kdump.  A situation
+> with very minimal memory.  In that situation the kernel needs to run
+> where we put it, modifying the kernel to not run where it gets put
+> is a problem.
 
-> my tests when from 330ns per entry to 
-> 880ns. After bisecting it I came down to this change:
-> 
->    commit a71e4917dc0ebbcb5a0ecb7ca3486643c1c9a6e2
->    Author: Len Brown <len.brown@intel.com>
->    Date:   Tue Apr 21 00:50:11 2009 -0400
-> 
->     ACPI: idle: mark_tsc_unstable() at init-time, not run-time
-> 
-> 
-> I've never had a problem with the TSC with this box before. It passes the 
-> synchronization phase, and until this commit, the TSC never was marked as 
-> unstable.
-> 
-> Should it now be unstable? Or is this a false positive?
+I thought in the kdump case you typically loaded it pretty high?  Either
+which way, kdump is always loaded by kexec, so it should just be a
+matter of updating kexec to zero the runtime_start field, no?  Basically
+this is the bootloader saying "do what I say, dammit."  Since the
+existing protocol doesn't have a way to unambiguously communicate one
+direction versus another (see below), it seems like a relatively small
+issue involving only one tool.  Suboptimal, yes.
 
-If you revert that patch the issue goes away?
-
-Does your Xeon even export any C-states?
-(cat /proc/acpi/processor/*/power)
-
-does your dmesg before or afer the patch actually print
-"TSC halts in idle"?
-
-thanks,
--Len
-
-> # cat /proc/cpuinfo 
-> processor	: 0
-> vendor_id	: GenuineIntel
-> cpu family	: 15
-> model		: 4
-> model name	: Intel(R) Xeon(TM) CPU 2.80GHz
-> stepping	: 1
-> cpu MHz		: 2793.272
-> cache size	: 1024 KB
-> physical id	: 0
-> siblings	: 2
-> core id		: 0
-> cpu cores	: 1
-> apicid		: 0
-> initial apicid	: 0
-> fpu		: yes
-> fpu_exception	: yes
-> cpuid level	: 5
-> wp		: yes
-> flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-> cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx 
-> lm constant_tsc pebs bts pni dtes64 monitor ds_cpl cid cx16 xtpr
-> bogomips	: 5586.54
-> clflush size	: 64
-> cache_alignment	: 128
-> address sizes	: 36 bits physical, 48 bits virtual
-> power management:
+> With the code as it is today you can get the exact same behavior
+> by simply bumping up the minimum alignment to 16MB, and a lot less code
+> and no changes needed to any bootloaders.
 > 
-> Anything else I might need to know?
+> Is your goal to setup a scenario where on small memory systems a bootloader
+> like pxelinux can support a relocatable kernel and load it a lower
+> address?  If so that seems reasonable.
+
+Yes.
+
+> With that said how about we change the logic to:
 > 
-> -- Steve
+> if (load_addr == legacy_load_addr) /* 0x100000 */
+> 	use config_physical_start
+> else if aligned
+> 	noop
+> else
+>         /* Crap this is bad align the kernel and hope something works. */
 > 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+> That gets the desired behavior we override bootloaders that are not
+> smart and taking relocation into account.  I am really not comfortable
+> with having code that will override a bootloader doing something
+> reasonable.
+
+I'm not sure that is quite right either, because if alignment is
+configured to be 1 MB or less then 1 MB is a perfectly legitimate
+address for a relocating bootloader to want to use, even if it is not
+configured in.  It would be more than a bit odd to not have that be
+permitted.
+
+> I expect we will still want to update kexec to be able to take
+> advantage of loadtime_size (runtime_size seems like the wrong name).
+
+Well, it is the amount of memory the kernel needs during runtime (as
+opposed to during loading.)  I admit it's not an ideal name, though.  On
+the other hand, simply calling it kernel_start and kernel_size seemed
+ambiguous.
+
+	-hpa
+
