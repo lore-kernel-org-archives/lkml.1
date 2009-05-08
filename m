@@ -1,84 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760492AbZEHMpd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753094AbZEHMsU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760492AbZEHMpd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 08:45:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756618AbZEHMpX
+	id S1753094AbZEHMsU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 08:48:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753922AbZEHMsJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 08:45:23 -0400
-Received: from mga14.intel.com ([143.182.124.37]:17954 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756213AbZEHMpW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 08:45:22 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,317,1239001200"; 
-   d="scan'208";a="140688134"
-Date: Fri, 8 May 2009 20:44:33 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
+	Fri, 8 May 2009 08:48:09 -0400
+Received: from smtp02.citrix.com ([66.165.176.63]:63663 "EHLO
+	SMTP02.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753237AbZEHMsI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 08:48:08 -0400
+X-Greylist: delayed 574 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 May 2009 08:48:08 EDT
+X-IronPort-AV: E=Sophos;i="4.40,317,1238990400"; 
+   d="scan'208";a="50481805"
+Subject: Re: [PATCH 06/16] xen: disable PAT
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
 To: Ingo Molnar <mingo@elte.hu>
-Cc: =?utf-8?B?RnLDqWTDqXJpYw==?= Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 4/8] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090508124433.GB15949@localhost>
-References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
+In-Reply-To: <20090508111432.GF11596@elte.hu>
+References: <1241730653-4688-1-git-send-email-jeremy@goop.org>
+	 <1241730653-4688-7-git-send-email-jeremy@goop.org>
+	 <20090508111432.GF11596@elte.hu>
+Content-Type: text/plain
+Organization: Citrix Systems, Inc.
+Date: Fri, 8 May 2009 13:38:31 +0100
+Message-ID: <1241786311.16804.56.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090508114742.GB17129@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Ingo,
-
-On Fri, May 08, 2009 at 07:47:42PM +0800, Ingo Molnar wrote:
+On Fri, 2009-05-08 at 07:14 -0400, Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 > 
-> * Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > From: Ian Campbell <ian.campbell@citrix.com>
+> > 
+> > Impact: disable PAT under Xen
+> > 
+> > Xen imposes a particular PAT layout on all paravirtual guests which
+> > does not match the layout Linux would like to use.
+> > 
+> > Force PAT to be disabled until this is resolved.
+> > 
+> > Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+> > Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 > 
-> > Export all page flags faithfully in /proc/kpageflags.
-> 
-> Ongoing objection and NAK against extended haphazard exporting of 
-> kernel internals via an ad-hoc ABI via ad-hoc, privatized 
-> instrumentation that only helps the MM code and nothing else. It was 
-> a mistake to introduce the /proc/kpageflags hack a year ago, and it 
-> even more wrong today to expand on it.
+> hm, what will the resolution be?
 
-If cannot abandon it, embrace it. That's my attitude.
+Roughly speaking the kernel needs to cope with different values written
+to MSR_IA32_CR_PAT than the single hard coded value it would write
+itself if given the chance. Essentially _PAGE_CACHE_* need to become
+dynamic (or I guess we could change the native layout to match Xen's, I
+don't know why native differs from the initial state, I guess just to
+avoid using the PAT bit for some reason).
 
-> /proc/kpageflags should be done via the proper methods outlined in 
-> the previous mails i wrote on this topic: for example by using the 
-> 'object collections' abstraction i suggested. Clean enumeration of 
-> all pages (files, tasks, etc.) and the definition of histograms over 
-> it via free-form filter expressions is the right way to do this. It 
-> would not only help other subsystems, it would also be far more 
-> capable.
+The various mappings used are:
+	PAT PCD PWT	NATIVE	XEN	BIOS	INIT
+        0   0   0	WB	WB	WB	WB
+        0   0   1	WC	WT	WT	WT
+        0   1   0	UC-	UC-	UC-	UC-
+        0   1   1	UC	UC	-	UC
+        1   0   0	-	WC	WB	WB
+        1   0   1	-	WP	WT	WT
+        1   1   0	-	-	UC-	UC-
+        1   1   1	-	-	-	UC-
+(INIT is the processors initial state and BIOS is apparently commonly
+set by the BIOS).
 
-For the new interfaces(files etc.) I'd very like to use the ftrace
-interface. For the existing pagemap interfaces, if they can fulfill
-their targeted tasks, why bother making the shift?
+At the time this changeset was originally written using the actual PAT
+bit (required by Xen's layout to get at WC) led to strange errors (to do
+with swap masking various bits IIRC) but I believe those have been fixed
+since by Jan Beulich.
 
-When the pagemap interfaces cannot satisfy some new applications,
-and ftrace can provide a superset of the pagemap interfaces and shows
-clear advantages while meeting the new demands, then we can schedule
-tearing down of the old interface?
+I'm not sure how _PAGE_PAT_LARGE fits in -- native cunning avoids having
+to worry about it by not using the PAT bit at all.
 
-> So this should be done in cooperation with instrumentation folks, 
-> while improving _all_ of Linux instrumentation in general. Or, if 
-> you dont have the time/interest to work with us on that, it should 
-> not be done at all. Not having the resources/interest to do 
-> something properly is not a license to introduce further 
-> instrumentation crap into Linux.
+Ian.
 
-I'd be glad to work with you on the 'object collections' ftrace
-interfaces.  Maybe next month. For now my time have been allocated
-for the hwpoison work, sorry!
 
-Thanks,
-Fengguang
