@@ -1,98 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759649AbZEHS7q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763798AbZEHTAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759649AbZEHS7q (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 14:59:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753522AbZEHS7i
+	id S1763798AbZEHTAa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755729AbZEHTAW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 14:59:38 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58178 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751678AbZEHS7h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 14:59:37 -0400
-Date: Fri, 8 May 2009 14:56:44 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Nauman Rafique <nauman@google.com>
-Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] io-controller: Add io group reference handling for
-	request
-Message-ID: <20090508185644.GH7293@redhat.com>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A03FF3C.4020506@cn.fujitsu.com> <20090508135724.GE7293@redhat.com> <e98e18940905081041r386e52a5q5a2b1f13f1e8c634@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e98e18940905081041r386e52a5q5a2b1f13f1e8c634@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 8 May 2009 15:00:22 -0400
+Received: from zone0.gcu-squad.org ([212.85.147.21]:47689 "EHLO
+	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751678AbZEHTAV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 15:00:21 -0400
+Date: Fri, 8 May 2009 20:59:16 +0200
+From: Jean Delvare <khali@linux-fr.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LM Sensors <lm-sensors@lm-sensors.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: [GIT PULL] hwmon fixes for 2.6.30
+Message-ID: <20090508205916.4478b06c@hyperion.delvare>
+X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 10:41:01AM -0700, Nauman Rafique wrote:
-> On Fri, May 8, 2009 at 6:57 AM, Vivek Goyal <vgoyal@redhat.com> wrote:
-> > On Fri, May 08, 2009 at 05:45:32PM +0800, Gui Jianfeng wrote:
-> >> Hi Vivek,
-> >>
-> >> This patch adds io group reference handling when allocating
-> >> and removing a request.
-> >>
-> >
-> > Hi Gui,
-> >
-> > Thanks for the patch. We were thinking that requests can take a reference
-> > on io queues and io queues can take a reference on io groups. That should
-> > make sure that io groups don't go away as long as active requests are
-> > present.
-> >
-> > But there seems to be a small window while allocating the new request
-> > where request gets allocated from a group first and then later it is
-> > mapped to that group and queue is created. IOW, in get_request_wait(),
-> > we allocate a request from a particular group and set rq->rl, then
-> > drop the queue lock and later call elv_set_request() which again maps
-> > the request to the group saves rq->iog and creates new queue. This window
-> > is troublesome because request can be mapped to a particular group at the
-> > time of allocation and during set_request() it can go to a different
-> > group as queue lock was dropped and group might have disappeared.
-> >
-> > In this case probably it might make sense that request also takes a
-> > reference on groups. At the same time it looks too much that request takes
-> > a reference on queue as well as group object. Ideas are welcome on how
-> > to handle it...
-> 
-> IMHO a request being allocated on the wrong cgroup should not be a big
-> problem as such. All it means is that the request descriptor was
-> accounted to the wrong cgroup in this particular corner case. Please
-> correct me if I am wrong.
+Hi Linus,
 
-I think you are right. We just need to be little careful while freeing
-the request that associated request list might have gone away (rq->rl).
+Please pull some hwmon subsystem fixes for Linux 2.6.30 from:
 
-Or we probably can think of getting rid of (rq->rl) also and while
-freeing request determine io queue and group from rq->ioq. But somehow
-I remember that I had to introduce rq->rl otherwise I was running into
-issues of request being mapped to different groups at different point
-of time hence different request list etc. Will check again..
-> 
-> We can also get rid of rq->iog pointer too. What that means is that
-> request is associated with ioq (rq->ioq), and we can use
-> ioq_to_io_group() function to get the io_group. So the request would
-> only be indirectly associated with an io_group i.e. the request is
-> associated with an io_queue and the io_group for the request is the
-> io_group associated with io_queue. Do you see any problems with that
-> approach?
+git://jdelvare.pck.nerim.net/jdelvare-2.6 hwmon-for-linus
 
-Looks like this is also doable. Good idea. Can't think of why can't
-we get rid of rq->iog and manage with rq->ioq. There are only 1-2
-places where ioq is not setup yet and rq has been mapped to the group.
-There we shall have to carry group information or carry bio information
-and map it again to get group info.
+ drivers/hwmon/asus_atk0110.c |    2 ++
+ drivers/hwmon/w83781d.c      |    3 ++-
+ 2 files changed, 4 insertions(+), 1 deletions(-)
 
-Will try to implement it and see how does it go.
+---------------
 
-Thanks
-Vivek
+Jean Delvare (1):
+      hwmon: (w83781d) Fix W83782D support (NULL pointer dereference)
+
+Luca Tettamanti (1):
+      hwmon: (asus_atk0110) Fix compiler warning
+
+Thanks,
+-- 
+Jean Delvare
