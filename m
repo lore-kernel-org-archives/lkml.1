@@ -1,94 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759440AbZEHFUZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762090AbZEHFU6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759440AbZEHFUZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 01:20:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751659AbZEHFUK
+	id S1762090AbZEHFU6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 01:20:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752826AbZEHFUr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 01:20:10 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:44695 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1751057AbZEHFUJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 01:20:09 -0400
-Cc: xfs@oss.sgi.com, kernel-testers@vger.kernel.org,
-       linux-kernel@vger.kernel.org, a.beregalov@gmail.com
-Message-Id: <9375AA94-2051-42CB-A7EB-9A32E3F94A24@sgi.com>
-From: Felix Blyakher <felixb@sgi.com>
-To: Eric Sandeen <sandeen@sandeen.net>
-In-Reply-To: <4A039F85.8010506@sandeen.net>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
-Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] xfs: fix double unlock in xfs_swap_extents()
-Date: Fri, 8 May 2009 00:20:06 -0500
-References: <1241745202-7452-1-git-send-email-felixb@sgi.com> <4A039F85.8010506@sandeen.net>
-X-Mailer: Apple Mail (2.930.3)
+	Fri, 8 May 2009 01:20:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45844 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751086AbZEHFUq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 01:20:46 -0400
+Date: Fri, 8 May 2009 02:25:11 -0300
+From: Glauber Costa <glommer@redhat.com>
+To: Avi Kivity <avi@redhat.com>
+Cc: Gleb Natapov <gleb@redhat.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] deal with interrupt shadow state for emulated
+	instruction
+Message-ID: <20090508052511.GC5953@poweredge.glommer>
+References: <1241548811-8138-1-git-send-email-glommer@redhat.com> <20090506080321.GU9795@redhat.com> <4A016B98.7070701@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A016B98.7070701@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On May 7, 2009, at 9:57 PM, Eric Sandeen wrote:
-
-> Felix Blyakher wrote:
->> Regreesion from commit ef8f7fc, which rearranged the code in
->> xfs_swap_extents() leading to double unlock of xfs inode iolock.
->> That resulted in xfs_fsr deadlocking itself on platforms, which
->> don't handle double unlock of rw_semaphore nicely. It caused the
->> count go negative, which represents the write holder, without
->> really having one. ia64 is one of the platforms where deadlock
->> was easily reproduced and the fix was tested.
->>
->> Signed-off-by: Felix Blyakher <felixb@sgi.com>
+On Wed, May 06, 2009 at 01:51:04PM +0300, Avi Kivity wrote:
+> Gleb Natapov wrote:
+>> On Tue, May 05, 2009 at 02:40:11PM -0400, Glauber Costa wrote:
+>>   
+>>> diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+>>> index 8e680c3..a49d07b 100644
+>>> --- a/arch/x86/include/asm/kvm_host.h
+>>> +++ b/arch/x86/include/asm/kvm_host.h
+>>> @@ -510,6 +510,8 @@ struct kvm_x86_ops {
+>>>  	void (*run)(struct kvm_vcpu *vcpu, struct kvm_run *run);
+>>>  	int (*handle_exit)(struct kvm_run *run, struct kvm_vcpu *vcpu);
+>>>  	void (*skip_emulated_instruction)(struct kvm_vcpu *vcpu);
+>>> +	void (*set_interrupt_shadow)(struct kvm_vcpu *vcpu, int mask);
+>>>     
+>> There is .drop_interrupt_shadow() callback. The patch should remove it and
+>> replace its use by set_interrupt_shadow().
+>>   
 >
-> Also-written-by: Eric Sandeen <sandeen@sandeen.net>
-> Independently-arrived-at-by: Eric Sandeen <sandeen@sandeen.net>
+> That would be [PATCH 1/2].
+[PATCH 2/2]. Otherwise we will break bisectability, as the pure removal of this
+function would lead us to a non-functioning kernel for no reason.
 
-That would make it: Signed-off-by: Eric Sandeen <sandeen@sandeen.net> :)
+Avi: if this patch is okay, please apply. I'll send another one later that replaces
+the existing .drop_interrupt_shadow by the (then) in tree set_interrupt_shadow.
 
-> ;)
->
-> But seriously ...
-
-Seriously.
-
-Felix
-
->
->
-> Reviewed-by: Eric Sandeen <sandeen@sandeen.net>
->
->> ---
->> fs/xfs/xfs_dfrag.c |    8 +++++---
->> 1 files changed, 5 insertions(+), 3 deletions(-)
->>
->> diff --git a/fs/xfs/xfs_dfrag.c b/fs/xfs/xfs_dfrag.c
->> index e6d839b..7465f9e 100644
->> --- a/fs/xfs/xfs_dfrag.c
->> +++ b/fs/xfs/xfs_dfrag.c
->> @@ -347,13 +347,15 @@ xfs_swap_extents(
->>
->> 	error = xfs_trans_commit(tp, XFS_TRANS_SWAPEXT);
->>
->> -out_unlock:
->> -	xfs_iunlock(ip,  XFS_ILOCK_EXCL | XFS_IOLOCK_EXCL);
->> -	xfs_iunlock(tip, XFS_ILOCK_EXCL | XFS_IOLOCK_EXCL);
->> out:
->> 	kmem_free(tempifp);
->> 	return error;
->>
->> +out_unlock:
->> +	xfs_iunlock(ip,  XFS_ILOCK_EXCL | XFS_IOLOCK_EXCL);
->> +	xfs_iunlock(tip, XFS_ILOCK_EXCL | XFS_IOLOCK_EXCL);
->> +	goto out;
->> +
->> out_trans_cancel:
->> 	xfs_trans_cancel(tp, 0);
->> 	goto out_unlock;
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux- 
-> kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
 
