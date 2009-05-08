@@ -1,63 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761318AbZEHW4S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762971AbZEHXAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761318AbZEHW4S (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 18:56:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZEHW4E
+	id S1762971AbZEHXAa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 19:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZEHXAP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 18:56:04 -0400
-Received: from ultra7.eskimo.com ([204.122.16.70]:2562 "EHLO ultra7.eskimo.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751039AbZEHW4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 18:56:04 -0400
-Date: Fri, 8 May 2009 15:53:49 -0700
-From: Elladan <elladan@eskimo.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, fengguang.wu@intel.com,
-       hannes@cmpxchg.org, peterz@infradead.org, riel@redhat.com,
-       linux-kernel@vger.kernel.org, tytso@mit.edu, linux-mm@kvack.org,
-       elladan@eskimo.com, npiggin@suse.de, cl@linux-foundation.org,
-       kosaki.motohiro@jp.fujitsu.com, minchan.kim@gmail.com
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
-	class citizen
-Message-ID: <20090508225349.GA9883@eskimo.com>
-References: <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org> <20090507134410.0618b308.akpm@linux-foundation.org> <20090508081608.GA25117@localhost> <20090508125859.210a2a25.akpm@linux-foundation.org> <20090508230045.5346bd32@lxorguk.ukuu.org.uk> <20090508151532.6769e702.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090508151532.6769e702.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 8 May 2009 19:00:15 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32884
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751209AbZEHXAO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 19:00:14 -0400
+Date: Fri, 08 May 2009 16:00:08 -0700 (PDT)
+Message-Id: <20090508.160008.127530143.davem@davemloft.net>
+To: shemminger@vyatta.com
+Cc: jpirko@redhat.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       jgarzik@pobox.com, shemminger@linux-foundation.org,
+       bridge@lists.linux-foundation.org, fubar@us.ibm.com,
+       bonding-devel@lists.sourceforge.net, kaber@trash.net,
+       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
+Subject: Re: [PATCH] net: introduce a list of device addresses
+ dev_addr_list (v6)
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090508153842.65ce3bed@s6510>
+References: <20090505124827.GB3473@psychotron.englab.brq.redhat.com>
+	<20090505.122718.51237316.davem@davemloft.net>
+	<20090508153842.65ce3bed@s6510>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 03:15:32PM -0700, Andrew Morton wrote:
-> On Fri, 8 May 2009 23:00:45 +0100
-> Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> 
-> > > The patch seems reasonable but the changelog and the (non-existent)
-> > > design documentation could do with a touch-up.
-> > 
-> > Is it right that I as a user can do things like mmap my database
-> > PROT_EXEC to get better database numbers by making other
-> > stuff swap first ?
-> >
-> > You seem to be giving everyone a "nice my process up" hack.
-> 
-> Yep.
-> 
-> But prior to 2.6.27(?) the same effect could be had by mmap()ing the
-> file with or without PROT_EXEC.  The patch restores a
-> probably-beneficial heuristic which got lost in the LRU rewrite.
-> 
-> So we're no worse than pre-2.6.27 kernels here.  Plus there are
-> probably more effective ways of getting that sort of boost, such as
-> having a process running which simply touches your favoured pages
-> at a suitable (and fairly low) frequency.
+From: Stephen Hemminger <shemminger@vyatta.com>
+Date: Fri, 8 May 2009 15:38:42 -0700
 
-An example of a process which does this automatically is the Java virtual
-machine (and probably other runtimes which use a mark and sweep type GC).
+> Not sure if this is such a good idea since the purpose of this was to fix
+> a bonding/bridging interaction, but it breaks STP on bridging.
 
-You can see this in practice pretty easily -- a jvm process will automatically
-keep its memory paged in, even under strong VM pressure.
+Thanks for not paying attention... :-/
 
--E
+The Intel folks want to have an address list functionality so
+they can public MAC addresses meant for FCOE and other purposes.
+
+So even if the bonding bits bomb, we still need this.
