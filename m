@@ -1,75 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761329AbZEHJKq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762943AbZEHJLg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761329AbZEHJKq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 05:10:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760259AbZEHJKf
+	id S1762943AbZEHJLg (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 05:11:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758192AbZEHJLZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 05:10:35 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60833 "EHLO mx2.mail.elte.hu"
+	Fri, 8 May 2009 05:11:25 -0400
+Received: from mail46.e.nsc.no ([193.213.115.46]:39362 "EHLO mail46.e.nsc.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756255AbZEHJKe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 05:10:34 -0400
-Date: Fri, 8 May 2009 11:10:15 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Shaohua Li <shaohua.li@intel.com>, lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] x86 MCE: shut up lockdep warning
-Message-ID: <20090508091015.GA2038@elte.hu>
-References: <1241754429.4444.12.camel@sli10-desk.sh.intel.com> <20090508064517.GX23223@one.firstfloor.org>
+	id S1758274AbZEHJLY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 05:11:24 -0400
+Date: Fri, 8 May 2009 11:10:52 +0200
+From: Henrik Austad <henrik@austad.us>
+To: GeunSik Lim <leemgs1@gmail.com>
+Cc: finarfin@dreamos.org, linux-kernel@vger.kernel.org
+Subject: Re: SCHED_EDF infos
+Message-ID: <20090508091052.GA10429@januz.myftp.org>
+References: <164c92d827cbee86ba2c5621716309e6@localhost> <200904300939.31754.henrik@austad.us> <49b7c2350905071935kbd2aa22v9d39cf41c537c24b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <20090508064517.GX23223@one.firstfloor.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <49b7c2350905071935kbd2aa22v9d39cf41c537c24b@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 08, 2009 at 11:35:58AM +0900, GeunSik Lim wrote:
+> Hi Henlik,
 
-* Andi Kleen <andi@firstfloor.org> wrote:
+Hi Lim,
 
-> On Fri, May 08, 2009 at 11:47:09AM +0800, Shaohua Li wrote:
-> > lockdep report below warning when I try to offline one cpu:
-> > [  110.835487] =================================
-> > [  110.835616] [ INFO: inconsistent lock state ]
-> > [  110.835688] 2.6.30-rc4-00336-g8c9ed89 #52
-> > [  110.835757] ---------------------------------
-> > [  110.835828] inconsistent {HARDIRQ-ON-W} -> {IN-HARDIRQ-W} usage.
-> > [  110.835908] swapper/0 [HC1[1]:SC0[0]:HE0:SE1] takes:
-> > [  110.835982]  (cmci_discover_lock){?.+...}, at: [<ffffffff80236dc0>] cmci_clear+0x30/0x9b
-> > 
-> > smp_call_function_single() will disable interrupt. moving mce reenable/disable
-> > to workqueue, so no irq is disabled.
-> 
-> Looks good. Thanks.
-> 
-> Acked-by: Andi Kleen <ak@linux.intel.com>
 
-The report is useful, but the fix does not look good at all, and you 
-should never have acked it:
+First off, to all of you, sorry for my last, very poorly formatted email. I 
+have now tranceded into the realms of mutt.
 
- - it works around a lockdep warning
+> [..]
+> I think so.
+> How can we approach  EDF implementation like Pfair as a generic solution
+> for Multicore in Linux?
 
- - you did not realize the real bug while the warning was plain
+I am working on an implementation now, and I hope to be able to release a 
+prototype by the end of next week. I think we can continue the discussion 
+then based on that.
 
- - plus the patch introduces a fragile (because complex)
-   work_on_cpu() call into the CPU hotplug path, which could have 
-   caused followup regressions.
+> > I'm working on SCHED_PFAIR :-) Which is a multicore, ratebased deadline 
+> > driven global scheduling policy where I use the PD^2 rules to solve 
+> > tie-breaks. In theory, it can reach 100% utilization on all cores 
+> > without missing deadlines (but in practice you will only get close to 
+> > 100% as it is not perfect).
 
-Please also Cc: the relevant upstream subsystem maintainers in such 
-cases (the x86 maintaiers in this case).
+> > [..]
+> > I'd suggest getting the scheduler running first, then look at those
+> > problems later. If you spend all your time trying to learn the 
+> > scheduler and design in every little feature you need, you'll never 
+> > finish in time.
 
-Thanks,
+> In fact, I also  don't have perfect know how to solve PI in Multicore.
+> [...]
+> > deadline inversion will be a problem, in fact, whatever you chooose to 
+> > be the 'key' for picking tasks (priority, niceness, deadlines, wind 
+> > direction, <whatever>), you can pretty much take that and add a 
+> > -inversion after it. :)
 
-	Ingo
+No, PI is going to be deadly no matter what you do.
+
+Henrik
