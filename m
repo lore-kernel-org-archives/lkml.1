@@ -1,66 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755432AbZEHOaH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760494AbZEHOab@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755432AbZEHOaH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 10:30:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752430AbZEHO3x
+	id S1760494AbZEHOab (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 10:30:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759276AbZEHOaA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 10:29:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45835 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752255AbZEHO3w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 10:29:52 -0400
-Message-ID: <4A0440B2.7040300@redhat.com>
-Date: Fri, 08 May 2009 10:24:50 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Fri, 8 May 2009 10:30:00 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:48075 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1760198AbZEHO37 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 10:29:59 -0400
+Date: Fri, 8 May 2009 10:29:32 -0400 (EDT)
+From: Christoph Lameter <cl@linux.com>
+X-X-Sender: cl@qirst.com
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu, mel@csn.ul.ie,
+       linux-kernel@vger.kernel.org, riel@redhat.com, rientjes@google.com,
+       xemul@openvz.org
+Subject: Re: [RFC/PATCH v2] mm: Introduce GFP_PANIC for non-failing
+ allocations
+In-Reply-To: <1241792580.28600.41.camel@penberg-laptop>
+Message-ID: <alpine.DEB.1.10.0905081026210.21690@qirst.com>
+References: <20090504122740.GH4173@lenovo> <20090504131311.GA23330@elte.hu>  <20090504131638.GJ4173@lenovo>  <alpine.DEB.1.10.0905040940490.9553@qirst.com>  <20090504115335.9bc08587.akpm@linux-foundation.org>  <20090504192117.GB31176@lenovo> 
+ <20090504123453.d130a6cf.akpm@linux-foundation.org>  <20090504200925.GD31176@lenovo> <1241787448.28600.26.camel@penberg-laptop>  <alpine.DEB.1.10.0905081018130.23875@qirst.com> <1241792580.28600.41.camel@penberg-laptop>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-CC: vgoyal@redhat.com, akpm@linux-foundation.org, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, peterz@infradead.org
-Subject: Re: IO scheduler based IO Controller V2
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com>	<20090505132441.1705bfad.akpm@linux-foundation.org>	<20090506023332.GA1212@redhat.com> <20090507.091858.226775723.ryov@valinux.co.jp>
-In-Reply-To: <20090507.091858.226775723.ryov@valinux.co.jp>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ryo Tsuruta wrote:
-> Hi Vivek,
-> 
->> Ryo, dm-ioband breaks the notion of classes and priority of CFQ because
->> of FIFO dispatch of buffered bios. Apart from that it tries to provide
->> fairness in terms of actual IO done and that would mean a seeky workload
->> will can use disk for much longer to get equivalent IO done and slow down
->> other applications. Implementing IO controller at IO scheduler level gives
->> us tigher control. Will it not meet your requirements? If you got specific
->> concerns with IO scheduler based contol patches, please highlight these and
->> we will see how these can be addressed.
-> 
-> I'd like to avoid making complicated existing IO schedulers and other
-> kernel codes and to give a choice to users whether or not to use it.
-> I know that you chose an approach that using compile time options to
-> get the same behavior as old system, but device-mapper drivers can be
-> added, removed and replaced while system is running.
+On Fri, 8 May 2009, Pekka Enberg wrote:
 
-I do not believe that every use of cgroups will end up with
-a separate logical volume for each group.
+> On Fri, 8 May 2009, Pekka Enberg wrote:
+> > > +#define GFP_PANIC	(__GFP_NOFAIL | __GFP_NORETRY | __GFP_NOMEMALLOC)
+>
+> On Fri, 2009-05-08 at 10:20 -0400, Christoph Lameter wrote:
+> > So this means not retrying the allocation a couple of times? Not delving
+> > into reserve pools? Such behavior is good for a allocation that causes a
+> > panic if it fails?
+>
+> If you do GFP_KERNEL|GFP_PANIC, we will cond_resched() and retry if we
+> made some progress. So yes, I think the behavior is good for early-boot
+> call-sites that can't really fail anyway.
 
-In fact, if you look at group-per-UID usage, which could be
-quite common on shared web servers and shell servers, I would
-expect all the groups to share the same filesystem.
+Better make sure that GFP_PANIC is only used during early boot then.
 
-I do not believe dm-ioband would be useful in that configuration,
-while the IO scheduler based IO controller will just work.
+If memory is low on boot (due to node hotplug or some such thing, powerpc
+may do evil tricks here) then the panic may trigger after the patch.
+We would have just delved into the reserves a bit before.
 
--- 
-All rights reversed.
