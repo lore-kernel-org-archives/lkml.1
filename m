@@ -1,35 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbZEHAsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbZEHAyc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754255AbZEHAsZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753132AbZEHAsM
+	id S1755584AbZEHAyc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:54:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZEHAyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:48:12 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:44489 "EHLO crca.org.au"
+	Thu, 7 May 2009 20:54:20 -0400
+Received: from e1.ny.us.ibm.com ([32.97.182.141]:54566 "EHLO e1.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753494AbZEHAsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 20:48:11 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Fabio Comolli <fabio.comolli@gmail.com>,
-       linux-kernel@vger.kernel.org, Pavel Machek <pavel@ucw.cz>,
-       linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net
-In-Reply-To: <20090507173938.48145f52@jbarnes-g45>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	 <200905072022.15202.rjw@sisk.pl>
-	 <b637ec0b0905071157x2d6f050aqcb825241c51ccb84@mail.gmail.com>
-	 <200905072127.11995.rjw@sisk.pl> <1241728860.19600.207.camel@nigel-laptop>
-	 <20090507161406.35d953df@jbarnes-g45>
-	 <1241739155.19600.233.camel@nigel-laptop>
-	 <20090507164334.0d3890ef@jbarnes-g45>
-	 <1241741618.19600.236.camel@nigel-laptop>
-	 <20090507173938.48145f52@jbarnes-g45>
+	id S1753132AbZEHAyS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 20:54:18 -0400
+Subject: Re: [RFC][PATCH] Dynamic Tick: Allow 32-bit machines to sleep 
+ formore than 2.15 seconds
+From: john stultz <johnstul@us.ibm.com>
+To: Jon Hunter <jon-hunter@ti.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A02F5A3.3050004@ti.com>
+References: <49ECE615.2010800@ti.com>  <20090421063523.GA8020@elte.hu>
+	 <1240345936.6080.6.camel@localhost>  <49EE54B4.9020700@ti.com>
+	 <1240358525.6080.40.camel@localhost>  <4A02F5A3.3050004@ti.com>
 Content-Type: text/plain
-Date: Fri, 08 May 2009 10:49:09 +1000
-Message-Id: <1241743749.19600.238.camel@nigel-laptop>
+Date: Thu, 07 May 2009 17:54:08 -0700
+Message-Id: <1241744048.7518.132.camel@localhost.localdomain>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
@@ -37,86 +29,89 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
-
-On Thu, 2009-05-07 at 17:39 -0700, Jesse Barnes wrote:
-> On Fri, 08 May 2009 10:13:38 +1000
-> Nigel Cunningham <nigel@tuxonice.net> wrote:
-> > On Thu, 2009-05-07 at 16:43 -0700, Jesse Barnes wrote:
-> > > On Fri, 08 May 2009 09:32:34 +1000
-> > > Nigel Cunningham <nigel@tuxonice.net> wrote:
-> > > > On Thu, 2009-05-07 at 16:14 -0700, Jesse Barnes wrote:
-> > > > > On Fri, 08 May 2009 06:41:00 +1000
-> > > > > Nigel Cunningham <nigel@tuxonice.net> wrote:
-> > > > > 
-> > > > > > Hi.
-> > > > > > 
-> > > > > > On Thu, 2009-05-07 at 21:27 +0200, Rafael J. Wysocki wrote:
-> > > > > > > In fact I agree, but there's a catch.  The way in which
-> > > > > > > TuxOnIce operates LRU pages is based on some assumptions
-> > > > > > > that may or may not be satisfied in future, so if we decide
-> > > > > > > to merge it, then we'll have to make sure these assumptions
-> > > > > > > will be satisfied. That in turn is going to require quite
-> > > > > > > some discussion I guess.
-> > > > > > 
-> > > > > > Agreed. That's why I've got that GEMS patch - it's putting
-> > > > > > pages on the LRU that don't satisfy the former assumptions:
-> > > > > > they are used during hibernating and need to be atomically
-> > > > > > copied. If there are further developments in that area, I
-> > > > > > would hope we could just extend what's been done with GEMS.
-> > > > > 
-> > > > > Another option here would be to suspend all DRM operations
-> > > > > earlier. The suspend hook for i915 already does this, but maybe
-> > > > > it needs to happen sooner?  We'll probably want a generic DRM
-> > > > > suspend hook soon too (as the radeon memory manager lands) to
-> > > > > shut down GPU activity in the suspend and hibernate cases.
-> > > > > 
-> > > > > All that assumes I understand what's going on here though. :)
-> > > > > It appears you delay saving the GEM (just GEM by the way, for
-> > > > > Graphics/GPU Execution Manager) backing store until late to
-> > > > > avoid having the pages move around out from under you?
-> > > > 
-> > > > Yeah. TuxOnIce saves some pages without doing an atomic copy of
-> > > > them. Up 'til now, the algorithm has been LRU pages - pages used
-> > > > for TuxOnIce's userspace helpers. With GEM, we also need to make
-> > > > sure GEM pages are atomically copied and so also 'subtract' them
-> > > > from the list of pages that aren't atomically copied.
-> > > > 
-> > > > It's no great problem to do this, so I wouldn't ask you to change
-> > > > GEM to suspend DRM operations earlier. It's more important that
-> > > > GEM doesn't allocate extra pages unexpectedly - and I don't think
-> > > > that's likely anyway since we've switched away from X. This is
-> > > > important because TuxOnIce depends (for reliability) on having
-> > > > memory usage being predictable much more than swsusp and uswsusp
-> > > > do. (Larger images, less free RAM to begin with).
-> > > 
-> > > Yeah X is typically the one causing GEM allocations and performing
-> > > execution, but there are other possibilities too.  E.g. Wayland is a
-> > > non-X based display system that may be running instead, or maybe
-> > > there's an EGL or GPGPU program running in the background.
-> > > 
-> > > So I think it's best if we suspend DRM fairly early, otherwise you
-> > > *may* get extra allocations and will probably see all sorts of GPU
-> > > memory mapping activity and execution while you're trying to
-> > > hibernate things.  On the plus side I don't think this is a radical
-> > > redesign or anything, and mostly something we can do in our suspend
-> > > and hibernate callbacks.
-> > 
-> > That won't stop updates to the framebuffer?
+On Thu, 2009-05-07 at 09:52 -0500, Jon Hunter wrote:
+> john stultz wrote:
+> > So yes, while your patch in of itself doesn't create the issue, it does
+> > open the window a bit more. I'm just saying we need to add the
+> > clocksource limiting factor in before more odd configs trip over it. :)
 > 
-> No you can still have the framebuffer mapped and write to it (as long
-> as we don't invalidate such mappings at DRM suspend time that is, but
-> there's no reason to do that).
+> Thanks, this helps. I have been looking into this some more and it seems 
+> to me that the appropriate place in the tick_nohz_stop_sched_tick() 
+> function to check the clocksource upper limit would be in the following 
+> code segment:
 > 
-> Does that mean tuxonice writes directly to framebuffer memory when
-> suspending?  Or does it just rely on a userspace program that does
-> that?  I'm just curious, either way should work fine, drm-wise.
+> 	/* Read jiffies and the time when jiffies were updated last */
+>           do {
+>                   seq = read_seqbegin(&xtime_lock);
+>                   last_update = last_jiffies_update;
+>                   last_jiffies = jiffies;
+>           } while (read_seqretry(&xtime_lock, seq));
+> 
+>           /* Get the next timer wheel timer */
+>           next_jiffies = get_next_timer_interrupt(last_jiffies);
+>           delta_jiffies = next_jiffies - last_jiffies;
+> 
+> 
+> Here is my thinking...
+> 
+> 1). The above do-while is holding the xtime_lock for updating a couple 
+> variables. Given that we would need to hold this lock when querying the 
+> max time that the clocksource can be deferred it would seem to make 
+> sense to do it in this same loop to avoid requesting the same lock twice 
+> in the same function.
 
-It doesn't write directly to the framebuffer memory. It may (or may not)
-have a userspace program running that uses the framebuffer to display
-progress.
+Yep. It would be easy to pull:
+	max_time_delta = timekeeping_max_deferment()
+when you read jiffies.
 
-Regards,
 
-Nigel
+> 2). The function "get_next_timer_interrupt()" returns the time of when 
+> the next timer event is due to expire. If we know the maximum number of 
+> jiffies that can elapse before the clocksource wraps, then we can simply 
+> compare delta_jiffies with the maximum jiffies for the clocksource and 
+> adjust delta_jiffies if it is greater than the maximum jiffies.
+
+Urr. Lets move away from jiffies. Jiffies bad. Human time good.
+
+Its easy to get the max value in ns right now, last_update is already a
+ktime_t. 
+
+I think checking if expires (little bit lower in the same function) is
+larger then (last_update + max_time_delta) would be much much simpler.
+
+
+> 3). The maximum jiffies that can elapse before a clocksource wraps 
+> should be a constant value which can be derived from the clocksource 
+> mask value. Therefore, I was thinking that it would be more 
+> efficient/optimal to calculate the maximum jiffies that can elapse 
+> before the clocksource wraps when the clocksource is registered and 
+> store it in the main clocksource structure.
+
+Yeeks. No, lets not do this. Cluttering up the clocksource with jiffies
+values is totally unnecessary.
+
+
+> So taking the above into account, I was thinking of something along the 
+> lines of the following. Let me know if you have any thoughts/comments.
+> 
+> Cheers
+> Jon
+> 
+> 
+> Signed-off-by: Jon Hunter <jon-hunter@ti.com>
+
+
+So while I really don't like your patch, I think you have the right
+idea. Just keep things in nanoseconds, rather then converting them to
+jiffies first. It will be much simpler patch and won't affect as much
+code.
+
+Look at the simple accessor patch I sent earlier:
+http://lkml.indiana.edu/hypermail/linux/kernel/0901.3/02693.html
+
+You could require the xtime_lock be held while calling to doge grabbing
+it twice and plug it right in.
+
+thanks
+-john
 
