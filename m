@@ -1,135 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762138AbZEHIT1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762344AbZEHIUK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762138AbZEHIT1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 04:19:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbZEHITM
+	id S1762344AbZEHIUK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 04:20:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756487AbZEHITw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 04:19:12 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:42635 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754454AbZEHITJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 04:19:09 -0400
-Message-ID: <4A03EABF.40702@cosmosbay.com>
-Date: Fri, 08 May 2009 10:18:07 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Fri, 8 May 2009 04:19:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51883 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754255AbZEHITv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 04:19:51 -0400
+Message-ID: <4A03EB00.2070203@redhat.com>
+Date: Fri, 08 May 2009 11:19:12 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: "H. Peter Anvin" <hpa@linux.intel.com>, linux-kernel@vger.kernel.org,
-       vgoyal@redhat.com, hbabu@us.ibm.com, kexec@lists.infradead.org,
-       ying.huang@intel.com, mingo@elte.hu, tglx@linutronix.de,
-       ebiederm@xmission.com, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 01/14] x86, boot: align the .bss section in the decompressor
-References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com> <1241735222-6640-2-git-send-email-hpa@linux.intel.com> <20090508071759.GA12808@uranus.ravnborg.org>
-In-Reply-To: <20090508071759.GA12808@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Fri, 08 May 2009 10:18:08 +0200 (CEST)
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Gregory Haskins <ghaskins@novell.com>, viro@ZenIV.linux.org.uk,
+       kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via eventfd-notification
+ interface
+References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A0175F0.1090705@novell.com> <alpine.DEB.1.10.0905060818000.32007@makko.or.mcafeemobile.com> <4A01AEC1.8020201@novell.com> <alpine.DEB.1.10.0905061834080.32606@makko.or.mcafeemobile.com> <4A02AE65.3000800@redhat.com> <alpine.DEB.1.10.0905072012460.31280@makko.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0905072012460.31280@makko.or.mcafeemobile.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg a écrit :
-> On Thu, May 07, 2009 at 03:26:49PM -0700, H. Peter Anvin wrote:
->> From: H. Peter Anvin <hpa@zytor.com>
+Davide Libenzi wrote:
+> On Thu, 7 May 2009, Avi Kivity wrote:
+>
+>   
+>> What's your take on adding irq context safe callbacks to irqfd?
 >>
->> Aligning the .bss section makes it trivially faster, and makes using
->> larger transfers for the clear slightly easier.
+>> To give some background here, we would like to use eventfd as a generic
+>> connector between components, so the components do not know about each other.
+>> So far eventfd successfully abstracts among components in the same process, in
+>> different processes, and in the kernel.
 >>
->> [ Impact: trivial performance enhancement, future patch prep ]
+>> eventfd_signal() can be safely called from irq context, and will wake up a
+>> waiting task.  But in some cases, if the consumer is in the kernel, it may be
+>> able to consume the event from irq context, saving a context switch.
 >>
->> Signed-off-by: H. Peter Anvin <hpa@zytor.com>
->> ---
->>  arch/x86/boot/compressed/vmlinux.lds.S |    1 +
->>  1 files changed, 1 insertions(+), 0 deletions(-)
->>
->> diff --git a/arch/x86/boot/compressed/vmlinux.lds.S b/arch/x86/boot/compressed/vmlinux.lds.S
->> index 0d26c92..27c168d 100644
->> --- a/arch/x86/boot/compressed/vmlinux.lds.S
->> +++ b/arch/x86/boot/compressed/vmlinux.lds.S
->> @@ -42,6 +42,7 @@ SECTIONS
->>  		*(.data.*)
->>  		_edata = . ;
->>  	}
->> +	. = ALIGN(32);
-> 
-> Where does this magic 32 comes from?
-> I would assume the better choice would be:
-> 	. = ALIGN(L1_CACHE_BYTES);
-> 
-> So we match the relevant CPU.
-> 
-> In general for alignmnet of output sections I see the need for:
-> 1) Function call
-> 2) L1_CACHE_BYTES
-> 3) PAGE_SIZE
-> 4) 2*PAGE_SIZE
-> 
-> But I see magic constant used here and there that does not match
-> the above (when looking at all archs).
-> So I act when I see a new 'magic' number..
-> 
+>> So, will you consider patches adding this capability to eventfd?
+>>     
+>
+> Since I received this one after your ACK on the capability of eventfd of 
+> triggering callbacks, I assume we're clear on this point, aren't we?
+>   
 
-I totally agree
+We are.
 
-gcc itself has a strange 32 bytes alignement rule (unless using -Os) for 
-object of a >= 32 bytes size. Did you know that ?
-
-$ cat try.c
-char foo[32] = {1};
-$ gcc -O -S try.c
-        .file   "try.c"
-.globl foo
-        .data
-        .align 32            <<< HERE , what a mess >>
-        .type   foo, @object
-        .size   foo, 32
-foo:
-        .byte   1
-        .zero   31
-        .ident  "GCC: (GNU) 4.4.0"
-        .section        .note.GNU-stack,"",@progbits
-
-
-It makes many .o kernel files marked with a 2**5 alignement of .data or percpudata
-At link time, it creates many holes.
-
-In my opinion, gcc should have a separate option than -Os, as this as too expensive
-side effects on the code speed.
-
-I can save lot of data space if I patch gcc-4.4.0/config/i386/i386.c
-
-to :
-
-/* Compute the alignment for a static variable.
-   TYPE is the data type, and ALIGN is the alignment that
-   the object would ordinarily have.  The value of this function is used
-   instead of that alignment to align the object.  */
-
-int
-ix86_data_alignment (tree type, int align)
-{
--  int max_align = optimize_size ? BITS_PER_WORD : MIN (256, MAX_OFILE_ALIGNMENT);
-+  int max_align = BITS_PER_WORD;
-
-  if (AGGREGATE_TYPE_P (type)
-      && TYPE_SIZE (type)
-      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-      && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= (unsigned) max_align
-          || TREE_INT_CST_HIGH (TYPE_SIZE (type)))
-      && align < max_align)
-    align = max_align;
-
-  /* x86-64 ABI requires arrays greater than 16 bytes to be aligned
-     to 16byte boundary.  */
-  if (TARGET_64BIT)
-    {
-      if (AGGREGATE_TYPE_P (type)
-           && TYPE_SIZE (type)
-           && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
-           && (TREE_INT_CST_LOW (TYPE_SIZE (type)) >= 128
-               || TREE_INT_CST_HIGH (TYPE_SIZE (type))) && align < 128)
-        return 128;
-
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
