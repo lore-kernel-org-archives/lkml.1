@@ -1,110 +1,285 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756933AbZEHCvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760778AbZEHCwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756933AbZEHCvw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 22:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753751AbZEHCvm
+	id S1760778AbZEHCwW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 22:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755042AbZEHCwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 22:51:42 -0400
-Received: from mga11.intel.com ([192.55.52.93]:46451 "EHLO mga11.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753230AbZEHCvm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 22:51:42 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,314,1239001200"; 
-   d="asc'?scan'208";a="455192892"
-Subject: [BUGFIX] Fix crashdump panic with CONFIG_KEXEC_JUMP
-From: Huang Ying <ying.huang@intel.com>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Tim Starling <tstarling@wikimedia.org>,
-       akpm@linux-foundation.org
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-MOj3XKCio0x+2PXD8095"
-Date: Fri, 08 May 2009 10:51:41 +0800
-Message-Id: <1241751101.6259.85.camel@yhuang-dev.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+	Thu, 7 May 2009 22:52:03 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:44496 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753762AbZEHCwB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 22:52:01 -0400
+Date: Thu, 7 May 2009 22:52:00 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Li Zefan <lizf@cn.fujitsu.com>
+cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] tracing/events: clean up for
+ ftrace_set_clr_event()
+In-Reply-To: <4A03998E.3020503@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0905072248180.28378@gandalf.stny.rr.com>
+References: <4A03998E.3020503@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
---=-MOj3XKCio0x+2PXD8095
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-Tim Starling reported that crashdump will panic with kernel compiled
-with CONFIG_KEXEC_JUMP due to null pointer deference in
-machine_kexec_32.c: machine_kexec(), when deferencing
-kexec_image. Refering to:
-
-http://bugzilla.kernel.org/show_bug.cgi?id=3D13265
-
-This patch fixes the BUG via replacing global variable reference:
-kexec_image in machine_kexec() with local variable reference: image,
-which is more appropriate, and will not be null.
-
-Same BUG is in machine_kexec_64.c too, so fixed too in the same way.
-
-Reported-by: Tim Starling <tstarling@wikimedia.org>
-Signed-off-by: Huang Ying <ying.huang@intel.com>
-
----
- arch/x86/kernel/machine_kexec_32.c |    4 ++--
- arch/x86/kernel/machine_kexec_64.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
-
---- a/arch/x86/kernel/machine_kexec_32.c
-+++ b/arch/x86/kernel/machine_kexec_32.c
-@@ -194,7 +194,7 @@ void machine_kexec(struct kimage *image)
- 				       unsigned int preserve_context);
-=20
- #ifdef CONFIG_KEXEC_JUMP
--	if (kexec_image->preserve_context)
-+	if (image->preserve_context)
- 		save_processor_state();
- #endif
-=20
-@@ -253,7 +253,7 @@ void machine_kexec(struct kimage *image)
- 					   image->preserve_context);
-=20
- #ifdef CONFIG_KEXEC_JUMP
--	if (kexec_image->preserve_context)
-+	if (image->preserve_context)
- 		restore_processor_state();
- #endif
-=20
---- a/arch/x86/kernel/machine_kexec_64.c
-+++ b/arch/x86/kernel/machine_kexec_64.c
-@@ -274,7 +274,7 @@ void machine_kexec(struct kimage *image)
- 	int save_ftrace_enabled;
-=20
- #ifdef CONFIG_KEXEC_JUMP
--	if (kexec_image->preserve_context)
-+	if (image->preserve_context)
- 		save_processor_state();
- #endif
-=20
-@@ -333,7 +333,7 @@ void machine_kexec(struct kimage *image)
- 				       image->preserve_context);
-=20
- #ifdef CONFIG_KEXEC_JUMP
--	if (kexec_image->preserve_context)
-+	if (image->preserve_context)
- 		restore_processor_state();
- #endif
-=20
 
 
---=-MOj3XKCio0x+2PXD8095
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
+On Fri, 8 May 2009, Li Zefan wrote:
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
+> Add a helper function __ftrace_set_clr_event(), and replace some
+> ftrace_set_clr_event() calls with this helper, thus we don't need any
+> kstrdup() or kmalloc().
+> 
+> As a side effect, this patch fixes an issue in self tests code, which is
+> similar to the one fixed in commit d6bf81ef0f7474434c2a049e8bf3c9146a14dd96
+> ("tracing: append ":*" to internal setting of system events")
+> 
+> It's a small issue and won't cause any bug in fact, but we should do things
+> right anyway.
+> 
+> [ Impact: clean up ]
+> 
+> Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+> ---
+>  kernel/trace/trace_events.c |  126 ++++++++++++++++---------------------------
+>  1 files changed, 46 insertions(+), 80 deletions(-)
+> 
+> diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+> index 8d0fae3..45f1099 100644
+> --- a/kernel/trace/trace_events.c
+> +++ b/kernel/trace/trace_events.c
+> @@ -111,11 +111,44 @@ static void ftrace_event_enable_disable(struct ftrace_event_call *call,
+>  	}
+>  }
+>  
+> -static int ftrace_set_clr_event(char *buf, int set)
+> +/*
+> + * __ftrace_set_clr_event(NULL, NULL, NULL, set) will set/unset all events.
+> + */
+> +static int __ftrace_set_clr_event(const char *match, const char *sub,
+> +				  const char *event, int set)
+>  {
+>  	struct ftrace_event_call *call;
+> +	int ret;
+> +
+> +	mutex_lock(&event_mutex);
+> +	list_for_each_entry(call, &ftrace_events, list) {
+> +
+> +		if (!call->name || !call->regfunc)
+> +			continue;
+> +
+> +		if (match &&
+> +		    strcmp(match, call->name) != 0 &&
+> +		    strcmp(match, call->system) != 0)
+> +			continue;
+> +
+> +		if (sub && strcmp(sub, call->system) != 0)
+> +			continue;
+> +
+> +		if (event && strcmp(event, call->name) != 0)
+> +			continue;
+> +
+> +		ftrace_event_enable_disable(call, set);
+> +
+> +		ret = 0;
+> +	}
+> +	mutex_unlock(&event_mutex);
+> +
+> +	return ret;
+> +}
+> +
+> +static int ftrace_set_clr_event(char *buf, int set)
+> +{
+>  	char *event = NULL, *sub = NULL, *match;
+> -	int ret = -EINVAL;
+>  
+>  	/*
+>  	 * The buf format can be <subsystem>:<event-name>
+> @@ -141,30 +174,7 @@ static int ftrace_set_clr_event(char *buf, int set)
+>  			event = NULL;
+>  	}
+>  
+> -	mutex_lock(&event_mutex);
+> -	list_for_each_entry(call, &ftrace_events, list) {
+> -
+> -		if (!call->name || !call->regfunc)
+> -			continue;
+> -
+> -		if (match &&
+> -		    strcmp(match, call->name) != 0 &&
+> -		    strcmp(match, call->system) != 0)
+> -			continue;
+> -
+> -		if (sub && strcmp(sub, call->system) != 0)
+> -			continue;
+> -
+> -		if (event && strcmp(event, call->name) != 0)
+> -			continue;
+> -
+> -		ftrace_event_enable_disable(call, set);
+> -
+> -		ret = 0;
+> -	}
+> -	mutex_unlock(&event_mutex);
+> -
+> -	return ret;
+> +	return __ftrace_set_clr_event(match, sub, event, set);
+>  }
+>  
+>  /* 128 should be much more than enough */
+> @@ -408,18 +418,14 @@ system_enable_read(struct file *filp, char __user *ubuf, size_t cnt,
+>  	struct ftrace_event_call *call;
+>  	char buf[2];
+>  	int set = -1;
+> -	int all = 0;
+>  	int ret;
+>  
+> -	if (system[0] == '*')
+> -		all = 1;
+> -
+>  	mutex_lock(&event_mutex);
+>  	list_for_each_entry(call, &ftrace_events, list) {
+>  		if (!call->name || !call->regfunc)
+>  			continue;
+>  
+> -		if (!all && strcmp(call->system, system) != 0)
+> +		if (system && strcmp(call->system, system) != 0)
+>  			continue;
+>  
+>  		/*
+> @@ -480,7 +486,6 @@ system_enable_write(struct file *filp, const char __user *ubuf, size_t cnt,
+>  {
+>  	const char *system = filp->private_data;
+>  	unsigned long val;
+> -	char *command;
+>  	char buf[64];
+>  	ssize_t ret;
+>  
+> @@ -500,30 +505,16 @@ system_enable_write(struct file *filp, const char __user *ubuf, size_t cnt,
+>  	if (ret < 0)
+>  		return ret;
+>  
+> -	switch (val) {
+> -	case 0:
+> -	case 1:
+> -		break;
+> -
+> -	default:
+> +	if (val != 0 && val != 1)
 
-iEYEABECAAYFAkoDnjkACgkQKhFGF+eHlphwCACfSaYO+EqomMp2Gyo1enqklfXP
-HiMAn2s9/BopPSCgA3Ug/a6mUQBA5EJk
-=4ASh
------END PGP SIGNATURE-----
+What about "if (val & ~1UL)"?
 
---=-MOj3XKCio0x+2PXD8095--
+>  		return -EINVAL;
+> -	}
+>  
+> -	/* +3 for the ":*\0" */
+> -	command = kmalloc(strlen(system)+3, GFP_KERNEL);
+> -	if (!command)
+> -		return -ENOMEM;
+> -	sprintf(command, "%s:*", system);
+> -
+> -	ret = ftrace_set_clr_event(command, val);
+> +	ret = __ftrace_set_clr_event(NULL, system, NULL, val);
+>  	if (ret)
+> -		goto out_free;
+> +		goto out;
+>  
+>  	ret = cnt;
+>  
+> - out_free:
+> -	kfree(command);
+> -
+> +out:
+>  	*ppos += cnt;
+>  
+>  	return ret;
+> @@ -1181,7 +1172,7 @@ static __init int event_trace_init(void)
+>  			  &ftrace_show_header_fops);
+>  
+>  	trace_create_file("enable", 0644, d_events,
+> -			  "*", &ftrace_system_enable_fops);
+> +			  NULL, &ftrace_system_enable_fops);
+>  
+>  	for_each_event(call, __start_ftrace_events, __stop_ftrace_events) {
+>  		/* The linker may leave blanks */
+> @@ -1259,7 +1250,6 @@ static __init void event_trace_self_tests(void)
+>  {
+>  	struct ftrace_event_call *call;
+>  	struct event_subsystem *system;
+> -	char *sysname;
+>  	int ret;
+>  
+>  	pr_info("Running tests on trace events:\n");
+> @@ -1305,14 +1295,7 @@ static __init void event_trace_self_tests(void)
+>  
+>  		pr_info("Testing event system %s: ", system->name);
+>  
+> -		/* ftrace_set_clr_event can modify the name passed in. */
+> -		sysname = kstrdup(system->name, GFP_KERNEL);
+> -		if (WARN_ON(!sysname)) {
+> -			pr_warning("Can't allocate memory, giving up!\n");
+> -			return;
+> -		}
+> -		ret = ftrace_set_clr_event(sysname, 1);
+> -		kfree(sysname);
+> +		ret = __ftrace_set_clr_event(NULL, system->name, NULL, 1);
+>  		if (WARN_ON_ONCE(ret)) {
+>  			pr_warning("error enabling system %s\n",
+>  				   system->name);
+> @@ -1321,14 +1304,7 @@ static __init void event_trace_self_tests(void)
+>  
+>  		event_test_stuff();
+>  
+> -		sysname = kstrdup(system->name, GFP_KERNEL);
+> -		if (WARN_ON(!sysname)) {
+> -			pr_warning("Can't allocate memory, giving up!\n");
+> -			return;
+> -		}
+> -		ret = ftrace_set_clr_event(sysname, 0);
+> -		kfree(sysname);
+> -
+> +		ret = __ftrace_set_clr_event(NULL, system->name, NULL, 0);
+>  		if (WARN_ON_ONCE(ret))
+>  			pr_warning("error disabling system %s\n",
+>  				   system->name);
+> @@ -1341,15 +1317,8 @@ static __init void event_trace_self_tests(void)
+>  	pr_info("Running tests on all trace events:\n");
+>  	pr_info("Testing all events: ");
+>  
+> -	sysname = kmalloc(4, GFP_KERNEL);
+> -	if (WARN_ON(!sysname)) {
+> -		pr_warning("Can't allocate memory, giving up!\n");
+> -		return;
+> -	}
+> -	memcpy(sysname, "*:*", 4);
+> -	ret = ftrace_set_clr_event(sysname, 1);
+> +	ret = __ftrace_set_clr_event(NULL, NULL, NULL, 1);
+>  	if (WARN_ON_ONCE(ret)) {
+> -		kfree(sysname);
+>  		pr_warning("error enabling all events\n");
+>  		return;
+>  	}
+> @@ -1357,10 +1326,7 @@ static __init void event_trace_self_tests(void)
+>  	event_test_stuff();
+>  
+>  	/* reset sysname */
+> -	memcpy(sysname, "*:*", 4);
+> -	ret = ftrace_set_clr_event(sysname, 0);
+> -	kfree(sysname);
+> -
+> +	ret = __ftrace_set_clr_event(NULL, NULL, NULL, 0);
+>  	if (WARN_ON_ONCE(ret)) {
+>  		pr_warning("error disabling all events\n");
+>  		return;
+
+Other than my one little optimization above, it looks good.
+
+-- Steve
 
