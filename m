@@ -1,82 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762091AbZEHUZ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757060AbZEHUcX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762091AbZEHUZ1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 16:25:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756243AbZEHUZQ
+	id S1757060AbZEHUcX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 16:32:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755481AbZEHUcO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 16:25:16 -0400
-Received: from mu-out-0910.google.com ([209.85.134.188]:13242 "EHLO
-	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756140AbZEHUZP (ORCPT
+	Fri, 8 May 2009 16:32:14 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:36116 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754991AbZEHUcN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 16:25:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=IrsaFonxo/0bNl12xCl3QKQcKZ6Lu/fyXgrqGq8O7GRWkK1TQgcDfYnHGdKA0IQ7s6
-         LZOk6vibRPia33uVjlNJv7yn6gLnrMENV1dKIDDbi1vstldbeHQ3twbHt7euHXawj/NS
-         prZGQ+cYVzNDMMOMuLugXAwtAltCYOrn8aCsA=
-Message-ID: <4A04951F.8060703@gmail.com>
-Date: Fri, 08 May 2009 22:25:03 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.7 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Karl Relton <karllinuxtest.relton@ntlworld.com>
-CC: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] staging/wlan-ng: Change KERN_DEBUG or pr_debug to match
- orig driver
-References: <1241812457.6459.2.camel@localhost>
-In-Reply-To: <1241812457.6459.2.camel@localhost>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-2
+	Fri, 8 May 2009 16:32:13 -0400
+Date: Fri, 8 May 2009 13:24:52 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: fengguang.wu@intel.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       a.p.zijlstra@chello.nl, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
+       andi@firstfloor.org, mpm@selenic.com, adobriyan@gmail.com,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 4/8] proc: export more page flags in /proc/kpageflags
+Message-Id: <20090508132452.bafa287a.akpm@linux-foundation.org>
+In-Reply-To: <20090508114742.GB17129@elte.hu>
+References: <20090508105320.316173813@intel.com>
+	<20090508111031.020574236@intel.com>
+	<20090508114742.GB17129@elte.hu>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/08/2009 09:54 PM, Karl Relton wrote:
-> Change uses of KERN_DEBUG over to pr_debug to match original driver
-> where messages are only needed during driver development.
+On Fri, 8 May 2009 13:47:42 +0200
+Ingo Molnar <mingo@elte.hu> wrote:
 
-Hmm, but many of them don't fit this rule. Some of them should be
-honored a higher level, some of them simply should be left as such,
-because we want to see the information.
+> 
+> * Wu Fengguang <fengguang.wu@intel.com> wrote:
+> 
+> > Export all page flags faithfully in /proc/kpageflags.
+> 
+> Ongoing objection and NAK against extended haphazard exporting of 
+> kernel internals via an ad-hoc ABI via ad-hoc, privatized 
+> instrumentation that only helps the MM code and nothing else.
 
-> --- c/drivers/staging/wlan-ng/prism2mgmt.c	2009-04-30 05:48:16.000000000 +0100
-> +++ d/drivers/staging/wlan-ng/prism2mgmt.c	2009-05-08 19:11:11.000000000 +0100
-> @@ -1096,7 +1096,7 @@ int prism2mgmt_wlansniff(wlandevice_t *w
->  		/* Disable monitor mode */
->  		result = hfa384x_cmd_monitor(hw, HFA384x_MONITOR_DISABLE);
->  		if (result) {
-> -			printk(KERN_DEBUG
-> +			pr_debug(
->  			       "failed to disable monitor mode, result=%d\n",
+You're a year too late.  The pagemap interface is useful.
 
-rather an ERROR or WARNING?
+> /proc/kpageflags should be done via the proper methods outlined in 
+> the previous mails i wrote on this topic: for example by using the 
+> 'object collections' abstraction i suggested.
 
-> --- c/drivers/staging/wlan-ng/prism2sta.c	2009-04-30 05:48:16.000000000 +0100
-> +++ d/drivers/staging/wlan-ng/prism2sta.c	2009-05-08 19:15:08.000000000 +0100
-> @@ -1188,7 +1188,7 @@ static void prism2sta_inf_chinforesults(
->  			chinforesult->active =
->  			    le16_to_cpu(inf->info.chinforesult.result[n].
->  					    active);
-> -			printk(KERN_DEBUG
-> +			pr_debug(
->  			       "chinfo: channel %d, %s level (avg/peak)=%d/%d dB, pcf %d\n",
+What's that?
 
-yeah, useless info for an user (the change is OK), but:
+> So this should be done in cooperation with instrumentation folks, 
 
-> @@ -1276,7 +1276,7 @@ void prism2sta_processing_defer(struct w
->  							wlandev->bssid,
->  							WLAN_BSSID_LEN);
->  			if (result) {
-> -				printk(KERN_DEBUG
-> +				pr_debug(
->  				       "getconfig(0x%02x) failed, result = %d\n",
->  				       HFA384x_RID_CURRENTBSSID, result);
+Feel free to start cooperating.
 
-we want likely to know this one.
+> while improving _all_ of Linux instrumentation in general. Or, if 
+> you dont have the time/interest to work with us on that, it should 
+> not be done at all. Not having the resources/interest to do 
+> something properly is not a license to introduce further 
+> instrumentation crap into Linux.
 
-etc.
+If and when whatever-this-stuff-is is available and if it turns out to be
+usable then someone can take on the task of migrating the existing
+apgemap implementation over to use the new machinery while preserving
+existing userspace interfaces.
+
+But we shouldn't block improvements to an existing feature because
+someone might change the way that feature is implemented some time in
+the future.
