@@ -1,62 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759369AbZEHQGj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbZEHQQL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759369AbZEHQGj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 12:06:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753599AbZEHQG0
+	id S1755530AbZEHQQL (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 12:16:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbZEHQPz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 12:06:26 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58798 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752929AbZEHQGZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 12:06:25 -0400
-Message-ID: <4A04580B.5050501@redhat.com>
-Date: Fri, 08 May 2009 12:04:27 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Fri, 8 May 2009 12:15:55 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:56675 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753256AbZEHQPz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 12:15:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=S1Wp5JLeSP0EAQChJnwyaQy9kjWirjMpXO6sE8WKYWT2FmWpPCrtlHdCT4hZEezV91
+         +rnrHL1nRjsppUK3XO7RvR9nQOBIfm5zyHE+TAwUSho1iOOGfm+YlaSIm90j5FvES2jf
+         QYP6AcfRqruYhYynSsaeEeYWkk6rTyQvOlh8I=
+Date: Fri, 8 May 2009 20:15:53 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, mel@csn.ul.ie, riel@redhat.com,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, rientjes@google.com
+Subject: Re: [PATCH 2/2] SLUB: Use GFP_PANIC for early-boot allocations
+Message-ID: <20090508161553.GL6132@lenovo>
+References: <1241795429.28600.61.camel@penberg-laptop> <alpine.DEB.1.10.0905081127240.26361@qirst.com> <1241797017.28600.63.camel@penberg-laptop> <1241797364.6311.2914.camel@laptop> <1241797558.28600.68.camel@penberg-laptop> <1241797858.6311.2925.camel@laptop>
 MIME-Version: 1.0
-To: Elladan <elladan@eskimo.com>
-CC: Christoph Lameter <cl@linux.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first	class
- citizen
-References: <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost> <alpine.DEB.1.10.0905070935530.24528@qirst.com> <1241705702.11251.156.camel@twins> <alpine.DEB.1.10.0905071016410.24528@qirst.com> <1241712000.18617.7.camel@lts-notebook> <alpine.DEB.1.10.0905071231090.10171@qirst.com> <4A03164D.90203@redhat.com> <20090508034054.GB1202@eskimo.com>
-In-Reply-To: <20090508034054.GB1202@eskimo.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241797858.6311.2925.camel@laptop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Elladan wrote:
+[Peter Zijlstra - Fri, May 08, 2009 at 05:50:58PM +0200]
+| On Fri, 2009-05-08 at 18:45 +0300, Pekka Enberg wrote:
+| 
+| > On Fri, 2009-05-08 at 17:42 +0200, Peter Zijlstra wrote:
+| > > BUG_ON((gfp & __GFP_PANIC) && (system_state != STATE_BOOTING));
+| > 
+| > There's no technical reason not to use GFP_PANIC when system_state !=
+| > STATE_BOOTING so I don't think it's needed. It's just that GFP_PANIC
+| > (and BUG_ON) is IMHO too harsh for create_unique_id().
+| 
+| Shouldn't we handle every allocation failure after booting?
 
->> Nobody (except you) is proposing that we completely disable
->> the eviction of executable pages.  I believe that your idea
->> could easily lead to a denial of service attack, with a user
->> creating a very large executable file and mmaping it.
->>
->> Giving executable pages some priority over other file cache
->> pages is nowhere near as dangerous wrt. unexpected side effects
->> and should work just as well.
-> 
-> I don't think this sort of DOS is relevant for a single user or trusted user
-> system.  
+Definitely
 
-Which not all systems are, meaning that the mechanism
-Christoph proposes can never be enabled by default and
-would have to be tweaked by the user.
+| 
+| I think it _is_ a bug to panic on allocation failures once we're
+| running.
+|
 
-I prefer code that should work just as well 99% of the
-time, but can be enabled by default for everybody.
-That way people automatically get the benefit.
+But Peter I believe there was no suggestion to use GFP_PANIC everywhere
+to get rid of error handling. But rather to use it in case if kmalloc is
+followed by BUG_ON.
 
--- 
-All rights reversed.
+| 
+| I'm really not very fond of __GFP_PANIC as it stands, it seems to
+| suggest its OK to ignore allocation failures, which would bring us back
+| to the original UNIX error handling :/
+| 
+	-- Cyrill
