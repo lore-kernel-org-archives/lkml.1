@@ -1,182 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762091AbZEHSSl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760259AbZEHSS1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762091AbZEHSSl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 14:18:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755001AbZEHSSA
+	id S1760259AbZEHSS1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 14:18:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755148AbZEHSR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 14:18:00 -0400
-Received: from casper.infradead.org ([85.118.1.10]:55404 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756621AbZEHSR7 (ORCPT
+	Fri, 8 May 2009 14:17:57 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:37915 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751994AbZEHSR4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 14:17:59 -0400
-Message-Id: <20090508170028.630419454@chello.nl>
+	Fri, 8 May 2009 14:17:56 -0400
+Message-Id: <20090508170028.837558214@chello.nl>
 References: <20090508165219.469818319@chello.nl>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 May 2009 18:52:20 +0200
+Date: Fri, 08 May 2009 18:52:22 +0200
 From: Peter Zijlstra <a.p.zijlstra@chello.nl>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: Paul Mackerras <paulus@samba.org>,
        Corey Ashford <cjashfor@linux.vnet.ibm.com>,
        linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
        Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 1/5] hrtimer: per-cpu cached values of ktime
-Content-Disposition: inline; filename=opt-tick-ktime_get.patch
+Subject: [PATCH 3/5] perf_counter: rework ioctl()s
+Content-Disposition: inline; filename=perf_counter-family.patch
 X-Bad-Reply: References but no 'Re:' in Subject.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The regular (hrtimer driven) tick calls ktime_get() 4 times:
+Corey noticed that ioctl()s on grouped counters didn't work on the whole group.
+This extends the ioctl() interface to take a second argument that is
+interpreted as a flags field. We then provide PERF_IOC_FLAG_GROUP to toggle
+the behaviour.
 
-hrtimer_interupt()
-  ktimer_get()
-  __run_hrtimer()
-    tick_sched_timer()
-      ktimer_get()
-      update_process_times()
-        run_local_timers()
-        rcu_pending()
-        printk_tick()
-        scheduler_tick()
-          sched_clock_tick()
-            ktime_get()
-          perf_counter_task_tick()
-        run_posix_cpu_timers()
-      profile_tick()
-      hrtimer_forward()
-    hrtimer_enqueue()
-      tick_program_event()
-        tick_dev_program_event()
-          ktime_get()
-
-Reduce that to 2 by caching the 1st ktime_get(). By clearing the state on
-irq_exit() this always works, even for !hrtimer ticks.
-
-Getting rid of the last ktime_get() is a bit more involved as that code can
-also get called from outside of irq context.
+Having this flag gives the greatest flexibility, allowing you to individually
+enable/disable/reset counters in a group, or all together.
 
 Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 ---
- include/linux/hrtimer.h  |    5 +++++
- kernel/hrtimer.c         |   22 ++++++++++++++++++++--
- kernel/sched_clock.c     |    3 ++-
- kernel/softirq.c         |    2 ++
- kernel/time/tick-sched.c |    2 +-
- 5 files changed, 30 insertions(+), 4 deletions(-)
+ include/linux/perf_counter.h |   10 ++--
+ kernel/perf_counter.c        |  104 +++++++++++++++++++++++--------------------
+ 2 files changed, 65 insertions(+), 49 deletions(-)
 
-Index: linux-2.6/include/linux/hrtimer.h
+Index: linux-2.6/kernel/perf_counter.c
 ===================================================================
---- linux-2.6.orig/include/linux/hrtimer.h
-+++ linux-2.6/include/linux/hrtimer.h
-@@ -173,8 +173,13 @@ struct hrtimer_cpu_base {
- 	int				hres_active;
- 	unsigned long			nr_events;
- #endif
-+	ktime_t				ktime_irq;
-+	int				ktime_irq_set;
- };
+--- linux-2.6.orig/kernel/perf_counter.c
++++ linux-2.6/kernel/perf_counter.c
+@@ -82,7 +82,7 @@ list_add_counter(struct perf_counter *co
+ 	 * add it straight to the context's counter list, or to the group
+ 	 * leader's sibling list:
+ 	 */
+-	if (counter->group_leader == counter)
++	if (group_leader == counter)
+ 		list_add_tail(&counter->list_entry, &ctx->counter_list);
+ 	else {
+ 		list_add_tail(&counter->list_entry, &group_leader->sibling_list);
+@@ -385,24 +385,6 @@ static void perf_counter_disable(struct 
+ 	spin_unlock_irq(&ctx->lock);
+ }
  
-+extern ktime_t ktime_irq_get(void);
-+extern void ktime_irq_clear(void);
-+
- static inline void hrtimer_set_expires(struct hrtimer *timer, ktime_t time)
- {
- 	timer->_expires = time;
-Index: linux-2.6/kernel/hrtimer.c
-===================================================================
---- linux-2.6.orig/kernel/hrtimer.c
-+++ linux-2.6/kernel/hrtimer.c
-@@ -88,7 +88,6 @@ EXPORT_SYMBOL_GPL(ktime_get_real);
-  */
- DEFINE_PER_CPU(struct hrtimer_cpu_base, hrtimer_bases) =
- {
+-/*
+- * Disable a counter and all its children.
+- */
+-static void perf_counter_disable_family(struct perf_counter *counter)
+-{
+-	struct perf_counter *child;
 -
- 	.clock_base =
- 	{
- 		{
-@@ -104,6 +103,25 @@ DEFINE_PER_CPU(struct hrtimer_cpu_base, 
+-	perf_counter_disable(counter);
+-
+-	/*
+-	 * Lock the mutex to protect the list of children
+-	 */
+-	mutex_lock(&counter->mutex);
+-	list_for_each_entry(child, &counter->child_list, child_list)
+-		perf_counter_disable(child);
+-	mutex_unlock(&counter->mutex);
+-}
+-
+ static int
+ counter_sched_in(struct perf_counter *counter,
+ 		 struct perf_cpu_context *cpuctx,
+@@ -753,24 +735,6 @@ static int perf_counter_refresh(struct p
+ 	return 0;
+ }
+ 
+-/*
+- * Enable a counter and all its children.
+- */
+-static void perf_counter_enable_family(struct perf_counter *counter)
+-{
+-	struct perf_counter *child;
+-
+-	perf_counter_enable(counter);
+-
+-	/*
+-	 * Lock the mutex to protect the list of children
+-	 */
+-	mutex_lock(&counter->mutex);
+-	list_for_each_entry(child, &counter->child_list, child_list)
+-		perf_counter_enable(child);
+-	mutex_unlock(&counter->mutex);
+-}
+-
+ void __perf_counter_sched_out(struct perf_counter_context *ctx,
+ 			      struct perf_cpu_context *cpuctx)
+ {
+@@ -1307,31 +1271,79 @@ static unsigned int perf_poll(struct fil
+ 
+ static void perf_counter_reset(struct perf_counter *counter)
+ {
++	(void)perf_counter_read(counter);
+ 	atomic_set(&counter->count, 0);
++	perf_counter_update_userpage(counter);
++}
++
++static void perf_counter_for_each_sibling(struct perf_counter *counter,
++					  void (*func)(struct perf_counter *))
++{
++	struct perf_counter_context *ctx = counter->ctx;
++	struct perf_counter *sibling;
++
++	spin_lock_irq(&ctx->lock);
++	counter = counter->group_leader;
++
++	func(counter);
++	list_for_each_entry(sibling, &counter->sibling_list, list_entry)
++		func(sibling);
++	spin_unlock_irq(&ctx->lock);
++}
++
++static void perf_counter_for_each_child(struct perf_counter *counter,
++					void (*func)(struct perf_counter *))
++{
++	struct perf_counter *child;
++
++	mutex_lock(&counter->mutex);
++	func(counter);
++	list_for_each_entry(child, &counter->child_list, child_list)
++		func(child);
++	mutex_unlock(&counter->mutex);
++}
++
++static void perf_counter_for_each(struct perf_counter *counter,
++				  void (*func)(struct perf_counter *))
++{
++	struct perf_counter *child;
++
++	mutex_lock(&counter->mutex);
++	perf_counter_for_each_sibling(counter, func);
++	list_for_each_entry(child, &counter->child_list, child_list)
++		perf_counter_for_each_sibling(child, func);
++	mutex_unlock(&counter->mutex);
+ }
+ 
+ static long perf_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	struct perf_counter *counter = file->private_data;
+-	int err = 0;
++	void (*func)(struct perf_counter *);
++	u32 flags = arg;
+ 
+ 	switch (cmd) {
+ 	case PERF_COUNTER_IOC_ENABLE:
+-		perf_counter_enable_family(counter);
++		func = perf_counter_enable;
+ 		break;
+ 	case PERF_COUNTER_IOC_DISABLE:
+-		perf_counter_disable_family(counter);
+-		break;
+-	case PERF_COUNTER_IOC_REFRESH:
+-		err = perf_counter_refresh(counter, arg);
++		func = perf_counter_disable;
+ 		break;
+ 	case PERF_COUNTER_IOC_RESET:
+-		perf_counter_reset(counter);
++		func = perf_counter_reset;
+ 		break;
++
++	case PERF_COUNTER_IOC_REFRESH:
++		return perf_counter_refresh(counter, arg);
+ 	default:
+-		err = -ENOTTY;
++		return -ENOTTY;
  	}
- };
- 
-+ktime_t ktime_irq_get(void)
-+{
-+	struct hrtimer_cpu_base *cpu_base = &__get_cpu_var(hrtimer_bases);
+-	return err;
 +
-+	if (!cpu_base->ktime_irq_set) {
-+		cpu_base->ktime_irq = ktime_get();
-+		cpu_base->ktime_irq_set = 1;
-+	}
++	if (flags & PERF_IOC_FLAG_GROUP)
++		perf_counter_for_each(counter, func);
++	else
++		perf_counter_for_each_child(counter, func);
 +
-+	return cpu_base->ktime_irq;
-+}
-+
-+void ktime_irq_clear(void)
-+{
-+	struct hrtimer_cpu_base *cpu_base = &__get_cpu_var(hrtimer_bases);
-+
-+	cpu_base->ktime_irq_set = 0;
-+}
-+
- /**
-  * ktime_get_ts - get the monotonic clock in timespec format
-  * @ts:		pointer to timespec variable
-@@ -1222,7 +1240,7 @@ void hrtimer_interrupt(struct clock_even
- 	if (!(++nr_retries % 5))
- 		hrtimer_interrupt_hanging(dev, ktime_sub(ktime_get(), now));
- 
--	now = ktime_get();
-+	now = ktime_irq_get();
- 
- 	expires_next.tv64 = KTIME_MAX;
- 
-Index: linux-2.6/kernel/sched_clock.c
-===================================================================
---- linux-2.6.orig/kernel/sched_clock.c
-+++ linux-2.6/kernel/sched_clock.c
-@@ -219,7 +219,7 @@ void sched_clock_tick(void)
- 	WARN_ON_ONCE(!irqs_disabled());
- 
- 	scd = this_scd();
--	now_gtod = ktime_to_ns(ktime_get());
-+	now_gtod = ktime_to_ns(ktime_irq_get());
- 	now = sched_clock();
- 
- 	__raw_spin_lock(&scd->lock);
-@@ -246,6 +246,7 @@ void sched_clock_idle_wakeup_event(u64 d
- 	if (timekeeping_suspended)
- 		return;
- 
-+	ktime_irq_clear();
- 	sched_clock_tick();
- 	touch_softlockup_watchdog();
- }
-Index: linux-2.6/kernel/softirq.c
-===================================================================
---- linux-2.6.orig/kernel/softirq.c
-+++ linux-2.6/kernel/softirq.c
-@@ -282,6 +282,8 @@ void irq_enter(void)
- 		tick_check_idle(cpu);
- 	} else
- 		__irq_enter();
-+
-+	ktime_irq_clear();
++	return 0;
  }
  
- #ifdef __ARCH_IRQ_EXIT_IRQS_DISABLED
-Index: linux-2.6/kernel/time/tick-sched.c
+ /*
+Index: linux-2.6/include/linux/perf_counter.h
 ===================================================================
---- linux-2.6.orig/kernel/time/tick-sched.c
-+++ linux-2.6/kernel/time/tick-sched.c
-@@ -629,7 +629,7 @@ static enum hrtimer_restart tick_sched_t
- 	struct tick_sched *ts =
- 		container_of(timer, struct tick_sched, sched_timer);
- 	struct pt_regs *regs = get_irq_regs();
--	ktime_t now = ktime_get();
-+	ktime_t now = ktime_irq_get();
- 	int cpu = smp_processor_id();
+--- linux-2.6.orig/include/linux/perf_counter.h
++++ linux-2.6/include/linux/perf_counter.h
+@@ -157,10 +157,14 @@ struct perf_counter_hw_event {
+ /*
+  * Ioctls that can be done on a perf counter fd:
+  */
+-#define PERF_COUNTER_IOC_ENABLE		_IO ('$', 0)
+-#define PERF_COUNTER_IOC_DISABLE	_IO ('$', 1)
++#define PERF_COUNTER_IOC_ENABLE		_IOW('$', 0, u32)
++#define PERF_COUNTER_IOC_DISABLE	_IOW('$', 1, u32)
+ #define PERF_COUNTER_IOC_REFRESH	_IOW('$', 2, u32)
+-#define PERF_COUNTER_IOC_RESET		_IO ('$', 3)
++#define PERF_COUNTER_IOC_RESET		_IOW('$', 3, u32)
++
++enum perf_counter_ioc_flags {
++	PERF_IOC_FLAG_GROUP		= 1U << 0,
++};
  
- #ifdef CONFIG_NO_HZ
+ /*
+  * Structure of the page that can be mapped via mmap
 
 -- 
 
