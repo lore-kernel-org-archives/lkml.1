@@ -1,83 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764107AbZEHTXn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757535AbZEHT2S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764107AbZEHTXn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 15:23:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757354AbZEHTXf
+	id S1757535AbZEHT2S (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:28:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753670AbZEHT2D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 15:23:35 -0400
-Received: from e32.co.us.ibm.com ([32.97.110.150]:55212 "EHLO
-	e32.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757324AbZEHTXe (ORCPT
+	Fri, 8 May 2009 15:28:03 -0400
+Received: from e38.co.us.ibm.com ([32.97.110.159]:45931 "EHLO
+	e38.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751677AbZEHT2B (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:23:34 -0400
-Date: Fri, 8 May 2009 14:15:52 -0500
+	Fri, 8 May 2009 15:28:01 -0400
+Date: Fri, 8 May 2009 14:28:00 -0500
 From: "Serge E. Hallyn" <serue@us.ibm.com>
 To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, xemul@parallels.com
-Subject: Re: [PATCH 1/2] pidns 1/2: make create_pid_namespace() accept
-	parent pidns
-Message-ID: <20090508191552.GA28885@us.ibm.com>
-References: <20090503232700.GD16631@x200.localdomain>
+Cc: akpm@linux-foundation.org, viro@zeniv.linux.org.uk,
+       containers@lists.linux-foundation.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] dcache: extrace and use d_unlinked()
+Message-ID: <20090508192800.GC28885@us.ibm.com>
+References: <20090503233203.GK16631@x200.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090503232700.GD16631@x200.localdomain>
+In-Reply-To: <20090503233203.GK16631@x200.localdomain>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> create_pid_namespace() creates everything, but caller has to assign parent
-> pidns by hand, which is unnatural. At the moment of call new ->level has
-> to be taken from somewhere and parent pidns is already available.
+> d_unlinked() will be used in middle-term to ban checkpointing when opened
+> but unlinked file is detected, and in long term, to detect such situation
+> and special case on it.
 > 
 > Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
 
-Yes, nicer.
+Well I see no errors.
 
 Acked-by: Serge Hallyn <serue@us.ibm.com>
 
+Though is it just me, or  do d_unhashed and d_unlinked seem too close to
+not end up getting confused at some point?
+
+-serge
+
 > ---
->  kernel/pid_namespace.c |    8 ++++----
->  1 files changed, 4 insertions(+), 4 deletions(-)
+>  fs/dcache.c            |    7 +++----
+>  fs/namespace.c         |    8 ++++----
+>  include/linux/dcache.h |    5 +++++
+>  3 files changed, 12 insertions(+), 8 deletions(-)
 > 
-> diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
-> index 2d1001b..495d5de 100644
-> --- a/kernel/pid_namespace.c
-> +++ b/kernel/pid_namespace.c
-> @@ -67,9 +67,10 @@ err_alloc:
->  	return NULL;
+> diff --git a/fs/dcache.c b/fs/dcache.c
+> index 1fcffeb..86cb34f 100644
+> --- a/fs/dcache.c
+> +++ b/fs/dcache.c
+> @@ -1910,7 +1910,7 @@ char *__d_path(const struct path *path, struct path *root,
+> 
+>  	spin_lock(&vfsmount_lock);
+>  	prepend(&end, &buflen, "\0", 1);
+> -	if (!IS_ROOT(dentry) && d_unhashed(dentry) &&
+> +	if (d_unlinked(dentry) &&
+>  		(prepend(&end, &buflen, " (deleted)", 10) != 0))
+>  			goto Elong;
+> 
+> @@ -2035,7 +2035,7 @@ char *dentry_path(struct dentry *dentry, char *buf, int buflen)
+> 
+>  	spin_lock(&dcache_lock);
+>  	prepend(&end, &buflen, "\0", 1);
+> -	if (!IS_ROOT(dentry) && d_unhashed(dentry) &&
+> +	if (d_unlinked(dentry) &&
+>  		(prepend(&end, &buflen, "//deleted", 9) != 0))
+>  			goto Elong;
+>  	if (buflen < 1)
+> @@ -2097,9 +2097,8 @@ SYSCALL_DEFINE2(getcwd, char __user *, buf, unsigned long, size)
+>  	read_unlock(&current->fs->lock);
+> 
+>  	error = -ENOENT;
+> -	/* Has the current directory has been unlinked? */
+>  	spin_lock(&dcache_lock);
+> -	if (IS_ROOT(pwd.dentry) || !d_unhashed(pwd.dentry)) {
+> +	if (!d_unlinked(pwd.dentry)) {
+>  		unsigned long len;
+>  		struct path tmp = root;
+>  		char * cwd;
+> diff --git a/fs/namespace.c b/fs/namespace.c
+> index 4119620..b2bd687 100644
+> --- a/fs/namespace.c
+> +++ b/fs/namespace.c
+> @@ -1417,7 +1417,7 @@ static int graft_tree(struct vfsmount *mnt, struct path *path)
+>  		goto out_unlock;
+> 
+>  	err = -ENOENT;
+> -	if (IS_ROOT(path->dentry) || !d_unhashed(path->dentry))
+> +	if (!d_unlinked(path->dentry))
+>  		err = attach_recursive_mnt(mnt, path, NULL);
+>  out_unlock:
+>  	mutex_unlock(&path->dentry->d_inode->i_mutex);
+> @@ -1599,7 +1599,7 @@ static int do_move_mount(struct path *path, char *old_name)
+>  	if (IS_DEADDIR(path->dentry->d_inode))
+>  		goto out1;
+> 
+> -	if (!IS_ROOT(path->dentry) && d_unhashed(path->dentry))
+> +	if (d_unlinked(path->dentry))
+>  		goto out1;
+> 
+>  	err = -EINVAL;
+> @@ -2162,9 +2162,9 @@ SYSCALL_DEFINE2(pivot_root, const char __user *, new_root,
+>  	error = -ENOENT;
+>  	if (IS_DEADDIR(new.dentry->d_inode))
+>  		goto out2;
+> -	if (d_unhashed(new.dentry) && !IS_ROOT(new.dentry))
+> +	if (d_unlinked(new.dentry))
+>  		goto out2;
+> -	if (d_unhashed(old.dentry) && !IS_ROOT(old.dentry))
+> +	if (d_unlinked(old.dentry))
+>  		goto out2;
+>  	error = -EBUSY;
+>  	if (new.mnt == root.mnt ||
+> diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+> index 1515636..f8488bd 100644
+> --- a/include/linux/dcache.h
+> +++ b/include/linux/dcache.h
+> @@ -351,6 +351,11 @@ static inline int d_unhashed(struct dentry *dentry)
+>  	return (dentry->d_flags & DCACHE_UNHASHED);
 >  }
 > 
-> -static struct pid_namespace *create_pid_namespace(unsigned int level)
-> +static struct pid_namespace *create_pid_namespace(struct pid_namespace *parent_pid_ns)
+> +static inline int d_unlinked(struct dentry *dentry)
+> +{
+> +	return d_unhashed(dentry) && !IS_ROOT(dentry);
+> +}
+> +
+>  static inline struct dentry *dget_parent(struct dentry *dentry)
 >  {
->  	struct pid_namespace *ns;
-> +	unsigned int level = parent_pid_ns->level + 1;
->  	int i;
-> 
->  	ns = kmem_cache_zalloc(pid_ns_cachep, GFP_KERNEL);
-> @@ -86,6 +87,7 @@ static struct pid_namespace *create_pid_namespace(unsigned int level)
-> 
->  	kref_init(&ns->kref);
->  	ns->level = level;
-> +	ns->parent = get_pid_ns(parent_pid_ns);
-> 
->  	set_bit(0, ns->pidmap[0].page);
->  	atomic_set(&ns->pidmap[0].nr_free, BITS_PER_PAGE - 1);
-> @@ -125,9 +127,7 @@ struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *old
->  	if (flags & CLONE_THREAD)
->  		goto out_put;
-> 
-> -	new_ns = create_pid_namespace(old_ns->level + 1);
-> -	if (!IS_ERR(new_ns))
-> -		new_ns->parent = get_pid_ns(old_ns);
-> +	new_ns = create_pid_namespace(old_ns);
-> 
->  out_put:
->  	put_pid_ns(old_ns);
+>  	struct dentry *ret;
 > _______________________________________________
 > Containers mailing list
 > Containers@lists.linux-foundation.org
