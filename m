@@ -1,65 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbZEHIna@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757124AbZEHIvf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755600AbZEHIna (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 04:43:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbZEHInV
+	id S1757124AbZEHIvf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 04:51:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbZEHIv1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 04:43:21 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54723 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751112AbZEHInT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 04:43:19 -0400
-Date: Fri, 8 May 2009 04:42:53 -0400
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: jdike@addtoit.com, sam@ravnborg.org, Amerigo Wang <amwang@redhat.com>,
-       user-mode-linux-devel@lists.sourceforge.net
-Message-Id: <20090508084349.6229.72810.sendpatchset@localhost.localdomain>
-Subject: [PATCH] uml: fix a section warning
+	Fri, 8 May 2009 04:51:27 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:47850 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751060AbZEHIvZ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 04:51:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=FhS18sEbpXf0C13YkDRiJMrZQoAn6UKPi741Msxly4iIKlDmagL90MJlCl3x6Ig4E8
+         06L9vVSvnquNTCcJc4tLaKVWi3S7bWnPFm7AE4gBRJOeywG8ExYVDPFB7dq11ndx76zC
+         GqLtIavQH36ufzode7VDOaC0Zk+BDxhtHxDK8=
+MIME-Version: 1.0
+In-Reply-To: <20090505212139.GA2559@cmpxchg.org>
+References: <20090501181449.GA8912@cmpxchg.org>
+	 <1241430874-12667-1-git-send-email-hannes@cmpxchg.org>
+	 <20090505122442.6271c7da.akpm@linux-foundation.org>
+	 <20090505203807.GB2428@cmpxchg.org>
+	 <20090505140517.bef78dd3.akpm@linux-foundation.org>
+	 <20090505212139.GA2559@cmpxchg.org>
+Date: Fri, 8 May 2009 17:51:24 +0900
+Message-ID: <aec7e5c30905080151q5a4f4ebq1e743b534a5fc84a@mail.gmail.com>
+Subject: Re: [patch 1/3] mm: introduce follow_pte()
+From: Magnus Damm <magnus.damm@gmail.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-media@vger.kernel.org,
+       hverkuil@xs4all.nl, lethal@linux-sh.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 6, 2009 at 6:21 AM, Johannes Weiner <hannes@cmpxchg.org> wrote:
+> On Tue, May 05, 2009 at 02:05:17PM -0700, Andrew Morton wrote:
+>> On Tue, 5 May 2009 22:38:07 +0200
+>> Johannes Weiner <hannes@cmpxchg.org> wrote:
+>> > On Tue, May 05, 2009 at 12:24:42PM -0700, Andrew Morton wrote:
+>> > > On Mon,  4 May 2009 11:54:32 +0200
+>> > > Johannes Weiner <hannes@cmpxchg.org> wrote:
+>> > >
+>> > > > A generic readonly page table lookup helper to map an address space
+>> > > > and an address from it to a pte.
+>> > >
+>> > > umm, OK.
+>> > >
+>> > > Is there actually some point to these three patches?  If so, what is it?
+>> >
+>> > Magnus needs to check for physical contiguity of a VMAs backing pages
+>> > to support zero-copy exportation of video data to userspace.
+>> >
+>> > This series implements follow_pfn() so he can walk the VMA backing
+>> > pages and ensure their PFNs are in linear order.
+>> >
+>> > [ This patch can be collapsed with 2/3, I just thought it would be
+>> >   easier to read the diffs when having them separate. ]
+>> >
+>> > 1/3 and 2/3: factor out the page table walk from follow_phys() into
+>> > follow_pte().
+>> >
+>> > 3/3: implement follow_pfn() on top of follow_pte().
+>>
+>> So we could bundle these patches with Magnus's patchset, or we could
+>> consider these three patches as a cleanup or something.
+>>
+>> Given that 3/3 introduces an unused function, I'm inclined to sit tight
+>> and await Magnus's work.
+>
+> Yeah, I didn't see the video guys responding on Magnus' patch yet, so
+> let's wait for them.
+>
+> Magnus, the actual conversion of your code should be trivial, could
+> you respin it on top of these three patches using follow_pfn() then?
 
-When I compiled uml on x86_64, I got this warning:
+So I tested the patches in -mm (1/3, 2/3, 3/3) together with the zero
+copy patch and everything seems fine. Feel free to add acks from me,
+least for patch 1/3 and 3/3 - i know too little about the generic case
+to say anything about 2/3.
 
-  MODPOST vmlinux.o
-WARNING: vmlinux.o (.__syscall_stub.2): unexpected non-allocatable section.
-Did you forget to use "ax"/"aw" in a .S file?
-Note that for example <linux/init.h> contains
-section definitions for use in .S files.
+Acked-by: Magnus Damm <damm@igel.co.jp>
 
-Because modpost checks for missing SHF_ALLOC section flag. So just
-add it. :)
+I'll send V3 of my zero copy patch in a little while. Thanks a lot for the help!
 
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Jeff Dike <jdike@addtoit.com>
-Cc: Sam Ravnborg <sam@ravnborg.org>
+Cheers,
 
----
-diff --git a/arch/um/sys-x86_64/stub.S b/arch/um/sys-x86_64/stub.S
-index 6d9edf9..20e4a96 100644
---- a/arch/um/sys-x86_64/stub.S
-+++ b/arch/um/sys-x86_64/stub.S
-@@ -1,7 +1,7 @@
- #include "as-layout.h"
- 
- 	.globl syscall_stub
--.section .__syscall_stub, "x"
-+.section .__syscall_stub, "ax"
- syscall_stub:
- 	syscall
- 	/* We don't have 64-bit constants, so this constructs the address
-diff --git a/arch/um/sys-i386/stub.S b/arch/um/sys-i386/stub.S
-index c41b04b..54a36ec 100644
---- a/arch/um/sys-i386/stub.S
-+++ b/arch/um/sys-i386/stub.S
-@@ -1,7 +1,7 @@
- #include "as-layout.h"
- 
- 	.globl syscall_stub
--.section .__syscall_stub, "x"
-+.section .__syscall_stub, "ax"
- 
- 	.globl batch_syscall_stub
- batch_syscall_stub:
+/ magnus
