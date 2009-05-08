@@ -1,105 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZEHMB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757683AbZEHMF4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756232AbZEHMB2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 08:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbZEHMBS
+	id S1757683AbZEHMF4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 08:05:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbZEHMFr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 08:01:18 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:32843 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753237AbZEHMBS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 08:01:18 -0400
-Date: Fri, 8 May 2009 08:01:16 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Li Zefan <lizf@cn.fujitsu.com>
-cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+	Fri, 8 May 2009 08:05:47 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:36313 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750822AbZEHMFq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 08:05:46 -0400
+Date: Fri, 8 May 2009 14:05:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
        LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 1/2] tracing/events: clean up for
- ftrace_set_clr_event()
-In-Reply-To: <4A041478.5070401@cn.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0905080750460.28378@gandalf.stny.rr.com>
-References: <4A03998E.3020503@cn.fujitsu.com> <20090508105013.GA6417@nowhere> <4A041478.5070401@cn.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+Subject: Re: [PATCH 1/2] tracing/events: clean up for ftrace_set_clr_event()
+Message-ID: <20090508120531.GA18758@elte.hu>
+References: <4A03998E.3020503@cn.fujitsu.com> <20090508105013.GA6417@nowhere> <4A041478.5070401@cn.fujitsu.com> <20090508112758.GD6417@nowhere>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090508112758.GD6417@nowhere>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Fri, 8 May 2009, Li Zefan wrote:
+* Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> Frederic Weisbecker wrote:
-> > On Fri, May 08, 2009 at 10:31:42AM +0800, Li Zefan wrote:
-> >> Add a helper function __ftrace_set_clr_event(), and replace some
-> >> ftrace_set_clr_event() calls with this helper, thus we don't need any
-> >> kstrdup() or kmalloc().
-> >>
-> >> As a side effect, this patch fixes an issue in self tests code, which is
-> >> similar to the one fixed in commit d6bf81ef0f7474434c2a049e8bf3c9146a14dd96
-> >> ("tracing: append ":*" to internal setting of system events")
-
-Actually, what does this patch solve that the above mentioned commit does 
-not?
-
-> >>
-> >> It's a small issue and won't cause any bug in fact, but we should do things
-> >> right anyway.
-> >>
-> >> [ Impact: clean up ]
+> On Fri, May 08, 2009 at 07:16:08PM +0800, Li Zefan wrote:
+> > Frederic Weisbecker wrote:
+> > > On Fri, May 08, 2009 at 10:31:42AM +0800, Li Zefan wrote:
+> > >> Add a helper function __ftrace_set_clr_event(), and replace some
+> > >> ftrace_set_clr_event() calls with this helper, thus we don't need any
+> > >> kstrdup() or kmalloc().
+> > >>
+> > >> As a side effect, this patch fixes an issue in self tests code, which is
+> > >> similar to the one fixed in commit d6bf81ef0f7474434c2a049e8bf3c9146a14dd96
+> > >> ("tracing: append ":*" to internal setting of system events")
+> > >>
+> > >> It's a small issue and won't cause any bug in fact, but we should do things
+> > >> right anyway.
+> > >>
+> > >> [ Impact: clean up ]
+> > > 
+> > > If this fixes an issue like you described, then it's more than a cleanup :)
+> > > 
 > > 
-> > If this fixes an issue like you described, then it's more than a cleanup :)
+> > That issue causes no bug, and that's why I call it a cleanup.
 > > 
-> 
-> That issue causes no bug, and that's why I call it a cleanup.
-> 
-> How about (mainly stealed from commit d6bf81ef0f7474434c2a049e8bf3c9146a14dd96):
-> 
-> [ Impact: prevent accidental enabling of events with same name as a system in self tests ]
-> 
-> But it excceeds 80 char..
-> 
-> I sometimes feel it hard to write Impact line (one of the reason is my limit
-> English skill). I've explained the impact of this patch in detail, but I'm
-> still required to add a one-line summary. :(
-
-I find the Impact line much easier to write when I think of it as the 
-reason for the patch (think, why am I writing this). Here I would have 
-written:
-
-[ Impact: remove use of kmalloc and kstrdup with cleaner code ]
-
-> 
+> > How about (mainly stealed from commit d6bf81ef0f7474434c2a049e8bf3c9146a14dd96):
 > > 
-> ...
-> >> +		if (event && strcmp(event, call->name) != 0)
-> >> +			continue;
+> > [ Impact: prevent accidental enabling of events with same name as a system in self tests ]
 > > 
+> > But it excceeds 80 char..
 > > 
-> > Neat: You can simply use !strcmp(...)
-> > 
+> > I sometimes feel it hard to write Impact line (one of the reason is my limit
+> > English skill). I've explained the impact of this patch in detail, but I'm
+> > still required to add a one-line summary. :(
 > 
-> Actually it's arguable which is better, and both styles are used in kernel code.
 > 
-> And that 'if (!ptr)' vs 'if (ptr == NULL)'..
+> Well, I also find hard to write straightforward and good matching
+> impact lines.
+> And I'm certainly not well suited to give any advices about how
+> to write good impact lines.
 > 
+> But IMHO you can sum up your above impact line.
+> 
+> [ Impact: prevent spurious events enabling in tracing selftests ]
 
-I preferer if (!ptr) over if (ptr == NULL), but this has nothing to do 
-with the reason for the "strcmp(...) != 0". It is totally different, and 
-it fooled you too ;-)
+Thanks, i used this minor variant of it:
 
-As I mentioned to Frederic, !strcmp() actually means "these strings 
-match". Which fools the human brain all too easy. Thus we see,
-"strcmp(...) == 0" as "is a match" and "strcmp(...) != 0" as not a match, 
-because our brain focuses on the "==" and the "!=". Those that program in 
-C, default "!" as not.
+[ Impact: prevent spurious event-enabling in tracing self-tests ]
 
-Note, strcmp being 0 for match has nothing to do with the C convention of 
-0 being non error. But because it is used in sorting algorithms. strcmp 
-will return > 0 if it deems str1 > str2, or it will return < 0 if it deems 
-str1 < str2, and of course it returns 0 on match.
+> They usually don't need more details, those details can be placed 
+> in the changelog. It's more about the general pratical impact, not 
+> a detailed one.
 
--- Steve
+Yeah. There's two ends of the spectrum. The too terse:
 
+ [ Impact: fix ]
+
+that one is unhelpful beacause it's largely meaningless.
+
+The too verbose:
+
+ [ Impact: fix crash in foo while bar was setting baz to more
+           than alice when charlie saw the full moon, by setting
+           blah to bleh ]
+
+Which is unhelpful because long impact lines tend to include 
+implementational details while the goal is a 'quick practical impact 
+on system summary'.
+
+Best one is to find some middle ground. In any case, dont worry 
+about getting it wrong either, it's an iterative process.
+
+	Ingo
