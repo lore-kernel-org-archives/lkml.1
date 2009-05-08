@@ -1,94 +1,298 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763096AbZEHJsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761529AbZEHJvG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763096AbZEHJsR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 05:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753591AbZEHJsB
+	id S1761529AbZEHJvG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 05:51:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbZEHJuv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 05:48:01 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57593 "EHLO mx3.mail.elte.hu"
+	Fri, 8 May 2009 05:50:51 -0400
+Received: from mga03.intel.com ([143.182.124.21]:32061 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751977AbZEHJsA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 05:48:00 -0400
-Date: Fri, 8 May 2009 11:47:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Sam Ravnborg <sam@ravnborg.org>
-Cc: "H. Peter Anvin" <hpa@linux.intel.com>, linux-kernel@vger.kernel.org,
-       vgoyal@redhat.com, hbabu@us.ibm.com, kexec@lists.infradead.org,
-       ying.huang@intel.com, tglx@linutronix.de, ebiederm@xmission.com,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH 03/14] x86, config: change defaults PHYSICAL_START and
-	PHYSICAL_ALIGN
-Message-ID: <20090508094726.GE3559@elte.hu>
-References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com> <1241735222-6640-4-git-send-email-hpa@linux.intel.com> <20090508073606.GC12808@uranus.ravnborg.org>
+	id S1753591AbZEHJuu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 05:50:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,316,1239001200"; 
+   d="scan'208";a="140640615"
+Date: Fri, 8 May 2009 17:50:10 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "linux-pm@lists.linux-foundation.org" 
+	<linux-pm@lists.linux-foundation.org>,
+       "pavel@ucw.cz" <pavel@ucw.cz>,
+       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
+       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
+       "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+Message-ID: <20090508095010.GA26398@localhost>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <20090507154502.a7f51dd9.akpm@linux-foundation.org> <alpine.DEB.2.00.0905071554490.10759@chino.kir.corp.google.com> <200905080111.31273.rjw@sisk.pl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090508073606.GC12808@uranus.ravnborg.org>
+In-Reply-To: <200905080111.31273.rjw@sisk.pl>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: 0.0
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=0.0 required=5.9 tests=none autolearn=no SpamAssassin version=3.2.5
-	_SUMMARY_
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Sam Ravnborg <sam@ravnborg.org> wrote:
-
-> On Thu, May 07, 2009 at 03:26:51PM -0700, H. Peter Anvin wrote:
-> > From: H. Peter Anvin <hpa@zytor.com>
+On Fri, May 08, 2009 at 07:11:30AM +0800, Rafael J. Wysocki wrote:
+> On Friday 08 May 2009, David Rientjes wrote:
+> > On Thu, 7 May 2009, Andrew Morton wrote:
 > > 
-> > Change the default for CONFIG_PHYSICAL_START to 16 MB; 4 MB if
-> > EMBEDDED.  Change the default for CONFIG_PHYSICAL_ALIGN to match up
-> > with a large page alignment datum (4 MB for non-PAE, 2 MB for PAE.)
+> > > The setting and clearing of that thing looks gruesomely racy..
+> > > 
 > > 
-> > The default of 16 MB is designed to avoid occupying ZONE_DMA, as well
-> > as avoiding a 15-16 MB memory hole, which some vendors inexplicably
-> > still have in their systems.
+> > It's not racy currently because zone_scan_lock ensures ZONE_OOM_LOCKED 
+> > gets test/set and cleared atomically for the entire zonelist (the clear 
+> > happens for the same zonelist that was test/set).
 > > 
-> > [ Impact: minor performance improvement, leave ZONE_DMA free ]
-> > 
-> > Signed-off-by: H. Peter Anvin <hpa@zytor.com>
-> > ---
-> >  arch/x86/Kconfig |   19 +++++++++++--------
-> >  1 files changed, 11 insertions(+), 8 deletions(-)
-> > 
-> > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> > index 039c3f0..13b3a5a 100644
-> > --- a/arch/x86/Kconfig
-> > +++ b/arch/x86/Kconfig
-> > @@ -1455,17 +1455,20 @@ config KEXEC_JUMP
-> >  
-> >  config PHYSICAL_START
-> >  	hex "Physical address where the kernel is loaded" if (EMBEDDED || CRASH_DUMP)
-> > -	default "0x1000000" if X86_NUMAQ
-> > -	default "0x200000" if X86_64
-> > -	default "0x100000"
-> > +	default "0x400000" if EMBEDDED
-> > +	default "0x1000000"
-> >  	---help---
-> >  	  This gives the physical address where the kernel is loaded.
-> >  
-> >  	  If kernel is a not relocatable (CONFIG_RELOCATABLE=n) then
-> >  	  bzImage will decompress itself to above physical address and
-> > -	  run from there. Otherwise, bzImage will run from the address where
-> > -	  it has been loaded by the boot loader and will ignore above physical
-> > -	  address.
-> > +	  run from there. Otherwise, bzImage will run from the either
-> > +	  the above physical address or where it has been loaded by
-> > +	  the boot loader, whichever is higher.
-> > +
-> > +	  For embedded machines with very small memory (less than
-> > +	  about 24 MB) this may need to be adjusted downward from the
-> > +	  default value of 0x1000000 (16 MB).
+> > Using it for hibernation in the way I've proposed will open it up to the 
+> > race I earlier described: when a kthread is in the oom killer and 
+> > subsequently clears its zonelist of ZONE_OOM_LOCKED (all other tasks are 
+> > frozen so they can't be in the oom killer).  That's perfectly acceptable, 
+> > however, since the system is by definition already oom if kthreads can't 
+> > get memory so it will end up killing a user task even though it's stuck in 
+> > D state and will exit on thaw; we aren't concerned about killing 
+> > needlessly because the oom killer becomes a no-op when it finds a task 
+> > that has already been killed but hasn't exited by way of TIF_MEMDIE.
 > 
-> But in the above you say that default is "0x400000" if EMBEDDED
-> That is in contradiction with the help - no?
+> OK there.
+> 
+> So everyone seems to agree we can do something like in the patch below?
+> 
+> ---
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> Subject: PM/Hibernate: Rework shrinking of memory
+> 
+> Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
+> just once to make some room for the image and then allocates memory
+> to apply more pressure to the memory management subsystem, if
+> necessary.
 
-Yes, the help text is wrong.
+Thanks! Reducing to single-pass helps memory bounty laptops considerably :)
 
-	Ingo
+> Unfortunately, we don't seem to be able to drop shrink_all_memory()
+> entirely just yet, because that would lead to huge performance
+> regressions in some test cases.
+
+Yes, but it's not the fault of this patch. In fact some regressions
+may even be positive pressures to the page allocate/reclaim code ;)
+
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  kernel/power/snapshot.c |  151 +++++++++++++++++++++++++++++++++---------------
+>  1 file changed, 104 insertions(+), 47 deletions(-)
+> 
+> Index: linux-2.6/kernel/power/snapshot.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/snapshot.c
+> +++ linux-2.6/kernel/power/snapshot.c
+> @@ -1066,69 +1066,126 @@ void swsusp_free(void)
+>  	buffer = NULL;
+>  }
+>  
+> +/* Helper functions used for the shrinking of memory. */
+> +
+>  /**
+> - *	swsusp_shrink_memory -  Try to free as much memory as needed
+> - *
+> - *	... but do not OOM-kill anyone
+> + * preallocate_image_memory - Allocate given number of page frames
+> + * @nr_pages: Number of page frames to allocate
+>   *
+> - *	Notice: all userland should be stopped before it is called, or
+> - *	livelock is possible.
+> + * Return value: Number of page frames actually allocated
+>   */
+> -
+> -#define SHRINK_BITE	10000
+> -static inline unsigned long __shrink_memory(long tmp)
+> +static unsigned long preallocate_image_memory(unsigned long nr_pages)
+>  {
+> -	if (tmp > SHRINK_BITE)
+> -		tmp = SHRINK_BITE;
+> -	return shrink_all_memory(tmp);
+> +	unsigned long nr_alloc = 0;
+> +
+> +	while (nr_pages > 0) {
+> +		if (!alloc_image_page(GFP_KERNEL | __GFP_NOWARN))
+> +			break;
+> +		nr_pages--;
+> +		nr_alloc++;
+> +	}
+> +
+> +	return nr_alloc;
+>  }
+>  
+> +/**
+> + * swsusp_shrink_memory -  Make the kernel release as much memory as needed
+> + *
+> + * To create a hibernation image it is necessary to make a copy of every page
+> + * frame in use.  We also need a number of page frames to be free during
+> + * hibernation for allocations made while saving the image and for device
+> + * drivers, in case they need to allocate memory from their hibernation
+> + * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
+> + * respectively, both of which are rough estimates).  To make this happen, we
+> + * compute the total number of available page frames and allocate at least
+> + *
+> + * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
+> + *
+> + * of them, which corresponds to the maximum size of a hibernation image.
+> + *
+> + * If image_size is set below the number following from the above formula,
+> + * the preallocation of memory is continued until the total number of page
+> + * frames in use is below the requested image size or it is impossible to
+> + * allocate more memory, whichever happens first.
+> + */
+>  int swsusp_shrink_memory(void)
+>  {
+> -	long tmp;
+>  	struct zone *zone;
+> -	unsigned long pages = 0;
+> -	unsigned int i = 0;
+> -	char *p = "-\\|/";
+> +	unsigned long saveable, size, max_size, count, pages = 0;
+>  	struct timeval start, stop;
+> +	int error = 0;
+>  
+> -	printk(KERN_INFO "PM: Shrinking memory...  ");
+> +	printk(KERN_INFO "PM: Shrinking memory ... ");
+>  	do_gettimeofday(&start);
+> -	do {
+> -		long size, highmem_size;
+>  
+> -		highmem_size = count_highmem_pages();
+> -		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
+> -		tmp = size;
+> -		size += highmem_size;
+> -		for_each_populated_zone(zone) {
+> -			tmp += snapshot_additional_pages(zone);
+> -			if (is_highmem(zone)) {
+> -				highmem_size -=
+> -					zone_page_state(zone, NR_FREE_PAGES);
+> -			} else {
+> -				tmp -= zone_page_state(zone, NR_FREE_PAGES);
+> -				tmp += zone->lowmem_reserve[ZONE_NORMAL];
+> -			}
+> -		}
+> +	/* Count the number of saveable data pages. */
+> +	saveable = count_data_pages() + count_highmem_pages();
+>  
+> -		if (highmem_size < 0)
+> -			highmem_size = 0;
+> +	/*
+> +	 * Compute the total number of page frames we can use (count) and the
+> +	 * number of pages needed for image metadata (size).
+> +	 */
+> +	count = saveable;
+> +	size = 0;
+> +	for_each_populated_zone(zone) {
+> +		size += snapshot_additional_pages(zone);
+> +		count += zone_page_state(zone, NR_FREE_PAGES);
+> +		count -= zone->pages_min;
+
+I'd prefer to be more safe, by removing the above line...
+
+> +	}
+
+...and add another line here:
+
+        count -= totalreserve_pages;
+
+
+But hey, that 'count' counts "savable+free" memory.
+We don't have a counter for an estimation of "free+freeable" memory,
+ie. we are sure we cannot preallocate above that threshold. 
+
+One applicable situation is, when there are 800M anonymous memory,
+but only 500M image_size and no swap space.
+
+In that case we will otherwise goto the oom code path. Sure oom is
+(and shall be) reliably disabled in hibernation, but still we shall be
+cautious enough not to create a low memory situation, which will hurt:
+- hibernation speed
+  (vmscan goes mad trying to squeeze the last free page)
+- user experiences after resume
+  (all *active* file data and metadata have to reloaded)
+
+The current code simply tries *too hard* to meet image_size.
+I'd rather take that as a mild advice, and to only free
+"free+freeable-margin" pages when image_size is not approachable.
+
+The safety margin can be totalreserve_pages, plus enough pages for
+retaining the "hard core working set".
+
+Thanks,
+Fengguang
+
+> -		tmp += highmem_size;
+> -		if (tmp > 0) {
+> -			tmp = __shrink_memory(tmp);
+> -			if (!tmp)
+> -				return -ENOMEM;
+> -			pages += tmp;
+> -		} else if (size > image_size / PAGE_SIZE) {
+> -			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
+> -			pages += tmp;
+> -		}
+> -		printk("\b%c", p[i++%4]);
+> -	} while (tmp > 0);
+> +	/* Compute the maximum number of saveable pages to leave in memory. */
+> +	max_size = (count - (size + PAGES_FOR_IO)) / 2 - 2 * SPARE_PAGES;
+> +	size = DIV_ROUND_UP(image_size, PAGE_SIZE);
+> +	if (size > max_size)
+> +		size = max_size;
+> +	/*
+> +	 * If the maximum is not less than the current number of saveable pages
+> +	 * in memory, we don't need to do anything more.
+> +	 */
+> +	if (size >= saveable)
+> +		goto out;
+> +
+> +	/*
+> +	 * Let the memory management subsystem know that we're going to need a
+> +	 * large number of page frames to allocate and make it free some memory.
+> +	 * NOTE: If this is not done, performance is heavily affected in some
+> +	 * test cases.
+> +	 */
+> +	shrink_all_memory(saveable - size);
+> +
+> +	/*
+> +	 * Prevent the OOM killer from triggering while we're allocating image
+> +	 * memory.
+> +	 */
+> +	for_each_populated_zone(zone)
+> +		zone_set_flag(zone, ZONE_OOM_LOCKED);
+> +	/*
+> +	 * The number of saveable pages in memory was too high, so apply some
+> +	 * pressure to decrease it.  First, make room for the largest possible
+> +	 * image and fail if that doesn't work.  Next, try to decrease the size
+> +	 * of the image as much as indicated by image_size.
+> +	 */
+> +	count -= max_size;
+> +	pages = preallocate_image_memory(count);
+> +	if (pages < count)
+> +		error = -ENOMEM;
+> +	else
+> +		pages += preallocate_image_memory(max_size - size);
+> +
+> +	for_each_populated_zone(zone)
+> +		zone_clear_flag(zone, ZONE_OOM_LOCKED);
+> +
+> +	/* Release all of the preallocated page frames. */
+> +	swsusp_free();
+> +
+> +	if (error) {
+> +		printk(KERN_CONT "\n");
+> +		return error;
+> +	}
+> +
+> + out:
+>  	do_gettimeofday(&stop);
+> -	printk("\bdone (%lu pages freed)\n", pages);
+> +	printk(KERN_CONT "done (preallocated %lu free pages)\n", pages);
+>  	swsusp_show_speed(&start, &stop, pages, "Freed");
+>  
+>  	return 0;
