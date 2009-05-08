@@ -1,54 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754350AbZEHNne@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758141AbZEHNnv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754350AbZEHNne (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 09:43:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753171AbZEHNnZ
+	id S1758141AbZEHNnv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 09:43:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbZEHNnh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 09:43:25 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45019 "EHLO ogre.sisk.pl"
+	Fri, 8 May 2009 09:43:37 -0400
+Received: from mga14.intel.com ([143.182.124.37]:49810 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751695AbZEHNnY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 09:43:24 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Fri, 8 May 2009 15:42:47 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com,
-       linux-pm@lists.linux-foundation.org, pavel@ucw.cz,
-       torvalds@linux-foundation.org, jens.axboe@oracle.com,
-       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905080111.31273.rjw@sisk.pl> <20090508101651.aa4d513d.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090508101651.aa4d513d.kamezawa.hiroyu@jp.fujitsu.com>
+	id S1758141AbZEHNng (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 09:43:36 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,317,1239001200"; 
+   d="scan'208";a="140704019"
+Date: Fri, 8 May 2009 21:43:03 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       =?utf-8?B?RnLDqWTDqXJpYw==?= Weisbecker <fweisbec@gmail.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: ftrace: concurrent accesses possible?
+Message-ID: <20090508134303.GA15127@localhost>
+References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu> <20090508125821.GC15949@localhost> <alpine.DEB.2.00.0905080908120.28378@gandalf.stny.rr.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905081542.48942.rjw@sisk.pl>
+In-Reply-To: <alpine.DEB.2.00.0905080908120.28378@gandalf.stny.rr.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 May 2009, KAMEZAWA Hiroyuki wrote:
-> On Fri, 8 May 2009 01:11:30 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Fri, May 08, 2009 at 09:17:04PM +0800, Steven Rostedt wrote:
 > 
-> > +	for_each_populated_zone(zone)
-> > +		zone_set_flag(zone, ZONE_OOM_LOCKED);
+> On Fri, 8 May 2009, Wu Fengguang wrote:
 > 
-> > +	for_each_populated_zone(zone)
-> > +		zone_clear_flag(zone, ZONE_OOM_LOCKED);
-> > +
+> > Hello,
+> > 
+> > On Fri, May 08, 2009 at 07:47:42PM +0800, Ingo Molnar wrote:
+> > > 
+> > > So this should be done in cooperation with instrumentation folks, 
+> > > while improving _all_ of Linux instrumentation in general. Or, if 
+> > > you dont have the time/interest to work with us on that, it should 
+> > > not be done at all. Not having the resources/interest to do 
+> > > something properly is not a license to introduce further 
+> > > instrumentation crap into Linux.
+> > 
+> > I have a dummy question on /debug/trace: is it possible to
+> > - use 2+ tracers concurrently?
 > 
-> Isn't it better to make above 2 be functions and move to mm/oom_kill.c ?
+> Two plugins? no.
+> 
+> Two types of tracing? yes.
+> 
+> The "current_tracer" is for specific tracing purposes that like, latency 
+> tracing, function tracing and graph tracing. There are others, but they 
+> are more "themes" than tracers. The latency tracing only shows a "max 
+> latency" and does not show current traces unless they hit the max 
+> threshold. The function graph tracer has a different output format that 
+> has indentation based on the depth of the traced functions.
+> 
+> But with tracing events, we can pick and choose any event and trace them 
+> all together. You can filter them as well. For new events in the kernel, 
+> we only add them via trace events. These events show up in the plugin 
+> tracers too.
 
-Hmm, OK.  I'll do it.
+OK. Thanks for explaining!
 
-Well, in fact snapshot.c is all about memory management, so perhaps it's a good
-idea to move it into mm as a whole. ;-)
+> > - run a system script that makes use of a tracer,
+> 
+> Sure
+> 
+> >   without disturbing the sysadmin's tracer activities?
+> 
+> Hmm, you mean have individual tracers tracing different things. We sorta 
 
-Best,
-Rafael
+Right. Plus two 'instances' of the same tracer run with different options.
+
+> do that now, but they are more custom. That is, you can have the stack 
+> tracer running (recording max stack of the kernel) and run other tracers 
+> as well, without noticing.  But those that write to the ring buffer, only 
+> write to a single ring buffer. If another trace facility created their own 
+> ring buffer, then you could have more than one ring buffer being used. But 
+> ftrace currently uses only one (This is net exactly true, because the 
+> latency tracers have a separate ring buffer to store the max).
+
+That's OK.
+
+> > - access 1 tracer concurrently from many threads,
+> 
+> More than one reader can happen, but inside the kernel, they are 
+> serialized. When reading from the trace_pipe (consumer mode), every read 
+> will produce a different output, because the previous read was "consumed". 
+> If two threads try to read this way at the same time, they will each get a 
+> different result.
+> 
+> >   with different filter etc. options?
+> 
+> Not sure what you mean here. If you two threads filtering differently, 
+> this should be done in userspace.
+
+It's about efficiency.  Here is a use case: one have N CPUs and want
+to create N threads to query N different segments of the total memory
+via kpageflags. This ability is important for a large memory system.
+
+Thanks,
+Fengguang
+
