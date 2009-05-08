@@ -1,64 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758603AbZEHJdh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760450AbZEHJec@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758603AbZEHJdh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 05:33:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757643AbZEHJdK
+	id S1760450AbZEHJec (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 05:34:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756104AbZEHJeW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 05:33:10 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50029 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756002AbZEHJdI (ORCPT
+	Fri, 8 May 2009 05:34:22 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:53376 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753962AbZEHJeU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 05:33:08 -0400
-Date: Fri, 8 May 2009 11:37:57 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andi Kleen <andi@firstfloor.org>, Shaohua Li <shaohua.li@intel.com>,
-       lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH] x86 MCE: shut up lockdep warning
-Message-ID: <20090508093757.GY23223@one.firstfloor.org>
-References: <1241754429.4444.12.camel@sli10-desk.sh.intel.com> <20090508064517.GX23223@one.firstfloor.org> <20090508091015.GA2038@elte.hu>
+	Fri, 8 May 2009 05:34:20 -0400
+Date: Fri, 8 May 2009 10:31:25 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: akataria@vmware.com
+Cc: Chris Snook <chris.snook@gmail.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86: Reduce the default HZ value
+Message-ID: <20090508103125.00121311@lxorguk.ukuu.org.uk>
+In-Reply-To: <1241734784.32495.31.camel@alok-dev1>
+References: <1241462661.412.8.camel@alok-dev1>
+	<4A00ADDE.9000908@zytor.com>
+	<1241560625.8665.17.camel@alok-dev1>
+	<13a12eea0905070935o5abbeb49n8320d06c15b19b56@mail.gmail.com>
+	<1241715373.32495.21.camel@alok-dev1>
+	<13a12eea0905071329s79fb262tf89ed901a77726ae@mail.gmail.com>
+	<20090507213403.3a75a6fb@lxorguk.ukuu.org.uk>
+	<1241734784.32495.31.camel@alok-dev1>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090508091015.GA2038@elte.hu>
-User-Agent: Mutt/1.4.2.1i
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->  - it works around a lockdep warning
+> > As a side note Red Hat ships runtime configurable tick behaviour in RHEL
+> > these days. HZ is fixed but the ticks can be bunched up. That was done as
+> > a quick fix to keep stuff portable but its a lot more sensible than
+> > randomly messing with the HZ value and its not much code either.
+> > 
+> Hi Alan, 
 > 
->  - you did not realize the real bug while the warning was plain
+> I guess you are talking about the tick_divider patch ? 
+> And that's still same as reducing the HZ value only that it can be done
+> dynamically (boot time), right ? 
 
-Well I'm not sure you understood it either :)  Actually I'm pretty
-sure you did not. It would have been good if you had awaited proper
-review comments before commiting your patch.
+Yes - which has the advantage that you can select different behaviours
+rather than distributions having to build with HZ=1000 either for
+compatibility or responsiveness can still allow users to drop to a lower
+HZ value if doing stuff like HPC.
 
-I don't think here's really a real bug because cpu hotunplug is single threaded
-anyways (cpu add remove lock) and we don't do multiple discoveries in parallel.
-
-The reason the lock is there is only during bringup with multiple CPUs
-doing this in parallel on initial bootup. But we can't race against cpu 
-hotunplug there because there's not hotunplug before the system
-is up with all configured CPUs.
-
-So I think any way of shutting up lockdep is fine here and your
-patch is overkill and disables interrupts unnecessarily. 
-
->  - plus the patch introduces a fragile (because complex)
->    work_on_cpu() call into the CPU hotplug path, which could have 
->    caused followup regressions.
-
-That's a reasonable point,  but doesn't seem strong enough to
-do full irq disabling. A better fix would be to find some other
-way to shut off this lockdep warning for this case. Is there
-such a way?
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Basically it removes the need to argue about it at build time and lets
+the user decide.
