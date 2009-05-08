@@ -1,225 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762637AbZEHLOu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762321AbZEHLOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762637AbZEHLOu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 07:14:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759707AbZEHLMw
+	id S1762321AbZEHLOa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 07:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759798AbZEHLMv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 07:12:52 -0400
+	Fri, 8 May 2009 07:12:51 -0400
 Received: from mga03.intel.com ([143.182.124.21]:48712 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757526AbZEHLMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 07:12:49 -0400
+	id S1758271AbZEHLMs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 07:12:48 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.40,316,1239001200"; 
-   d="scan'208";a="140664193"
-Message-Id: <20090508105320.316173813@intel.com>
+   d="scan'208";a="140664192"
+Message-Id: <20090508111031.568178884@intel.com>
+References: <20090508105320.316173813@intel.com>
 User-Agent: quilt/0.46-1
-Date: Fri, 08 May 2009 18:53:20 +0800
+Date: Fri, 08 May 2009 18:53:26 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, Wu Fengguang <fengguang.wu@intel.com>
 Cc: Matt Mackall <mpm@selenic.com>
 Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: "Wu, Fengguang" <fengguang.wu@intel.com>, Andi Kleen <andi@firstfloor.org>,
-       <linux-mm@kvack.org>
-Subject: [PATCH 0/8] export more page flags in /proc/kpageflags (take 6)
+CC: Andi Kleen <andi@firstfloor.org>, <linux-mm@kvack.org>
+Subject: [PATCH 6/8] pagemap: document 9 more exported page flags
+Content-Disposition: inline; filename=kpageflags-doc.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew,
+Also add short descriptions for all of the 20 exported page flags.
 
-Can you merge this patchset? There should be no more concerns :-)
-The last patch may be delayed to the hwpoison merge time.
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ Documentation/vm/pagemap.txt |   62 +++++++++++++++++++++++++++++++++
+ 1 file changed, 62 insertions(+)
 
-take 6:
+--- linux.orig/Documentation/vm/pagemap.txt
++++ linux/Documentation/vm/pagemap.txt
+@@ -49,6 +49,68 @@ There are three components to pagemap:
+      8. WRITEBACK
+      9. RECLAIM
+     10. BUDDY
++    11. MMAP
++    12. ANON
++    13. SWAPCACHE
++    14. SWAPBACKED
++    15. COMPOUND_HEAD
++    16. COMPOUND_TAIL
++    16. HUGE
++    18. UNEVICTABLE
++    20. NOPAGE
++
++Short descriptions to the page flags:
++
++ 0. LOCKED
++    page is being locked for exclusive access, eg. by undergoing read/write IO
++
++ 7. SLAB
++    page is managed by the SLAB/SLOB/SLUB/SLQB kernel memory allocator
++    When compound page is used, SLUB/SLQB will only set this flag on the head
++    page; SLOB will not flag it at all.
++
++10. BUDDY
++    a free memory block managed by the buddy system allocator
++    The buddy system organizes free memory in blocks of various orders.
++    An order N block has 2^N physically contiguous pages, with the BUDDY flag
++    set for and _only_ for the first page.
++
++15. COMPOUND_HEAD
++16. COMPOUND_TAIL
++    A compound page with order N consists of 2^N physically contiguous pages.
++    A compound page with order 2 takes the form of "HTTT", where H donates its
++    head page and T donates its tail page(s).  The major consumers of compound
++    pages are hugeTLB pages (Documentation/vm/hugetlbpage.txt), the SLUB etc.
++    memory allocators and various device drivers. However in this interface,
++    only huge/giga pages are made visible to end users.
++17. HUGE
++    this is an integral part of a HugeTLB page
++
++20. NOPAGE
++    no page frame exists at the requested address
++
++    [IO related page flags]
++ 1. ERROR     IO error occurred
++ 3. UPTODATE  page has up-to-date data
++              ie. for file backed page: (in-memory data revision >= on-disk one)
++ 4. DIRTY     page has been written to, hence contains new data
++              ie. for file backed page: (in-memory data revision >  on-disk one)
++ 8. WRITEBACK page is being synced to disk
++
++    [LRU related page flags]
++ 5. LRU         page is in one of the LRU lists
++ 6. ACTIVE      page is in the active LRU list
++18. UNEVICTABLE page is in the unevictable (non-)LRU list
++                It is somehow pinned and not a candidate for LRU page reclaims,
++		eg. ramfs pages, shmctl(SHM_LOCK) and mlock() memory segments
++ 2. REFERENCED  page has been referenced since last LRU list enqueue/requeue
++ 9. RECLAIM     page will be reclaimed soon after its pageout IO completed
++11. MMAP        a memory mapped page
++12. ANON        a memory mapped page that is not part of a file
++13. SWAPCACHE   page is mapped to swap space, ie. has an associated swap entry
++14. SWAPBACKED  page is backed by swap/RAM
++
++The page-types tool in this directory can be used to query the above flags.
+ 
+ Using pagemap to do something useful:
+ 
 
-- show more help text in page-types
-- separate out PG_hwpoison
-- comment on KPF_MMAP
-
-take 5:
-
-- add page-types tool for querying the exported page flags.
-- export all page flags unconditionally and faithfully, and offload
-  complicated filtering works to the user space tool.
-
-This patchset:
-
-Export 10 more flags to end users (and more for kernel developers):
-
-        11. KPF_MMAP            (pseudo flag) memory mapped page
-        12. KPF_ANON            (pseudo flag) memory mapped page (anonymous)
-        13. KPF_SWAPCACHE       page is in swap cache
-        14. KPF_SWAPBACKED      page is swap/RAM backed
-        15. KPF_COMPOUND_HEAD   (*)
-        16. KPF_COMPOUND_TAIL   (*)
-        17. KPF_HUGE		hugeTLB pages
-        18. KPF_UNEVICTABLE     page is in the unevictable LRU list
-        19. KPF_HWPOISON        hardware detected corruption
-        20. KPF_NOPAGE          (pseudo flag) no page frame at the address
-
-        (*) For compound pages, exporting _both_ head/tail info enables
-            users to tell where a compound page starts/ends, and its order.
-
-Patches:
-
-[PATCH 1/8] mm: introduce PageHuge() for testing huge/gigantic pages
-[PATCH 2/8] slob: use PG_slab for identifying SLOB pages
-[PATCH 3/8] proc: kpagecount/kpageflags code cleanup
-[PATCH 4/8] proc: export more page flags in /proc/kpageflags
-[PATCH 5/8] pagemap: document clarifications
-[PATCH 6/8] pagemap: document 9 more exported page flags
-[PATCH 7/8] pagemap: add page-types tool
-[PATCH 7/8] pagemap: export PG_hwpoison
-
- Documentation/vm/Makefile     |    2 
- Documentation/vm/page-types.c |  700 ++++++++++++++++++++++++++++++++
- Documentation/vm/pagemap.txt  |   72 +++
- fs/proc/page.c                |  166 ++++++-
- include/linux/mm.h            |   24 +
- include/linux/page-flags.h    |    2 
- mm/hugetlb.c                  |    2 
- mm/page_alloc.c               |   11 
- mm/slob.c                     |    6 
- 9 files changed, 940 insertions(+), 45 deletions(-)
-
-Thanks,
-Fengguang
---
-
-a simple demo of the page-types tool
-
-# ./page-types -h
-page-types [options]
-            -r|--raw                  Raw mode, for kernel developers
-            -a|--addr    addr-spec    Walk a range of pages
-            -b|--bits    bits-spec    Walk pages with specified bits
-            -l|--list                 Show page details in ranges
-            -L|--list-each            Show page details one by one
-            -N|--no-summary           Don't show summay info
-            -h|--help                 Show this usage message
-addr-spec:
-            N                         one page at offset N (unit: pages)
-            N+M                       pages range from N to N+M-1
-            N,M                       pages range from N to M-1
-            N,                        pages range from N to end
-            ,M                        pages range from 0 to M
-bits-spec:
-            bit1,bit2                 (flags & (bit1|bit2)) != 0
-            bit1,bit2=bit1            (flags & (bit1|bit2)) == bit1
-            bit1,~bit2                (flags & (bit1|bit2)) == bit1
-            =bit1,bit2                flags == (bit1|bit2)
-bit-names:
-          locked              error         referenced           uptodate   
-           dirty                lru             active               slab   
-       writeback            reclaim              buddy               mmap   
-       anonymous          swapcache         swapbacked      compound_head   
-   compound_tail               huge        unevictable           hwpoison   
-          nopage           reserved(r)         mlocked(r)    mappedtodisk(r)
-         private(r)       private_2(r)   owner_private(r)            arch(r)
-        uncached(r)       readahead(o)       slob_free(o)     slub_frozen(o)
-      slub_debug(o)
-                                   (r) raw mode bits  (o) overloaded bits
-
-
-# ./page-types
-             flags      page-count       MB  symbolic-flags                     long-symbolic-flags
-0x0000000000000000          487369     1903  _________________________________
-0x0000000000000014               5        0  __R_D____________________________  referenced,dirty
-0x0000000000000020               1        0  _____l___________________________  lru
-0x0000000000000024              34        0  __R__l___________________________  referenced,lru
-0x0000000000000028            3838       14  ___U_l___________________________  uptodate,lru
-0x0001000000000028              48        0  ___U_l_______________________I___  uptodate,lru,readahead
-0x000000000000002c            6478       25  __RU_l___________________________  referenced,uptodate,lru
-0x000100000000002c              47        0  __RU_l_______________________I___  referenced,uptodate,lru,readahead
-0x0000000000000040            8344       32  ______A__________________________  active
-0x0000000000000060               1        0  _____lA__________________________  lru,active
-0x0000000000000068             348        1  ___U_lA__________________________  uptodate,lru,active
-0x0001000000000068              12        0  ___U_lA______________________I___  uptodate,lru,active,readahead
-0x000000000000006c             988        3  __RU_lA__________________________  referenced,uptodate,lru,active
-0x000100000000006c              48        0  __RU_lA______________________I___  referenced,uptodate,lru,active,readahead
-0x0000000000004078               1        0  ___UDlA_______b__________________  uptodate,dirty,lru,active,swapbacked
-0x000000000000407c              34        0  __RUDlA_______b__________________  referenced,uptodate,dirty,lru,active,swapbacked
-0x0000000000000400             503        1  __________B______________________  buddy
-0x0000000000000804               1        0  __R________M_____________________  referenced,mmap
-0x0000000000000828            1029        4  ___U_l_____M_____________________  uptodate,lru,mmap
-0x0001000000000828              43        0  ___U_l_____M_________________I___  uptodate,lru,mmap,readahead
-0x000000000000082c             382        1  __RU_l_____M_____________________  referenced,uptodate,lru,mmap
-0x000100000000082c              12        0  __RU_l_____M_________________I___  referenced,uptodate,lru,mmap,readahead
-0x0000000000000868             192        0  ___U_lA____M_____________________  uptodate,lru,active,mmap
-0x0001000000000868              12        0  ___U_lA____M_________________I___  uptodate,lru,active,mmap,readahead
-0x000000000000086c             800        3  __RU_lA____M_____________________  referenced,uptodate,lru,active,mmap
-0x000100000000086c              31        0  __RU_lA____M_________________I___  referenced,uptodate,lru,active,mmap,readahead
-0x0000000000004878               2        0  ___UDlA____M__b__________________  uptodate,dirty,lru,active,mmap,swapbacked
-0x0000000000001000             492        1  ____________a____________________  anonymous
-0x0000000000005808               4        0  ___U_______Ma_b__________________  uptodate,mmap,anonymous,swapbacked
-0x0000000000005868            2839       11  ___U_lA____Ma_b__________________  uptodate,lru,active,mmap,anonymous,swapbacked
-0x000000000000586c              30        0  __RU_lA____Ma_b__________________  referenced,uptodate,lru,active,mmap,anonymous,swapbacked
-             total          513968     2007
-
-
-# ./page-types -r
-             flags      page-count       MB  symbolic-flags                     long-symbolic-flags
-0x0000000000000000          468002     1828  _________________________________
-0x0000000100000000           19102       74  _____________________r___________  reserved
-0x0000000000008000              41        0  _______________H_________________  compound_head
-0x0000000000010000             188        0  ________________T________________  compound_tail
-0x0000000000008014               1        0  __R_D__________H_________________  referenced,dirty,compound_head
-0x0000000000010014               4        0  __R_D___________T________________  referenced,dirty,compound_tail
-0x0000000000000020               1        0  _____l___________________________  lru
-0x0000000800000024              34        0  __R__l__________________P________  referenced,lru,private
-0x0000000000000028            3794       14  ___U_l___________________________  uptodate,lru
-0x0001000000000028              46        0  ___U_l_______________________I___  uptodate,lru,readahead
-0x0000000400000028              44        0  ___U_l_________________d_________  uptodate,lru,mappedtodisk
-0x0001000400000028               2        0  ___U_l_________________d_____I___  uptodate,lru,mappedtodisk,readahead
-0x000000000000002c            6434       25  __RU_l___________________________  referenced,uptodate,lru
-0x000100000000002c              47        0  __RU_l_______________________I___  referenced,uptodate,lru,readahead
-0x000000040000002c              14        0  __RU_l_________________d_________  referenced,uptodate,lru,mappedtodisk
-0x000000080000002c              30        0  __RU_l__________________P________  referenced,uptodate,lru,private
-0x0000000800000040            8124       31  ______A_________________P________  active,private
-0x0000000000000040             219        0  ______A__________________________  active
-0x0000000800000060               1        0  _____lA_________________P________  lru,active,private
-0x0000000000000068             322        1  ___U_lA__________________________  uptodate,lru,active
-0x0001000000000068              12        0  ___U_lA______________________I___  uptodate,lru,active,readahead
-0x0000000400000068              13        0  ___U_lA________________d_________  uptodate,lru,active,mappedtodisk
-0x0000000800000068              12        0  ___U_lA_________________P________  uptodate,lru,active,private
-0x000000000000006c             977        3  __RU_lA__________________________  referenced,uptodate,lru,active
-0x000100000000006c              48        0  __RU_lA______________________I___  referenced,uptodate,lru,active,readahead
-0x000000040000006c               5        0  __RU_lA________________d_________  referenced,uptodate,lru,active,mappedtodisk
-0x000000080000006c               3        0  __RU_lA_________________P________  referenced,uptodate,lru,active,private
-0x0000000c0000006c               3        0  __RU_lA________________dP________  referenced,uptodate,lru,active,mappedtodisk,private
-0x0000000c00000068               1        0  ___U_lA________________dP________  uptodate,lru,active,mappedtodisk,private
-0x0000000000004078               1        0  ___UDlA_______b__________________  uptodate,dirty,lru,active,swapbacked
-0x000000000000407c              34        0  __RUDlA_______b__________________  referenced,uptodate,dirty,lru,active,swapbacked
-0x0000000000000400             538        2  __________B______________________  buddy
-0x0000000000000804               1        0  __R________M_____________________  referenced,mmap
-0x0000000000000828            1029        4  ___U_l_____M_____________________  uptodate,lru,mmap
-0x0001000000000828              43        0  ___U_l_____M_________________I___  uptodate,lru,mmap,readahead
-0x000000000000082c             382        1  __RU_l_____M_____________________  referenced,uptodate,lru,mmap
-0x000100000000082c              12        0  __RU_l_____M_________________I___  referenced,uptodate,lru,mmap,readahead
-0x0000000000000868             192        0  ___U_lA____M_____________________  uptodate,lru,active,mmap
-0x0001000000000868              12        0  ___U_lA____M_________________I___  uptodate,lru,active,mmap,readahead
-0x000000000000086c             800        3  __RU_lA____M_____________________  referenced,uptodate,lru,active,mmap
-0x000100000000086c              31        0  __RU_lA____M_________________I___  referenced,uptodate,lru,active,mmap,readahead
-0x0000000000004878               2        0  ___UDlA____M__b__________________  uptodate,dirty,lru,active,mmap,swapbacked
-0x0000000000001000             492        1  ____________a____________________  anonymous
-0x0000000000005008               2        0  ___U________a_b__________________  uptodate,anonymous,swapbacked
-0x0000000000005808               4        0  ___U_______Ma_b__________________  uptodate,mmap,anonymous,swapbacked
-0x000000000000580c               1        0  __RU_______Ma_b__________________  referenced,uptodate,mmap,anonymous,swapbacked
-0x0000000000005868            2839       11  ___U_lA____Ma_b__________________  uptodate,lru,active,mmap,anonymous,swapbacked
-0x000000000000586c              29        0  __RU_lA____Ma_b__________________  referenced,uptodate,lru,active,mmap,anonymous,swapbacked
-             total          513968     2007
-
-
-# ./page-types --raw --list --no-summary --bits reserved
-offset  count   flags
-0       15      _____________________r___________
-31      4       _____________________r___________
-159     97      _____________________r___________
-4096    2067    _____________________r___________
-6752    2390    _____________________r___________
-9355    3       _____________________r___________
-9728    14526   _____________________r___________
-
+-- 
 
