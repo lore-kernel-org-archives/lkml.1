@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbZEHTjU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762091AbZEHTlv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759784AbZEHTjU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 15:39:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbZEHTi7
+	id S1762091AbZEHTlv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:41:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754991AbZEHTln
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 15:38:59 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:36477 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754285AbZEHTi6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:38:58 -0400
-Subject: Re: Adaptec driver crashes (1/3 and 2/3)
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Norman Diamond <n0diamond@yahoo.co.jp>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <8690A202112B4316A178F6DD0AD7E394@DIAMOND8600>
-References: <8690A202112B4316A178F6DD0AD7E394@DIAMOND8600>
-Content-Type: text/plain
-Date: Fri, 08 May 2009 19:38:57 +0000
-Message-Id: <1241811537.3327.91.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Fri, 8 May 2009 15:41:43 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50024 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754547AbZEHTlm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 15:41:42 -0400
+Message-ID: <4A048AF4.1080205@garzik.org>
+Date: Fri, 08 May 2009 15:41:40 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Grozdan <neutrino8@gmail.com>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: Linux and LLVM
+References: <c5bd819b0905081228m4ee6472bhc3968b178f038b9c@mail.gmail.com>
+In-Reply-To: <c5bd819b0905081228m4ee6472bhc3968b178f038b9c@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-06 at 16:13 +0900, Norman Diamond wrote:
-> The easiest 100% reproducible way to crash a Linux system is as follows.
+Grozdan wrote:
+> Hi,
 > 
-> Insert either an Adaptec 1460 PCMCIA card or Adaptec 1480 CardBus card. 
-> Remove the card.  Insert the card again.  Even if you knew to set the 
-> console to a text mode terminal first (since Linux doesn't give Blue Screens 
-> of Death otherwise), you still won't get a dump.  Not much to go on without 
-> a dump, but at least it's 100% repro.
+> First, I'd like to say that I'm not interested in any holy wars,
+> trolling, ego-boosters, or whatever, and basically want to ask a
+> simple question and get the views of the Linux developers on it, at
+> least from those who are interested in answering it or have time to do
+> so as I know that most kernel devs are very busy :)
+> 
+> Recently, FreeBSD has reported that it's slowly switching from GCC to
+> LLVM/CLANG for compilers. What are the thoughts of the Linux kernel
+> devs about this and do they things that it's a good idea to go in the
+> same direction as FreeBSD (switching over to LLVM)?
 
-Sounds like something's still pinned.  When you remove it the first
-time, can you remove the module? (that's aha152x_cs right?).
+It is highly unlikely we will switch compilers away from gcc -- we have 
+enough problems just supporting multiple gcc versions.
 
-James
+That said, you could join the effort to get LLVM to compile under the 
+kernel.  Here is a meta-bug for that: 
+http://llvm.org/bugs/show_bug.cgi?id=4068
+
+It is a moot question until LLVM can actually build a bootable kernel :)
+
+Regards,
+
+	Jeff
+
 
 
