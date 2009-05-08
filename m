@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755495AbZEHOHH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763540AbZEHOHl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755495AbZEHOHH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 10:07:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758303AbZEHOBj
+	id S1763540AbZEHOHl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 10:07:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758603AbZEHOBk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 10:01:39 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:58274 "EHLO
+	Fri, 8 May 2009 10:01:40 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:58249 "EHLO
 	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756786AbZEHOBf (ORCPT
+	with ESMTP id S1758704AbZEHOBf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 8 May 2009 10:01:35 -0400
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
@@ -16,11 +16,11 @@ Cc: cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org,
        linux-fbdev-devel@lists.sourceforge.net,
        Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
        Jim Paris <jim@jtan.com>
-Subject: [PATCH 13/15] ps3vram: Remove no longer used ps3vram_priv.ddr_base
-Date: Fri,  8 May 2009 16:01:22 +0200
-Message-Id: <1241791284-11490-14-git-send-email-Geert.Uytterhoeven@sonycom.com>
+Subject: [PATCH 14/15] ps3vram: Make ps3vram_priv.reports a void *
+Date: Fri,  8 May 2009 16:01:23 +0200
+Message-Id: <1241791284-11490-15-git-send-email-Geert.Uytterhoeven@sonycom.com>
 X-Mailer: git-send-email 1.6.2.4
-In-Reply-To: <1241791284-11490-13-git-send-email-Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <1241791284-11490-14-git-send-email-Geert.Uytterhoeven@sonycom.com>
 References: <1241791284-11490-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
  <1241791284-11490-2-git-send-email-Geert.Uytterhoeven@sonycom.com>
  <1241791284-11490-3-git-send-email-Geert.Uytterhoeven@sonycom.com>
@@ -34,66 +34,44 @@ References: <1241791284-11490-1-git-send-email-Geert.Uytterhoeven@sonycom.com>
  <1241791284-11490-11-git-send-email-Geert.Uytterhoeven@sonycom.com>
  <1241791284-11490-12-git-send-email-Geert.Uytterhoeven@sonycom.com>
  <1241791284-11490-13-git-send-email-Geert.Uytterhoeven@sonycom.com>
+ <1241791284-11490-14-git-send-email-Geert.Uytterhoeven@sonycom.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+So we can kill a cast.
+
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Cc: Jim Paris <jim@jtan.com>
 ---
- drivers/block/ps3vram.c |   14 +-------------
- 1 files changed, 1 insertions(+), 13 deletions(-)
+ drivers/block/ps3vram.c |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/block/ps3vram.c b/drivers/block/ps3vram.c
-index e85f09d..5f5b828 100644
+index 5f5b828..70f51ff 100644
 --- a/drivers/block/ps3vram.c
 +++ b/drivers/block/ps3vram.c
-@@ -73,7 +73,6 @@ struct ps3vram_priv {
+@@ -72,7 +72,7 @@ struct ps3vram_priv {
+ 	u64 memory_handle;
  	u64 context_handle;
  	u32 *ctrl;
- 	u32 *reports;
--	u8 __iomem *ddr_base;
+-	u32 *reports;
++	void *reports;
  	u8 *xdr_buf;
  
  	u32 *fifo_base;
-@@ -705,19 +704,11 @@ static int __devinit ps3vram_probe(struct ps3_system_bus_device *dev)
- 		goto out_free_context;
- 	}
+@@ -102,9 +102,9 @@ static char *size = "256M";
+ module_param(size, charp, 0);
+ MODULE_PARM_DESC(size, "memory size");
  
--	priv->ddr_base = ioremap_flags(ddr_lpar, ddr_size, _PAGE_NO_CACHE);
--
--	if (!priv->ddr_base) {
--		dev_err(&dev->core, "ioremap DDR failed\n");
--		error = -ENOMEM;
--		goto out_unmap_context;
--	}
--
- 	priv->ctrl = ioremap(ctrl_lpar, 64 * 1024);
- 	if (!priv->ctrl) {
- 		dev_err(&dev->core, "ioremap CTRL failed\n");
- 		error = -ENOMEM;
--		goto out_unmap_vram;
-+		goto out_unmap_context;
- 	}
+-static u32 *ps3vram_get_notifier(u32 *reports, int notifier)
++static u32 *ps3vram_get_notifier(void *reports, int notifier)
+ {
+-	return (void *)reports + DMA_NOTIFIER_OFFSET_BASE +
++	return reports + DMA_NOTIFIER_OFFSET_BASE +
+ 	       DMA_NOTIFIER_SIZE * notifier;
+ }
  
- 	priv->reports = ioremap(reports_lpar, reports_size);
-@@ -794,8 +785,6 @@ out_unmap_reports:
- 	iounmap(priv->reports);
- out_unmap_ctrl:
- 	iounmap(priv->ctrl);
--out_unmap_vram:
--	iounmap(priv->ddr_base);
- out_unmap_context:
- 	lv1_gpu_context_iomap(priv->context_handle, XDR_IOIF, xdr_lpar,
- 			      XDR_BUF_SIZE, IOPTE_M);
-@@ -825,7 +814,6 @@ static int ps3vram_remove(struct ps3_system_bus_device *dev)
- 	ps3vram_cache_cleanup(dev);
- 	iounmap(priv->reports);
- 	iounmap(priv->ctrl);
--	iounmap(priv->ddr_base);
- 	lv1_gpu_context_iomap(priv->context_handle, XDR_IOIF,
- 			      ps3_mm_phys_to_lpar(__pa(priv->xdr_buf)),
- 			      XDR_BUF_SIZE, IOPTE_M);
 -- 
 1.6.2.4
 
