@@ -1,135 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764213AbZEHDGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757078AbZEHDNf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764213AbZEHDGz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 23:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763876AbZEHDCv
+	id S1757078AbZEHDNf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 23:13:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753742AbZEHDNX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 23:02:51 -0400
-Received: from mga14.intel.com ([143.182.124.37]:63458 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1763897AbZEHDCt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 23:02:49 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,314,1239001200"; 
-   d="scan'208";a="140519541"
-Date: Fri, 8 May 2009 11:02:09 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
-	class citizen
-Message-ID: <20090508030209.GA8892@localhost>
-References: <20090430205936.0f8b29fc@riellaptop.surriel.com> <20090430181340.6f07421d.akpm@linux-foundation.org> <20090430215034.4748e615@riellaptop.surriel.com> <20090430195439.e02edc26.akpm@linux-foundation.org> <49FB01C1.6050204@redhat.com> <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org>
+	Thu, 7 May 2009 23:13:23 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:48604 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753237AbZEHDNW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 23:13:22 -0400
+Message-ID: <4A03A34C.3000109@novell.com>
+Date: Thu, 07 May 2009 23:13:16 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507151039.GA2413@cmpxchg.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Marcelo Tosatti <mtosatti@redhat.com>
+CC: Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org, Anthony Liguori <anthony@codemonkey.ws>
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com> <20090507233503.GA9103@amt.cnet>
+In-Reply-To: <20090507233503.GA9103@amt.cnet>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig73A9A3EBCBAFD4DFD80678E7"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 11:10:39PM +0800, Johannes Weiner wrote:
-> On Thu, May 07, 2009 at 08:11:01PM +0800, Wu Fengguang wrote:
-> > Introduce AS_EXEC to mark executables and their linked libraries, and to
-> > protect their referenced active pages from being deactivated.
-> > 
-> > CC: Elladan <elladan@eskimo.com>
-> > CC: Nick Piggin <npiggin@suse.de>
-> > CC: Johannes Weiner <hannes@cmpxchg.org>
-> > CC: Christoph Lameter <cl@linux-foundation.org>
-> > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > Acked-by: Peter Zijlstra <peterz@infradead.org>
-> > Acked-by: Rik van Riel <riel@redhat.com>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  include/linux/pagemap.h |    1 +
-> >  mm/mmap.c               |    2 ++
-> >  mm/nommu.c              |    2 ++
-> >  mm/vmscan.c             |   35 +++++++++++++++++++++++++++++++++--
-> >  4 files changed, 38 insertions(+), 2 deletions(-)
-> > 
-> > --- linux.orig/include/linux/pagemap.h
-> > +++ linux/include/linux/pagemap.h
-> > @@ -25,6 +25,7 @@ enum mapping_flags {
-> >  #ifdef CONFIG_UNEVICTABLE_LRU
-> >  	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
-> >  #endif
-> > +	AS_EXEC		= __GFP_BITS_SHIFT + 4,	/* mapped PROT_EXEC somewhere */
-> >  };
-> >  
-> >  static inline void mapping_set_error(struct address_space *mapping, int error)
-> > --- linux.orig/mm/mmap.c
-> > +++ linux/mm/mmap.c
-> > @@ -1194,6 +1194,8 @@ munmap_back:
-> >  			goto unmap_and_free_vma;
-> >  		if (vm_flags & VM_EXECUTABLE)
-> >  			added_exe_file_vma(mm);
-> > +		if (vm_flags & VM_EXEC)
-> > +			set_bit(AS_EXEC, &file->f_mapping->flags);
-> >  	} else if (vm_flags & VM_SHARED) {
-> >  		error = shmem_zero_setup(vma);
-> >  		if (error)
-> > --- linux.orig/mm/nommu.c
-> > +++ linux/mm/nommu.c
-> > @@ -1224,6 +1224,8 @@ unsigned long do_mmap_pgoff(struct file 
-> >  			added_exe_file_vma(current->mm);
-> >  			vma->vm_mm = current->mm;
-> >  		}
-> > +		if (vm_flags & VM_EXEC)
-> > +			set_bit(AS_EXEC, &file->f_mapping->flags);
-> >  	}
-> 
-> I find it a bit ugly that it applies an attribute of the memory area
-> (per mm) to the page cache mapping (shared).  Because this in turn
-> means that the reference through a non-executable vma might get the
-> pages rotated just because there is/was an executable mmap around.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig73A9A3EBCBAFD4DFD80678E7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Right, the intention was to identify a whole executable/library file,
-eg. /bin/bash or /lib/libc-2.9.so, covering both _text_ and _data_
-sections.
+Marcelo Tosatti wrote:
+> On Thu, May 07, 2009 at 01:03:45PM -0400, Gregory Haskins wrote:
+>  =20
+>> Chris Wright wrote:
+>>    =20
+>>> * Gregory Haskins (ghaskins@novell.com) wrote:
+>>>  =20
+>>>      =20
+>>>> Chris Wright wrote:
+>>>>    =20
+>>>>        =20
+>>>>> VF drivers can also have this issue (and typically use mmio).
+>>>>> I at least have a better idea what your proposal is, thanks for
+>>>>> explanation.  Are you able to demonstrate concrete benefit with it =
+yet
+>>>>> (improved latency numbers for example)?
+>>>>>      =20
+>>>>>          =20
+>>>> I had a test-harness/numbers for this kind of thing, but its a bit
+>>>> crufty since its from ~1.5 years ago.  I will dig it up, update it, =
+and
+>>>> generate/post new numbers.
+>>>>    =20
+>>>>        =20
+>>> That would be useful, because I keep coming back to pio and shared
+>>> page(s) when think of why not to do this.  Seems I'm not alone in tha=
+t.
+>>>
+>>> thanks,
+>>> -chris
+>>>  =20
+>>>      =20
+>> I completed the resurrection of the test and wrote up a little wiki on=
 
-> >  	down_write(&nommu_region_sem);
-> > --- linux.orig/mm/vmscan.c
-> > +++ linux/mm/vmscan.c
-> > @@ -1230,6 +1230,7 @@ static void shrink_active_list(unsigned 
-> >  	unsigned long pgmoved;
-> >  	unsigned long pgscanned;
-> >  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
-> > +	LIST_HEAD(l_active);
-> >  	LIST_HEAD(l_inactive);
-> >  	struct page *page;
-> >  	struct pagevec pvec;
-> > @@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned 
-> >  
-> >  		/* page_referenced clears PageReferenced */
-> >  		if (page_mapping_inuse(page) &&
-> > -		    page_referenced(page, 0, sc->mem_cgroup))
-> > +		    page_referenced(page, 0, sc->mem_cgroup)) {
-> > +			struct address_space *mapping = page_mapping(page);
-> > +
-> >  			pgmoved++;
-> > +			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
-> > +				list_add(&page->lru, &l_active);
-> > +				continue;
-> > +			}
-> > +		}
-> 
-> Since we walk the VMAs in page_referenced anyway, wouldn't it be
-> better to check if one of them is executable?  This would even work
-> for executable anon pages.  After all, there are applications that cow
-> executable mappings (sbcl and other language environments that use an
-> executable, run-time modified core image come to mind).
+>> the subject, which you can find here:
+>>
+>> http://developer.novell.com/wiki/index.php/WhyHypercalls
+>>
+>> Hopefully this answers Chris' "show me the numbers" and Anthony's "Why=
 
-The page_referenced() path will only cover the _text_ section.  But
-yeah, the _data_ section is more likely to grow huge in some rare cases.
+>> reinvent the wheel?" questions.
+>>
+>> I will include this information when I publish the updated v2 series
+>> with the s/hypercall/dynhc changes.
+>>
+>> Let me know if you have any questions.
+>>    =20
+>
+> Greg,
+>
+> I think comparison is not entirely fair. You're using
+> KVM_HC_VAPIC_POLL_IRQ ("null" hypercall) and the compiler optimizes tha=
+t
+> (on Intel) to only one register read:
+>
+>         nr =3D kvm_register_read(vcpu, VCPU_REGS_RAX);
+>
+> Whereas in a real hypercall for (say) PIO you would need the address,
+> size, direction and data.
+>  =20
 
-Thanks,
-Fengguang
+Hi Marcelo,
+   I'll have to respectfully disagree with you here.  What you are
+proposing is actually a different test: a 4th type I would call  "PIO
+over HC".  It is distinctly different than the existing MMIO, PIO, and
+HC tests already present.
+
+I assert that the current HC test remains valid because for pure
+hypercalls, the "nr" *is* the address.  It identifies the function to be
+executed (e.g. VAPIC_POLL_IRQ =3D null), just like the PIO address of my
+nullio device identifies the function to be executed (i.e.
+nullio_write() =3D null)
+
+My argument is that the HC test emulates the "dynhc()" concept I have
+been talking about, whereas the PIOoHC is more like the
+pv_io_ops->iowrite approach.
+
+That said, your 4th test type would actually be a very interesting
+data-point to add to the suite (especially since we are still kicking
+around the notion of doing something like this).  I will update the
+patches.
+
+
+> Also for PIO/MMIO you're adding this unoptimized lookup to the=20
+> measurement:
+>
+>         pio_dev =3D vcpu_find_pio_dev(vcpu, port, size, !in);
+>         if (pio_dev) {
+>                 kernel_pio(pio_dev, vcpu, vcpu->arch.pio_data);
+>                 complete_pio(vcpu);=20
+>                 return 1;
+>         }
+>
+> Whereas for hypercall measurement you don't.
+
+In theory they should both share about the same algorithmic complexity
+in the decode-stage, but due to the possible optimization you mention
+you may have a point.  I need to take some steps to ensure the HC path
+isn't artificially simplified by GCC (like making the execute stage do
+some trivial work like you mention below).
+
+>  I believe a fair comparison
+> would be have a shared guest/host memory area where you store guest/hos=
+t
+> TSC values and then do, on guest:
+>
+> 	rdtscll(&shared_area->guest_tsc);
+> 	pio/mmio/hypercall
+> 	... back to host
+> 	rdtscll(&shared_area->host_tsc);
+>
+> And then calculate the difference (minus guests TSC_OFFSET of course)?
+>
+>  =20
+I'm not sure I need that much complexity.  I can probably just change
+the test harness to generate an ioread32(), and have the functions
+return the TSC value as a return parameter for all test types.  The
+important thing is that we pick something extremely cheap (yet dynamic)
+to compute so the execution time doesn't invalidate the measurement
+granularity with a large constant.
+
+Regards,
+-Greg
+
+
+
+--------------enig73A9A3EBCBAFD4DFD80678E7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkoDo0wACgkQlOSOBdgZUxk02ACfVq1ZAQ/UUSjM830ltsDgVtn1
+7TAAniRtwLSW9T9JkvuHH2S9XrviLtUc
+=41pj
+-----END PGP SIGNATURE-----
+
+--------------enig73A9A3EBCBAFD4DFD80678E7--
