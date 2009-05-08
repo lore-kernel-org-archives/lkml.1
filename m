@@ -1,157 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbZEHCBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbZEHCKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755204AbZEHCBf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 22:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753083AbZEHCBY
+	id S1757868AbZEHCKz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 22:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbZEHCKn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 22:01:24 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:56450 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752041AbZEHCBX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 22:01:23 -0400
-Date: Fri, 8 May 2009 11:01:23 +0900
-From: Isaku Yamahata <yamahata@valinux.co.jp>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Xen-devel <xen-devel@lists.xensource.com>,
-       Alex Nixon <alex.nixon@citrix.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [Xen-devel] [PATCH 03/11] Xen: Rename the balloon lock
-Message-ID: <20090508020123.GE25512%yamahata@valinux.co.jp>
-References: <1241732737-7669-1-git-send-email-jeremy@goop.org> <1241732737-7669-4-git-send-email-jeremy@goop.org>
+	Thu, 7 May 2009 22:10:43 -0400
+Received: from sh.osrg.net ([192.16.179.4]:35971 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752041AbZEHCKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 22:10:42 -0400
+Date: Fri, 8 May 2009 11:06:07 +0900
+To: fujita.tomonori@lab.ntt.co.jp
+Cc: tj@kernel.org, axboe@kernel.dk, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, linux-ide@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
+       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
+       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
+       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
+       bharrosh@panasas.com
+Subject: Re: [GIT PATCH] block,scsi,ide: unify sector and data_len, take#2
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090507192427K.fujita.tomonori@lab.ntt.co.jp>
+References: <1241423927-11871-1-git-send-email-tj@kernel.org>
+	<20090507192427K.fujita.tomonori@lab.ntt.co.jp>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241732737-7669-4-git-send-email-jeremy@goop.org>
-User-Agent: Mutt/1.5.6i
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090508110630H.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 08 May 2009 11:06:18 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi. Please please don't move the arch common variable
-into x86 specific file. It causes link error on ia64.
+On Thu, 7 May 2009 19:23:34 +0900
+FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
 
-Before I sent the patches to fix it twice or so,
-but it seems to be dropped.
+> On Mon,  4 May 2009 16:58:36 +0900
+> Tejun Heo <tj@kernel.org> wrote:
+> 
+> > Hello,
+> > 
+> > Upon ack, please pull from the following git tree.
+> > 
+> >   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-unify-sector-and-data_len
+> > 
+> > This is the second take of block-unify-sector-and-data_len patchset.
+> > The primary goal of this patchset is to consolidate all the similar
+> > bug slightly different current position and data length fields in
+> > struct request.  For detailed description, please read the description
+> > in the last take[L].  Changes from the last take[L] are
+> 
+> Looks really nice. Finally, the block insulates the internal! SCSI
+> did two years ago ;)
 
+btw, you are still working on the cleanups of the block API, right?
 
-On Thu, May 07, 2009 at 02:45:29PM -0700, Jeremy Fitzhardinge wrote:
-> From: Alex Nixon <alex.nixon@citrix.com>
-> 
-> Impact: cleanup
-> 
-> * xen_create_contiguous_region needs access to the balloon lock to
->   ensure memory doesn't change under its feet, so expose the balloon
->   lock
-> * Change the name of the lock to xen_reservation_lock, to imply it's
->   now less-specific usage.
-> 
-> Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> ---
->  arch/x86/xen/mmu.c             |    7 +++++++
->  drivers/xen/balloon.c          |   15 ++++-----------
->  include/xen/interface/memory.h |    8 ++++++++
->  3 files changed, 19 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-> index d673b03..218cf79 100644
-> --- a/arch/x86/xen/mmu.c
-> +++ b/arch/x86/xen/mmu.c
-> @@ -67,6 +67,13 @@
->  
->  #define MMU_UPDATE_HISTO	30
->  
-> +/*
-> + * Protects atomic reservation decrease/increase against concurrent increases.
-> + * Also protects non-atomic updates of current_pages and driver_pages, and
-> + * balloon lists.
-> + */
-> +DEFINE_SPINLOCK(xen_reservation_lock);
-> +
->  #ifdef CONFIG_XEN_DEBUG_FS
->  
->  static struct {
-> diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
-> index efa4b36..1e7984d 100644
-> --- a/drivers/xen/balloon.c
-> +++ b/drivers/xen/balloon.c
-> @@ -84,13 +84,6 @@ static struct sys_device balloon_sysdev;
->  
->  static int register_balloon(struct sys_device *sysdev);
->  
-> -/*
-> - * Protects atomic reservation decrease/increase against concurrent increases.
-> - * Also protects non-atomic updates of current_pages and driver_pages, and
-> - * balloon lists.
-> - */
-> -static DEFINE_SPINLOCK(balloon_lock);
-> -
->  static struct balloon_stats balloon_stats;
->  
->  /* We increase/decrease in batches which fit in a page */
-> @@ -209,7 +202,7 @@ static int increase_reservation(unsigned long nr_pages)
->  	if (nr_pages > ARRAY_SIZE(frame_list))
->  		nr_pages = ARRAY_SIZE(frame_list);
->  
-> -	spin_lock_irqsave(&balloon_lock, flags);
-> +	spin_lock_irqsave(&xen_reservation_lock, flags);
->  
->  	page = balloon_first_page();
->  	for (i = 0; i < nr_pages; i++) {
-> @@ -267,7 +260,7 @@ static int increase_reservation(unsigned long nr_pages)
->  	totalram_pages = balloon_stats.current_pages;
->  
->   out:
-> -	spin_unlock_irqrestore(&balloon_lock, flags);
-> +	spin_unlock_irqrestore(&xen_reservation_lock, flags);
->  
->  	return 0;
->  }
-> @@ -312,7 +305,7 @@ static int decrease_reservation(unsigned long nr_pages)
->  	kmap_flush_unused();
->  	flush_tlb_all();
->  
-> -	spin_lock_irqsave(&balloon_lock, flags);
-> +	spin_lock_irqsave(&xen_reservation_lock, flags);
->  
->  	/* No more mappings: invalidate P2M and add to balloon. */
->  	for (i = 0; i < nr_pages; i++) {
-> @@ -329,7 +322,7 @@ static int decrease_reservation(unsigned long nr_pages)
->  	balloon_stats.current_pages -= nr_pages;
->  	totalram_pages = balloon_stats.current_pages;
->  
-> -	spin_unlock_irqrestore(&balloon_lock, flags);
-> +	spin_unlock_irqrestore(&xen_reservation_lock, flags);
->  
->  	return need_sleep;
->  }
-> diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
-> index f548f7c..9df4bd0 100644
-> --- a/include/xen/interface/memory.h
-> +++ b/include/xen/interface/memory.h
-> @@ -9,6 +9,8 @@
->  #ifndef __XEN_PUBLIC_MEMORY_H__
->  #define __XEN_PUBLIC_MEMORY_H__
->  
-> +#include <linux/spinlock.h>
-> +
->  /*
->   * Increase or decrease the specified domain's memory reservation. Returns a
->   * -ve errcode on failure, or the # extents successfully allocated or freed.
-> @@ -184,4 +186,10 @@ DEFINE_GUEST_HANDLE_STRUCT(xen_memory_map);
->   */
->  #define XENMEM_machine_memory_map   10
->  
-> +/*
-> + * Prevent the balloon driver from changing the memory reservation during a driver
-> + * critical region.
-> + */
-> +extern spinlock_t xen_reservation_lock;
-> +
->  #endif /* __XEN_PUBLIC_MEMORY_H__ */
-
--- 
-yamahata
+I also want to see some cleanups of request completion functions a bit
+(e.g. we don't need _bidi_ stuff, we have too many completion
+functions, etc...).
