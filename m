@@ -1,25 +1,26 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753840AbZEHAlP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764881AbZEHAlk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753840AbZEHAlP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 20:41:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762817AbZEHARd
+	id S1764881AbZEHAlk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 20:41:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761939AbZEHARe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 20:17:33 -0400
-Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:48374
+	Thu, 7 May 2009 20:17:34 -0400
+Received: from adsl-76-233-236-102.dsl.pltn13.sbcglobal.net ([76.233.236.102]:48344
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1762966AbZEHAR1 (ORCPT
+	with ESMTP id S932343AbZEHARX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 20:17:27 -0400
+	Thu, 7 May 2009 20:17:23 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
+       Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 9/9] xen/swiotlb: update to new new dma_ops
-Date: Thu,  7 May 2009 17:17:22 -0700
-Message-Id: <1241741842-7966-10-git-send-email-jeremy@goop.org>
+Subject: [PATCH 3/9] xen: add hooks for mapping phys<->bus addresses in swiotlb
+Date: Thu,  7 May 2009 17:17:16 -0700
+Message-Id: <1241741842-7966-4-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1241741842-7966-1-git-send-email-jeremy@goop.org>
 References: <1241741842-7966-1-git-send-email-jeremy@goop.org>
@@ -27,131 +28,111 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+From: Ian Campbell <ian.campbell@citrix.com>
 
-Convert to use map_page/unmap_page rather than map_single, use enum
-dma_data_direction.
+Impact: Xen support for DMA
 
+Add hooks to allow Xen to do translation between pfn and mfns for the swiotlb
+layer, so that dma actually ends up going to the proper machine pages.
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 ---
- drivers/pci/xen-iommu.c |   54 ++++++++++++++++++++---------------------------
- 1 files changed, 23 insertions(+), 31 deletions(-)
+ arch/x86/kernel/pci-swiotlb.c |   10 ----------
+ arch/x86/xen/pci-swiotlb.c    |   18 ++++++++++++++++++
+ drivers/pci/xen-iommu.c       |   11 +++++++++++
+ include/xen/swiotlb.h         |    2 ++
+ 4 files changed, 31 insertions(+), 10 deletions(-)
 
-diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
-index 81338b2..41c276f 100644
---- a/drivers/pci/xen-iommu.c
-+++ b/drivers/pci/xen-iommu.c
-@@ -154,7 +154,9 @@ static inline dma_addr_t xen_dma_map_page(struct page *page)
- }
+diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
+index bc09da7..3216674 100644
+--- a/arch/x86/kernel/pci-swiotlb.c
++++ b/arch/x86/kernel/pci-swiotlb.c
+@@ -13,16 +13,6 @@
  
- static int xen_map_sg(struct device *hwdev, struct scatterlist *sg,
--			int nents, int direction)
-+		      int nents,
-+		      enum dma_data_direction direction,
-+		      struct dma_attrs *attrs)
- {
- 	struct scatterlist *s;
- 	struct page *page;
-@@ -179,7 +181,9 @@ static int xen_map_sg(struct device *hwdev, struct scatterlist *sg,
- }
+ int swiotlb __read_mostly;
  
- static void xen_unmap_sg(struct device *hwdev, struct scatterlist *sg,
--			 int nents, int direction)
-+			 int nents,
-+			 enum dma_data_direction direction,
-+			 struct dma_attrs *attrs)
- {
- 	struct scatterlist *s;
- 	struct page *page;
-@@ -242,53 +246,41 @@ static void xen_free_coherent(struct device *dev, size_t size,
- 	free_pages((unsigned long)vaddr, order);
- }
- 
--static dma_addr_t xen_swiotlb_map_single(struct device *dev, phys_addr_t paddr,
--					 size_t size, int direction)
-+static dma_addr_t xen_map_page(struct device *dev, struct page *page,
-+			       unsigned long offset, size_t size,
-+			       enum dma_data_direction direction,
-+			       struct dma_attrs *attrs)
- {
- 	dma_addr_t dma;
--	BUG_ON(direction == DMA_NONE);
--
--	WARN_ON(size == 0);
--	dma = swiotlb_map_single(dev, phys_to_virt(paddr), size, direction);
--
--	flush_write_buffers();
--	return dma;
+-dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
+-{
+-	return paddr;
 -}
 -
--static dma_addr_t xen_map_single(struct device *dev, phys_addr_t paddr,
--					size_t size, int direction)
+-phys_addr_t swiotlb_bus_to_phys(dma_addr_t baddr)
 -{
--	struct page *page;
--	dma_addr_t dma;
- 
- 	BUG_ON(direction == DMA_NONE);
- 
- 	WARN_ON(size == 0);
--	page = pfn_to_page(PFN_DOWN(paddr));
- 
--	dma = xen_dma_map_page(page) + offset_in_page(paddr);
-+	dma = xen_dma_map_page(page) + offset;
- 
- 	IOMMU_BUG_ON(address_needs_mapping(dev, dma));
--	IOMMU_BUG_ON(range_straddles_page_boundary(paddr, size));
- 	flush_write_buffers();
- 	return dma;
- }
- 
--static void xen_unmap_single(struct device *dev, dma_addr_t dma_addr,
--				size_t size, int direction)
-+static void xen_unmap_page(struct device *dev, dma_addr_t dma_addr,
-+			   size_t size,
-+			   enum dma_data_direction direction,
-+			   struct dma_attrs *attrs)
+-	return baddr;
+-}
+-
+ int __weak swiotlb_arch_range_needs_mapping(phys_addr_t paddr, size_t size)
  {
- 	BUG_ON(direction == DMA_NONE);
- 	xen_dma_unmap_page(pfn_to_page(mfn_to_pfn(PFN_DOWN(dma_addr))));
+ 	return 0;
+diff --git a/arch/x86/xen/pci-swiotlb.c b/arch/x86/xen/pci-swiotlb.c
+index 25f0365..1d43fde 100644
+--- a/arch/x86/xen/pci-swiotlb.c
++++ b/arch/x86/xen/pci-swiotlb.c
+@@ -1,5 +1,7 @@
+ #include <linux/bootmem.h>
+ #include <linux/gfp.h>
++#include <linux/dma-mapping.h>
++#include <linux/swiotlb.h>
+ 
+ #include <xen/swiotlb.h>
+ #include <asm/xen/hypervisor.h>
+@@ -25,3 +27,19 @@ void *swiotlb_alloc(unsigned order, unsigned long nslabs)
+ 	WARN_ON(1);
+ 	return NULL;
  }
++
++dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
++{
++	if (xen_pv_domain())
++		return xen_phys_to_bus(paddr);
++
++	return paddr;
++}
++
++phys_addr_t swiotlb_bus_to_phys(dma_addr_t baddr)
++{
++	if (xen_pv_domain())
++		return xen_bus_to_phys(baddr);
++
++	return baddr;
++}
+diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
+index b9b4620..e3d6ddb 100644
+--- a/drivers/pci/xen-iommu.c
++++ b/drivers/pci/xen-iommu.c
+@@ -59,6 +59,17 @@ void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
+ 			panic(KERN_ERR "xen_create_contiguous_region failed\n");
+ 	}
+ }
++
++dma_addr_t xen_phys_to_bus(phys_addr_t paddr)
++{
++	return phys_to_machine(XPADDR(paddr)).maddr;
++}
++
++phys_addr_t xen_bus_to_phys(dma_addr_t daddr)
++{
++	return machine_to_phys(XMADDR(daddr)).paddr;
++}
++
+ static inline int address_needs_mapping(struct device *hwdev,
+ 						dma_addr_t addr)
+ {
+diff --git a/include/xen/swiotlb.h b/include/xen/swiotlb.h
+index 67b7b42..4229f27 100644
+--- a/include/xen/swiotlb.h
++++ b/include/xen/swiotlb.h
+@@ -2,5 +2,7 @@
+ #define _XEN_SWIOTLB_H
  
--static struct dma_mapping_ops xen_dma_ops = {
-+static struct dma_map_ops xen_dma_ops = {
- 	.dma_supported = NULL,
+ extern void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs);
++extern phys_addr_t xen_bus_to_phys(dma_addr_t daddr);
++extern dma_addr_t xen_phys_to_bus(phys_addr_t paddr);
  
- 	.alloc_coherent = xen_alloc_coherent,
- 	.free_coherent = xen_free_coherent,
- 
--	.map_single = xen_map_single,
--	.unmap_single = xen_unmap_single,
-+	.map_page = xen_map_page,
-+	.unmap_page = xen_unmap_page,
- 
- 	.map_sg = xen_map_sg,
- 	.unmap_sg = xen_unmap_sg,
-@@ -298,17 +290,17 @@ static struct dma_mapping_ops xen_dma_ops = {
- 	.is_phys = 0,
- };
- 
--static struct dma_mapping_ops xen_swiotlb_dma_ops = {
-+static struct dma_map_ops xen_swiotlb_dma_ops = {
- 	.dma_supported = swiotlb_dma_supported,
- 
- 	.alloc_coherent = xen_alloc_coherent,
- 	.free_coherent = xen_free_coherent,
- 
--	.map_single = xen_swiotlb_map_single,	/* swiotlb_map_single has a different prototype */
--	.unmap_single = swiotlb_unmap_single,
-+	.map_page = swiotlb_map_page,
-+	.unmap_page = swiotlb_unmap_page,
- 
--	.map_sg = swiotlb_map_sg,
--	.unmap_sg = swiotlb_unmap_sg,
-+	.map_sg = swiotlb_map_sg_attrs,
-+	.unmap_sg = swiotlb_unmap_sg_attrs,
- 
- 	.mapping_error = swiotlb_dma_mapping_error,
- 
+ #endif /* _XEN_SWIOTLB_H */
 -- 
 1.6.0.6
 
