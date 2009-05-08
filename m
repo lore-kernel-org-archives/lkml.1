@@ -1,65 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757868AbZEHCKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758348AbZEHCLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757868AbZEHCKz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 22:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753538AbZEHCKn
+	id S1758348AbZEHCLV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 22:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbZEHCLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 22:10:43 -0400
-Received: from sh.osrg.net ([192.16.179.4]:35971 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752041AbZEHCKm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 22:10:42 -0400
-Date: Fri, 8 May 2009 11:06:07 +0900
-To: fujita.tomonori@lab.ntt.co.jp
-Cc: tj@kernel.org, axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, linux-ide@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
-       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
-       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
-       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
-       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
-       bharrosh@panasas.com
-Subject: Re: [GIT PATCH] block,scsi,ide: unify sector and data_len, take#2
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090507192427K.fujita.tomonori@lab.ntt.co.jp>
-References: <1241423927-11871-1-git-send-email-tj@kernel.org>
-	<20090507192427K.fujita.tomonori@lab.ntt.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Thu, 7 May 2009 22:11:05 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:62553 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754923AbZEHCLA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 22:11:00 -0400
+Message-Id: <200905080210.n482ALpZ048382@www262.sakura.ne.jp>
+Subject: Re: [TOMOYO] Add garbage collector support.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: jmorris@namei.org
+Cc: pavel@ucw.cz, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+MIME-Version: 1.0
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090508110630H.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 08 May 2009 11:06:18 +0900 (JST)
+Date: Fri, 08 May 2009 11:10:21 +0900
+References: <20090501102438.GA7470@elf.ucw.cz> <200905012207.BFC60616.QStOHOMJFOLFFV@I-love.SAKURA.ne.jp> <20090503215615.GA1368@ucw.cz> <200905041524.GGH52160.FFFVMSJOOLtHOQ@I-love.SAKURA.ne.jp> <200905062116.HCI09807.VOFFHFSMOLOtQJ@I-love.SAKURA.ne.jp> <200905072042.AFF10698.LJFHOOFFQtMOSV@I-love.SAKURA.ne.jp> <alpine.LRH.2.00.0905081140500.2761@tundra.namei.org>
+In-Reply-To: <alpine.LRH.2.00.0905081140500.2761@tundra.namei.org>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 07052009 #1939649, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009 19:23:34 +0900
-FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp> wrote:
-
-> On Mon,  4 May 2009 16:58:36 +0900
-> Tejun Heo <tj@kernel.org> wrote:
+James Morris wrote:
+> > James, it is possible to apply below commits to security-testing-2.6#next ?
+> > I get a lot of warning messages in my environment.
 > 
-> > Hello,
-> > 
-> > Upon ack, please pull from the following git tree.
-> > 
-> >   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-unify-sector-and-data_len
-> > 
-> > This is the second take of block-unify-sector-and-data_len patchset.
-> > The primary goal of this patchset is to consolidate all the similar
-> > bug slightly different current position and data length fields in
-> > struct request.  For detailed description, please read the description
-> > in the last take[L].  Changes from the last take[L] are
-> 
-> Looks really nice. Finally, the block insulates the internal! SCSI
-> did two years ago ;)
+> Please elaborate.
 
-btw, you are still working on the cleanups of the block API, right?
+Without commits
 
-I also want to see some cleanups of request completion functions a bit
-(e.g. we don't need _bidi_ stuff, we have too many completion
-functions, etc...).
+  mm: pass correct mm when growing stack
+  Revert "kobject: don't block for each kobject_uevent".
+  x86: clean up old gcc warnings
+
+I get compiler warnings
+
+  # make init/main.o
+  scripts/kconfig/conf -s arch/x86/Kconfig
+    CHK     include/linux/version.h
+    CHK     include/linux/utsrelease.h
+    SYMLINK include/asm -> include/asm-x86
+    CALL    scripts/checksyscalls.sh
+    CC      init/main.o
+  In file included from /usr/src/all/security-testing-2.6.git/arch/x86/include/asm/page.h:8,
+                   from /usr/src/all/security-testing-2.6.git/arch/x86/include/asm/processor.h:18,
+                   from include/linux/prefetch.h:14,
+                   from include/linux/list.h:6,
+                   from include/linux/module.h:9,
+                   from init/main.c:13:
+  /usr/src/all/security-testing-2.6.git/arch/x86/include/asm/page_types.h:48: warning: parameter has incomplete type
+  /usr/src/all/security-testing-2.6.git/arch/x86/include/asm/page_types.h:50: warning: parameter has incomplete type
+
+and runtime warnings
+
+  ------------[ cut here ]------------
+  WARNING: at security/security.c:217 security_vm_enough_memory+0x9b/0xb0()
+  Hardware name: VMware Virtual Platform
+  Modules linked in: pcnet32 crc32
+  Pid: 3277, comm: khelper Not tainted 2.6.29 #3
+  Call Trace:
+   [<c015f400>] ? zap_locks+0x110/0x130
+   [<c015e5fd>] warn_slowpath+0x8d/0xf0
+   [<c019b2ec>] ? validate_chain+0x3fc/0x540
+   [<c019b2ec>] ? validate_chain+0x3fc/0x540
+   [<c019d79c>] ? __lock_acquire+0x29c/0x8b0
+   [<c019f159>] ? __lock_acquired+0x109/0x1c0
+   [<c035bbdb>] security_vm_enough_memory+0x9b/0xb0
+   [<c02089bb>] acct_stack_growth+0xcb/0x190
+   [<c0208ba1>] expand_downwards+0x121/0x1a0
+   [<c0208c3d>] expand_stack+0xd/0x10
+   [<c0208cdd>] find_extend_vma+0x9d/0x130
+   [<c01ff5d5>] __get_user_pages+0x95/0x6c0
+   [<c01ffc73>] get_user_pages+0x73/0x90
+   [<c0233cd8>] get_arg_page+0x48/0x130
+   [<c02342a5>] copy_strings+0x165/0x2f0
+   [<c02366ba>] do_execve+0x31a/0x900
+   [<c010252a>] sys_execve+0x5a/0xb0
+   [<c01040b4>] syscall_call+0x7/0xb
+   [<c010b624>] ? kernel_execve+0x24/0x30
+   [<c017ab73>] ? ____call_usermodehelper+0x103/0x190
+   [<c017aa70>] ? ____call_usermodehelper+0x0/0x190
+   [<c0104a73>] ? kernel_thread_helper+0x7/0x10
+  ---[ end trace 636cdcc028137283 ]---
+
+in my environment.
+
+These commits are already in 2.6.30-rc4.
+These warnings will disappear when security-testing-2.6#next is refreshed
+using 2.6.30-rcX . But security-testing-2.6#next is using 2.6.29.
+Thus, I wished these commits applied to security-testing-2.6#next
+if there is no problem.
