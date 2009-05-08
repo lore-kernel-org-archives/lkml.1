@@ -1,305 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755995AbZEHL7s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756232AbZEHMB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755995AbZEHL7s (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 07:59:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753517AbZEHL7i
+	id S1756232AbZEHMB2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 08:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753435AbZEHMBS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 07:59:38 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:37673 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753237AbZEHL7g (ORCPT
+	Fri, 8 May 2009 08:01:18 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:32843 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753237AbZEHMBS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 07:59:36 -0400
-From: Jorg Schummer <ext-jorg.2.schummer@nokia.com>
-To: ext-jorg.2.schummer@nokia.com
-Cc: "Theodore Ts'o" <tytso@mit.edu>, akpm@linux-foundation.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 01/39] ext3: Add support for non-native signed/unsigned htree hash algorithms
-Date: Fri,  8 May 2009 14:58:01 +0300
-Message-Id: <1241783920-12613-2-git-send-email-ext-jorg.2.schummer@nokia.com>
-X-Mailer: git-send-email 1.5.4.3
-In-Reply-To: <>
-References: <>
-X-OriginalArrivalTime: 08 May 2009 11:58:44.0102 (UTC) FILETIME=[56154260:01C9CFD4]
-X-Nokia-AV: Clean
+	Fri, 8 May 2009 08:01:18 -0400
+Date: Fri, 8 May 2009 08:01:16 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Li Zefan <lizf@cn.fujitsu.com>
+cc: Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] tracing/events: clean up for
+ ftrace_set_clr_event()
+In-Reply-To: <4A041478.5070401@cn.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0905080750460.28378@gandalf.stny.rr.com>
+References: <4A03998E.3020503@cn.fujitsu.com> <20090508105013.GA6417@nowhere> <4A041478.5070401@cn.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Theodore Ts'o <tytso@mit.edu>
 
-The original ext3 hash algorithms assumed that variables of type char
-were signed, as God and K&R intended.  Unfortunately, this assumption
-is not true on some architectures.  Userspace support for marking
-filesystems with non-native signed/unsigned chars was added two years
-ago, but the kernel-side support was never added (until now).
+On Fri, 8 May 2009, Li Zefan wrote:
 
-Signed-off-by: "Theodore Ts'o" <tytso@mit.edu>
-Cc: akpm@linux-foundation.org
-Cc: linux-kernel@vger.kernel.org
----
- fs/ext3/hash.c             |   77 ++++++++++++++++++++++++++++++++++++++------
- fs/ext3/namei.c            |    7 ++++
- fs/ext3/super.c            |   12 +++++++
- include/linux/ext3_fs.h    |   28 +++++++++++++++-
- include/linux/ext3_fs_sb.h |    1 +
- 5 files changed, 114 insertions(+), 11 deletions(-)
+> Frederic Weisbecker wrote:
+> > On Fri, May 08, 2009 at 10:31:42AM +0800, Li Zefan wrote:
+> >> Add a helper function __ftrace_set_clr_event(), and replace some
+> >> ftrace_set_clr_event() calls with this helper, thus we don't need any
+> >> kstrdup() or kmalloc().
+> >>
+> >> As a side effect, this patch fixes an issue in self tests code, which is
+> >> similar to the one fixed in commit d6bf81ef0f7474434c2a049e8bf3c9146a14dd96
+> >> ("tracing: append ":*" to internal setting of system events")
 
-diff --git a/fs/ext3/hash.c b/fs/ext3/hash.c
-index c30e149..7d215b4 100644
---- a/fs/ext3/hash.c
-+++ b/fs/ext3/hash.c
-@@ -35,23 +35,71 @@ static void TEA_transform(__u32 buf[4], __u32 const in[])
- 
- 
- /* The old legacy hash */
--static __u32 dx_hack_hash (const char *name, int len)
-+static __u32 dx_hack_hash_unsigned(const char *name, int len)
- {
--	__u32 hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
-+	__u32 hash, hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
-+	const unsigned char *ucp = (const unsigned char *) name;
-+
-+	while (len--) {
-+		hash = hash1 + (hash0 ^ (((int) *ucp++) * 7152373));
-+
-+		if (hash & 0x80000000)
-+			hash -= 0x7fffffff;
-+		hash1 = hash0;
-+		hash0 = hash;
-+	}
-+	return hash0 << 1;
-+}
-+
-+static __u32 dx_hack_hash_signed(const char *name, int len)
-+{
-+	__u32 hash, hash0 = 0x12a3fe2d, hash1 = 0x37abe8f9;
-+	const signed char *scp = (const signed char *) name;
-+
- 	while (len--) {
--		__u32 hash = hash1 + (hash0 ^ (*name++ * 7152373));
-+		hash = hash1 + (hash0 ^ (((int) *scp++) * 7152373));
- 
--		if (hash & 0x80000000) hash -= 0x7fffffff;
-+		if (hash & 0x80000000)
-+			hash -= 0x7fffffff;
- 		hash1 = hash0;
- 		hash0 = hash;
- 	}
--	return (hash0 << 1);
-+	return hash0 << 1;
- }
- 
--static void str2hashbuf(const char *msg, int len, __u32 *buf, int num)
-+static void str2hashbuf_signed(const char *msg, int len, __u32 *buf, int num)
- {
- 	__u32	pad, val;
- 	int	i;
-+	const signed char *scp = (const signed char *) msg;
-+
-+	pad = (__u32)len | ((__u32)len << 8);
-+	pad |= pad << 16;
-+
-+	val = pad;
-+	if (len > num*4)
-+		len = num * 4;
-+	for (i = 0; i < len; i++) {
-+		if ((i % 4) == 0)
-+			val = pad;
-+		val = ((int) scp[i]) + (val << 8);
-+		if ((i % 4) == 3) {
-+			*buf++ = val;
-+			val = pad;
-+			num--;
-+		}
-+	}
-+	if (--num >= 0)
-+		*buf++ = val;
-+	while (--num >= 0)
-+		*buf++ = pad;
-+}
-+
-+static void str2hashbuf_unsigned(const char *msg, int len, __u32 *buf, int num)
-+{
-+	__u32	pad, val;
-+	int	i;
-+	const unsigned char *ucp = (const unsigned char *) msg;
- 
- 	pad = (__u32)len | ((__u32)len << 8);
- 	pad |= pad << 16;
-@@ -62,7 +110,7 @@ static void str2hashbuf(const char *msg, int len, __u32 *buf, int num)
- 	for (i=0; i < len; i++) {
- 		if ((i % 4) == 0)
- 			val = pad;
--		val = msg[i] + (val << 8);
-+		val = ((int) ucp[i]) + (val << 8);
- 		if ((i % 4) == 3) {
- 			*buf++ = val;
- 			val = pad;
-@@ -95,6 +143,8 @@ int ext3fs_dirhash(const char *name, int len, struct dx_hash_info *hinfo)
- 	const char	*p;
- 	int		i;
- 	__u32		in[8], buf[4];
-+	void		(*str2hashbuf)(const char *, int, __u32 *, int) =
-+				str2hashbuf_signed;
- 
- 	/* Initialize the default seed for the hash checksum functions */
- 	buf[0] = 0x67452301;
-@@ -113,13 +163,18 @@ int ext3fs_dirhash(const char *name, int len, struct dx_hash_info *hinfo)
- 	}
- 
- 	switch (hinfo->hash_version) {
-+	case DX_HASH_LEGACY_UNSIGNED:
-+		hash = dx_hack_hash_unsigned(name, len);
-+		break;
- 	case DX_HASH_LEGACY:
--		hash = dx_hack_hash(name, len);
-+		hash = dx_hack_hash_signed(name, len);
- 		break;
-+	case DX_HASH_HALF_MD4_UNSIGNED:
-+		str2hashbuf = str2hashbuf_unsigned;
- 	case DX_HASH_HALF_MD4:
- 		p = name;
- 		while (len > 0) {
--			str2hashbuf(p, len, in, 8);
-+			(*str2hashbuf)(p, len, in, 8);
- 			half_md4_transform(buf, in);
- 			len -= 32;
- 			p += 32;
-@@ -127,10 +182,12 @@ int ext3fs_dirhash(const char *name, int len, struct dx_hash_info *hinfo)
- 		minor_hash = buf[2];
- 		hash = buf[1];
- 		break;
-+	case DX_HASH_TEA_UNSIGNED:
-+		str2hashbuf = str2hashbuf_unsigned;
- 	case DX_HASH_TEA:
- 		p = name;
- 		while (len > 0) {
--			str2hashbuf(p, len, in, 4);
-+			(*str2hashbuf)(p, len, in, 4);
- 			TEA_transform(buf, in);
- 			len -= 16;
- 			p += 16;
-diff --git a/fs/ext3/namei.c b/fs/ext3/namei.c
-index 1dd2abe..287b304 100644
---- a/fs/ext3/namei.c
-+++ b/fs/ext3/namei.c
-@@ -368,6 +368,8 @@ dx_probe(struct qstr *entry, struct inode *dir,
- 		goto fail;
- 	}
- 	hinfo->hash_version = root->info.hash_version;
-+	if (hinfo->hash_version <= DX_HASH_TEA)
-+		hinfo->hash_version += EXT3_SB(dir->i_sb)->s_hash_unsigned;
- 	hinfo->seed = EXT3_SB(dir->i_sb)->s_hash_seed;
- 	if (entry)
- 		ext3fs_dirhash(entry->name, entry->len, hinfo);
-@@ -636,6 +638,9 @@ int ext3_htree_fill_tree(struct file *dir_file, __u32 start_hash,
- 	dir = dir_file->f_path.dentry->d_inode;
- 	if (!(EXT3_I(dir)->i_flags & EXT3_INDEX_FL)) {
- 		hinfo.hash_version = EXT3_SB(dir->i_sb)->s_def_hash_version;
-+		if (hinfo.hash_version <= DX_HASH_TEA)
-+			hinfo.hash_version +=
-+				EXT3_SB(dir->i_sb)->s_hash_unsigned;
- 		hinfo.seed = EXT3_SB(dir->i_sb)->s_hash_seed;
- 		count = htree_dirblock_to_tree(dir_file, dir, 0, &hinfo,
- 					       start_hash, start_minor_hash);
-@@ -1398,6 +1403,8 @@ static int make_indexed_dir(handle_t *handle, struct dentry *dentry,
- 
- 	/* Initialize as for dx_probe */
- 	hinfo.hash_version = root->info.hash_version;
-+	if (hinfo.hash_version <= DX_HASH_TEA)
-+		hinfo.hash_version += EXT3_SB(dir->i_sb)->s_hash_unsigned;
- 	hinfo.seed = EXT3_SB(dir->i_sb)->s_hash_seed;
- 	ext3fs_dirhash(name, namelen, &hinfo);
- 	frame = frames;
-diff --git a/fs/ext3/super.c b/fs/ext3/super.c
-index f6c94f2..541d5e4 100644
---- a/fs/ext3/super.c
-+++ b/fs/ext3/super.c
-@@ -1744,6 +1744,18 @@ static int ext3_fill_super (struct super_block *sb, void *data, int silent)
- 	for (i=0; i < 4; i++)
- 		sbi->s_hash_seed[i] = le32_to_cpu(es->s_hash_seed[i]);
- 	sbi->s_def_hash_version = es->s_def_hash_version;
-+	i = le32_to_cpu(es->s_flags);
-+	if (i & EXT2_FLAGS_UNSIGNED_HASH)
-+		sbi->s_hash_unsigned = 3;
-+	else if ((i & EXT2_FLAGS_SIGNED_HASH) == 0) {
-+#ifdef __CHAR_UNSIGNED__
-+		es->s_flags |= cpu_to_le32(EXT2_FLAGS_UNSIGNED_HASH);
-+		sbi->s_hash_unsigned = 3;
-+#else
-+		es->s_flags |= cpu_to_le32(EXT2_FLAGS_SIGNED_HASH);
-+#endif
-+		sb->s_dirt = 1;
-+	}
- 
- 	if (sbi->s_blocks_per_group > blocksize * 8) {
- 		printk (KERN_ERR
-diff --git a/include/linux/ext3_fs.h b/include/linux/ext3_fs.h
-index d14f029..9004794 100644
---- a/include/linux/ext3_fs.h
-+++ b/include/linux/ext3_fs.h
-@@ -354,6 +354,13 @@ struct ext3_inode {
- #define	EXT3_ORPHAN_FS			0x0004	/* Orphans being recovered */
- 
- /*
-+ * Misc. filesystem flags
-+ */
-+#define EXT2_FLAGS_SIGNED_HASH		0x0001  /* Signed dirhash in use */
-+#define EXT2_FLAGS_UNSIGNED_HASH	0x0002  /* Unsigned dirhash in use */
-+#define EXT2_FLAGS_TEST_FILESYS		0x0004	/* to test development code */
-+
-+/*
-  * Mount flags
-  */
- #define EXT3_MOUNT_CHECK		0x00001	/* Do mount-time checks */
-@@ -489,7 +496,23 @@ struct ext3_super_block {
- 	__u16	s_reserved_word_pad;
- 	__le32	s_default_mount_opts;
- 	__le32	s_first_meta_bg;	/* First metablock block group */
--	__u32	s_reserved[190];	/* Padding to the end of the block */
-+	__le32	s_mkfs_time;		/* When the filesystem was created */
-+	__le32	s_jnl_blocks[17];	/* Backup of the journal inode */
-+	/* 64bit support valid if EXT4_FEATURE_COMPAT_64BIT */
-+/*150*/	__le32	s_blocks_count_hi;	/* Blocks count */
-+	__le32	s_r_blocks_count_hi;	/* Reserved blocks count */
-+	__le32	s_free_blocks_count_hi;	/* Free blocks count */
-+	__le16	s_min_extra_isize;	/* All inodes have at least # bytes */
-+	__le16	s_want_extra_isize; 	/* New inodes should reserve # bytes */
-+	__le32	s_flags;		/* Miscellaneous flags */
-+	__le16  s_raid_stride;		/* RAID stride */
-+	__le16  s_mmp_interval;         /* # seconds to wait in MMP checking */
-+	__le64  s_mmp_block;            /* Block for multi-mount protection */
-+	__le32  s_raid_stripe_width;    /* blocks on all data disks (N*stride)*/
-+	__u8	s_log_groups_per_flex;  /* FLEX_BG group size */
-+	__u8	s_reserved_char_pad2;
-+	__le16  s_reserved_pad;
-+	__u32   s_reserved[162];        /* Padding to the end of the block */
- };
- 
- #ifdef __KERNEL__
-@@ -694,6 +717,9 @@ static inline __le16 ext3_rec_len_to_disk(unsigned len)
- #define DX_HASH_LEGACY		0
- #define DX_HASH_HALF_MD4	1
- #define DX_HASH_TEA		2
-+#define DX_HASH_LEGACY_UNSIGNED	3
-+#define DX_HASH_HALF_MD4_UNSIGNED	4
-+#define DX_HASH_TEA_UNSIGNED		5
- 
- #ifdef __KERNEL__
- 
-diff --git a/include/linux/ext3_fs_sb.h b/include/linux/ext3_fs_sb.h
-index e024e38..a4e9216 100644
---- a/include/linux/ext3_fs_sb.h
-+++ b/include/linux/ext3_fs_sb.h
-@@ -57,6 +57,7 @@ struct ext3_sb_info {
- 	u32 s_next_generation;
- 	u32 s_hash_seed[4];
- 	int s_def_hash_version;
-+	int s_hash_unsigned;	/* 3 if hash should be signed, 0 if not */
- 	struct percpu_counter s_freeblocks_counter;
- 	struct percpu_counter s_freeinodes_counter;
- 	struct percpu_counter s_dirs_counter;
--- 
-1.5.4.3
+Actually, what does this patch solve that the above mentioned commit does 
+not?
+
+> >>
+> >> It's a small issue and won't cause any bug in fact, but we should do things
+> >> right anyway.
+> >>
+> >> [ Impact: clean up ]
+> > 
+> > If this fixes an issue like you described, then it's more than a cleanup :)
+> > 
+> 
+> That issue causes no bug, and that's why I call it a cleanup.
+> 
+> How about (mainly stealed from commit d6bf81ef0f7474434c2a049e8bf3c9146a14dd96):
+> 
+> [ Impact: prevent accidental enabling of events with same name as a system in self tests ]
+> 
+> But it excceeds 80 char..
+> 
+> I sometimes feel it hard to write Impact line (one of the reason is my limit
+> English skill). I've explained the impact of this patch in detail, but I'm
+> still required to add a one-line summary. :(
+
+I find the Impact line much easier to write when I think of it as the 
+reason for the patch (think, why am I writing this). Here I would have 
+written:
+
+[ Impact: remove use of kmalloc and kstrdup with cleaner code ]
+
+> 
+> > 
+> ...
+> >> +		if (event && strcmp(event, call->name) != 0)
+> >> +			continue;
+> > 
+> > 
+> > Neat: You can simply use !strcmp(...)
+> > 
+> 
+> Actually it's arguable which is better, and both styles are used in kernel code.
+> 
+> And that 'if (!ptr)' vs 'if (ptr == NULL)'..
+> 
+
+I preferer if (!ptr) over if (ptr == NULL), but this has nothing to do 
+with the reason for the "strcmp(...) != 0". It is totally different, and 
+it fooled you too ;-)
+
+As I mentioned to Frederic, !strcmp() actually means "these strings 
+match". Which fools the human brain all too easy. Thus we see,
+"strcmp(...) == 0" as "is a match" and "strcmp(...) != 0" as not a match, 
+because our brain focuses on the "==" and the "!=". Those that program in 
+C, default "!" as not.
+
+Note, strcmp being 0 for match has nothing to do with the C convention of 
+0 being non error. But because it is used in sorting algorithms. strcmp 
+will return > 0 if it deems str1 > str2, or it will return < 0 if it deems 
+str1 < str2, and of course it returns 0 on match.
+
+-- Steve
 
