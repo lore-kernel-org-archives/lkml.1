@@ -1,143 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758277AbZEHTiu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759784AbZEHTjU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758277AbZEHTiu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 15:38:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754285AbZEHTim
+	id S1759784AbZEHTjU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:39:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755324AbZEHTi7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 15:38:42 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:35684 "EHLO havoc.gtf.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753140AbZEHTil (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:38:41 -0400
-Date: Fri, 8 May 2009 15:38:41 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: viro@zeniv.linux.org.uk, mingo@elte.hu,
-       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
-Subject: [PATCH 1/2 v2] kernel/{sched,smp}.c: fix static decl prior to struct declaration
-Message-ID: <20090508193841.GA13831@havoc.gtf.org>
-References: <20090508184838.GA11157@havoc.gtf.org>
+	Fri, 8 May 2009 15:38:59 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:36477 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754285AbZEHTi6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 15:38:58 -0400
+Subject: Re: Adaptec driver crashes (1/3 and 2/3)
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Norman Diamond <n0diamond@yahoo.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <8690A202112B4316A178F6DD0AD7E394@DIAMOND8600>
+References: <8690A202112B4316A178F6DD0AD7E394@DIAMOND8600>
+Content-Type: text/plain
+Date: Fri, 08 May 2009 19:38:57 +0000
+Message-Id: <1241811537.3327.91.camel@mulgrave.int.hansenpartnership.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090508184838.GA11157@havoc.gtf.org>
-User-Agent: Mutt/1.4.2.2i
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to C99 6.9.2p3, any declaration "static struct foo my_foo;"
-must follow the definition of struct foo.
+On Wed, 2009-05-06 at 16:13 +0900, Norman Diamond wrote:
+> The easiest 100% reproducible way to crash a Linux system is as follows.
+> 
+> Insert either an Adaptec 1460 PCMCIA card or Adaptec 1480 CardBus card. 
+> Remove the card.  Insert the card again.  Even if you knew to set the 
+> console to a text mode terminal first (since Linux doesn't give Blue Screens 
+> of Death otherwise), you still won't get a dump.  Not much to go on without 
+> a dump, but at least it's 100% repro.
 
-Apparently, gcc's lack of warning is a bug.
+Sounds like something's still pinned.  When you remove it the first
+time, can you remove the module? (that's aha152x_cs right?).
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
-Patch v2 changes:
-- fix ifdef imbalance, by moving entire USER_SCHED code block
-- indent cpp directives, to indicate nesting
+James
 
- kernel/sched.c |   60 ++++++++++++++++++++++++++++-----------------------------
- kernel/smp.c   |    4 +--
- 2 files changed, 32 insertions(+), 32 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 26efa47..61a54c7 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -303,36 +303,6 @@ struct task_group {
- 	struct list_head children;
- };
- 
--#ifdef CONFIG_USER_SCHED
--
--/* Helper function to pass uid information to create_sched_user() */
--void set_tg_uid(struct user_struct *user)
--{
--	user->tg->uid = user->uid;
--}
--
--/*
-- * Root task group.
-- * 	Every UID task group (including init_task_group aka UID-0) will
-- * 	be a child to this group.
-- */
--struct task_group root_task_group;
--
--#ifdef CONFIG_FAIR_GROUP_SCHED
--/* Default task group's sched entity on each cpu */
--static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
--/* Default task group's cfs_rq on each cpu */
--static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
--#endif /* CONFIG_FAIR_GROUP_SCHED */
--
--#ifdef CONFIG_RT_GROUP_SCHED
--static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
--static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
--#endif /* CONFIG_RT_GROUP_SCHED */
--#else /* !CONFIG_USER_SCHED */
--#define root_task_group init_task_group
--#endif /* CONFIG_USER_SCHED */
--
- /* task_group_lock serializes add/remove of task groups and also changes to
-  * a task group's cpu shares.
-  */
-@@ -663,6 +633,36 @@ struct rq {
- 
- static DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
- 
-+#ifdef CONFIG_USER_SCHED
-+
-+/* Helper function to pass uid information to create_sched_user() */
-+void set_tg_uid(struct user_struct *user)
-+{
-+	user->tg->uid = user->uid;
-+}
-+
-+/*
-+ * Root task group.
-+ * 	Every UID task group (including init_task_group aka UID-0) will
-+ * 	be a child to this group.
-+ */
-+struct task_group root_task_group;
-+
-+# ifdef CONFIG_FAIR_GROUP_SCHED
-+/* Default task group's sched entity on each cpu */
-+static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
-+/* Default task group's cfs_rq on each cpu */
-+static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
-+# endif /* CONFIG_FAIR_GROUP_SCHED */
-+
-+# ifdef CONFIG_RT_GROUP_SCHED
-+static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
-+static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
-+# endif /* CONFIG_RT_GROUP_SCHED */
-+#else /* !CONFIG_USER_SCHED */
-+# define root_task_group init_task_group
-+#endif /* CONFIG_USER_SCHED */
-+
- static inline void check_preempt_curr(struct rq *rq, struct task_struct *p, int sync)
- {
- 	rq->curr->sched_class->check_preempt_curr(rq, p, sync);
-diff --git a/kernel/smp.c b/kernel/smp.c
-index 858baac..aba7bda 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -12,8 +12,6 @@
- #include <linux/smp.h>
- #include <linux/cpu.h>
- 
--static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
--
- static struct {
- 	struct list_head	queue;
- 	spinlock_t		lock;
-@@ -39,6 +37,8 @@ struct call_single_queue {
- 	spinlock_t		lock;
- };
- 
-+static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
-+
- static DEFINE_PER_CPU(struct call_function_data, cfd_data) = {
- 	.lock			= __SPIN_LOCK_UNLOCKED(cfd_data.lock),
- };
