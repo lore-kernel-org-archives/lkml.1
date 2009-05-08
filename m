@@ -1,14 +1,14 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763444AbZEHDAW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763511AbZEHDAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763444AbZEHDAW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 7 May 2009 23:00:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762156AbZEHC4w
+	id S1763511AbZEHDAr (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 7 May 2009 23:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762210AbZEHC4y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 7 May 2009 22:56:52 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36251 "EHLO hera.kernel.org"
+	Thu, 7 May 2009 22:56:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36200 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762189AbZEHC4g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 7 May 2009 22:56:36 -0400
+	id S1756078AbZEHC4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 7 May 2009 22:56:14 -0400
 From: Tejun Heo <tj@kernel.org>
 To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        linux-ide@vger.kernel.org, rusty@rustcorp.com.au,
@@ -23,228 +23,139 @@ To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
        schwidefsky@de.ibm.com, zaitcev@redhat.com,
        fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 01/18] ide: dequeue in-flight request
-Date: Fri,  8 May 2009 11:53:59 +0900
-Message-Id: <1241751256-17435-2-git-send-email-tj@kernel.org>
+Subject: [PATCH 10/18] amiflop: dequeue in-flight request
+Date: Fri,  8 May 2009 11:54:08 +0900
+Message-Id: <1241751256-17435-11-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1241751256-17435-1-git-send-email-tj@kernel.org>
 References: <1241751256-17435-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 08 May 2009 02:54:27 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 08 May 2009 02:54:33 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ide generally has single request in flight and tracks it using
-hwif->rq and all state handlers follow the following convention.
-
-* ide_started is returned if the request is in flight.
-
-* ide_stopped is returned if the queue needs to be restarted.  The
-  request might or might not have been processed fully or partially.
-
-* hwif->rq is set to NULL, when an issued request completes.
-
-So, dequeueing model can be implemented by dequeueing after fetch,
-requeueing if hwif->rq isn't NULL on ide_stopped return and doing
-about the same thing on completion / port unlock paths.  These changes
-can be made in ide-io proper.
-
-In addition to the above main changes, the following updates are
-necessary.
-
-* ide-cd shouldn't dequeue a request when issuing REQUEST SENSE for it
-  as the request is already dequeued.
-
-* ide-atapi uses request queue as stack when issuing REQUEST SENSE to
-  put the REQUEST SENSE in front of the failed request.  This now
-  needs to be done using requeueing.
+Request processing in amiflop is done sequentially in
+redo_fd_request() proper and redo_fd_request() can easily be converted
+to track in-flight request.  Remove CURRENT, track in-flight request
+directly and dequeue it when processing starts.
 
 [ Impact: dequeue in-flight request ]
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Borislav Petkov <petkovbb@googlemail.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 ---
- drivers/ide/ide-atapi.c |   14 ++++++++++++--
- drivers/ide/ide-cd.c    |    8 --------
- drivers/ide/ide-io.c    |   34 +++++++++++++++++++++++++++-------
- 3 files changed, 39 insertions(+), 17 deletions(-)
+ drivers/block/amiflop.c |   48 +++++++++++++++++++++++-----------------------
+ 1 files changed, 24 insertions(+), 24 deletions(-)
 
-diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index 792534d..2874c3d 100644
---- a/drivers/ide/ide-atapi.c
-+++ b/drivers/ide/ide-atapi.c
-@@ -246,6 +246,7 @@ EXPORT_SYMBOL_GPL(ide_queue_sense_rq);
-  */
- void ide_retry_pc(ide_drive_t *drive)
+diff --git a/drivers/block/amiflop.c b/drivers/block/amiflop.c
+index e4a14b9..80a68b2 100644
+--- a/drivers/block/amiflop.c
++++ b/drivers/block/amiflop.c
+@@ -112,8 +112,6 @@ module_param(fd_def_df0, ulong, 0);
+ MODULE_LICENSE("GPL");
+ 
+ static struct request_queue *floppy_queue;
+-#define QUEUE (floppy_queue)
+-#define CURRENT elv_next_request(floppy_queue)
+ 
+ /*
+  *  Macros
+@@ -1335,59 +1333,61 @@ static int get_track(int drive, int track)
+ 
+ static void redo_fd_request(void)
  {
-+	struct request *failed_rq = drive->hwif->rq;
- 	struct request *sense_rq = &drive->sense_rq;
- 	struct ide_atapi_pc *pc = &drive->request_sense_pc;
- 
-@@ -260,8 +261,17 @@ void ide_retry_pc(ide_drive_t *drive)
- 	if (drive->media == ide_tape)
- 		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
- 
--	if (ide_queue_sense_rq(drive, pc))
--		ide_complete_rq(drive, -EIO, blk_rq_bytes(drive->hwif->rq));
-+	/*
-+	 * Push back the failed request and put request sense on top
-+	 * of it.  The failed command will be retried after sense data
-+	 * is acquired.
-+	 */
-+	blk_requeue_request(failed_rq->q, failed_rq);
-+	drive->hwif->rq = NULL;
-+	if (ide_queue_sense_rq(drive, pc)) {
-+		blkdev_dequeue_request(failed_rq);
-+		ide_complete_rq(drive, -EIO, blk_rq_bytes(failed_rq));
-+	}
- }
- EXPORT_SYMBOL_GPL(ide_retry_pc);
- 
-diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
-index 1a58b38..1f88911 100644
---- a/drivers/ide/ide-cd.c
-+++ b/drivers/ide/ide-cd.c
-@@ -404,15 +404,7 @@ static int cdrom_decode_status(ide_drive_t *drive, u8 stat)
- 
- end_request:
- 	if (stat & ATA_ERR) {
--		struct request_queue *q = drive->queue;
--		unsigned long flags;
--
--		spin_lock_irqsave(q->queue_lock, flags);
--		blkdev_dequeue_request(rq);
--		spin_unlock_irqrestore(q->queue_lock, flags);
--
- 		hwif->rq = NULL;
--
- 		return ide_queue_sense_rq(drive, rq) ? 2 : 1;
- 	} else
- 		return 2;
-diff --git a/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-index ca2519d..abda733 100644
---- a/drivers/ide/ide-io.c
-+++ b/drivers/ide/ide-io.c
-@@ -487,10 +487,10 @@ void do_ide_request(struct request_queue *q)
- 
- 	if (!ide_lock_port(hwif)) {
- 		ide_hwif_t *prev_port;
-+
-+		WARN_ON_ONCE(hwif->rq);
- repeat:
- 		prev_port = hwif->host->cur_port;
--		hwif->rq = NULL;
--
- 		if (drive->dev_flags & IDE_DFLAG_SLEEPING &&
- 		    time_after(drive->sleep, jiffies)) {
- 			ide_unlock_port(hwif);
-@@ -519,7 +519,12 @@ repeat:
- 		 * we know that the queue isn't empty, but this can happen
- 		 * if the q->prep_rq_fn() decides to kill a request
- 		 */
--		rq = elv_next_request(drive->queue);
-+		if (!rq) {
-+			rq = elv_next_request(drive->queue);
-+			if (rq)
-+				blkdev_dequeue_request(rq);
-+		}
-+
- 		spin_unlock_irq(q->queue_lock);
- 		spin_lock_irq(&hwif->lock);
- 
-@@ -555,8 +560,11 @@ repeat:
- 		startstop = start_request(drive, rq);
- 		spin_lock_irq(&hwif->lock);
- 
--		if (startstop == ide_stopped)
-+		if (startstop == ide_stopped) {
-+			rq = hwif->rq;
-+			hwif->rq = NULL;
- 			goto repeat;
-+		}
- 	} else
- 		goto plug_device;
- out:
-@@ -572,18 +580,24 @@ plug_device:
- plug_device_2:
- 	spin_lock_irq(q->queue_lock);
- 
-+	if (rq)
-+		blk_requeue_request(q, rq);
- 	if (!elv_queue_empty(q))
- 		blk_plug_device(q);
- }
- 
--static void ide_plug_device(ide_drive_t *drive)
-+static void ide_requeue_and_plug(ide_drive_t *drive, struct request *rq)
- {
- 	struct request_queue *q = drive->queue;
++	struct request *rq;
+ 	unsigned int cnt, block, track, sector;
+ 	int drive;
+ 	struct amiga_floppy_struct *floppy;
+ 	char *data;
  	unsigned long flags;
++	int err;
  
- 	spin_lock_irqsave(q->queue_lock, flags);
-+
-+	if (rq)
-+		blk_requeue_request(q, rq);
- 	if (!elv_queue_empty(q))
- 		blk_plug_device(q);
-+
- 	spin_unlock_irqrestore(q->queue_lock, flags);
- }
+- repeat:
+-	if (!CURRENT) {
++next_req:
++	rq = elv_next_request(floppy_queue);
++	if (!rq) {
+ 		/* Nothing left to do */
+ 		return;
+ 	}
++	blkdev_dequeue_request(rq);
  
-@@ -632,6 +646,7 @@ void ide_timer_expiry (unsigned long data)
- 	unsigned long	flags;
- 	int		wait = -1;
- 	int		plug_device = 0;
-+	struct request	*uninitialized_var(rq_in_flight);
+-	floppy = CURRENT->rq_disk->private_data;
++	floppy = rq->rq_disk->private_data;
+ 	drive = floppy - unit;
  
- 	spin_lock_irqsave(&hwif->lock, flags);
- 
-@@ -693,6 +708,8 @@ void ide_timer_expiry (unsigned long data)
- 		spin_lock_irq(&hwif->lock);
- 		enable_irq(hwif->irq);
- 		if (startstop == ide_stopped) {
-+			rq_in_flight = hwif->rq;
-+			hwif->rq = NULL;
- 			ide_unlock_port(hwif);
- 			plug_device = 1;
++next_segment:
+ 	/* Here someone could investigate to be more efficient */
+-	for (cnt = 0; cnt < blk_rq_cur_sectors(CURRENT); cnt++) {
++	for (cnt = 0, err = 0; cnt < blk_rq_cur_sectors(rq); cnt++) {
+ #ifdef DEBUG
+ 		printk("fd: sector %ld + %d requested for %s\n",
+-		       blk_rq_pos(CURRENT), cnt,
+-		       (rq_data_dir(CURRENT) == READ) ? "read" : "write");
++		       blk_rq_pos(rq), cnt,
++		       (rq_data_dir(rq) == READ) ? "read" : "write");
+ #endif
+-		block = blk_rq_pos(CURRENT) + cnt;
++		block = blk_rq_pos(rq) + cnt;
+ 		if ((int)block > floppy->blocks) {
+-			__blk_end_request_cur(CURRENT, -EIO);
+-			goto repeat;
++			err = -EIO;
++			break;
  		}
-@@ -701,7 +718,7 @@ void ide_timer_expiry (unsigned long data)
  
- 	if (plug_device) {
- 		ide_unlock_host(hwif->host);
--		ide_plug_device(drive);
-+		ide_requeue_and_plug(drive, rq_in_flight);
+ 		track = block / (floppy->dtype->sects * floppy->type->sect_mult);
+ 		sector = block % (floppy->dtype->sects * floppy->type->sect_mult);
+-		data = CURRENT->buffer + 512 * cnt;
++		data = rq->buffer + 512 * cnt;
+ #ifdef DEBUG
+ 		printk("access to track %d, sector %d, with buffer at "
+ 		       "0x%08lx\n", track, sector, data);
+ #endif
+ 
+ 		if (get_track(drive, track) == -1) {
+-			__blk_end_request_cur(CURRENT, -EIO);
+-			goto repeat;
++			err = -EIO;
++			break;
+ 		}
+ 
+-		switch (rq_data_dir(CURRENT)) {
+-		case READ:
++		if (rq_data_dir(rq) == READ) {
+ 			memcpy(data, floppy->trackbuf + sector * 512, 512);
+-			break;
+-
+-		case WRITE:
++		} else {
+ 			memcpy(floppy->trackbuf + sector * 512, data, 512);
+ 
+ 			/* keep the drive spinning while writes are scheduled */
+ 			if (!fd_motor_on(drive)) {
+-				__blk_end_request_cur(CURRENT, -EIO);
+-				goto repeat;
++				err = -EIO;
++				break;
+ 			}
+ 			/*
+ 			 * setup a callback to write the track buffer
+@@ -1399,12 +1399,12 @@ static void redo_fd_request(void)
+ 		        /* reset the timer */
+ 			mod_timer (flush_track_timer + drive, jiffies + 1);
+ 			local_irq_restore(flags);
+-			break;
+ 		}
  	}
+ 
+-	__blk_end_request_cur(CURRENT, 0);
+-	goto repeat;
++	if (__blk_end_request_cur(rq, err))
++		goto next_segment;
++	goto next_req;
  }
  
-@@ -787,6 +804,7 @@ irqreturn_t ide_intr (int irq, void *dev_id)
- 	ide_startstop_t startstop;
- 	irqreturn_t irq_ret = IRQ_NONE;
- 	int plug_device = 0;
-+	struct request *uninitialized_var(rq_in_flight);
- 
- 	if (host->host_flags & IDE_HFLAG_SERIALIZE) {
- 		if (hwif != host->cur_port)
-@@ -866,6 +884,8 @@ irqreturn_t ide_intr (int irq, void *dev_id)
- 	 */
- 	if (startstop == ide_stopped) {
- 		BUG_ON(hwif->handler);
-+		rq_in_flight = hwif->rq;
-+		hwif->rq = NULL;
- 		ide_unlock_port(hwif);
- 		plug_device = 1;
- 	}
-@@ -875,7 +895,7 @@ out:
- out_early:
- 	if (plug_device) {
- 		ide_unlock_host(hwif->host);
--		ide_plug_device(drive);
-+		ide_requeue_and_plug(drive, rq_in_flight);
- 	}
- 
- 	return irq_ret;
+ static void do_fd_request(struct request_queue * q)
 -- 
 1.6.0.2
 
