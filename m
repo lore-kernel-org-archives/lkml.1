@@ -1,76 +1,125 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756795AbZEHFgK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbZEHFjc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756795AbZEHFgK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 01:36:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753007AbZEHFfw
+	id S1753599AbZEHFjc (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 01:39:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZEHFjW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 01:35:52 -0400
-Received: from gw.goop.org ([64.81.55.164]:44879 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751211AbZEHFfv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 01:35:51 -0400
-Message-ID: <4A03C4B6.5070308@goop.org>
-Date: Thu, 07 May 2009 22:35:50 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Bryan Donlan <bdonlan@gmail.com>
-CC: LKML <linux-kernel@vger.kernel.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>
-Subject: Re: [BISECTED REGRESSION] Xen: OOPSes on heavy block IO on 2.6.30-master
-References: <3e8340490905072118s6d7a4127tff932317213febb4@mail.gmail.com>
-In-Reply-To: <3e8340490905072118s6d7a4127tff932317213febb4@mail.gmail.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 8 May 2009 01:39:22 -0400
+Received: from qw-out-2122.google.com ([74.125.92.24]:23083 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751209AbZEHFjV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 01:39:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=V5WwGHy1L9s1TXuVwTWk+PGtzwpX33pwHaX63P8i9PqQdFMk+vRxEigB2irw3MRU4r
+         Oy9ONaIGvtN6TXThfHKGZea3LoWnDQIRzfM26RUphhJ0QSB9ZcF2tuaWCJsFd6/nL3kN
+         aD84sPmXBTwk29MyV6sPrknk5CFKtlSIudass=
+Subject: Re: [RFC 1/1] seccomp: Add bitmask of allowed system calls.
+From: Tom Zanussi <tzanussi@gmail.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Adam Langley <agl@google.com>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
+       linux-kernel@vger.kernel.org, markus@google.com
+In-Reply-To: <20090507230021.GC6472@nowhere>
+References: <396556a20805301217k293e5718h6bbf02b234897235@europa>
+	 <20090507221447.GE28770@elte.hu>
+	 <a84d7bc60905071534l1e65f216mfd9330e93e4da4e2@mail.gmail.com>
+	 <20090507230021.GC6472@nowhere>
+Content-Type: text/plain
+Date: Fri, 08 May 2009 00:32:25 -0500
+Message-Id: <1241760745.9416.37.camel@tropicana>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bryan Donlan wrote:
-> I've bisected this problem down to the following commit;
-> unfortunately, there were some rather hairy interdependencies after
-> that point, so I wasn't able to test reverting it on top of master:
-> commit 93dbda7cbcd70a0bd1a99f39f44a9ccde8ab9040
-> Author: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> Date:   Thu Feb 26 17:35:44 2009 -0800
->   
-
-Thanks for going to the trouble of bisecting this, but I'd just fixed 
-this bug :/
-
-The patch below should fix it.
-
-Thanks again,
-    J
-
->From f26499cadfd057e4377e92ba680e16fa7bdf9422 Mon Sep 17 00:00:00 2001
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Date: Tue, 5 May 2009 13:08:42 -0700
-Subject: [PATCH] xen/i386: reserve Xen pagetables
-
-The Xen pagetables are no longer implicitly reserved as part of the other
-i386_start_kernel reservations, so make sure we explicitly reserve them.
-This prevents them from being released into the general kernel free page
-pool and reused.
-
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 0e13477..801d042 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -1799,6 +1799,11 @@ __init pgd_t *xen_setup_kernel_pagetable(pgd_t *pgd,
+On Fri, 2009-05-08 at 01:00 +0200, Frederic Weisbecker wrote:
+> On Thu, May 07, 2009 at 03:34:58PM -0700, Adam Langley wrote:
+> > > That assessment is incorrect, there's no difference between safety
+> > > here really.
+> > >
+> > > LSM cannot magically inspect user-space memory either when multiple
+> > > threads may access it. The point would be to define filters for
+> > > system call _arguments_, which are inherently thread-local and safe.
+> > 
+> > If I hook security_operations.socket_connect, I can validate the struct
+> > sockaddr after the final copy_from_user. However, since the sockaddr lives in
+> > userspace memory, if I try and validate it from ftrace SYSCALL_ENTER, I can't
+> > know that it won't change before sys_connect reads it again.
+> > 
+> > Because of that, there are system calls which an LSM hook can safely accept
+> > that an ftrace hook cannot. However, as you point out, any arguments passed in
+> > registers are inheriently safe and these may be sufficiently powerful.
+> > 
+> > > There are two problems with the bitmap scheme, which i also
+> > > suggested in a previous thread but then found it to be lacking:
+> > >
+> > > 1) enumeration: you define a bitmap. That will be problematic
+> > >   between compat and native 64-bit (both have different syscall
+> > >   vectors).
+> > 
+> > I /think/ it works out, but I've been bitten before with subtle 32/64 bit
+> > compat issues and accept that it's a bit ugly.
+> > 
+> > > 2) flexibility. It's an on/off selection per syscall. With the
+> > >   filter we have on, off, or filtered. That's a _whole_ lot more
+> > >   flexible.
+> > 
+> > Absolutely.
+> > 
+> > Is there a git tree that I can pull this parsing code from?
+> > (git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
+> > maybe?). I can patch in the seccomp-on-ftrace work and try building the
+> > filtering on top of that. I'll see how it turns out anyway.
+> 
+> 
+> Hi,
+> 
+> The most uptodate one is:
+> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
+> on the tracing/filters topic.
+> 
+> See kernel/trace/trace_events_filter.c
+> 
+> You might want to reuse some current syscall tracing facility.
+> An automated resolution table is built on bootime, you can look
+> at the end of arch/x86/kernel/ftrace.c
+> 
+> This table links each syscalls nr to the matching attribute entry of syscall
+> in which you can find:
+> 
+> - parameters names
+> - parameters types
+> - syscall name
+> 
  
- 	pin_pagetable_pfn(MMUEXT_PIN_L3_TABLE, PFN_DOWN(__pa(swapper_pg_dir)));
- 
-+	reserve_early(__pa(xen_start_info->pt_base),
-+		      __pa(xen_start_info->pt_base +
-+			   xen_start_info->nr_pt_frames * PAGE_SIZE),
-+		      "XEN PAGETABLES");
-+
- 	return swapper_pg_dir;
- }
- #endif	/* CONFIG_X86_64 */
+I guess it would be easier for seccomp to make use of the filtering and
+reuse the syscall tracing facility if we added filtering to the syscall
+tracer first.  It would be useful to do for the syscall tracer anyway,
+regardless of whether it (or something similar) ended up being used by
+seccomp.
 
+Frederic, did you have any plans for that?  If not, I can take a look
+when I get the chance...
+
+Tom
+
+> You can look at the hooks in include/linux/syscall.h:
+> The sections inside
+> #ifdef CONFIG_FTRACE_SYSCALLS
+> 
+> Well, it's a bit insane to read, so you can also look
+> at include/trace/syscall.h and kernel/trace/trace_syscalls.c and
+> see how it is used and how it could be reused.
+> 
+> 
+> Thanks,
+> Frederic.
+> 
 
