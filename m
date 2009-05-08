@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764415AbZEHV0d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764406AbZEHV0v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764415AbZEHV0d (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 17:26:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761780AbZEHVXk
+	id S1764406AbZEHV0v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 17:26:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762172AbZEHVXl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 17:23:40 -0400
-Received: from mail.windriver.com ([147.11.1.11]:44762 "EHLO mail.wrs.com"
+	Fri, 8 May 2009 17:23:41 -0400
+Received: from mail.windriver.com ([147.11.1.11]:44765 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756909AbZEHVXf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 17:23:35 -0400
+	id S1756966AbZEHVXg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 17:23:36 -0400
 From: Jason Wessel <jason.wessel@windriver.com>
 To: linux-kernel@vger.kernel.org
 Cc: kgdb-bugreport@lists.sourceforge.net, kdb@oss.sgi.com,
        Jason Wessel <jason.wessel@windriver.com>
-Subject: [PATCH 08/13] RFC ONLY - arm,kgdb: Add hook to catch an oops with debugger
-Date: Fri,  8 May 2009 16:23:15 -0500
-Message-Id: <1241817800-9320-9-git-send-email-jason.wessel@windriver.com>
+Subject: [PATCH 09/13] RFC ONLY - powerpc,kgdb: Introduce low level trap catching
+Date: Fri,  8 May 2009 16:23:16 -0500
+Message-Id: <1241817800-9320-10-git-send-email-jason.wessel@windriver.com>
 X-Mailer: git-send-email 1.6.3.rc0.1.gf800
-In-Reply-To: <1241817800-9320-8-git-send-email-jason.wessel@windriver.com>
+In-Reply-To: <1241817800-9320-9-git-send-email-jason.wessel@windriver.com>
 References: <1241817800-9320-1-git-send-email-jason.wessel@windriver.com>
  <1241817800-9320-2-git-send-email-jason.wessel@windriver.com>
  <1241817800-9320-3-git-send-email-jason.wessel@windriver.com>
@@ -26,7 +26,8 @@ References: <1241817800-9320-1-git-send-email-jason.wessel@windriver.com>
  <1241817800-9320-6-git-send-email-jason.wessel@windriver.com>
  <1241817800-9320-7-git-send-email-jason.wessel@windriver.com>
  <1241817800-9320-8-git-send-email-jason.wessel@windriver.com>
-X-OriginalArrivalTime: 08 May 2009 21:23:30.0216 (UTC) FILETIME=[3BC7EA80:01C9D023]
+ <1241817800-9320-9-git-send-email-jason.wessel@windriver.com>
+X-OriginalArrivalTime: 08 May 2009 21:23:31.0075 (UTC) FILETIME=[3C4AFD30:01C9D023]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,83 +36,92 @@ This is a RFC patch.  The work to possibly merge kdb and kgdb is being
 evaluated and this patch is considered only a proof of concept or
 prototype.
 
-Add in a low level hook to catch calls to die() in the debugger.
+The only way the debugger can handle a trap in inside rcu_lock,
+notify_die, or atomic_notifier_call_chain without a recursive fault is
+to have a low level "first opportunity handler" low level
+program_check_exception() handler.
 
-After the debugger is done, the standard system rules will be in play
-for the original exception.
-
-The kdb debugger wanted a chance to catch these sorts of exceptions
-for analysis.
+The other change here is to make sure that kgdb_handle_exception() is
+called with correct parameters when catching an oops, because kdb
+needs to know if the entry was an oops, single step, or breakpoint
+exception.
 
 Signed-off-by: Jason Wessel <jason.wessel@windriver.com>
 ---
- arch/arm/include/asm/kgdb.h |    2 ++
- arch/arm/kernel/kgdb.c      |    8 ++++++++
- arch/arm/kernel/traps.c     |    5 +++++
- 3 files changed, 15 insertions(+), 0 deletions(-)
+ arch/powerpc/kernel/kgdb.c  |    7 +++++--
+ arch/powerpc/kernel/traps.c |    7 +++++++
+ lib/Kconfig.kgdb            |    2 +-
+ 3 files changed, 13 insertions(+), 3 deletions(-)
 
-diff --git a/arch/arm/include/asm/kgdb.h b/arch/arm/include/asm/kgdb.h
-index 67af4b8..5a2e60e 100644
---- a/arch/arm/include/asm/kgdb.h
-+++ b/arch/arm/include/asm/kgdb.h
-@@ -95,6 +95,8 @@ extern int kgdb_fault_expected;
- #define _PC			15
- #define _CPSR			(GDB_MAX_REGS - 1)
- 
-+int kgdb_die_hook(int cmd, const char *str, struct pt_regs *regs, int err);
-+
- /*
-  * So that we can denote the end of a frame for tracing,
-  * in the simple case:
-diff --git a/arch/arm/kernel/kgdb.c b/arch/arm/kernel/kgdb.c
-index bb17e9b..3c0e5e5 100644
---- a/arch/arm/kernel/kgdb.c
-+++ b/arch/arm/kernel/kgdb.c
-@@ -10,6 +10,7 @@
-  *           Deepak Saxena <dsaxena@plexity.net>
-  */
- #include <linux/kgdb.h>
-+#include <linux/notifier.h>
- #include <asm/traps.h>
- 
- /* Make a local copy of the registers passed into the handler (bletch) */
-@@ -189,6 +190,13 @@ void kgdb_arch_exit(void)
- 	unregister_undef_hook(&kgdb_compiled_brkpt_hook);
+diff --git a/arch/powerpc/kernel/kgdb.c b/arch/powerpc/kernel/kgdb.c
+index e8207a3..d0ef25c 100644
+--- a/arch/powerpc/kernel/kgdb.c
++++ b/arch/powerpc/kernel/kgdb.c
+@@ -20,6 +20,7 @@
+ #include <linux/smp.h>
+ #include <linux/signal.h>
+ #include <linux/ptrace.h>
++#include <linux/kdebug.h>
+ #include <asm/current.h>
+ #include <asm/processor.h>
+ #include <asm/machdep.h>
+@@ -115,7 +116,9 @@ void kgdb_roundup_cpus(unsigned long flags)
+ /* KGDB functions to use existing PowerPC64 hooks. */
+ static int kgdb_debugger(struct pt_regs *regs)
+ {
+-	return kgdb_handle_exception(0, computeSignal(TRAP(regs)), 0, regs);
++	if (kgdb_handle_exception(1, computeSignal(TRAP(regs)), DIE_OOPS, regs))
++		return 0;
++	return 1;
  }
  
-+int kgdb_die_hook(int cmd, const char *str, struct pt_regs *regs, int err)
-+{
-+	if (kgdb_handle_exception(1, err, cmd, regs))
-+		return NOTIFY_DONE;
-+	return NOTIFY_STOP;
-+}
+ static int kgdb_handle_breakpoint(struct pt_regs *regs)
+@@ -123,7 +126,7 @@ static int kgdb_handle_breakpoint(struct pt_regs *regs)
+ 	if (user_mode(regs))
+ 		return 0;
+ 
+-	if (kgdb_handle_exception(0, SIGTRAP, 0, regs) != 0)
++	if (kgdb_handle_exception(1, SIGTRAP, 0, regs) != 0)
+ 		return 0;
+ 
+ 	if (*(u32 *) (regs->nip) == *(u32 *) (&arch_kgdb_ops.gdb_bpt_instr))
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 678fbff..ae409df 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -812,12 +812,19 @@ void __kprobes program_check_exception(struct pt_regs *regs)
+ 		return;
+ 	}
+ 	if (reason & REASON_TRAP) {
 +
- /*
-  * Register our undef instruction hooks with ARM undef core.
-  * We regsiter a hook specifically looking for the KGB break inst
-diff --git a/arch/arm/kernel/traps.c b/arch/arm/kernel/traps.c
-index 57eb0f6..e649019 100644
---- a/arch/arm/kernel/traps.c
-+++ b/arch/arm/kernel/traps.c
-@@ -21,6 +21,9 @@
- #include <linux/hardirq.h>
- #include <linux/init.h>
- #include <linux/uaccess.h>
-+#include <linux/kgdb.h>
-+#include <linux/kdebug.h>
-+#include <linux/notifier.h>
++#ifdef CONFIG_KGDB_LOW_LEVEL_TRAP
++		if (debugger_bpt(regs))
++			return;
++#endif /* CONFIG_KGDB_LOW_LEVEL_TRAP */
+ 		/* trap exception */
+ 		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
+ 				== NOTIFY_STOP)
+ 			return;
++#ifndef CONFIG_KGDB_LOW_LEVEL_TRAP
+ 		if (debugger_bpt(regs))
+ 			return;
++#endif /* ! CONFIG_KGDB_LOW_LEVEL_TRAP */
  
- #include <asm/atomic.h>
- #include <asm/cacheflush.h>
-@@ -248,6 +251,8 @@ NORET_TYPE void die(const char *str, struct pt_regs *regs, int err)
- {
- 	struct thread_info *thread = current_thread_info();
+ 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
+ 		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
+diff --git a/lib/Kconfig.kgdb b/lib/Kconfig.kgdb
+index 617f797..a2f63be 100644
+--- a/lib/Kconfig.kgdb
++++ b/lib/Kconfig.kgdb
+@@ -59,7 +59,7 @@ config KGDB_TESTS_BOOT_STRING
  
-+	kgdb_die_hook(DIE_OOPS, str, regs, err);
-+
- 	oops_enter();
- 
- 	console_verbose();
+ config KGDB_LOW_LEVEL_TRAP
+        bool "KGDB: Allow debugging with traps in notifiers"
+-       depends on X86
++       depends on X86 || PPC
+        default n
+        help
+          This will add an extra call back to kgdb for the breakpoint
 -- 
 1.6.3.rc0.1.gf800
 
