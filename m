@@ -1,156 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755708AbZEHMJg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759438AbZEHMO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755708AbZEHMJg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 08:09:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753677AbZEHMJ0
+	id S1759438AbZEHMO7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 08:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZEHMOv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 08:09:26 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:61145 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753371AbZEHMJZ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 08:09:25 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZMIhGKsc8zBLw32PbLIw3VeZT1KoChwx3/JHu0LXoGepqgY10jdCyKs+hh2fpjCT4i
-         8ejHHy/eEfP22qjb+oNpURCIPqXssjRYQ4mpHFXHxsXAoVd/USjv01iv9Eo68pwvUGNq
-         Y4rUUxvpNJoT3om2fCCAxyHMaP+7Sd/wZkNDc=
-MIME-Version: 1.0
-In-Reply-To: <20090508041700.GC8892@localhost>
-References: <20090430181340.6f07421d.akpm@linux-foundation.org>
-	 <20090430195439.e02edc26.akpm@linux-foundation.org>
-	 <49FB01C1.6050204@redhat.com>
-	 <20090501123541.7983a8ae.akpm@linux-foundation.org>
-	 <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins>
-	 <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org>
-	 <1241709466.11251.164.camel@twins> <20090508041700.GC8892@localhost>
-Date: Fri, 8 May 2009 21:09:24 +0900
-Message-ID: <28c262360905080509q333ec8acv2d2be69d99e1dfa3@mail.gmail.com>
-Subject: Re: [RFC][PATCH] vmscan: report vm_flags in page_referenced()
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
+	Fri, 8 May 2009 08:14:51 -0400
+Received: from mga09.intel.com ([134.134.136.24]:27530 "EHLO mga09.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751207AbZEHMOu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 08:14:50 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,317,1239001200"; 
+   d="scan'208";a="513736786"
+Date: Fri, 8 May 2009 20:14:48 +0800
+From: Shaohua Li <shaohua.li@intel.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH] x86 MCE: shut up lockdep warning
+Message-ID: <20090508121448.GA1807@sli10-desk.sh.intel.com>
+References: <1241754429.4444.12.camel@sli10-desk.sh.intel.com> <20090508064517.GX23223@one.firstfloor.org> <20090508091015.GA2038@elte.hu> <20090508093757.GY23223@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090508093757.GY23223@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 8, 2009 at 1:17 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> On Thu, May 07, 2009 at 11:17:46PM +0800, Peter Zijlstra wrote:
->> On Thu, 2009-05-07 at 17:10 +0200, Johannes Weiner wrote:
->>
->> > > @@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned
->> > >
->> > >           /* page_referenced clears PageReferenced */
->> > >           if (page_mapping_inuse(page) &&
->> > > -             page_referenced(page, 0, sc->mem_cgroup))
->> > > +             page_referenced(page, 0, sc->mem_cgroup)) {
->> > > +                 struct address_space *mapping = page_mapping(page);
->> > > +
->> > >                   pgmoved++;
->> > > +                 if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
->> > > +                         list_add(&page->lru, &l_active);
->> > > +                         continue;
->> > > +                 }
->> > > +         }
->> >
->> > Since we walk the VMAs in page_referenced anyway, wouldn't it be
->> > better to check if one of them is executable?  This would even work
->> > for executable anon pages.  After all, there are applications that cow
->> > executable mappings (sbcl and other language environments that use an
->> > executable, run-time modified core image come to mind).
->>
->> Hmm, like provide a vm_flags mask along to page_referenced() to only
->> account matching vmas... seems like a sensible idea.
->
-> Here is a quick patch for your opinions. Compile tested.
->
-> With the added vm_flags reporting, the mlock=>unevictable logic can
-> possibly be made more straightforward.
->
-> Thanks,
-> Fengguang
-> ---
-> vmscan: report vm_flags in page_referenced()
->
-> This enables more informed reclaim heuristics, eg. to protect executable
-> file pages more aggressively.
->
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  include/linux/rmap.h |    5 +++--
->  mm/rmap.c            |   30 +++++++++++++++++++++---------
->  mm/vmscan.c          |    7 +++++--
->  3 files changed, 29 insertions(+), 13 deletions(-)
->
-> --- linux.orig/include/linux/rmap.h
-> +++ linux/include/linux/rmap.h
-> @@ -83,7 +83,8 @@ static inline void page_dup_rmap(struct
->  /*
->  * Called from mm/vmscan.c to handle paging out
->  */
-> -int page_referenced(struct page *, int is_locked, struct mem_cgroup *cnt);
-> +int page_referenced(struct page *, int is_locked,
-> +                       struct mem_cgroup *cnt, unsigned long *vm_flags);
->  int try_to_unmap(struct page *, int ignore_refs);
->
->  /*
-> @@ -128,7 +129,7 @@ int page_wrprotect(struct page *page, in
->  #define anon_vma_prepare(vma)  (0)
->  #define anon_vma_link(vma)     do {} while (0)
->
-> -#define page_referenced(page,l,cnt) TestClearPageReferenced(page)
-> +#define page_referenced(page, locked, cnt, flags) TestClearPageReferenced(page)
->  #define try_to_unmap(page, refs) SWAP_FAIL
->
->  static inline int page_mkclean(struct page *page)
-> --- linux.orig/mm/rmap.c
-> +++ linux/mm/rmap.c
-> @@ -333,7 +333,8 @@ static int page_mapped_in_vma(struct pag
->  * repeatedly from either page_referenced_anon or page_referenced_file.
->  */
->  static int page_referenced_one(struct page *page,
-> -       struct vm_area_struct *vma, unsigned int *mapcount)
-> +                              struct vm_area_struct *vma,
-> +                              unsigned int *mapcount)
->  {
->        struct mm_struct *mm = vma->vm_mm;
->        unsigned long address;
-> @@ -385,7 +386,8 @@ out:
->  }
->
->  static int page_referenced_anon(struct page *page,
-> -                               struct mem_cgroup *mem_cont)
-> +                               struct mem_cgroup *mem_cont,
-> +                               unsigned long *vm_flags)
->  {
->        unsigned int mapcount;
->        struct anon_vma *anon_vma;
-> @@ -406,6 +408,7 @@ static int page_referenced_anon(struct p
->                if (mem_cont && !mm_match_cgroup(vma->vm_mm, mem_cont))
->                        continue;
->                referenced += page_referenced_one(page, vma, &mapcount);
-> +               *vm_flags |= vma->vm_flags;
+On Fri, May 08, 2009 at 05:37:57PM +0800, Andi Kleen wrote:
+> >  - it works around a lockdep warning
+> > 
+> >  - you did not realize the real bug while the warning was plain
+> 
+> Well I'm not sure you understood it either :)  Actually I'm pretty
+> sure you did not. It would have been good if you had awaited proper
+> review comments before commiting your patch.
+> 
+> I don't think here's really a real bug because cpu hotunplug is single threaded
+> anyways (cpu add remove lock) and we don't do multiple discoveries in parallel.
+> 
+> The reason the lock is there is only during bringup with multiple CPUs
+> doing this in parallel on initial bootup. But we can't race against cpu 
+> hotunplug there because there's not hotunplug before the system
+> is up with all configured CPUs.
+> 
+> So I think any way of shutting up lockdep is fine here and your
+> patch is overkill and disables interrupts unnecessarily. 
+yes, this isn't a real bug, but just a false warning from lockdep. It's
+my fault I didn't point this out first.
 
-Sometime this vma don't contain the anon page.
-That's why we need page_check_address.
-For such a case, wrong *vm_flag cause be harmful to reclaim.
-It can be happen in your first class citizen patch, I think.
+> >  - plus the patch introduces a fragile (because complex)
+> >    work_on_cpu() call into the CPU hotplug path, which could have 
+> >    caused followup regressions.
+> 
+> That's a reasonable point,  but doesn't seem strong enough to
+> do full irq disabling. A better fix would be to find some other
+> way to shut off this lockdep warning for this case. Is there
+> such a way?
+I tried to assign a lockdep class to the mce lock, which is the usual
+way to avoid lockdep warning, but it appears not working here.
 
-
-
--- 
-Kinds regards,
-Minchan Kim
+Thanks,
+Shaohua
