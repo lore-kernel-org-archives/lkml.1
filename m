@@ -1,84 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764034AbZEHTL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764271AbZEHTLz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764034AbZEHTL0 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 15:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753910AbZEHTLR
+	id S1764271AbZEHTLz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:11:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755758AbZEHTLm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 15:11:17 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:46453 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752520AbZEHTLR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:11:17 -0400
-Date: Fri, 8 May 2009 21:09:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Garzik <jeff@garzik.org>, Rusty Russell <rusty@rustcorp.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
-Subject: Re: [RFC PATCH 2/2] kernel/sched.c: VLA in middle of struct
-Message-ID: <20090508190944.GB12130@elte.hu>
-References: <20090508184838.GA11157@havoc.gtf.org> <20090508185015.GA11320@havoc.gtf.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090508185015.GA11320@havoc.gtf.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Fri, 8 May 2009 15:11:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55161 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753910AbZEHTLk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 15:11:40 -0400
+Date: Fri, 8 May 2009 12:09:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Norman Diamond" <n0diamond@yahoo.co.jp>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+Subject: Re: Adaptec driver crashes (3/3)
+Message-Id: <20090508120905.9624e4ad.akpm@linux-foundation.org>
+In-Reply-To: <507A39B029A94344AD588481FAAF019A@DIAMOND8600>
+References: <507A39B029A94344AD588481FAAF019A@DIAMOND8600>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 6 May 2009 16:13:53 +0900
+"Norman Diamond" <n0diamond@yahoo.co.jp> wrote:
 
-* Jeff Garzik <jeff@garzik.org> wrote:
-
-> The semantics for variable-length arrays __in the middle of structs__
-> are quite muddy, and a case in sched.c presents an interesting case,
-> as the preceding code comment indicates:
+> A tougher non-100%-reproducible way to crash a Linux system is as follows.
 > 
-> 	/*
-> 	 * The cpus mask in sched_group and sched_domain hangs off
-> 	 the end.  * FIXME: use cpumask_var_t or dynamic percpu alloc
-> 	 to avoid * wasting space for nr_cpu_ids < CONFIG_NR_CPUS.  */
-> 	struct static_sched_group {
-> 		struct sched_group sg; DECLARE_BITMAP(cpus,
-> 		CONFIG_NR_CPUS);
-> 	};
+> I don't remember exactly what I did, but for some reason I guessed it might 
+> happen a second time, so I set the console to a text mode terminal before it 
+> happened the second time (since Linux doesn't give Blue Screens of Death 
+> otherwise).  This is with an Adaptec 1480 card, AIC7xxx driver.
 > 
-> 	struct static_sched_domain {
-> 		struct sched_domain sd; DECLARE_BITMAP(span,
-> 		CONFIG_NR_CPUS);
-> 	};
+> I wish I had a wooden table so I wouldn't have to read and type this stuff 
+> back in by hand.  (In case anyone here doesn't read thedailywtf, ignore the 
+> part about the wooden table.  I still wish I wouldn't have to read and type 
+> this stuff back in by hand.) 
 > 
-> Both sched_group and sched_domain have the following trailing struct
-> member:
+> BUG: unable to handle kernel NULL pointer dereference at virtual address 0000000
+> 0
+> printing eip: c04a50af *pde = 00000000
+> Oops: 0000 [#1] SMP
+> Modules linked in: snd_seq_dummy snd_seq_oss snd_seq_midi_event snd_seq snd_seq_
+> device snd_pcm_oss snd_mixer_oss fuse lp pcspkr snd_intel8x0 snd_ac97_codec ac97
+> _bus e100 snd_pcm snd_timer snd video mii iTCO_wdt soundcore serio_raw iTCO_vend
+> or_support output psmouse evdev pcmcia intel_agp agpgart shpchp snd_page_alloc p
+> arport_pc parport sg yenta_socket rsrc_nonstatic pcmcia_core aufs squashfs sqlzm
+> a unlzma
 > 
-> 	unsigned long cpumask[];
-> 
-> So this change is intended largely to spawn a discussion, because
-> I'm not sure this VLA-in-middle-of-struct behavior is guaranteed to
-> always behave as expected?
-> 
-> Maybe a C expert can say whether cpumask[0] is better than cpumask[],
-> or have other comments?
+> Pid: 3531, comm: klogs Not tainted (2.6.24.3 #1)
+> EIP: 0060:[<c04a50af>] EFLAGS: 00010046 CPU: 0
+> EIP is at ahc_handle_scsiint+0xdbf/0xef0
+> EAX: 00000000 EBX: 00000007 ECX: 00000001 EDX: 0000000d
+> ESI: ede17e00 EDI: 00000000 EBP: 00000000 ESP: ed507de4
+>  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> Process klogd (pid: 3531, ti=ed506000 task=edd6aaa0 task.ti=ed506000)
+> Stack: 00000001 00000041 00000001 ee6a6580 d662d853 41410000 000000a0 ead93024
+>        c01806db 00a0ee08 00000041 00000007 00000000 00000001 00000000 00000000
+>        ed53b541 00000001 ede17e00 00000064 00000082 0000000b c04b20f9 ede0cd60
+> Call Trace:
+>  [<c01806db>] __link_path_walk+0xaab/0xe10
+>  [<c04b20f9>] ahc_linux_isr+0x1e9/0x260
+>  [<c0151025>] handle_IRQ_event+0x25/0x50
+>  [<c01529bc>] handle_level_irq+0x7c/0xf0
+>  [<c010748b>] do_IRQ+0x3b/0x70
+>  [<efbe3d90>] aufs_getattr+0x0/0xa0 [aufs]
+>  [<c01052d3>] common_interrupt+0x23/0x30
+>  [<efbe3d90>] aufs_getattr+0x0/0xa0 [aufs]
+>  [<efbe3d9e>] aufs_getattr+0xe/0xa0 [aufs]
+>  [<c017fa47>] getname+0xa7/0xc0
+>  [<c03b7acf>] security_inode_getattr+0x1f/0x30
+>  [<c017a4f8>] vfs_getattr+0x48/0x70
+>  [<c017a727>] vfs_stat_fd+0x37/0x60
+>  [<c017a82f>] sys_stat64+0xf/0x30
+>  [<c01775ee>] vfs_write+0x11e/0x140
+>  [<c0177c31>] sys_write+0x41/0x70
+>  [<c012cc1a>] sys_time+0xa/0x30
+>  [<c0104352>] syscall_call+0x7/0xb
+>  [<c0700000>] rpcb_getport_prepare+0x10/0x40
+>  =======================
+> Code: 24 2c e8 c5 95 ff ff b9 14 00 00 00 89 f0 8d 54 24 2c c7 44 24 04 00 00 00
+>  00 c7 04 24 b6 d1 80 c0 e8 56 e9 ff ff e9 8d f8 ff ff <8b> 07 89 fa 0f b6 58 1b
+>  0f b6 c3 89 44 24 1c 89 f0 e8 5b a5 00
+> EIP: [<c04a50af>] ahc_handle_scsiint+0xdbf/0xef0 SS:ESP 0068:ed507de4
 
-This bit of the code is a bit temporary, with a half-done cpumask 
-conversion ...
+ahc_handle_scsiint() is a huge function.  It would help if we can find
+the file and line where it is crashing.  If you could do the following,
+please.
 
-I'm not convinced at all that this code wants to be converted to 
-cpuvar_t. These are all either statically percpu or dynamically 
-allocated structures, so we wont allocate NR_CPUS of them. So i'd 
-lean towards embedding a full struct cpumask and that's it.
+- Run a more recent kernel: we might have fixed it since 2.6.24!
 
-That cpumask[] should probably be cpumask[0], to document the 
-aliasing to ->span and ->cpus properly.
+- Enable CONFIG_DEBUG_INFO
 
-Rusty, what do you think?
+- Reproduce the crash and note the EIP address (c04a50af in this example).
 
-	Ingo
+- In your kernel build source directory, do
+
+gdb vmlinux
+(gdb) l *0xc04a50af
+
+  (with a suitable value of c04a50af)
+
+Alternatively, try doing this with your current 2.6.24 setup.
+
+Alternatively, see if you can get the poorly-documented
+scripts/markup_oops.pl to work.
+
+
