@@ -1,174 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753769AbZEHHbQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756693AbZEHHch@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753769AbZEHHbQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 03:31:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752805AbZEHHa6
+	id S1756693AbZEHHch (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 03:32:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752707AbZEHHc1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 03:30:58 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:6797 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752592AbZEHHa5 (ORCPT
+	Fri, 8 May 2009 03:32:27 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:47604 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751517AbZEHHc1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 03:30:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=pcWyRfIdjtA88DuMQsyP6m7ojiCGoer70X3CptZkAyYzYmYhaJyCakWY64Uyybv8Ya
-         wZGKqBayFEvGMeYrxTa8zhiuxJoK508+aZ7gi/3DSqr4CUXoBm9+WmNAi/SVOvh2BskT
-         ocEMxNE76+kIBWh2LaErb9PZIPHE0mUCYsggA=
-Date: Fri, 8 May 2009 16:30:42 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
- class citizen
-Message-Id: <20090508163042.ba4ef116.minchan.kim@barrios-desktop>
-In-Reply-To: <20090508030209.GA8892@localhost>
-References: <20090430205936.0f8b29fc@riellaptop.surriel.com>
-	<20090430181340.6f07421d.akpm@linux-foundation.org>
-	<20090430215034.4748e615@riellaptop.surriel.com>
-	<20090430195439.e02edc26.akpm@linux-foundation.org>
-	<49FB01C1.6050204@redhat.com>
-	<20090501123541.7983a8ae.akpm@linux-foundation.org>
-	<20090503031539.GC5702@localhost>
-	<1241432635.7620.4732.camel@twins>
-	<20090507121101.GB20934@localhost>
-	<20090507151039.GA2413@cmpxchg.org>
-	<20090508030209.GA8892@localhost>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Fri, 8 May 2009 03:32:27 -0400
+Date: Fri, 8 May 2009 09:34:36 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@linux.intel.com>
+Cc: linux-kernel@vger.kernel.org, vgoyal@redhat.com, hbabu@us.ibm.com,
+       kexec@lists.infradead.org, ying.huang@intel.com, mingo@elte.hu,
+       tglx@linutronix.de, ebiederm@xmission.com,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH 02/14] x86, boot: honor CONFIG_PHYSICAL_START when relocatable
+Message-ID: <20090508073436.GB12808@uranus.ravnborg.org>
+References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com> <1241735222-6640-3-git-send-email-hpa@linux.intel.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241735222-6640-3-git-send-email-hpa@linux.intel.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Let me have a question. 
-
-On Fri, 8 May 2009 11:02:09 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
-
-> On Thu, May 07, 2009 at 11:10:39PM +0800, Johannes Weiner wrote:
-> > On Thu, May 07, 2009 at 08:11:01PM +0800, Wu Fengguang wrote:
-> > > Introduce AS_EXEC to mark executables and their linked libraries, and to
-> > > protect their referenced active pages from being deactivated.
-> > > 
-> > > CC: Elladan <elladan@eskimo.com>
-> > > CC: Nick Piggin <npiggin@suse.de>
-> > > CC: Johannes Weiner <hannes@cmpxchg.org>
-> > > CC: Christoph Lameter <cl@linux-foundation.org>
-> > > CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > Acked-by: Peter Zijlstra <peterz@infradead.org>
-> > > Acked-by: Rik van Riel <riel@redhat.com>
-> > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > ---
-> > >  include/linux/pagemap.h |    1 +
-> > >  mm/mmap.c               |    2 ++
-> > >  mm/nommu.c              |    2 ++
-> > >  mm/vmscan.c             |   35 +++++++++++++++++++++++++++++++++--
-> > >  4 files changed, 38 insertions(+), 2 deletions(-)
-> > > 
-> > > --- linux.orig/include/linux/pagemap.h
-> > > +++ linux/include/linux/pagemap.h
-> > > @@ -25,6 +25,7 @@ enum mapping_flags {
-> > >  #ifdef CONFIG_UNEVICTABLE_LRU
-> > >  	AS_UNEVICTABLE	= __GFP_BITS_SHIFT + 3,	/* e.g., ramdisk, SHM_LOCK */
-> > >  #endif
-> > > +	AS_EXEC		= __GFP_BITS_SHIFT + 4,	/* mapped PROT_EXEC somewhere */
-> > >  };
-> > >  
-> > >  static inline void mapping_set_error(struct address_space *mapping, int error)
-> > > --- linux.orig/mm/mmap.c
-> > > +++ linux/mm/mmap.c
-> > > @@ -1194,6 +1194,8 @@ munmap_back:
-> > >  			goto unmap_and_free_vma;
-> > >  		if (vm_flags & VM_EXECUTABLE)
-> > >  			added_exe_file_vma(mm);
-> > > +		if (vm_flags & VM_EXEC)
-> > > +			set_bit(AS_EXEC, &file->f_mapping->flags);
-> > >  	} else if (vm_flags & VM_SHARED) {
-> > >  		error = shmem_zero_setup(vma);
-> > >  		if (error)
-> > > --- linux.orig/mm/nommu.c
-> > > +++ linux/mm/nommu.c
-> > > @@ -1224,6 +1224,8 @@ unsigned long do_mmap_pgoff(struct file 
-> > >  			added_exe_file_vma(current->mm);
-> > >  			vma->vm_mm = current->mm;
-> > >  		}
-> > > +		if (vm_flags & VM_EXEC)
-> > > +			set_bit(AS_EXEC, &file->f_mapping->flags);
-> > >  	}
-> > 
-> > I find it a bit ugly that it applies an attribute of the memory area
-> > (per mm) to the page cache mapping (shared).  Because this in turn
-> > means that the reference through a non-executable vma might get the
-> > pages rotated just because there is/was an executable mmap around.
+On Thu, May 07, 2009 at 03:26:50PM -0700, H. Peter Anvin wrote:
+> From: H. Peter Anvin <hpa@zytor.com>
 > 
-> Right, the intention was to identify a whole executable/library file,
-> eg. /bin/bash or /lib/libc-2.9.so, covering both _text_ and _data_
-> sections.
-
-But, your patch is care just text section. 
-Do I miss something ?
-
-> > >  	down_write(&nommu_region_sem);
-> > > --- linux.orig/mm/vmscan.c
-> > > +++ linux/mm/vmscan.c
-> > > @@ -1230,6 +1230,7 @@ static void shrink_active_list(unsigned 
-> > >  	unsigned long pgmoved;
-> > >  	unsigned long pgscanned;
-> > >  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
-> > > +	LIST_HEAD(l_active);
-> > >  	LIST_HEAD(l_inactive);
-> > >  	struct page *page;
-> > >  	struct pagevec pvec;
-> > > @@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned 
-> > >  
-> > >  		/* page_referenced clears PageReferenced */
-> > >  		if (page_mapping_inuse(page) &&
-> > > -		    page_referenced(page, 0, sc->mem_cgroup))
-> > > +		    page_referenced(page, 0, sc->mem_cgroup)) {
-> > > +			struct address_space *mapping = page_mapping(page);
-> > > +
-> > >  			pgmoved++;
-> > > +			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
-> > > +				list_add(&page->lru, &l_active);
-> > > +				continue;
-> > > +			}
-> > > +		}
-> > 
-> > Since we walk the VMAs in page_referenced anyway, wouldn't it be
-> > better to check if one of them is executable?  This would even work
-> > for executable anon pages.  After all, there are applications that cow
-> > executable mappings (sbcl and other language environments that use an
-> > executable, run-time modified core image come to mind).
+> Currently, when building a relocatable kernel, CONFIG_PHYSICAL_START
+> is ignored.  This is undesirable, as we would like to keep the kernel
+> out of ZONE_DMA and away from the possible memory hole at 15 MB (which
+> some vendors for some bizarre reason still have.)
 > 
-> The page_referenced() path will only cover the _text_ section.  But
-
-Why did you said that "The page_referenced() path will only cover the ""_text_"" section" ? 
-Could you elaborate please ?
-
-> yeah, the _data_ section is more likely to grow huge in some rare cases.
->
-> Thanks,
-> Fengguang
+> With this patch, CONFIG_PHYSICAL_START is considered the *minimum*
+> address at which the kernel can be located; a relocating bootloader
+> can locate it higher, but not lower.  This also restores the
+> originally intended behavior that CONFIG_RELOCATABLE is functionally a
+> noop if used with a non-relocating bootloader.
 > 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
+> This patch also change movsb and stosb to movsl, stosl and stosq, to
+> shave a small fraction off the boot time.
+
+On the coding style side of thing...
+> +     movl %ebp, %ebx
+> +     cmpl %ebx, %eax
+> +     jbe 1f
+> +     movl %eax, %ebx
+
+This looks messy with different idention of the operand.
+
+Compare it to this:
+> +	movl	%ebp, %ebx
+> +	cmpl	%ebx, %eax
+> +	jbe	1f
+> +	movl	%eax, %ebx
 
 
--- 
-Kinds Regards
-Minchan Kim
+I like the latter more with vertical alignment of the operand.
+I see that you add spaces around operators (,) - good.
+
+
+
+>   */
+>  
+>  #ifdef CONFIG_RELOCATABLE
+> -	movl 	%ebp, %ebx
+> -	addl    $(CONFIG_PHYSICAL_ALIGN - 1), %ebx
+> -	andl    $(~(CONFIG_PHYSICAL_ALIGN - 1)), %ebx
+> +	movl $LOAD_PHYSICAL_ADDR, %eax
+> +	movl %ebp, %ebx
+> +	cmpl %ebx, %eax
+> +	jbe 1f
+> +	movl %eax, %ebx
+> +1:
+> +	addl $(CONFIG_PHYSICAL_ALIGN - 1), %ebx
+> +	andl $(~(CONFIG_PHYSICAL_ALIGN - 1)), %ebx
+>  #else
+>  	movl $LOAD_PHYSICAL_ADDR, %ebx
+>  #endif
+> +	movl %ebx, %edi		/* Save kernel target address */
+>  
+>  	/* Replace the compressed data size with the uncompressed size */
+>  	subl input_len(%ebp), %ebx
+> @@ -84,27 +90,30 @@ ENTRY(startup_32)
+>  	addl $4095, %ebx
+>  	andl $~4095, %ebx
+
+Not part of your patch...
+But this is most likely (PAGE_SIZE - 1) so it would be better to write so.
+
+
+>  
+> -/* Copy the compressed kernel to the end of our buffer
+> +/*
+> + * Set up the stack
+> + */
+> +	leal boot_stack_end(%ebx), %esp
+> +	pushl %edi		/* Saved kernel target address */
+> +
+> +/*
+> + * Copy the compressed kernel to the end of our buffer
+>   * where decompression in place becomes safe.
+>   */
+>  	pushl %esi
+> -	leal _ebss(%ebp), %esi
+> -	leal _ebss(%ebx), %edi
+> -	movl $(_ebss - startup_32), %ecx
+> +	leal (_bss-4)(%ebp), %esi
+> +	leal (_bss-4)(%ebx), %edi
+> +	movl $(_bss - startup_32), %ecx
+> +	shrl $2, %ecx
+
+I do not see why you mess around with _bss here?
+Do you use .bss for decompression?
+
+
+Note: I do not speak x86 assembler so I have not tried to
+      understand the functionality.
+
+      I tired to grasp the changes around clear bss - but faild :-(
+
+	Sam
