@@ -1,74 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757620AbZEHV6j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756083AbZEHV66@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757620AbZEHV6j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 17:58:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbZEHV6a
+	id S1756083AbZEHV66 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 17:58:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751626AbZEHV6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 17:58:30 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:57139 "EHLO crca.org.au"
+	Fri, 8 May 2009 17:58:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43480 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751626AbZEHV63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 17:58:29 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
-       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org,
-       Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <200905082144.57955.bzolnier@gmail.com>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	 <20090507215112.GC14611@elf.ucw.cz>
-	 <1241746459.19600.246.camel@nigel-laptop>
-	 <200905082144.57955.bzolnier@gmail.com>
-Content-Type: text/plain
-Date: Sat, 09 May 2009 07:59:31 +1000
-Message-Id: <1241819971.19600.288.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	id S1759851AbZEHV6p (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 17:58:45 -0400
+Date: Fri, 8 May 2009 17:56:18 -0400
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Andrea Righi <righi.andrea@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
+       m-ikeda@ds.jp.nec.com, peterz@infradead.org
+Subject: Re: IO scheduler based IO Controller V2
+Message-ID: <20090508215618.GJ7293@redhat.com>
+References: <20090506203228.GH8180@redhat.com> <20090506213453.GC4282@linux> <20090506215235.GJ8180@redhat.com> <20090507090450.GA4613@linux> <20090507141126.GA9463@redhat.com> <20090507144501.GB9463@redhat.com> <20090507153642.GC9463@redhat.com> <20090507221900.GA29774@linux> <20090508180951.GG7293@redhat.com> <20090508200458.GA3708@linux>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090508200458.GA3708@linux>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Fri, May 08, 2009 at 10:05:01PM +0200, Andrea Righi wrote:
 
-On Fri, 2009-05-08 at 21:44 +0200, Bartlomiej Zolnierkiewicz wrote:
-> Please proceed to Plan B then.
+[..]
+> > Conclusion
+> > ==========
+> > It just reaffirms that with max BW control, we are not doing a fair job
+> > of throttling hence no more hold the IO scheduler properties with-in
+> > cgroup.
+> > 
+> > With proportional BW controller implemented at IO scheduler level, one
+> > can do very tight integration with IO controller and hence retain 
+> > IO scheduler behavior with-in cgroup.
 > 
-> Adding third core code framework to do the same thing is out of question
-> (probably same should have been said about adding second one in the past).
+> It is worth to bug you I would say :). Results are interesting,
+> definitely. I'll check if it's possible to merge part of the io-throttle
+> max BW control in this controller and who knows if finally we'll be able
+> to converge to a common proposal...
 
-Why? We have plenty of history of having multiple implementations of
-things (slub, slab and slob...).
+Great, Few thoughts though.
 
-> Moreover you will for sure hit much more regressions than you expect
-> (I "love" seeing over and over again when people/companies get trapped
-> into fallacy of superiority of their _own_ solution).
+- What are your requirements? Do you strictly need max bw control or
+  proportional BW control will satisfy your needs? Or you need both?
 
-That's just wrong. TuxOnIce deliberately doesn't remove any of swsusp or
-uswsusp so that there's no chance of users having regressions. It
-provides the _option_ of being a drop in replacement for swsusp, but it
-doesn't force users to take that option.
+- With the current algorithm BFQ (modified WF2Q+), we should be able
+  to do proportional BW division while maintaining the properties of
+  IO scheduler with-in cgroup in hiearchical manner.
+ 
+  I think it can be simply enhanced to do max bw control also. That is
+  whenever a queue is selected for dispatch (from fairness point of view)
+  also check the IO rate of that group and if IO rate exceeded, expire
+  the queue immediately and fake as if queue consumed its time slice
+  which will be equivalent to throttling.
 
-Regressions happen at the moment because TuxOnIce isn't included in
-vanilla. Users update from one version of stable to the next or from one
-version of head to the next and expect TuxOnIce to keep working, and it
-doesn't always do that because of changes to the vanilla code that
-require an updated patch.
+  But in this simple scheme, I think throttling is still unfair with-in
+  the class. What I mean is following.
 
-> I really wouldn't consider teaming with Rafael to work on "swsuspOnTux"
-> (evolving the in-kernel code while re-using chunks of TuxOnIce code) as
-> a bad Plan B.  It has the potential of resulting in a solution clearly
-> superior to all existing ones (TuxOnIce included).
+  if an RT task and an BE task are in same cgroup and cgroup exceeds its
+  max BW, RT task is next to be dispatched from fairness point of view and it
+  will end being throttled. This is still fine because until RT task is
+  finished, BE task will never get to run in that cgroup, so at some point
+  of time, cgroup rate will come down and RT task will get the IO done
+  meeting fairnesss and max bw constraints.
 
-If there are features in swsusp that TuxOnIce is lacking, or features to
-uswsusp that TuxOnIce is lacking, please tell me what they are and I'll
-implement them. In saying this, I don't deny that TuxOnIce code can
-still be improved - there's a lot I'd still like to do.
+  But this simple scheme does not work with-in same class. Say prio 0
+  and prio 7 BE class readers. Now we will end up throttling the guy who
+  is scheduled to go next and there is no mechanism that prio0 and prio7
+  tasks are throttled in proportionate manner.
 
-Regards,
+  So, we shall have to come up with something better, I think Dhaval was
+  implementing upper limit for cpu controller. May be PeterZ and Dhaval can
+  give us some pointers how did they manage to implement both proportional
+  and max bw control with the help of a single tree while maintaining the
+  notion of prio with-in cgroup.
 
-Nigel
+PeterZ/Dhaval  ^^^^^^^^
 
+- We should be able to get rid of reader-writer issue even with above
+  simple throttling mechanism for schedulers like deadline and AS, because at
+  elevator we see it as a single queue (for both reads and writes) and we
+  will throttle this queue. With-in queue dispatch are taken care by io
+  scheduler. So as long as IO has been queued in the queue, scheduler
+  will take care of giving advantage to readers even if throttling is
+  taking place on the queue.
+
+Why am I thinking loud? So that we know what are we trying to achieve at the
+end of the day. So at this point of time what are the advantages/disadvantages
+of doing max bw control along with proportional bw control?
+
+Advantages
+==========
+- With a combined code base, total code should be less as compared to if
+  both of them are implemented separately. 
+
+- There can be few advantages in terms of maintaining the notion of IO
+  scheduler with-in cgroup. (like RT tasks always goes first in presence
+  of BE and IDLE task etc. But simple throttling scheme will not take
+  care of fair throttling with-in class. We need a better algorithm to
+  achive that goal).
+
+- We probably will get rid of reader writer issue for single queue
+  schedulers like deadline and AS. (Need to run tests and see).
+
+Disadvantages
+=============
+- Implementation at IO scheduler/elevator layer does not cover higher
+  level logical devices. So one can do max bw control only at leaf nodes
+  where IO scheduler is running and not at intermediate logical nodes.
+   
+I personally think that proportional BW control will meet more people's
+need as compared to max bw contorl. 
+
+So far nobody has come up with a solution where a single proposal covers
+all the cases without breaking things. So personally, I want to make
+things work at least at IO scheduler level and cover as much ground as
+possible without breaking things (hardware RAID, all the direct attached
+devices etc) and then worry about higher level software devices.
+
+Thoughts?
+
+Thanks
+Vivek
