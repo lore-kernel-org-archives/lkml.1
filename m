@@ -1,71 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759417AbZEHQ4v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762352AbZEHQ6v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759417AbZEHQ4v (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 12:56:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZEHQ4j
+	id S1762352AbZEHQ6v (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 12:58:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZEHQ6m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 12:56:39 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:64675 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752619AbZEHQ4i convert rfc822-to-8bit (ORCPT
+	Fri, 8 May 2009 12:58:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44579 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753006AbZEHQ6m (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 12:56:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=WadHuKGJzpd6Moxw8KRSqC2zmds6GQfbqTNkFDkXKY3XOUYXD+LIPNsxRTThs5iYib
-         mdEkG1kndsYQCYsrTkRyokZGPuJCien16q2W4Ko36jkYcNzC2Hyp+D8RMOdqVunzOLON
-         2uuriSxZhXu3Qc6NS/vKxmjwwIAZbSwwAKlOc=
-MIME-Version: 1.0
-In-Reply-To: <1241774338.1567.36.camel@johannes.local>
-References: <20090403182724.GA7364@tuxdriver.com>
-	 <1241774338.1567.36.camel@johannes.local>
-Date: Fri, 8 May 2009 19:56:38 +0300
-X-Google-Sender-Auth: d46318b670ea08c5
-Message-ID: <da94abde0905080956g3c6f49f3ta38412d886cfb2ec@mail.gmail.com>
-Subject: Re: Linux wireless mini-summit -- Berlin, June 2009
-From: Kalle Valo <kalle.valo@iki.fi>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 8 May 2009 12:58:42 -0400
+Date: Fri, 8 May 2009 09:56:04 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH 4/4] ring-buffer: change WARN_ON from checking
+ preempt_count to preemptible
+Message-Id: <20090508095604.1f5ad960.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.0905080653110.28378@gandalf.stny.rr.com>
+References: <20090508043250.372421144@goodmis.org>
+	<20090508043331.726786617@goodmis.org>
+	<20090507215427.4256cc3c.akpm@linux-foundation.org>
+	<alpine.DEB.2.00.0905080653110.28378@gandalf.stny.rr.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 8, 2009 at 12:18 PM, Johannes Berg
-<johannes@sipsolutions.net> wrote:
->
->> So, here I open the floor for discussion of agenda items for our
->> wireless meeting/hackfest.  What do we think is important to discuss
->> face-to-face this year?  What isn't getting done?  What is getting
->> done wrong?  What do we need that we didn't realize last year?
->
-> I've tried to capture the discussion from here on the wiki:
->
-> http://wireless.kernel.org/en/developers/Summits/Berlin-2009
+On Fri, 8 May 2009 06:53:48 -0400 (EDT) Steven Rostedt <rostedt@goodmis.org> wrote:
 
-Good idea.
+> 
+> 
+> On Thu, 7 May 2009, Andrew Morton wrote:
+> 
+> > On Fri, 08 May 2009 00:32:54 -0400 Steven Rostedt <rostedt@goodmis.org> wrote:
+> > 
+> > > From: Steven Rostedt <srostedt@redhat.com>
+> > > 
+> > > There's a WARN_ON in the ring buffer code that makes sure preemption
+> > > is disabled. It checks "!preempt_count()". But when CONFIG_PREEMPT is not
+> > > enabled, preempt_count() is always zero, and this will trigger the warning.
+> > > 
+> > > [ Impact: prevent false warning on non preemptible kernels ]
+> > > 
+> > > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+> > > ---
+> > >  kernel/trace/ring_buffer.c |    2 +-
+> > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/kernel/trace/ring_buffer.c b/kernel/trace/ring_buffer.c
+> > > index 3ae5ccf..3611706 100644
+> > > --- a/kernel/trace/ring_buffer.c
+> > > +++ b/kernel/trace/ring_buffer.c
+> > > @@ -1688,7 +1688,7 @@ void ring_buffer_discard_commit(struct ring_buffer *buffer,
+> > >  	 * committed yet. Thus we can assume that preemption
+> > >  	 * is still disabled.
+> > >  	 */
+> > > -	RB_WARN_ON(buffer, !preempt_count());
+> > > +	RB_WARN_ON(buffer, preemptible());
+> > >  
+> > >  	cpu = smp_processor_id();
+> > >  	cpu_buffer = buffer->buffers[cpu];
+> > 
+> > smp_processor_id() will warn too.
+> > 
+> 
+> The difference is that RB_WARN_ON also disables the ring buffer.
+> 
 
-> Feel free to edit and add suggestions
+Yes, but the kernel will produce two large warning spews for the
+same thing.
 
-What about proper roaming support? I think it will be the thing we are
-lacking after power save is finished. There was talk about having GSoC
-project, what happened to it?
-
-I'm interested about roaming, but I don't how much time if any I can
-find for implementing it. But I could make a summary of all
-discussions we have had here during the last year and maybe try to
-start some discussion at the summit. What others think?
-
-> or put yourself into "confirmed
-> attendees" (do we want that? it seemed we should say who will be there)
-
-It's nice to know in advance who will be there. So yes, at least I
-want such a list :)
-
-Kalle
