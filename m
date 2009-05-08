@@ -1,53 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760494AbZEHOab@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760336AbZEHOeT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760494AbZEHOab (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 10:30:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759276AbZEHOaA
+	id S1760336AbZEHOeT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 10:34:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZEHOeJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 10:30:00 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:48075 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760198AbZEHO37 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 10:29:59 -0400
-Date: Fri, 8 May 2009 10:29:32 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu, mel@csn.ul.ie,
-       linux-kernel@vger.kernel.org, riel@redhat.com, rientjes@google.com,
-       xemul@openvz.org
-Subject: Re: [RFC/PATCH v2] mm: Introduce GFP_PANIC for non-failing
- allocations
-In-Reply-To: <1241792580.28600.41.camel@penberg-laptop>
-Message-ID: <alpine.DEB.1.10.0905081026210.21690@qirst.com>
-References: <20090504122740.GH4173@lenovo> <20090504131311.GA23330@elte.hu>  <20090504131638.GJ4173@lenovo>  <alpine.DEB.1.10.0905040940490.9553@qirst.com>  <20090504115335.9bc08587.akpm@linux-foundation.org>  <20090504192117.GB31176@lenovo> 
- <20090504123453.d130a6cf.akpm@linux-foundation.org>  <20090504200925.GD31176@lenovo> <1241787448.28600.26.camel@penberg-laptop>  <alpine.DEB.1.10.0905081018130.23875@qirst.com> <1241792580.28600.41.camel@penberg-laptop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 8 May 2009 10:34:09 -0400
+Received: from tac.ki.iif.hu ([193.6.222.43]:49042 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752570AbZEHOeI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 10:34:08 -0400
+From: Ferenc Wagner <wferi@niif.hu>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: rocket tty BUG in 2.6.29 (regression)
+References: <8763gcsa5e.fsf@tac.ki.iif.hu>
+	<20090508110316.0116208b@lxorguk.ukuu.org.uk>
+Date: Fri, 08 May 2009 16:33:57 +0200
+In-Reply-To: <20090508110316.0116208b@lxorguk.ukuu.org.uk> (Alan Cox's message
+	of "Fri, 8 May 2009 11:03:16 +0100")
+Message-ID: <87k54roe96.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 May 2009, Pekka Enberg wrote:
+Alan Cox <alan@lxorguk.ukuu.org.uk> writes:
 
-> On Fri, 8 May 2009, Pekka Enberg wrote:
-> > > +#define GFP_PANIC	(__GFP_NOFAIL | __GFP_NORETRY | __GFP_NOMEMALLOC)
+> On Fri, 08 May 2009 02:36:45 +0200
+> Ferenc Wagner <wferi@niif.hu> wrote:
 >
-> On Fri, 2009-05-08 at 10:20 -0400, Christoph Lameter wrote:
-> > So this means not retrying the allocation a couple of times? Not delving
-> > into reserve pools? Such behavior is good for a allocation that causes a
-> > panic if it fails?
+>> 2.6.26 works fine in our terminal server machine, but after rebooting
+>> it into 2.6.29 I got the following Oops when starting screen for a
+>> ttyR serial device (after unloading and reloading the rocket module
+>> while trying to get some udev rename rules right):
 >
-> If you do GFP_KERNEL|GFP_PANIC, we will cond_resched() and retry if we
-> made some progress. So yes, I think the behavior is good for early-boot
-> call-sites that can't really fail anyway.
+> So it works the first time around, then blos up the second ? Is this
+> repeatable ?
 
-Better make sure that GFP_PANIC is only used during early boot then.
+No, I didn't say this.  The first time I didn't even try, because our
+software uses the persistent names, not /dev/ttyR*, but the udev
+rename rules didn't fire.  So I fixed the rules, removed and
+reinserted the module, then started the console multiplexer, which
+provoked the bugs (all 16).  I don't think it has anything to do with
+the issue, but wanted to explain the "last removed: rocket" part of
+the log.
 
-If memory is low on boot (due to node hotplug or some such thing, powerpc
-may do evil tricks here) then the panic may trigger after the patch.
-We would have just delved into the reserves a bit before.
+> In theory Ted is the maintainer for rocket but as I'm the one who last
+> did any surgery on it this one may well be my bug.
 
+Looks like Jiri has a handle on the problem, though.  Once you
+converge on a patch and need testing, tell me.  I'm not in a hurry,
+the current Debian stable kernel works OK, I tested 2.6.29 while
+investigating an unrelated networking issue.
+-- 
+Thanks for the great support again,
+Feri.
