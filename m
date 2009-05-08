@@ -1,61 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764057AbZEHUyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764076AbZEHUy7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764057AbZEHUyT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 16:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756889AbZEHUyH
+	id S1764076AbZEHUy7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 16:54:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755502AbZEHUyu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 16:54:07 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55809 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754362AbZEHUyE (ORCPT
+	Fri, 8 May 2009 16:54:50 -0400
+Received: from mtaout01-winn.ispmail.ntl.com ([81.103.221.47]:15606 "EHLO
+	mtaout01-winn.ispmail.ntl.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754823AbZEHUyu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 16:54:04 -0400
-Message-ID: <4A049AF5.7090300@zytor.com>
-Date: Fri, 08 May 2009 13:49:57 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: "H. Peter Anvin" <hpa@linux.intel.com>, linux-kernel@vger.kernel.org,
-       vgoyal@redhat.com, hbabu@us.ibm.com, kexec@lists.infradead.org,
-       ying.huang@intel.com, mingo@elte.hu, tglx@linutronix.de,
-       ebiederm@xmission.com
-Subject: Re: [PATCH 05/14] kbuild: allow compressors (gzip, bzip2, lzma) to
- take multiple inputs
-References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com> <1241735222-6640-6-git-send-email-hpa@linux.intel.com> <20090508074234.GD12808@uranus.ravnborg.org> <4A0493B0.3090204@linux.intel.com> <20090508204747.GA18041@uranus.ravnborg.org>
-In-Reply-To: <20090508204747.GA18041@uranus.ravnborg.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Fri, 8 May 2009 16:54:50 -0400
+X-Greylist: delayed 3624 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 May 2009 16:54:49 EDT
+Subject: Re: [PATCH] staging/wlan-ng: Change KERN_DEBUG or pr_debug to
+ match orig driver
+From: Karl Relton <karllinuxtest.relton@ntlworld.com>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <4A04951F.8060703@gmail.com>
+References: <1241812457.6459.2.camel@localhost> <4A04951F.8060703@gmail.com>
+Content-Type: text/plain
+Date: Fri, 08 May 2009 21:54:46 +0100
+Message-Id: <1241816086.6459.7.camel@localhost>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
+X-Cloudmark-Analysis: v=1.0 c=1 a=gpGDuW15Bh8A:10 a=34Ld2yrW4hAA:10 a=6UWwUf1ebYGkXz9Qp-4A:9 a=dzf08rUCoDBTkqHJkaYA:7 a=2ryqrcbORycpnLgPeKp4j9A0z74A:4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
+On Fri, 2009-05-08 at 22:25 +0200, Jiri Slaby wrote:
+> On 05/08/2009 09:54 PM, Karl Relton wrote:
+> > Change uses of KERN_DEBUG over to pr_debug to match original driver
+> > where messages are only needed during driver development.
 > 
-> I did a quick attempt to integrate it in the Makefile - not pretty.
-> So I dropped that idea.
-> 
-> It is mainly that we should not fill up scripts/ with small
-> undocumented scripts.
-> 
-> Could you add something like this in the top of the file:
-> 
-> # Find the sum of the size of all files specified and
-> # output the size as an escaped hex string.
-> #
-> # Sample:
-> # $ ls -l foo
-> # $ -rw-rw-r-- 1 xxx xxx 146 May  8 22:28 foo
-> # $ bin_size foo
-> # $ \\x92\\x00\\x00\\x00
-> # 146 equals 92 hex
+> Hmm, but many of them don't fit this rule. Some of them should be
+> honored a higher level, some of them simply should be left as such,
+> because we want to see the information.
 > 
 
-OK, I see your point (especially since that's not what it does.)
+I see your point, but the motivation of this patch was to be consistent
+with the original out-of-tree driver. For all these messages that used
+its own macro WLAN_LOG_DEBUG which depended on a compile-time flag. For
+normal use, the flag would be unset which meant you would get none of
+the messages.
 
-To be honest, how ugly would it be to get a C program in here?  Doing 
-this in shell is horrid, and people tend to whine about Perl (which is 
-perfect for this kind of job.)
+Now I agree that you could question the logic of some of the messages
+being 'debug only' - but there are probably lots of other messages in
+this driver that also have a questionable level. Previously someone else
+had already converted some of messages to pr_debug - this patch merely
+cleaned up to make them consistent (with the original driver).
 
-	-hpa
+Karl
+
+> > --- c/drivers/staging/wlan-ng/prism2mgmt.c	2009-04-30 05:48:16.000000000 +0100
+> > +++ d/drivers/staging/wlan-ng/prism2mgmt.c	2009-05-08 19:11:11.000000000 +0100
+> > @@ -1096,7 +1096,7 @@ int prism2mgmt_wlansniff(wlandevice_t *w
+> >  		/* Disable monitor mode */
+> >  		result = hfa384x_cmd_monitor(hw, HFA384x_MONITOR_DISABLE);
+> >  		if (result) {
+> > -			printk(KERN_DEBUG
+> > +			pr_debug(
+> >  			       "failed to disable monitor mode, result=%d\n",
+> 
+> rather an ERROR or WARNING?
+> 
+> > --- c/drivers/staging/wlan-ng/prism2sta.c	2009-04-30 05:48:16.000000000 +0100
+> > +++ d/drivers/staging/wlan-ng/prism2sta.c	2009-05-08 19:15:08.000000000 +0100
+> > @@ -1188,7 +1188,7 @@ static void prism2sta_inf_chinforesults(
+> >  			chinforesult->active =
+> >  			    le16_to_cpu(inf->info.chinforesult.result[n].
+> >  					    active);
+> > -			printk(KERN_DEBUG
+> > +			pr_debug(
+> >  			       "chinfo: channel %d, %s level (avg/peak)=%d/%d dB, pcf %d\n",
+> 
+> yeah, useless info for an user (the change is OK), but:
+> 
+> > @@ -1276,7 +1276,7 @@ void prism2sta_processing_defer(struct w
+> >  							wlandev->bssid,
+> >  							WLAN_BSSID_LEN);
+> >  			if (result) {
+> > -				printk(KERN_DEBUG
+> > +				pr_debug(
+> >  				       "getconfig(0x%02x) failed, result = %d\n",
+> >  				       HFA384x_RID_CURRENTBSSID, result);
+> 
+> we want likely to know this one.
+> 
+> etc.
+> 
 
