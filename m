@@ -1,47 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762971AbZEHXAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764091AbZEHXCk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762971AbZEHXAa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 19:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZEHXAP
+	id S1764091AbZEHXCk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 19:02:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbZEHXCc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 19:00:15 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:32884
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751209AbZEHXAO (ORCPT
+	Fri, 8 May 2009 19:02:32 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:34323 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752663AbZEHXCc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 19:00:14 -0400
-Date: Fri, 08 May 2009 16:00:08 -0700 (PDT)
-Message-Id: <20090508.160008.127530143.davem@davemloft.net>
-To: shemminger@vyatta.com
-Cc: jpirko@redhat.com, linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       jgarzik@pobox.com, shemminger@linux-foundation.org,
-       bridge@lists.linux-foundation.org, fubar@us.ibm.com,
-       bonding-devel@lists.sourceforge.net, kaber@trash.net,
-       mschmidt@redhat.com, dada1@cosmosbay.com, ivecera@redhat.com
-Subject: Re: [PATCH] net: introduce a list of device addresses
- dev_addr_list (v6)
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090508153842.65ce3bed@s6510>
-References: <20090505124827.GB3473@psychotron.englab.brq.redhat.com>
-	<20090505.122718.51237316.davem@davemloft.net>
-	<20090508153842.65ce3bed@s6510>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Fri, 8 May 2009 19:02:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=joMa2FAnAmHJbxYtPU134oQtdNRDOuza6yWYJ0/JAnMY9OPP8a9uR7XpfzG8ZmrWhI
+         p0fRRjIrEd/JlZCKPuRD3/6JVTJysuRQsRsaQvjj1WitXLCyxSq+MZWxGgCTD8laCPy1
+         zx2XY5nYasABgD4cWx2peS0rqBgIyH1OBw0qU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: nigel@tuxonice.net
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Sat, 9 May 2009 01:05:57 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-00442-ga3668b0; KDE/4.2.2; i686; ; )
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.linux-foundation.org,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org,
+       Pavel Machek <pavel@ucw.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <200905082144.57955.bzolnier@gmail.com> <1241819971.19600.288.camel@nigel-laptop>
+In-Reply-To: <1241819971.19600.288.camel@nigel-laptop>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905090105.58243.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Stephen Hemminger <shemminger@vyatta.com>
-Date: Fri, 8 May 2009 15:38:42 -0700
+On Friday 08 May 2009 23:59:31 Nigel Cunningham wrote:
+> Hi.
+> 
+> On Fri, 2009-05-08 at 21:44 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > Please proceed to Plan B then.
+> > 
+> > Adding third core code framework to do the same thing is out of question
+> > (probably same should have been said about adding second one in the past).
+> 
+> Why? We have plenty of history of having multiple implementations of
+> things (slub, slab and slob...).
 
-> Not sure if this is such a good idea since the purpose of this was to fix
-> a bonding/bridging interaction, but it breaks STP on bridging.
+With all respect to sl*b developers but things such as sl*b etc. are on
+whole different level when it comes to complexity because their interactions
+with weird hardware configurations are quite limited.
 
-Thanks for not paying attention... :-/
+> > Moreover you will for sure hit much more regressions than you expect
+> > (I "love" seeing over and over again when people/companies get trapped
+> > into fallacy of superiority of their _own_ solution).
+> 
+> That's just wrong. TuxOnIce deliberately doesn't remove any of swsusp or
+> uswsusp so that there's no chance of users having regressions. It
+> provides the _option_ of being a drop in replacement for swsusp, but it
+> doesn't force users to take that option.
 
-The Intel folks want to have an address list functionality so
-they can public MAC addresses meant for FCOE and other purposes.
+OK.  What is exactly your plan for transition and for swsusp removal then?
 
-So even if the bonding bits bomb, we still need this.
+> Regressions happen at the moment because TuxOnIce isn't included in
+> vanilla. Users update from one version of stable to the next or from one
+> version of head to the next and expect TuxOnIce to keep working, and it
+> doesn't always do that because of changes to the vanilla code that
+> require an updated patch.
+
+I mean [u]swsusp -> TuxOnIce regressions.
+
+> > I really wouldn't consider teaming with Rafael to work on "swsuspOnTux"
+> > (evolving the in-kernel code while re-using chunks of TuxOnIce code) as
+> > a bad Plan B.  It has the potential of resulting in a solution clearly
+> > superior to all existing ones (TuxOnIce included).
+> 
+> If there are features in swsusp that TuxOnIce is lacking, or features to
+> uswsusp that TuxOnIce is lacking, please tell me what they are and I'll
+> implement them. In saying this, I don't deny that TuxOnIce code can
+> still be improved - there's a lot I'd still like to do.
+
+Instead of new features I would rather see more effort being put into making
+the _core_ TuxOnIce (I mean patch #8 here) smaller (8 KLOC is still a lot,
+just to put things into the right perspective the current in-kernel content
+of kernel/power/ is 5.5 KLOC) and with more documentation inside the code.
+
+Thanks,
+Bart
