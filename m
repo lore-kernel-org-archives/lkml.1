@@ -1,65 +1,287 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760982AbZEHMUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762676AbZEHMVt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760982AbZEHMUh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 08:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755788AbZEHMU2
+	id S1762676AbZEHMVt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 08:21:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755788AbZEHMVj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 08:20:28 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:51210 "EHLO mx2.redhat.com"
+	Fri, 8 May 2009 08:21:39 -0400
+Received: from mga14.intel.com ([143.182.124.37]:61248 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755148AbZEHMU0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 08:20:26 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-In-Reply-To: <20090507011716.BA522FC39E@magilla.sf.frob.com>
-References: <20090507011716.BA522FC39E@magilla.sf.frob.com> <20090505224729.GA965@redhat.com> <20090506224650.GZ3036@sequoia.sous-sol.org> <20090506231332.GA3756@redhat.com> <20090506232703.GA3036@sequoia.sous-sol.org> <alpine.LRH.2.00.0905070946480.22586@tundra.namei.org>
-To: Roland McGrath <roland@redhat.com>
-Cc: dhowells@redhat.com, James Morris <jmorris@namei.org>,
-       Chris Wright <chrisw@sous-sol.org>, Oleg Nesterov <oleg@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, Eric Paris <eparis@redhat.com>,
-       Stephen Smalley <sds@tycho.nsa.gov>
-Subject: Re: [PATCH 3/3] ptrace: do not use task_lock() for attach
-Date: Fri, 08 May 2009 13:18:20 +0100
-Message-ID: <23342.1241785100@redhat.com>
+	id S1752821AbZEHMVi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 08:21:38 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,317,1239001200"; 
+   d="scan'208";a="140682169"
+Date: Fri, 8 May 2009 20:21:15 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 1/8] mm: introduce PageHuge() for testing huge/gigantic
+	pages
+Message-ID: <20090508122115.GA15949@localhost>
+References: <20090508105320.316173813@intel.com> <20090508111030.264063904@intel.com> <20090508114018.GA17129@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090508114018.GA17129@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roland McGrath <roland@redhat.com> wrote:
-
-> Good catch, Chris and Oleg!  This one is yet another dhowells blue plate
-> special, deeply subtle change buried inside the ginormous commit d84f4f9. ;-}
-
-Well...  Unfortunately it was an all-or-nothing patch, leastways if you wanted
-the kernel to compile afterwards.
-
-> He even mentioned this one in the log:
+On Fri, May 08, 2009 at 07:40:18PM +0800, Ingo Molnar wrote:
 > 
->  (a) selinux_setprocattr() no longer does its check for whether the
-> 	 current ptracer can access processes with the new SID inside the lock
-> 	 that covers getting the ptracer's SID.  Whilst this lock ensures that
-> 	 the check is done with the ptracer pinned, the result is only valid
-> 	 until the lock is released, so there's no point doing it inside the
-> 	 lock.
+> * Wu Fengguang <fengguang.wu@intel.com> wrote:
+> 
+> > Introduce PageHuge(), which identifies huge/gigantic pages
+> > by their dedicated compound destructor functions.
+[snip]
+> > +#ifdef CONFIG_HUGETLBFS
+> > +void free_huge_page(struct page *page);
+> > +void free_gigantic_page(struct page *page);
+> > +
+> > +static inline int PageHuge(struct page *page)
+> > +{
+> > +	compound_page_dtor *dtor;
+> > +
+> > +	if (!PageCompound(page))
+> > +		return 0;
+> > +
+> > +	page = compound_head(page);
+> > +	dtor = get_compound_page_dtor(page);
+> > +
+> > +	return  dtor == free_huge_page ||
+> > +		dtor == free_gigantic_page;
+> > +}
+> 
+> Hm, this function is _way_ too large to be inlined.
 
-I knew there was a reason I carefully documented the major changes.
+Thanks, updated patch as follows.
 
-> Before d84f4f9, the extraction, avc check, and SID switch were all under
-> task_lock().  What David's comment ignores is that "the lock that covers
-> getting the ptracer's SID" (i.e. task_lock) is also the lock that excludes
-> ptrace attempts, with their security checks against the (old or new) SID.
-> i.e.:
+---
+Subject: mm: introduce PageHuge() for testing huge/gigantic pages
 
-I mainly focused on making sure ptrace and execve still worked in relation to
-each other.  Unfortunately, I didn't see that selinux_setprocattr() might
-interact with ptrace() in the same manner.
+Introduce PageHuge(), which identifies huge/gigantic pages
+by their dedicated compound destructor functions.
 
-> Indeed, cred_exec_mutex is the equivalent lock for that post-d84f4f9.
+Also move prep_compound_gigantic_page() to hugetlb.c and
+make __free_pages_ok() non-static.
 
-Yeah.  Perhaps it should be renamed cred_ptrace_mutex.
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ include/linux/mm.h |    9 +++
+ mm/hugetlb.c       |   98 ++++++++++++++++++++++++++++---------------
+ mm/internal.h      |    6 +-
+ mm/page_alloc.c    |   21 ---------
+ 4 files changed, 79 insertions(+), 55 deletions(-)
 
-David
+--- linux.orig/mm/page_alloc.c
++++ linux/mm/page_alloc.c
+@@ -77,8 +77,6 @@ int percpu_pagelist_fraction;
+ int pageblock_order __read_mostly;
+ #endif
+ 
+-static void __free_pages_ok(struct page *page, unsigned int order);
+-
+ /*
+  * results with 256, 32 in the lowmem_reserve sysctl:
+  *	1G machine -> (16M dma, 800M-16M normal, 1G-800M high)
+@@ -298,23 +296,6 @@ void prep_compound_page(struct page *pag
+ 	}
+ }
+ 
+-#ifdef CONFIG_HUGETLBFS
+-void prep_compound_gigantic_page(struct page *page, unsigned long order)
+-{
+-	int i;
+-	int nr_pages = 1 << order;
+-	struct page *p = page + 1;
+-
+-	set_compound_page_dtor(page, free_compound_page);
+-	set_compound_order(page, order);
+-	__SetPageHead(page);
+-	for (i = 1; i < nr_pages; i++, p = mem_map_next(p, page, i)) {
+-		__SetPageTail(p);
+-		p->first_page = page;
+-	}
+-}
+-#endif
+-
+ static int destroy_compound_page(struct page *page, unsigned long order)
+ {
+ 	int i;
+@@ -544,7 +525,7 @@ static void free_one_page(struct zone *z
+ 	spin_unlock(&zone->lock);
+ }
+ 
+-static void __free_pages_ok(struct page *page, unsigned int order)
++void __free_pages_ok(struct page *page, unsigned int order)
+ {
+ 	unsigned long flags;
+ 	int i;
+--- linux.orig/mm/hugetlb.c
++++ linux/mm/hugetlb.c
+@@ -578,39 +578,9 @@ static void free_huge_page(struct page *
+ 		hugetlb_put_quota(mapping, 1);
+ }
+ 
+-/*
+- * Increment or decrement surplus_huge_pages.  Keep node-specific counters
+- * balanced by operating on them in a round-robin fashion.
+- * Returns 1 if an adjustment was made.
+- */
+-static int adjust_pool_surplus(struct hstate *h, int delta)
++static void free_gigantic_page(struct page *page)
+ {
+-	static int prev_nid;
+-	int nid = prev_nid;
+-	int ret = 0;
+-
+-	VM_BUG_ON(delta != -1 && delta != 1);
+-	do {
+-		nid = next_node(nid, node_online_map);
+-		if (nid == MAX_NUMNODES)
+-			nid = first_node(node_online_map);
+-
+-		/* To shrink on this node, there must be a surplus page */
+-		if (delta < 0 && !h->surplus_huge_pages_node[nid])
+-			continue;
+-		/* Surplus cannot exceed the total number of pages */
+-		if (delta > 0 && h->surplus_huge_pages_node[nid] >=
+-						h->nr_huge_pages_node[nid])
+-			continue;
+-
+-		h->surplus_huge_pages += delta;
+-		h->surplus_huge_pages_node[nid] += delta;
+-		ret = 1;
+-		break;
+-	} while (nid != prev_nid);
+-
+-	prev_nid = nid;
+-	return ret;
++	__free_pages_ok(page, compound_order(page));
+ }
+ 
+ static void prep_new_huge_page(struct hstate *h, struct page *page, int nid)
+@@ -623,6 +593,35 @@ static void prep_new_huge_page(struct hs
+ 	put_page(page); /* free it into the hugepage allocator */
+ }
+ 
++static void prep_compound_gigantic_page(struct page *page, unsigned long order)
++{
++	int i;
++	int nr_pages = 1 << order;
++	struct page *p = page + 1;
++
++	set_compound_page_dtor(page, free_gigantic_page);
++	set_compound_order(page, order);
++	__SetPageHead(page);
++	for (i = 1; i < nr_pages; i++, p = mem_map_next(p, page, i)) {
++		__SetPageTail(p);
++		p->first_page = page;
++	}
++}
++
++int PageHuge(struct page *page)
++{
++	compound_page_dtor *dtor;
++
++	if (!PageCompound(page))
++		return 0;
++
++	page = compound_head(page);
++	dtor = get_compound_page_dtor(page);
++
++	return  dtor == free_huge_page ||
++		dtor == free_gigantic_page;
++}
++
+ static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
+ {
+ 	struct page *page;
+@@ -1140,6 +1139,41 @@ static inline void try_to_free_low(struc
+ }
+ #endif
+ 
++/*
++ * Increment or decrement surplus_huge_pages.  Keep node-specific counters
++ * balanced by operating on them in a round-robin fashion.
++ * Returns 1 if an adjustment was made.
++ */
++static int adjust_pool_surplus(struct hstate *h, int delta)
++{
++	static int prev_nid;
++	int nid = prev_nid;
++	int ret = 0;
++
++	VM_BUG_ON(delta != -1 && delta != 1);
++	do {
++		nid = next_node(nid, node_online_map);
++		if (nid == MAX_NUMNODES)
++			nid = first_node(node_online_map);
++
++		/* To shrink on this node, there must be a surplus page */
++		if (delta < 0 && !h->surplus_huge_pages_node[nid])
++			continue;
++		/* Surplus cannot exceed the total number of pages */
++		if (delta > 0 && h->surplus_huge_pages_node[nid] >=
++						h->nr_huge_pages_node[nid])
++			continue;
++
++		h->surplus_huge_pages += delta;
++		h->surplus_huge_pages_node[nid] += delta;
++		ret = 1;
++		break;
++	} while (nid != prev_nid);
++
++	prev_nid = nid;
++	return ret;
++}
++
+ #define persistent_huge_pages(h) (h->nr_huge_pages - h->surplus_huge_pages)
+ static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count)
+ {
+--- linux.orig/include/linux/mm.h
++++ linux/include/linux/mm.h
+@@ -355,6 +355,15 @@ static inline void set_compound_order(st
+ 	page[1].lru.prev = (void *)order;
+ }
+ 
++#ifdef CONFIG_HUGETLBFS
++int PageHuge(struct page *page);
++#else
++static inline int PageHuge(struct page *page)
++{
++	return 0;
++}
++#endif
++
+ /*
+  * Multiple processes may "see" the same page. E.g. for untouched
+  * mappings of /dev/null, all processes see the same page full of
+--- linux.orig/mm/internal.h
++++ linux/mm/internal.h
+@@ -16,9 +16,6 @@
+ void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
+ 		unsigned long floor, unsigned long ceiling);
+ 
+-extern void prep_compound_page(struct page *page, unsigned long order);
+-extern void prep_compound_gigantic_page(struct page *page, unsigned long order);
+-
+ static inline void set_page_count(struct page *page, int v)
+ {
+ 	atomic_set(&page->_count, v);
+@@ -51,6 +48,9 @@ extern void putback_lru_page(struct page
+  */
+ extern unsigned long highest_memmap_pfn;
+ extern void __free_pages_bootmem(struct page *page, unsigned int order);
++extern void __free_pages_ok(struct page *page, unsigned int order);
++extern void prep_compound_page(struct page *page, unsigned long order);
++
+ 
+ /*
+  * function for dealing with page's order in buddy system.
