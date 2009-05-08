@@ -1,60 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755961AbZEHIhZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755600AbZEHIna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755961AbZEHIhZ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 04:37:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752567AbZEHIhI
+	id S1755600AbZEHIna (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 04:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751154AbZEHInV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 04:37:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48355 "EHLO mx2.redhat.com"
+	Fri, 8 May 2009 04:43:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54723 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751770AbZEHIhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 04:37:05 -0400
-Message-ID: <4A03EEDA.5090008@redhat.com>
-Date: Fri, 08 May 2009 11:35:38 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Gregory Haskins <gregory.haskins@gmail.com>
-CC: Gregory Haskins <ghaskins@novell.com>, Chris Wright <chrisw@sous-sol.org>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
-       Anthony Liguori <anthony@codemonkey.ws>
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com> <4A0322F1.2000905@redhat.com> <4A032390.6030100@gmail.com> <4A032472.4030106@redhat.com> <4A03259B.3050500@gmail.com> <4A032771.6050703@redhat.com> <4A032A74.2020809@novell.com> <4A032FDD.8020209@redhat.com> <4A033101.8050106@gmail.com> <4A0339D2.3050600@redhat.com> <4A033F6E.3010604@novell.com> <4A03416D.8020405@redhat.com> <4A0343F5.5070509@gmail.com>
-In-Reply-To: <4A0343F5.5070509@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1751112AbZEHInT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 04:43:19 -0400
+Date: Fri, 8 May 2009 04:42:53 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: jdike@addtoit.com, sam@ravnborg.org, Amerigo Wang <amwang@redhat.com>,
+       user-mode-linux-devel@lists.sourceforge.net
+Message-Id: <20090508084349.6229.72810.sendpatchset@localhost.localdomain>
+Subject: [PATCH] uml: fix a section warning
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
 
-    
+When I compiled uml on x86_64, I got this warning:
 
->>> Ack.  I hope when its all said and done I can convince you that the
->>> framework to code up those virtio backends in the kernel is vbus ;)
->>>       
->> If vbus doesn't bring significant performance advantages, I'll prefer
->> virtio because of existing investment.
->>     
->
-> Just to clarify: vbus is just the container/framework for the in-kernel
-> models.  You can implement and deploy virtio devices inside the
-> container (tho I haven't had a chance to sit down and implement one
-> yet).  Note that I did publish a virtio transport in the last few series
-> to demonstrate how that might work, so its just ripe for the picking if
-> someone is so inclined.
->
->   
+  MODPOST vmlinux.o
+WARNING: vmlinux.o (.__syscall_stub.2): unexpected non-allocatable section.
+Did you forget to use "ax"/"aw" in a .S file?
+Note that for example <linux/init.h> contains
+section definitions for use in .S files.
 
-Yeah I keep getting confused over this.
+Because modpost checks for missing SHF_ALLOC section flag. So just
+add it. :)
 
-> So really the question is whether you implement the in-kernel virtio
-> backend in vbus, in some other framework, or just do it standalone.
->   
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: Jeff Dike <jdike@addtoit.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
 
-I prefer the standalone model.  Keep the glue in userspace.
-
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
-
+---
+diff --git a/arch/um/sys-x86_64/stub.S b/arch/um/sys-x86_64/stub.S
+index 6d9edf9..20e4a96 100644
+--- a/arch/um/sys-x86_64/stub.S
++++ b/arch/um/sys-x86_64/stub.S
+@@ -1,7 +1,7 @@
+ #include "as-layout.h"
+ 
+ 	.globl syscall_stub
+-.section .__syscall_stub, "x"
++.section .__syscall_stub, "ax"
+ syscall_stub:
+ 	syscall
+ 	/* We don't have 64-bit constants, so this constructs the address
+diff --git a/arch/um/sys-i386/stub.S b/arch/um/sys-i386/stub.S
+index c41b04b..54a36ec 100644
+--- a/arch/um/sys-i386/stub.S
++++ b/arch/um/sys-i386/stub.S
+@@ -1,7 +1,7 @@
+ #include "as-layout.h"
+ 
+ 	.globl syscall_stub
+-.section .__syscall_stub, "x"
++.section .__syscall_stub, "ax"
+ 
+ 	.globl batch_syscall_stub
+ batch_syscall_stub:
