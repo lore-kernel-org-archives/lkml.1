@@ -1,23 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754572AbZEHGD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758811AbZEHGGV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754572AbZEHGD7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 02:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZEHGDu
+	id S1758811AbZEHGGV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 02:06:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753131AbZEHGGM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 02:03:50 -0400
-Received: from cantor.suse.de ([195.135.220.2]:51904 "EHLO mx1.suse.de"
+	Fri, 8 May 2009 02:06:12 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:56795 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753231AbZEHGDu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 02:03:50 -0400
-Date: Fri, 08 May 2009 08:03:50 +0200
-Message-ID: <s5hr5z0f7w9.wl%tiwai@suse.de>
+	id S1752685AbZEHGGL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 02:06:11 -0400
+Date: Fri, 08 May 2009 08:06:11 +0200
+Message-ID: <s5hprekf7sc.wl%tiwai@suse.de>
 From: Takashi Iwai <tiwai@suse.de>
 To: Tino Keitel <tino.keitel@gmx.de>
-Cc: linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, alsa-devel@alsa-project.org
 Subject: Re: 2.6.29 regression: left audio channel broken after resume from	suspend with Intel HDA
-In-Reply-To: <20090507125933.GA4100@mac.home>
-References: <20090421073219.GA5866@dose.home.local>
-	<s5hfxg2cv6m.wl%tiwai@suse.de>
+In-Reply-To: <20090507205349.GA12089@mac.home>
+References: <s5hfxg2cv6m.wl%tiwai@suse.de>
 	<20090421183936.GA21935@dose.home.local>
 	<s5hws9a5ewr.wl%tiwai@suse.de>
 	<20090424142113.GA18668@dose.home.local>
@@ -26,7 +25,8 @@ References: <20090421073219.GA5866@dose.home.local>
 	<20090506222753.GA6728@mac.home>
 	<20090507072352.GA6513@mac.home>
 	<s5hy6t92nuz.wl%tiwai@suse.de>
-	<20090507125933.GA4100@mac.home>
+	<20090507204208.GA20465@mac.home>
+	<20090507205349.GA12089@mac.home>
 User-Agent: Wanderlust/2.12.0 (Your Wildest Dreams) SEMI/1.14.6 (Maruoka)
  FLIM/1.14.7 (=?ISO-8859-4?Q?Sanj=F2?=) APEL/10.6 Emacs/22.3
  (x86_64-suse-linux-gnu) MULE/5.0 (SAKAKI)
@@ -36,18 +36,21 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-At Thu, 7 May 2009 14:59:33 +0200,
+At Thu, 7 May 2009 22:53:49 +0200,
 Tino Keitel wrote:
 > 
-> On Thu, May 07, 2009 at 12:45:08 +0200, Takashi Iwai wrote:
+> On Thu, May 07, 2009 at 22:42:08 +0200, Tino Keitel wrote:
+> > On Thu, May 07, 2009 at 12:45:08 +0200, Takashi Iwai wrote:
+> > 
+> > [...]
+> > 
+> > > Could you try the patch below instead?
+> > 
+> > It doesn't work.
 > 
-> > The problem is that BIOS on your machine sets this pin both for
-> > input and output.  Since it's set as input, the driver respects
-> 
-> In theory, the hardware jack can be used for input _and_ output.
+> Sorry, my mixer setup was wrong. The patch works.
 
-But not at the very same moment.  So you have to choose either the
-input or the output to specify the current direction.
+Thanks for testing.  I merged the patch now to sound git tree.
 
 
 Takashi
