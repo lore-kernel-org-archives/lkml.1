@@ -1,96 +1,164 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763530AbZEHUFn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763797AbZEHUG3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763530AbZEHUFn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 16:05:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757370AbZEHUF0
+	id S1763797AbZEHUG3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 16:06:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754983AbZEHUGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 16:05:26 -0400
-Received: from web50112.mail.re2.yahoo.com ([206.190.39.149]:28958 "HELO
-	web50112.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1762998AbZEHUFW convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 16:05:22 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
-  b=xbAPPk/it8BQcSGWXg10GoyKcCQSho60tu5xc5wOC9/Ld6Bo6lMSTJ4yW9dML2bDa7JNx9cDJ6k33HLj27d/ebI32gbQbeJ2q/SjLPAs8F1FRwvL21biouVUIC+boOCOJcpjLoxqrZHYJCVdgBX9zyCgr8Eu2/K5LaeXhpgXcF0=;
-Message-ID: <791493.63197.qm@web50112.mail.re2.yahoo.com>
-X-YMail-OSG: l5zAqNkVM1nYU.91b7y4Ip9RSXA122XgVdvN5ne65gyHXsw4LLRfkveGHKVRErXmrL6Z0twr0pHs3rujVSSe_b.9Mz4e8EIjtB0Hj8MeHEs5i__9376pE4YfESCtRc2QHNLGFCDCzNPLJDLVq_1IOIivjI7f7m5HBzJuSZnzHtePXH_dlDXuRZALIClt2UOihiBqn87KWUT2f_o2ZAc62AO.bNwWNJWAfIGmq96hVnQTpT3KQHfqyXR2G0Tht_6xalH7ult_uLabA_YjDFhUQBnRh0zd70wfadU-
-X-Mailer: YahooMailClassic/5.3.9 YahooMailWebService/0.7.289.10
-Date: Fri, 8 May 2009 13:05:22 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [RFC PATCH 00/21 v3] amd64_edac: EDAC module for AMD64
-To: Andrew Morton <akpm@linux-foundation.org>, Ingo Molnar <mingo@elte.hu>
-Cc: Borislav Petkov <borislav.petkov@amd.com>, greg@kroah.com,
-       tglx@linutronix.de, hpa@zytor.com, mchehab@redhat.com, aris@redhat.com,
-       edt@aei.ca, linux-kernel@vger.kernel.org
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 8 May 2009 16:06:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:39397 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753339AbZEHUGR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 16:06:17 -0400
+Date: Fri, 8 May 2009 12:58:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: hannes@cmpxchg.org, peterz@infradead.org, riel@redhat.com,
+       linux-kernel@vger.kernel.org, tytso@mit.edu, linux-mm@kvack.org,
+       elladan@eskimo.com, npiggin@suse.de, cl@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, minchan.kim@gmail.com
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
+ class citizen
+Message-Id: <20090508125859.210a2a25.akpm@linux-foundation.org>
+In-Reply-To: <20090508081608.GA25117@localhost>
+References: <20090430181340.6f07421d.akpm@linux-foundation.org>
+	<20090430215034.4748e615@riellaptop.surriel.com>
+	<20090430195439.e02edc26.akpm@linux-foundation.org>
+	<49FB01C1.6050204@redhat.com>
+	<20090501123541.7983a8ae.akpm@linux-foundation.org>
+	<20090503031539.GC5702@localhost>
+	<1241432635.7620.4732.camel@twins>
+	<20090507121101.GB20934@localhost>
+	<20090507151039.GA2413@cmpxchg.org>
+	<20090507134410.0618b308.akpm@linux-foundation.org>
+	<20090508081608.GA25117@localhost>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 8 May 2009 16:16:08 +0800
+Wu Fengguang <fengguang.wu@intel.com> wrote:
 
---- On Thu, 5/7/09, Ingo Molnar <mingo@elte.hu> wrote:
-
-> From: Ingo Molnar <mingo@elte.hu>
-> Subject: Re: [RFC PATCH 00/21 v3] amd64_edac: EDAC module for AMD64
-> To: "Andrew Morton" <akpm@linux-foundation.org>
-> Cc: "Borislav Petkov" <borislav.petkov@amd.com>, greg@kroah.com, norsk5@yahoo.com, tglx@linutronix.de, hpa@zytor.com, mchehab@redhat.com, aris@redhat.com, edt@aei.ca, linux-kernel@vger.kernel.org
-> Date: Thursday, May 7, 2009, 3:18 PM
+> vmscan: make mapped executable pages the first class citizen
 > 
-> * Andrew Morton <akpm@linux-foundation.org>
-> wrote:
+> Protect referenced PROT_EXEC mapped pages from being deactivated.
 > 
-> > On Thu, 7 May 2009 16:38:07 +0200
-> > Borislav Petkov <borislav.petkov@amd.com>
-> wrote:
-> > 
-> > > Hi,
-> > > 
-> > > On Thu, May 07, 2009 at 04:27:24PM +0200, Ingo
-> Molnar wrote:
-> > > > Regarding workflow, the arch/x86 bits look
-> good to me now, so you've 
-> > > > got my Acked-by for that.
-> > > 
-> > > Cool, thanks.
-> > > 
-> > > Does that mean you're going to pick that one
-> or...
-> > > 
-> > > > Most of the EDAC patches are hosted in 
-> > > > -mm, so we could carry them in the x86 tree
-> separately as well and 
-> > > > export it to linux-next so that -mm will
-> have it automatically.
-> > > 
-> > > is the bunch going through Andrew as a whole?
-> > > 
-> > 
-> > I could.  But there's negligible overlap with
-> other EDAC work so 
-> > we might as well merge this via IngoTrees or directly
-> from your 
-> > tree.
-> 
-> If Doug and you agrees too then i have no problem (at all)
-> with 
-> Borislav carrying these bits in a separate tree, as long as
-> he also 
-> opens an edac-next branch for linux-next and asks Stephen
-> to pull 
-> it, and keeps it an append-mostly tree that isnt rebased.
-> 
-> [ I still have to do a finegrained review of this lot, a
-> quick look
->   suggested i'll have a few minor things to note ;) ]
-> 
->     Ingo
+> PROT_EXEC(or its internal presentation VM_EXEC) pages normally belong to some
+> currently running executables and their linked libraries, they shall really be
+> cached aggressively to provide good user experiences.
 > 
 
-I agree, if it removes a burden from some
+The patch seems reasonable but the changelog and the (non-existent)
+design documentation could do with a touch-up.
 
-doug t
+> 
+> --- linux.orig/mm/vmscan.c
+> +++ linux/mm/vmscan.c
+> @@ -1233,6 +1233,7 @@ static void shrink_active_list(unsigned 
+>  	unsigned long pgscanned;
+>  	unsigned long vm_flags;
+>  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
+> +	LIST_HEAD(l_active);
+>  	LIST_HEAD(l_inactive);
+>  	struct page *page;
+>  	struct pagevec pvec;
+> @@ -1272,8 +1273,13 @@ static void shrink_active_list(unsigned 
+>  
+>  		/* page_referenced clears PageReferenced */
+>  		if (page_mapping_inuse(page) &&
+> -		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags))
+> +		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
+>  			pgmoved++;
+> +			if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
+> +				list_add(&page->lru, &l_active);
+> +				continue;
+> +			}
+> +		}
+
+What we're doing here is to identify referenced, file-backed active
+pages.  We clear their referenced bit and give than another trip around
+the active list.  So if they aren't referenced during that additional
+pass, they will get deactivated next time they are scanned, yes?  It's
+a fairly high-level design/heuristic thing which needs careful
+commenting, please.
+
+
+Also, the change makes this comment:
+
+	spin_lock_irq(&zone->lru_lock);
+	/*
+	 * Count referenced pages from currently used mappings as
+	 * rotated, even though they are moved to the inactive list.
+	 * This helps balance scan pressure between file and anonymous
+	 * pages in get_scan_ratio.
+	 */
+	reclaim_stat->recent_rotated[!!file] += pgmoved;
+
+inaccurate.
+								
+>  		list_add(&page->lru, &l_inactive);
+>  	}
+> @@ -1282,7 +1288,6 @@ static void shrink_active_list(unsigned 
+>  	 * Move the pages to the [file or anon] inactive list.
+>  	 */
+>  	pagevec_init(&pvec, 1);
+> -	lru = LRU_BASE + file * LRU_FILE;
+>  
+>  	spin_lock_irq(&zone->lru_lock);
+>  	/*
+> @@ -1294,6 +1299,7 @@ static void shrink_active_list(unsigned 
+>  	reclaim_stat->recent_rotated[!!file] += pgmoved;
+>  
+>  	pgmoved = 0;  /* count pages moved to inactive list */
+> +	lru = LRU_BASE + file * LRU_FILE;
+>  	while (!list_empty(&l_inactive)) {
+>  		page = lru_to_page(&l_inactive);
+>  		prefetchw_prev_lru_page(page, &l_inactive, flags);
+> @@ -1316,6 +1322,29 @@ static void shrink_active_list(unsigned 
+>  	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+>  	__count_zone_vm_events(PGREFILL, zone, pgscanned);
+>  	__count_vm_events(PGDEACTIVATE, pgmoved);
+> +
+> +	pgmoved = 0;  /* count pages moved back to active list */
+> +	lru = LRU_ACTIVE + file * LRU_FILE;
+> +	while (!list_empty(&l_active)) {
+> +		page = lru_to_page(&l_active);
+> +		prefetchw_prev_lru_page(page, &l_active, flags);
+> +		VM_BUG_ON(PageLRU(page));
+> +		SetPageLRU(page);
+> +		VM_BUG_ON(!PageActive(page));
+> +
+> +		list_move(&page->lru, &zone->lru[lru].list);
+> +		mem_cgroup_add_lru_list(page, lru);
+> +		pgmoved++;
+> +		if (!pagevec_add(&pvec, page)) {
+> +			spin_unlock_irq(&zone->lru_lock);
+> +			if (buffer_heads_over_limit)
+> +				pagevec_strip(&pvec);
+> +			__pagevec_release(&pvec);
+> +			spin_lock_irq(&zone->lru_lock);
+> +		}
+> +	}
+
+The copy-n-pasting here is unfortunate.  But I expect that if we redid
+this as a loop, the result would be a bit ugly - the pageActive
+handling gets in the way.
+
+> +	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+
+Is it just me, is is all this stuff:
+
+	lru = LRU_ACTIVE + file * LRU_FILE;
+	...
+	foo(NR_LRU_BASE + lru);
+
+really hard to read?
+
+
+
+Now.  How do we know that this patch improves Linux?
 
