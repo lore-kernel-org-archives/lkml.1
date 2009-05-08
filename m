@@ -1,86 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763219AbZEHSTz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759795AbZEHSUd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763219AbZEHSTz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 14:19:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756616AbZEHSSJ
+	id S1759795AbZEHSUd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 14:20:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758660AbZEHST1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 14:18:09 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:37931 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755031AbZEHSSF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 14:18:05 -0400
-Message-Id: <20090508170028.750619201@chello.nl>
-References: <20090508165219.469818319@chello.nl>
-User-Agent: quilt/0.46-1
-Date: Fri, 08 May 2009 18:52:21 +0200
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH 2/5] perf_counter: optimize perf_counter_task_tick()
-Content-Disposition: inline; filename=perf_counter-opt-tick.patch
-X-Bad-Reply: References but no 'Re:' in Subject.
+	Fri, 8 May 2009 14:19:27 -0400
+Received: from smtp6.welho.com ([213.243.153.40]:49521 "EHLO smtp6.welho.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762954AbZEHST0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 14:19:26 -0400
+Date: Fri, 8 May 2009 21:19:24 +0300
+From: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>
+To: Daniel Mack <daniel@caiaq.de>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] w1-gpio: add external pull-up enable callback
+Message-ID: <20090508181924.GR17782@sci.fi>
+Mail-Followup-To: Ville =?iso-8859-1?Q?Syrj=E4l=E4?= <syrjala@sci.fi>,
+	Daniel Mack <daniel@caiaq.de>, linux-kernel@vger.kernel.org
+References: <1241527413-22920-1-git-send-email-daniel@caiaq.de> <20090506093307.GC17782@sci.fi> <20090506093445.GA31875@buzzloop.caiaq.de> <20090506202818.GH17782@sci.fi> <20090507013032.GA5456@buzzloop.caiaq.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090507013032.GA5456@buzzloop.caiaq.de>
+User-Agent: Mutt/1.5.16 (2007-06-09)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-perf_counter_task_tick() does way too much work to find out there's nothing to
-do. Provide an easy short-circuit for the normal case where there are no
-counters on the system.
+On Thu, May 07, 2009 at 03:30:32AM +0200, Daniel Mack wrote:
+> On Wed, May 06, 2009 at 11:28:18PM +0300, Ville Syrjälä wrote:
+> > > > > This patch adds a callback function pointer to let users switch on and
+> > > > > off the external pull-up resistor. This lets the outside world know
+> > > > > whether the processor is currently actively driving the bus or not.
+> > > > 
+> > > > Looks simple enough but I wonder if you could just do this from the
+> > > > platform code. I suppose the downside would be that you would enable the
+> > > > pullup even if w1-gpio is not loaded.
+> > > 
+> > > That's right. Hence I put it where I believe it belongs to.
+> > 
+> > Well, if you think you need it who am I to argue :)
+> > 
+> > Acked-by: Ville Syrjälä <syrjala@sci.fi>
+> 
+> Thanks :)
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- kernel/perf_counter.c |   13 +++++++++++--
- 1 file changed, 11 insertions(+), 2 deletions(-)
-
-Index: linux-2.6/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/kernel/perf_counter.c
-+++ linux-2.6/kernel/perf_counter.c
-@@ -39,6 +39,7 @@ int perf_max_counters __read_mostly = 1;
- static int perf_reserved_percpu __read_mostly;
- static int perf_overcommit __read_mostly = 1;
- 
-+static atomic_t nr_counters __read_mostly;
- static atomic_t nr_mmap_tracking __read_mostly;
- static atomic_t nr_munmap_tracking __read_mostly;
- static atomic_t nr_comm_tracking __read_mostly;
-@@ -1076,8 +1077,14 @@ static void rotate_ctx(struct perf_count
- 
- void perf_counter_task_tick(struct task_struct *curr, int cpu)
- {
--	struct perf_cpu_context *cpuctx = &per_cpu(perf_cpu_context, cpu);
--	struct perf_counter_context *ctx = &curr->perf_counter_ctx;
-+	struct perf_cpu_context *cpuctx;
-+	struct perf_counter_context *ctx;
-+
-+	if (!atomic_read(&nr_counters))
-+		return;
-+
-+	cpuctx = &per_cpu(perf_cpu_context, cpu);
-+	ctx = &curr->perf_counter_ctx;
- 
- 	perf_counter_cpu_sched_out(cpuctx);
- 	perf_counter_task_sched_out(curr, cpu);
-@@ -1197,6 +1204,7 @@ static void free_counter(struct perf_cou
- {
- 	perf_pending_sync(counter);
- 
-+	atomic_dec(&nr_counters);
- 	if (counter->hw_event.mmap)
- 		atomic_dec(&nr_mmap_tracking);
- 	if (counter->hw_event.munmap)
-@@ -2861,6 +2869,7 @@ done:
- 
- 	counter->pmu = pmu;
- 
-+	atomic_inc(&nr_counters);
- 	if (counter->hw_event.mmap)
- 		atomic_inc(&nr_mmap_tracking);
- 	if (counter->hw_event.munmap)
+BTW you should probably send this via Evgeniy Polyakov if you want it
+included in the kernel at some point.
 
 -- 
-
+Ville Syrjälä
+syrjala@sci.fi
+http://www.sci.fi/~syrjala/
