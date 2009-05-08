@@ -1,82 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763380AbZEHRCw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763413AbZEHRDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763380AbZEHRCw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 13:02:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753006AbZEHRCo
+	id S1763413AbZEHRDS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 13:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbZEHRC6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 13:02:44 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:45538 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752619AbZEHRCn (ORCPT
+	Fri, 8 May 2009 13:02:58 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:40640 "EHLO
+	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762859AbZEHRCz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 13:02:43 -0400
-Message-ID: <4A0464AC.9060308@zytor.com>
-Date: Fri, 08 May 2009 09:58:20 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Fri, 8 May 2009 13:02:55 -0400
+X-BigFish: VPS1(zz936fJzz1202hzzz32i6bh43j63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KJC4L9-02-CQC-01
+From: Mark Langsdorf <mark.langsdorf@amd.com>
+To: Joerg Roedel <joerg.roedel@amd.com>
+Subject: [PATCH][KVM][retry 2] Add support for Pause Filtering to AMD SVM
+Date: Fri, 8 May 2009 12:03:55 -0500
+User-Agent: KMail/1.9.10
+CC: avi@redhat.com, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <200905050909.58583.mark.langsdorf@amd.com> <20090507135522.GJ4059@amd.com> <200905071000.14038.mark.langsdorf@amd.com>
+In-Reply-To: <200905071000.14038.mark.langsdorf@amd.com>
 MIME-Version: 1.0
-To: Sam Ravnborg <sam@ravnborg.org>
-CC: "H. Peter Anvin" <hpa@linux.intel.com>, linux-kernel@vger.kernel.org,
-       vgoyal@redhat.com, hbabu@us.ibm.com, kexec@lists.infradead.org,
-       ying.huang@intel.com, mingo@elte.hu, tglx@linutronix.de,
-       ebiederm@xmission.com
-Subject: Re: [PATCH 02/14] x86, boot: honor CONFIG_PHYSICAL_START when relocatable
-References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com> <1241735222-6640-3-git-send-email-hpa@linux.intel.com> <20090508073436.GB12808@uranus.ravnborg.org>
-In-Reply-To: <20090508073436.GB12808@uranus.ravnborg.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Content-Disposition: inline
+Message-ID: <200905081203.55484.mark.langsdorf@amd.com>
+X-OriginalArrivalTime: 08 May 2009 17:00:53.0698 (UTC) FILETIME=[8C2A1220:01C9CFFE]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sam Ravnborg wrote:
-> 
-> On the coding style side of thing...
->> +     movl %ebp, %ebx
->> +     cmpl %ebx, %eax
->> +     jbe 1f
->> +     movl %eax, %ebx
-> 
-> This looks messy with different idention of the operand.
-> 
-> Compare it to this:
->> +	movl	%ebp, %ebx
->> +	cmpl	%ebx, %eax
->> +	jbe	1f
->> +	movl	%eax, %ebx
-> 
-> 
-> I like the latter more with vertical alignment of the operand.
-> I see that you add spaces around operators (,) - good.
+>From 01813db8627e74018c8cec90df7e345839351f23 Mon Sep 17 00:00:00 2001
+From: Mark Langsdorf <mark.langsdorf@amd.com>
+Date: Thu, 7 May 2009 09:44:10 -0500
+Subject: [PATCH] Add support for Pause Filtering to AMD SVM
 
-head_32.S was already written in the style with space (rather than tab)
-between opcode and operands.  There was a total of three instructions
-that didn't follow the pattern.  Re-styling the whole file is possible,
-of course, but should be a separate patch entirely.
+This feature creates a new field in the VMCB called Pause
+Filter Count.  If Pause Filter Count is greater than 0 and
+intercepting PAUSEs is enabled, the processor will increment
+an internal counter when a PAUSE instruction occurs instead
+of intercepting.  When the internal counter reaches the
+Pause Filter Count value, a PAUSE intercept will occur.
 
->>  	pushl %esi
->> -	leal _ebss(%ebp), %esi
->> -	leal _ebss(%ebx), %edi
->> -	movl $(_ebss - startup_32), %ecx
->> +	leal (_bss-4)(%ebp), %esi
->> +	leal (_bss-4)(%ebx), %edi
->> +	movl $(_bss - startup_32), %ecx
->> +	shrl $2, %ecx
-> 
-> I do not see why you mess around with _bss here?
-> Do you use .bss for decompression?
+This feature can be used to detect contended spinlocks,
+especially when the lock holding VCPU is not scheduled.
+Rescheduling another VCPU prevents the VCPU seeking the
+lock from wasting its quantum by spinning idly.
 
-This chunk of code is about moving the initialized segments into place.
- Moving the contents of the bss is a bug (and it clobbers the stack, the
-setup of which I moved earlier in the code.)
+Experimental results show that most spinlocks are held
+for less than 1000 PAUSE cycles or more than a few
+thousand.  Default the Pause Filter Counter to 3000 to
+detect the contended spinlocks.
 
-However, using _edata would give an unaligned symbol, so use _bss
-instead as being an aligned symbol at the beginning of the _bss; we thus
-move the range from startup_32 to _bss.
+Processor support for this feature is indicated by a CPUID
+bit.
 
-	-hpa
+On a 24 core system running 4 guests each with 16 VCPUs,
+this patch improved overall performance of each guest's
+32 job kernbench by approximately 1%.  Further performance
+improvement may be possible with a more sophisticated
+yield algorithm.
 
+-Mark Langsdorf
+Operating System Research Center
+AMD
+
+Signed-off-by: Mark Langsdorf <mark.langsdorf@amd.com>
+---
+ arch/x86/include/asm/svm.h |    3 ++-
+ arch/x86/kvm/svm.c         |   17 +++++++++++++++++
+ virt/kvm/kvm_main.c        |    2 ++
+ 3 files changed, 21 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/include/asm/svm.h b/arch/x86/include/asm/svm.h
+index 85574b7..1fecb7e 100644
+--- a/arch/x86/include/asm/svm.h
++++ b/arch/x86/include/asm/svm.h
+@@ -57,7 +57,8 @@ struct __attribute__ ((__packed__)) vmcb_control_area {
+ 	u16 intercept_dr_write;
+ 	u32 intercept_exceptions;
+ 	u64 intercept;
+-	u8 reserved_1[44];
++	u8 reserved_1[42];
++	u16 pause_filter_count;
+ 	u64 iopm_base_pa;
+ 	u64 msrpm_base_pa;
+ 	u64 tsc_offset;
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index ef43a18..4279141 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -45,6 +45,7 @@ MODULE_LICENSE("GPL");
+ #define SVM_FEATURE_NPT  (1 << 0)
+ #define SVM_FEATURE_LBRV (1 << 1)
+ #define SVM_FEATURE_SVML (1 << 2)
++#define SVM_FEATURE_PAUSE_FILTER (1 << 10)
+ 
+ #define DEBUGCTL_RESERVED_BITS (~(0x3fULL))
+ 
+@@ -575,6 +576,12 @@ static void init_vmcb(struct vcpu_svm *svm)
+ 
+ 	svm->nested_vmcb = 0;
+ 	svm->vcpu.arch.hflags = HF_GIF_MASK;
++
++	if (svm_has(SVM_FEATURE_PAUSE_FILTER)) {
++		control->pause_filter_count = 5000;
++		control->intercept |= (1ULL << INTERCEPT_PAUSE);
++	}
++
+ }
+ 
+ static int svm_vcpu_reset(struct kvm_vcpu *vcpu)
+@@ -2087,6 +2094,15 @@ static int interrupt_window_interception(struct vcpu_svm *svm,
+ 	return 1;
+ }
+ 
++static int pause_interception(struct vcpu_svm *svm, struct kvm_run *kvm_run)
++{
++	/* Simple yield */
++	vcpu_put(&svm->vcpu);
++	schedule();
++	vcpu_load(&svm->vcpu);
++	return 1;
++}
++
+ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+ 				      struct kvm_run *kvm_run) = {
+ 	[SVM_EXIT_READ_CR0]           		= emulate_on_interception,
+@@ -2123,6 +2139,7 @@ static int (*svm_exit_handlers[])(struct vcpu_svm *svm,
+ 	[SVM_EXIT_CPUID]			= cpuid_interception,
+ 	[SVM_EXIT_IRET]                         = iret_interception,
+ 	[SVM_EXIT_INVD]                         = emulate_on_interception,
++	[SVM_EXIT_PAUSE]			= pause_interception,
+ 	[SVM_EXIT_HLT]				= halt_interception,
+ 	[SVM_EXIT_INVLPG]			= invlpg_interception,
+ 	[SVM_EXIT_INVLPGA]			= invalid_op_interception,
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 2b73e19..e2b730d 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -710,6 +710,7 @@ void vcpu_load(struct kvm_vcpu *vcpu)
+ 	kvm_arch_vcpu_load(vcpu, cpu);
+ 	put_cpu();
+ }
++EXPORT_SYMBOL_GPL(vcpu_load);
+ 
+ void vcpu_put(struct kvm_vcpu *vcpu)
+ {
+@@ -719,6 +720,7 @@ void vcpu_put(struct kvm_vcpu *vcpu)
+ 	preempt_enable();
+ 	mutex_unlock(&vcpu->mutex);
+ }
++EXPORT_SYMBOL_GPL(vcpu_put);
+ 
+ static void ack_flush(void *_completed)
+ {
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+1.6.0.2
+
 
