@@ -1,348 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752756AbZEHHCT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753966AbZEHHKo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752756AbZEHHCT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 03:02:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752105AbZEHHCG
+	id S1753966AbZEHHKo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 03:10:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZEHHKf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 03:02:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42447 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751517AbZEHHCE (ORCPT
+	Fri, 8 May 2009 03:10:35 -0400
+Received: from mail1.asahi-net.or.jp ([202.224.39.197]:17251 "EHLO
+	mail1.asahi-net.or.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751487AbZEHHKe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 03:02:04 -0400
-Date: Thu, 7 May 2009 23:53:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: joseph.cihula@intel.com
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
-       hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
-       jmorris@namei.org, jbeulich@novell.com, peterm@redhat.com,
-       gang.wei@intel.com, shane.wang@intel.com
-Subject: Re: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
- support
-Message-Id: <20090507235334.05952fa4.akpm@linux-foundation.org>
-In-Reply-To: <4A03B9C3.9090607@intel.com>
-References: <4A03B9C3.9090607@intel.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Fri, 8 May 2009 03:10:34 -0400
+X-Greylist: delayed 1522 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 May 2009 03:10:34 EDT
+Message-ID: <4A03D4F2.1070904@epsilou.com>
+Date: Fri, 08 May 2009 15:45:06 +0900
+From: Kazuhisa Ichikawa <ki@epsilou.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: axboe@kernel.dk
+CC: linux-kernel@vger.kernel.org
+Subject: [PATCH] block: fix the bio_vec array index out-of-bounds test
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 07 May 2009 21:49:07 -0700 Joseph Cihula <joseph.cihula@intel.com> wrote:
+From: Kazuhisa Ichikawa <ki@epsilou.com>
 
-> Linux support for Intel(R) Trusted Execution Technology.
-> 
-> --- linux-2.6.30-rc4/arch/x86/include/asm/fixmap.h	2009-04-29 21:48:16.000000000 -0700
-> +++ linux-2.6.30-rc4-lkml/arch/x86/include/asm/fixmap.h	2009-05-07 08:07:17.000000000 -0700
-> @@ -132,6 +132,9 @@ enum fixed_addresses {
->  #ifdef CONFIG_X86_32
->  	FIX_WP_TEST,
->  #endif
-> +#ifdef CONFIG_INTEL_TXT
-> +	FIX_TBOOT_SHARED_BASE,
-> +#endif
+Current bio_vec array index out-of-bounds test within 
+__end_that_request_first() does not seem correct. 
+It checks bio->bi_idx against bio->bi_vcnt, but the subsequent code 
+uses idx (which is, bio->bi_idx + next_idx) as the array index into 
+bio_vec array. This means that the test really make sense only at 
+the first iteration of !(nr_bytes >=bio->bi_size) case (when next_idx 
+== zero). Fix this by replacing bio->bi_idx with idx.
+(This patch applies to 2.6.30-rc4.)
 
-Curious.  Does this "shared" page get documented anywhere in the code?
+Signed-off-by: Kazuhisa Ichikawa <ki@epsilou.com>
+---
 
-It can't use ioremap() or early_ioremap()?
+--- linux-2.6.30-rc4/block/blk-core.c.ORIG	2009-05-08 00:00:10.000000000 +0900
++++ linux-2.6.30-rc4/block/blk-core.c	2009-05-08 00:00:10.000000000 +0900
+@@ -1768,10 +1768,10 @@ static int __end_that_request_first(stru
+ 		} else {
+ 			int idx = bio->bi_idx + next_idx;
+ 
+-			if (unlikely(bio->bi_idx >= bio->bi_vcnt)) {
++			if (unlikely(idx >= bio->bi_vcnt)) {
+ 				blk_dump_rq_flags(req, "__end_that");
+ 				printk(KERN_ERR "%s: bio idx %d >= vcnt %d\n",
+-				       __func__, bio->bi_idx, bio->bi_vcnt);
++				       __func__, idx, bio->bi_vcnt);
+ 				break;
+ 			}
+ 
 
->  	__end_of_fixed_addresses
->  };
->  
->
-> ...
->
-> +struct tboot_uuid {
-> +	u32    data1;
-> +	u16    data2;
-> +	u16    data3;
-> +	u16    data4;
-> +	u8     data5[6];
-> +} __attribute__ ((__packed__));
 
-Please use __packed everywhere.
-
-> +/* used to communicate between tboot and the launched kernel */
-> +
-> +#define TB_KEY_SIZE             64   /* 512 bits */
-> +
-> +#define MAX_TB_MAC_REGIONS      32
-> +struct tboot_mac_region {
-> +  u64  start;         /* must be 64 byte -aligned */
-> +  u32  size;          /* must be 64 byte -granular */
-> +} __attribute__ ((__packed__));
-> +
-> +/* GAS - Generic Address Structure (ACPI 2.0+) */
-> +struct tboot_acpi_generic_address {
-> +  u8  space_id;
-> +  u8  bit_width;
-> +  u8  bit_offset;
-> +  u8  access_width;
-> +  u64 address;
-> +} __attribute__ ((__packed__));
-> +
-> +/* combines Sx info from FADT and FACS tables per ACPI 2.0+ spec
-> +   (http://www.acpi.info/) */
-> +struct tboot_acpi_sleep_info {
-> +  struct tboot_acpi_generic_address pm1a_cnt_blk;
-> +  struct tboot_acpi_generic_address pm1b_cnt_blk;
-> +  struct tboot_acpi_generic_address pm1a_evt_blk;
-> +  struct tboot_acpi_generic_address pm1b_evt_blk;
-> +  u16 pm1a_cnt_val;
-> +  u16 pm1b_cnt_val;
-> +  u64 wakeup_vector;
-> +  u32 vector_width;
-> +  u64 kernel_s3_resume_vector;
-
-Indenting broke in many places.
-
-I didn't see a `depends on ACPI' in Kconfig.  Is it needed?
-
-> +} __attribute__ ((__packed__));
-> +
-> +struct tboot_shared {
-> +	/* version 3+ fields: */
-> +	struct tboot_uuid uuid; /* TBOOT_SHARED_UUID */
-> +	u32  version;      	/* Version number: 5 is current */
-> +	u32  log_addr;     	/* physical addr of tb_log_t log */
-> +	u32  shutdown_entry;	/* entry point for tboot shutdown */
-> +	u32  shutdown_type;	/* type of shutdown (TB_SHUTDOWN_*) */
-> +	struct tboot_acpi_sleep_info
-> +		  acpi_sinfo;	/* where kernel put acpi sleep info in Sx */
-> +	u32  tboot_base;	/* starting addr for tboot */
-> +	u32  tboot_size;	/* size of tboot */
-> +	u8   num_mac_regions;   /* number mem regions to MAC on S3 */
-> +				/* contig regions memory to MAC on S3 */
-> +	struct tboot_mac_region mac_regions[MAX_TB_MAC_REGIONS];
-> +	/* version 4+ fields: */
-> +				/* populated by tboot; will be encrypted */
-> +	u8   s3_key[TB_KEY_SIZE];
-> +	/* version 5+ fields: */
-> +	u8   reserved_align[3]; /* used to 4byte-align num_in_wfs */
-> +	u32  num_in_wfs;        /* number of processors in wait-for-SIPI */
-> +} __attribute__ ((__packed__));
-> +
-> +/* UUID for tboot_shared data struct to facilitate matching */
-> +/* {663C8DFF-E8B3-4b82-AABF-19EA4D057A08} */
-> +#define TBOOT_SHARED_UUID     \
-> +		((struct tboot_uuid){ 0x663c8dff, 0xe8b3, 0x4b82, 0xaabf,   \
-> +				{ 0x19, 0xea, 0x4d, 0x5, 0x7a, 0x8 } })
-
-Strange.  A
-
-	static struct tboot_uuid uuid __initdata = { ... };
-
-within tboot_probe() would suffice.
-
-> +extern struct tboot_shared *tboot_shared;
-> +
-> +static inline int tboot_in_measured_env(void)
-> +{
-> +	return tboot_shared != NULL;
-> +}
-> +
->
-> ...
->
-> +
-> +#include <linux/init.h>
-> +#include <linux/sched.h>
-> +#include <linux/pfn.h>
-> +#include <linux/mm.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/init_task.h>
-
-a newline here is typical
-
-> +#include <asm/pgtable.h>
-> +#include <asm/pgalloc.h>
-> +#include <asm/processor.h>
-> +#include <asm/bootparam.h>
-> +#include <asm/setup.h>
-> +#include <asm/io.h>
-> +#include <asm/e820.h>
-> +#include <asm/tboot.h>
-> +
-> +/* Global pointer to shared data; NULL means no measured launch. */
-> +struct tboot_shared *tboot_shared __read_mostly;
-> +
-> +void __init tboot_probe(void)
-> +{
-> +	/* Look for valid page-aligned address for shared page. */
-> +	if (boot_params.tboot_shared_addr == 0)
-> +		return;
-> +	/* also verify that it is mapped as we expect it before calling
-> +	   set_fixmap(), to reduce chance of garbage value causing crash */
-> +	if (!e820_any_mapped(boot_params.tboot_shared_addr,
-> +			     boot_params.tboot_shared_addr, E820_UNUSABLE)) {
-> +		printk(KERN_WARNING "TXT: non-0 tboot_shared_addr but it is not of type E820_UNUSABLE\n");
-> +		return;
-> +	}
-> +
-> +	/* only a natively booted kernel should be using TXT */
-> +	if (paravirt_enabled()) {
-> +		printk(KERN_WARNING "TXT: non-0 tboot_shared_addr but pv_ops is enabled\n");
-> +		return;
-> +	}
-> +
-> +	/* Map and check for tboot UUID. */
-> +	set_fixmap(FIX_TBOOT_SHARED_BASE, boot_params.tboot_shared_addr);
-> +	tboot_shared = (struct tboot_shared *)
-> +				fix_to_virt(FIX_TBOOT_SHARED_BASE);
-> +	if (memcmp(&TBOOT_SHARED_UUID, &tboot_shared->uuid,
-> +		   sizeof(struct tboot_uuid))) {
-> +		printk(KERN_WARNING "TXT: tboot_shared at 0x%lx is invalid\n",
-> +		       (unsigned long)boot_params.tboot_shared_addr);
-
-That's a peculiar way of printing a u64, especially on 32 bit.
-
-The code appears to be enabled for 32-bit.  Is that a
-supported/tested/realistic combination?
-
-> +		tboot_shared = NULL;
-> +		return;
-> +	}
-> +	if (tboot_shared->version < 5) {
-> +		printk(KERN_WARNING "TXT: tboot_shared version is invalid: %u\n",
-> +		       tboot_shared->version);
-> +		tboot_shared = NULL;
-> +		return;
-> +	}
-> +
-> +	printk(KERN_INFO "TXT: found shared page at phys addr 0x%lx:\n",
-> +	       (unsigned long)boot_params.tboot_shared_addr);
-> +	printk(KERN_DEBUG "TXT:  version: %d\n", tboot_shared->version);
-> +	printk(KERN_DEBUG "TXT:  log_addr: 0x%08x\n", tboot_shared->log_addr);
-> +	printk(KERN_DEBUG "TXT:  shutdown_entry: 0x%x\n",
-> +	       tboot_shared->shutdown_entry);
-> +	printk(KERN_DEBUG "TXT:  tboot_base: 0x%08x\n",
-> +	       tboot_shared->tboot_base);
-> +	printk(KERN_DEBUG "TXT:  tboot_size: 0x%x\n",
-> +	       tboot_shared->tboot_size);
-> +}
-> +
->
-> ...
->
-> +void tboot_shutdown(u32 shutdown_type)
-> +{
-> +	if (!tboot_in_measured_env())
-> +		return;
-> +
-> +	/* if we're being called before the 1:1 mapping is set up then just
-> +	   return and let the normal shutdown happen; this should only be
-> +	   due to very early panic() */
-> +	if (!tboot_pg_dir)
-> +		return;
-> +
-> +	local_irq_disable();
-
-Mystery local_irq_disable() needs a comment, methinks.
-
-> +	/* if this is S3 then set regions to MAC */
-> +	if (shutdown_type == TB_SHUTDOWN_S3) {
-> +		tboot_shared->num_mac_regions = 3;
-> +		/* S3 resume code */
-> +		tboot_shared->mac_regions[0].start =
-> +			PFN_PHYS(PFN_DOWN(acpi_wakeup_address));
-> +		tboot_shared->mac_regions[0].size =
-> +			PFN_UP(WAKEUP_SIZE) << PAGE_SHIFT;
-> +		/* AP trampoline code */
-> +		tboot_shared->mac_regions[1].start =
-> +			PFN_PHYS(PFN_DOWN(virt_to_phys(trampoline_base)));
-> +		tboot_shared->mac_regions[1].size =
-> +			PFN_UP(TRAMPOLINE_SIZE) << PAGE_SHIFT;
-> +		/* kernel code + data + bss */
-> +		tboot_shared->mac_regions[2].start =
-> +			PFN_PHYS(PFN_DOWN(virt_to_phys(&_text)));
-> +		tboot_shared->mac_regions[2].size =
-> +			PFN_PHYS(PFN_UP(virt_to_phys(&_end))) -
-> +			PFN_PHYS(PFN_DOWN(virt_to_phys(&_text)));
-> +	}
-> +
-> +	tboot_shared->shutdown_type = shutdown_type;
-> +
-> +	switch_to_tboot_pt();
-> +
-> +	((void(*)(void))(unsigned long)tboot_shared->shutdown_entry)();
-> +
-> +	/* should not reach here */
-> +	while (1)
-> +		halt();
-> +}
-> +
->
-> ...
->
-> +struct acpi_table_header *tboot_get_dmar_table(void)
-> +{
-> +	void *heap_base, *heap_ptr, *config;
-> +	struct acpi_table_header *dmar_table;
-> +
-> +	/* ACPI tables may not be DMA protected by tboot, so use DMAR copy */
-> +	/* SINIT saved in SinitMleData in TXT heap (which is DMA protected) */
-> +
-> +	/* map config space in order to get heap addr */
-> +	config = ioremap(TXT_PUB_CONFIG_REGS_BASE, NR_TXT_CONFIG_PAGES *
-> +			 PAGE_SIZE);
-> +	if (config == NULL)
-> +		return NULL;
-> +
-> +	/* now map TXT heap */
-> +	heap_base = ioremap(*(u64 *)(config + TXTCR_HEAP_BASE),
-> +			    *(u64 *)(config + TXTCR_HEAP_SIZE));
-> +	iounmap(config);
-> +	if (heap_base == NULL)
-> +		return NULL;
-> +
-> +	/* walk heap to SinitMleData */
-> +	/* skip BiosData */
-> +	heap_ptr = heap_base + *(u64 *)heap_base;
-> +	/* skip OsMleData */
-> +	heap_ptr += *(u64 *)heap_ptr;
-> +	/* skip OsSinitData */
-> +	heap_ptr += *(u64 *)heap_ptr;
-> +	/* now points to SinitMleDataSize; set to SinitMleData */
-> +	heap_ptr += sizeof(u64);
-> +	/* get addr of DMAR table */
-> +	dmar_table = (struct acpi_table_header *)(heap_ptr +
-> +			((struct sinit_mle_data *)heap_ptr)->vtd_dmars_off -
-> +			  sizeof(u64));
-> +
-> +	/* don't unmap heap because dmar.c needs access to this */
-> +
-> +	return dmar_table;
-> +}
-
-This function trusts BIOS authors rather a lot.
-
->
-> ...
->
-> +config INTEL_TXT
-> +        bool "Enable Intel(R) Trusted Execution Technology (Intel(R) TXT)"
-> +        depends on EXPERIMENTAL && X86 && DMAR
-> +        help
-> +          This option enables support for booting the kernel with the
-> +	  Trusted Boot (tboot) module. This will utilize
-> +          Intel(R) Trusted Execution Technology to perform a measured launch
-> +	  of the kernel. If the system does not support Intel(R) TXT, this
-> +	  will have no effect.
-> +
-> +	  Intel TXT will provide higher assurance of sysem configuration and
-> +	  initial state as well as data reset protection.  This is used to
-> +	  create a robust initial kernel measurement and verification.
-> +
-> +          See <http://www.intel.com/technology/security/> for more information
-> +	  about Intel(R) TXT.
-> +          See <http://tboot.sourceforge.net> for more information about tboot.
-> +	  See Documentation/intel_txt.txt for a description of how to enable
-> +	  Intel TXT support in a kernel boot.
-> +
-> +          If you are unsure as to whether this is required, answer N.
-> +
-
-The help uses a mix of tab- and space-indenting which is why it looks
-all messy when quoted.
