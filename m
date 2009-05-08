@@ -1,43 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755959AbZEHOoc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756787AbZEHOyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755959AbZEHOoc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 10:44:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751481AbZEHOoU
+	id S1756787AbZEHOyV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 10:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752344AbZEHOyH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 10:44:20 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:50992 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751209AbZEHOoU (ORCPT
+	Fri, 8 May 2009 10:54:07 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:55853 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751481AbZEHOyE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 10:44:20 -0400
-Date: Fri, 8 May 2009 10:43:51 -0400 (EDT)
-From: Christoph Lameter <cl@linux.com>
-X-X-Sender: cl@qirst.com
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-cc: Cyrill Gorcunov <gorcunov@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, mingo@elte.hu, mel@csn.ul.ie,
-       linux-kernel@vger.kernel.org, riel@redhat.com, rientjes@google.com,
-       xemul@openvz.org
-Subject: Re: [RFC/PATCH v2] mm: Introduce GFP_PANIC for non-failing
- allocations
-In-Reply-To: <1241793281.28600.43.camel@penberg-laptop>
-Message-ID: <alpine.DEB.1.10.0905081043040.21690@qirst.com>
-References: <20090504122740.GH4173@lenovo> <20090504131311.GA23330@elte.hu>  <20090504131638.GJ4173@lenovo>  <alpine.DEB.1.10.0905040940490.9553@qirst.com>  <20090504115335.9bc08587.akpm@linux-foundation.org>  <20090504192117.GB31176@lenovo> 
- <20090504123453.d130a6cf.akpm@linux-foundation.org>  <20090504200925.GD31176@lenovo> <1241787448.28600.26.camel@penberg-laptop>  <alpine.DEB.1.10.0905081018130.23875@qirst.com>  <1241792580.28600.41.camel@penberg-laptop>  <alpine.DEB.1.10.0905081026210.21690@qirst.com>
- <1241793281.28600.43.camel@penberg-laptop>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Fri, 8 May 2009 10:54:04 -0400
+Message-ID: <4A044786.2080508@codemonkey.ws>
+Date: Fri, 08 May 2009 09:53:58 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Marcelo Tosatti <mtosatti@redhat.com>, Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Avi Kivity <avi@redhat.com>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com> <20090507233503.GA9103@amt.cnet> <4A043E89.90403@novell.com>
+In-Reply-To: <4A043E89.90403@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 May 2009, Pekka Enberg wrote:
+Gregory Haskins wrote:
+>> Greg,
+>>
+>> I think comparison is not entirely fair.
+>>     
+>
+> <snip>
+>
+> FYI: I've update the test/wiki to (hopefully) address your concerns.
+>
+> http://developer.novell.com/wiki/index.php/WhyHypercalls
+>   
 
->  		show_mem();
->  	}
-> +	if (unlikely(gfp_mask & GFP_PANIC))
+And we're now getting close to the point where the difference is 
+virtually meaningless.
 
-(gfp_mask & GFP_PANIC) == GFP_PANIC please. Otherwise any one of the bits
-alone will cause a panic.
+At .14us, in order to see 1% CPU overhead added from PIO vs HC, you need 
+71429 exits.
+
+If you have this many exits, the shear cost of the base vmexit overhead 
+is going to result in about 15% CPU overhead.  To put this another way, 
+if you're workload was entirely bound by vmexits (which is virtually 
+impossible), then when you were saturating your CPU at 100%, only 7% of 
+that is the cost of PIO exits vs. HC.
+
+In real life workloads, if you're paying 15% overhead just to the cost 
+of exits (not including the cost of heavy weight or post-exit 
+processing), you're toast.  I think it's going to be very difficult to 
+construct a real scenario where you'll have a measurable (i.e. > 1%) 
+performance overhead from using PIO vs. HC.
+
+And in the absence of that, I don't see the justification for adding 
+additional infrastructure to Linux to support this.
+
+The non-x86 architecture argument isn't valid because other 
+architectures either 1) don't use PCI at all (s390) and are already 
+using hypercalls 2) use PCI, but do not have a dedicated hypercall 
+instruction (PPC emb) or 3) have PIO (ia64).
+
+Regards,
+
+Anthony Liguori
+
+> Regards,
+> -Greg
+>
+>
+>   
 
