@@ -1,129 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753286AbZEHGqT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753845AbZEHGzY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753286AbZEHGqT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 02:46:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbZEHGqJ
+	id S1753845AbZEHGzY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 02:55:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751517AbZEHGzK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 02:46:09 -0400
-Received: from 2605ds1-ynoe.1.fullrate.dk ([90.184.12.24]:3789 "EHLO
-	shrek.krogh.cc" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751001AbZEHGqI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 02:46:08 -0400
-Message-ID: <4A03D501.7050803@krogh.cc>
-Date: Fri, 08 May 2009 08:45:21 +0200
-From: Jesper Krogh <jesper@krogh.cc>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Fri, 8 May 2009 02:55:10 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:57116 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751154AbZEHGzH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 02:55:07 -0400
+To: "H. Peter Anvin" <h.peter.anvin@intel.com>
+Cc: "H. Peter Anvin" <hpa@linux.intel.com>, linux-kernel@vger.kernel.org,
+       vgoyal@redhat.com, hbabu@us.ibm.com, kexec@lists.infradead.org,
+       ying.huang@intel.com, mingo@elte.hu, tglx@linutronix.de,
+       sam@ravnborg.org
+References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com>
+	<m14ovwz8ua.fsf@fess.ebiederm.org> <4A03C3BB.3070401@intel.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Thu, 07 May 2009 23:54:52 -0700
+In-Reply-To: <4A03C3BB.3070401@intel.com> (H. Peter Anvin's message of "Thu\, 07 May 2009 22\:31\:39 -0700")
+Message-ID: <m1tz3wgk3n.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       torvalds@linux-foundation.org, stable@kernel.org
-Subject: Re: Linux 2.6.27.21
-References: <20090323221017.GC11563@kroah.com>
-In-Reply-To: <20090323221017.GC11563@kroah.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: h.peter.anvin@intel.com, sam@ravnborg.org, tglx@linutronix.de, mingo@elte.hu, ying.huang@intel.com, kexec@lists.infradead.org, hbabu@us.ibm.com, vgoyal@redhat.com, linux-kernel@vger.kernel.org, hpa@linux.intel.com
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;"H. Peter Anvin" <h.peter.anvin@intel.com>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.5000]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.1 XMSolicitRefs_0 Weightloss drug
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [PATCH 00/14] RFC: x86: relocatable kernel changes
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greg KH wrote:
-> I'm announcing the release of the 2.6.27.21 kernel.
-> 
-> I'll also be replying to this message with a copy of the patch between
-> 2.6.27.20 and 2.6.27.21
+"H. Peter Anvin" <h.peter.anvin@intel.com> writes:
 
+> Eric W. Biederman wrote:
+>> Peter do you plan to update pxelinux or other bootloaders to use the
+>> relocatable kernel feature?
+>
+> Yes.
+>
+>> The direction of this patch seems reasonable.  The details are broken.
+>> The common case for relocatable kernels today is kdump.  A situation
+>> with very minimal memory.  In that situation the kernel needs to run
+>> where we put it, modifying the kernel to not run where it gets put
+>> is a problem.
+>
+> I thought in the kdump case you typically loaded it pretty high?  Either
+> which way, kdump is always loaded by kexec, so it should just be a
+> matter of updating kexec to zero the runtime_start field, no?
 
-Today i got this oops on a 2.6.27.6 that has been up (and working for 
-212 days). I didnt seem to find anyting in the git log that matches 
-perfectly.
+Yes.  In practice it doesn't matter. I just don't want to get into a
+contest with the kernel about who knows better how to put the kernel
+in memory the bootloader or the kernel decompressor.
 
-May  7 23:22:29 svin kernel: [14713794.603459] Modules linked in: 
-af_packet nls_cp437 isofs nfsd auth_rpcgss exportfs autofs4 nfs lockd 
-sunrpc ipv6 bonding iptable_filter ip_tables x_tables parport_pc
-lp parport loop cfi_cmdset_0001 cfi_util jedec_probe cfi_probe gen_probe 
-i2c_nforce2 ck804xrom mtd button chipreg i2c_core pcspkr shpchp psmouse 
-pci_hotplug map_funcs serio_raw joydev evdev ext3 jbd mb
-cache ide_cd_mod cdrom sg sd_mod ata_generic libata usbhid hid dock 
-mptsas mptscsih mptbase qla2xxx scsi_transport_sas scsi_transport_fc 
-ohci_hcd amd74xx ehci_hcd e1000 scsi_mod ide_core usbcore dm_mir
-ror dm_log dm_snapshot dm_mod thermal processor fan thermal_sys fuse
-May  7 23:22:29 svin kernel: [14713794.603459] CPU 31:
-May  7 23:22:29 svin kernel: [14713794.603459] Modules linked in: 
-af_packet nls_cp437 isofs nfsd auth_rpcgss exportfs autofs4 nfs lockd 
-sunrpc ipv6 bonding iptable_filter ip_tables x_tables parport_pc lp 
-parport loop cfi_cmdset_0001 cfi_util jedec_probe cfi_probe gen_probe 
-i2c_nforce2 ck804xrom mtd button chipreg i2c_core pcspkr shpchp psmouse 
-pci_hotplug map_funcs serio_raw joydev evdev ext3 jbd mbcache ide_cd_mod 
-cdrom sg sd_mod ata_generic libata usbhid hid dock mptsas mptscsih 
-mptbase qla2xxx scsi_transport_sas scsi_transport_fc ohci_hcd amd74xx 
-ehci_hcd e1000 scsi_mod ide_core usbcore dm_mirror dm_log dm_snapshot 
-dm_mod thermal processor fan thermal_sys fuse
-May  7 23:22:29 svin kernel: [14713794.603459] Pid: 130, comm: events/31 
-Not tainted 2.6.27.6 #2
-May  7 23:22:29 svin kernel: [14713794.603459] RIP: 
-0010:[<ffffffff8025949b>]  [<ffffffff8025949b>] csd_flag_wait+0xb/0x10
-May  7 23:22:29 svin kernel: [14713794.603459] RSP: 
-0018:ffff88021f3d7d78  EFLAGS: 00000202
-May  7 23:22:29 svin kernel: [14713794.603459] RAX: 0000000000000020 
-RBX: 000000000000001f RCX: 0000000000000020
-May  7 23:22:29 svin kernel: [14713794.603459] RDX: 0000000000000020 
-RSI: 0000000000000020 RDI: ffff8800adfd4900
-May  7 23:22:29 svin kernel: [14713794.603459] RBP: 0000000000000286 
-R08: 0000000000000000 R09: ffff88021f3d7cf0
-May  7 23:22:29 svin kernel: [14713794.603459] R10: 0000000000000000 
-R11: 00000000ffffffff R12: 000000028022b9bf
-May  7 23:22:29 svin kernel: [14713794.603459] R13: ffffffff803370aa 
-R14: ffff88021f3d7e70 R15: ffff880e272365b8
-May  7 23:22:29 svin kernel: [14713794.603459] FS: 
-00007f656f4266e0(0000) GS:ffff88101f013b00(0000) knlGS:00000000f7e5eb60
-May  7 23:22:29 svin kernel: [14713794.603459] CS:  0010 DS: 0018 ES: 
-0018 CR0: 000000008005003b
-May  7 23:22:29 svin kernel: [14713794.603459] CR2: 0000000000620058 
-CR3: 0000000000201000 CR4: 00000000000006e0
-May  7 23:22:29 svin kernel: [14713794.603459] DR0: 0000000000000000 
-DR1: 0000000000000000 DR2: 0000000000000000
-May  7 23:22:29 svin kernel: [14713794.603459] DR3: 0000000000000000 
-DR6: 00000000ffff0ff0 DR7: 0000000000000400
-May  7 23:22:29 svin kernel: [14713794.603459]
-May  7 23:22:29 svin kernel: [14713794.603459] Call Trace:
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff8025983a>] ? 
-smp_call_function_mask+0x13a/0x230
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff8045925f>] ? 
-thread_return+0x3a/0x5eb
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff80241a84>] ? 
-lock_timer_base+0x34/0x70
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff802174a0>] ? 
-mcheck_timer+0x0/0x80
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff80217d40>] ? 
-mcheck_check_cpu+0x0/0x40
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff8023ca9d>] ? 
-on_each_cpu+0x1d/0x40
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff802174b4>] ? 
-mcheck_timer+0x14/0x80
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff80248d3e>] ? 
-run_workqueue+0xbe/0x150
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff80249770>] ? 
-worker_thread+0x0/0x100
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff80249770>] ? 
-worker_thread+0x0/0x100
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff8024980f>] ? 
-worker_thread+0x9f/0x100
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff8024c9c0>] ? 
-autoremove_wake_function+0x0/0x30
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff80249770>] ? 
-worker_thread+0x0/0x100
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff80249770>] ? 
-worker_thread+0x0/0x100
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff8024c58b>] ? 
-kthread+0x4b/0x80
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff8020d1b9>] ? 
-child_rip+0xa/0x11
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff8024c540>] ? 
-kthread+0x0/0x80
-May  7 23:22:29 svin kernel: [14713794.603459]  [<ffffffff8020d1af>] ? 
-child_rip+0x0/0x11
-May  7 23:22:29 svin kernel: [14713794.603459]
+> Basically
+> this is the bootloader saying "do what I say, dammit."  Since the
+> existing protocol doesn't have a way to unambiguously communicate one
+> direction versus another (see below), it seems like a relatively small
+> issue involving only one tool.  Suboptimal, yes.
 
+The existing protocol doesn't have the option of anything else.
 
--- 
-Jesper
+Physical start has always been <= the alignment for x86 and x86_64,
+in any real world configuration.
+
+Something goofy may have happened during unification, I thought I had
+removed physical start as totally unnecessary from x86_64.
+
+Hmmm....
+
+In the non-kdump case this is interesting.  I know of instances where
+kexec is burned in firmware.  So I am strongly reluctant to make anything
+that feels like a true backwards incompatible change.
+
+Those systems also don't have the stupid 15MB hole either.
+
+>> With the code as it is today you can get the exact same behavior
+>> by simply bumping up the minimum alignment to 16MB, and a lot less code
+>> and no changes needed to any bootloaders.
+>> 
+>> Is your goal to setup a scenario where on small memory systems a bootloader
+>> like pxelinux can support a relocatable kernel and load it a lower
+>> address?  If so that seems reasonable.
+>
+> Yes.
+>
+>> With that said how about we change the logic to:
+>> 
+>> if (load_addr == legacy_load_addr) /* 0x100000 */
+>> 	use config_physical_start
+>> else if aligned
+>> 	noop
+>> else
+>>         /* Crap this is bad, align the kernel and hope something works. */
+>> 
+>> That gets the desired behavior we override bootloaders that are not
+>> smart and taking relocation into account.  I am really not comfortable
+>> with having code that will override a bootloader doing something
+>> reasonable.
+>
+> I'm not sure that is quite right either, because if alignment is
+> configured to be 1 MB or less then 1 MB is a perfectly legitimate
+> address for a relocating bootloader to want to use, even if it is not
+> configured in.  It would be more than a bit odd to not have that be
+> permitted.
+
+On the 64bit kernel 2MB really is required.  We run at a fixed virtual
+address and use 2MB pages. So anything less that 2MB really won't work.
+
+So I think it would be a bad idea if we had bootloaders ignoring the
+alignment.
+
+With the suggested start address, it probably make sense to only
+export our true alignment requirement.
+
+>> I expect we will still want to update kexec to be able to take
+>> advantage of loadtime_size (runtime_size seems like the wrong name).
+>
+> Well, it is the amount of memory the kernel needs during runtime (as
+> opposed to during loading.)  I admit it's not an ideal name, though.  On
+> the other hand, simply calling it kernel_start and kernel_size seemed
+> ambiguous.
+
+It is the amount of memory we need before a true memory allocator is
+initialized.  Essentially text+data+bss.  How about we call it init_size?
+
+Perhaps we should have:
+init_size
+best start (As a 64bit field please)
+optimum align  (Or we flip it around)
+
+Eric
