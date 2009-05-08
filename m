@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763304AbZEHLQh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757720AbZEHLQ5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763304AbZEHLQh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 07:16:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762923AbZEHLPF
+	id S1757720AbZEHLQ5 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 07:16:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762982AbZEHLPR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 07:15:05 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:60311 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762821AbZEHLPD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 07:15:03 -0400
-Date: Fri, 8 May 2009 13:14:32 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>, "H. Peter Anvin" <hpa@zytor.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Ian Campbell <ian.campbell@citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 06/16] xen: disable PAT
-Message-ID: <20090508111432.GF11596@elte.hu>
-References: <1241730653-4688-1-git-send-email-jeremy@goop.org> <1241730653-4688-7-git-send-email-jeremy@goop.org>
+	Fri, 8 May 2009 07:15:17 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:64651 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1758453AbZEHLPQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 07:15:16 -0400
+Message-ID: <4A041478.5070401@cn.fujitsu.com>
+Date: Fri, 08 May 2009 19:16:08 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241730653-4688-7-git-send-email-jeremy@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Frederic Weisbecker <fweisbec@gmail.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] tracing/events: clean up for ftrace_set_clr_event()
+References: <4A03998E.3020503@cn.fujitsu.com> <20090508105013.GA6417@nowhere>
+In-Reply-To: <20090508105013.GA6417@nowhere>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
-
-> From: Ian Campbell <ian.campbell@citrix.com>
+Frederic Weisbecker wrote:
+> On Fri, May 08, 2009 at 10:31:42AM +0800, Li Zefan wrote:
+>> Add a helper function __ftrace_set_clr_event(), and replace some
+>> ftrace_set_clr_event() calls with this helper, thus we don't need any
+>> kstrdup() or kmalloc().
+>>
+>> As a side effect, this patch fixes an issue in self tests code, which is
+>> similar to the one fixed in commit d6bf81ef0f7474434c2a049e8bf3c9146a14dd96
+>> ("tracing: append ":*" to internal setting of system events")
+>>
+>> It's a small issue and won't cause any bug in fact, but we should do things
+>> right anyway.
+>>
+>> [ Impact: clean up ]
 > 
-> Impact: disable PAT under Xen
+> If this fixes an issue like you described, then it's more than a cleanup :)
 > 
-> Xen imposes a particular PAT layout on all paravirtual guests which
-> does not match the layout Linux would like to use.
-> 
-> Force PAT to be disabled until this is resolved.
-> 
-> Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-hm, what will the resolution be? Every step in the direction of 
-making Xen guests more special is a step in the wrong direction. 
-Coupling between Xen and Linux should be reduced, not increased.
+That issue causes no bug, and that's why I call it a cleanup.
 
-	Ingo
+How about (mainly stealed from commit d6bf81ef0f7474434c2a049e8bf3c9146a14dd96):
+
+[ Impact: prevent accidental enabling of events with same name as a system in self tests ]
+
+But it excceeds 80 char..
+
+I sometimes feel it hard to write Impact line (one of the reason is my limit
+English skill). I've explained the impact of this patch in detail, but I'm
+still required to add a one-line summary. :(
+
+> 
+...
+>> +		if (event && strcmp(event, call->name) != 0)
+>> +			continue;
+> 
+> 
+> Neat: You can simply use !strcmp(...)
+> 
+
+Actually it's arguable which is better, and both styles are used in kernel code.
+
+And that 'if (!ptr)' vs 'if (ptr == NULL)'..
+
