@@ -1,80 +1,241 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751813AbZEHEO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbZEHERv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751813AbZEHEO5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 00:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751348AbZEHEOr
+	id S1754990AbZEHERv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 00:17:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751930AbZEHERm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 00:14:47 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:47570 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751347AbZEHEOq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 00:14:46 -0400
-Date: Fri, 8 May 2009 00:14:44 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Len Brown <len.brown@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
-Subject: regression in TSC unstable?
-Message-ID: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 8 May 2009 00:17:42 -0400
+Received: from mga14.intel.com ([143.182.124.37]:42267 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751831AbZEHERl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 00:17:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,315,1239001200"; 
+   d="scan'208";a="140540558"
+Date: Fri, 8 May 2009 12:17:00 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Johannes Weiner <hannes@cmpxchg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: [RFC][PATCH] vmscan: report vm_flags in page_referenced()
+Message-ID: <20090508041700.GC8892@localhost>
+References: <20090430181340.6f07421d.akpm@linux-foundation.org> <20090430215034.4748e615@riellaptop.surriel.com> <20090430195439.e02edc26.akpm@linux-foundation.org> <49FB01C1.6050204@redhat.com> <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org> <1241709466.11251.164.camel@twins>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241709466.11251.164.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 07, 2009 at 11:17:46PM +0800, Peter Zijlstra wrote:
+> On Thu, 2009-05-07 at 17:10 +0200, Johannes Weiner wrote:
+> 
+> > > @@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned 
+> > >  
+> > >  		/* page_referenced clears PageReferenced */
+> > >  		if (page_mapping_inuse(page) &&
+> > > -		    page_referenced(page, 0, sc->mem_cgroup))
+> > > +		    page_referenced(page, 0, sc->mem_cgroup)) {
+> > > +			struct address_space *mapping = page_mapping(page);
+> > > +
+> > >  			pgmoved++;
+> > > +			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
+> > > +				list_add(&page->lru, &l_active);
+> > > +				continue;
+> > > +			}
+> > > +		}
+> > 
+> > Since we walk the VMAs in page_referenced anyway, wouldn't it be
+> > better to check if one of them is executable?  This would even work
+> > for executable anon pages.  After all, there are applications that cow
+> > executable mappings (sbcl and other language environments that use an
+> > executable, run-time modified core image come to mind).
+> 
+> Hmm, like provide a vm_flags mask along to page_referenced() to only
+> account matching vmas... seems like a sensible idea.
 
-The ring-buffer-benchmark module creates a producer and consumer and loops 
-on do_gettimeofday until it hits about 10 seconds. Then it calculates the 
-number of events recorded / time running.
+Here is a quick patch for your opinions. Compile tested.
 
-After Ingo merged Linus's latest my tests when from 330ns per entry to 
-880ns. After bisecting it I came down to this change:
+With the added vm_flags reporting, the mlock=>unevictable logic can
+possibly be made more straightforward.
 
-   commit a71e4917dc0ebbcb5a0ecb7ca3486643c1c9a6e2
-   Author: Len Brown <len.brown@intel.com>
-   Date:   Tue Apr 21 00:50:11 2009 -0400
+Thanks,
+Fengguang
+---
+vmscan: report vm_flags in page_referenced()
 
-    ACPI: idle: mark_tsc_unstable() at init-time, not run-time
+This enables more informed reclaim heuristics, eg. to protect executable
+file pages more aggressively.
 
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ include/linux/rmap.h |    5 +++--
+ mm/rmap.c            |   30 +++++++++++++++++++++---------
+ mm/vmscan.c          |    7 +++++--
+ 3 files changed, 29 insertions(+), 13 deletions(-)
 
-I've never had a problem with the TSC with this box before. It passes the 
-synchronization phase, and until this commit, the TSC never was marked as 
-unstable.
-
-Should it now be unstable? Or is this a false positive?
-
-# cat /proc/cpuinfo 
-processor	: 0
-vendor_id	: GenuineIntel
-cpu family	: 15
-model		: 4
-model name	: Intel(R) Xeon(TM) CPU 2.80GHz
-stepping	: 1
-cpu MHz		: 2793.272
-cache size	: 1024 KB
-physical id	: 0
-siblings	: 2
-core id		: 0
-cpu cores	: 1
-apicid		: 0
-initial apicid	: 0
-fpu		: yes
-fpu_exception	: yes
-cpuid level	: 5
-wp		: yes
-flags		: fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca 
-cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe syscall nx 
-lm constant_tsc pebs bts pni dtes64 monitor ds_cpl cid cx16 xtpr
-bogomips	: 5586.54
-clflush size	: 64
-cache_alignment	: 128
-address sizes	: 36 bits physical, 48 bits virtual
-power management:
-
-Anything else I might need to know?
-
--- Steve
-
+--- linux.orig/include/linux/rmap.h
++++ linux/include/linux/rmap.h
+@@ -83,7 +83,8 @@ static inline void page_dup_rmap(struct 
+ /*
+  * Called from mm/vmscan.c to handle paging out
+  */
+-int page_referenced(struct page *, int is_locked, struct mem_cgroup *cnt);
++int page_referenced(struct page *, int is_locked,
++			struct mem_cgroup *cnt, unsigned long *vm_flags);
+ int try_to_unmap(struct page *, int ignore_refs);
+ 
+ /*
+@@ -128,7 +129,7 @@ int page_wrprotect(struct page *page, in
+ #define anon_vma_prepare(vma)	(0)
+ #define anon_vma_link(vma)	do {} while (0)
+ 
+-#define page_referenced(page,l,cnt) TestClearPageReferenced(page)
++#define page_referenced(page, locked, cnt, flags) TestClearPageReferenced(page)
+ #define try_to_unmap(page, refs) SWAP_FAIL
+ 
+ static inline int page_mkclean(struct page *page)
+--- linux.orig/mm/rmap.c
++++ linux/mm/rmap.c
+@@ -333,7 +333,8 @@ static int page_mapped_in_vma(struct pag
+  * repeatedly from either page_referenced_anon or page_referenced_file.
+  */
+ static int page_referenced_one(struct page *page,
+-	struct vm_area_struct *vma, unsigned int *mapcount)
++			       struct vm_area_struct *vma,
++			       unsigned int *mapcount)
+ {
+ 	struct mm_struct *mm = vma->vm_mm;
+ 	unsigned long address;
+@@ -385,7 +386,8 @@ out:
+ }
+ 
+ static int page_referenced_anon(struct page *page,
+-				struct mem_cgroup *mem_cont)
++				struct mem_cgroup *mem_cont,
++				unsigned long *vm_flags)
+ {
+ 	unsigned int mapcount;
+ 	struct anon_vma *anon_vma;
+@@ -406,6 +408,7 @@ static int page_referenced_anon(struct p
+ 		if (mem_cont && !mm_match_cgroup(vma->vm_mm, mem_cont))
+ 			continue;
+ 		referenced += page_referenced_one(page, vma, &mapcount);
++		*vm_flags |= vma->vm_flags;
+ 		if (!mapcount)
+ 			break;
+ 	}
+@@ -418,6 +421,7 @@ static int page_referenced_anon(struct p
+  * page_referenced_file - referenced check for object-based rmap
+  * @page: the page we're checking references on.
+  * @mem_cont: target memory controller
++ * @vm_flags: collect the encountered vma->vm_flags
+  *
+  * For an object-based mapped page, find all the places it is mapped and
+  * check/clear the referenced flag.  This is done by following the page->mapping
+@@ -427,7 +431,8 @@ static int page_referenced_anon(struct p
+  * This function is only called from page_referenced for object-based pages.
+  */
+ static int page_referenced_file(struct page *page,
+-				struct mem_cgroup *mem_cont)
++				struct mem_cgroup *mem_cont,
++				unsigned long *vm_flags)
+ {
+ 	unsigned int mapcount;
+ 	struct address_space *mapping = page->mapping;
+@@ -468,6 +473,7 @@ static int page_referenced_file(struct p
+ 		if (mem_cont && !mm_match_cgroup(vma->vm_mm, mem_cont))
+ 			continue;
+ 		referenced += page_referenced_one(page, vma, &mapcount);
++		*vm_flags |= vma->vm_flags;
+ 		if (!mapcount)
+ 			break;
+ 	}
+@@ -481,29 +487,35 @@ static int page_referenced_file(struct p
+  * @page: the page to test
+  * @is_locked: caller holds lock on the page
+  * @mem_cont: target memory controller
++ * @vm_flags: collect the encountered vma->vm_flags
+  *
+  * Quick test_and_clear_referenced for all mappings to a page,
+  * returns the number of ptes which referenced the page.
+  */
+-int page_referenced(struct page *page, int is_locked,
+-			struct mem_cgroup *mem_cont)
++int page_referenced(struct page *page,
++		    int is_locked,
++		    struct mem_cgroup *mem_cont,
++		    unsigned long *vm_flags)
+ {
+ 	int referenced = 0;
+ 
+ 	if (TestClearPageReferenced(page))
+ 		referenced++;
+ 
++	*vm_flags = 0;
+ 	if (page_mapped(page) && page->mapping) {
+ 		if (PageAnon(page))
+-			referenced += page_referenced_anon(page, mem_cont);
++			referenced += page_referenced_anon(page, mem_cont,
++								vm_flags);
+ 		else if (is_locked)
+-			referenced += page_referenced_file(page, mem_cont);
++			referenced += page_referenced_file(page, mem_cont,
++								vm_flags);
+ 		else if (!trylock_page(page))
+ 			referenced++;
+ 		else {
+ 			if (page->mapping)
+-				referenced +=
+-					page_referenced_file(page, mem_cont);
++				referenced += page_referenced_file(page,
++							mem_cont, vm_flags);
+ 			unlock_page(page);
+ 		}
+ 	}
+--- linux.orig/mm/vmscan.c
++++ linux/mm/vmscan.c
+@@ -598,6 +598,7 @@ static unsigned long shrink_page_list(st
+ 	struct pagevec freed_pvec;
+ 	int pgactivate = 0;
+ 	unsigned long nr_reclaimed = 0;
++	unsigned long vm_flags;
+ 
+ 	cond_resched();
+ 
+@@ -648,7 +649,8 @@ static unsigned long shrink_page_list(st
+ 				goto keep_locked;
+ 		}
+ 
+-		referenced = page_referenced(page, 1, sc->mem_cgroup);
++		referenced = page_referenced(page, 1,
++						sc->mem_cgroup, &vm_flags);
+ 		/* In active use or really unfreeable?  Activate it. */
+ 		if (sc->order <= PAGE_ALLOC_COSTLY_ORDER &&
+ 					referenced && page_mapping_inuse(page))
+@@ -1229,6 +1231,7 @@ static void shrink_active_list(unsigned 
+ {
+ 	unsigned long pgmoved;
+ 	unsigned long pgscanned;
++	unsigned long vm_flags;
+ 	LIST_HEAD(l_hold);	/* The pages which were snipped off */
+ 	LIST_HEAD(l_inactive);
+ 	struct page *page;
+@@ -1269,7 +1272,7 @@ static void shrink_active_list(unsigned 
+ 
+ 		/* page_referenced clears PageReferenced */
+ 		if (page_mapping_inuse(page) &&
+-		    page_referenced(page, 0, sc->mem_cgroup))
++		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags))
+ 			pgmoved++;
+ 
+ 		list_add(&page->lru, &l_inactive);
