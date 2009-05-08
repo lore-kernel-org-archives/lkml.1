@@ -1,104 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763880AbZEHSiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757713AbZEHSka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763880AbZEHSiR (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 14:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932108AbZEHSfk
+	id S1757713AbZEHSka (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 14:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755081AbZEHSkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 14:35:40 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:61221 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757166AbZEHSfi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 14:35:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=piHN3bX+2oU7SZDR5fDQS3jUT1hWXdRMem/Tf2g0dsXchnLE2IsNgonuG6xCNqm8b5
-         +p7xPZaPfRE7phvHsKrXvwtnhardeQvgFhrBQhU7/WqJKKp+uE64UibPu2DjFv3HXGaW
-         p7E5CL2dHZTQnnkcFj6S+vMAMhxFyEjxci//0=
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Jeff Mahoney <jeffm@suse.com>,
-       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
-       Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH 7/7] kill-the-bkl/reiserfs: use mutex_lock in reiserfs_mutex_lock_safe
-Date: Fri,  8 May 2009 20:35:24 +0200
-Message-Id: <1241807725-6263-8-git-send-email-fweisbec@gmail.com>
-X-Mailer: git-send-email 1.6.2.3
-In-Reply-To: <1241807725-6263-1-git-send-email-fweisbec@gmail.com>
-References: <1241807725-6263-1-git-send-email-fweisbec@gmail.com>
+	Fri, 8 May 2009 14:40:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54672 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754813AbZEHSkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 14:40:17 -0400
+Date: Fri, 8 May 2009 18:39:32 GMT
+From: tip-bot for Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <20090508170028.750619201@chello.nl>
+References: <20090508170028.750619201@chello.nl>
+Subject: [tip:perfcounters/core] perf_counter: optimize perf_counter_task_tick()
+Message-ID: <tip-7fc23a5380797012e92a9633169440f2f4a21253@git.kernel.org>
+Git-Commit-ID: 7fc23a5380797012e92a9633169440f2f4a21253
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 08 May 2009 18:39:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-reiserfs_mutex_lock_safe() is a hack to avoid any dependency between
-an internal reiserfs mutex and the write lock, it has been proposed
-to follow the old bkl logic.
+Commit-ID:  7fc23a5380797012e92a9633169440f2f4a21253
+Gitweb:     http://git.kernel.org/tip/7fc23a5380797012e92a9633169440f2f4a21253
+Author:     Peter Zijlstra <a.p.zijlstra@chello.nl>
+AuthorDate: Fri, 8 May 2009 18:52:21 +0200
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 8 May 2009 20:36:57 +0200
 
-The code does the following:
+perf_counter: optimize perf_counter_task_tick()
 
-while (!mutex_trylock(m)) {
-	reiserfs_write_unlock(s);
-	schedule();
-	reiserfs_write_lock(s);
-}
+perf_counter_task_tick() does way too much work to find out
+there's nothing to do. Provide an easy short-circuit for the
+normal case where there are no counters on the system.
 
-It then imitate the implicit behaviour of the lock when it was
-a Bkl and hadn't such dependency:
+[ Impact: micro-optimization ]
 
-mutex_lock(m) {
-	if (fastpath)
-		let's go
-	else {
-		wait_for_mutex() {
-			schedule() {
-				unlock_kernel()
-				reacquire_lock_kernel()
-			}
-		}
-	}
-}
+Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+LKML-Reference: <20090508170028.750619201@chello.nl>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-The problem is that by using such explicit schedule(), we don't
-benefit of the adaptive mutex spinning on owner.
 
-The logic in use now is:
-
-reiserfs_write_unlock(s);
-mutex_lock(m); // -> possible adaptive spinning
-reiserfs_write_lock(s);
-
-[ Impact: restore the use of adaptive spinning mutexes in reiserfs ]
-
-Cc: Jeff Mahoney <jeffm@suse.com>
-Cc: Chris Mason <chris.mason@oracle.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Alexander Beregalov <a.beregalov@gmail.com>
-Signed-off-by: Frederic Weisbecker <fweisbec@gmail.com>
 ---
- fs/reiserfs/journal.c |    8 +++-----
- 1 files changed, 3 insertions(+), 5 deletions(-)
+ kernel/perf_counter.c |   13 +++++++++++--
+ 1 files changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/fs/reiserfs/journal.c b/fs/reiserfs/journal.c
-index b1ebd5a..3c3e00d 100644
---- a/fs/reiserfs/journal.c
-+++ b/fs/reiserfs/journal.c
-@@ -566,11 +566,9 @@ static inline void insert_journal_hash(struct reiserfs_journal_cnode **table,
- static inline void reiserfs_mutex_lock_safe(struct mutex *m,
- 			       struct super_block *s)
- {
--	while (!mutex_trylock(m)) {
--		reiserfs_write_unlock(s);
--		schedule();
--		reiserfs_write_lock(s);
--	}
-+	reiserfs_write_unlock(s);
-+	mutex_lock(m);
-+	reiserfs_write_lock(s);
- }
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 60e55f0..fdb0d24 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -39,6 +39,7 @@ int perf_max_counters __read_mostly = 1;
+ static int perf_reserved_percpu __read_mostly;
+ static int perf_overcommit __read_mostly = 1;
  
- /* lock the current transaction */
--- 
-1.6.2.3
-
++static atomic_t nr_counters __read_mostly;
+ static atomic_t nr_mmap_tracking __read_mostly;
+ static atomic_t nr_munmap_tracking __read_mostly;
+ static atomic_t nr_comm_tracking __read_mostly;
+@@ -1076,8 +1077,14 @@ static void rotate_ctx(struct perf_counter_context *ctx)
+ 
+ void perf_counter_task_tick(struct task_struct *curr, int cpu)
+ {
+-	struct perf_cpu_context *cpuctx = &per_cpu(perf_cpu_context, cpu);
+-	struct perf_counter_context *ctx = &curr->perf_counter_ctx;
++	struct perf_cpu_context *cpuctx;
++	struct perf_counter_context *ctx;
++
++	if (!atomic_read(&nr_counters))
++		return;
++
++	cpuctx = &per_cpu(perf_cpu_context, cpu);
++	ctx = &curr->perf_counter_ctx;
+ 
+ 	perf_counter_cpu_sched_out(cpuctx);
+ 	perf_counter_task_sched_out(curr, cpu);
+@@ -1197,6 +1204,7 @@ static void free_counter(struct perf_counter *counter)
+ {
+ 	perf_pending_sync(counter);
+ 
++	atomic_dec(&nr_counters);
+ 	if (counter->hw_event.mmap)
+ 		atomic_dec(&nr_mmap_tracking);
+ 	if (counter->hw_event.munmap)
+@@ -2861,6 +2869,7 @@ done:
+ 
+ 	counter->pmu = pmu;
+ 
++	atomic_inc(&nr_counters);
+ 	if (counter->hw_event.mmap)
+ 		atomic_inc(&nr_mmap_tracking);
+ 	if (counter->hw_event.munmap)
