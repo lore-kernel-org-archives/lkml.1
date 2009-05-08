@@ -1,72 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757424AbZEHISW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761313AbZEHIS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757424AbZEHISW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 04:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbZEHISI
+	id S1761313AbZEHIS6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 04:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754774AbZEHISr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 04:18:08 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40773 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754454AbZEHISG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 04:18:06 -0400
-Message-ID: <4A03EA8C.9040104@jp.fujitsu.com>
-Date: Fri, 08 May 2009 17:17:16 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Fri, 8 May 2009 04:18:47 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:51868 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756255AbZEHISp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 04:18:45 -0400
+Message-ID: <4A03EA83.6040907@redhat.com>
+Date: Fri, 08 May 2009 11:17:07 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Shaohua Li <shaohua.li@intel.com>
-CC: lkml <linux-kernel@vger.kernel.org>, Andi Kleen <andi@firstfloor.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] x86 MCE: shut up lockdep warning
-References: <1241754429.4444.12.camel@sli10-desk.sh.intel.com>
-In-Reply-To: <1241754429.4444.12.camel@sli10-desk.sh.intel.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <4A019717.7070806@codemonkey.ws> <4A01B4CF.3080706@novell.com>
+In-Reply-To: <4A01B4CF.3080706@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Shaohua Li wrote:
-> lockdep report below warning when I try to offline one cpu:
-> [  110.835487] =================================
-> [  110.835616] [ INFO: inconsistent lock state ]
-> [  110.835688] 2.6.30-rc4-00336-g8c9ed89 #52
-> [  110.835757] ---------------------------------
-> [  110.835828] inconsistent {HARDIRQ-ON-W} -> {IN-HARDIRQ-W} usage.
-> [  110.835908] swapper/0 [HC1[1]:SC0[0]:HE0:SE1] takes:
-> [  110.835982]  (cmci_discover_lock){?.+...}, at: [<ffffffff80236dc0>] cmci_clear+0x30/0x9b
-> 
-> smp_call_function_single() will disable interrupt. moving mce reenable/disable
-> to workqueue, so no irq is disabled.
+Gregory Haskins wrote:
+> Anthony Liguori wrote:
+>   
+>> Gregory Haskins wrote:
+>>     
+>>> Today, there is no equivelent of a platform agnostic "iowrite32()" for
+>>> hypercalls so the driver would look like the pseudocode above except
+>>> substitute with kvm_hypercall(), lguest_hypercall(), etc.  The proposal
+>>> is to allow the hypervisor to assign a dynamic vector to resources in
+>>> the backend and convey this vector to the guest (such as in PCI
+>>> config-space as mentioned in my example use-case).  The provides the
+>>> "address negotiation" function that would normally be done for something
+>>> like a pio port-address.   The hypervisor agnostic driver can then use
+>>> this globally recognized address-token coupled with other device-private
+>>> ABI parameters to communicate with the device.  This can all occur
+>>> without the core hypervisor needing to understand the details beyond the
+>>> addressing.
+>>>   
+>>>       
+>> PCI already provide a hypervisor agnostic interface (via IO regions). 
+>> You have a mechanism for devices to discover which regions they have
+>> allocated and to request remappings.  It's supported by Linux and
+>> Windows.  It works on the vast majority of architectures out there today.
+>>
+>> Why reinvent the wheel?
+>>     
+>
+> I suspect the current wheel is square.  And the air is out.  Plus its
+> pulling to the left when I accelerate, but to be fair that may be my
+> alignment....
 
-I want a confirmation.
-Will this scheduled work be executed properly on the cpu which is going
-to offline?
+No, your wheel is slightly faster on the highway, but doesn't work at 
+all off-road.
 
-> @@ -1106,14 +1108,14 @@ static int __cpuinit mce_cpu_callback(struct notifier_block *nfb,
->  	case CPU_DOWN_PREPARE:
->  	case CPU_DOWN_PREPARE_FROZEN:
->  		del_timer_sync(t);
-> -		smp_call_function_single(cpu, mce_disable_cpu, &action, 1);
-> +		work_on_cpu(cpu, mce_disable_cpu, &action);
->  		break;
->  	case CPU_DOWN_FAILED:
->  	case CPU_DOWN_FAILED_FROZEN:
->  		t->expires = round_jiffies(jiffies +
->  						__get_cpu_var(next_interval));
->  		add_timer_on(t, cpu);
-> -		smp_call_function_single(cpu, mce_reenable_cpu, &action, 1);
-> +		work_on_cpu(cpu, mce_reenable_cpu, &action);
->  		break;
->  	case CPU_POST_DEAD:
->  		/* intentionally ignoring frozen here */
-> 
+Consider nested virtualization where the host (H) runs a guest (G1) 
+which is itself a hypervisor, running a guest (G2).  The host exposes a 
+set of virtio (V1..Vn) devices for guest G1.  Guest G1, rather than 
+creating a new virtio devices and bridging it to one of V1..Vn, assigns 
+virtio device V1 to guest G2, and prays.
 
-I believe there is strong reason to have "1" in the last argument of
-smp_call_function_single().
+Now guest G2 issues a hypercall.  Host H traps the hypercall, sees it 
+originated in G1 while in guest mode, so it injects it into G1.  G1 
+examines the parameters but can't make any sense of them, so it returns 
+an error to G2.
 
+If this were done using mmio or pio, it would have just worked.  With 
+pio, H would have reflected the pio into G1, G1 would have done the 
+conversion from G2's port number into G1's port number and reissued the 
+pio, finally trapped by H and used to issue the I/O.  With mmio, G1 
+would have set up G2's page tables to point directly at the addresses 
+set up by H, so we would actually have a direct G2->H path.  Of course 
+we'd need an emulated iommu so all the memory references actually 
+resolve to G2's context.
 
-Thanks,
-H.Seto
+So the upshoot is that hypercalls for devices must not be the primary 
+method of communications; they're fine as an optimization, but we should 
+always be able to fall back on something else.  We also need to figure 
+out how G1 can stop V1 from advertising hypercall support.
+
+-- 
+Do not meddle in the internals of kernels, for they are subtle and quick to panic.
 
