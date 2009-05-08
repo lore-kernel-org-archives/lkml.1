@@ -1,81 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763750AbZEHTUu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1764009AbZEHTWZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763750AbZEHTUu (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 15:20:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755489AbZEHTUk
+	id S1764009AbZEHTWZ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 15:22:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbZEHTWR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 15:20:40 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:42887 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755081AbZEHTUj (ORCPT
+	Fri, 8 May 2009 15:22:17 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:51023 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753140AbZEHTWQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:20:39 -0400
-Date: Fri, 8 May 2009 14:19:22 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: akpm@linux-foundation.org, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, xemul@parallels.com
-Subject: Re: [PATCH 2/2] pidns 2/2: rewrite copy_pid_ns()
-Message-ID: <20090508191922.GB28885@us.ibm.com>
-References: <20090503232721.GE16631@x200.localdomain>
+	Fri, 8 May 2009 15:22:16 -0400
+To: "Jan Beulich" <jbeulich@novell.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, <mingo@elte.hu>, <tglx@linutronix.de>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] x86-64: improve e820_search_gap()
+From: Andi Kleen <andi@firstfloor.org>
+References: <4A0199B8.76EA.0078.0@novell.com> <4A03BC1A.9060605@zytor.com>
+	<4A03F016.76EA.0078.0@novell.com>
+Date: Fri, 08 May 2009 21:22:15 +0200
+In-Reply-To: <4A03F016.76EA.0078.0@novell.com> (Jan Beulich's message of "Fri, 08 May 2009 07:40:54 +0100")
+Message-ID: <874ovvo0wo.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090503232721.GE16631@x200.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Alexey Dobriyan (adobriyan@gmail.com):
-> copy_pid_ns() is a perfect example of a case where unwinding leads to more
-> code and makes it less clear. Watch the diffstat.
-> 
-> Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
+"Jan Beulich" <jbeulich@novell.com> writes:
+>
+> Why blindly? Aren't hotpluggable memory ranges supposed to be reserved
+> in the E820 map?
 
-Nice.
+They are supposed to be reserved in SRAT, but not in e820.
 
-Reviewed-by: Serge Hallyn <serue@us.ibm.com>
-
-thanks,
--serge
-
-> ---
->  kernel/pid_namespace.c |   18 +++---------------
->  1 files changed, 3 insertions(+), 15 deletions(-)
-> 
-> diff --git a/kernel/pid_namespace.c b/kernel/pid_namespace.c
-> index 495d5de..821722a 100644
-> --- a/kernel/pid_namespace.c
-> +++ b/kernel/pid_namespace.c
-> @@ -116,23 +116,11 @@ static void destroy_pid_namespace(struct pid_namespace *ns)
-> 
->  struct pid_namespace *copy_pid_ns(unsigned long flags, struct pid_namespace *old_ns)
->  {
-> -	struct pid_namespace *new_ns;
-> -
-> -	BUG_ON(!old_ns);
-> -	new_ns = get_pid_ns(old_ns);
->  	if (!(flags & CLONE_NEWPID))
-> -		goto out;
-> -
-> -	new_ns = ERR_PTR(-EINVAL);
-> +		return get_pid_ns(old_ns);
->  	if (flags & CLONE_THREAD)
-> -		goto out_put;
-> -
-> -	new_ns = create_pid_namespace(old_ns);
-> -
-> -out_put:
-> -	put_pid_ns(old_ns);
-> -out:
-> -	return new_ns;
-> +		return ERR_PTR(-EINVAL);
-> +	return create_pid_namespace(old_ns);
->  }
-> 
->  void free_pid_ns(struct kref *kref)
-> _______________________________________________
-> Containers mailing list
-> Containers@lists.linux-foundation.org
-> https://lists.linux-foundation.org/mailman/listinfo/containers
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
