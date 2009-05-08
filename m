@@ -1,89 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759639AbZEHKa3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760298AbZEHKdp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759639AbZEHKa3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 06:30:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751977AbZEHKaP
+	id S1760298AbZEHKdp (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 06:33:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbZEHKdf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 06:30:15 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:51353 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751831AbZEHKaO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 06:30:14 -0400
-Subject: Re: lockdep report at resume
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Jiri Kosina <jkosina@suse.cz>
-Cc: Oliver Neukum <oliver@neukum.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       linux-input <linux-input@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Oleg Nesterov <oleg@redhat.com>
-In-Reply-To: <alpine.LNX.2.00.0905051446520.22532@wotan.suse.de>
-References: <1234022517.4175.107.camel@johannes.local>
-	 <1238578840.5970.178.camel@johannes.local>
-	 <alpine.LNX.2.00.0904211550280.13028@wotan.suse.de>
-	 <200904211559.43497.oliver@neukum.org>
-	 <alpine.LNX.2.00.0904211609220.13028@wotan.suse.de>
-	 <1240323968.17388.22.camel@johannes.local>
-	 <alpine.LNX.2.00.0905051446520.22532@wotan.suse.de>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-EkdNSVHNJdAADibftIq/"
-Date: Fri, 08 May 2009 12:25:13 +0200
-Message-Id: <1241778313.4495.0.camel@johannes.local>
+	Fri, 8 May 2009 06:33:35 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:48302 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751487AbZEHKde (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 06:33:34 -0400
+Date: Fri, 8 May 2009 07:32:39 -0300
+From: Mauro Carvalho Chehab <mchehab@redhat.com>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
+       greg@kroah.com, norsk5@yahoo.com, tglx@linutronix.de, hpa@zytor.com,
+       aris@redhat.com, edt@aei.ca, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH 00/21 v3] amd64_edac: EDAC module for AMD64
+Message-ID: <20090508073239.4d04c0d7@pedra.chehab.org>
+In-Reply-To: <20090508100738.GA21064@aftab>
+References: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com>
+	<20090507142724.GM481@elte.hu>
+	<20090507143807.GA15923@aftab>
+	<20090507135227.abbbc7dc.akpm@linux-foundation.org>
+	<20090507211859.GA28770@elte.hu>
+	<20090508100738.GA21064@aftab>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Em Fri, 8 May 2009 12:07:38 +0200
+Borislav Petkov <borislav.petkov@amd.com> escreveu:
 
---=-EkdNSVHNJdAADibftIq/
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> Hi,
+> 
+> On Thu, May 07, 2009 at 11:18:59PM +0200, Ingo Molnar wrote:
+> > 
+> > * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > 
+> > > On Thu, 7 May 2009 16:38:07 +0200
+> > > Borislav Petkov <borislav.petkov@amd.com> wrote:
+> > > 
+> > > > Hi,
+> > > > 
+> > > > On Thu, May 07, 2009 at 04:27:24PM +0200, Ingo Molnar wrote:
+> > > > > Regarding workflow, the arch/x86 bits look good to me now, so you've 
+> > > > > got my Acked-by for that.
+> > > > 
+> > > > Cool, thanks.
+> > > > 
+> > > > Does that mean you're going to pick that one or...
+> > > > 
+> > > > > Most of the EDAC patches are hosted in 
+> > > > > -mm, so we could carry them in the x86 tree separately as well and 
+> > > > > export it to linux-next so that -mm will have it automatically.
+> > > > 
+> > > > is the bunch going through Andrew as a whole?
+> > > > 
+> > > 
+> > > I could.  But there's negligible overlap with other EDAC work so 
+> > > we might as well merge this via IngoTrees or directly from your 
+> > > tree.
+> > 
+> > If Doug and you agrees too then i have no problem (at all) with 
+> > Borislav carrying these bits in a separate tree, as long as he also 
+> > opens an edac-next branch for linux-next and asks Stephen to pull 
+> > it, and keeps it an append-mostly tree that isnt rebased.
+> 
+> I'll still need to rebase stuff to latest Linus tree for now since we're
+> not yet ready reorganizing/cleaning up the code. After it gets merged,
+> I'll switch to append-only mode.
 
-On Tue, 2009-05-05 at 14:47 +0200, Jiri Kosina wrote:
-> On Tue, 21 Apr 2009, Johannes Berg wrote:
->=20
-> > > > > [ thanks for the analysis Johannes ... involving also Oliver here=
-; really
-> > > > >   seems like a false positive to me ]
-> > > > I think he's right. But as a matter of principle I'd like to see=20
-> > > > flush_scheduled_work() avoided where possible, hence the patch.
-> > > I am not entirely sure that this is the same issue as the one from #1=
-3136=20
-> > > of kernel.org bugzilla.
-> > > Anyway, for reference, the patch Oliver mentioned here is below.
-> > Thanks. Unfortunately I have another problem that turns off lockdep so =
-I
-> > can't test this right now, sorry.
->=20
-> Are you able to reproduce the problem with current git (the expected fix=20
-> is 89092ddd7a).
+One good idea is to split the Kbuild changes into a separate changeset. This
+way, if compilation happens to break due to a merge conflict with other patches,
+you can just write a fix patch fixing it before the Kbuild one, without
+breaking git bisect.
 
-I don't know, unfortunately, because I keep getting a different lockdep
-report at _suspend_ time.
+-- 
 
-johannes
-
---=-EkdNSVHNJdAADibftIq/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKBAiAAAoJEODzc/N7+Qma1SMQAM08DI+GbMwsBWd+52u3Z94Q
-NlEW5StdITcDobWO8/H4TbBdp4grXE99hzCnw82AsdsA46JfUdUqbwjUGejVHRoG
-watrTIKhLJGezMaighPYEvmlVG43aSl3Nkp3bq3llAmzRGOeuNZnt5WUOvRhvtTt
-DDWuecWz7F2pH0ikfjhhFk1Gvoqvn+AleILN9vEtaLLrdk476S2c0/yuR63l2Xj5
-i78cZUFrSWvBATifr8rbH6HKIkKcCrF0XoEQFvfYEn4LhpblN0trpHDijXsJbNDA
-Gpmj8rXJDYDZ63wdw2Vd06jAdoGLXdRaMP8fkT3T3IzsUcXNXtdFAEyTqVZIvZ8n
-clVLFRFpGSrzFAdk2urOk2ogFbpMBLZQI5ywUiT4wsPUynzWEmXq+ErDa9BBrtJZ
-7AOp9ysSjeTW31HKPwAxlldRV7/IYpIR6QdxXdJ+9a2+nlczsRvp2ARz09IL33+f
-poYFpZk7YATewIC7/sVnt6ebKgItt+xMQurJX999+g4Ji/mbyG/5Dr0oEsaskgXj
-wrcSiSgvJEOUOVnpyjGsbUwmBxsUR0cm4Q6ejtWLPJ+Oe1x1RjPkL2yNmiDoE/d2
-gIzxoSxKKp8rE2qbitxwZUzSJALXE94yEv3NZthWMQdTorHLyJKJ/k6gX7a1TYPI
-yL4uQLovfTTArR4JQDCN
-=ZA/b
------END PGP SIGNATURE-----
-
---=-EkdNSVHNJdAADibftIq/--
-
+Cheers,
+Mauro
