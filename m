@@ -1,53 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763697AbZEHPwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753522AbZEHQGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763697AbZEHPwj (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 11:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755020AbZEHPw2
+	id S1753522AbZEHQGS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 12:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752929AbZEHQGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 11:52:28 -0400
-Received: from casper.infradead.org ([85.118.1.10]:35216 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754023AbZEHPw1 (ORCPT
+	Fri, 8 May 2009 12:06:04 -0400
+Received: from devils.ext.ti.com ([198.47.26.153]:34848 "EHLO
+	devils.ext.ti.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752592AbZEHQGB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 11:52:27 -0400
-Subject: Re: [PATCH 2/2] SLUB: Use GFP_PANIC for early-boot allocations
-From: Peter Zijlstra <peterz@infradead.org>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Christoph Lameter <cl@linux-foundation.org>, akpm@linux-foundation.org,
-       gorcunov@openvz.org, kosaki.motohiro@jp.fujitsu.com, mel@csn.ul.ie,
-       riel@redhat.com, linux-kernel@vger.kernel.org, mingo@elte.hu,
-       rientjes@google.com
-In-Reply-To: <1241797558.28600.68.camel@penberg-laptop>
-References: <1241795429.28600.61.camel@penberg-laptop>
-	 <alpine.DEB.1.10.0905081127240.26361@qirst.com>
-	 <1241797017.28600.63.camel@penberg-laptop>
-	 <1241797364.6311.2914.camel@laptop>
-	 <1241797558.28600.68.camel@penberg-laptop>
-Content-Type: text/plain
-Date: Fri, 08 May 2009 17:50:58 +0200
-Message-Id: <1241797858.6311.2925.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 8 May 2009 12:06:01 -0400
+Message-ID: <4A04584E.4020307@ti.com>
+Date: Fri, 8 May 2009 11:05:34 -0500
+From: Jon Hunter <jon-hunter@ti.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: john stultz <johnstul@us.ibm.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] Dynamic Tick: Allow 32-bit machines to sleep  formore
+ than 2.15 seconds
+References: <49ECE615.2010800@ti.com>  <20090421063523.GA8020@elte.hu>	 <1240345936.6080.6.camel@localhost>  <49EE54B4.9020700@ti.com>	 <1240358525.6080.40.camel@localhost>  <4A02F5A3.3050004@ti.com> <1241744048.7518.132.camel@localhost.localdomain>
+In-Reply-To: <1241744048.7518.132.camel@localhost.localdomain>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-08 at 18:45 +0300, Pekka Enberg wrote:
 
-> On Fri, 2009-05-08 at 17:42 +0200, Peter Zijlstra wrote:
-> > BUG_ON((gfp & __GFP_PANIC) && (system_state != STATE_BOOTING));
+john stultz wrote:
+> Yep. It would be easy to pull:
+> 	max_time_delta = timekeeping_max_deferment()
+> when you read jiffies.
+
+Ok, will do.
+
+> Urr. Lets move away from jiffies. Jiffies bad. Human time good.
 > 
-> There's no technical reason not to use GFP_PANIC when system_state !=
-> STATE_BOOTING so I don't think it's needed. It's just that GFP_PANIC
-> (and BUG_ON) is IMHO too harsh for create_unique_id().
+> Its easy to get the max value in ns right now, last_update is already a
+> ktime_t. 
+> 
+> I think checking if expires (little bit lower in the same function) is
+> larger then (last_update + max_time_delta) would be much much simpler.
 
-Shouldn't we handle every allocation failure after booting?
+No problem. I will do this too. I had a bit of a tough time figuring out 
+what was best here.
 
-I think it _is_ a bug to panic on allocation failures once we're
-running.
+> Yeeks. No, lets not do this. Cluttering up the clocksource with jiffies
+> values is totally unnecessary.
 
-I'm really not very fond of __GFP_PANIC as it stands, it seems to
-suggest its OK to ignore allocation failures, which would bring us back
-to the original UNIX error handling :/
+Sorry about that. I have a tendency to try to reduce run-time 
+computation if I can do it once at the beginning. However, I also 
+dislike clutter so we can keep it the way you recommend.
 
+> So while I really don't like your patch, I think you have the right
+> idea. Just keep things in nanoseconds, rather then converting them to
+> jiffies first. It will be much simpler patch and won't affect as much
+> code.
+> 
+> Look at the simple accessor patch I sent earlier:
+> http://lkml.indiana.edu/hypermail/linux/kernel/0901.3/02693.html
+> 
+> You could require the xtime_lock be held while calling to doge grabbing
+> it twice and plug it right in.
+
+Done. See below. Please note that the below patch is simply for handling 
+the wrapping of clocksources and does not include the original patch to 
+convert max_delta_ns to long long (to keep things simple for now).
+
+I still have a couple concerns:
+
+1). The use of delta_jiffies
+
+The below patch does not update delta_jiffies. In the current code 
+delta_jiffies in a couple places after "expires" is calculated. So if we 
+adjust expires to account for clocksource wrap, we should avoid using 
+delta_jiffies later on. The first place delta_jiffies is used after 
+expires is calculated is here:
+
+                  if (delta_jiffies > 1)
+                          cpumask_set_cpu(cpu, nohz_cpu_mask);
+
+The second place is here:
+
+                  /*
+                   * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
+                   * there is no timer pending or at least extremly far
+                   * into the future (12 days for HZ=1000). In this case
+                   * we simply stop the tick timer:
+                   */
+                  if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
+                          ts->idle_expires.tv64 = KTIME_MAX;
+                          if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
+                                  hrtimer_cancel(&ts->sched_timer);
+                          goto out;
+
+Currently I have modified these compares so that the comparisons are 
+done in nanoseconds and not jiffies to be safe. Let me know your thoughts.
+
+
+2). Clocksource max deferment
+
+In your original patch you suggested that we should reduce the max time 
+returned by the function timekeeping_max_deferment by some amount. Would 
+it make sense to reduce this by a jiffie? In the current dynamic tick 
+code we will only defer the tick if the next event is greater than or 
+equal to 1 jiffie.
+
+Cheers
+Jon
+
+
+
+Signed-off-by: Jon Hunter <jon-hunter@ti.com>
+---
+  include/linux/time.h      |    1 +
+  kernel/time/tick-sched.c  |   36 +++++++++++++++++++++++++-----------
+  kernel/time/timekeeping.c |   14 ++++++++++++++
+  3 files changed, 40 insertions(+), 11 deletions(-)
+
+diff --git a/include/linux/time.h b/include/linux/time.h
+index 242f624..090be07 100644
+--- a/include/linux/time.h
++++ b/include/linux/time.h
+@@ -130,6 +130,7 @@ extern void monotonic_to_bootbased(struct timespec *ts);
+
+  extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
+  extern int timekeeping_valid_for_hres(void);
++extern s64 timekeeping_max_deferment(void);
+  extern void update_wall_time(void);
+  extern void update_xtime_cache(u64 nsec);
+
+diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+index d3f1ef4..5f9ba13 100644
+--- a/kernel/time/tick-sched.c
++++ b/kernel/time/tick-sched.c
+@@ -217,6 +217,7 @@ void tick_nohz_stop_sched_tick(int inidle)
+  	ktime_t last_update, expires, now;
+  	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
+  	int cpu;
++	s64 time_delta, max_time_delta;
+
+  	local_irq_save(flags);
+
+@@ -264,6 +265,7 @@ void tick_nohz_stop_sched_tick(int inidle)
+  		seq = read_seqbegin(&xtime_lock);
+  		last_update = last_jiffies_update;
+  		last_jiffies = jiffies;
++		max_time_delta = timekeeping_max_deferment();
+  	} while (read_seqretry(&xtime_lock, seq));
+
+  	/* Get the next timer wheel timer */
+@@ -283,11 +285,22 @@ void tick_nohz_stop_sched_tick(int inidle)
+  	if ((long)delta_jiffies >= 1) {
+
+  		/*
+-		* calculate the expiry time for the next timer wheel
+-		* timer
+-		*/
+-		expires = ktime_add_ns(last_update, tick_period.tv64 *
+-				   delta_jiffies);
++		 * Calculate the time delta for the next timer event.
++		 * If the time delta exceeds the maximum time delta
++		 * permitted by the current clocksource then adjust
++		 * the time delta accordingly to ensure the
++		 * clocksource does not wrap.
++		 * /
++		time_delta = tick_period.tv64 * delta_jiffies;
++
++		if (time_delta > max_time_delta)
++			time_delta = max_time_delta;
++
++		/*
++		 * calculate the expiry time for the next timer wheel
++		 * timer
++		 */
++		expires = ktime_add_ns(last_update, time_delta);
+
+  		/*
+  		 * If this cpu is the one which updates jiffies, then
+@@ -300,7 +313,7 @@ void tick_nohz_stop_sched_tick(int inidle)
+  		if (cpu == tick_do_timer_cpu)
+  			tick_do_timer_cpu = TICK_DO_TIMER_NONE;
+
+-		if (delta_jiffies > 1)
++		if (time_delta > tick_period.tv64)
+  			cpumask_set_cpu(cpu, nohz_cpu_mask);
+
+  		/* Skip reprogram of event if its not changed */
+@@ -332,12 +345,13 @@ void tick_nohz_stop_sched_tick(int inidle)
+  		ts->idle_sleeps++;
+
+  		/*
+-		 * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
+-		 * there is no timer pending or at least extremly far
+-		 * into the future (12 days for HZ=1000). In this case
+-		 * we simply stop the tick timer:
++		 * time_delta >= (tick_period.tv64 * NEXT_TIMER_MAX_DELTA)
++		 * signals that there is no timer pending or at least
++		 * extremely far into the future (12 days for HZ=1000).
++		 * In this case we simply stop the tick timer:
+  		 */
+-		if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
++		if (unlikely(time_delta >=
++				(tick_period.tv64 * NEXT_TIMER_MAX_DELTA))) {
+  			ts->idle_expires.tv64 = KTIME_MAX;
+  			if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
+  				hrtimer_cancel(&ts->sched_timer);
+diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+index 687dff4..a2ce815 100644
+--- a/kernel/time/timekeeping.c
++++ b/kernel/time/timekeeping.c
+@@ -271,6 +271,20 @@ int timekeeping_valid_for_hres(void)
+  }
+
+  /**
++ * timekeeping_max_deferment - Returns max time the clocksource can be 
+deferred
++ *
++ * IMPORTANT: Must be called with xtime_lock held!
++ */
++s64 timekeeping_max_deferment(void)
++{
++	s64 max_nsecs;
++
++	max_nsecs = cyc2ns(clock, clock->mask);
++
++	return max_nsecs; /* XXX maybe reduce by some amount to be safe? */
++}
++
++/**
+   * read_persistent_clock -  Return time in seconds from the persistent 
+clock.
+   *
+   * Weak dummy function for arches that do not yet support it.
+-- 
+1.6.1
