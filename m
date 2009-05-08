@@ -1,88 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754052AbZEIBKY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbZEIBKl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754052AbZEIBKY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 21:10:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751209AbZEIBKK
+	id S1756003AbZEIBKl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 21:10:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbZEIBKY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 21:10:10 -0400
-Received: from ppp121-45-82-25.lns10.adl6.internode.on.net ([121.45.82.25]:36001
-	"EHLO homer.shelbyville.oz" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751039AbZEIBKJ (ORCPT
+	Fri, 8 May 2009 21:10:24 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:48202 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756434AbZEIBKX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 21:10:09 -0400
-Date: Sat, 9 May 2009 10:10:09 +0930
-From: Ron <ron@debian.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] fix for sched_clock() when using jiffies
-Message-ID: <20090509004009.GZ5417@homer.shelbyville.oz>
-References: <20081126150645.GA28153@homer.shelbyville.oz> <1227712598.4454.199.camel@twins> <20081126153152.GB28153@homer.shelbyville.oz> <20081128144039.GG28138@elte.hu> <20090508132449.GV5417@homer.shelbyville.oz> <20090508200444.GA22132@homer.shelbyville.oz> <20090508160142.ad89944f.akpm@linux-foundation.org>
+	Fri, 8 May 2009 21:10:23 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090508160142.ad89944f.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: ron@debian.org
-X-SA-Exim-Scanned: No (on homer.shelbyville.oz); SAEximRunCond expanded to false
+In-Reply-To: <8763gbmapm.fsf@deeprootsystems.com>
+References: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com>
+	 <1241655468-5750-2-git-send-email-khilman@deeprootsystems.com>
+	 <20090507111548.GH28398@elte.hu> <87k54ssx65.fsf@deeprootsystems.com>
+	 <d6200be20905071452t3efb67gffd4de5332e83e73@mail.gmail.com>
+	 <8763gbmapm.fsf@deeprootsystems.com>
+Date: Fri, 8 May 2009 16:58:59 -0700
+Message-ID: <d6200be20905081658l65a1b37fs28739881267786d7@mail.gmail.com>
+Subject: Re: [PATCH] genirq: ensure IRQs are lazy disabled before suspend
+From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
+To: Kevin Hilman <khilman@deeprootsystems.com>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+       linux-pm@lists.linux-foundation.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 04:01:42PM -0700, Andrew Morton wrote:
-> On Sat, 9 May 2009 05:34:44 +0930
-> Ron <ron@debian.org> wrote:
-> 
-> >  
-> > Account for the initial offset to the jiffy count.
-> > 
-> > Signed-off-by: Ron Lee <ron@debian.org>
-> > 
-> > ---
-> >  kernel/sched_clock.c |    3 ++-
-> >  1 files changed, 2 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
-> > index a0b0852..a1567b1 100644
-> > --- a/kernel/sched_clock.c
-> > +++ b/kernel/sched_clock.c
-> > @@ -37,7 +37,8 @@
-> >   */
-> >  unsigned long long __attribute__((weak)) sched_clock(void)
-> >  {
-> > -	return (unsigned long long)jiffies * (NSEC_PER_SEC / HZ);
-> > +	return (unsigned long long)(jiffies - INITIAL_JIFFIES)
-> > +					* (NSEC_PER_SEC / HZ);
-> >  }
-> >  
-> >  static __read_mostly int sched_clock_running;
-> 
-> Why?  I assume that you encountered some problem which was fixed
-> by this patch.  What was that problem?
+2009/5/8 Kevin Hilman <khilman@deeprootsystems.com>:
+> Arve Hjønnevåg <arve@android.com> writes:
+>
+>> On Thu, May 7, 2009 at 9:19 AM, Kevin Hilman
+>> <khilman@deeprootsystems.com> wrote:
+>>> From a3f359c66bd0ae1bb2603e7cf120d9d4d68591b7 Mon Sep 17 00:00:00 2001
+>>> From: Kevin Hilman <khilman@deeprootsystems.com>
+>>> Date: Wed, 6 May 2009 16:00:07 -0700
+>>> Subject: [PATCH] genirq: ensure IRQs are lazy disabled before suspend
+>>>
+>>> In commit 76d2160147f43f982dfe881404cfde9fd0a9da21, the default
+>>> behavior of disable_irq() was changed to delay the disable until it is
+>>> next handled.
+>>>
+>>> However, this leaves open the possibility that the system can go into
+>>> suspend with an interrupt enabled.  For example, if a driver calls
+>>> disable_irq() in its suspend_hook there's now a possibility that the
+>>> system is suspended before the lazy disable happens.
+>>>
+>>> The result is an unwanted wakeup from suspend if the IRQ is capable of
+>>> waking the system (common on embedded SoCs.)
+>>
+>> If the interrupt contoller uses the same enable register for wakeup
+>> and interrupts, I think it is the responsibility of the platform code,
+>> not individual drivers, to disable the interrupts that are not marked
+>> for wakeup before entering suspend.
+>
+> I agree, for wakeup interrupts, drivers should use
+> [set|disable]_irq_wake() and the platform code should handle this.
+>
+> I used wakeup interrupts in this description as an example which
+> turned out to be a bad example.  The 2nd version of this patch I
+> posted, I removed the reference to wakeup interrupts in favor of just
+> talking about the delayed disable piece.
+>
+> But ignoring wakup interrupts, would you agree that the delayed
+> disable of an interrupt should not wait until after resume?
+>
 
-This was a resend of a patch that seemed to get a thumbs up, except
-for whitespace damage in what I originally sent, but which apparently
-then didn't get applied.  The original context to it was:
+No. The platform code needs to turn off interrupts that are not wakeup
+interrupts anyway, so there is not much point in disabling some
+interrupts early. Also, if the interrupt in question is not a wakeup
+interrupt you leave it in a state where it does not detect an edge. A
+driver that enables its hardware in resume, then unmasks the interrupt
+would loose an interrupt that triggered between enabling the hardware
+and unmasking the interrupt.
 
- I'm in the process of updating a port for an ARM based chip we've been
- working on, from 2.6.22-rc4'ish to the current HEAD of Linus' tree, and
- I started seeing the following:
+>>> This patch ensures that the lazy disable is done, and masked by
+>>> the irq_chip before the system goes into suspend.
+>>
+>> This will create a window where wakeup interrupts can be lost if the
+>> driver has masked the interrupt (by calling disable_irq). If the
+>> hardware does not allow edge detection on disabled interrupts (the msm
+>> platform has this limitation) then this change will turn off the edge
+>> detection. If suspend_ops->enter does not turn the interrupt (and edge
+>> detection) back on (without this change it may never need to turn on
+>> any interrupt) it will not wakeup at all.
+>
+> Not sure I follow you here...
+>
+> It seems like you're relying on the delayed disable to wait until
+> after resume so that disabled interrupts can wake the system.  How
+> did this work before the delayed disable patch?
+>
 
- [    0.000000] PID hash table entries: 512 (order: 9, 2048 bytes)
- [42949372.970000] Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+It did not.
 
- The reason appears to be that printk_clock() has been replaced with a
- call to cpu_clock, which in our case currently falls back to the default
- (weak) implementation of sched_clock() that uses jiffies -- but doesn't
- account for the initial offset of the jiffy count.  The following simple
- patch fixes it for me, in line with what printk_clock used to do.
+> If the interrupt is being used as a wakeup, why would anyone be
+> calling disable_irq()?
+>
 
-I've since created a 'real' implementation of sched_clock for our port,
-so it's no longer an issue for us, but someone else reported this on
-#kernelnewbies yesterday, so I figured it was worth forwarding a clean
-patch for it once again.
+Drivers call disable_irq to make sure their interrupt handler does not
+get called. A driver may not be able take interrupts after its suspend
+hook has been called. If it calls disable_irq on a wakeup interrupt
+then this interrupt should abort suspend or wake up from suspend. The
+driver will then see the interrupt when it call enable_irq in its
+resume handler.
 
-Cheers,
-Ron
-
-
+-- 
+Arve Hjønnevåg
