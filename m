@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754990AbZEHMH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760222AbZEHMIS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754990AbZEHMH3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 08:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751695AbZEHMHU
+	id S1760222AbZEHMIS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 08:08:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755021AbZEHMID
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 08:07:20 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:48651 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751831AbZEHMHT (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 08:07:19 -0400
-Date: Fri, 8 May 2009 15:06:18 +0300 (EEST)
-From: Jorg Schummer <ext-jorg.2.schummer@nokia.com>
-X-X-Sender: jorg@jorg-desktop
-To: "Schummer Jorg.2 (EXT-TietoEnator/Helsinki)" 
-	<ext-jorg.2.schummer@nokia.com>
-cc: "Theodore Ts'o" <tytso@mit.edu>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Sorry for spam
-In-Reply-To: <1241783920-12613-2-git-send-email-ext-jorg.2.schummer@nokia.com>
-Message-ID: <alpine.DEB.1.00.0905081503470.16876@jorg-desktop>
-References: <> <1241783920-12613-2-git-send-email-ext-jorg.2.schummer@nokia.com>
-User-Agent: Alpine 1.00 (DEB 882 2007-12-20)
+	Fri, 8 May 2009 08:08:03 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:50029 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751695AbZEHMIB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 08:08:01 -0400
+Date: Fri, 8 May 2009 14:07:40 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Len Brown <lenb@kernel.org>
+Cc: Steven Rostedt <rostedt@goodmis.org>, LKML <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>, john stultz <johnstul@us.ibm.com>
+Subject: Re: regression in TSC unstable?
+Message-ID: <20090508120740.GB18758@elte.hu>
+References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com> <alpine.LFD.2.00.0905080117410.4710@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323329-650013766-1241784379=:16876"
-X-OriginalArrivalTime: 08 May 2009 12:06:20.0534 (UTC) FILETIME=[66234160:01C9CFD5]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.00.0905080117410.4710@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+* Len Brown <lenb@kernel.org> wrote:
 
---8323329-650013766-1241784379=:16876
-Content-Type: TEXT/PLAIN; format=flowed; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+> On Fri, 8 May 2009, Steven Rostedt wrote:
+> 
+> > The ring-buffer-benchmark module creates a producer and consumer and loops 
+> > on do_gettimeofday until it hits about 10 seconds. Then it calculates the 
+> > number of events recorded / time running.
+> > 
+> > After Ingo merged Linus's latest
+> 
+> merged what into what?
+> are you referring to the upstream kernel or something else?
 
-Sorry for the spam, it was a git-send-email accident..
+he's describing how he found it: a not-yet-upstream kernel-benchmark 
+module showed a performance regression that came in via upstream. 
+The regression is upstream too, just harder to notice.
 
-Jörg
---8323329-650013766-1241784379=:16876--
+	Ingo
