@@ -1,51 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758208AbZEHXg1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756960AbZEHXoK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758208AbZEHXg1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 19:36:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbZEHXgM
+	id S1756960AbZEHXoK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 19:44:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753118AbZEHXn4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 19:36:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:48373 "EHLO hera.kernel.org"
+	Fri, 8 May 2009 19:43:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47918 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751039AbZEHXgL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 19:36:11 -0400
-Message-ID: <4A04C1A8.2070904@kernel.org>
-Date: Sat, 09 May 2009 08:35:04 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1753109AbZEHXnz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 19:43:55 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: nigel@tuxonice.net
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Date: Sat, 9 May 2009 01:43:10 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Pavel Machek <pavel@ucw.cz>, linux-pm@lists.linux-foundation.org,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <200905090046.21282.rjw@sisk.pl> <1241825408.19600.384.camel@nigel-laptop>
+In-Reply-To: <1241825408.19600.384.camel@nigel-laptop>
 MIME-Version: 1.0
-To: Miklos Szeredi <miklos@szeredi.hu>
-CC: linux-kernel@vger.kernel.org, fuse-devel@lists.sourceforge.net
-Subject: Re: [PATCHSET] CUSE: implement CUSE, take #3
-References: <1239674094-30894-1-git-send-email-tj@kernel.org> <E1Lwanr-00041r-RP@pomaz-ex.szeredi.hu> <49EFB1A9.3060503@kernel.org> <E1LwvrC-00068P-5r@pomaz-ex.szeredi.hu> <49F043A4.2060700@kernel.org> <E1LypSa-0004fR-J1@pomaz-ex.szeredi.hu> <49F908A1.70207@kernel.org> <49F90941.2030405@kernel.org> <E1M1dVf-00051D-JE@pomaz-ex.szeredi.hu>
-In-Reply-To: <E1M1dVf-00051D-JE@pomaz-ex.szeredi.hu>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 08 May 2009 23:35:10 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200905090143.10980.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Miklos Szeredi wrote:
-> On Thu, 30 Apr 2009, Tejun Heo wrote:
->> Tejun Heo wrote:
->>>> I'll post the updated libfuse patch as well.  Please let me know if
->>>> you find anything wrong with the current patches.
->>> Looks good to me.  Much prettier with two inits merged.
->> Oh... what happened to CUSE_INIT_DONE?
+On Saturday 09 May 2009, Nigel Cunningham wrote:
+> Hi.
 > 
-> By moving the CUSE_INIT reply processing into the ->end() callback,
-> the device initialization becomes synchronous with the process writing
-> the message into the cuse device.
+> On Sat, 2009-05-09 at 00:46 +0200, Rafael J. Wysocki wrote:
+> > On Friday 08 May 2009, Nigel Cunningham wrote:
+> > > On Fri, 2009-05-08 at 16:11 +0200, Rafael J. Wysocki wrote:
+> > > > On Friday 08 May 2009, Nigel Cunningham wrote:
+> > > > > On Thu, 2009-05-07 at 23:51 +0200, Pavel Machek wrote:
+> > > > > > On Thu 2009-05-07 19:42:54, Rafael J. Wysocki wrote:
+> > > > > > > On Thursday 07 May 2009, Pavel Machek wrote:
+[--snip--]
+> > > And the code includes some fundamental differences. I freeze processes
+> > > and prepare the whole image before saving anything or doing an atomic
+> > > copy whereas you just free memory before doing the atomic copy. You save
+> > > everything in one part whereas I save the image in two parts.
+> > 
+> > IMO the differences are not that fundamental.  The whole problem boils down
+> > to using the same data structures for memory management and I think we can
+> > reach an agreement here.
 > 
-> This means, that the process can simply wait for the write() on the
-> device to complete before proceeding.
-> 
-> I've updated the libfuse patch so it calls ->init_done() after sending
-> the CUSE_INIT reply.
+> I think we might be able to agree on using the same data structures, but
+> I'm not so sure about algorithms - I think you're underestimating the
+> differences here.
 
-Ah... cool.  Thanks.
+Well, which algorithms do you have in mind in particular?
 
--- 
-tejun
+Rafael
