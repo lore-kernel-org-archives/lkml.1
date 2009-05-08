@@ -1,89 +1,325 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZEHKeW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbZEHKja@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbZEHKeW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 06:34:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751926AbZEHKeE
+	id S1756042AbZEHKja (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 06:39:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752821AbZEHKjU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 06:34:04 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38889 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751487AbZEHKeB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 06:34:01 -0400
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-From: Peter Zijlstra <peterz@infradead.org>
-To: paulmck@linux.vnet.ibm.com
-Cc: Christoph Lameter <cl@linux.com>, Alok Kataria <akataria@vmware.com>,
-       "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       "alan@lxorguk.ukuu.org.uk" <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090507180112.GE6693@linux.vnet.ibm.com>
-References: <1241462661.412.8.camel@alok-dev1> <4A00ADDE.9000908@zytor.com>
-	 <1241560625.8665.17.camel@alok-dev1>
-	 <alpine.DEB.1.10.0905071010170.24528@qirst.com>
-	 <1241716053.6311.1514.camel@laptop> <1241716422.6311.1524.camel@laptop>
-	 <1241716718.6311.1531.camel@laptop>
-	 <20090507173608.GC6693@linux.vnet.ibm.com>
-	 <1241717904.6311.1558.camel@laptop>
-	 <20090507180112.GE6693@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Fri, 08 May 2009 12:32:56 +0200
-Message-Id: <1241778776.6311.2585.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Fri, 8 May 2009 06:39:20 -0400
+Received: from cantor.suse.de ([195.135.220.2]:57724 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751487AbZEHKjT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 06:39:19 -0400
+From: Nikanth Karthikesan <knikanth@suse.de>
+Organization: suse.de
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Detect and warn on atomic_inc/atomic_dec wrapping around
+Date: Fri, 8 May 2009 16:10:49 +0530
+User-Agent: KMail/1.11.1 (Linux/2.6.27.21-0.1-default; KDE/4.2.1; x86_64; ; )
+Cc: mingo@elte.hu, jens.axboe@oracle.com, linux-kernel@vger.kernel.org
+References: <200904291221.40361.knikanth@novell.com> <200904301939.51022.knikanth@novell.com> <20090507172316.20a95642.akpm@linux-foundation.org>
+In-Reply-To: <20090507172316.20a95642.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905081610.50202.knikanth@suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-07 at 11:01 -0700, Paul E. McKenney wrote:
+On Friday 08 May 2009 05:53:16 Andrew Morton wrote:
+> On Thu, 30 Apr 2009 19:39:50 +0530
+>
+> Nikanth Karthikesan <knikanth@novell.com> wrote:
+> > Detect and warn on atomic_inc/atomic_dec overflow.
+> >
+> > Add a debug option to detect and warn when the 32-bit atomic_t overflows
+> > during atomic_inc and atomic_dec.
+> >
+> >
+> > ...
+> >
+> > --- a/include/asm-generic/atomic.h
+> > +++ b/include/asm-generic/atomic.h
+> > @@ -4,15 +4,51 @@
+> >   * Copyright (C) 2005 Silicon Graphics, Inc.
+> >   *	Christoph Lameter
+> >   *
+> > - * Allows to provide arch independent atomic definitions without the
+> > need to - * edit all arch specific atomic.h files.
+> >   */
+> >
+> > +#include <linux/kernel.h>
+> >  #include <asm/types.h>
+> > +#include <asm/bug.h>
+>
+> We're going to have real trouble making changes like this to a
+> low-level header file - sparc64 results below.
+>
+> > +/**
+> > + * atomic_inc - increment atomic variable
+> > + * @v: pointer of type atomic_t
+> > + *
+> > + * Atomically increments @v by 1.
+> > + */
+> > +static inline void atomic_inc(atomic_t *v)
+> > +{
+> > +#ifdef CONFIG_ENABLE_WARN_ATOMIC_INC_WRAP
+> > +	WARN_ONCE((atomic_read(v) > (INT_MAX / 2)),
+> > +		KERN_ERR "atomic inc overflow!");
+> > +#endif
+> > +	raw_atomic_inc(v);
+> > +}
+>
+> Are we allowed to assume that atomic_inc==raw_atomic_inc for all
+> architectures which use this definition?
+>
 
-> In general, I agree.  However, in the case where you have a single
-> CPU-bound task running in user mode, you don't care that much about
-> syscall performance.  So, yes, this would mean having yet another config
-> variable that users running big CPU-bound scientific applications would
-> need to worry about, which is not perfect either.
-> 
-> For whatever it is worth, the added overhead on entry would be something
-> like the following:
-> 
-> void rcu_irq_enter(void)
-> {
-> 	struct rcu_dynticks *rdtp = &__get_cpu_var(rcu_dynticks);
-> 
-> 	if (rdtp->dynticks_nesting++)
-> 		return;
-> 	rdtp->dynticks++;
-> 	WARN_ON_RATELIMIT(!(rdtp->dynticks & 0x1), &rcu_rs);
-> 	smp_mb(); /* CPUs seeing ++ must see later RCU read-side crit sects */
-> }
-> 
-> On exit, a bit more:
-> 
-> void rcu_irq_exit(void)
-> {
-> 	struct rcu_dynticks *rdtp = &__get_cpu_var(rcu_dynticks);
-> 
-> 	if (--rdtp->dynticks_nesting)
-> 		return;
-> 	smp_mb(); /* CPUs seeing ++ must see prior RCU read-side crit sects */
-> 	rdtp->dynticks++;
-> 	WARN_ON_RATELIMIT(rdtp->dynticks & 0x1, &rcu_rs);
-> 
-> 	/* If the interrupt queued a callback, get out of dyntick mode. */
-> 	if (__get_cpu_var(rcu_data).nxtlist ||
-> 	    __get_cpu_var(rcu_bh_data).nxtlist)
-> 		set_need_resched();
-> }
-> 
-> But I could move the callback check into call_rcu(), which would get the
-> overhead of rcu_irq_exit() down to about that of rcu_irq_enter().
+No. Only for architectures that have HAVE_ARCH_DEBUG_ATOMIC. I missed
+enclosing the change with #ifdef HAVE_ARCH_DEBUG_ATOMIC. That should solve the
+problem as it wont be built for other architectures at all.
 
-Can't you simply enter idle state after a grace period completes and
-finds no pending callbacks for the next period. And leave idle state at
-the next call_rcu()?
+> Do we know that atomic_read() is defined at this point?
+>
 
+Yes.
 
+>
+> We can avoid the problematic includes via
+>
+> extern void atomic_inc_screwed_up(atomic_t *v);
+>
+
+This and even having atomic_inc defined as a c function instead of a macro has
+a problem. WARN_ONCE would warn only once even if more than 1 variable wraps
+around. So should we have atomic_inc itself as a macro instead?
+
+Also it would report the location in source as include/asm-generic/atomic.h
+instead of the caller. But it should be fine as stack trace would be printed.
+
+Anyway I have converted warn_once as an extern function.
+
+Changes from the previous version:
+1. Enclose everything with #ifdef CONFIG_HAVE_ARCH_DEBUG_ATOMIC.
+2. Make the warn_once as an extern function and remove the
+#include<asm/bug.h>. This is not required as CONFIG_HAVE_ARCH_DEBUG_ATOMIC is
+defined onlf for x86 and it does not have problem with this include. I think
+we could remove this and also make everything as macro?
+
+The linux/kernel.h is used for INT_MAX which can also be avoided by
+redefining, if required.
+
+Thanks
+Nikanth
+
+Subject: atomic: detect and warn on atomic_inc/atomic_dec wrapping around
+From: Nikanth Karthikesan <knikanth@novell.com>
+
+Add a debug option to detect and warn when the 32-bit atomic_t overflows
+during atomic_inc and atomic_dec.
+
+We expect that overflow and underflow of an atomic_t is usually a bug. 
+There was a patch of this nature in -mm for a long time and it never
+triggered false positives and it did find a couple of real bugs.
+
+The option is default-y for now.  It will have a fairly nasty impact on
+.text size so we may decide to switch it to default-n prior to a kernel
+release.
+
+Signed-off-by: Nikanth Karthikesan <knikanth@suse.de>
+Acked-by: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index df9e885..dd49be3 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -46,6 +46,7 @@ config X86
+ 	select HAVE_KERNEL_GZIP
+ 	select HAVE_KERNEL_BZIP2
+ 	select HAVE_KERNEL_LZMA
++	select HAVE_ARCH_DEBUG_ATOMIC
+ 
+ config ARCH_DEFCONFIG
+ 	string
+diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
+index 85b46fb..c6a17bb 100644
+--- a/arch/x86/include/asm/atomic_32.h
++++ b/arch/x86/include/asm/atomic_32.h
+@@ -78,24 +78,24 @@ static inline int atomic_sub_and_test(int i, atomic_t *v)
+ }
+ 
+ /**
+- * atomic_inc - increment atomic variable
++ * raw_atomic_inc - increment atomic variable
+  * @v: pointer of type atomic_t
+  *
+  * Atomically increments @v by 1.
+  */
+-static inline void atomic_inc(atomic_t *v)
++static inline void raw_atomic_inc(atomic_t *v)
+ {
+ 	asm volatile(LOCK_PREFIX "incl %0"
+ 		     : "+m" (v->counter));
+ }
+ 
+ /**
+- * atomic_dec - decrement atomic variable
++ * raw_atomic_dec - decrement atomic variable
+  * @v: pointer of type atomic_t
+  *
+  * Atomically decrements @v by 1.
+  */
+-static inline void atomic_dec(atomic_t *v)
++static inline void raw_atomic_dec(atomic_t *v)
+ {
+ 	asm volatile(LOCK_PREFIX "decl %0"
+ 		     : "+m" (v->counter));
+diff --git a/arch/x86/include/asm/atomic_64.h b/arch/x86/include/asm/atomic_64.h
+index 8c21731..1183b85 100644
+--- a/arch/x86/include/asm/atomic_64.h
++++ b/arch/x86/include/asm/atomic_64.h
+@@ -77,12 +77,12 @@ static inline int atomic_sub_and_test(int i, atomic_t *v)
+ }
+ 
+ /**
+- * atomic_inc - increment atomic variable
++ * raw_atomic_inc - increment atomic variable
+  * @v: pointer of type atomic_t
+  *
+  * Atomically increments @v by 1.
+  */
+-static inline void atomic_inc(atomic_t *v)
++static inline void raw_atomic_inc(atomic_t *v)
+ {
+ 	asm volatile(LOCK_PREFIX "incl %0"
+ 		     : "=m" (v->counter)
+@@ -90,12 +90,12 @@ static inline void atomic_inc(atomic_t *v)
+ }
+ 
+ /**
+- * atomic_dec - decrement atomic variable
++ * raw_atomic_dec - decrement atomic variable
+  * @v: pointer of type atomic_t
+  *
+  * Atomically decrements @v by 1.
+  */
+-static inline void atomic_dec(atomic_t *v)
++static inline void raw_atomic_dec(atomic_t *v)
+ {
+ 	asm volatile(LOCK_PREFIX "decl %0"
+ 		     : "=m" (v->counter)
+diff --git a/include/asm-generic/atomic.h b/include/asm-generic/atomic.h
+index 3673a13..b14e8ce 100644
+--- a/include/asm-generic/atomic.h
++++ b/include/asm-generic/atomic.h
+@@ -4,15 +4,56 @@
+  * Copyright (C) 2005 Silicon Graphics, Inc.
+  *	Christoph Lameter
+  *
+- * Allows to provide arch independent atomic definitions without the need to
+- * edit all arch specific atomic.h files.
+  */
+ 
+ #include <asm/types.h>
+ 
++#ifdef CONFIG_HAVE_ARCH_DEBUG_ATOMIC
++
++#ifdef CONFIG_ENABLE_WARN_ATOMIC_INC_WRAP
++#include <linux/kernel.h>
++extern void warn_once(bool condition, char *msg);
++#endif
++
++/**
++ * atomic_inc - increment atomic variable
++ * @v: pointer of type atomic_t
++ *
++ * Atomically increments @v by 1.
++ */
++static inline void atomic_inc(atomic_t *v)
++{
++#ifdef CONFIG_ENABLE_WARN_ATOMIC_INC_WRAP
++	warn_once((atomic_read(v) > (INT_MAX / 2)),
++		KERN_ERR "atomic inc overflow!");
++#endif
++	raw_atomic_inc(v);
++}
++
++/**
++ * atomic_dec - decrement atomic variable
++ * @v: pointer of type atomic_t
++ *
++ * Atomically decrements @v by 1.
++ */
++static inline void atomic_dec(atomic_t *v)
++{
++#ifdef CONFIG_ENABLE_WARN_ATOMIC_INC_WRAP
++	warn_once((atomic_read(v) < (INT_MIN / 2)),
++		KERN_ERR "atomic dec underflow!");
++#endif
++	raw_atomic_dec(v);
++
++}
++
++#endif /* CONFIG_HAVE_ARCH_DEBUG_ATOMIC */
++
+ /*
+  * Suppport for atomic_long_t
+  *
++ * Allows to provide arch independent atomic definitions without the need to
++ * edit all arch specific atomic.h files.
++ *
+  * Casts for parameters are avoided for existing atomic functions in order to
+  * avoid issues with cast-as-lval under gcc 4.x and other limitations that the
+  * macros of a platform may have.
+diff --git a/kernel/printk.c b/kernel/printk.c
+index 5052b54..48fef2c 100644
+--- a/kernel/printk.c
++++ b/kernel/printk.c
+@@ -33,6 +33,7 @@
+ #include <linux/bootmem.h>
+ #include <linux/syscalls.h>
+ #include <linux/kexec.h>
++#include <linux/bug.h>
+ 
+ #include <asm/uaccess.h>
+ 
+@@ -1322,3 +1323,13 @@ bool printk_timed_ratelimit(unsigned long *caller_jiffies,
+ }
+ EXPORT_SYMBOL(printk_timed_ratelimit);
+ #endif
++
++#ifdef CONFIG_ENABLE_WARN_ATOMIC_INC_WRAP
++
++void warn_once(bool condition, char *msg)
++{
++        WARN_ONCE(condition, msg);
++}
++EXPORT_SYMBOL(warn_once);
++
++#endif
+diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
+index 812c282..773c1a4 100644
+--- a/lib/Kconfig.debug
++++ b/lib/Kconfig.debug
+@@ -17,6 +17,17 @@ config ENABLE_WARN_DEPRECATED
+ 	  Disable this to suppress the "warning: 'foo' is deprecated
+ 	  (declared at kernel/power/somefile.c:1234)" messages.
+ 
++config HAVE_ARCH_DEBUG_ATOMIC
++	bool
++
++config ENABLE_WARN_ATOMIC_INC_WRAP
++	bool "Enable warning on atomic_inc()/atomic_dec() wrap"
++	depends on HAVE_ARCH_DEBUG_ATOMIC
++	default y
++	help
++	  Enable printing a warning when atomic_inc() or atomic_dec()
++	  operation wraps around the 32-bit value.
++
+ config ENABLE_MUST_CHECK
+ 	bool "Enable __must_check logic"
+ 	default y
 
