@@ -1,69 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754464AbZEHJWg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761536AbZEHJXb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754464AbZEHJWg (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 05:22:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753126AbZEHJW1
+	id S1761536AbZEHJXb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 05:23:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753606AbZEHJXV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 05:22:27 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:25141 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751036AbZEHJW0 convert rfc822-to-8bit (ORCPT
+	Fri, 8 May 2009 05:23:21 -0400
+Received: from www262.sakura.ne.jp ([202.181.97.72]:54244 "EHLO
+	www262.sakura.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752567AbZEHJXU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 05:22:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=iL1NmUrovkRmz3jv4Vq2lewEa6QlHuwy0oDvlj+l9QIEqeBJh2+K1izzcuHQeuFHba
-         ImzzWbqYNUYqgDXhSVi5xxUu7R4t9wHpYL6Cdm2eIRJefnuaZsNnRDMStE9muj27fzqO
-         590si21zE4UR3cwJDlta+EvTymWhsntgoKGmY=
+	Fri, 8 May 2009 05:23:20 -0400
+Message-Id: <200905080922.n489Me6M063091@www262.sakura.ne.jp>
+Subject: Re: [TOMOYO] Add garbage collector support.
+From: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
+To: jmorris@namei.org
+Cc: pavel@ucw.cz, linux-security-module@vger.kernel.org,
+       linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-In-Reply-To: <1240855555.5529.11.camel@think.oraclecorp.com>
-References: <1240855555.5529.11.camel@think.oraclecorp.com>
-Date: Fri, 8 May 2009 17:22:26 +0800
-Message-ID: <b6a2187b0905080222r53c7ed80s6d2ff91d386cd963@mail.gmail.com>
-Subject: Re: [GIT PULL] Btrfs updates for 2.6.30-rc
-From: Jeff Chua <jeff.chua.linux@gmail.com>
-To: Chris Mason <chris.mason@oracle.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+Date: Fri, 08 May 2009 18:22:40 +0900
+References: <20090501102438.GA7470@elf.ucw.cz> <200905012207.BFC60616.QStOHOMJFOLFFV@I-love.SAKURA.ne.jp> <20090503215615.GA1368@ucw.cz> <200905041524.GGH52160.FFFVMSJOOLtHOQ@I-love.SAKURA.ne.jp> <200905062116.HCI09807.VOFFHFSMOLOtQJ@I-love.SAKURA.ne.jp> <200905072042.AFF10698.LJFHOOFFQtMOSV@I-love.SAKURA.ne.jp> <alpine.LRH.2.00.0905081140500.2761@tundra.namei.org> <200905080210.n482ALpZ048382@www262.sakura.ne.jp> <alpine.LRH.2.00.0905081824570.4389@tundra.namei.org>
+In-Reply-To: <alpine.LRH.2.00.0905081824570.4389@tundra.namei.org>
+Content-Type: text/plain; charset="ISO-2022-JP"
+X-Anti-Virus: K-Prox Anti-Virus Powered by Kaspersky, bases: 08052009 #1941045, status: clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, Apr 28, 2009 at 2:05 AM, Chris Mason <chris.mason@oracle.com> wrote:
-> Hello everyone,
->
-> The master branch of:
->
-> git://git.kernel.org/pub/scm/linux/kernel/git/mason/btrfs-unstable.git
->
-> Has a few btrfs bug fixes, performance fixes and a few cleanups.  The
-> highlights are some code from Josef Bacik to for metadata block group
-> preallocation, which will help cut down on the chances of metadata
-> enospc.
+James Morris wrote:
+> Ok, I've merged #next with current Linus.
 
-
-Chris,
-
-Any chance to create a btrfs partition less than 256MB? I'm looking at
-using btrfs when it's stable enough for all partitions rather than
-some btrfs and smaller ones non-btrfs. Currently, reiserfs/reiser4
-supports smaller than 100MB which is good for testing.
-
-in btrfs-progs-0.18/mkfs.c ...
-                                if (block_count < 256*1024*1024) {
-                                        fprintf(stderr, "File system size "
-                                                "%llu bytes is too small, "
-                                                "256M is required at least\n",
-                                                block_count);
-                                        exit(1);
-                                }
-
-Also, would it be possible when creating a 300MB partition for "df" to
-display "50MB free" instead of "300MB free"?
-
-Thanks,
-Jeff.
+Thank you for your time.
+Now, I'm testing the garbage collector patch.
