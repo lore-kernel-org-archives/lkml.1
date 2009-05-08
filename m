@@ -1,158 +1,425 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757798AbZEHUAS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbZEHUFX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757798AbZEHUAS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 16:00:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754689AbZEHUAA
+	id S1756243AbZEHUFX (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 16:05:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754254AbZEHUFH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 16:00:00 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:33517 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754620AbZEHT77 (ORCPT
+	Fri, 8 May 2009 16:05:07 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:45282 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754092AbZEHUFF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 15:59:59 -0400
-Message-ID: <4A048F2E.3080702@novell.com>
-Date: Fri, 08 May 2009 15:59:42 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Fri, 8 May 2009 16:05:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=LDQRrW2et+R3QagtmEeKu6+NQmU+cWRCPFv9JCdgLCUmMf17ny6I9cd00y1uAx6Dwa
+         ihMkBxUv7z+DTX9/BAm9+P+SrRekiXGIqqfiTNIGmiooPMLPOx4X6cJcTWoH+84GE6HB
+         NVHnw8jRqOqoibsAQzGW0yUSwoK65RcNwNcdU=
+Date: Fri, 8 May 2009 22:05:01 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
+       m-ikeda@ds.jp.nec.com, peterz@infradead.org
+Subject: Re: IO scheduler based IO Controller V2
+Message-ID: <20090508200458.GA3708@linux>
+References: <20090506023332.GA1212@redhat.com> <20090506203228.GH8180@redhat.com> <20090506213453.GC4282@linux> <20090506215235.GJ8180@redhat.com> <20090507090450.GA4613@linux> <20090507141126.GA9463@redhat.com> <20090507144501.GB9463@redhat.com> <20090507153642.GC9463@redhat.com> <20090507221900.GA29774@linux> <20090508180951.GG7293@redhat.com>
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <4A019717.7070806@codemonkey.ws> <4A01B4CF.3080706@novell.com> <4A03EA83.6040907@redhat.com> <4A044DB5.7050304@novell.com> <4A046519.30604@redhat.com> <4A04802B.9000003@novell.com> <4A048413.4060406@redhat.com>
-In-Reply-To: <4A048413.4060406@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigE6F03CAA1C17129970E61DA4"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090508180951.GG7293@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigE6F03CAA1C17129970E61DA4
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+On Fri, May 08, 2009 at 02:09:51PM -0400, Vivek Goyal wrote:
+> On Fri, May 08, 2009 at 12:19:01AM +0200, Andrea Righi wrote:
+> > On Thu, May 07, 2009 at 11:36:42AM -0400, Vivek Goyal wrote:
+> > > Hmm.., my old config had "AS" as default scheduler that's why I was seeing
+> > > the strange issue of RT task finishing after BE. My apologies for that. I
+> > > somehow assumed that CFQ is default scheduler in my config.
+> > 
+> > ok.
+> > 
+> > > 
+> > > So I have re-run the test to see if we are still seeing the issue of
+> > > loosing priority and class with-in cgroup. And we still do..
+> > > 
+> > > 2.6.30-rc4 with io-throttle patches
+> > > ===================================
+> > > Test1
+> > > =====
+> > > - Two readers, one BE prio 0 and other BE prio 7 in a cgroup limited with
+> > >   8MB/s BW.
+> > > 
+> > > 234179072 bytes (234 MB) copied, 55.8448 s, 4.2 MB/s
+> > > prio 0 task finished
+> > > 234179072 bytes (234 MB) copied, 55.8878 s, 4.2 MB/s
+> > > 
+> > > Test2
+> > > =====
+> > > - Two readers, one RT prio 0 and other BE prio 7 in a cgroup limited with
+> > >   8MB/s BW.
+> > > 
+> > > 234179072 bytes (234 MB) copied, 55.8876 s, 4.2 MB/s
+> > > 234179072 bytes (234 MB) copied, 55.8984 s, 4.2 MB/s
+> > > RT task finished
+> > 
+> > ok, coherent with the current io-throttle implementation.
+> > 
+> > > 
+> > > Test3
+> > > =====
+> > > - Reader Starvation
+> > > - I created a cgroup with BW limit of 64MB/s. First I just run the reader
+> > >   alone and then I run reader along with 4 writers 4 times. 
+> > > 
+> > > Reader alone
+> > > 234179072 bytes (234 MB) copied, 3.71796 s, 63.0 MB/s
+> > > 
+> > > Reader with 4 writers
+> > > ---------------------
+> > > First run
+> > > 234179072 bytes (234 MB) copied, 30.394 s, 7.7 MB/s 
+> > > 
+> > > Second run
+> > > 234179072 bytes (234 MB) copied, 26.9607 s, 8.7 MB/s
+> > > 
+> > > Third run
+> > > 234179072 bytes (234 MB) copied, 37.3515 s, 6.3 MB/s
+> > > 
+> > > Fourth run
+> > > 234179072 bytes (234 MB) copied, 36.817 s, 6.4 MB/s
+> > > 
+> > > Note that out of 64MB/s limit of this cgroup, reader does not get even
+> > > 1/5 of the BW. In normal systems, readers are advantaged and reader gets
+> > > its job done much faster even in presence of multiple writers.   
+> > 
+> > And this is also coherent. The throttling is equally probable for read
+> > and write. But this shouldn't happen if we saturate the physical disk BW
+> > (doing proportional BW control or using a watermark close to 100 in
+> > io-throttle). In this case IO scheduler logic shouldn't be totally
+> > broken.
+> >
+> 
+> Can you please explain the watermark a bit more? So blockio.watermark=90
+> mean 90% of what? total disk BW? But disk BW varies based on work load?
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->>>> And likewise, in both cases, G1 would (should?) know what to do with=
+The controller starts to apply throttling rules only when the total disk
+BW utilization is greater than 90%.
 
->>>> that "address" as it relates to G2, just as it would need to know wh=
-at
->>>> the PIO address is for.  Typically this would result in some kind of=
+The consumed BW is evaluated as (cpu_ticks / io_ticks * 100), where
+cpu_ticks are the ticks (in jiffies) since the last i/o request and
+io_ticks is the difference of ticks accounted to a particular block
+device, retrieved by:
 
->>>> translation of that "address", but I suppose even this is completely=
+part_stat_read(bdev->bd_part, io_ticks)
 
->>>> arbitrary and only G1 knows for sure.  E.g. it might translate from
->>>> hypercall vector X to Y similar to your PIO example, it might
->>>> completely
->>>> change transports, or it might terminate locally (e.g. emulated devi=
-ce
->>>> in G1).   IOW: G2 might be using hypercalls to talk to G1, and G1
->>>> might
->>>> be using MMIO to talk to H.  I don't think it matters from a topolog=
-y
->>>> perspective (though it might from a performance perspective).
->>>>        =20
->>> How can you translate a hypercall?  G1's and H's hypercall mechanisms=
+BTW it's the same metric (%util) used by iostat.
 
->>> can be completely different.
->>>    =20
->>
->> Well, what I mean is that the hypercall ABI is specific to G2->G1, but=
+> 
+> > Doing a very quick test with io-throttle, using a 10MB/s BW limit and
+> > blockio.watermark=90:
+> > 
+> > Launching reader
+> > 256+0 records in
+> > 256+0 records out
+> > 268435456 bytes (268 MB) copied, 32.2798 s, 8.3 MB/s
+> > 
+> > In the same time the writers wrote ~190MB, so the single reader got
+> > about 1/3 of the total BW.
+> > 
+> > 182M testzerofile4
+> > 198M testzerofile1
+> > 188M testzerofile3
+> > 189M testzerofile2
+> > 
+> 
+> But its now more a max bw controller at all now? I seem to be getting the
+> total BW of (268+182+198+188+189)/32 = 32MB/s and you set the limit to
+> 10MB/s?
+>  
 
->> the path really looks like G2->(H)->G1 transparently since H gets all
->> the initial exits coming from G2.  But all H has to do is blindly
->> reinject the exit with all the same parameters (e.g. registers,
->> primarily) to the G1-root context.
->>
->> So when the trap is injected to G1, G1 sees it as a normal HC-VMEXIT,
->> and does its thing according to the ABI.  Perhaps the ABI for that
->> particular HC-id is a PIOoHC, so it turns around and does a
->> ioread/iowrite PIO, trapping us back to H.
->>
->> So this transform of the HC-id "X" to PIO("Y") is the translation I wa=
-s
->> referring to.  It could really be anything, though (e.g. HC "X" to HC
->> "Z", if thats what G1s handler for X told it to do)
->>  =20
->
-> That only works if the device exposes a pio port, and the hypervisor
-> exposes HC_PIO.  If the device exposes the hypercall, things break
-> once you assign it.
+The limit of 10MB/s is applied only when the consumed disk BW hits 90%.
 
-Well, true.  But normally I would think you would resurface the device
-from G1 to G2 anyway, so any relevant transform would also be reflected
-in the resurfaced device config.  I suppose if you had a hard
-requirement that, say, even the pci-config space was pass-through, this
-would be a problem.  I am not sure if that is a realistic environment,
-though.=20
->
->>>   Of course mmio is faster in this case since it traps directly.
->>>
->>> btw, what's the hypercall rate you're seeing? at 10K hypercalls/sec, =
-a
->>> 0.4us difference will buy us 0.4% reduction in cpu load, so let's see=
+If the disk is not fully saturated no limit is applied. It's nothing
+more than soft limiting, to avoid to waste the unused disk BW that we
+have with hard limits. This is similar to the proportional approach from
+a certain point of view.
 
->>> what's the potential gain here.
->>>    =20
->>
->> Its more of an issue of execution latency (which translates to IO
->> latency, since "execution" is usually for the specific goal of doing
->> some IO).  In fact, per my own design claims, I try to avoid exits lik=
-e
->> the plague and generally succeed at making very few of them. ;)
->>
->> So its not really the .4% reduction of cpu use that allures me.  Its t=
-he
->> 16% reduction in latency.  Time/discussion will tell if its worth the
->> trouble to use HC or just try to shave more off of PIO.  If we went th=
-at
->> route, I am concerned about falling back to MMIO, but Anthony seems to=
+But ok, this only reduces the number of times that we block the IO
+requests. The fact is that when we apply throttling the probability to
+block a read or a write it's the same also in this case.
 
->> think this is not a real issue.
->>  =20
->
-> You need to use absolute numbers, not percentages off the smallest
-> component.  If you want to reduce latency, keep things on the same
-> core (IPIs, cache bounces are more expensive than the 200ns we're
-> seeing here).
->
->
-Ok, so there are no shortages of IO cards that can perform operations in
-the order of 10us-15us.  Therefore a 350ns latency (the delta between
-PIO and HC) turns into a 2%-3.5% overhead when compared to bare-metal.=20
-I am not really at liberty to talk about most of the kinds of
-applications that might care.  A trivial example might be PTPd clock
-distribution.
+> 
+> [..]
+> > What are the results with your IO scheduler controller (if you already
+> > have them, otherwise I'll repeat this test in my system)? It seems a
+> > very interesting test to compare the advantages of the IO scheduler
+> > solution respect to the io-throttle approach.
+> > 
+> 
+> I had not done any reader writer testing so far. But you forced me to run
+> some now. :-) Here are the results. 
 
-But this is going nowhere.  Based on Anthony's asserting that the MMIO
-fallback worry is unfounded, and all the controversy this is causing,
-perhaps we should just move on and just forget the whole thing.  If I
-have to I will patch the HC code in my own tree.  For now, I will submit
-a few patches to clean up the locking on the io_bus.  That may help
-narrow the gap without all this stuff, anyway.
+Good! :)
 
--Greg
+> 
+> Because one is max BW controller and other is proportional BW controller
+> doing exact comparison is hard. Still....
+> 
+> Test1
+> =====
+> Try to run lots of writers (50 random writers using fio and 4 sequential
+> writers with dd if=/dev/zero) and one single reader either in root group
+> or with in one cgroup to show that readers are not starved by writers
+> as opposed to io-throttle controller.
+> 
+> Run test1 with vanilla kernel with CFQ
+> =====================================
+> Launched 50 fio random writers, 4 sequential writers and 1 reader in root
+> and noted how long it takes reader to finish. Also noted the per second output
+> from iostat -d 1 -m /dev/sdb1 to monitor how disk throughput varies.
+> 
+> ***********************************************************************
+> # launch 50 writers fio job
+> 
+> fio_args="--size=64m --rw=write --numjobs=50 --group_reporting"
+> fio $fio_args --name=test2 --directory=/mnt/sdb/fio2/ --output=/mnt/sdb/fio2/test2.log > /dev/null  &
+> 
+> #launch 4 sequential writers
+> ionice -c 2 -n 7 dd if=/dev/zero of=/mnt/sdb/testzerofile1 bs=4K count=524288 &
+> ionice -c 2 -n 7 dd if=/dev/zero of=/mnt/sdb/testzerofile2 bs=4K count=524288 &
+> ionice -c 2 -n 7 dd if=/dev/zero of=/mnt/sdb/testzerofile3 bs=4K count=524288 &
+> ionice -c 2 -n 7 dd if=/dev/zero of=/mnt/sdb/testzerofile4 bs=4K count=524288 &
+> 
+> echo "Sleeping for 5 seconds"
+> sleep 5
+> echo "Launching reader"
+> 
+> ionice -c 2 -n 0 dd if=/mnt/sdb/zerofile2 of=/dev/zero &
+> wait $!
+> echo "Reader Finished"
+> ***************************************************************************
+> 
+> Results
+> -------
+> 234179072 bytes (234 MB) copied, 4.55047 s, 51.5 MB/s
+> 
+> Reader finished in 4.5 seconds. Following are few lines from iostat output
+> 
+> ***********************************************************************
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            151.00         0.04        48.33          0         48
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            120.00         1.78        31.23          1         31
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            504.95        56.75         7.51         57          7
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            547.47        62.71         4.47         62          4
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            441.00        49.80         7.82         49          7
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            441.41        48.28        13.84         47         13
+> 
+> *************************************************************************
+> 
+> Note how, first write picks up and then suddenly reader comes in and CFQ
+> allocates a huge chunk of BW to reader to give it the advantage.
+> 
+> Run Test1 with IO scheduler based io controller patch
+> =====================================================
+> 
+> 234179072 bytes (234 MB) copied, 5.23141 s, 44.8 MB/s 
+> 
+> Reader finishes in 5.23 seconds. Why does it take more time than CFQ,
+> because looks like current algorithm is not punishing writers that hard.
+> This can be fixed and not an issue.
+> 
+> Following is some output from iostat.
+> 
+> **********************************************************************
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            139.60         0.04        43.83          0         44
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            227.72        16.88        29.05         17         29
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            349.00        35.04        16.06         35         16
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            339.00        34.16        21.07         34         21
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            343.56        36.68        12.54         37         12
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            378.00        38.68        19.47         38         19
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            532.00        59.06        10.00         59         10
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            125.00         2.62        38.82          2         38
+> ************************************************************************
+> 
+> Note how read throughput goes up when reader comes in. Also note that
+> writer is still getting some decent IO done and that's why reader took
+> little bit more time as compared to CFQ.
+> 
+> 
+> Run Test1 with IO throttle patches
+> ==================================
+> 
+> Now same test is run with io-throttle patches. The only difference is that
+> it run the test in a cgroup with max limit of 32MB/s. That should mean 
+> that effectvily we got a disk which can support at max 32MB/s of IO rate.
+> If we look at above CFQ and io controller results, it looks like with
+> above load we touched a peak of 70MB/s.  So one can think of same test
+> being run on a disk roughly half the speed of original disk.
+> 
+> 234179072 bytes (234 MB) copied, 144.207 s, 1.6 MB/s
+> 
+> Reader got a disk rate of 1.6MB/s (5 %) out of 32MB/s capacity, as opposed to
+> the case CFQ and io scheduler controller where reader got around 70-80% of
+> disk BW under similar work load.
+> 
+> Test2
+> =====
+> Run test2 with io scheduler based io controller
+> ===============================================
+> Now run almost same test with a little difference. This time I create two
+> cgroups of same weight 1000. I run the 50 fio random writer in one cgroup
+> and 4 sequential writers and 1 reader in second group. This test is more
+> to show that proportional BW IO controller is working and because of
+> reader in group1, group2 writes are not killed (providing isolation) and
+> secondly, reader still gets preference over the writers which are in same
+> group.
+> 
+> 				root
+> 			     /       \		
+> 			  group1     group2
+> 		  (50 fio writers)   ( 4 writers and one reader)
+> 
+> 234179072 bytes (234 MB) copied, 12.8546 s, 18.2 MB/s
+> 
+> Reader finished in almost 13 seconds and got around 18MB/s. Remember when
+> everything was in root group reader got around 45MB/s. This is to account
+> for the fact that half of the disk is now being shared by other cgroup
+> which are running 50 fio writes and reader can't steal the disk from them.
+> 
+> Following is some portion of iostat output when reader became active
+> *********************************************************************
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            103.92         0.03        40.21          0         41
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            240.00        15.78        37.40         15         37
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            206.93        13.17        28.50         13         28
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            224.75        15.39        27.89         15         28
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            270.71        16.85        25.95         16         25
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            215.84         8.81        32.40          8         32
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            216.16        19.11        20.75         18         20
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            211.11        14.67        35.77         14         35
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            208.91        15.04        26.95         15         27
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            277.23        24.30        28.53         24         28
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            202.97        12.29        34.79         12         35
+> **********************************************************************
+> 
+> Total disk throughput is varying a lot, on an average it looks like it
+> is getting 45MB/s. Lets say 50% of that is going to cgroup1 (fio writers),
+> then out of rest of 22 MB/s reader seems to have to 18MB/s. These are
+> highly approximate numbers. I think I need to come up with some kind of 
+> tool to measure per cgroup throughput (like we have for per partition
+> stat) for more accurate comparision.
+> 
+> But the point is that second cgroup got the isolation and read got
+> preference with-in same cgroup. The expected behavior.
+> 
+> Run test2 with io-throttle
+> ==========================
+> Same setup of two groups. The only difference is that I setup two groups
+> with (16MB) limit. So previous 32MB limit got divided between two cgroups
+> 50% each.
+> 
+> - 234179072 bytes (234 MB) copied, 90.8055 s, 2.6 MB/s
+> 
+> Reader took 90 seconds to finish.  It seems to have got around 16% of
+> available disk BW (16MB) to it.
+> 
+> iostat output is long. Will just paste one section.
+> 
+> ************************************************************************
+> [..]
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            141.58        10.16        16.12         10         16
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            174.75         8.06        12.31          7         12
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1             47.52         0.12         6.16          0          6
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1             82.00         0.00        31.85          0         31
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1            141.00         0.00        48.07          0         48
+> 
+> Device:            tps    MB_read/s    MB_wrtn/s    MB_read    MB_wrtn
+> sdb1             72.73         0.00        26.52          0         26
+>  
+> 
+> ***************************************************************************
+> 
+> Conclusion
+> ==========
+> It just reaffirms that with max BW control, we are not doing a fair job
+> of throttling hence no more hold the IO scheduler properties with-in
+> cgroup.
+> 
+> With proportional BW controller implemented at IO scheduler level, one
+> can do very tight integration with IO controller and hence retain 
+> IO scheduler behavior with-in cgroup.
 
+It is worth to bug you I would say :). Results are interesting,
+definitely. I'll check if it's possible to merge part of the io-throttle
+max BW control in this controller and who knows if finally we'll be able
+to converge to a common proposal...
 
-
-
---------------enigE6F03CAA1C17129970E61DA4
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkoEjy4ACgkQlOSOBdgZUxl0JACfdOnehAxCHRWaShBvph4iOeI0
-PKkAn3ENHZ9Xd1LAgi/B46jZOEyC6ZiL
-=PRz9
------END PGP SIGNATURE-----
-
---------------enigE6F03CAA1C17129970E61DA4--
+Thanks,
+-Andrea
