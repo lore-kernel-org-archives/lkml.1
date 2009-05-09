@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752989AbZEIHtP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755693AbZEIHtd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752989AbZEIHtP (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 03:49:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752304AbZEIHp7
+	id S1755693AbZEIHtd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 03:49:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZEIHqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 03:45:59 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:47404 "EHLO
+	Sat, 9 May 2009 03:46:00 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:64706 "EHLO
 	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516AbZEIHpk (ORCPT
+	with ESMTP id S1751504AbZEIHpk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 9 May 2009 03:45:40 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=YUJSipOfW3ZZ52MxJqsLZqYPwWNSwhGOQrDWFszZprGg+5CfosyCQUXozxKQFQ7Xv2
-         46BwMmDcLFyKg/nwxF/Fmty4yL7V5NggSkSvwGkij9Crz7TWJzsC2f1l2ZbYfV75yHN1
-         rqHpTgd01dsGUqYoOiiqZi5O5Ff42SgPqAnvo=
+        b=OwwY8/eDD3vI2Pl3CVATxapuNo7hhjNM/A+9/m5D8US/UMadutXh4yIyy2f6KwjyOm
+         9WufCdeV6dAve8cUud3XHmuRBnyexDJ5WJYbPT1x3bmd5DZlrDH+wsQb+2MCZYNDwKST
+         XmnPuh8I+N6nNvH2v30aSROVs1hxRlUvL8CBo=
 From: Borislav Petkov <petkovbb@googlemail.com>
 To: <bzolnier@gmail.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 08/14] ide-floppy/ide_floppy_format_unit: use local buffer
-Date: Sat,  9 May 2009 09:45:28 +0200
-Message-Id: <1241855134-4984-9-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 09/14] ide-atapi: use local sense buffer
+Date: Sat,  9 May 2009 09:45:29 +0200
+Message-Id: <1241855134-4984-10-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241855134-4984-1-git-send-email-petkovbb@gmail.com>
 References: <1241855134-4984-1-git-send-email-petkovbb@gmail.com>
@@ -29,75 +29,138 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pass the buffer into ide_floppy_create_format_unit_cmd instead of using
-pc->buf.
+Save a pointer to the sense buffer in rq->sense in order to access it
+later in the ->pc_callback method. Also, remove remaining references to
+pc->buf in ide-floppy code.
 
 There should be no functional change resulting from this patch.
 
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-floppy_ioctl.c |   24 +++++++++++++-----------
- 1 files changed, 13 insertions(+), 11 deletions(-)
+ drivers/ide/ide-atapi.c        |   10 ++++++++--
+ drivers/ide/ide-floppy.c       |   12 ++++++------
+ drivers/ide/ide-floppy_ioctl.c |    4 ++--
+ drivers/ide/ide-tape.c         |    5 +++--
+ 4 files changed, 19 insertions(+), 12 deletions(-)
 
+diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
+index bd59fea..df3e3bb 100644
+--- a/drivers/ide/ide-atapi.c
++++ b/drivers/ide/ide-atapi.c
+@@ -93,6 +93,13 @@ int ide_queue_pc_tail(ide_drive_t *drive, struct gendisk *disk,
+ 	rq->cmd_type = REQ_TYPE_SPECIAL;
+ 	rq->special = (char *)pc;
+ 
++	/*
++	 * FIXME: temporarily save a ptr to the sense buffer in rq->sense for
++	 * the ->do_callback sense massaging. Will remove later.
++	 */
++	if (pc->c[0] == REQUEST_SENSE)
++		rq->sense = buf;
++
+ 	if (buf && bufflen) {
+ 		error = blk_rq_map_kern(drive->queue, rq, buf, bufflen,
+ 					GFP_NOIO);
+@@ -252,8 +259,7 @@ void ide_retry_pc(ide_drive_t *drive)
+ 	/* init pc from sense_rq */
+ 	ide_init_pc(pc);
+ 	memcpy(pc->c, sense_rq->cmd, 12);
+-	pc->buf = bio_data(sense_rq->bio);	/* pointer to mapped address */
+-	pc->req_xfer = blk_rq_bytes(sense_rq);
++	sense_rq->sense = bio_data(sense_rq->bio);	/* pointer to mapped address */
+ 
+ 	if (drive->media == ide_tape)
+ 		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
+diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
+index 060c893..cb6c6f8 100644
+--- a/drivers/ide/ide-floppy.c
++++ b/drivers/ide/ide-floppy.c
+@@ -77,7 +77,12 @@ static int ide_floppy_callback(ide_drive_t *drive, int dsc)
+ 	    (rq && blk_pc_request(rq)))
+ 		uptodate = 1; /* FIXME */
+ 	else if (pc->c[0] == GPCMD_REQUEST_SENSE) {
+-		u8 *buf = pc->buf;
++
++		u8 *buf;
++
++		BUG_ON(!rq->sense);
++
++		buf = rq->sense;
+ 
+ 		if (!pc->error) {
+ 			floppy->sense_key = buf[2] & 0x0F;
+@@ -209,8 +214,6 @@ static void idefloppy_create_rw_cmd(ide_drive_t *drive,
+ 	pc->rq = rq;
+ 	if (rq->cmd_flags & REQ_RW)
+ 		pc->flags |= PC_FLAG_WRITING;
+-	pc->buf = NULL;
+-	pc->buf_size = blk_rq_bytes(rq);
+ 	pc->flags |= PC_FLAG_DMA_OK;
+ }
+ 
+@@ -225,9 +228,6 @@ static void idefloppy_blockpc_cmd(struct ide_disk_obj *floppy,
+ 		if (rq_data_dir(rq) == WRITE)
+ 			pc->flags |= PC_FLAG_WRITING;
+ 	}
+-	/* pio will be performed by ide_pio_bytes() which handles sg fine */
+-	pc->buf = NULL;
+-	pc->buf_size = blk_rq_bytes(rq);
+ }
+ 
+ static ide_startstop_t ide_floppy_do_request(ide_drive_t *drive,
 diff --git a/drivers/ide/ide-floppy_ioctl.c b/drivers/ide/ide-floppy_ioctl.c
-index 0d2c9f0..7a03d34 100644
+index 7a03d34..9c22882 100644
 --- a/drivers/ide/ide-floppy_ioctl.c
 +++ b/drivers/ide/ide-floppy_ioctl.c
-@@ -93,24 +93,25 @@ static int ide_floppy_get_format_capacities(ide_drive_t *drive,
- 	return 0;
- }
+@@ -47,7 +47,6 @@ static int ide_floppy_get_format_capacities(ide_drive_t *drive,
+ 		return -EINVAL;
  
--static void ide_floppy_create_format_unit_cmd(struct ide_atapi_pc *pc, int b,
--		int l, int flags)
-+static void ide_floppy_create_format_unit_cmd(struct ide_atapi_pc *pc,
-+					      u8 *buf, int b, int l,
-+					      int flags)
- {
- 	ide_init_pc(pc);
- 	pc->c[0] = GPCMD_FORMAT_UNIT;
- 	pc->c[1] = 0x17;
+ 	ide_floppy_create_read_capacity_cmd(pc);
+-	pc->buf_size = sizeof(pc_buf);
  
--	memset(pc->buf, 0, 12);
--	pc->buf[1] = 0xA2;
-+	memset(buf, 0, 12);
-+	buf[1] = 0xA2;
- 	/* Default format list header, u8 1: FOV/DCRT/IMM bits set */
- 
- 	if (flags & 1)				/* Verify bit on... */
--		pc->buf[1] ^= 0x20;		/* ... turn off DCRT bit */
--	pc->buf[3] = 8;
-+		buf[1] ^= 0x20;			/* ... turn off DCRT bit */
-+	buf[3] = 8;
- 
--	put_unaligned(cpu_to_be32(b), (unsigned int *)(&pc->buf[4]));
--	put_unaligned(cpu_to_be32(l), (unsigned int *)(&pc->buf[8]));
--	pc->buf_size = 12;
-+	put_unaligned(cpu_to_be32(b), (unsigned int *)(&buf[4]));
-+	put_unaligned(cpu_to_be32(l), (unsigned int *)(&buf[8]));
-+	pc->req_xfer = 12;
- 	pc->flags |= PC_FLAG_WRITING;
- }
- 
-@@ -137,6 +138,7 @@ static int ide_floppy_format_unit(ide_drive_t *drive, struct ide_atapi_pc *pc,
- 				  int __user *arg)
+ 	if (ide_queue_pc_tail(drive, floppy->disk, pc, pc_buf, pc->req_xfer)) {
+ 		printk(KERN_ERR "ide-floppy: Can't get floppy parameters\n");
+@@ -198,11 +197,12 @@ static int ide_floppy_get_format_progress(ide_drive_t *drive,
+ 					  int __user *arg)
  {
  	struct ide_disk_obj *floppy = drive->driver_data;
-+	u8 buf[12];
- 	int blocks, length, flags, err = 0;
++	u8 sense_buf[18];
+ 	int progress_indication = 0x10000;
  
- 	if (floppy->openers > 1) {
-@@ -170,9 +172,9 @@ static int ide_floppy_format_unit(ide_drive_t *drive, struct ide_atapi_pc *pc,
- 	}
+ 	if (drive->atapi_flags & IDE_AFLAG_SRFP) {
+ 		ide_create_request_sense_cmd(drive, pc);
+-		if (ide_queue_pc_tail(drive, floppy->disk, pc, pc->buf,
++		if (ide_queue_pc_tail(drive, floppy->disk, pc, sense_buf,
+ 				      pc->req_xfer))
+ 			return -EIO;
  
- 	ide_floppy_get_sfrp_bit(drive, pc);
--	ide_floppy_create_format_unit_cmd(pc, blocks, length, flags);
-+	ide_floppy_create_format_unit_cmd(pc, buf, blocks, length, flags);
+diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+index 7c9e0c7..badc9cb 100644
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -288,11 +288,12 @@ static struct ide_tape_obj *ide_tape_chrdev_get(unsigned int i)
+  * called on each failed packet command retry to analyze the request sense. We
+  * currently do not utilize this information.
+  */
+-static void idetape_analyze_error(ide_drive_t *drive, u8 *sense)
++static void idetape_analyze_error(ide_drive_t *drive)
+ {
+ 	idetape_tape_t *tape = drive->driver_data;
+ 	struct ide_atapi_pc *pc = drive->failed_pc;
+ 	struct request *rq = drive->hwif->rq;
++	u8 *sense = rq->sense;
  
--	if (ide_queue_pc_tail(drive, floppy->disk, pc, pc->buf, pc->req_xfer))
-+	if (ide_queue_pc_tail(drive, floppy->disk, pc, buf, pc->req_xfer))
- 		err = -EIO;
+ 	tape->sense_key = sense[2] & 0xF;
+ 	tape->asc       = sense[12];
+@@ -362,7 +363,7 @@ static int ide_tape_callback(ide_drive_t *drive, int dsc)
  
- out:
+ 	if (pc->c[0] == REQUEST_SENSE) {
+ 		if (uptodate)
+-			idetape_analyze_error(drive, pc->buf);
++			idetape_analyze_error(drive);
+ 		else
+ 			printk(KERN_ERR "ide-tape: Error in REQUEST SENSE "
+ 					"itself - Aborting request!\n");
 -- 
 1.6.2.4
 
