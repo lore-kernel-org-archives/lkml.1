@@ -1,174 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbZEIJ0V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751548AbZEIJcC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754799AbZEIJ0V (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 05:26:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZEIJ0M
+	id S1751548AbZEIJcC (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 05:32:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751182AbZEIJbw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 05:26:12 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55957 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751144AbZEIJ0K (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 05:26:10 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH v3] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-In-Reply-To: <20090507105007.GA28398@elte.hu>
-References: <20090507185831.9D24.A69D9226@jp.fujitsu.com> <20090507105007.GA28398@elte.hu>
-Message-Id: <20090509182541.8D0F.A69D9226@jp.fujitsu.com>
+	Sat, 9 May 2009 05:31:52 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36481 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751076AbZEIJbw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 05:31:52 -0400
+Date: Sat, 9 May 2009 11:31:01 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Andrew Morton <akpm@linux-foundation.org>, gorcunov@openvz.org,
+       kosaki.motohiro@jp.fujitsu.com, mel@csn.ul.ie, cl@linux-foundation.org,
+       riel@redhat.com, linux-kernel@vger.kernel.org, rientjes@google.com
+Subject: Re: [PATCH 1/2] mm: Introduce GFP_PANIC for early-boot allocations
+Message-ID: <20090509093101.GC13784@elte.hu>
+References: <1241795428.28600.60.camel@penberg-laptop> <20090508135632.9c041339.akpm@linux-foundation.org> <4A054156.60501@cs.helsinki.fi> <20090509091911.GA13784@elte.hu> <4A054AB5.1000601@cs.helsinki.fi>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50 [ja]
-Date: Sat,  9 May 2009 18:26:08 +0900 (JST)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A054AB5.1000601@cs.helsinki.fi>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 
-> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > 
-> > Changelog:
-> >   since v2
-> >   - revert using percpu_counter_sum()
-> > 
-> >   since v1
-> >   - use percpu_counter_sum() instead percpu_counter_read()
-> > 
-> > 
-> > -------------------------------------
-> > Subject: [PATCH v3] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
-> > 
-> > cpuacct_update_stats() is called at every tick updating. and it use percpu_counter
-> > for avoiding performance degression.
-> > 
-> > For archs which define VIRT_CPU_ACCOUNTING, every tick would result
-> > in >1000 units of cputime updates and since this is much much greater
-> > than percpu_batch_counter, we end up taking spinlock on every tick.
-> > 
-> > This patch change batch rule. now, any cpu can store "percpu_counter_bach * jiffies"
-> > cputime in per-cpu cache.
-> > it mean this patch don't have behavior change if VIRT_CPU_ACCOUNTING=n.
-> > 
-> > Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
-> > Cc: Balaji Rao <balajirrao@gmail.com>
-> > Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-> > Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-> > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> > Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-> > Cc: Ingo Molnar <mingo@elte.hu>
-> > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > ---
-> >  kernel/sched.c |    6 +++++-
-> >  1 file changed, 5 insertions(+), 1 deletion(-)
-> > 
-> > Index: b/kernel/sched.c
-> > ===================================================================
-> > --- a/kernel/sched.c	2009-04-30 11:37:47.000000000 +0900
-> > +++ b/kernel/sched.c	2009-05-07 16:34:00.000000000 +0900
-> > @@ -10221,6 +10221,7 @@ struct cpuacct {
-> >  };
-> >  
-> >  struct cgroup_subsys cpuacct_subsys;
-> > +static s32 cpuacct_batch;
-> 
-> should be __read_mostly i guess.
-> 
-> >  
-> >  /* return cpu accounting group corresponding to this container */
-> >  static inline struct cpuacct *cgroup_ca(struct cgroup *cgrp)
-> > @@ -10250,6 +10251,9 @@ static struct cgroup_subsys_state *cpuac
-> >  	if (!ca->cpuusage)
-> >  		goto out_free_ca;
-> >  
-> > +	if (!cpuacct_batch)
-> > +		cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
-> 
-> So this is a once per boot condition? Why not initialize it in 
-> sched_init() or so? (instead of incuring this ugly check all the 
-> time)
 
-Thanks! fixed.
+* Pekka Enberg <penberg@cs.helsinki.fi> wrote:
 
+> Ingo Molnar wrote:
+>> * Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>>
+>>> Hi Andrew,
+>>>
+>>> Andrew Morton wrote:
+>>>> On Fri, 08 May 2009 18:10:28 +0300
+>>>> Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>>>>
+>>>>> +#define GFP_PANIC	(__GFP_NOFAIL | __GFP_NORETRY)
+>>>> urgh, you have to be kidding me.  This significantly worsens complexity
+>>>> and risk in core MM and it's just yuk.
+>>>>
+>>>> I think we can justify pulling such dopey party tricks to save  
+>>>> pageframe space, or bits in page.flags and such.  But just to save 
+>>>> a scrap of memory which would have been released during boot  
+>>>> anwyay?  Don't think so.
+>>> No, I wasn't kidding and I don't agree that it "significantly  
+>>> worsens complexity". The point is not to save memory but to clearly 
+>>> annotate those special call-sites that really don't need to check for 
+>>> out-of-memory.
+>>
+>> Frankly, i cannot believe that so many smart people dont see the  
+>> simple, universal, un-arguable truism in the following statement:
+>>
+>>  it is shorter, tidier, more maintainable, more reviewable to write:
+>>
+>> 	ptr = kmalloc(GFP_BOOT, size);
+>>
+>>  than to write:
+>>
+>> 	ptr = kmalloc(GFP_KERNEL, size);
+>> 	BUG_ON(!ptr);
+>
+> Hey, that's a much better name! I guess we don't need to support 
+> GFP_ATOMIC? I'll repost the series with Peter's system_state != 
+> BOOTING warning. Lets see if that makes the patch more palatable 
+> to Andrew.
 
+Hey, and as we all know, names do matter! We are much better off 
+hacking Linux not Freax, after all.
 
-Changelog:
-  since V3
-  - rewirte patch description (thanks Bharata!)
-  - append read_mostly to cpuacct_batch
-  - cpuacct_batch is initialized by sched_init()
+Successful projects need good names, and anyone who doesnt know that 
+must be a true git. Hm, wait a minute ...
 
-  since v2
-  - revert using percpu_counter_sum()
-
-  since v1
-  - use percpu_counter_sum() instead percpu_counter_read()
-
-
----------------------------------------------------------
-Subject: [PATCH v4] cpuacct: Use bigger percpu counter batch values for stats counters on archs that have VIRT_CPU_ACCOUNTING=y
-
-percpu counters used to accumulate statistics in cpuacct controller use
-the default batch value [max(2*nr_cpus, 32)] which can be too small for
-archs that define VIRT_CPU_ACCOUNTING. In such archs, a tick could result in
-cputime updates in the range of thousands. As a result, cpuacct_update_stats()
-would end up acquiring the percpu counter spinlock on every tick which
-is not good for performance.
-
-Let those architectures to have a bigger batch threshold so that percpu counter
-spinlock isn't taken on every tick. This change doesn't affect the archs which
-don't define VIRT_CPU_ACCOUNTING and they continue to have the default
-percpu counter batch value.
-
-Cc: Balaji Rao <balajirrao@gmail.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
----
- kernel/sched.c |    7 ++++++-
- 1 file changed, 6 insertions(+), 1 deletion(-)
-
-Index: b/kernel/sched.c
-===================================================================
---- a/kernel/sched.c	2009-05-09 16:48:08.000000000 +0900
-+++ b/kernel/sched.c	2009-05-09 18:16:00.000000000 +0900
-@@ -824,8 +824,12 @@ static struct file_operations sched_feat
- 	.release	= single_release,
- };
- 
-+static __read_mostly s32 cpuacct_batch;
-+
- static __init int sched_init_debug(void)
- {
-+	cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
-+
- 	debugfs_create_file("sched_features", 0644, NULL, NULL,
- 			&sched_feat_fops);
- 
-@@ -10457,7 +10461,8 @@ static void cpuacct_update_stats(struct 
- 	ca = task_ca(tsk);
- 
- 	do {
--		percpu_counter_add(&ca->cpustat[idx], val);
-+		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
-+
- 		ca = ca->parent;
- 	} while (ca);
- 	rcu_read_unlock();
-
-
+	Ingo
