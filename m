@@ -1,201 +1,741 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1764675AbZEIAqY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1765467AbZEIBBY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1764675AbZEIAqY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 20:46:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764365AbZEIAqE
+	id S1765467AbZEIBBY (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 21:01:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932506AbZEIBAv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 20:46:04 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55679 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764321AbZEIAqB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 20:46:01 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v5 3/7] kprobes: cleanup fix_riprel() using insn decoder
-	on x86
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Jim Keniston <jkenisto@us.ibm.com>, Ingo Molnar <mingo@elte.hu>
-Date: Fri, 08 May 2009 20:48:53 -0400
-Message-ID: <20090509004853.5505.71357.stgit@localhost.localdomain>
-In-Reply-To: <20090509004829.5505.38720.stgit@localhost.localdomain>
-References: <20090509004829.5505.38720.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
+	Fri, 8 May 2009 21:00:51 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:41878 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S932505AbZEIBAr (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 21:00:47 -0400
+Date: Fri, 8 May 2009 17:31:30 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Linux 2.6.30-rc5
+Message-ID: <alpine.LFD.2.01.0905081717580.4983@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Cleanup fix_riprel() in arch/x86/kernel/kprobes.c by using x86 instruction
-decoder.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Jim Keniston <jkenisto@us.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
+It's been a week (and a couple of days - what can I say?), so here's a new 
+-rc.
+
+It's been getting quieter, although by -rc5 I obviously always hope for 
+not just "pretty quiet" but "almost deathly quiet", and it never is. 
+
+Driver updates (SCSI being the bulk of it, but there are input layer, 
+networking, DRI and MD changes too). Arch updates (mostly ARM "davinci" 
+support, but some x86 and even alpha). And various random stuff (fairly 
+big cifs update, but some smaller ocfs2 and xfs updates, and a fair amount 
+of small one-liners all over).
+
+Oh, and if you look at the non-rename-aware patches, you'll see huge 
+changes due to moving the dtc and libfdt sources (open-firmware device 
+tree building/using support) from arch/powerpc/boot to scripts/dtc so that 
+microblaze could use it too.
+
+But on the whole, not a lot of huge issues. Please test and remind people 
+about regressions if you've seen any, or (heaven forbid) look for new ones 
+if you haven't.
+
+Shortlog appended. 
+
+		Linus
+
 ---
+Abhijeet Joglekar (6):
+      [SCSI] libfc: Hold disc mutex while processing gpn ft resp
+      [SCSI] libfc: Do not retry if the new state is not the same as old state
+      [SCSI] libfc: Track rogue remote ports
+      [SCSI] libfc: During fabric logoff, flush the rport Q after logging off dns port
+      [SCSI] libfc: Change state to NONE in fc_lport_destroy
+      [SCSI] libfc: whenever queueing delete ev for rport, set state to NONE
 
- arch/x86/kernel/kprobes.c |  128 ++++++++-------------------------------------
- 1 files changed, 23 insertions(+), 105 deletions(-)
+Alan Cox (1):
+      vt: Add a note on the historical abuse of CLOCK_TICK_RATE
 
-diff --git a/arch/x86/kernel/kprobes.c b/arch/x86/kernel/kprobes.c
-index 3d5e85f..f33fb5e 100644
---- a/arch/x86/kernel/kprobes.c
-+++ b/arch/x86/kernel/kprobes.c
-@@ -108,50 +108,6 @@ static const u32 twobyte_is_boostable[256 / 32] = {
- 	/*      -----------------------------------------------         */
- 	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
- };
--static const u32 onebyte_has_modrm[256 / 32] = {
--	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
--	/*      -----------------------------------------------         */
--	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 00 */
--	W(0x10, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 10 */
--	W(0x20, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) | /* 20 */
--	W(0x30, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0) , /* 30 */
--	W(0x40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 40 */
--	W(0x50, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 50 */
--	W(0x60, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0) | /* 60 */
--	W(0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 70 */
--	W(0x80, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 80 */
--	W(0x90, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 90 */
--	W(0xa0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* a0 */
--	W(0xb0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* b0 */
--	W(0xc0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* c0 */
--	W(0xd0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1) , /* d0 */
--	W(0xe0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* e0 */
--	W(0xf0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1)   /* f0 */
--	/*      -----------------------------------------------         */
--	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
--};
--static const u32 twobyte_has_modrm[256 / 32] = {
--	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
--	/*      -----------------------------------------------         */
--	W(0x00, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1) | /* 0f */
--	W(0x10, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0) , /* 1f */
--	W(0x20, 1, 1, 1, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1) | /* 2f */
--	W(0x30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) , /* 3f */
--	W(0x40, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 4f */
--	W(0x50, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 5f */
--	W(0x60, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* 6f */
--	W(0x70, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1) , /* 7f */
--	W(0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0) | /* 8f */
--	W(0x90, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* 9f */
--	W(0xa0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 1) | /* af */
--	W(0xb0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1) , /* bf */
--	W(0xc0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0) | /* cf */
--	W(0xd0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) , /* df */
--	W(0xe0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1) | /* ef */
--	W(0xf0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0)   /* ff */
--	/*      -----------------------------------------------         */
--	/*      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f          */
--};
- #undef W
- 
- struct kretprobe_blackpoint kretprobe_blacklist[] = {
-@@ -329,68 +285,30 @@ static int __kprobes is_IF_modifier(kprobe_opcode_t *insn)
- static void __kprobes fix_riprel(struct kprobe *p)
- {
- #ifdef CONFIG_X86_64
--	u8 *insn = p->ainsn.insn;
--	s64 disp;
--	int need_modrm;
--
--	/* Skip legacy instruction prefixes.  */
--	while (1) {
--		switch (*insn) {
--		case 0x66:
--		case 0x67:
--		case 0x2e:
--		case 0x3e:
--		case 0x26:
--		case 0x64:
--		case 0x65:
--		case 0x36:
--		case 0xf0:
--		case 0xf3:
--		case 0xf2:
--			++insn;
--			continue;
--		}
--		break;
--	}
-+	struct insn insn;
-+	insn_init_kernel(&insn, p->ainsn.insn);
- 
--	/* Skip REX instruction prefix.  */
--	if (is_REX_prefix(insn))
--		++insn;
--
--	if (*insn == 0x0f) {
--		/* Two-byte opcode.  */
--		++insn;
--		need_modrm = test_bit(*insn,
--				      (unsigned long *)twobyte_has_modrm);
--	} else
--		/* One-byte opcode.  */
--		need_modrm = test_bit(*insn,
--				      (unsigned long *)onebyte_has_modrm);
--
--	if (need_modrm) {
--		u8 modrm = *++insn;
--		if ((modrm & 0xc7) == 0x05) {
--			/* %rip+disp32 addressing mode */
--			/* Displacement follows ModRM byte.  */
--			++insn;
--			/*
--			 * The copied instruction uses the %rip-relative
--			 * addressing mode.  Adjust the displacement for the
--			 * difference between the original location of this
--			 * instruction and the location of the copy that will
--			 * actually be run.  The tricky bit here is making sure
--			 * that the sign extension happens correctly in this
--			 * calculation, since we need a signed 32-bit result to
--			 * be sign-extended to 64 bits when it's added to the
--			 * %rip value and yield the same 64-bit result that the
--			 * sign-extension of the original signed 32-bit
--			 * displacement would have given.
--			 */
--			disp = (u8 *) p->addr + *((s32 *) insn) -
--			       (u8 *) p->ainsn.insn;
--			BUG_ON((s64) (s32) disp != disp); /* Sanity check.  */
--			*(s32 *)insn = (s32) disp;
--		}
-+	if (insn_rip_relative(&insn)) {
-+		s64 newdisp;
-+		u8 *disp;
-+		insn_get_displacement(&insn);
-+		/*
-+		 * The copied instruction uses the %rip-relative addressing
-+		 * mode.  Adjust the displacement for the difference between
-+		 * the original location of this instruction and the location
-+		 * of the copy that will actually be run.  The tricky bit here
-+		 * is making sure that the sign extension happens correctly in
-+		 * this calculation, since we need a signed 32-bit result to
-+		 * be sign-extended to 64 bits when it's added to the %rip
-+		 * value and yield the same 64-bit result that the sign-
-+		 * extension of the original signed 32-bit displacement would
-+		 * have given.
-+		 */
-+		newdisp = (u8 *) p->addr + (s64) insn.displacement.value -
-+			  (u8 *) p->ainsn.insn;
-+		BUG_ON((s64) (s32) newdisp != newdisp); /* Sanity check.  */
-+		disp = (u8 *) p->ainsn.insn + INSN_DISPLACEMENT_OFFS(&insn);
-+		*(s32 *) disp = (s32) newdisp;
- 	}
- #endif
- }
+Alan Jenkins (1):
+      mac80211: fix modprobe deadlock by not calling wep_init under rtnl_lock
 
+Alex Williamson (2):
+      virtio_net: Cleanup command queue scatterlist usage
+      virtio_net: Fix function name typo
 
--- 
-Masami Hiramatsu
+Anders Kaseorg (2):
+      kbuild, modpost: Check the section flags, to catch missing "ax"/"aw"
+      kbuild, modpost: fix unexpected non-allocatable section when cross compiling
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+Andi Kleen (3):
+      x86, mce: make polling timer interval per CPU
+      x86, mce: fix boot logging logic
+      Eliminate thousands of warnings with gcc 3.2 build
 
-e-mail: mhiramat@redhat.com
+Andrea Righi (1):
+      mm: prevent divide error for small values of vm_dirty_bytes
+
+Andreas Herrmann (1):
+      x86: show number of core_siblings instead of thread_siblings in /proc/cpuinfo
+
+Andrew Morton (2):
+      vmscan: avoid multiplication overflow in shrink_zone()
+      drivers/base/iommu.c: add missing includes
+
+Arjan Opmeer (2):
+      Input: elantech - provide a workaround for jumpy cursor on firmware 2.34
+      Input: elantech - make sure touchpad is really in absolute mode
+
+Artem Bityutskiy (1):
+      mtd: expose subpage size via sysfs
+
+Arun KS (1):
+      OMAP1: clock: Typo fix for clock in omap1
+
+Ashutosh Naik (1):
+      ibft: fix the display of a few fields in the NIC attribute structure in sysfs
+
+Ben Dooks (3):
+      [ARM] S3C64XX: Add S3C64XX_PA_IIS{0,1} to <mach/map.h>
+      [ARM] S3C: Add UDIVSLOT support for newer UARTS
+      [ARM] S3C2412: Add missing cache flush in suspend code
+
+Ben Nizette (4):
+      Input: omap-keypad - use disable_irq_nosync() in irq handler
+      Input: sa1111ps2 - use disable_irq_nosync() in irq handlers
+      Input: tsc2007 - use disable_irq_nosync() in irq handler
+      Input: ucb1400 - use disable_irq_nosync() in irq handler
+
+Ben Skeggs (2):
+      drm: clean the map list before destroying the hash table
+      drm: cleanup properly in drm_get_dev() failure paths
+
+Benjamin Herrenschmidt (1):
+      powerpc: Fix setting of oprofile cpu type
+
+Boaz Harrosh (3):
+      [SCSI] libosd: OSD2r05: Prepare for rev5 attribute list changes
+      [SCSI] libosd: OSD2r05: OSD_CRYPTO_KEYID_SIZE will grow 20 => 32 bytes
+      [SCSI] libosd: OSD2r05: on-the-wire changes for latest OSD2 revision 5.
+
+Bob Copeland (2):
+      Input: appletouch - fix DMA to/from stack buffer
+      ath5k: fix buffer overrun in rate debug code
+
+Borislav Petkov (1):
+      ide-cd: fix REQ_QUIET tests in cdrom_decode_status
+
+Breno Leitao (1):
+      jsm: removing unused spinlock
+
+Brian King (1):
+      [SCSI] ipr: Fix sleeping function called with interrupts disabled
+
+Bruno Prémont (1):
+      netconsole: take care of NETDEV_UNREGISTER event
+
+Catalin Marinas (4):
+      [ARM] 5488/1: ARM errata: Invalidation of the Instruction Cache operation can fail
+      [ARM] 5487/1: ARM errata: Stale prediction on replaced interworking branch
+      [ARM] 5490/1: ARM errata: Processor deadlock when a false hazard is created
+      [ARM] 5489/1: ARM errata: Data written to the L2 cache can be overwritten with stale data
+
+Cedric Hombourger (1):
+      kbuild: fix Module.markers permission error under cygwin
+
+Chris Leech (2):
+      [SCSI] fcoe: don't export functions that are internal to fcoe
+      [SCSI] fcoe: fix spelling typos and bad comments
+
+Christof Schmitt (5):
+      [SCSI] zfcp: Dont call zfcp_fsf_req_free on NULL pointer
+      [SCSI] zfcp: Let actcli handle control file errors
+      [SCSI] zfcp: Fix abort handler for completions in progress
+      [SCSI] zfcp: Reference counting for cfdc requests
+      [SCSI] zfcp: Fix oops when port disappears
+
+Christoph Hellwig (3):
+      xfs: a couple getbmap cleanups
+      xfs: fix getbmap vs mmap deadlock
+      MAINTAINERS: add ptrace entry
+
+Christophe Borivant (1):
+      HID: Add support for the G25 force feedback wheel in native mode
+
+Daisuke Nishimura (2):
+      memcg: fix try_get_mem_cgroup_from_swapcache()
+      memcg: fix mem_cgroup_shrink_usage()
+
+Dan Carpenter (4):
+      HID: hidraw -- fix missing unlocks in unlocked_ioctl
+      [SCSI] fcoe: kfree() -> kfree_skb()
+      [SCSI] libosd: fix potential ERR_PTR dereference in osd_initiator.c
+      sdhci-pci: bad error handling in probe function
+
+Daniel Mack (1):
+      isl29003: fix resume functionality
+
+Dave Airlie (3):
+      drm/kms: don't try to shortcut drm mode set function
+      i2c-algo-bit: Fix timeout test
+      drm/r128: fix r128 ioremaps to use ioremap_wc.
+
+Dave Hansen (1):
+      [SCSI] fix sign extension with 1.5TB usb-storage LBD=y
+
+David Brownell (2):
+      davinci: gpio bugfixes
+      davinci: DM644x: NAND: update partitioning
+
+David Gibson (1):
+      Move dtc and libfdt sources from arch/powerpc/boot to scripts/dtc
+
+David Howells (4):
+      mm: use roundown_pow_of_two() in zone_batchsize()
+      nommu: clamp zone_batchsize() to 0 under NOMMU conditions
+      nommu: make the initial mmap allocation excess behaviour Kconfig configurable
+      NOMMU: Don't check vm_region::vm_start is page aligned in add_nommu_region()
+
+David Rientjes (2):
+      x86, srat: do not register nodes beyond e820 map
+      oom: prevent livelock when oom_kill_allocating_task is set
+
+Denis V. Lunev (1):
+      mtd: mtd in mtd_release is unused without CONFIG_MTD_CHAR
+
+Dmitry Torokhov (2):
+      Input: ALPS - add signature for Toshiba Satellite Pro M10
+      Input: lifebook - add DMI entry for Fujitsu B-2130
+
+Enrik Berkhan (1):
+      i2c-algo-pca: Let PCA9564 recover from unacked data byte (state 0x30)
+
+Eric Dumazet (4):
+      sched: account system time properly
+      net: Fix skb_tx_hash() for forwarding workloads.
+      netfilter: use likely() in xt_info_rdlock_bh()
+      bonding: bond_slave_info_query() fix
+
+Eric Miao (5):
+      [ARM] pxa: fix issue of muxed GPIO irq_chip functions touching non-muxed GPIOs
+      [ARM] pxa: make ads7846 on corgi and spitz to sync on HSYNC
+      [ARM] pxa/zylonite: fix the issue of unused SDATA_IN_1 pin get AC97 not working
+      [ARM] pxa/zylonite: configure GPIO18/19 correctly, used by 2 GPIO expanders
+      [ARM] pxa/littleton: add missing da9034 touchscreen support
+
+Eric Moore (10):
+      [SCSI] mpt2sas : unique ioctl magic number
+      [SCSI] mpt2sas : the sanity check in base_interrupt needs to be on dword boundary
+      [SCSI] mpt2sas : fix oops when firmware sends large sense buffer size
+      [SCSI] mpt2sas : running out of message frames
+      [SCSI] mpt2sas : driver name needs to be in the MPT2IOCINFO ioctl
+      [SCSI] mpt2sas : Identify Dell series-7 adapters at driver load time
+      [SCSI] mpt2sas : Broadcast Primative AEN bug fix
+      [SCSI] mpt2sas : release diagnotic buffers prior host reset
+      [SCSI] mpt2sas: fix hotplug event processing
+      [SCSI] mpt2sas : bump driver version to 01.100.02.00
+
+Eric Piel (1):
+      initramfs: clean up messages related to initramfs unpacking
+
+FUJITA Tomonori (1):
+      [SCSI] sg: return EFAULT for an invalid user address
+
+Florian Fainelli (1):
+      MAINTAINERS: Florian has moved
+
+Frédéric Brière (1):
+      kbuild: clean Module.markers and modules.order for out-of-tree modules
+
+Giuliano Pochini (1):
+      ALSA: indigo-express: add missing 64KHz flags
+
+Grant Likely (3):
+      powerpc: Update MPC5xxx and Xilinx Virtex maintainer entries
+      virtio: add missing include to virtio_net.h
+      of: make of_(un)register_platform_driver common code
+
+Guennadi Liakhovetski (2):
+      [ARM] pxa: remove duplicate select statements from Kconfig
+      ARM: ARCH_MXC should select HAVE_CLK
+
+H Hartley Sweeten (1):
+      kernel/posix-cpu-timers.c: fix sparse warning
+
+Hannes Hering (1):
+      ehea: fix invalid pointer access
+
+Heiko Carstens (1):
+      atomic: fix atomic_long_cmpxchg/xchg for 64 bit architectures
+
+Henrik Rydberg (8):
+      Input: bcm5974 - prepare for a new trackpad header type
+      Input: bcm5974 - add quad-finger tapping
+      Input: bcm5974 - Add support for the Macbook 5 (Unibody)
+      Input: bcm5974 - augment debug information
+      Input: bcm5974 - add documentation for the driver
+      Input: allow certain EV_ABS events to bypass all filtering
+      Input: add detailed multi-touch finger data report protocol
+      Input: document the multi-touch (MT) protocol
+
+Hidetoshi Seto (1):
+      x86: MCE: make cmci_discover_lock irq-safe
+
+Hirokazu Takata (2):
+      m32r: build fix for __stringify macro
+      m32r: use __stringify() macro in assembler.h
+
+Huang Weiyi (1):
+      ARM: OMAP3: remove duplicated #include
+
+Huang Ying (1):
+      x86, kexec: fix crashdump panic with CONFIG_KEXEC_JUMP
+
+Hugh Dickins (1):
+      doc: hashdist defaults on for 64bit
+
+Ian Kent (1):
+      autofs4: fix incorrect return in autofs4_mount_busy()
+
+Igor Mammedov (2):
+      Enable dfs submounts to handle remote referrals.
+      Added loop check when mounting DFS tree.
+
+Ivan Kokshaysky (4):
+      alpha: titan and marvel build fixes
+      alpha: exception table sorting
+      alpha: futex implementation
+      alpha: binfmt_aout fix
+
+Jake Edge (1):
+      proc: avoid information leaks to non-privileged processes
+
+James Smart (3):
+      [SCSI] lpfc 8.3.1 : Fix up kernel-doc function comments
+      [SCSI] lpfc 8.3.1: misc fixes/changes
+      [SCSI] lpfc 8.3.1 : Update version to 8.3.1
+
+Jan Beulich (3):
+      [IA64] xen_domu_defconfig: fix build issues/warnings
+      x86: fix boot hang in early_reserve_e820()
+      x86-64: finish cleanup_highmaps()'s job wrt. _brk_end
+
+Jan Engelhardt (1):
+      md: constify VFTs
+
+Jarek Poplawski (1):
+      net: Fix oops when splicing skbs from a frag_list.
+
+Jarkko Nikula (1):
+      ARM: OMAP2: Remove defines and resource init for OMAP24XX EAC
+
+Jay Vosburgh (1):
+      bonding: fix alb mode locking regression
+
+Jean Delvare (1):
+      hwmon: (w83781d) Fix W83782D support (NULL pointer dereference)
+
+Jeff Layton (11):
+      nls: add a nls_nullsize inline
+      cifs: move #defines for mapchars into cifs_unicode.h
+      cifs: add replacement for cifs_strtoUCS_le called cifs_from_ucs2
+      cifs: add new function to get unicode string length in bytes
+      cifs: rename cifs_strlcpy_to_host and make it use new functions
+      cifs: convert CIFSTCon to use new unicode helper functions
+      cifs: fix session setup unicode string saving to use new unicode helpers
+      cifs: change CIFSSMBUnixQuerySymLink to use new helpers
+      cifs: change cifs_get_name_from_search_buf to use new unicode helper
+      cifs: fix length handling in cifs_get_name_from_search_buf
+      [CIFS] remove cifs_strfromUCS_le
+
+Jeremy Fitzhardinge (1):
+      x86: xen, i386: reserve Xen pagetables
+
+Jesper Nilsson (1):
+      CRISv10: fix serial driver proc-usage
+
+Jesse Brandeburg (1):
+      e1000: fix virtualization bug
+
+Jiri Kosina (1):
+      HID: fix oops in hid_check_keys_pressed()
+
+Jiri Pirko (1):
+      bonding: correct the cleanup in bond_create()
+
+Joe Eykholt (1):
+      [SCSI] fcoe: fip: add multicast filter to receive FIP advertisements.
+
+Joel Becker (3):
+      ocfs2: Fix some printk() warnings.
+      ocfs2: Fix a missing credit when deleting from indexed directories.
+      ocfs2: Change repository in MAINTAINERS.
+
+Joerg Roedel (2):
+      dma-debug: remove broken dma memory leak detection for 2.6.30
+      amd-iommu: fix iommu flag masks
+
+Johannes Berg (2):
+      iwlwifi: notify on scan completion even when shutting down
+      mac80211: default to automatic power control
+
+Johannes Weiner (1):
+      mm: fix pageref leak in do_swap_page()
+
+John Stultz (1):
+      clockevents: prevent endless loop in tick_handle_periodic()
+
+John Wright (1):
+      x86: gettimeofday() vDSO: fix segfault when tv == NULL
+
+Jon Smirl (1):
+      ASoC: Set the MPC5200 i2s driver to BROKEN status.
+
+Jonas Bonn (2):
+      drm: add control node checks missing from kms merge
+      drm: remove unreachable code in drm_sysfs.c
+
+Joonyoung Shim (1):
+      ASoC: TWL4030: Fix gain control for earpiece amplifier
+
+Josef Bacik (1):
+      fiemap: fix problem with setting FIEMAP_EXTENT_LAST
+
+José M. Fernández (1):
+      mmc: increase power up delay
+
+Jussi Kivilinna (1):
+      rndis_wlan: fix initialization order for workqueue&workers
+
+KOSAKI Motohiro (1):
+      mm: fix Committed_AS underflow on large NR_CPUS environment
+
+Kevin Hilman (13):
+      davinci: add default Kconfig, add HAVE_IDE
+      davinci: add runtime CPU detection support
+      davinci: major rework of clock, PLL, PSC infrastructure
+      davinci: add arch_ioremap() which uses existing static mappings
+      ARM: OMAP2/3: GPIO: do not attempt to wake-enable
+      OMAP: dmtimer: enable all timers to be wakeup events
+      davinci: timers: use clk_get_rate()
+      davinci: add EDMA driver
+      davinci: serial: generalize for more SoCs
+      davinci: update pin-multiplexing support
+      davinci: DM644x: rename board file
+      davinci: update DM644x support in preparation for more SoCs
+      [ARM] 5506/1: davinci: DMA_32BIT_MASK --> DMA_BIT_MASK(32)
+
+Krzysztof Helt (1):
+      fbdev: remove makefile reference to removed driver
+
+Lachlan McIlroy (1):
+      xfs_file_last_byte() needs to acquire ilock
+
+Ladislav Michl (3):
+      ARM: OMAP: MMC: Remove unused power_pin
+      ARM: OMAP1: Simplify board-h2 MMC setup
+      ARM: OMAP1: Fix mmc_set_power GPIO usage
+
+Laszlo Attila Toth (1):
+      xt_socket: checks for the state of nf_conntrack
+
+Latchesar Ionkov (3):
+      net/9p: set correct stat size when sending Twstat messages
+      net/9p: return error when p9_client_stat fails
+      net/9p: handle correctly interrupted 9P requests
+
+Lennert Buytenhek (2):
+      mv643xx_eth: OOM handling fixes
+      mv643xx_eth: 64bit mib counter read fix
+
+Linus Torvalds (2):
+      random: make get_random_int() more random
+      Linux 2.6.30-rc5
+
+Lubomir Rintel (1):
+      ne2k-pci: Do not register device until initialized.
+
+Luca Tettamanti (1):
+      hwmon: (asus_atk0110) Fix compiler warning
+
+Maciej Cencora (1):
+      drm/radeon: bump minor version for occlusion queries support
+
+Magnus Lilja (1):
+      i.MX31: Disable CPU_32v6K in mx3_defconfig.
+
+Marcel Holtmann (1):
+      Bluetooth: Fix issue with sysfs handling for connections
+
+Mark A. Greer (1):
+      davinci: PSC: Clear bits in MDCTL reg before setting new bits
+
+Mark Brown (1):
+      ASoC: Fix logic in WM8350 master clocking check
+
+Martin Fuzzey (2):
+      mxc : Clean up properly when imx_dma_free() used without imx_dma_disable()
+      mxc : BUG in imx_dma_request
+
+Martin Petermann (4):
+      [SCSI] zfcp: Avoid referencing freed memory in req send
+      [SCSI] zfcp: remove unit will fail if add unit is not finished
+      [SCSI] zfcp: revert previous patch for sbal counting
+      [SCSI] zfcp: Fix port reference counting
+
+Masami Hiramatsu (1):
+      kprobes: fix to use text_mutex around arm/disarm kprobe
+
+Matt Kraai (1):
+      kbuild: remove a tag file before it is regenerated
+
+Mel Gorman (1):
+      Ignore madvise(MADV_WILLNEED) for hugetlbfs-backed regions
+
+Michael Wolf (1):
+      powerpc adjust oprofile_cpu_type version 3
+
+Michal Januszewski (1):
+      fbdev: fix fillrect for 24bpp modes
+
+Michal Simek (1):
+      microblaze: Fix return value for sys_ipc
+
+Mike Christie (5):
+      [SCSI] fix q->lock not held warning when target is busy
+      [SCSI] iscsi_tcp: don't fire conn error if pdu init fails
+      [SCSI] cxgb3i, iser, iscsi_tcp: set target can queue
+      [SCSI] cxgb3i: fix can_queue and cmd_per_lun initialization
+      [SCSI] cxgb3i: fix cpu use abuse during writes
+
+Ming Lei (1):
+      locking: Documentation: lockdep-design.txt, fix note of state bits
+
+NeilBrown (6):
+      md: fix loading of out-of-date bitmap.
+      md/raid10: don't clear bitmap during recovery if array will still be degraded.
+      md: fix some (more) errors with bitmaps on devices larger than 2TB.
+      md: tidy up status_resync to handle large arrays.
+      md: remove ability to explicit set an inactive array to 'clean'.
+      md: remove rd%d links immediately after stopping an array.
+
+Nick Piggin (1):
+      mm: close page_mkwrite races
+
+Nico Schottelius (1):
+      kbuild: fix scripts/setlocalversion with git
+
+Nicolas Pitre (3):
+      [ARM] Kirkwood: update defconfig
+      [ARM] orion5x: update defconfig
+      [ARM] mv78xx0: update defconfig
+
+Nikanth Karthikesan (1):
+      x86: Fix a typo in a printk message
+
+Olaf Weber (1):
+      xfs: add more checks to superblock validation
+
+Oleg Nesterov (1):
+      ptrace: s/parent/real_parent/ in binfmt_elf_fdpic.c
+
+Oliver Neukum (1):
+      HID: fix possible deadlock in usbhid_close()
+
+Omar Laazimani (1):
+      usbnet: CDC EEM support (v5)
+
+Paul Gortmaker (1):
+      [ARM] 5507/1: support R_ARM_MOVW_ABS_NC and MOVT_ABS relocation types
+
+Paul Walmsley (4):
+      OMAP2xxx clock: pre-initialize struct clks early
+      OMAP2xxx clock: fix broken cpu_mask code
+      OMAP3 GPTIMER: fix GPTIMER12 IRQ
+      OMAP2/3 GPTIMER: allow system tick GPTIMER to be changed in board-*.c files
+
+Peter Horton (1):
+      mtd: fix timeout in M25P80 driver
+
+Peter Jones (1):
+      [SCSI] sr: report more accurate drive status after closing the tray.
+
+Philipp Zabel (1):
+      [ARM] pxa: remove unused CPU_FREQ_PXA Kconfig symbol
+
+Pierre Ossman (2):
+      mmc_block: be prepared for oversized requests
+      sdhci: catch ADMA errors
+
+Ping Cheng (1):
+      Input: wacom - fix TabletPC touch bug
+
+Rabin Vincent (3):
+      Subject: [PATCH] br2684: restore net_dev initialization
+      mmci: fix crash with debug enabled
+      mvsdio: fix CONFIG_PM=y build
+
+Ralph Wuerthner (1):
+      alloc_vmap_area: fix memory leak
+
+Randy Dunlap (3):
+      docs: also clean index.html
+      kernel-doc: restrict syntax for private: and public:
+      doc: small kernel-parameters updates
+
+Robert Love (2):
+      [SCSI] libfc: Fix compilation warnings with allmodconfig
+      net: Only store high 16 bits of kernel generated filter priorities
+
+Robert Moore (1):
+      acpica: validate package element more carefully in acpi_rs_get_pci_routing_table_length
+
+Robert P. J. Day (2):
+      kbuild: "make prepare" should be "make modules_prepare"
+      [ARM] Kconfig typo fix:  "PXA930" -> "CPU_PXA930".
+
+Roel Kluin (2):
+      ARM: OMAP2: possible division by 0
+      i2c: Timeouts off by 1
+
+Roger Quadros (2):
+      ARM: OMAP3: Fixed spurious IRQ issue for GPIO interrupts
+      ARM: OMAP3: Clean up spurious interrupt check logic
+
+Russell King (1):
+      [ARM] lart: fix build error
+
+Sam Ravnborg (4):
+      avr32: drop unused CLEAN_FILES
+      kbuild: fix comment in modpost.c
+      kbuild, modpost: fix "unexpected non-allocatable" warning with SUSE gcc
+      kbuild, modpost: fix unexpected non-allocatable warning with mips
+
+Santosh Shilimkar (1):
+      ARM: OMAP: Fix for possible race condition in omap_free_dma()
+
+Sascha Hauer (2):
+      MXC: remove BUG_ON in interrupt handler
+      mx3fb: Fix compilation with CONFIG_PM
+
+Satoru SATOH (1):
+      tcp: Fix tcp_prequeue() to get correct rto_min value
+
+Sergey Senozhatsky (1):
+      cxgb3: fixing gcc 4.4 compiler warning: suggest parentheses around operand of ‘!’
+
+Sergio Aguirre (1):
+      OMAP3: clock: Camera module doesn't have IDLEST bit
+
+Stefan Bader (1):
+      vgacon: return the upper half of 512 character fonts
+
+Stephen Rothwell (1):
+      wireless: remove unneeded EXPORT_SYMBOL the tickles a powerpc compiler bug
+
+Stephen Smalley (1):
+      selinux: Fix send_sigiotask hook
+
+Steve French (17):
+      [CIFS] Make cifs_unlink consistent in checks for null inode
+      [CIFS] Remove older session setup implementation
+      [CIFS] rename cifs_strndup to cifs_strndup_from_ucs
+      [CIFS] Remove unneeded QuerySymlink call and fix mapping for unmapped status
+      [CIFS] Fix build warning
+      [CIFS] Add remaining ntlmssp flags and standardize field names
+      [CIFS] Remove sparse endian warnings
+      [CIFS] Remove trailing whitespace
+      [CIFS] Fix endian conversion of vcnum field
+      [CIFS] NTLMSSP support moving into new file, old dead code removed
+      [CIFS] Fix final user of old string conversion code
+      [CIFS] remove checkpatch warning
+      [CIFS] Remove sparse warning
+      [CIFS] NTLMSSP reenabled after move from connect.c to sess.c
+      [CIFS] Fix SMB uid in NTLMSSP authenticate request
+      [CIFS] Allow raw ntlmssp code to be enabled with sec=ntlmssp
+      [CIFS] Fix double list addition in cifs posix open code
+
+Steve Glendinning (2):
+      smsc95xx: configure LED outputs
+      smsc95xx: add support for LAN9512 and LAN9514
+
+Steven A. Falco (1):
+      mtd: Bug in m25p80.c during whole-chip erase
+
+Steven Rostedt (1):
+      tracing: fix ref count in splice pages
+
+Stuart Bennett (1):
+      tracing: x86, mmiotrace: fix range test
+
+Subrata Modak (1):
+      configfs: Fix Trivial Warning in fs/configfs/symlink.c
+
+Sudhakar Rajashekhara (1):
+      davinci: DM646x: add interrupt number and priorities
+
+Sunil Mushran (1):
+      ocfs2: Add missing iput() during error handling in ocfs2_dentry_attach_lock()
+
+Suresh Jayaraman (2):
+      cifs: Rename cifs_strncpy_to_host and fix buffer size
+      cifs: Increase size of tmp_buf in cifs_readdir to avoid potential overflows
+
+Swen Schillig (6):
+      [SCSI] zfcp: Enable auto-port discovery for NPIV.
+      [SCSI] zfcp: Dont block zfcp_wq with scan
+      [SCSI] zfcp: Set WKA-port to offline on adapter deactivation
+      [SCSI] zfcp: avoid false ERP complete due to sema race
+      [SCSI] zfcp: no port recovery after storage side error inject
+      [SCSI] zfcp: no port recovery after ADISC request timeout
+
+Takashi Iwai (3):
+      ALSA: Add missing SNDRV_PCM_INFO_BATCH flag to some drivers
+      ALSA: pcm core - Avoid jiffies check for devices with BATCH flag
+      ASoC: Remove BROKEN from mpc5200 kconfig
+
+Tao Ma (3):
+      ocfs2: Reserve 1 more cluster in expanding_inline_dir for indexed dir.
+      ocfs2: Fix 2 warning during ocfs2 make.
+      ocfs2/trivial: Remove unused variable in ocfs2_rename.
+
+Thomas Gleixner (2):
+      Revert "genirq: assert that irq handlers are indeed running in hardirq context"
+      x86: initialize io_bitmap_base on 32bit
+
+Tobias Klauser (1):
+      microblaze: Storage class should be before const qualifier
+
+Tony Lindgren (1):
+      ARM: OMAP: Remove old dead gpio expander code
+
+Trond Myklebust (2):
+      SUNRPC: Fix the problem of EADDRNOTAVAIL syslog floods on reconnect
+      NFS: Close page_mkwrite() races
+
+Ulrich Dangel (1):
+      HID: Fix the support for apple mini aluminium keyboard
+
+Uwe Kleine-König (1):
+      mx27ads: move PBC mapping out of vmalloc space
+
+Valentin Longchamp (1):
+      mx31: remove mx31moboard_defconfig
+
+Vitaly Mayatskikh (1):
+      pagemap: require aligned-length, non-null reads of /proc/pid/pagemap
+
+Wu Fengguang (1):
+      inotify: use GFP_NOFS in kernel_event() to work around a lockdep false-positive
+
+kxie@chelsio.com (1):
+      [SCSI] cxgb3i: fix ddp map overrun
+
+s-paulraj@ti.com (1):
+      davinci: DM355 IRQ Definitions
