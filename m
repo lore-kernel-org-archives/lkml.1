@@ -1,60 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758AbZEIKCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754582AbZEIKDS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754758AbZEIKCv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 06:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZEIKCm
+	id S1754582AbZEIKDS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 06:03:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751024AbZEIKC7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 06:02:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:54082 "EHLO mx3.mail.elte.hu"
+	Sat, 9 May 2009 06:02:59 -0400
+Received: from mail.atlantis.sk ([80.94.52.35]:40050 "EHLO mail.atlantis.sk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751137AbZEIKCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 06:02:41 -0400
-Date: Sat, 9 May 2009 12:01:37 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [patch] tracing/mm: add page frame snapshot trace
-Message-ID: <20090509100137.GC20941@elte.hu>
-References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu> <20090508124433.GB15949@localhost> <20090509062758.GB21354@elte.hu> <20090509091325.GA7994@localhost>
+	id S1751831AbZEIKC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 06:02:58 -0400
+From: Ondrej Zary <linux@rainbow-software.org>
+To: David Fries <david@fries.net>
+Subject: Re: TSC marked unstable on suspend and resume
+Date: Sat, 9 May 2009 12:02:42 +0200
+User-Agent: KMail/1.9.10
+Cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       "linux-kernel" <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@tglx.de>
+References: <20090221023943.GA4894@spacedout.fries.net> <200905082353.15962.linux@rainbow-software.org> <20090509003415.GJ4162@spacedout.fries.net>
+In-Reply-To: <20090509003415.GJ4162@spacedout.fries.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090509091325.GA7994@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200905091202.46244.linux@rainbow-software.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Saturday 09 May 2009 02:34:15 David Fries wrote:
+> On Fri, May 08, 2009 at 11:53:12PM +0200, Ondrej Zary wrote:
+> > On Thursday 30 April 2009 05:37:33 john stultz wrote:
+> > > On Wed, 2009-04-29 at 18:25 -0500, David Fries wrote:
+> > > > On Wed, Apr 29, 2009 at 09:45:40AM -0700, john stultz wrote:
+> > > > > On Fri, Feb 20, 2009 at 7:39 PM, David Fries <david@fries.net> wrote:
+> > > > > > I'm getting TSC marked as unsable on hibernate to disk with
+> > > > > > 2.6.29-rc3. ?The last kernel I ran 2.6.24.4 ran 300+ days without
+> > > > > > a problem and does not loose TSC on hibernate.
+> > > > > >
+> > > > > > I'm hibernating with `echo disk > /sys/power/state`.
+> > > > > > These look like the relavant messages,
+> > > > > >
+> > > > > > CPU 0 irqstacks, hard=c0379000 soft=c0378000
+> > > > > > PID hash table entries: 1024 (order: 10, 4096 bytes)
+> > > > > > Fast TSC calibration using PIT
+> > > > > > Detected 300.705 MHz processor.
+> > > > > > Calibrating delay loop (skipped), value calculated using timer
+> > > > > > frequency.. 601.41 BogoMIPS (lpj=300705) hibernate to disk,
+> > > > > > Restarting tasks ... done.
+> > > > > > Clocksource tsc unstable (delta = 499883531 ns)
+> > > > > >
+> > > > > > model name      : AMD-K6(tm) 3D processor
+> > > > > > Host bridge: VIA Technologies, Inc. VT82C598 [Apollo MVP3] (rev
+> > > > > > 04)
+> > > > >
+> > > > > Hmm. Seems like the clocksource watchdog is having some problem
+> > > > > handling state around hibernate.
+> > >
+> > > Yea. This seems to be the case here. There's watchdog code and
+> > > variables to handle resume properly, but there isn't a corresponding
+> > > suspend hook, so the resume path doesn't actually change anything.
+> > >
+> > > Here's a patch you can try, I only had time to compile test it today,
+> > > so its untested. Hopefully I didn't miss anything obvious.
+> >
+> > I have the same problem and the patch does not solve it for me too.
+>
+> What CPU and motherboard chipset?
 
-* Wu Fengguang <fengguang.wu@intel.com> wrote:
+Cyrix MII PR300 225MHz
+PCPartner TXB820DS (i430TX)
 
-> 2) support concurrent object iterations
->    For example, a huge 1TB memory space can be split up into 10
->    segments which can be queried concurrently (with different options).
+> > I noticed that after resume, ping is unable to measue short time
+> > correctly: 64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.000 ms
+> >
+> > "echo tsc
+> > >/sys/devices/system/clocksource/clocksource0/current_clocksource" fixes
+> > the problem until next hibernation:
+> > 64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.223 ms
+>
+> I didn't know about that, thanks for posting the tip.
 
-this should already be possible. If you lseek the trigger file, that 
-will be understood as an 'offset' by the patch, and then write a 
-(decimal) value into the file, that will be the count.
 
-So it should already be possible to fork off nr_cpus helper threads, 
-one bound to each CPU, each triggering trace output of a separate 
-segment of the memory map - and each reading that CPU's 
-trace_pipe_raw file to recover the data - all in parallel.
 
-	Ingo
+-- 
+Ondrej Zary
