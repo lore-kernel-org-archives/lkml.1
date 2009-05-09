@@ -1,48 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754915AbZEIQjV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbZEIQlS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754915AbZEIQjV (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 12:39:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbZEIQjE
+	id S1755074AbZEIQlS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 12:41:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbZEIQlH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 12:39:04 -0400
-Received: from kroah.org ([198.145.64.141]:41998 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751516AbZEIQjD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 12:39:03 -0400
-Date: Sat, 9 May 2009 09:35:23 -0700
-From: Greg KH <greg@kroah.com>
-To: "John W. Linville" <linville@tuxdriver.com>
-Cc: Eric Valette <eric.valette@free.fr>,
-       Hin-Tak Leung <hintak.leung@gmail.com>, linux-wireless@vger.kernel.org,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [RFT] rtl8187: use DMA-aware buffers with usb_control_msg
-Message-ID: <20090509163523.GA1200@kroah.com>
-References: <20090506064513.GA7460@kroah.com> <1241632963-25601-1-git-send-email-linville@tuxdriver.com> <3ace41890905081620h10d0250eq1ede9cd73021dc5b@mail.gmail.com> <4A054F18.7020501@free.fr> <20090509135731.GD17349@kroah.com> <20090509155013.GA21763@tuxdriver.com>
+	Sat, 9 May 2009 12:41:07 -0400
+Received: from a2s31.a2hosting.com ([69.39.67.40]:47860 "EHLO
+	a2s31.a2hosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751516AbZEIQlG (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 12:41:06 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090509155013.GA21763@tuxdriver.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Date: Sat, 09 May 2009 12:41:05 -0400
+From: <v.virvilis@biovista.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: SATA disks resets in a md setup
+In-Reply-To: <4A053229.5010406@garzik.org>
+References: <200905081739.46206.v.virvilis@biovista.com> <4A053229.5010406@garzik.org>
+Message-ID: <3794dbcf42f7f6b00e50070eeb203e8b@biovista.com>
+User-Agent: RoundCube Webmail/0.2
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="UTF-8"
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - a2s31.a2hosting.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - biovista.com
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 09, 2009 at 11:50:14AM -0400, John W. Linville wrote:
-> > usb_control messages are slow and should not be on the "fast path" of
-> > any data being sent through the device.  Any overhead of the
-> > kmalloc/kfree is totally eaten up by the actual transmission turn around
-> > time of the message itself, so you don't have to worry about the
-> > performance impact.
+On Sat, 09 May 2009 03:35:05 -0400, Jeff Garzik <jeff@garzik.org> wrote:
+
 > 
-> Yeah, I don't like the original version either.  Even if the kmalloc's
-> aren't a big performance hit, the failure path sucks.  I've included a
-> new version below, but unfortunately I haven't had a chance to test it.
-> Please give it a try if you get a chance?
+> For hardware details, see 
+> http://ata.wiki.kernel.org/index.php/Libata_error_messages
 
-Looks good to me, a bit cleaner even.
+Thanks for the link.
+> 
+> The ATA bus is the cable connection, so an ATA bus error typically means
+> 
+> - problem with your cable, or
+> - your motherboard's SATA port, or
+> - your drive's SATA port, or
+> - "dirty power" supply, or
+> - some other cause for cable interference
+> 
 
-thanks,
+I have changed SATA cables twice and I added a better PSU. The problem
+persists.
 
-greg k-h
+Do you have any insight on the sectors count mismatch I mentioned in the
+first mail?
+The disk is 250GB but it looks it is searching for a 500GB disk (that is
+md0 = sda + sdb).
+
+Is it possible the SATA reset thing to trigger an md bug. I am totally
+guessing here...
+
+Regards
+            .bill
+
