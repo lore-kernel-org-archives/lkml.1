@@ -1,147 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755112AbZEIXH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755538AbZEIX1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755112AbZEIXH7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 19:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbZEIXHr
+	id S1755538AbZEIX1z (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 19:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753308AbZEIX1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 19:07:47 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:42282 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751494AbZEIXHo (ORCPT
+	Sat, 9 May 2009 19:27:47 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:57419 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753263AbZEIX1q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 19:07:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer;
-        b=we03eH7n0P1W9WSgh5gvfkGVMnmkKhI38G701KbVcfd5acTxWRz8P3oXqb5E5qm15E
-         Er8Guls1Jik75QycWcg3LOuaqr7+kagVF+Xiy0jncrof/BoEJIixqUpNr1TkF1Y2tD2I
-         fgdnlk9EbQwFdz5KHsMI1tv6+7xkH0//Xi3u4=
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: gregkh@suse.de, davem@davemloft.net
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH] Staging: rtl8187se: convert to net_device_ops
-Date: Sun, 10 May 2009 03:06:54 +0400
-Message-Id: <1241910414-7389-1-git-send-email-a.beregalov@gmail.com>
-X-Mailer: git-send-email 1.6.3
+	Sat, 9 May 2009 19:27:46 -0400
+Message-ID: <4A061158.3010604@zytor.com>
+Date: Sat, 09 May 2009 16:27:20 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Sam Ravnborg <sam@ravnborg.org>
+CC: linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Tim Abbott <tabbott@mit.edu>
+Subject: Re: Minimal linker script
+References: <20090509080006.GA22617@uranus.ravnborg.org>
+In-Reply-To: <20090509080006.GA22617@uranus.ravnborg.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
- drivers/staging/rtl8187se/Kconfig                  |    2 +-
- .../staging/rtl8187se/ieee80211/ieee80211_module.c |    1 -
- drivers/staging/rtl8187se/r8180_core.c             |   25 ++++++++++++--------
- drivers/staging/rtl8187se/r8180_pm.c               |    6 +++-
- 4 files changed, 20 insertions(+), 14 deletions(-)
+Sam Ravnborg wrote:
+>  *      . = START;
+>  *      __init_begin = .;
+>  *      HEAD_SECTION
+>  *      INIT_TEXT_SECTION(PAGE_SIZE)
+>  *      INIT_DATA_SECTION(...)
+>  *      PERCPU(PAGE_SIZE)
+>  *      __init_end = .;
+>  *
+>  *      _stext = .;
+>  *      TEXT_SECTION = 0
+>  *      _etext = .;
+>  *
+>  *      _sdata = .;
+>  *      RO_DATA_SECTION(PAGE_SIZE)
+>  *      RW_DATA_SECTION(...)
+>  *      _edata = .;
+>  *
+>  *      EXCEPTION_TABLE(...)
+>  *      NOTES
+>  *
+>  *      __bss_start = .;
+>  *      BSS_SECTION(0, 0)
+>  *      __bss_stop = .;
+>  *      _end = .;
+>  *
+>  *
+>  * [__init_begin, __init_end] is the init section that may be freed after init
+>  * [_stext, _etext] is the text section
+>  * [_sdata, _edata] is the data section
+>  *
+>  * Some of the included output section include their own set of constants.
+>  * Examples are: [__initramfs_start, __initramfs_end] for initramfs and
+>  *               [__nosave_begin, __nosave_end] for the nosave data
+>  */
+> 
 
-diff --git a/drivers/staging/rtl8187se/Kconfig b/drivers/staging/rtl8187se/Kconfig
-index f636296..236e427 100644
---- a/drivers/staging/rtl8187se/Kconfig
-+++ b/drivers/staging/rtl8187se/Kconfig
-@@ -1,6 +1,6 @@
- config RTL8187SE
- 	tristate "RealTek RTL8187SE Wireless LAN NIC driver"
- 	depends on PCI
--	depends on WIRELESS_EXT && COMPAT_NET_DEV_OPS
-+	depends on WIRELESS_EXT
- 	default N
- 	---help---
-diff --git a/drivers/staging/rtl8187se/ieee80211/ieee80211_module.c b/drivers/staging/rtl8187se/ieee80211/ieee80211_module.c
-index 0c9fef0..c2b61e6 100644
---- a/drivers/staging/rtl8187se/ieee80211/ieee80211_module.c
-+++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_module.c
-@@ -114,7 +114,6 @@ struct net_device *alloc_ieee80211(int sizeof_priv)
- 		goto failed;
- 	}
- 	ieee = netdev_priv(dev);
--	dev->hard_start_xmit = ieee80211_xmit;
- 
- 	ieee->dev = dev;
- 
-diff --git a/drivers/staging/rtl8187se/r8180_core.c b/drivers/staging/rtl8187se/r8180_core.c
-index e10413c..7e2feca 100644
---- a/drivers/staging/rtl8187se/r8180_core.c
-+++ b/drivers/staging/rtl8187se/r8180_core.c
-@@ -198,7 +198,8 @@ static void __devexit rtl8180_pci_remove(struct pci_dev *pdev);
- static void rtl8180_shutdown (struct pci_dev *pdev)
- {
- 	struct net_device *dev = pci_get_drvdata(pdev);
--	dev->stop(dev);
-+	if (dev->netdev_ops->ndo_stop)
-+		dev->netdev_ops->ndo_stop(dev);
- 	pci_disable_device(pdev);
- }
- 
-@@ -4551,8 +4552,6 @@ short rtl8180_init(struct net_device *dev)
- 		//DMESG("Reported EEPROM chip is a 93c46 (1Kbit)");
- 	}
- 
--	dev->get_stats = rtl8180_stats;
--
- 	dev->dev_addr[0]=eprom_read(dev,MAC_ADR) & 0xff;
- 	dev->dev_addr[1]=(eprom_read(dev,MAC_ADR) & 0xff00)>>8;
- 	dev->dev_addr[2]=eprom_read(dev,MAC_ADR+1) & 0xff;
-@@ -5832,6 +5831,18 @@ int rtl8180_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
-      -----------------------------PCI STUFF---------------------------
- *****************************************************************************/
- 
-+static const struct net_device_ops rtl8180_netdev_ops = {
-+	.ndo_open		= rtl8180_open,
-+	.ndo_stop		= rtl8180_close,
-+	.ndo_get_stats		= rtl8180_stats,
-+	.ndo_tx_timeout		= rtl8180_restart,
-+	.ndo_do_ioctl		= rtl8180_ioctl,
-+	.ndo_set_multicast_list	= r8180_set_multicast,
-+	.ndo_set_mac_address	= r8180_set_mac_adr,
-+	.ndo_validate_addr	= eth_validate_addr,
-+	.ndo_change_mtu		= eth_change_mtu,
-+	.ndo_start_xmit		= ieee80211_xmit,
-+};
- 
- static int __devinit rtl8180_pci_probe(struct pci_dev *pdev,
- 				       const struct pci_device_id *id)
-@@ -5936,14 +5947,8 @@ static int __devinit rtl8180_pci_probe(struct pci_dev *pdev,
- 	dev->irq = pdev->irq;
- 	priv->irq = 0;
- 
--	dev->open = rtl8180_open;
--	dev->stop = rtl8180_close;
--	//dev->hard_start_xmit = ieee80211_xmit;
--	dev->tx_timeout = rtl8180_restart;
-+	dev->netdev_ops = &rtl8180_netdev_ops;
- 	dev->wireless_handlers = &r8180_wx_handlers_def;
--	dev->do_ioctl = rtl8180_ioctl;
--	dev->set_multicast_list = r8180_set_multicast;
--	dev->set_mac_address = r8180_set_mac_adr;
- 
- #if WIRELESS_EXT >= 12
- #if WIRELESS_EXT < 17
-diff --git a/drivers/staging/rtl8187se/r8180_pm.c b/drivers/staging/rtl8187se/r8180_pm.c
-index 3851b93..2b3d642 100644
---- a/drivers/staging/rtl8187se/r8180_pm.c
-+++ b/drivers/staging/rtl8187se/r8180_pm.c
-@@ -30,7 +30,8 @@ int rtl8180_suspend (struct pci_dev *pdev, pm_message_t state)
- 	if (!netif_running(dev))
- 		goto out_pci_suspend;
- 
--	dev->stop(dev);
-+	if (dev->netdev_ops->ndo_stop)
-+		dev->netdev_ops->ndo_stop(dev);
- 
- 	netif_device_detach(dev);
- 
-@@ -71,7 +72,8 @@ int rtl8180_resume (struct pci_dev *pdev)
- 	if(!netif_running(dev))
- 		goto out;
- 
--	dev->open(dev);
-+	if (dev->netdev_ops->ndo_open)
-+		dev->netdev_ops->ndo_open(dev);
- 	netif_device_attach(dev);
- out:
- 	return 0;
+It seems rather disturbing to me that different sections have different
+start and end symbols.  I realize this is largely for historical
+reasons, but if we used a single pattern (e.g. something like
+__text_start, __text_end for the .text section) then at least in the
+i386 case we could easily recognize those as relocatable symbols even if
+they show up as absolute.
+
+Furthermore, consistency is a good thing, even if it means a bigger
+changeset.
+
+	-hpa
+
 -- 
-1.6.3
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
