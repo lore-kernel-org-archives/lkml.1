@@ -1,45 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755030AbZEIFDZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755820AbZEIFDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755030AbZEIFDZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 01:03:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751017AbZEIFDO
+	id S1755820AbZEIFDi (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 01:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbZEIFDT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 01:03:14 -0400
-Received: from kroah.org ([198.145.64.141]:51217 "EHLO coco.kroah.org"
+	Sat, 9 May 2009 01:03:19 -0400
+Received: from kroah.org ([198.145.64.141]:51222 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750949AbZEIFDO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 01:03:14 -0400
-Date: Fri, 8 May 2009 21:34:22 -0700
+	id S1753819AbZEIFDS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 01:03:18 -0400
+Date: Fri, 8 May 2009 21:55:12 -0700
 From: Greg KH <greg@kroah.com>
-To: Robert Mykland <robert@ascenium.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Vendor info from device name
-Message-ID: <20090509043422.GA13794@kroah.com>
-References: <4A04CB41.3040008@ascenium.com>
+To: Xiaofan Chen <xiaofanc@gmail.com>
+Cc: linux-usb@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: usbutils 0.82 release
+Message-ID: <20090509045512.GD14356@kroah.com>
+References: <20090506222439.GB22327@kroah.com> <a276da400905080822u61f18893x3bd044037abee004@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4A04CB41.3040008@ascenium.com>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <a276da400905080822u61f18893x3bd044037abee004@mail.gmail.com>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 05:16:01PM -0700, Robert Mykland wrote:
-> Hi Folks,
+On Fri, May 08, 2009 at 11:22:43PM +0800, Xiaofan Chen wrote:
+> On Thu, May 7, 2009 at 6:24 AM, Greg KH <greg@kroah.com> wrote:
+> > Here's the 0.82 release of usbutils.
+> >
+> > Many bugs with autoconf were resolved to hopefully make it easier for
+> > distros to find where the usb.ids file is dynamically.  Wireless USB
+> > device support was added, as well as other bugfixes.  The full shortlog
+> > is below.
 > 
-> I am inside a file system driver, a modified version of vfat to be 
-> exact, trying to get vendor info that uniquely identifies a USB storage 
-> device that's associated.  I have the device name coming into 
-> vfat_get_sb().  I looked down through the associated structures I get 
-> here but nothing obvious pops out.  What's the best way to get down to 
-> the vendor/unique device info from here?  Thanks in advance for your 
-> help and apologies in advance if this is a dumb question.
+> By the way, the issue with "lsusb -t" has not been solved.
 
-Do this from userspace, with the tools provided in the udev package,
-vol_id and friends.
+Yes, it's an interm fix before I get the time to hook into libudev...
 
-Why would you want to do this within the kernel?
+If anyone wants to provide patches to fix this before then, I'll gladly
+take them :)
 
 thanks,
 
