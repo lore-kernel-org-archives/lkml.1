@@ -1,231 +1,268 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1765064AbZEIArT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932481AbZEIAvk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1765064AbZEIArT (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 20:47:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1764632AbZEIAqU
+	id S932481AbZEIAvk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 20:51:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S932382AbZEIAvd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 20:46:20 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:55698 "EHLO mx2.redhat.com"
+	Fri, 8 May 2009 20:51:33 -0400
+Received: from e9.ny.us.ibm.com ([32.97.182.139]:47455 "EHLO e9.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1764611AbZEIAqR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 20:46:17 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [PATCH -tip v5 6/7] x86: add pt_regs register and stack access APIs
-To: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>
-Cc: systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Roland McGrath <roland@redhat.com>
-Date: Fri, 08 May 2009 20:49:10 -0400
-Message-ID: <20090509004910.5505.23345.stgit@localhost.localdomain>
-In-Reply-To: <20090509004829.5505.38720.stgit@localhost.localdomain>
-References: <20090509004829.5505.38720.stgit@localhost.localdomain>
-User-Agent: StGIT/0.14.3
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+	id S932380AbZEIAvc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 20:51:32 -0400
+Subject: Re: [RFC][PATCH] Dynamic Tick: Allow 32-bit machines to sleep  
+ formorethan 2.15 seconds
+From: john stultz <johnstul@us.ibm.com>
+To: Jon Hunter <jon-hunter@ti.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A04584E.4020307@ti.com>
+References: <49ECE615.2010800@ti.com>  <20090421063523.GA8020@elte.hu>
+	 <1240345936.6080.6.camel@localhost>  <49EE54B4.9020700@ti.com>
+	 <1240358525.6080.40.camel@localhost>  <4A02F5A3.3050004@ti.com>
+	 <1241744048.7518.132.camel@localhost.localdomain> <4A04584E.4020307@ti.com>
+Content-Type: text/plain
+Date: Fri, 08 May 2009 17:51:21 -0700
+Message-Id: <1241830281.7297.21.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add following APIs for accessing registers and stack entries from pt_regs.
+On Fri, 2009-05-08 at 11:05 -0500, Jon Hunter wrote:
+> john stultz wrote:
+> > Yep. It would be easy to pull:
+> > 	max_time_delta = timekeeping_max_deferment()
+> > when you read jiffies.
+> 
+> Ok, will do.
+> 
+> > Urr. Lets move away from jiffies. Jiffies bad. Human time good.
+> > 
+> > Its easy to get the max value in ns right now, last_update is already a
+> > ktime_t. 
+> > 
+> > I think checking if expires (little bit lower in the same function) is
+> > larger then (last_update + max_time_delta) would be much much simpler.
+> 
+> No problem. I will do this too. I had a bit of a tough time figuring out 
+> what was best here.
+> 
+> > Yeeks. No, lets not do this. Cluttering up the clocksource with jiffies
+> > values is totally unnecessary.
+> 
+> Sorry about that. I have a tendency to try to reduce run-time 
+> computation if I can do it once at the beginning. However, I also 
+> dislike clutter so we can keep it the way you recommend.
+> 
+> > So while I really don't like your patch, I think you have the right
+> > idea. Just keep things in nanoseconds, rather then converting them to
+> > jiffies first. It will be much simpler patch and won't affect as much
+> > code.
+> > 
+> > Look at the simple accessor patch I sent earlier:
+> > http://lkml.indiana.edu/hypermail/linux/kernel/0901.3/02693.html
+> > 
+> > You could require the xtime_lock be held while calling to doge grabbing
+> > it twice and plug it right in.
+> 
+> Done. See below. Please note that the below patch is simply for handling 
+> the wrapping of clocksources and does not include the original patch to 
+> convert max_delta_ns to long long (to keep things simple for now).
+> 
+> I still have a couple concerns:
+> 
+> 1). The use of delta_jiffies
+> 
+> The below patch does not update delta_jiffies. In the current code 
+> delta_jiffies in a couple places after "expires" is calculated. So if we 
+> adjust expires to account for clocksource wrap, we should avoid using 
+> delta_jiffies later on. The first place delta_jiffies is used after 
+> expires is calculated is here:
+> 
+>                   if (delta_jiffies > 1)
+>                           cpumask_set_cpu(cpu, nohz_cpu_mask);
+> 
+> The second place is here:
+> 
+>                   /*
+>                    * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
+>                    * there is no timer pending or at least extremly far
+>                    * into the future (12 days for HZ=1000). In this case
+>                    * we simply stop the tick timer:
+>                    */
+>                   if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
+>                           ts->idle_expires.tv64 = KTIME_MAX;
+>                           if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
+>                                   hrtimer_cancel(&ts->sched_timer);
+>                           goto out;
+> 
+> Currently I have modified these compares so that the comparisons are 
+> done in nanoseconds and not jiffies to be safe. Let me know your thoughts.
 
-- query_register_offset(const char *name)
-   Query the offset of "name" register.
+Yep. Looks good to me.
 
-- query_register_name(unsigned offset)
-   Query the name of register by its offset.
+> 
+> 2). Clocksource max deferment
+> 
+> In your original patch you suggested that we should reduce the max time 
+> returned by the function timekeeping_max_deferment by some amount. Would 
+> it make sense to reduce this by a jiffie? In the current dynamic tick 
+> code we will only defer the tick if the next event is greater than or 
+> equal to 1 jiffie.
 
-- get_register(struct pt_regs *regs, unsigned offset)
-   Get the value of a register by its offset.
+Yea. NSEC_PER_SEC/HZ would probably be safe. I was initially thinking
+being more paranoid and just dividing it in half, but that's probably a
+bit silly.
 
-- valid_stack_address(struct pt_regs *regs, unsigned long addr)
-   Check the address is in the stack.
+As far the decision to defer if the next even is greater then one jiffy
+away, that seems reasonable, but I'd not embed that into the
+timekeeping_max_deferrment(). 
 
-- get_stack_nth(struct pt_regs *reg, unsigned nth)
-   Get Nth entry of the stack. (N >= 0)
+I'm suggesting we drop timekeeping_max_deferrment() down since that's
+the absolute maximum and we're sure to break if we actually wait that
+long (since the time between clocksource reads would certainly be longer
+due to execution delay). 1HZ seems reasonable, since we should easily be
+able to run the tick code twice in that time, as well as it should be
+easily within the interrupt programming granularity.
 
-- get_argument_nth(struct pt_regs *reg, unsigned nth)
-   Get Nth argument at function call. (N >= 0)
+Any additional decisions as to how far out we should be before we start
+skipping ticks would be up to the tick resched code, and shouldn't be in
+the timekeeping function.
 
+Sound sane? If so add that in and I'll ack it.
 
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
-Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Roland McGrath <roland@redhat.com>
----
+> 
+> 
+> Signed-off-by: Jon Hunter <jon-hunter@ti.com>
 
- arch/x86/include/asm/ptrace.h |   66 +++++++++++++++++++++++++++++++++++++++++
- arch/x86/kernel/ptrace.c      |   60 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 126 insertions(+), 0 deletions(-)
+This looks *much* better to me. Thanks for reworking it!
 
-diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
-index 90b76b3..c316b85 100644
---- a/arch/x86/include/asm/ptrace.h
-+++ b/arch/x86/include/asm/ptrace.h
-@@ -7,6 +7,7 @@
- 
- #ifdef __KERNEL__
- #include <asm/segment.h>
-+#include <asm/page_types.h>
- #endif
- 
- #ifndef __ASSEMBLY__
-@@ -215,6 +216,71 @@ static inline unsigned long user_stack_pointer(struct pt_regs *regs)
- 	return regs->sp;
- }
- 
-+/* Query offset/name of register from its name/offset */
-+extern int query_register_offset(const char *name);
-+extern const char *query_register_name(unsigned offset);
-+#define MAX_REG_OFFSET (offsetof(struct pt_regs, ss))
-+
-+/* Get register value from its offset */
-+static inline unsigned long get_register(struct pt_regs *regs, unsigned offset)
-+{
-+	if (unlikely(offset > MAX_REG_OFFSET))
-+		return 0;
-+	return *(unsigned long *)((unsigned long)regs + offset);
-+}
-+
-+/* Check the address in the stack */
-+static inline int valid_stack_address(struct pt_regs *regs, unsigned long addr)
-+{
-+	return ((addr & ~(THREAD_SIZE - 1))  ==
-+		(kernel_trap_sp(regs) & ~(THREAD_SIZE - 1)));
-+}
-+
-+/* Get Nth entry of the stack */
-+static inline unsigned long get_stack_nth(struct pt_regs *regs, unsigned n)
-+{
-+	unsigned long *addr = (unsigned long *)kernel_trap_sp(regs);
-+	addr += n;
-+	if (valid_stack_address(regs, (unsigned long)addr))
-+		return *addr;
-+	else
-+		return 0;
-+}
-+
-+/* Get Nth argument at function call */
-+static inline unsigned long get_argument_nth(struct pt_regs *regs, unsigned n)
-+{
-+#ifdef CONFIG_X86_32
-+#define NR_REGPARMS 3
-+	if (n < NR_REGPARMS) {
-+		switch (n) {
-+		case 0: return regs->ax;
-+		case 1: return regs->dx;
-+		case 2: return regs->cx;
-+		}
-+		return 0;
-+#else /* CONFIG_X86_64 */
-+#define NR_REGPARMS 6
-+	if (n < NR_REGPARMS) {
-+		switch (n) {
-+		case 0: return regs->di;
-+		case 1: return regs->si;
-+		case 2: return regs->dx;
-+		case 3: return regs->cx;
-+		case 4: return regs->r8;
-+		case 5: return regs->r9;
-+		}
-+		return 0;
-+#endif
-+	} else {
-+		/*
-+		 * The typical case: arg n is on the stack.
-+		 * (Note: stack[0] = return address, so skip it)
-+		 */
-+		return get_stack_nth(regs, 1 + n - NR_REGPARMS);
-+	}
-+}
-+
- /*
-  * These are defined as per linux/ptrace.h, which see.
-  */
-diff --git a/arch/x86/kernel/ptrace.c b/arch/x86/kernel/ptrace.c
-index 09ecbde..00eb9d7 100644
---- a/arch/x86/kernel/ptrace.c
-+++ b/arch/x86/kernel/ptrace.c
-@@ -48,6 +48,66 @@ enum x86_regset {
- 	REGSET_IOPERM32,
- };
- 
-+struct pt_regs_offset {
-+	const char *name;
-+	int offset;
-+};
-+
-+#define REG_OFFSET(r) offsetof(struct pt_regs, r)
-+#define REG_OFFSET_NAME(r) {.name = #r, .offset = REG_OFFSET(r)}
-+#define REG_OFFSET_END {.name = NULL, .offset = 0}
-+
-+static const struct pt_regs_offset regoffset_table[] = {
-+#ifdef CONFIG_X86_64
-+	REG_OFFSET_NAME(r15),
-+	REG_OFFSET_NAME(r14),
-+	REG_OFFSET_NAME(r13),
-+	REG_OFFSET_NAME(r12),
-+	REG_OFFSET_NAME(r11),
-+	REG_OFFSET_NAME(r10),
-+	REG_OFFSET_NAME(r9),
-+	REG_OFFSET_NAME(r8),
-+#endif
-+	REG_OFFSET_NAME(bx),
-+	REG_OFFSET_NAME(cx),
-+	REG_OFFSET_NAME(dx),
-+	REG_OFFSET_NAME(si),
-+	REG_OFFSET_NAME(di),
-+	REG_OFFSET_NAME(bp),
-+	REG_OFFSET_NAME(ax),
-+#ifdef CONFIG_X86_32
-+	REG_OFFSET_NAME(ds),
-+	REG_OFFSET_NAME(es),
-+	REG_OFFSET_NAME(fs),
-+	REG_OFFSET_NAME(gs),
-+#endif
-+	REG_OFFSET_NAME(orig_ax),
-+	REG_OFFSET_NAME(ip),
-+	REG_OFFSET_NAME(cs),
-+	REG_OFFSET_NAME(flags),
-+	REG_OFFSET_NAME(sp),
-+	REG_OFFSET_NAME(ss),
-+	REG_OFFSET_END,
-+};
-+
-+int query_register_offset(const char *name)
-+{
-+	const struct pt_regs_offset *roff;
-+	for (roff = regoffset_table; roff->name != NULL; roff++)
-+		if (!strcmp(roff->name, name))
-+			return roff->offset;
-+	return -EINVAL;
-+}
-+
-+const char *query_register_name(unsigned offset)
-+{
-+	const struct pt_regs_offset *roff;
-+	for (roff = regoffset_table; roff->name != NULL; roff++)
-+		if (roff->offset == offset)
-+			return roff->name;
-+	return NULL;
-+}
-+
- /*
-  * does not yet catch signals sent when the child dies.
-  * in exit.c or in signal.c.
+Thomas, this all sound/look good to you?
 
+thanks
+-john
 
--- 
-Masami Hiramatsu
+> ---
+>   include/linux/time.h      |    1 +
+>   kernel/time/tick-sched.c  |   36 +++++++++++++++++++++++++-----------
+>   kernel/time/timekeeping.c |   14 ++++++++++++++
+>   3 files changed, 40 insertions(+), 11 deletions(-)
+> 
+> diff --git a/include/linux/time.h b/include/linux/time.h
+> index 242f624..090be07 100644
+> --- a/include/linux/time.h
+> +++ b/include/linux/time.h
+> @@ -130,6 +130,7 @@ extern void monotonic_to_bootbased(struct timespec *ts);
+> 
+>   extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
+>   extern int timekeeping_valid_for_hres(void);
+> +extern s64 timekeeping_max_deferment(void);
+>   extern void update_wall_time(void);
+>   extern void update_xtime_cache(u64 nsec);
+> 
+> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
+> index d3f1ef4..5f9ba13 100644
+> --- a/kernel/time/tick-sched.c
+> +++ b/kernel/time/tick-sched.c
+> @@ -217,6 +217,7 @@ void tick_nohz_stop_sched_tick(int inidle)
+>   	ktime_t last_update, expires, now;
+>   	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
+>   	int cpu;
+> +	s64 time_delta, max_time_delta;
+> 
+>   	local_irq_save(flags);
+> 
+> @@ -264,6 +265,7 @@ void tick_nohz_stop_sched_tick(int inidle)
+>   		seq = read_seqbegin(&xtime_lock);
+>   		last_update = last_jiffies_update;
+>   		last_jiffies = jiffies;
+> +		max_time_delta = timekeeping_max_deferment();
+>   	} while (read_seqretry(&xtime_lock, seq));
+> 
+>   	/* Get the next timer wheel timer */
+> @@ -283,11 +285,22 @@ void tick_nohz_stop_sched_tick(int inidle)
+>   	if ((long)delta_jiffies >= 1) {
+> 
+>   		/*
+> -		* calculate the expiry time for the next timer wheel
+> -		* timer
+> -		*/
+> -		expires = ktime_add_ns(last_update, tick_period.tv64 *
+> -				   delta_jiffies);
+> +		 * Calculate the time delta for the next timer event.
+> +		 * If the time delta exceeds the maximum time delta
+> +		 * permitted by the current clocksource then adjust
+> +		 * the time delta accordingly to ensure the
+> +		 * clocksource does not wrap.
+> +		 * /
+> +		time_delta = tick_period.tv64 * delta_jiffies;
+> +
+> +		if (time_delta > max_time_delta)
+> +			time_delta = max_time_delta;
+> +
+> +		/*
+> +		 * calculate the expiry time for the next timer wheel
+> +		 * timer
+> +		 */
+> +		expires = ktime_add_ns(last_update, time_delta);
+> 
+>   		/*
+>   		 * If this cpu is the one which updates jiffies, then
+> @@ -300,7 +313,7 @@ void tick_nohz_stop_sched_tick(int inidle)
+>   		if (cpu == tick_do_timer_cpu)
+>   			tick_do_timer_cpu = TICK_DO_TIMER_NONE;
+> 
+> -		if (delta_jiffies > 1)
+> +		if (time_delta > tick_period.tv64)
+>   			cpumask_set_cpu(cpu, nohz_cpu_mask);
+> 
+>   		/* Skip reprogram of event if its not changed */
+> @@ -332,12 +345,13 @@ void tick_nohz_stop_sched_tick(int inidle)
+>   		ts->idle_sleeps++;
+> 
+>   		/*
+> -		 * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
+> -		 * there is no timer pending or at least extremly far
+> -		 * into the future (12 days for HZ=1000). In this case
+> -		 * we simply stop the tick timer:
+> +		 * time_delta >= (tick_period.tv64 * NEXT_TIMER_MAX_DELTA)
+> +		 * signals that there is no timer pending or at least
+> +		 * extremely far into the future (12 days for HZ=1000).
+> +		 * In this case we simply stop the tick timer:
+>   		 */
+> -		if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
+> +		if (unlikely(time_delta >=
+> +				(tick_period.tv64 * NEXT_TIMER_MAX_DELTA))) {
+>   			ts->idle_expires.tv64 = KTIME_MAX;
+>   			if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
+>   				hrtimer_cancel(&ts->sched_timer);
+> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
+> index 687dff4..a2ce815 100644
+> --- a/kernel/time/timekeeping.c
+> +++ b/kernel/time/timekeeping.c
+> @@ -271,6 +271,20 @@ int timekeeping_valid_for_hres(void)
+>   }
+> 
+>   /**
+> + * timekeeping_max_deferment - Returns max time the clocksource can be 
+> deferred
+> + *
+> + * IMPORTANT: Must be called with xtime_lock held!
+> + */
+> +s64 timekeeping_max_deferment(void)
+> +{
+> +	s64 max_nsecs;
+> +
+> +	max_nsecs = cyc2ns(clock, clock->mask);
+> +
+> +	return max_nsecs; /* XXX maybe reduce by some amount to be safe? */
+> +}
+> +
+> +/**
+>    * read_persistent_clock -  Return time in seconds from the persistent 
+> clock.
+>    *
+>    * Weak dummy function for arches that do not yet support it.
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
