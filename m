@@ -1,46 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754761AbZEIVY7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755205AbZEIViP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754761AbZEIVY7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 17:24:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752867AbZEIVYs
+	id S1755205AbZEIViP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 17:38:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753487AbZEIVhy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 17:24:48 -0400
-Received: from fmailhost03.isp.att.net ([207.115.11.53]:64404 "EHLO
-	fmailhost03.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751005AbZEIVYr (ORCPT
+	Sat, 9 May 2009 17:37:54 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:57444 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753052AbZEIVhx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 17:24:47 -0400
-X-Originating-IP: [71.195.50.4]
-Message-ID: <4A05F485.4080303@lwfinger.net>
-Date: Sat, 09 May 2009 16:24:21 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: "John W. Linville" <linville@tuxdriver.com>
-CC: Greg KH <greg@kroah.com>, Eric Valette <eric.valette@free.fr>,
-       Hin-Tak Leung <hintak.leung@gmail.com>, linux-wireless@vger.kernel.org,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: Re: [RFT] rtl8187: use DMA-aware buffers with usb_control_msg
-References: <20090506064513.GA7460@kroah.com> <1241632963-25601-1-git-send-email-linville@tuxdriver.com> <3ace41890905081620h10d0250eq1ede9cd73021dc5b@mail.gmail.com> <4A054F18.7020501@free.fr> <20090509135731.GD17349@kroah.com> <20090509155013.GA21763@tuxdriver.com>
-In-Reply-To: <20090509155013.GA21763@tuxdriver.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 9 May 2009 17:37:53 -0400
+Date: Sat, 9 May 2009 18:37:12 -0300
+From: Mauro Carvalho Chehab <mchehab@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Ming Lei <tom.leiming@gmail.com>,
+       Laurent Pinchart <laurent.pinchart@skynet.be>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       video4linux-list@redhat.com
+Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
+Message-ID: <20090509183712.54ac4c79@pedra.chehab.org>
+In-Reply-To: <alpine.LFD.2.01.0905090923370.3586@localhost.localdomain>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
+	<200904202208.23899.laurent.pinchart@skynet.be>
+	<d82e647a0904201847n403424efnb5a0c40a4cac365d@mail.gmail.com>
+	<200904220121.12002.laurent.pinchart@skynet.be>
+	<20090509112819.759594d5@linux-lm>
+	<alpine.LFD.2.01.0905090923370.3586@localhost.localdomain>
+X-Mailer: Claws Mail 3.3.1 (GTK+ 2.10.4; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <mchehab@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-John W. Linville wrote:
+Em Sat, 9 May 2009 09:24:51 -0700 (PDT)
+Linus Torvalds <torvalds@linux-foundation.org> escreveu:
+
 > 
-> Yeah, I don't like the original version either.  Even if the kmalloc's
-> aren't a big performance hit, the failure path sucks.  I've included a
-> new version below, but unfortunately I haven't had a chance to test it.
-> Please give it a try if you get a chance?
+> 
+> On Sat, 9 May 2009, Ming Lei wrote:
+> > 
+> > Rc5 has been released today, why isn't this patch accepted by upstream
+> > now?  It is really a bug fix.
 
-This one tests just fine here running on the latest pull of wireless testing
-(v2.6.30-rc4-22732-gd879ac6). I think there is a leak of priv->io_dmabuf when
-the driver is unloaded, and kfree(priv->io_dmabuf) should be added to
-rtl8187_disconnect(). Otherwise ACK.
 
-Larry
+> 
+> I can take it directly, but was hoping to get it through the regular DVB 
+> tree. Haven't had a DVB update request yet (or maybe it got lost?)
+> 
+> 		Linus
 
+The patch were added on my linux-next tree. I'll move it to the tree I handle
+bug fixes and I'll ask Linus to pull from it together with a few other fixes I
+have there, later today or tomorrow.
+
+
+
+
+Cheers,
+Mauro
