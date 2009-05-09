@@ -1,68 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbZEIUSW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755359AbZEIUV0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755075AbZEIUSW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 16:18:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754331AbZEIUSH
+	id S1755359AbZEIUV0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 16:21:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754859AbZEIUVP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 16:18:07 -0400
-Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43093
-	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754012AbZEIUSF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 16:18:05 -0400
-Date: Sat, 09 May 2009 13:18:01 -0700 (PDT)
-Message-Id: <20090509.131801.250435722.davem@davemloft.net>
-To: jpirko@redhat.com
-Cc: richard.genoud@gmail.com, fubar@us.ibm.com,
-       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: [PATCH] Remove duplicate slow protocol define in bond_3ad.h
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20090509171250.GA3390@psychotron.englab.brq.redhat.com>
-References: <1241888356-7575-1-git-send-email-richard.genoud@gmail.com>
-	<20090509171250.GA3390@psychotron.englab.brq.redhat.com>
-X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Sat, 9 May 2009 16:21:15 -0400
+Received: from bu3sch.de ([62.75.166.246]:40904 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754848AbZEIUVO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 16:21:14 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: Greg KH <greg@kroah.com>
+Subject: Re: DMA debug trace pointing to rtl8187
+Date: Sat, 9 May 2009 22:19:39 +0200
+User-Agent: KMail/1.9.9
+Cc: Larry Finger <Larry.Finger@lwfinger.net>,
+       Eric Valette <eric.valette@free.fr>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, Hin-Tak Leung <hintak.leung@gmail.com>
+References: <49FDB9F8.3080400@free.fr> <4A05BD77.9020003@lwfinger.net> <20090509192959.GA1842@kroah.com>
+In-Reply-To: <20090509192959.GA1842@kroah.com>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200905092219.40216.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jiri Pirko <jpirko@redhat.com>
-Date: Sat, 9 May 2009 19:12:53 +0200
+On Saturday 09 May 2009 21:29:59 Greg KH wrote:
+> On Sat, May 09, 2009 at 12:29:27PM -0500, Larry Finger wrote:
+> > I think there is a second problem that John's fix does not treat. Although the
+> > buffer is removed from the stack, there is no assurance that the buffer obtained
+> > with kmalloc() is reachable by DMA. This case will be triggered if the USB
+> > adapter does 32-bit DMA and the system has more than 4 GB RAM.
 
-> Sat, May 09, 2009 at 06:59:16PM CEST, richard.genoud@gmail.com wrote:
->>ETH_P_SLOW is already defined in include/linux/if_ether.h.
->>There's no need to define BOND_ETH_P_LACPDU in drivers/net/bonding/bond_3ad.h
->>
->>Signed-off-by: Richard Genoud <richard.genoud@gmail.com>
->>---
->> drivers/net/bonding/bond_3ad.h |    4 ++--
->> 1 files changed, 2 insertions(+), 2 deletions(-)
->>
->>diff --git a/drivers/net/bonding/bond_3ad.h b/drivers/net/bonding/bond_3ad.h
->>index a306230..2c46a15 100644
->>--- a/drivers/net/bonding/bond_3ad.h
->>+++ b/drivers/net/bonding/bond_3ad.h
->>@@ -26,10 +26,10 @@
->> #include <asm/byteorder.h>
->> #include <linux/skbuff.h>
->> #include <linux/netdevice.h>
->>+#include <linux/if_ether.h>
->> 
->> // General definitions
->>-#define BOND_ETH_P_LACPDU       0x8809
->>-#define PKT_TYPE_LACPDU         cpu_to_be16(BOND_ETH_P_LACPDU)
->>+#define PKT_TYPE_LACPDU         cpu_to_be16(ETH_P_SLOW)
->> #define AD_TIMER_INTERVAL       100 /*msec*/
->> 
->> #define MULTICAST_LACPDU_ADDR    {0x01, 0x80, 0xC2, 0x00, 0x00, 0x02}
->>-- 
->>1.6.0.4
-> 
-> Looks good.
-> 
-> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
+In practice this does not hit, because such systems' kmalloc does not return
+memory above 4G (i386) _or_ the DMA mapping functions take care of bounce buffering
+or I/O-remapping (should be true for all other arches).
+So if the device is able to do DMA with addresses >=32bit it should be fine, provided
+it correctly sets the DMA mask.
 
-Applied to net-next-2.6
+> Memory returned by kmalloc will always be able to be DMAable.  If not,
+> we have lots of problems :)
+
+True for sane devices.
+False for devices like Broadcom HND-DMA, which should only be used to slap thy hw engineers.
+
+-- 
+Greetings, Michael.
