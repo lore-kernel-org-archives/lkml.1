@@ -1,59 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754933AbZEIPtb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754134AbZEIP5y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754933AbZEIPtb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 11:49:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752083AbZEIPtX
+	id S1754134AbZEIP5y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 11:57:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751966AbZEIP5q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 11:49:23 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42589 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751528AbZEIPtW (ORCPT
+	Sat, 9 May 2009 11:57:46 -0400
+Received: from tomts20.bellnexxia.net ([209.226.175.74]:41726 "EHLO
+	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751921AbZEIP5p (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 11:49:22 -0400
-Date: Sat, 9 May 2009 08:22:33 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] devtmpfs patches
-Message-ID: <20090509082233.32cbb8e4@infradead.org>
-In-Reply-To: <20090509150853.GA32394@suse.de>
-References: <20090509143742.GA27663@kroah.com>
-	<b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com>
-	<20090509150853.GA32394@suse.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Sat, 9 May 2009 11:57:45 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ah8GAKtEBUpMQW1W/2dsb2JhbACBUM0Yg34F
+Date: Sat, 9 May 2009 11:57:42 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: "Frank Ch. Eigler" <fche@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
+       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org,
+       fweisbec@gmail.com, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, jiayingz@google.com, mbligh@google.com,
+       roland@redhat.com
+Subject: Re: [RFC] convert ftrace syscall tracer to TRACE_EVENT()
+Message-ID: <20090509155742.GA6340@Krystal>
+References: <20090508210347.GA3121@redhat.com> <20090509083737.GE3656@elte.hu> <20090509153629.GC29911@redhat.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Disposition: inline
+In-Reply-To: <20090509153629.GC29911@redhat.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:55:25 up 70 days, 12:21,  4 users,  load average: 0.91, 0.55,
+	0.57
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 May 2009 08:08:53 -0700
-Greg KH <gregkh@suse.de> wrote:
-
-> > Well, guess you meant the opposite ;-)
+* Frank Ch. Eigler (fche@redhat.com) wrote:
+> Hi -
 > 
-> Heh, yes, sorry about that.  It makes booting faster :)
+> On Sat, May 09, 2009 at 10:37:37AM +0200, Ingo Molnar wrote:
+> > [...]
+> > Firstly, it adds two new tracepoints to every system call. That is 
+> > unnecessary - we already have the TIF flag based callbacks, and we 
+> > can use the existing syscall attributes table to get to tracepoints 
+> > - without slow down (or impacting) the fast path in any way.
+> > [...]
+> 
+> However, as the TIF_SYSCALL_FTRACE and/or TIF_SYSCALL_TRACE flags are
+> tied to a single consumer, it would limit the usefulness of the
+> naturally multiple-client tracepoints, if they were made conditional
+> on them.  Would you be interested in a proper reference-counting API?
+> 
 
-.. and I don't buy that.
+I've got this in my TIF_KERNEL_TRACE patchset. I think I should post it
+as-is for RFC once more.
 
-The only argument I've heard is "oh but it's hard". No it's not.
-The other argument is "but for more partitions we get other device
-numbers"... you know what, that's easy to fix. Just make the 32 bit dev
-number consistent. Few lines of code I bet, and it is benefit for
-everyone to do that....
+Mathieu
 
-Beyond that... this is not needed... but at least call it "devfs".. for
-what it is.
-
-(and yes there is very obvious irony)
-
+> - FChE
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
