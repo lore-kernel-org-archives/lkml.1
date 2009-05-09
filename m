@@ -1,82 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753199AbZEIITY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751945AbZEIIbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753199AbZEIITY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 04:19:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750861AbZEIITK
+	id S1751945AbZEIIbT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 04:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZEIIbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 04:19:10 -0400
-Received: from mga14.intel.com ([143.182.124.37]:20164 "EHLO mga14.intel.com"
+	Sat, 9 May 2009 04:31:09 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:45237 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750826AbZEIITI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 04:19:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,320,1239001200"; 
-   d="scan'208";a="140982345"
-Date: Sat, 9 May 2009 16:18:42 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 6/8] pagemap: document 9 more exported page flags
-Message-ID: <20090509081842.GA8168@localhost>
-References: <20090508105320.316173813@intel.com> <20090508111031.568178884@intel.com> <20090509171125.8D08.A69D9226@jp.fujitsu.com>
+	id S1751053AbZEIIbI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 04:31:08 -0400
+Date: Sat, 9 May 2009 10:30:17 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>,
+       Christoph Lameter <cl@linux-foundation.org>, akpm@linux-foundation.org,
+       kosaki.motohiro@jp.fujitsu.com, mel@csn.ul.ie, riel@redhat.com,
+       linux-kernel@vger.kernel.org, rientjes@google.com
+Subject: Re: [PATCH 2/2] SLUB: Use GFP_PANIC for early-boot allocations
+Message-ID: <20090509083017.GA3656@elte.hu>
+References: <1241795429.28600.61.camel@penberg-laptop> <alpine.DEB.1.10.0905081127240.26361@qirst.com> <1241797017.28600.63.camel@penberg-laptop> <1241797364.6311.2914.camel@laptop> <1241797558.28600.68.camel@penberg-laptop> <1241797858.6311.2925.camel@laptop> <20090508161553.GL6132@lenovo> <1241800267.6311.2969.camel@laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090509171125.8D08.A69D9226@jp.fujitsu.com>
+In-Reply-To: <1241800267.6311.2969.camel@laptop>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 09, 2009 at 04:13:40PM +0800, KOSAKI Motohiro wrote:
-> > Also add short descriptions for all of the 20 exported page flags.
+
+* Peter Zijlstra <peterz@infradead.org> wrote:
+
+> On Fri, 2009-05-08 at 20:15 +0400, Cyrill Gorcunov wrote:
+> > [Peter Zijlstra - Fri, May 08, 2009 at 05:50:58PM +0200]
+> > | On Fri, 2009-05-08 at 18:45 +0300, Pekka Enberg wrote:
+> > | 
+> > | > On Fri, 2009-05-08 at 17:42 +0200, Peter Zijlstra wrote:
+> > | > > BUG_ON((gfp & __GFP_PANIC) && (system_state != STATE_BOOTING));
+> > | > 
+> > | > There's no technical reason not to use GFP_PANIC when system_state !=
+> > | > STATE_BOOTING so I don't think it's needed. It's just that GFP_PANIC
+> > | > (and BUG_ON) is IMHO too harsh for create_unique_id().
+> > | 
+> > | Shouldn't we handle every allocation failure after booting?
 > > 
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  Documentation/vm/pagemap.txt |   62 +++++++++++++++++++++++++++++++++
-> >  1 file changed, 62 insertions(+)
+> > Definitely
 > > 
-> > --- linux.orig/Documentation/vm/pagemap.txt
-> > +++ linux/Documentation/vm/pagemap.txt
-> > @@ -49,6 +49,68 @@ There are three components to pagemap:
-> >       8. WRITEBACK
-> >       9. RECLAIM
-> >      10. BUDDY
-> > +    11. MMAP
-> > +    12. ANON
-> > +    13. SWAPCACHE
-> > +    14. SWAPBACKED
-> > +    15. COMPOUND_HEAD
-> > +    16. COMPOUND_TAIL
-> > +    16. HUGE
+> > | 
+> > | I think it _is_ a bug to panic on allocation failures once we're
+> > | running.
+> > |
+> > 
+> > But Peter I believe there was no suggestion to use GFP_PANIC everywhere
+> > to get rid of error handling. But rather to use it in case if kmalloc is
+> > followed by BUG_ON.
 > 
-> nit. 16 appear twice.
+> Well, what I'm saying is that that either is a genuine bug we 
+> should fix, or its boot code, which is exactly what my assertion 
+> above tests for.
 
-Good catch!
+This is about boot code - and only about boot code.
 
-Andrew, this fix can be folded into the last patch.
----
-pagemap: fix HUGE numbering
+This is a really simple thing. Replace existing x86 platform code 
+early boot allocaton patterns of:
 
-Thanks to KOSAKI Motohiro for catching this.
+	x = alloc(GFP_KERNEL, ...);
+	BUG_ON(!x);
 
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
----
- Documentation/vm/pagemap.txt |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+	y = alloc(GFP_KERNEL, ...);
+	BUG_ON(!y);
 
---- linux.orig/Documentation/vm/pagemap.txt
-+++ linux/Documentation/vm/pagemap.txt
-@@ -55,7 +55,7 @@ There are three components to pagemap:
-     14. SWAPBACKED
-     15. COMPOUND_HEAD
-     16. COMPOUND_TAIL
--    16. HUGE
-+    17. HUGE
-     18. UNEVICTABLE
-     19. HWPOISON
-     20. NOPAGE
+With:
+
+	x = alloc(GFP_KERNEL | __GFP_PANIC, ...);
+
+	y = alloc(GFP_KERNEL | __GFP_PANIC, ...);
+
+it makes code shorter, smaller and easier to read. Nothing more, 
+nothing less. And yes, i agree that we should disallow this after 
+bootup has finished - but the boot-alloc case Cyrill and me would 
+like to handle via this is still fully valid.
+
+	Ingo
