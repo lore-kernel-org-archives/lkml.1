@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755310AbZEIQtj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755510AbZEIQtz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755310AbZEIQtj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 12:49:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754756AbZEIQtE
+	id S1755510AbZEIQtz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 12:49:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbZEIQtF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 12:49:04 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54431 "EHLO smtp.polymtl.ca"
+	Sat, 9 May 2009 12:49:05 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54437 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754916AbZEIQtB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 12:49:01 -0400
-Message-Id: <20090509162350.323591599@polymtl.ca>
+	id S1753491AbZEIQtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 12:49:03 -0400
+Message-Id: <20090509162349.030889599@polymtl.ca>
 References: <20090509162209.217414024@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Sat, 09 May 2009 12:22:22 -0400
+Date: Sat, 09 May 2009 12:22:14 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
@@ -21,9 +21,9 @@ To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        peterz@infradead.org, jiayingz@google.com, roland@redhat.com,
        mbligh@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 13/20] LTTng Kernel Trace Thread Flag powerpc
-Content-Disposition: inline; filename=lttng-kernel-trace-thread-flag-powerpc.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sat,  9 May 2009 16:47:19 +0000
+Subject: [RFC patch 05/20] LTTng Kernel Trace Thread Flag Cris
+Content-Disposition: inline; filename=lttng-kernel-trace-thread-flag-cris.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sat,  9 May 2009 16:47:18 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -32,49 +32,40 @@ Add a thread flag to activate system-wide syscall tracing.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- arch/powerpc/include/asm/thread_info.h |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+ arch/cris/include/asm/thread_info.h |    9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
 
-Index: linux-2.6-lttng/arch/powerpc/include/asm/thread_info.h
+Index: linux-2.6-lttng/arch/cris/include/asm/thread_info.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/powerpc/include/asm/thread_info.h	2009-04-23 14:56:40.000000000 -0400
-+++ linux-2.6-lttng/arch/powerpc/include/asm/thread_info.h	2009-04-23 14:56:42.000000000 -0400
-@@ -102,7 +102,7 @@ static inline struct thread_info *curren
- #define TIF_POLLING_NRFLAG	3	/* true if poll_idle() is polling
- 					   TIF_NEED_RESCHED */
- #define TIF_32BIT		4	/* 32 bit binary */
--#define TIF_PERFMON_WORK	5	/* work for pfm_handle_work() */
-+#define TIF_KERNEL_TRACE	5	/* kernel trace active */
- #define TIF_PERFMON_CTXSW	6	/* perfmon needs ctxsw calls */
- #define TIF_SYSCALL_AUDIT	7	/* syscall auditing active */
- #define TIF_SINGLESTEP		8	/* singlestepping active */
-@@ -114,6 +114,7 @@ static inline struct thread_info *curren
- #define TIF_FREEZE		14	/* Freezing for suspend */
- #define TIF_RUNLATCH		15	/* Is the runlatch enabled? */
- #define TIF_ABI_PENDING		16	/* 32/64 bit switch needed */
-+#define TIF_PERFMON_WORK	17	/* work for pfm_handle_work() */
- 
- /* as above, but as bit values */
- #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
-@@ -121,7 +122,7 @@ static inline struct thread_info *curren
+--- linux-2.6-lttng.orig/arch/cris/include/asm/thread_info.h	2009-03-15 15:57:05.000000000 -0400
++++ linux-2.6-lttng/arch/cris/include/asm/thread_info.h	2009-03-15 15:57:14.000000000 -0400
+@@ -85,6 +85,7 @@ struct thread_info {
+ #define TIF_NOTIFY_RESUME	1	/* resumption notification requested */
+ #define TIF_SIGPENDING		2	/* signal pending */
+ #define TIF_NEED_RESCHED	3	/* rescheduling necessary */
++#define TIF_KERNEL_TRACE	4	/* kernel trace active */
+ #define TIF_RESTORE_SIGMASK	9	/* restore signal mask in do_signal() */
+ #define TIF_POLLING_NRFLAG	16	/* true if poll_idle() is polling TIF_NEED_RESCHED */
+ #define TIF_MEMDIE		17
+@@ -94,12 +95,16 @@ struct thread_info {
+ #define _TIF_NOTIFY_RESUME	(1<<TIF_NOTIFY_RESUME)
+ #define _TIF_SIGPENDING		(1<<TIF_SIGPENDING)
  #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
- #define _TIF_32BIT		(1<<TIF_32BIT)
--#define _TIF_PERFMON_WORK	(1<<TIF_PERFMON_WORK)
 +#define _TIF_KERNEL_TRACE	(1<<TIF_KERNEL_TRACE)
- #define _TIF_PERFMON_CTXSW	(1<<TIF_PERFMON_CTXSW)
- #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
- #define _TIF_SINGLESTEP		(1<<TIF_SINGLESTEP)
-@@ -132,7 +133,8 @@ static inline struct thread_info *curren
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
  #define _TIF_FREEZE		(1<<TIF_FREEZE)
- #define _TIF_RUNLATCH		(1<<TIF_RUNLATCH)
- #define _TIF_ABI_PENDING	(1<<TIF_ABI_PENDING)
--#define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP)
-+#define _TIF_PERFMON_WORK	(1<<TIF_PERFMON_WORK)
-+#define _TIF_SYSCALL_T_OR_A	(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_SECCOMP|_TIF_KERNEL_TRACE)
  
- #define _TIF_USER_WORK_MASK	(_TIF_SIGPENDING | _TIF_NEED_RESCHED | \
- 				 _TIF_NOTIFY_RESUME)
+-#define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
+-#define _TIF_ALLWORK_MASK	0x0000FFFF	/* work to do on any return to u-space */
++/* work to do on interrupt/exception return */
++#define _TIF_WORK_MASK		0x0000FFFF & \
++		(~_TIF_SYSCALL_TRACE | ~_TIF_KERNEL_TRACE)
++/* work to do on any return to u-space */
++#define _TIF_ALLWORK_MASK	0x0000FFFF
+ 
+ #endif /* __KERNEL__ */
+ 
 
 -- 
 Mathieu Desnoyers
