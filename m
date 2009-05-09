@@ -1,103 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbZEIH6Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753540AbZEIIAo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752886AbZEIH6Q (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 03:58:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbZEIH54
+	id S1753540AbZEIIAo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 04:00:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbZEIIAf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 03:57:56 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:38582 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750826AbZEIH5z (ORCPT
+	Sat, 9 May 2009 04:00:35 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:49790 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751440AbZEIIAe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 03:57:55 -0400
-Date: Sat, 9 May 2009 10:00:06 +0200
+	Sat, 9 May 2009 04:00:34 -0400
+Date: Sat, 9 May 2009 10:02:45 +0200
 From: Sam Ravnborg <sam@ravnborg.org>
-To: linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: Tim Abbott <tabbott@mit.edu>
-Subject: Minimal linker script
-Message-ID: <20090509080006.GA22617@uranus.ravnborg.org>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Cc: bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/14] ide-tape: fix potential fs requests bug
+Message-ID: <20090509080245.GB22617@uranus.ravnborg.org>
+References: <1241855134-4984-1-git-send-email-petkovbb@gmail.com> <1241855134-4984-2-git-send-email-petkovbb@gmail.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <1241855134-4984-2-git-send-email-petkovbb@gmail.com>
 User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-While trying to address the common patters in our
-linker scripts I made a sketch of a minimal linker script.
+On Sat, May 09, 2009 at 09:45:21AM +0200, Borislav Petkov wrote:
+> ide-tape had a potential bug for fs requests when preparing the command
+> packet: it was writing the transfer length as a number of fixed blocks.
+> However, the block layer implies 512 byte blocks and ide-tape can have
+> other block sizes so account for that too.
+> 
+> ide-floppy does this calculation properly with the block size factor
+> (floppy->bs_factor).
+> 
+> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> ---
+>  drivers/ide/ide-tape.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+> index e166045..fc79cf4 100644
+> --- a/drivers/ide/ide-tape.c
+> +++ b/drivers/ide/ide-tape.c
+> @@ -586,7 +586,7 @@ static void ide_tape_create_rw_cmd(idetape_tape_t *tape,
+>  				   struct ide_atapi_pc *pc, struct request *rq,
+>  				   u8 opcode)
+>  {
+> -	unsigned int length = blk_rq_sectors(rq);
+> +	unsigned int length = blk_rq_sectors(rq) / (tape->blk_size >> 9);
 
-As this will be the basis for my continued effort to create
-a set of defines that can be used by all architectues I would like
-to receive some feedback.
-
-/*
- * Helper macros to support writing architecture specific
- * linker scripts.
- *
- * A minimal linker scripts has following content:
- *
- * OUTPUT_FORMAT(...)
- * OUTPUT_ARCH(...)
- * ENTRY(...)
- * SECTIONS
- * {
- *      . = START;
- *      __init_begin = .;
- *      HEAD_SECTION
- *      INIT_TEXT_SECTION(PAGE_SIZE)
- *      INIT_DATA_SECTION(...)
- *      PERCPU(PAGE_SIZE)
- *      __init_end = .;
- *
- *      _stext = .;
- *      TEXT_SECTION = 0
- *      _etext = .;
- *
- *      _sdata = .;
- *      RO_DATA_SECTION(PAGE_SIZE)
- *      RW_DATA_SECTION(...)
- *      _edata = .;
- *
- *      EXCEPTION_TABLE(...)
- *      NOTES
- *
- *      __bss_start = .;
- *      BSS_SECTION(0, 0)
- *      __bss_stop = .;
- *      _end = .;
- *
- *      /DISCARD/ : {
- *              EXIT_TEXT
- *              EXIT_DATA
- *              *(.exitcall.exit)
- *      }
- *      STABS_DEBUG
- *      DWARF_DEBUG
- * }
- *
- * [__init_begin, __init_end] is the init section that may be freed after init
- * [_stext, _etext] is the text section
- * [_sdata, _edata] is the data section
- *
- * Some of the included output section include their own set of constants.
- * Examples are: [__initramfs_start, __initramfs_end] for initramfs and
- *               [__nosave_begin, __nosave_end] for the nosave data
- */
-
-There is one majot issue in the minimal script I need to address.
-All symbols are absolute (__init_begin, _stext etc) - I need to find a nice
-way to make them non-absolute.
-For now I and more interested in comments on the structure and the coverage
-of the symbols.
-I strikes me that [_stext, _etext] do not cover text in the init section.
-And does [_sdata, _edata] cover RO_DATA?
-
-What abut the order of the sections - are they significant for any archtecture?
-I have used an order used by some of the embedded targets that allows
-a maximum of code to reside inisde [__init_begin, __init_end].
-
-Comments appreciated!
+If tape->blk_size equals 256 or less then we get a divide-by-zero.
 
 	Sam
