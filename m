@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752184AbZEIHq5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754165AbZEIHrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752184AbZEIHq5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 03:46:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751911AbZEIHpn
+	id S1754165AbZEIHrX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 03:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752391AbZEIHpr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 03:45:43 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:55504 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750989AbZEIHph (ORCPT
+	Sat, 9 May 2009 03:45:47 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:60855 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751027AbZEIHph (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 9 May 2009 03:45:37 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=BMngIaVCZLR9ZfPLUlIt10hGr8TgR3Hwtb5CTSffDxMqOtDmPEPm4+oxFVhhbbKBNt
-         UD3Ft7zy5GH/TdyBX8FPdphb7od83Wf8E7x9EtErVSjBp/ovonyji0r0YP8klGbujth+
-         x35PB3GP5C4Ckc0HsHGZRXMk1lZrMQ8s1wJlg=
+        b=jMFeJu1AeEPvlWxpX72pB8jWoFVE1n2wk8cqgatYh59i9X99L8T6zUKgw+USrqOt2G
+         +AX92nrjmbvRLlba8Enn4VHdRFYnXNHOjpPVfVLuCXkBXxpC/P0vvUcmFMenkvFfa/wU
+         Rk0EWov0U9gm/35D6CdXKGmZa6PMWdp/5ykg0=
 From: Borislav Petkov <petkovbb@googlemail.com>
 To: <bzolnier@gmail.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 02/14] ide-atapi: switch to blk_rq_bytes() on do_request() path
-Date: Sat,  9 May 2009 09:45:22 +0200
-Message-Id: <1241855134-4984-3-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 04/14] ide-atapi: add a len-parameter to ide_queue_pc_tail
+Date: Sat,  9 May 2009 09:45:24 +0200
+Message-Id: <1241855134-4984-5-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241855134-4984-1-git-send-email-petkovbb@gmail.com>
 References: <1241855134-4984-1-git-send-email-petkovbb@gmail.com>
@@ -29,160 +29,257 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-After the recent struct request cleanups, blk_rq_bytes() is guaranteed
-to be valid and is the current total length of the rq's bio. Use that
-instead of pc->req_xfer in the do_request() path after the command has
-been queued.
+This is in preparation for removing ide_atapi_pc.
 
-The remaining usage of pc->req_xfer now is only until we map the rq to a
-bio.
-
-While at it:
-
-- remove local caching of rq completion length in ide_tape_issue_pc()
+There should be no functional change resulting from this patch.
 
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-atapi.c  |   12 +++++++-----
- drivers/ide/ide-floppy.c |    8 ++++----
- drivers/ide/ide-tape.c   |   12 ++++++------
- 3 files changed, 17 insertions(+), 15 deletions(-)
+ drivers/ide/ide-atapi.c        |   12 ++++++------
+ drivers/ide/ide-floppy.c       |    4 ++--
+ drivers/ide/ide-floppy_ioctl.c |    8 ++++----
+ drivers/ide/ide-tape.c         |   26 +++++++++++++-------------
+ include/linux/ide.h            |    3 ++-
+ 5 files changed, 27 insertions(+), 26 deletions(-)
 
 diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index 792534d..cacffd4 100644
+index 1f2af8b..27690f1 100644
 --- a/drivers/ide/ide-atapi.c
 +++ b/drivers/ide/ide-atapi.c
-@@ -360,7 +360,7 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
- 						     ? "write" : "read");
- 			pc->flags |= PC_FLAG_DMA_ERROR;
- 		} else
--			pc->xferred = pc->req_xfer;
-+			pc->xferred = blk_rq_bytes(rq);
- 		debug_log("%s: DMA finished\n", drive->name);
- 	}
+@@ -84,7 +84,7 @@ EXPORT_SYMBOL_GPL(ide_init_pc);
+  * and wait for it to be serviced.
+  */
+ int ide_queue_pc_tail(ide_drive_t *drive, struct gendisk *disk,
+-		      struct ide_atapi_pc *pc)
++		      struct ide_atapi_pc *pc, unsigned int bufflen)
+ {
+ 	struct request *rq;
+ 	int error;
+@@ -93,8 +93,8 @@ int ide_queue_pc_tail(ide_drive_t *drive, struct gendisk *disk,
+ 	rq->cmd_type = REQ_TYPE_SPECIAL;
+ 	rq->special = (char *)pc;
  
-@@ -617,7 +617,7 @@ ide_startstop_t ide_issue_pc(ide_drive_t *drive, struct ide_cmd *cmd)
- 	ide_hwif_t *hwif = drive->hwif;
- 	ide_expiry_t *expiry = NULL;
- 	struct request *rq = hwif->rq;
--	unsigned int timeout;
-+	unsigned int timeout, bytes;
- 	u16 bcount;
- 	u8 valid_tf;
- 	u8 drq_int = !!(drive->atapi_flags & IDE_AFLAG_DRQ_INTERRUPT);
-@@ -637,9 +637,11 @@ ide_startstop_t ide_issue_pc(ide_drive_t *drive, struct ide_cmd *cmd)
- 		pc->xferred = 0;
+-	if (pc->req_xfer) {
+-		error = blk_rq_map_kern(drive->queue, rq, pc->buf, pc->req_xfer,
++	if (bufflen) {
++		error = blk_rq_map_kern(drive->queue, rq, pc->buf, bufflen,
+ 					GFP_NOIO);
+ 		if (error)
+ 			goto put_req;
+@@ -117,7 +117,7 @@ int ide_do_test_unit_ready(ide_drive_t *drive, struct gendisk *disk)
+ 	ide_init_pc(&pc);
+ 	pc.c[0] = TEST_UNIT_READY;
  
- 		valid_tf = IDE_VALID_DEVICE;
--		bcount = ((drive->media == ide_tape) ?
--				pc->req_xfer :
--				min(pc->req_xfer, 63 * 1024));
-+		bytes = blk_rq_bytes(rq);
-+
-+		bcount = ((drive->media == ide_tape) ? bytes
-+						     : min_t(unsigned int,
-+							     bytes, 63 * 1024));
+-	return ide_queue_pc_tail(drive, disk, &pc);
++	return ide_queue_pc_tail(drive, disk, &pc, 0);
+ }
+ EXPORT_SYMBOL_GPL(ide_do_test_unit_ready);
  
- 		if (pc->flags & PC_FLAG_DMA_ERROR) {
- 			pc->flags &= ~PC_FLAG_DMA_ERROR;
+@@ -132,7 +132,7 @@ int ide_do_start_stop(ide_drive_t *drive, struct gendisk *disk, int start)
+ 	if (drive->media == ide_tape)
+ 		pc.flags |= PC_FLAG_WAIT_FOR_DSC;
+ 
+-	return ide_queue_pc_tail(drive, disk, &pc);
++	return ide_queue_pc_tail(drive, disk, &pc, 0);
+ }
+ EXPORT_SYMBOL_GPL(ide_do_start_stop);
+ 
+@@ -147,7 +147,7 @@ int ide_set_media_lock(ide_drive_t *drive, struct gendisk *disk, int on)
+ 	pc.c[0] = ALLOW_MEDIUM_REMOVAL;
+ 	pc.c[4] = on;
+ 
+-	return ide_queue_pc_tail(drive, disk, &pc);
++	return ide_queue_pc_tail(drive, disk, &pc, 0);
+ }
+ EXPORT_SYMBOL_GPL(ide_set_media_lock);
+ 
 diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
-index 6509817..a1c5598 100644
+index a1c5598..5df00d4 100644
 --- a/drivers/ide/ide-floppy.c
 +++ b/drivers/ide/ide-floppy.c
-@@ -210,7 +210,7 @@ static void idefloppy_create_rw_cmd(ide_drive_t *drive,
- 	if (rq->cmd_flags & REQ_RW)
- 		pc->flags |= PC_FLAG_WRITING;
- 	pc->buf = NULL;
--	pc->req_xfer = pc->buf_size = blocks * floppy->block_size;
-+	pc->buf_size = blk_rq_bytes(rq);
- 	pc->flags |= PC_FLAG_DMA_OK;
- }
+@@ -318,7 +318,7 @@ static int ide_floppy_get_flexible_disk_page(ide_drive_t *drive,
  
-@@ -227,7 +227,7 @@ static void idefloppy_blockpc_cmd(struct ide_disk_obj *floppy,
+ 	ide_floppy_create_mode_sense_cmd(pc, IDEFLOPPY_FLEXIBLE_DISK_PAGE);
+ 
+-	if (ide_queue_pc_tail(drive, disk, pc)) {
++	if (ide_queue_pc_tail(drive, disk, pc, pc->req_xfer)) {
+ 		printk(KERN_ERR PFX "Can't get flexible disk page params\n");
+ 		return 1;
  	}
- 	/* pio will be performed by ide_pio_bytes() which handles sg fine */
- 	pc->buf = NULL;
--	pc->req_xfer = pc->buf_size = blk_rq_bytes(rq);
-+	pc->buf_size = blk_rq_bytes(rq);
- }
+@@ -390,7 +390,7 @@ static int ide_floppy_get_capacity(ide_drive_t *drive)
+ 	pc.buf = &pc_buf[0];
+ 	pc.buf_size = sizeof(pc_buf);
  
- static ide_startstop_t ide_floppy_do_request(ide_drive_t *drive,
-@@ -286,8 +286,8 @@ static ide_startstop_t ide_floppy_do_request(ide_drive_t *drive,
- 
- 	cmd.rq = rq;
- 
--	if (blk_fs_request(rq) || pc->req_xfer) {
--		ide_init_sg_cmd(&cmd, pc->req_xfer);
-+	if (blk_fs_request(rq) || blk_rq_bytes(rq)) {
-+		ide_init_sg_cmd(&cmd, blk_rq_bytes(rq));
- 		ide_map_sg(drive, &cmd);
+-	if (ide_queue_pc_tail(drive, disk, &pc)) {
++	if (ide_queue_pc_tail(drive, disk, &pc, pc.req_xfer)) {
+ 		printk(KERN_ERR PFX "Can't get floppy parameters\n");
+ 		return 1;
  	}
+diff --git a/drivers/ide/ide-floppy_ioctl.c b/drivers/ide/ide-floppy_ioctl.c
+index cd8a420..75f1d50 100644
+--- a/drivers/ide/ide-floppy_ioctl.c
++++ b/drivers/ide/ide-floppy_ioctl.c
+@@ -50,7 +50,7 @@ static int ide_floppy_get_format_capacities(ide_drive_t *drive,
+ 	pc->buf = &pc_buf[0];
+ 	pc->buf_size = sizeof(pc_buf);
  
+-	if (ide_queue_pc_tail(drive, floppy->disk, pc)) {
++	if (ide_queue_pc_tail(drive, floppy->disk, pc, pc->req_xfer)) {
+ 		printk(KERN_ERR "ide-floppy: Can't get floppy parameters\n");
+ 		return -EIO;
+ 	}
+@@ -124,7 +124,7 @@ static int ide_floppy_get_sfrp_bit(ide_drive_t *drive, struct ide_atapi_pc *pc)
+ 	ide_floppy_create_mode_sense_cmd(pc, IDEFLOPPY_CAPABILITIES_PAGE);
+ 	pc->flags |= PC_FLAG_SUPPRESS_ERROR;
+ 
+-	if (ide_queue_pc_tail(drive, floppy->disk, pc))
++	if (ide_queue_pc_tail(drive, floppy->disk, pc, pc->req_xfer))
+ 		return 1;
+ 
+ 	if (pc->buf[8 + 2] & 0x40)
+@@ -172,7 +172,7 @@ static int ide_floppy_format_unit(ide_drive_t *drive, struct ide_atapi_pc *pc,
+ 	ide_floppy_get_sfrp_bit(drive, pc);
+ 	ide_floppy_create_format_unit_cmd(pc, blocks, length, flags);
+ 
+-	if (ide_queue_pc_tail(drive, floppy->disk, pc))
++	if (ide_queue_pc_tail(drive, floppy->disk, pc, pc->req_xfer))
+ 		err = -EIO;
+ 
+ out:
+@@ -200,7 +200,7 @@ static int ide_floppy_get_format_progress(ide_drive_t *drive,
+ 
+ 	if (drive->atapi_flags & IDE_AFLAG_SRFP) {
+ 		ide_create_request_sense_cmd(drive, pc);
+-		if (ide_queue_pc_tail(drive, floppy->disk, pc))
++		if (ide_queue_pc_tail(drive, floppy->disk, pc, pc->req_xfer))
+ 			return -EIO;
+ 
+ 		if (floppy->sense_key == 2 &&
 diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index fc79cf4..25463c5 100644
+index 35c188a..e17fd47 100644
 --- a/drivers/ide/ide-tape.c
 +++ b/drivers/ide/ide-tape.c
-@@ -292,6 +292,7 @@ static void idetape_analyze_error(ide_drive_t *drive, u8 *sense)
- {
- 	idetape_tape_t *tape = drive->driver_data;
- 	struct ide_atapi_pc *pc = drive->failed_pc;
-+	struct request *rq = drive->hwif->rq;
+@@ -769,7 +769,7 @@ static int idetape_flush_tape_buffers(ide_drive_t *drive)
+ 	int rc;
  
- 	tape->sense_key = sense[2] & 0xF;
- 	tape->asc       = sense[12];
-@@ -302,7 +303,7 @@ static void idetape_analyze_error(ide_drive_t *drive, u8 *sense)
+ 	idetape_create_write_filemark_cmd(drive, &pc, 0);
+-	rc = ide_queue_pc_tail(drive, tape->disk, &pc);
++	rc = ide_queue_pc_tail(drive, tape->disk, &pc, pc.req_xfer);
+ 	if (rc)
+ 		return rc;
+ 	idetape_wait_ready(drive, 60 * 5 * HZ);
+@@ -792,7 +792,7 @@ static int idetape_read_position(ide_drive_t *drive)
+ 	debug_log(DBG_PROCS, "Enter %s\n", __func__);
  
- 	/* Correct pc->xferred by asking the tape.	 */
- 	if (pc->flags & PC_FLAG_DMA_ERROR)
--		pc->xferred = pc->req_xfer -
-+		pc->xferred = blk_rq_bytes(rq) -
- 			tape->blk_size *
- 			get_unaligned_be32(&sense[3]);
+ 	idetape_create_read_position_cmd(&pc);
+-	if (ide_queue_pc_tail(drive, tape->disk, &pc))
++	if (ide_queue_pc_tail(drive, tape->disk, &pc, pc.req_xfer))
+ 		return -1;
+ 	position = tape->first_frame;
+ 	return position;
+@@ -845,12 +845,12 @@ static int idetape_position_tape(ide_drive_t *drive, unsigned int block,
+ 		__ide_tape_discard_merge_buffer(drive);
+ 	idetape_wait_ready(drive, 60 * 5 * HZ);
+ 	idetape_create_locate_cmd(drive, &pc, block, partition, skip);
+-	retval = ide_queue_pc_tail(drive, disk, &pc);
++	retval = ide_queue_pc_tail(drive, disk, &pc, pc.req_xfer);
+ 	if (retval)
+ 		return (retval);
  
-@@ -484,6 +485,7 @@ static ide_startstop_t ide_tape_issue_pc(ide_drive_t *drive,
- 					 struct ide_atapi_pc *pc)
- {
- 	idetape_tape_t *tape = drive->driver_data;
-+	struct request *rq = drive->hwif->rq;
+ 	idetape_create_read_position_cmd(&pc);
+-	return ide_queue_pc_tail(drive, disk, &pc);
++	return ide_queue_pc_tail(drive, disk, &pc, pc.req_xfer);
+ }
  
- 	if (drive->failed_pc == NULL && pc->c[0] != REQUEST_SENSE)
- 		drive->failed_pc = pc;
-@@ -493,7 +495,6 @@ static ide_startstop_t ide_tape_issue_pc(ide_drive_t *drive,
+ static void ide_tape_discard_merge_buffer(ide_drive_t *drive,
+@@ -1046,12 +1046,12 @@ static int idetape_rewind_tape(ide_drive_t *drive)
+ 	debug_log(DBG_SENSE, "Enter %s\n", __func__);
  
- 	if (pc->retries > IDETAPE_MAX_PC_RETRIES ||
- 		(pc->flags & PC_FLAG_ABORT)) {
--		unsigned int done = blk_rq_bytes(drive->hwif->rq);
+ 	idetape_create_rewind_cmd(drive, &pc);
+-	retval = ide_queue_pc_tail(drive, disk, &pc);
++	retval = ide_queue_pc_tail(drive, disk, &pc, pc.req_xfer);
+ 	if (retval)
+ 		return retval;
  
- 		/*
- 		 * We will "abort" retrying a packet command in case legitimate
-@@ -517,7 +518,7 @@ static ide_startstop_t ide_tape_issue_pc(ide_drive_t *drive,
+ 	idetape_create_read_position_cmd(&pc);
+-	retval = ide_queue_pc_tail(drive, disk, &pc);
++	retval = ide_queue_pc_tail(drive, disk, &pc, pc.req_xfer);
+ 	if (retval)
+ 		return retval;
+ 	return 0;
+@@ -1119,7 +1119,7 @@ static int idetape_space_over_filemarks(ide_drive_t *drive, short mt_op,
+ 	case MTBSF:
+ 		idetape_create_space_cmd(&pc, mt_count - count,
+ 					 IDETAPE_SPACE_OVER_FILEMARK);
+-		return ide_queue_pc_tail(drive, disk, &pc);
++		return ide_queue_pc_tail(drive, disk, &pc, pc.req_xfer);
+ 	case MTFSFM:
+ 	case MTBSFM:
+ 		if (!sprev)
+@@ -1258,7 +1258,7 @@ static int idetape_write_filemark(ide_drive_t *drive)
  
- 		drive->failed_pc = NULL;
- 		drive->pc_callback(drive, 0);
--		ide_complete_rq(drive, -EIO, done);
-+		ide_complete_rq(drive, -EIO, blk_rq_bytes(rq));
- 		return ide_stopped;
+ 	/* Write a filemark */
+ 	idetape_create_write_filemark_cmd(drive, &pc, 1);
+-	if (ide_queue_pc_tail(drive, tape->disk, &pc)) {
++	if (ide_queue_pc_tail(drive, tape->disk, &pc, pc.req_xfer)) {
+ 		printk(KERN_ERR "ide-tape: Couldn't write a filemark\n");
+ 		return -EIO;
  	}
- 	debug_log(DBG_SENSE, "Retry #%d, cmd = %02X\n", pc->retries, pc->c[0]);
-@@ -592,8 +593,7 @@ static void ide_tape_create_rw_cmd(idetape_tape_t *tape,
- 	put_unaligned(cpu_to_be32(length), (unsigned int *) &pc->c[1]);
- 	pc->c[1] = 1;
- 	pc->buf = NULL;
--	pc->buf_size = length * tape->blk_size;
--	pc->req_xfer = pc->buf_size;
-+	pc->buf_size = blk_rq_bytes(rq);
- 	if (pc->req_xfer == tape->buffer_size)
- 		pc->flags |= PC_FLAG_DMA_OK;
+@@ -1343,11 +1343,11 @@ static int idetape_mtioctop(ide_drive_t *drive, short mt_op, int mt_count)
+ 			IDETAPE_LU_RETENSION_MASK | IDETAPE_LU_LOAD_MASK);
+ 	case MTEOM:
+ 		idetape_create_space_cmd(&pc, 0, IDETAPE_SPACE_TO_EOD);
+-		return ide_queue_pc_tail(drive, disk, &pc);
++		return ide_queue_pc_tail(drive, disk, &pc, pc.req_xfer);
+ 	case MTERASE:
+ 		(void)idetape_rewind_tape(drive);
+ 		idetape_create_erase_cmd(&pc);
+-		return ide_queue_pc_tail(drive, disk, &pc);
++		return ide_queue_pc_tail(drive, disk, &pc, pc.req_xfer);
+ 	case MTSETBLK:
+ 		if (mt_count) {
+ 			if (mt_count < tape->blk_size ||
+@@ -1456,7 +1456,7 @@ static void ide_tape_get_bsize_from_bdesc(ide_drive_t *drive)
+ 	struct ide_atapi_pc pc;
  
-@@ -718,7 +718,7 @@ out:
+ 	idetape_create_mode_sense_cmd(&pc, IDETAPE_BLOCK_DESCRIPTOR);
+-	if (ide_queue_pc_tail(drive, tape->disk, &pc)) {
++	if (ide_queue_pc_tail(drive, tape->disk, &pc, pc.req_xfer)) {
+ 		printk(KERN_ERR "ide-tape: Can't get block descriptor\n");
+ 		if (tape->blk_size == 0) {
+ 			printk(KERN_WARNING "ide-tape: Cannot deal with zero "
+@@ -1612,7 +1612,7 @@ static void idetape_get_inquiry_results(ide_drive_t *drive)
+ 	pc.buf = &pc_buf[0];
+ 	pc.buf_size = sizeof(pc_buf);
  
- 	cmd.rq = rq;
+-	if (ide_queue_pc_tail(drive, tape->disk, &pc)) {
++	if (ide_queue_pc_tail(drive, tape->disk, &pc, pc.req_xfer)) {
+ 		printk(KERN_ERR "ide-tape: %s: can't get INQUIRY results\n",
+ 				tape->name);
+ 		return;
+@@ -1641,7 +1641,7 @@ static void idetape_get_mode_sense_results(ide_drive_t *drive)
+ 	u8 speed, max_speed;
  
--	ide_init_sg_cmd(&cmd, pc->req_xfer);
-+	ide_init_sg_cmd(&cmd, blk_rq_bytes(rq));
- 	ide_map_sg(drive, &cmd);
+ 	idetape_create_mode_sense_cmd(&pc, IDETAPE_CAPABILITIES_PAGE);
+-	if (ide_queue_pc_tail(drive, tape->disk, &pc)) {
++	if (ide_queue_pc_tail(drive, tape->disk, &pc, pc.req_xfer)) {
+ 		printk(KERN_ERR "ide-tape: Can't get tape parameters - assuming"
+ 				" some default values\n");
+ 		tape->blk_size = 512;
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index 745a393..7e15bd1 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1160,7 +1160,8 @@ enum {
+ 	REQ_IDETAPE_WRITE	= (1 << 3),
+ };
  
- 	return ide_tape_issue_pc(drive, &cmd, pc);
+-int ide_queue_pc_tail(ide_drive_t *, struct gendisk *, struct ide_atapi_pc *);
++int ide_queue_pc_tail(ide_drive_t *, struct gendisk *, struct ide_atapi_pc *,
++		      unsigned int);
+ 
+ int ide_do_test_unit_ready(ide_drive_t *, struct gendisk *);
+ int ide_do_start_stop(ide_drive_t *, struct gendisk *, int);
 -- 
 1.6.2.4
 
