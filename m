@@ -1,99 +1,181 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZEIG4m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755458AbZEIG55@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755533AbZEIG4m (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 02:56:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbZEIG4a
+	id S1755458AbZEIG55 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 02:57:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751705AbZEIG5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 02:56:30 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:65193 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751397AbZEIG42 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 02:56:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
-         :references:mime-version:content-type:content-disposition
-         :in-reply-to:user-agent;
-        b=LwMZbqo9SHvkuDGmq7xhMiKi02GqIlVJwQgwbu552Ts/bdsmndYc7fBudBzc7tYiVM
-         SLZr6WVZ/UQMJ/mAO9mwnH3cpbO1fr7TKPUJcA6Vmx/G3zs+re74cwZjNMgUjU06BsDB
-         yur5sqtSECurTpPDpluu9U7AKu21kmPqj6JSs=
-Date: Sat, 9 May 2009 08:56:19 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, rusty@rustcorp.com.au,
-       James.Bottomley@HansenPartnership.com, mike.miller@hp.com,
-       donari75@gmail.com, paul.clements@steeleye.com, tim@cyberelk.net,
-       Geert.Uytterhoeven@sonycom.com, davem@davemloft.net,
-       Laurent@lvivier.info, jgarzik@pobox.com, jeremy@xensource.com,
-       grant.likely@secretlab.ca, adrian@mcmen.demon.co.uk,
-       sfr@canb.auug.org.au, bzolnier@gmail.com, petkovbb@googlemail.com,
-       sshtylyov@ru.mvista.com, oakad@yahoo.com, drzeus@drzeus.cx,
-       dwmw2@infradead.org, Markus.Lidel@shadowconnect.com, wein@de.ibm.com,
-       schwidefsky@de.ibm.com, zaitcev@redhat.com,
-       fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk
-Subject: Re: [PATCH 01/18] ide: dequeue in-flight request
-Message-ID: <20090509065619.GA8966@liondog.tnic>
-Reply-To: petkovbb@gmail.com
-Mail-Followup-To: petkovbb@gmail.com, Tejun Heo <tj@kernel.org>,
-	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-	linux-ide@vger.kernel.org, rusty@rustcorp.com.au,
-	James.Bottomley@HansenPartnership.com, mike.miller@hp.com,
-	donari75@gmail.com, paul.clements@steeleye.com, tim@cyberelk.net,
-	Geert.Uytterhoeven@sonycom.com, davem@davemloft.net,
-	Laurent@lvivier.info, jgarzik@pobox.com, jeremy@xensource.com,
-	grant.likely@secretlab.ca, adrian@mcmen.demon.co.uk,
-	sfr@canb.auug.org.au, bzolnier@gmail.com, petkovbb@googlemail.com,
-	sshtylyov@ru.mvista.com, oakad@yahoo.com, drzeus@drzeus.cx,
-	dwmw2@infradead.org, Markus.Lidel@shadowconnect.com,
-	wein@de.ibm.com, schwidefsky@de.ibm.com, zaitcev@redhat.com,
-	fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk
-References: <1241751256-17435-1-git-send-email-tj@kernel.org> <1241751256-17435-2-git-send-email-tj@kernel.org>
+	Sat, 9 May 2009 02:57:48 -0400
+Received: from mga03.intel.com ([143.182.124.21]:6148 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751397AbZEIG5s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 02:57:48 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,320,1239001200"; 
+   d="scan'208";a="140970647"
+Date: Sat, 9 May 2009 14:56:40 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: [RFC][PATCH] vmscan: report vm_flags in page_referenced()
+Message-ID: <20090509065640.GA6487@localhost>
+References: <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org> <1241709466.11251.164.camel@twins> <20090508041700.GC8892@localhost> <28c262360905080509q333ec8acv2d2be69d99e1dfa3@mail.gmail.com> <20090508121549.GA17077@localhost> <28c262360905080701h366e071cv1560b09126cbc78c@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <1241751256-17435-2-git-send-email-tj@kernel.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <28c262360905080701h366e071cv1560b09126cbc78c@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 11:53:59AM +0900, Tejun Heo wrote:
-> ide generally has single request in flight and tracks it using
-> hwif->rq and all state handlers follow the following convention.
+On Fri, May 08, 2009 at 10:01:19PM +0800, Minchan Kim wrote:
+> On Fri, May 8, 2009 at 9:15 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > On Fri, May 08, 2009 at 08:09:24PM +0800, Minchan Kim wrote:
+> >> On Fri, May 8, 2009 at 1:17 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
+> >> > On Thu, May 07, 2009 at 11:17:46PM +0800, Peter Zijlstra wrote:
+> >> >> On Thu, 2009-05-07 at 17:10 +0200, Johannes Weiner wrote:
+> >> >>
+> >> >> > > @@ -1269,8 +1270,15 @@ static void shrink_active_list(unsigned
+> >> >> > >
+> >> >> > >           /* page_referenced clears PageReferenced */
+> >> >> > >           if (page_mapping_inuse(page) &&
+> >> >> > > -             page_referenced(page, 0, sc->mem_cgroup))
+> >> >> > > +             page_referenced(page, 0, sc->mem_cgroup)) {
+> >> >> > > +                 struct address_space *mapping = page_mapping(page);
+> >> >> > > +
+> >> >> > >                   pgmoved++;
+> >> >> > > +                 if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
+> >> >> > > +                         list_add(&page->lru, &l_active);
+> >> >> > > +                         continue;
+> >> >> > > +                 }
+> >> >> > > +         }
+> >> >> >
+> >> >> > Since we walk the VMAs in page_referenced anyway, wouldn't it be
+> >> >> > better to check if one of them is executable?  This would even work
+> >> >> > for executable anon pages.  After all, there are applications that cow
+> >> >> > executable mappings (sbcl and other language environments that use an
+> >> >> > executable, run-time modified core image come to mind).
+> >> >>
+> >> >> Hmm, like provide a vm_flags mask along to page_referenced() to only
+> >> >> account matching vmas... seems like a sensible idea.
+> >> >
+> >> > Here is a quick patch for your opinions. Compile tested.
+> >> >
+> >> > With the added vm_flags reporting, the mlock=>unevictable logic can
+> >> > possibly be made more straightforward.
+> >> >
+> >> > Thanks,
+> >> > Fengguang
+> >> > ---
+> >> > vmscan: report vm_flags in page_referenced()
+> >> >
+> >> > This enables more informed reclaim heuristics, eg. to protect executable
+> >> > file pages more aggressively.
+> >> >
+> >> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> >> > ---
+> >> >  include/linux/rmap.h |    5 +++--
+> >> >  mm/rmap.c            |   30 +++++++++++++++++++++---------
+> >> >  mm/vmscan.c          |    7 +++++--
+> >> >  3 files changed, 29 insertions(+), 13 deletions(-)
+> >> >
+> >> > --- linux.orig/include/linux/rmap.h
+> >> > +++ linux/include/linux/rmap.h
+> >> > @@ -83,7 +83,8 @@ static inline void page_dup_rmap(struct
+> >> >  /*
+> >> >  * Called from mm/vmscan.c to handle paging out
+> >> >  */
+> >> > -int page_referenced(struct page *, int is_locked, struct mem_cgroup *cnt);
+> >> > +int page_referenced(struct page *, int is_locked,
+> >> > +                       struct mem_cgroup *cnt, unsigned long *vm_flags);
+> >> >  int try_to_unmap(struct page *, int ignore_refs);
+> >> >
+> >> >  /*
+> >> > @@ -128,7 +129,7 @@ int page_wrprotect(struct page *page, in
+> >> >  #define anon_vma_prepare(vma)  (0)
+> >> >  #define anon_vma_link(vma)     do {} while (0)
+> >> >
+> >> > -#define page_referenced(page,l,cnt) TestClearPageReferenced(page)
+> >> > +#define page_referenced(page, locked, cnt, flags) TestClearPageReferenced(page)
+> >> >  #define try_to_unmap(page, refs) SWAP_FAIL
+> >> >
+> >> >  static inline int page_mkclean(struct page *page)
+> >> > --- linux.orig/mm/rmap.c
+> >> > +++ linux/mm/rmap.c
+> >> > @@ -333,7 +333,8 @@ static int page_mapped_in_vma(struct pag
+> >> >  * repeatedly from either page_referenced_anon or page_referenced_file.
+> >> >  */
+> >> >  static int page_referenced_one(struct page *page,
+> >> > -       struct vm_area_struct *vma, unsigned int *mapcount)
+> >> > +                              struct vm_area_struct *vma,
+> >> > +                              unsigned int *mapcount)
+> >> >  {
+> >> >        struct mm_struct *mm = vma->vm_mm;
+> >> >        unsigned long address;
+> >> > @@ -385,7 +386,8 @@ out:
+> >> >  }
+> >> >
+> >> >  static int page_referenced_anon(struct page *page,
+> >> > -                               struct mem_cgroup *mem_cont)
+> >> > +                               struct mem_cgroup *mem_cont,
+> >> > +                               unsigned long *vm_flags)
+> >> >  {
+> >> >        unsigned int mapcount;
+> >> >        struct anon_vma *anon_vma;
+> >> > @@ -406,6 +408,7 @@ static int page_referenced_anon(struct p
+> >> >                if (mem_cont && !mm_match_cgroup(vma->vm_mm, mem_cont))
+> >> >                        continue;
+> >> >                referenced += page_referenced_one(page, vma, &mapcount);
+> >> > +               *vm_flags |= vma->vm_flags;
+> >>
+> >> Sometime this vma don't contain the anon page.
+> >> That's why we need page_check_address.
+> >> For such a case, wrong *vm_flag cause be harmful to reclaim.
+> >> It can be happen in your first class citizen patch, I think.
+> >
+> > Yes I'm aware of that - the VMA area covers that page, but have no pte
+> > actually installed for that page. That should be OK - the presentation
+> > of such VMA is a good indication of it being some executable text.
+> >
 > 
-> * ide_started is returned if the request is in flight.
+> Sorry but I can't understand your point.
 > 
-> * ide_stopped is returned if the queue needs to be restarted.  The
->   request might or might not have been processed fully or partially.
-> 
-> * hwif->rq is set to NULL, when an issued request completes.
-> 
-> So, dequeueing model can be implemented by dequeueing after fetch,
-> requeueing if hwif->rq isn't NULL on ide_stopped return and doing
-> about the same thing on completion / port unlock paths.  These changes
-> can be made in ide-io proper.
-> 
-> In addition to the above main changes, the following updates are
-> necessary.
-> 
-> * ide-cd shouldn't dequeue a request when issuing REQUEST SENSE for it
->   as the request is already dequeued.
-> 
-> * ide-atapi uses request queue as stack when issuing REQUEST SENSE to
->   put the REQUEST SENSE in front of the failed request.  This now
->   needs to be done using requeueing.
-> 
-> [ Impact: dequeue in-flight request ]
-> 
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-> Cc: Borislav Petkov <petkovbb@googlemail.com>
-> Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> This is general interface but not only executable text.
+> Sometime, The information of vma which don't really have the page can
+> be passed to caller.
 
-Acked-by: Borislav Petkov <petkovbb@gmail.com>
+Right. But if the caller don't care, why bother passing the vm_flags
+parameter down to page_referenced_one()? We can do that when there
+comes a need, otherwise it sounds more like unnecessary overheads.
 
--- 
-Regards/Gruss,
-    Boris.
+> ex) It can be happen by COW, mremap, non-linear mapping and so on.
+> but I am not sure.
+
+Hmm, this reminded me of the mlocked page protection logic in
+page_referenced_one(). Why shall the "if (vma->vm_flags & VM_LOCKED)"
+check be placed *after* the page_check_address() check? Is there a
+case that an *existing* page frame is not mapped to the VM_LOCKED vma?
+And why not to protect the page in such a case?
+
+> I doubt  vm_flag information is useful.
+
+Me too :) I don't expect many of the other flags to be useful.
+Just that passing them out blindly could be more convenient than doing
+
+        if (vma->vm_flags & PROT_EXEC)
+                *vm_flags = PROT_EXEC;
+
+But I do suspect passing out VM_LOCKED could help somehow.
+
+Thanks,
+Fengguang
