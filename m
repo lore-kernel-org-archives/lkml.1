@@ -1,85 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752924AbZEIOaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752745AbZEIOmo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752924AbZEIOaJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 10:30:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752564AbZEIO3z
+	id S1752745AbZEIOmo (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 10:42:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751936AbZEIOme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 10:29:55 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:36743 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752604AbZEIO3z convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 10:29:55 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah8GAM8vBUpMQW1W/2dsb2JhbACBUM04g34F
-Date: Sat, 9 May 2009 10:29:52 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Jason Baron <jbaron@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
-       linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, jiayingz@google.com, mbligh@google.com,
-       roland@redhat.com, fche@redhat.com
-Subject: Re: [RFC] convert ftrace syscall tracer to TRACE_EVENT()
-Message-ID: <20090509142952.GA3511@Krystal>
-References: <20090508210347.GA3121@redhat.com> <20090509083737.GE3656@elte.hu> <c62985530905090553u538f8589l984b03428713d7ef@mail.gmail.com> <20090509133306.GA20684@elte.hu> <20090509135046.GA2344@Krystal> <c62985530905090706t52929c0qe21418f86aca9ba8@mail.gmail.com> <20090509141556.GA24082@elte.hu>
+	Sat, 9 May 2009 10:42:34 -0400
+Received: from kroah.org ([198.145.64.141]:54163 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751553AbZEIOme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 10:42:34 -0400
+Date: Sat, 9 May 2009 07:37:42 -0700
+From: Greg KH <greg@kroah.com>
+To: linux-kernel@vger.kernel.org
+Cc: Greg KH <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>,
+       Jan Blunck <jblunck@suse.de>
+Subject: [patch 00/13] devtmpfs patches
+Message-ID: <20090509143742.GA27663@kroah.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8BIT
-In-Reply-To: <20090509141556.GA24082@elte.hu>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:25:05 up 70 days, 10:51,  4 users,  load average: 0.16, 0.45,
-	0.52
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar (mingo@elte.hu) wrote:
-> 
-> * Frédéric Weisbecker <fweisbec@gmail.com> wrote:
-> 
-> > > I would expect to use copy_string_from_user (for strings) and 
-> > > copy_from_user for structures, because without any strings 
-> > > (especially), the trace information become much less useful.
-> > 
-> > Yeah, for structures we would just need the copy_from_user.
-> 
-> There's just a few places (mainly related to VFS APIs) where we 
-> really want to do that, and there we want to do it a bit later, not 
-> at syscall time: we want to do it after the getname(), to output a 
-> stable (and already copied to kernel space) copy of the file name.
-> 
-> So the right solution there would be to add special, case by case 
-> tracepoints to those few places. We dont need strings for the 
-> majority of the 300+ system calls that exist on Linux.
-> 
-> 	Ingo
+Here's the latest version of the devtmpfs patch, broken up into 13
+different patches to make it easier to review and merge properly.
 
-Hrm, this is an important design decision.. I cover a lot of those sites
-in my LTTng instrumentation, and this is clearly one way to do it, at
-the expense of adding tracepoints in many kernel locations when there
-could be a functionnal equivalent with syscall instrumentation.
+This series does the following:
+  - creates a new callback within the driver core to allow drivers and
+    subsystems to provide a name for their subsystem to properly reflect
+    what userspace should use for their device nodes.  This allows for
+    things like the sound/ and input/ subdirectories to be properly told
+    to userspace.  Note these names and subdirectories are the ones that
+    have been used for years, and are standardized across all
+    distributions and synced up with the LANANA naming scheme which is
+    specified by LSB.  We aren't creating anything new here.
+  - fills in the callbacks by the various subsystems that need to define
+    it, including the misc device layer.  This is the majority of the
+    patches in the series.
+  - adds the devtmpfs core code.  Description of what this is, why it is
+    needed, and how it works is within this patch.
 
-The thing we would need to do it from the syscall tracing site is a
-table to map the system call numbers to their specific types (for the
-syscalls we care about) and therefore which would also map to a
-serialisation function to extract the parameters and write the correct
-content into the trace buffers.
+All of these patches have been tested for a number of weeks now in
+SuSE's kernel trees and have proved to increase boot time a measurable
+ammount (a few seconds at the very least) on both traditional systems
+(servers / desktops) as well as on netbooks using a non-SuSE based
+userspace infrastructure.
 
-We could also use getname()/putname() in the syscall tracing primitive.
-Note that architectures like x86 64 needs some tweaks I have in my
-patchset to correctly ensure that syscall entry/exit are always paired.
-This is required because we change the thread flag synchronously with
-thread execution upen activation/deactivation.
+This feature also allows rescue systems to work properly by allowing
+systems to boot into /bin/bash with full access to all of their device
+nodes.  It is also a big win on embedded systems with no local users yet
+they need to provide dynamic names as their hardware configuration can
+be changed by external forces.
 
-Mathieu
+All of the previous objections to this patch series seems to have been
+properly addressed, but as always, comments are welcome, just make them
+substantial please :)
 
+These patches are now in the driver-core git tree of quilt patches.
 
+thanks,
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+greg k-h
+
