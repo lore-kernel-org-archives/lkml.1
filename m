@@ -1,102 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753189AbZEIPB5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753776AbZEIPKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753189AbZEIPB5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 11:01:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751766AbZEIPBq
+	id S1753776AbZEIPKg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 11:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZEIPK0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 11:01:46 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:51479 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751410AbZEIPBp convert rfc822-to-8bit (ORCPT
+	Sat, 9 May 2009 11:10:26 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:49543 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751440AbZEIPKZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 11:01:45 -0400
+	Sat, 9 May 2009 11:10:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=JIeA16Yp8OCwq3Y4fz5Yde/a/1vcnHwgKTSICzLoDvNZyQgZHtLFvQdt7ft8BzTDnL
-         yCLMC5EIldNoTFTvfW0+Jhab13zD1iIo8ho/8VFkuiegPsAwl81do+z11SUnMx4bvf9E
-         DfVF6N2IE9wRfbthBMn6ir3pD5shXqiVkKAVo=
+        b=aVot6e9UjqJoB52sQYFcW/fS4oN7qF5uUU/utebxPx9bCHZzk9DqoRa5PO3+QL7bks
+         pcjqePKRgDuPjUW2HCbDARXqlVrTxijEayCFw38No2F8YXSWd1xDsvzJvX11qDhMAN/U
+         s42GwH9jHh9xXDFHJhGcpog5NE6gsbP92evaU=
 MIME-Version: 1.0
-In-Reply-To: <20090509142952.GA3511@Krystal>
-References: <20090508210347.GA3121@redhat.com> <20090509083737.GE3656@elte.hu>
-	 <c62985530905090553u538f8589l984b03428713d7ef@mail.gmail.com>
-	 <20090509133306.GA20684@elte.hu> <20090509135046.GA2344@Krystal>
-	 <c62985530905090706t52929c0qe21418f86aca9ba8@mail.gmail.com>
-	 <20090509141556.GA24082@elte.hu> <20090509142952.GA3511@Krystal>
-Date: Sat, 9 May 2009 17:01:44 +0200
-Message-ID: <c62985530905090801x1a2c34der364d4636ec667429@mail.gmail.com>
-Subject: Re: [RFC] convert ftrace syscall tracer to TRACE_EVENT()
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org,
-       laijs@cn.fujitsu.com, rostedt@goodmis.org, peterz@infradead.org,
-       jiayingz@google.com, mbligh@google.com, roland@redhat.com,
-       fche@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
+In-Reply-To: <20090509143742.GA27663@kroah.com>
+References: <20090509143742.GA27663@kroah.com>
+Date: Sat, 9 May 2009 17:10:24 +0200
+Message-ID: <b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com>
+Subject: Re: [patch 00/13] devtmpfs patches
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/9 Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>:
-> * Ingo Molnar (mingo@elte.hu) wrote:
->>
->> * Fr�d�ric Weisbecker <fweisbec@gmail.com> wrote:
->>
->> > > I would expect to use copy_string_from_user (for strings) and
->> > > copy_from_user for structures, because without any strings
->> > > (especially), the trace information become much less useful.
->> >
->> > Yeah, for structures we would just need the copy_from_user.
->>
->> There's just a few places (mainly related to VFS APIs) where we
->> really want to do that, and there we want to do it a bit later, not
->> at syscall time: we want to do it after the getname(), to output a
->> stable (and already copied to kernel space) copy of the file name.
->>
->> So the right solution there would be to add special, case by case
->> tracepoints to those few places. We dont need strings for the
->> majority of the 300+ system calls that exist on Linux.
->>
->> � � � Ingo
+Hi.
+
+On Sat, May 9, 2009 at 4:37 PM, Greg KH <greg@kroah.com> wrote:
+> Here's the latest version of the devtmpfs patch, broken up into 13
+> different patches to make it easier to review and merge properly.
 >
-> Hrm, this is an important design decision.. I cover a lot of those sites
-> in my LTTng instrumentation, and this is clearly one way to do it, at
-> the expense of adding tracepoints in many kernel locations when there
-> could be a functionnal equivalent with syscall instrumentation.
-
-
-Yeah, these tracepoints defined from DEFINE_SYSCALL are a good way
-to proceed generically.
-For specific cases, we can later add some upper layer, such as described below.
-
-
-> The thing we would need to do it from the syscall tracing site is a
-> table to map the system call numbers to their specific types (for the
-> syscalls we care about) and therefore which would also map to a
-> serialisation function to extract the parameters and write the correct
-> content into the trace buffers.
-
-
-I would rather see this not using the syscalls as a key but the type
-of a parameter.
-We can find a same specific complex type used by several syscalls.
-
-If we want even better precision, we can also pair that with syscalls
-mapping for specific post-computing in output time. As an exemple to
-print O_RDONLY instead of the matching number.
-
-
+> This series does the following:
+>  - creates a new callback within the driver core to allow drivers and
+>    subsystems to provide a name for their subsystem to properly reflect
+>    what userspace should use for their device nodes.  This allows for
+>    things like the sound/ and input/ subdirectories to be properly told
+>    to userspace.  Note these names and subdirectories are the ones that
+>    have been used for years, and are standardized across all
+>    distributions and synced up with the LANANA naming scheme which is
+>    specified by LSB.  We aren't creating anything new here.
+>  - fills in the callbacks by the various subsystems that need to define
+>    it, including the misc device layer.  This is the majority of the
+>    patches in the series.
+>  - adds the devtmpfs core code.  Description of what this is, why it is
+>    needed, and how it works is within this patch.
 >
-> We could also use getname()/putname() in the syscall tracing primitive.
-> Note that architectures like x86 64 needs some tweaks I have in my
-> patchset to correctly ensure that syscall entry/exit are always paired.
-> This is required because we change the thread flag synchronously with
-> thread execution upen activation/deactivation.
+> All of these patches have been tested for a number of weeks now in
+> SuSE's kernel trees and have proved to increase boot time a measurable
+> ammount (a few seconds at the very least)
+
+Well, guess you meant the opposite ;-)
 
 
-Not sure I understand your point here. The only resulting problem of such
-race would be rare unpaired syscall exit or entry traces... Is it that
-much important?
+> on both traditional systems
+> (servers / desktops) as well as on netbooks using a non-SuSE based
+> userspace infrastructure.
+>
+> This feature also allows rescue systems to work properly by allowing
+> systems to boot into /bin/bash with full access to all of their device
+> nodes.  It is also a big win on embedded systems with no local users yet
+> they need to provide dynamic names as their hardware configuration can
+> be changed by external forces.
+>
+> All of the previous objections to this patch series seems to have been
+> properly addressed, but as always, comments are welcome, just make them
+> substantial please :)
+>
+> These patches are now in the driver-core git tree of quilt patches.
+>
+> thanks,
+>
+> greg k-h
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
