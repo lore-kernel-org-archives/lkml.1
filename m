@@ -1,44 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755134AbZEIQKp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754344AbZEIQNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755134AbZEIQKp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 12:10:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754344AbZEIQKa
+	id S1754344AbZEIQNV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 12:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbZEIQNJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 12:10:30 -0400
-Received: from hera.kernel.org ([140.211.167.34]:49904 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755195AbZEIQK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 12:10:28 -0400
-Message-ID: <4A05AAA4.9010806@kernel.org>
-Date: Sun, 10 May 2009 01:09:08 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sat, 9 May 2009 12:13:09 -0400
+Received: from mail.gmx.net ([213.165.64.20]:58843 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1751966AbZEIQNH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 12:13:07 -0400
+X-Authenticated: #20450766
+X-Provags-ID: V01U2FsdGVkX19PJc85Ga5P7T2Dzf4vl/PPNZwgBb+Gd3/8J00WI4
+	uUKoi0tCSP1JMO
+Date: Sat, 9 May 2009 18:13:13 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Mauro Carvalho Chehab <mchehab@infradead.org>
+cc: Linux Media Mailing List <linux-media@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, sam@ravnborg.org,
+       linux-kbuild@vger.kernel.org
+Subject: dubious section mismatch test (was Re: [PULL] soc-camera: one commit
+ as v4l2-dev preparation)
+In-Reply-To: <20090509062726.22d18182@pedra.chehab.org>
+Message-ID: <Pine.LNX.4.64.0905091430100.3515@axis700.grange>
+References: <Pine.LNX.4.64.0905071841331.9460@axis700.grange>
+ <20090509062726.22d18182@pedra.chehab.org>
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: jeff@garzik.org, linux-ide@vger.kernel.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Mauelshagen@RedHat.com, dm-devel@RedHat.com, dan.j.williams@gmail.com
-Subject: Re: [PATCH 2/3] scsi: add scsi_device->alt_capacity
-References: <1241828002-12742-1-git-send-email-tj@kernel.org>	 <1241828002-12742-3-git-send-email-tj@kernel.org> <1241842999.6357.2.camel@mulgrave>
-In-Reply-To: <1241842999.6357.2.camel@mulgrave>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 09 May 2009 16:09:13 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> This is done at slightly the wrong level.  Capacity is actually a
-> property of struct scsi_disk not struct scsi_device ... shouldn't
-> alt_capacity be at the same level?
+On Sat, 9 May 2009, Mauro Carvalho Chehab wrote:
 
-Hmmm... I think that was my first try and then I moved it to sdev for
-some reason I can't rememer now.  I'll look into it again and try to
-move it into sdev.
+> WARNING: /home/v4l/master/v4l/soc_camera.o(.data+0x0): Section mismatch in reference from the variable soc_camera_pdrv to the function .devinit.text:soc_camera_pdrv_probe()
+> The variable soc_camera_pdrv references
+> the function __devinit soc_camera_pdrv_probe()
+> If the reference is valid then annotate the
+> variable with __init* (see linux/init.h) or name the variable:
+> *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+> 
+> WARNING: /home/v4l/master/v4l/soc_camera.o(.data+0x8): Section mismatch in reference from the variable soc_camera_pdrv to the function .devexit.text:soc_camera_pdrv_remove()
+> The variable soc_camera_pdrv references
+> the function __devexit soc_camera_pdrv_remove()
+> If the reference is valid then annotate the
+> variable with __exit* (see linux/init.h) or name the variable:
+> *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
 
-Thanks.
+FWIW, I find this test dubious. Matching on symbol names doesn't seem like 
+a good idea to me. Can we introduce a new marker instead something like
 
--- 
-tejun
+static struct whatever_driver __driver driver = {
+	.probe	= my_probe,
+	.remove	= __exit_p(my_remove),
+};
+
+to put them in a new special section? Or is there a better solution?
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski, Ph.D.
+Freelance Open-Source Software Developer
+http://www.open-technology.de/
