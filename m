@@ -1,71 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754882AbZEIXel@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbZEIXmR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754882AbZEIXel (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 19:34:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753512AbZEIXec
+	id S1755721AbZEIXmR (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 19:42:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753984AbZEIXmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 19:34:32 -0400
-Received: from gate.crashing.org ([63.228.1.57]:39961 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752970AbZEIXec (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 19:34:32 -0400
-Subject: Device core removal ordering brokenness
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Greg KH <greg@kroah.com>, Linux Kernel list <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Sun, 10 May 2009 09:29:21 +1000
-Message-Id: <1241911761.19955.8.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Sat, 9 May 2009 19:42:05 -0400
+Received: from smtp09.mail.tnz.yahoo.co.jp ([203.216.226.137]:36377 "HELO
+	smtp09.mail.tnz.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751494AbZEIXmE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 19:42:04 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=yj20050223; d=yahoo.co.jp;
+  h=Received:X-Apparently-From:Message-ID:From:To:Cc:References:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE;
+  b=cGiTudQDz2Vk4ddtvSVB2O7uRFCcOsi8C9jLLc4aW7ApP1YpCyfZNEHgzIrsrwxheN9dDJnRo0tH9ib7RKUcmxReqj6mzGJFSlk6SViknN3KFjOpEM5SAJxY+FCq7dLC  ;
+X-Apparently-From: <n0diamond@yahoo.co.jp>
+Message-ID: <4FF8388A0C334AB38FEA6F5DE0F0EA23@DIAMOND8600>
+From: "Norman Diamond" <n0diamond@yahoo.co.jp>
+To: "James Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
+References: <8690A202112B4316A178F6DD0AD7E394@DIAMOND8600> <1241811537.3327.91.camel@mulgrave.int.hansenpartnership.com>
+Subject: Re: Adaptec driver crashes (1/3 and 2/3)
+Date: Sun, 10 May 2009 08:41:45 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-2022-jp";
+	reply-type=original
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Alan !
+James Bottomley wrote:
+> On Wed, 2009-05-06 at 16:13 +0900, Norman Diamond wrote:
+>> The easiest 100% reproducible way to crash a Linux system is as follows.
+>>
+>> Insert either an Adaptec 1460 PCMCIA card or Adaptec 1480 CardBus card. 
+>> Remove the card.  Insert the card again.  Even if you knew to set the 
+>> console to a text mode terminal first (since Linux doesn't give Blue 
+>> Screens of Death otherwise), you still won't get a dump.  Not much to go 
+>> on without a dump, but at least it's 100% repro.
+>
+> Sounds like something's still pinned.  When you remove it the first time, 
+> can you remove the module? (that's aha152x_cs right?).
 
-I was looking at git history regarding the various BUS_NOTIFY_*
-notifiers (since David needs some stuff for his DMA debug code that
-isn't provided by the current set) when I noticed that commit of yours:
+With the 1460, after removing the first time, no I couldn't rmmod the 
+module.  You're either right or nearly right about the module name since 
+some were renamed to use hyphens instead of underbars, but I don't remember 
+if that was included.  Anyway, the module was in use by 4 unknown users, and 
+couldn't be rmmodded.
 
-ec0676ee28528dc8dda13a93ee4b1f215a0c2f9d
+However, yesterday with the 1460 I couldn't repro the kernel crash. 
+Yesterday with the 1460 I could only repro less severe lossage.  Removal of 
+the card showed up in dmesg.  Reinsertions of the card were completely 
+ignored, not showing up in dmesg, not recreating the special file /dev/sdb, 
+and if I mknodded /dev/sdb it was still inaccessible (no such device).  Also 
+shutdown hanged and I had to hold the power switch to shut down.
 
-Unless I'm mistaken, which is very possible, this moves the
-BUS_NOTIFY_DEL_DEVICE callback to -before- the driver remove() callback
-is invoked. This sounds very illogical and potentially dangerous to me.
+Yesterday with the 1480 I did repro the kernel crash, the same as before. 
+The aic7xxx driver was compiled in, not a module.  I don't recall if removal 
+of the card showed up in dmesg.  Reinsertion didn't, but the system lived 
+long enough for dmesg to run and not show a reinsertion.  After that came a 
+1 line kernel crash message with no dump.  If I recall correctly, 
+Ctrl+Alt+Del accomplished a reboot so I didn't have to hold the power 
+switch. 
 
-In fact, the original ordering and the only one that, to me, makes sense
-in term of semantics is:
-
-ADD / ->probe() / BOUND ... UNBIND / ->remove() / DEL
-
-And not the current (since your patch):
-
-ADD / ->probe() / BOUND ... DEL / UNBIND / ->remove()
-
-IE. The DEL callback might tear down data structures used by the driver,
-such as DMA mapping stuff etc...  (In fact, that's pretty much the whole
-point of this callback). ADD/DEL should be invoked while no driver is
-active on the device.
-
-Now if I look at the reason for your change, I discover what look to me
-like added brokenness in the core, but again, I may be missing something
-obvious. IE. The addition and removal path don't look symetric to me,
-and you moved the DEL callback because in the first place, the core
-tears down various things (such as PM or sysfs related data structures)
-before the driver is unbound from the device.
-
-Whatever you guys think is the right approach for those sysfs and PM
-structures, I do believe that moving around the DEL callback was a
-mistake and I can see that becoming an issue on various platforms (if
-not already).
-
-Cheers,
-Ben.
-
-
-
-
+--------------------------------------
+Power up the Internet with Yahoo! Toolbar.
+http://pr.mail.yahoo.co.jp/toolbar/
