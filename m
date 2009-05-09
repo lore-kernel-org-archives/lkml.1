@@ -1,62 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbZEIRYD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754027AbZEIR14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754976AbZEIRYD (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 13:24:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbZEIRXv
+	id S1754027AbZEIR14 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 13:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbZEIR1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 13:23:51 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:41600 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752213AbZEIRXu convert rfc822-to-8bit (ORCPT
+	Sat, 9 May 2009 13:27:47 -0400
+Received: from rv-out-0506.google.com ([209.85.198.229]:27799 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbZEIR1r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 13:23:50 -0400
+	Sat, 9 May 2009 13:27:47 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=JU2zL+Xu0FQU99Hzl2M28hXsJVRkMVxW4aCwP0s68WnfAcYahZroA6mNhMAbVlvLdW
+         eeN4KsCv3HRekYA5OtxUPYdFLGvLZ6vw0esIxXlY4sH8wNQPpTws7RKPm21jXJXB7cm4
+         TOjEvGiSSmXiP5kpGks1dgumqy6H1ybrGc1EY=
 MIME-Version: 1.0
-In-Reply-To: <20090509181559.664b141a@lxorguk.ukuu.org.uk>
-References: <ac3eb2510905071612v61a27760hffc684ee87df9249@mail.gmail.com> 
-	<Pine.LNX.4.44L0.0905081000140.3010-100000@iolanthe.rowland.org> 
-	<ac3eb2510905091000y4c7a6448uce799d00d500fffe@mail.gmail.com> 
-	<20090509181559.664b141a@lxorguk.ukuu.org.uk>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Sat, 9 May 2009 19:23:30 +0200
-Message-ID: <ac3eb2510905091023l42747289h56d59f3b0a7b5b90@mail.gmail.com>
-Subject: Re: usbfs, claiming entire usb devices
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Kernel development list <linux-kernel@vger.kernel.org>,
-       Pantelis Koukousoulas <pktoss@gmail.com>,
-       USB list <linux-usb@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <4A04E5EA.7000103@samsung.com>
+References: <4A04E5EA.7000103@samsung.com>
+Date: Sat, 9 May 2009 22:57:47 +0530
+Message-ID: <5d5443650905091027w2b60f2ael520373790e6414c7@mail.gmail.com>
+Subject: Re: [PATCH] Input: add MAX7359 key switch controller driver, v2
+From: Trilok Soni <soni.trilok@gmail.com>
+To: Kim Kyuwon <q1.kim@samsung.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       linux-input@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>,
+       Marek Szyprowski <m.szyprowski@samsung.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 9, 2009 at 19:15, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> > Yes.  That is, a process shouldn't be allowed to access a locked device
->> > unless that process is the lock holder.
->>
->> You think the pid or the uid would make more sense?
->
-> How about neither ?
->
-> The standard Unix behaviour is to open the file O_EXCL if you want
-> exclusivity. Neither uid or pid are helpful or work in the many
-> environments where you want security - in particular where (as is very
-> common with user space driver type code) you want parts of your code
-> running setuid and parts not, as two processes with different pid and uid
-> values.
->
-> If O_EXCL is interpeted as exclusive access (versus kernel and re-open of
-> the same node) then you can implement the rest of the sematics in user
-> space.
+Hi Kim,
 
-Hmm, but his is a lock for "future" device, which did not even show up
-at that point the "lock" will be taken. The files would not be opened
-a second time.
+On Sat, May 9, 2009 at 7:39 AM, Kim Kyuwon <q1.kim@samsung.com> wrote:
+> The Maxim MAX7359 is a I2C interfaced key switch controller which provides
+> microprocessors with management of up to 64 key switches.
+> This patch adds support for the MAX7359 key switch controller.
+>
+> Signed-off-by: Kim Kyuwon <q1.kim@samsung.com>
 
-The lock-file and the device file are two different files, both would
-be opened only by one process - and we are playing around here with
-the idea how to connect these both processes.
 
-Thanks,
-Kay
+Thanks for implementing review comments. Please add
+
+Reviewed-by: Trilok Soni <soni.trilok@gmail.com>
+
+-- 
+---Trilok Soni
+http://triloksoni.wordpress.com
+http://www.linkedin.com/in/triloksoni
