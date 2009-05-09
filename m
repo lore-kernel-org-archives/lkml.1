@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755550AbZEID2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZEID2j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755550AbZEID2W (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 23:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751567AbZEID2M
+	id S1755811AbZEID2j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 23:28:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbZEID2N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 23:28:12 -0400
-Received: from kroah.org ([198.145.64.141]:41349 "EHLO coco.kroah.org"
+	Fri, 8 May 2009 23:28:13 -0400
+Received: from kroah.org ([198.145.64.141]:41350 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751071AbZEID2L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 23:28:11 -0400
-Date: Fri, 8 May 2009 20:24:32 -0700
+	id S1751227AbZEID2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 23:28:12 -0400
+Date: Fri, 8 May 2009 20:24:37 -0700
 From: Greg KH <gregkh@suse.de>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
        Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, linux-usb@vger.kernel.org
-Subject: [GIT PATCH] USB fixes for 2.6.30-rc4
-Message-ID: <20090509032432.GA9000@kroah.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: [GIT PATCH] driver core patches for 2.6.30-rc4
+Message-ID: <20090509032437.GB9000@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,18 +24,20 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here's some USB fixes for your 2.6.30-rc4 tree.
+Here are a few driver-core patches for your 2.6.30-rc4 tree.
 
-More device ids, and some bugfixes for problems that people have
-reported recently.
+They revert 2 patches in the platform driver core that turned out to be
+the wrong thing to do.  There is also some minor documentation patches,
+and a Kconfig fix.
 
 Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/usb-2.6.git/
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-core-2.6.git/
 
-All of these patches have been in the -next and -mm releases for a while.
+All of these patches have been in the linux-next and mm trees for a
+while.
 
-The full patches will be sent to the linux-usb mailing list, if anyone
-wants to see them.
+The patches will be sent as a follow-on to this message to lkml for people
+to see.
 
 thanks,
 
@@ -43,29 +45,28 @@ greg k-h
 
 ------------
 
- drivers/usb/Makefile               |    2 ++
- drivers/usb/atm/cxacru.c           |   10 ++++++++--
- drivers/usb/gadget/usbstring.c     |    6 +++---
- drivers/usb/serial/ftdi_sio.c      |   20 ++++++++++++++++----
- drivers/usb/serial/ftdi_sio.h      |    6 ++++++
- drivers/usb/storage/unusual_devs.h |    5 +++--
- 6 files changed, 38 insertions(+), 11 deletions(-)
+
+ Documentation/sysfs-rules.txt   |    2 +-
+ drivers/base/platform.c         |   22 +++-------------------
+ include/linux/device.h          |    9 ++-------
+ include/linux/platform_device.h |    1 -
+ lib/Kconfig.debug               |    1 -
+ 5 files changed, 6 insertions(+), 29 deletions(-)
 
 ---------------
 
-Alan Stern (2):
-      USB: Gadget: fix UTF conversion in the usbstring library
-      usb-serial: ftdi_sio: fix reference counting of ftdi_private
+Greg Kroah-Hartman (1):
+      Revert driver core: move platform_data into platform_device
 
-Andy Lutomirski (1):
-      USB: Fix makefile so that CONFIG_WDM and CONFIG_TMC work.
+Henrik Austad (1):
+      Doc/sysfs-rules: Swap the order of the words so the sentence makes more sense
 
-Nicolas Pitre (1):
-      USB: ftdi_sio: add vendor/product id for the Marvell SheevaPlug
+Jason Baron (1):
+      Remove old PRINTK_DEBUG config item
 
-Phil Dibowitz (1):
-      USB: unusual_devs: extend nokia 6288 bcd range
+Ming Lei (1):
+      Revert driver core: fix passing platform_data
 
-Simon Arlott (1):
-      USB: cxacru: Fix negative dB output
+Randy Dunlap (1):
+      Driver core: platform: fix kernel-doc warnings
 
