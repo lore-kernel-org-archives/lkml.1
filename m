@@ -1,86 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755598AbZEIBc4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754468AbZEIBni@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755598AbZEIBc4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 21:32:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752240AbZEIBcr
+	id S1754468AbZEIBni (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 21:43:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752423AbZEIBn3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 21:32:47 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48240 "EHLO ogre.sisk.pl"
+	Fri, 8 May 2009 21:43:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37753 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751054AbZEIBcq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 21:32:46 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Sat, 9 May 2009 02:08:43 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-pm@lists.linux-foundation.org" 
-	<linux-pm@lists.linux-foundation.org>,
-       "pavel@ucw.cz" <pavel@ucw.cz>,
-       "torvalds@linux-foundation.org" <torvalds@linux-foundation.org>,
-       "jens.axboe@oracle.com" <jens.axboe@oracle.com>,
-       "alan-jenkins@tuffmail.co.uk" <alan-jenkins@tuffmail.co.uk>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "kernel-testers@vger.kernel.org" <kernel-testers@vger.kernel.org>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <20090508095010.GA26398@localhost> <200905081551.56577.rjw@sisk.pl>
-In-Reply-To: <200905081551.56577.rjw@sisk.pl>
+	id S1751207AbZEIBn2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 21:43:28 -0400
+Message-ID: <4A04DF32.4050305@kernel.org>
+Date: Sat, 09 May 2009 10:41:06 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Tim Connors <tconnors+linuxkml@astro.swin.edu.au>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org
+Subject: Re: sata_sil24 EH complete
+References: <alpine.DEB.2.00.0905060004100.15177@dirac.rather.puzzling.org> <4A00DA98.5060201@kernel.org> <alpine.DEB.2.00.0905061038340.14678@dirac.rather.puzzling.org> <alpine.DEB.2.00.0905090005560.24222@dirac.rather.puzzling.org>
+In-Reply-To: <alpine.DEB.2.00.0905090005560.24222@dirac.rather.puzzling.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905090208.44381.rjw@sisk.pl>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 09 May 2009 01:41:11 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 May 2009, Rafael J. Wysocki wrote:
-> On Friday 08 May 2009, Wu Fengguang wrote:
-[--snip--]
-> > But hey, that 'count' counts "savable+free" memory.
-> > We don't have a counter for an estimation of "free+freeable" memory,
-> > ie. we are sure we cannot preallocate above that threshold. 
-> > 
-> > One applicable situation is, when there are 800M anonymous memory,
-> > but only 500M image_size and no swap space.
-> > 
-> > In that case we will otherwise goto the oom code path. Sure oom is
-> > (and shall be) reliably disabled in hibernation, but still we shall be
-> > cautious enough not to create a low memory situation, which will hurt:
-> > - hibernation speed
-> >   (vmscan goes mad trying to squeeze the last free page)
-> > - user experiences after resume
-> >   (all *active* file data and metadata have to reloaded)
+Tim Connors wrote:
+>>> Hmm... "ata1.00: configured for UDMA/100" means libata part of
+>>> configuration went okay but it looks like SCSI probing didn't kick in
+>>> for reason.  Is this always reproducible?
+>> 100% of time if it is plugged in after boot.
 > 
-> Strangely enough, my recent testing with this patch doesn't confirm the
-> theory. :-)  Namely, I set image_size too low on purpose and it only caused
-> preallocate_image_memory() to return NULL at one point and that was it.
+> Hah, I lied.  Not 100% of the time.
 > 
-> It didn't even took too much time.
-> 
-> I'll carry out more testing to verify this observation.
+> With *some* combination perhaps of
+>> for host in 0 1 2 3 ; do ; echo "- - -" > /sys/class/scsi_host/host$host/scan ; done
+> and
+>> scsiadd -s
+> when the drive is plugged in and when it isn't plugged in (or maybe even
+> just leaving it alone) and plugging and unplugging it repeadedly,
+> eventually (maybe 20% of the time?) it comes good:
 
-I can confirm that even if image_size is below the minimum we can get,
-the second preallocate_image_memory() just returns after allocating fewer pages
-that it's been asked for (that's with the original __GFP_NO_OOM_KILL-based
-approach, as I wrote in the previous message in this thread) and nothing bad
-happens.
+I can reliably reproduce it here.  Heh... interesting.  I'll dig in.
 
-That may be because we freeze the mm kernel threads, but I've also tested
-without freezing them and it's still worked the same way.
+Thanks.
 
-> > The current code simply tries *too hard* to meet image_size.
-> > I'd rather take that as a mild advice, and to only free
-> > "free+freeable-margin" pages when image_size is not approachable.
-> > 
-> > The safety margin can be totalreserve_pages, plus enough pages for
-> > retaining the "hard core working set".
-> 
-> How to compute the size of the "hard core working set", then?
-
-Well, I'm still interested in the answer here. ;-)
-
-Best,
-Rafael
+-- 
+tejun
