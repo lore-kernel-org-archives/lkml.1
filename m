@@ -1,61 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756860AbZEIQ4B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756791AbZEIQzp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756860AbZEIQ4B (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 12:56:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756163AbZEIQw3
+	id S1756791AbZEIQzp (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 12:55:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756072AbZEIQwJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 12:52:29 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54780 "EHLO smtp.polymtl.ca"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754859AbZEIQw3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 12:52:29 -0400
-Message-Id: <20090509162350.940432237@polymtl.ca>
-References: <20090509162209.217414024@polymtl.ca>
-User-Agent: quilt/0.46-1
-Date: Sat, 09 May 2009 12:22:26 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
-       fweisbec@gmail.com, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, jiayingz@google.com, roland@redhat.com,
-       mbligh@google.com
-Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 17/20] LTTng Kernel Trace Thread Flag UML
-Content-Disposition: inline; filename=lttng-kernel-trace-thread-flag-um.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sat,  9 May 2009 16:47:20 +0000
+	Sat, 9 May 2009 12:52:09 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:37470 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756069AbZEIQwH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 12:52:07 -0400
+Date: Sat, 9 May 2009 18:54:17 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
+       Linux Media Mailing List <linux-media@vger.kernel.org>,
+       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
+Subject: Re: dubious section mismatch test (was Re: [PULL] soc-camera: one commit as v4l2-dev preparation)
+Message-ID: <20090509165416.GA25534@uranus.ravnborg.org>
+References: <Pine.LNX.4.64.0905071841331.9460@axis700.grange> <20090509062726.22d18182@pedra.chehab.org> <Pine.LNX.4.64.0905091430100.3515@axis700.grange>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.64.0905091430100.3515@axis700.grange>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a thread flag to activate system-wide syscall tracing.
+On Sat, May 09, 2009 at 06:13:13PM +0200, Guennadi Liakhovetski wrote:
+> On Sat, 9 May 2009, Mauro Carvalho Chehab wrote:
+> 
+> > WARNING: /home/v4l/master/v4l/soc_camera.o(.data+0x0): Section mismatch in reference from the variable soc_camera_pdrv to the function .devinit.text:soc_camera_pdrv_probe()
+> > The variable soc_camera_pdrv references
+> > the function __devinit soc_camera_pdrv_probe()
+> > If the reference is valid then annotate the
+> > variable with __init* (see linux/init.h) or name the variable:
+> > *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+> > 
+> > WARNING: /home/v4l/master/v4l/soc_camera.o(.data+0x8): Section mismatch in reference from the variable soc_camera_pdrv to the function .devexit.text:soc_camera_pdrv_remove()
+> > The variable soc_camera_pdrv references
+> > the function __devexit soc_camera_pdrv_remove()
+> > If the reference is valid then annotate the
+> > variable with __exit* (see linux/init.h) or name the variable:
+> > *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
+> 
+> FWIW, I find this test dubious. Matching on symbol names doesn't seem like 
+> a good idea to me. Can we introduce a new marker instead something like
+> 
+> static struct whatever_driver __driver driver = {
+> 	.probe	= my_probe,
+> 	.remove	= __exit_p(my_remove),
+> };
+> 
+> to put them in a new special section? Or is there a better solution?
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
----
- arch/um/include/asm/thread_info.h |    2 ++
- 1 file changed, 2 insertions(+)
+We already have that:
+__refdata would be your choice in this case.
 
-Index: linux-2.6-lttng/arch/um/include/asm/thread_info.h
-===================================================================
---- linux-2.6-lttng.orig/arch/um/include/asm/thread_info.h	2009-03-15 15:51:26.000000000 -0400
-+++ linux-2.6-lttng/arch/um/include/asm/thread_info.h	2009-03-15 15:57:18.000000000 -0400
-@@ -69,6 +69,7 @@ static inline struct thread_info *curren
- #define TIF_MEMDIE	 	5
- #define TIF_SYSCALL_AUDIT	6
- #define TIF_RESTORE_SIGMASK	7
-+#define TIF_KERNEL_TRACE	8	/* kernel trace active */
- #define TIF_FREEZE		16	/* is freezing for suspend */
- 
- #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
-@@ -78,6 +79,7 @@ static inline struct thread_info *curren
- #define _TIF_MEMDIE		(1 << TIF_MEMDIE)
- #define _TIF_SYSCALL_AUDIT	(1 << TIF_SYSCALL_AUDIT)
- #define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
-+#define _TIF_KERNEL_TRACE	(1 << TIF_KERNEL_TRACE)
- #define _TIF_FREEZE		(1 << TIF_FREEZE)
- 
- #endif
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+	Sam
