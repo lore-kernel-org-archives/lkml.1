@@ -1,80 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752181AbZEIH5H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752886AbZEIH6Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752181AbZEIH5H (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 03:57:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751027AbZEIH4z
+	id S1752886AbZEIH6Q (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 03:58:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750926AbZEIH54
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 03:56:55 -0400
-Received: from mga03.intel.com ([143.182.124.21]:19280 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750922AbZEIH4y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 03:56:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,320,1239001200"; 
-   d="scan'208";a="140979397"
-Date: Sat, 9 May 2009 15:56:25 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: =?utf-8?B?RnLDqWTDqXJpYw==?= Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [PATCH 4/8] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090509075625.GA6843@localhost>
-References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu> <20090508124433.GB15949@localhost> <20090509055914.GA21354@elte.hu>
-MIME-Version: 1.0
+	Sat, 9 May 2009 03:57:56 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:38582 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750826AbZEIH5z (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 03:57:55 -0400
+Date: Sat, 9 May 2009 10:00:06 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Tim Abbott <tabbott@mit.edu>
+Subject: Minimal linker script
+Message-ID: <20090509080006.GA22617@uranus.ravnborg.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090509055914.GA21354@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 09, 2009 at 01:59:14PM +0800, Ingo Molnar wrote:
-> 
-> * Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > > /proc/kpageflags should be done via the proper methods outlined 
-> > > in the previous mails i wrote on this topic: for example by 
-> > > using the 'object collections' abstraction i suggested. Clean 
-> > > enumeration of all pages (files, tasks, etc.) and the definition 
-> > > of histograms over it via free-form filter expressions is the 
-> > > right way to do this. It would not only help other subsystems, 
-> > > it would also be far more capable.
-> > 
-> > For the new interfaces(files etc.) I'd very like to use the ftrace 
-> > interface. For the existing pagemap interfaces, if they can 
-> > fulfill their targeted tasks, why bother making the shift?
-> 
-> Because they were a mistake to be merged? Because having them 
-> fragments and thus weakens Linux instrumentation in general? 
-> Because, somewhat hipocritically, other MM instrumentation patches 
-> are being rejected under the pretense that they "do not matter" - 
-> while instrumentation that provably _does_ matter (yours) is added 
-> outside the existing instrumentation frameworks?
-> 
-> > When the pagemap interfaces cannot satisfy some new applications, 
-> > and ftrace can provide a superset of the pagemap interfaces and 
-> > shows clear advantages while meeting the new demands, then we can 
-> > schedule tearing down of the old interface?
-> 
-> Yes. But meanwhile dont extend it ... otherwise this bad cycle will 
-> never end. "Oh, we just added this to /proc/kpageflags too, why 
-> should we go through the trouble of use the generic framework?"
-> 
-> Do you see my position?
+While trying to address the common patters in our
+linker scripts I made a sketch of a minimal linker script.
 
-Yes I can understand the merits of conforming to a generic framework.
-But that alone is not enough. If you at the same time demonstrate some
-clear technical advantages(flexibility, speed, simplicity etc.), then
-it would be great.  (Let me work out some expectations for ftrace..)
+As this will be the basis for my continued effort to create
+a set of defines that can be used by all architectues I would like
+to receive some feedback.
 
-Thanks,
-Fengguang
+/*
+ * Helper macros to support writing architecture specific
+ * linker scripts.
+ *
+ * A minimal linker scripts has following content:
+ *
+ * OUTPUT_FORMAT(...)
+ * OUTPUT_ARCH(...)
+ * ENTRY(...)
+ * SECTIONS
+ * {
+ *      . = START;
+ *      __init_begin = .;
+ *      HEAD_SECTION
+ *      INIT_TEXT_SECTION(PAGE_SIZE)
+ *      INIT_DATA_SECTION(...)
+ *      PERCPU(PAGE_SIZE)
+ *      __init_end = .;
+ *
+ *      _stext = .;
+ *      TEXT_SECTION = 0
+ *      _etext = .;
+ *
+ *      _sdata = .;
+ *      RO_DATA_SECTION(PAGE_SIZE)
+ *      RW_DATA_SECTION(...)
+ *      _edata = .;
+ *
+ *      EXCEPTION_TABLE(...)
+ *      NOTES
+ *
+ *      __bss_start = .;
+ *      BSS_SECTION(0, 0)
+ *      __bss_stop = .;
+ *      _end = .;
+ *
+ *      /DISCARD/ : {
+ *              EXIT_TEXT
+ *              EXIT_DATA
+ *              *(.exitcall.exit)
+ *      }
+ *      STABS_DEBUG
+ *      DWARF_DEBUG
+ * }
+ *
+ * [__init_begin, __init_end] is the init section that may be freed after init
+ * [_stext, _etext] is the text section
+ * [_sdata, _edata] is the data section
+ *
+ * Some of the included output section include their own set of constants.
+ * Examples are: [__initramfs_start, __initramfs_end] for initramfs and
+ *               [__nosave_begin, __nosave_end] for the nosave data
+ */
 
+There is one majot issue in the minimal script I need to address.
+All symbols are absolute (__init_begin, _stext etc) - I need to find a nice
+way to make them non-absolute.
+For now I and more interested in comments on the structure and the coverage
+of the symbols.
+I strikes me that [_stext, _etext] do not cover text in the init section.
+And does [_sdata, _edata] cover RO_DATA?
+
+What abut the order of the sections - are they significant for any archtecture?
+I have used an order used by some of the embedded targets that allows
+a maximum of code to reside inisde [__init_begin, __init_end].
+
+Comments appreciated!
+
+	Sam
