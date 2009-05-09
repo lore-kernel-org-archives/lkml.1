@@ -1,17 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756183AbZEIQwy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbZEIQxS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756183AbZEIQwy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 12:52:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754883AbZEIQtY
+	id S1756245AbZEIQxS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 12:53:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755016AbZEIQtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 12:49:24 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54469 "EHLO smtp.polymtl.ca"
+	Sat, 9 May 2009 12:49:25 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54471 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755085AbZEIQtW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 12:49:22 -0400
-Message-Id: <20090509162209.217414024@polymtl.ca>
+	id S1755210AbZEIQtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 12:49:23 -0400
+Message-Id: <20090509162350.207344704@polymtl.ca>
+References: <20090509162209.217414024@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Sat, 09 May 2009 12:22:09 -0400
+Date: Sat, 09 May 2009 12:22:21 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
@@ -19,42 +20,41 @@ To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        fweisbec@gmail.com, laijs@cn.fujitsu.com, rostedt@goodmis.org,
        peterz@infradead.org, jiayingz@google.com, roland@redhat.com,
        mbligh@google.com
-Subject: [RFC patch 00/20] Kernel tracing thread flag
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sat,  9 May 2009 16:47:17 +0000
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [RFC patch 12/20] LTTng Kernel Trace Thread Flag parisc
+Content-Disposition: inline; filename=lttng-kernel-trace-thread-flag-parisc.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sat,  9 May 2009 16:47:19 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the generalisation of the TIF_SYSCALL_FTRACE thread flag for :
+Add a thread flag to activate system-wide syscall tracing.
 
-- multiple tracers (even accessible from modules)
-- multiple architectures
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ arch/parisc/include/asm/thread_info.h |    2 ++
+ 1 file changed, 2 insertions(+)
 
-It includes :
-
-- Addition of the TIF_KERNEL_TRACE for all Linux architectures.
-- Modification of some architecture entry*.S files to ensure that the thread
-  flag is re-read upon syscall exit to ensure that syscall exit is traced.
-  Basically, what I try to achieve here is to make sure that given the following
-  sequence will get its syscall exit event traced :
-
-- Thread preempted in a system call
-- Activation of all TIF_KERNEL_TRACE thread flags
-- ...enough time passes to expect that all tracing sites are activated...
-- syscall exit -> expected to be traced
-
-But if the thread flags used at syscall exit are the same that has been read at
-syscall entry, the event will be skipped. This does not permit reaching a known
-"quiescent state" where we know that all tracing sites are activated.
-
-Note that having non-perfectly matched syscall trace entry/exit may have
-implications wrt getname/putname refcounting for instance, and could cause
-problems if getname/putname was used in the syscall entry/exit pairs. We will
-have to deal with this somehow when we face this problem. Keeping a per-thread
-flag saying that a matching syscall_entry tracing has been executed could fix
-this problem. We could even re-use TIF_SYSCALL_FTRACE for this specific purpose.
-
-Mathieu
+Index: linux-2.6-lttng/arch/parisc/include/asm/thread_info.h
+===================================================================
+--- linux-2.6-lttng.orig/arch/parisc/include/asm/thread_info.h	2009-03-15 15:57:04.000000000 -0400
++++ linux-2.6-lttng/arch/parisc/include/asm/thread_info.h	2009-03-15 15:57:16.000000000 -0400
+@@ -59,6 +59,7 @@ struct thread_info {
+ #define TIF_MEMDIE		5
+ #define TIF_RESTORE_SIGMASK	6	/* restore saved signal mask */
+ #define TIF_FREEZE		7	/* is freezing for suspend */
++#define TIF_KERNEL_TRACE	8	/* kernel trace active */
+ 
+ #define _TIF_SYSCALL_TRACE	(1 << TIF_SYSCALL_TRACE)
+ #define _TIF_SIGPENDING		(1 << TIF_SIGPENDING)
+@@ -67,6 +68,7 @@ struct thread_info {
+ #define _TIF_32BIT		(1 << TIF_32BIT)
+ #define _TIF_RESTORE_SIGMASK	(1 << TIF_RESTORE_SIGMASK)
+ #define _TIF_FREEZE		(1 << TIF_FREEZE)
++#define _TIF_KERNEL_TRACE	(1 << TIF_KERNEL_TRACE)
+ 
+ #define _TIF_USER_WORK_MASK     (_TIF_SIGPENDING | \
+                                  _TIF_NEED_RESCHED | _TIF_RESTORE_SIGMASK)
 
 -- 
 Mathieu Desnoyers
