@@ -1,74 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbZEIQql@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752947AbZEIQtA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753761AbZEIQql (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 12:46:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZEIQqb
+	id S1752947AbZEIQtA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 12:49:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751990AbZEIQsw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 12:46:31 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:33905 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbZEIQqb convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 12:46:31 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090509082233.32cbb8e4@infradead.org>
-References: <20090509143742.GA27663@kroah.com> <b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com> 
-	<20090509150853.GA32394@suse.de> <20090509082233.32cbb8e4@infradead.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Sat, 9 May 2009 18:46:10 +0200
-Message-ID: <ac3eb2510905090946t52926a5j1be2cac31f480352@mail.gmail.com>
-Subject: Re: [patch 00/13] devtmpfs patches
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Greg KH <gregkh@suse.de>, Fabio Comolli <fabio.comolli@gmail.com>,
-       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 9 May 2009 12:48:52 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54412 "EHLO smtp.polymtl.ca"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751888AbZEIQsv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 12:48:51 -0400
+Message-Id: <20090509162348.872445655@polymtl.ca>
+References: <20090509162209.217414024@polymtl.ca>
+User-Agent: quilt/0.46-1
+Date: Sat, 09 May 2009 12:22:13 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       fweisbec@gmail.com, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, jiayingz@google.com, roland@redhat.com,
+       mbligh@google.com
+Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Subject: [RFC patch 04/20] LTTng Kernel Trace Thread Flag Blackfin
+Content-Disposition: inline; filename=lttng-kernel-trace-thread-flag-blackfin.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sat,  9 May 2009 16:47:18 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 9, 2009 at 17:22, Arjan van de Ven <arjan@infradead.org> wrote:
-> On Sat, 9 May 2009 08:08:53 -0700
-> Greg KH <gregkh@suse.de> wrote:
->
->> > Well, guess you meant the opposite ;-)
->>
->> Heh, yes, sorry about that.  It makes booting faster :)
->
-> .. and I don't buy that.
+Add a thread flag to activate system-wide syscall tracing.
 
-Don't buy, just try it - and you will see. :)
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+---
+ arch/blackfin/include/asm/thread_info.h |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-We must mount a tmpfs at some point during bootup, wherever you do
-that, in initramfs or the real root. Doing that, there will obviously
-be a point, where /dev is empty, exactly at that time you can not do
-anything else, which is not very tightly controlled, you can not just
-start stuff in parallel during that time. Devtmpfs gets rid of that
-limitation, and offers you to do things without waiting for a hard
-checkpoint. It's obviously the fastest one can do, like number can
-show. There can be no faster alternatives for this implemented in
-userspace.
+Index: linux-2.6-lttng/arch/blackfin/include/asm/thread_info.h
+===================================================================
+--- linux-2.6-lttng.orig/arch/blackfin/include/asm/thread_info.h	2009-03-16 19:50:47.000000000 -0400
++++ linux-2.6-lttng/arch/blackfin/include/asm/thread_info.h	2009-03-16 19:55:16.000000000 -0400
+@@ -123,6 +123,7 @@ static inline struct thread_info *curren
+ #define TIF_RESTORE_SIGMASK	5	/* restore signal mask in do_signal() */
+ #define TIF_FREEZE              6       /* is freezing for suspend */
+ #define TIF_IRQ_SYNC            7       /* sync pipeline stage */
++#define TIF_KERNEL_TRACE        8       /* kernel trace active */
+ 
+ /* as above, but as bit values */
+ #define _TIF_SYSCALL_TRACE	(1<<TIF_SYSCALL_TRACE)
+@@ -132,8 +133,9 @@ static inline struct thread_info *curren
+ #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+ #define _TIF_FREEZE             (1<<TIF_FREEZE)
+ #define _TIF_IRQ_SYNC           (1<<TIF_IRQ_SYNC)
++#define _TIF_KERNEL_TRACE       (1<<TIF_KERNEL_TRACE)
+ 
+-#define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
++#define _TIF_WORK_MASK		0x0000FEFE	/* work to do on interrupt/exception return */
+ 
+ #endif				/* __KERNEL__ */
+ 
 
-> The only argument I've heard is "oh but it's hard". No it's not.
-> The other argument is "but for more partitions we get other device
-> numbers"... you know what, that's easy to fix. Just make the 32 bit dev
-> number consistent. Few lines of code I bet, and it is benefit for
-> everyone to do that....
-
-And all the other subsystems. You can't even trust a single static
-node for rtc devices, and so on ... Converting all of that stuff in
-the kernel is just not a real option. Static device nodes a bad hack,
-and distros do not do that today, and can for reasons of correctness
-and reliability, not start doing that.
-
-> Beyond that... this is not needed... but at least call it "devfs".. for
-> what it is.
->
-> (and yes there is very obvious irony)
-
-No problem, it's just a random name we've choosen, that even contains
-all of "devfs". :) I just liked to express, that one can do whatever
-one wants to do with the nodes from userspace, just like we can today.
-
-Thanks,
-Kay
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
