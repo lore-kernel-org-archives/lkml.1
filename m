@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755811AbZEID2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756839AbZEID25@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755811AbZEID2j (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 23:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751912AbZEID2N
+	id S1756839AbZEID25 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 23:28:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbZEID2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 23:28:13 -0400
-Received: from kroah.org ([198.145.64.141]:41350 "EHLO coco.kroah.org"
+	Fri, 8 May 2009 23:28:15 -0400
+Received: from kroah.org ([198.145.64.141]:41353 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751227AbZEID2M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 23:28:12 -0400
-Date: Fri, 8 May 2009 20:24:37 -0700
-From: Greg KH <gregkh@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>
+	id S1752234AbZEID2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 23:28:13 -0400
+Date: Fri, 8 May 2009 20:24:43 -0700
+From: Greg KH <greg@kroah.com>
+To: Linus Torvalds <torvalds@osdl.org>, Andrew Morton <akpm@osdl.org>
 Cc: linux-kernel@vger.kernel.org
-Subject: [GIT PATCH] driver core patches for 2.6.30-rc4
-Message-ID: <20090509032437.GB9000@kroah.com>
+Subject: [GIT PATCH] STAGING patches for 2.6.30-rc4 tree
+Message-ID: <20090509032443.GC9000@kroah.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
@@ -24,49 +23,44 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Here are a few driver-core patches for your 2.6.30-rc4 tree.
+Here are some patches for your 2.6.30-rc4 git tree.
 
-They revert 2 patches in the platform driver core that turned out to be
-the wrong thing to do.  There is also some minor documentation patches,
-and a Kconfig fix.
+It contains:
+	- a new device id.
+	- documentation update to keep someone from getting unwanted
+	  emails.
+	- 2 bugfixes
+
+All of these are contained within the drivers/staging tree, and have
+been in the linux-next and -mm trees for a while now.
 
 Please pull from:
-	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/driver-core-2.6.git/
-
-All of these patches have been in the linux-next and mm trees for a
-while.
-
-The patches will be sent as a follow-on to this message to lkml for people
-to see.
+	master.kernel.org:/pub/scm/linux/kernel/git/gregkh/staging-2.6.git/
 
 thanks,
 
 greg k-h
 
-------------
+--------------
 
-
- Documentation/sysfs-rules.txt   |    2 +-
- drivers/base/platform.c         |   22 +++-------------------
- include/linux/device.h          |    9 ++-------
- include/linux/platform_device.h |    1 -
- lib/Kconfig.debug               |    1 -
- 5 files changed, 6 insertions(+), 29 deletions(-)
+ drivers/staging/comedi/TODO            |    1 -
+ drivers/staging/rt2870/rt2870.h        |    1 +
+ drivers/staging/rtl8187se/r8180.h      |    2 +-
+ drivers/staging/rtl8187se/r8180_core.c |   46 +++++--------------------------
+ drivers/staging/winbond/wbusb.c        |    9 +++++-
+ 5 files changed, 17 insertions(+), 42 deletions(-)
 
 ---------------
 
+Dave Hayes (1):
+      Staging: rt2870: new device id
+
 Greg Kroah-Hartman (1):
-      Revert driver core: move platform_data into platform_device
+      Staging: comedi: David doesn't want to get comedi patches
 
-Henrik Austad (1):
-      Doc/sysfs-rules: Swap the order of the words so the sentence makes more sense
+Larry Finger (1):
+      Staging: rtl8187se: Fix compilation warnings and procfs directory leak
 
-Jason Baron (1):
-      Remove old PRINTK_DEBUG config item
-
-Ming Lei (1):
-      Revert driver core: fix passing platform_data
-
-Randy Dunlap (1):
-      Driver core: platform: fix kernel-doc warnings
+Pekka Enberg (1):
+      Staging: w35und: unregister device from the ieee80211 stack upon ->disconnect()
 
