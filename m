@@ -1,43 +1,26 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753086AbZEICFa (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 8 May 2009 22:05:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753058AbZEICFK
+	id S1757053AbZEIQ5J (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 9 May 2009 12:57:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755723AbZEIQ4f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 22:05:10 -0400
-Received: from mailfilter11.ihug.co.nz ([203.109.136.11]:24725 "EHLO
-	mailfilter11.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752408AbZEICFJ (ORCPT
+	Sat, 9 May 2009 12:56:35 -0400
+Received: from cpe-65-29-106-176.mi.res.rr.com ([65.29.106.176]:1972 "HELO
+	cpe-65-29-106-176.mi.res.rr.com" rhost-flags-OK-FAIL-OK-FAIL)
+	by vger.kernel.org with SMTP id S1756344AbZEIQ4e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 22:05:09 -0400
-X-Greylist: delayed 723 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 May 2009 22:05:09 EDT
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AmMiAFN/BErEA7b6/2dsb2JhbACBMJRSggcHhWMSoFuBRAmPVoJLR2sF
-X-IronPort-AV: E=Sophos;i="4.40,320,1238932800"; 
-   d="scan'208";a="182647285"
+	Sat, 9 May 2009 12:56:34 -0400
+Message-ID: <20090509122735.1090808@airefata.com>
+Date: Sat, 9 May 2009 12:27:35 -0500
+From: "Roland Shepherd" <rxh5715@airefata.com>
+User-Agent: Thunderbird 2.0.0.9 (Windows/20071031)
 MIME-Version: 1.0
-Date: Sat, 09 May 2009 13:50:11 +1200
-From: IL <il.erikander@yahoo.ie>
-To: undisclosed-recipients:;
-Subject: (no subject)
-Reply-To: fred.ilca7@9.cn
-Message-ID: <9e60c557fef04a7fd265453447d558ef@ihug.co.nz>
-SenderIP: 196.3.182.250
-User-Agent: Vodafone Webmail/0.1
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+To: linux-kernel@vger.kernel.org
+Subject: Your battleship won't sink
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
--- 
-Hello,
-801,613 Euro is now yours. Congrats... You have won.
-
-Send your information to Monte Fred +44-704-574-9850 on
-ilca7.fred@gmail.com to help process your claims.
-Provide your name, address, age, phone number, occupation.
-
-Erik Andersen
-Irish Lotto
+Your renewd xxxlife in a click of the mouse! http://uhs.squmukbegg.com/
 
