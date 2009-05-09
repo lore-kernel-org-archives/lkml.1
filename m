@@ -1,46 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752988AbZEIJzZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754758AbZEIKCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752988AbZEIJzZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 05:55:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZEIJzM
+	id S1754758AbZEIKCv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 06:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZEIKCm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 05:55:12 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:54233 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751137AbZEIJzK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 05:55:10 -0400
-Date: Sat, 9 May 2009 12:00:08 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Jan Beulich <jbeulich@novell.com>,
-       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86-64: improve e820_search_gap()
-Message-ID: <20090509100008.GD23223@one.firstfloor.org>
-References: <4A0199B8.76EA.0078.0@novell.com> <4A03BC1A.9060605@zytor.com> <4A03F016.76EA.0078.0@novell.com> <874ovvo0wo.fsf@basil.nowhere.org> <4A0492EA.6080403@zytor.com> <20090508205347.GC23223@one.firstfloor.org> <4A049B99.4000402@zytor.com>
-Mime-Version: 1.0
+	Sat, 9 May 2009 06:02:42 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:54082 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751137AbZEIKCl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 06:02:41 -0400
+Date: Sat, 9 May 2009 12:01:37 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [patch] tracing/mm: add page frame snapshot trace
+Message-ID: <20090509100137.GC20941@elte.hu>
+References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu> <20090508124433.GB15949@localhost> <20090509062758.GB21354@elte.hu> <20090509091325.GA7994@localhost>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A049B99.4000402@zytor.com>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090509091325.GA7994@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> However, as far as querying SRAT, I don't like the idea of spreading the 
-> knowledge of the system memory map out between a bunch of different 
-> places, each of which have a little piece of the puzzle.  It puts a huge 
-> onus on the user to know what mechanisms are actually available, and 
-> really makes a shitty interface.
 
-AFAIK another popular OS always combines mappings from all sources (e820,
-SRAT, PCI, PNP, ACPI etc.) in the query before allocating anything.
-Something like that might be a reasonable long term direction for Linux
-too, but it's probably also a can of worms to handle the conflicts
-between the various sources (e.g. e820 reserves a lot of things
-in other sources too). It would be a rather large change.
-Maybe that would handle the systems I thought of above.
+* Wu Fengguang <fengguang.wu@intel.com> wrote:
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+> 2) support concurrent object iterations
+>    For example, a huge 1TB memory space can be split up into 10
+>    segments which can be queried concurrently (with different options).
+
+this should already be possible. If you lseek the trigger file, that 
+will be understood as an 'offset' by the patch, and then write a 
+(decimal) value into the file, that will be the count.
+
+So it should already be possible to fork off nr_cpus helper threads, 
+one bound to each CPU, each triggering trace output of a separate 
+segment of the memory map - and each reading that CPU's 
+trace_pipe_raw file to recover the data - all in parallel.
+
+	Ingo
