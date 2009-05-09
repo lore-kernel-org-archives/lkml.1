@@ -1,82 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753837AbZEIQcp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754754AbZEIQf7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753837AbZEIQcp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 12:32:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754095AbZEIQc3
+	id S1754754AbZEIQf7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 12:35:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752030AbZEIQfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 12:32:29 -0400
-Received: from tomts10.bellnexxia.net ([209.226.175.54]:63317 "EHLO
-	tomts10-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754849AbZEIQc2 (ORCPT
+	Sat, 9 May 2009 12:35:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56606 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751167AbZEIQfk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 12:32:28 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ah8GAKdIBUpMQW1W/2dsb2JhbACBUM0Kg34F
-Date: Sat, 9 May 2009 12:32:16 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Frank Ch. Eigler" <fche@redhat.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Jason Baron <jbaron@redhat.com>,
-       Tom Zanussi <tzanussi@gmail.com>, linux-kernel@vger.kernel.org,
-       fweisbec@gmail.com, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, jiayingz@google.com, mbligh@google.com,
-       roland@redhat.com
-Subject: Re: [RFC] convert ftrace syscall tracer to TRACE_EVENT()
-Message-ID: <20090509163216.GA7548@Krystal>
-References: <20090508210347.GA3121@redhat.com> <20090509083737.GE3656@elte.hu> <20090509153629.GC29911@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <20090509153629.GC29911@redhat.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 12:30:30 up 70 days, 12:56,  4 users,  load average: 0.51, 0.52,
-	0.53
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 9 May 2009 12:35:40 -0400
+Date: Sat, 9 May 2009 09:24:51 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ming Lei <tom.leiming@gmail.com>
+cc: Laurent Pinchart <laurent.pinchart@skynet.be>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       video4linux-list@redhat.com, mchehab@infradead.org
+Subject: Re: 2.6.30-rc2-git2: Reported regressions from 2.6.29
+In-Reply-To: <20090509112819.759594d5@linux-lm>
+Message-ID: <alpine.LFD.2.01.0905090923370.3586@localhost.localdomain>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <200904202208.23899.laurent.pinchart@skynet.be> <d82e647a0904201847n403424efnb5a0c40a4cac365d@mail.gmail.com> <200904220121.12002.laurent.pinchart@skynet.be> <20090509112819.759594d5@linux-lm>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Frank Ch. Eigler (fche@redhat.com) wrote:
-> Hi -
+
+
+On Sat, 9 May 2009, Ming Lei wrote:
 > 
-> On Sat, May 09, 2009 at 10:37:37AM +0200, Ingo Molnar wrote:
-> > [...]
-> > Firstly, it adds two new tracepoints to every system call. That is 
-> > unnecessary - we already have the TIF flag based callbacks, and we 
-> > can use the existing syscall attributes table to get to tracepoints 
-> > - without slow down (or impacting) the fast path in any way.
-> > [...]
-> 
-> However, as the TIF_SYSCALL_FTRACE and/or TIF_SYSCALL_TRACE flags are
-> tied to a single consumer, it would limit the usefulness of the
-> naturally multiple-client tracepoints, if they were made conditional
-> on them.  Would you be interested in a proper reference-counting API?
-> 
+> Rc5 has been released today, why isn't this patch accepted by upstream
+> now?  It is really a bug fix.
 
-Hrm, actually, looking at 
+I can take it directly, but was hoping to get it through the regular DVB 
+tree. Haven't had a DVB update request yet (or maybe it got lost?)
 
-void start_ftrace_syscalls(void)
-{
-        unsigned long flags;
-        struct task_struct *g, *t;
-
-        mutex_lock(&syscall_trace_lock);
-
-        /* Don't enable the flag on the tasks twice */
-        if (++refcount != 1)
-                goto unlock;
-
-shows me that there is in fact some refcounting done there. But I'll
-send the TIF_KERNEL_TRACE patchset anyway, given it supports much more
-architectures and has a more generic thread flag name.
-
-Mathieu
-
-
-> - FChE
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+		Linus
