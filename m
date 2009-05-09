@@ -1,53 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754254AbZEILVj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753853AbZEILgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754254AbZEILVj (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 07:21:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752438AbZEILV3
+	id S1753853AbZEILgT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 07:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751735AbZEILgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 07:21:29 -0400
-Received: from fk-out-0910.google.com ([209.85.128.191]:64857 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751149AbZEILV2 (ORCPT
+	Sat, 9 May 2009 07:36:09 -0400
+Received: from smtp4.netcologne.de ([194.8.194.137]:43877 "EHLO
+	smtp4.netcologne.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751321AbZEILgI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 07:21:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
-         :content-transfer-encoding;
-        b=Jk18eCT2TXcGfrb7JDYVJOTs5ODblwLea60mygiC9ECcAxsGBja3Z/RFFpj7cFTjus
-         UV7QKa9h++kz4PBhbkrb2Oy+VLjaAbxxHcqgLtD1PBT9oWA+XRa22yAwO7KRKSdSoRTn
-         P0ayJwHvHL4SN/GudrP+FEvbBuOtQKWA1cIe0=
-Subject: [PATCH] Spelling fix in btrfs code comment
-From: Sankar P <sankar.curiosity@gmail.com>
-To: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
-       trivial@kernel.org
-Content-Type: text/plain
-Date: Sat, 09 May 2009 16:49:03 +0530
-Message-Id: <1241867943.26731.5.camel@blr-psankar.blr.novell.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 9 May 2009 07:36:08 -0400
+Date: Sat, 9 May 2009 13:36:06 +0200
+From: Max Kellermann <max@duempel.org>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: jens.axboe@oracle.com, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 0/3] make splice more generic
+Message-ID: <20090509113606.GA15607@squirrel.roonstrasse.net>
+Mail-Followup-To: Miklos Szeredi <miklos@szeredi.hu>, jens.axboe@oracle.com,
+	torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20090507133734.450612199@szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090507133734.450612199@szeredi.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix a trivial spelling error in a comment
+On 2009/05/07 15:37, Miklos Szeredi <miklos@szeredi.hu> wrote:
+> Just after cleaning up my patches after a vacation I found Max
+> Kellermann's patch on LKML implementing the first part.  I'll still
+> post mine, because it's slightly simpler (no ref + unref on the buffer
+> if not necessary).
 
-Signed-off-by: Sankar P <sankar.curiosity@gmail.com>
+I didn't do that initially, but then I wasn't sure if that is actually
+valid: the get() method requires a pointer to the pipe and the buffer,
+not just the underlying page.  I chose the safe path, because I don't
+know that API very well.
 
----
-diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
-index e496644..3e2c7c7 100644
---- a/fs/btrfs/extent-tree.c
-+++ b/fs/btrfs/extent-tree.c
-@@ -312,7 +312,7 @@ btrfs_lookup_first_block_group(struct btrfs_fs_info *info, u64 bytenr)
- }
- 
- /*
-- * return the block group that contains teh given bytenr
-+ * return the block group that contains the given bytenr
-  */
- struct btrfs_block_group_cache *btrfs_lookup_block_group(
- 						 struct btrfs_fs_info *info,
-
-
+Max
