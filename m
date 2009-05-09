@@ -1,73 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZEIKU1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbZEIKXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753219AbZEIKU1 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 06:20:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751228AbZEIKUO
+	id S1754916AbZEIKXT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 06:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbZEIKXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 06:20:14 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:36439 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750936AbZEIKUM (ORCPT
+	Sat, 9 May 2009 06:23:05 -0400
+Received: from pfepb.post.tele.dk ([195.41.46.236]:39287 "EHLO
+	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751370AbZEIKXD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 06:20:12 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class citizen
-Cc: kosaki.motohiro@jp.fujitsu.com, Elladan <elladan@eskimo.com>,
-       Rik van Riel <riel@redhat.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>
-In-Reply-To: <alpine.DEB.1.10.0905081312080.15748@qirst.com>
-References: <20090508034054.GB1202@eskimo.com> <alpine.DEB.1.10.0905081312080.15748@qirst.com>
-Message-Id: <20090509191818.3AD8.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Sat,  9 May 2009 19:20:09 +0900 (JST)
+	Sat, 9 May 2009 06:23:03 -0400
+Date: Sat, 9 May 2009 12:25:14 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: petkovbb@gmail.com, Borislav Petkov <petkovbb@googlemail.com>,
+       bzolnier@gmail.com, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 01/14] ide-tape: fix potential fs requests bug
+Message-ID: <20090509102514.GA23517@uranus.ravnborg.org>
+References: <1241855134-4984-1-git-send-email-petkovbb@gmail.com> <1241855134-4984-2-git-send-email-petkovbb@gmail.com> <20090509080245.GB22617@uranus.ravnborg.org> <20090509085008.GA5261@liondog.tnic>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090509085008.GA5261@liondog.tnic>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 7 May 2009, Elladan wrote:
+On Sat, May 09, 2009 at 10:50:08AM +0200, Borislav Petkov wrote:
+> On Sat, May 09, 2009 at 10:02:45AM +0200, Sam Ravnborg wrote:
+> > On Sat, May 09, 2009 at 09:45:21AM +0200, Borislav Petkov wrote:
+> > > ide-tape had a potential bug for fs requests when preparing the command
+> > > packet: it was writing the transfer length as a number of fixed blocks.
+> > > However, the block layer implies 512 byte blocks and ide-tape can have
+> > > other block sizes so account for that too.
+> > > 
+> > > ide-floppy does this calculation properly with the block size factor
+> > > (floppy->bs_factor).
+> > > 
+> > > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> > > ---
+> > >  drivers/ide/ide-tape.c |    2 +-
+> > >  1 files changed, 1 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
+> > > index e166045..fc79cf4 100644
+> > > --- a/drivers/ide/ide-tape.c
+> > > +++ b/drivers/ide/ide-tape.c
+> > > @@ -586,7 +586,7 @@ static void ide_tape_create_rw_cmd(idetape_tape_t *tape,
+> > >  				   struct ide_atapi_pc *pc, struct request *rq,
+> > >  				   u8 opcode)
+> > >  {
+> > > -	unsigned int length = blk_rq_sectors(rq);
+> > > +	unsigned int length = blk_rq_sectors(rq) / (tape->blk_size >> 9);
+> > 
+> > If tape->blk_size equals 256 or less then we get a divide-by-zero.
 > 
-> > > Nobody (except you) is proposing that we completely disable
-> > > the eviction of executable pages.  I believe that your idea
-> > > could easily lead to a denial of service attack, with a user
-> > > creating a very large executable file and mmaping it.
+> Yes, there is a far-fetched, potential possibility for that but here's
+> what the QIC 157D (http://www.qic.org/html/standards/15x.x/qic157d.pdf)
+> spec for streaming tapes says on block sizes:
 > 
-> The amount of mlockable pages is limited via ulimit. We can already make
-> the pages unreclaimable through mlock().
+> "The Block Length specifies the current length in bytes of each logical
+> block described by the block descriptor for the current medium. For QIC
+> Streaming Tape Devices, two block sizes supported may be of either 512
+> or 1024 bytes per block."
 > 
-> > I don't know of any distro that applies default ulimits, so desktops are
-> > already susceptible to the far more trivial "call malloc a lot" or "fork bomb"
-> > attacks.  Plus, ulimits don't help, since they only apply per process - you'd
-> > need a default mem cgroup before this mattered, I think.
-> 
-> The point remains that the proposed patch does not solve the general
-> problem that we encounter with exec pages of critical components of the
-> user interface being evicted from memory.
-> 
-> Do we have test data that shows a benefit? The description is minimal. Rik
-> claimed on IRC that tests have been done. If so then the patch description
-> should include the tests. Which loads benefit from this patch?
-> 
-> A significant change to the reclaim algorithm also needs to
-> have a clear description of the effects on reclaim behavior which is also
-> lacking.
+> Also, the driver catches invalid block sizes in
+> idetape_get_mode_sense_results() so I guess we should be fine.
 
-btw,
+OK - but If I am wondering maybe the next reader will
+think the same
+A small comment:
+/* idetape_get_mode_sense_results() prevent sizes less than 1 << 9 */
+Seems to be reasonable.
 
-This is very good news to me.
-Recently I've taked sevaral time for reproducing this issue. but
-I have no luck. I'm interesting its test-case.
-
-Thanks.
-
-
+	Sam
