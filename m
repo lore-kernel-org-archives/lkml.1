@@ -1,52 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752873AbZEIJLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753610AbZEIJNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752873AbZEIJLa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 05:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751410AbZEIJLV
+	id S1753610AbZEIJNX (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 05:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751171AbZEIJNP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 05:11:21 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:38876 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751024AbZEIJLU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 05:11:20 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A054884.3060503@s5r6.in-berlin.de>
-Date: Sat, 09 May 2009 11:10:28 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
+	Sat, 9 May 2009 05:13:15 -0400
+Received: from thunk.org ([69.25.196.29]:34798 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751024AbZEIJNO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 05:13:14 -0400
+Date: Sat, 9 May 2009 05:13:08 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Grozdan <neutrino8@gmail.com>
+Cc: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org
+Subject: Re: Linux and LLVM
+Message-ID: <20090509091308.GE15054@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Grozdan <neutrino8@gmail.com>, Jeff Garzik <jeff@garzik.org>,
+	linux-kernel@vger.kernel.org
+References: <c5bd819b0905081228m4ee6472bhc3968b178f038b9c@mail.gmail.com> <4A048AF4.1080205@garzik.org> <c5bd819b0905081250k2095beb6r1aae22fcd82ac468@mail.gmail.com>
 MIME-Version: 1.0
-To: Kenneth Crudup <kenny@panix.com>
-CC: linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net,
-       linux-kernel@vger.kernel.org
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <20090507120948.GA1531@ucw.cz> <Pine.LNX.4.64.0905070925500.8967@hp9800.localdomain> <Pine.LNX.4.64.0905071101000.8967@hp9800.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0905071101000.8967@hp9800.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <c5bd819b0905081250k2095beb6r1aae22fcd82ac468@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kenneth Crudup wrote:
-> Oh, and I can hit "ESC" in the middle of suspending with TuxOnIce and
-> back out of it if I'd changed my mind for whatever reason.
+On Fri, May 08, 2009 at 09:50:04PM +0200, Grozdan wrote:
+> 2009/5/8 Jeff Garzik <jeff@garzik.org>:
+> > Grozdan wrote:
+> >>
+> > It is highly unlikely we will switch compilers away from gcc -- we have
+> > enough problems just supporting multiple gcc versions.
+> >
+> > That said, you could join the effort to get LLVM to compile under the
+> > kernel.  Here is a meta-bug for that:
+> > http://llvm.org/bugs/show_bug.cgi?id=4068
+> >
+> > It is a moot question until LLVM can actually build a bootable kernel :)
 > 
-> There are(/were) competing ieee1394 OHCI drivers and competing Bluetooth
-> USB HCI drivers, and that's just off the top of my head- so having
-> competing suspend/resume methods won't be anything new. Let the market
-> decide which is best.
+> Thanks for the quick answer! I was not aware that currently there's
+> lots of work until CLANG can compile a bootable Linux kernel. Thanks
+> for the link too. I'll dig through it
 
-The case of two 1394 driver stacks isn't fully comparable.  I supported 
-the addition of the second stack with the intent to replace the existing 
-one after a transition period, and in the hope that the ratio of 
-available maintainer manpower : size and complexity of the codebase 
-would improve considerably.  Because that was/is the single fundamental 
-problem in Linux 1394 driver land.
+Note also that the list of architectures currently supported by Linux:
 
-(Besides, how well is infrastructure like the suspend--resume framework 
-comparable to drivers?)
--- 
-Stefan Richter
--=====-=-=== -=-= -==-=
-http://arcgraph.de/sr/
+http://en.wikipedia.org/wiki/Linux_kernel_portability_and_supported_architectures
+
+Seems to be a superset of the architectures supported by LLVM, and the
+CLANG web page states that it is production quality only on the x86
+and x86_64 architectures.  So "switch away from" seems to be a rather
+ambitious goal.  
+
+As Jeff has suggested, getting CLANG to at least be able to compile a
+single Linux kernel, on one architecture is clearly the first step.
+
+The next step will be to work on fixing regressions on a wide variety
+of different kernel configurations such that in people's mind, that
+when a kernel bug is submitted, the probability that it is a compiler
+bug must be roughly the same as in GCC --- in other words, that for
+any give bug report submitted, P(LLVM/CLANG compiler bug) must be less
+than P(GCC compiler bug).  At that point, assuming there is a large
+enough community of users who prefer to use LLVM/CLANG (presumably
+because its code generator is proving itself superior to gcc), it
+would be possible to call LLVM/CLANG "supported" under Linux.
+
+I suspect we have quite a ways to go before we get to that point, and
+even then there is the issue of the architectures which aren't yet
+supported by LLVM.
+
+Regards,
+
+					- Ted
