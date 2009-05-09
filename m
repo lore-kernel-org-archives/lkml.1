@@ -1,110 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbZEIJZT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754799AbZEIJ0V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754546AbZEIJZT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 05:25:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbZEIJZA
+	id S1754799AbZEIJ0V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 05:26:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751076AbZEIJ0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 05:25:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56327 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751386AbZEIJY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 05:24:59 -0400
-Date: Sat, 9 May 2009 11:24:31 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [patch] tracing/mm: add page frame snapshot trace
-Message-ID: <20090509092431.GB13784@elte.hu>
-References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu> <20090508124433.GB15949@localhost> <20090509062758.GB21354@elte.hu> <20090509091325.GA7994@localhost>
+	Sat, 9 May 2009 05:26:12 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:55957 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751144AbZEIJ0K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 05:26:10 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v3] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
+Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
+       Bharata B Rao <bharata@linux.vnet.ibm.com>,
+       Balaji Rao <balajirrao@gmail.com>,
+       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Martin Schwidefsky <schwidefsky@de.ibm.com>
+In-Reply-To: <20090507105007.GA28398@elte.hu>
+References: <20090507185831.9D24.A69D9226@jp.fujitsu.com> <20090507105007.GA28398@elte.hu>
+Message-Id: <20090509182541.8D0F.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090509091325.GA7994@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50 [ja]
+Date: Sat,  9 May 2009 18:26:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Wu Fengguang <fengguang.wu@intel.com> wrote:
-
-> Hi Ingo,
 > 
-> On Sat, May 09, 2009 at 02:27:58PM +0800, Ingo Molnar wrote:
-> > 
-> > * Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > 
-> > > > So this should be done in cooperation with instrumentation 
-> > > > folks, while improving _all_ of Linux instrumentation in 
-> > > > general. Or, if you dont have the time/interest to work with us 
-> > > > on that, it should not be done at all. Not having the 
-> > > > resources/interest to do something properly is not a license to 
-> > > > introduce further instrumentation crap into Linux.
-> > > 
-> > > I'd be glad to work with you on the 'object collections' ftrace 
-> > > interfaces.  Maybe next month. For now my time have been allocated 
-> > > for the hwpoison work, sorry!
-> > 
-> > No problem - our offer still stands: we are glad to help out with 
-> > the instrumentation side bits. We'll even write all the patches for 
-> > you, just please help us out with making it maximally useful to 
-> > _you_ :-)
+> * KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 > 
-> Thank you very much!
+> > 
+> > Changelog:
+> >   since v2
+> >   - revert using percpu_counter_sum()
+> > 
+> >   since v1
+> >   - use percpu_counter_sum() instead percpu_counter_read()
+> > 
+> > 
+> > -------------------------------------
+> > Subject: [PATCH v3] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
+> > 
+> > cpuacct_update_stats() is called at every tick updating. and it use percpu_counter
+> > for avoiding performance degression.
+> > 
+> > For archs which define VIRT_CPU_ACCOUNTING, every tick would result
+> > in >1000 units of cputime updates and since this is much much greater
+> > than percpu_batch_counter, we end up taking spinlock on every tick.
+> > 
+> > This patch change batch rule. now, any cpu can store "percpu_counter_bach * jiffies"
+> > cputime in per-cpu cache.
+> > it mean this patch don't have behavior change if VIRT_CPU_ACCOUNTING=n.
+> > 
+> > Cc: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> > Cc: Balaji Rao <balajirrao@gmail.com>
+> > Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> > Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> > Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > Cc: Ingo Molnar <mingo@elte.hu>
+> > Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> > Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > ---
+> >  kernel/sched.c |    6 +++++-
+> >  1 file changed, 5 insertions(+), 1 deletion(-)
+> > 
+> > Index: b/kernel/sched.c
+> > ===================================================================
+> > --- a/kernel/sched.c	2009-04-30 11:37:47.000000000 +0900
+> > +++ b/kernel/sched.c	2009-05-07 16:34:00.000000000 +0900
+> > @@ -10221,6 +10221,7 @@ struct cpuacct {
+> >  };
+> >  
+> >  struct cgroup_subsys cpuacct_subsys;
+> > +static s32 cpuacct_batch;
 > 
-> The good fact is, 2/3 of the code and experiences can be reused.
+> should be __read_mostly i guess.
 > 
-> > Find below a first prototype patch written by Steve yesterday and 
-> > tidied up a bit by me today. It can also be tried on latest -tip:
-> > 
-> >   http://people.redhat.com/mingo/tip.git/README
-> > 
-> > This patch adds the first version of the 'object collections' 
-> > instrumentation facility under /debug/tracing/objects/mm/. It has a 
-> > single control so far, a 'number of pages to dump' trigger file:
-> > 
-> > To dump 1000 pages to the trace buffers, do:
-> > 
-> >   echo 1000 > /debug/tracing/objects/mm/pages/trigger
-> > 
-> > To dump all pages to the trace buffers, do:
-> > 
-> >   echo -1 > /debug/tracing/objects/mm/pages/trigger
+> >  
+> >  /* return cpu accounting group corresponding to this container */
+> >  static inline struct cpuacct *cgroup_ca(struct cgroup *cgrp)
+> > @@ -10250,6 +10251,9 @@ static struct cgroup_subsys_state *cpuac
+> >  	if (!ca->cpuusage)
+> >  		goto out_free_ca;
+> >  
+> > +	if (!cpuacct_batch)
+> > +		cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
 > 
-> That is not too intuitive, I'm afraid.
+> So this is a once per boot condition? Why not initialize it in 
+> sched_init() or so? (instead of incuring this ugly check all the 
+> time)
 
-This was just a first-level approximation - and it matches the usual 
-"0xffffffff means infinite" idiom.
+Thanks! fixed.
 
-How about changing it from 'trigger' to 'dump_range':
 
-   echo "*" > /debug/tracing/objects/mm/pages/dump_range
 
-being a shortcut for 'dump all'?
+Changelog:
+  since V3
+  - rewirte patch description (thanks Bharata!)
+  - append read_mostly to cpuacct_batch
+  - cpuacct_batch is initialized by sched_init()
 
-And:
+  since v2
+  - revert using percpu_counter_sum()
 
-   echo "1000 2000" > /debug/tracing/objects/mm/pages/dump_range
+  since v1
+  - use percpu_counter_sum() instead percpu_counter_read()
 
-?
 
-The '1000' is the offset where the dumping starts, and 2000 is the 
-size of the dump.
+---------------------------------------------------------
+Subject: [PATCH v4] cpuacct: Use bigger percpu counter batch values for stats counters on archs that have VIRT_CPU_ACCOUNTING=y
 
-	Ingo
+percpu counters used to accumulate statistics in cpuacct controller use
+the default batch value [max(2*nr_cpus, 32)] which can be too small for
+archs that define VIRT_CPU_ACCOUNTING. In such archs, a tick could result in
+cputime updates in the range of thousands. As a result, cpuacct_update_stats()
+would end up acquiring the percpu counter spinlock on every tick which
+is not good for performance.
+
+Let those architectures to have a bigger batch threshold so that percpu counter
+spinlock isn't taken on every tick. This change doesn't affect the archs which
+don't define VIRT_CPU_ACCOUNTING and they continue to have the default
+percpu counter batch value.
+
+Cc: Balaji Rao <balajirrao@gmail.com>
+Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+---
+ kernel/sched.c |    7 ++++++-
+ 1 file changed, 6 insertions(+), 1 deletion(-)
+
+Index: b/kernel/sched.c
+===================================================================
+--- a/kernel/sched.c	2009-05-09 16:48:08.000000000 +0900
++++ b/kernel/sched.c	2009-05-09 18:16:00.000000000 +0900
+@@ -824,8 +824,12 @@ static struct file_operations sched_feat
+ 	.release	= single_release,
+ };
+ 
++static __read_mostly s32 cpuacct_batch;
++
+ static __init int sched_init_debug(void)
+ {
++	cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
++
+ 	debugfs_create_file("sched_features", 0644, NULL, NULL,
+ 			&sched_feat_fops);
+ 
+@@ -10457,7 +10461,8 @@ static void cpuacct_update_stats(struct 
+ 	ca = task_ca(tsk);
+ 
+ 	do {
+-		percpu_counter_add(&ca->cpustat[idx], val);
++		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
++
+ 		ca = ca->parent;
+ 	} while (ca);
+ 	rcu_read_unlock();
+
+
