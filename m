@@ -1,61 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754500AbZEIPM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753305AbZEIPOI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754500AbZEIPM6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 11:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752490AbZEIPMu
+	id S1753305AbZEIPOI (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 11:14:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751534AbZEIPNy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 11:12:50 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:33210 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751534AbZEIPMt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 11:12:49 -0400
-Date: Sat, 9 May 2009 08:08:53 -0700
-From: Greg KH <gregkh@suse.de>
-To: Fabio Comolli <fabio.comolli@gmail.com>
-Cc: Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] devtmpfs patches
-Message-ID: <20090509150853.GA32394@suse.de>
-References: <20090509143742.GA27663@kroah.com> <b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com>
+	Sat, 9 May 2009 11:13:54 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:37141 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751766AbZEIPNx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 11:13:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :references:mime-version:content-type:content-disposition
+         :in-reply-to:user-agent;
+        b=wcK8GY4LWMl7VQPC0ZQQaZ6/l70GMK29+sBkPerOeKG4wCLfO0NV4DCsBNPa3VQ7qt
+         K7qWkKSoLz1UvaZlPcqoOIqpkjlIYNKrHhfJxtpVbvVkoGumz33Sme9Ol2Km61a4mtjp
+         tlIr2GxVQ4+r1dOVvVA9hMtwltjOrZaoHh7PI=
+Date: Sat, 9 May 2009 17:13:48 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] libata: fix suspend/resume for ATA SEMB devices
+Message-ID: <20090509151348.GA25760@liondog.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Jeff Garzik <jeff@garzik.org>,
+	Tejun Heo <htejun@gmail.com>, linux-ide@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+References: <20090426143836.GA3643@liondog.tnic> <49F4DFA9.6040805@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+In-Reply-To: <49F4DFA9.6040805@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 09, 2009 at 05:10:24PM +0200, Fabio Comolli wrote:
-> Hi.
+On Mon, Apr 27, 2009 at 07:26:49AM +0900, Tejun Heo wrote:
+> Borislav Petkov wrote:
+> > due to a class mismatch in ata_dev_revalidate(). Fix it by adding the
+> > ATA_DEV_SEMB device class to the check.
+> > 
+> > CC: Tejun Heo <htejun@gmail.com>
+> > CC: Jeff Garzik <jeff@garzik.org>
+> > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 > 
-> On Sat, May 9, 2009 at 4:37 PM, Greg KH <greg@kroah.com> wrote:
-> > Here's the latest version of the devtmpfs patch, broken up into 13
-> > different patches to make it easier to review and merge properly.
-> >
-> > This series does the following:
-> >  - creates a new callback within the driver core to allow drivers and
-> >    subsystems to provide a name for their subsystem to properly reflect
-> >    what userspace should use for their device nodes.  This allows for
-> >    things like the sound/ and input/ subdirectories to be properly told
-> >    to userspace.  Note these names and subdirectories are the ones that
-> >    have been used for years, and are standardized across all
-> >    distributions and synced up with the LANANA naming scheme which is
-> >    specified by LSB.  We aren't creating anything new here.
-> >  - fills in the callbacks by the various subsystems that need to define
-> >    it, including the misc device layer.  This is the majority of the
-> >    patches in the series.
-> >  - adds the devtmpfs core code.  Description of what this is, why it is
-> >    needed, and how it works is within this patch.
-> >
-> > All of these patches have been tested for a number of weeks now in
-> > SuSE's kernel trees and have proved to increase boot time a measurable
-> > ammount (a few seconds at the very least)
-> 
-> Well, guess you meant the opposite ;-)
+> Acked-by: Tejun Heo <tj@kernel.org>
 
-Heh, yes, sorry about that.  It makes booting faster :)
+Hi Jeff,
 
-thanks,
+any chance this can make it into 2.6.30?
 
-greg k-h
+-- 
+Regards/Gruss,
+    Boris.
