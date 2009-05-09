@@ -1,113 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756003AbZEIBKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbZEIBO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756003AbZEIBKl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 21:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbZEIBKY
+	id S1756243AbZEIBO6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 21:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbZEIBOu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 21:10:24 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:48202 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756434AbZEIBKX convert rfc822-to-8bit (ORCPT
+	Fri, 8 May 2009 21:14:50 -0400
+Received: from SpacedOut.fries.net ([67.64.210.234]:59431 "EHLO
+	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753058AbZEIBOt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 21:10:23 -0400
+	Fri, 8 May 2009 21:14:49 -0400
+Date: Fri, 8 May 2009 19:34:15 -0500
+From: David Fries <david@fries.net>
+To: Ondrej Zary <linux@rainbow-software.org>
+Cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@tglx.de>
+Subject: Re: TSC marked unstable on suspend and resume
+Message-ID: <20090509003415.GJ4162@spacedout.fries.net>
+References: <20090221023943.GA4894@spacedout.fries.net> <20090429232523.GO2862@spacedout.fries.net> <1241062653.7270.44.camel@localhost.localdomain> <200905082353.15962.linux@rainbow-software.org>
 MIME-Version: 1.0
-In-Reply-To: <8763gbmapm.fsf@deeprootsystems.com>
-References: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com>
-	 <1241655468-5750-2-git-send-email-khilman@deeprootsystems.com>
-	 <20090507111548.GH28398@elte.hu> <87k54ssx65.fsf@deeprootsystems.com>
-	 <d6200be20905071452t3efb67gffd4de5332e83e73@mail.gmail.com>
-	 <8763gbmapm.fsf@deeprootsystems.com>
-Date: Fri, 8 May 2009 16:58:59 -0700
-Message-ID: <d6200be20905081658l65a1b37fs28739881267786d7@mail.gmail.com>
-Subject: Re: [PATCH] genirq: ensure IRQs are lazy disabled before suspend
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Kevin Hilman <khilman@deeprootsystems.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       linux-pm@lists.linux-foundation.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905082353.15962.linux@rainbow-software.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Fri, 08 May 2009 19:34:21 -0500 (CDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/8 Kevin Hilman <khilman@deeprootsystems.com>:
-> Arve Hjønnevåg <arve@android.com> writes:
->
->> On Thu, May 7, 2009 at 9:19 AM, Kevin Hilman
->> <khilman@deeprootsystems.com> wrote:
->>> From a3f359c66bd0ae1bb2603e7cf120d9d4d68591b7 Mon Sep 17 00:00:00 2001
->>> From: Kevin Hilman <khilman@deeprootsystems.com>
->>> Date: Wed, 6 May 2009 16:00:07 -0700
->>> Subject: [PATCH] genirq: ensure IRQs are lazy disabled before suspend
->>>
->>> In commit 76d2160147f43f982dfe881404cfde9fd0a9da21, the default
->>> behavior of disable_irq() was changed to delay the disable until it is
->>> next handled.
->>>
->>> However, this leaves open the possibility that the system can go into
->>> suspend with an interrupt enabled.  For example, if a driver calls
->>> disable_irq() in its suspend_hook there's now a possibility that the
->>> system is suspended before the lazy disable happens.
->>>
->>> The result is an unwanted wakeup from suspend if the IRQ is capable of
->>> waking the system (common on embedded SoCs.)
->>
->> If the interrupt contoller uses the same enable register for wakeup
->> and interrupts, I think it is the responsibility of the platform code,
->> not individual drivers, to disable the interrupts that are not marked
->> for wakeup before entering suspend.
->
-> I agree, for wakeup interrupts, drivers should use
-> [set|disable]_irq_wake() and the platform code should handle this.
->
-> I used wakeup interrupts in this description as an example which
-> turned out to be a bad example.  The 2nd version of this patch I
-> posted, I removed the reference to wakeup interrupts in favor of just
-> talking about the delayed disable piece.
->
-> But ignoring wakup interrupts, would you agree that the delayed
-> disable of an interrupt should not wait until after resume?
->
+On Fri, May 08, 2009 at 11:53:12PM +0200, Ondrej Zary wrote:
+> On Thursday 30 April 2009 05:37:33 john stultz wrote:
+> > On Wed, 2009-04-29 at 18:25 -0500, David Fries wrote:
+> > > On Wed, Apr 29, 2009 at 09:45:40AM -0700, john stultz wrote:
+> > > > On Fri, Feb 20, 2009 at 7:39 PM, David Fries <david@fries.net> wrote:
+> > > > > I'm getting TSC marked as unsable on hibernate to disk with
+> > > > > 2.6.29-rc3. ?The last kernel I ran 2.6.24.4 ran 300+ days without a
+> > > > > problem and does not loose TSC on hibernate.
+> > > > >
+> > > > > I'm hibernating with `echo disk > /sys/power/state`.
+> > > > > These look like the relavant messages,
+> > > > >
+> > > > > CPU 0 irqstacks, hard=c0379000 soft=c0378000
+> > > > > PID hash table entries: 1024 (order: 10, 4096 bytes)
+> > > > > Fast TSC calibration using PIT
+> > > > > Detected 300.705 MHz processor.
+> > > > > Calibrating delay loop (skipped), value calculated using timer
+> > > > > frequency.. 601.41 BogoMIPS (lpj=300705) hibernate to disk,
+> > > > > Restarting tasks ... done.
+> > > > > Clocksource tsc unstable (delta = 499883531 ns)
+> > > > >
+> > > > > model name      : AMD-K6(tm) 3D processor
+> > > > > Host bridge: VIA Technologies, Inc. VT82C598 [Apollo MVP3] (rev 04)
+> > > >
+> > > > Hmm. Seems like the clocksource watchdog is having some problem
+> > > > handling state around hibernate.
+> >
+> > Yea. This seems to be the case here. There's watchdog code and variables
+> > to handle resume properly, but there isn't a corresponding suspend hook,
+> > so the resume path doesn't actually change anything.
+> >
+> > Here's a patch you can try, I only had time to compile test it today, so
+> > its untested. Hopefully I didn't miss anything obvious.
+> 
+> I have the same problem and the patch does not solve it for me too.
 
-No. The platform code needs to turn off interrupts that are not wakeup
-interrupts anyway, so there is not much point in disabling some
-interrupts early. Also, if the interrupt in question is not a wakeup
-interrupt you leave it in a state where it does not detect an edge. A
-driver that enables its hardware in resume, then unmasks the interrupt
-would loose an interrupt that triggered between enabling the hardware
-and unmasking the interrupt.
+What CPU and motherboard chipset?
 
->>> This patch ensures that the lazy disable is done, and masked by
->>> the irq_chip before the system goes into suspend.
->>
->> This will create a window where wakeup interrupts can be lost if the
->> driver has masked the interrupt (by calling disable_irq). If the
->> hardware does not allow edge detection on disabled interrupts (the msm
->> platform has this limitation) then this change will turn off the edge
->> detection. If suspend_ops->enter does not turn the interrupt (and edge
->> detection) back on (without this change it may never need to turn on
->> any interrupt) it will not wakeup at all.
->
-> Not sure I follow you here...
->
-> It seems like you're relying on the delayed disable to wait until
-> after resume so that disabled interrupts can wake the system.  How
-> did this work before the delayed disable patch?
->
+> I noticed that after resume, ping is unable to measue short time correctly:
+> 64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.000 ms
+> 
+> "echo tsc >/sys/devices/system/clocksource/clocksource0/current_clocksource" 
+> fixes the problem until next hibernation:
+> 64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.223 ms
 
-It did not.
-
-> If the interrupt is being used as a wakeup, why would anyone be
-> calling disable_irq()?
->
-
-Drivers call disable_irq to make sure their interrupt handler does not
-get called. A driver may not be able take interrupts after its suspend
-hook has been called. If it calls disable_irq on a wakeup interrupt
-then this interrupt should abort suspend or wake up from suspend. The
-driver will then see the interrupt when it call enable_irq in its
-resume handler.
+I didn't know about that, thanks for posting the tip.
 
 -- 
-Arve Hjønnevåg
+David Fries <david@fries.net>
+http://fries.net/~david/ (PGP encryption key available)
