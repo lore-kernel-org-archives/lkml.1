@@ -1,149 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbZEISEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753843AbZEISKJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753379AbZEISEA (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 14:04:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZEISDv
+	id S1753843AbZEISKJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 14:10:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753209AbZEISJ5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 14:03:51 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:35649 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751197AbZEISDt (ORCPT
+	Sat, 9 May 2009 14:09:57 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:43973 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753161AbZEISJ4 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 14:03:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=g/KKCP8l/LdNtbH1QWDlmva7LGscHLBHAyH0sblNNuMTOU5xW52pgps+VWu8cPDhxA
-         PvXu/9O2LWdku/oFDZkehEcG8Gqyk0UkdMAQRUmjgfUUveldJbsaTSUs5e8ZC99AhCeE
-         dVKEVANfH7jbQIO8zOOpW5xTfWTZhPsY3qcFQ=
-Message-ID: <4A05C582.8020203@gmail.com>
-Date: Sat, 09 May 2009 12:03:46 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sat, 9 May 2009 14:09:56 -0400
 MIME-Version: 1.0
-To: v.virvilis@biovista.com
-CC: linux-kernel@vger.kernel.org
-Subject: Re: SATA disks resets in a md setup
-References: <200905081739.46206.v.virvilis@biovista.com>
-In-Reply-To: <200905081739.46206.v.virvilis@biovista.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090509181138.15d2a490@lxorguk.ukuu.org.uk>
+References: <20090509143742.GA27663@kroah.com> <b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com> 
+	<20090509150853.GA32394@suse.de> <20090509082233.32cbb8e4@infradead.org> 
+	<ac3eb2510905090946t52926a5j1be2cac31f480352@mail.gmail.com> 
+	<20090509181138.15d2a490@lxorguk.ukuu.org.uk>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Sat, 9 May 2009 20:09:35 +0200
+Message-ID: <ac3eb2510905091109l67429676he237be885c0ff00e@mail.gmail.com>
+Subject: Re: [patch 00/13] devtmpfs patches
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Arjan van de Ven <arjan@infradead.org>, Greg KH <gregkh@suse.de>,
+       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vassilis Virvilis wrote:
-> Hi,
-> 
-> I have spent the better part of the day looking for this and I didn't came up with anything so I thought to ask here in case this is a bug.
-> 
-> Setup:
-> ------
-> The system is amd64bit running debian unstable stock with kernel 2.6.29 (debian package). full dmesg is attached
-> I have 2 250GB disks (/dev/sda, /dev/sdb) that I used to assemble a md array (/dev/md0)
-> 
-> Homework:
-> ---------
-> Please note that the two disk are tested via smart long selftest and via $dd bs=256M if=/dev/sd? of=/dev/null without any problem.
-> I researched in web and followed advices:
-> 	I have checked / exchanged cables
-> 	I disabled smartd.
-> 
-> The actual Problem:
-> -------------------
-> Then I start the following stress test. From the other disks of the machine /dev/hda, /dev/hdb, /dev/sdc I start copying (via rsync) to /dev/md0 to a newly formated ext3 filesystem.
-> 
-> Everything goes fine for a while and then the system freezes and I am getting the first
-> 
-> [ 9351.377903] ata2.00: exception Emask 0x10 SAct 0x0 SErr 0x1b0000 action 0xe frozen
-> [ 9351.377941] ata2.00: irq_stat 0x04400000, PHY RDY changed
-> [ 9351.377961] ata2: SError: { PHYRdyChg PHYInt 10B8B Dispar }
-> [ 9351.377983] ata2.00: cmd b0/d5:01:09:4f:c2/00:00:00:00:00/00 tag 0 pio 512 in
-> [ 9351.377985]          res 50/00:00:b6:46:6a/00:00:13:00:00/e0 Emask 0x10 (ATA bus error)
-> [ 9351.378006] ata2.00: status: { DRDY }
-> [ 9351.378026] ata2: hard resetting link
-> [ 9357.659634] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> [ 9389.345002] ata2.00: qc timeout (cmd 0xec)
-> [ 9389.345013] ata2.00: failed to IDENTIFY (I/O error, err_mask=0x5)
-> [ 9389.345017] ata2.00: revalidation failed (errno=-5)
-> [ 9389.345037] ata2: failed to recover some devices, retrying in 5 secs
-> [ 9395.548107] ata2: hard resetting link
-> [ 9396.033100] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> [ 9396.034245] ata2.00: configured for UDMA/133
-> [ 9396.034275] ata2: EH complete
-> [ 9396.098216] sd 1:0:0:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-> [ 9396.114211] sd 1:0:0:0: [sdb] Write Protect is off
-> [ 9396.114217] sd 1:0:0:0: [sdb] Mode Sense: 00 3a 00 00
-> [ 9396.130212] sd 1:0:0:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+On Sat, May 9, 2009 at 19:11, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> On Sat, 9 May 2009 18:46:10 +0200
+> Kay Sievers <kay.sievers@vrfy.org> wrote:
+>
+>> On Sat, May 9, 2009 at 17:22, Arjan van de Ven <arjan@infradead.org> wrote:
+>> > On Sat, 9 May 2009 08:08:53 -0700
+>> > Greg KH <gregkh@suse.de> wrote:
+>> >
+>> >> > Well, guess you meant the opposite ;-)
+>> >>
+>> >> Heh, yes, sorry about that.  It makes booting faster :)
+>> >
+>> > .. and I don't buy that.
+>>
+>> Don't buy, just try it - and you will see. :)
+>
+> Got some boot timing graphs for the change ?
 
-Looks like the drive dropped off the SATA bus for some period of time.
+So far, I got numbers for different options used with devtmpfs to
+compare initramfs with non-initramfs. Initramfs is what all general
+purpose distros need to use today, to be able to identify the disk by
+LABEL/UUID/Hardware-properties. And I wanted to see how expensive the
+use of initramfs is. They are posted here:
+  http://lkml.org/lkml/2009/5/6/197
 
-> 
-> This happens 2 or 3 times more (sometimes even sda gives the same message)
-> 
-> At the end what happens is the following. Please note the
->  **** [10671.430120] ata2.00: n_sectors mismatch 488397168 != 268435455 *****
-> 
-> 
-> [10665.354196] ata2: limiting SATA link speed to 1.5 Gbps
-> [10665.354196] ata2.00: exception Emask 0x10 SAct 0x0 SErr 0x400100 action 0x6 frozen
-> [10665.354196] ata2.00: irq_stat 0x08000000, interface fatal error
-> [10665.354196] ata2: SError: { UnrecovData Handshk }
-> [10665.354196] ata2.00: cmd 35/00:00:27:ae:7a/00:04:01:00:00/e0 tag 0 dma 524288 out
-> [10665.354196]          res 50/00:00:26:ae:7a/00:00:01:00:00/e0 Emask 0x10 (ATA bus error)
-> [10665.354196] ata2.00: status: { DRDY }
-> [10665.354196] ata2: hard resetting link
-> [10665.846071] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-> [10665.846071] ata2.00: n_sectors mismatch 488397168 != 268435455
-> [10665.846071] ata2.00: revalidation failed (errno=-19)
-> [10665.846071] ata2: failed to recover some devices, retrying in 5 secs
-> [10670.878898] ata2: hard resetting link
-> [10671.429184] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-> [10671.430120] ata2.00: n_sectors mismatch 488397168 != 268435455
+The "init" for intramfs is attached to the mail, mainly to illustrate
+the simplification over the things we need to do today, and that there
+is never a point in time where we have to delay things, because /dev
+is empty during the moment we mount a fresh and empty tmpfs /dev.
 
-This is likely just indicating that the kernel received some corrupted 
-identify data from the drive because of all the SATA link problems.
+To directly compare numbers for devtmpfs and non-devtmpfs, the "init"
+script would need to be modified to ignore the kernel provided
+devtmpfs and mount an empty tmpfs over it, and populate it, just like
+we do it today. There is no theoretical chance that this can ever be
+faster.
 
-> [10671.430124] ata2.00: revalidation failed (errno=-19)
-> [10671.430145] ata2.00: disabled
-> [10671.934174] ata2: hard resetting link
-> [10672.462213] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> [10672.463130] ata2.00: ATA-0: WDC WD2500JS-00MVB1, 10.02E01, max MWDMA2
-> [10672.463134] ata2.00: 268435455 sectors, multi 0: LBA
-> [10672.463137] ata2.00: applying bridge limits
-> [10672.463683] ata2.00: failed to set xfermode (err_mask=0x1)
-> [10672.463706] ata2: failed to recover some devices, retrying in 5 secs
-> [10677.749459] ata2: hard resetting link
-> [10678.272486] ata2: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-> [10678.273961] ata2.00: failed to set xfermode (err_mask=0x1)
-> [10678.273987] ata2: limiting SATA link speed to 1.5 Gbps
-> [10678.273989] ata2.00: limiting speed to PIO3
-> [10678.273992] ata2: failed to recover some devices, retrying in 5 secs
-> [10683.430922] ata2: hard resetting link
-> [10683.920364] ata2: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
-> [10683.921839] ata2.00: failed to set xfermode (err_mask=0x1)
-> [10683.921863] ata2.00: disabled
-> [10684.424389] sd 1:0:0:0: [sdb] Result: hostbyte=DID_OK driverbyte=DRIVER_SENSE,SUGGEST_OK
-> [10684.424397] sd 1:0:0:0: [sdb] Sense Key : Aborted Command [current] [descriptor]
-> [10684.424402] Descriptor sense data with sense descriptors (in hex):
-> [10684.424404]         72 0b 00 00 00 00 00 0c 00 0a 80 00 00 00 00 00
-> [10684.424410]         01 7a ae 26
-> [10684.424413] sd 1:0:0:0: [sdb] Add. Sense: No additional sense information
-> [10684.424417] end_request: I/O error, dev sdb, sector 24817191
-> [10684.424440] Buffer I/O error on device md0, logical block 64151117
-> [10684.424459] lost page write due to I/O error on md0
-> [10684.424465] Buffer I/O error on device md0, logical block 64151118
+Most of the bootstrap logic we have today: mount an empty tmpfs /dev
+-> add the few mandatory nodes to be able to start the bootstrap
+process -> run something that reads sysfs-device-information (in the
+usual case udev) -> delaying all further processing until /dev is
+minimally usable to start things that rely on a working /dev, ... all
+that gets basically stripped down to: "mount --move /dev /root/dev",
+right at the end before we leave initramfs behind us.
 
-This time it dropped off more permanently.
-
-> 
-> and my filesystem is dead. /dev/sdb is deleted from /dev. I have to reboot and even then linux can't find the ata2 /dev/sdb.
-> I have to remove power for 1-2 min for the disk to become accessible again.
-> 
-> Do you think the disk is bad or something?
-
-Possible, though it's also possible the cause is something else, like 
-the power supply not being sufficient to handle that many drives 
-properly.. In any case, pretty much 100% chance it is a hardware problem 
-of some sort.
+Kay
