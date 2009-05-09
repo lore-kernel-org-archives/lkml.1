@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754394AbZEIQuW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbZEIQul@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754394AbZEIQuW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 12:50:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754847AbZEIQtG
+	id S1755527AbZEIQul (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 12:50:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754916AbZEIQtI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 12:49:06 -0400
-Received: from smtp.polymtl.ca ([132.207.4.11]:54434 "EHLO smtp.polymtl.ca"
+	Sat, 9 May 2009 12:49:08 -0400
+Received: from smtp.polymtl.ca ([132.207.4.11]:54435 "EHLO smtp.polymtl.ca"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753564AbZEIQtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1753782AbZEIQtD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 9 May 2009 12:49:03 -0400
-Message-Id: <20090509162349.341638107@polymtl.ca>
+Message-Id: <20090509162350.477343212@polymtl.ca>
 References: <20090509162209.217414024@polymtl.ca>
 User-Agent: quilt/0.46-1
-Date: Sat, 09 May 2009 12:22:16 -0400
+Date: Sat, 09 May 2009 12:22:23 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
@@ -21,9 +21,9 @@ To: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
        peterz@infradead.org, jiayingz@google.com, roland@redhat.com,
        mbligh@google.com
 Cc: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: [RFC patch 07/20] LTTng Kernel Trace Thread Flag H8300
-Content-Disposition: inline; filename=lttng-kernel-trace-thread-flag-h8300.patch
-X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sat,  9 May 2009 16:47:18 +0000
+Subject: [RFC patch 14/20] LTTng Kernel Trace Thread Flag s390
+Content-Disposition: inline; filename=lttng-kernel-trace-thread-flag-s390.patch
+X-Poly-FromMTA: (test.casi.polymtl.ca [132.207.72.60]) at Sat,  9 May 2009 16:47:20 +0000
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -32,33 +32,101 @@ Add a thread flag to activate system-wide syscall tracing.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 ---
- arch/h8300/include/asm/thread_info.h |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/s390/include/asm/thread_info.h |    2 ++
+ arch/s390/kernel/entry.S            |   10 ++++++++--
+ arch/s390/kernel/entry64.S          |   10 ++++++++--
+ 3 files changed, 18 insertions(+), 4 deletions(-)
 
-Index: linux-2.6-lttng/arch/h8300/include/asm/thread_info.h
+Index: linux-2.6-lttng/arch/s390/include/asm/thread_info.h
 ===================================================================
---- linux-2.6-lttng.orig/arch/h8300/include/asm/thread_info.h	2009-03-15 15:57:05.000000000 -0400
-+++ linux-2.6-lttng/arch/h8300/include/asm/thread_info.h	2009-03-15 15:57:15.000000000 -0400
-@@ -89,6 +89,7 @@ static inline struct thread_info *curren
+--- linux-2.6-lttng.orig/arch/s390/include/asm/thread_info.h	2009-03-15 15:57:04.000000000 -0400
++++ linux-2.6-lttng/arch/s390/include/asm/thread_info.h	2009-03-15 15:57:17.000000000 -0400
+@@ -90,6 +90,7 @@ static inline struct thread_info *curren
+ #define TIF_SYSCALL_AUDIT	5	/* syscall auditing active */
+ #define TIF_SINGLE_STEP		6	/* deliver sigtrap on return to user */
+ #define TIF_MCCK_PENDING	7	/* machine check handling is pending */
++#define TIF_KERNEL_TRACE	8	/* kernel trace active */
+ #define TIF_USEDFPU		16	/* FPU was used by this task this quantum (SMP) */
+ #define TIF_POLLING_NRFLAG	17	/* true if poll_idle() is polling 
  					   TIF_NEED_RESCHED */
- #define TIF_MEMDIE		4
- #define TIF_RESTORE_SIGMASK	5	/* restore signal mask in do_signal() */
-+#define TIF_KERNEL_TRACE	6	/* kernel trace active */
- #define TIF_FREEZE		16	/* is freezing for suspend */
- 
- /* as above, but as bit values */
-@@ -97,9 +98,10 @@ static inline struct thread_info *curren
- #define _TIF_NEED_RESCHED	(1<<TIF_NEED_RESCHED)
- #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
- #define _TIF_RESTORE_SIGMASK	(1<<TIF_RESTORE_SIGMASK)
+@@ -107,6 +108,7 @@ static inline struct thread_info *curren
+ #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
+ #define _TIF_SINGLE_STEP	(1<<TIF_SINGLE_STEP)
+ #define _TIF_MCCK_PENDING	(1<<TIF_MCCK_PENDING)
 +#define _TIF_KERNEL_TRACE	(1<<TIF_KERNEL_TRACE)
- #define _TIF_FREEZE		(1<<TIF_FREEZE)
+ #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
+ #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
+ #define _TIF_31BIT		(1<<TIF_31BIT)
+Index: linux-2.6-lttng/arch/s390/kernel/entry.S
+===================================================================
+--- linux-2.6-lttng.orig/arch/s390/kernel/entry.S	2009-03-15 15:51:10.000000000 -0400
++++ linux-2.6-lttng/arch/s390/kernel/entry.S	2009-03-15 15:57:17.000000000 -0400
+@@ -265,7 +265,9 @@ sysc_do_restart:
+ 	sth	%r7,SP_SVCNR(%r15)
+ 	sll	%r7,2		  # svc number *4
+ 	l	%r8,BASED(.Lsysc_table)
+-	tm	__TI_flags+3(%r9),(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT)
++	l	%r8,__TI_flags+3(%r9)
++	n	%r8,BASED(.Lc_tif_syscall_trace_or_audit_or_kernel_trace)
++	ltr	%r8,%r8
+ 	l	%r8,0(%r7,%r8)	  # get system call addr.
+ 	bnz	BASED(sysc_tracesys)
+ 	basr	%r14,%r8	  # call sys_xxxx
+@@ -405,7 +407,9 @@ sysc_tracego:
+ 	basr	%r14,%r8		# call sys_xxx
+ 	st	%r2,SP_R2(%r15)		# store return value
+ sysc_tracenogo:
+-	tm	__TI_flags+3(%r9),(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT)
++	l	%r8,__TI_flags+3(%r9)
++	n	%r8,BASED(.Lc_tif_syscall_trace_or_audit_or_kernel_trace)
++	ltr	%r8,%r8
+ 	bz	BASED(sysc_return)
+ 	l	%r1,BASED(.Ltrace_exit)
+ 	la	%r2,SP_PTREGS(%r15)	# load pt_regs
+@@ -1049,6 +1053,8 @@ cleanup_io_leave_insn:
+ .L0x030:	.short	0x030
+ .L0x038:	.short	0x038
+ .Lc_1:		.long	1
++.Lc_tif_syscall_trace_or_audit_or_kernel_trace:
++		.long	_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_KERNEL_TRACE
  
--#define _TIF_WORK_MASK		0x0000FFFE	/* work to do on interrupt/exception return */
-+#define _TIF_WORK_MASK		0x0000FFBE	/* work to do on interrupt/exception return */
- 
- #endif /* __KERNEL__ */
- 
+ /*
+  * Symbol constants
+Index: linux-2.6-lttng/arch/s390/kernel/entry64.S
+===================================================================
+--- linux-2.6-lttng.orig/arch/s390/kernel/entry64.S	2009-03-15 15:51:10.000000000 -0400
++++ linux-2.6-lttng/arch/s390/kernel/entry64.S	2009-03-15 15:57:17.000000000 -0400
+@@ -260,7 +260,9 @@ sysc_do_restart:
+ 	larl	%r10,sys_call_table_emu  # use 31 bit emulation system calls
+ sysc_noemu:
+ #endif
+-	tm	__TI_flags+7(%r9),(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT)
++	l	%r8,__TI_flags+7(%r9)
++	n	%r8,BASED(.Lc_tif_syscall_trace_or_audit_or_kernel_trace)
++	ltr	%r8,%r8
+ 	lgf	%r8,0(%r7,%r10) # load address of system call routine
+ 	jnz	sysc_tracesys
+ 	basr	%r14,%r8	# call sys_xxxx
+@@ -391,7 +393,9 @@ sysc_tracego:
+ 	basr	%r14,%r8		# call sys_xxx
+ 	stg	%r2,SP_R2(%r15)		# store return value
+ sysc_tracenogo:
+-	tm	__TI_flags+7(%r9),(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT)
++	l	%r8,__TI_flags+7(%r9)
++	n	%r8,BASED(.Lc_tif_syscall_trace_or_audit_or_kernel_trace)
++	ltr	%r8,%r8
+ 	jz	sysc_return
+ 	la	%r2,SP_PTREGS(%r15)	# load pt_regs
+ 	larl	%r14,sysc_return	# return point is sysc_return
+@@ -1033,6 +1037,8 @@ cleanup_io_leave_insn:
+ 		.align	4
+ .Lconst:
+ .Lnr_syscalls:	.long	NR_syscalls
++.Lc_tif_syscall_trace_or_audit_or_kernel_trace:
++		.long	_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT|_TIF_KERNEL_TRACE
+ .L0x0130:	.short	0x130
+ .L0x0140:	.short	0x140
+ .L0x0150:	.short	0x150
 
 -- 
 Mathieu Desnoyers
