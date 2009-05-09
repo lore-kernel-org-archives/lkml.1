@@ -1,106 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752623AbZEIPVp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753412AbZEIPWe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752623AbZEIPVp (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 11:21:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751736AbZEIPVg
+	id S1753412AbZEIPWe (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 11:22:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751702AbZEIPW0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 11:21:36 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:41230 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751528AbZEIPVf (ORCPT
+	Sat, 9 May 2009 11:22:26 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43898 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751670AbZEIPWZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 11:21:35 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Date: Sat, 9 May 2009 17:21:30 +0200 (CEST)
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Subject: Re: 2.6.30-rc: reiserfs_delete_xattrs log spam (bug 13122)
-To: Jeff Mahoney <jeffm@suse.com>
-cc: Al Viro <viro@ZenIV.linux.org.uk>, reiserfs-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <4A058EBD.8030302@suse.com>
-Message-ID: <tkrat.efedc43c9c935741@s5r6.in-berlin.de>
-References: <4A057951.8040501@s5r6.in-berlin.de>
- <tkrat.fe49a8c298128f65@s5r6.in-berlin.de>
- <20090509130152.GD8633@ZenIV.linux.org.uk> <4A058EBD.8030302@suse.com>
+	Sat, 9 May 2009 11:22:25 -0400
+Date: Sat, 9 May 2009 16:22:25 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: [git pull] VFS patches for -rc6
+Message-ID: <20090509152224.GE8633@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; CHARSET=us-ascii
-Content-Disposition: INLINE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On  9 May, Jeff Mahoney wrote:
-> Al Viro wrote:
->>> On  9 May, Stefan Richter wrote:
->>>> May  9 14:27:22 stein REISERFS warning (device sda1): jdm-20004 
->>>> reiserfs_delete_xattrs: Couldn't delete all xattrs (-13)
->>>> May  9 14:27:22 stein
-...
->> Could you try to bisect it?
+Assorted patches, including reiserfs stuff that had been caught by WARN_ON in
+-rc3, a bunch of race fixes all over the place, etc.  Please, pull from
 
-I bisected it with a series of git-format-patch output on top of
-2.6.29.3.  The last good one is "reiserfs: simplify xattr internal file
-lookups/opens", the first bad one is "reiserfs: eliminate per-super xattr lock".
-(Doh, what a surprise; grep'ing for the message in the diffs would have
-pointed to this one too... Well, the bisection homed in quickly though.)
-Of course that's only the patch which caused the symptoms to appear, not
-necessarily the one which introduced the bug.
+git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git/ for-linus
 
-My config contains:
-CONFIG_REISERFS_FS=y
-# CONFIG_REISERFS_CHECK is not set
-# CONFIG_REISERFS_PROC_INFO is not set
-# CONFIG_REISERFS_FS_XATTR is not set
+Shortlog:
+Al Viro (11):
+      Always lookup priv_root on reiserfs mount and keep it
+      New helper: deactivate_locked_super()
+      Convert obvious places to deactivate_locked_super()
+      Fix a leak in failure exit in 9p ->get_sb()
+      Fix deadlock in ipathfs ->get_sb()
+      Reduce path_lookup() abuses
+      Make open_exec() and sys_uselib() use may_open(), instead of duplicating its parts
+      Switch open_exec() and sys_uselib() to do_open_filp()
+      switch ufs directories to ufs_sync_file()
+      Fix races around the access to ->s_options
+      Fix the race between capifs remount and node creation
 
-(As mentioned, the filesystem was created and initially populated with a
-kernel which was differently configured; I don't have an immediate idea
-where to obtain the config.)
+Alessio Igor Bogani (1):
+      vfs: umount_begin BKL pushdown
 
-The tested series:
+Christoph Hellwig (1):
+      romfs: cleanup romfs_fs.h
 
-0001-reiserfs-add-support-for-mount-count-incrementing.patch
-0002-reiserfs-audit-transaction-ids-to-always-be-unsigne.patch
-0003-reiserfs-use-buffer_info-for-leaf_paste_entries.patch
-0004-reiserfs-use-more-consistent-printk-formatting.patch
-0005-reiserfs-make-some-warnings-informational.patch
-0006-reiserfs-rework-reiserfs_warning.patch
-0007-reiserfs-prepare_error_buf-wrongly-consumes-va_arg.patch
-0008-reiserfs-eliminate-reiserfs_warning-from-uniqueness.patch
-0009-reiserfs-add-locking-around-error-buffer.patch
-0010-reiserfs-rework-reiserfs_panic.patch
-0011-reiserfs-rearrange-journal-abort.patch
-0012-reiserfs-introduce-reiserfs_error.patch
-0013-reiserfs-use-reiserfs_error.patch
-0014-reiserfs-small-variable-cleanup.patch
-0015-reiserfs-xattr-reiserfs_get_page-takes-offset-inste.patch
-0016-reiserfs-remove-link-detection-code.patch
-0017-reiserfs-remove-IS_PRIVATE-helpers.patch
-0018-reiserfs-Clean-up-xattrs-when-REISERFS_FS_XATTR-is.patch
-0019-reiserfs-simplify-xattr-internal-file-lookups-opens.patch
-0020-reiserfs-eliminate-per-super-xattr-lock.patch
-0021-reiserfs-make-per-inode-xattr-locking-more-fine-gra.patch
-# 0021 doesn't build, I skipped it.
-0022-reiserfs-remove-i_has_xattr_dir.patch
-0023-reiserfs-use-generic-xattr-handlers.patch
-0024-reiserfs-journaled-xattrs.patch
-# 0024 and later build only with A. Bergalov's fix folded in.
-0025-reiserfs-use-generic-readdir-for-operations-across.patch
-0026-reiserfs-add-atomic-addition-of-selinux-attributes.patch
-0027-reiserfs-factor-out-buffer_info-initialization.patch
-0028-reiserfs-cleanup-path-functions.patch
-0029-reiserfs-strip-trailing-whitespace.patch
-0030-reiserfs-rename-p_s_sb-to-sb.patch
-0031-reiserfs-rename-p_s_bh-to-bh.patch
-0032-reiserfs-rename-p_s_inode-to-inode.patch
-0033-reiserfs-rename-p_s_tb-to-tb.patch
-0034-reiserfs-rename-p_._-variables.patch
-0035-reiserfs-rename-cn-_-variables.patch
+H Hartley Sweeten (1):
+      NULL noise in fs/super.c:kill_bdev_super()
 
-> I'm looking into this right now. I have an idea, but I haven't been able
-> to reproduce it yet to test.
+Jeff Mahoney (4):
+      reiserfs: Expand i_mutex to enclose lookup_one_len
+      reiserfs: fixup xattr_root caching
+      reiserfs: dont associate security.* with xattr files
+      reiserfs: remove privroot hiding in lookup
 
-Thanks, I can test something for you.
--- 
-Stefan Richter
--=====-==--= -=-= -=--=
-http://arcgraph.de/sr/
+Joel Becker (1):
+      ocfs2: Use nd_set_link().
+
+Manish Katiyar (1):
+      Make checkpatch.pl shut up on fs/inode.c
+
+Roel Kluin (1):
+      ROMFS: romfs_dev_read() error ignored
+
+npiggin@suse.de (1):
+      fs: dcache fix LRU ordering
+
+Diffstat:
+ drivers/infiniband/hw/ipath/ipath_fs.c |    2 +-
+ drivers/isdn/capi/capifs.c             |   11 ++-
+ drivers/mtd/mtdsuper.c                 |    3 +-
+ drivers/scsi/osd/osd_uld.c             |   20 ++--
+ fs/9p/vfs_super.c                      |   12 ++-
+ fs/affs/super.c                        |    3 +-
+ fs/afs/super.c                         |    7 +-
+ fs/btrfs/super.c                       |   12 +--
+ fs/cifs/cifsfs.c                       |    6 +-
+ fs/dcache.c                            |    2 +-
+ fs/devpts/inode.c                      |    5 +-
+ fs/ecryptfs/main.c                     |    5 +-
+ fs/exec.c                              |   79 +++++----------
+ fs/fuse/inode.c                        |    3 +
+ fs/gfs2/ops_fstype.c                   |    8 +-
+ fs/hpfs/super.c                        |    3 +-
+ fs/inode.c                             |   81 ++++++--------
+ fs/libfs.c                             |    3 +-
+ fs/namei.c                             |   13 ++-
+ fs/namespace.c                         |   23 +++-
+ fs/nfs/super.c                         |   22 ++--
+ fs/ocfs2/symlink.c                     |   77 +++++++-------
+ fs/open.c                              |    2 +-
+ fs/proc/root.c                         |    3 +-
+ fs/reiserfs/dir.c                      |   24 +++--
+ fs/reiserfs/namei.c                    |   17 +---
+ fs/reiserfs/super.c                    |    9 +-
+ fs/reiserfs/xattr.c                    |  181 ++++++++++++++++----------------
+ fs/reiserfs/xattr_security.c           |   12 ++-
+ fs/romfs/super.c                       |    3 +-
+ fs/super.c                             |   48 ++++++---
+ fs/ubifs/super.c                       |    3 +-
+ fs/ufs/dir.c                           |    2 +-
+ fs/ufs/file.c                          |    2 +-
+ fs/ufs/ufs.h                           |    2 +-
+ include/linux/Kbuild                   |    2 +-
+ include/linux/fs.h                     |    4 +-
+ include/linux/namei.h                  |    1 -
+ include/linux/reiserfs_fs_sb.h         |    3 +-
+ include/linux/reiserfs_xattr.h         |    3 +-
+ include/linux/romfs_fs.h               |    5 -
+ kernel/cgroup.c                        |    3 +-
+ security/tomoyo/common.c               |    6 +-
+ security/tomoyo/realpath.c             |   16 ++--
+ 44 files changed, 369 insertions(+), 382 deletions(-)
