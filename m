@@ -1,62 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752696AbZEIJwY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752988AbZEIJzZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752696AbZEIJwY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 05:52:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751137AbZEIJwO
+	id S1752988AbZEIJzZ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 05:55:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751139AbZEIJzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 05:52:14 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:56171 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751321AbZEIJwN (ORCPT
+	Sat, 9 May 2009 05:55:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:54233 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751137AbZEIJzK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 05:52:13 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH v3] cpuacct: VIRT_CPU_ACCOUNTING don't prevent percpu cputime count
-Cc: kosaki.motohiro@jp.fujitsu.com, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Bharata B Rao <bharata@linux.vnet.ibm.com>,
-       Balaji Rao <balajirrao@gmail.com>,
-       Dhaval Giani <dhaval@linux.vnet.ibm.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-In-Reply-To: <1241861925.6316.112.camel@laptop>
-References: <20090509182541.8D0F.A69D9226@jp.fujitsu.com> <1241861925.6316.112.camel@laptop>
-Message-Id: <20090509185145.3AD2.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Sat,  9 May 2009 18:52:11 +0900 (JST)
+	Sat, 9 May 2009 05:55:10 -0400
+Date: Sat, 9 May 2009 12:00:08 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Jan Beulich <jbeulich@novell.com>,
+       mingo@elte.hu, tglx@linutronix.de, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86-64: improve e820_search_gap()
+Message-ID: <20090509100008.GD23223@one.firstfloor.org>
+References: <4A0199B8.76EA.0078.0@novell.com> <4A03BC1A.9060605@zytor.com> <4A03F016.76EA.0078.0@novell.com> <874ovvo0wo.fsf@basil.nowhere.org> <4A0492EA.6080403@zytor.com> <20090508205347.GC23223@one.firstfloor.org> <4A049B99.4000402@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A049B99.4000402@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Sat, 2009-05-09 at 18:26 +0900, KOSAKI Motohiro wrote:
-> > 
-> > Index: b/kernel/sched.c
-> > ===================================================================
-> > --- a/kernel/sched.c    2009-05-09 16:48:08.000000000 +0900
-> > +++ b/kernel/sched.c    2009-05-09 18:16:00.000000000 +0900
-> > @@ -824,8 +824,12 @@ static struct file_operations sched_feat
-> >         .release        = single_release,
-> >  };
-> >  
-> > +static __read_mostly s32 cpuacct_batch;
-> > +
-> >  static __init int sched_init_debug(void)
-> >  {
-> > +       cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
-> > +
-> >         debugfs_create_file("sched_features", 0644, NULL, NULL,
-> >                         &sched_feat_fops);
-> 
-> I'm pretty user you can select cpu accounting without SCHED_DEBUG...
+> However, as far as querying SRAT, I don't like the idea of spreading the 
+> knowledge of the system memory map out between a bunch of different 
+> places, each of which have a little piece of the puzzle.  It puts a huge 
+> onus on the user to know what mechanisms are actually available, and 
+> really makes a shitty interface.
 
-Grr, yes, it's idiot ;)
-I'll fix it soon.
+AFAIK another popular OS always combines mappings from all sources (e820,
+SRAT, PCI, PNP, ACPI etc.) in the query before allocating anything.
+Something like that might be a reasonable long term direction for Linux
+too, but it's probably also a can of worms to handle the conflicts
+between the various sources (e.g. e820 reserves a lot of things
+in other sources too). It would be a rather large change.
+Maybe that would handle the systems I thought of above.
 
-
-
-
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
