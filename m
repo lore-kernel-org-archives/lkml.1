@@ -1,65 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbZEIQlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbZEIQql@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755074AbZEIQlS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 12:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751553AbZEIQlH
+	id S1753761AbZEIQql (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 12:46:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751528AbZEIQqb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 12:41:07 -0400
-Received: from a2s31.a2hosting.com ([69.39.67.40]:47860 "EHLO
-	a2s31.a2hosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751516AbZEIQlG (ORCPT
+	Sat, 9 May 2009 12:46:31 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:33905 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751197AbZEIQqb convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 12:41:06 -0400
+	Sat, 9 May 2009 12:46:31 -0400
 MIME-Version: 1.0
-Date: Sat, 09 May 2009 12:41:05 -0400
-From: <v.virvilis@biovista.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: SATA disks resets in a md setup
-In-Reply-To: <4A053229.5010406@garzik.org>
-References: <200905081739.46206.v.virvilis@biovista.com> <4A053229.5010406@garzik.org>
-Message-ID: <3794dbcf42f7f6b00e50070eeb203e8b@biovista.com>
-User-Agent: RoundCube Webmail/0.2
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain; charset="UTF-8"
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - a2s31.a2hosting.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - biovista.com
+In-Reply-To: <20090509082233.32cbb8e4@infradead.org>
+References: <20090509143742.GA27663@kroah.com> <b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com> 
+	<20090509150853.GA32394@suse.de> <20090509082233.32cbb8e4@infradead.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Sat, 9 May 2009 18:46:10 +0200
+Message-ID: <ac3eb2510905090946t52926a5j1be2cac31f480352@mail.gmail.com>
+Subject: Re: [patch 00/13] devtmpfs patches
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Greg KH <gregkh@suse.de>, Fabio Comolli <fabio.comolli@gmail.com>,
+       Greg KH <greg@kroah.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 09 May 2009 03:35:05 -0400, Jeff Garzik <jeff@garzik.org> wrote:
+On Sat, May 9, 2009 at 17:22, Arjan van de Ven <arjan@infradead.org> wrote:
+> On Sat, 9 May 2009 08:08:53 -0700
+> Greg KH <gregkh@suse.de> wrote:
+>
+>> > Well, guess you meant the opposite ;-)
+>>
+>> Heh, yes, sorry about that.  It makes booting faster :)
+>
+> .. and I don't buy that.
 
-> 
-> For hardware details, see 
-> http://ata.wiki.kernel.org/index.php/Libata_error_messages
+Don't buy, just try it - and you will see. :)
 
-Thanks for the link.
-> 
-> The ATA bus is the cable connection, so an ATA bus error typically means
-> 
-> - problem with your cable, or
-> - your motherboard's SATA port, or
-> - your drive's SATA port, or
-> - "dirty power" supply, or
-> - some other cause for cable interference
-> 
+We must mount a tmpfs at some point during bootup, wherever you do
+that, in initramfs or the real root. Doing that, there will obviously
+be a point, where /dev is empty, exactly at that time you can not do
+anything else, which is not very tightly controlled, you can not just
+start stuff in parallel during that time. Devtmpfs gets rid of that
+limitation, and offers you to do things without waiting for a hard
+checkpoint. It's obviously the fastest one can do, like number can
+show. There can be no faster alternatives for this implemented in
+userspace.
 
-I have changed SATA cables twice and I added a better PSU. The problem
-persists.
+> The only argument I've heard is "oh but it's hard". No it's not.
+> The other argument is "but for more partitions we get other device
+> numbers"... you know what, that's easy to fix. Just make the 32 bit dev
+> number consistent. Few lines of code I bet, and it is benefit for
+> everyone to do that....
 
-Do you have any insight on the sectors count mismatch I mentioned in the
-first mail?
-The disk is 250GB but it looks it is searching for a 500GB disk (that is
-md0 = sda + sdb).
+And all the other subsystems. You can't even trust a single static
+node for rtc devices, and so on ... Converting all of that stuff in
+the kernel is just not a real option. Static device nodes a bad hack,
+and distros do not do that today, and can for reasons of correctness
+and reliability, not start doing that.
 
-Is it possible the SATA reset thing to trigger an md bug. I am totally
-guessing here...
+> Beyond that... this is not needed... but at least call it "devfs".. for
+> what it is.
+>
+> (and yes there is very obvious irony)
 
-Regards
-            .bill
+No problem, it's just a random name we've choosen, that even contains
+all of "devfs". :) I just liked to express, that one can do whatever
+one wants to do with the nodes from userspace, just like we can today.
 
+Thanks,
+Kay
