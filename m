@@ -1,77 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754140AbZEIQTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbZEIQXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754140AbZEIQTZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 12:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751921AbZEIQTQ
+	id S1753968AbZEIQXV (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 12:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751595AbZEIQXM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 12:19:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48041 "EHLO mx2.redhat.com"
+	Sat, 9 May 2009 12:23:12 -0400
+Received: from cantor.suse.de ([195.135.220.2]:59338 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751553AbZEIQTQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 12:19:16 -0400
-Date: Sat, 9 May 2009 18:15:06 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org,
-       Andy Whitcroft <apw@canonical.com>
-Subject: Re: [FOR REVIEW, PATCH 2/2] introduce "struct wait_opts" to
-	simplify do_wait() pathes
-Message-ID: <20090509161506.GA8150@redhat.com>
-References: <20090506053324.GA31988@redhat.com> <20090506072756.GA17457@elte.hu> <20090507064120.GB15220@redhat.com> <20090507075417.GA9836@elte.hu>
+	id S1751440AbZEIQXM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 12:23:12 -0400
+Date: Sat, 9 May 2009 09:19:23 -0700
+From: Greg KH <gregkh@suse.de>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] devtmpfs patches
+Message-ID: <20090509161923.GA942@suse.de>
+References: <20090509143742.GA27663@kroah.com> <b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com> <20090509150853.GA32394@suse.de> <20090509082233.32cbb8e4@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090507075417.GA9836@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090509082233.32cbb8e4@infradead.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(add Andy)
+On Sat, May 09, 2009 at 08:22:33AM -0700, Arjan van de Ven wrote:
+> On Sat, 9 May 2009 08:08:53 -0700
+> Greg KH <gregkh@suse.de> wrote:
+> 
+> > > Well, guess you meant the opposite ;-)
+> > 
+> > Heh, yes, sorry about that.  It makes booting faster :)
+> 
+> .. and I don't buy that.
 
-On 05/07, Ingo Molnar wrote:
->
-> * Oleg Nesterov <oleg@redhat.com> wrote:
->
-> > On 05/06, Ingo Molnar wrote:
-> > >
-> > > One small nit with the definition above: when using vertical spacing
-> > > (which really looks nice) we tend to put the asterix to the type
-> > > itself, not to the variable. I.e.:
-> > >
-> > > 	enum pid_type		wtype;
-> > > 	struct pid *		wpid;
-> > > 	int			wflags;
-> > >
-> > > ( This is done to separate the field name from the type - the
-> > >   pointer nature of the field is part of the type, not part of the
-> > >   name. )
-> >
-> > Indeed, I like this more too. But checkpatch.pl disagrees!
->
-> That's probably a checkpatch bug mistaking * for multiplication -
-> ignore checkpatch in that case and please report it to Andy
-> Withcroft as well as well.
+Kay posted numbers showing this.
 
-No, this is not a bug. From scripts/checkpatch.pl
+I have bootchart graphics somewhere around here that also shows this.
 
-	1667                          # Should not end with a space.
-	1668                          $to =~ s/\s+$//;
+> The only argument I've heard is "oh but it's hard". No it's not.
 
-checkpatch explicitely dislikes "type * name". I think this is
-not really right, but I won't insist. Perhaps it is better to
-allow tabs before name at least, because this likely means the
-code really tries ro look good.
+No, it's not "hard", it's just reality :)
 
+> The other argument is "but for more partitions we get other device
+> numbers"... you know what, that's easy to fix. Just make the 32 bit dev
+> number consistent. Few lines of code I bet, and it is benefit for
+> everyone to do that....
 
-Btw, can't resist,
+Huh?  We need to be able to support large number of partitions at boot
+time.  We also need to support an initrd, and not a static /dev/ tree at
+boot time, as that is what the world requires from a flexible Linux
+distro that runs on multiple types of hardware configurations.
 
-	while ($to =~ s/\*\s+\*/\*\*/) {
-	}
+Sure, if you can ensure your hardware platform isn't going to change,
+and is relativly limited (as Moblin currently does), then you don't need
+an initrd and you can get away with a static /dev and save a few
+hundred's of a second.  But the distros can't do that, they are stuck
+supporting users with tens of partitions and other "wierd"
+configurations.
 
-I think this can be simplified to
+> Beyond that... this is not needed... but at least call it "devfs".. for
+> what it is.
 
-	$to =~ s/(?<=\*)\s+//g;
+It's not a stand-alone filesystem.  It's an in-kernel mknod on top of
+tmpfs.  Heck, if it's just a matter of the name change, I'll gladly do
+it.  That doesn't stop the fact that it's still a very useful and needed
+option for lots of configurations where Linux is used (embedded, rescue
+disks, fast boot on flexable distros, etc.)
 
-Oleg.
+> (and yes there is very obvious irony)
 
+devfs was removed for a number of other reasons (bad code, maintainer
+left, in-kernel policy that was in contrast to the LSB, modprobe from
+within the kernel, thousands of lines of code, etc.)  Turns out that the
+idea of a devfs is a good one, and here is a simple, and easy to
+understand and maintain implementation of such a thing.
+
+I'll be the first to say this, hence it is without irony that I am
+proposing it be included.
+
+If there are any technical problems with the proposed patches, please
+let us know.
+
+thanks,
+
+greg k-h
