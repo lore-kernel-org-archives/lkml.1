@@ -1,153 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752648AbZEIGwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755533AbZEIG4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752648AbZEIGwT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 02:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750931AbZEIGwK
+	id S1755533AbZEIG4m (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 02:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751811AbZEIG4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 02:52:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41183 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751189AbZEIGwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 02:52:09 -0400
-Message-ID: <4A0527CB.4020807@kernel.org>
-Date: Fri, 08 May 2009 23:50:51 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sat, 9 May 2009 02:56:30 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:65193 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751397AbZEIG42 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 02:56:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:reply-to:mail-followup-to
+         :references:mime-version:content-type:content-disposition
+         :in-reply-to:user-agent;
+        b=LwMZbqo9SHvkuDGmq7xhMiKi02GqIlVJwQgwbu552Ts/bdsmndYc7fBudBzc7tYiVM
+         SLZr6WVZ/UQMJ/mAO9mwnH3cpbO1fr7TKPUJcA6Vmx/G3zs+re74cwZjNMgUjU06BsDB
+         yur5sqtSECurTpPDpluu9U7AKu21kmPqj6JSs=
+Date: Sat, 9 May 2009 08:56:19 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, rusty@rustcorp.com.au,
+       James.Bottomley@HansenPartnership.com, mike.miller@hp.com,
+       donari75@gmail.com, paul.clements@steeleye.com, tim@cyberelk.net,
+       Geert.Uytterhoeven@sonycom.com, davem@davemloft.net,
+       Laurent@lvivier.info, jgarzik@pobox.com, jeremy@xensource.com,
+       grant.likely@secretlab.ca, adrian@mcmen.demon.co.uk,
+       sfr@canb.auug.org.au, bzolnier@gmail.com, petkovbb@googlemail.com,
+       sshtylyov@ru.mvista.com, oakad@yahoo.com, drzeus@drzeus.cx,
+       dwmw2@infradead.org, Markus.Lidel@shadowconnect.com, wein@de.ibm.com,
+       schwidefsky@de.ibm.com, zaitcev@redhat.com,
+       fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk
+Subject: Re: [PATCH 01/18] ide: dequeue in-flight request
+Message-ID: <20090509065619.GA8966@liondog.tnic>
+Reply-To: petkovbb@gmail.com
+Mail-Followup-To: petkovbb@gmail.com, Tejun Heo <tj@kernel.org>,
+	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+	linux-ide@vger.kernel.org, rusty@rustcorp.com.au,
+	James.Bottomley@HansenPartnership.com, mike.miller@hp.com,
+	donari75@gmail.com, paul.clements@steeleye.com, tim@cyberelk.net,
+	Geert.Uytterhoeven@sonycom.com, davem@davemloft.net,
+	Laurent@lvivier.info, jgarzik@pobox.com, jeremy@xensource.com,
+	grant.likely@secretlab.ca, adrian@mcmen.demon.co.uk,
+	sfr@canb.auug.org.au, bzolnier@gmail.com, petkovbb@googlemail.com,
+	sshtylyov@ru.mvista.com, oakad@yahoo.com, drzeus@drzeus.cx,
+	dwmw2@infradead.org, Markus.Lidel@shadowconnect.com,
+	wein@de.ibm.com, schwidefsky@de.ibm.com, zaitcev@redhat.com,
+	fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk
+References: <1241751256-17435-1-git-send-email-tj@kernel.org> <1241751256-17435-2-git-send-email-tj@kernel.org>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jack Steiner <steiner@sgi.com>, David Rientjes <rientjes@google.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] x86: fix node_possible_map logic -v2
-References: <4A05269D.8000701@kernel.org>
-In-Reply-To: <4A05269D.8000701@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <1241751256-17435-2-git-send-email-tj@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 08, 2009 at 11:53:59AM +0900, Tejun Heo wrote:
+> ide generally has single request in flight and tracks it using
+> hwif->rq and all state handlers follow the following convention.
+> 
+> * ide_started is returned if the request is in flight.
+> 
+> * ide_stopped is returned if the queue needs to be restarted.  The
+>   request might or might not have been processed fully or partially.
+> 
+> * hwif->rq is set to NULL, when an issued request completes.
+> 
+> So, dequeueing model can be implemented by dequeueing after fetch,
+> requeueing if hwif->rq isn't NULL on ide_stopped return and doing
+> about the same thing on completion / port unlock paths.  These changes
+> can be made in ide-io proper.
+> 
+> In addition to the above main changes, the following updates are
+> necessary.
+> 
+> * ide-cd shouldn't dequeue a request when issuing REQUEST SENSE for it
+>   as the request is already dequeued.
+> 
+> * ide-atapi uses request queue as stack when issuing REQUEST SENSE to
+>   put the REQUEST SENSE in front of the failed request.  This now
+>   needs to be done using requeueing.
+> 
+> [ Impact: dequeue in-flight request ]
+> 
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+> Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+> Cc: Borislav Petkov <petkovbb@googlemail.com>
+> Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
-recently there are some changes to about meaning of node_possible_map
+Acked-by: Borislav Petkov <petkovbb@gmail.com>
 
-and it is some strange:
-the node without memory would be set in node_possible_map
-but some node with less NODE_MIN_SIZE will be kicked out of node_possible_map.
-
-try to fix it by adding strict_setup_node_bootmem.
-also remove unparse_node.
-
-so result will be:
-1. cpu_to_node will return online node only (nearest one)
-2. apicid_to_node still return the node that could be not online but is set
-   in node_possible_map.
-3. node_possible_map will include nodes that mem on it are less NODE_MIN_SIZE
-
-v2: after move_cpus_to_node change.
-
-[ Impact: get node_possible_map right ]
-
-Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-
----
- arch/x86/include/asm/numa_64.h |    4 ++++
- arch/x86/mm/numa_64.c          |    7 +++++++
- arch/x86/mm/srat_64.c          |   29 ++---------------------------
- 3 files changed, 13 insertions(+), 27 deletions(-)
-
-Index: linux-2.6/arch/x86/mm/srat_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/srat_64.c
-+++ linux-2.6/arch/x86/mm/srat_64.c
-@@ -36,10 +36,6 @@ static int num_node_memblks __initdata;
- static struct bootnode node_memblk_range[NR_NODE_MEMBLKS] __initdata;
- static int memblk_nodeid[NR_NODE_MEMBLKS] __initdata;
- 
--/* Too small nodes confuse the VM badly. Usually they result
--   from BIOS bugs. */
--#define NODE_MIN_SIZE (4*1024*1024)
--
- static __init int setup_node(int pxm)
- {
- 	return acpi_map_pxm_to_node(pxm);
-@@ -338,17 +334,6 @@ static int __init nodes_cover_memory(con
- 	return 1;
- }
- 
--static void __init unparse_node(int node)
--{
--	int i;
--	node_clear(node, nodes_parsed);
--	node_clear(node, cpu_nodes_parsed);
--	for (i = 0; i < MAX_LOCAL_APIC; i++) {
--		if (apicid_to_node[i] == node)
--			apicid_to_node[i] = NUMA_NO_NODE;
--	}
--}
--
- void __init acpi_numa_arch_fixup(void) {}
- 
- /* Use the information discovered above to actually set up the nodes. */
-@@ -360,18 +345,8 @@ int __init acpi_scan_nodes(unsigned long
- 		return -1;
- 
- 	/* First clean up the node list */
--	for (i = 0; i < MAX_NUMNODES; i++) {
-+	for (i = 0; i < MAX_NUMNODES; i++)
- 		cutoff_node(i, start, end);
--		/*
--		 * don't confuse VM with a node that doesn't have the
--		 * minimum memory.
--		 */
--		if (nodes[i].end &&
--			(nodes[i].end - nodes[i].start) < NODE_MIN_SIZE) {
--			unparse_node(i);
--			node_set_offline(i);
--		}
--	}
- 
- 	if (!nodes_cover_memory(nodes)) {
- 		bad_srat();
-@@ -404,7 +379,7 @@ int __init acpi_scan_nodes(unsigned long
- 
- 		if (node == NUMA_NO_NODE)
- 			continue;
--		if (!node_isset(node, node_possible_map))
-+		if (!node_online(node))
- 			numa_clear_node(i);
- 	}
- 	numa_init_array();
-Index: linux-2.6/arch/x86/mm/numa_64.c
-===================================================================
---- linux-2.6.orig/arch/x86/mm/numa_64.c
-+++ linux-2.6/arch/x86/mm/numa_64.c
-@@ -192,6 +192,13 @@ void __init setup_node_bootmem(int nodei
- 	if (!end)
- 		return;
- 
-+	/*
-+	 * don't confuse VM with a node that doesn't have the
-+	 * minimum memory.
-+	 */
-+	if (end && (end - start) < NODE_MIN_SIZE)
-+		return;
-+
- 	start = roundup(start, ZONE_ALIGN);
- 
- 	printk(KERN_INFO "Bootmem setup node %d %016lx-%016lx\n", nodeid,
-Index: linux-2.6/arch/x86/include/asm/numa_64.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/numa_64.h
-+++ linux-2.6/arch/x86/include/asm/numa_64.h
-@@ -24,6 +24,10 @@ extern void setup_node_bootmem(int nodei
- 			       unsigned long end);
- 
- #ifdef CONFIG_NUMA
-+/* Too small nodes confuse the VM badly. Usually they result
-+   from BIOS bugs. */
-+#define NODE_MIN_SIZE (4*1024*1024)
-+
- extern void __init init_cpu_to_node(void);
- extern void numa_set_node(int cpu, int node);
- extern void numa_clear_node(int cpu);
+-- 
+Regards/Gruss,
+    Boris.
