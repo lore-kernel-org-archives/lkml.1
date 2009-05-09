@@ -1,105 +1,223 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753761AbZEIHDW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbZEIHF3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753761AbZEIHDW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 03:03:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZEIHDN
+	id S1756245AbZEIHF3 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 03:05:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752389AbZEIHFU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 03:03:13 -0400
-Received: from nn7.de ([85.214.94.156]:53156 "EHLO nn7.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751670AbZEIHDM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 03:03:12 -0400
-X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Sat, 09 May 2009 03:03:11 EDT
-Subject: regression 2.6.30-rc4+git: oops in rfcomm_tty_open klist_add_tail
-From: Soeren Sonnenburg <kernel@nn7.de>
-To: Linux Kernel <linux-kernel@vger.kernel.org>
-Cc: Marcel Holtmann <marcel@holtmann.org>
+	Sat, 9 May 2009 03:05:20 -0400
+Received: from rv-out-0506.google.com ([209.85.198.232]:57283 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751670AbZEIHFT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 03:05:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:cc:in-reply-to:references:content-type:date
+         :message-id:mime-version:x-mailer:content-transfer-encoding;
+        b=vi8qn+mH/3ZAgf2kDQO61iBrsWIh9S4JIkhKoDU+ntmzFHpiow60IgoYcPFn+cMclZ
+         XbR/TcawoDdYafbN4JfZWaQDdzlmLl10A6EDUYwOlLfrbiVXaxQb0/J3Q3u52zOAH86n
+         tMyhPcQ88WC/2k8rV4yPl159nQPzNtX1b/bbw=
+Subject: Re: [PATCH 2/3] x86: add numa_move_cpus_to_node
+From: "Justin P. Mattock" <justinmattock@gmail.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+In-Reply-To: <4A052721.4010201@kernel.org>
+References: <4A05269D.8000701@kernel.org>  <4A052721.4010201@kernel.org>
 Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Sat, 09 May 2009 08:56:26 +0200
-Message-Id: <1241852186.14865.63.camel@localhost>
+Date: Sat, 09 May 2009 00:05:24 -0700
+Message-Id: <1241852724.1876.5.camel@unix>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+X-Mailer: Evolution 2.26.0 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear all,
+On Fri, 2009-05-08 at 23:48 -0700, Yinghai Lu wrote:
 
-I am seeing the oops below as soon as I try to bring up my internet
-connection over rfcomm via a bluetooth device. I think that things were
-working ok with 2.6.30-rc3 still but now I see this oops even after a
-clean reboot, reproducibly ...
+> 
+> when node only have hot add range and don't have other static range.
 
-Any ideas?
-Soeren 
+when the node only has "hot add range", then don't have other "static
+ranges".
 
-------------[ cut here ]------------
-WARNING: at kernel/workqueue.c:371 flush_cpu_workqueue+0x7d/0x80()
-Hardware name: NC10                       
-Modules linked in: ath5k mac80211 cfg80211 tun ppp_mppe ppp_async crc_ccitt ppp_generic slhc rfcomm l2cap fuse binfmt_misc snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer uvcvideo snd_seq_device videodev v4l1_compat btusb bluetooth psmouse snd i2c_i801 rtc_cmos rtc_core rtc_lib sky2 evdev soundcore snd_page_alloc [last unloaded: cfg80211]
-Pid: 1418, comm: bluetooth Not tainted 2.6.30-rc4-sonne #8
-Call Trace:
- [<c051dddf>] ? printk+0x18/0x21
- [<c0136233>] warn_slowpath+0x73/0xd0
- [<c0126709>] ? update_curr+0x99/0x1d0
- [<c0127777>] ? set_next_entity+0xa7/0x190
- [<c012c877>] ? finish_task_switch+0x97/0xd0
- [<c051e5f8>] ? __schedule+0x4e8/0xb20
- [<c0127777>] ? set_next_entity+0xa7/0x190
- [<c012c877>] ? finish_task_switch+0x97/0xd0
- [<c014752d>] flush_cpu_workqueue+0x7d/0x80
- [<c0147760>] flush_workqueue+0x30/0x50
- [<f8ab9cc6>] add_conn+0x16/0x40 [bluetooth]
- [<c0147050>] ? worker_thread+0x0/0x250
- [<c01471aa>] worker_thread+0x15a/0x250
- [<f8ab9cb0>] ? add_conn+0x0/0x40 [bluetooth]
- [<c014b370>] ? autoremove_wake_function+0x0/0x50
- [<c0147050>] ? worker_thread+0x0/0x250
- [<c014af56>] kthread+0x46/0x80
- [<c014af10>] ? kthread+0x0/0x80
- [<c010394f>] kernel_thread_helper+0x7/0x18
----[ end trace c91b55c4d7c5c20d ]---
-BUG: unable to handle kernel NULL pointer dereference at 0000000c
-IP: [<c050ad5b>] klist_node_init+0x2b/0x60
-*pde = 00000000 
-Oops: 0000 [#1] PREEMPT SMP 
-last sysfs file: /sys/devices/pci0000:00/0000:00:1c.0/0000:02:00.0/net/wlan1/statistics/collisions
-Modules linked in: ath5k mac80211 cfg80211 tun ppp_mppe ppp_async crc_ccitt ppp_generic slhc rfcomm l2cap fuse binfmt_misc snd_hda_codec_realtek snd_hda_intel snd_hda_codec snd_pcm_oss snd_mixer_oss snd_pcm snd_seq_oss snd_seq_midi snd_rawmidi snd_seq_midi_event snd_seq snd_timer uvcvideo snd_seq_device videodev v4l1_compat btusb bluetooth psmouse snd i2c_i801 rtc_cmos rtc_core rtc_lib sky2 evdev soundcore snd_page_alloc [last unloaded: cfg80211]
+> that node will not be onlined, and cpus on that will be linked to nearby
+> node with memory.
+> then when that host add range is added later, we need to linked those cpus
+Then
+> back.
+> 
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  arch/x86/include/asm/numa_64.h |   10 ++++---
+>  arch/x86/mm/init_64.c          |    3 ++
+>  arch/x86/mm/numa_64.c          |   52 +++++++++++++++++++++++++++++++++++------
+>  3 files changed, 54 insertions(+), 11 deletions(-)
+> 
+> Index: linux-2.6/arch/x86/include/asm/numa_64.h
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/include/asm/numa_64.h
+> +++ linux-2.6/arch/x86/include/asm/numa_64.h
+> @@ -25,16 +25,18 @@ extern void setup_node_bootmem(int nodei
+>  
+>  #ifdef CONFIG_NUMA
+>  extern void __init init_cpu_to_node(void);
+> -extern void __cpuinit numa_set_node(int cpu, int node);
+> -extern void __cpuinit numa_clear_node(int cpu);
+> -extern void __cpuinit numa_add_cpu(int cpu);
+> -extern void __cpuinit numa_remove_cpu(int cpu);
+> +extern void numa_set_node(int cpu, int node);
+> +extern void numa_clear_node(int cpu);
+> +extern void numa_add_cpu(int cpu);
+> +extern void numa_remove_cpu(int cpu);
+> +extern void numa_move_cpus_to_node(int nid);
+>  #else
+>  static inline void init_cpu_to_node(void)		{ }
+>  static inline void numa_set_node(int cpu, int node)	{ }
+>  static inline void numa_clear_node(int cpu)		{ }
+>  static inline void numa_add_cpu(int cpu, int node)	{ }
+>  static inline void numa_remove_cpu(int cpu)		{ }
+> +static inline void numa_move_cpus_to_node(int nid)	{ }
+>  #endif
+>  
+>  #endif /* _ASM_X86_NUMA_64_H */
+> Index: linux-2.6/arch/x86/mm/numa_64.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/mm/numa_64.c
+> +++ linux-2.6/arch/x86/mm/numa_64.c
+> @@ -12,6 +12,7 @@
+>  #include <linux/module.h>
+>  #include <linux/nodemask.h>
+>  #include <linux/sched.h>
+> +#include <linux/node.h>
+>  
+>  #include <asm/e820.h>
+>  #include <asm/proto.h>
+> @@ -660,7 +661,7 @@ void __init init_cpu_to_node(void)
+>  #endif
+>  
+> 
+> -void __cpuinit numa_set_node(int cpu, int node)
+> +void numa_set_node(int cpu, int node)
+>  {
+>  	int *cpu_to_node_map = early_per_cpu_ptr(x86_cpu_to_node_map);
+>  
+> @@ -683,19 +684,56 @@ void __cpuinit numa_set_node(int cpu, in
+>  		per_cpu(node_number, cpu) = node;
+>  }
+>  
+> -void __cpuinit numa_clear_node(int cpu)
+> +void numa_clear_node(int cpu)
+>  {
+>  	numa_set_node(cpu, NUMA_NO_NODE);
+>  }
+>  
+> +static int real_cpu_to_node(int cpu)
+> +{
+> +	int apicid, nodeid = -1;
+> +
+> +	/*
+> +	 * when the node doesn't have memory before, cpu_to_node(cpu) is
+> +	 * point to other node, but apicid_to_node still hold the real nodeid
+> +	 */
+> +	apicid = per_cpu(x86_cpu_to_apicid, cpu);
+> +	if (apicid == BAD_APICID)
+> +		return nodeid;
+> +
+> +	nodeid = apicid_to_node[apicid];
+> +	return nodeid;
+> +}
+> +
+> +void numa_move_cpus_to_node(int nid)
+> +{
+> +	int cpu;
+> +
+> +	for_each_present_cpu(cpu) {
+> +		int nodeid;
+> +
+> +		nodeid = real_cpu_to_node(cpu);
+> +		if (nodeid != nid)
+> +			continue;
+> +
+> +		nodeid = cpu_to_node(cpu);
+> +		if (nodeid != nid) {
+> +			unregister_cpu_under_node(cpu, nodeid);
+> +			numa_remove_cpu(cpu);
+> +			numa_set_node(cpu, nid);
+> +			numa_add_cpu(cpu);
+> +		}
+> +	}
+> +}
+> +
+>  #ifndef CONFIG_DEBUG_PER_CPU_MAPS
+>  
+> -void __cpuinit numa_add_cpu(int cpu)
+> +void numa_add_cpu(int cpu)
+>  {
+>  	cpumask_set_cpu(cpu, node_to_cpumask_map[early_cpu_to_node(cpu)]);
+>  }
+>  
+> -void __cpuinit numa_remove_cpu(int cpu)
+> +void numa_remove_cpu(int cpu)
+>  {
+>  	cpumask_clear_cpu(cpu, node_to_cpumask_map[early_cpu_to_node(cpu)]);
+>  }
+> @@ -705,7 +743,7 @@ void __cpuinit numa_remove_cpu(int cpu)
+>  /*
+>   * --------- debug versions of the numa functions ---------
+>   */
+> -static void __cpuinit numa_set_cpumask(int cpu, int enable)
+> +static void numa_set_cpumask(int cpu, int enable)
+>  {
+>  	int node = early_cpu_to_node(cpu);
+>  	struct cpumask *mask;
+> @@ -728,12 +766,12 @@ static void __cpuinit numa_set_cpumask(i
+>  		enable ? "numa_add_cpu" : "numa_remove_cpu", cpu, node, buf);
+>  }
+>  
+> -void __cpuinit numa_add_cpu(int cpu)
+> +void numa_add_cpu(int cpu)
+>  {
+>  	numa_set_cpumask(cpu, 1);
+>  }
+>  
+> -void __cpuinit numa_remove_cpu(int cpu)
+> +void numa_remove_cpu(int cpu)
+>  {
+>  	numa_set_cpumask(cpu, 0);
+>  }
+> Index: linux-2.6/arch/x86/mm/init_64.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/mm/init_64.c
+> +++ linux-2.6/arch/x86/mm/init_64.c
+> @@ -631,6 +631,9 @@ int arch_add_memory(int nid, u64 start,
+>  	ret = __add_pages(nid, zone, start_pfn, nr_pages);
+>  	WARN_ON_ONCE(ret);
+>  
+> +	if (!ret)
+> +		numa_move_cpus_to_node(nid);
+> +
+>  	return ret;
+>  }
+>  EXPORT_SYMBOL_GPL(arch_add_memory);
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-Pid: 13288, comm: pppd Tainted: G        W  (2.6.30-rc4-sonne #8) NC10                       
-EIP: 0060:[<c050ad5b>] EFLAGS: 00010246 CPU: 1
-EIP is at klist_node_init+0x2b/0x60
-EAX: e89da560 EBX: e89da554 ECX: c200cae0 EDX: e89da554
-ESI: 00000000 EDI: ffffffea EBP: f697dd98 ESP: f697dd84
- DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
-Process pppd (pid: 13288, ti=f697c000 task=e8926b70 task.ti=f697c000)
-Stack:
- c0679ce3 e1e527a0 e1e527a0 00000000 e89da554 f697dda8 c050ae6a eaacf840
- 00000000 f697ddd0 c03cb1a3 00000000 00000001 eaacf848 eba32edc eba32ed4
- eba32e00 eba32e16 e88d6f80 f697de30 f91c7330 00000004 e88d6f80 eb9d4a58
-Call Trace:
- [<c050ae6a>] ? klist_add_tail+0x1a/0x50
- [<c03cb1a3>] ? device_move+0x83/0x230
- [<f91c7330>] ? rfcomm_tty_open+0x300/0x330 [rfcomm]
- [<c035fc21>] ? check_tty_count+0x51/0xc0
- [<c01315a0>] ? default_wake_function+0x0/0x10
- [<c0362d9a>] ? tty_open+0x1aa/0x4c0
- [<c01a6caa>] ? exact_lock+0xa/0x20
- [<c03d067c>] ? kobj_lookup+0x17c/0x190
- [<c01a6f62>] ? chrdev_open+0xf2/0x1d0
- [<c01a24c2>] ? __dentry_open+0xd2/0x2c0
- [<c01a2799>] ? nameidata_to_filp+0x59/0x70
- [<c01a6e70>] ? chrdev_open+0x0/0x1d0
- [<c01afdb1>] ? do_filp_open+0x1c1/0x7d0
- [<c0120a75>] ? ptep_set_access_flags+0x35/0x50
- [<c018c533>] ? do_wp_page+0x143/0x680
- [<c01b9298>] ? alloc_fd+0xe8/0x100
- [<c01a22a9>] ? do_sys_open+0x59/0xf0
- [<c01a23a9>] ? sys_open+0x29/0x40
- [<c0102f34>] ? sysenter_do_call+0x12/0x26
-Code: 55 89 e5 83 ec 14 89 75 fc 89 c6 8d 42 04 89 5d f8 89 d3 89 42 04 89 42 08 8d 42 0c e8 af 2e dd ff f7 c6 01 00 00 00 89 33 75 15 <8b> 56 0c 85 d2 74 04 89 d8 ff d2 8b 5d f8 8b 75 fc 89 ec 5d c3 
-EIP: [<c050ad5b>] klist_node_init+0x2b/0x60 SS:ESP 0068:f697dd84
-CR2: 000000000000000c
----[ end trace c91b55c4d7c5c20e ]---
+This way it sounds better(correct me if I'm wrong).
+
+regards,
+
+Justin P. Mattock
 
