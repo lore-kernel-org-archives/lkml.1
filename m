@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754916AbZEIKXT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753964AbZEIKXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754916AbZEIKXT (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 06:23:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbZEIKXF
+	id S1753964AbZEIKXd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 06:23:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752462AbZEIKXU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 06:23:05 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:39287 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751370AbZEIKXD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 06:23:03 -0400
-Date: Sat, 9 May 2009 12:25:14 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: petkovbb@gmail.com, Borislav Petkov <petkovbb@googlemail.com>,
-       bzolnier@gmail.com, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 01/14] ide-tape: fix potential fs requests bug
-Message-ID: <20090509102514.GA23517@uranus.ravnborg.org>
-References: <1241855134-4984-1-git-send-email-petkovbb@gmail.com> <1241855134-4984-2-git-send-email-petkovbb@gmail.com> <20090509080245.GB22617@uranus.ravnborg.org> <20090509085008.GA5261@liondog.tnic>
-Mime-Version: 1.0
+	Sat, 9 May 2009 06:23:20 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45568 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754891AbZEIKXT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 06:23:19 -0400
+Date: Sat, 9 May 2009 12:22:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [patch] tracing/mm: add page frame snapshot trace
+Message-ID: <20090509102254.GA15245@elte.hu>
+References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu> <20090508124433.GB15949@localhost> <20090509062758.GB21354@elte.hu> <20090509091325.GA7994@localhost> <20090509092431.GB13784@elte.hu> <20090509094316.GA5520@localhost>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090509085008.GA5261@liondog.tnic>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090509094316.GA5520@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 09, 2009 at 10:50:08AM +0200, Borislav Petkov wrote:
-> On Sat, May 09, 2009 at 10:02:45AM +0200, Sam Ravnborg wrote:
-> > On Sat, May 09, 2009 at 09:45:21AM +0200, Borislav Petkov wrote:
-> > > ide-tape had a potential bug for fs requests when preparing the command
-> > > packet: it was writing the transfer length as a number of fixed blocks.
-> > > However, the block layer implies 512 byte blocks and ide-tape can have
-> > > other block sizes so account for that too.
-> > > 
-> > > ide-floppy does this calculation properly with the block size factor
-> > > (floppy->bs_factor).
-> > > 
-> > > Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
-> > > ---
-> > >  drivers/ide/ide-tape.c |    2 +-
-> > >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > > 
-> > > diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-> > > index e166045..fc79cf4 100644
-> > > --- a/drivers/ide/ide-tape.c
-> > > +++ b/drivers/ide/ide-tape.c
-> > > @@ -586,7 +586,7 @@ static void ide_tape_create_rw_cmd(idetape_tape_t *tape,
-> > >  				   struct ide_atapi_pc *pc, struct request *rq,
-> > >  				   u8 opcode)
-> > >  {
-> > > -	unsigned int length = blk_rq_sectors(rq);
-> > > +	unsigned int length = blk_rq_sectors(rq) / (tape->blk_size >> 9);
+
+* Wu Fengguang <fengguang.wu@intel.com> wrote:
+
+> > How about changing it from 'trigger' to 'dump_range':
+> 
+> That's a better name!
+> 
+> >    echo "*" > /debug/tracing/objects/mm/pages/dump_range
 > > 
-> > If tape->blk_size equals 256 or less then we get a divide-by-zero.
+> > being a shortcut for 'dump all'?
 > 
-> Yes, there is a far-fetched, potential possibility for that but here's
-> what the QIC 157D (http://www.qic.org/html/standards/15x.x/qic157d.pdf)
-> spec for streaming tapes says on block sizes:
+> No I'm not complaining about -1. That's even better than "*",
+> because the latter can easily be expanded by shell ;)
 > 
-> "The Block Length specifies the current length in bytes of each logical
-> block described by the block descriptor for the current medium. For QIC
-> Streaming Tape Devices, two block sizes supported may be of either 512
-> or 1024 bytes per block."
+> > And:
+> > 
+> >    echo "1000 2000" > /debug/tracing/objects/mm/pages/dump_range
+> > 
+> > ?
 > 
-> Also, the driver catches invalid block sizes in
-> idetape_get_mode_sense_results() so I guess we should be fine.
+> Now it's much more intuitive!
+> 
+> > The '1000' is the offset where the dumping starts, and 2000 is the 
+> > size of the dump.
+> 
+> Ah the second parameter 2000 can easily be taken as "end"..
 
-OK - but If I am wondering maybe the next reader will
-think the same
-A small comment:
-/* idetape_get_mode_sense_results() prevent sizes less than 1 << 9 */
-Seems to be reasonable.
+Ok ... i've changed the name to dump_range and added your fix for 
+mapcount as well. I pushed it all out to -tip.
 
-	Sam
+Would you be interested in having a look at that and tweaking the 
+dump_range API to any variant of your liking, and sending a patch 
+for that? Both "<start> <end>" and "<start> <size>" (or any other 
+variant) would be fine IMHO.
+
+The lseek hack is nice (and we can keep that) but an explicit range 
+API would be nice, we try to keep all of ftrace scriptable.
+
+	Ingo
