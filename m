@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754111AbZEIRXF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754976AbZEIRYD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754111AbZEIRXF (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 13:23:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752213AbZEIRWx
+	id S1754976AbZEIRYD (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 13:24:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbZEIRXv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 13:22:53 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:24571 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751386AbZEIRWw (ORCPT
+	Sat, 9 May 2009 13:23:51 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:41600 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752213AbZEIRXu convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 13:22:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=R2rXuVG4EEuX6MPZUPPlYdd3+xL6FXEWyVXvir0QJo5cCdC9veFQ/d0uiqjyJJ7T7/
-         Seo7K9LMhCTegWTbEDySMD6soc7nr407k3VLMTPfpfdkUNnhKGKS07zY+fFLc0eEM4EN
-         zHheJwAachSd7pWVVKLUaNEz/BOBEyLR/4BdA=
+	Sat, 9 May 2009 13:23:50 -0400
 MIME-Version: 1.0
-In-Reply-To: <4d34a0a70905081858y56dacf34of004301f93daf3e3@mail.gmail.com>
-References: <4A012C64.1020101@samsung.com>
-	 <20090508031859.GE30616@dtor-d630.eng.vmware.com>
-	 <4d34a0a70905081858y56dacf34of004301f93daf3e3@mail.gmail.com>
-Date: Sat, 9 May 2009 22:52:53 +0530
-Message-ID: <5d5443650905091022k539654f7p31dd8c3191fccba8@mail.gmail.com>
-Subject: Re: Input: add MAX7359 key switch controller driver
-From: Trilok Soni <soni.trilok@gmail.com>
-To: Kim Kyuwon <chammoru@gmail.com>
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Kim Kyuwon <q1.kim@samsung.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>,
-       Marek Szyprowski <m.szyprowski@samsung.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090509181559.664b141a@lxorguk.ukuu.org.uk>
+References: <ac3eb2510905071612v61a27760hffc684ee87df9249@mail.gmail.com> 
+	<Pine.LNX.4.44L0.0905081000140.3010-100000@iolanthe.rowland.org> 
+	<ac3eb2510905091000y4c7a6448uce799d00d500fffe@mail.gmail.com> 
+	<20090509181559.664b141a@lxorguk.ukuu.org.uk>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Sat, 9 May 2009 19:23:30 +0200
+Message-ID: <ac3eb2510905091023l42747289h56d59f3b0a7b5b90@mail.gmail.com>
+Subject: Re: usbfs, claiming entire usb devices
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Kernel development list <linux-kernel@vger.kernel.org>,
+       Pantelis Koukousoulas <pktoss@gmail.com>,
+       USB list <linux-usb@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Kim,
-
-On Sat, May 9, 2009 at 7:28 AM, Kim Kyuwon <chammoru@gmail.com> wrote:
-> Hi Dmitry,
+On Sat, May 9, 2009 at 19:15, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> > Yes.  That is, a process shouldn't be allowed to access a locked device
+>> > unless that process is the lock holder.
+>>
+>> You think the pid or the uid would make more sense?
 >
-> Thank you for good comments. I fixed all as you recommended. More
-> detailed answers are below your comments.
-> In addition, I also added wakeup related statements
-> (device_init_wakeup, device_may_wakeup, [enable|disable]_irq_wake).
+> How about neither ?
 >
-> I'm sending this revised patch right now.
+> The standard Unix behaviour is to open the file O_EXCL if you want
+> exclusivity. Neither uid or pid are helpful or work in the many
+> environments where you want security - in particular where (as is very
+> common with user space driver type code) you want parts of your code
+> running setuid and parts not, as two processes with different pid and uid
+> values.
 >
-> By the way, can I ask the same question which I ask to Trilok.
+> If O_EXCL is interpeted as exclusive access (versus kernel and re-open of
+> the same node) then you can implement the rest of the sematics in user
+> space.
 
-I thought I had explained it in my e-mail but Dmitry's reply is more
-explanatory.
+Hmm, but his is a lock for "future" device, which did not even show up
+at that point the "lock" will be taken. The files would not be opened
+a second time.
 
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
+The lock-file and the device file are two different files, both would
+be opened only by one process - and we are playing around here with
+the idea how to connect these both processes.
+
+Thanks,
+Kay
