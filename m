@@ -1,112 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754937AbZEIMxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbZEINCG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754937AbZEIMxU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 08:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbZEIMxK
+	id S1754042AbZEINCG (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 09:02:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752815AbZEINBy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 08:53:10 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:59019 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751553AbZEIMxJ (ORCPT
+	Sat, 9 May 2009 09:01:54 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:53578 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753070AbZEINBx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 08:53:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=QizlGK8ZNotFA/mp+OsBxeeVpU0+LdEYoCOabug7NaidknxdGvzFoi9e+/3fyIWWkI
-         4Hco4X8745kG7IGE0+MEp8nN9wuOnmlDRy1NhLPT5C1uDrHkY+W1I5ZPzBwJjvBOyox2
-         /+X+JfC8cKGOV4wuq8XezXeLF8eSIyJDKmQmc=
+	Sat, 9 May 2009 09:01:53 -0400
+Date: Sat, 9 May 2009 14:01:52 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Cc: Jeff Mahoney <jeffm@suse.com>, reiserfs-devel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: 2.6.30-rc: reiserfs_delete_xattrs log spam (bug 13122)
+Message-ID: <20090509130152.GD8633@ZenIV.linux.org.uk>
+References: <4A057951.8040501@s5r6.in-berlin.de> <tkrat.fe49a8c298128f65@s5r6.in-berlin.de>
 MIME-Version: 1.0
-In-Reply-To: <20090509083737.GE3656@elte.hu>
-References: <20090508210347.GA3121@redhat.com> <20090509083737.GE3656@elte.hu>
-Date: Sat, 9 May 2009 14:53:06 +0200
-Message-ID: <c62985530905090553u538f8589l984b03428713d7ef@mail.gmail.com>
-Subject: Re: [RFC] convert ftrace syscall tracer to TRACE_EVENT()
-From: =?ISO-8859-1?Q?Fr=E9d=E9ric_Weisbecker?= <fweisbec@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Jason Baron <jbaron@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
-       linux-kernel@vger.kernel.org, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, mathieu.desnoyers@polymtl.ca, jiayingz@google.com,
-       mbligh@google.com, roland@redhat.com, fche@redhat.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <tkrat.fe49a8c298128f65@s5r6.in-berlin.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/9 Ingo Molnar <mingo@elte.hu>:
->
-> * Jason Baron <jbaron@redhat.com> wrote:
->
->> Hi,
->>
->> I've been thinking about converting the current ftrace syscall
->> tracer to the TRACE_EVENT() macros. There are a few issues with
->> the current syscall tracer approach:
->>
->> 1) It has to be enabled for all processes and all syscalls. By
->> moving to TRACE_EVENT(), it can be enabled/disabled per tracepoint
->> and can also make use of the generic tracing filters, such as
->> "trace all process for pid x"
->>
->> 2) Other tracers can not tie into it, since its not tracepoint
->> based. TRACE_EVENT() fixes this.
->>
->> 3) data formatting. The syscall tracer I don't believe understands
->> all the various types for output formatting. By moving to
->> TRACE_EVENT(), we can print out a more readible syscall trace.
->>
->> 4) The ftrace syscall tracer needs a new arch specific code for
->> each architecture. By converting to TRACE_EVENT() we don't need
->> any architecutre specific code.
->>
->> Other issues to consider:
->>
->> * Maintainence. The current syscall tracer automatically picks up
->> new syscalls. The TRACE_EVENT() will be harder to initially set
->> up. But once its done, syscalls are obviously not added often. So
->> I don't think this will be too bad.
->>
->> * Performance. The current syscall tracer adds a
->> 'test_thread_flag()' to syscall entry/exit. The TRACE_EVENT()
->> would add a per-syscall global to check. So they are going to have
->> different cache profiles...however, the tracepoint infrastructure
->> is hopefully moving to the 'immediate' value work, which will make
->> this more highly optimized.
->>
->> I've also tested the patch shown below (which uses,
->> DECLARE_TRACE(), as a preliminary proof of concept), using
->> getpid() in a loop, and tbench, and saw very small performance
->> differences. Obviously we would have to do more extensive testing
->> before deciding.
->>
->> Patch is pretty rough, but should give a rough sense of what the
->> DECLARE_TRACE() type patch might look like...
->
-> Yeah, i very much agree with the direction. (I've Cc:-ed Tom Zanussi
-> who also has expressed interest in this.)
->
-> I'm not sure about the implementation as you've posted it though:
->
-> Firstly, it adds two new tracepoints to every system call. That is
-> unnecessary - we already have the TIF flag based callbacks, and we
-> can use the existing syscall attributes table to get to tracepoints
-> - without slow down (or impacting) the fast path in any way.
+On Sat, May 09, 2009 at 02:44:25PM +0200, Stefan Richter wrote:
+> On  9 May, Stefan Richter wrote:
+> > I just switched from 2.6.29.1 to 2.6.30-rc5, and I'm getting the same as 
+> > the reporter of http://bugzilla.kernel.org/show_bug.cgi?id=13122 alias
+> > http://marc.info/?l=linux-kernel&m=123990989515105, i.e. repetitions of
+> >  >>>
+> > May  9 14:27:22 stein REISERFS warning (device sda1): jdm-20004 
+> > reiserfs_delete_xattrs: Couldn't delete all xattrs (-13)
+> > May  9 14:27:22 stein
+> > <<<
+> > 
+> > This happens in irregular intervals, but a lot of times --- presumably 
+> > when certain files are accessed.  I'm on a recently set-up Gentoo 
+> > machine.  I created its root filesystem using the Gentoo x86-64 minimal 
+> > boot CD; my guess is that the kernel of the boot CD had 
+> > CONFIG_REISERFS_FS_XATTR enabled.  All kernels which I used since then 
+> > have it disabled:  2.6.27-gentoo-r8, 2.6.29.1, now 2.6.30-rc5.
+> 
+> PS:  Also, the following came up at this (= first) boot of 2.6.30-rc, as
+> a warm reboot from 2.6.29.1. I have no idea whether it's connected to
+> the issue.
 
+That WARN_ON() is fixed in the patches in VFS queue; should be gone in
+-next and I'm going to push a bunch of fixes to Linus today, this one
+among them.
 
-
-Agreed, that's unnecessary because we already hook in ptrace without
-impacting the off-case.
-
-
-
-> Secondly, we should reuse the information we get in SYSCALL_DEFINE,
-> to construct the TRACE_EVENT tracepoints directly - without having
-> to list all syscalls again in a separate file.
-
-
-Indeed, that's not trivial though, but feasible.
-I'm not sure we can reuse the TRACE_EVENT macro directly inside SYSCALL_DEFINE.
-The resulting macro tempest effect that would occur confuses me and I
-have troubles to imagine the result.
+The first one you've reported is a different story.  Could you try to
+bisect it?
