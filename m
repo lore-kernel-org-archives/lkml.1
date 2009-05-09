@@ -1,422 +1,346 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753771AbZEIG3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754103AbZEIGsT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753771AbZEIG3T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 02:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbZEIG3G
+	id S1754103AbZEIGsT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 02:48:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751465AbZEIGsG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 02:29:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44178 "EHLO mx3.mail.elte.hu"
+	Sat, 9 May 2009 02:48:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46016 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751189AbZEIG3D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 02:29:03 -0400
-Date: Sat, 9 May 2009 08:27:58 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Li Zefan <lizf@cn.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
-       Alexey Dobriyan <adobriyan@gmail.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: [patch] tracing/mm: add page frame snapshot trace
-Message-ID: <20090509062758.GB21354@elte.hu>
-References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu> <20090508124433.GB15949@localhost>
+	id S1750931AbZEIGsF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 02:48:05 -0400
+Message-ID: <4A05269D.8000701@kernel.org>
+Date: Fri, 08 May 2009 23:45:49 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090508124433.GB15949@localhost>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: [PATCH 1/3] x86: remove MEMORY_HOTPLUG_RESERVE related code
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Wu Fengguang <fengguang.wu@intel.com> wrote:
+after
+| commit b263295dbffd33b0fbff670720fa178c30e3392a
+| Author: Christoph Lameter <clameter@sgi.com>
+| Date:   Wed Jan 30 13:30:47 2008 +0100
+|
+|    x86: 64-bit, make sparsemem vmemmap the only memory model
 
-> > So this should be done in cooperation with instrumentation 
-> > folks, while improving _all_ of Linux instrumentation in 
-> > general. Or, if you dont have the time/interest to work with us 
-> > on that, it should not be done at all. Not having the 
-> > resources/interest to do something properly is not a license to 
-> > introduce further instrumentation crap into Linux.
-> 
-> I'd be glad to work with you on the 'object collections' ftrace 
-> interfaces.  Maybe next month. For now my time have been allocated 
-> for the hwpoison work, sorry!
+we don't have MEMORY_HOTPLUG_RESERVE anymore.
 
-No problem - our offer still stands: we are glad to help out with 
-the instrumentation side bits. We'll even write all the patches for 
-you, just please help us out with making it maximally useful to 
-_you_ :-)
+remove related dead code.
 
-Find below a first prototype patch written by Steve yesterday and 
-tidied up a bit by me today. It can also be tried on latest -tip:
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
-  http://people.redhat.com/mingo/tip.git/README
-
-This patch adds the first version of the 'object collections' 
-instrumentation facility under /debug/tracing/objects/mm/. It has a 
-single control so far, a 'number of pages to dump' trigger file:
-
-To dump 1000 pages to the trace buffers, do:
-
-  echo 1000 > /debug/tracing/objects/mm/pages/trigger
-
-To dump all pages to the trace buffers, do:
-
-  echo -1 > /debug/tracing/objects/mm/pages/trigger
-
-Preliminary timings on an older, 1GB RAM 2 GHz Athlon64 box show 
-that it's plenty fast:
-
- # time echo -1 > /debug/tracing/objects/mm/pages/trigger
-
-  real	0m0.127s
-  user	0m0.000s
-  sys	0m0.126s
-
- # time cat /debug/tracing/per_cpu/*/trace_pipe_raw > /tmp/page-trace.bin
-
-  real	0m0.065s
-  user	0m0.001s
-  sys	0m0.064s
-
-  # ls -l /tmp/1
-  -rw-r--r-- 1 root root 13774848 2009-05-09 11:46 /tmp/page-dump.bin
-
-127 millisecs to collect, 65 milliseconds to dump. (And that's not 
-using splice() to dump the trace data.)
-
-The current (very preliminary) record format is:
-
-  # cat /debug/tracing/events/mm/dump_pages/format 
-  name: dump_pages
-  ID: 40
-  format:
-	field:unsigned short common_type;	offset:0;	size:2;
-	field:unsigned char common_flags;	offset:2;	size:1;
-	field:unsigned char common_preempt_count;	offset:3;	size:1;
-	field:int common_pid;	offset:4;	size:4;
-	field:int common_tgid;	offset:8;	size:4;
-
-	field:unsigned long pfn;	offset:16;	size:8;
-	field:unsigned long flags;	offset:24;	size:8;
-	field:unsigned long index;	offset:32;	size:8;
-	field:unsigned int count;	offset:40;	size:4;
-	field:unsigned int mapcount;	offset:44;	size:4;
-
-  print fmt: "pfn=%lu flags=%lx count=%u mapcount=%u index=%lu", 
-  REC->pfn, REC->flags, REC->count, REC->mapcount, REC->index
-
-Note: the page->flags value should probably be converted into more 
-independent values i suspect, like get_uflags() is - the raw 
-page->flags is too compressed and inter-dependent on other 
-properties of struct page to be directly usable.
-
-Also, buffer size has to be large enough to hold the dump. To hold 
-one million entries (4GB of RAM), this should be enough:
-
-  echo 60000 > /debug/tracing/buffer_size_kb
-
-Once we add synchronization between producer and consumer, pretty 
-much any buffer size will suffice.
-
-The trace records are unique so user-space can filter out the dump 
-and only the dump - even if there are other trace events in the 
-buffer.
-
-TODO:
-
- - add smarter flags output - a'la your get_uflags().
-
- - add synchronization between trace producer and trace consumer
-
- - port user-space bits to this facility: Documentation/vm/page-types.c
-
-What do you think about this patch? We could also further reduce the 
-patch/plugin size by factoring out some of this code into generic 
-tracing code. This will be best done when we add the 'tasks' object 
-collection to dump a tasks snapshot to the trace buffer.
-
-	Ingo
-
----------------------------->
->From dcac8cdac1d41af0336d8ed17c2cb898ba8a791f Mon Sep 17 00:00:00 2001
-From: Steven Rostedt <srostedt@redhat.com>
-Date: Fri, 8 May 2009 16:44:15 -0400
-Subject: [PATCH] tracing/mm: add page frame snapshot trace
-
-This is a prototype to dump out a snapshot of the page tables to the
-tracing buffer. Currently it is very primitive, and just writes out
-the events. There is no synchronization to not loose the events,
-so /debug/tracing/buffer_size_kb has to be large enough for all
-events to fit.
-
-We will do something about synchronization later. That is, have a way
-to read the buffer through the tracing/object/mm/page/X file and have
-the two in sync.
-
-But this is just a prototype to get the ball rolling.
-
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/trace/events/mm.h |   48 +++++++++++++
- kernel/trace/Makefile     |    1 +
- kernel/trace/trace_mm.c   |  172 +++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 221 insertions(+), 0 deletions(-)
+ arch/x86/include/asm/numa_64.h |    3 -
+ arch/x86/mm/numa_64.c          |    5 --
+ arch/x86/mm/srat_64.c          |   63 +++++++------------------------------
+ include/linux/mm.h             |    2 -
+ mm/page_alloc.c                |   69 -----------------------------------------
+ 5 files changed, 12 insertions(+), 130 deletions(-)
 
-diff --git a/include/trace/events/mm.h b/include/trace/events/mm.h
-new file mode 100644
-index 0000000..f5a1668
---- /dev/null
-+++ b/include/trace/events/mm.h
-@@ -0,0 +1,48 @@
-+#if !defined(_TRACE_MM_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _TRACE_MM_H
-+
-+#include <linux/tracepoint.h>
-+#include <linux/mm.h>
-+
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM mm
-+
-+/**
-+ * dump_pages - called by the trace page dump trigger
-+ * @pfn: page frame number
-+ * @page: pointer to the page frame
-+ *
-+ * This is a helper trace point into the dumping of the page frames.
-+ * It will record various infromation about a page frame.
-+ */
-+TRACE_EVENT(dump_pages,
-+
-+	TP_PROTO(unsigned long pfn, struct page *page),
-+
-+	TP_ARGS(pfn, page),
-+
-+	TP_STRUCT__entry(
-+		__field(	unsigned long,	pfn		)
-+		__field(	unsigned long,	flags		)
-+		__field(	unsigned long,	index		)
-+		__field(	unsigned int,	count		)
-+		__field(	unsigned int,	mapcount	)
-+	),
-+
-+	TP_fast_assign(
-+		__entry->pfn		= pfn;
-+		__entry->flags		= page->flags;
-+		__entry->count		= atomic_read(&page->_count);
-+		__entry->mapcount	= atomic_read(&page->_mapcount);
-+		__entry->index		= page->index;
-+	),
-+
-+	TP_printk("pfn=%lu flags=%lx count=%u mapcount=%u index=%lu",
-+		  __entry->pfn, __entry->flags, __entry->count,
-+		  __entry->mapcount, __entry->index)
-+);
-+
-+#endif /*  _TRACE_MM_H */
-+
-+/* This part must be outside protection */
-+#include <trace/define_trace.h>
-diff --git a/kernel/trace/Makefile b/kernel/trace/Makefile
-index 06b8585..848e5ce 100644
---- a/kernel/trace/Makefile
-+++ b/kernel/trace/Makefile
-@@ -51,5 +51,6 @@ obj-$(CONFIG_EVENT_TRACING) += trace_export.o
- obj-$(CONFIG_FTRACE_SYSCALLS) += trace_syscalls.o
- obj-$(CONFIG_EVENT_PROFILE) += trace_event_profile.o
- obj-$(CONFIG_EVENT_TRACING) += trace_events_filter.o
-+obj-$(CONFIG_EVENT_TRACING) += trace_mm.o
+Index: linux-2.6/arch/x86/include/asm/numa_64.h
+===================================================================
+--- linux-2.6.orig/arch/x86/include/asm/numa_64.h
++++ linux-2.6/arch/x86/include/asm/numa_64.h
+@@ -17,9 +17,6 @@ extern int compute_hash_shift(struct boo
+ extern void numa_init_array(void);
+ extern int numa_off;
  
- libftrace-y := ftrace.o
-diff --git a/kernel/trace/trace_mm.c b/kernel/trace/trace_mm.c
-new file mode 100644
-index 0000000..87123ed
---- /dev/null
-+++ b/kernel/trace/trace_mm.c
-@@ -0,0 +1,172 @@
-+/*
-+ * Trace mm pages
-+ *
-+ * Copyright (C) 2009 Red Hat Inc, Steven Rostedt <srostedt@redhat.com>
-+ *
-+ * Code based on Matt Mackall's /proc/[kpagecount|kpageflags] code.
-+ */
-+#include <linux/module.h>
-+#include <linux/bootmem.h>
-+#include <linux/debugfs.h>
-+#include <linux/uaccess.h>
-+
-+#include "trace_output.h"
-+
-+#define CREATE_TRACE_POINTS
-+#include <trace/events/mm.h>
-+
-+void trace_read_page_frames(unsigned long start, unsigned long end,
-+			    void (*trace)(unsigned long pfn, struct page *page))
-+{
-+	unsigned long pfn = start;
-+	struct page *page;
-+
-+	if (start > max_pfn - 1)
+-extern void srat_reserve_add_area(int nodeid);
+-extern int hotadd_percent;
+-
+ extern s16 apicid_to_node[MAX_LOCAL_APIC];
+ 
+ extern unsigned long numa_free_all_bootmem(void);
+Index: linux-2.6/arch/x86/mm/numa_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/numa_64.c
++++ linux-2.6/arch/x86/mm/numa_64.c
+@@ -272,9 +272,6 @@ void __init setup_node_bootmem(int nodei
+ 		reserve_bootmem_node(NODE_DATA(nodeid), bootmap_start,
+ 				 bootmap_pages<<PAGE_SHIFT, BOOTMEM_DEFAULT);
+ 
+-#ifdef CONFIG_ACPI_NUMA
+-	srat_reserve_add_area(nodeid);
+-#endif
+ 	node_set_online(nodeid);
+ }
+ 
+@@ -608,8 +605,6 @@ static __init int numa_setup(char *opt)
+ #ifdef CONFIG_ACPI_NUMA
+ 	if (!strncmp(opt, "noacpi", 6))
+ 		acpi_numa = -1;
+-	if (!strncmp(opt, "hotadd=", 7))
+-		hotadd_percent = simple_strtoul(opt+7, NULL, 10);
+ #endif
+ 	return 0;
+ }
+Index: linux-2.6/arch/x86/mm/srat_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/srat_64.c
++++ linux-2.6/arch/x86/mm/srat_64.c
+@@ -31,8 +31,6 @@ static nodemask_t nodes_parsed __initdat
+ static nodemask_t cpu_nodes_parsed __initdata;
+ static struct bootnode nodes[MAX_NUMNODES] __initdata;
+ static struct bootnode nodes_add[MAX_NUMNODES];
+-static int found_add_area __initdata;
+-int hotadd_percent __initdata = 0;
+ 
+ static int num_node_memblks __initdata;
+ static struct bootnode node_memblk_range[NR_NODE_MEMBLKS] __initdata;
+@@ -66,9 +64,6 @@ static __init void cutoff_node(int i, un
+ {
+ 	struct bootnode *nd = &nodes[i];
+ 
+-	if (found_add_area)
+-		return;
+-
+ 	if (nd->start < start) {
+ 		nd->start = start;
+ 		if (nd->end < nd->start)
+@@ -86,7 +81,6 @@ static __init void bad_srat(void)
+ 	int i;
+ 	printk(KERN_ERR "SRAT: SRAT not used.\n");
+ 	acpi_numa = -1;
+-	found_add_area = 0;
+ 	for (i = 0; i < MAX_LOCAL_APIC; i++)
+ 		apicid_to_node[i] = NUMA_NO_NODE;
+ 	for (i = 0; i < MAX_NUMNODES; i++)
+@@ -182,24 +176,21 @@ acpi_numa_processor_affinity_init(struct
+ 	       pxm, apic_id, node);
+ }
+ 
+-static int update_end_of_memory(unsigned long end) {return -1;}
+-static int hotadd_enough_memory(struct bootnode *nd) {return 1;}
+ #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+ static inline int save_add_info(void) {return 1;}
+ #else
+ static inline int save_add_info(void) {return 0;}
+ #endif
+ /*
+- * Update nodes_add and decide if to include add are in the zone.
+- * Both SPARSE and RESERVE need nodes_add information.
+- * This code supports one contiguous hot add area per node.
++ * Update nodes_add[]
++ * This code supports one contiguous hot add area per node
+  */
+-static int __init
+-reserve_hotadd(int node, unsigned long start, unsigned long end)
++static void __init
++update_nodes_add(int node, unsigned long start, unsigned long end)
+ {
+ 	unsigned long s_pfn = start >> PAGE_SHIFT;
+ 	unsigned long e_pfn = end >> PAGE_SHIFT;
+-	int ret = 0, changed = 0;
++	int changed = 0;
+ 	struct bootnode *nd = &nodes_add[node];
+ 
+ 	/* I had some trouble with strange memory hotadd regions breaking
+@@ -210,7 +201,7 @@ reserve_hotadd(int node, unsigned long s
+ 	   mistakes */
+ 	if ((signed long)(end - start) < NODE_MIN_SIZE) {
+ 		printk(KERN_ERR "SRAT: Hotplug area too small\n");
+-		return -1;
 +		return;
-+
-+	if (end > max_pfn - 1)
-+		end = max_pfn - 1;
-+
-+	while (pfn < end) {
-+		page = NULL;
-+		if (pfn_valid(pfn))
-+			page = pfn_to_page(pfn);
-+		pfn++;
-+		if (page)
-+			trace(pfn, page);
-+	}
-+}
-+
-+static void trace_do_dump_pages(unsigned long pfn, struct page *page)
-+{
-+	trace_dump_pages(pfn, page);
-+}
-+
-+static ssize_t
-+trace_mm_trigger_read(struct file *filp, char __user *ubuf, size_t cnt,
-+		 loff_t *ppos)
-+{
-+	return simple_read_from_buffer(ubuf, cnt, ppos, "0\n", 2);
-+}
-+
-+
-+static ssize_t
-+trace_mm_trigger_write(struct file *filp, const char __user *ubuf, size_t cnt,
-+		       loff_t *ppos)
-+{
-+	unsigned long val, start, end;
-+	char buf[64];
-+	int ret;
-+
-+	if (cnt >= sizeof(buf))
-+		return -EINVAL;
-+
-+	if (copy_from_user(&buf, ubuf, cnt))
-+		return -EFAULT;
-+
-+	if (tracing_update_buffers() < 0)
-+		return -ENOMEM;
-+
-+	if (trace_set_clr_event("mm", "dump_pages", 1))
-+		return -EINVAL;
-+
-+	buf[cnt] = 0;
-+
-+	ret = strict_strtol(buf, 10, &val);
-+	if (ret < 0)
-+		return ret;
-+
-+	start = *ppos;
-+	if (val < 0)
-+		end = max_pfn - 1;
-+	else
-+		end = start + val;
-+
-+	trace_read_page_frames(start, end, trace_do_dump_pages);
-+
-+	*ppos += cnt;
-+
-+	return cnt;
-+}
-+
-+static const struct file_operations trace_mm_fops = {
-+	.open		= tracing_open_generic,
-+	.read		= trace_mm_trigger_read,
-+	.write		= trace_mm_trigger_write,
-+};
-+
-+/* move this into trace_objects.c when that file is created */
-+static struct dentry *trace_objects_dir(void)
-+{
-+	static struct dentry *d_objects;
-+	struct dentry *d_tracer;
-+
-+	if (d_objects)
-+		return d_objects;
-+
-+	d_tracer = tracing_init_dentry();
-+	if (!d_tracer)
-+		return NULL;
-+
-+	d_objects = debugfs_create_dir("objects", d_tracer);
-+	if (!d_objects)
-+		pr_warning("Could not create debugfs "
-+			   "'objects' directory\n");
-+
-+	return d_objects;
-+}
-+
-+
-+static struct dentry *trace_objects_mm_dir(void)
-+{
-+	static struct dentry *d_mm;
-+	struct dentry *d_objects;
-+
-+	if (d_mm)
-+		return d_mm;
-+
-+	d_objects = trace_objects_dir();
-+	if (!d_objects)
-+		return NULL;
-+
-+	d_mm = debugfs_create_dir("mm", d_objects);
-+	if (!d_mm)
-+		pr_warning("Could not create 'objects/mm' directory\n");
-+
-+	return d_mm;
-+}
-+
-+static struct dentry *trace_objects_mm_pages_dir(void)
-+{
-+	static struct dentry *d_pages;
-+	struct dentry *d_mm;
-+
-+	if (d_pages)
-+		return d_pages;
-+
-+	d_mm = trace_objects_mm_dir();
-+	if (!d_mm)
-+		return NULL;
-+
-+	d_pages = debugfs_create_dir("pages", d_mm);
-+	if (!d_pages)
-+		pr_warning("Could not create debugfs "
-+			   "'objects/mm/pages' directory\n");
-+
-+	return d_pages;
-+}
-+
-+static __init int trace_objects_mm_init(void)
-+{
-+	struct dentry *d_pages;
-+
-+	d_pages = trace_objects_mm_pages_dir();
-+	if (!d_pages)
-+		return 0;
-+
-+	trace_create_file("trigger", 0600, d_pages, NULL,
-+			  &trace_mm_fops);
-+
-+	return 0;
-+}
-+fs_initcall(trace_objects_mm_init);
+ 	}
+ 
+ 	/* This check might be a bit too strict, but I'm keeping it for now. */
+@@ -218,12 +209,7 @@ reserve_hotadd(int node, unsigned long s
+ 		printk(KERN_ERR
+ 			"SRAT: Hotplug area %lu -> %lu has existing memory\n",
+ 			s_pfn, e_pfn);
+-		return -1;
+-	}
+-
+-	if (!hotadd_enough_memory(&nodes_add[node]))  {
+-		printk(KERN_ERR "SRAT: Hotplug area too large\n");
+-		return -1;
++		return;
+ 	}
+ 
+ 	/* Looks good */
+@@ -245,11 +231,9 @@ reserve_hotadd(int node, unsigned long s
+ 			printk(KERN_ERR "SRAT: Hotplug zone not continuous. Partly ignored\n");
+ 	}
+ 
+-	ret = update_end_of_memory(nd->end);
+-
+ 	if (changed)
+-	 	printk(KERN_INFO "SRAT: hot plug zone found %Lx - %Lx\n", nd->start, nd->end);
+-	return ret;
++		printk(KERN_INFO "SRAT: hot plug zone found %Lx - %Lx\n",
++				 nd->start, nd->end);
+ }
+ 
+ /* Callback for parsing of the Proximity Domain <-> Memory Area mappings */
+@@ -310,13 +294,10 @@ acpi_numa_memory_affinity_init(struct ac
+ 	       start, end);
+ 	e820_register_active_regions(node, start >> PAGE_SHIFT,
+ 				     end >> PAGE_SHIFT);
+-	push_node_boundaries(node, nd->start >> PAGE_SHIFT,
+-						nd->end >> PAGE_SHIFT);
+ 
+-	if ((ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) &&
+-	    (reserve_hotadd(node, start, end) < 0)) {
+-		/* Ignore hotadd region. Undo damage */
+-		printk(KERN_NOTICE "SRAT: Hotplug region ignored\n");
++	if (ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) {
++		update_nodes_add(node, start, end);
++		/* restore nodes[node] */
+ 		*nd = oldnode;
+ 		if ((nd->start | nd->end) == 0)
+ 			node_clear(node, nodes_parsed);
+@@ -510,26 +491,6 @@ static int null_slit_node_compare(int a,
+ }
+ #endif /* CONFIG_NUMA_EMU */
+ 
+-void __init srat_reserve_add_area(int nodeid)
+-{
+-	if (found_add_area && nodes_add[nodeid].end) {
+-		u64 total_mb;
+-
+-		printk(KERN_INFO "SRAT: Reserving hot-add memory space "
+-				"for node %d at %Lx-%Lx\n",
+-			nodeid, nodes_add[nodeid].start, nodes_add[nodeid].end);
+-		total_mb = (nodes_add[nodeid].end - nodes_add[nodeid].start)
+-					>> PAGE_SHIFT;
+-		total_mb *= sizeof(struct page);
+-		total_mb >>= 20;
+-		printk(KERN_INFO "SRAT: This will cost you %Lu MB of "
+-				"pre-allocated memory.\n", (unsigned long long)total_mb);
+-		reserve_bootmem_node(NODE_DATA(nodeid), nodes_add[nodeid].start,
+-			       nodes_add[nodeid].end - nodes_add[nodeid].start,
+-			       BOOTMEM_DEFAULT);
+-	}
+-}
+-
+ int __node_distance(int a, int b)
+ {
+ 	int index;
+Index: linux-2.6/include/linux/mm.h
+===================================================================
+--- linux-2.6.orig/include/linux/mm.h
++++ linux-2.6/include/linux/mm.h
+@@ -1032,8 +1032,6 @@ extern void add_active_range(unsigned in
+ 					unsigned long end_pfn);
+ extern void remove_active_range(unsigned int nid, unsigned long start_pfn,
+ 					unsigned long end_pfn);
+-extern void push_node_boundaries(unsigned int nid, unsigned long start_pfn,
+-					unsigned long end_pfn);
+ extern void remove_all_active_ranges(void);
+ extern unsigned long absent_pages_in_range(unsigned long start_pfn,
+ 						unsigned long end_pfn);
+Index: linux-2.6/mm/page_alloc.c
+===================================================================
+--- linux-2.6.orig/mm/page_alloc.c
++++ linux-2.6/mm/page_alloc.c
+@@ -150,10 +150,6 @@ static unsigned long __meminitdata dma_r
+   static int __meminitdata nr_nodemap_entries;
+   static unsigned long __meminitdata arch_zone_lowest_possible_pfn[MAX_NR_ZONES];
+   static unsigned long __meminitdata arch_zone_highest_possible_pfn[MAX_NR_ZONES];
+-#ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
+-  static unsigned long __meminitdata node_boundary_start_pfn[MAX_NUMNODES];
+-  static unsigned long __meminitdata node_boundary_end_pfn[MAX_NUMNODES];
+-#endif /* CONFIG_MEMORY_HOTPLUG_RESERVE */
+   static unsigned long __initdata required_kernelcore;
+   static unsigned long __initdata required_movablecore;
+   static unsigned long __meminitdata zone_movable_pfn[MAX_NUMNODES];
+@@ -3121,64 +3117,6 @@ void __init sparse_memory_present_with_a
+ }
+ 
+ /**
+- * push_node_boundaries - Push node boundaries to at least the requested boundary
+- * @nid: The nid of the node to push the boundary for
+- * @start_pfn: The start pfn of the node
+- * @end_pfn: The end pfn of the node
+- *
+- * In reserve-based hot-add, mem_map is allocated that is unused until hotadd
+- * time. Specifically, on x86_64, SRAT will report ranges that can potentially
+- * be hotplugged even though no physical memory exists. This function allows
+- * an arch to push out the node boundaries so mem_map is allocated that can
+- * be used later.
+- */
+-#ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
+-void __init push_node_boundaries(unsigned int nid,
+-		unsigned long start_pfn, unsigned long end_pfn)
+-{
+-	mminit_dprintk(MMINIT_TRACE, "zoneboundary",
+-			"Entering push_node_boundaries(%u, %lu, %lu)\n",
+-			nid, start_pfn, end_pfn);
+-
+-	/* Initialise the boundary for this node if necessary */
+-	if (node_boundary_end_pfn[nid] == 0)
+-		node_boundary_start_pfn[nid] = -1UL;
+-
+-	/* Update the boundaries */
+-	if (node_boundary_start_pfn[nid] > start_pfn)
+-		node_boundary_start_pfn[nid] = start_pfn;
+-	if (node_boundary_end_pfn[nid] < end_pfn)
+-		node_boundary_end_pfn[nid] = end_pfn;
+-}
+-
+-/* If necessary, push the node boundary out for reserve hotadd */
+-static void __meminit account_node_boundary(unsigned int nid,
+-		unsigned long *start_pfn, unsigned long *end_pfn)
+-{
+-	mminit_dprintk(MMINIT_TRACE, "zoneboundary",
+-			"Entering account_node_boundary(%u, %lu, %lu)\n",
+-			nid, *start_pfn, *end_pfn);
+-
+-	/* Return if boundary information has not been provided */
+-	if (node_boundary_end_pfn[nid] == 0)
+-		return;
+-
+-	/* Check the boundaries and update if necessary */
+-	if (node_boundary_start_pfn[nid] < *start_pfn)
+-		*start_pfn = node_boundary_start_pfn[nid];
+-	if (node_boundary_end_pfn[nid] > *end_pfn)
+-		*end_pfn = node_boundary_end_pfn[nid];
+-}
+-#else
+-void __init push_node_boundaries(unsigned int nid,
+-		unsigned long start_pfn, unsigned long end_pfn) {}
+-
+-static void __meminit account_node_boundary(unsigned int nid,
+-		unsigned long *start_pfn, unsigned long *end_pfn) {}
+-#endif
+-
+-
+-/**
+  * get_pfn_range_for_nid - Return the start and end page frames for a node
+  * @nid: The nid to return the range for. If MAX_NUMNODES, the min and max PFN are returned.
+  * @start_pfn: Passed by reference. On return, it will have the node start_pfn.
+@@ -3203,9 +3141,6 @@ void __meminit get_pfn_range_for_nid(uns
+ 
+ 	if (*start_pfn == -1UL)
+ 		*start_pfn = 0;
+-
+-	/* Push the node boundaries out if requested */
+-	account_node_boundary(nid, start_pfn, end_pfn);
+ }
+ 
+ /*
+@@ -3810,10 +3745,6 @@ void __init remove_all_active_ranges(voi
+ {
+ 	memset(early_node_map, 0, sizeof(early_node_map));
+ 	nr_nodemap_entries = 0;
+-#ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
+-	memset(node_boundary_start_pfn, 0, sizeof(node_boundary_start_pfn));
+-	memset(node_boundary_end_pfn, 0, sizeof(node_boundary_end_pfn));
+-#endif /* CONFIG_MEMORY_HOTPLUG_RESERVE */
+ }
+ 
+ /* Compare two active node_active_regions */
