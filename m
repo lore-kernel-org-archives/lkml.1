@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755139AbZEIHse@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755365AbZEIHsv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755139AbZEIHse (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 03:48:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751970AbZEIHpz
+	id S1755365AbZEIHsv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 03:48:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752245AbZEIHp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 03:45:55 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:51936 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751505AbZEIHpj (ORCPT
+	Sat, 9 May 2009 03:45:57 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:64707 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751431AbZEIHpj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sat, 9 May 2009 03:45:39 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=hx1SS8B8MT02bov4kbjxbpzVUNGs36qbNBOvnavhTNSZxzQTDSvvRVaemjOFGoS6FJ
-         6X2G7vBfSVadiBXRyf+6/OthTiFBKOHRSNVlVwWfcgL3V7traHGw8hDmu7a0gO3mROmH
-         wA84HNIxCfwbLHfjZJcdDblYmnonTayvPB70U=
+        b=jjebis+J1ypZ3ABumqmJHlJ50hrYpq7zK7tmh+AGKKaWbliQZT1KoC9YRY2GVZXxYj
+         9fyhloD3FIYwf4JgaQ6T8A2O4CQe8PvfKEy/ef9HWcDwSNS6py9Pjp5q5MvFFhAVvlWD
+         hODj9qtXkXrIo4GgR3sjUDt0JNF9bCmAFKSEk=
 From: Borislav Petkov <petkovbb@googlemail.com>
 To: <bzolnier@gmail.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 06/14] ide-floppy/ide_floppy_get_flexible_disk_page: use local buffer
-Date: Sat,  9 May 2009 09:45:26 +0200
-Message-Id: <1241855134-4984-7-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 07/14] ide-floppy/ide_floppy_get_sfrp_bit: use local buffer
+Date: Sat,  9 May 2009 09:45:27 +0200
+Message-Id: <1241855134-4984-8-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1241855134-4984-1-git-send-email-petkovbb@gmail.com>
 References: <1241855134-4984-1-git-send-email-petkovbb@gmail.com>
@@ -33,57 +33,33 @@ There should be no functional change resulting from this patch.
 
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-floppy.c |   20 ++++++++++----------
- 1 files changed, 10 insertions(+), 10 deletions(-)
+ drivers/ide/ide-floppy_ioctl.c |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
-index be21cf2..060c893 100644
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -311,33 +311,33 @@ static int ide_floppy_get_flexible_disk_page(ide_drive_t *drive,
+diff --git a/drivers/ide/ide-floppy_ioctl.c b/drivers/ide/ide-floppy_ioctl.c
+index 9c2518d..0d2c9f0 100644
+--- a/drivers/ide/ide-floppy_ioctl.c
++++ b/drivers/ide/ide-floppy_ioctl.c
+@@ -117,16 +117,17 @@ static void ide_floppy_create_format_unit_cmd(struct ide_atapi_pc *pc, int b,
+ static int ide_floppy_get_sfrp_bit(ide_drive_t *drive, struct ide_atapi_pc *pc)
  {
  	struct ide_disk_obj *floppy = drive->driver_data;
- 	struct gendisk *disk = floppy->disk;
--	u8 *page;
-+	u8 *page, buf[40];
- 	int capacity, lba_capacity;
- 	u16 transfer_rate, sector_size, cyls, rpm;
- 	u8 heads, sectors;
++	u8 buf[20];
  
- 	ide_floppy_create_mode_sense_cmd(pc, IDEFLOPPY_FLEXIBLE_DISK_PAGE);
+ 	drive->atapi_flags &= ~IDE_AFLAG_SRFP;
  
--	if (ide_queue_pc_tail(drive, disk, pc, pc->buf, pc->req_xfer)) {
-+	if (ide_queue_pc_tail(drive, disk, pc, buf, pc->req_xfer)) {
- 		printk(KERN_ERR PFX "Can't get flexible disk page params\n");
+ 	ide_floppy_create_mode_sense_cmd(pc, IDEFLOPPY_CAPABILITIES_PAGE);
+ 	pc->flags |= PC_FLAG_SUPPRESS_ERROR;
+ 
+-	if (ide_queue_pc_tail(drive, floppy->disk, pc, pc->buf, pc->req_xfer))
++	if (ide_queue_pc_tail(drive, floppy->disk, pc, buf, pc->req_xfer))
  		return 1;
- 	}
  
--	if (pc->buf[3] & 0x80)
-+	if (buf[3] & 0x80)
- 		drive->dev_flags |= IDE_DFLAG_WP;
- 	else
- 		drive->dev_flags &= ~IDE_DFLAG_WP;
+-	if (pc->buf[8 + 2] & 0x40)
++	if (buf[8 + 2] & 0x40)
+ 		drive->atapi_flags |= IDE_AFLAG_SRFP;
  
- 	set_disk_ro(disk, !!(drive->dev_flags & IDE_DFLAG_WP));
- 
--	page = &pc->buf[8];
-+	page = &buf[8];
- 
--	transfer_rate = be16_to_cpup((__be16 *)&pc->buf[8 + 2]);
--	sector_size   = be16_to_cpup((__be16 *)&pc->buf[8 + 6]);
--	cyls          = be16_to_cpup((__be16 *)&pc->buf[8 + 8]);
--	rpm           = be16_to_cpup((__be16 *)&pc->buf[8 + 28]);
--	heads         = pc->buf[8 + 4];
--	sectors       = pc->buf[8 + 5];
-+	transfer_rate = be16_to_cpup((__be16 *)&buf[8 + 2]);
-+	sector_size   = be16_to_cpup((__be16 *)&buf[8 + 6]);
-+	cyls          = be16_to_cpup((__be16 *)&buf[8 + 8]);
-+	rpm           = be16_to_cpup((__be16 *)&buf[8 + 28]);
-+	heads         = buf[8 + 4];
-+	sectors       = buf[8 + 5];
- 
- 	capacity = cyls * heads * sectors * sector_size;
- 
+ 	return 0;
 -- 
 1.6.2.4
 
