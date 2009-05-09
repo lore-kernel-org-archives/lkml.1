@@ -1,125 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753599AbZEHFjc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754116AbZEHF6Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753599AbZEHFjc (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 01:39:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751211AbZEHFjW
+	id S1754116AbZEHF6Y (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 01:58:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752421AbZEHF6K
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 01:39:22 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:23083 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751209AbZEHFjV (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 01:39:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=V5WwGHy1L9s1TXuVwTWk+PGtzwpX33pwHaX63P8i9PqQdFMk+vRxEigB2irw3MRU4r
-         Oy9ONaIGvtN6TXThfHKGZea3LoWnDQIRzfM26RUphhJ0QSB9ZcF2tuaWCJsFd6/nL3kN
-         aD84sPmXBTwk29MyV6sPrknk5CFKtlSIudass=
-Subject: Re: [RFC 1/1] seccomp: Add bitmask of allowed system calls.
-From: Tom Zanussi <tzanussi@gmail.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Adam Langley <agl@google.com>, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Li Zefan <lizf@cn.fujitsu.com>, Steven Rostedt <rostedt@goodmis.org>,
-       linux-kernel@vger.kernel.org, markus@google.com
-In-Reply-To: <20090507230021.GC6472@nowhere>
-References: <396556a20805301217k293e5718h6bbf02b234897235@europa>
-	 <20090507221447.GE28770@elte.hu>
-	 <a84d7bc60905071534l1e65f216mfd9330e93e4da4e2@mail.gmail.com>
-	 <20090507230021.GC6472@nowhere>
-Content-Type: text/plain
-Date: Fri, 08 May 2009 00:32:25 -0500
-Message-Id: <1241760745.9416.37.camel@tropicana>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 
+	Fri, 8 May 2009 01:58:10 -0400
+Received: from 76-10-159-13.dsl.teksavvy.com ([76.10.159.13]:47253 "EHLO
+	qhoops.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752685AbZEHF6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 8 May 2009 01:58:08 -0400
+X-Greylist: delayed 446 seconds by postgrey-1.27 at vger.kernel.org; Fri, 08 May 2009 01:58:08 EDT
+Message-ID: <6818156.7441241761835737.JavaMail.james@prod3.pk.lan>
+MIME-Version: 1.0
+X-UserIsAuth: true
+Date: Sat, 09 May 2009 01:50:12 -0400
+From: Jason Daly <jason2@primarykey.ca>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+CC: Karl Hiramoto <karl@hiramoto.org>,
+       "ath9k-devel@lists.ath9k.org" <ath9k-devel@venema.h4ckr.net>,
+       linux-wireless <linux-wireless@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [ath9k-devel] New kernel recommendations for ath9k
+References: <43e72e890905070104u59eebcceu18718a733e388cc9@mail.gmail.com> 	<4A02B1CA.3060708@hiramoto.org> <43e72e890905071020v26857c52p3abea96be04ef1d9@mail.gmail.com>
+In-Reply-To: <43e72e890905071020v26857c52p3abea96be04ef1d9@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-P3Scan: v2.3.2 by Jack S. Lai. No outbound virus detected.
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-08 at 01:00 +0200, Frederic Weisbecker wrote:
-> On Thu, May 07, 2009 at 03:34:58PM -0700, Adam Langley wrote:
-> > > That assessment is incorrect, there's no difference between safety
-> > > here really.
-> > >
-> > > LSM cannot magically inspect user-space memory either when multiple
-> > > threads may access it. The point would be to define filters for
-> > > system call _arguments_, which are inherently thread-local and safe.
-> > 
-> > If I hook security_operations.socket_connect, I can validate the struct
-> > sockaddr after the final copy_from_user. However, since the sockaddr lives in
-> > userspace memory, if I try and validate it from ftrace SYSCALL_ENTER, I can't
-> > know that it won't change before sys_connect reads it again.
-> > 
-> > Because of that, there are system calls which an LSM hook can safely accept
-> > that an ftrace hook cannot. However, as you point out, any arguments passed in
-> > registers are inheriently safe and these may be sufficiently powerful.
-> > 
-> > > There are two problems with the bitmap scheme, which i also
-> > > suggested in a previous thread but then found it to be lacking:
-> > >
-> > > 1) enumeration: you define a bitmap. That will be problematic
-> > >   between compat and native 64-bit (both have different syscall
-> > >   vectors).
-> > 
-> > I /think/ it works out, but I've been bitten before with subtle 32/64 bit
-> > compat issues and accept that it's a bit ugly.
-> > 
-> > > 2) flexibility. It's an on/off selection per syscall. With the
-> > >   filter we have on, off, or filtered. That's a _whole_ lot more
-> > >   flexible.
-> > 
-> > Absolutely.
-> > 
-> > Is there a git tree that I can pull this parsing code from?
-> > (git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> > maybe?). I can patch in the seccomp-on-ftrace work and try building the
-> > filtering on top of that. I'll see how it turns out anyway.
-> 
-> 
-> Hi,
-> 
-> The most uptodate one is:
-> git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git
-> on the tracing/filters topic.
-> 
-> See kernel/trace/trace_events_filter.c
-> 
-> You might want to reuse some current syscall tracing facility.
-> An automated resolution table is built on bootime, you can look
-> at the end of arch/x86/kernel/ftrace.c
-> 
-> This table links each syscalls nr to the matching attribute entry of syscall
-> in which you can find:
-> 
-> - parameters names
-> - parameters types
-> - syscall name
-> 
- 
-I guess it would be easier for seccomp to make use of the filtering and
-reuse the syscall tracing facility if we added filtering to the syscall
-tracer first.  It would be useful to do for the syscall tracer anyway,
-regardless of whether it (or something similar) ended up being used by
-seccomp.
+Thanks for the kernel info.
 
-Frederic, did you have any plans for that?  If not, I can take a look
-when I get the chance...
+How do you configure hostapd to work in N mode with ath9k?  Currently 
+the hw_mode parameter found in hostapd.conf does not accept anything 
+greater than g.
 
-Tom
+Thanks
+-JD
 
-> You can look at the hooks in include/linux/syscall.h:
-> The sections inside
-> #ifdef CONFIG_FTRACE_SYSCALLS
+Luis R. Rodriguez wrote:
+> On Thu, May 7, 2009 at 3:02 AM, Karl Hiramoto <karl@hiramoto.org> wrote:
+>> Luis R. Rodriguez wrote:
+>>> For those not subscribed to the ath9k wiki on wireless.kernel.org [1]
+>>> (which we recommend you do if you're a user) here's a quick note to
+>>> let you know our latest kernel recommendations for using ath9k:
+>>>
+>>>  *  >= 2.6.27.22
+>>>  *  >= 2.6.28.10
+>>>  *  2.6.29
+>>>
+>>> If you want 802.11n support or AP support you'll want at least 2.6.29.
+>>> If you happen to have one of our new 1x1 AR9285 devices (all AR9285
+>>> devices are 1x1) then you'll need at least 2.6.29. If you want to
+>>> start using ath9k on APs with AHB you will need at least 2.6.30 (still
+>>> in RC series).
+>>>
+>>> As usual if you happen to be stuck on older kernels for one reason or
+>>> another you can always use compat-wireless [2] and if that happens to
+>>> be a little too bleeding edge we have now compat-wireless releases for
+>>> stable kernel releases, starting as of the 2.6.30-rc series [3].
+>>>
+>>>  Luis
+>>>
+>>> [1] http://wireless.kernel.org/en/users/Drivers/ath9k
+>>> [2] http://wireless.kernel.org/en/users/Download
+>>> [3] http://wireless.kernel.org/en/users/Download/stable
+>>>
+>> Thanks for the update.  If i want to use multiple AP's with Ath9k it it
+>> still best to use wireless-testing?  Is multiple AP support in 2.6.30-rc
+>> series net-next or wireless-next?
 > 
-> Well, it's a bit insane to read, so you can also look
-> at include/trace/syscall.h and kernel/trace/trace_syscalls.c and
-> see how it is used and how it could be reused.
+> Yeah wireless-testing is best for that. I should also mention that if
+> you want to use AP mode you want to be at least on 2.6.29 (your own
+> kernel, not the compat-wireless one) if you care about Power Save
+> buffering on the AP as otherwise even if you use a compat-wireless
+> with code from > 2.6.29 those frames will be dropped. IIRC its due to
+> the way we use skb->cb for this and there not being a clean way to
+> backport this (so we just drop them).
 > 
-> 
-> Thanks,
-> Frederic.
-> 
+>   Luis
+> _______________________________________________
+> ath9k-devel mailing list
+> ath9k-devel@lists.ath9k.org
+> https://lists.ath9k.org/mailman/listinfo/ath9k-devel
+
 
