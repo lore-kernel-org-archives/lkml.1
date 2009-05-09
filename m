@@ -1,81 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756243AbZEIBO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757494AbZEIBTU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756243AbZEIBO6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 8 May 2009 21:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753722AbZEIBOu
+	id S1757494AbZEIBTU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 8 May 2009 21:19:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754517AbZEIBTM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 8 May 2009 21:14:50 -0400
-Received: from SpacedOut.fries.net ([67.64.210.234]:59431 "EHLO
-	SpacedOut.fries.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753058AbZEIBOt (ORCPT
+	Fri, 8 May 2009 21:19:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:54563 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754281AbZEIBTL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 8 May 2009 21:14:49 -0400
-Date: Fri, 8 May 2009 19:34:15 -0500
-From: David Fries <david@fries.net>
-To: Ondrej Zary <linux@rainbow-software.org>
-Cc: john stultz <johnstul@us.ibm.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@tglx.de>
-Subject: Re: TSC marked unstable on suspend and resume
-Message-ID: <20090509003415.GJ4162@spacedout.fries.net>
-References: <20090221023943.GA4894@spacedout.fries.net> <20090429232523.GO2862@spacedout.fries.net> <1241062653.7270.44.camel@localhost.localdomain> <200905082353.15962.linux@rainbow-software.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905082353.15962.linux@rainbow-software.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Greylist: Sender is SPF-compliant, not delayed by milter-greylist-3.0 (SpacedOut.fries.net [127.0.0.1]); Fri, 08 May 2009 19:34:21 -0500 (CDT)
+	Fri, 8 May 2009 21:19:11 -0400
+Date: Fri, 8 May 2009 18:15:59 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Ron <ron@debian.org>
+Cc: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] fix for sched_clock() when using jiffies
+Message-Id: <20090508181559.4750800e.akpm@linux-foundation.org>
+In-Reply-To: <20090509004009.GZ5417@homer.shelbyville.oz>
+References: <20081126150645.GA28153@homer.shelbyville.oz>
+	<1227712598.4454.199.camel@twins>
+	<20081126153152.GB28153@homer.shelbyville.oz>
+	<20081128144039.GG28138@elte.hu>
+	<20090508132449.GV5417@homer.shelbyville.oz>
+	<20090508200444.GA22132@homer.shelbyville.oz>
+	<20090508160142.ad89944f.akpm@linux-foundation.org>
+	<20090509004009.GZ5417@homer.shelbyville.oz>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 11:53:12PM +0200, Ondrej Zary wrote:
-> On Thursday 30 April 2009 05:37:33 john stultz wrote:
-> > On Wed, 2009-04-29 at 18:25 -0500, David Fries wrote:
-> > > On Wed, Apr 29, 2009 at 09:45:40AM -0700, john stultz wrote:
-> > > > On Fri, Feb 20, 2009 at 7:39 PM, David Fries <david@fries.net> wrote:
-> > > > > I'm getting TSC marked as unsable on hibernate to disk with
-> > > > > 2.6.29-rc3. ?The last kernel I ran 2.6.24.4 ran 300+ days without a
-> > > > > problem and does not loose TSC on hibernate.
-> > > > >
-> > > > > I'm hibernating with `echo disk > /sys/power/state`.
-> > > > > These look like the relavant messages,
-> > > > >
-> > > > > CPU 0 irqstacks, hard=c0379000 soft=c0378000
-> > > > > PID hash table entries: 1024 (order: 10, 4096 bytes)
-> > > > > Fast TSC calibration using PIT
-> > > > > Detected 300.705 MHz processor.
-> > > > > Calibrating delay loop (skipped), value calculated using timer
-> > > > > frequency.. 601.41 BogoMIPS (lpj=300705) hibernate to disk,
-> > > > > Restarting tasks ... done.
-> > > > > Clocksource tsc unstable (delta = 499883531 ns)
-> > > > >
-> > > > > model name      : AMD-K6(tm) 3D processor
-> > > > > Host bridge: VIA Technologies, Inc. VT82C598 [Apollo MVP3] (rev 04)
-> > > >
-> > > > Hmm. Seems like the clocksource watchdog is having some problem
-> > > > handling state around hibernate.
-> >
-> > Yea. This seems to be the case here. There's watchdog code and variables
-> > to handle resume properly, but there isn't a corresponding suspend hook,
-> > so the resume path doesn't actually change anything.
-> >
-> > Here's a patch you can try, I only had time to compile test it today, so
-> > its untested. Hopefully I didn't miss anything obvious.
+On Sat, 9 May 2009 10:10:09 +0930 Ron <ron@debian.org> wrote:
+
+> On Fri, May 08, 2009 at 04:01:42PM -0700, Andrew Morton wrote:
+> > On Sat, 9 May 2009 05:34:44 +0930
+> > Ron <ron@debian.org> wrote:
+> > 
+> > >  
+> > > Account for the initial offset to the jiffy count.
+> > > 
+> > > Signed-off-by: Ron Lee <ron@debian.org>
+> > > 
+> > > ---
+> > >  kernel/sched_clock.c |    3 ++-
+> > >  1 files changed, 2 insertions(+), 1 deletions(-)
+> > > 
+> > > diff --git a/kernel/sched_clock.c b/kernel/sched_clock.c
+> > > index a0b0852..a1567b1 100644
+> > > --- a/kernel/sched_clock.c
+> > > +++ b/kernel/sched_clock.c
+> > > @@ -37,7 +37,8 @@
+> > >   */
+> > >  unsigned long long __attribute__((weak)) sched_clock(void)
+> > >  {
+> > > -	return (unsigned long long)jiffies * (NSEC_PER_SEC / HZ);
+> > > +	return (unsigned long long)(jiffies - INITIAL_JIFFIES)
+> > > +					* (NSEC_PER_SEC / HZ);
+> > >  }
+> > >  
+> > >  static __read_mostly int sched_clock_running;
+> > 
+> > Why?  I assume that you encountered some problem which was fixed
+> > by this patch.  What was that problem?
 > 
-> I have the same problem and the patch does not solve it for me too.
-
-What CPU and motherboard chipset?
-
-> I noticed that after resume, ping is unable to measue short time correctly:
-> 64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.000 ms
+> This was a resend of a patch that seemed to get a thumbs up, except
+> for whitespace damage in what I originally sent, but which apparently
+> then didn't get applied.  The original context to it was:
 > 
-> "echo tsc >/sys/devices/system/clocksource/clocksource0/current_clocksource" 
-> fixes the problem until next hibernation:
-> 64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.223 ms
+>  I'm in the process of updating a port for an ARM based chip we've been
+>  working on, from 2.6.22-rc4'ish to the current HEAD of Linus' tree, and
+>  I started seeing the following:
+> 
+>  [    0.000000] PID hash table entries: 512 (order: 9, 2048 bytes)
+>  [42949372.970000] Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+> 
+>  The reason appears to be that printk_clock() has been replaced with a
+>  call to cpu_clock, which in our case currently falls back to the default
+>  (weak) implementation of sched_clock() that uses jiffies -- but doesn't
+>  account for the initial offset of the jiffy count.  The following simple
+>  patch fixes it for me, in line with what printk_clock used to do.
 
-I didn't know about that, thanks for posting the tip.
+Removing printk_clock() always seemed a mildly wrong idea to me.
 
--- 
-David Fries <david@fries.net>
-http://fries.net/~david/ (PGP encryption key available)
+I'm sure we fixed this printk-timestamping ages and ages ago.  Maybe it
+came back, or maybe it's somehow specific to your setup?
+
+It's trivial to test, but I don't have the time to build and boot a
+kernel right now :(
+
+If the printk oddity is indeed being seen on all kernels then I'd
+suggest that it be fixed right there in vprintk().  Because changing
+sched_clock() adds unneeded overhead and partially defeats the intent
+of INITIAL_JIFFIES, which is to catch code which is incorrectly
+handling jiffy wrapping.
+
