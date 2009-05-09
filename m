@@ -1,59 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752821AbZEIJYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754546AbZEIJZT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752821AbZEIJYe (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 05:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753325AbZEIJYN
+	id S1754546AbZEIJZT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 05:25:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751440AbZEIJZA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 05:24:13 -0400
-Received: from casper.infradead.org ([85.118.1.10]:56454 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753038AbZEIJYL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 05:24:11 -0400
-Subject: Re: IO scheduler based IO Controller V2
-From: Peter Zijlstra <peterz@infradead.org>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Andrea Righi <righi.andrea@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
-       m-ikeda@ds.jp.nec.com
-In-Reply-To: <20090508215618.GJ7293@redhat.com>
-References: <20090506203228.GH8180@redhat.com> <20090506213453.GC4282@linux>
-	 <20090506215235.GJ8180@redhat.com> <20090507090450.GA4613@linux>
-	 <20090507141126.GA9463@redhat.com> <20090507144501.GB9463@redhat.com>
-	 <20090507153642.GC9463@redhat.com> <20090507221900.GA29774@linux>
-	 <20090508180951.GG7293@redhat.com> <20090508200458.GA3708@linux>
-	 <20090508215618.GJ7293@redhat.com>
-Content-Type: text/plain
-Date: Sat, 09 May 2009 11:22:52 +0200
-Message-Id: <1241860972.6316.91.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Sat, 9 May 2009 05:25:00 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56327 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751386AbZEIJY7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 05:24:59 -0400
+Date: Sat, 9 May 2009 11:24:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: =?iso-8859-1?Q?Fr=E9d=E9ric?= Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Li Zefan <lizf@cn.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [patch] tracing/mm: add page frame snapshot trace
+Message-ID: <20090509092431.GB13784@elte.hu>
+References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu> <20090508124433.GB15949@localhost> <20090509062758.GB21354@elte.hu> <20090509091325.GA7994@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090509091325.GA7994@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-08 at 17:56 -0400, Vivek Goyal wrote:
->   So, we shall have to come up with something better, I think Dhaval was
->   implementing upper limit for cpu controller. May be PeterZ and Dhaval can
->   give us some pointers how did they manage to implement both proportional
->   and max bw control with the help of a single tree while maintaining the
->   notion of prio with-in cgroup.
 
-We don't do max bandwidth control in the SCHED_OTHER bits as I oppose to
-making it non work conserving.
+* Wu Fengguang <fengguang.wu@intel.com> wrote:
 
-SCHED_FIFO/RR do constant bandwidth things and are always scheduled in
-favour of SCHED_OTHER. 
+> Hi Ingo,
+> 
+> On Sat, May 09, 2009 at 02:27:58PM +0800, Ingo Molnar wrote:
+> > 
+> > * Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > 
+> > > > So this should be done in cooperation with instrumentation 
+> > > > folks, while improving _all_ of Linux instrumentation in 
+> > > > general. Or, if you dont have the time/interest to work with us 
+> > > > on that, it should not be done at all. Not having the 
+> > > > resources/interest to do something properly is not a license to 
+> > > > introduce further instrumentation crap into Linux.
+> > > 
+> > > I'd be glad to work with you on the 'object collections' ftrace 
+> > > interfaces.  Maybe next month. For now my time have been allocated 
+> > > for the hwpoison work, sorry!
+> > 
+> > No problem - our offer still stands: we are glad to help out with 
+> > the instrumentation side bits. We'll even write all the patches for 
+> > you, just please help us out with making it maximally useful to 
+> > _you_ :-)
+> 
+> Thank you very much!
+> 
+> The good fact is, 2/3 of the code and experiences can be reused.
+> 
+> > Find below a first prototype patch written by Steve yesterday and 
+> > tidied up a bit by me today. It can also be tried on latest -tip:
+> > 
+> >   http://people.redhat.com/mingo/tip.git/README
+> > 
+> > This patch adds the first version of the 'object collections' 
+> > instrumentation facility under /debug/tracing/objects/mm/. It has a 
+> > single control so far, a 'number of pages to dump' trigger file:
+> > 
+> > To dump 1000 pages to the trace buffers, do:
+> > 
+> >   echo 1000 > /debug/tracing/objects/mm/pages/trigger
+> > 
+> > To dump all pages to the trace buffers, do:
+> > 
+> >   echo -1 > /debug/tracing/objects/mm/pages/trigger
+> 
+> That is not too intuitive, I'm afraid.
 
-That is, we provide a minimum bandwidth for real-time tasks, but since
-having a maximum higher than the minimum is useless since one cannot
-rely on it (non deterministic) we put max = min.
+This was just a first-level approximation - and it matches the usual 
+"0xffffffff means infinite" idiom.
 
+How about changing it from 'trigger' to 'dump_range':
+
+   echo "*" > /debug/tracing/objects/mm/pages/dump_range
+
+being a shortcut for 'dump all'?
+
+And:
+
+   echo "1000 2000" > /debug/tracing/objects/mm/pages/dump_range
+
+?
+
+The '1000' is the offset where the dumping starts, and 2000 is the 
+size of the dump.
+
+	Ingo
