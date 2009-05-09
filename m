@@ -1,45 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753308AbZEIRrM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754842AbZEIRrz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753308AbZEIRrM (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 13:47:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752191AbZEIRqy
+	id S1754842AbZEIRrz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 13:47:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751974AbZEIRrq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 13:46:54 -0400
-Received: from smtp20.orange.fr ([80.12.242.27]:31148 "EHLO smtp20.orange.fr"
+	Sat, 9 May 2009 13:47:46 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53288 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751667AbZEIRqx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 13:46:53 -0400
-X-ME-UUID: 20090509174652551.0D70420000BB@mwinf2007.orange.fr
-Message-ID: <4A05C18B.2070703@free.fr>
-Date: Sat, 09 May 2009 19:46:51 +0200
-From: Eric Valette <eric.valette@free.fr>
-Reply-To: eric.valette@free.fr
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: Larry Finger <Larry.Finger@lwfinger.net>
-CC: Greg KH <greg@kroah.com>, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       linux-wireless@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linux-usb@vger.kernel.org, Hin-Tak Leung <hintak.leung@gmail.com>
-Subject: Re: DMA debug trace pointing to rtl8187
-References: <49FDB9F8.3080400@free.fr> <20090506133131F.fujita.tomonori@lab.ntt.co.jp> <4A012FC8.3020304@free.fr> <20090506064513.GA7460@kroah.com> <4A05BD77.9020003@lwfinger.net>
-In-Reply-To: <4A05BD77.9020003@lwfinger.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	id S1751921AbZEIRrq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 13:47:46 -0400
+Subject: GFS2: Pull request (fix)
+From: Steven Whitehouse <swhiteho@redhat.com>
+To: torvalds@linux-foundation.org
+Cc: cluster-devel@redhat.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Organization: Red Hat UK Ltd
+Date: Sat, 09 May 2009 18:49:07 +0100
+Message-Id: <1241891347.3350.10.camel@localhost.localdomain>
+Mime-Version: 1.0
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Larry Finger wrote:
+Hi,
 
-> I just saw John's version 2 that looks more like what I was thinking about. I
-> will be testing soon.
+Please consider pulling the following patch,
 
-Should find time to compile, test and browse the WEB a little using WiFi
-at 9PM (France = UTC +2 right now).
+Steve.
 
-I'll report ASAP.
+---------------------------------------------------------------------------
+The following changes since commit 091bf7624d1c90cec9e578a18529f615213ff847:
+  Linus Torvalds (1):
+        Linux 2.6.30-rc5
 
---eric
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/steve/gfs2-2.6-fixes.git master
+
+Steven Whitehouse (1):
+      GFS2: Fix glock ref counting bug
+
+ fs/gfs2/glock.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+
+----------------------------------------------------------------------
+>From 0c7a531a200480c7bc447260376973d830da9069 Mon Sep 17 00:00:00 2001
+From: Steven Whitehouse <swhiteho@redhat.com>
+Date: Thu, 30 Apr 2009 14:52:58 +0100
+Subject: [PATCH] GFS2: Fix glock ref counting bug
+
+Depending on the ordering of events as we go around the
+glock shrinker loop, it is possible to drop the ref count
+of a glock incorrectly. It doesn't happen very often. This
+patch corrects the got_ref variable, fixing the problem.
+
+Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+
+diff --git a/fs/gfs2/glock.c b/fs/gfs2/glock.c
+index 1afd9f2..ff49810 100644
+--- a/fs/gfs2/glock.c
++++ b/fs/gfs2/glock.c
+@@ -1304,6 +1304,7 @@ static int gfs2_shrink_glock_memory(int nr, gfp_t gfp_mask)
+ 				nr--;
+ 				if (queue_delayed_work(glock_workqueue, &gl->gl_work, 0) == 0)
+ 					gfs2_glock_put(gl);
++				got_ref = 0;
+ 			}
+ 			spin_lock(&lru_lock);
+ 			if (may_demote)
+-- 
+1.6.0.6
+
+
 
