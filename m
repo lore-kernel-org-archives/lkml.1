@@ -1,70 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755074AbZEIXEk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755112AbZEIXH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755074AbZEIXEk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 19:04:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbZEIXEa
+	id S1755112AbZEIXH7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 19:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753270AbZEIXHr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 19:04:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:52630 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752626AbZEIXE3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 19:04:29 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
-Date: Sun, 10 May 2009 01:03:22 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com,
-       linux-pm@lists.linux-foundation.org, pavel@ucw.cz,
-       Linus Torvalds <torvalds@linux-foundation.org>, jens.axboe@oracle.com,
-       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
-       kernel-testers@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
-References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905092337.39906.rjw@sisk.pl> <alpine.DEB.2.00.0905091536250.6272@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0905091536250.6272@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905100103.23815.rjw@sisk.pl>
+	Sat, 9 May 2009 19:07:47 -0400
+Received: from fg-out-1718.google.com ([72.14.220.152]:42282 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751494AbZEIXHo (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 19:07:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=we03eH7n0P1W9WSgh5gvfkGVMnmkKhI38G701KbVcfd5acTxWRz8P3oXqb5E5qm15E
+         Er8Guls1Jik75QycWcg3LOuaqr7+kagVF+Xiy0jncrof/BoEJIixqUpNr1TkF1Y2tD2I
+         fgdnlk9EbQwFdz5KHsMI1tv6+7xkH0//Xi3u4=
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: gregkh@suse.de, davem@davemloft.net
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Subject: [PATCH] Staging: rtl8187se: convert to net_device_ops
+Date: Sun, 10 May 2009 03:06:54 +0400
+Message-Id: <1241910414-7389-1-git-send-email-a.beregalov@gmail.com>
+X-Mailer: git-send-email 1.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 10 May 2009, David Rientjes wrote:
-> On Sat, 9 May 2009, Rafael J. Wysocki wrote:
-> 
-> > > This has been changed in the latest mmotm with Mel's page alloactor 
-> > > patches (and I think yours should be based on mmotm).  Specifically, 
-> > > page-allocator-break-up-the-allocator-entry-point-into-fast-and-slow-paths.patch.
-> > > 
-> > > Before his patchset, zonelists that had ZONE_OOM_LOCKED set for at least 
-> > > one of their zones would unconditionally goto restart.  Now, if
-> > > order > PAGE_ALLOC_COSTLY_ORDER, it gives up and returns NULL.  Otherwise, 
-> > > it does goto restart.
-> > > 
-> > > So if your allocation has order > PAGE_ALLOC_COSTLY_ORDER,
-> > 
-> > It doesn't.  All of my allocations are of order 0.
-> > 
-> 
-> All order 0 allocations are implicitly __GFP_NOFAIL and will loop 
-> endlessly unless they can't block.  So if you want to simply prohibit the 
-> oom killer from being invoked and not change the retry behavior, setting 
-> ZONE_OOM_LOCKED for all zones will do that.  If your machine hangs, it 
-> means nothing can be reclaimed and you can't free memory via oom killing, 
-> so there's nothing else the page allocator can do.
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
+ drivers/staging/rtl8187se/Kconfig                  |    2 +-
+ .../staging/rtl8187se/ieee80211/ieee80211_module.c |    1 -
+ drivers/staging/rtl8187se/r8180_core.c             |   25 ++++++++++++--------
+ drivers/staging/rtl8187se/r8180_pm.c               |    6 +++-
+ 4 files changed, 20 insertions(+), 14 deletions(-)
 
-But I want it to give up in this case instead of looping forever.
+diff --git a/drivers/staging/rtl8187se/Kconfig b/drivers/staging/rtl8187se/Kconfig
+index f636296..236e427 100644
+--- a/drivers/staging/rtl8187se/Kconfig
++++ b/drivers/staging/rtl8187se/Kconfig
+@@ -1,6 +1,6 @@
+ config RTL8187SE
+ 	tristate "RealTek RTL8187SE Wireless LAN NIC driver"
+ 	depends on PCI
+-	depends on WIRELESS_EXT && COMPAT_NET_DEV_OPS
++	depends on WIRELESS_EXT
+ 	default N
+ 	---help---
+diff --git a/drivers/staging/rtl8187se/ieee80211/ieee80211_module.c b/drivers/staging/rtl8187se/ieee80211/ieee80211_module.c
+index 0c9fef0..c2b61e6 100644
+--- a/drivers/staging/rtl8187se/ieee80211/ieee80211_module.c
++++ b/drivers/staging/rtl8187se/ieee80211/ieee80211_module.c
+@@ -114,7 +114,6 @@ struct net_device *alloc_ieee80211(int sizeof_priv)
+ 		goto failed;
+ 	}
+ 	ieee = netdev_priv(dev);
+-	dev->hard_start_xmit = ieee80211_xmit;
+ 
+ 	ieee->dev = dev;
+ 
+diff --git a/drivers/staging/rtl8187se/r8180_core.c b/drivers/staging/rtl8187se/r8180_core.c
+index e10413c..7e2feca 100644
+--- a/drivers/staging/rtl8187se/r8180_core.c
++++ b/drivers/staging/rtl8187se/r8180_core.c
+@@ -198,7 +198,8 @@ static void __devexit rtl8180_pci_remove(struct pci_dev *pdev);
+ static void rtl8180_shutdown (struct pci_dev *pdev)
+ {
+ 	struct net_device *dev = pci_get_drvdata(pdev);
+-	dev->stop(dev);
++	if (dev->netdev_ops->ndo_stop)
++		dev->netdev_ops->ndo_stop(dev);
+ 	pci_disable_device(pdev);
+ }
+ 
+@@ -4551,8 +4552,6 @@ short rtl8180_init(struct net_device *dev)
+ 		//DMESG("Reported EEPROM chip is a 93c46 (1Kbit)");
+ 	}
+ 
+-	dev->get_stats = rtl8180_stats;
+-
+ 	dev->dev_addr[0]=eprom_read(dev,MAC_ADR) & 0xff;
+ 	dev->dev_addr[1]=(eprom_read(dev,MAC_ADR) & 0xff00)>>8;
+ 	dev->dev_addr[2]=eprom_read(dev,MAC_ADR+1) & 0xff;
+@@ -5832,6 +5831,18 @@ int rtl8180_ioctl(struct net_device *dev, struct ifreq *rq, int cmd)
+      -----------------------------PCI STUFF---------------------------
+ *****************************************************************************/
+ 
++static const struct net_device_ops rtl8180_netdev_ops = {
++	.ndo_open		= rtl8180_open,
++	.ndo_stop		= rtl8180_close,
++	.ndo_get_stats		= rtl8180_stats,
++	.ndo_tx_timeout		= rtl8180_restart,
++	.ndo_do_ioctl		= rtl8180_ioctl,
++	.ndo_set_multicast_list	= r8180_set_multicast,
++	.ndo_set_mac_address	= r8180_set_mac_adr,
++	.ndo_validate_addr	= eth_validate_addr,
++	.ndo_change_mtu		= eth_change_mtu,
++	.ndo_start_xmit		= ieee80211_xmit,
++};
+ 
+ static int __devinit rtl8180_pci_probe(struct pci_dev *pdev,
+ 				       const struct pci_device_id *id)
+@@ -5936,14 +5947,8 @@ static int __devinit rtl8180_pci_probe(struct pci_dev *pdev,
+ 	dev->irq = pdev->irq;
+ 	priv->irq = 0;
+ 
+-	dev->open = rtl8180_open;
+-	dev->stop = rtl8180_close;
+-	//dev->hard_start_xmit = ieee80211_xmit;
+-	dev->tx_timeout = rtl8180_restart;
++	dev->netdev_ops = &rtl8180_netdev_ops;
+ 	dev->wireless_handlers = &r8180_wx_handlers_def;
+-	dev->do_ioctl = rtl8180_ioctl;
+-	dev->set_multicast_list = r8180_set_multicast;
+-	dev->set_mac_address = r8180_set_mac_adr;
+ 
+ #if WIRELESS_EXT >= 12
+ #if WIRELESS_EXT < 17
+diff --git a/drivers/staging/rtl8187se/r8180_pm.c b/drivers/staging/rtl8187se/r8180_pm.c
+index 3851b93..2b3d642 100644
+--- a/drivers/staging/rtl8187se/r8180_pm.c
++++ b/drivers/staging/rtl8187se/r8180_pm.c
+@@ -30,7 +30,8 @@ int rtl8180_suspend (struct pci_dev *pdev, pm_message_t state)
+ 	if (!netif_running(dev))
+ 		goto out_pci_suspend;
+ 
+-	dev->stop(dev);
++	if (dev->netdev_ops->ndo_stop)
++		dev->netdev_ops->ndo_stop(dev);
+ 
+ 	netif_device_detach(dev);
+ 
+@@ -71,7 +72,8 @@ int rtl8180_resume (struct pci_dev *pdev)
+ 	if(!netif_running(dev))
+ 		goto out;
+ 
+-	dev->open(dev);
++	if (dev->netdev_ops->ndo_open)
++		dev->netdev_ops->ndo_open(dev);
+ 	netif_device_attach(dev);
+ out:
+ 	return 0;
+-- 
+1.6.3
 
-Look.  I have a specific problem at hand that I want to solve and the approach
-you suggested _clearly_ _doesn't_ _work_.  I have also tried to explain to you
-why it doesn't work, but you're ingnoring it, so I really don't know what else
-I can say.
-
-OTOH, the approach suggested by Andrew _does_ _work_ regardless of your
-opinion about it.  It's been tested and it's done the job 100% of the time.  Go
-figure.  And please stop beating the dead horse.
-
-Thanks,
-Rafael
