@@ -1,48 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755377AbZEIUIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbZEIUSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755377AbZEIUIU (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 16:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753303AbZEIUII
+	id S1755075AbZEIUSW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 16:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754331AbZEIUSH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 16:08:08 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:51379 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752626AbZEIUIH (ORCPT
+	Sat, 9 May 2009 16:18:07 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:43093
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754012AbZEIUSF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 16:08:07 -0400
-Date: Sat, 9 May 2009 14:08:05 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Jesse Barnes <jbarnes@virtuousgeek.org>,
-       Yinghai Lu <yinghai@kernel.org>, linux-pci@vger.kernel.org,
-       Ivan Kokshaysky <ink@jurassic.park.msu.ru>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [GIT PULL] xen: dom0 support for PCI access
-Message-ID: <20090509200805.GA26487@parisc-linux.org>
-References: <1241732737-7669-1-git-send-email-jeremy@goop.org> <20090508111024.GD11596@elte.hu> <20090508124436.GT8112@parisc-linux.org> <4A05A493.7050107@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A05A493.7050107@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 9 May 2009 16:18:05 -0400
+Date: Sat, 09 May 2009 13:18:01 -0700 (PDT)
+Message-Id: <20090509.131801.250435722.davem@davemloft.net>
+To: jpirko@redhat.com
+Cc: richard.genoud@gmail.com, fubar@us.ibm.com,
+       kernel-janitors@vger.kernel.org, linux-kernel@vger.kernel.org,
+       netdev@vger.kernel.org
+Subject: Re: [PATCH] Remove duplicate slow protocol define in bond_3ad.h
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090509171250.GA3390@psychotron.englab.brq.redhat.com>
+References: <1241888356-7575-1-git-send-email-richard.genoud@gmail.com>
+	<20090509171250.GA3390@psychotron.englab.brq.redhat.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 09, 2009 at 08:43:15AM -0700, Jeremy Fitzhardinge wrote:
-> Thanks.  Can I put your acked-by on those 7 changes (after fixing the  
-> __init thing Yinghai mentioned)?
+From: Jiri Pirko <jpirko@redhat.com>
+Date: Sat, 9 May 2009 19:12:53 +0200
 
-Certainly, though I think Reviewed-by would be more appropriate?
+> Sat, May 09, 2009 at 06:59:16PM CEST, richard.genoud@gmail.com wrote:
+>>ETH_P_SLOW is already defined in include/linux/if_ether.h.
+>>There's no need to define BOND_ETH_P_LACPDU in drivers/net/bonding/bond_3ad.h
+>>
+>>Signed-off-by: Richard Genoud <richard.genoud@gmail.com>
+>>---
+>> drivers/net/bonding/bond_3ad.h |    4 ++--
+>> 1 files changed, 2 insertions(+), 2 deletions(-)
+>>
+>>diff --git a/drivers/net/bonding/bond_3ad.h b/drivers/net/bonding/bond_3ad.h
+>>index a306230..2c46a15 100644
+>>--- a/drivers/net/bonding/bond_3ad.h
+>>+++ b/drivers/net/bonding/bond_3ad.h
+>>@@ -26,10 +26,10 @@
+>> #include <asm/byteorder.h>
+>> #include <linux/skbuff.h>
+>> #include <linux/netdevice.h>
+>>+#include <linux/if_ether.h>
+>> 
+>> // General definitions
+>>-#define BOND_ETH_P_LACPDU       0x8809
+>>-#define PKT_TYPE_LACPDU         cpu_to_be16(BOND_ETH_P_LACPDU)
+>>+#define PKT_TYPE_LACPDU         cpu_to_be16(ETH_P_SLOW)
+>> #define AD_TIMER_INTERVAL       100 /*msec*/
+>> 
+>> #define MULTICAST_LACPDU_ADDR    {0x01, 0x80, 0xC2, 0x00, 0x00, 0x02}
+>>-- 
+>>1.6.0.4
+> 
+> Looks good.
+> 
+> Signed-off-by: Jiri Pirko <jpirko@redhat.com>
 
-Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
-
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+Applied to net-next-2.6
