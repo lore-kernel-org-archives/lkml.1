@@ -1,71 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755824AbZEJIuV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752699AbZEJIxJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755824AbZEJIuV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 04:50:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZEJIty
+	id S1752699AbZEJIxJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 04:53:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbZEJIwz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 04:49:54 -0400
-Received: from ozlabs.org ([203.10.76.45]:57365 "EHLO ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755356AbZEJItw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 04:49:52 -0400
-From: Rusty Russell <rusty@rustcorp.com.au>
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC PATCH 2/2] kernel/sched.c: VLA in middle of struct
-Date: Sun, 10 May 2009 18:19:40 +0930
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
-Cc: Jeff Garzik <jeff@garzik.org>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mike Travis <travis@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
-       viro@zeniv.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>,
-       roland@redhat.com
-References: <20090508184838.GA11157@havoc.gtf.org> <20090508185015.GA11320@havoc.gtf.org> <20090508190944.GB12130@elte.hu>
-In-Reply-To: <20090508190944.GB12130@elte.hu>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	Sun, 10 May 2009 04:52:55 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:40769 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751081AbZEJIwx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 04:52:53 -0400
+Date: Sun, 10 May 2009 10:55:04 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: linux arch <linux-arch@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>, Tim Abbott <tabbott@mit.edu>
+Subject: Re: Minimal linker script
+Message-ID: <20090510085504.GA18719@uranus.ravnborg.org>
+References: <20090509080006.GA22617@uranus.ravnborg.org> <4A061158.3010604@zytor.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905101819.41765.rusty@rustcorp.com.au>
+In-Reply-To: <4A061158.3010604@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 May 2009 04:39:44 am Ingo Molnar wrote:
-> * Jeff Garzik <jeff@garzik.org> wrote:
-> > The semantics for variable-length arrays __in the middle of structs__
-> > are quite muddy, and a case in sched.c presents an interesting case,
-> > as the preceding code comment indicates:
-> >
-> > 	/*
-> > 	 * The cpus mask in sched_group and sched_domain hangs off
-> > 	 the end.  * FIXME: use cpumask_var_t or dynamic percpu alloc
-> > 	 to avoid * wasting space for nr_cpu_ids < CONFIG_NR_CPUS.  */
-> > 	struct static_sched_group {
-> > 		struct sched_group sg; DECLARE_BITMAP(cpus,
-> > 		CONFIG_NR_CPUS);
-> > 	};
+On Sat, May 09, 2009 at 04:27:20PM -0700, H. Peter Anvin wrote:
+> Sam Ravnborg wrote:
+> >  *      . = START;
+> >  *      __init_begin = .;
+> >  *      HEAD_SECTION
+> >  *      INIT_TEXT_SECTION(PAGE_SIZE)
+> >  *      INIT_DATA_SECTION(...)
+> >  *      PERCPU(PAGE_SIZE)
+> >  *      __init_end = .;
+> >  *
+> >  *      __text_begin = .;
+> >  *      TEXT_SECTION = 0
+> >  *      __text_end = .;
+> >  *
+> >  *      __data_begin = .;
+> >  *      RO_DATA_SECTION(PAGE_SIZE)
+> >  *      RW_DATA_SECTION(...)
+> >  *      __data_end = .;
+> >  *
+> >  *      EXCEPTION_TABLE(...)
+> >  *      NOTES
+> >  *
+> >  *      __bss_start = .;
+> >  *      BSS_SECTION(0, 0)
+> >  *      __bss_end = .;
+> >  *      _end = .;
+> >  *
+> >  *
+> >  * [__init_begin, __init_end] is the init section that may be freed after init
+> >  * [_stext, _etext] is the text section
+> >  * [_sdata, _edata] is the data section
+> >  *
+> >  * Some of the included output section include their own set of constants.
+> >  * Examples are: [__initramfs_start, __initramfs_end] for initramfs and
+> >  *               [__nosave_begin, __nosave_end] for the nosave data
+> >  */
+> > 
+> 
+> It seems rather disturbing to me that different sections have different
+> start and end symbols.  I realize this is largely for historical
+> reasons, but if we used a single pattern (e.g. something like
+> __text_start, __text_end for the .text section)
 
-Yeah, it's kinda nasty.  Generally, sched_group is dynamically allocated,
-so we just allocate sizeof(struct sched_group) + size of nr_cpu_ids bits.
+The 'oldish' names were kept only because they are widely used.
+I agree to be consistent is better so will change it to be so.
 
-These ones are static, and it was easier to put this hack in than make them 
-dynamic.  There's nothing wrong with it, until we really want NR_CPUS ==
-bignum, or we want to get rid of NR_CPUS altogether for 
-CONFIG_CPUMASKS_OFFSTACK (which would be very clean, but not clearly 
-worthwhile).
+I edited the sample above to consistently use __<section>_{begin,end}.
 
-But more importantly, my comment is obviously unclear, since your patch shows 
-you didn't understand the purpose of the field: The cpus bitmap *is* the sg-
->cpumask[] array.
+For now I kept '_end' as I had no better name for it.
 
-> > Maybe a C expert can say whether cpumask[0] is better than cpumask[],
-> > or have other comments?
+> then at least in the
+> i386 case we could easily recognize those as relocatable symbols even if
+> they show up as absolute.
 
-[0] is a gcc extension, but it should be equivalent.
+Do you then say that i386 could allow us to use absolute symbols,
+and we could adjust in the code instead?
 
-> That cpumask[] should probably be cpumask[0], to document the
-> aliasing to ->span and ->cpus properly.
+That would make the linker script nicer but with added
+complexity in the code..
 
-If the comment wasn't sufficient documentation, I don't think that would help :(
-
-Rusty.
+	Sam
