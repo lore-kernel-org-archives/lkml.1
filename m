@@ -1,57 +1,147 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbZEJKCG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754978AbZEJKEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754222AbZEJKCG (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 06:02:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZEJKBw
+	id S1754978AbZEJKEU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 06:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752495AbZEJKEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 06:01:52 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:50079 "EHLO mx2.redhat.com"
+	Sun, 10 May 2009 06:04:09 -0400
+Received: from mga14.intel.com ([143.182.124.37]:45384 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752758AbZEJKBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 06:01:51 -0400
-Message-ID: <4A06A59A.2010703@redhat.com>
-Date: Sun, 10 May 2009 12:59:54 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751478AbZEJKEI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 06:04:08 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.40,323,1239001200"; 
+   d="scan'208";a="141169910"
+Date: Sun, 10 May 2009 18:03:35 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "cl@linux-foundation.org" <cl@linux-foundation.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
+	class  citizen
+Message-ID: <20090510100335.GC7651@localhost>
+References: <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org> <20090507134410.0618b308.akpm@linux-foundation.org> <20090508081608.GA25117@localhost> <20090508125859.210a2a25.akpm@linux-foundation.org> <20090508230045.5346bd32@lxorguk.ukuu.org.uk> <2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com> <20090510092053.GA7651@localhost> <2f11576a0905100229m2c5e6a67md555191dc8c374ae@mail.gmail.com>
 MIME-Version: 1.0
-To: Gregory Haskins <ghaskins@novell.com>
-CC: Anthony Liguori <anthony@codemonkey.ws>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <4A019717.7070806@codemonkey.ws> <4A01B4CF.3080706@novell.com> <4A03EA83.6040907@redhat.com> <4A044DB5.7050304@novell.com> <4A046519.30604@redhat.com> <4A04802B.9000003@novell.com> <4A048413.4060406@redhat.com> <4A048F2E.3080702@novell.com>
-In-Reply-To: <4A048F2E.3080702@novell.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <2f11576a0905100229m2c5e6a67md555191dc8c374ae@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gregory Haskins wrote:
->>
->> That only works if the device exposes a pio port, and the hypervisor
->> exposes HC_PIO.  If the device exposes the hypercall, things break
->> once you assign it.
->>     
->
-> Well, true.  But normally I would think you would resurface the device
-> from G1 to G2 anyway, so any relevant transform would also be reflected
-> in the resurfaced device config.  
+On Sun, May 10, 2009 at 05:29:43PM +0800, KOSAKI Motohiro wrote:
+> >> >> The patch seems reasonable but the changelog and the (non-existent)
+> >> >> design documentation could do with a touch-up.
+> >> >
+> >> > Is it right that I as a user can do things like mmap my database
+> >> > PROT_EXEC to get better database numbers by making other
+> >> > stuff swap first ?
+> >> >
+> >> > You seem to be giving everyone a "nice my process up" hack.
+> >>
+> >> How about this?
+> >
+> > Why it deserves more tricks? PROT_EXEC pages are rare.
+> > If user space is to abuse PROT_EXEC, let them be for it ;-)
+> 
+> yes, typicall rare.
+> tha problem is, user program _can_ use PROT_EXEC for get higher priority
+> ahthough non-executable memory.
 
-We do, but the G1 hypervisor cannot be expected to understand the config 
-option that exposes the hypercall.
+- abuses should be rare
+- large scale abuses will be even more rare,
+- the resulted vmscan overheads are the *expected* side effect
+- the side effects are still safe
 
-> I suppose if you had a hard
-> requirement that, say, even the pci-config space was pass-through, this
-> would be a problem.  I am not sure if that is a realistic environment,
-> though. 
->   
+So if that's what they want, let them have it to their heart's content.
 
-You must pass through the config space, as some of it is device 
-specific.  The hypervisor will trap config space accesses, but unless it 
-understands them, it cannot modify them.
+You know it's normal for many users/apps to care only about the result.
+When they want something but cannot get it from the smarter version of
+PROT_EXEC heuristics, they will go on to devise more complicated tricks.
 
--- 
-error compiling committee.c: too many arguments to function
+In the end both sides loose.
 
+If the abused case is important enough, then let's introduce a feature
+to explicitly prioritize the pages. But let's leave the PROT_EXEC case
+simple.
+
+> In general, static priority mechanism have one weakness. if all object
+> have higher priority, it break priority mechanism.
+
+Yup.
+
+> >> then, this patch don't change kernel reclaim policy.
+> >>
+> >> anyway, user process non-changable preventing "nice my process up
+> >> hack" seems makes sense to me.
+> >>
+> >> test result:
+> >>
+> >> echo 100 > /proc/sys/vm/dirty_ratio
+> >> echo 100 > /proc/sys/vm/dirty_background_ratio
+> >> run modified qsbench (use mmap(PROT_EXEC) instead malloc)
+> >>
+> >>            active2active vs active2inactive ratio
+> >> before    5:5
+> >> after       1:9
+> >
+> > Do you have scripts for producing such numbers? I'm dreaming to have
+> > such tools :-)
+> 
+> I made stastics showing patch for testing, hehe :)
+
+I see :)
+
+Thanks,
+Fengguang
+
+> ---
+>  include/linux/vmstat.h |    1 +
+>  mm/vmstat.c            |    1 +
+>  2 files changed, 2 insertions(+)
+> 
+> Index: b/include/linux/vmstat.h
+> ===================================================================
+> --- a/include/linux/vmstat.h    2009-02-17 07:34:38.000000000 +0900
+> +++ b/include/linux/vmstat.h    2009-05-10 02:36:37.000000000 +0900
+> @@ -51,6 +51,7 @@ enum vm_event_item { PGPGIN, PGPGOUT, PS
+>                 UNEVICTABLE_PGSTRANDED, /* unable to isolate on unlock */
+>                 UNEVICTABLE_MLOCKFREED,
+>  #endif
+> +               FOR_ALL_ZONES(PGA2A),
+>                 NR_VM_EVENT_ITEMS
+>  };
+> 
+> Index: b/mm/vmstat.c
+> ===================================================================
+> --- a/mm/vmstat.c       2009-05-10 01:08:36.000000000 +0900
+> +++ b/mm/vmstat.c       2009-05-10 02:37:18.000000000 +0900
+> @@ -708,6 +708,7 @@ static const char * const vmstat_text[]
+>         "unevictable_pgs_stranded",
+>         "unevictable_pgs_mlockfreed",
+>  #endif
+> +       TEXTS_FOR_ZONES("pga2a")
+>  #endif
+>  };
+> 
+> 
+> 
+> >> please don't ask performance number. I haven't reproduce Wu's patch
+> >> improvemnt ;)
+> >
+> > That's why I decided to "explain" instead of "benchmark" the benefits
+> > of my patch, hehe.
+> 
+> okey, I see.
