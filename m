@@ -1,289 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbZEJOPT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755471AbZEJOXT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755302AbZEJOPT (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 10:15:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754645AbZEJONW
+	id S1755471AbZEJOXT (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 10:23:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752591AbZEJOXF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 10:13:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:54526 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754171AbZEJONR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 10:13:17 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: [RFC][PATCH 4/6] PM/Hibernate: Rework shrinking of memory
-Date: Sun, 10 May 2009 15:53:41 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4-rjw; KDE/4.2.2; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@tuxonice.net>,
-       David Rientjes <rientjes@google.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-References: <200905070040.08561.rjw@sisk.pl> <200905072348.59856.rjw@sisk.pl> <200905101548.57557.rjw@sisk.pl>
-In-Reply-To: <200905101548.57557.rjw@sisk.pl>
+	Sun, 10 May 2009 10:23:05 -0400
+Received: from anchor-post-2.mail.demon.net ([195.173.77.133]:33396 "EHLO
+	anchor-post-2.mail.demon.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752315AbZEJOXE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 10:23:04 -0400
+Message-ID: <4A06E344.4060901@rsk.demon.co.uk>
+Date: Sun, 10 May 2009 15:23:00 +0100
+From: Richard Kennedy <richard@rsk.demon.co.uk>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Chris Peterson <cpeterso@cpeterso.com>
+CC: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] use round_jiffies() for slow work thread pool's 5 second
+   cull timer
+References: <alpine.DEB.2.00.0905100336130.27219@ubuntu-desktop>
+In-Reply-To: <alpine.DEB.2.00.0905100336130.27219@ubuntu-desktop>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905101553.42116.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Rafael J. Wysocki <rjw@sisk.pl>
+Chris Peterson wrote:
+> The slow work thread pool culls its idle threads after 5 seconds without any work requests. Also, the slow work thread pool waits 5 seconds before starting new threads after OOM.
+> 
+> This patch uses round_jiffies() to round these 5 second timers to whole seconds. In this case, the actual timer wait would be between 4.75 and 5.75 seconds (because round_jiffies() rounds < 0.25 seconds down and > 0.25 seconds up). This patch also refactors the mod_timer() logic into a separate helper function.
+> 
+> Signed-off-by: Chris Peterson <cpeterso@cpeterso.com>
+> ---
+> diff --git a/kernel/slow-work.c b/kernel/slow-work.c
+> index b28d191..9bfcb53 100644
+> --- a/kernel/slow-work.c
+> +++ b/kernel/slow-work.c
+> @@ -318,6 +318,12 @@ cant_get_ref:
+>  }
+>  EXPORT_SYMBOL(slow_work_enqueue);
+>  
+> +static void slow_work_defer_cull_time(void)
+> +{
+> +	mod_timer(&slow_work_cull_timer,
+> +			  round_jiffies_relative(SLOW_WORK_CULL_TIMEOUT));
+> +}
+> +
+Hi Chris,
 
-Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
-just once to make some room for the image and then allocates memory
-to apply more pressure to the memory management subsystem, if
-necessary.
+Doesn't mod_timer take an absolute time not a relative one?
 
-Unfortunately, we don't seem to be able to drop shrink_all_memory()
-entirely just yet, because that would lead to huge performance
-regressions in some test cases.
+So I think this should be
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/snapshot.c |  209 +++++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 165 insertions(+), 44 deletions(-)
+	mod_timer(&timer,round_jiffies(jiffies + TIMEOUT) );
 
-Index: linux-2.6/kernel/power/snapshot.c
-===================================================================
---- linux-2.6.orig/kernel/power/snapshot.c
-+++ linux-2.6/kernel/power/snapshot.c
-@@ -1066,69 +1066,190 @@ void swsusp_free(void)
- 	buffer = NULL;
- }
- 
-+/* Helper functions used for the shrinking of memory. */
-+
-+#define GFP_IMAGE	(GFP_KERNEL | __GFP_NOWARN | __GFP_NO_OOM_KILL)
-+
- /**
-- *	swsusp_shrink_memory -  Try to free as much memory as needed
-+ * preallocate_image_pages - Allocate a number of pages for hibernation image
-+ * @nr_pages: Number of page frames to allocate.
-+ * @mask: GFP flags to use for the allocation.
-  *
-- *	... but do not OOM-kill anyone
-+ * Return value: Number of page frames actually allocated
-+ */
-+static unsigned long preallocate_image_pages(unsigned long nr_pages, gfp_t mask)
-+{
-+	unsigned long nr_alloc = 0;
-+
-+	while (nr_pages > 0) {
-+		if (!alloc_image_page(mask))
-+			break;
-+		nr_pages--;
-+		nr_alloc++;
-+	}
-+
-+	return nr_alloc;
-+}
-+
-+static unsigned long preallocate_image_memory(unsigned long nr_pages)
-+{
-+	return preallocate_image_pages(nr_pages, GFP_IMAGE);
-+}
-+
-+#ifdef CONFIG_HIGHMEM
-+static unsigned long preallocate_image_highmem(unsigned long nr_pages)
-+{
-+	return preallocate_image_pages(nr_pages, GFP_IMAGE | __GFP_HIGHMEM);
-+}
-+
-+/**
-+ * compute_fraction - Compute approximate fraction x * (a/b)
-+ * @x: Number to multiply.
-+ * @numerator: Numerator of the fraction (a).
-+ * @denominator: Denominator of the fraction (b).
-  *
-- *	Notice: all userland should be stopped before it is called, or
-- *	livelock is possible.
-+ * Compute an approximate value of the expression x * (a/b), where a is less
-+ * than b, all x, a, b are unsigned longs and x * a may be greater than the
-+ * maximum unsigned long.
-  */
-+static unsigned long compute_fraction(
-+	unsigned long x, unsigned long numerator, unsigned long denominator)
-+{
-+	unsigned long ratio = (numerator << 8) / denominator;
-+
-+	x *= ratio;
-+	return x >> 8;
-+}
- 
--#define SHRINK_BITE	10000
--static inline unsigned long __shrink_memory(long tmp)
-+static unsigned long highmem_fraction(
-+	unsigned long size, unsigned long highmem, unsigned long count)
- {
--	if (tmp > SHRINK_BITE)
--		tmp = SHRINK_BITE;
--	return shrink_all_memory(tmp);
-+	return highmem > count / 2 ?
-+			compute_fraction(size, highmem, count) :
-+			size - compute_fraction(size, count - highmem, count);
-+}
-+#else
-+static inline unsigned long preallocate_image_highmem(unsigned long nr_pages)
-+{
-+	return 0;
- }
- 
-+static inline unsigned long highmem_fraction(
-+	unsigned long size, unsigned long highmem, unsigned long count)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_HIGHMEM */
-+
-+/**
-+ * swsusp_shrink_memory -  Make the kernel release as much memory as needed
-+ *
-+ * To create a hibernation image it is necessary to make a copy of every page
-+ * frame in use.  We also need a number of page frames to be free during
-+ * hibernation for allocations made while saving the image and for device
-+ * drivers, in case they need to allocate memory from their hibernation
-+ * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
-+ * respectively, both of which are rough estimates).  To make this happen, we
-+ * compute the total number of available page frames and allocate at least
-+ *
-+ * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
-+ *
-+ * of them, which corresponds to the maximum size of a hibernation image.
-+ *
-+ * If image_size is set below the number following from the above formula,
-+ * the preallocation of memory is continued until the total number of page
-+ * frames in use is below the requested image size or it is impossible to
-+ * allocate more memory, whichever happens first.
-+ */
- int swsusp_shrink_memory(void)
- {
--	long tmp;
- 	struct zone *zone;
--	unsigned long pages = 0;
--	unsigned int i = 0;
--	char *p = "-\\|/";
-+	unsigned long saveable, size, max_size, count, highmem, pages = 0;
-+	unsigned long alloc, pages_highmem;
- 	struct timeval start, stop;
-+	int error = 0;
- 
--	printk(KERN_INFO "PM: Shrinking memory...  ");
-+	printk(KERN_INFO "PM: Shrinking memory... ");
- 	do_gettimeofday(&start);
--	do {
--		long size, highmem_size;
- 
--		highmem_size = count_highmem_pages();
--		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
--		tmp = size;
--		size += highmem_size;
--		for_each_populated_zone(zone) {
--			tmp += snapshot_additional_pages(zone);
--			if (is_highmem(zone)) {
--				highmem_size -=
--					zone_page_state(zone, NR_FREE_PAGES);
--			} else {
--				tmp -= zone_page_state(zone, NR_FREE_PAGES);
--				tmp += zone->lowmem_reserve[ZONE_NORMAL];
--			}
-+	/* Count the number of saveable data pages. */
-+	highmem = count_highmem_pages();
-+	saveable = count_data_pages();
-+
-+	/*
-+	 * Compute the total number of page frames we can use (count) and the
-+	 * number of pages needed for image metadata (size).
-+	 */
-+	count = saveable;
-+	saveable += highmem;
-+	size = 0;
-+	for_each_populated_zone(zone) {
-+		size += snapshot_additional_pages(zone);
-+		if (is_highmem(zone)) {
-+			highmem += zone_page_state(zone, NR_FREE_PAGES);
-+		} else {
-+			count += zone_page_state(zone, NR_FREE_PAGES);
- 		}
-+	}
-+	count += highmem;
-+	count -= totalreserve_pages;
- 
--		if (highmem_size < 0)
--			highmem_size = 0;
-+	/* Compute the maximum number of saveable pages to leave in memory. */
-+	max_size = (count - (size + PAGES_FOR_IO)) / 2 - 2 * SPARE_PAGES;
-+	size = DIV_ROUND_UP(image_size, PAGE_SIZE);
-+	if (size > max_size)
-+		size = max_size;
-+	/*
-+	 * If the maximum is not less than the current number of saveable pages
-+	 * in memory, we don't need to do anything more.
-+	 */
-+	if (size >= saveable)
-+		goto out;
- 
--		tmp += highmem_size;
--		if (tmp > 0) {
--			tmp = __shrink_memory(tmp);
--			if (!tmp)
--				return -ENOMEM;
--			pages += tmp;
--		} else if (size > image_size / PAGE_SIZE) {
--			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
--			pages += tmp;
--		}
--		printk("\b%c", p[i++%4]);
--	} while (tmp > 0);
-+	/*
-+	 * Let the memory management subsystem know that we're going to need a
-+	 * large number of page frames to allocate and make it free some memory.
-+	 * NOTE: If this is not done, performance is heavily affected in some
-+	 * test cases.
-+	 */
-+	shrink_all_memory(saveable - size);
-+
-+	/*
-+	 * The number of saveable pages in memory was too high, so apply some
-+	 * pressure to decrease it.  First, make room for the largest possible
-+	 * image and fail if that doesn't work.  Next, try to decrease the size
-+	 * of the image as much as indicated by image_size using allocations
-+	 * from highmem and non-highmem zones separately.
-+	 *
-+	 */
-+	pages_highmem = preallocate_image_highmem(highmem / 2);
-+	alloc = count - max_size - pages_highmem;
-+	pages = preallocate_image_memory(alloc);
-+	if (pages < alloc) {
-+		error = -ENOMEM;
-+		goto free_out;
-+	}
-+	size = max_size - size;
-+	alloc = size;
-+	size = preallocate_image_highmem(
-+				highmem_fraction(size, highmem, count));
-+	pages_highmem += size;
-+	alloc -= size;
-+	pages += preallocate_image_memory(alloc);
-+	pages += pages_highmem;
-+
-+ free_out:
-+	/* Release all of the preallocated page frames. */
-+	swsusp_free();
-+
-+	if (error) {
-+		printk(KERN_CONT "\n");
-+		return error;
-+	}
-+
-+ out:
- 	do_gettimeofday(&stop);
--	printk("\bdone (%lu pages freed)\n", pages);
-+	printk(KERN_CONT "done (preallocated %lu free pages)\n", pages);
- 	swsusp_show_speed(&start, &stop, pages, "Freed");
- 
- 	return 0;
+regards
+
+Richard
+
