@@ -1,66 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754847AbZEJPq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756037AbZEJPqt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754847AbZEJPq1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 11:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZEJPqS
+	id S1756037AbZEJPqt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 11:46:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753573AbZEJPqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 11:46:18 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:37608 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752999AbZEJPqR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 11:46:17 -0400
-Date: Sun, 10 May 2009 11:45:04 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] SCRIPTS: Correct RE in header CONFIG leak check.
-Message-ID: <alpine.LFD.2.00.0905101141140.17364@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Sun, 10 May 2009 11:46:38 -0400
+Received: from cantor.suse.de ([195.135.220.2]:49520 "EHLO mx1.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752628AbZEJPqh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 11:46:37 -0400
+Date: Sun, 10 May 2009 08:20:05 -0700
+From: Greg KH <gregkh@suse.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] devtmpfs patches
+Message-ID: <20090510152005.GA9461@suse.de>
+References: <20090509143742.GA27663@kroah.com> <b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com> <20090509150853.GA32394@suse.de> <20090509082233.32cbb8e4@infradead.org> <20090509161923.GA942@suse.de> <20090509223454.4642753d.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090509223454.4642753d.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sat, May 09, 2009 at 10:34:54PM -0700, Andrew Morton wrote:
+> On Sat, 9 May 2009 09:19:23 -0700 Greg KH <gregkh@suse.de> wrote:
+> 
+> >  We need to be able to support large number of partitions at boot
+> > time. 
+> 
+> I suspect that the intersection between (systems which need to shave
+> boot time to the minimum) and (systems which have lots of partitions)
+> is quite small?
 
-Correct the regular expression in scripts/headers_check.pl to include
-'_' as a valid character in the class; otherwise, the check will
-report a "leaked" symbol of CONFIG_A_B_C as merely CONFIG_A.
+No, not at all, lots of desktops have one or two disks with 15+
+partitions.  Those users want fast boot times as well.
 
-Signed-off-by: Robert P. J. Day <rpjday@crashcourse.ca>
+thanks,
 
----
-
-diff --git a/scripts/headers_check.pl b/scripts/headers_check.pl
-index 56f90a4..4414c43 100644
---- a/scripts/headers_check.pl
-+++ b/scripts/headers_check.pl
-@@ -70,7 +70,7 @@ sub check_prototypes
-
- sub check_config
- {
--	if ($line =~ m/[^a-zA-Z0-9_]+CONFIG_([a-zA-Z0-9]+)[^a-zA-Z0-9]/) {
-+	if ($line =~ m/[^a-zA-Z0-9_]+CONFIG_([a-zA-Z0-9_]+)[^a-zA-Z0-9_]/) {
- 		printf STDERR "$filename:$lineno: leaks CONFIG_$1 to userspace where it is not valid\n";
- 	}
- }
-
-========================================================================
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-========================================================================
+greg k-h
