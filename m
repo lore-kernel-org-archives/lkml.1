@@ -1,89 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751478AbZEJKKX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbZEJKPU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751478AbZEJKKX (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 06:10:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbZEJKKG
+	id S1755721AbZEJKPU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 06:15:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751112AbZEJKPF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 06:10:06 -0400
-Received: from smtp11.mail.tnz.yahoo.co.jp ([203.216.226.139]:49138 "HELO
-	smtp11.mail.tnz.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750751AbZEJKKE (ORCPT
+	Sun, 10 May 2009 06:15:05 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:13609 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750801AbZEJKPC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 06:10:04 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=yj20050223; d=yahoo.co.jp;
-  h=Received:X-Apparently-From:Message-ID:From:To:Cc:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE;
-  b=BwTktEaCIVYleR5OPMtl5wxsCUUE5rVwIrkZfoOoNRHOmxujgt8wMLtHUcoVmKhfpmzM1VDX8B1N2a/jfaQZu/a4qNPYwkfkMHzoa4VoOCojviJDWe3+Wt87dhBOSV3n  ;
-X-Apparently-From: <n0diamond@yahoo.co.jp>
-Message-ID: <C112FA2011134214977C4C45098BBB48@DIAMOND8600>
-From: "Norman Diamond" <n0diamond@yahoo.co.jp>
-To: "James Bottomley" <James.Bottomley@HansenPartnership.com>
-Cc: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
-Subject: Re: Adaptec driver crashes (1/3 and 2/3)
-Date: Sun, 10 May 2009 19:09:25 +0900
+	Sun, 10 May 2009 06:15:02 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=hHjm7hbx8sCHAyzMbxo1YVY9g2JZbt9Acziq5JbldQRTIMomYyesMqmNbYz4HmeX3M
+         kR5aOg5/kWaT91Hf4maVFAdUOE5pK3k7SHtriSwSttC94DNXuxTVA2MCweP9NYX4Sz1/
+         ik6egzfa/Bpu52iIBGgG6CNXaPqph6/I0os5E=
 MIME-Version: 1.0
-Content-Type: text/plain;
-	format=flowed;
-	charset="iso-2022-jp";
-	reply-type=response
+In-Reply-To: <20090510100335.GC7651@localhost>
+References: <1241432635.7620.4732.camel@twins>
+	 <20090507151039.GA2413@cmpxchg.org>
+	 <20090507134410.0618b308.akpm@linux-foundation.org>
+	 <20090508081608.GA25117@localhost>
+	 <20090508125859.210a2a25.akpm@linux-foundation.org>
+	 <20090508230045.5346bd32@lxorguk.ukuu.org.uk>
+	 <2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com>
+	 <20090510092053.GA7651@localhost>
+	 <2f11576a0905100229m2c5e6a67md555191dc8c374ae@mail.gmail.com>
+	 <20090510100335.GC7651@localhost>
+Date: Sun, 10 May 2009 19:15:02 +0900
+X-Google-Sender-Auth: 480db6f64e37b330
+Message-ID: <2f11576a0905100315j2c810e96mc29b84647dc565c2@mail.gmail.com>
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class 
+	citizen
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "cl@linux-foundation.org" <cl@linux-foundation.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Priority: 3
-X-MSMail-Priority: Normal
-X-Mailer: Microsoft Outlook Express 6.00.2900.5512
-X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Norman Diamond (I) wrote:
-> James Bottomley wrote:
->> On Wed, 2009-05-06 at 16:13 +0900, Norman Diamond wrote:
->>> The easiest 100% reproducible way to crash a Linux system is as follows.
->>>
->>> Insert either an Adaptec 1460 PCMCIA card or Adaptec 1480 CardBus card. 
->>> Remove the card.  Insert the card again.  Even if you knew to set the 
->>> console to a text mode terminal first (since Linux doesn't give Blue 
->>> Screens of Death otherwise), you still won't get a dump.  Not much to go 
->>> on without a dump, but at least it's 100% repro.
+>> >> >> The patch seems reasonable but the changelog and the (non-existent)
+>> >> >> design documentation could do with a touch-up.
+>> >> >
+>> >> > Is it right that I as a user can do things like mmap my database
+>> >> > PROT_EXEC to get better database numbers by making other
+>> >> > stuff swap first ?
+>> >> >
+>> >> > You seem to be giving everyone a "nice my process up" hack.
+>> >>
+>> >> How about this?
+>> >
+>> > Why it deserves more tricks? PROT_EXEC pages are rare.
+>> > If user space is to abuse PROT_EXEC, let them be for it ;-)
 >>
->> Sounds like something's still pinned.  When you remove it the first time, 
->> can you remove the module? (that's aha152x_cs right?).
+>> yes, typicall rare.
+>> tha problem is, user program _can_ use PROT_EXEC for get higher priority
+>> ahthough non-executable memory.
 >
-> With the 1460, after removing the first time, no I couldn't rmmod the 
-> module.
-> However, yesterday with the 1460 I couldn't repro the kernel crash. 
-> Yesterday with the 1460 I could only repro less severe lossage.
+> - abuses should be rare
+> - large scale abuses will be even more rare,
+> - the resulted vmscan overheads are the *expected* side effect
+> - the side effects are still safe
 
-Today I tried Knoppix 6.0.1, kernel 2.6.28.4.  aha152x_cs is a module here 
-too.  When inserting a 1460, nothing happened.  Removing a 1460, nothing 
-happened.  Inserting a 1460, nothing happened.  I modprobed aha152x_cs.  It 
-modprobed successfully.  Removing a 1460, inserting, removing, inserting, 
-nothing happened, even though the module remained loaded.  The older 
-partially working kernel was better than this.
+Who expect?
+The fact is, application developer decide to use PROT_EXEC, but side-effect
+cause end-user, not application developer.
 
-> Yesterday with the 1480 I did repro the kernel crash, the same as before. 
-> The aic7xxx driver was compiled in, not a module.
+In general, side-effect attack mistaked guy, it's no problem. They can
+do it their own risk.
+but We know application developer and administrator are often different person.
 
-Today with Knoppix 6.0.1, kernel 2.6.28.4, this one is worse too.  Here 
-aic7xxx is a module, not compiled in.  I don't remember if I had to modprobe 
-it manually but I think not.  I think that inserting a 1480 automatically 
-modprobed the module and it worked for the time being.  However, removing 
-the card started the time bomb.  Reinsertion was no longer necessary. 
-Around 20 seconds after removal, if the console was in text mode then there 
-would be a 1-line crash message with no dump.  Attempts to rmmod aic7xxx 
-failed.  It didn't matter if I tried 0, 1, or multiple times while the time 
-bomb was running, rmmod failed and the crash was still coming.
 
-One time I shut down Knoppix 6.0.1 from whatever KDE's Start button is 
-called, the usual way of doing a shutdown, instead of letting a crash do it. 
-When the CD-ROM tray popped open, I guessed that Knoppix was nearly done 
-shutting down, so I hit the Enter key, and the power went off a few seconds 
-later.  Older versions had some text mode messages on the screen during 
-shutdown, and told us at the same time as it popped open the CD tray.  OK, 
-this one isn't the fault of a SCSI driver.
+> So if that's what they want, let them have it to their heart's content.
+>
+> You know it's normal for many users/apps to care only about the result.
+> When they want something but cannot get it from the smarter version of
+> PROT_EXEC heuristics, they will go on to devise more complicated tricks.
+>
+> In the end both sides loose.
+>
+> If the abused case is important enough, then let's introduce a feature
+> to explicitly prioritize the pages. But let's leave the PROT_EXEC case
+> simple.
 
-Sometimes there are reasons to stick to older partially working versions. 
-
---------------------------------------
-Power up the Internet with Yahoo! Toolbar.
-http://pr.mail.yahoo.co.jp/toolbar/
+No.
+explicit priotize mechanism don't solve problem anyway. application
+developer don't know end-user environment.
+they can't mark proper page priority.
