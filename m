@@ -1,104 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbZEJJy3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbZEJKCG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756564AbZEJJy3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 05:54:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbZEJJyT
+	id S1754222AbZEJKCG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 06:02:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752819AbZEJKBw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 05:54:19 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:16268 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752656AbZEJJyS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 05:54:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-type:content-transfer-encoding
-         :content-disposition:message-id;
-        b=hUmh/QEMWKD4blK4jCCiTRwgj2rCv5PGiwphodJyv52UBS/HnRT0d+LhDInAzf26Uy
-         TBEdBmHtM81GLOXdqpzdOJ1YhdLSDciBs9BD28Vn8rAPK4bj7ktgr5EQKFqnYZycj1Qy
-         ZlsbFMyep8mQUn84tei/tKl7q3sc5SNTc6/FI=
-From: Vladimir Zajac <eightgraph@gmail.com>
-To: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH 2.6.30-rc4] thermal: fix off-by-1 error in trip point trigger condition
-Date: Sun, 10 May 2009 11:54:09 +0200
-User-Agent: KMail/1.9.9
-Cc: Zhang Rui <rui.zhang@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Matthew Garrett <mjg59@srcf.ucam.org>
-References: <200905061934.21821.eightgraph@gmail.com> <1241657280.15284.107.camel@rzhang-dt>
-In-Reply-To: <1241657280.15284.107.camel@rzhang-dt>
+	Sun, 10 May 2009 06:01:52 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:50079 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752758AbZEJKBv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 06:01:51 -0400
+Message-ID: <4A06A59A.2010703@redhat.com>
+Date: Sun, 10 May 2009 12:59:54 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Anthony Liguori <anthony@codemonkey.ws>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <4A019717.7070806@codemonkey.ws> <4A01B4CF.3080706@novell.com> <4A03EA83.6040907@redhat.com> <4A044DB5.7050304@novell.com> <4A046519.30604@redhat.com> <4A04802B.9000003@novell.com> <4A048413.4060406@redhat.com> <4A048F2E.3080702@novell.com>
+In-Reply-To: <4A048F2E.3080702@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905101154.09600.eightgraph@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 07 May 2009 02:48:00 Zhang Rui wrote:
-> On Thu, 2009-05-07 at 01:34 +0800, Vladimir Zajac wrote:
-> > This patch fixes a regression caused by commit
-> > b1569e99c795bf83b4ddf41c4f1c42761ab7f75e
-> > "ACPI: move thermal trip handling to generic thermal layer"
-> > which accidentally changed trip point trigger condition to
-> >   temp > trip_temp
-> > 
-> > This patch changes the trigger condition back to
-> >   temp >= trip_temp
-> > 
-> > Signed-off-by: Vladimir Zajac <eightgraph@gmail.com>
-> 
-> Acked-by: Zhang Rui <rui.zhang@intel.com>
-Acked-by: Matthew Garrett <mjg@redhat.com>
-> > ---
-> > 
-> >  thermal_sys.c |    8 ++++----
-> >  1 file changed, 4 insertions(+), 4 deletions(-)
-> > 
-> > --- linux-2.6.30-rc4/drivers/thermal/thermal_sys.c	2009-04-30 23:52:59.000000000 +0200
-> > +++ linux-2.6.30-rc4-p1/drivers/thermal/thermal_sys.c	2009-05-04 19:58:30.000000000 +0200
-> > @@ -961,7 +961,7 @@ void thermal_zone_device_update(struct t
-> >  
-> >  		switch (trip_type) {
-> >  		case THERMAL_TRIP_CRITICAL:
-> > -			if (temp > trip_temp) {
-> > +			if (temp >= trip_temp) {
-> >  				if (tz->ops->notify)
-> >  					ret = tz->ops->notify(tz, count,
-> >  							      trip_type);
-> > @@ -974,7 +974,7 @@ void thermal_zone_device_update(struct t
-> >  			}
-> >  			break;
-> >  		case THERMAL_TRIP_HOT:
-> > -			if (temp > trip_temp)
-> > +			if (temp >= trip_temp)
-> >  				if (tz->ops->notify)
-> >  					tz->ops->notify(tz, count, trip_type);
-> >  			break;
-> > @@ -986,14 +986,14 @@ void thermal_zone_device_update(struct t
-> >  
-> >  				cdev = instance->cdev;
-> >  
-> > -				if (temp > trip_temp)
-> > +				if (temp >= trip_temp)
-> >  					cdev->ops->set_cur_state(cdev, 1);
-> >  				else
-> >  					cdev->ops->set_cur_state(cdev, 0);
-> >  			}
-> >  			break;
-> >  		case THERMAL_TRIP_PASSIVE:
-> > -			if (temp > trip_temp || tz->passive)
-> > +			if (temp >= trip_temp || tz->passive)
-> >  				thermal_zone_device_passive(tz, temp,
-> >  							    trip_temp, count);
-> >  			break;
+Gregory Haskins wrote:
+>>
+>> That only works if the device exposes a pio port, and the hypervisor
+>> exposes HC_PIO.  If the device exposes the hypercall, things break
+>> once you assign it.
+>>     
+>
+> Well, true.  But normally I would think you would resurface the device
+> from G1 to G2 anyway, so any relevant transform would also be reflected
+> in the resurfaced device config.  
 
-Forwarding Matthew Garrett's reply from another thread:
-> Looks good. You probably need to resend it with a Signed-off-by: line, 
-> but feel free to add
-> 
-> Acked-by: Matthew Garrett <mjg@redhat.com>
-> 	
+We do, but the G1 hypervisor cannot be expected to understand the config 
+option that exposes the hypercall.
+
+> I suppose if you had a hard
+> requirement that, say, even the pci-config space was pass-through, this
+> would be a problem.  I am not sure if that is a realistic environment,
+> though. 
+>   
+
+You must pass through the config space, as some of it is device 
+specific.  The hypervisor will trap config space accesses, but unless it 
+understands them, it cannot modify them.
+
+-- 
+error compiling committee.c: too many arguments to function
+
