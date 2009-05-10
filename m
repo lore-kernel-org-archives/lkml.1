@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754914AbZEJPz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZEJP5q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754914AbZEJPz2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 11:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZEJPzP
+	id S1755865AbZEJP5q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 11:57:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbZEJP5h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 11:55:15 -0400
-Received: from bu3sch.de ([62.75.166.246]:60594 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751513AbZEJPzO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 11:55:14 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: Michael Riepe <michael.riepe@googlemail.com>
-Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
-Date: Sun, 10 May 2009 17:53:34 +0200
-User-Agent: KMail/1.9.9
-Cc: Francois Romieu <romieu@fr.zoreil.com>, Rui Santos <rsantos@grupopie.com>,
-       Michael =?iso-8859-1?q?B=FCker?= <m.bueker@berlin.de>,
+	Sun, 10 May 2009 11:57:37 -0400
+Received: from casper.infradead.org ([85.118.1.10]:59664 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752999AbZEJP5h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 11:57:37 -0400
+Date: Sun, 10 May 2009 08:59:57 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Greg KH <gregkh@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
        linux-kernel@vger.kernel.org
-References: <200903041828.49972.m.bueker@berlin.de> <200904041950.04324.mb@bu3sch.de> <4A06D8D2.4010505@googlemail.com>
-In-Reply-To: <4A06D8D2.4010505@googlemail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Subject: Re: [patch 00/13] devtmpfs patches
+Message-ID: <20090510085957.1c15b208@infradead.org>
+In-Reply-To: <20090510152005.GA9461@suse.de>
+References: <20090509143742.GA27663@kroah.com>
+	<b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com>
+	<20090509150853.GA32394@suse.de>
+	<20090509082233.32cbb8e4@infradead.org>
+	<20090509161923.GA942@suse.de>
+	<20090509223454.4642753d.akpm@linux-foundation.org>
+	<20090510152005.GA9461@suse.de>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905101753.35282.mb@bu3sch.de>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 10 May 2009 15:38:26 Michael Riepe wrote:
-> 
-> Michael Buesch wrote:
-> 
-> > I'm currently testing 2.6.29.1 without any additional patches but
-> > with the pci=nomsi boot option.
-> > 
-> > I didn't notice any hickups, yet. I'm running a stresstest on a GBit link for quite
-> > some time now. Earlier tests with older kernels and MSI burped earlier.
-> > 
-> > I will do more testing. If it turns out this is stable I will test the same kernel
-> > with Message Signaled Interrupts to see if that causes some breakage.
-> 
-> I've had this problem up to and including 2.6.29.2. Currently, I'm
-> trying 2.6.29.2 with pci=nomsi, and it's stable so far. With MSI
-> enabled, a single high-speed TCP transfer will stop after a few seconds,
-> but without MSI, I can run four simultaneous transfers to two different
-> hosts without a single hickup.
-> 
-> It seems to me that this particular chip really doesn't like MSI.
+On Sun, 10 May 2009 08:20:05 -0700
+Greg KH <gregkh@suse.de> wrote:
 
-I can confirm this. I tried with msi enabled and it starts breaking
-after a few seconds of heavy transfers. Disabling MSI results in a reliable connection.
+> On Sat, May 09, 2009 at 10:34:54PM -0700, Andrew Morton wrote:
+> > On Sat, 9 May 2009 09:19:23 -0700 Greg KH <gregkh@suse.de> wrote:
+> > 
+> > >  We need to be able to support large number of partitions at boot
+> > > time. 
+> > 
+> > I suspect that the intersection between (systems which need to shave
+> > boot time to the minimum) and (systems which have lots of
+> > partitions) is quite small?
+> 
+> No, not at all, lots of desktops have one or two disks with 15+
+> partitions.  Those users want fast boot times as well.
 
-Maybe we should disable MSI as temporary workaround for affected chips?
+if partitions > 15 don't have stable numbers surely we could fix
+that....
+
 
 -- 
-Greetings, Michael.
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
