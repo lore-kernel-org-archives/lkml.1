@@ -1,69 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753368AbZEJNLB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbZEJNST@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753368AbZEJNLB (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 09:11:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752292AbZEJNKu
+	id S1753780AbZEJNST (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 09:18:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbZEJNSE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 09:10:50 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:34581 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752024AbZEJNKt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 09:10:49 -0400
-Message-ID: <4A06D21C.2060008@redhat.com>
-Date: Sun, 10 May 2009 16:09:48 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Glauber Costa <glommer@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Gleb Natapov <gleb@redhat.com>
-Subject: Re: [PATCH 2/2] deal with interrupt shadow state for emulated instruction
-References: <1241814187-5973-1-git-send-email-glommer@redhat.com> <1241814187-5973-2-git-send-email-glommer@redhat.com> <1241814187-5973-3-git-send-email-glommer@redhat.com>
-In-Reply-To: <1241814187-5973-3-git-send-email-glommer@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 10 May 2009 09:18:04 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45384 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751673AbZEJNSD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 09:18:03 -0400
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
+ class  citizen
+From: Peter Zijlstra <peterz@infradead.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Wu Fengguang <fengguang.wu@intel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "cl@linux-foundation.org" <cl@linux-foundation.org>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+In-Reply-To: <2f11576a0905100539l1512170oc64f7aee2864e8d5@mail.gmail.com>
+References: <20090508081608.GA25117@localhost>
+	 <2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com>
+	 <20090510092053.GA7651@localhost>
+	 <2f11576a0905100229m2c5e6a67md555191dc8c374ae@mail.gmail.com>
+	 <20090510100335.GC7651@localhost>
+	 <2f11576a0905100315j2c810e96mc29b84647dc565c2@mail.gmail.com>
+	 <20090510112149.GA8633@localhost>
+	 <2f11576a0905100439u38c8bccak355ec23953950d6@mail.gmail.com>
+	 <20090510114454.GA8891@localhost> <1241957948.9562.2.camel@laptop>
+	 <2f11576a0905100539l1512170oc64f7aee2864e8d5@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 10 May 2009 15:17:21 +0200
+Message-Id: <1241961441.9562.63.camel@laptop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber Costa wrote:
-> we currently unblock shadow interrupt state when we skip an instruction,
-> but failing to do so when we actually emulate one. This blocks interrupts
-> in key instruction blocks, in particular sti; hlt; sequences
->
-> If the instruction emulated is an sti, we have to block shadow interrupts.
-> The same goes for mov ss. pop ss also needs it, but we don't currently
-> emulate it.
->
-> Without this patch, I cannot boot gpxe option roms at vmx machines.
-> This is described at https://bugzilla.redhat.com/show_bug.cgi?id=494469
-> diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-> index 3d8fcc5..c456aa5 100644
-> --- a/arch/x86/kvm/x86.c
-> +++ b/arch/x86/kvm/x86.c
-> @@ -2362,7 +2362,7 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
->  			u16 error_code,
->  			int emulation_type)
->  {
-> -	int r;
-> +	int r, shadow_mask;
->  	struct decode_cache *c;
->  
->  	kvm_clear_exception_queue(vcpu);
-> @@ -2415,7 +2415,12 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
->  		return EMULATE_DONE;
->  	}
->  
-> +	vcpu->arch.emulate_ctxt.interruptibility = 0;
->   
+On Sun, 2009-05-10 at 21:39 +0900, KOSAKI Motohiro wrote:
+> >> > They always use mmap(PROT_READ | PROT_WRITE | PROT_EXEC) for anycase.
+> >> > Please google it. you can find various example.
+> >>
+> >> How widely is PROT_EXEC abused? Would you share some of your google results?
+> >
+> > That's a security bug right there and should be fixed regardless of our
+> > heuristics.
+> 
+> Yes, should be. but it's not security issue. it doesn't make any security hole.
+> Plus, this claim doesn't help to solve end-user problems.
 
-If the instruction is sti or mov ss, this is ouput only.  Otherwise, it 
-is an input/output parameter.
+Having more stuff executable than absolutely needed is always a security
+issue.
 
-To reduce confusion suggest moving this statement to x86_emulate_insn, 
-so it can be an output-only parameter.
+> I think the basic concept of the patch is right.
+>   - executable mapping is important for good latency
+>   - executable file is relatively small
+> 
+> The last problem is, The patch assume executable mappings is rare, but
+> it isn't guranteed.
+> How do we separate truth executable mapping and mis-used PROT_EXEC usage?
+
+One could possibly limit the size, but I don't think it pays to bother
+about this until we really run into it, again as Andrew already said,
+there's more ways to screw reclaim if you really want to.
 
 
--- 
-error compiling committee.c: too many arguments to function
 
