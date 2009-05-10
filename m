@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZEJP5q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbZEJQ2N@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbZEJP5q (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 11:57:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753838AbZEJP5h
+	id S1752953AbZEJQ2N (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 12:28:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751965AbZEJQ15
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 11:57:37 -0400
-Received: from casper.infradead.org ([85.118.1.10]:59664 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752999AbZEJP5h (ORCPT
+	Sun, 10 May 2009 12:27:57 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:42147 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751634AbZEJQ14 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 11:57:37 -0400
-Date: Sun, 10 May 2009 08:59:57 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Greg KH <gregkh@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
+	Sun, 10 May 2009 12:27:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
+         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=wDewMR3/tG75B9vfR5ZT7LHEJExAb/UZCq1f/iaXN+LtbqGKk8S8rekbEoxQ4grNK6
+         P16V6VE5AQeMTh727WH80t8jBcCy2RwHKRpzDtFr44em4xqbrQeQxSUnfwIBG96aVVWk
+         zNRaKgsieaFKPF8PCd3nze+GY/gZBVFQd/rSA=
+Message-ID: <4A070089.4090804@googlemail.com>
+Date: Sun, 10 May 2009 18:27:53 +0200
+From: Michael Riepe <michael.riepe@googlemail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: de-de, de, en-us, en
+MIME-Version: 1.0
+To: Michael Buesch <mb@bu3sch.de>
+CC: Francois Romieu <romieu@fr.zoreil.com>, Rui Santos <rsantos@grupopie.com>,
+       =?ISO-8859-15?Q?Michael_B=FCker?= <m.bueker@berlin.de>,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] devtmpfs patches
-Message-ID: <20090510085957.1c15b208@infradead.org>
-In-Reply-To: <20090510152005.GA9461@suse.de>
-References: <20090509143742.GA27663@kroah.com>
-	<b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com>
-	<20090509150853.GA32394@suse.de>
-	<20090509082233.32cbb8e4@infradead.org>
-	<20090509161923.GA942@suse.de>
-	<20090509223454.4642753d.akpm@linux-foundation.org>
-	<20090510152005.GA9461@suse.de>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+References: <200903041828.49972.m.bueker@berlin.de> <200904041950.04324.mb@bu3sch.de> <4A06D8D2.4010505@googlemail.com> <200905101753.35282.mb@bu3sch.de>
+In-Reply-To: <200905101753.35282.mb@bu3sch.de>
+X-Enigmail-Version: 0.91.0.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 May 2009 08:20:05 -0700
-Greg KH <gregkh@suse.de> wrote:
 
-> On Sat, May 09, 2009 at 10:34:54PM -0700, Andrew Morton wrote:
-> > On Sat, 9 May 2009 09:19:23 -0700 Greg KH <gregkh@suse.de> wrote:
-> > 
-> > >  We need to be able to support large number of partitions at boot
-> > > time. 
-> > 
-> > I suspect that the intersection between (systems which need to shave
-> > boot time to the minimum) and (systems which have lots of
-> > partitions) is quite small?
+
+Michael Buesch wrote:
+
+>>It seems to me that this particular chip really doesn't like MSI.
 > 
-> No, not at all, lots of desktops have one or two disks with 15+
-> partitions.  Those users want fast boot times as well.
+> 
+> I can confirm this. I tried with msi enabled and it starts breaking
+> after a few seconds of heavy transfers. Disabling MSI results in a reliable connection.
+> 
+> Maybe we should disable MSI as temporary workaround for affected chips?
 
-if partitions > 15 don't have stable numbers surely we could fix
-that....
-
+Yep. It may not solve the problem, but it's a lot better than turning
+MSI off for everything, including apparently working NICs that use the
+same driver(s).
 
 -- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+Michael "Tired" Riepe <michael.riepe@googlemail.com>
+X-Tired: Each morning I get up I die a little
