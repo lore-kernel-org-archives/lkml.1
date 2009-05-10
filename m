@@ -1,107 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754324AbZEJO4u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbZEJO6w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754324AbZEJO4u (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 10:56:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbZEJO4k
+	id S1755798AbZEJO6w (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 10:58:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbZEJO6n
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 10:56:40 -0400
-Received: from out01.mta.xmission.com ([166.70.13.231]:34325 "EHLO
-	out01.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752410AbZEJO4j (ORCPT
+	Sun, 10 May 2009 10:58:43 -0400
+Received: from netrider.rowland.org ([192.131.102.5]:40620 "HELO
+	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752087AbZEJO6n (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 10:56:39 -0400
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Greg KH <gregkh@suse.de>, Fabio Comolli <fabio.comolli@gmail.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-References: <20090509143742.GA27663@kroah.com>
-	<b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com>
-	<20090509150853.GA32394@suse.de>
-	<20090509082233.32cbb8e4@infradead.org> <20090509161923.GA942@suse.de>
-	<20090509213404.6cd040f7@infradead.org>
-	<m1bpq1wg8p.fsf@fess.ebiederm.org>
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 10 May 2009 07:56:32 -0700
-In-Reply-To: <m1bpq1wg8p.fsf@fess.ebiederm.org> (Eric W. Biederman's message of "Sun\, 10 May 2009 00\:48\:22 -0700")
-Message-ID: <m1skjdt3a7.fsf@fess.ebiederm.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+	Sun, 10 May 2009 10:58:43 -0400
+Date: Sun, 10 May 2009 10:58:43 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@netrider.rowland.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+cc: Greg KH <greg@kroah.com>, Linux Kernel list <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Device core removal ordering brokenness
+In-Reply-To: <1241911761.19955.8.camel@pasglop>
+Message-ID: <Pine.LNX.4.44L0.0905101035410.31353-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
-X-SA-Exim-Connect-IP: 67.169.126.145
-X-SA-Exim-Rcpt-To: arjan@infradead.org, akpm@linux-foundation.org, linux-kernel@vger.kernel.org, greg@kroah.com, kay.sievers@vrfy.org, fabio.comolli@gmail.com, gregkh@suse.de
-X-SA-Exim-Mail-From: ebiederm@xmission.com
-X-Spam-DCC: XMission; sa01 1397; Body=1 Fuz1=1 Fuz2=1 
-X-Spam-Combo: ;Arjan van de Ven <arjan@infradead.org>
-X-Spam-Relay-Country: 
-X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
-	*  1.5 XMNoVowels Alpha-numberic number with no vowels
-	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
-	* -0.2 BAYES_40 BODY: Bayesian spam probability is 20 to 40%
-	*      [score: 0.2856]
-	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
-	*      [sa01 1397; Body=1 Fuz1=1 Fuz2=1]
-	*  0.1 XMSolicitRefs_0 Weightloss drug
-	*  0.0 XM_SPF_Neutral SPF-Neutral
-	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
-Subject: Re: [patch 00/13] devtmpfs patches
-X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
-X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ebiederm@xmission.com (Eric W. Biederman) writes:
+On Sun, 10 May 2009, Benjamin Herrenschmidt wrote:
 
-> Arjan van de Ven <arjan@infradead.org> writes:
->
->> On Sat, 9 May 2009 09:19:23 -0700
->> Greg KH <gregkh@suse.de> wrote:
->>
->>
->> btw... I would be a LOT happier about the solution from a technical
->> point of view if it wasn't the kernel making the device node, but the
->> kernel exposing a file with a list of all devices, so that userland can
->> chose to mknod or not, with which permissions if non-default and with
->> non-default owners.
->> So basically (and I'm making up a filename here, don't read too much
->> into that)
->>
->> cat /proc/alldevices
->>
->> c   1     4         foobar
->> b   8     0         sda
->> c   122   12        dri/card0
->>
->> etc
->> making the actual nodes from this in the most simple case is basically
->> no time in userspace, but a slightly more advanced early userspace app
->> can even do permissions for the few device nodes where it matters etc.
->>
->> I can imagine that being a good solution that ends up solving your
->> problem, but in a way that is more consistent with what the kernel does
->> right now and how we can then have userland make decisions on where to
->> make the nodes, with what perms etc etc.
->> In fact such a file would be a greeat help in general, and would be a
->> nice generic solution.
->
-> I just did a tiny 100 line test app.
->
-> It took me all of 0.06s to mount /sys and /dev and to walk sysfs and
-> create all 649 of the device nodes. 
+> Hi Alan !
 
-Ok.  I just asked the question how much is mknod and how much is
-traversing /sys.
+Hi!
 
-If the I hard code the devices to make in my test app the time is,
-0.01s, even on my old 700Mhz amd k7.  So the time to traverse sys to
-find the device numbers is a big part of the cost.
+> I was looking at git history regarding the various BUS_NOTIFY_*
+> notifiers (since David needs some stuff for his DMA debug code that
+> isn't provided by the current set) when I noticed that commit of yours:
+> 
+> ec0676ee28528dc8dda13a93ee4b1f215a0c2f9d
+> 
+> Unless I'm mistaken, which is very possible, this moves the
+> BUS_NOTIFY_DEL_DEVICE callback to -before- the driver remove() callback
+> is invoked. This sounds very illogical and potentially dangerous to me.
+> 
+> In fact, the original ordering and the only one that, to me, makes sense
+> in term of semantics is:
+> 
+> ADD / ->probe() / BOUND ... UNBIND / ->remove() / DEL
+> 
+> And not the current (since your patch):
+> 
+> ADD / ->probe() / BOUND ... DEL / UNBIND / ->remove()
+> 
+> IE. The DEL callback might tear down data structures used by the driver,
+> such as DMA mapping stuff etc...  (In fact, that's pretty much the whole
+> point of this callback). ADD/DEL should be invoked while no driver is
+> active on the device.
+> 
+> Now if I look at the reason for your change, I discover what look to me
+> like added brokenness in the core, but again, I may be missing something
+> obvious. IE. The addition and removal path don't look symetric to me,
+> and you moved the DEL callback because in the first place, the core
+> tears down various things (such as PM or sysfs related data structures)
+> before the driver is unbound from the device.
+> 
+> Whatever you guys think is the right approach for those sysfs and PM
+> structures, I do believe that moving around the DEL callback was a
+> mistake and I can see that becoming an issue on various platforms (if
+> not already).
 
-At the same time.  Things can potentially be sped up quite a bit by
-walking /sys/dev/block and /sys/dev/char and just calling readlink.
+Before the patch, the ordering was like this:
 
-A cheaper way of reading the devices out of sysfs might be in order,
-to ensure the bottleneck is mknod speed.  But I just don't see this
-gating boot speed.
+device_add: 	ADD  dpm_sysfs_add()  ->probe
+device_del:	dpm_sysfs_remove()  ->remove  DEL
 
-Eric
+Now the ordering is like this:
+
+device_add:	dpm_sysfs_add()  ADD  ->probe
+device_del:	DEL  dpm_sysfs_remove()  ->remove
+
+Okay, yes, it's not symmetrical.  But the point of the patch was to put
+the DEL before the dpm_sysfs_remove(), and in any case the code wasn't
+symmetrical even before the patch.  I gather that you'd prefer to see
+
+device_del:	->remove  DEL  dpm_sysfs_remove()
+
+Offhand I can't think of any reason not to do this.  Maybe someone else 
+can; this code has a lot of undocumented constraints.  (Hmm, what 
+happens if a system suspend occurs after the device has been 
+unregistered from its bus but before it has been taken off the dpm 
+list?  It's probably okay but worth checking...)
+
+If you'd like to submit a patch moving the "if (dev->bus)...", 
+device_pm_remove(), and dpm_sysfs_remove() stuff after the call to 
+bus_remove_device(), go ahead.
+
+Alan Stern
+
