@@ -1,72 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZEJB20@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755952AbZEJBa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbZEJB20 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 21:28:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755463AbZEJB2P
+	id S1755952AbZEJBa2 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 21:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbZEJBaT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 21:28:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43691 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755337AbZEJB2N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 21:28:13 -0400
-Message-ID: <4A062D58.6030401@kernel.org>
-Date: Sun, 10 May 2009 10:26:48 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: jeff@garzik.org, linux-ide@vger.kernel.org, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       Mauelshagen@RedHat.com, dm-devel@RedHat.com, dan.j.williams@gmail.com
-Subject: Re: [PATCH 2/3] scsi: add scsi_device->alt_capacity
-References: <1241828002-12742-1-git-send-email-tj@kernel.org>	 <1241828002-12742-3-git-send-email-tj@kernel.org>	 <1241842999.6357.2.camel@mulgrave>  <4A05AAA4.9010806@kernel.org> <1241886223.3542.37.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1241886223.3542.37.camel@mulgrave.int.hansenpartnership.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+	Sat, 9 May 2009 21:30:19 -0400
+Received: from outbound.icp-qv1-irony-out3.iinet.net.au ([203.59.1.148]:50897
+	"EHLO outbound.icp-qv1-irony-out3.iinet.net.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755520AbZEJBaS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 21:30:18 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AuoCAPfKBUp8qMNV/2dsb2JhbAAIvgAIjleCLBgIgTIF
+X-IronPort-AV: E=Sophos;i="4.40,322,1238947200"; 
+   d="scan'208";a="434868748"
+Subject: [PATCH] atmel-lcdc: Fix pixclock upper bound detection
+From: Ben Nizette <bn@niasdigital.com>
+To: nicolas.ferre@atmel.com
+Cc: Haavard Skinnemoen <hskinnemoen@atmel.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       kernel <kernel@avr32linux.org>
+Content-Type: text/plain
+Date: Sun, 10 May 2009 11:29:39 +1000
+Message-Id: <1241918979.3246.10.camel@linux-51e8.site>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.1.1 
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 10 May 2009 01:26:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, James.
 
-James Bottomley wrote:
-> On Sun, 2009-05-10 at 01:09 +0900, Tejun Heo wrote:
->> James Bottomley wrote:
->>> This is done at slightly the wrong level.  Capacity is actually a
->>> property of struct scsi_disk not struct scsi_device ... shouldn't
->>> alt_capacity be at the same level?
->> Hmmm... I think that was my first try and then I moved it to sdev for
->> some reason I can't rememer now.  I'll look into it again and try to
->> move it into sdev.
-> 
-> Really one of the things I was wondering is why even scsi_disk ...
-> capacity is in there, but it's also in gendisk, so I've thought
-> (admittedly never translated it to action) that we could just remove the
-> duplication in scsi_disk.
-> 
-> This alt_capacity looks to be a pure ATA thing...  I can't find it
-> in the SCSI specs and there doesn't seem to be a SAT equivalent of
-> the commands.  Ideally, what should be happening is that the ata ULD
-> would issue the capacity commands and just set the block
-> alt_capacity without having to worry about transporting the value up
-> and down the stack.  Matthew Wilcox thought we could begin an
-> implementation of the ATA uld using the ATA_16 command to transport
-> it through SCSI ... this might provide the good reason to begin
-> that.
+AFAICT the code which checks that the requested pixclock value is within
+bounds is incorrect.  It ensures that the lcdc core clock is at least
+(bytes per pixel) times higher than the pixel clock rather than just
+greater than or equal to.
 
-Yeap, it's a purely ATA specific workaround.
+There are tighter restrictions on the pixclock value as a function of
+bus width for STN panels but even then it isn't a simple relationship as
+currently checked for.  IMO either something like the below patch should
+be applied or else more detailed checking logic should be implemented
+which takes in to account the panel type as well.
 
-Now I remembered what was the problem.  The problem was that the
-latest hook libata can use is ->slave_configure which is called before
-HLD attaches, so there's no sdkp or genhd associated during libata
-configuration.  Longer term, this definitely is something which should
-be stripped out of SCSI whether that happens with ATA HLD on top of
-SCSI or a completely separate stack.  Any better ideas on how to work
-around this for now?
+CMIIW :-)
 
-Thanks.
+Signed-off-by: Ben Nizette <bn@niasdigital.com>
 
--- 
-tejun
+---
+diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
+index 9a577a8..5779641 100644
+--- a/drivers/video/atmel_lcdfb.c
++++ b/drivers/video/atmel_lcdfb.c
+@@ -351,7 +351,7 @@ static int atmel_lcdfb_check_var(struct fb_var_screeninfo *var,
+ 	dev_dbg(dev, "  bpp:        %u\n", var->bits_per_pixel);
+ 	dev_dbg(dev, "  clk:        %lu KHz\n", clk_value_khz);
+ 
+-	if ((PICOS2KHZ(var->pixclock) * var->bits_per_pixel / 8) > clk_value_khz) {
++	if (PICOS2KHZ(var->pixclock) > clk_value_khz) {
+ 		dev_err(dev, "%lu KHz pixel clock is too fast\n", PICOS2KHZ(var->pixclock));
+ 		return -EINVAL;
+ 	}
+
+
