@@ -1,53 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755678AbZEJVz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755488AbZEJWHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755678AbZEJVz1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 17:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752174AbZEJVzP
+	id S1755488AbZEJWHd (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 18:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753533AbZEJWHQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 17:55:15 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2511 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751480AbZEJVzN (ORCPT
+	Sun, 10 May 2009 18:07:16 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:43825 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751480AbZEJWHO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 17:55:13 -0400
-Subject: Re: RFC: MAINTAINER email address style?
-From: Joe Perches <joe@perches.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, randy.dunlap@oracle.com,
-       torvalds@linux-foundation.org, akpm@kernel.org,
+	Sun, 10 May 2009 18:07:14 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:message-id:user-agent:
+	mime-version:content-type:content-id:x-system-of-record;
+	b=eLtcZsEy4u54xgiypW8kb6ClcFHJoRSfsfcmcNUSsu+qnQmlcVTTK5xctY3VlyB5R
+	dobxeQyY1+3c+s2cYCRXw==
+Date: Sun, 10 May 2009 15:07:05 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, San Mehat <san@android.com>,
+       =?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20090510222441.0fc3fc5b@lxorguk.ukuu.org.uk>
-References: <1239167872-8179-1-git-send-email-joe@perches.com>
-	 <20090417134711.ba0f03e7.randy.dunlap@oracle.com>
-	 <1240003652.31116.44.camel@localhost> <20090407081312.GH1408@ucw.cz>
-	 <1240415689.21848.19.camel@localhost>
-	 <20090422185916.GA3864@uranus.ravnborg.org>
-	 <20090422120510.cc17e470.akpm@linux-foundation.org>
-	 <1240430185.21848.103.camel@localhost> <20090422203005.GA467@elf.ucw.cz>
-	 <1240557233.6735.240.camel@localhost>
-	 <1241987200.3877.9.camel@Joe-AcerAspire>
-	 <20090510222441.0fc3fc5b@lxorguk.ukuu.org.uk>
-Content-Type: text/plain
-Date: Sun, 10 May 2009 14:52:40 -0700
-Message-Id: <1241992360.6711.9.camel@Joe-AcerAspire>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Subject: [patch 01/11 -mmotm] lowmemorykiller: Only iterate over process list
+ when needed.
+Message-ID: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="497827084-1006510910-1241992771=:18804"
+Content-ID: <alpine.DEB.2.00.0905101507030.18804@chino.kir.corp.google.com>
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-05-10 at 22:24 +0100, Alan Cox wrote:
-> > Should names and email addresses in MAINTAINERS be integrated?
-> > Should it stay as-is or be changed to:
-> Please leave it alone or it becomes a total PITA to parse.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-I think people might parse the integrated style better.
+--497827084-1006510910-1241992771=:18804
+Content-Type: TEXT/PLAIN; CHARSET=UTF-8
+Content-Transfer-Encoding: 8BIT
+Content-ID: <alpine.DEB.2.00.0905101507031.18804@chino.kir.corp.google.com>
 
-I have a modified version of scripts/get_maintainer.pl
-that supports either style.
+From: Arve Hjønnevåg <arve@android.com>
 
-Are there other scripts that parse MAINTAINERS?
+Use NR_ACTIVE plus NR_INACTIVE as a size estimate for our fake cache
+instead the sum of rss. Neither method is accurate.
 
+Also skip the process scan, if the amount of memory available is above
+the largest threshold set.
 
+Signed-off-by: Arve Hjønnevåg <arve@android.com>
+---
+ drivers/staging/android/lowmemorykiller.c |   35 +++++++++++++++++-----------
+ 1 files changed, 21 insertions(+), 14 deletions(-)
+
+diff --git a/drivers/staging/android/lowmemorykiller.c b/drivers/staging/android/lowmemorykiller.c
+--- a/drivers/staging/android/lowmemorykiller.c
++++ b/drivers/staging/android/lowmemorykiller.c
+@@ -71,23 +71,30 @@ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
+ 	}
+ 	if(nr_to_scan > 0)
+ 		lowmem_print(3, "lowmem_shrink %d, %x, ofree %d, ma %d\n", nr_to_scan, gfp_mask, other_free, min_adj);
++	rem = global_page_state(NR_ACTIVE) + global_page_state(NR_INACTIVE);
++	if (nr_to_scan <= 0 || min_adj == OOM_ADJUST_MAX + 1) {
++		lowmem_print(5, "lowmem_shrink %d, %x, return %d\n", nr_to_scan, gfp_mask, rem);
++		return rem;
++	}
++
+ 	read_lock(&tasklist_lock);
+ 	for_each_process(p) {
+-		if(p->oomkilladj >= 0 && p->mm) {
+-			tasksize = get_mm_rss(p->mm);
+-			if(nr_to_scan > 0 && tasksize > 0 && p->oomkilladj >= min_adj) {
+-				if(selected == NULL ||
+-				   p->oomkilladj > selected->oomkilladj ||
+-				   (p->oomkilladj == selected->oomkilladj &&
+-				    tasksize > selected_tasksize)) {
+-					selected = p;
+-					selected_tasksize = tasksize;
+-					lowmem_print(2, "select %d (%s), adj %d, size %d, to kill\n",
+-					             p->pid, p->comm, p->oomkilladj, tasksize);
+-				}
+-			}
+-			rem += tasksize;
++		if (p->oomkilladj < min_adj || !p->mm)
++			continue;
++		tasksize = get_mm_rss(p->mm);
++		if (tasksize <= 0)
++			continue;
++		if (selected) {
++			if (p->oomkilladj < selected->oomkilladj)
++				continue;
++			if (p->oomkilladj == selected->oomkilladj &&
++			    tasksize <= selected_tasksize)
++				continue;
+ 		}
++		selected = p;
++		selected_tasksize = tasksize;
++		lowmem_print(2, "select %d (%s), adj %d, size %d, to kill\n",
++		             p->pid, p->comm, p->oomkilladj, tasksize);
+ 	}
+ 	if(selected != NULL) {
+ 		lowmem_print(1, "send sigkill to %d (%s), adj %d, size %d\n",
+--497827084-1006510910-1241992771=:18804--
