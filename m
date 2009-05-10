@@ -1,43 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753705AbZEJV0y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756610AbZEJV3Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753705AbZEJV0y (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 17:26:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753944AbZEJV0n
+	id S1756610AbZEJV3Q (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 17:29:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbZEJV3A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 17:26:43 -0400
-Received: from fg-out-1718.google.com ([72.14.220.156]:50584 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752509AbZEJV0m (ORCPT
+	Sun, 10 May 2009 17:29:00 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60315 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751966AbZEJV3A (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 17:26:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Xbc54ZvmOBMLQ3e0yB6EXLpPnDspvTEBA1wsQ9i5RAXJ6t9pa/6kOCG5s2Pqs2JpHd
-         xdsv5L8+wVPM3N3qRPvn6LZuEAs92dVBisePultgYWPSJQAPWWjAnaxiD7i1Rm4a7moN
-         GqQe52RNdfnv4NKbgPvlzLPv1QbJctXIb+XY4=
-Message-ID: <4A074682.6010403@gmail.com>
-Date: Sun, 10 May 2009 23:26:26 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.7 Thunderbird/3.0b2
-MIME-Version: 1.0
-To: Chris Clayton <chris2553@googlemail.com>
-CC: linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Oops in wireless from today's git
-References: <c6b1100b0905101239n564e4379v5460c281260950bc@mail.gmail.com>
-In-Reply-To: <c6b1100b0905101239n564e4379v5460c281260950bc@mail.gmail.com>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-2
+	Sun, 10 May 2009 17:29:00 -0400
+Date: Sun, 10 May 2009 22:24:41 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Joe Perches <joe@perches.com>
+Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, randy.dunlap@oracle.com,
+       torvalds@linux-foundation.org, akpm@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: RFC: MAINTAINER email address style?
+Message-ID: <20090510222441.0fc3fc5b@lxorguk.ukuu.org.uk>
+In-Reply-To: <1241987200.3877.9.camel@Joe-AcerAspire>
+References: <1239167872-8179-1-git-send-email-joe@perches.com>
+	<20090417134711.ba0f03e7.randy.dunlap@oracle.com>
+	<1240003652.31116.44.camel@localhost>
+	<20090407081312.GH1408@ucw.cz>
+	<1240415689.21848.19.camel@localhost>
+	<20090422185916.GA3864@uranus.ravnborg.org>
+	<20090422120510.cc17e470.akpm@linux-foundation.org>
+	<1240430185.21848.103.camel@localhost>
+	<20090422203005.GA467@elf.ucw.cz>
+	<1240557233.6735.240.camel@localhost>
+	<1241987200.3877.9.camel@Joe-AcerAspire>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/10/2009 09:39 PM, Chris Clayton wrote:
-> I've just done a git pull and built, installed and booted the kernel.
-> Unfortunately I got the oops below.
 
-What's your HEAD? Looks like the issue solved by
-0cc113d866fa87c1455cbaff8d1f7ac054090bd5.
+> > > P:      Len Brown now <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Rafael J. Wysocki <rjw@sisk.pl>
+> > > L:      linux-pm@lists.linux-foundation.org
+> > > S:      Supported
+> 
+> Is there a consensus/majority opinion on this?
+> 
+> Should names and email addresses in MAINTAINERS be integrated?
+> Should it stay as-is or be changed to:
+
+Please leave it alone or it becomes a total PITA to parse.
+
