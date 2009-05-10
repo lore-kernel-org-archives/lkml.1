@@ -1,47 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756416AbZEJVer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbZEJVfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756416AbZEJVer (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 17:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752437AbZEJVei
+	id S1756809AbZEJVfb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 17:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754663AbZEJVfT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 17:34:38 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:50905 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752174AbZEJVeh (ORCPT
+	Sun, 10 May 2009 17:35:19 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:43058 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752076AbZEJVfS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 17:34:37 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A074855.8070008@s5r6.in-berlin.de>
-Date: Sun, 10 May 2009 23:34:13 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
-MIME-Version: 1.0
+	Sun, 10 May 2009 17:35:18 -0400
+Date: Sun, 10 May 2009 22:35:18 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
 To: Jeff Mahoney <jeffm@suse.com>
-CC: Al Viro <viro@ftp.linux.org.uk>, reiserfs-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 0/4] reiserfs xattr fixups
-References: <20090510200535.893737918@suse.com>
-In-Reply-To: <20090510200535.893737918@suse.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Cc: Al Viro <viro@ftp.linux.org.uk>, reiserfs-devel@vger.kernel.org,
+       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de
+Subject: Re: [patch 3/4] reiserfs: fixup perms when xattrs are disabled
+Message-ID: <20090510213518.GG8633@ZenIV.linux.org.uk>
+References: <20090510200535.893737918@suse.com> <20090510200649.900586983@suse.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090510200649.900586983@suse.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Mahoney wrote:
->  Here are my remaining patches for reiserfs in 2.6.30:
-> 
->  - reiserfs-xattr-fixup: Cleans up some ifdefs
->  - reiserfs-xattr-root-fixup: Fixes an oops on open_xa_dir with
-> 			      CONFIG_REISERFS_FS_XATTR=n
->  - reiserfs-xattrs-disabled-perms: Fixes warnings on delete with
-> 			      CONFIG_REISERFS_FS_XATTR=n (bko#13122)
->  - reiserfs-expose-privroot: Adds a -oexpose_privroot that will allow
-> 			     access to the privroot.
+On Sun, May 10, 2009 at 04:05:38PM -0400, Jeff Mahoney wrote:
 
-I rebooted into v2.6.30-rc5-96-ga4d7749 + these four patches now.
-Looks good so far.
--- 
-Stefan Richter
--=====-=-=== -=-= -==-=
-http://arcgraph.de/sr/
+> +#ifdef CONFIG_REISERFS_FS_XATTR
+> +	/*
+> +	 * Stat data v1 doesn't support ACLs.
+> +	 */
+> +	if (get_inode_sd_version(inode) != STAT_DATA_V1)
+> +		return generic_permission(inode, mask, reiserfs_check_acl);
+> +	else
+> +#endif
+> +		return generic_permission(inode, mask, NULL);
+
+Matter of style: this kind of mixing the nesting structures is Not Nice(tm),
+so I'd rather turn that into
+
++#ifdef CONFIG_REISERFS_FS_XATTR
++	/*
++	 * Stat data v1 doesn't support ACLs.
++	 */
++	if (get_inode_sd_version(inode) != STAT_DATA_V1)
++		return generic_permission(inode, mask, reiserfs_check_acl);
++#endif
++
++	return generic_permission(inode, mask, NULL);
