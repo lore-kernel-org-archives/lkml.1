@@ -1,73 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752591AbZEJMkP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753264AbZEJMsD@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752591AbZEJMkP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 08:40:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752225AbZEJMj7
+	id S1753264AbZEJMsD (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 08:48:03 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752087AbZEJMrt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 08:39:59 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:38596 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752169AbZEJMj7 (ORCPT
+	Sun, 10 May 2009 08:47:49 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:60941 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751025AbZEJMrs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 08:39:59 -0400
+	Sun, 10 May 2009 08:47:48 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=rLdmMRtZsSXkKx61EtS3cXnGAumumfHYSaBOce940Lixh8Gu20H/gorV5Imq1Dx4bX
-         TNpvju1Y9yJRpZHQ+k6XWB5icjkrfqIoBv+Ecg+WNfP063N62IIrPKUiQgir3jzgxgix
-         x+8oYg47lbL+ev6IKIOlCqz6ZKhY5a622nsl4=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=JUijqlmcjvLlU52BYcRNF/nsPfvR+sMIs47h8ph4wTZJrkWNUKDFgTi+RVtiBoPpwn
+         9G+Qrw86/1WfJBwKNicMnr9hnaqQi8ESGtkg9M7lSObS3hpwM/BJ1s1fID+q/CvqP6gF
+         UBUikKQU2G2Gy1l+ujCFYtPL4fBGju3knAQNo=
+Date: Sun, 10 May 2009 14:46:41 +0200
+From: Jarek Poplawski <jarkao2@gmail.com>
+To: "Alexander V. Lukyanov" <lav@netis.ru>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.29.1: unregister_netdevice problem
+Message-ID: <20090510124641.GA2978@ami.dom.local>
+References: <20090422055735.GA4334@night.netis.ru> <20090427054103.GA27529@night.netis.ru> <20090428125755.GA5242@night.netis.ru> <49F76BF6.4040709@gmail.com> <20090429054510.GA8267@night.netis.ru> <20090429090809.GA2995@ami.dom.local> <20090508062640.GA4555@night.netis.ru> <20090508104628.GA6287@ff.dom.local> <20090510073559.GA8929@night.netis.ru>
 MIME-Version: 1.0
-In-Reply-To: <1241957948.9562.2.camel@laptop>
-References: <20090508081608.GA25117@localhost>
-	 <2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com>
-	 <20090510092053.GA7651@localhost>
-	 <2f11576a0905100229m2c5e6a67md555191dc8c374ae@mail.gmail.com>
-	 <20090510100335.GC7651@localhost>
-	 <2f11576a0905100315j2c810e96mc29b84647dc565c2@mail.gmail.com>
-	 <20090510112149.GA8633@localhost>
-	 <2f11576a0905100439u38c8bccak355ec23953950d6@mail.gmail.com>
-	 <20090510114454.GA8891@localhost> <1241957948.9562.2.camel@laptop>
-Date: Sun, 10 May 2009 21:39:58 +0900
-X-Google-Sender-Auth: 86c00fecb75a3977
-Message-ID: <2f11576a0905100539l1512170oc64f7aee2864e8d5@mail.gmail.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class 
-	citizen
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090510073559.GA8929@night.netis.ru>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> > They always use mmap(PROT_READ | PROT_WRITE | PROT_EXEC) for anycase.
->> > Please google it. you can find various example.
->>
->> How widely is PROT_EXEC abused? Would you share some of your google results?
->
-> That's a security bug right there and should be fixed regardless of our
-> heuristics.
+On Sun, May 10, 2009 at 11:35:59AM +0400, Alexander V. Lukyanov wrote:
+> On Fri, May 08, 2009 at 10:46:28AM +0000, Jarek Poplawski wrote:
+> > I can't see anything suspicious for now, except these UDP and TCP
+> > warnings. Did you see similar messages with 2.6.27? Btw., could this
+> 
+> Yes. Such messages show up with any kernel version.
+> 
+> > eth0.987 be "connected" with any of this traffic? (IP# ?)
+> 
+> No, eth0.987 is only used for traffic output.
+> 
+> BTW, it seems that only actively used vlan interfaces have the problem
+> (even when the traffic stops). Other vlan interfaces with little traffic
+> can be removed with no problems.
 
-Yes, should be. but it's not security issue. it doesn't make any security hole.
-Plus, this claim doesn't help to solve end-user problems.
+OK, I'll try to look around this, but how about trying 2.6.28.10 in
+the meantime? It could limit "a bit" the number of places/lines.
 
-I think the basic concept of the patch is right.
-  - executable mapping is important for good latency
-  - executable file is relatively small
-
-The last problem is, The patch assume executable mappings is rare, but
-it isn't guranteed.
-How do we separate truth executable mapping and mis-used PROT_EXEC usage?
+Jarek P.
