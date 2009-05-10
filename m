@@ -1,75 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbZEJOtS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbZEJOyV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755302AbZEJOtS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 10:49:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbZEJOs7
+	id S1755329AbZEJOyV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 10:54:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753659AbZEJOyM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 10:48:59 -0400
-Received: from proton.sasknet.sk.ca ([142.165.20.178]:45941 "EHLO
-	proton.sasknet.sk.ca" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752389AbZEJOs6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 10:48:58 -0400
-X-Greylist: delayed 332 seconds by postgrey-1.27 at vger.kernel.org; Sun, 10 May 2009 10:48:58 EDT
-Date: Sun, 10 May 2009 15:43:04 +0100
-From: "mail.telia.com" <helpdesk@telia.com>
-Subject: Webmaster E-post konto Uppgradering
-To: Undisclosed recipients:;
-Reply-to: technicalsupportteam@live.com
-Message-id: <0KJF00B1UNI7BH20@bgmpomr1.sasknet.sk.ca>
-MIME-version: 1.0
-X-MIMEOLE: Produced By Microsoft MimeOLE V6.00.2600.0000
-X-Mailer: Microsoft Outlook Express 6.00.2600.0000
-Content-type: text/plain; charset=Windows-1251
-Content-transfer-encoding: 8BIT
-X-Priority: 3
-X-MSMail-priority: Normal
-X-Proofpoint-Virus-Version: vendor=fsecure engine=1.12.8161:2.4.5,1.2.40,4.0.166 definitions=2009-05-09_02:2009-04-28,2009-05-09,2009-05-09 signatures=0
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=default score=0 spamscore=0 ipscore=0 phishscore=40 bulkscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx engine=5.0.0-0811170000 definitions=main-0905100095
+	Sun, 10 May 2009 10:54:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54312 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753459AbZEJOyM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 10:54:12 -0400
+Message-ID: <4A06EA08.1030102@redhat.com>
+Date: Sun, 10 May 2009 10:51:52 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+MIME-Version: 1.0
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, hannes@cmpxchg.org,
+       linux-kernel@vger.kernel.org, tytso@mit.edu, linux-mm@kvack.org,
+       elladan@eskimo.com, npiggin@suse.de, cl@linux-foundation.org,
+       minchan.kim@gmail.com
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class
+  citizen
+References: <20090430181340.6f07421d.akpm@linux-foundation.org>	<1241432635.7620.4732.camel@twins>	<20090507121101.GB20934@localhost>	<20090507151039.GA2413@cmpxchg.org>	<20090507134410.0618b308.akpm@linux-foundation.org>	<20090508081608.GA25117@localhost>	<20090508125859.210a2a25.akpm@linux-foundation.org>	<20090508230045.5346bd32@lxorguk.ukuu.org.uk>	<2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com>	<1241946446.6317.42.camel@laptop>	<2f11576a0905100236u15d45f7fm32d470776659cfec@mail.gmail.com> <20090510144533.167010a9@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090510144533.167010a9@lxorguk.ukuu.org.uk>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Bäste mail.telia.com Post Användare, 
+Alan Cox wrote:
+> On Sun, 10 May 2009 18:36:19 +0900
+> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+>> I don't oppose this policy. PROT_EXEC seems good viewpoint.
+> 
+> I don't think it is that simple
+> 
+> Not only can it be abused but some systems such as java have large
+> PROT_EXEC mapped environments, as do many other JIT based languages.
 
+On the file LRU side, or on the anon LRU side?
 
-Vi skrev till er den 10 may 2009 råd att du byter lösenord på 
-kontot för att förhindra obehörig åtkomst till kontot efter 
-nätverket undervisning vi tidigare meddelat. 
+> Secondly it moves the pressure from the storage volume holding the system
+> binaries and libraries to the swap device which already has to deal with
+> a lot of random (and thus expensive) I/O, as well as the users filestore
+> for mapped objects there - which may even be on a USB thumbdrive.
 
-alla Mailhub system kommer att genomgå regelbundna underhåll. Tillgång 
-till din e-post via Webmail klient att vara tillgängligt under en viss tid 
-under denna period. Vi håller på att uppgradera vår databas 
-och e-post kontocentral I.E hemsida uppfattning. Vi skall ta bort gamla 
-[https: / / mail.telia.com / l konton som inte längre är aktiva för att skapa 
-mer utrymme för nya accountsusers. Vi har också undersökt ett stort 
-säkerhet revisionen för att förbättra och höja 
-vår säkerhet. 
+Preserving the PROT_EXEC pages over streaming IO should not
+move much (if any) pressure from the file LRUs onto the
+swap-backed (anon) LRUs.
 
-För att fortsätta använda våra tjänster du behöver för att uppdatera och 
-åter comfirmed ditt e-postkonto detaljer som efterfrågas nedan. För att komplettera 
-ditt konto igen comfirmation måste du svara på det här mailet omedelbart och 
-ange ditt konto 
-information som efterfrågas nedan. 
+> I still think the focus is on the wrong thing. We shouldn't be trying to
+> micro-optimise page replacement guesswork - we should be macro-optimising
+> the resulting I/O performance.
 
+Any ideas on how to achieve that? :)
 
-Användarnamn: 
-Lösenord: 
-Födelsedatum: 
-Kommande Lösenord: 
-
-
-Underlåtenhet att göra detta kommer omedelbart att göra ditt konto avaktiveras från 
-vår databas och tjänster inte kommer att avbrytas eftersom viktiga meddelanden maj 
-samt att gå förlorade på grund av de sjunkande att åter comfirmed till oss ditt konto 
-detaljer. 
-
-Vi ber om ursäkt för de olägenheter som detta orsakar dig under den här 
-period, men lita på att vi är här för att hjälpa dig bättre och ge 
-mer teknik som kretsar kring e-post och Internet. Det är också 
-relevant, du understandthat vår främsta oro är för våra kunder, 
-och för säkerheten på sina filer och data. 
-
-
-COMFIRMATION Kod: mail.telia.com -/93-1A388-480 
-Teknisk Support Team
+-- 
+All rights reversed.
