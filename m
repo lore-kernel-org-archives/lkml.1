@@ -1,74 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756995AbZEJX3U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756867AbZEJX3r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756995AbZEJX3U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 19:29:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZEJX3J
+	id S1756867AbZEJX3r (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 19:29:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753664AbZEJX3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 19:29:09 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56444 "EHLO mx2.suse.de"
+	Sun, 10 May 2009 19:29:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58010 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750943AbZEJX3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 19:29:08 -0400
-Message-ID: <4A07630E.8000503@suse.com>
-Date: Sun, 10 May 2009 19:28:14 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
+	id S1751095AbZEJX3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 19:29:34 -0400
+Message-ID: <4A0763A5.4050600@kernel.org>
+Date: Mon, 11 May 2009 08:30:45 +0900
+From: Tejun Heo <tj@kernel.org>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Al Viro <viro@ZenIV.linux.org.uk>
-Cc: Al Viro <viro@ftp.linux.org.uk>, reiserfs-devel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, stefanr@s5r6.in-berlin.de
-Subject: Re: [patch 3/4] reiserfs: fixup perms when xattrs are disabled
-References: <20090510200535.893737918@suse.com> <20090510200649.900586983@suse.com> <20090510213518.GG8633@ZenIV.linux.org.uk>
-In-Reply-To: <20090510213518.GG8633@ZenIV.linux.org.uk>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+CC: Borislav Petkov <petkovbb@googlemail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jens Axboe <axboe@kernel.dk>
+Subject: Re: [RFC PATCH 0/12] ide-atapi remove pc->buf
+References: <1241855134-4984-1-git-send-email-petkovbb@gmail.com> <200905102332.24775.bzolnier@gmail.com>
+In-Reply-To: <200905102332.24775.bzolnier@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-15
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 10 May 2009 23:29:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+Hello, Bartlomiej.
 
-Al Viro wrote:
-> On Sun, May 10, 2009 at 04:05:38PM -0400, Jeff Mahoney wrote:
+Bartlomiej Zolnierkiewicz wrote:
+> Good question, how's about:
 > 
->> +#ifdef CONFIG_REISERFS_FS_XATTR
->> +	/*
->> +	 * Stat data v1 doesn't support ACLs.
->> +	 */
->> +	if (get_inode_sd_version(inode) != STAT_DATA_V1)
->> +		return generic_permission(inode, mask, reiserfs_check_acl);
->> +	else
->> +#endif
->> +		return generic_permission(inode, mask, NULL);
+> Once tj/block-unify-sector-and-data_len is in block/for-2.6.31 and your tree
+> is ready I will pull it into the separate branch.  This branch can be then
+> pulled into ide/for-next or into new ide/all branch (replacing ide/for-next
+> in linux-next).
 > 
-> Matter of style: this kind of mixing the nesting structures is Not Nice(tm),
-> so I'd rather turn that into
+> This means that I'll have to synchronize merge window merges with Jens but
+> this is needed already and shouldn't be a problem.
 > 
-> +#ifdef CONFIG_REISERFS_FS_XATTR
-> +	/*
-> +	 * Stat data v1 doesn't support ACLs.
-> +	 */
-> +	if (get_inode_sd_version(inode) != STAT_DATA_V1)
-> +		return generic_permission(inode, mask, reiserfs_check_acl);
-> +#endif
-> +
-> +	return generic_permission(inode, mask, NULL);
+> If somebody [ Tejun/Jens: I'm talking to you :) ] has a better idea how to
+> handle this please stand-up.
 
-Works for me.
+There needs to be a sync point anyway and there's one more patchset on
+top of block-unify-sector-and-data_len involving ide changes (the
+block-peek-fetch one), so if both get acked by Jens, it would be
+easier to simply branch out from there.  From there on, I don't expect
+too much disruption to ide from further block layer changes, so things
+should be okay.
 
-- -Jeff
+Thanks.
 
-- --
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkoHYw4ACgkQLPWxlyuTD7JdrACfdMo7wPBtIGBadVEBKiviD4i9
-H4oAoKf1GtugtaiTVZdwwveaTPxBRD/T
-=JiZ1
------END PGP SIGNATURE-----
+-- 
+tejun
