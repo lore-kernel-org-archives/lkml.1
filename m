@@ -1,48 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756116AbZEJCcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbZEJCvT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756116AbZEJCcS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 9 May 2009 22:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755599AbZEJCcH
+	id S1755612AbZEJCvT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 9 May 2009 22:51:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753883AbZEJCvE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 9 May 2009 22:32:07 -0400
-Received: from cavan.codon.org.uk ([93.93.128.6]:37675 "EHLO
-	vavatch.codon.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754237AbZEJCcE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 9 May 2009 22:32:04 -0400
-Date: Sun, 10 May 2009 03:32:03 +0100
-From: Matthew Garrett <mjg59@srcf.ucam.org>
-To: Dave Young <hidave.darkstar@gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       len.brown@intel.com
-Subject: Re: [PATCH] dell-laptop : remove the duplicated kconfig option
-Message-ID: <20090510023203.GC14018@srcf.ucam.org>
-References: <a8e1da0905091928p40228e4ejdcf10a706c5b95b7@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a8e1da0905091928p40228e4ejdcf10a706c5b95b7@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: mjg59@codon.org.uk
-X-SA-Exim-Scanned: No (on vavatch.codon.org.uk); SAEximRunCond expanded to false
+	Sat, 9 May 2009 22:51:04 -0400
+Received: from gate.crashing.org ([63.228.1.57]:35530 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753236AbZEJCvE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 9 May 2009 22:51:04 -0400
+Subject: Re: dma-debug: add a check dma memory leaks
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Joerg Roedel <joerg.roedel@amd.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       reinette.chatre@intel.com, greg@kroah.com
+In-Reply-To: <1241913552.24436.113.camel@macbook.infradead.org>
+References: <200903302101.n2UL1O1n011970@hera.kernel.org>
+	 <1240005065.19059.19.camel@macbook.infradead.org>
+	 <20090421092016.GH17438@amd.com>
+	 <1241913552.24436.113.camel@macbook.infradead.org>
+Content-Type: text/plain; charset="UTF-8"
+Date: Sun, 10 May 2009 11:46:24 +1000
+Message-Id: <1241919984.19955.9.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 10, 2009 at 10:28:39AM +0800, Dave Young wrote:
-
-(Cc:ing Len)
-
-> dell-laptop driver has duplicated Kconfig defination both in
-> drivers/misc/Kconfig and drivers/platform/x86/Kconfig.
+On Sun, 2009-05-10 at 00:59 +0100, David Woodhouse wrote:
+> Subject: Add BUS_NOTIFY_UNBOUND_DRIVER callback after driver removal
 > 
-> Here remove the drivers/misc/ option because its source code is under
-> drivers/platform/x86.
+> This adds a notifier callback which happens _after_ the driver has been
+> unbound from the device, needed for things like the DMA debugging API
+> which want to check that all DMA mappings have been correctly torn down.
 > 
-> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+> Signed-off-by: David Woodhouse <David.Woodhouse@intel.com>
 
-Acked-by: Matthew Garrett <mjg@redhat.com>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
--- 
-Matthew Garrett | mjg59@srcf.ucam.org
+> ---
+> On Tue, 2009-04-21 at 11:20 +0200, Joerg Roedel wrote:
+> > On Fri, Apr 17, 2009 at 10:51:05PM +0100, David Woodhouse wrote:
+> > > Hm, cute... but not quite functioning as you intended. If you look at
+> > > __device_release_driver() in drivers/base/dd.c you'll see it actually
+> > > calls the notifier _before_ calling into the driver's ->remove() method.
+> > > So it's hardly surprising that not everything has been freed yet...
+> > > 
+> > > Reported by Reinette when it bit iwlwifi.
+> > > 
+> > > Ben, can we get away with changing the order so that the ->remove() is
+> > > called before the notifier, in this case?
+> > 
+> > Ben? I would like to keep this check. If its not possible to move this
+> > one behind the drivers ->remove function it may be an option to add
+> > another notifier?
+> 
+> It doesn't look like it's possible to move the UNBIND callback. Let's
+> add an UNBOUND callback instead... I've tested this and it fixes the
+> false positives.
+> 
+> Jörg, should you be using UNBOUND instead of UNBIND in the amd_iommu
+> notifier callback too?
+> 
+> diff --git a/drivers/base/dd.c b/drivers/base/dd.c
+> index 742cbe6..efd00de 100644
+> --- a/drivers/base/dd.c
+> +++ b/drivers/base/dd.c
+> @@ -320,6 +320,10 @@ static void __device_release_driver(struct device *dev)
+>  		devres_release_all(dev);
+>  		dev->driver = NULL;
+>  		klist_remove(&dev->p->knode_driver);
+> +		if (dev->bus)
+> +			blocking_notifier_call_chain(&dev->bus->p->bus_notifier,
+> +						     BUS_NOTIFY_UNBOUND_DRIVER,
+> +						     dev);
+>  	}
+>  }
+>  
+> diff --git a/include/linux/device.h b/include/linux/device.h
+> index 6a69caa..4ded2ae 100644
+> --- a/include/linux/device.h
+> +++ b/include/linux/device.h
+> @@ -116,6 +116,7 @@ extern int bus_unregister_notifier(struct bus_type *bus,
+>  #define BUS_NOTIFY_BOUND_DRIVER		0x00000003 /* driver bound to device */
+>  #define BUS_NOTIFY_UNBIND_DRIVER	0x00000004 /* driver about to be
+>  						      unbound */
+> +#define BUS_NOTIFY_UNBOUND_DRIVER	0x00000005 /* driver has been unbound */
+>  
+>  extern struct kset *bus_get_kset(struct bus_type *bus);
+>  extern struct klist *bus_get_device_klist(struct bus_type *bus);
+> 
+> 
+
