@@ -1,75 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756577AbZEJScy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756558AbZEJSie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756577AbZEJScy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 14:32:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbZEJSco
+	id S1756558AbZEJSie (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 14:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754051AbZEJSiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 14:32:44 -0400
-Received: from mail.gmx.net ([213.165.64.20]:34586 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1754795AbZEJScn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 14:32:43 -0400
-X-Authenticated: #20450766
-X-Provags-ID: V01U2FsdGVkX18VfkpwklkVQsJYY740TcRdu3tOKIfMRxj3PXgOYu
-	ADoR3h9nj6eefD
-Date: Sun, 10 May 2009 20:33:03 +0200 (CEST)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Sam Ravnborg <sam@ravnborg.org>
-cc: Mauro Carvalho Chehab <mchehab@infradead.org>,
-       Linux Media Mailing List <linux-media@vger.kernel.org>,
-       linux-kernel@vger.kernel.org, linux-kbuild@vger.kernel.org
-Subject: Re: dubious section mismatch test (was Re: [PULL] soc-camera: one
- commit as v4l2-dev preparation)
-In-Reply-To: <20090509165416.GA25534@uranus.ravnborg.org>
-Message-ID: <Pine.LNX.4.64.0905092113280.10748@axis700.grange>
-References: <Pine.LNX.4.64.0905071841331.9460@axis700.grange>
- <20090509062726.22d18182@pedra.chehab.org> <Pine.LNX.4.64.0905091430100.3515@axis700.grange>
- <20090509165416.GA25534@uranus.ravnborg.org>
+	Sun, 10 May 2009 14:38:23 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:64535 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753745AbZEJSiW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 14:38:22 -0400
+Message-ID: <4A071F1A.1090702@codemonkey.ws>
+Date: Sun, 10 May 2009 13:38:18 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-Y-GMX-Trusted: 0
-X-FuHaFi: 0.5600000000000001
+To: Gregory Haskins <ghaskins@novell.com>
+CC: Avi Kivity <avi@redhat.com>, Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org,
+       Hollis Blanchard <hollisb@us.ibm.com>
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <4A02D40D.7060307@redhat.com> <4A0448DF.90705@codemonkey.ws> <4A0570B1.30401@novell.com>
+In-Reply-To: <4A0570B1.30401@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 May 2009, Sam Ravnborg wrote:
+Gregory Haskins wrote:
+> Anthony Liguori wrote:
+>   
+>
+>>   I'm surprised so much effort is going into this, is there any
+>> indication that this is even close to a bottleneck in any circumstance?
+>>     
+>
+> Yes.  Each 1us of overhead is a 4% regression in something as trivial as
+> a 25us UDP/ICMP rtt "ping".m 
+>   
 
-> On Sat, May 09, 2009 at 06:13:13PM +0200, Guennadi Liakhovetski wrote:
-> > On Sat, 9 May 2009, Mauro Carvalho Chehab wrote:
-> > 
-> > > WARNING: /home/v4l/master/v4l/soc_camera.o(.data+0x0): Section mismatch in reference from the variable soc_camera_pdrv to the function .devinit.text:soc_camera_pdrv_probe()
-> > > The variable soc_camera_pdrv references
-> > > the function __devinit soc_camera_pdrv_probe()
-> > > If the reference is valid then annotate the
-> > > variable with __init* (see linux/init.h) or name the variable:
-> > > *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
-> > > 
-> > > WARNING: /home/v4l/master/v4l/soc_camera.o(.data+0x8): Section mismatch in reference from the variable soc_camera_pdrv to the function .devexit.text:soc_camera_pdrv_remove()
-> > > The variable soc_camera_pdrv references
-> > > the function __devexit soc_camera_pdrv_remove()
-> > > If the reference is valid then annotate the
-> > > variable with __exit* (see linux/init.h) or name the variable:
-> > > *driver, *_template, *_timer, *_sht, *_ops, *_probe, *_probe_one, *_console, 
-> > 
-> > FWIW, I find this test dubious. Matching on symbol names doesn't seem like 
-> > a good idea to me. Can we introduce a new marker instead something like
-> > 
-> > static struct whatever_driver __driver driver = {
-> > 	.probe	= my_probe,
-> > 	.remove	= __exit_p(my_remove),
-> > };
-> > 
-> > to put them in a new special section? Or is there a better solution?
-> 
-> We already have that:
-> __refdata would be your choice in this case.
+It wasn't 1us, it was 350ns or something around there (i.e ~1%).
 
-Aha, great! Then also the warning text should be changed, shouldn't it?
+> for request-response, this is generally for *every* packet since you
+> cannot exploit buffering/deferring.
+>
+> Can you back up your claim that PPC has no difference in performance
+> with an MMIO exit and a "hypercall" (yes, I understand PPC has no "VT"
+> like instructions, but clearly there are ways to cause a trap, so
+> presumably we can measure the difference between a PF exit and something
+> more explicit).
+>   
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski, Ph.D.
-Freelance Open-Source Software Developer
-http://www.open-technology.de/
+First, the PPC that KVM supports performs very poorly relatively 
+speaking because it receives no hardware assistance  this is not the 
+right place to focus wrt optimizations.
+
+And because there's no hardware assistance, there simply isn't a 
+hypercall instruction.  Are PFs the fastest type of exits?  Probably not 
+but I honestly have no idea.  I'm sure Hollis does though.
+
+Page faults are going to have tremendously different performance 
+characteristics on PPC too because it's a software managed TLB. There's 
+no page table lookup like there is on x86.
+
+As a more general observation, we need numbers to justify an 
+optimization, not to justify not including an optimization.
+
+In other words, the burden is on you to present a scenario where this 
+optimization would result in a measurable improvement in a real world 
+work load.
+
+
+Regards,
+
+Anthony Liguori
+> We need numbers before we can really decide to abandon this
+> optimization.  If PPC mmio has no penalty over hypercall, I am not sure
+> the 350ns on x86 is worth this effort (especially if I can shrink this
+> with some RCU fixes).  Otherwise, the margin is quite a bit larger.
+>
+> -Greg
+>
+>
+>
+>   
+
