@@ -1,48 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757367AbZEJWLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756541AbZEJWTZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757367AbZEJWLQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 18:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756869AbZEJWI2
+	id S1756541AbZEJWTZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 18:19:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753305AbZEJWTP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 18:08:28 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51533 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1757072AbZEJWI1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 18:08:27 -0400
-Date: Sun, 10 May 2009 23:04:50 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Joe Perches <joe@perches.com>
-Cc: Pavel Machek <pavel@ucw.cz>, Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, randy.dunlap@oracle.com,
-       torvalds@linux-foundation.org, akpm@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: RFC: MAINTAINER email address style?
-Message-ID: <20090510230450.24725d8c@lxorguk.ukuu.org.uk>
-In-Reply-To: <1241992360.6711.9.camel@Joe-AcerAspire>
-References: <1239167872-8179-1-git-send-email-joe@perches.com>
-	<20090417134711.ba0f03e7.randy.dunlap@oracle.com>
-	<1240003652.31116.44.camel@localhost>
-	<20090407081312.GH1408@ucw.cz>
-	<1240415689.21848.19.camel@localhost>
-	<20090422185916.GA3864@uranus.ravnborg.org>
-	<20090422120510.cc17e470.akpm@linux-foundation.org>
-	<1240430185.21848.103.camel@localhost>
-	<20090422203005.GA467@elf.ucw.cz>
-	<1240557233.6735.240.camel@localhost>
-	<1241987200.3877.9.camel@Joe-AcerAspire>
-	<20090510222441.0fc3fc5b@lxorguk.ukuu.org.uk>
-	<1241992360.6711.9.camel@Joe-AcerAspire>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Sun, 10 May 2009 18:19:15 -0400
+Received: from gate.crashing.org ([63.228.1.57]:57923 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752437AbZEJWTO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 18:19:14 -0400
+Subject: Re: Device core removal ordering brokenness
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Greg KH <greg@kroah.com>, Linux Kernel list <linux-kernel@vger.kernel.org>,
+       David Woodhouse <dwmw2@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.44L0.0905101035410.31353-100000@netrider.rowland.org>
+References: <Pine.LNX.4.44L0.0905101035410.31353-100000@netrider.rowland.org>
+Content-Type: text/plain
+Date: Mon, 11 May 2009 08:17:04 +1000
+Message-Id: <1241993824.19955.14.camel@pasglop>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> I have a modified version of scripts/get_maintainer.pl
-> that supports either style.
+On Sun, 2009-05-10 at 10:58 -0400, Alan Stern wrote:
 
-Including quoted commas in email addresses - which *are* valid ?
+> Before the patch, the ordering was like this:
+> 
+> device_add: 	ADD  dpm_sysfs_add()  ->probe
+> device_del:	dpm_sysfs_remove()  ->remove  DEL
+
+Right.
+
+> Now the ordering is like this:
+> 
+> device_add:	dpm_sysfs_add()  ADD  ->probe
+> device_del:	DEL  dpm_sysfs_remove()  ->remove
+> 
+> Okay, yes, it's not symmetrical.  But the point of the patch was to put
+> the DEL before the dpm_sysfs_remove(), and in any case the code wasn't
+> symmetrical even before the patch.
+
+How so ? It does definitely look symetrical above :-) That's not a big
+deal per-se though, it's just that I want to be able to tear down data
+structures in DEL that may be indirectly used by the driver (DMA mapping
+related or even MMIO related internal arch stuff).
+
+>   I gather that you'd prefer to see
+> 
+> device_del:	->remove  DEL  dpm_sysfs_remove()
+
+I don't actually care that much about where drm_sysfs_remove() is vs.
+DEL, but you seem to want to adjust the sysfs files in ADD and DEL, so
+that would make sense.
+
+> Offhand I can't think of any reason not to do this.  Maybe someone else 
+> can; this code has a lot of undocumented constraints.  (Hmm, what 
+> happens if a system suspend occurs after the device has been 
+> unregistered from its bus but before it has been taken off the dpm 
+> list?  It's probably okay but worth checking...)
+> 
+> If you'd like to submit a patch moving the "if (dev->bus)...", 
+> device_pm_remove(), and dpm_sysfs_remove() stuff after the call to 
+> bus_remove_device(), go ahead.
+
+I first want to "probe" you guys in case there's some nasty skeleton
+waiting around the corner, but yeah I'll probably do that. One other
+option is to split DEL in two.
+
+Ben
+
 
