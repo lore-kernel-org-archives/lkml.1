@@ -1,74 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755092AbZEJKGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751478AbZEJKKX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755092AbZEJKGp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 06:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbZEJKGg
+	id S1751478AbZEJKKX (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 06:10:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750801AbZEJKKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 06:06:36 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:32031 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750751AbZEJKGf (ORCPT
+	Sun, 10 May 2009 06:10:06 -0400
+Received: from smtp11.mail.tnz.yahoo.co.jp ([203.216.226.139]:49138 "HELO
+	smtp11.mail.tnz.yahoo.co.jp" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750751AbZEJKKE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 06:06:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=YBmW7fMWEkJCP0E4y3cr1vc740Tq2DtfgO0K04hHH4RfN91WC8hFTXi7n3CNjKQSiJ
-         6AuW0ESOHbrLVK+ei2olGAalQc7WKreAa5xvY7ueJMTD7v8IS9nfFD6X2GGZ2C1/EVMY
-         6DftFBeBhrR+tY89eAzqcTMM2x/4UfzH4WmO8=
+	Sun, 10 May 2009 06:10:04 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=yj20050223; d=yahoo.co.jp;
+  h=Received:X-Apparently-From:Message-ID:From:To:Cc:Subject:Date:MIME-Version:Content-Type:Content-Transfer-Encoding:X-Priority:X-MSMail-Priority:X-Mailer:X-MimeOLE;
+  b=BwTktEaCIVYleR5OPMtl5wxsCUUE5rVwIrkZfoOoNRHOmxujgt8wMLtHUcoVmKhfpmzM1VDX8B1N2a/jfaQZu/a4qNPYwkfkMHzoa4VoOCojviJDWe3+Wt87dhBOSV3n  ;
+X-Apparently-From: <n0diamond@yahoo.co.jp>
+Message-ID: <C112FA2011134214977C4C45098BBB48@DIAMOND8600>
+From: "Norman Diamond" <n0diamond@yahoo.co.jp>
+To: "James Bottomley" <James.Bottomley@HansenPartnership.com>
+Cc: <linux-kernel@vger.kernel.org>, <linux-scsi@vger.kernel.org>
+Subject: Re: Adaptec driver crashes (1/3 and 2/3)
+Date: Sun, 10 May 2009 19:09:25 +0900
 MIME-Version: 1.0
-In-Reply-To: <20090510093541.GB7651@localhost>
-References: <20090503031539.GC5702@localhost>
-	 <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org>
-	 <20090507134410.0618b308.akpm@linux-foundation.org>
-	 <20090508081608.GA25117@localhost>
-	 <20090508125859.210a2a25.akpm@linux-foundation.org>
-	 <20090508230045.5346bd32@lxorguk.ukuu.org.uk>
-	 <2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com>
-	 <1241946446.6317.42.camel@laptop> <20090510093541.GB7651@localhost>
-Date: Sun, 10 May 2009 19:06:34 +0900
-X-Google-Sender-Auth: ad797f41796cd9be
-Message-ID: <2f11576a0905100306q3c087da8td834026a5161fe68@mail.gmail.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class 
-	citizen
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+	format=flowed;
+	charset="iso-2022-jp";
+	reply-type=response
 Content-Transfer-Encoding: 7bit
+X-Priority: 3
+X-MSMail-Priority: Normal
+X-Mailer: Microsoft Outlook Express 6.00.2900.5512
+X-MimeOLE: Produced By Microsoft MimeOLE V6.00.2900.5579
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> I don't think this is desirable, like Andrew already said, there's tons
->> of ways to defeat any of this and we've so far always priorized mappings
->> over !mappings. Limiting this to only PROT_EXEC mappings is already less
->> than it used to be.
+Norman Diamond (I) wrote:
+> James Bottomley wrote:
+>> On Wed, 2009-05-06 at 16:13 +0900, Norman Diamond wrote:
+>>> The easiest 100% reproducible way to crash a Linux system is as follows.
+>>>
+>>> Insert either an Adaptec 1460 PCMCIA card or Adaptec 1480 CardBus card. 
+>>> Remove the card.  Insert the card again.  Even if you knew to set the 
+>>> console to a text mode terminal first (since Linux doesn't give Blue 
+>>> Screens of Death otherwise), you still won't get a dump.  Not much to go 
+>>> on without a dump, but at least it's 100% repro.
+>>
+>> Sounds like something's still pinned.  When you remove it the first time, 
+>> can you remove the module? (that's aha152x_cs right?).
 >
-> Yeah. One thing I realized in readahead is that *anything* can happen.
-> When it comes to caching, app/user behaviors are *far more* unpredictable.
-> We can make the heuristics as large as 1000LOC (and leave users and
-> ourselves lost in the mist) or as simple as 100LOC (and make it happy
-> to hacking or even abuse).
+> With the 1460, after removing the first time, no I couldn't rmmod the 
+> module.
+> However, yesterday with the 1460 I couldn't repro the kernel crash. 
+> Yesterday with the 1460 I could only repro less severe lossage.
 
-umm. I think it isn't good example.
-Please see recent_scan/rotate stastics. it use only less 100LOC.
+Today I tried Knoppix 6.0.1, kernel 2.6.28.4.  aha152x_cs is a module here 
+too.  When inserting a 1460, nothing happened.  Removing a 1460, nothing 
+happened.  Inserting a 1460, nothing happened.  I modprobed aha152x_cs.  It 
+modprobed successfully.  Removing a 1460, inserting, removing, inserting, 
+nothing happened, even though the module remained loaded.  The older 
+partially working kernel was better than this.
 
-Plus, I don't think stastics is wrong.
-if the page can claim "I'm high priority", it's risky. bad userland
-program might exploit this rule.
-but if the page claim "I think PROT_EXEC is important, maybe", it
-isn't risky. if user-program want to exploit the rule, kernel ignore
-the claim.
+> Yesterday with the 1480 I did repro the kernel crash, the same as before. 
+> The aic7xxx driver was compiled in, not a module.
+
+Today with Knoppix 6.0.1, kernel 2.6.28.4, this one is worse too.  Here 
+aic7xxx is a module, not compiled in.  I don't remember if I had to modprobe 
+it manually but I think not.  I think that inserting a 1480 automatically 
+modprobed the module and it worked for the time being.  However, removing 
+the card started the time bomb.  Reinsertion was no longer necessary. 
+Around 20 seconds after removal, if the console was in text mode then there 
+would be a 1-line crash message with no dump.  Attempts to rmmod aic7xxx 
+failed.  It didn't matter if I tried 0, 1, or multiple times while the time 
+bomb was running, rmmod failed and the crash was still coming.
+
+One time I shut down Knoppix 6.0.1 from whatever KDE's Start button is 
+called, the usual way of doing a shutdown, instead of letting a crash do it. 
+When the CD-ROM tray popped open, I guessed that Knoppix was nearly done 
+shutting down, so I hit the Enter key, and the power went off a few seconds 
+later.  Older versions had some text mode messages on the screen during 
+shutdown, and told us at the same time as it popped open the CD tray.  OK, 
+this one isn't the fault of a SCSI driver.
+
+Sometimes there are reasons to stick to older partially working versions. 
+
+--------------------------------------
+Power up the Internet with Yahoo! Toolbar.
+http://pr.mail.yahoo.co.jp/toolbar/
