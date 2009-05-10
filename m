@@ -1,90 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752699AbZEJIxJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753930AbZEJI73@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752699AbZEJIxJ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 04:53:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbZEJIwz
+	id S1753930AbZEJI73 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 04:59:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751380AbZEJI7T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 04:52:55 -0400
-Received: from pfepa.post.tele.dk ([195.41.46.235]:40769 "EHLO
-	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751081AbZEJIwx (ORCPT
+	Sun, 10 May 2009 04:59:19 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:11905 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751400AbZEJI7S (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 04:52:53 -0400
-Date: Sun, 10 May 2009 10:55:04 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: "H. Peter Anvin" <hpa@zytor.com>
-Cc: linux arch <linux-arch@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>, Tim Abbott <tabbott@mit.edu>
-Subject: Re: Minimal linker script
-Message-ID: <20090510085504.GA18719@uranus.ravnborg.org>
-References: <20090509080006.GA22617@uranus.ravnborg.org> <4A061158.3010604@zytor.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A061158.3010604@zytor.com>
-User-Agent: Mutt/1.4.2.1i
+	Sun, 10 May 2009 04:59:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=Xb6O3QBIrYmfYDSSYiOt6JZug02MwwX/zyeQqsi9q0p+YlNYQ1x1sm51fuz+kUo83n
+         otNigv8tTd9FkW8Bwo51p0GBQ5ZniIC3mkL413g/Ytz9qqOzFr9nj+LqMbCTy/Y6t/3z
+         gG2Nm3xLSEi/xNPw7Lrl8BmgjP8Dsl9eRx4R0=
+MIME-Version: 1.0
+In-Reply-To: <20090508230045.5346bd32@lxorguk.ukuu.org.uk>
+References: <20090430181340.6f07421d.akpm@linux-foundation.org>
+	 <20090501123541.7983a8ae.akpm@linux-foundation.org>
+	 <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins>
+	 <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org>
+	 <20090507134410.0618b308.akpm@linux-foundation.org>
+	 <20090508081608.GA25117@localhost>
+	 <20090508125859.210a2a25.akpm@linux-foundation.org>
+	 <20090508230045.5346bd32@lxorguk.ukuu.org.uk>
+Date: Sun, 10 May 2009 17:59:17 +0900
+X-Google-Sender-Auth: f98129b804670920
+Message-ID: <2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com>
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class 
+	citizen
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, hannes@cmpxchg.org,
+       peterz@infradead.org, riel@redhat.com, linux-kernel@vger.kernel.org,
+       tytso@mit.edu, linux-mm@kvack.org, elladan@eskimo.com, npiggin@suse.de,
+       cl@linux-foundation.org, minchan.kim@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 09, 2009 at 04:27:20PM -0700, H. Peter Anvin wrote:
-> Sam Ravnborg wrote:
-> >  *      . = START;
-> >  *      __init_begin = .;
-> >  *      HEAD_SECTION
-> >  *      INIT_TEXT_SECTION(PAGE_SIZE)
-> >  *      INIT_DATA_SECTION(...)
-> >  *      PERCPU(PAGE_SIZE)
-> >  *      __init_end = .;
-> >  *
-> >  *      __text_begin = .;
-> >  *      TEXT_SECTION = 0
-> >  *      __text_end = .;
-> >  *
-> >  *      __data_begin = .;
-> >  *      RO_DATA_SECTION(PAGE_SIZE)
-> >  *      RW_DATA_SECTION(...)
-> >  *      __data_end = .;
-> >  *
-> >  *      EXCEPTION_TABLE(...)
-> >  *      NOTES
-> >  *
-> >  *      __bss_start = .;
-> >  *      BSS_SECTION(0, 0)
-> >  *      __bss_end = .;
-> >  *      _end = .;
-> >  *
-> >  *
-> >  * [__init_begin, __init_end] is the init section that may be freed after init
-> >  * [_stext, _etext] is the text section
-> >  * [_sdata, _edata] is the data section
-> >  *
-> >  * Some of the included output section include their own set of constants.
-> >  * Examples are: [__initramfs_start, __initramfs_end] for initramfs and
-> >  *               [__nosave_begin, __nosave_end] for the nosave data
-> >  */
-> > 
-> 
-> It seems rather disturbing to me that different sections have different
-> start and end symbols.  I realize this is largely for historical
-> reasons, but if we used a single pattern (e.g. something like
-> __text_start, __text_end for the .text section)
+2009/5/9 Alan Cox <alan@lxorguk.ukuu.org.uk>:
+>> The patch seems reasonable but the changelog and the (non-existent)
+>> design documentation could do with a touch-up.
+>
+> Is it right that I as a user can do things like mmap my database
+> PROT_EXEC to get better database numbers by making other
+> stuff swap first ?
+>
+> You seem to be giving everyone a "nice my process up" hack.
 
-The 'oldish' names were kept only because they are widely used.
-I agree to be consistent is better so will change it to be so.
+How about this?
+if priority < DEF_PRIORITY-2, aggressive lumpy reclaim in
+shrink_inactive_list() already
+reclaim the active page forcely.
+then, this patch don't change kernel reclaim policy.
 
-I edited the sample above to consistently use __<section>_{begin,end}.
+anyway, user process non-changable preventing "nice my process up
+hack" seems makes sense to me.
 
-For now I kept '_end' as I had no better name for it.
+test result:
 
-> then at least in the
-> i386 case we could easily recognize those as relocatable symbols even if
-> they show up as absolute.
+echo 100 > /proc/sys/vm/dirty_ratio
+echo 100 > /proc/sys/vm/dirty_background_ratio
+run modified qsbench (use mmap(PROT_EXEC) instead malloc)
 
-Do you then say that i386 could allow us to use absolute symbols,
-and we could adjust in the code instead?
+           active2active vs active2inactive ratio
+before    5:5
+after       1:9
 
-That would make the linker script nicer but with added
-complexity in the code..
+please don't ask performance number. I haven't reproduce Wu's patch
+improvemnt ;)
 
-	Sam
+Wu, What do you think?
+
+---
+ mm/vmscan.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: b/mm/vmscan.c
+===================================================================
+--- a/mm/vmscan.c	2009-05-10 02:40:01.000000000 +0900
++++ b/mm/vmscan.c	2009-05-10 03:33:30.000000000 +0900
+@@ -1275,7 +1275,8 @@ static void shrink_active_list(unsigned
+ 			struct address_space *mapping = page_mapping(page);
+
+ 			pgmoved++;
+-			if (mapping && test_bit(AS_EXEC, &mapping->flags)) {
++			if (mapping && (priority >= DEF_PRIORITY - 2) &&
++			    test_bit(AS_EXEC, &mapping->flags)) {
+ 				pga2a++;
+ 				list_add(&page->lru, &l_active);
+ 				continue;
