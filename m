@@ -1,112 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753780AbZEJNil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbZEJNrg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753780AbZEJNil (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 09:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751673AbZEJNic
+	id S1754214AbZEJNrg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 09:47:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbZEJNr0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 09:38:32 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:41499 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752024AbZEJNia (ORCPT
+	Sun, 10 May 2009 09:47:26 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:51196 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752669AbZEJNrZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 09:38:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
-         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=NJ/iORNhSrZE/Yrc+CJPAER4pAocr7LHJCBWF7sTFpqta/k47rGe8NdGDERYTttqep
-         QgCjnUF+hVMZHFuuSOpoxZHOMAhDKPRt4FeJmFUbK6ys1Xug5jjxxkpXSS95J2dEsgAm
-         GGRPOizjNlvvaJWTUBj6k/86ZJ1/vkL+Eu2Gw=
-Message-ID: <4A06D8D2.4010505@googlemail.com>
-Date: Sun, 10 May 2009 15:38:26 +0200
-From: Michael Riepe <michael.riepe@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: de-de, de, en-us, en
-MIME-Version: 1.0
-To: Michael Buesch <mb@bu3sch.de>
-CC: Francois Romieu <romieu@fr.zoreil.com>, Rui Santos <rsantos@grupopie.com>,
-       =?ISO-8859-15?Q?Michael_B=FCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
-References: <200903041828.49972.m.bueker@berlin.de> <20090322211159.GA23042@electric-eye.fr.zoreil.com> <49CA1822.6050902@grupopie.com> <200904041950.04324.mb@bu3sch.de>
-In-Reply-To: <200904041950.04324.mb@bu3sch.de>
-X-Enigmail-Version: 0.91.0.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 10 May 2009 09:47:25 -0400
+Date: Sun, 10 May 2009 14:45:33 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, hannes@cmpxchg.org,
+       riel@redhat.com, linux-kernel@vger.kernel.org, tytso@mit.edu,
+       linux-mm@kvack.org, elladan@eskimo.com, npiggin@suse.de,
+       cl@linux-foundation.org, minchan.kim@gmail.com
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
+ class  citizen
+Message-ID: <20090510144533.167010a9@lxorguk.ukuu.org.uk>
+In-Reply-To: <2f11576a0905100236u15d45f7fm32d470776659cfec@mail.gmail.com>
+References: <20090430181340.6f07421d.akpm@linux-foundation.org>
+	<1241432635.7620.4732.camel@twins>
+	<20090507121101.GB20934@localhost>
+	<20090507151039.GA2413@cmpxchg.org>
+	<20090507134410.0618b308.akpm@linux-foundation.org>
+	<20090508081608.GA25117@localhost>
+	<20090508125859.210a2a25.akpm@linux-foundation.org>
+	<20090508230045.5346bd32@lxorguk.ukuu.org.uk>
+	<2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com>
+	<1241946446.6317.42.camel@laptop>
+	<2f11576a0905100236u15d45f7fm32d470776659cfec@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 10 May 2009 18:36:19 +0900
+KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> I don't oppose this policy. PROT_EXEC seems good viewpoint.
 
-Michael Buesch wrote:
+I don't think it is that simple
 
-> I'm currently testing 2.6.29.1 without any additional patches but
-> with the pci=nomsi boot option.
-> 
-> I didn't notice any hickups, yet. I'm running a stresstest on a GBit link for quite
-> some time now. Earlier tests with older kernels and MSI burped earlier.
-> 
-> I will do more testing. If it turns out this is stable I will test the same kernel
-> with Message Signaled Interrupts to see if that causes some breakage.
+Not only can it be abused but some systems such as java have large
+PROT_EXEC mapped environments, as do many other JIT based languages.
 
-I've had this problem up to and including 2.6.29.2. Currently, I'm
-trying 2.6.29.2 with pci=nomsi, and it's stable so far. With MSI
-enabled, a single high-speed TCP transfer will stop after a few seconds,
-but without MSI, I can run four simultaneous transfers to two different
-hosts without a single hickup.
+Secondly it moves the pressure from the storage volume holding the system
+binaries and libraries to the swap device which already has to deal with
+a lot of random (and thus expensive) I/O, as well as the users filestore
+for mapped objects there - which may even be on a USB thumbdrive.
 
-It seems to me that this particular chip really doesn't like MSI.
+I still think the focus is on the wrong thing. We shouldn't be trying to
+micro-optimise page replacement guesswork - we should be macro-optimising
+the resulting I/O performance. My disks each do 50MBytes/second and even with the
+Gnome developers finest creations that ought to be enough if the rest of
+the system was working properly.
 
-Kernel: 2.6.29.2 (x86_64)
-Board: Intel D945GCLF2
-BIOS version: LF94510J.86A.0099.2008.0731.0303
-
-lspci -vv:
-01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
-RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 02)
-        Subsystem: Intel Corporation Device 0001
-        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
-ParErr- Stepping- SERR- FastB2B- DisINTx-
-        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
-<TAbort- <MAbort- >SERR- <PERR- INTx-
-        Latency: 0, Cache Line Size: 64 bytes
-        Interrupt: pin A routed to IRQ 16
-        Region 0: I/O ports at 1000 [size=256]
-        Region 2: Memory at 90100000 (64-bit, non-prefetchable) [size=4K]
-        Region 4: Memory at 90000000 (64-bit, prefetchable) [size=64K]
-        Expansion ROM at 90020000 [disabled] [size=128K]
-        Capabilities: [40] Power Management version 3
-                Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA
-PME(D0+,D1+,D2+,D3hot+,D3cold+)
-                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
-        Capabilities: [50] MSI: Mask- 64bit+ Count=1/1 Enable-
-                Address: 0000000000000000  Data: 0000
-        Capabilities: [70] Express (v1) Endpoint, MSI 01
-                DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s
-<512ns, L1 <64us
-                        ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
-                DevCtl: Report errors: Correctable- Non-Fatal- Fatal-
-Unsupported-
-                        RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
-                        MaxPayload 128 bytes, MaxReadReq 4096 bytes
-                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+
-TransPend-
-                LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1,
-Latency L0 <512ns, L1 <64us
-                        ClockPM+ Suprise- LLActRep- BwNot-
-                LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain-
-CommClk+
-                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
-                LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+
-DLActive- BWMgmt- ABWMgmt-
-        Capabilities: [b0] MSI-X: Enable- Mask- TabSize=2
-                Vector table: BAR=4 offset=00000000
-                PBA: BAR=4 offset=00000800
-        Capabilities: [d0] Vital Product Data <?>
-        Kernel driver in use: r8169
-        Kernel modules: r8169
-
--- 
-Michael "Tired" Riepe <michael.riepe@googlemail.com>
-X-Tired: Each morning I get up I die a little
