@@ -1,49 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbZEJWsb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756120AbZEJXGk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756981AbZEJWsb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 18:48:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755420AbZEJWsV
+	id S1756120AbZEJXGk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 19:06:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbZEJXGa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 18:48:21 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50561 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754957AbZEJWsU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 18:48:20 -0400
-Date: Sun, 10 May 2009 23:46:17 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Sam Ravnborg <sam@ravnborg.org>, randy.dunlap@oracle.com,
-       torvalds@linux-foundation.org, akpm@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: RFC: MAINTAINER email address style?
-Message-ID: <20090510234617.223d0808@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090510213611.GC30393@elf.ucw.cz>
-References: <1240003652.31116.44.camel@localhost>
-	<20090407081312.GH1408@ucw.cz>
-	<1240415689.21848.19.camel@localhost>
-	<20090422185916.GA3864@uranus.ravnborg.org>
-	<20090422120510.cc17e470.akpm@linux-foundation.org>
-	<1240430185.21848.103.camel@localhost>
-	<20090422203005.GA467@elf.ucw.cz>
-	<1240557233.6735.240.camel@localhost>
-	<1241987200.3877.9.camel@Joe-AcerAspire>
-	<20090510222441.0fc3fc5b@lxorguk.ukuu.org.uk>
-	<20090510213611.GC30393@elf.ucw.cz>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 10 May 2009 19:06:30 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:58584 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751095AbZEJXG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 19:06:29 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+X-Fcc: ~/Mail/linus
+Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
+       Jason Baron <jbaron@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       fweisbec@gmail.com, laijs@cn.fujitsu.com, rostedt@goodmis.org,
+       peterz@infradead.org, jiayingz@google.com, mbligh@google.com
+Cc: Oleg Nesterov <oleg@redhat.com>
+Subject: Re: [RFC patch 00/20] Kernel tracing thread flag
+In-Reply-To: Mathieu Desnoyers's message of  Saturday, 9 May 2009 12:22:09 -0400 <20090509162209.217414024@polymtl.ca>
+References: <20090509162209.217414024@polymtl.ca>
+X-Shopping-List: (1) Despotic seduction string-art
+   (2) Ostentatious detention
+   (3) Judicious prostitutes
+   (4) Spurious homogeneous beef
+Message-Id: <20090510230435.B0E94FC35D@magilla.sf.frob.com>
+Date: Sun, 10 May 2009 16:04:35 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Currently it is PITA to use... which is IMNSHO worse. <> is standard
-> email notation, and I do not think it is in any way hard to parse.
+I suspect you will hit troubles with some arch's not having a bit to spare.
+(Even on x86, it probably hurts several bytes of cache wastage to have to
+use longer immediates in some 'test' instructions.)
 
-Why - I'm having no trouble using it and I don't believe grep options -A
-and -B are terribly difficult to master, or "alias" if you can't remember
-them.
+Another direction to go for this is overloading TIF_SYSCALL_TRACE, so we do
+not need any arch changes.  Before the end of the ptrace cleanup work that
+Oleg is in the middle of, it should become simple to divorce ptrace's own
+bookkeeping from TIF_SYSCALL_TRACE.  At that point, we just need a little
+bit of cooperation (in generic non-arch code) to overload that bit for
+multiple simultaneous purposes.
 
-Alan
+
+Thanks,
+Roland
