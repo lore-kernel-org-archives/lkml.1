@@ -1,99 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755509AbZEJHbh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751760AbZEJHbv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755509AbZEJHbh (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 03:31:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZEJHb2
+	id S1751760AbZEJHbv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 03:31:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbZEJHb3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Sun, 10 May 2009 03:31:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54218 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751502AbZEJHb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 10 May 2009 03:31:28 -0400
-Received: from mail-qy0-f129.google.com ([209.85.221.129]:55743 "EHLO
-	mail-qy0-f129.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751299AbZEJHb1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 03:31:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=GFvsQkXPm3OamZBIUL4hXczXJAzJxGhspyk6w8S/zGSPxE82I2LVHpM1t3fGOooUNB
-         ENIbUoYYNSpo1OV2rrKc6zrsv8a3hDqCTvLp6z4iQVhnm8uEkaeryp8EUVJ9rJC5ikDZ
-         P+FqBnrBirRZecfVCmW+/ub2uwRqfXqcpCLeI=
+Date: Sun, 10 May 2009 07:30:34 GMT
+From: tip-bot for Sam Ravnborg <sam@ravnborg.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rakib.mullick@gmail.com, sam@ravnborg.org, marcin.slusarz@gmail.com,
+       tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rakib.mullick@gmail.com, sam@ravnborg.org, tglx@linutronix.de,
+       marcin.slusarz@gmail.com, mingo@elte.hu
+In-Reply-To: <b9df5fa10905090235s4bfd26a8o979f93809c9727ad@mail.gmail.com>
+References: <b9df5fa10905090235s4bfd26a8o979f93809c9727ad@mail.gmail.com>
+Subject: [tip:x86/urgent] x86: Fix false positive section mismatch warnings in the apic code
+Message-ID: <tip-b74d446f1f337e3fe906169a3266cb65ffa4179e@git.kernel.org>
+Git-Commit-ID: b74d446f1f337e3fe906169a3266cb65ffa4179e
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-In-Reply-To: <20090508121739.b58b2d57.akpm@linux-foundation.org>
-References: <90b950fc0905062147w4673308ak54b9d8e348c23ad9@mail.gmail.com>
-	 <20090508121739.b58b2d57.akpm@linux-foundation.org>
-Date: Sun, 10 May 2009 16:31:27 +0900
-Message-ID: <90b950fc0905100031xc2d2dfau2cb8e2ac9a3a4ebe@mail.gmail.com>
-Subject: Re: [PATCH] Alpha Channel support for Samsung SoC Framebuffer driver.
-From: InKi Dae <daeinki@gmail.com>
-To: ben-linux@fluff.org, linux-fbdev-devel@lists.sourceforge.net,
-       linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Kyungmin Park <kmpark@infradead.org>
-Content-Type: multipart/mixed; boundary=0016364ee2ea871f6f046989d928
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 10 May 2009 07:30:36 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---0016364ee2ea871f6f046989d928
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Commit-ID:  b74d446f1f337e3fe906169a3266cb65ffa4179e
+Gitweb:     http://git.kernel.org/tip/b74d446f1f337e3fe906169a3266cb65ffa4179e
+Author:     Sam Ravnborg <sam@ravnborg.org>
+AuthorDate: Sat, 9 May 2009 15:35:10 +0600
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Sun, 10 May 2009 09:26:54 +0200
 
-I have modifed the space problem of my patch and then I am sending
-this patch modified again.
-You can see attached file.
+x86: Fix false positive section mismatch warnings in the apic code
 
-Thank you for your indication, Andrew Morton.
+[ Impact: reduce kernel image size a bit, annotate away warnings ]
 
-2009/5/9 Andrew Morton <akpm@linux-foundation.org>:
-> On Thu, 7 May 2009 13:47:16 +0900
-> InKi Dae <daeinki@gmail.com> wrote:
->
->> This patch supports ARGB1888 and ARGB4888 for Samsung SoC Framebuffer
->> driver. (s3c-fb.c)
->
-> The patch was hopelessly mangled by your email client - all tabs
-> were replaced with single spaces.
->
-> Please fix that up then resend. =A0Please cc myself on that resend.
->
-> Thanks.
->
+Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
+[ modified and tested it ]
+Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
+Cc: Marcin Slusarz <marcin.slusarz@gmail.com>
+LKML-Reference: <b9df5fa10905090235s4bfd26a8o979f93809c9727ad@mail.gmail.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
---0016364ee2ea871f6f046989d928
-Content-Type: application/octet-stream; name="s3c_lcd_alpha.patch"
-Content-Disposition: attachment; filename="s3c_lcd_alpha.patch"
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_fujfa0rf0
 
-ZGlmZiAtLWdpdCBhL2RyaXZlcnMvdmlkZW8vczNjLWZiLmMgYi9kcml2ZXJzL3ZpZGVvL3MzYy1m
-Yi5jCmluZGV4IGUwZTc4OTkuLjU1ZDIyOTggMTAwNjQ0Ci0tLSBhL2RyaXZlcnMvdmlkZW8vczNj
-LWZiLmMKKysrIGIvZHJpdmVycy92aWRlby9zM2MtZmIuYwpAQCAtMzU4LDkgKzM1OCwxNiBAQCBz
-dGF0aWMgaW50IHMzY19mYl9zZXRfcGFyKHN0cnVjdCBmYl9pbmZvICppbmZvKQogCXdyaXRlbChk
-YXRhLCByZWdzICsgVklET1NEX0Iod2luX25vKSk7CiAKIAlkYXRhID0gdmFyLT54cmVzICogdmFy
-LT55cmVzOworCisJdTMyIG9zZGNfZGF0YSA9IDA7CisKKwlvc2RjX2RhdGEgPSBWSURJU0QxNENf
-QUxQSEExX1IoMHhmKSB8CisJCVZJRElTRDE0Q19BTFBIQTFfRygweGYpIHwKKwkJVklESVNEMTRD
-X0FMUEhBMV9CKDB4Zik7CisKIAlpZiAoczNjX2ZiX2hhc19vc2RfZCh3aW5fbm8pKSB7CiAJCXdy
-aXRlbChkYXRhLCByZWdzICsgVklET1NEX0Qod2luX25vKSk7Ci0JCXdyaXRlbCgwLCByZWdzICsg
-VklET1NEX0Mod2luX25vKSk7CisJCXdyaXRlbChvc2RjX2RhdGEsIHJlZ3MgKyBWSURPU0RfQyh3
-aW5fbm8pKTsKIAl9IGVsc2UKIAkJd3JpdGVsKGRhdGEsIHJlZ3MgKyBWSURPU0RfQyh3aW5fbm8p
-KTsKIApAQCAtNDA5LDggKzQxNiwxMiBAQCBzdGF0aWMgaW50IHMzY19mYl9zZXRfcGFyKHN0cnVj
-dCBmYl9pbmZvICppbmZvKQogCQkJCWRhdGEgfD0gV0lOQ09OMV9CUFBNT0RFXzE5QlBQX0ExNjY2
-OwogCQkJZWxzZQogCQkJCWRhdGEgfD0gV0lOQ09OMV9CUFBNT0RFXzE4QlBQXzY2NjsKLQkJfSBl
-bHNlIGlmICh2YXItPnRyYW5zcC5sZW5ndGggIT0gMCkKLQkJCWRhdGEgfD0gV0lOQ09OMV9CUFBN
-T0RFXzI1QlBQX0ExODg4OworCQl9IGVsc2UgaWYgKHZhci0+dHJhbnNwLmxlbmd0aCA9PSAxKQor
-CQkJZGF0YSB8PSBXSU5DT04xX0JQUE1PREVfMjVCUFBfQTE4ODgKKwkJCQl8IFdJTkNPTjFfQkxE
-X1BJWDsKKwkJZWxzZSBpZiAodmFyLT50cmFuc3AubGVuZ3RoID09IDQpCisJCQlkYXRhIHw9IFdJ
-TkNPTjFfQlBQTU9ERV8yOEJQUF9BNDg4OAorCQkJCXwgV0lOQ09OMV9CTERfUElYIHwgV0lOQ09O
-MV9BTFBIQV9TRUw7CiAJCWVsc2UKIAkJCWRhdGEgfD0gV0lOQ09OMF9CUFBNT0RFXzI0QlBQXzg4
-ODsKIApAQCAtNDE4LDYgKzQyOSwyMCBAQCBzdGF0aWMgaW50IHMzY19mYl9zZXRfcGFyKHN0cnVj
-dCBmYl9pbmZvICppbmZvKQogCQlicmVhazsKIAl9CiAKKwkvKiBJdCBoYXMgbm8gY29sb3Iga2V5
-IGNvbnRyb2wgcmVnaXN0ZXIgZm9yIHdpbmRvdzAgKi8KKwlpZiAod2luX25vID4gMCkgeworCQl1
-MzIga2V5Y29uMF9kYXRhID0gMCwga2V5Y29uMV9kYXRhID0gMDsKKworCQlrZXljb24wX2RhdGEg
-PSB+KFd4S0VZQ09OMF9LRVlCTF9FTiB8CisJCQkJV3hLRVlDT04wX0tFWUVOX0YgfAorCQkJCVd4
-S0VZQ09OMF9ESVJDT04pIHwgV3hLRVlDT04wX0NPTVBLRVkoMCk7CisKKwkJa2V5Y29uMV9kYXRh
-ID0gV3hLRVlDT04xX0NPTFZBTCgweGZmZmZmZik7CisKKwkJd3JpdGVsKGtleWNvbjBfZGF0YSwg
-cmVncyArIFd4S0VZQ09OeSh3aW5fbm8tMSwgMCkpOworCQl3cml0ZWwoa2V5Y29uMV9kYXRhLCBy
-ZWdzICsgV3hLRVlDT055KHdpbl9uby0xLCAxKSk7CisJfQorCiAJd3JpdGVsKGRhdGEsIHJlZ3Mg
-KyBXSU5DT04od2luX25vKSk7CiAJd3JpdGVsKDB4MCwgcmVncyArIFdJTnhNQVAod2luX25vKSk7
-CiAK
---0016364ee2ea871f6f046989d928--
+---
+ arch/x86/kernel/apic/es7000_32.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
+
+diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
+index 1c11b81..3029477 100644
+--- a/arch/x86/kernel/apic/es7000_32.c
++++ b/arch/x86/kernel/apic/es7000_32.c
+@@ -254,7 +254,7 @@ static int parse_unisys_oem(char *oemptr)
+ }
+ 
+ #ifdef CONFIG_ACPI
+-static int find_unisys_acpi_oem_table(unsigned long *oem_addr)
++static int __init find_unisys_acpi_oem_table(unsigned long *oem_addr)
+ {
+ 	struct acpi_table_header *header = NULL;
+ 	struct es7000_oem_table *table;
+@@ -285,7 +285,7 @@ static int find_unisys_acpi_oem_table(unsigned long *oem_addr)
+ 	return 0;
+ }
+ 
+-static void unmap_unisys_acpi_oem_table(unsigned long oem_addr)
++static void __init unmap_unisys_acpi_oem_table(unsigned long oem_addr)
+ {
+ 	if (!oem_addr)
+ 		return;
+@@ -306,7 +306,7 @@ static int es7000_check_dsdt(void)
+ static int es7000_acpi_ret;
+ 
+ /* Hook from generic ACPI tables.c */
+-static int es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
++static int __init es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ {
+ 	unsigned long oem_addr = 0;
+ 	int check_dsdt;
+@@ -717,7 +717,7 @@ struct apic apic_es7000_cluster = {
+ 	.safe_wait_icr_idle		= native_safe_apic_wait_icr_idle,
+ };
+ 
+-struct apic apic_es7000 = {
++struct apic __refdata apic_es7000 = {
+ 
+ 	.name				= "es7000",
+ 	.probe				= probe_es7000,
