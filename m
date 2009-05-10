@@ -1,93 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754553AbZEJURS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754477AbZEJUam@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754553AbZEJURS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 16:17:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752758AbZEJURE
+	id S1754477AbZEJUam (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 16:30:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbZEJUac
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 16:17:04 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:60288 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752711AbZEJURC (ORCPT
+	Sun, 10 May 2009 16:30:32 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2403 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751699AbZEJUac (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 16:17:02 -0400
-Date: Sun, 10 May 2009 21:13:50 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Rik van Riel <riel@redhat.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, hannes@cmpxchg.org,
-       linux-kernel@vger.kernel.org, tytso@mit.edu, linux-mm@kvack.org,
-       elladan@eskimo.com, npiggin@suse.de, cl@linux-foundation.org,
-       minchan.kim@gmail.com
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
- class  citizen
-Message-ID: <20090510211350.7aecc8de@lxorguk.ukuu.org.uk>
-In-Reply-To: <4A06EA08.1030102@redhat.com>
-References: <20090430181340.6f07421d.akpm@linux-foundation.org>
-	<1241432635.7620.4732.camel@twins>
-	<20090507121101.GB20934@localhost>
-	<20090507151039.GA2413@cmpxchg.org>
-	<20090507134410.0618b308.akpm@linux-foundation.org>
-	<20090508081608.GA25117@localhost>
-	<20090508125859.210a2a25.akpm@linux-foundation.org>
-	<20090508230045.5346bd32@lxorguk.ukuu.org.uk>
-	<2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com>
-	<1241946446.6317.42.camel@laptop>
-	<2f11576a0905100236u15d45f7fm32d470776659cfec@mail.gmail.com>
-	<20090510144533.167010a9@lxorguk.ukuu.org.uk>
-	<4A06EA08.1030102@redhat.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+	Sun, 10 May 2009 16:30:32 -0400
+Subject: RFC: MAINTAINER email address style?
+From: Joe Perches <joe@perches.com>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
+       randy.dunlap@oracle.com, torvalds@linux-foundation.org, akpm@kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1240557233.6735.240.camel@localhost>
+References: <1239167872-8179-1-git-send-email-joe@perches.com>
+	 <20090417134711.ba0f03e7.randy.dunlap@oracle.com>
+	 <1240003652.31116.44.camel@localhost> <20090407081312.GH1408@ucw.cz>
+	 <1240415689.21848.19.camel@localhost>
+	 <20090422185916.GA3864@uranus.ravnborg.org>
+	 <20090422120510.cc17e470.akpm@linux-foundation.org>
+	 <1240430185.21848.103.camel@localhost>  <20090422203005.GA467@elf.ucw.cz>
+	 <1240557233.6735.240.camel@localhost>
+Content-Type: text/plain
+Date: Sun, 10 May 2009 13:26:40 -0700
+Message-Id: <1241987200.3877.9.camel@Joe-AcerAspire>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > Not only can it be abused but some systems such as java have large
-> > PROT_EXEC mapped environments, as do many other JIT based languages.
-> 
-> On the file LRU side, or on the anon LRU side?
+On Fri, 2009-04-24 at 00:13 -0700, Joe Perches wrote: 
+> On Wed, 2009-04-22 at 22:30 +0200, Pavel Machek wrote:
+> > If possible, it would be nice to aggregate multiple entries onto one
+> > line. I.e.:
+> > P:      Len Brown
+> > M:      len.brown@intel.com
+> > P:      Pavel Machek
+> > M:      pavel@ucw.cz
+> > P:      Rafael J. Wysocki
+> > M:      rjw@sisk.pl
+> > L:      linux-pm@lists.linux-foundation.org
+> > S:      Supported
+> > 
+> > ->
+> > 
+> > P:      Len Brown now <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Rafael J. Wysocki <rjw@sisk.pl>
+> > L:      linux-pm@lists.linux-foundation.org
+> > S:      Supported
 
-Generally anonymous so it would indeed be ok.
+Is there a consensus/majority opinion on this?
 
-> > I still think the focus is on the wrong thing. We shouldn't be trying to
-> > micro-optimise page replacement guesswork - we should be macro-optimising
-> > the resulting I/O performance.
-> 
-> Any ideas on how to achieve that? :)
+Should names and email addresses in MAINTAINERS be integrated?
+Should it stay as-is or be changed to:
 
-I know - vm is hard, and page out consists of making the best wrong
-decision without having the facts.
+M: name <email>
+M: name2 <email2>
 
-Make your swap decisions depend upon I/O load on storage devices. Make
-your paging decisions based upon writing and reading large contiguous
-chunks (512K costs the same as 8K pretty much) - but you already know
-that .
+or
 
-Historically BSD tackled some of this by actually swapping processes out
-once pressure got very high - because even way back it actually became
-cheaper at some point than spewing randomness at the disk drive. Plus it
-also avoids the death by thrashing problem. Possibly however that means
-the chunk size should relate to the paging rate ?
+M: name <email>, name2 <email2>
 
-I get to watch what comes down the pipe from the vm, and it's not pretty,
-especially when todays disk drive is more like swapping to a tape loop. I
-can see how to fix anonymous page out (log structured swap) but I'm not
-sure what that would do to anonymous page-in even with a cleaner.
+When multiple names are on a single line,
+the M: line length can get relatively long.
 
-At the block level it may be worth having a look what is going on in more
-detail - the bigger queues and I/O sizes on modern disks (plus the
-cache flushimng) also mean that the amount of time it can take a command
-to the head and back to the OS has probably jumped a lot with newer SATA
-devices - even if the block layer is getting them queued at the head of
-the queue and promptly. I can give a disk 15 seconds of work quite easily
-and possibly stuffing the disk stupid isn't the right algorithm when
-paging is considered.
+The longest lines are 240 chars long.
 
-rpm -e gnome* and Arjan's ioprio hacks seem to fix my box but thats not a
-general useful approach. I need to re-test the ioprio hacks with a
-current kernel and see if the other I/O changes have helped.
+240 M:  Ramkrishna Vepa <ram.vepa@neterion.com>, Rastapur Santosh <santosh.rastapur@neterion.com>, Sivakumar Subramani <sivakumar.subramani@neterion.com>, Sreenivasa Honnur <sreenivasa.honnur@neterion.com>, Anil Murthy <anil.murthy@neterion.com>
+238 M:  "David S. Miller" <davem@davemloft.net>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>, Pekka Savola (ipv6) <pekkas@netcore.fi>, James Morris <jmorris@namei.org>, Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>, Patrick McHardy <kaber@trash.net>
+219 M:  Jeff Kirsher <jeffrey.t.kirsher@intel.com>, Jesse Brandeburg <jesse.brandeburg@intel.com>, Bruce Allan <bruce.w.allan@intel.com>, PJ Waskiewicz <peter.p.waskiewicz.jr@intel.com>, John Ronciak <john.ronciak@intel.com>
+185 M:  Ananth N Mavinakayanahalli <ananth@in.ibm.com>, Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>, "David S. Miller" <davem@davemloft.net>, Masami Hiramatsu <mhiramat@redhat.com>
+167 M:  Steve Hodgson <shodgson@solarflare.com>, Ben Hutchings <bhutchings@solarflare.com>, Robert Stonehouse <rstonehouse@solarflare.com>, linux-net-drivers@solarflare.com
+156 M:  Jeremy Fitzhardinge <jeremy@xensource.com>, Chris Wright <chrisw@sous-sol.org>, Alok Kataria <akataria@vmware.com>, Rusty Russell <rusty@rustcorp.com.au>
+155 M:  Jiri Slaby <jirislaby@gmail.com>, Nick Kossifidis <mickflemm@gmail.com>, "Luis R. Rodriguez" <lrodriguez@atheros.com>, Bob Copeland <me@bobcopeland.com>
 
-Alan
+
