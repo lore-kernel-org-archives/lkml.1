@@ -1,127 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755935AbZEJFzl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756193AbZEJF4s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755935AbZEJFzl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 01:55:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752210AbZEJFzc
+	id S1756193AbZEJF4s (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 01:56:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZEJF4i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 01:55:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:38293 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751699AbZEJFzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 01:55:31 -0400
-Subject: Re: [tip:perfcounters/core] perf_counter, x86: remove
- X86_FEATURE_ARCH_PERFMON flag for AMD cpus
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: mingo@redhat.com
-Cc: hpa@zytor.com, paulus@samba.org, linux-kernel@vger.kernel.org,
-       robert.richter@amd.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       mingo@elte.hu, linux-tip-commits@vger.kernel.org
-In-Reply-To: <1241931753.4796.15.camel@localhost.localdomain>
-References: <1241002046-8832-2-git-send-email-robert.richter@amd.com>
-	 <tip-da1a776be1ac7f78bb30ececbec4c1383163b079@git.kernel.org>
-	 <1241931753.4796.15.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Sun, 10 May 2009 11:23:15 +0530
-Message-Id: <1241934795.4796.55.camel@localhost.localdomain>
+	Sun, 10 May 2009 01:56:38 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:42758
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752210AbZEJF4h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 01:56:37 -0400
+Date: Sat, 09 May 2009 22:56:33 -0700 (PDT)
+Message-Id: <20090509.225633.55249495.davem@davemloft.net>
+To: a.beregalov@gmail.com
+Cc: gregkh@suse.de, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: [PATCH] Staging: rtl8187se: convert to net_device_ops
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1241910414-7389-1-git-send-email-a.beregalov@gmail.com>
+References: <1241910414-7389-1-git-send-email-a.beregalov@gmail.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Ingo,
+From: Alexander Beregalov <a.beregalov@gmail.com>
+Date: Sun, 10 May 2009 03:06:54 +0400
 
-On Sun, 2009-05-10 at 10:32 +0530, Jaswinder Singh Rajput wrote:
-> Hello Robert,
-> 
-> On Wed, 2009-04-29 at 13:03 +0000, tip-bot for Robert Richter wrote:
-> > Commit-ID:  da1a776be1ac7f78bb30ececbec4c1383163b079
-> > Gitweb:     http://git.kernel.org/tip/da1a776be1ac7f78bb30ececbec4c1383163b079
-> > Author:     Robert Richter <robert.richter@amd.com>
-> > AuthorDate: Wed, 29 Apr 2009 12:46:58 +0200
-> > Committer:  Ingo Molnar <mingo@elte.hu>
-> > CommitDate: Wed, 29 Apr 2009 14:51:00 +0200
-> > 
-> > perf_counter, x86: remove X86_FEATURE_ARCH_PERFMON flag for AMD cpus
-> > 
-> > X86_FEATURE_ARCH_PERFMON is an Intel hardware feature that does not
-> > work on AMD CPUs. The flag is now only used in Intel specific code
-> > (especially initialization).
-> > 
-> 
-> I think X86_FEATURE_ARCH_PERFMON should be for all x86 cpus which
-> support performance monitor.
-> 
-> #define X86_FEATURE_ARCH_PERFMON (3*32+11) /* Intel Architectural PerfMon */
-> should be replaced by
-> #define X86_FEATURE_ARCH_PERFMON (3*32+11) /* Performace Monitor */
-> 
-> All x86 cpus which support performance monitor should set this feature.
-> 
+> Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
 
-Currently X86_FEATURE_ARCH_PERFMON is enabled for >= Intel Core2
+Thanks for doing this work Alexander.
 
-But Performance monitor is almost supported by all Intel processors. I
-am adding few MSRs list for reference to see complete list please check
-arch/x86/kernel/cpu/cpu_debug.c
-
-I am planning to enable cpufeature to below processors to access
-performance monitor MSRs for cpu_debug.c
-
-Should I use X86_FEATURE_ARCH_PERFMON or make a new one like
-X86_FEATURE_PMC.
-
-If I use X86_FEATURE_ARCH_PERFMON then I need to add one more check for 
-arch/x86/kernel/cpu/perf_counter.c because perf_counter.c only supports
-latest processors (Intel >= Core2, AMD >= K7).
-
-what you think, what is the better approach.
-
-few x86 Performance Monitor MSRs
---------------------------------
-
-Intel:
------
-Petium	:	0x11-0x13
-
-P6	:	0xC1-0xC2
-		0x186-0x187
-
-Core	:	0xC1-0xC4
-		0x186-0x187
-
-P4/Xeon	:	0x186-0x189
-		0x300-0x311
-		0x360-0x371
-
-Xeon MP	:	0x186-0x189
-		0x300-0x311
-		0x360-0x371
-
-ATOM	:	0xC1-0xC2
-		0x186-0x187
-		0x309-0x30B
-		0x345
-		0x38D-0x390
-
-Core 2	:	0xC1-0xC2
-		0x186-0x187
-		0x309-0x30B
-		0x345
-		0x38D-0x390
-
-Nehalem	:	0xC1-0xC4
-		0x186-0x189
-		0x1A6
-		0x301
-		0x309-0x30B
-		0x345
-		0x38D-0x396
-
-AMD:
----
-
->= K6	:	0xC0010000-0xC0010007
-
-
+Acked-by: David S. Miller <davem@davemloft.net>
