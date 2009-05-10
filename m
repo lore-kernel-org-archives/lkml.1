@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753806AbZEJGbd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756224AbZEJGoQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753806AbZEJGbd (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 02:31:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbZEJGbX
+	id S1756224AbZEJGoQ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 02:44:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbZEJGn7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 02:31:23 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57543 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751183AbZEJGbW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 02:31:22 -0400
-Date: Sun, 10 May 2009 08:30:47 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, robert.richter@amd.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter, x86: remove
-	X86_FEATURE_ARCH_PERFMON flag for AMD cpus
-Message-ID: <20090510063047.GD30778@elte.hu>
-References: <1241002046-8832-2-git-send-email-robert.richter@amd.com> <tip-da1a776be1ac7f78bb30ececbec4c1383163b079@git.kernel.org> <1241931753.4796.15.camel@localhost.localdomain> <1241934795.4796.55.camel@localhost.localdomain>
+	Sun, 10 May 2009 02:43:59 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:33953 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751299AbZEJGn6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 02:43:58 -0400
+Message-ID: <4A06778E.9030908@zytor.com>
+Date: Sat, 09 May 2009 23:43:26 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241934795.4796.55.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Andi Kleen <andi@firstfloor.org>
+CC: Jan Beulich <jbeulich@novell.com>, mingo@elte.hu, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86-64: improve e820_search_gap()
+References: <4A0199B8.76EA.0078.0@novell.com> <4A03BC1A.9060605@zytor.com> <4A03F016.76EA.0078.0@novell.com> <874ovvo0wo.fsf@basil.nowhere.org> <4A0492EA.6080403@zytor.com> <20090508205347.GC23223@one.firstfloor.org> <4A049B99.4000402@zytor.com> <20090509100008.GD23223@one.firstfloor.org>
+In-Reply-To: <20090509100008.GD23223@one.firstfloor.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-
-> > #define X86_FEATURE_ARCH_PERFMON (3*32+11) /* Intel Architectural PerfMon */
-> > should be replaced by
-> > #define X86_FEATURE_ARCH_PERFMON (3*32+11) /* Performace Monitor */
-> > 
-> > All x86 cpus which support performance monitor should set this feature.
-> > 
+Andi Kleen wrote:
+>> However, as far as querying SRAT, I don't like the idea of spreading the 
+>> knowledge of the system memory map out between a bunch of different 
+>> places, each of which have a little piece of the puzzle.  It puts a huge 
+>> onus on the user to know what mechanisms are actually available, and 
+>> really makes a shitty interface.
 > 
-> Currently X86_FEATURE_ARCH_PERFMON is enabled for >= Intel Core2
-> 
-> But Performance monitor is almost supported by all Intel 
-> processors. I am adding few MSRs list for reference to see 
-> complete list please check arch/x86/kernel/cpu/cpu_debug.c
+> AFAIK another popular OS always combines mappings from all sources (e820,
+> SRAT, PCI, PNP, ACPI etc.) in the query before allocating anything.
+> Something like that might be a reasonable long term direction for Linux
+> too, but it's probably also a can of worms to handle the conflicts
+> between the various sources (e.g. e820 reserves a lot of things
+> in other sources too). It would be a rather large change.
+> Maybe that would handle the systems I thought of above.
 
-I think you are confusing two things:
+You *always* have a conflict resolution policy... whether or not it is
+explicit or accidental, and whether or not it is the result of merging
+the data or just accessing multiple data sources is another matter.  It
+might be hard to replicate an accidental policy in an explicit way, or
+the accidental policy really might make no sense, which may mean
+behavior changes.
 
-- The 'architectural perfmon' CPU flag, enumerated in CPUID. (this 
-  is a relatively new CPUID flag that only Intel CPUs at around 
-  Core2 and later will report.)
+	-hpa
 
-- The concept of 'performance monitoring' - which has been present 
-  in various x86 CPUs starting at the original Pentium (P5) 15 years 
-  ago or so.
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
-The X86_FEATURE_ARCH_PERFMON flag is for the architectural perfmon 
-CPUID feature. If you execute CPUID you'll get that from the CPU - 
-on Core2 and later Intel CPUs. You wont get it on AMD CPUs. You wont 
-get it on earlier Intel CPUs.
-
-And since 'Architectural Performance Monitoring' is an Intel only 
-thing, it would not be correct to do as if AMD had the same thing. 
-AMD has something _similar_, but not quite the same.
-
-So, the patch from Robert cleans up that area.
-
-( The patch might still be buggy in other ways, but you need to 
-  understand its intent and mechanism before being able to argue 
-  about other bugs. )
-
-And you need to understand the difference between 'hardware' CPU 
-feature flags, provided by the CPUID instruction, and 'software' CPU 
-feature flags defined by Linux (for the reason of abstracting out 
-certain types of functionality).
-
-	Ingo
