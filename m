@@ -1,46 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757071AbZEJWjy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756981AbZEJWsb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757071AbZEJWjy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 18:39:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756117AbZEJWjd
+	id S1756981AbZEJWsb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 18:48:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755420AbZEJWsV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 18:39:33 -0400
-Received: from tundra.namei.org ([65.99.196.166]:56390 "EHLO tundra.namei.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756747AbZEJWjb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 18:39:31 -0400
-Date: Mon, 11 May 2009 08:37:40 +1000 (EST)
-From: James Morris <jmorris@namei.org>
-To: David Howells <dhowells@redhat.com>
-cc: roland@redhat.com, chrisw@sous-sol.org, oleg@redhat.com,
-       akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       linux-security-module@vger.kernel.org, eparis@redhat.com,
-       sds@tycho.nsa.gov
-Subject: Re: [PATCH 2/2] CRED: Guard the setprocattr security hook against
- ptrace
-In-Reply-To: <20090508125527.8488.82217.stgit@warthog.procyon.org.uk>
-Message-ID: <alpine.LRH.2.00.0905110837270.24749@tundra.namei.org>
-References: <20090508125522.8488.13637.stgit@warthog.procyon.org.uk> <20090508125527.8488.82217.stgit@warthog.procyon.org.uk>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 10 May 2009 18:48:21 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:50561 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754957AbZEJWsU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 18:48:20 -0400
+Date: Sun, 10 May 2009 23:46:17 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Pavel Machek <pavel@ucw.cz>
+Cc: Joe Perches <joe@perches.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Sam Ravnborg <sam@ravnborg.org>, randy.dunlap@oracle.com,
+       torvalds@linux-foundation.org, akpm@kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: RFC: MAINTAINER email address style?
+Message-ID: <20090510234617.223d0808@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090510213611.GC30393@elf.ucw.cz>
+References: <1240003652.31116.44.camel@localhost>
+	<20090407081312.GH1408@ucw.cz>
+	<1240415689.21848.19.camel@localhost>
+	<20090422185916.GA3864@uranus.ravnborg.org>
+	<20090422120510.cc17e470.akpm@linux-foundation.org>
+	<1240430185.21848.103.camel@localhost>
+	<20090422203005.GA467@elf.ucw.cz>
+	<1240557233.6735.240.camel@localhost>
+	<1241987200.3877.9.camel@Joe-AcerAspire>
+	<20090510222441.0fc3fc5b@lxorguk.ukuu.org.uk>
+	<20090510213611.GC30393@elf.ucw.cz>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 May 2009, David Howells wrote:
+> Currently it is PITA to use... which is IMNSHO worse. <> is standard
+> email notation, and I do not think it is in any way hard to parse.
 
-> Guard the setprocattr security hook against ptrace by taking the target task's
-> cred_guard_mutex around it.  The problem is that setprocattr() may otherwise
-> note the lack of a debugger, and then perform an action on that basis whilst
-> letting a debugger attach between the two points.  Holding cred_guard_mutex
-> across the test and the action prevents ptrace_attach() from doing that.
-> 
-> Signed-off-by: David Howells <dhowells@redhat.com>
+Why - I'm having no trouble using it and I don't believe grep options -A
+and -B are terribly difficult to master, or "alias" if you can't remember
+them.
 
-Applied to 
-git://git.kernel.org/pub/scm/linux/kernel/git/jmorris/security-testing-2.6#next
-
--- 
-James Morris
-<jmorris@namei.org>
+Alan
