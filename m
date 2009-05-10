@@ -1,65 +1,155 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbZEJPAI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbZEJPBw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755519AbZEJPAI (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 11:00:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbZEJO7z
+	id S1756091AbZEJPBw (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 11:01:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754690AbZEJPBn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 10:59:55 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:58233 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753077AbZEJO7z (ORCPT
+	Sun, 10 May 2009 11:01:43 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:48482 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754103AbZEJPBm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 10:59:55 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=HVT0J0Q5yEgc1FsKrVKA7xq0PGG+8wkOUnZf/pW/1pPo8Ecdtu9KM+Siw6dAhVyRqf
-         MVZQjqHvpHG9PmwHBfeH+CP2MJiqwiwJzp5VLqwxtjFAumjTxyrlcWFBUjcn83RSTO0D
-         R7i1ypKgMY80l/Sqgvn3Y/W0qCJcRHGnPBwIw=
+	Sun, 10 May 2009 11:01:42 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: linux-kernel@vger.kernel.org
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+Date: Sun, 10 May 2009 10:01:38 -0500
+User-Agent: KMail/1.9.9
+Cc: Michael Riepe <michael.riepe@googlemail.com>
+References: <200903041828.49972.m.bueker@berlin.de> <200904041950.04324.mb@bu3sch.de> <4A06D8D2.4010505@googlemail.com>
+In-Reply-To: <4A06D8D2.4010505@googlemail.com>
 MIME-Version: 1.0
-In-Reply-To: <4A06EA08.1030102@redhat.com>
-References: <20090430181340.6f07421d.akpm@linux-foundation.org>
-	 <20090507134410.0618b308.akpm@linux-foundation.org>
-	 <20090508081608.GA25117@localhost>
-	 <20090508125859.210a2a25.akpm@linux-foundation.org>
-	 <20090508230045.5346bd32@lxorguk.ukuu.org.uk>
-	 <2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com>
-	 <1241946446.6317.42.camel@laptop>
-	 <2f11576a0905100236u15d45f7fm32d470776659cfec@mail.gmail.com>
-	 <20090510144533.167010a9@lxorguk.ukuu.org.uk>
-	 <4A06EA08.1030102@redhat.com>
-Date: Sun, 10 May 2009 23:59:54 +0900
-X-Google-Sender-Auth: 1aad5aef50bfe482
-Message-ID: <2f11576a0905100759n30fbc948wef34336774abfae1@mail.gmail.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class 
-	citizen
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, hannes@cmpxchg.org,
-       linux-kernel@vger.kernel.org, tytso@mit.edu, linux-mm@kvack.org,
-       elladan@eskimo.com, npiggin@suse.de, cl@linux-foundation.org,
-       minchan.kim@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905101001.40455.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+On Sun May 10 2009, Michael Riepe wrote:
+> 
+> Michael Buesch wrote:
+> 
+> > I'm currently testing 2.6.29.1 without any additional patches but
+> > with the pci=nomsi boot option.
+> > 
+> > I didn't notice any hickups, yet. I'm running a stresstest on a GBit link for quite
+> > some time now. Earlier tests with older kernels and MSI burped earlier.
+> > 
 
->> Secondly it moves the pressure from the storage volume holding the system
->> binaries and libraries to the swap device which already has to deal with
->> a lot of random (and thus expensive) I/O, as well as the users filestore
->> for mapped objects there - which may even be on a USB thumbdrive.
->
-> Preserving the PROT_EXEC pages over streaming IO should not
-> move much (if any) pressure from the file LRUs onto the
-> swap-backed (anon) LRUs.
+I can confirm greater through-put and reduced cpu usage with pci=nomsi
+on different hardware.
 
-I don't think this is good example.
-this issue is already solved by your patch. Thus this patch don't
-improve streaming IO issue.
+Machine: Everex Cloudbook (ce1200v)
+HICS: Via CX700
+PCI-to-PCIe bridge, Via 1106:324B
+(only) Downstream device: HD Audio Controller, Via 1106:3288
+
+Kernel: 2.6.30-rc5 (git repo)
+
+No extensive benchmarking required here - you can hear the difference!
+
+00:13.1 PCI bridge [0604]: VIA Technologies, Inc. CX700/VX700 PCI to PCI Bridge [1106:324a]
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap- 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort+ >SERR- <PERR- INTx-
+        Latency: 0
+        Bus: primary=00, secondary=03, subordinate=03, sec-latency=0
+        I/O behind bridge: 00005000-00005fff
+        Memory behind bridge: d1100000-d11fffff
+        Prefetchable memory behind bridge: 00000000fff00000-00000000000fffff
+        Secondary status: 66MHz- FastB2B- ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- <SERR- <PERR-
+        BridgeCtl: Parity- SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
+                PriDiscTmr- SecDiscTmr- DiscTmrStat- DiscTmrSERREn-
+
+02:01.0 Audio device [0403]: VIA Technologies, Inc. VT1708/A [Azalia HDAC] (VIA High Definition Audio Controller) [1106:3288] (rev 10)
+        Subsystem: FIRST INTERNATIONAL Computer Inc Device [1509:2f07]
+        Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B- DisINTx-
+        Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort- <TAbort- <MAbort- >SERR- <PERR- INTx-
+        Latency: 0, Cache Line Size: 32 bytes
+        Interrupt: pin A routed to IRQ 17
+        Region 0: Memory at d1000000 (64-bit, non-prefetchable) [size=16K]
+        Capabilities: [50] Power Management version 2
+                Flags: PMEClk- DSI- D1- D2- AuxCurrent=55mA PME(D0+,D1-,D2-,D3hot+,D3cold+)
+                Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+        Capabilities: [60] Message Signalled Interrupts: Mask- 64bit+ Queue=0/0 Enable-
+                Address: 0000000000000000  Data: 0000
+        Capabilities: [70] Express (v1) Root Complex Integrated Endpoint, MSI 00
+                DevCap: MaxPayload 128 bytes, PhantFunc 0, Latency L0s <64ns, L1 <1us
+                        ExtTag- RBE- FLReset-
+                DevCtl: Report errors: Correctable- Non-Fatal- Fatal- Unsupported-
+                        RlxdOrd- ExtTag- PhantFunc- AuxPwr- NoSnoop-
+                        MaxPayload 128 bytes, MaxReadReq 128 bytes
+                DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+ TransPend+
+                LnkCap: Port #0, Speed unknown, Width x0, ASPM unknown, Latency L0 <64ns, L1 <1us
+                        ClockPM- Suprise- LLActRep- BwNot-
+                LnkCtl: ASPM Disabled; Disabled- Retrain- CommClk-
+                        ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+                LnkSta: Speed unknown, Width x0, TrErr- Train- SlotClk- DLActive- BWMgmt- ABWMgmt-
+        Kernel driver in use: HDA Intel
+
+Mike
+> > I will do more testing. If it turns out this is stable I will test the same kernel
+> > with Message Signaled Interrupts to see if that causes some breakage.
+> 
+> I've had this problem up to and including 2.6.29.2. Currently, I'm
+> trying 2.6.29.2 with pci=nomsi, and it's stable so far. With MSI
+> enabled, a single high-speed TCP transfer will stop after a few seconds,
+> but without MSI, I can run four simultaneous transfers to two different
+> hosts without a single hickup.
+> 
+> It seems to me that this particular chip really doesn't like MSI.
+> 
+> Kernel: 2.6.29.2 (x86_64)
+> Board: Intel D945GCLF2
+> BIOS version: LF94510J.86A.0099.2008.0731.0303
+> 
+> lspci -vv:
+> 01:00.0 Ethernet controller: Realtek Semiconductor Co., Ltd.
+> RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 02)
+>         Subsystem: Intel Corporation Device 0001
+>         Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+> ParErr- Stepping- SERR- FastB2B- DisINTx-
+>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+> <TAbort- <MAbort- >SERR- <PERR- INTx-
+>         Latency: 0, Cache Line Size: 64 bytes
+>         Interrupt: pin A routed to IRQ 16
+>         Region 0: I/O ports at 1000 [size=256]
+>         Region 2: Memory at 90100000 (64-bit, non-prefetchable) [size=4K]
+>         Region 4: Memory at 90000000 (64-bit, prefetchable) [size=64K]
+>         Expansion ROM at 90020000 [disabled] [size=128K]
+>         Capabilities: [40] Power Management version 3
+>                 Flags: PMEClk- DSI- D1+ D2+ AuxCurrent=375mA
+> PME(D0+,D1+,D2+,D3hot+,D3cold+)
+>                 Status: D0 PME-Enable- DSel=0 DScale=0 PME-
+>         Capabilities: [50] MSI: Mask- 64bit+ Count=1/1 Enable-
+>                 Address: 0000000000000000  Data: 0000
+>         Capabilities: [70] Express (v1) Endpoint, MSI 01
+>                 DevCap: MaxPayload 256 bytes, PhantFunc 0, Latency L0s
+> <512ns, L1 <64us
+>                         ExtTag- AttnBtn- AttnInd- PwrInd- RBE+ FLReset-
+>                 DevCtl: Report errors: Correctable- Non-Fatal- Fatal-
+> Unsupported-
+>                         RlxdOrd+ ExtTag- PhantFunc- AuxPwr- NoSnoop-
+>                         MaxPayload 128 bytes, MaxReadReq 4096 bytes
+>                 DevSta: CorrErr- UncorrErr- FatalErr- UnsuppReq- AuxPwr+
+> TransPend-
+>                 LnkCap: Port #0, Speed 2.5GT/s, Width x1, ASPM L0s L1,
+> Latency L0 <512ns, L1 <64us
+>                         ClockPM+ Suprise- LLActRep- BwNot-
+>                 LnkCtl: ASPM Disabled; RCB 64 bytes Disabled- Retrain-
+> CommClk+
+>                         ExtSynch- ClockPM- AutWidDis- BWInt- AutBWInt-
+>                 LnkSta: Speed 2.5GT/s, Width x1, TrErr- Train- SlotClk+
+> DLActive- BWMgmt- ABWMgmt-
+>         Capabilities: [b0] MSI-X: Enable- Mask- TabSize=2
+>                 Vector table: BAR=4 offset=00000000
+>                 PBA: BAR=4 offset=00000800
+>         Capabilities: [d0] Vital Product Data <?>
+>         Kernel driver in use: r8169
+>         Kernel modules: r8169
+> 
+
+
