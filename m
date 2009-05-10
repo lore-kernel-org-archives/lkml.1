@@ -1,88 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbZEJJgk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756564AbZEJJy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756564AbZEJJgk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 05:36:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756356AbZEJJgW
+	id S1756564AbZEJJy3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 05:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbZEJJyT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 05:36:22 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:56440 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756084AbZEJJgV convert rfc822-to-8bit (ORCPT
+	Sun, 10 May 2009 05:54:19 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:16268 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752656AbZEJJyS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 05:36:21 -0400
+	Sun, 10 May 2009 05:54:18 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=Mn5kNvj8Bo1k+P4xxxHacdzQmGdhQAu00I6DphAzPtNJawNiDTQdSiUin7b9sDeLmJ
-         yBVzJrvxP3pLgk8tvMVKblW44s91P+PhZSVu80glAQPhRqdBoB6lZxdPreGds4QVT+nW
-         x0elR4PxGpz2h9nLXiEQpRuRMQ36BlzScEXrA=
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=hUmh/QEMWKD4blK4jCCiTRwgj2rCv5PGiwphodJyv52UBS/HnRT0d+LhDInAzf26Uy
+         TBEdBmHtM81GLOXdqpzdOJ1YhdLSDciBs9BD28Vn8rAPK4bj7ktgr5EQKFqnYZycj1Qy
+         ZlsbFMyep8mQUn84tei/tKl7q3sc5SNTc6/FI=
+From: Vladimir Zajac <eightgraph@gmail.com>
+To: "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>
+Subject: Re: [PATCH 2.6.30-rc4] thermal: fix off-by-1 error in trip point trigger condition
+Date: Sun, 10 May 2009 11:54:09 +0200
+User-Agent: KMail/1.9.9
+Cc: Zhang Rui <rui.zhang@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+References: <200905061934.21821.eightgraph@gmail.com> <1241657280.15284.107.camel@rzhang-dt>
+In-Reply-To: <1241657280.15284.107.camel@rzhang-dt>
 MIME-Version: 1.0
-In-Reply-To: <1241946446.6317.42.camel@laptop>
-References: <20090430181340.6f07421d.akpm@linux-foundation.org>
-	 <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost>
-	 <20090507151039.GA2413@cmpxchg.org>
-	 <20090507134410.0618b308.akpm@linux-foundation.org>
-	 <20090508081608.GA25117@localhost>
-	 <20090508125859.210a2a25.akpm@linux-foundation.org>
-	 <20090508230045.5346bd32@lxorguk.ukuu.org.uk>
-	 <2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com>
-	 <1241946446.6317.42.camel@laptop>
-Date: Sun, 10 May 2009 18:36:19 +0900
-X-Google-Sender-Auth: a78d85e703672d0b
-Message-ID: <2f11576a0905100236u15d45f7fm32d470776659cfec@mail.gmail.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class 
-	citizen
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, hannes@cmpxchg.org,
-       riel@redhat.com, linux-kernel@vger.kernel.org, tytso@mit.edu,
-       linux-mm@kvack.org, elladan@eskimo.com, npiggin@suse.de,
-       cl@linux-foundation.org, minchan.kim@gmail.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905101154.09600.eightgraph@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> How about this?
->> if priority < DEF_PRIORITY-2, aggressive lumpy reclaim in
->> shrink_inactive_list() already
->> reclaim the active page forcely.
->> then, this patch don't change kernel reclaim policy.
->>
->> anyway, user process non-changable preventing "nice my process up
->> hack" seems makes sense to me.
->>
->> test result:
->>
->> echo 100 > /proc/sys/vm/dirty_ratio
->> echo 100 > /proc/sys/vm/dirty_background_ratio
->> run modified qsbench (use mmap(PROT_EXEC) instead malloc)
->>
->>            active2active vs active2inactive ratio
->> before    5:5
->> after       1:9
->>
->> please don't ask performance number. I haven't reproduce Wu's patch
->> improvemnt ;)
->>
->> Wu, What do you think?
->
-> I don't think this is desirable, like Andrew already said, there's tons
-> of ways to defeat any of this and we've so far always priorized mappings
-> over !mappings. Limiting this to only PROT_EXEC mappings is already less
-> than it used to be.
+On Thursday 07 May 2009 02:48:00 Zhang Rui wrote:
+> On Thu, 2009-05-07 at 01:34 +0800, Vladimir Zajac wrote:
+> > This patch fixes a regression caused by commit
+> > b1569e99c795bf83b4ddf41c4f1c42761ab7f75e
+> > "ACPI: move thermal trip handling to generic thermal layer"
+> > which accidentally changed trip point trigger condition to
+> >   temp > trip_temp
+> > 
+> > This patch changes the trigger condition back to
+> >   temp >= trip_temp
+> > 
+> > Signed-off-by: Vladimir Zajac <eightgraph@gmail.com>
+> 
+> Acked-by: Zhang Rui <rui.zhang@intel.com>
+Acked-by: Matthew Garrett <mjg@redhat.com>
+> > ---
+> > 
+> >  thermal_sys.c |    8 ++++----
+> >  1 file changed, 4 insertions(+), 4 deletions(-)
+> > 
+> > --- linux-2.6.30-rc4/drivers/thermal/thermal_sys.c	2009-04-30 23:52:59.000000000 +0200
+> > +++ linux-2.6.30-rc4-p1/drivers/thermal/thermal_sys.c	2009-05-04 19:58:30.000000000 +0200
+> > @@ -961,7 +961,7 @@ void thermal_zone_device_update(struct t
+> >  
+> >  		switch (trip_type) {
+> >  		case THERMAL_TRIP_CRITICAL:
+> > -			if (temp > trip_temp) {
+> > +			if (temp >= trip_temp) {
+> >  				if (tz->ops->notify)
+> >  					ret = tz->ops->notify(tz, count,
+> >  							      trip_type);
+> > @@ -974,7 +974,7 @@ void thermal_zone_device_update(struct t
+> >  			}
+> >  			break;
+> >  		case THERMAL_TRIP_HOT:
+> > -			if (temp > trip_temp)
+> > +			if (temp >= trip_temp)
+> >  				if (tz->ops->notify)
+> >  					tz->ops->notify(tz, count, trip_type);
+> >  			break;
+> > @@ -986,14 +986,14 @@ void thermal_zone_device_update(struct t
+> >  
+> >  				cdev = instance->cdev;
+> >  
+> > -				if (temp > trip_temp)
+> > +				if (temp >= trip_temp)
+> >  					cdev->ops->set_cur_state(cdev, 1);
+> >  				else
+> >  					cdev->ops->set_cur_state(cdev, 0);
+> >  			}
+> >  			break;
+> >  		case THERMAL_TRIP_PASSIVE:
+> > -			if (temp > trip_temp || tz->passive)
+> > +			if (temp >= trip_temp || tz->passive)
+> >  				thermal_zone_device_passive(tz, temp,
+> >  							    trip_temp, count);
+> >  			break;
 
-I don't oppose this policy. PROT_EXEC seems good viewpoint.
-The problem is PROT_EXEC'ed page isn't gurantee rarely.
-
-if all pages claim "Hey, I'm higher priority page, please don't
-reclaim me", end-user get
-suck result easily.
-
-before 2.6.27 kernel have similar problems. many mapped page cause bad latency
-easily. I don't want reproduce this.
+Forwarding Matthew Garrett's reply from another thread:
+> Looks good. You probably need to resend it with a Signed-off-by: line, 
+> but feel free to add
+> 
+> Acked-by: Matthew Garrett <mjg@redhat.com>
+> 	
