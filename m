@@ -1,40 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755857AbZEJR5S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756561AbZEJSBv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755857AbZEJR5S (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 13:57:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753780AbZEJR5I
+	id S1756561AbZEJSBv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 14:01:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756235AbZEJSBm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 13:57:08 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:54015 "EHLO
+	Sun, 10 May 2009 14:01:42 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:47505 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751480AbZEJR5H (ORCPT
+	with ESMTP id S1756227AbZEJSBm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 13:57:07 -0400
-Message-ID: <4A07155A.8030601@zytor.com>
-Date: Sun, 10 May 2009 10:56:42 -0700
+	Sun, 10 May 2009 14:01:42 -0400
+Message-ID: <4A071518.8000307@zytor.com>
+Date: Sun, 10 May 2009 10:55:36 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-CC: Jan Beulich <jbeulich@novell.com>, mingo@elte.hu, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86-64: improve e820_search_gap()
-References: <4A0199B8.76EA.0078.0@novell.com> <4A03BC1A.9060605@zytor.com> <4A03F016.76EA.0078.0@novell.com> <874ovvo0wo.fsf@basil.nowhere.org> <4A0492EA.6080403@zytor.com> <20090508205347.GC23223@one.firstfloor.org> <4A049B99.4000402@zytor.com> <20090509100008.GD23223@one.firstfloor.org> <4A06778E.9030908@zytor.com> <20090510151804.GE23223@one.firstfloor.org>
-In-Reply-To: <20090510151804.GE23223@one.firstfloor.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: Keir Fraser <keir.fraser@eu.citrix.com>,
+       Ian Campbell <Ian.Campbell@eu.citrix.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Linux@zytor.com" <Linux@zytor.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [Xen-devel] Re: [PATCH 06/16] xen: disable PAT
+References: <4A05CD29.6050505@zytor.com>	<C62C5B3C.AB1A%keir.fraser@eu.citrix.com> <20090510142928.66bb57bb@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090510142928.66bb57bb@lxorguk.ukuu.org.uk>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
+Alan Cox wrote:
 > 
-> Well right now we ignore ACPI/PNP data, sometimes ignore PCI data 
-> and only look in e820 and sometimes only use PCI/e820 and sometimes
-> only use SRAT (or at least it was like this at some point)
+> There are quite a few different CPUs with PAT errata. I've no idea why
+> there are so many errata about that specific bit.
 > 
 
-That *is* a conflict resolution policy.  Quite probably an accidental one.
+I suspect it is simply because:
+
+a) it moves around between the various page table formats;
+b) the default configuration and existing OSes don't use it;
+c) it isn't even *present* in some formats.
 
 	-hpa
 
