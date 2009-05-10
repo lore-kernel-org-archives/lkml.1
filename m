@@ -1,98 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbZEJLWe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752953AbZEJL2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753577AbZEJLWe (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 07:22:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751025AbZEJLWY
+	id S1752953AbZEJL2Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 07:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750865AbZEJL2L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 07:22:24 -0400
-Received: from mga03.intel.com ([143.182.124.21]:32291 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750805AbZEJLWX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 07:22:23 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,323,1239001200"; 
-   d="scan'208";a="141180733"
-Date: Sun, 10 May 2009 19:21:49 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
-	class  citizen
-Message-ID: <20090510112149.GA8633@localhost>
-References: <20090507151039.GA2413@cmpxchg.org> <20090507134410.0618b308.akpm@linux-foundation.org> <20090508081608.GA25117@localhost> <20090508125859.210a2a25.akpm@linux-foundation.org> <20090508230045.5346bd32@lxorguk.ukuu.org.uk> <2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com> <20090510092053.GA7651@localhost> <2f11576a0905100229m2c5e6a67md555191dc8c374ae@mail.gmail.com> <20090510100335.GC7651@localhost> <2f11576a0905100315j2c810e96mc29b84647dc565c2@mail.gmail.com>
+	Sun, 10 May 2009 07:28:11 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:10828 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750805AbZEJL2J (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 07:28:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=FcXwHNkR4cRlHnRUM+xSCqVq76PuWSoK92ta3XvstxfVbKi/+paLursuwaujT7HN+6
+         q8en9cBEWe4y3mltIc9x9HUyGnqa51BGrtRzDXOL2kzsS417zPVJH+msyGHvlXHeX6TO
+         r9b5L1b1m5GM0zBnMh+hlcBBNKf/XbLo9fzjM=
+Message-ID: <4A06BA42.2050107@gmail.com>
+Date: Sun, 10 May 2009 20:28:02 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2f11576a0905100315j2c810e96mc29b84647dc565c2@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, rusty@rustcorp.com.au,
+       James.Bottomley@HansenPartnership.com, mike.miller@hp.com,
+       donari75@gmail.com, paul.clements@steeleye.com, tim@cyberelk.net,
+       Geert.Uytterhoeven@sonycom.com, davem@davemloft.net,
+       Laurent@lvivier.info, jgarzik@pobox.com, jeremy@xensource.com,
+       grant.likely@secretlab.ca, adrian@mcmen.demon.co.uk,
+       sfr@canb.auug.org.au, bzolnier@gmail.com, petkovbb@googlemail.com,
+       sshtylyov@ru.mvista.com, oakad@yahoo.com, drzeus@drzeus.cx,
+       dwmw2@infradead.org, Markus.Lidel@shadowconnect.com, wein@de.ibm.com,
+       schwidefsky@de.ibm.com, zaitcev@redhat.com,
+       fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk
+Subject: Re: [GIT PATCH] block: unify request processing model and implement
+ peek/fetch
+References: <1241751256-17435-1-git-send-email-tj@kernel.org>
+In-Reply-To: <1241751256-17435-1-git-send-email-tj@kernel.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 10, 2009 at 06:15:02PM +0800, KOSAKI Motohiro wrote:
-> >> >> >> The patch seems reasonable but the changelog and the (non-existent)
-> >> >> >> design documentation could do with a touch-up.
-> >> >> >
-> >> >> > Is it right that I as a user can do things like mmap my database
-> >> >> > PROT_EXEC to get better database numbers by making other
-> >> >> > stuff swap first ?
-> >> >> >
-> >> >> > You seem to be giving everyone a "nice my process up" hack.
-> >> >>
-> >> >> How about this?
-> >> >
-> >> > Why it deserves more tricks? PROT_EXEC pages are rare.
-> >> > If user space is to abuse PROT_EXEC, let them be for it ;-)
-> >>
-> >> yes, typicall rare.
-> >> tha problem is, user program _can_ use PROT_EXEC for get higher priority
-> >> ahthough non-executable memory.
-> >
-> > - abuses should be rare
-> > - large scale abuses will be even more rare,
-> > - the resulted vmscan overheads are the *expected* side effect
-> > - the side effects are still safe
-> 
-> Who expect?
-> The fact is, application developer decide to use PROT_EXEC, but side-effect
-> cause end-user, not application developer.
-> 
-> In general, side-effect attack mistaked guy, it's no problem. They can
-> do it their own risk.
-> but We know application developer and administrator are often different person.
-> 
-> 
-> > So if that's what they want, let them have it to their heart's content.
-> >
-> > You know it's normal for many users/apps to care only about the result.
-> > When they want something but cannot get it from the smarter version of
-> > PROT_EXEC heuristics, they will go on to devise more complicated tricks.
-> >
-> > In the end both sides loose.
-> >
-> > If the abused case is important enough, then let's introduce a feature
-> > to explicitly prioritize the pages. But let's leave the PROT_EXEC case
-> > simple.
-> 
-> No.
-> explicit priotize mechanism don't solve problem anyway. application
-> developer don't know end-user environment.
-> they can't mark proper page priority.
+Tejun Heo wrote:
+> All changes have been compile tested.  libata, ide, hd and ubd_kern
+> are verified to work.  Waiting for floppy media to test it.
 
-So it's simply wrong for an application to prioritize itself and is
-not fair gaming and hence should be blamed. I doubt any application
-aimed for a wide audience will do this insane hack. But specific
-targeted applications are more likely to do all tricks which fits
-their needs&environment, and likely they are doing so for good reasons
-and are aware of the consequences.
+Floppy verified to work.
+
+Thanks.
+
+-- 
+tejun
