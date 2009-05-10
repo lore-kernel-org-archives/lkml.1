@@ -1,77 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754222AbZEJRMr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754880AbZEJRe0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754222AbZEJRMr (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 13:12:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751480AbZEJRMi
+	id S1754880AbZEJRe0 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 13:34:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753358AbZEJReR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 13:12:38 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:44633 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751478AbZEJRMh (ORCPT
+	Sun, 10 May 2009 13:34:17 -0400
+Received: from smtp.ctxuk.citrix.com ([62.200.22.115]:11082 "EHLO
+	SMTP.EU.CITRIX.COM" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752762AbZEJReQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 13:12:37 -0400
-Date: Sun, 10 May 2009 19:12:29 +0200
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Jan Engelhardt <jengelh@medozas.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       michael@araneidae.co.uk
-Subject: Re: /proc/uptime idle counter remains at 0
-Message-ID: <20090510191229.71f43f3c@skybase>
-In-Reply-To: <alpine.LSU.2.00.0905090957490.27646@fbirervta.pbzchgretzou.qr>
-References: <alpine.LSU.2.00.0905090957490.27646@fbirervta.pbzchgretzou.qr>
-Organization: IBM Corporation
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 10 May 2009 13:34:16 -0400
+X-IronPort-AV: E=Sophos;i="4.40,324,1238976000"; 
+   d="scan'208";a="5190562"
+User-Agent: Microsoft-Entourage/12.17.0.090302
+Date: Sun, 10 May 2009 18:34:11 +0100
+Subject: Re: [Xen-devel] Re: [PATCH 06/16] xen: disable PAT
+From: Keir Fraser <keir.fraser@eu.citrix.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+CC: "H. Peter Anvin" <hpa@zytor.com>,
+       Ian Campbell <Ian.Campbell@eu.citrix.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Linux@zytor.com" <Linux@zytor.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jan Beulich <jbeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Message-ID: <C62CCEA3.AB56%keir.fraser@eu.citrix.com>
+Thread-Topic: [Xen-devel] Re: [PATCH 06/16] xen: disable PAT
+Thread-Index: AcnRc0G7JonX0J8QSYWYAHtcYY5xigAIkW/w
+In-Reply-To: <20090510142928.66bb57bb@lxorguk.ukuu.org.uk>
+Mime-version: 1.0
+Content-type: text/plain;
+	charset="US-ASCII"
+Content-transfer-encoding: 7bit
+X-OriginalArrivalTime: 10 May 2009 17:34:16.0542 (UTC) FILETIME=[8AC74FE0:01C9D195]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 May 2009 10:05:57 +0200 (CEST)
-Jan Engelhardt <jengelh@medozas.de> wrote:
+On 10/05/2009 14:29, "Alan Cox" <alan@lxorguk.ukuu.org.uk> wrote:
 
-> starting from v2.6.28-4930-g79741dd lasting thru at least v2.6.29.1,
-> the second field of /proc/uptime always shows 0.00. This happens for
-> both the typical i386 (my case) and on an ARM (according to Michael,
-> cc'ed).
+>> have matching PAT configuration. No elfnote would mean use Xen's existing
+>> PAT setup (or if that's very dangerous then disable PAT altogether, perhaps
+>> dependent on CPU model/stepping?).
 > 
-> From the commit log of 79741dd:
+> Hiding it on errata hit processors if the guest cannot support PAT
+> safely on such processors sounds a good policy and its one being a
+> hypervisor you can do neatly.
 > 
-> 	"""The cpu time spent by the idle process actually doing
-> 	something is currently accounted as idle time. This is plain
-> 	wrong, the architectures that support VIRT_CPU_ACCOUNTING=y
-> 	can do better: distinguish between the time spent doing
-> 	nothing and the time spent by idle doing work. The first is
-> 	accounted with account_idle_time and the second with
-> 	account_system_time."""
-> 
-> Citing Michael from our irc conversation:
-> 
-> 	"""the writer[committer] [says] that [the] idle process time
-> 	isn't really idle time ... but that's all that /proc/uptime
-> 	looks at. I guess fs/proc/uptime.c needs to catch up."""
-> 
-> So, were the updates to uptime.c missed, or do we now live on with
-> /proc/uptime constantly having 0?
+> There are quite a few different CPUs with PAT errata. I've no idea why
+> there are so many errata about that specific bit.
 
-The second paragraph from git commit 79741dd tells you more about this:
+Okay, this sounds like a good way to then. I can work out details with
+Jeremy from here, and this will then have no impact on Linux PAT logic. If
+we advertise PAT to Linux via CPUID, that will mean PAT is set up just as
+Linux requires.
 
-In addition idle time is no more added to the stime of the idle
-process. This field now contains the system time of the idle process as
-it should be. On systems without VIRT_CPU_ACCOUNTING this will always
-be zero as every tick that occurs while idle is running will be
-accounted as idle time.
+ Thanks,
+ Keir
 
-The point is the semantics of the stime field for the idle process. The
-stime field used to contain the real system time (cpu really did
-something) of the idle process plus the idle time (cpu is stopped).
-After the change the field only contains the real system time. Which is
-ihmo much more useful, no?
-
--- 
-blue skies,
-   Martin.
-
-"Reality continues to ruin my life." - Calvin.
 
