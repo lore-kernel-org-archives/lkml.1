@@ -1,121 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756459AbZEJTMU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbZEJTf2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756459AbZEJTMU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 15:12:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751672AbZEJTMG
+	id S1752767AbZEJTf2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 15:35:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbZEJTfN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 15:12:06 -0400
-Received: from tomts5-srv.bellnexxia.net ([209.226.175.25]:51867 "EHLO
-	tomts5-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750921AbZEJTMF (ORCPT
+	Sun, 10 May 2009 15:35:13 -0400
+Received: from rcsinet11.oracle.com ([148.87.113.123]:51829 "EHLO
+	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751809AbZEJTfM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 15:12:05 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ar0FAJbABkpMQW1W/2dsb2JhbACBUMt5gjaBSAU
-Date: Sun, 10 May 2009 15:12:02 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, Greg KH <greg@kroah.com>,
-       Ingo Molnar <mingo@elte.hu>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Ben Slusky <sluskyb@paranoiacs.org>, Dave Jones <davej@redhat.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [RFC patch] cpufreq: fix circular locking in teardown
-Message-ID: <20090510191202.GA14894@Krystal>
-References: <2f11576a0905100822y5507a9f7m6f9aa0fcc05ac18@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 10 May 2009 15:35:12 -0400
+Message-ID: <4A072CB5.2050801@oracle.com>
+Date: Sun, 10 May 2009 12:36:21 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: akpm@linux-foundation.org
+CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
+Subject: [PATCH -mmotm] slqbinfo: eliminate warnings
+References: <200905082241.n48Mfpdh022249@imap1.linux-foundation.org>
+In-Reply-To: <200905082241.n48Mfpdh022249@imap1.linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <2f11576a0905100822y5507a9f7m6f9aa0fcc05ac18@mail.gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 14:50:11 up 71 days, 15:16,  4 users,  load average: 0.58, 0.61,
-	0.63
-User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Source-IP: abhmt003.oracle.com [141.146.116.12]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010205.4A072C41.01FA:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* KOSAKI Motohiro (kosaki.motohiro@jp.fujitsu.com) wrote:
-> Hi
-> 
-> my box output following warnings.
-> it seems regression by commit 7ccc7608b836e58fbacf65ee4f8eefa288e86fac.
-> 
-> A: work -> do_dbs_timer()  -> cpu_policy_rwsem
-> B: store() -> cpu_policy_rwsem -> cpufreq_governor_dbs() -> work
-> 
-> 
+From: Randy Dunlap <randy.dunlap@oracle.com>
 
-Hrm, I think it must be due to my attempt to fix the timer teardown race
-in ondemand governor mixed with new locking behavior in 2.6.30-rc.
+Eliminate build warnings:
 
-The rwlock seems to be taken around the whole call to
-cpufreq_governor_dbs(), when it should be only taken around accesses to
-the locked data, and especially *not* around the call to
-dbs_timer_exit().
+Documentation/vm/slqbinfo.c:386: warning: unused variable 'total'
+Documentation/vm/slqbinfo.c:512: warning: format '%5d' expects type 'int', but argument 9 has type 'long unsigned int'
+Documentation/vm/slqbinfo.c:520: warning: format '%4ld' expects type 'long int', but argument 9 has type 'int'
+Documentation/vm/slqbinfo.c:646: warning: unused variable 'total_partial'
+Documentation/vm/slqbinfo.c:646: warning: unused variable 'avg_partial'
+Documentation/vm/slqbinfo.c:645: warning: unused variable 'max_partial'
+Documentation/vm/slqbinfo.c:645: warning: unused variable 'min_partial'
+Documentation/vm/slqbinfo.c:860: warning: unused variable 'count'
+Documentation/vm/slqbinfo.c:858: warning: unused variable 'p'
 
-Reverting my fix attempt would put the teardown race back in place
-(replacing the cancel_delayed_work_sync by cancel_delayed_work).
-Instead, a proper fix would imply modifying this critical section :
-
-cpufreq.c: __cpufreq_remove_dev()
-...
-        if (cpufreq_driver->target)
-                __cpufreq_governor(data, CPUFREQ_GOV_STOP);
-
-        unlock_policy_rwsem_write(cpu);
-
-To make sure the __cpufreq_governor() callback is not called with rwsem
-held. This would allow execution of cancel_delayed_work_sync() without
-being nested within the rwsem.
-
-Here is a first cut at a RFC patch for cpufreq.c locking. This is 
-currently untested.
-
-Applies on top of the 2.6.30-rc5 tree with
-
-cpufreq-fix-timer-teardown-in-conservative-governor.patch
-cpufreq-fix-timer-teardown-in-ondemand-governor.patch
-
-already applied. Should fix circular dep in teardown of both conservative and
-ondemande governors. At a first glance, CPUFREQ_GOV_STOP does not seem to modify
-the policy, therefore this locking seemed unneeded.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Greg KH <greg@kroah.com>
-CC: Ingo Molnar <mingo@elte.hu>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Ben Slusky <sluskyb@paranoiacs.org>
-CC: Dave Jones <davej@redhat.com>
-CC: Chris Wright <chrisw@sous-sol.org>
-CC: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
 ---
- drivers/cpufreq/cpufreq.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ Documentation/vm/slqbinfo.c |   11 ++---------
+ 1 file changed, 2 insertions(+), 9 deletions(-)
 
-Index: linux-2.6-lttng/drivers/cpufreq/cpufreq.c
-===================================================================
---- linux-2.6-lttng.orig/drivers/cpufreq/cpufreq.c	2009-05-10 14:41:53.000000000 -0400
-+++ linux-2.6-lttng/drivers/cpufreq/cpufreq.c	2009-05-10 14:42:29.000000000 -0400
-@@ -1070,11 +1070,11 @@ static int __cpufreq_remove_dev(struct s
- 	spin_unlock_irqrestore(&cpufreq_driver_lock, flags);
- #endif
+--- mmotm-2009-0508-1522.orig/Documentation/vm/slqbinfo.c
++++ mmotm-2009-0508-1522/Documentation/vm/slqbinfo.c
+@@ -383,7 +383,6 @@ void slab_stats(struct slabinfo *s)
+ {
+ 	unsigned long total_alloc;
+ 	unsigned long total_free;
+-	unsigned long total;
  
-+	unlock_policy_rwsem_write(cpu);
-+
- 	if (cpufreq_driver->target)
- 		__cpufreq_governor(data, CPUFREQ_GOV_STOP);
+ 	total_alloc = s->alloc;
+ 	total_free = s->free;
+@@ -501,7 +500,7 @@ void slabcache(struct slabinfo *s)
+ 		total_alloc = s->alloc;
+ 		total_free = s->free;
  
--	unlock_policy_rwsem_write(cpu);
+-		printf("%-21s %8ld %10ld %10ld %5ld %5ld %7ld %5d %7ld %8d\n",
++		printf("%-21s %8ld %10ld %10ld %5ld %5ld %7ld %5ld %7ld %8d\n",
+ 			s->name, s->objects,
+ 			total_alloc, total_free,
+ 			total_alloc ? (s->alloc_slab_fill * 100 / total_alloc) : 0,
+@@ -512,7 +511,7 @@ void slabcache(struct slabinfo *s)
+ 			s->order);
+ 	}
+ 	else
+-		printf("%-21s %8ld %7d %8s %4d %1d %3ld %4ld %s\n",
++		printf("%-21s %8ld %7d %8s %4d %1d %3ld %4d %s\n",
+ 			s->name, s->objects, s->object_size, size_str,
+ 			s->objs_per_slab, s->order,
+ 			s->slabs ? (s->objects * s->object_size * 100) /
+@@ -641,10 +640,6 @@ void totals(void)
+ 	/* Object size */
+ 	unsigned long long min_objsize = max, max_objsize = 0, avg_objsize;
+ 
+-	/* Number of partial slabs in a slabcache */
+-	unsigned long long min_partial = max, max_partial = 0,
+-				avg_partial, total_partial = 0;
 -
- 	kobject_put(&data->kobj);
+ 	/* Number of slabs in a slab cache */
+ 	unsigned long long min_slabs = max, max_slabs = 0,
+ 				avg_slabs, total_slabs = 0;
+@@ -855,9 +850,7 @@ void read_slab_dir(void)
+ 	DIR *dir;
+ 	struct dirent *de;
+ 	struct slabinfo *slab = slabinfo;
+-	char *p;
+ 	char *t;
+-	int count;
  
- 	/* we need to make sure that the underlying kobj is actually
+ 	if (chdir("/sys/kernel/slab") && chdir("/sys/slab"))
+ 		fatal("SYSFS support for SLUB not active\n");
 
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+
+
+
