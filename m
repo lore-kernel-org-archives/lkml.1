@@ -1,97 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751760AbZEJHbv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755917AbZEJHg1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751760AbZEJHbv (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 03:31:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753526AbZEJHb3
+	id S1755917AbZEJHg1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 03:36:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752632AbZEJHgQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 03:31:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54218 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751502AbZEJHb2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 03:31:28 -0400
-Date: Sun, 10 May 2009 07:30:34 GMT
-From: tip-bot for Sam Ravnborg <sam@ravnborg.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rakib.mullick@gmail.com, sam@ravnborg.org, marcin.slusarz@gmail.com,
-       tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rakib.mullick@gmail.com, sam@ravnborg.org, tglx@linutronix.de,
-       marcin.slusarz@gmail.com, mingo@elte.hu
-In-Reply-To: <b9df5fa10905090235s4bfd26a8o979f93809c9727ad@mail.gmail.com>
-References: <b9df5fa10905090235s4bfd26a8o979f93809c9727ad@mail.gmail.com>
-Subject: [tip:x86/urgent] x86: Fix false positive section mismatch warnings in the apic code
-Message-ID: <tip-b74d446f1f337e3fe906169a3266cb65ffa4179e@git.kernel.org>
-Git-Commit-ID: b74d446f1f337e3fe906169a3266cb65ffa4179e
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+	Sun, 10 May 2009 03:36:16 -0400
+Received: from night.yars.free.net ([193.233.48.54]:57220 "EHLO
+	night.yars.free.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751933AbZEJHgP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 03:36:15 -0400
+Date: Sun, 10 May 2009 11:35:59 +0400
+From: "Alexander V. Lukyanov" <lav@netis.ru>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.29.1: unregister_netdevice problem
+Message-ID: <20090510073559.GA8929@night.netis.ru>
+References: <20090422055735.GA4334@night.netis.ru> <20090427054103.GA27529@night.netis.ru> <20090428125755.GA5242@night.netis.ru> <49F76BF6.4040709@gmail.com> <20090429054510.GA8267@night.netis.ru> <20090429090809.GA2995@ami.dom.local> <20090508062640.GA4555@night.netis.ru> <20090508104628.GA6287@ff.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sun, 10 May 2009 07:30:36 +0000 (UTC)
+In-Reply-To: <20090508104628.GA6287@ff.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  b74d446f1f337e3fe906169a3266cb65ffa4179e
-Gitweb:     http://git.kernel.org/tip/b74d446f1f337e3fe906169a3266cb65ffa4179e
-Author:     Sam Ravnborg <sam@ravnborg.org>
-AuthorDate: Sat, 9 May 2009 15:35:10 +0600
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Sun, 10 May 2009 09:26:54 +0200
+On Fri, May 08, 2009 at 10:46:28AM +0000, Jarek Poplawski wrote:
+> I can't see anything suspicious for now, except these UDP and TCP
+> warnings. Did you see similar messages with 2.6.27? Btw., could this
 
-x86: Fix false positive section mismatch warnings in the apic code
+Yes. Such messages show up with any kernel version.
 
-[ Impact: reduce kernel image size a bit, annotate away warnings ]
+> eth0.987 be "connected" with any of this traffic? (IP# ?)
 
-Signed-off-by: Sam Ravnborg <sam@ravnborg.org>
-[ modified and tested it ]
-Signed-off-by: Rakib Mullick <rakib.mullick@gmail.com>
-Cc: Marcin Slusarz <marcin.slusarz@gmail.com>
-LKML-Reference: <b9df5fa10905090235s4bfd26a8o979f93809c9727ad@mail.gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+No, eth0.987 is only used for traffic output.
 
+BTW, it seems that only actively used vlan interfaces have the problem
+(even when the traffic stops). Other vlan interfaces with little traffic
+can be removed with no problems.
 
----
- arch/x86/kernel/apic/es7000_32.c |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
-
-diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
-index 1c11b81..3029477 100644
---- a/arch/x86/kernel/apic/es7000_32.c
-+++ b/arch/x86/kernel/apic/es7000_32.c
-@@ -254,7 +254,7 @@ static int parse_unisys_oem(char *oemptr)
- }
- 
- #ifdef CONFIG_ACPI
--static int find_unisys_acpi_oem_table(unsigned long *oem_addr)
-+static int __init find_unisys_acpi_oem_table(unsigned long *oem_addr)
- {
- 	struct acpi_table_header *header = NULL;
- 	struct es7000_oem_table *table;
-@@ -285,7 +285,7 @@ static int find_unisys_acpi_oem_table(unsigned long *oem_addr)
- 	return 0;
- }
- 
--static void unmap_unisys_acpi_oem_table(unsigned long oem_addr)
-+static void __init unmap_unisys_acpi_oem_table(unsigned long oem_addr)
- {
- 	if (!oem_addr)
- 		return;
-@@ -306,7 +306,7 @@ static int es7000_check_dsdt(void)
- static int es7000_acpi_ret;
- 
- /* Hook from generic ACPI tables.c */
--static int es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
-+static int __init es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
- {
- 	unsigned long oem_addr = 0;
- 	int check_dsdt;
-@@ -717,7 +717,7 @@ struct apic apic_es7000_cluster = {
- 	.safe_wait_icr_idle		= native_safe_apic_wait_icr_idle,
- };
- 
--struct apic apic_es7000 = {
-+struct apic __refdata apic_es7000 = {
- 
- 	.name				= "es7000",
- 	.probe				= probe_es7000,
+-- 
+   Alexander..
