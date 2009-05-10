@@ -1,35 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755075AbZEJVho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbZEJViA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755075AbZEJVho (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 17:37:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756610AbZEJVgM
+	id S1757279AbZEJViA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 17:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756218AbZEJVgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 17:36:12 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:44286 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756530AbZEJVgC (ORCPT
+	Sun, 10 May 2009 17:36:14 -0400
+Received: from mu-out-0910.google.com ([209.85.134.188]:4536 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754166AbZEJVgG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 17:36:02 -0400
+	Sun, 10 May 2009 17:36:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:subject:date:user-agent:cc:references:in-reply-to
          :mime-version:content-disposition:message-id:content-type
          :content-transfer-encoding;
-        b=EccK9jxP8c6gflvNA1lFAt1LQzsFUBOc/F30YPAzQmXW8StpA9N7Mazw05KQswx0Za
-         AETDgvd/8vmzV1gsFuH1gFp2HcE9SKmADQOMF5QbDPJHO+drIpDstfsJEQLoBaDt/pnq
-         IwTSUVoib/StU7abQvI93yHOtZEXNqIEl2m30=
+        b=jKIV56FQUwklm2GTG5fJ78kMWVEtZj1fAFo6ZK8Jx5NmFHjEKR0/GDO+RVZ3yyPacF
+         EpPuI8Y3VljySEb+w3zqFnn5g2jVRGJg5mZgZXAOvU/obMz+taZC7SUn+UB4GKZqfdy4
+         ujyYYnu8Lo6T093WikGi00kumijs5765UZbuA=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [RFC PATCH 0/12] ide-atapi remove pc->buf
-Date: Sun, 10 May 2009 23:32:24 +0200
+Subject: Re: [PATCH 14/14] ide: unify interrupt reason checking
+Date: Sun, 10 May 2009 23:39:37 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-00442-ga3668b0; KDE/4.2.2; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Jens Axboe <axboe@kernel.dk>
-References: <1241855134-4984-1-git-send-email-petkovbb@gmail.com>
-In-Reply-To: <1241855134-4984-1-git-send-email-petkovbb@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1241855134-4984-1-git-send-email-petkovbb@gmail.com> <1241855134-4984-15-git-send-email-petkovbb@gmail.com>
+In-Reply-To: <1241855134-4984-15-git-send-email-petkovbb@gmail.com>
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200905102332.24775.bzolnier@gmail.com>
+Message-Id: <200905102339.38126.bzolnier@gmail.com>
 Content-Type: Text/Plain;
   charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
@@ -37,52 +36,103 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-Hi,
-
-On Saturday 09 May 2009 09:45:20 Borislav Petkov wrote:
-> Hi Bart,
+On Saturday 09 May 2009 09:45:34 Borislav Petkov wrote:
+> Add ide_check_ireason() function that handles all ATAPI devices. Move
+> the ATAPI_COD check later in the if-else chain since the case for
+> ATAPI_COD to be set is rather unlikely in a normal operation. Also, add
+> a branch predictor hint for it. Generally, move all unlikely cases in
+> ireason checking further down in the code path.
 > 
-> Here's an assortment :) of ide patches touching stuff here and there.
-> I've been working on those for a while and initial testing shows no
-> problems. Among the changes is a first attempt to remove the 64 byte
-> buffer embedded in each packet command sent to an ide drive. Also, some
-> ireason handling unification is there along with other minor stuff.
-
-Generally looks good but needs some fixes (see my other mails).
-
-[ also: if you are re-posting any patches please always indicate whether
-  (and how) they were changed ]
-
-> This is based ontop of
+> In addition, add PFX for printks originating from ide-atapi. Finally,
+> remove ide_cd_check_ireason.
 > 
-> git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-unify-sector-and-data_len
-> 
-> and I'm more than open to suggestions on the logistics of merging those
-> (how/when/on top of whose branch/who picks them up/do we want to hit the
-> .31 merge window or do more testing?/etc) after being reviewed.
-> 
-> 
->  drivers/ide/ide-atapi.c        |  145 +++++++++++++++++++++++------------
->  drivers/ide/ide-cd.c           |   69 +++--------------
->  drivers/ide/ide-floppy.c       |   53 ++++++-------
->  drivers/ide/ide-floppy_ioctl.c |   43 ++++++-----
->  drivers/ide/ide-tape.c         |  168 +++++++++++++++++++---------------------
->  include/linux/ide.h            |   18 +----
->  6 files changed, 238 insertions(+), 258 deletions(-)
+> Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
+> ---
+>  drivers/ide/ide-atapi.c |   94 ++++++++++++++++++++++++++++++++++-------------
+>  drivers/ide/ide-cd.c    |   48 +-----------------------
+>  include/linux/ide.h     |    2 +
+>  3 files changed, 71 insertions(+), 73 deletions(-)
 
-Good question, how's about:
+[...]
 
-Once tj/block-unify-sector-and-data_len is in block/for-2.6.31 and your tree
-is ready I will pull it into the separate branch.  This branch can be then
-pulled into ide/for-next or into new ide/all branch (replacing ide/for-next
-in linux-next).
+> @@ -324,6 +327,56 @@ void ide_read_bcount_and_ireason(ide_drive_t *drive, u16 *bcount, u8 *ireason)
+>  EXPORT_SYMBOL_GPL(ide_read_bcount_and_ireason);
+>  
+>  /*
+> + * Check the contents of the interrupt reason register and attempt to recover if
+> + * there are problems.
+> + *
+> + * Returns:
+> + * - 0 if everything's ok
+> + * - 1 if the request has to be terminated.
+> + */
+> +int ide_check_ireason(ide_drive_t *drive, struct request *rq, int len,
+> +		      int ireason, int rw)
+> +{
+> +	ide_hwif_t *hwif = drive->hwif;
+> +
+> +	debug_log("ireason: 0x%x, rw: 0x%x\n", ireason, rw);
+> +
+> +	if (ireason == (!rw << 1))
+> +		return 0;
+> +	else if (ireason == (rw << 1)) {
+> +		printk(KERN_ERR PFX "%s: %s: wrong transfer direction!\n",
+> +				drive->name, __func__);
+> +
+> +		if (dev_is_idecd(drive))
+> +			ide_pad_transfer(drive, rw, len);
+> +	}
+> +	else if (!rw && ireason == ATAPI_COD) {
 
-This means that I'll have to synchronize merge window merges with Jens but
-this is needed already and shouldn't be a problem.
+ERROR: else should follow close brace '}'
+#90: FILE: drivers/ide/ide-atapi.c:353:
++       }
++       else if (!rw && ireason == ATAPI_COD) {
 
-If somebody [ Tejun/Jens: I'm talking to you :) ] has a better idea how to
-handle this please stand-up.
+> +		if (dev_is_idecd(drive)) {
+> +			/*
+> +			 * some drives (ASUS) seem to tell us that status info
 
-Thanks,
-Bart
+s/some/Some/
+
+> +			 * is available.  Just get it and ignore.
+> +			 */
+> +			(void)hwif->tp_ops->read_status(hwif);
+> +			return 0;
+> +		}
+> +	} else {
+> +		if (unlikely(ireason & ATAPI_COD))
+> +			printk(KERN_ERR PFX "%s: CoD != 0 in %s\n", drive->name,
+> +					__func__);
+
+This is redundant given printk() below and using unlikely() in error-only
+code-paths is overdoing it a bit (putting it very mildly)...
+
+> +		/* drive wants a command packet, or invalid ireason... */
+> +		printk(KERN_ERR PFX "%s: %s: bad interrupt reason 0x%02x\n",
+> +				drive->name, __func__, ireason);
+
+> @@ -501,13 +543,13 @@ static u8 ide_wait_ireason(ide_drive_t *drive, u8 ireason)
+>  
+>  	while (retries-- && ((ireason & ATAPI_COD) == 0 ||
+>  		(ireason & ATAPI_IO))) {
+> -		printk(KERN_ERR "%s: (IO,CoD != (0,1) while issuing "
+> +		printk(KERN_ERR PFX "%s: (IO,CoD != (0,1) while issuing "
+
+WARNING: line over 80 characters
+#203: FILE: drivers/ide/ide-atapi.c:625:
++                       printk(KERN_ERR PFX "%s: (IO,CoD) != (0,1) while issuing "
+
+[ Please remember about checkpatch.pl. ]
+
+> @@ -652,9 +608,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
+>  		goto out_end;
+>  	}
+>  
+> -	/* check which way to transfer data */
+> -	rc = ide_cd_check_ireason(drive, rq, len, ireason, write);
+> -	if (rc)
+> +	if (ide_check_ireason(drive, rq, len, ireason, write))
+>  		goto out_end;
+
+This introduces a real bug -- we check rc's value in "out_end" path.
