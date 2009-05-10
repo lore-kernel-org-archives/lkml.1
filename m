@@ -1,70 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756830AbZEJXNg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756611AbZEJXYk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756830AbZEJXNg (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 19:13:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751444AbZEJXN1
+	id S1756611AbZEJXYk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 19:24:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752288AbZEJXY3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 19:13:27 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56690 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751251AbZEJXN0 (ORCPT
+	Sun, 10 May 2009 19:24:29 -0400
+Received: from wa-out-1112.google.com ([209.85.146.182]:40732 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751591AbZEJXY2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 19:13:26 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: lockdep warnings: cpufreq ondemand gorvernor possibly circular locking
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Greg KH <greg@kroah.com>, Ingo Molnar <mingo@elte.hu>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, Ben Slusky <sluskyb@paranoiacs.org>,
-       Dave Jones <davej@redhat.com>, Chris Wright <chrisw@sous-sol.org>
-In-Reply-To: <20090510110428.8c55aab1.akpm@linux-foundation.org>
-References: <2f11576a0905100822y5507a9f7m6f9aa0fcc05ac18@mail.gmail.com> <20090510110428.8c55aab1.akpm@linux-foundation.org>
-Message-Id: <20090511080509.B9A1.A69D9226@jp.fujitsu.com>
+	Sun, 10 May 2009 19:24:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=S4W2DPNCAUfznN8vdDaivgqFXSUjpPMxzvFFjaU5ZBLx8hMw+wxQIYt4V0CsUBi3X9
+         JzCIJAojXqgn8pjzSb+jdaHYPmoFuQMaz/gIm4EZ4vhEVV3coC4Yh6wmX7cNK7QleL3D
+         CaEiomEgnoM7vip0J5TI6bhAV+QiH5rQ5n6w0=
+Message-ID: <4A076275.5000307@gmail.com>
+Date: Mon, 11 May 2009 08:25:41 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-ide@vger.kernel.org, jgarzik@pobox.com
+Subject: Re: [mmotm 2009-04-30] ata: failed to IDENTIFY
+References: <20090510114759.GA7577@localhost>
+In-Reply-To: <20090510114759.GA7577@localhost>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 11 May 2009 08:13:24 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Mon, 11 May 2009 00:22:26 +0900 KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > my box output following warnings.
-> > it seems regression by commit 7ccc7608b836e58fbacf65ee4f8eefa288e86fac.
-> > 
-> > A: work -> do_dbs_timer()  -> cpu_policy_rwsem
-> > B: store() -> cpu_policy_rwsem -> cpufreq_governor_dbs() -> work
-> 
-> I can't find any commit which matches
-> 7ccc7608b836e58fbacf65ee4f8eefa288e86fac
+Hello,
 
-Grr, sorry. it's mmotm only commit.
+The warning message seems suspicious.  I'll look into it.
 
-filename is cpufreq-fix-timer-teardown-in-ondemand-governor.patch.
+Wu Fengguang wrote:
+...
+> [ 5986.864611] ata1.00: qc timeout (cmd 0xec)
+> [ 5987.153668] ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+> [ 5987.159861] ata1.00: revalidation failed (errno=-5)
+> [ 5987.164854] ata1: hard resetting link
+> [ 5987.500647] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 300)
+> [ 5997.508508] ata1.00: qc timeout (cmd 0xec)
+> [ 5997.512720] ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+> [ 5997.518913] ata1.00: revalidation failed (errno=-5)
+> [ 5997.523893] ata1: limiting SATA link speed to 1.5 Gbps
+> [ 5997.529149] ata1: hard resetting link
+> [ 5997.860516] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+> [ 6027.868126] ata1.00: qc timeout (cmd 0xec)
+> [ 6027.872339] ata1.00: failed to IDENTIFY (I/O error, err_mask=0x4)
+> [ 6027.878530] ata1.00: revalidation failed (errno=-5)
+> [ 6027.883507] ata1.00: disabled
+> [ 6027.886603] ata1: hard resetting link
+> [ 6028.220134] ata1: SATA link up 1.5 Gbps (SStatus 113 SControl 310)
+> [ 6028.226450] ata1: EH complete
+> [ 6028.229748] sd 0:0:0:0: [sda] Result: hostbyte=DID_BAD_TARGET driverbyte=DRIVER_OK
+> [ 6028.237583] Restarting system.
+> [ 6028.240745] machine restart
 
-commit 7ccc7608b836e58fbacf65ee4f8eefa288e86fac
-Author: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Date:   Tue Apr 28 20:50:21 2009 +0200
+But the above failures seem to indicate that IRQ delivery went out the
+window during shutdown before ATA shuts down properly.  I don't think
+this is something caused by libata proper.  Would it possible for you
+to bisect the problem?
 
-    The problem is that dbs_timer_exit() uses cancel_delayed_work() when it
-    should use cancel_delayed_work_sync().  cancel_delayed_work() does not
-    wait for the workqueue handler to exit.
+Thanks.
 
-    The ondemand governor does not "seem" to be affected (read : race
-    condition occurs very rarely) because the "if (!dbs_info->enable)" check
-    at the beginning of the workqueue handler returns immediately without
-    rescheduling the work.  The conservative governor in 2.6.30-rc has the
-    same check as the ondemand governor, which makes things usually run
-    smoothly.  However, if the governor is quickly stopped and then started,
-    this could lead to the following race :
-
-    dbs_enable could be reenabled and multiple do_dbs_timer handlers would
-    run.  This is why a synchronized teardown is required.
-
-    The patch applies to, at least, 2.6.28.x, 2.6.29.1, 2.6.30-rc2.
-
-
-
+-- 
+tejun
