@@ -1,64 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbZEJVTV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZEJVWj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756206AbZEJVTV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 17:19:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbZEJVTI
+	id S1756039AbZEJVWj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 17:22:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbZEJVW3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 17:19:08 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:37909 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752329AbZEJVTH (ORCPT
+	Sun, 10 May 2009 17:22:29 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52015 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752504AbZEJVW3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 17:19:07 -0400
-Date: Sun, 10 May 2009 22:19:01 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
+	Sun, 10 May 2009 17:22:29 -0400
+Date: Sun, 10 May 2009 23:22:23 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Joe Perches <joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
+       randy.dunlap@oracle.com, torvalds@linux-foundation.org, akpm@kernel.org,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] devtmpfs patches
-Message-ID: <20090510221901.30c1c5a5@lxorguk.ukuu.org.uk>
-In-Reply-To: <1241980263.9562.380.camel@laptop>
-References: <20090509143742.GA27663@kroah.com>
-	<b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com>
-	<20090509150853.GA32394@suse.de>
-	<20090509082233.32cbb8e4@infradead.org>
-	<20090509161923.GA942@suse.de>
-	<20090509223454.4642753d.akpm@linux-foundation.org>
-	<20090510152005.GA9461@suse.de>
-	<1241980263.9562.380.camel@laptop>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Subject: Re: RFC: MAINTAINER email address style?
+Message-ID: <20090510212223.GA30393@elf.ucw.cz>
+References: <20090417134711.ba0f03e7.randy.dunlap@oracle.com> <1240003652.31116.44.camel@localhost> <20090407081312.GH1408@ucw.cz> <1240415689.21848.19.camel@localhost> <20090422185916.GA3864@uranus.ravnborg.org> <20090422120510.cc17e470.akpm@linux-foundation.org> <1240430185.21848.103.camel@localhost> <20090422203005.GA467@elf.ucw.cz> <1240557233.6735.240.camel@localhost> <1241987200.3877.9.camel@Joe-AcerAspire>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241987200.3877.9.camel@Joe-AcerAspire>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> /me boggles, however does one end up with that many partitions on so few
-> disks? 
+Hi!
 
-It happens. Tejun did the extending because libata users were really
-hitting these limits.
- 
-> /boot
-> /
-> /home
-> /usr
-> swap
-> /usr/local
-> /opt
+> > > If possible, it would be nice to aggregate multiple entries onto one
+> > > line. I.e.:
+> > > P:      Len Brown
+> > > M:      len.brown@intel.com
+> > > P:      Pavel Machek
+> > > M:      pavel@ucw.cz
+> > > P:      Rafael J. Wysocki
+> > > M:      rjw@sisk.pl
+> > > L:      linux-pm@lists.linux-foundation.org
+> > > S:      Supported
+> > > 
+> > > ->
+> > > 
+> > > P:      Len Brown now <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Rafael J. Wysocki <rjw@sisk.pl>
+> > > L:      linux-pm@lists.linux-foundation.org
+> > > S:      Supported
 > 
-> and I'm seriously out of sensible ideas.
+> Is there a consensus/majority opinion on this?
+> 
+> Should names and email addresses in MAINTAINERS be integrated?
+> Should it stay as-is or be changed to:
+> 
+> M: name <email>
+> M: name2 <email2>
+> 
+> or
+> 
+> M: name <email>, name2 <email2>
 
-I've seen two usual variants
+I'd prefer this... add addresses until 80 characters are full, then
+start new line.
 
-	Fedora & Unbuntu & Debian & ....
+> When multiple names are on a single line,
+> the M: line length can get relatively long.
+> 
+> The longest lines are 240 chars long.
 
-	Fedora 10 & Rawhide & Fedora 9 & ...
+Yep, that looks bad.
 
-for people who like to play with distros or need to test a product on them
+									Pavel
 
-
-and once you do that 16 is quite easy
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
