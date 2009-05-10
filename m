@@ -1,77 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756039AbZEJVWj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756560AbZEJVZt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756039AbZEJVWj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 17:22:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752623AbZEJVW3
+	id S1756560AbZEJVZt (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 17:25:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbZEJVZk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 17:22:29 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52015 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752504AbZEJVW3 (ORCPT
+	Sun, 10 May 2009 17:25:40 -0400
+Received: from casper.infradead.org ([85.118.1.10]:51251 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752329AbZEJVZj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 17:22:29 -0400
-Date: Sun, 10 May 2009 23:22:23 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Joe Perches <joe@perches.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Sam Ravnborg <sam@ravnborg.org>,
-       randy.dunlap@oracle.com, torvalds@linux-foundation.org, akpm@kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: RFC: MAINTAINER email address style?
-Message-ID: <20090510212223.GA30393@elf.ucw.cz>
-References: <20090417134711.ba0f03e7.randy.dunlap@oracle.com> <1240003652.31116.44.camel@localhost> <20090407081312.GH1408@ucw.cz> <1240415689.21848.19.camel@localhost> <20090422185916.GA3864@uranus.ravnborg.org> <20090422120510.cc17e470.akpm@linux-foundation.org> <1240430185.21848.103.camel@localhost> <20090422203005.GA467@elf.ucw.cz> <1240557233.6735.240.camel@localhost> <1241987200.3877.9.camel@Joe-AcerAspire>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241987200.3877.9.camel@Joe-AcerAspire>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 10 May 2009 17:25:39 -0400
+Date: Sun, 10 May 2009 14:23:22 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Rik van Riel <riel@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, hannes@cmpxchg.org,
+       linux-kernel@vger.kernel.org, tytso@mit.edu, linux-mm@kvack.org,
+       elladan@eskimo.com, npiggin@suse.de, cl@linux-foundation.org,
+       minchan.kim@gmail.com
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
+ class  citizen
+Message-ID: <20090510142322.690186a4@infradead.org>
+In-Reply-To: <4A073B0D.4090604@redhat.com>
+References: <20090430181340.6f07421d.akpm@linux-foundation.org>
+	<1241432635.7620.4732.camel@twins>
+	<20090507121101.GB20934@localhost>
+	<20090507151039.GA2413@cmpxchg.org>
+	<20090507134410.0618b308.akpm@linux-foundation.org>
+	<20090508081608.GA25117@localhost>
+	<20090508125859.210a2a25.akpm@linux-foundation.org>
+	<20090508230045.5346bd32@lxorguk.ukuu.org.uk>
+	<2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com>
+	<1241946446.6317.42.camel@laptop>
+	<2f11576a0905100236u15d45f7fm32d470776659cfec@mail.gmail.com>
+	<20090510144533.167010a9@lxorguk.ukuu.org.uk>
+	<4A06EA08.1030102@redhat.com>
+	<20090510211350.7aecc8de@lxorguk.ukuu.org.uk>
+	<4A073B0D.4090604@redhat.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
+On Sun, 10 May 2009 16:37:33 -0400
+Rik van Riel <riel@redhat.com> wrote:
 
-> > > If possible, it would be nice to aggregate multiple entries onto one
-> > > line. I.e.:
-> > > P:      Len Brown
-> > > M:      len.brown@intel.com
-> > > P:      Pavel Machek
-> > > M:      pavel@ucw.cz
-> > > P:      Rafael J. Wysocki
-> > > M:      rjw@sisk.pl
-> > > L:      linux-pm@lists.linux-foundation.org
-> > > S:      Supported
-> > > 
-> > > ->
-> > > 
-> > > P:      Len Brown now <len.brown@intel.com>, Pavel Machek <pavel@ucw.cz>, Rafael J. Wysocki <rjw@sisk.pl>
-> > > L:      linux-pm@lists.linux-foundation.org
-> > > S:      Supported
+> Alan Cox wrote:
 > 
-> Is there a consensus/majority opinion on this?
+> > Make your swap decisions depend upon I/O load on storage devices.
+> > Make your paging decisions based upon writing and reading large
+> > contiguous chunks (512K costs the same as 8K pretty much) - but you
+> > already know that .
 > 
-> Should names and email addresses in MAINTAINERS be integrated?
-> Should it stay as-is or be changed to:
-> 
-> M: name <email>
-> M: name2 <email2>
-> 
-> or
-> 
-> M: name <email>, name2 <email2>
+> Even a 2MB chunk only takes 3x as much time to write to
+> or read from disk as a 4kB page.
 
-I'd prefer this... add addresses until 80 characters are full, then
-start new line.
+... if your disk rotates.
+If instead it's a voltage level in a transistor... the opposite is
+true... it starts to approach linear-with-size then ;-)
+ 
+At least we know for the block device which of the two types it is
+inside the kernel (ok, there's a few false positives towards rotating,
+but those we could/should quirk away)
 
-> When multiple names are on a single line,
-> the M: line length can get relatively long.
 > 
-> The longest lines are 240 chars long.
+> > Historically BSD tackled some of this by actually swapping
+> > processes out once pressure got very high 
+> 
+> Our big problem today usually isn't throughput though,
+> but latency - the time it takes to bring a previously
+> inactive application back to life.
 
-Yep, that looks bad.
+Could we do a chain? E.g. store which page we paged out next (for the
+vma) as part of the first pageout, and then page them just right back
+in? Or even have a (bitmap?) of pages that have been in memory for the
+vma, and on a re-fault, look for other pages "nearby" that used to be
+in but are now out ?
 
-									Pavel
+> 
+> If we have any throughput related memory problems,
+> they often seem to be due to TLB miss penalties.
+
+TLB miss is cheap on x86. For most non-HPC workloads they
+tend to be hidden by the out of order execution...
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
