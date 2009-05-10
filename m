@@ -1,98 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755798AbZEJO6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755519AbZEJPAI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755798AbZEJO6w (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 10:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753849AbZEJO6n
+	id S1755519AbZEJPAI (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 11:00:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754103AbZEJO7z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 10:58:43 -0400
-Received: from netrider.rowland.org ([192.131.102.5]:40620 "HELO
-	netrider.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752087AbZEJO6n (ORCPT
+	Sun, 10 May 2009 10:59:55 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:58233 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753077AbZEJO7z (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 10:58:43 -0400
-Date: Sun, 10 May 2009 10:58:43 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@netrider.rowland.org
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-cc: Greg KH <greg@kroah.com>, Linux Kernel list <linux-kernel@vger.kernel.org>,
-       David Woodhouse <dwmw2@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Device core removal ordering brokenness
-In-Reply-To: <1241911761.19955.8.camel@pasglop>
-Message-ID: <Pine.LNX.4.44L0.0905101035410.31353-100000@netrider.rowland.org>
+	Sun, 10 May 2009 10:59:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=HVT0J0Q5yEgc1FsKrVKA7xq0PGG+8wkOUnZf/pW/1pPo8Ecdtu9KM+Siw6dAhVyRqf
+         MVZQjqHvpHG9PmwHBfeH+CP2MJiqwiwJzp5VLqwxtjFAumjTxyrlcWFBUjcn83RSTO0D
+         R7i1ypKgMY80l/Sqgvn3Y/W0qCJcRHGnPBwIw=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <4A06EA08.1030102@redhat.com>
+References: <20090430181340.6f07421d.akpm@linux-foundation.org>
+	 <20090507134410.0618b308.akpm@linux-foundation.org>
+	 <20090508081608.GA25117@localhost>
+	 <20090508125859.210a2a25.akpm@linux-foundation.org>
+	 <20090508230045.5346bd32@lxorguk.ukuu.org.uk>
+	 <2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com>
+	 <1241946446.6317.42.camel@laptop>
+	 <2f11576a0905100236u15d45f7fm32d470776659cfec@mail.gmail.com>
+	 <20090510144533.167010a9@lxorguk.ukuu.org.uk>
+	 <4A06EA08.1030102@redhat.com>
+Date: Sun, 10 May 2009 23:59:54 +0900
+X-Google-Sender-Auth: 1aad5aef50bfe482
+Message-ID: <2f11576a0905100759n30fbc948wef34336774abfae1@mail.gmail.com>
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class 
+	citizen
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Rik van Riel <riel@redhat.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, hannes@cmpxchg.org,
+       linux-kernel@vger.kernel.org, tytso@mit.edu, linux-mm@kvack.org,
+       elladan@eskimo.com, npiggin@suse.de, cl@linux-foundation.org,
+       minchan.kim@gmail.com
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 May 2009, Benjamin Herrenschmidt wrote:
+Hi
 
-> Hi Alan !
+>> Secondly it moves the pressure from the storage volume holding the system
+>> binaries and libraries to the swap device which already has to deal with
+>> a lot of random (and thus expensive) I/O, as well as the users filestore
+>> for mapped objects there - which may even be on a USB thumbdrive.
+>
+> Preserving the PROT_EXEC pages over streaming IO should not
+> move much (if any) pressure from the file LRUs onto the
+> swap-backed (anon) LRUs.
 
-Hi!
-
-> I was looking at git history regarding the various BUS_NOTIFY_*
-> notifiers (since David needs some stuff for his DMA debug code that
-> isn't provided by the current set) when I noticed that commit of yours:
-> 
-> ec0676ee28528dc8dda13a93ee4b1f215a0c2f9d
-> 
-> Unless I'm mistaken, which is very possible, this moves the
-> BUS_NOTIFY_DEL_DEVICE callback to -before- the driver remove() callback
-> is invoked. This sounds very illogical and potentially dangerous to me.
-> 
-> In fact, the original ordering and the only one that, to me, makes sense
-> in term of semantics is:
-> 
-> ADD / ->probe() / BOUND ... UNBIND / ->remove() / DEL
-> 
-> And not the current (since your patch):
-> 
-> ADD / ->probe() / BOUND ... DEL / UNBIND / ->remove()
-> 
-> IE. The DEL callback might tear down data structures used by the driver,
-> such as DMA mapping stuff etc...  (In fact, that's pretty much the whole
-> point of this callback). ADD/DEL should be invoked while no driver is
-> active on the device.
-> 
-> Now if I look at the reason for your change, I discover what look to me
-> like added brokenness in the core, but again, I may be missing something
-> obvious. IE. The addition and removal path don't look symetric to me,
-> and you moved the DEL callback because in the first place, the core
-> tears down various things (such as PM or sysfs related data structures)
-> before the driver is unbound from the device.
-> 
-> Whatever you guys think is the right approach for those sysfs and PM
-> structures, I do believe that moving around the DEL callback was a
-> mistake and I can see that becoming an issue on various platforms (if
-> not already).
-
-Before the patch, the ordering was like this:
-
-device_add: 	ADD  dpm_sysfs_add()  ->probe
-device_del:	dpm_sysfs_remove()  ->remove  DEL
-
-Now the ordering is like this:
-
-device_add:	dpm_sysfs_add()  ADD  ->probe
-device_del:	DEL  dpm_sysfs_remove()  ->remove
-
-Okay, yes, it's not symmetrical.  But the point of the patch was to put
-the DEL before the dpm_sysfs_remove(), and in any case the code wasn't
-symmetrical even before the patch.  I gather that you'd prefer to see
-
-device_del:	->remove  DEL  dpm_sysfs_remove()
-
-Offhand I can't think of any reason not to do this.  Maybe someone else 
-can; this code has a lot of undocumented constraints.  (Hmm, what 
-happens if a system suspend occurs after the device has been 
-unregistered from its bus but before it has been taken off the dpm 
-list?  It's probably okay but worth checking...)
-
-If you'd like to submit a patch moving the "if (dev->bus)...", 
-device_pm_remove(), and dpm_sysfs_remove() stuff after the call to 
-bus_remove_device(), go ahead.
-
-Alan Stern
-
+I don't think this is good example.
+this issue is already solved by your patch. Thus this patch don't
+improve streaming IO issue.
