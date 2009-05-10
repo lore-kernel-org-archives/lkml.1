@@ -1,104 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752767AbZEJTf2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754721AbZEJTi4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752767AbZEJTf2 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 15:35:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752004AbZEJTfN
+	id S1754721AbZEJTi4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 15:38:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751690AbZEJTir
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 15:35:13 -0400
-Received: from rcsinet11.oracle.com ([148.87.113.123]:51829 "EHLO
-	rgminet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751809AbZEJTfM (ORCPT
+	Sun, 10 May 2009 15:38:47 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:22682 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751345AbZEJTiq convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 15:35:12 -0400
-Message-ID: <4A072CB5.2050801@oracle.com>
-Date: Sun, 10 May 2009 12:36:21 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Sun, 10 May 2009 15:38:46 -0400
 MIME-Version: 1.0
-To: akpm@linux-foundation.org
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH -mmotm] slqbinfo: eliminate warnings
-References: <200905082241.n48Mfpdh022249@imap1.linux-foundation.org>
-In-Reply-To: <200905082241.n48Mfpdh022249@imap1.linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt003.oracle.com [141.146.116.12]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010205.4A072C41.01FA:SCFSTAT5015188,ss=1,fgs=0
+In-Reply-To: <4A06E344.4060901@rsk.demon.co.uk>
+References: <alpine.DEB.2.00.0905100336130.27219@ubuntu-desktop>
+	 <4A06E344.4060901@rsk.demon.co.uk>
+Date: Sun, 10 May 2009 12:38:46 -0700
+Message-ID: <a24804730905101238m3f561ea9p3bdadf151de53b71@mail.gmail.com>
+Subject: Re: [PATCH] use round_jiffies() for slow work thread pool's 5 second 
+	cull timer
+From: Chris Peterson <cpeterso@cpeterso.com>
+To: Richard Kennedy <richard@rsk.demon.co.uk>
+Cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Yes, you are correct. I misread how round_jiffies_relative() worked.
 
-Eliminate build warnings:
-
-Documentation/vm/slqbinfo.c:386: warning: unused variable 'total'
-Documentation/vm/slqbinfo.c:512: warning: format '%5d' expects type 'int', but argument 9 has type 'long unsigned int'
-Documentation/vm/slqbinfo.c:520: warning: format '%4ld' expects type 'long int', but argument 9 has type 'int'
-Documentation/vm/slqbinfo.c:646: warning: unused variable 'total_partial'
-Documentation/vm/slqbinfo.c:646: warning: unused variable 'avg_partial'
-Documentation/vm/slqbinfo.c:645: warning: unused variable 'max_partial'
-Documentation/vm/slqbinfo.c:645: warning: unused variable 'min_partial'
-Documentation/vm/slqbinfo.c:860: warning: unused variable 'count'
-Documentation/vm/slqbinfo.c:858: warning: unused variable 'p'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- Documentation/vm/slqbinfo.c |   11 ++---------
- 1 file changed, 2 insertions(+), 9 deletions(-)
-
---- mmotm-2009-0508-1522.orig/Documentation/vm/slqbinfo.c
-+++ mmotm-2009-0508-1522/Documentation/vm/slqbinfo.c
-@@ -383,7 +383,6 @@ void slab_stats(struct slabinfo *s)
- {
- 	unsigned long total_alloc;
- 	unsigned long total_free;
--	unsigned long total;
- 
- 	total_alloc = s->alloc;
- 	total_free = s->free;
-@@ -501,7 +500,7 @@ void slabcache(struct slabinfo *s)
- 		total_alloc = s->alloc;
- 		total_free = s->free;
- 
--		printf("%-21s %8ld %10ld %10ld %5ld %5ld %7ld %5d %7ld %8d\n",
-+		printf("%-21s %8ld %10ld %10ld %5ld %5ld %7ld %5ld %7ld %8d\n",
- 			s->name, s->objects,
- 			total_alloc, total_free,
- 			total_alloc ? (s->alloc_slab_fill * 100 / total_alloc) : 0,
-@@ -512,7 +511,7 @@ void slabcache(struct slabinfo *s)
- 			s->order);
- 	}
- 	else
--		printf("%-21s %8ld %7d %8s %4d %1d %3ld %4ld %s\n",
-+		printf("%-21s %8ld %7d %8s %4d %1d %3ld %4d %s\n",
- 			s->name, s->objects, s->object_size, size_str,
- 			s->objs_per_slab, s->order,
- 			s->slabs ? (s->objects * s->object_size * 100) /
-@@ -641,10 +640,6 @@ void totals(void)
- 	/* Object size */
- 	unsigned long long min_objsize = max, max_objsize = 0, avg_objsize;
- 
--	/* Number of partial slabs in a slabcache */
--	unsigned long long min_partial = max, max_partial = 0,
--				avg_partial, total_partial = 0;
--
- 	/* Number of slabs in a slab cache */
- 	unsigned long long min_slabs = max, max_slabs = 0,
- 				avg_slabs, total_slabs = 0;
-@@ -855,9 +850,7 @@ void read_slab_dir(void)
- 	DIR *dir;
- 	struct dirent *de;
- 	struct slabinfo *slab = slabinfo;
--	char *p;
- 	char *t;
--	int count;
- 
- 	if (chdir("/sys/kernel/slab") && chdir("/sys/slab"))
- 		fatal("SYSFS support for SLUB not active\n");
+chris
 
 
-
-
+On Sun, May 10, 2009 at 7:23 AM, Richard Kennedy
+<richard@rsk.demon.co.uk> wrote:
+> Chris Peterson wrote:
+>> The slow work thread pool culls its idle threads after 5 seconds without any work requests. Also, the slow work thread pool waits 5 seconds before starting new threads after OOM.
+>>
+>> This patch uses round_jiffies() to round these 5 second timers to whole seconds. In this case, the actual timer wait would be between 4.75 and 5.75 seconds (because round_jiffies() rounds < 0.25 seconds down and > 0.25 seconds up). This patch also refactors the mod_timer() logic into a separate helper function.
+>>
+>> Signed-off-by: Chris Peterson <cpeterso@cpeterso.com>
+>> ---
+>> diff --git a/kernel/slow-work.c b/kernel/slow-work.c
+>> index b28d191..9bfcb53 100644
+>> --- a/kernel/slow-work.c
+>> +++ b/kernel/slow-work.c
+>> @@ -318,6 +318,12 @@ cant_get_ref:
+>>  }
+>>  EXPORT_SYMBOL(slow_work_enqueue);
+>>
+>> +static void slow_work_defer_cull_time(void)
+>> +{
+>> +     mod_timer(&slow_work_cull_timer,
+>> +                       round_jiffies_relative(SLOW_WORK_CULL_TIMEOUT));
+>> +}
+>> +
+> Hi Chris,
+>
+> Doesn't mod_timer take an absolute time not a relative one?
+>
+> So I think this should be
+>
+>        mod_timer(&timer,round_jiffies(jiffies + TIMEOUT) );
+>
+> regards
+>
+> Richard
+>
+>
