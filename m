@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758626AbZEKSTZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbZEKSUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758626AbZEKSTZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 14:19:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753108AbZEKSTO
+	id S1758256AbZEKSUc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 14:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755657AbZEKSUV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 14:19:14 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:36638 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751442AbZEKSTN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 14:19:13 -0400
-Message-ID: <4A086C07.7050103@codemonkey.ws>
-Date: Mon, 11 May 2009 13:18:47 -0500
-From: Anthony Liguori <anthony@codemonkey.ws>
+	Mon, 11 May 2009 14:20:21 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38013 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753232AbZEKSUU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 14:20:20 -0400
+Message-ID: <4A086CA4.4030302@redhat.com>
+Date: Mon, 11 May 2009 14:21:24 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: Hollis Blanchard <hollisb@us.ibm.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net>	 <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com>	 <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com>	 <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com>	 <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com>	 <4A02D40D.7060307@redhat.com> <4A0448DF.90705@codemonkey.ws>	 <4A0570B1.30401@novell.com> <4A071F1A.1090702@codemonkey.ws>	 <4A0824C2.4000109@gmail.com> <1242059712.29194.12.camel@slate.austin.ibm.com> <4A085B06.4080803@redhat.com> <4A086590.4040602@codemonkey.ws> <4A086835.5020400@redhat.com>
-In-Reply-To: <4A086835.5020400@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Jim Keniston <jkenisto@us.ibm.com>
+Subject: Re: [PATCH -tip v5 2/7] kprobes: checks probe address is instruction
+ boudary on x86
+References: <20090509004829.5505.38720.stgit@localhost.localdomain> <20090509004847.5505.37957.stgit@localhost.localdomain> <alpine.DEB.2.00.0905111011060.14976@gandalf.stny.rr.com> <4A083DAD.8000009@redhat.com> <alpine.DEB.2.00.0905111119390.2492@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0905111119390.2492@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Avi Kivity wrote:
-> Anthony Liguori wrote:
->>>
->>> It's a question of cost vs. benefit.  It's clear the benefit is low 
->>> (but that doesn't mean it's not worth having).  The cost initially 
->>> appeared to be very low, until the nested virtualization wrench was 
->>> thrown into the works.  Not that nested virtualization is a reality 
->>> -- even on svm where it is implemented it is not yet production 
->>> quality and is disabled by default.
->>>
->>> Now nested virtualization is beginning to look interesting, with 
->>> Windows 7's XP mode requiring virtualization extensions.  Desktop 
->>> virtualization is also something likely to use device assignment 
->>> (though you probably won't assign a virtio device to the XP instance 
->>> inside Windows 7).
->>>
->>> Maybe we should revisit the mmio hypercall idea again, it might be 
->>> workable if we find a way to let the guest know if it should use the 
->>> hypercall or not for a given memory range.
->>>
->>> mmio hypercall is nice because
->>> - it falls back nicely to pure mmio
->>> - it optimizes an existing slow path, not just new device models
->>> - it has preexisting semantics, so we have less ABI to screw up
->>> - for nested virtualization + device assignment, we can drop it and 
->>> get a nice speed win (or rather, less speed loss)
+Steven Rostedt wrote:
+> On Mon, 11 May 2009, Masami Hiramatsu wrote:
+>>>> +	 * by fix_riprel().
+>>>> +	 */
+>>>> +	memcpy(buf, kp->addr, MAX_INSN_SIZE * sizeof(kprobe_opcode_t));
+>>>> +	buf[0] = kp->opcode;
+>>> Why is it OK to copy addr to "buf" and then rewrite the first character of 
+>>> buf?  Does it have something to do with the above "p"?
+>> Yes, each kprobe copied probed instruction to kp->ainsn.insn,
+>> which is an executable buffer for single stepping.
+>> So, basically, kp->ainsn.insn has an original instruction.
+>> However, RIP-relative instruction can not do single-stepping
+>> at different place, fix_riprel() tweaks the displacement of
+>> that instruction. In that case, we can't recover the instruction
+>> from the kp->ainsn.insn.
 >>
->> If it's a PCI device, then we can also have an interrupt which we 
->> currently lack with vmcall-based hypercalls.  This would give us 
->> guestcalls, upcalls, or whatever we've previously decided to call them.
->
-> Sorry, I totally failed to understand this.  Please explain.
+>> On the other hand, kp->opcode has a copy of the first byte of
+>> the probed instruction, which is overwritten by int3. And
+>> the instruction at kp->addr is not modified by kprobes except
+>> for the first byte, we can recover the original instruction
+>> from it and kp->opcode.
+> 
+> For code that is awkward, complex or non-trivial, don't be afraid to put 
+> in a paragraph explaining the code. The above explanation should be a 
+> comment in the code. Otherwise people like me would just look at it and 
+> say "huh?".
+> 
+> Note, I'm a bit cranky this morning, so I hope I don't offend anyone.
 
-I totally missed what you meant by MMIO hypercall.
+No, that's very helpful review for me. Thanks :-)
 
-In what cases do you think MMIO hypercall would result in a net benefit?
 
-I think the difference in MMIO vs hcall will be overshadowed by the 
-heavy weight transition to userspace.  The only thing I can think of 
-where it may matter is for in-kernel devices like the APIC but that's a 
-totally different path in Linux.
+-- 
+Masami Hiramatsu
 
-Regards,
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-Anthony Liguori
+e-mail: mhiramat@redhat.com
+
