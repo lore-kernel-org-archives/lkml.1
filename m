@@ -1,86 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757211AbZEKPKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757834AbZEKPLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757211AbZEKPKi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 11:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZEKPK3
+	id S1757834AbZEKPLW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 11:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754557AbZEKPLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 11:10:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36211 "EHLO hera.kernel.org"
+	Mon, 11 May 2009 11:11:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36231 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753477AbZEKPK2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 11:10:28 -0400
-Date: Mon, 11 May 2009 15:09:40 GMT
-From: tip-bot for Alexey Dobriyan <adobriyan@gmail.com>
+	id S1752989AbZEKPLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 11:11:06 -0400
+Date: Mon, 11 May 2009 15:09:51 GMT
+From: tip-bot for Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       tglx@linutronix.de, mingo@elte.hu, adobriyan@gmail.com
+       a.p.zijlstra@chello.nl, venkatesh.pallipadi@intel.com,
+       mahesh@linux.vnet.ibm.com, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, mingo@elte.hu, svaidy@linux.vnet.ibm.com
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, adobriyan@gmail.com, mingo@elte.hu
-In-Reply-To: <20090503233015.GJ16631@x200.localdomain>
-References: <20090503233015.GJ16631@x200.localdomain>
-Subject: [tip:x86/asm] x86, 64-bit: ifdef out struct thread_struct::ip
-Message-ID: <tip-0c23590f00f85467b318ad0c20c36796a5bd4c60@git.kernel.org>
-Git-Commit-ID: 0c23590f00f85467b318ad0c20c36796a5bd4c60
+       a.p.zijlstra@chello.nl, venkatesh.pallipadi@intel.com,
+       mahesh@linux.vnet.ibm.com, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, mingo@elte.hu, svaidy@linux.vnet.ibm.com
+In-Reply-To: <20090511143914.GB4853@dirshya.in.ibm.com>
+References: <20090511143914.GB4853@dirshya.in.ibm.com>
+Subject: [tip:sched/core] sched: Don't export sched_mc_power_savings on multi-socket single core system
+Message-ID: <tip-33faf60cb97fee37b0e60a68c171f9099c576dec@git.kernel.org>
+Git-Commit-ID: 33faf60cb97fee37b0e60a68c171f9099c576dec
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 15:09:42 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 15:09:53 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  0c23590f00f85467b318ad0c20c36796a5bd4c60
-Gitweb:     http://git.kernel.org/tip/0c23590f00f85467b318ad0c20c36796a5bd4c60
-Author:     Alexey Dobriyan <adobriyan@gmail.com>
-AuthorDate: Mon, 4 May 2009 03:30:15 +0400
+Commit-ID:  33faf60cb97fee37b0e60a68c171f9099c576dec
+Gitweb:     http://git.kernel.org/tip/33faf60cb97fee37b0e60a68c171f9099c576dec
+Author:     Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+AuthorDate: Mon, 11 May 2009 20:09:14 +0530
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 11 May 2009 16:23:54 +0200
+CommitDate: Mon, 11 May 2009 17:05:57 +0200
 
-x86, 64-bit: ifdef out struct thread_struct::ip
+sched: Don't export sched_mc_power_savings on multi-socket single core system
 
-struct thread_struct::ip isn't used on x86_64, struct pt_regs::ip is used
-instead.
+Fix to prevent sched_mc_power_saving from being exported through sysfs
+for multi-scoket single core system. Max cores should be always greater than
+one (1). My earlier patch that introduced fix for not exporting
+'sched_mc_power_saving' on laptops  broke it on multi-socket single core
+system. This fix addresses issue on both laptop and multi-socket single
+core system.
+Below are the Test results:
 
-kgdb should be reading 0 always, but I can't check it.
+1. Single socket - multi-core
+       Before Patch: Does not export 'sched_mc_power_saving'
+       After Patch: Does not export 'sched_mc_power_saving'
+       Result: Pass
 
-[ Impact: (potentially) reduce thread_struct size on 64-bit ]
+2. Multi Socket - single core
+      Before Patch: exports 'sched_mc_power_saving'
+      After Patch: Does not export 'sched_mc_power_saving'
+      Result: Pass
 
-Signed-off-by: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: containers@lists.linux-foundation.org
-LKML-Reference: <20090503233015.GJ16631@x200.localdomain>
+3. Multi Socket - Multi core
+      Before Patch: exports 'sched_mc_power_saving'
+      After Patch: exports 'sched_mc_power_saving'
+
+[ Impact: make the sched_mc_power_saving control available more consistently ]
+
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: Suresh B Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <20090511143914.GB4853@dirshya.in.ibm.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/include/asm/processor.h |    2 ++
- arch/x86/kernel/kgdb.c           |    2 +-
- 2 files changed, 3 insertions(+), 1 deletions(-)
+ arch/x86/include/asm/topology.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index a6732ff..a9ba743 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -427,7 +427,9 @@ struct thread_struct {
- 	unsigned short		fsindex;
- 	unsigned short		gsindex;
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index f44b49a..066ef59 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -203,7 +203,8 @@ struct pci_bus;
+ void x86_pci_root_bus_res_quirks(struct pci_bus *b);
+ 
+ #ifdef CONFIG_SMP
+-#define mc_capable()	(cpumask_weight(cpu_core_mask(0)) != nr_cpu_ids)
++#define mc_capable()	((boot_cpu_data.x86_max_cores > 1) && \
++			(cpumask_weight(cpu_core_mask(0)) != nr_cpu_ids))
+ #define smt_capable()			(smp_num_siblings > 1)
  #endif
-+#ifdef CONFIG_X86_32
- 	unsigned long		ip;
-+#endif
- #ifdef CONFIG_X86_64
- 	unsigned long		fs;
- #endif
-diff --git a/arch/x86/kernel/kgdb.c b/arch/x86/kernel/kgdb.c
-index eedfaeb..d07706f 100644
---- a/arch/x86/kernel/kgdb.c
-+++ b/arch/x86/kernel/kgdb.c
-@@ -141,7 +141,7 @@ void sleeping_thread_to_gdb_regs(unsigned long *gdb_regs, struct task_struct *p)
- 	gdb_regs32[GDB_PS]	= *(unsigned long *)(p->thread.sp + 8);
- 	gdb_regs32[GDB_CS]	= __KERNEL_CS;
- 	gdb_regs32[GDB_SS]	= __KERNEL_DS;
--	gdb_regs[GDB_PC]	= p->thread.ip;
-+	gdb_regs[GDB_PC]	= 0;
- 	gdb_regs[GDB_R8]	= 0;
- 	gdb_regs[GDB_R9]	= 0;
- 	gdb_regs[GDB_R10]	= 0;
+ 
