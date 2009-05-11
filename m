@@ -1,164 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758345AbZEKUCW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbZEKUCi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758345AbZEKUCW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 16:02:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753022AbZEKUCN
+	id S1758670AbZEKUCi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 16:02:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757609AbZEKUCT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 16:02:13 -0400
-Received: from havoc.gtf.org ([69.61.125.42]:48332 "EHLO havoc.gtf.org"
+	Mon, 11 May 2009 16:02:19 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:49855 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752742AbZEKUCM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 16:02:12 -0400
-Date: Mon, 11 May 2009 16:02:13 -0400
-From: Jeff Garzik <jeff@garzik.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: viro@zeniv.linux.org.uk, mingo@elte.hu,
-       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
-Subject: [PATCH 1/2 v3] kernel/{sched,smp}.c: fix static decl prior to struct declaration
-Message-ID: <20090511200213.GA8478@havoc.gtf.org>
-References: <20090508184838.GA11157@havoc.gtf.org> <20090508193841.GA13831@havoc.gtf.org>
-Mime-Version: 1.0
+	id S1756809AbZEKUCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 16:02:18 -0400
+Date: Mon, 11 May 2009 22:01:43 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       eswierk@aristanetworks.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/apic] x86: read apic ID in the !acpi_lapic case
+Message-ID: <20090511200143.GJ28684@elte.hu>
+References: <49FC85A9.2070702@kernel.org> <tip-4401da6111ac58f94234417427d06a72c4048c74@git.kernel.org> <20090511110234.GH4648@elte.hu> <20090511134140.GH4624@lenovo> <20090511134950.GA949@elte.hu> <4A0863C5.9070206@kernel.org> <20090511180521.GL4624@lenovo>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090508193841.GA13831@havoc.gtf.org>
-User-Agent: Mutt/1.4.2.2i
+In-Reply-To: <20090511180521.GL4624@lenovo>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-According to C99 6.9.2p3, any declaration "static struct foo my_foo;"
-must follow the definition of struct foo.
 
-Apparently, gcc's lack of warning is a bug.
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
 
-Signed-off-by: Jeff Garzik <jgarzik@redhat.com>
----
-Patch v3 changes:
-- fix compile breakage WRT root_task_group.
-Patch v2 changes:
-- fix ifdef imbalance, by moving entire USER_SCHED code block
-- indent cpp directives, to indicate nesting
+> [Yinghai Lu - Mon, May 11, 2009 at 10:43:33AM -0700]
+> ...
+> | >>
+> | >> x86: apic - fixmap apic address even if apic disabled
+> | >>
+> | >> In case if apic were disabled by boot option
+> | >> we still need read_apic operation. So fixmap
+> | >> a fake apic area if needed.
+> | >>
+> | >> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+> | >> ---
+> | >>  arch/x86/kernel/apic/apic.c |   17 +++++++++--------
+> | >>  1 file changed, 9 insertions(+), 8 deletions(-)
+> | >>
+> | >> Index: linux-2.6.git/arch/x86/kernel/apic/apic.c
+> | >> =====================================================================
+> | >> --- linux-2.6.git.orig/arch/x86/kernel/apic/apic.c
+> | >> +++ linux-2.6.git/arch/x86/kernel/apic/apic.c
+> | >> @@ -1591,13 +1591,6 @@ void __init init_apic_mappings(void)
+> | >>  	} else
+> | >>  		apic_phys = mp_lapic_addr;
+> | >>  
+> | >> -	/* lets check if we may NOP'ify apic operations */
+> | >> -	if (!cpu_has_apic) {
+> | >> -		pr_info("APIC: disable apic facility\n");
+> | >> -		apic_disable();
+> | >> -		return;
+> | >> -	}
+> | >> -
+> | >>  	/*
+> | >>  	 * acpi lapic path already maps that address in
+> | >>  	 * acpi_register_lapic_address()
+> | >> @@ -1606,7 +1599,15 @@ void __init init_apic_mappings(void)
+> | >>  		set_fixmap_nocache(FIX_APIC_BASE, apic_phys);
+> | >>  
+> | >>  	apic_printk(APIC_VERBOSE, "mapped APIC to %08lx (%08lx)\n",
+> | >> -				APIC_BASE, apic_phys);
+> | >> +			APIC_BASE, apic_phys);
+> | >> +
+> | >> +	/* lets check if we may NOP'ify apic operations */
+> | >> +	if (!cpu_has_apic) {
+> | >> +		pr_info("APIC: disable apic facility\n");
+> | >> +		apic_disable();
+> | >> +		return;
+> | >> +	}
+> | >> +
+> | > 
+> | > Will check this - thanks.
+> | > 
+> | 
+> | please check this one instead.
+> | 
+> | [PATCH] x86: add native_apic_read_dummy
+> | 
+> | when apic is not used ( not there, or disable_apic ), try to install
+> | dummy read too.
+> | 
+> | could save 4k in that case.
+> | 
+> | [ Impact: fix bug when try to dump APIC reg ]
+> | 
+> | Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> | Cc: Cyrill Gorcunov <gorcunov@openvz.org>
+> | 
+> 
+> Thanks Yinghai, looks really attractive!
+> 
+> But would need a good testing (seems we
+> rely on read_apic heavily in smp environment
+> even if it was disabled or not supported).
+> 
+> (btw comment about disable_apic now should
+>  contain apic->read as well or should be dropped
+>  completely since all is selfevidence from code
+>  though this is not that important i believe)
 
- kernel/sched.c |   74 ++++++++++++++++++++++++++++-----------------------------
- kernel/smp.c   |    4 +--
- 2 files changed, 39 insertions(+), 39 deletions(-)
+Needs a delta patch against -tip - i got this stuff stable today but 
+i dont want to replace patches as it has a problematic track record 
+already.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 26efa47..7afa517 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -303,48 +303,11 @@ struct task_group {
- 	struct list_head children;
- };
- 
--#ifdef CONFIG_USER_SCHED
--
--/* Helper function to pass uid information to create_sched_user() */
--void set_tg_uid(struct user_struct *user)
--{
--	user->tg->uid = user->uid;
--}
--
--/*
-- * Root task group.
-- * 	Every UID task group (including init_task_group aka UID-0) will
-- * 	be a child to this group.
-- */
--struct task_group root_task_group;
--
--#ifdef CONFIG_FAIR_GROUP_SCHED
--/* Default task group's sched entity on each cpu */
--static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
--/* Default task group's cfs_rq on each cpu */
--static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
--#endif /* CONFIG_FAIR_GROUP_SCHED */
--
--#ifdef CONFIG_RT_GROUP_SCHED
--static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
--static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
--#endif /* CONFIG_RT_GROUP_SCHED */
--#else /* !CONFIG_USER_SCHED */
--#define root_task_group init_task_group
--#endif /* CONFIG_USER_SCHED */
--
- /* task_group_lock serializes add/remove of task groups and also changes to
-  * a task group's cpu shares.
-  */
- static DEFINE_SPINLOCK(task_group_lock);
- 
--#ifdef CONFIG_SMP
--static int root_task_group_empty(void)
--{
--	return list_empty(&root_task_group.children);
--}
--#endif
--
- #ifdef CONFIG_FAIR_GROUP_SCHED
- #ifdef CONFIG_USER_SCHED
- # define INIT_TASK_GROUP_LOAD	(2*NICE_0_LOAD)
-@@ -663,6 +626,43 @@ struct rq {
- 
- static DEFINE_PER_CPU_SHARED_ALIGNED(struct rq, runqueues);
- 
-+#ifdef CONFIG_USER_SCHED
-+
-+/* Helper function to pass uid information to create_sched_user() */
-+void set_tg_uid(struct user_struct *user)
-+{
-+	user->tg->uid = user->uid;
-+}
-+
-+/*
-+ * Root task group.
-+ * 	Every UID task group (including init_task_group aka UID-0) will
-+ * 	be a child to this group.
-+ */
-+struct task_group root_task_group;
-+
-+# ifdef CONFIG_FAIR_GROUP_SCHED
-+/* Default task group's sched entity on each cpu */
-+static DEFINE_PER_CPU(struct sched_entity, init_sched_entity);
-+/* Default task group's cfs_rq on each cpu */
-+static DEFINE_PER_CPU(struct cfs_rq, init_cfs_rq) ____cacheline_aligned_in_smp;
-+# endif /* CONFIG_FAIR_GROUP_SCHED */
-+
-+# ifdef CONFIG_RT_GROUP_SCHED
-+static DEFINE_PER_CPU(struct sched_rt_entity, init_sched_rt_entity);
-+static DEFINE_PER_CPU(struct rt_rq, init_rt_rq) ____cacheline_aligned_in_smp;
-+# endif /* CONFIG_RT_GROUP_SCHED */
-+#else /* !CONFIG_USER_SCHED */
-+# define root_task_group init_task_group
-+#endif /* CONFIG_USER_SCHED */
-+
-+#ifdef CONFIG_SMP
-+static int root_task_group_empty(void)
-+{
-+	return list_empty(&root_task_group.children);
-+}
-+#endif
-+
- static inline void check_preempt_curr(struct rq *rq, struct task_struct *p, int sync)
- {
- 	rq->curr->sched_class->check_preempt_curr(rq, p, sync);
-diff --git a/kernel/smp.c b/kernel/smp.c
-index 858baac..aba7bda 100644
---- a/kernel/smp.c
-+++ b/kernel/smp.c
-@@ -12,8 +12,6 @@
- #include <linux/smp.h>
- #include <linux/cpu.h>
- 
--static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
--
- static struct {
- 	struct list_head	queue;
- 	spinlock_t		lock;
-@@ -39,6 +37,8 @@ struct call_single_queue {
- 	spinlock_t		lock;
- };
- 
-+static DEFINE_PER_CPU(struct call_single_queue, call_single_queue);
-+
- static DEFINE_PER_CPU(struct call_function_data, cfd_data) = {
- 	.lock			= __SPIN_LOCK_UNLOCKED(cfd_data.lock),
- };
+	Ingo
