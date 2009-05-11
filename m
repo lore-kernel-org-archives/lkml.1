@@ -1,97 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759011AbZEKUVd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759297AbZEKUVr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759011AbZEKUVd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 16:21:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbZEKUVX
+	id S1759297AbZEKUVr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 16:21:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbZEKUVZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 16:21:23 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:61793 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752168AbZEKUVW (ORCPT
+	Mon, 11 May 2009 16:21:25 -0400
+Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:54223 "EHLO
+	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753526AbZEKUVY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 16:21:22 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=A2I828nBo8QPah6FUWPLO3WUl9M5N07ihWlJdAnMG3S9khcMl3KitAtnCZ1PmBFQR
-	mOW5ILIsVzyozoUWQRnXg==
-Date: Mon, 11 May 2009 13:21:18 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Dave Hansen <dave@linux.vnet.ibm.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       San Mehat <san@android.com>, Arve Hjonnevag <arve@android.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 08/11 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
-In-Reply-To: <1242071124.8109.35426.camel@localhost.localdomain>
-Message-ID: <alpine.DEB.2.00.0905111313120.27577@chino.kir.corp.google.com>
-References: <20090511085750.B9AC.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0905101719040.31823@chino.kir.corp.google.com> <20090511104310.B9C1.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0905110143190.24726@chino.kir.corp.google.com>
- <1242057793.8109.34342.camel@localhost.localdomain> <alpine.DEB.2.00.0905111159130.23739@chino.kir.corp.google.com> <1242071124.8109.35426.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 11 May 2009 16:21:24 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: Probe Timeouts with 47afbaf5af9454a7a1a64591e20cbfcc27ca67a8
+Date: Mon, 11 May 2009 22:21:22 +0200
+User-Agent: KMail/1.9.9
+Cc: johannes@sipsolutions.net, parag.lkml@gmail.com, linville@tuxdriver.com,
+       linux-kernel@vger.kernel.org, niel.lambrechts@gmail.com
+References: <f7848160904301838q4883106fq8d31e2e7c0b10a14@mail.gmail.com> <1241165805.13562.2.camel@johannes.local> <f7848160905010619n74372488n45a7b7abccfe5ea7@mail.gmail.com> <alpine.LFD.2.01.0905111046310.3586@localhost.localdomain> <1242066170.3873.43.camel@johannes.local> <alpine.LFD.2.01.0905111126320.3586@localhost.localdomain> <1242067939.3873.45.camel@johannes.local> <1242067939.3873.45.camel@johannes.local> <alpine.LFD.2.01.0905111157561.3586@localhost.localdomain>
+In-reply-To: <alpine.LFD.2.01.0905111157561.3586@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905112221.24522.elendil@planet.nl>
+X-OriginalArrivalTime: 11 May 2009 20:21:24.0983 (UTC) FILETIME=[0E9BB870:01C9D276]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009, Dave Hansen wrote:
+Linus Torvalds wrote:
+> Well, since I'm testing this laptop for any corner cases, the
+> non-working case had actually been tested with things like multiple
+> suspend-to-ram cycles (while doing accelerated 3D and sound at the same
+> time), along with testing anything else I could think of. And everything
+> worked, but wireless wouldn't associate.
 
-> So, there are three conditions that have to be met before we get to this
-> behavior:
-> 1. order > PAGE_ALLOC_COSTLY_ORDER
-> 2. __GFP_NOFAIL set
-> 3. no progress being made
-> 
-> The two hunks of this patch really do different things to me.
-> Personally, I'd split them up.  
-> 
-> This patch's first hunk effectively says, "When we have __GFP_NOFAIL
-> set, it is now OK to OOM tasks for 'order > PAGE_ALLOC_COSTLY_ORDER'".
-> That's a little bit goofy to me.  Either OOMs help large-order allocs or
-> they don't.  __GFP_NOFAIL doesn't change how effective an OOM is.
-> 
+JFYI.
 
-Right, but the problem is that we don't know what the oom killer did 
-(until you get to patches 10 and 11 in this series).  It would be easier 
-to use the __GFP_REPEAT retry logic to determine whether to continue 
-looping, but we currently bypass that because reclaim failed and we don't 
-know what the oom killer did.  My later patches change that, so 
-__GFP_REPEAT actually works in this case.
+I also have a 2510p that I actually _do_ use - as my main workstation - 
+both docked (mostly with wired net) and undocked with wireless, and 
+between 1 and 4 suspend/resume (to RAM) cycles per day (frequently 
+(un)docking while suspended).
 
-> Yeah, adding a new warning or enhancing the existing "page allocation
-> failure" warning would be nice.
-> 
+I've been running 2.6.30-rc3 and later on it and have not seen any 
+wireless (or other) problems. Distro is Debian Lenny.
 
-Ok, it's a good idea that I never considered.
+Firmware in use is:
+iwlagn 0000:10:00.0: firmware: requesting iwlwifi-4965-2.ucode
+iwlagn 0000:10:00.0: loaded firmware version 228.57.2.23
 
-> Aren't you a bit worried that people will keep adding new 'goto nopage'
-> cases in here?  Would it be more effective to just put a:
-> 
->         if (gfp_mask & __GFP_NOFAIL)
->                 goto restart;
-> 
-> at the very end of the function?  That should keep people from screwing
-> this up in the future a bit better.
-> 
-
-goto nopage is the only thing we have to worry about since the retry logic 
-does get invoked otherwise (and any order less than 
-PAGE_ALLOC_COSTLY_ORDER is actually implicitly __GFP_NOFAIL there, 
-regardless of reclaim progress).  We do actually need to bypass that logic 
-for a couple of cases (GFP_THISNODE and GFP_ATOMIC) where reclaim is 
-inherently denied.  We lack BUG_ON()'s for such cases undoubtedly because 
-of the performance impact in the very hot path.
-
-> Thanks for going to the trouble of trying to sort all this code out a
-> bit better.  I know it is a mess.  Could you try and beef up the
-> descriptions a bit in the next pass?  Some of the stuff about where
-> you're encountering these situations would be really helpful, especially
-> with 'git blame' these days.  
-> 
-
-Ok, thanks for the comments.
+Cheers,
+FJP
