@@ -1,75 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbZEKWBQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbZEKWGS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759493AbZEKWBQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 18:01:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbZEKWAz
+	id S1758524AbZEKWGS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 18:06:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755122AbZEKWGE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 18:00:55 -0400
-Received: from bu3sch.de ([62.75.166.246]:55293 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756226AbZEKWAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 18:00:55 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: David Dillow <dave@thedillows.org>
-Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
-Date: Mon, 11 May 2009 23:59:43 +0200
-User-Agent: KMail/1.9.9
-Cc: Michael Riepe <michael.riepe@googlemail.com>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Rui Santos <rsantos@grupopie.com>,
-       Michael =?utf-8?q?B=C3=BCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-References: <200903041828.49972.m.bueker@berlin.de> <200905112310.08534.mb@bu3sch.de> <1242077392.3716.15.camel@lap75545.ornl.gov>
-In-Reply-To: <1242077392.3716.15.camel@lap75545.ornl.gov>
-X-Move-Along: Nothing to see here. No, really... Nothing.
+	Mon, 11 May 2009 18:06:04 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:8018 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753730AbZEKWGC (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 18:06:02 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=xWs9GqHxNAw0X5nU5glQiVHDB6IkkRdlKof91ReUFYXaOFov+bQDofZMxXlqNBGR9
+	G+bhhKIlzr7bRCT96Ipng==
+Date: Mon, 11 May 2009 15:05:57 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Greg KH <gregkh@suse.de>
+cc: Andrew Morton <akpm@linux-foundation.org>, npiggin@suse.de, mel@csn.ul.ie,
+       a.p.zijlstra@chello.nl, Christoph Lameter <cl@linux-foundation.org>,
+       dave@linux.vnet.ibm.com, san@android.com, arve@android.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 05/11 -mmotm] oom: fix possible oom_dump_tasks NULL
+ pointer
+In-Reply-To: <20090511214106.GB22040@suse.de>
+Message-ID: <alpine.DEB.2.00.0905111501480.2234@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101501050.18804@chino.kir.corp.google.com> <20090511141138.3e8118ab.akpm@linux-foundation.org> <alpine.DEB.2.00.0905111418560.466@chino.kir.corp.google.com>
+ <20090511214106.GB22040@suse.de>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905112359.43433.mb@bu3sch.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 May 2009 23:29:52 David Dillow wrote:
-> On Mon, 2009-05-11 at 23:10 +0200, Michael Buesch wrote:
-> > On Monday 11 May 2009 22:48:44 Michael Buesch wrote:
-> > > On Monday 11 May 2009 02:29:14 David Dillow wrote:
-> > > > > Kernel: 2.6.29.2 (x86_64)
-> > > > > Board: Intel D945GCLF2
-> > > > > BIOS version: LF94510J.86A.0099.2008.0731.0303
-> > > > 
-> > > > I'm not sure this is tied to the chip. 
-> > > 
-> > > Yeah maybe other chips are affected as well.
-> > > I just want to note that my failing chip/board is an Intel D945GCLF2 board
-> > > with onboard G-LAN, too.
-> > > 
-> > > The device XID is: XID 3c4000c0
-> > > (see kernel log)
-> > > 
-> > > Somebody else (I think it was Rui Santos) already reported a failing chip with that XID, too.
-> > > 
-> > 
-> > Here's a patch which blacklists MSI support by XID.
-> > It's currently only compile-tested, because I can't reboot the machine right now.
-> 
-> I was saying that I don't think the timeouts are necessarily the NIC
-> chipset -- or the bridge chip for that matter --  having issues with
-> MSI. There were some substantial IRQ handling changes in 2.6.28 and my
-> bisection of the problem seem to lead into that code. I'll try this
-> later tonight hopefully, but can you try to run 2.6.27 with the current
-> r8169 driver and see if it is solid for you? That way it is using the
-> same driver code, but avoids the IRQ changes.
-> 
-> Of course, my XID is 281000c0, so it looks like I have a different NIC
-> chip as well, so we may be chasing different problems. Still, it'd be
-> nice to rule out the IRQ changes before adding a blacklist.
+On Mon, 11 May 2009, Greg KH wrote:
 
-Ok, that perfectly makes sense.
-I can try 2.6.29's driver on 2.6.27, but I can't tell when, because I currently
-only have infrequent physical access to the machine.
+> > This was a source of confusion from me when I posted a smaller set earlier 
+> > that made the same changes to the staging driver, and the only reason I 
+> > sent the change here was because drivers/staging/android/lowmemorykiller.c 
+> > is in Linus' tree.
+> 
+> I have that series in my "to-apply" queue to get through this week.  I
+> will handle them.
+> 
 
--- 
-Greetings, Michael.
+Great!
+
+> I think the original lowmemorykiller.c patches have no problem getting
+> into the tree.  But, it seems that people are still disagreeing with the
+> core oom changes you have made, so those will probably take a few more
+> review cycles in order to work themselves out.
+> 
+
+Andrew merged a fixed up version of 
+oom-move-oom_adj-value-from-task_struct-to-mm_struct.patch to -mm so that 
+it's not dependent on the earlier lowmemorykiller changes.  I assume the 
+merge conflicts will be handled by whoever pushes their changes last.
+
+> I would _really_ like to see the end goal to get this lowmemorykiller
+> code out of the staging tree, and I think that is what your goal here is
+> as well.
+
+Not really, my only real change to it was making sure it would compile 
+when I moved ->oomkilladj from task_struct to mm_struct.  In the course of 
+that, I found a possible NULL pointer and coding style problems so I 
+thought I'd fix them up as well.  Then Arve posted a couple of patches 
+he'd been sitting on, so I added them early on to my series so they'd all 
+apply cleanly.
+
+> If, at the end of your series that happens, I think that would
+> be very good.
+> 
+
+Arve, San, it seems like this driver is still being actively developed 
+judging by the patches you sent me.  Any ideas?
