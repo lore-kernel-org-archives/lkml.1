@@ -1,97 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761016AbZEKXFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761221AbZEKXGB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761016AbZEKXFo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 19:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759710AbZEKXFT
+	id S1761221AbZEKXGB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 19:06:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760292AbZEKXFn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 19:05:19 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36309 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756401AbZEKXFQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 19:05:16 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 1/6] mm: Introduce __GFP_NO_OOM_KILL
-Date: Tue, 12 May 2009 01:04:35 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
-Cc: rientjes@google.com, fengguang.wu@intel.com,
-       linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       pavel@ucw.cz, nigel@tuxonice.net, linux-mm@kvack.org
-References: <200905070040.08561.rjw@sisk.pl> <200905120014.24751.rjw@sisk.pl> <20090511153323.518c146a.akpm@linux-foundation.org>
-In-Reply-To: <20090511153323.518c146a.akpm@linux-foundation.org>
+	Mon, 11 May 2009 19:05:43 -0400
+Received: from mail.fieldses.org ([141.211.133.115]:50186 "EHLO
+	pickle.fieldses.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761006AbZEKXFl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 19:05:41 -0400
+Date: Mon, 11 May 2009 19:05:41 -0400
+To: H Hartley Sweeten <hartleys@visionengravers.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] net/sunrpc/svc.c: fix sparse warning
+Message-ID: <20090511230541.GL793@fieldses.org>
+References: <BD79186B4FD85F4B8E60E381CAEE1909015F8D20@mi8nycmail19.Mi8.com> <20090416190601.GA1145@fieldses.org> <BD79186B4FD85F4B8E60E381CAEE1909015F8F97@mi8nycmail19.Mi8.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905120104.36313.rjw@sisk.pl>
+In-Reply-To: <BD79186B4FD85F4B8E60E381CAEE1909015F8F97@mi8nycmail19.Mi8.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+From: "J. Bruce Fields" <bfields@fieldses.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 May 2009, Andrew Morton wrote:
-> On Tue, 12 May 2009 00:14:23 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+On Thu, Apr 16, 2009 at 03:15:17PM -0400, H Hartley Sweeten wrote:
+> On Thursday, April 16, 2009 12:06 PM, J. Bruce Fields wrote:
+> > On Wed, Apr 15, 2009 at 03:46:13PM -0400, H Hartley Sweeten wrote:
+> >> Fix sparse warning in net/sunrpc/svc.c.
+> >> 
+> >> 	warning: symbol 'node' shadows an earlier one
+> >
+> > What's the other symbol?
 > 
-> > On Monday 11 May 2009, David Rientjes wrote:
-> > > On Sun, 10 May 2009, Rafael J. Wysocki wrote:
-> > > 
-> > > > Index: linux-2.6/mm/page_alloc.c
-> > > > ===================================================================
-> > > > --- linux-2.6.orig/mm/page_alloc.c
-> > > > +++ linux-2.6/mm/page_alloc.c
-> > > > @@ -1619,8 +1619,12 @@ nofail_alloc:
-> > > >  			goto got_pg;
-> > > >  		}
-> > > >  
-> > > > -		/* The OOM killer will not help higher order allocs so fail */
-> > > > -		if (order > PAGE_ALLOC_COSTLY_ORDER) {
-> > > > +		/*
-> > > > +		 * The OOM killer will not help higher order allocs so fail.
-> > > > +		 * Also fail if the caller doesn't want the OOM killer to run.
-> > > > +		 */
-> > > > +		if (order > PAGE_ALLOC_COSTLY_ORDER
-> > > > +				|| (gfp_mask & __GFP_NO_OOM_KILL)) {
-> > > >  			clear_zonelist_oom(zonelist, gfp_mask);
-> > > >  			goto nopage;
-> > > >  		}
-> > > > Index: linux-2.6/include/linux/gfp.h
-> > > > ===================================================================
-> > > > --- linux-2.6.orig/include/linux/gfp.h
-> > > > +++ linux-2.6/include/linux/gfp.h
-> > > > @@ -51,8 +51,9 @@ struct vm_area_struct;
-> > > >  #define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
-> > > >  #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
-> > > >  #define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
-> > > > +#define __GFP_NO_OOM_KILL ((__force gfp_t)0x200000u)  /* Don't invoke out_of_memory() */
-> > > >  
-> > > > -#define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
-> > > > +#define __GFP_BITS_SHIFT 22	/* Number of __GFP_FOO bits */
-> > > >  #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
-> > > >  
-> > > >  /* This equals 0, but use constants in case they ever change */
-> > > > 
-> > > 
-> > > Nack, unnecessary in mmotm and my patch series from 
-> > > http://lkml.org/lkml/2009/5/10/118.
-> > 
-> > Andrew, what's your opinion, please?
+> Sorry. Left that out...
 > 
-> I don't understand which part of David's patch series is supposed to
-> address your requirement.  If it's "don't kill tasks which are in D
-> state" then that's a problem because right now I think that patch is
-> wrong.  It's still being discussed.
-
-Yeah.
-
-> > I can wait with these patches until the dust settles in the mm land.
+> include/linux/nodemask.h
 > 
-> Yes, it is pretty dusty at present.  I'd suggest that finding something
-> else to do for a few days would be a wise step ;)
+> #define any_online_node(mask)			\
+> ({						\
+> 	int node;				\
+> 	for_each_node_mask(node, (mask))	\
+> 		if (node_online(node))		\
+> 			break;			\
+> 	node;					\
+> })
+> 
+> arch/powerpc/mm/numa.c is the only other user of that macro. In that
+> file the local variable is called nid, hence the name change in this
+> patch.
 
-Well, in fact I have finished the other parts of my patchset and the only
-missing piece is how to prevent the OOM killer from triggering while
-hibernation memory is being allocated, but in principle that can be done in a
-couple of different ways.
+Stupid question (and sorry for the delay): any reason that macro
+couldn't just be a static inline function?
 
-So, I think I'll post an update shortly and I'll wait for mm to settle down.
+I'm sort of resistant to the idea that the caller should have to care
+what local variable names the implementation uses.
+
+--b.
+
+> 
+> Regards,
+> Hartley
+> 
+> >> 
+> >> Signed-off-by: H Hartley Sweeten <hsweeten@visionengravers.com>
+> >> 
+> >> ---
+> >> 
+> >> diff --git a/net/sunrpc/svc.c b/net/sunrpc/svc.c
+> >> index 8847add..e781135 100644
+> >> --- a/net/sunrpc/svc.c
+> >> +++ b/net/sunrpc/svc.c
+> >> @@ -122,7 +122,7 @@ module_param_call(pool_mode, param_set_pool_mode,
+> >> param_get_pool_mode,
+> >>  static int
+> >>  svc_pool_map_choose_mode(void)
+> >>  {
+> >> -	unsigned int node;
+> >> +	unsigned int nid;
+> >>  
+> >>  	if (num_online_nodes() > 1) {
+> >>  		/*
+> >> @@ -132,8 +132,8 @@ svc_pool_map_choose_mode(void)
+> >>  		return SVC_POOL_PERNODE;
+> >>  	}
+> >>  
+> >> -	node = any_online_node(node_online_map);
+> >> -	if (nr_cpus_node(node) > 2) {
+> >> +	nid = any_online_node(node_online_map);
+> >> +	if (nr_cpus_node(nid) > 2) {
+> >>  		/*
+> >>  		 * Non-trivial SMP, or CONFIG_NUMA on
+> >>  		 * non-NUMA hardware, e.g. with a generic 
