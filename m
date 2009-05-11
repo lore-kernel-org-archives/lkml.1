@@ -1,64 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755544AbZEKK36@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754623AbZEKKbY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755544AbZEKK36 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 06:29:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752315AbZEKK3s
+	id S1754623AbZEKKbY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 06:31:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbZEKKbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 06:29:48 -0400
-Received: from hera.kernel.org ([140.211.167.34]:59675 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751024AbZEKK3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 06:29:48 -0400
-Subject: Re: [tip:perfcounters/core] perf_counter, x86: remove
- X86_FEATURE_ARCH_PERFMON flag for AMD cpus
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, robert.richter@amd.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-In-Reply-To: <20090511100226.GA31041@elte.hu>
-References: <1241002046-8832-2-git-send-email-robert.richter@amd.com>
-	 <tip-da1a776be1ac7f78bb30ececbec4c1383163b079@git.kernel.org>
-	 <1241931753.4796.15.camel@localhost.localdomain>
-	 <1241934795.4796.55.camel@localhost.localdomain>
-	 <20090510063047.GD30778@elte.hu>
-	 <1241938310.4796.67.camel@localhost.localdomain>
-	 <20090511100226.GA31041@elte.hu>
-Content-Type: text/plain
-Date: Mon, 11 May 2009 15:57:32 +0530
-Message-Id: <1242037652.3114.6.camel@localhost.localdomain>
+	Mon, 11 May 2009 06:31:16 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:37587 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752208AbZEKKbP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 06:31:15 -0400
+Date: Mon, 11 May 2009 19:31:15 +0900 (JST)
+Message-Id: <20090511.193115.189717098.ryov@valinux.co.jp>
+To: lizf@cn.fujitsu.com
+Cc: Alan.Brunelle@hp.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090507.092322.71121515.ryov@valinux.co.jp>
+References: <20090427.184417.189717449.ryov@valinux.co.jp>
+	<49FE5FEB.6040207@cn.fujitsu.com>
+	<20090507.092322.71121515.ryov@valinux.co.jp>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-11 at 12:02 +0200, Ingo Molnar wrote:
-> * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+Hi Li,
+
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
+Date: Thu, 07 May 2009 09:23:22 +0900 (JST)
+
+> Hi Li,
 > 
-> > There is one more way to check performance monitor support for 
-> > Intel by using IA32_MISC_ENABLE MSR (0x1A0) bit 7 tells whether 
-> > performance monitoring is available or not.
-> > 
-> > But IA32_MISC_ENABLE MSR (0x1A0) is not available for Pentium and 
-> > P6.
-> > 
-> > So better I will add new cpufeature for performance monitoring for 
-> > x86:
-> > 
-> > X86_FEATURE_PERFMON : Performance monitor support
+> From: Li Zefan <lizf@cn.fujitsu.com>
+> Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
+> Date: Mon, 04 May 2009 11:24:27 +0800
 > 
-> What is the exact wording of IA32_MISC_ENABLE bit 7 in the Intel 
-> documents?
+> > Ryo Tsuruta wrote:
+> > > Hi Alan,
+> > > 
+> > >> Hi Ryo -
+> > >>
+> > >> I don't know if you are taking in patches, but whilst trying to uncover
+> > >> some odd behavior I added some blktrace messages to dm-ioband-ctl.c. If
+> > >> you're keeping one code base for old stuff (2.6.18-ish RHEL stuff) and
+> > >> upstream you'll have to #if around these (the blktrace message stuff
+> > >> came in around 2.6.26 or 27 I think).
+> > >>
+> > >> My test case was to take a single 400GB storage device, put two 200GB
+> > >> partitions on it and then see what the "penalty" or overhead for adding
+> > >> dm-ioband on top. To do this I simply created an ext2 FS on each
+> > >> partition in parallel (two processes each doing a mkfs to one of the
+> > >> partitions). Then I put two dm-ioband devices on top of the two
+> > >> partitions (setting the weight to 100 in both cases - thus they should
+> > >> have equal access).
+> > >>
+> > >> Using default values I was seeing /very/ large differences - on the
+> > >> order of 3X. When I bumped the number of tokens to a large number
+> > >> (10,240) the timings got much closer (<2%). I have found that using
+> > >> weight-iosize performs worse than weight (closer to 5% penalty).
+> > > 
+> > > I could reproduce similar results. One dm-ioband device seems to stop
+> > > issuing I/Os for a few seconds at times. I'll investigate more on that.
+> > >  
+> > >> I'll try to formalize these results as I go forward and report out on
+> > >> them. In any event, I thought I'd share this patch with you if you are
+> > >> interested...
+> > > 
+> > > Thanks. I'll include your patche into the next release.
+> > >  
+> > 
+> > IMO we should use TRACE_EVENT instead of adding new blk_add_trace_msg().
 > 
+> Thanks for your suggestion. I'll use TRACE_EVENT instead.
 
-Bit 7: Performance Monitoring Available. (R)
-       1 = Performance monitoring enabled
-       0 = Performance monitoring disabled
+blk_add_trace_msg() supports both blktrace and tracepoints. I can
+get messages from dm-ioband through debugfs. Could you expain why
+should we use TRACE_EVENT instead?
 
---
-JSR
+> > 
+> > >> Here's a sampling from some blktrace output (sorry for the wrapping) - I
+> > >> should note that I'm a bit scared to see such large numbers of holds
+> > >> going on when the token count should be >5,000 for each device...
+> > >> Holding these back in an equal access situation is inhibiting the block
+> > >> I/O layer to merge (most) of these (as mkfs performs lots & lots of
+> > >> small but sequential I/Os).
+> > 
+> 
+> Thanks,
+> Ryo Tsuruta
 
-
+Thanks,
+Ryo Tsuruta
