@@ -1,77 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753838AbZEKKcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbZEKKkm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753838AbZEKKcP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 06:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751125AbZEKKb6
+	id S1753437AbZEKKkm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 06:40:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbZEKKkd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 06:31:58 -0400
-Received: from araneidae.co.uk ([62.3.233.233]:3041 "EHLO araneidae.co.uk"
+	Mon, 11 May 2009 06:40:33 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:60748 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751124AbZEKKb5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 06:31:57 -0400
-Date: Mon, 11 May 2009 11:31:51 +0100 (BST)
-From: Michael Abbott <michael@araneidae.co.uk>
-To: =?GB2312?B?0sHU8w==?= <wxc200@gmail.com>
-cc: linux-i2c@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2.6.29.2] PXA I2C: Define log level for i2c PXA error 
- report
-In-Reply-To: <fd6b62c10905110311w6350828tf90d9c699b73fe30@mail.gmail.com>
-Message-ID: <Pine.LNX.4.64.0905111126020.20970@venus.araneidae.co.uk>
-References: <Pine.LNX.4.64.0905060829580.24668@venus.araneidae.co.uk> 
- <20090506102202.73d6045d@hyperion.delvare> <Pine.LNX.4.64.0905081102060.14384@venus.araneidae.co.uk>
- <fd6b62c10905110311w6350828tf90d9c699b73fe30@mail.gmail.com>
+	id S1752207AbZEKKkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 06:40:32 -0400
+Date: Mon, 11 May 2009 11:40:29 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch -mmotm] mm: invoke oom killer for __GFP_NOFAIL
+Message-ID: <20090511104029.GB19847@csn.ul.ie>
+References: <alpine.DEB.2.00.0905091544470.6884@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="682240-1872984673-1242037911=:20970"
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0905091544470.6884@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Sat, May 09, 2009 at 03:46:39PM -0700, David Rientjes wrote:
+> The oom killer must be invoked regardless of the order if the allocation
+> is __GFP_NOFAIL, otherwise it will loop forever when reclaim fails to
+> free some memory.
+> 
+> Cc: Mel Gorman <mel@csn.ul.ie>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Nick Piggin <npiggin@suse.de>
+> Cc: Christoph Lameter <cl@linux-foundation.org>
+> Cc: Dave Hansen <dave@linux.vnet.ibm.com>
+> Signed-off-by: David Rientjes <rientjes@google.com>
+> ---
+>  mm/page_alloc.c |   16 ++++++----------
+>  1 files changed, 6 insertions(+), 10 deletions(-)
+> 
+> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
+> --- a/mm/page_alloc.c
+> +++ b/mm/page_alloc.c
+> @@ -1547,7 +1547,7 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
+>  		goto out;
+>  
+>  	/* The OOM killer will not help higher order allocs */
+> -	if (order > PAGE_ALLOC_COSTLY_ORDER)
+> +	if (order > PAGE_ALLOC_COSTLY_ORDER && !(gfp_mask & __GFP_NOFAIL))
+>  		goto out;
+>  
+>  	/* Exhausted what can be done so it's blamo time */
+> @@ -1763,16 +1763,12 @@ rebalance:
+>  					migratetype);
+>  			if (page)
+>  				goto got_pg;
+> +			if ((gfp_mask & __GFP_NOFAIL) ||
+> +					order <= PAGE_ALLOC_COSTLY_ORDER)
+> +				goto restart;
+>  
 
---682240-1872984673-1242037911=:20970
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Can this get a comment explaining the intention like the code you are
+removing had? Something like this?
 
-On Mon, 11 May 2009, =D2=C1=D4=F3 wrote:
-> 2009/5/11 Michael Abbott <michael@araneidae.co.uk>
-> > Now this is very odd. =A0I'd assumed the error messages I was getting w=
-ere
-> > just noise, but the commit you point me to uses KERN_ERR instead -- and=
- so
-> > I get a brief storm of these messages on boot on my target:
-> >
-> > [ =A0 20.667923] i2c: error: exhausted retries
-> > [ =A0 20.671962] i2c: msg_num: 0 msg_idx: -2000 msg_ptr: 0
-> > [ =A0 20.677113] i2c: ICR: 000007e0 ISR: 00000002
-> > [ =A0 20.677128] i2c: log: [00000446:000007e0]
-> >
-> > This is repeated nine times in total with exactly the same numbers. =A0=
-Any
-> > thoughts as to what this means? =A0Other than these messages on startup=
- my
-> > I2C sensors seem to work perfectly well.
-> If all error messages seem like "exhausted retries",not "timeout or
-> master error",there maybe some operation conflicts,and i2c controller
-> cannot succeed operateing after max times retry.  And which mode do
-> your i2c work?  Poll or Interrupt?
+/*
+ * The OOM killer only triggers for lower order allocation
+ * requests and when __GFP_NOFAIL is specified to prevent
+ * endlessly looping. Only retry the allocation if the OOM
+ * killer was used.
+ */
 
-Well, to be honest I don't actually know (I've inherited the driver and I=
-=20
-haven't figured out how the I2C drivers work), but here's how the i2c is=20
-initialised:
+Otherwise, it looks ok.
 
-static struct i2c_pxa_platform_data xcep_i2c_platform_data  =3D {
-        .class =3D I2C_CLASS_HWMON
-};
+Acked-by: Mel Gorman <mel@csn.ul.ie>
 
-=2E..
-        pxa_set_i2c_info(&xcep_i2c_platform_data);
+One related question, what is doing a costly-high-order allocation request
+with __GFP_NOFAIL specified?
 
-This is called in the .init_machine method, and the target system is a=20
-PXA255.
+> -			/*
+> -			 * The OOM killer does not trigger for high-order allocations
+> -			 * but if no progress is being made, there are no other
+> -			 * options and retrying is unlikely to help
+> -			 */
+> -			if (order > PAGE_ALLOC_COSTLY_ORDER)
+> -				goto nopage;
+> -
+> -			goto restart;
+> +			/* No freeing is possible so just fail */
+> +			goto nopage;
 
-However, after the error messages on startup, all the sensors seem to be=20
-detected and seem to be operating normally.
---682240-1872984673-1242037911=:20970--
+
+>  		}
+>  	}
+>  
+> 
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
