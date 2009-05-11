@@ -1,67 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbZEKD7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751826AbZEKEA3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754902AbZEKD7V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 23:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752398AbZEKD7I
+	id S1751826AbZEKEA3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 00:00:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750737AbZEKEAU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 23:59:08 -0400
-Received: from casper.infradead.org ([85.118.1.10]:54644 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752185AbZEKD7F (ORCPT
+	Mon, 11 May 2009 00:00:20 -0400
+Received: from zeniv.linux.org.uk ([195.92.253.2]:34615 "EHLO
+	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750712AbZEKEAU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 23:59:05 -0400
-Date: Sun, 10 May 2009 20:58:50 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>,
-       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] devtmpfs patches
-Message-ID: <20090510205850.30d10fc2@infradead.org>
-In-Reply-To: <20090510180018.260bc706.akpm@linux-foundation.org>
-References: <20090509143742.GA27663@kroah.com>
-	<b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com>
-	<20090509150853.GA32394@suse.de>
-	<20090509082233.32cbb8e4@infradead.org>
-	<20090509161923.GA942@suse.de>
-	<20090509223454.4642753d.akpm@linux-foundation.org>
-	<20090510152005.GA9461@suse.de>
-	<1241980263.9562.380.camel@laptop>
-	<20090510221901.30c1c5a5@lxorguk.ukuu.org.uk>
-	<ac3eb2510905101647k12a1b9ck71d43933037bac48@mail.gmail.com>
-	<20090510180018.260bc706.akpm@linux-foundation.org>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+	Mon, 11 May 2009 00:00:20 -0400
+Date: Mon, 11 May 2009 05:00:19 +0100
+From: Al Viro <viro@ZenIV.linux.org.uk>
+To: hooanon05@yahoo.co.jp
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Q. Switch open_exec() and sys_uselib() to do_open_filp()
+Message-ID: <20090511040019.GI8633@ZenIV.linux.org.uk>
+References: <29926.1242003317@jrobl> <20090511012828.GH8633@ZenIV.linux.org.uk> <31197.1242009975@jrobl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <31197.1242009975@jrobl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 May 2009 18:00:18 -0700
-Andrew Morton <akpm@linux-foundation.org> wrote:
+On Mon, May 11, 2009 at 11:46:15AM +0900, hooanon05@yahoo.co.jp wrote:
+> My poor English may make me misunderstood.
+> Please let me make sure.
+> Do you mean FMODE_EXEC was passed to struct file before this commit?
+> 
+> Previous open_exec() used to call
+> 	file = nameidata_to_filp(&nd, O_RDONLY|O_LARGEFILE)
+> and it calls
+> 	filp = __dentry_open(nd->path.dentry, nd->path.mnt, flags, filp,
+> 				     NULL);
+> __dentry_open()
+> {
+> 	f->f_flags = flags;
+> 	f->f_mode = ((flags+1) & O_ACCMODE) | FMODE_LSEEK |
+> 				FMODE_PREAD | FMODE_PWRITE;
+> 	;;;
+> }
+> 
+> So FMODE_EXEC was not set to f_flags/f_mode, O_RDONLY|O_LARGEFILE only.
 
-> A 1.5 second saving on some gadget which boots in 6 seconds would be a
-> lot more interesting.
+Nope.  It ended up in nd->intent.open.flags due to path_lookup_open().
+Then lookup_instantiate_filp() from a filesystem that might care about
+intents did
+        nd->intent.open.file = __dentry_open(dget(dentry), mntget(nd->mnt),
+                                             nd->intent.open.flags - 1,
+                                             nd->intent.open.file,
+                                             open);
+and nameidata_to_filp() ended up picking nd->intent.open.file.
 
-udev does not take 1.5 seconds today; it takes more like 0.75, of which
-the last 2/3rds are optional/asynchronous.
-
-Eric has shown that just making the nodes is 0.06 seconds with todays
-sysfs interface, and there is room for improvement, and room for Kay
-and Greg's patches if they get turned into having a nice flat ascii
-file that lists all device nodes in the system. That way Kay and Greg
-get the fast and easy startup of /dev that they want, and others like
-Eric and me get the flexibility to have a slightly smarter program that
-also gets the device ownership and permissions from a small database.
-
-
-
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+So f_flags is exactly where that thing used to end up, if it ended up
+anywhere at all.
