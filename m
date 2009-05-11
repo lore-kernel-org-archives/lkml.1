@@ -1,120 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbZEKNKe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757446AbZEKNLj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757842AbZEKNKe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 09:10:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbZEKNKX
+	id S1757446AbZEKNLj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 09:11:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754985AbZEKNL3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 09:10:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:36993 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754859AbZEKNKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 09:10:18 -0400
-Date: Mon, 11 May 2009 13:09:32 GMT
-From: tip-bot for Ian Campbell <Ian.Campbell@eu.citrix.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       ian.campbell@citrix.com, Jeremy.Fitzhardinge@citrix.com,
-       tglx@linutronix.de, Ian.Campbell@eu.citrix.com, mingo@elte.hu,
-       xen-devel@lists.xensource.com
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       ian.campbell@citrix.com, Jeremy.Fitzhardinge@citrix.com,
-       tglx@linutronix.de, Ian.Campbell@eu.citrix.com, mingo@elte.hu,
-       xen-devel@lists.xensource.com
-In-Reply-To: <1241797927.15972.51.camel@zakaz.uk.xensource.com>
-References: <1241797927.15972.51.camel@zakaz.uk.xensource.com>
-Subject: [tip:x86/xen] x86: use flush_tlb_others to implement flush_tlb_all, fix
-Message-ID: <tip-636afdbe85d50d9b88f5283b5e6d0f8518431aac@git.kernel.org>
-Git-Commit-ID: 636afdbe85d50d9b88f5283b5e6d0f8518431aac
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 13:09:34 +0000 (UTC)
+	Mon, 11 May 2009 09:11:29 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:56252 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754832AbZEKNL2 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 09:11:28 -0400
+Date: Mon, 11 May 2009 14:10:57 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: "Eric W. Biederman" <ebiederm@xmission.com>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] devtmpfs patches
+Message-ID: <20090511141057.24a5f8ed@lxorguk.ukuu.org.uk>
+In-Reply-To: <ac3eb2510905110434nb123423m134e848c17c3c736@mail.gmail.com>
+References: <20090509143742.GA27663@kroah.com>
+	<20090510152005.GA9461@suse.de>
+	<1241980263.9562.380.camel@laptop>
+	<20090510221901.30c1c5a5@lxorguk.ukuu.org.uk>
+	<ac3eb2510905101647k12a1b9ck71d43933037bac48@mail.gmail.com>
+	<20090510170016.1e3a4d97@infradead.org>
+	<ac3eb2510905101822t7fde14b3nf2c689621f69c925@mail.gmail.com>
+	<m1pregmkld.fsf@fess.ebiederm.org>
+	<ac3eb2510905110346p115dc8bbscc8921c9bd7e500d@mail.gmail.com>
+	<20090511115504.568c9a92@lxorguk.ukuu.org.uk>
+	<ac3eb2510905110434nb123423m134e848c17c3c736@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-14
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  636afdbe85d50d9b88f5283b5e6d0f8518431aac
-Gitweb:     http://git.kernel.org/tip/636afdbe85d50d9b88f5283b5e6d0f8518431aac
-Author:     Ian Campbell <Ian.Campbell@eu.citrix.com>
-AuthorDate: Fri, 8 May 2009 16:52:07 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 11 May 2009 15:08:08 +0200
+> And I did, and it's obvious that creating a single file along with the
+> ~10 we already create in /sys, instead of running through /sys or
+> /proc later and reconstruct what we missed, is always, and in every
+> case faster and simpler. It gets rid of a bunch of things we need to
 
-x86: use flush_tlb_others to implement flush_tlb_all, fix
+Arjan's numbers for sysfs are 0.06 seconds if I remember the mail
+correctly. That doesn't account for any meaningful speedup.
 
-"use the flush_tlb_others() call to implement flush_tlb_all()"
-causes:
-         BUG: spinlock bad magic on CPU#0, swapper/0
-          lock: c05b7588, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
-         Pid: 0, comm: swapper Not tainted 2.6.30-rc3-x86_32p-xen0-tip-01797-g3db7847 #1054
-         Call Trace:
-          [<c023e656>] spin_bug+0x96/0xf0
-          [<c023e90f>] _raw_spin_lock+0x6f/0x150
+> > - That dumping more crap in kernel without policy and management is a
+> >  good idea
+> 
+> What exactly do you find is "crap"? What do you mean with "management"?
 
-It can be called before the core_initcalls are run. Explicitly call
-init_smp_flush early on.
+Device spaces have user controlled naming rules, user controlled
+permissions, user controlled labelling and the like. That is policy, and
+the administering of that is management.
 
-Also there is no need for init_smp_flush to be __cpuinit.
+That was one of the things that killed devfs eventually, and it's not a
+problem your proposal or devfs solved.
 
-[ Impact: fix boot crash/warning ]
+> 
+> > - That the other proposals are worse than yours.
+> 
+> I also did, in exactly this thread.
 
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Cc: Xen-devel <xen-devel@lists.xensource.com>
-Acked-by: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
-LKML-Reference: <1241797927.15972.51.camel@zakaz.uk.xensource.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Sorry, but I can't find any convincing evidence in the mails. I see
+unhelpful things like you calling Arjan's numbers "made up", despite the
+fact he has spent months working on speeding up boot and has probably the
+most detailed analysis and data sets anyone does.
+
+In fact I see a litany of comments in response to technical queries and
+asking you to justify the code (as opposed to you trying to ask anyone to
+justify why it shouldn't get dumped in tree)
+
+Most of those comments are not helpful
+
+> > Arjan produced detailed boot graphs and boots a box very fast indeed. I
+> > see no boot graphs, no detailed analysis here.
+> 
+> I did in a reply to your earlier mail. And also mentioned the
+> init=/bin/sh case, which I think, would be reason enough alone,
+> without all the other gains, to do that.
+
+I think you actually hit the nail on the head a lot earlier when you
+asked Arjan  "How will you solve the dynamic device numbers". Which is
+that we could fix them ....
+
+What is the real underlying concern and what problem should we fix.
+
+We have at least six takes on this
+
+1.	What problem ?
+2.	The udev userspace setup you are using sucks so fix it
+3.	Udev sucks because it can't get the early boot events so has to
+do it the hard way - so queue them
+4.	Udev sucks because it can't get the early boot events so create
+a single table for it to read
+5.	Make the new big block numbers stable
+6.	Recreate devfs in a new but more clean form
+
+I don't buy take #1 so I would like to understand
+
+- Why Arjan's systems boot very fast and yours don't
+
+- Why you think sysfs changes will help when the stats say its 0.06 of a
+  second and udev is not it appears taking much time anyway
+
+- How you think you've solved the devfs problems about persistency and
+  the like and what performance cost that has. That killed devfs in the
+  end.
+
+But even more I'd like to know wtf we don't just fix the stability of the
+big block device numbering by attaching them to the existing block device
+nodes using minors > 256 which are currently unused in this space.
+Historically it didn't happen because Al Viro jumped up and down about
+the initial proposal but its cleaner than a new devfs and it solves the
+problem for everyone.
+
+Given most distros use udev sorting udev out is obviously useful but its
+not the 0.06 seconds - its the rest of the time that matters. If a sysfs
+table of devices or buffering the events until it starts sorts that then
+we have a far better model.
+
+Udev tackles all the hard stuff - policy in user space, event triggering
+for management etc, that your new devfs simply doesn't address. Fixing
+udev isn't so much fun but it does actually get us something featureful
+and useful that does what people want.
 
 
----
- arch/x86/include/asm/tlbflush.h |    2 ++
- arch/x86/mm/tlb.c               |    3 +--
- init/main.c                     |    1 +
- 3 files changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/include/asm/tlbflush.h b/arch/x86/include/asm/tlbflush.h
-index 16a5c84..2a4848d 100644
---- a/arch/x86/include/asm/tlbflush.h
-+++ b/arch/x86/include/asm/tlbflush.h
-@@ -129,6 +129,8 @@ static inline void reset_lazy_tlbstate(void)
- 
- #define local_flush_tlb() __flush_tlb()
- 
-+extern int init_smp_flush(void);
-+
- extern void flush_tlb_all(void);
- extern void flush_tlb_current_task(void);
- extern void flush_tlb_mm(struct mm_struct *);
-diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
-index e69bdad..0f030fb 100644
---- a/arch/x86/mm/tlb.c
-+++ b/arch/x86/mm/tlb.c
-@@ -229,7 +229,7 @@ void native_flush_tlb_others(const struct cpumask *cpumask,
- 	flush_tlb_others_ipi(cpumask, mm, va);
- }
- 
--static int __cpuinit init_smp_flush(void)
-+int __init init_smp_flush(void)
- {
- 	int i;
- 
-@@ -238,7 +238,6 @@ static int __cpuinit init_smp_flush(void)
- 
- 	return 0;
- }
--core_initcall(init_smp_flush);
- 
- void flush_tlb_current_task(void)
- {
-diff --git a/init/main.c b/init/main.c
-index 3bbf93b..20e86f8 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -650,6 +650,7 @@ asmlinkage void __init start_kernel(void)
- 	vfs_caches_init_early();
- 	cpuset_init_early();
- 	page_cgroup_init();
-+	init_smp_flush();
- 	mem_init();
- 	enable_debug_pagealloc();
- 	cpu_hotplug_init();
