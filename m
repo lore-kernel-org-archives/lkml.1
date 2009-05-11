@@ -1,100 +1,162 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760780AbZEKWrj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760307AbZEKWui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760780AbZEKWrj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 18:47:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760686AbZEKWrO
+	id S1760307AbZEKWui (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 18:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZEKWu0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 18:47:14 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37966 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760112AbZEKWrM (ORCPT
+	Mon, 11 May 2009 18:50:26 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:50345 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758755AbZEKWuZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 18:47:12 -0400
-Date: Mon, 11 May 2009 15:40:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Cc: marc.c.dionne@gmail.com, eparis@redhat.com, eparis@parisplace.org,
-       hch@lst.de, alan@lxorguk.ukuu.org.uk, serue@us.ibm.com, hpa@zytor.com,
-       sukadev@us.ibm.com, linux-kernel@vger.kernel.org, jbacik@redhat.com
-Subject: Re: [v3][PATCH 5/5] Merge code for single
- andmultiple-instancemounts
-Message-Id: <20090511154009.a6e10a0f.akpm@linux-foundation.org>
-In-Reply-To: <20090511221502.GA32530@linux.vnet.ibm.com>
-References: <20090307180816.GA30072@us.ibm.com>
-	<20090307181232.GF30072@us.ibm.com>
-	<7e0fb38c0905071335g7ebe972xa82faa1161f7ff0b@mail.gmail.com>
-	<20090507212429.GA24064@linux.vnet.ibm.com>
-	<1241735609.2907.4.camel@dhcp231-142.rdu.redhat.com>
-	<20090507231844.GA27609@linux.vnet.ibm.com>
-	<20090507232110.GB27609@linux.vnet.ibm.com>
-	<4A04F5D7.2050909@gmail.com>
-	<20090511221502.GA32530@linux.vnet.ibm.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 11 May 2009 18:50:25 -0400
+Message-Id: <200905112250.16176.arnd@arndb.de>
+References: <20090511222702.352192505@arndb.de>>
+User-Agent: quilt/0.46-1
+Date: Mon, 11 May 2009 22:50:15 +0000
+From: Arnd Bergmann <arnd@arndb.de>
+To: Thomas Gleixner <tglx@linutronix.de>, John Stultz <johnstul@us.ibm.com>,
+       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
+       Takashi Iwai <tiwai@suse.de>, Jaroslav Kysela <perex@perex.cz>
+Subject: [PATCH] x86: use PIT_TICK_RATE consistently
+Content-Disposition: inline
+Cc: linux-kernel@vger.kernel.org, x86@kernel.org
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18xmYpddJM52HwTdQB61SbVtnW3l/K2b7+ab/6
+ 2q4elmAwU4mIpqH5JrzsMNeDcQ9BhsR5G2qFhC5dmSLqxVOpPa
+ GH5DzQrl4QcL0bn7lei3Q==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009 15:15:02 -0700
-Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> wrote:
+On x86, the CLOCK_TICK_RATE is defined in terms of PIT_TICK_RATE,
+from the original i8253 PIT frequency. Change all users to
+refer to PIT_TICK_RATE directly, in order to reduce the number
+of overloaded meanings for CLOCK_TICK_RATE.
 
-> Marc Dionne [marc.c.dionne@gmail.com] wrote:
-> > On 05/07/2009 07:21 PM, Sukadev Bhattiprolu wrote:
-> >> Er. I meant add following lines after the memset().
-> >>
-> >> |         opts->mode    = DEVPTS_DEFAULT_MODE;
-> >> |         opts->ptmxmode = DEVPTS_DEFAULT_PTMX_MODE;
-> >
-> > Adding those two lines (with . instead of ->) does fix the issue for me, 
-> > thanks.
-> >
-> > | > Of course we would still need to understand if/
-> > | > why this patch changes the settings.
-> >
-> > That particular patch changed things because the original memcpy in 
-> > new_pts_mount() did this:
-> >
-> > memcpy(&fsi->mount_opts, opts, sizeof(opts));
-> >
-> > where opts was a pointer, not a structure.  So only the first few bytes of 
-> > the blank opts actually got copied over.  The patch moved this memcpy to 
-> > devpts_get_sb() and in the process fixed the sizeof error.
-> 
-> Here is a cleaner fix - When user space (/etc/rc.sysinit on RHEL5) mounts
-> devpts, this problem might be masked since the mount system call could pass
-> a non-NULL 'data' parmeter to devpts_get_sb().
-> 
-> I tested this patch by directly calling the system call mount() with a NULL
-> data parameter. If you/Eric/Peter can confirm that this works for you, I will
-> send this patch to Andrew.
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+---
+ arch/x86/include/asm/mach_timer.h |    2 +-
+ arch/x86/kernel/i8253.c           |    4 ++--
+ arch/x86/kernel/tsc.c             |    4 ++--
+ drivers/clocksource/acpi_pm.c     |    2 +-
+ drivers/input/joystick/analog.c   |    2 +-
+ sound/oss/pas2_pcm.c              |    8 ++++----
+ 6 files changed, 11 insertions(+), 11 deletions(-)
 
-You already sent it ;)
+diff --git a/arch/x86/include/asm/mach_timer.h 
+b/arch/x86/include/asm/mach_timer.h
+index 8537285..88d0c3c 100644
+--- a/arch/x86/include/asm/mach_timer.h
++++ b/arch/x86/include/asm/mach_timer.h
+@@ -15,7 +15,7 @@
+ 
+ #define CALIBRATE_TIME_MSEC 30 /* 30 msecs */
+ #define CALIBRATE_LATCH	\
+-	((CLOCK_TICK_RATE * CALIBRATE_TIME_MSEC + 1000/2)/1000)
++	((PIT_TICK_RATE * CALIBRATE_TIME_MSEC + 1000/2)/1000)
+ 
+ static inline void mach_prepare_counter(void)
+ {
+diff --git a/arch/x86/kernel/i8253.c b/arch/x86/kernel/i8253.c
+index c2e0bb0..5b0ef4e 100644
+--- a/arch/x86/kernel/i8253.c
++++ b/arch/x86/kernel/i8253.c
+@@ -115,7 +115,7 @@ void __init setup_pit_timer(void)
+ 	 * IO_APIC has been initialized.
+ 	 */
+ 	pit_ce.cpumask = cpumask_of(smp_processor_id());
+-	pit_ce.mult = div_sc(CLOCK_TICK_RATE, NSEC_PER_SEC, pit_ce.shift);
++	pit_ce.mult = div_sc(PIT_TICK_RATE, NSEC_PER_SEC, pit_ce.shift);
+ 	pit_ce.max_delta_ns = clockevent_delta2ns(0x7FFF, &pit_ce);
+ 	pit_ce.min_delta_ns = clockevent_delta2ns(0xF, &pit_ce);
+ 
+@@ -223,7 +223,7 @@ static int __init init_pit_clocksource(void)
+ 	    pit_ce.mode != CLOCK_EVT_MODE_PERIODIC)
+ 		return 0;
+ 
+-	pit_cs.mult = clocksource_hz2mult(CLOCK_TICK_RATE, pit_cs.shift);
++	pit_cs.mult = clocksource_hz2mult(PIT_TICK_RATE, pit_cs.shift);
+ 
+ 	return clocksource_register(&pit_cs);
+ }
+diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
+index d57de05..d1cb3e5 100644
+--- a/arch/x86/kernel/tsc.c
++++ b/arch/x86/kernel/tsc.c
+@@ -172,11 +172,11 @@ static unsigned long calc_pmtimer_ref(u64 deltatsc, u64 
+pm1, u64 pm2)
+ }
+ 
+ #define CAL_MS		10
+-#define CAL_LATCH	(CLOCK_TICK_RATE / (1000 / CAL_MS))
++#define CAL_LATCH	(PIT_TICK_RATE / (1000 / CAL_MS))
+ #define CAL_PIT_LOOPS	1000
+ 
+ #define CAL2_MS		50
+-#define CAL2_LATCH	(CLOCK_TICK_RATE / (1000 / CAL2_MS))
++#define CAL2_LATCH	(PIT_TICK_RATE / (1000 / CAL2_MS))
+ #define CAL2_PIT_LOOPS	5000
+ 
+ 
+diff --git a/drivers/clocksource/acpi_pm.c b/drivers/clocksource/acpi_pm.c
+index 40bd8c6..8e4c896 100644
+--- a/drivers/clocksource/acpi_pm.c
++++ b/drivers/clocksource/acpi_pm.c
+@@ -145,7 +145,7 @@ DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_SERVERWORKS, 
+PCI_DEVICE_ID_SERVERWORKS_LE,
+ #ifndef CONFIG_X86_64
+ #include <asm/mach_timer.h>
+ #define PMTMR_EXPECTED_RATE \
+-  ((CALIBRATE_LATCH * (PMTMR_TICKS_PER_SEC >> 10)) / (CLOCK_TICK_RATE>>10))
++  ((CALIBRATE_LATCH * (PMTMR_TICKS_PER_SEC >> 10)) / (PIT_TICK_RATE>>10))
+ /*
+  * Some boards have the PMTMR running way too fast. We check
+  * the PMTMR rate against PIT channel 2 to catch these cases.
+diff --git a/drivers/input/joystick/analog.c b/drivers/input/joystick/analog.c
+index 356b3a2..3f99867 100644
+--- a/drivers/input/joystick/analog.c
++++ b/drivers/input/joystick/analog.c
+@@ -139,7 +139,7 @@ struct analog_port {
+ #include <asm/i8253.h>
+ 
+ #define GET_TIME(x)	do { if (cpu_has_tsc) rdtscl(x); else x = get_time_pit(); 
+} while (0)
+-#define DELTA(x,y)	(cpu_has_tsc ? ((y) - (x)) : ((x) - (y) + ((x) < (y) ? 
+CLOCK_TICK_RATE / HZ : 0)))
++#define DELTA(x,y)	(cpu_has_tsc ? ((y) - (x)) : ((x) - (y) + ((x) < (y) ? 
+PIT_TICK_RATE / HZ : 0)))
+ #define TIME_NAME	(cpu_has_tsc?"TSC":"PIT")
+ static unsigned int get_time_pit(void)
+ {
+diff --git a/sound/oss/pas2_pcm.c b/sound/oss/pas2_pcm.c
+index 36c3ea6..0891e3b 100644
+--- a/sound/oss/pas2_pcm.c
++++ b/sound/oss/pas2_pcm.c
+@@ -63,13 +63,13 @@ static int pcm_set_speed(int arg)
+ 
+ 	if (pcm_channels & 2)
+ 	{
+-		foo = ((CLOCK_TICK_RATE / 2) + (arg / 2)) / arg;
+-		arg = ((CLOCK_TICK_RATE / 2) + (foo / 2)) / foo;
++		foo = ((PIT_TICK_RATE / 2) + (arg / 2)) / arg;
++		arg = ((PIT_TICK_RATE / 2) + (foo / 2)) / foo;
+ 	}
+ 	else
+ 	{
+-		foo = (CLOCK_TICK_RATE + (arg / 2)) / arg;
+-		arg = (CLOCK_TICK_RATE + (foo / 2)) / foo;
++		foo = (PIT_TICK_RATE + (arg / 2)) / arg;
++		arg = (PIT_TICK_RATE + (foo / 2)) / foo;
+ 	}
+ 
+ 	pcm_speed = arg;
+-- 
+1.6.0.4
 
-> >From 2f7746f4df78ff57125c4714f0cd64e739ccf804 Mon Sep 17 00:00:00 2001
-> From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Date: Mon, 11 May 2009 13:11:11 -0700
-> Subject: [PATCH] devpts: Correctly set default options
-> 
-> devpts_get_sb() calls memset(0) to clear mount options and calls
-> parse_mount_options() if user specified any mount options. The memset(0) is
-> bogus since the 'mode' and 'ptmxmode' options are non-zero by default.
-> parse_mount_options() restores options to default anyway and can properly deal
-> with NULL mount options.
-> 
-> So in devpts_get_sb() remove memset(0) and call parse_mount_options() even for
-> NULL mount options.
-> 
-> Bug reported by Eric Paris: http://lkml.org/lkml/2009/5/7/448.
+-- 
 
-This patch fixes a post-2.6.29 regression, yes?
-
-> Signed-off-by: Sukadev Bhattiprolu (sukadev@us.ibm.com)
-
-Please use angled brackets around the email address.  Some lame
-person's scripts probably require it.  <whistles innocently>
-
-Under the he-merged-it-last rule, this patch should formally go via
-Al's VFS tree.  But I would happily accept a stfu-and-merge it?
 
