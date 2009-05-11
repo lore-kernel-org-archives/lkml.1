@@ -1,50 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757056AbZEKA1P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbZEKA3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757056AbZEKA1P (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 20:27:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757322AbZEKA0w
+	id S1757404AbZEKA3a (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 20:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbZEKA3T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 20:26:52 -0400
-Received: from Cpsmtpm-eml108.kpnxchange.com ([195.121.3.12]:54601 "EHLO
-	CPSMTPM-EML108.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1757028AbZEKA0v (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 20:26:51 -0400
-From: Frans Pop <elendil@planet.nl>
-To: linux-kernel@vger.kernel.org
-Subject: Re: Regression in TSC unstable -- confirmed
-Date: Mon, 11 May 2009 02:26:48 +0200
-User-Agent: KMail/1.9.9
-Cc: Steven Rostedt <rostedt@goodmis.org>, len.brown@intel.com, mingo@elte.hu,
-       tglx@linutronix.de, johnstul@us.ibm.com
-References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com>
-In-reply-To: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="us-ascii"
+	Sun, 10 May 2009 20:29:19 -0400
+Received: from smtp.knology.net ([24.214.63.101]:45032 "EHLO smtp.knology.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753597AbZEKA3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 20:29:18 -0400
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+From: David Dillow <dave@thedillows.org>
+To: Michael Riepe <michael.riepe@googlemail.com>
+Cc: Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+In-Reply-To: <4A06D8D2.4010505@googlemail.com>
+References: <200903041828.49972.m.bueker@berlin.de>
+	 <20090322211159.GA23042@electric-eye.fr.zoreil.com>
+	 <49CA1822.6050902@grupopie.com> <200904041950.04324.mb@bu3sch.de>
+	 <4A06D8D2.4010505@googlemail.com>
+Content-Type: text/plain
+Date: Sun, 10 May 2009 20:29:14 -0400
+Message-Id: <1242001754.4093.12.camel@obelisk.thedillows.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
-Message-Id: <200905110226.50115.elendil@planet.nl>
-X-OriginalArrivalTime: 11 May 2009 00:26:50.0393 (UTC) FILETIME=[2D393890:01C9D1CF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I'm seeing the same issue with 2.6.30-rc5 (not tested previous RCs on that 
-box) on a system for which TSC has always been usable.
+cc'ing netdev, where networking discussions have a much higher
+probability of getting a developer's attention.
 
-$ dmesg | grep TSC
-Fast TSC calibration using PIT
-checking TSC synchronization [CPU#0 -> CPU#1]: passed.
-Marking TSC unstable due to TSC halts in idle
+On Sun, 2009-05-10 at 15:38 +0200, Michael Riepe wrote:
+> Michael Buesch wrote:
+> 
+> > I'm currently testing 2.6.29.1 without any additional patches but
+> > with the pci=nomsi boot option.
+> > 
+> > I didn't notice any hickups, yet. I'm running a stresstest on a GBit link for quite
+> > some time now. Earlier tests with older kernels and MSI burped earlier.
+> > 
+> > I will do more testing. If it turns out this is stable I will test the same kernel
+> > with Message Signaled Interrupts to see if that causes some breakage.
+> 
+> I've had this problem up to and including 2.6.29.2. Currently, I'm
+> trying 2.6.29.2 with pci=nomsi, and it's stable so far. With MSI
+> enabled, a single high-speed TCP transfer will stop after a few seconds,
+> but without MSI, I can run four simultaneous transfers to two different
+> hosts without a single hickup.
+> 
+> It seems to me that this particular chip really doesn't like MSI.
+> 
+> Kernel: 2.6.29.2 (x86_64)
+> Board: Intel D945GCLF2
+> BIOS version: LF94510J.86A.0099.2008.0731.0303
 
-The last line is new with 2.6.30. After reverting a71e4917dc0 the TSC 
-works fine again.
+I'm not sure this is tied to the chip. I've got a similar problem on my
+X58 based system; my device is detected as an RTL8168d/8111d by the
+r8169 driver, and will go out to lunch under high TX loads under any
+kernel after 2.6.28. It seems to be perfectly solid in 2.6.27, but is
+detected as a generic RTL8169, as the MAC is unknown to that version of
+the driver.
 
-The system has a Intel D945GCZ mainboard with dual core Pentium D 
-(3.20GHz) processor running x86_64 and Debian Lenny.
+It uses MSI in both cases, so the chip seems happy with MSI in at least
+some instances.
 
-Cheers,
-FJP
+I've spent a good part of the weekend bisecting between 2.6.27 and
+2.6.28, and it does seem to be working its way into the genirq changes.
+It is too early to sure, as I've had a number of kernels that locked up
+during boot, so the bisect is a mess, and may not be pointing me in the
+right direction. For example, it is currently pointing me at 5fef06...
+"Merge branch 'linus' into genirq", which I need to figure out how to
+verify.
 
-(Thanks to Steven for doing the bisection.)
+If the problem is related to changes in the IRQ handling, it could be
+that the driver is doing something incorrect WRT interrupts, but I don't
+really expect that to be the case.
+
+I'll continue to look at getting a more clean bisection to point us at
+the root cause, perhaps keeping the version of the driver constant to
+eliminate one variable.
+
