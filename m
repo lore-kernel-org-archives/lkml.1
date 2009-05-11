@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758102AbZEKUXA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759216AbZEKUZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758102AbZEKUXA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 16:23:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755589AbZEKUWu
+	id S1759216AbZEKUZb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 16:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758613AbZEKUZJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 16:22:50 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:45618 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754499AbZEKUWu (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 16:22:50 -0400
-Date: Mon, 11 May 2009 13:20:06 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: linux-kernel@vger.kernel.org, James Morris <jmorris@namei.org>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH] cred: #include init.h in cred.h
-Message-Id: <20090511132006.fedc9352.akpm@linux-foundation.org>
-In-Reply-To: <20090509033652.GB3224@x200.localdomain>
-References: <20090509033652.GB3224@x200.localdomain>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 May 2009 16:25:09 -0400
+Received: from mail.windriver.com ([147.11.1.11]:52579 "EHLO mail.wrs.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754909AbZEKUZH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 16:25:07 -0400
+From: Jason Wessel <jason.wessel@windriver.com>
+To: greg@kroah.com
+Cc: stern@rowland.harvard.edu, linux-usb@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH 0/4] usb_debug serial, ftdi_sio serial and sysrq
+Date: Mon, 11 May 2009 15:24:06 -0500
+Message-Id: <1242073450-3794-1-git-send-email-jason.wessel@windriver.com>
+X-Mailer: git-send-email 1.6.3.rc0.1.gf800
+X-OriginalArrivalTime: 11 May 2009 20:25:04.0887 (UTC) FILETIME=[91AE6870:01C9D276]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 9 May 2009 07:36:52 +0400
-Alexey Dobriyan <adobriyan@gmail.com> wrote:
+The idea behind this patch series is to allow the USB 2.0 debug device
+to better operate as a fully functional system console with the full
+capability for sysrq.
 
-> linux/cred.h can't be included as first header (alphabetical order)
-> because it uses __init which is enough to break compilation on some
-> archs.
-> 
+This is version 2 of the original patches per Greg and Alan's comments.
 
-hm, OK, not a lot of detail there though.
+Included is a fix to the ftdi_sio driver as well.
 
-> 
-> --- a/include/linux/cred.h
-> +++ b/include/linux/cred.h
-> @@ -13,6 +13,7 @@
->  #define _LINUX_CRED_H
->  
->  #include <linux/capability.h>
-> +#include <linux/init.h>
->  #include <linux/key.h>
->  #include <asm/atomic.h>
+Thanks,
+Jason.
 
-I assume that this is needed in 2.6.30?
+
+The short log and git info is below, which is against the 2.6.30
+development tree.
+The following changes since commit a4d7749be5de4a7261bcbe3c7d96c748792ec455:
+  Linus Torvalds (1):
+        Merge git://git.kernel.org/.../gregkh/staging-2.6
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/jwessel/linux-2.6-kgdb.git for_gregkh
+
+Jason Wessel (4):
+      usb_debug, usb_generic_serial: implement multi urb write
+      ftd_sio usb: move status check
+      usb_debug,usb_generic_serial: implement sysrq and serial break
+      ftd_sio usb: implement sysrq handling on break
+
+ drivers/usb/serial/Kconfig     |    7 ++
+ drivers/usb/serial/ftdi_sio.c  |   18 +++--
+ drivers/usb/serial/generic.c   |  151 +++++++++++++++++++++++++++++++++++-----
+ drivers/usb/serial/usb_debug.c |   41 +++++++++++
+ include/linux/usb/serial.h     |   38 ++++++++++-
+ 5 files changed, 227 insertions(+), 28 deletions(-)
