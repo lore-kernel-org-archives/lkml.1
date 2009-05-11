@@ -1,192 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757246AbZEKMGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbZEKMMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757246AbZEKMGc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 08:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbZEKMGQ
+	id S1753061AbZEKMMd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 08:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751457AbZEKMMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 08:06:16 -0400
-Received: from mail-qy0-f129.google.com ([209.85.221.129]:39068 "EHLO
-	mail-qy0-f129.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756239AbZEKMGM (ORCPT
+	Mon, 11 May 2009 08:12:23 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:57337 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751062AbZEKMMW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 08:06:12 -0400
+	Mon, 11 May 2009 08:12:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=HuwXHplOJM/3DVkK9Tr9+QxRVzdUpprPGAIbhyJfSVLZKjmmKNbgIMPBZXWy5JNaR9
-         Rvw7gIWw9tON/XOroePNerWEFt1o0bH+42W/wF8lrlPF6trQUgQ+7fxnsrrfz5pOyjgy
-         rxaGebdPszKktjZiZQzu5MdjyncOCs+pKbd8s=
-Message-ID: <4A0814A9.5040603@panasas.com>
-Date: Mon, 11 May 2009 15:06:01 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TElVmxHeAw0aiKu0egkJePhQ6v12Brw/kDK8cc0yRFkeYNPRuocGFDMUZIGIPKd9Ql
+         DilMopvpLXbUogNDPL12Fw0wYv+Ts3C2gX/yO/NgSapPEHnedQWwqrElv+XououVyYfx
+         2fZBJ8DEZE0krS3kBTnSxXRUNQRGCFFgkicyI=
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
-       sshtylyov@ru.mvista.com, mike.miller@hp.com, Eric.Moore@lsi.com,
-       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
-       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
-       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
-       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com
-Subject: Re: [GIT PATCH] block,scsi,ide: unify sector and data_len, take#2
-References: <1241423927-11871-1-git-send-email-tj@kernel.org>
-In-Reply-To: <1241423927-11871-1-git-send-email-tj@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090511115240.GC25673@in.ibm.com>
+References: <20090511114422.133566343@prasadkr_t60p.in.ibm.com>
+	 <20090511115240.GC25673@in.ibm.com>
+Date: Mon, 11 May 2009 17:42:22 +0530
+Message-ID: <344eb09a0905110512h4f4c98d0oa207e12d88f69e87@mail.gmail.com>
+Subject: Re: [Patch 02/12] Introducing generic hardware breakpoint handler 
+	interfaces
+From: Bharata B Rao <bharata.rao@gmail.com>
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+Cc: Alan Stern <stern@rowland.harvard.edu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
+       Roland McGrath <roland@redhat.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/04/2009 10:58 AM, Tejun Heo wrote:
-> Hello,
-> 
-> Upon ack, please pull from the following git tree.
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-unify-sector-and-data_len
-> 
-> This is the second take of block-unify-sector-and-data_len patchset.
-> The primary goal of this patchset is to consolidate all the similar
-> bug slightly different current position and data length fields in
-> struct request.  For detailed description, please read the description
-> in the last take[L].  Changes from the last take[L] are
-> 
-> * Acked-by:'s added
-> 
-> * osd resid_len conversion was missing as pointed out by Boaz Harrosh,
->   fixed.
-> 
-> * patch to cleanup request length accessor usages after the conversion
->   added.
-> 
-> This patchset contains the following eleven patches.
-> 
->   0001-nbd-don-t-clear-rq-sector-and-nr_sectors-unnecessa.patch
->   0002-ide-tape-don-t-initialize-rq-sector-for-rw-request.patch
->   0003-block-add-rq-resid_len.patch
->   0004-block-implement-blk_rq_pos-cur_-sectors-and-conv.patch
->   0005-block-convert-to-pos-and-nr_sectors-accessors.patch
->   0006-ide-convert-to-rq-pos-and-nr_sectors-accessors.patch
->   0007-block-drop-request-hard_-and-nr_sectors.patch
->   0008-block-cleanup-rq-data_len-usages.patch
->   0009-ide-cleanup-rq-data_len-usages.patch
->   0010-block-hide-request-sector-and-data_len.patch
->   0011-block-blk_rq_-cur_-_-sectors-bytes-usage-cleanup.patch
-> 
-> This patchset is on top of
-> 
->   linux-2.6-block#for-2.6.31	(f68adec3c7155a8bbf32a90cb4c4d0737df045d9)
-> + linux-2.6-ide#for-next	(03682411b1ccd38cbde2e9a6ab43884ff34fbefc)
-> 
-> and contains the following changes.
-> 
->  arch/um/drivers/ubd_kern.c               |    2 
->  block/as-iosched.c                       |   18 +++--
->  block/blk-barrier.c                      |    4 -
->  block/blk-core.c                         |  100 ++++++++++++-------------------
->  block/blk-map.c                          |    2 
->  block/blk-merge.c                        |   46 ++------------
->  block/blk.h                              |    1 
->  block/bsg.c                              |    8 +-
->  block/cfq-iosched.c                      |   30 ++++-----
->  block/deadline-iosched.c                 |    2 
->  block/elevator.c                         |   22 +++---
->  block/scsi_ioctl.c                       |    2 
->  drivers/ata/libata-scsi.c                |    2 
->  drivers/block/DAC960.c                   |    6 -
->  drivers/block/amiflop.c                  |    6 -
->  drivers/block/ataflop.c                  |   10 +--
->  drivers/block/cciss.c                    |   35 ++++------
->  drivers/block/cpqarray.c                 |    9 +-
->  drivers/block/floppy.c                   |   54 ++++++++--------
->  drivers/block/hd.c                       |   14 ++--
->  drivers/block/nbd.c                      |   19 +----
->  drivers/block/paride/pcd.c               |    4 -
->  drivers/block/paride/pd.c                |    8 +-
->  drivers/block/paride/pf.c                |    8 +-
->  drivers/block/ps3disk.c                  |    9 +-
->  drivers/block/sunvdc.c                   |    2 
->  drivers/block/swim3.c                    |   34 +++++-----
->  drivers/block/sx8.c                      |    6 -
->  drivers/block/ub.c                       |   16 ++--
->  drivers/block/viodasd.c                  |    8 +-
->  drivers/block/virtio_blk.c               |    2 
->  drivers/block/xd.c                       |    4 -
->  drivers/block/xen-blkfront.c             |   11 +--
->  drivers/block/xsysace.c                  |   25 ++++---
->  drivers/block/z2ram.c                    |    6 -
->  drivers/cdrom/gdrom.c                    |    6 -
->  drivers/cdrom/viocd.c                    |    2 
->  drivers/ide/ide-atapi.c                  |   13 ----
->  drivers/ide/ide-cd.c                     |   44 ++++---------
->  drivers/ide/ide-disk.c                   |    8 +-
->  drivers/ide/ide-dma.c                    |    2 
->  drivers/ide/ide-floppy.c                 |   10 +--
->  drivers/ide/ide-io.c                     |   10 +--
->  drivers/ide/ide-lib.c                    |    2 
->  drivers/ide/ide-tape.c                   |   11 +--
->  drivers/ide/ide-taskfile.c               |    2 
->  drivers/ide/pdc202xx_old.c               |    2 
->  drivers/ide/tc86c001.c                   |    2 
->  drivers/ide/tx4939ide.c                  |    2 
->  drivers/memstick/core/mspro_block.c      |    6 -
->  drivers/message/fusion/mptsas.c          |   21 +++---
->  drivers/message/i2o/i2o_block.c          |   28 +++-----
->  drivers/mmc/card/block.c                 |   10 +--
->  drivers/mtd/mtd_blkdevs.c                |    7 +-
->  drivers/s390/block/dasd.c                |    2 
->  drivers/s390/block/dasd_diag.c           |    5 -
->  drivers/s390/block/dasd_eckd.c           |    6 -
->  drivers/s390/block/dasd_fba.c            |    7 +-
->  drivers/s390/char/tape_34xx.c            |    2 
->  drivers/s390/char/tape_3590.c            |    2 
->  drivers/s390/char/tape_block.c           |    2 
->  drivers/sbus/char/jsflash.c              |    4 -
->  drivers/scsi/eata.c                      |   24 +++----
->  drivers/scsi/libsas/sas_expander.c       |   14 +---
->  drivers/scsi/libsas/sas_host_smp.c       |   52 ++++++++--------
->  drivers/scsi/lpfc/lpfc_scsi.c            |   22 +++---
->  drivers/scsi/mpt2sas/mpt2sas_transport.c |   23 +++----
->  drivers/scsi/osd/osd_initiator.c         |    4 -
->  drivers/scsi/scsi_lib.c                  |   46 ++++++--------
->  drivers/scsi/scsi_tgt_lib.c              |    2 
->  drivers/scsi/sd.c                        |   24 +++----
->  drivers/scsi/sd_dif.c                    |    2 
->  drivers/scsi/sg.c                        |    2 
->  drivers/scsi/sr.c                        |   15 ++--
->  drivers/scsi/st.c                        |    2 
->  drivers/scsi/u14-34f.c                   |   22 +++---
->  fs/exofs/osd.c                           |    4 -
->  include/linux/bio.h                      |    6 -
->  include/linux/blkdev.h                   |   56 ++++++++++-------
->  include/linux/elevator.h                 |    2 
->  include/scsi/scsi_cmnd.h                 |    2 
->  kernel/trace/blktrace.c                  |   16 ++--
->  82 files changed, 508 insertions(+), 585 deletions(-)
-> 
-> Thanks.
-> 
-> --
-> tejun
-> 
-> [L] http://lkml.org/lkml/2009/4/29/173
+On Mon, May 11, 2009 at 5:22 PM, K.Prasad <prasad@linux.vnet.ibm.com> wrote:
+> This patch introduces the generic Hardware Breakpoint interfaces for both user
+> and kernel space requests.
+>
+> Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
+> Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+> ---
+>  arch/Kconfig           |    4
+>  kernel/Makefile        |    1
+>  kernel/hw_breakpoint.c |  367 +++++++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 372 insertions(+)
+>
+> Index: arch/Kconfig
+> ===================================================================
+> --- arch/Kconfig.orig
+> +++ arch/Kconfig
+> @@ -112,3 +112,7 @@ config HAVE_DMA_API_DEBUG
+>
+>  config HAVE_DEFAULT_NO_SPIN_MUTEXES
+>        bool
+> +
+> +config HAVE_HW_BREAKPOINT
+> +       bool
+> +
+> Index: kernel/Makefile
+> ===================================================================
+> --- kernel/Makefile.orig
+> +++ kernel/Makefile
+> @@ -97,6 +97,7 @@ obj-$(CONFIG_X86_DS) += trace/
+>  obj-$(CONFIG_SMP) += sched_cpupri.o
+>  obj-$(CONFIG_SLOW_WORK) += slow-work.o
+>  obj-$(CONFIG_PERF_COUNTERS) += perf_counter.o
+> +obj-$(CONFIG_HAVE_HW_BREAKPOINT) += hw_breakpoint.o
+>
+>  ifneq ($(CONFIG_SCHED_OMIT_FRAME_POINTER),y)
+>  # According to Alan Modra <alan@linuxcare.com.au>, the -fno-omit-frame-pointer is
+> Index: kernel/hw_breakpoint.c
+> ===================================================================
+> --- /dev/null
+> +++ kernel/hw_breakpoint.c
+> @@ -0,0 +1,367 @@
+> +/*
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+> + *
+> + * Copyright (C) 2007 Alan Stern
+> + * Copyright (C) IBM Corporation, 2009
+> + */
+> +
+> +/*
+> + * HW_breakpoint: a unified kernel/user-space hardware breakpoint facility,
+> + * using the CPU's debug registers.
+> + *
+> + * This file contains the arch-independent routines.  It is not meant
+> + * to be compiled as a standalone source file; rather it should be
+> + * #include'd by the arch-specific implementation.
 
+That's no longer true, right ?
 
-Hi Tejun
-
-I've inspected all scsi touching patches and refrained from comments
-on the simple rename bunch. They all look very good accept that one
-place. (which will effect 2 patches)
-
-There are few more places that can use blk_end_request_all() after
-these changes.
-
-(The same internet outage on this reply)
-
-Thanks
-Boaz
+Regards,
+Bharata.
