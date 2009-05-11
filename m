@@ -1,27 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757638AbZEKNRa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbZEKNUx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757638AbZEKNRa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 09:17:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbZEKNRV
+	id S1756267AbZEKNUx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 09:20:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbZEKNUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 09:17:21 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:35990 "EHLO mx3.mail.elte.hu"
+	Mon, 11 May 2009 09:20:42 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:33858 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751416AbZEKNRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 09:17:21 -0400
-Date: Mon, 11 May 2009 15:17:08 +0200
+	id S1751318AbZEKNUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 09:20:41 -0400
+Date: Mon, 11 May 2009 15:20:27 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
-       Li Wei <W.Li@Sun.COM>, Michael Ellerman <michaele@au1.ibm.com>
-Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
-Message-ID: <20090511131708.GB32693@elte.hu>
-References: <20090507124556.041286732@linux.vnet.ibm.com> <20090507124558.618214093@linux.vnet.ibm.com> <20090507134610.GN28398@elte.hu> <4A04133B.8080501@linux.vnet.ibm.com>
+To: "Han, Weidong" <weidong.han@intel.com>
+Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
+       "dwmw2@infradead.org" <dwmw2@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
+Subject: Re: [PATCH 2/2] Intel-IOMMU, intr-remap: source-id checking
+Message-ID: <20090511132027.GC32693@elte.hu>
+References: <1241676996-27406-1-git-send-email-weidong.han@intel.com> <1241676996-27406-2-git-send-email-weidong.han@intel.com> <1241720381.27006.8582.camel@localhost.localdomain> <715D42877B251141A38726ABF5CABF2C01A6DD4900@pdsmsx503.ccr.corp.intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A04133B.8080501@linux.vnet.ibm.com>
+In-Reply-To: <715D42877B251141A38726ABF5CABF2C01A6DD4900@pdsmsx503.ccr.corp.intel.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -36,50 +38,44 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
+* Han, Weidong <weidong.han@intel.com> wrote:
 
->>> +/* __gcov_init is called by gcc-generated constructor code for each object
->>> + * file compiled with -fprofile-arcs. */
->>
->> Please use standard multi-line comments like specified in  
->> Documentation/CodingStyle. This observation holds for basically all  
->> the comment blocks in this file - dozens of them.
->
-> None of the __gcov functions are ever called by the kernel 
-> directly - only by gcc generated code. I can add comments for 
-> __gcov_init as that one is actually implemented. The other 
-> functions are required to prevent linking errors but are never 
-> actually called in kernel context, therefore in my opinion it 
-> wouldn't make much sense to provide full-blown comments for them.
+> Siddha, Suresh B wrote:
+> > On Wed, 2009-05-06 at 23:16 -0700, Han, Weidong wrote:
+> >> @@ -634,6 +694,44 @@ static int ir_parse_ioapic_scope(struct
+> >>  			       acpi_dmar_header *header, " 0x%Lx\n",
+> >>  			       scope->enumeration_id, drhd->address);
+> >> 
+> >> +			bus = pci_find_bus(drhd->segment, scope->bus);
+> >> +			path = (struct acpi_dmar_pci_path *)(scope + 1); +			count =
+> >> (scope->length - +				 sizeof(struct acpi_dmar_device_scope))
+> >> +				/ sizeof(struct acpi_dmar_pci_path);
+> >> +
+> >> +			while (count) {
+> >> +				if (pdev)
+> >> +					pci_dev_put(pdev);
+> >> +
+> >> +				if (!bus)
+> >> +					break;
+> >> +
+> >> +				pdev = pci_get_slot(bus,
+> >> +					PCI_DEVFN(path->dev, path->fn));
+> >> +				if (!pdev)
+> >> +					break;
+> > 
+> > ir_parse_ioapic_scope() happens very early in the boot. So, I 
+> > don't think we can do the pci related discovery here.
+> > 
+> 
+> Thanks for your pointing it out. It should enable the source-id 
+> checking for io-apic's after the pci subsystem is up. I will 
+> change it.
 
-It isnt about the amount of comments, it is about the plain (and 
-simple to rectify) fact that the above two-lines comment is 
-inconsistent with other kernel code.
+Note, there's ways to do early PCI quirks too, check 
+arch/x86/kernel/early-quirks.c. It's done by reading the PCI 
+configuration space directly via a careful early-capable subset of 
+the PCI config space APIs.
 
->>>                   $(asflags-y) $(AFLAGS_$(basetarget).o)
->>>  _cpp_flags     = $(KBUILD_CPPFLAGS) $(cppflags-y) $(CPPFLAGS_$(@F))
->>>  +# Enable gcov profiling flags for a file, directory or for all 
->>> files depending
->>> +# on variables GCOV_PROFILE_obj.o, GCOV_PROFILE and CONFIG_GCOV_PROFILE_ALL
->>> +# (in this order)
->>> +ifeq ($(CONFIG_GCOV_KERNEL),y)
->>
->> Please try to use winged comments in makefiles too.
->
-> What do you mean by winged comments?
+But it's a method of last resort.
 
-This:
-
-  /*
-   * Comment .....
-   * ...... goes here:
-   */
-
-Is called a winged comment. Its makefile equivalent is:
-
-   #
-   # Comment .........
-   # ....... goes here
-   #
-
-        Ingo
+	Ingo
