@@ -1,130 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbZEKKr3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523AbZEKKyS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754816AbZEKKr3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 06:47:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZEKKrT
+	id S1753523AbZEKKyS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 06:54:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751184AbZEKKx7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 06:47:19 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:33349 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752203AbZEKKrR convert rfc822-to-8bit (ORCPT
+	Mon, 11 May 2009 06:53:59 -0400
+Received: from adelie.canonical.com ([91.189.90.139]:33612 "EHLO
+	adelie.canonical.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751177AbZEKKx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 06:47:17 -0400
-MIME-Version: 1.0
-In-Reply-To: <m1pregmkld.fsf@fess.ebiederm.org>
-References: <20090509143742.GA27663@kroah.com> <20090509161923.GA942@suse.de> 
-	<20090509223454.4642753d.akpm@linux-foundation.org> <20090510152005.GA9461@suse.de> 
-	<1241980263.9562.380.camel@laptop> <20090510221901.30c1c5a5@lxorguk.ukuu.org.uk> 
-	<ac3eb2510905101647k12a1b9ck71d43933037bac48@mail.gmail.com> 
-	<20090510170016.1e3a4d97@infradead.org> <ac3eb2510905101822t7fde14b3nf2c689621f69c925@mail.gmail.com> 
-	<m1pregmkld.fsf@fess.ebiederm.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Mon, 11 May 2009 12:46:57 +0200
-Message-ID: <ac3eb2510905110346p115dc8bbscc8921c9bd7e500d@mail.gmail.com>
-Subject: Re: [patch 00/13] devtmpfs patches
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
+	Mon, 11 May 2009 06:53:58 -0400
+Date: Mon, 11 May 2009 11:53:54 +0100
+From: Andy Whitcroft <apw@canonical.com>
+To: Oleg Nesterov <oleg@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Roland McGrath <roland@redhat.com>,
        linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Subject: Re: [FOR REVIEW, PATCH 2/2] introduce "struct wait_opts" to
+	simplify do_wait() pathes
+Message-ID: <20090511105354.GB30651@shadowen.org>
+References: <20090506053324.GA31988@redhat.com> <20090506072756.GA17457@elte.hu> <20090507064120.GB15220@redhat.com> <20090507075417.GA9836@elte.hu> <20090509161506.GA8150@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090509161506.GA8150@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 04:36, Eric W. Biederman <ebiederm@xmission.com> wrote:
->> Devtmpfs is the simplest, is the fastest, is the most reliable, and it
->> is the most flexible
->
-> FLEXIBLE?
+On Sat, May 09, 2009 at 06:15:06PM +0200, Oleg Nesterov wrote:
+> (add Andy)
+> 
+> On 05/07, Ingo Molnar wrote:
+> >
+> > * Oleg Nesterov <oleg@redhat.com> wrote:
+> >
+> > > On 05/06, Ingo Molnar wrote:
+> > > >
+> > > > One small nit with the definition above: when using vertical spacing
+> > > > (which really looks nice) we tend to put the asterix to the type
+> > > > itself, not to the variable. I.e.:
+> > > >
+> > > > 	enum pid_type		wtype;
+> > > > 	struct pid *		wpid;
+> > > > 	int			wflags;
 
-Yes, flexible because you can do whatever you want in whatever order
-and never run into problems with an empty /dev. You can even just
-ignore /dev and go ahead. There are basically no dependencyies to do
-other things in parallel.
+My expectation would normally be that this would be written more as:
 
->> option for us. And still, nobody will be forced
->> to use it, it's entirely optional. For our systems, we decided to do
->> it that way, and we ship it already in the distro, and if there are no
->> substantial problems coming up, which we don't expect, we will
->> continue using it.
->
-> Yes but you are asking all of us to maintain it.  Forever in perpetuity.
-> A better case needs to be made than you have already shipped the code.
+ 	enum pid_type		wtype;
+ 	struct pid		*wpid;
+ 	int			wflags;
 
-I would be very careful with such statement if you want us to accept
-your namespace hacks in the future. I guess if we ask with your next
-round "do we want to to have to maintain this for forever" you get a
-very different answer than today.
+(more explanation below)
 
-> I'm sorry you decided to ship the code before getting a review.  I
-> guess that is the definition of an experimental feature.  One not in
-> the upstream kernel.
+> > > >
+> > > > ( This is done to separate the field name from the type - the
+> > > >   pointer nature of the field is part of the type, not part of the
+> > > >   name. )
+> > >
+> > > Indeed, I like this more too. But checkpatch.pl disagrees!
+> >
+> > That's probably a checkpatch bug mistaking * for multiplication -
+> > ignore checkpatch in that case and please report it to Andy
+> > Withcroft as well as well.
 
-No, I did decide to ship it in the distro which is how things work
-since forever. And it's not in the upstream kernel now, while this
-discussion happens.
+This is a C'ism.  The pointerness is not part of the type in C, where as
+it is in C++.  In C a char * is a pointer to the type char (classically
+written as "char *var").  In C++ char * is of type pointer to char
+(classically written as "char* var").
 
->> You might not like it for whatever reason.
->
-> I think your justification for this ``feature'' is strongly flawed.
+> No, this is not a bug. From scripts/checkpatch.pl
+> 
+> 	1667                          # Should not end with a space.
+> 	1668                          $to =~ s/\s+$//;
+> 
+> checkpatch explicitely dislikes "type * name". I think this is
+> not really right, but I won't insist. Perhaps it is better to
+> allow tabs before name at least, because this likely means the
+> code really tries ro look good.
 
-I did not hear any substantial technical argument so far.
+So yes the current behaviour is as designed.  We are aiming for a
+consistent style not necessarily one any of us actually wholy agrees
+with.  If the right people think this deserves relaxing we can revisit
+that decision.
 
-> You claim to save 2 seconds of a process that should take less than
-> a tenth of a second.
->
-> You claim flexibility while removing user space from the policy loop.
+> Btw, can't resist,
+> 
+> 	while ($to =~ s/\*\s+\*/\*\*/) {
+> 	}
+> 
+> I think this can be simplified to
+> 
+> 	$to =~ s/(?<=\*)\s+//g;
 
-The made up numbers you are bringing up here, suggest that you never
-worked in that area, and really, can you please talk about things you
-have experience with, or get the needed one _before_ calling things
-"flawed", "slow". You even suggest non-working racy hacks instead,
-which is far from funny.
+Heh quite possibly.  But the first is enough like line noise for me!
+The latter is primarily scary.
 
-> You claim speed increases when comparing to a dog slow non-tuned
-> implementation.
+> Oleg.
 
-Again. nothing is dog-slow. We just don't do unreliable bad hacks like
-you suggest. Have you ever wondered why _every_ distro does it this
-way? Maybe they are all stupid and just wait for you to tell them and
-solve their problem.
+Thanks.
 
->> And we consider this problem as solved.
->
-> What backroom have you had that discussion?
-
-I wrote like ten times as many words as are in the patch, here in this
-thread. I don't think there is any backroom here.
-
-> You are presenting this as a decision already made.  I think you
-> are not playing well with others.
-
-Oh, like calling stuff "flawed", "dog-slow", while not even seen any
-of this running for real?
-
-> I don't see a case having been made that the existing user
-> space interface is broken.  Just that the udev implementation
-> is slow.
-
-That's utter nonsense. It's not slow at all, it's just slower that
-what we can do with the bit of help from the kernel.
-
-> I think a slow user space application is simply not a justification
-> for putting code in the kernel.
-
-Can you read? Did you read the many reasons why we want this? I guess not.
-
-> I think a developer using faulty arguments for their code likely
-> has not thought things through and that is enough reason to call
-> suspicion onto the code in my opinion.
-
-You seem running in circles with searching for a "suspicion". Care to
-provide a technical argument for the first time? That would be
-appreciated.
-
-Thanks,
-Kay
+-apw
