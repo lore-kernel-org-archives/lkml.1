@@ -1,69 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759282AbZEKUJj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759267AbZEKUKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759282AbZEKUJj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 16:09:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZEKUJ2
+	id S1759267AbZEKUKz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 16:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbZEKUKq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 16:09:28 -0400
-Received: from av-gw2.cc.tut.fi ([130.230.130.111]:39676 "EHLO
-	av-gw2.cc.tut.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755697AbZEKUJ1 (ORCPT
+	Mon, 11 May 2009 16:10:46 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:62686 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754204AbZEKUKp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 16:09:27 -0400
-X-Greylist: delayed 12369 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 May 2009 16:09:27 EDT
-X-AuditID: 82e6826f-a8d93bb0000003e2-df-4a087fd61504 
-Message-ID: <4A0855A5.8040109@tut.fi>
-Date: Mon, 11 May 2009 19:43:17 +0300
-From: Janne Kulmala <janne.t.kulmala@tut.fi>
+	Mon, 11 May 2009 16:10:45 -0400
+Message-ID: <4A088640.2030701@vlnb.net>
+Date: Tue, 12 May 2009 00:10:40 +0400
+From: Vladislav Bolkhovitin <vst@vlnb.net>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Thomas Gleixner <tglx@linutronix.de>
-CC: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
-       Steven Rostedt <rostedt@goodmis.org>, len.brown@intel.com,
-       mingo@elte.hu, johnstul@us.ibm.com
-Subject: Re: [PATCH] ACPI: do not mark TSC unstable for invalid C-states
-References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com> <200905110226.50115.elendil@planet.nl> <alpine.LFD.2.00.0905111614570.3561@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0905111614570.3561@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Pavel Machek <pavel@ucw.cz>
+CC: Shannon McMackin <smcmackin@gmail.com>, linux-kernel@vger.kernel.org,
+       tuxonice-devel@lists.tuxonice.net
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <20090507120948.GA1531@ucw.cz> <200905080037.19722@centrum.cz> <gu017d$g2s$1@ger.gmane.org> <20090510053820.GF1363@ucw.cz>
+In-Reply-To: <20090510053820.GF1363@ucw.cz>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Brightmail-Tracker: AAAAAA==
+X-Provags-ID: V01U2FsdGVkX18Ud62Aky/kDkxFaC4JCAO+5egUHm8JCZaAYyl
+ +td1wNI+CPLM2FdcP939DNevhq61nK3eR+MVV0lLT9JP7J1JmP
+ KaOh3qjujX/Wk+UV5cpHA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Thomas Gleixner wrote:
-> commit a71e4917dc0ebbcb5a0ecb7ca3486643c1c9a6e2 (ACPI: idle:
-> mark_tsc_unstable() at init-time, not run-time) marks TSC unstable
-> even on non affected systems.
-> 
-> The reason is that the state enumeration does not check the cx->valid
-> flag before calling tsc_halts_in_c(), so it marks TSC unstable for any
-> enumerated albeit invalid C state which is known to turn off TSC.
-> 
-> Check cx->valid before checking whether the TSC might become unstable.
-> 
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-> ---
->  drivers/acpi/processor_idle.c |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> Index: linux-2.6/drivers/acpi/processor_idle.c
-> ===================================================================
-> --- linux-2.6.orig/drivers/acpi/processor_idle.c
-> +++ linux-2.6/drivers/acpi/processor_idle.c
-> @@ -583,7 +583,7 @@ static int acpi_processor_power_verify(s
->  
->  #if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
->  		/* TSC could halt in idle, so notify users */
-> -		if (tsc_halts_in_c(cx->type))
-> +		if (cx->valid && tsc_halts_in_c(cx->type))
->  			mark_tsc_unstable("TSC halts in idle");;
 
-Small suggestion: can we fix the double ';' here at the same time?
-
->  #endif
->  		switch (cx->type) {
+Pavel Machek, on 05/10/2009 09:38 AM wrote:
+> Hi!
 > 
+>>>> To summarise disadvantages:
+>>>>
+>>>> - only core has 8000 LoC
+>>>> - it does stuff that can be easily done in userspace
+>>>>     (and that todays distros _do_ in userspace).
+>>>> - it duplicates uswsusp functionality.
+>>>> - compared to [u]swsusp, it received little testing
+>>>>
+>>> To summarise advatages - for me tuxonice is the only hibernation method that works.
+>>> (Till now I've had 3 machines - no one of them able to resume with in-kernel swsusp.)
+>>>
+>> Just to add my 2 cents as a user of TOI.  Every distro and release I've  
+>> tried has one major issue with kernel hibernation.  Upon resume when  
+>> hibernating large images, there's a residual footprint in swap.  Every  
+>> further hibernation creates a larger footprint, to the order of an  
+>> additional 5-7% each time.  Nobody has ever cared in any forum to  
+>> explain why or how I might change that.
 > 
+> Maybe you should explain why it is a 'major issue'?
+> 
+> (Use swapoff -a; swapon -a to 'cure' it).
 
-Janne
+Great advice if you have used memory > physical memory!
+
+Just run two firefox's and thunderbird and you will get that pretty quickly:
+
+# free
+              total       used       free     shared    buffers     cached
+Mem:       2060560    2040656      19904          0      31452     360580
+Swap:      5358296    1475504    3882792
+
+
+
+> 								Pavel
