@@ -1,66 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761041AbZEKXJA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932106AbZEKXLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761041AbZEKXJA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 19:09:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbZEKXIu
+	id S932106AbZEKXLU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 19:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754378AbZEKXLB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 19:08:50 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:12402 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756359AbZEKXIt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 19:08:49 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=fzwUyDV2mQGxO8IZBi/vX3EU0UFTnabtuB+pXOkm7hEXlGtqdTcHaU4gP30d5Kllt
-	eHGToa9NkqoD5UxfJZJ+w==
-Date: Mon, 11 May 2009 16:08:44 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
+	Mon, 11 May 2009 19:11:01 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:47941 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752731AbZEKXLA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 19:11:00 -0400
+Subject: Re: [v3][PATCH 5/5] Merge code for single
+ andmultiple-instancemounts
+From: Eric Paris <eparis@redhat.com>
 To: Andrew Morton <akpm@linux-foundation.org>
-cc: Greg Kroah-Hartman <gregkh@suse.de>, npiggin@suse.de, mel@csn.ul.ie,
-       a.p.zijlstra@chello.nl, Christoph Lameter <cl@linux-foundation.org>,
-       dave@linux.vnet.ibm.com, san@android.com, arve@android.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 10/11 -mmotm] oom: avoid oom kill if no interruptible
- tasks
-In-Reply-To: <20090511143906.1cde5f6e.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.2.00.0905111606030.5979@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101502470.18804@chino.kir.corp.google.com> <20090511143906.1cde5f6e.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, marc.c.dionne@gmail.com,
+       eparis@parisplace.org, hch@lst.de, alan@lxorguk.ukuu.org.uk,
+       serue@us.ibm.com, hpa@zytor.com, sukadev@us.ibm.com,
+       linux-kernel@vger.kernel.org, jbacik@redhat.com
+In-Reply-To: <20090511154009.a6e10a0f.akpm@linux-foundation.org>
+References: <20090307180816.GA30072@us.ibm.com>
+	 <20090307181232.GF30072@us.ibm.com>
+	 <7e0fb38c0905071335g7ebe972xa82faa1161f7ff0b@mail.gmail.com>
+	 <20090507212429.GA24064@linux.vnet.ibm.com>
+	 <1241735609.2907.4.camel@dhcp231-142.rdu.redhat.com>
+	 <20090507231844.GA27609@linux.vnet.ibm.com>
+	 <20090507232110.GB27609@linux.vnet.ibm.com> <4A04F5D7.2050909@gmail.com>
+	 <20090511221502.GA32530@linux.vnet.ibm.com>
+	 <20090511154009.a6e10a0f.akpm@linux-foundation.org>
+Content-Type: text/plain
+Date: Mon, 11 May 2009 19:09:01 -0400
+Message-Id: <1242083341.3079.1.camel@dhcp231-142.rdu.redhat.com>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009, Andrew Morton wrote:
-
-> > If there are no interruptible system tasks other than kthreads,
+On Mon, 2009-05-11 at 15:40 -0700, Andrew Morton wrote:
+> On Mon, 11 May 2009 15:15:02 -0700
+> Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> wrote:
 > 
-> It's unclear what the term "system task" means.  Just "task"?
+> > Marc Dionne [marc.c.dionne@gmail.com] wrote:
+> > > On 05/07/2009 07:21 PM, Sukadev Bhattiprolu wrote:
+> > >> Er. I meant add following lines after the memset().
+> > >>
+> > >> |         opts->mode    = DEVPTS_DEFAULT_MODE;
+> > >> |         opts->ptmxmode = DEVPTS_DEFAULT_PTMX_MODE;
+> > >
+> > > Adding those two lines (with . instead of ->) does fix the issue for me, 
+> > > thanks.
+> > >
+> > > | > Of course we would still need to understand if/
+> > > | > why this patch changes the settings.
+> > >
+> > > That particular patch changed things because the original memcpy in 
+> > > new_pts_mount() did this:
+> > >
+> > > memcpy(&fsi->mount_opts, opts, sizeof(opts));
+> > >
+> > > where opts was a pointer, not a structure.  So only the first few bytes of 
+> > > the blank opts actually got copied over.  The patch moved this memcpy to 
+> > > devpts_get_sb() and in the process fixed the sizeof error.
+> > 
+> > Here is a cleaner fix - When user space (/etc/rc.sysinit on RHEL5) mounts
+> > devpts, this problem might be masked since the mount system call could pass
+> > a non-NULL 'data' parmeter to devpts_get_sb().
+> > 
+> > I tested this patch by directly calling the system call mount() with a NULL
+> > data parameter. If you/Eric/Peter can confirm that this works for you, I will
+> > send this patch to Andrew.
 > 
-
-Yes.
-
-> > no task
-> > should be chosen for oom kill since they won't respond to the SIGKILL
-> > anyway.  Instead, we choose to simply fail page allocations if reclaim
-> > cannot free memory and hope for the best.
+> You already sent it ;)
 > 
-> But plain old user processes enter and leave D state all the time.  The
-> task may well just be sitting there waiting for a disk read to
-> complete.  It will respond to the SIGKILL shortly after the IO
-> completes, so an appropriate action here is to just wait for that to
-> happen.
+> > >From 2f7746f4df78ff57125c4714f0cd64e739ccf804 Mon Sep 17 00:00:00 2001
+> > From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+> > Date: Mon, 11 May 2009 13:11:11 -0700
+> > Subject: [PATCH] devpts: Correctly set default options
+> > 
+> > devpts_get_sb() calls memset(0) to clear mount options and calls
+> > parse_mount_options() if user specified any mount options. The memset(0) is
+> > bogus since the 'mode' and 'ptmxmode' options are non-zero by default.
+> > parse_mount_options() restores options to default anyway and can properly deal
+> > with NULL mount options.
+> > 
+> > So in devpts_get_sb() remove memset(0) and call parse_mount_options() even for
+> > NULL mount options.
+> > 
+> > Bug reported by Eric Paris: http://lkml.org/lkml/2009/5/7/448.
 > 
+> This patch fixes a post-2.6.29 regression, yes?
 
-Since current is in the oom killer, it's runnable.  So the only way this 
-can fail an allocation is if a kthread is looking for memory and reclaim 
-has failed and no user tasks are running.  It's not guaranteed that any 
-memory will ever become available (for instance if all userspace tasks are 
-waiting on mm->mmap_sem for an oom killed task that will never exit even 
-after having been given TIF_MEMDIE), so the best course of action is to 
-fail, if allowed.
+I believe so, yes.
+
+> > Signed-off-by: Sukadev Bhattiprolu (sukadev@us.ibm.com)
+> 
+> Please use angled brackets around the email address.  Some lame
+> person's scripts probably require it.  <whistles innocently>
+> 
+> Under the he-merged-it-last rule, this patch should formally go via
+> Al's VFS tree.  But I would happily accept a stfu-and-merge it?
+
+You have another tested, reviewed, and ack'd on this patch from me.  I
+personally would say send it away!
+
+-Eric
+
