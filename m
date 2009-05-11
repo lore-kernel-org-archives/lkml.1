@@ -1,55 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbZEKHmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZEKHu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754589AbZEKHmT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 03:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbZEKHmG
+	id S1754542AbZEKHu1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 03:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbZEKHuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 03:42:06 -0400
-Received: from sovereign.computergmbh.de ([85.214.69.204]:52640 "EHLO
-	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752453AbZEKHmF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 03:42:05 -0400
-Date: Mon, 11 May 2009 09:42:03 +0200 (CEST)
-From: Jan Engelhardt <jengelh@medozas.de>
-To: Martin Schwidefsky <schwidefsky@de.ibm.com>
-cc: Michael Abbott <michael@araneidae.co.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] Re: /proc/uptime idle counter remains at 0
-In-Reply-To: <20090511093512.38ba9b70@skybase>
-Message-ID: <alpine.LSU.2.00.0905110938210.667@fbirervta.pbzchgretzou.qr>
-References: <alpine.LSU.2.00.0905090957490.27646@fbirervta.pbzchgretzou.qr> <20090510191229.71f43f3c@skybase> <alpine.LSU.2.00.0905110237310.17675@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0905110656180.6983@venus.araneidae.co.uk>
- <20090511093512.38ba9b70@skybase>
-User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+	Mon, 11 May 2009 03:50:11 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:42317 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751777AbZEKHuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 03:50:09 -0400
+Date: Mon, 11 May 2009 09:49:13 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: Re: [PATCH 7/7] x86/pci: update pirq_enable_irq to setup io apic
+	routing -v2
+Message-ID: <20090511074913.GA5636@elte.hu>
+References: <4A01C35C.7060207@kernel.org> <4A01C46E.8000501@kernel.org> <20090507141222.GI481@elte.hu> <20090507095256.7f87fb42@jbarnes-g45>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090507095256.7f87fb42@jbarnes-g45>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-On Monday 2009-05-11 09:35, Martin Schwidefsky wrote:
->> I have to confess I don't really understand the logic of what's going on 
->> here -- in particular, what does the idle process do other than account 
->> for time when the processor has nothing useful to do?  It does seem to me 
->> now that the .utime and .stime fields are now less than useful -- maybe 
->> they can be deleted now?
->
->The idle task does not just sleep, it will do "real" work, e.g. softirq
->handling for interrupts / network traffic.
+* Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
 
-With an RT kernel, SIRQ and such are separate tasks. That should also
-be play a role while 0 is displayed.
+> On Thu, 7 May 2009 16:12:22 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > 
+> > * Yinghai Lu <yinghai@kernel.org> wrote:
+> > 
+> > > 
+> > > so we could set io apic routing only when enable device irq.
+> > > 
+> > > also could make setup_IO_APIC_irqs and setup_ioapic_dest only handle
+> > > first ioapic...
+> > > 
+> > > v2: remove one one not needed style change.
+> > >     merge the patch only setup io_apic for acpi on in
+> > > setup_IO_APIC_irqs
+> > > 
+> > > [ Impact: make mptable irq enable more like acpi is used, and
+> > > numa_irq_desc could get correct node when acpi=off ]
+> > > 
+> > > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> > > 
+> > > ---
+> > >  arch/x86/kernel/apic/io_apic.c |  148
+> > > ++++++++++++++++++++---------------------
+> > > arch/x86/pci/irq.c             |   84 ++++++++--------------- 2
+> > > files changed, 103 insertions(+), 129 deletions(-)
+> > 
+> > Jesse, did this patch have your Acked-by?
+> 
+> Yeah, both of them are fine with me.  Ultimately you get to keep 
+> any broken pieces from io_apic changes anyway, right? :)
 
->> I've always assumed that the second field of /proc/uptime was a simple 
->> measure of time not spent doing real work, in other words a crude measure 
->> of spare CPU resources.  My instrument basically uses the the two fields 
->> of this file to compute a measure of CPU loading so it can raise an alert 
->> if the CPU doesn't have enough spare (idle) capacity.
->
->But it wasn't.. the old style stime of idle is a mixture of true idle
->time and some system time.
+Yeah, generally. But the wider the blame can be spread when it does 
+break, the better! ;-)
 
-Then I would say let's show the idle time only (but still inculde
-the idle time when the CPU is halted).
+> Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
 
+Thanks!
+
+	Ingo
