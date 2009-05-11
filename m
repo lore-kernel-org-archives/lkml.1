@@ -1,85 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755816AbZEKQaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754025AbZEKQcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755816AbZEKQaf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 12:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZEKQa0
+	id S1754025AbZEKQcV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 12:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZEKQcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 12:30:26 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:50157 "EHLO
-	IE1EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752989AbZEKQaZ (ORCPT
+	Mon, 11 May 2009 12:32:12 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:42666 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752454AbZEKQcL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 12:30:25 -0400
-X-BigFish: VPS-37(z34a4jz1432R62a3L98dR936eQ4015L1805Mzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KJHN5U-03-HK2-01
-Date: Mon, 11 May 2009 18:29:55 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip] x86: Addition of cpufeatures to friendly
-	access miscellaneous MSRs
-Message-ID: <20090511162955.GE10722@erda.amd.com>
-References: <1242058494.5139.7.camel@ht.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	Mon, 11 May 2009 12:32:11 -0400
+Date: Mon, 11 May 2009 18:37:19 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
+Cc: "'Andi Kleen'" <andi@firstfloor.org>, linux-kernel@vger.kernel.org,
+       Lee.Schermerhorn@hp.com, linux-numa@vger.kernel.org,
+       brice.goglin@inria.fr,
+       "'Terboven, Christian'" <terboven@rz.rwth-aachen.de>,
+       anmey@rz.rwth-aachen.de, "'Boris Bierbaum'" <boris@lfbs.rwth-aachen.de>
+Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+Message-ID: <20090511163719.GA19296@one.firstfloor.org>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de> <87zldjn597.fsf@basil.nowhere.org> <001501c9d248$69e2a870$3da7f950$@rwth-aachen.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1242058494.5139.7.camel@ht.satnam>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 11 May 2009 16:29:57.0462 (UTC) FILETIME=[B9002F60:01C9D255]
+In-Reply-To: <001501c9d248$69e2a870$3da7f950$@rwth-aachen.de>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11.05.09 21:44:54, Jaswinder Singh Rajput wrote:
-> Complete log is available at:
-> http://git.kernel.org/?p=linux/kernel/git/jaswinder/linux-2.6-cpu.git;a=shortlog;h=x86/cpufeature
+On Mon, May 11, 2009 at 04:54:40PM +0200, Stefan Lankes wrote:
+> > From: Andi Kleen [mailto:andi@firstfloor.org]
+> > 
+> > Stefan Lankes <lankes@lfbs.rwth-aachen.de> writes:
+> > >
+> > > [Patch 1/4]: Extend the system call madvise with a new parameter
+> > > MADV_ACCESS_LWP (the same as used in Solaris). The specified memory
+> > area
+> > 
+> > Linux does NUMA memory policies in mbind(), not madvise()
+> > Also if there's a new NUMA policy it should be in the standard
+> > Linux NUMA memory policy frame work, not inventing a new one
 > 
-> The following changes since commit 3e0c373749d7eb5b354ac0b043f2b2cdf84eefef:
->   Yinghai Lu (1):
->         x86: clean up and fix setup_clear/force_cpu_cap handling
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-cpu.git x86/cpufeature
-> 
-> Jaswinder Singh Rajput (15):
->       x86: Add cpufeature for Processor Name
->       x86: Add cpufeatures for Advanced Power Management
->       x86: Add cpufeature for Microcode update
->       x86: Add cpufeature for Cache MSRs
->       x86: Add cpufeature for Hard and Soft Poweron configuration
->       x86: Add cpufeature for Scaleable bus speed
->       x86: Add cpufeature for Miscellaneous Features
->       x86: Add cpufeature for Platform feature
->       x86: Add cpufeature for Hardware configuration
->       x86: Add cpufeature for System configuration
->       x86: Add cpufeature for System management mode (SMM)
->       x86: Add cpufeature for MM configuration
->       x86: Add cpufeature for Bus configuration
->       x86: Add cpufeature for performance frequency APERF/MPERF
->       x86: Add cpufeature for ancient performance monitoring
+> By default, mbind only has an effect on new allocations. I think that this
 
-Jaswinder,
+Nope, it affects existing pages too, it can even move pages
+if you ask for it.
 
-this is the last time I will mention this.
+> is different from what we need for applications with dynamic memory access
+> patterns. The app gives the kernel a hint that the access pattern has been
+> changed and the kernel has to redistribute the pages which are already
+> allocated.
 
-Please send a patch set with numbered patches. Your pull requests are
-hard to review. Even maintainers send their patches this way for
-review though the patches are available also in some git
-repositories. Make these patches relative to a common tree (linux-2.6
-or tip) or the maintainers tree (in this case also tip). Doing so,
-others can apply the patches easily in a local repository. This will
-reduce the efforts to review and test your patches and you will
-probably get more feedback.
+MF_MOVE
 
-Thanks,
 
--Robert
+> For instance, Norden's PDE solvers using adaptive mesh refinements (AMR) [1]
+> is an application with a dynamic access pattern. We use this example to
+> evaluate the performance of our patch. We ran this solver on our
+> quad-socket, dual-core Opteron 875 (2.2GHz) system running CentOS 5.2. The
+> code was already optimized for NUMA architectures. Before the arrays are
+> initialized, the threads are bound to one core. In our test case, the solver
+> needs 5318s. If we use our kernel extension, the solver needs 4489s. 
 
+Okay that sounds like good numbers. 
+
+> Currently, we are testing some other apps.
+
+Please keep the list updated.
+
+-Andi
 -- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
-
+ak@linux.intel.com -- Speaking for myself only.
