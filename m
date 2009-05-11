@@ -1,42 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757208AbZEKQiQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756962AbZEKQjj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757208AbZEKQiQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 12:38:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbZEKQh6
+	id S1756962AbZEKQjj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 12:39:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbZEKQj0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 12:37:58 -0400
-Received: from gw.goop.org ([64.81.55.164]:33912 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753046AbZEKQh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 12:37:57 -0400
-Message-ID: <4A085464.5030802@goop.org>
-Date: Mon, 11 May 2009 09:37:56 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: Avi Kivity <avi@redhat.com>, Gregory Haskins <ghaskins@novell.com>,
-       Marcelo Tosatti <mtosatti@redhat.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com> <20090507233503.GA9103@amt.cnet> <4A043E89.90403@novell.com> <4A044786.2080508@codemonkey.ws> <4A047EDE.2020806@redhat.com> <4A0481AC.7070409@codemonkey.ws>
-In-Reply-To: <4A0481AC.7070409@codemonkey.ws>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 11 May 2009 12:39:26 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:25243 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752139AbZEKQjZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 12:39:25 -0400
+Cc: Netdev <netdev@vger.kernel.org>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Linux NFS mailing list <linux-nfs@vger.kernel.org>
+Message-Id: <62189277-05F4-4AC7-97EC-AFDE39F781E3@oracle.com>
+From: Chuck Lever <chuck.lever@oracle.com>
+To: Frans Pop <elendil@planet.nl>
+In-Reply-To: <200905111639.43636.elendil@planet.nl>
+Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
 Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Apple Message framework v930.3)
+Subject: Re: svc: failed to register lockdv1 RPC service (errno 97).
+Date: Mon, 11 May 2009 12:39:18 -0400
+References: <200905110248.48695.elendil@planet.nl> <8054CA42-CAFC-4DFC-A3A9-107AF29284EE@oracle.com> <200905111639.43636.elendil@planet.nl>
+X-Mailer: Apple Mail (2.930.3)
+X-Source-IP: abhmt003.oracle.com [141.146.116.12]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010203.4A0854B8.01DE:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote:
-> Yes, I misunderstood that they actually emulated it like that.  
-> However, ia64 has no paravirtualization support today so surely, we 
-> aren't going to be justifying this via ia64, right?
+On May 11, 2009, at 10:39 AM, Frans Pop wrote:
+> On Monday 11 May 2009, you wrote:
+>> On May 10, 2009, at 8:48 PM, Frans Pop wrote:
+>>> After switching from 2.6.29.2 to 2.6.30-rc5 I get this new message
+>>> during boot of my home server:
+>>>  svc: failed to register lockdv1 RPC service (errno 97).
+>>
+>> Is this the only instance of this message, or do you see it several
+>> times?
 >
+> It's the only one.
+>
+>>> This looks to be the result of the following commit:
+>>> commit 363f724cdd3d2ae554e261be995abdeb15f7bdd9
+>>> Author: Chuck Lever <chuck.lever@oracle.com>
+>>>   SUNRPC: rpcb_register() should handle errors silently
+>>>   Move error reporting for RPC registration to rpcb_register's
+>>> caller.
+>>>
+>>> Question is: do I really want to know this? I assume the "failure"
+>>> happened with previous kernels too, but silently.
+>>
+>> The point of that commit was to report errors _less_ frequently.
+>
+> :-)
+>
+>> The server-side RPC code is attempting to be more automatic about
+>> which address families are supported by kernel NFS services.  This
+>> message tells us that some particular case is not handled yet.  I
+>> suspect you weren't seeing this error in the past at all.
+>
+> Correct. Neither this exact error, nor anything remotely similar.
 
-Someone is actively putting a pvops infrastructure into the ia64 port, 
-along with a Xen port.  I think pieces of it got merged this last window.
+No, I meant that whether or not you saw an error message, the  
+underlying condition probably was not occurring before 2.6.30.
 
-    J
+>> Can you report more about your server configuration?  What
+>> distribution is this?
+>
+> Debian stable (Lenny).
+> nfs-common and nfs-kernel-server (1.1.2)
+>
+> I'm using nfs4. rpc.statd is not running; rpc.mountd and rpc.idmapd  
+> are.
+
+The NFS client and server appear to start lockd listeners for NFSv4.   
+They probably don't need to.  But that's a separate issue.
+
+>> Does user space have portmapper or rpcbind?
+>
+> portmap (6.0)
+>
+>> Are you blacklisting ipv6.ko?
+>
+> No, the server has IPv6 enabled.
+> I'm using NFS mainly from my laptop though, which does not have an  
+> IPv6
+> address for my home network.
+>
+>> What's the output of "rpcinfo" on your server after it has started  
+>> NFSD?
+>
+> I guess you mean the -p option?
+>
+> $ rpcinfo -p
+>   program vers proto   port
+>    100000    2   tcp    111  portmapper
+>    100000    2   udp    111  portmapper
+>    100003    2   udp   2049  nfs
+>    100003    3   udp   2049  nfs
+>    100003    4   udp   2049  nfs
+>    100021    1   udp  47955  nlockmgr
+>    100021    3   udp  47955  nlockmgr
+>    100021    4   udp  47955  nlockmgr
+>    100021    1   tcp  41860  nlockmgr
+>    100021    3   tcp  41860  nlockmgr
+>    100021    4   tcp  41860  nlockmgr
+>    100003    2   tcp   2049  nfs
+>    100003    3   tcp   2049  nfs
+>    100003    4   tcp   2049  nfs
+>    100005    1   udp  40032  mountd
+>    100005    1   tcp  40623  mountd
+>    100005    2   udp  40032  mountd
+>    100005    2   tcp  40623  mountd
+>    100005    3   udp  40032  mountd
+>    100005    3   tcp  40623  mountd
+>    391002    2   tcp    792  sgi_fam
+
+In this case, it looks like the message can be treated as a notice.  I  
+think in general we could safely make that a dprintk, but I'd like to  
+wait a bit more to see if we catch any bad behavior.
+
+--
+Chuck Lever
+chuck[dot]lever[at]oracle[dot]com
