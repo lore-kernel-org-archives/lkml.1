@@ -1,83 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758018AbZEKTNo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755789AbZEKTRh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758018AbZEKTNo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 15:13:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754273AbZEKTNe
+	id S1755789AbZEKTRh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 15:17:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZEKTR2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 15:13:34 -0400
-Received: from mail-ew0-f224.google.com ([209.85.219.224]:41685 "EHLO
-	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753493AbZEKTNd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 15:13:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=HNrtX7rMjIvOzFxUq72uxQzUCbL08GOyx4lvk5Q/DNlgQu/k0nAWgPx16BHRXmM1Qc
-         iyguXL+X5cSfHpKEMDG11LwP1iq+uSsMPzAdnyQlAMg68HnjrEXZLilZfQBX0iRhPupv
-         TkqWib0LxUy5pX5mXkni9YwkeBZan6k3MseWE=
-Message-ID: <4A0878DC.8040907@gmail.com>
-Date: Mon, 11 May 2009 21:13:32 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Mon, 11 May 2009 15:17:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50468 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751752AbZEKTR1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 15:17:27 -0400
+Message-ID: <4A087955.7040505@kernel.org>
+Date: Mon, 11 May 2009 12:15:33 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: jeremy@xensource.com
-CC: virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH 2] xen pvfb: remove driver_data direct access of struct device
-References: <4A08775C.20305@gmail.com>
-In-Reply-To: <4A08775C.20305@gmail.com>
+To: Jack Steiner <steiner@sgi.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] x86: fix node_possible_map logic -v2
+References: <4A05269D.8000701@kernel.org> <4A0527CB.4020807@kernel.org> <20090511175312.GA27905@sgi.com>
+In-Reply-To: <20090511175312.GA27905@sgi.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To avoid direct access to the driver_data pointer in struct device, the
-functions dev_get_drvdata() and dev_set_drvdata() should be used.
+Jack Steiner wrote:
+> On Fri, May 08, 2009 at 11:50:51PM -0700, Yinghai Lu wrote:
+>> recently there are some changes to about meaning of node_possible_map
+>>
+>> and it is some strange:
+>> the node without memory would be set in node_possible_map
+>> but some node with less NODE_MIN_SIZE will be kicked out of node_possible_map.
+>>
+>> try to fix it by adding strict_setup_node_bootmem.
+>> also remove unparse_node.
+> 
+> I still see the same panic. Entry 0 of the node_data array is NULL &
+> it is dereferenced building the zonelists.
+> 
+> I'm sure that you are way ahead of me in diagnosing this problem but
+> this is a regression from previous behavior. Fpor example, in 2.6.27, node_data
+> is created for both nodes but node 0 contains no memory:
+> 
+> 	(2.7.27)
+> 	<6>SRAT: PXM 0 -> APIC 0 -> Node 0
+> 	<6>SRAT: PXM 1 -> APIC 128 -> Node 1
+> 	<6>SRAT: Node 1 PXM 1 0-fff6c000
+> 	<7>NUMA: Using 63 for the hash shift.
+> 	<6>Bootmem setup node 0 0000000000000000-0000000000000000
+> 	<3>Cannot find 212992 bytes in node 0
+> 	<6>Bootmem setup node 1 0000000000000000-0000000010000000
+> 	<6>  NODE_DATA [000000000139be80 - 00000000013cfe7f]
+> 	<6>  bootmap [00000000013d0000 -  00000000013d1fff] pages 2
+> 	<6>(7 early reservations) ==> bootmem [0000000000 - 0010000000]
+> 	<6>  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+> 	<6>  #1 [0000006000 - 0000008000]       TRAMPOLINE ==> [0000006000 - 0000008000]
+> 	<6>  #2 [0000200000 - 000139be38]    TEXT DATA BSS ==> [0000200000 - 000139be38]
+> 	<6>  #3 [000009f000 - 00000e0900]    BIOS reserved ==> [000009f000 - 00000e0900]
+> 	<6>  #4 [00000e0a68 - 0000100000]    BIOS reserved ==> [00000e0a68 - 0000100000]
+> 	<6>  #5 [00000e0900 - 00000e0a68]       EFI memmap ==> [00000e0900 - 00000e0a68]
+> 	<6>  #6 [0000001000 - 0000001030]        ACPI SLIT ==> [0000001000 - 0000001030]
+> 	<6>Bootmem setup node 0 0000000000000000-0000000000000000
+> 	<6>  NODE_DATA [00000000013d2000 - 0000000001405fff]
+> 	<6>  bootmap [0000000000000000 -  ffffffffffffffff] pages 0
+> 	<6>(7 early reservations) ==> bootmem [0000000000 - 0000000000]
+> 	<6>  #0 [0000000000 - 0000001000]   BIOS data page
+> 	<6>  #1 [0000006000 - 0000008000]       TRAMPOLINE
+> 	<6>  #2 [0000200000 - 000139be38]    TEXT DATA BSS
+> 	<6>  #3 [000009f000 - 00000e0900]    BIOS reserved
+> 	<6>  #4 [00000e0a68 - 0000100000]    BIOS reserved
+> 	<6>  #5 [00000e0900 - 00000e0a68]       EFI memmap
+> 	<6>  #6 [0000001000 - 0000001030]        ACPI SLIT
+> 	<6>    NODE_DATA(0) on node 1
+> 	<6>    bootmap(0) on node 1
+> 	<7> [ffffe20000000000-ffffe200003fffff] PMD -> [ffff880001600000-ffff8800019fffff] on node 1
+> 	<4>Zone PFN ranges:
+> 	<4>  DMA      0x00000000 -> 0x00001000
+> 	<4>  DMA32    0x00001000 -> 0x00100000
+> 	<4>  Normal   0x00100000 -> 0x00100000
+> 	<4>Movable zone start PFN for each node
+> 	<4>early_node_map[2] active PFN ranges
+> 	<4>    1: 0x00000000 -> 0x00000006
+> 	<4>    1: 0x00000200 -> 0x00010000
+> 	<4>Could not find start_pfn for node 0
+> 	<7>On node 0 totalpages: 0
+> 	<7>On node 1 totalpages: 65030
+> 	<7>  DMA zone: 3427 pages, LIFO batch:0
+> 	<7>  DMA32 zone: 60480 pages, LIFO batch:15
+> 
+> I have not seen any problems running on 2.6.27 using nodes that have no memory.
+> 
+> 
+> Do we have a clear and unambiguous definition of what a node really is?
+> In this case, is a board (socket) with cpus, a unique PXM but no memory
+> considered a node. Even though it has no memory, it is a node (depending on the
+> definition of "node") for purposes such as scheduling. The memoryless node also
+> has local IO buses that want to direct interrupts to node-local cpus.
+> 
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-And another few, also see http://lkml.org/lkml/2009/5/4/353
+how about 2.6.28, 29, and current linus tree?
 
-diff --git a/drivers/video/xen-fbfront.c b/drivers/video/xen-fbfront.c
-index 2493f05..15502d5 100644
---- a/drivers/video/xen-fbfront.c
-+++ b/drivers/video/xen-fbfront.c
-@@ -384,7 +384,7 @@ static int __devinit xenfb_probe(struct xenbus_device *dev,
- 		fb_size = XENFB_DEFAULT_FB_LEN;
- 	}
- 
--	dev->dev.driver_data = info;
-+	dev_set_drvdata(&dev->dev, info);
- 	info->xbdev = dev;
- 	info->irq = -1;
- 	info->x1 = info->y1 = INT_MAX;
-@@ -503,7 +503,7 @@ xenfb_make_preferred_console(void)
- 
- static int xenfb_resume(struct xenbus_device *dev)
- {
--	struct xenfb_info *info = dev->dev.driver_data;
-+	struct xenfb_info *info = dev_get_drvdata(&dev->dev);
- 
- 	xenfb_disconnect_backend(info);
- 	xenfb_init_shared_page(info, info->fb_info);
-@@ -512,7 +512,7 @@ static int xenfb_resume(struct xenbus_device *dev)
- 
- static int xenfb_remove(struct xenbus_device *dev)
- {
--	struct xenfb_info *info = dev->dev.driver_data;
-+	struct xenfb_info *info = dev_get_drvdata(&dev->dev);
- 
- 	xenfb_disconnect_backend(info);
- 	if (info->fb_info) {
-@@ -621,7 +621,7 @@ static void xenfb_disconnect_backend(struct xenfb_info *info)
- static void xenfb_backend_changed(struct xenbus_device *dev,
- 				  enum xenbus_state backend_state)
- {
--	struct xenfb_info *info = dev->dev.driver_data;
-+	struct xenfb_info *info = dev_get_drvdata(&dev->dev);
- 	int val;
- 
- 	switch (backend_state) {
+we should not have NODE_DATA to node that doesn't have memory.
+
+YH
