@@ -1,69 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758751AbZEKXsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760286AbZEKXtQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758751AbZEKXsx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 19:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758935AbZEKXsm
+	id S1760286AbZEKXtQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 19:49:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759394AbZEKXso
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 19:48:42 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:50322 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755142AbZEKXsm (ORCPT
+	Mon, 11 May 2009 19:48:44 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51831 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1759088AbZEKXsn (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 19:48:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=eadeu7rfsElTinPXUXTzGSYooaWZoEkywediziMbz1WVROTG/MkNqBtN8vySMuaksm
-         TY1MW0/7C2weIJ9I6ZcQF6/yj46cHwlslQOS4qcI2bSonSh/WBxrBHnRBOgRZknc+m1A
-         4PK4Tysc7VETjhJGzDdUX2mTRPqdaFXSYTg94=
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.2.00.0905111229540.23739@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0905091544470.6884@chino.kir.corp.google.com>
-	 <20090511162900.f372edd1.minchan.kim@barrios-desktop>
-	 <alpine.DEB.2.00.0905110138160.24726@chino.kir.corp.google.com>
-	 <28c262360905110212j9867b79wd8d90b16f6f196be@mail.gmail.com>
-	 <28c262360905110421g1b079f2cr798ca95adfb8ee45@mail.gmail.com>
-	 <20090511133840.GA11624@csn.ul.ie>
-	 <28c262360905110700p68f3de35xf0a1d52d2ccfd968@mail.gmail.com>
-	 <alpine.DEB.2.00.0905111229540.23739@chino.kir.corp.google.com>
-Date: Tue, 12 May 2009 08:48:42 +0900
-Message-ID: <28c262360905111648p21628f74u37daf0b028fe3fca@mail.gmail.com>
-Subject: Re: [patch -mmotm] mm: invoke oom killer for __GFP_NOFAIL
-From: Minchan Kim <minchan.kim@gmail.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Mon, 11 May 2009 19:48:43 -0400
+Date: Mon, 11 May 2009 16:45:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+Cc: oleg@redhat.com, mingo@elte.hu, roland@redhat.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/5] Split wait_noreap_copyout()
+Message-Id: <20090511164530.1842bb08.akpm@linux-foundation.org>
+In-Reply-To: <1242048349-2766-2-git-send-email-v.mayatskih@gmail.com>
+References: <1242048349-2766-1-git-send-email-v.mayatskih@gmail.com>
+	<1242048349-2766-2-git-send-email-v.mayatskih@gmail.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 4:32 AM, David Rientjes <rientjes@google.com> wrote:
-> On Mon, 11 May 2009, Minchan Kim wrote:
->
->> But this patch increases the probability of innocent task killing.
->> Is GFP_NOFAIL's early bailout more important than killing of innocent task ?
->>
->
-> __GFP_NOFAIL's bailout is, by definition, a bug in the page allocator and
-> this patch fixes it.
->
+On Mon, 11 May 2009 15:25:50 +0200
+Vitaly Mayatskikh <v.mayatskih@gmail.com> wrote:
 
-What I mean is If fortunately other process have a lot of memory is
-exited while looping, __GFP_NOFAIL can return.
-I have no objection about your patch.
-Just, I have a concern of killing innocent task.
+> +	if (!retval && infop) {
+> +		retval = put_user(signal, &infop->si_signo);
+> +		if (!retval)
+> +			retval = put_user(0, &infop->si_errno);
+> +		if (!retval)
+> +			retval = put_user((short)why, &infop->si_code);
+> +		if (!retval)
+> +			retval = put_user(pid, &infop->si_pid);
+> +		if (!retval)
+> +			retval = put_user(uid, &infop->si_uid);
+> +		if (!retval)
+> +			retval = put_user(status, &infop->si_status);
+> +	}
 
-As Mel and Andrew pointed out, fundamentally, __GFOP_NOFAIL and
-high-order allocation itself is bad code.
-Okay. we have to insert WARN_ON properly.
+I'll assume that "More changes to come" includes making all this somewhat
+less inefficient ;)
 
-Thanks for good contribution. :)
-
--- 
-Kinds regards,
-Minchan Kim
