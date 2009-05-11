@@ -1,139 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbZEKOkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756315AbZEKOmY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756545AbZEKOkq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 10:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbZEKOkX
+	id S1756315AbZEKOmY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 10:42:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753811AbZEKOmE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 10:40:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60634 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752661AbZEKOkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 10:40:19 -0400
-Message-ID: <4A0838E6.2000309@redhat.com>
-Date: Mon, 11 May 2009 10:40:38 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 11 May 2009 10:42:04 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:35971 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752059AbZEKOmB (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 10:42:01 -0400
+Message-ID: <4A083932.50605@novell.com>
+Date: Mon, 11 May 2009 10:41:54 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Steven Rostedt <rostedt@goodmis.org>, lkml <linux-kernel@vger.kernel.org>,
-       Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       Tom Zanussi <zanussi@comcast.net>
-Subject: Re: [PATCH -tip v5 0/7] tracing: kprobe-based event tracer and x86
- instruction decoder
-References: <20090509004829.5505.38720.stgit@localhost.localdomain> <20090509044302.GH8007@elte.hu>
-In-Reply-To: <20090509044302.GH8007@elte.hu>
+To: Nikola Ciprich <extmaillist@linuxbox.cz>
+CC: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, agraf@suse.de,
+       pmullaney@novell.com, pmorreale@novell.com, alext@novell.com,
+       anthony@codemonkey.ws, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       avi@redhat.com, bhutchings@solarflare.com, andi@firstfloor.org,
+       gregkh@suse.de, chrisw@sous-sol.org, shemminger@vyatta.com,
+       alex.williamson@hp.com, nikola.ciprich@linuxbox.cz
+Subject: Re: [RFC PATCH v3 00/17] virtual-bus
+References: <20090421183341.12548.33393.stgit@dev.haskins.net> <20090511113731.GA6205@nik-comp.linuxbox.cz>
+In-Reply-To: <20090511113731.GA6205@nik-comp.linuxbox.cz>
 X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigD2EBDE3F49001BFCDC924DD4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> 
->> Hi,
->>
->> Here are the patches of kprobe-based event tracer for x86, version 
->> 5, which allows you to probe various kernel events through ftrace 
->> interface.
->>
->> This version supports only x86(-32/-64) (but porting it on other 
->> arch just needs kprobes/kretprobes and register and stack access 
->> APIs).
->>
->> This patchset also includes x86(-64) instruction decoder which 
->> supports non-SSE/FP opcodes and includes x86 opcode map. I think 
->> it will be possible to share this opcode map with KVM's decoder.
->>
->> This series can be applied on the latest linux-2.6-tip tree.
->>
->> This patchset includes following changes:
->> - Add x86 instruction decoder [1/7]
->> - Check insertion point safety in kprobe [2/7]
->> - Cleanup fix_riprel() with insn decoder [3/7]
->> - Add kprobe-tracer plugin [4/7]
->> - Fix kernel_trap_sp() on x86 according to systemtap runtime. [5/7]
->> - Add arch-dep register and stack fetching functions [6/7]
->> - Support fetching various status (register/stack/memory/etc.) [7/7]
->>
->> Future items:
->> - .init function tracing support.
->> - Support primitive types(long, ulong, int, uint, etc) for args.
-> 
-> Ok, this looks pretty complete already.
-> 
-> Two high-level comments:
-> 
->  - There's no self-test - would it be possible to add one? See 
->    trace_selftest* in kernel/trace/
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigD2EBDE3F49001BFCDC924DD4
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-I'm not so sure. Currently, it seems that those self-tests are
-only for tracers which define new event-entry on ring-buffer.
-Since this tracer just use ftrace_bprintk, it might need
-another kind of selftest. e.g. comparing outputs with
-expected patterns.
-In that case, would it be better to make a user-space self test
-including filters and tracepoints?
-
->  - No generic integration.
-
-Right, this just rides on the ftrace's printk :-)
-
-> 
-> It would be nice if these ops:
-> 
->> E.g.
->>   echo p do_sys_open a0 a1 a2 a3 > /debug/tracing/kprobe_events
->>
->>  This sets a kprobe on the top of do_sys_open() function with recording
->> 1st to 4th arguments.
->>
->>   echo r do_sys_open rv rp >> /debug/tracing/kprobe_events
-> 
-> were just generally available in just about any other tracer - a bit 
-> like the event tracer.
-> 
-> It would also be nice to use the 'function attributes' facilities of 
-> the function tracer, combined with a new special syntax of the 
-> function-filter regex parser, to enable the recovery of return 
-> values (or the call arguments), for selected set of functions.
+Nikola Ciprich wrote:
+> Hi Gregory,
 >
-> For example, today we can already do things like:
-> 
->   echo 'sys_read:traceon:4' > /debug/tracing/set_ftrace_filter
-> 
-> for 'trace triggers': the above will trigger tracing to be enabled 
-> on the entry of sys_read(), 4 times.
-> 
-> Likewise, something like:
-> 
->   echo 'sys_read:args' > /debug/tracing/set_ftrace_filter
->   echo 'sys_read:return' > /debug/tracing/set_ftrace_filter
-> 
-> Could activate kprobes based argument and return-value tracing.
+> I'd like to try Your vbus patches, but compiling 2.6.30-rc2 (or 2.6.30-=
+rc5) fails
+> with following error:
+> drivers/vbus/proxy/kvm-guest-vbus: struct pci_device_id is 32 bytes.  T=
+he last of 1 is:
+> 0xda 0x11 0x00 0x00 0x00 0x20 0x00 0x00 0xff 0xff 0xff 0xff 0xff 0xff 0=
+xff 0xff 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00=
+ 0x00 0x00 0x00
+> FATAL: drivers/vbus/proxy/kvm-guest-vbus: struct pci_device_id is not t=
+erminated with a NULL entry!
+>
+> Do You have any idea on what might be wrong?
+> thanks a lot in advance...
+>  =20
+Hi Nik,
+  I haven't seen that error with vbus itself, but oddly enough I just
+encountered something similar when I was working on a different series
+(nullio).   The fix there was trivial, and I suspect it will be here as
+well.  What I am more confused on is why this suddenly started
+happening....  I will get back to you with a fix.
+
+Regards,
+-Greg
 
 
-Ah, that's a good idea. And also, I have another idea for using
-filters with kprobes, which is adding new kprobe-entry as a new
-trace-event when user defines a new probe via kprobe_events.
-Thus, user can use it as a dynamic-defined tracepoint.
 
-Thank you,
+--------------enigD2EBDE3F49001BFCDC924DD4
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
--- 
-Masami Hiramatsu
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
+iEYEARECAAYFAkoIOTIACgkQlOSOBdgZUxnhxACgjL/ON3Z9VbdZbI2IRwH+QNrV
+zm4AmQHazMQ86K/fIMWS1rUKo7jwNuRq
+=7vrT
+-----END PGP SIGNATURE-----
 
-e-mail: mhiramat@redhat.com
-
+--------------enigD2EBDE3F49001BFCDC924DD4--
