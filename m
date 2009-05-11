@@ -1,122 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755219AbZEKOxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755922AbZEKOyv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755219AbZEKOxT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 10:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752255AbZEKOxD
+	id S1755922AbZEKOyv (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 10:54:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751570AbZEKOyl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 10:53:03 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:64440 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752872AbZEKOxB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 10:53:01 -0400
-Date: Mon, 11 May 2009 10:53:01 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       zhaolei@cn.fujitsu.com, laijs@cn.fujitsu.com,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH v3] ftrace: add a tracepoint for
- __raise_softirq_irqoff()
-In-Reply-To: <20090511142734.GA12722@Krystal>
-Message-ID: <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com>
-References: <49FFDF9C.7040505@cn.fujitsu.com> <20090505161604.GA15524@Krystal> <4A07D3B3.10605@cn.fujitsu.com> <20090511134019.GB10932@Krystal> <alpine.DEB.2.00.0905111003280.14976@gandalf.stny.rr.com> <20090511142734.GA12722@Krystal>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Mon, 11 May 2009 10:54:41 -0400
+Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:50250 "EHLO
+	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751852AbZEKOyk convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 10:54:40 -0400
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+X-IronPort-AV: E=Sophos;i="4.40,328,1238968800";   d="scan'208";a="5629239"
+From: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
+To: "'Andi Kleen'" <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, Lee.Schermerhorn@hp.com,
+       linux-numa@vger.kernel.org, brice.goglin@inria.fr,
+       "'Terboven, Christian'" <terboven@rz.rwth-aachen.de>,
+       anmey@rz.rwth-aachen.de, "'Boris Bierbaum'" <boris@lfbs.rwth-aachen.de>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+ <87zldjn597.fsf@basil.nowhere.org>
+In-reply-to: <87zldjn597.fsf@basil.nowhere.org>
+Subject: RE: [RFC PATCH 0/4]: affinity-on-next-touch
+Date: Mon, 11 May 2009 16:54:40 +0200
+Organization: Chair for Operating Systems, RWTH Aachen University
+Message-id: <001501c9d248$69e2a870$3da7f950$@rwth-aachen.de>
+Content-transfer-encoding: 8BIT
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-index: AcnSO5HuYG95Ox0vSfOQ9r4UBh4c3gAA7bZQ
+Content-language: de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+> From: Andi Kleen [mailto:andi@firstfloor.org]
+> 
+> Stefan Lankes <lankes@lfbs.rwth-aachen.de> writes:
+> >
+> > [Patch 1/4]: Extend the system call madvise with a new parameter
+> > MADV_ACCESS_LWP (the same as used in Solaris). The specified memory
+> area
+> 
+> Linux does NUMA memory policies in mbind(), not madvise()
+> Also if there's a new NUMA policy it should be in the standard
+> Linux NUMA memory policy frame work, not inventing a new one
+
+By default, mbind only has an effect on new allocations. I think that this
+is different from what we need for applications with dynamic memory access
+patterns. The app gives the kernel a hint that the access pattern has been
+changed and the kernel has to redistribute the pages which are already
+allocated.
+
+> > [Patch 4/4]: This part of the patch adds some counters to detect
+> migration
+> > errors and publishes these counters via /proc/vmstat. Besides this,
+> the
+> > Kconfig file is extend with the parameter
+> CONFIG_AFFINITY_ON_NEXT_TOUCH.
+> >
+> > With this patch, the kernel reduces the overhead of page distribution
+> via
+> > "affinity-on-next-touch" from 2518ms to 366ms compared to the user-
+> level
+> 
+> The interesting part is less how much faster it is compared to an user
+> space implementation, but how much this migrate on touch approach
+> helps in general compared to already existing policies. Some hard
+> numbers on that would appreciated.
+> 
+> Note that for the OpenMP case old kernels sometimes had trouble because
+> the threads tended to be not scheduled to the final target CPU
+> on the first time slice so the memory was often first-touched
+> on the wrong node. Later kernels avoided that by more aggressively
+> moving the threads early.
+> 
+
+"affinity-on-next-touch" is not a data distribution strategy for
+applications with a static access pattern. If the access pattern changed,
+you could initialize the "affinity-on-next-touch" mechanism and afterwards
+the kernel redistributes the pages. 
+
+For instance, Norden's PDE solvers using adaptive mesh refinements (AMR) [1]
+is an application with a dynamic access pattern. We use this example to
+evaluate the performance of our patch. We ran this solver on our
+quad-socket, dual-core Opteron 875 (2.2GHz) system running CentOS 5.2. The
+code was already optimized for NUMA architectures. Before the arrays are
+initialized, the threads are bound to one core. In our test case, the solver
+needs 5318s. If we use our kernel extension, the solver needs 4489s. 
+
+Currently, we are testing some other apps.
+
+Stefan
+
+[1] Norden, M., Löf, H., Rantakokko, J., Holmgren, S.: Geographical Locality
+and Dynamic Data Migration for OpenMP Implementations of Adaptive PDE
+Solvers. In: Proceedings of the 2nd International Workshop on OpenMP
+(IWOMP), Reims, France (June 2006) 382–393
 
 
-
-On Mon, 11 May 2009, Mathieu Desnoyers wrote:
-
-> * Steven Rostedt (rostedt@goodmis.org) wrote:
-> > 
-> > On Mon, 11 May 2009, Mathieu Desnoyers wrote:
-> > > 
-> > > Yes, we should try to fix TRACE_EVENT, but we should fix it _before_ we
-> > > start using it widely. Circular header dependencies is a real problem
-> > > with TRACE_EVENT right now.
-> > > 
-> > > Until we fix this, I will be tempted to stay with a known-good solution,
-> > > which is DECLARE/DEFINE_TRACE.
-> > 
-> > The majority of tracepoints happen is C files. Those few cases where they 
-> > are used in headers is where the issues arise.
-> > 
-> > But...
-> > 
-> > I did not want to uglify all trace event headers with:
-> > 
-> > #ifdef CREATE_FOO_TRACE_POINTS
-> > #undef CREATE_FOO_TRACE_POINTS
-> > #include <trace/define_trace.h>
-> > #endif
-> > 
-> > We would only need to do that for those trace points that need to be 
-> > included in header files. Then the declaration C file would need to define 
-> > both CREATE_FOO_TRACE_POINTS and CREATE_TRACE_POINTS
-> > 
-> > #define CREATE_FOO_TRACE_POINTS
-> > #define CRATE_TRACE_POINTS
-> > #include <trace/events/foo.h>
-> > 
-> > 
-> > But this is pretty trivial to solve, and I do not consider it a show 
-> > stopper or a major header dependency problem.
-> > 
-> > -- Steve
-> > 
-> 
-> Hrm, is there any way to solve it elegantly ?
-> 
-> What we really need is to see the cases where TRACE_EVENT() is used as a
-> declaration vs the case where it expands
-> TP_STRUCT__entry/TP_fast_assign/TP_printk as having different
-> dependencies. The problem comes when we bring the include dependencies
-> of the TP_fast_assign part into the tracepoint header and it becomes
-> a dependency of the TRACE_EVENT() declaration-only part.
-> 
-> Can we do the following ?
-> 
-> All tracepoint headers could surround the include dependencies by :
-> 
-> #ifdef BUILD_EVENTS
-> #include <veryannoyingheaderdependency.h>
-> #endif
-> 
-> And then we follow this by the TRACE_EVENT() declarations.
-> 
-> BUILD_EVENTS would only be defined in kernel/trace/events.c.
-
-That file no longer exists. All the events are created with the 
-define_trace.h or ftrace.h file.
-
-We could do something like your
-
-#ifdef BUILD_EVENTS /* or better name BUILDING_EVENTS ?? */
-#include <allmyannoyingheaders.h>
-[...]
-#endif
-
-And then have the define_trace.h file add define it. But this again adds 
-more annoying CPP commands to all trace_event headers.
-
--- Steve
-
-> 
-> I think it should work, but it looks a bit too simple, so I may have
-> missed something... ?
-> 
-> Mathieu
-> 
-> 
-> -- 
-> Mathieu Desnoyers
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
-> 
