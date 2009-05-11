@@ -1,235 +1,289 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757322AbZEKAOY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756944AbZEKASS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757322AbZEKAOY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 20:14:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZEKAOP
+	id S1756944AbZEKASS (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 20:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752631AbZEKASD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 20:14:15 -0400
-Received: from dd2934.kasserver.com ([85.13.129.136]:32893 "EHLO
-	dd2934.kasserver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752329AbZEKAOO (ORCPT
+	Sun, 10 May 2009 20:18:03 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:46933 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752121AbZEKASA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 20:14:14 -0400
-Message-ID: <4A076730.6080209@datenparkplatz.de>
-Date: Mon, 11 May 2009 01:45:52 +0200
-From: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+	Sun, 10 May 2009 20:18:00 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [patch 06/11 -mmotm] oom: move oom_adj value from task_struct to mm_struct
+Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, San Mehat <san@android.com>,
+       Arve Hjonnevag <arve@android.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0905101501270.18804@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101501270.18804@chino.kir.corp.google.com>
+Message-Id: <20090511091640.B9B5.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: whole system lock-up on low memory
-Content-Type: multipart/mixed;
- boundary="------------090408010506050208000407"
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Mon, 11 May 2009 09:17:58 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------090408010506050208000407
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: 7bit
 
-Hi,
+> The per-task oom_adj value is a characteristic of its mm more than the
+> task itself since it's not possible to oom kill any thread that shares
+> the mm.  If a task were to be killed while attached to an mm that could
+> not be freed because another thread were set to OOM_DISABLE, it would
+> have needlessly been terminated since there is no potential for future
+> memory freeing.
+> 
+> This patch moves oomkilladj (now more appropriately named oom_adj) from
+> struct task_struct to struct mm_struct.  This requires task_lock() on a
+> task to check its oom_adj value to protect against exec, but it's already
+> necessary to take the lock when dereferencing the mm to find the total VM
+> size for the badness heuristic.
+> 
+> This fixes a livelock if the oom killer chooses a task and another thread
+> sharing the same memory has an oom_adj value of OOM_DISABLE.  This occurs
+> because oom_kill_task() repeatedly returns 1 and refuses to kill the
+> chosen task while select_bad_process() will repeatedly choose the same
+> task during the next retry.
+> 
+> Taking task_lock() in select_bad_process() to check for OOM_DISABLE and
+> in oom_kill_task() to check for threads sharing the same memory will be
+> removed in the next patch in this series where it will no longer be
+> necessary.
+> 
+> Writing to /proc/pid/oom_adj for a kthread will now return -EINVAL since
+> these threads are immune from oom killing already.  They simply report an
+> oom_adj value of OOM_DISABLE.
 
+David, staging driver shold be standalone.
+Please don't change core kernel for staging.
 
-vanilla linux 2.6.29.3, AMD64, tested on openSUSE 11.1 and Kubuntu 9.04.
+if you merge it into mainline, I suggest to you help the driver graduate
+staging.
 
-
-I observe the following behaviour:
-
-When any user application (non-kernel, non-root) consumes all the
-available system memory, the system freezes completely instead of any
-application being killed by the oom-killer.
-
-The mouse pointer stalls, and there is a seemingly endless loop of
-hard-disc access, even when no swap space on any harddisc is activated.
-
-IMO, this is severe, because any application can practically crash the
-system (e.g. in case of a memory-leak), causing data loss in case of
-unsaved data.
-
-
-To reproduce this, I've attached a small C++ utility
-(compiles with g++ memory_overcommit.cc -o memory_overcommit.bin) which
-allocates chunks of memory of user defined size.
-
-On the Ubuntu system, the system freeze can be observed with swap
-enabled on a cryptographic swap partition (dm-crypt; /etc/crypttab).
-With openSUSE the lock-up also occurs with deactivated swap.
-(swapoff -a).
-
-Tested from a KDE terminal window as regular urser, the
-steps to reproduce are:
-
-* use cryptographic swap partition or disable swap
-  (maybe also reproducible with normal swap; but apparently not on Suse)
-
-* compile and invoke the attached code:
-  ./memory_overcommit.bin
-
-* enter a number (in MiB) of memory that is slightly smaller than the
-available memory and press "enter" key once.
-
-* enter a smaller number (minimum 1 MiB) and confirm again, do the same
-again,..., successively approaching the limit of available memory with
-smaller chunks.
-
-* finally, when most of the memory/buffers/cache are used-up, the system
-becomes unresponsive and constant, heavy harddisk-access commences.
-
-Sometimes, killing the X-server or shutting down via hotkeys works after
-several minutes of waiting, but this is not consistent.
+Thanks.
 
 
-I've reported this issue on the Ubuntu bug tracker before:
-https://bugs.launchpad.net/ubuntu/+bug/283420
+> 
+> Cc: Nick Piggin <npiggin@suse.de>
+> Cc: San Mehat <san@android.com>
+> Signed-off-by: David Rientjes <rientjes@google.com>
+> ---
+>  Documentation/filesystems/proc.txt        |   15 +++++++++----
+>  drivers/staging/android/lowmemorykiller.c |    2 +-
+>  fs/proc/base.c                            |   19 ++++++++++++++--
+>  include/linux/mm_types.h                  |    2 +
+>  include/linux/sched.h                     |    1 -
+>  mm/oom_kill.c                             |   32 ++++++++++++++++++----------
+>  6 files changed, 49 insertions(+), 22 deletions(-)
+> 
+> diff --git a/Documentation/filesystems/proc.txt b/Documentation/filesystems/proc.txt
+> --- a/Documentation/filesystems/proc.txt
+> +++ b/Documentation/filesystems/proc.txt
+> @@ -1003,11 +1003,13 @@ CHAPTER 3: PER-PROCESS PARAMETERS
+>  3.1 /proc/<pid>/oom_adj - Adjust the oom-killer score
+>  ------------------------------------------------------
+>  
+> -This file can be used to adjust the score used to select which processes
+> -should be killed in an  out-of-memory  situation.  Giving it a high score will
+> -increase the likelihood of this process being killed by the oom-killer.  Valid
+> -values are in the range -16 to +15, plus the special value -17, which disables
+> -oom-killing altogether for this process.
+> +This file can be used to adjust the score used to select which processes should
+> +be killed in an out-of-memory situation.  The oom_adj value is a characteristic
+> +of the task's mm, so all threads that share an mm with pid will have the same
+> +oom_adj value.  A high value will increase the liklihood of this process being
+> +killed by the oom-killer.  Valid values are in the range -16 to +15 as
+> +explained below and a special value of -17, which disables oom-killing
+> +altogether for threads sharing pid's mm.
+>  
+>  The process to be killed in an out-of-memory situation is selected among all others
+>  based on its badness score. This value equals the original memory size of the process
+> @@ -1021,6 +1023,9 @@ the parent's score if they do not share the same memory. Thus forking servers
+>  are the prime candidates to be killed. Having only one 'hungry' child will make
+>  parent less preferable than the child.
+>  
+> +/proc/<pid>/oom_adj cannot be changed for kthreads since they are immune from
+> +oom-killing already.
+> +
+>  /proc/<pid>/oom_score shows process' current badness score.
+>  
+>  The following heuristics are then applied:
+> diff --git a/drivers/staging/android/lowmemorykiller.c b/drivers/staging/android/lowmemorykiller.c
+> --- a/drivers/staging/android/lowmemorykiller.c
+> +++ b/drivers/staging/android/lowmemorykiller.c
+> @@ -97,7 +97,7 @@ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
+>  			task_unlock(p);
+>  			continue;
+>  		}
+> -		oom_adj = p->oomkilladj;
+> +		oom_adj = p->mm->oom_adj;
+>  		if (oom_adj < min_adj) {
+>  			task_unlock(p);
+>  			continue;
+> diff --git a/fs/proc/base.c b/fs/proc/base.c
+> --- a/fs/proc/base.c
+> +++ b/fs/proc/base.c
+> @@ -1003,7 +1003,12 @@ static ssize_t oom_adjust_read(struct file *file, char __user *buf,
+>  
+>  	if (!task)
+>  		return -ESRCH;
+> -	oom_adjust = task->oomkilladj;
+> +	task_lock(task);
+> +	if (task->mm)
+> +		oom_adjust = task->mm->oom_adj;
+> +	else
+> +		oom_adjust = OOM_DISABLE;
+> +	task_unlock(task);
+>  	put_task_struct(task);
+>  
+>  	len = snprintf(buffer, sizeof(buffer), "%i\n", oom_adjust);
+> @@ -1032,11 +1037,19 @@ static ssize_t oom_adjust_write(struct file *file, const char __user *buf,
+>  	task = get_proc_task(file->f_path.dentry->d_inode);
+>  	if (!task)
+>  		return -ESRCH;
+> -	if (oom_adjust < task->oomkilladj && !capable(CAP_SYS_RESOURCE)) {
+> +	task_lock(task);
+> +	if (!task->mm) {
+> +		task_unlock(task);
+> +		put_task_struct(task);
+> +		return -EINVAL;
+> +	}
+> +	if (oom_adjust < task->mm->oom_adj && !capable(CAP_SYS_RESOURCE)) {
+> +		task_unlock(task);
+>  		put_task_struct(task);
+>  		return -EACCES;
+>  	}
+> -	task->oomkilladj = oom_adjust;
+> +	task->mm->oom_adj = oom_adjust;
+> +	task_unlock(task);
+>  	put_task_struct(task);
+>  	if (end - buffer == 0)
+>  		return -EIO;
+> diff --git a/include/linux/mm_types.h b/include/linux/mm_types.h
+> --- a/include/linux/mm_types.h
+> +++ b/include/linux/mm_types.h
+> @@ -232,6 +232,8 @@ struct mm_struct {
+>  
+>  	unsigned long saved_auxv[AT_VECTOR_SIZE]; /* for /proc/PID/auxv */
+>  
+> +	s8 oom_adj;	/* OOM kill score adjustment (bit shift) */
+> +
+>  	cpumask_t cpu_vm_mask;
+>  
+>  	/* Architecture-specific MM context */
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1149,7 +1149,6 @@ struct task_struct {
+>  	 * a short time
+>  	 */
+>  	unsigned char fpu_counter;
+> -	s8 oomkilladj; /* OOM kill score adjustment (bit shift). */
+>  #ifdef CONFIG_BLK_DEV_IO_TRACE
+>  	unsigned int btrace_seq;
+>  #endif
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -58,6 +58,7 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+>  	unsigned long points, cpu_time, run_time;
+>  	struct mm_struct *mm;
+>  	struct task_struct *child;
+> +	int oom_adj;
+>  
+>  	task_lock(p);
+>  	mm = p->mm;
+> @@ -65,6 +66,7 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+>  		task_unlock(p);
+>  		return 0;
+>  	}
+> +	oom_adj = mm->oom_adj;
+>  
+>  	/*
+>  	 * The memory size of the process is the basis for the badness.
+> @@ -148,15 +150,15 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+>  		points /= 8;
+>  
+>  	/*
+> -	 * Adjust the score by oomkilladj.
+> +	 * Adjust the score by oom_adj.
+>  	 */
+> -	if (p->oomkilladj) {
+> -		if (p->oomkilladj > 0) {
+> +	if (oom_adj) {
+> +		if (oom_adj > 0) {
+>  			if (!points)
+>  				points = 1;
+> -			points <<= p->oomkilladj;
+> +			points <<= oom_adj;
+>  		} else
+> -			points >>= -(p->oomkilladj);
+> +			points >>= -(oom_adj);
+>  	}
+>  
+>  #ifdef DEBUG
+> @@ -251,8 +253,10 @@ static struct task_struct *select_bad_process(unsigned long *ppoints,
+>  			*ppoints = ULONG_MAX;
+>  		}
+>  
+> -		if (p->oomkilladj == OOM_DISABLE)
+> +		task_lock(p);
+> +		if (p->mm && p->mm->oom_adj == OOM_DISABLE)
+>  			continue;
+> +		task_unlock(p);
+>  
+>  		points = badness(p, uptime.tv_sec);
+>  		if (points > *ppoints || !chosen) {
+> @@ -304,8 +308,7 @@ static void dump_tasks(const struct mem_cgroup *mem)
+>  		}
+>  		printk(KERN_INFO "[%5d] %5d %5d %8lu %8lu %3d     %3d %s\n",
+>  		       p->pid, __task_cred(p)->uid, p->tgid, mm->total_vm,
+> -		       get_mm_rss(mm), (int)task_cpu(p), p->oomkilladj,
+> -		       p->comm);
+> +		       get_mm_rss(mm), (int)task_cpu(p), mm->oom_adj, p->comm);
+>  		task_unlock(p);
+>  	} while_each_thread(g, p);
+>  }
+> @@ -367,8 +370,12 @@ static int oom_kill_task(struct task_struct *p)
+>  	 * Don't kill the process if any threads are set to OOM_DISABLE
+>  	 */
+>  	do_each_thread(g, q) {
+> -		if (q->mm == mm && q->oomkilladj == OOM_DISABLE)
+> +		task_lock(q);
+> +		if (q->mm == mm && q->mm && q->mm->oom_adj == OOM_DISABLE) {
+> +			task_unlock(q);
+>  			return 1;
+> +		}
+> +		task_unlock(q);
+>  	} while_each_thread(g, q);
+>  
+>  	__oom_kill_task(p, 1);
+> @@ -393,10 +400,11 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+>  	struct task_struct *c;
+>  
+>  	if (printk_ratelimit()) {
+> -		printk(KERN_WARNING "%s invoked oom-killer: "
+> -			"gfp_mask=0x%x, order=%d, oomkilladj=%d\n",
+> -			current->comm, gfp_mask, order, current->oomkilladj);
+>  		task_lock(current);
+> +		printk(KERN_WARNING "%s invoked oom-killer: "
+> +			"gfp_mask=0x%x, order=%d, oom_adj=%d\n",
+> +			current->comm, gfp_mask, order,
+> +			current->mm ? current->mm->oom_adj : OOM_DISABLE);
+>  		cpuset_print_task_mems_allowed(current);
+>  		task_unlock(current);
+>  		dump_stack();
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 
-but as stated above, I also had the problem on another system.
 
 
-I'd be glad if I could help if you need further information.
-
---------------090408010506050208000407
-Content-Type: text/x-c++src;
- name="memory_overcommit.cc"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="memory_overcommit.cc"
-
-#include <cassert>
-#include <cerrno>
-#include <clocale>
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <limits>
-
-using std::exit;
-using std::numeric_limits;
-using std::printf;
-using std::size_t;
-using std::strlen;
-
-void read_answer(char* buffer, size_t buffer_size)
-{
-	assert(buffer_size > 1);
-
-	char const* ret = std::fgets(buffer, buffer_size, stdin);
-	if(ret == 0)
-	{
-		printf("\nSorry, there was an error while reading the answer. This program will now terminate.\n");
-		exit(EXIT_FAILURE);
-	}
-	else if(strlen(buffer) == buffer_size - 1 && buffer[buffer_size - 2] != '\n')
-	{
-		printf("Sorry, you answer is too long (possibly out of range). This program will now terminate.\n");
-		exit(EXIT_FAILURE);
-	}
-}
-
-size_t determine_size(char const* s)
-{
-	assert(strlen(s) > 0);
-
-	char* endptr = 0;
-	errno = 0;
-	unsigned long v = std::strtoul(s, &endptr, 10);
-	if(strlen(s) == 1 || endptr != s + strlen(s) - 1)
-	{
-		printf("\nSorry, your answer does not appear to be valid. This program will now terminate.\n");
-		exit(EXIT_FAILURE);
-	}
-	else if((v == numeric_limits<unsigned long>::max() && errno == ERANGE) || v == 0
-	        || numeric_limits<unsigned long>::max() / (1024 * 1024) < v)
-	{
-		printf("\nSorry, that value is out of range. This program will now terminate.\n");
-		exit(EXIT_FAILURE);
-	}
-	v *= 1024 * 1024;
-	
-	assert(numeric_limits<size_t>::is_specialized);
-	if(v > numeric_limits<size_t>::max() )
-	{
-		printf("\nSorry, that value is out of range. This program will now terminate.\n");
-		exit(EXIT_FAILURE);
-	}
-
-	return v;
-}
-
-bool inquire_repeat(size_t& v)
-{
-	printf("\nShould a new allocation be made? You can enter:\n"
-			"==> \"No\" to quit,\n"
-			"==> Any Number of MiB to change the chunk size and continue, or\n"
-			"==> Hit return to continue with last chunk size.\n\nYour answer: ");
-
-	char answer[20];
-	read_answer(answer, sizeof(answer) );
-	if(std::strcmp(answer, "\n") == 0) {
-		return true;
-	}
-	else if(std::strcmp(answer, "No\n") == 0) {
-		return false;
-	}
-	
-	v = determine_size(answer);
-	return true;
-}
-
-
-int main() {
-	#ifdef _POSIX_C_SOURCE
-	std::setlocale(LC_ALL, ""); // Prepare thousands grouping in output.
-	#endif
-	
-	printf("\n\nThis program allows to repeatedly allocate chunks of memory of user-specified size. "
-	       "\nAfter each allocation the user can choose to repeat or to quit the program.\n\nFirst, please enter now "
-	       "the amount of memory in MiB (1024 * 1024 bytes) \nto allocate in each round: ");
-	char answer[20];
-	read_answer(answer, sizeof(answer) );
-	
-	size_t alloc_size = determine_size(answer);
-
-	size_t total = 0;
-	do {
-		printf("\n   >>> Starting to allocate chunk...\n");
-		std::fflush(stdout);
-		void* p = std::malloc(alloc_size);
-		if(!p) {
-			printf("\n   > The last memory allocation failed."
-			       "\n   > This means the system reported the out-of-memory condition orderly."
-			       "\nThis program will now terminate.\n");
-			exit(0);
-		}
-		std::memset(p, 0, alloc_size);
-		printf("   >>> A chunk was just allocated! <<<\n");
-		if(numeric_limits<size_t>::max() - total >= alloc_size)
-		{
-			total += alloc_size;
-			
-			#ifdef _POSIX_C_SOURCE
-			char const* fmt_string = "   The total number of bytes allocated is now %'zu.\n";
-			#else
-			char const* fmt_string = "   The total number of bytes allocated is now %zu.\n";
-			#endif
-			
-			printf(fmt_string, total);
-		}
-		else {
-			#ifdef _POSIX_C_SOURCE
-			char const* fmt_string = "   More than %'zu bytes have been allocated in total by now.\n";
-			#else
-			char const* fmt_string = "   More than %zu bytes have been allocated in total by now.\n";
-			#endif
-			
-			printf(fmt_string, total);
-			total = numeric_limits<size_t>::max();
-		}
-	} while(inquire_repeat(alloc_size) );
-
-	printf("\nQuit was requested. This program will now terminate.\n");
-}
-
-
-
---------------090408010506050208000407--
