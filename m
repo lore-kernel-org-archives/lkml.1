@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758459AbZEKTnT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755732AbZEKToc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758459AbZEKTnT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 15:43:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754467AbZEKTnD
+	id S1755732AbZEKToc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 15:44:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZEKToU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 15:43:03 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:15060 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754270AbZEKTnB (ORCPT
+	Mon, 11 May 2009 15:44:20 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:32724 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752714AbZEKToT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 15:43:01 -0400
-Date: Mon, 11 May 2009 21:42:48 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: djwong@us.ibm.com
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       LM Sensors <lm-sensors@lm-sensors.org>
-Subject: Re: [lm-sensors] [GIT PULL] hwmon fixes for 2.6.30
-Message-ID: <20090511214248.0e09d39b@hyperion.delvare>
-In-Reply-To: <20090511193733.GA7967@plum>
-References: <20090508205916.4478b06c@hyperion.delvare>
-	<20090511193733.GA7967@plum>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 May 2009 15:44:19 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=Cm3deO46i0qPGoy/4RFtWI9YoQR6MQ+f265nb46fRqcpvBLJGLhhIExyt6/HhsMA0
+	ENGclN57HVnYu8LwidlOg==
+Date: Mon, 11 May 2009 12:44:16 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Rik van Riel <riel@redhat.com>
+cc: Greg KH <greg@kroah.com>,
+       =?UTF-8?Q?Arve_Hj=C3=B8nnev=C3=A5g?= <arve@android.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, San Mehat <san@android.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>
+Subject: Re: [patch 1/5] oom: cleanup android low memory killer
+In-Reply-To: <49FF7B02.9050608@redhat.com>
+Message-ID: <alpine.DEB.2.00.0905111241120.23739@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905031305130.18426@chino.kir.corp.google.com> <d6200be20905041448p1ca2d068r5ba8348488842b5c@mail.gmail.com> <20090504220905.GA29402@kroah.com> <alpine.DEB.2.00.0905041529570.2310@chino.kir.corp.google.com> <20090504225936.GA9876@kroah.com>
+ <alpine.DEB.2.00.0905041607170.6073@chino.kir.corp.google.com> <49FF7B02.9050608@redhat.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Darrick,
+On Mon, 4 May 2009, Rik van Riel wrote:
 
-On Mon, 11 May 2009 12:37:33 -0700, Darrick J. Wong wrote:
-> On Fri, May 08, 2009 at 08:59:16PM +0200, Jean Delvare wrote:
-> > Hi Linus,
-> > 
-> > Please pull some hwmon subsystem fixes for Linux 2.6.30 from:
-> > 
-> > git://jdelvare.pck.nerim.net/jdelvare-2.6 hwmon-for-linus
-> > 
-> >  drivers/hwmon/asus_atk0110.c |    2 ++
-> >  drivers/hwmon/w83781d.c      |    3 ++-
-> >  2 files changed, 4 insertions(+), 1 deletions(-)
-> > 
-> > ---------------
-> > 
-> > Jean Delvare (1):
-> >       hwmon: (w83781d) Fix W83782D support (NULL pointer dereference)
-> > 
-> > Luca Tettamanti (1):
-> >       hwmon: (asus_atk0110) Fix compiler warning
+> > There was an interest in a low mem userspace notifier that applications can
+> > poll() on at configurable low mem levels to react accordingly.  This would
+> > probably address the problem that the Android team is trying to fix.
 > 
-> Hi Jean,
+> This would also make it easier for virtual machines to be
+> ballooned down to size when the host experiences memory
+> pressure.
 > 
-> Hmm... is the "Support HC10 in ibmaem driver" patch queued for 2.6.31?  As I
-> recall you put it in your tree some time ago, but I haven't heard or seen it
-> since then. :)
+> The low memory notification could also be useful for JVMs,
+> databases that do (some of) their own caching and any garbage
+> collected program in general.
+> 
 
-Yes, it is queued for 2.6.31. See:
-ftp://ftp.kernel.org/pub/linux/kernel/people/jdelvare/linux-2.6/jdelvare-hwmon/
+I agree, and I'd suggest that it be implemented as a cgroup so that 
+individual sets of tasks can be responsible for their own lowmem 
+notifiers.
 
--- 
-Jean Delvare
+KOSAKI, you were pushing the /dev/mem_notify patchset last year from 
+Marcelo.  Do you have any plans of recreating that in a cgroup or have you 
+dropped it?
