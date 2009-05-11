@@ -1,73 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757814AbZEKJIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbZEKJMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757814AbZEKJIb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 05:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757672AbZEKJIN
+	id S1756544AbZEKJMz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 05:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbZEKJMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 05:08:13 -0400
-Received: from mga14.intel.com ([143.182.124.37]:21343 "EHLO mga14.intel.com"
+	Mon, 11 May 2009 05:12:44 -0400
+Received: from sh.osrg.net ([192.16.179.4]:41369 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757682AbZEKJIM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 05:08:12 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.40,327,1239001200"; 
-   d="asc'?scan'208";a="141380659"
-Subject: Re: [PATCH -v3] KVM: MCE: Add MCE support to KVM
-From: Huang Ying <ying.huang@intel.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: Avi Kivity <avi@redhat.com>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <1242032701.3114.4.camel@localhost.localdomain>
-References: <1242031695.8213.17.camel@yhuang-dev.sh.intel.com>
-	 <1242032701.3114.4.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-LIj816tuI31W8E8RV3zG"
-Date: Mon, 11 May 2009 17:08:09 +0800
-Message-Id: <1242032889.8213.32.camel@yhuang-dev.sh.intel.com>
+	id S1752398AbZEKJMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 05:12:43 -0400
+Date: Mon, 11 May 2009 18:11:32 +0900
+To: jens.axboe@oracle.com
+Cc: fujita.tomonori@lab.ntt.co.jp, tj@kernel.org,
+       James.Bottomley@HansenPartnership.com, bharrosh@panasas.com,
+       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] block: let blk_end_request_all handle bidi requests
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090511090629.GO4694@kernel.dk>
+References: <1242032169-22422-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<1242032169-22422-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<20090511090629.GO4694@kernel.dk>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090511181242D.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 11 May 2009 18:11:33 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 11 May 2009 11:06:30 +0200
+Jens Axboe <jens.axboe@oracle.com> wrote:
 
---=-LIj816tuI31W8E8RV3zG
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, 2009-05-11 at 17:05 +0800, Jaswinder Singh Rajput wrote:
-> On Mon, 2009-05-11 at 16:48 +0800, Huang Ying wrote:
-> > +int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
-> > +{
-> > +	u64 data;
+> On Mon, May 11 2009, FUJITA Tomonori wrote:
+> > blk_end_request_all() and __blk_end_request_all() should finish all
+> > bytes including bidi, by definition. That's what all bidi users need ,
+> > bidi requests must be complete as a whole (partial completion is
+> > impossible).
+> > 
+> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> > ---
+> >  include/linux/blkdev.h |   12 ++++++++++--
+> >  1 files changed, 10 insertions(+), 2 deletions(-)
+> > 
+> > diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
+> > index 8919683..3b5c564 100644
+> > --- a/include/linux/blkdev.h
+> > +++ b/include/linux/blkdev.h
+> > @@ -911,8 +911,12 @@ static inline bool blk_end_request(struct request *rq, int error,
+> >  static inline void blk_end_request_all(struct request *rq, int error)
+> >  {
+> >  	bool pending;
+> > +	unsigned int bidi_bytes = 0;
+> >  
+> > -	pending = blk_end_request(rq, error, blk_rq_bytes(rq));
+> > +	if (unlikely(blk_bidi_rq(rq)))
+> > +		bidi_bytes = blk_rq_bytes(rq->next_rq);
 > > +
-> > +	switch (msr) {
-> > +	case 0xc0010010: /* SYSCFG */
-> > +	case 0xc0010015: /* HWCR */
->=20
-> You can replace this with :
->=20
-> +	case MSR_K8_SYSCFG:
-> +	case MSR_K8_HWCR:
->=20
+> > +	pending = blk_end_bidi_request(rq, error, blk_rq_bytes(rq), bidi_bytes);
+> >  	BUG_ON(pending);
+> >  }
+> >  
+> > @@ -963,8 +967,12 @@ static inline bool __blk_end_request(struct request *rq, int error,
+> >  static inline void __blk_end_request_all(struct request *rq, int error)
+> >  {
+> >  	bool pending;
+> > +	unsigned int bidi_bytes = 0;
+> > +
+> > +	if (unlikely(blk_bidi_rq(rq)))
+> > +		bidi_bytes = blk_rq_bytes(rq->next_rq);
+> >  
+> > -	pending = __blk_end_request(rq, error, blk_rq_bytes(rq));
+> > +	pending = __blk_end_bidi_request(rq, error, blk_rq_bytes(rq), bidi_bytes);
+> >  	BUG_ON(pending);
+> >  }
+> 
+> Looks ok, perhaps we can next get rid of the bidi naming? It's all
+> pretty much folded into one anyway, using __blk_end_bidi_request() from
+> generic end-request handling looks confusing.
 
-I do not change this actually. So I think it should be changed in
-another patch.
-
-Best Regards,
-Huang Ying
-
---=-LIj816tuI31W8E8RV3zG
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkoH6vcACgkQKhFGF+eHlpj8tQCgin5h+7v63B8pRnGkiAyjU/mc
-h0EAn2Zv0cP5QwuHlb/iZi+yz3JdFCz3
-=tOjM
------END PGP SIGNATURE-----
-
---=-LIj816tuI31W8E8RV3zG--
-
+Yeah, agreed; the bidi name is confusing. I'll send another patch to
+clean up it on the top of this patchset soon.
