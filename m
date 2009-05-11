@@ -1,107 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759559AbZEKVJ1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbZEKVM7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759559AbZEKVJ1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 17:09:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755510AbZEKVJR
+	id S1759473AbZEKVM7 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 17:12:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZEKVMq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 17:09:17 -0400
-Received: from cassiel.sirena.org.uk ([80.68.93.111]:55632 "EHLO
-	cassiel.sirena.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753317AbZEKVJR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 17:09:17 -0400
-Date: Mon, 11 May 2009 22:09:11 +0100
-From: Mark Brown <broonie@sirena.org.uk>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: lrg@slimlogic.co.uk, alsa-devel@alsa-project.org,
-       lkml <linux-kernel@vger.kernel.org>
-Message-ID: <20090511210910.GA4482@sirena.org.uk>
-References: <4A088314.1000204@gmail.com>
+	Mon, 11 May 2009 17:12:46 -0400
+Received: from bu3sch.de ([62.75.166.246]:49989 "EHLO vs166246.vserver.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752392AbZEKVMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 17:12:45 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: David Dillow <dave@thedillows.org>
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+Date: Mon, 11 May 2009 23:10:08 +0200
+User-Agent: KMail/1.9.9
+Cc: Michael Riepe <michael.riepe@googlemail.com>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       Michael =?utf-8?q?B=C3=BCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+References: <200903041828.49972.m.bueker@berlin.de> <1242001754.4093.12.camel@obelisk.thedillows.org> <200905112248.44868.mb@bu3sch.de>
+In-Reply-To: <200905112248.44868.mb@bu3sch.de>
+X-Move-Along: Nothing to see here. No, really... Nothing.
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A088314.1000204@gmail.com>
-X-Cookie: Process promptly.
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: 82.41.28.43
-X-SA-Exim-Mail-From: broonie@sirena.org.uk
-Subject: Re: [alsa-devel] [PATCH] soc: remove driver_data direct access of
-	struct device
-X-SA-Exim-Version: 4.2.1 (built Wed, 25 Jun 2008 17:14:11 +0000)
-X-SA-Exim-Scanned: Yes (on cassiel.sirena.org.uk)
+Message-Id: <200905112310.08534.mb@bu3sch.de>
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 09:57:08PM +0200, Roel Kluin wrote:
-
-I've applied this since it's so trivial but please in future:
-
- - Give a Signed-off-by for your patches.
- - CC maintainers for your patches.
-
-> diff --git a/sound/soc/codecs/wm8400.c b/sound/soc/codecs/wm8400.c
-> index 510efa6..e4547de 100644
-> --- a/sound/soc/codecs/wm8400.c
-> +++ b/sound/soc/codecs/wm8400.c
-> @@ -1473,8 +1473,8 @@ static int wm8400_codec_probe(struct platform_device *dev)
->  
->  	codec = &priv->codec;
->  	codec->private_data = priv;
-> -	codec->control_data = dev->dev.driver_data;
-> -	priv->wm8400 = dev->dev.driver_data;
-> +	codec->control_data = dev_get_drvdata(&dev->dev);
-> +	priv->wm8400 = dev_get_drvdata(&dev->dev);
->  
->  	ret = regulator_bulk_get(priv->wm8400->dev,
->  				 ARRAY_SIZE(power), &power[0]);
-> diff --git a/sound/soc/codecs/wm8731.c b/sound/soc/codecs/wm8731.c
-> index e043e3f..7a20587 100644
-> --- a/sound/soc/codecs/wm8731.c
-> +++ b/sound/soc/codecs/wm8731.c
-> @@ -666,14 +666,14 @@ static int __devinit wm8731_spi_probe(struct spi_device *spi)
->  	codec->hw_write = (hw_write_t)wm8731_spi_write;
->  	codec->dev = &spi->dev;
->  
-> -	spi->dev.driver_data = wm8731;
-> +	dev_set_drvdata(&spi->dev, wm8731);
->  
->  	return wm8731_register(wm8731);
->  }
->  
->  static int __devexit wm8731_spi_remove(struct spi_device *spi)
->  {
-> -	struct wm8731_priv *wm8731 = spi->dev.driver_data;
-> +	struct wm8731_priv *wm8731 = dev_get_drvdata(&spi->dev);
->  
->  	wm8731_unregister(wm8731);
->  
-> diff --git a/sound/soc/codecs/wm8753.c b/sound/soc/codecs/wm8753.c
-> index a6e8f3f..d121e58 100644
-> --- a/sound/soc/codecs/wm8753.c
-> +++ b/sound/soc/codecs/wm8753.c
-> @@ -1822,14 +1822,14 @@ static int __devinit wm8753_spi_probe(struct spi_device *spi)
->  	codec->hw_write = (hw_write_t)wm8753_spi_write;
->  	codec->dev = &spi->dev;
->  
-> -	spi->dev.driver_data = wm8753;
-> +	dev_set_drvdata(&spi->dev, wm8753);
->  
->  	return wm8753_register(wm8753);
->  }
->  
->  static int __devexit wm8753_spi_remove(struct spi_device *spi)
->  {
-> -	struct wm8753_priv *wm8753 = spi->dev.driver_data;
-> +	struct wm8753_priv *wm8753 = dev_get_drvdata(&spi->dev);
->  	wm8753_unregister(wm8753);
->  	return 0;
->  }
-> _______________________________________________
-> Alsa-devel mailing list
-> Alsa-devel@alsa-project.org
-> http://mailman.alsa-project.org/mailman/listinfo/alsa-devel
+On Monday 11 May 2009 22:48:44 Michael Buesch wrote:
+> On Monday 11 May 2009 02:29:14 David Dillow wrote:
+> > > Kernel: 2.6.29.2 (x86_64)
+> > > Board: Intel D945GCLF2
+> > > BIOS version: LF94510J.86A.0099.2008.0731.0303
+> > 
+> > I'm not sure this is tied to the chip. 
+> 
+> Yeah maybe other chips are affected as well.
+> I just want to note that my failing chip/board is an Intel D945GCLF2 board
+> with onboard G-LAN, too.
+> 
+> The device XID is: XID 3c4000c0
+> (see kernel log)
+> 
+> Somebody else (I think it was Rui Santos) already reported a failing chip with that XID, too.
 > 
 
+Here's a patch which blacklists MSI support by XID.
+It's currently only compile-tested, because I can't reboot the machine right now.
+
+Signed-off-by: Michael Buesch <mb@bu3sch.de>
+
+Index: linux-2.6.29/drivers/net/r8169.c
+===================================================================
+--- linux-2.6.29.orig/drivers/net/r8169.c	2009-05-11 23:00:12.000000000 +0200
++++ linux-2.6.29/drivers/net/r8169.c	2009-05-11 23:07:32.000000000 +0200
+@@ -1917,14 +1917,26 @@
+ 
+ /* Cfg9346_Unlock assumed. */
+ static unsigned rtl_try_msi(struct pci_dev *pdev, void __iomem *ioaddr,
+-			    const struct rtl_cfg_info *cfg)
++			    const struct rtl_cfg_info *cfg, u32 xid)
+ {
+-	unsigned msi = 0;
++	unsigned i, blacklisted = 0, msi = 0;
+ 	u8 cfg2;
+ 
++	static const u32 xid_blacklist[] = {
++		/* Blacklisted devices with (currently) broken MSI support.
++		 * Devices are identified by XID. */
++		0x3c4000c0,
++	};
++
+ 	cfg2 = RTL_R8(Config2) & ~MSIEnable;
++	for (i = 0; i < ARRAY_SIZE(xid_blacklist); i++) {
++		if (xid == xid_blacklist[i])
++			blacklisted = 1;
++	}
+ 	if (cfg->features & RTL_FEATURE_MSI) {
+-		if (pci_enable_msi(pdev)) {
++		if (blacklisted) {
++			dev_info(&pdev->dev, "MSI blacklisted. Back to INTx.\n");
++		} else if (pci_enable_msi(pdev)) {
+ 			dev_info(&pdev->dev, "no MSI. Back to INTx.\n");
+ 		} else {
+ 			cfg2 |= MSIEnable;
+@@ -1974,6 +1986,7 @@
+ 	void __iomem *ioaddr;
+ 	unsigned int i;
+ 	int rc;
++	u32 xid;
+ 
+ 	if (netif_msg_drv(&debug)) {
+ 		printk(KERN_INFO "%s Gigabit Ethernet driver %s loaded\n",
+@@ -2109,6 +2122,7 @@
+ 	}
+ 	tp->chipset = i;
+ 
++	xid = RTL_R32(TxConfig) & 0x7cf0f8ff;
+ 	RTL_W8(Cfg9346, Cfg9346_Unlock);
+ 	RTL_W8(Config1, RTL_R8(Config1) | PMEnable);
+ 	RTL_W8(Config5, RTL_R8(Config5) & PMEStatus);
+@@ -2116,7 +2130,7 @@
+ 		tp->features |= RTL_FEATURE_WOL;
+ 	if ((RTL_R8(Config5) & (UWF | BWF | MWF)) != 0)
+ 		tp->features |= RTL_FEATURE_WOL;
+-	tp->features |= rtl_try_msi(pdev, ioaddr, cfg);
++	tp->features |= rtl_try_msi(pdev, ioaddr, cfg, xid);
+ 	RTL_W8(Cfg9346, Cfg9346_Lock);
+ 
+ 	if ((tp->mac_version <= RTL_GIGA_MAC_VER_06) &&
+@@ -2175,8 +2189,6 @@
+ 	pci_set_drvdata(pdev, dev);
+ 
+ 	if (netif_msg_probe(tp)) {
+-		u32 xid = RTL_R32(TxConfig) & 0x7cf0f8ff;
+-
+ 		printk(KERN_INFO "%s: %s at 0x%lx, "
+ 		       "%2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x, "
+ 		       "XID %08x IRQ %d\n",
+
+
 -- 
-"You grabbed my hand and we fell into it, like a daydream - or a fever."
+Greetings, Michael.
