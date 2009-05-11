@@ -1,85 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757886AbZEKRWn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbZEKR1Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757886AbZEKRWn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 13:22:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754695AbZEKRWc
+	id S1757214AbZEKR1Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 13:27:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZEKR1Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 13:22:32 -0400
-Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:33983 "EHLO
-	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753890AbZEKRWa (ORCPT
+	Mon, 11 May 2009 13:27:16 -0400
+Received: from astoria.ccjclearline.com ([64.235.106.9]:44621 "EHLO
+	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018AbZEKR1P (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 13:22:30 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=us-ascii
-X-IronPort-AV: E=Sophos;i="4.40,329,1238968800";   d="scan'208";a="5640880"
-From: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
-To: "'Andi Kleen'" <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, Lee.Schermerhorn@hp.com,
-       linux-numa@vger.kernel.org, brice.goglin@inria.fr,
-       "'Terboven, Christian'" <terboven@rz.rwth-aachen.de>,
-       anmey@rz.rwth-aachen.de, Boris Bierbaum <boris@lfbs.rwth-aachen.de>
-References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
- <87zldjn597.fsf@basil.nowhere.org>
- <001501c9d248$69e2a870$3da7f950$@rwth-aachen.de>
- <20090511163719.GA19296@one.firstfloor.org>
-In-reply-to: <20090511163719.GA19296@one.firstfloor.org>
-Subject: RE: [RFC PATCH 0/4]: affinity-on-next-touch
-Date: Mon, 11 May 2009 19:22:31 +0200
-Organization: Chair for Operating Systems, RWTH Aachen University
-Message-id: <000301c9d25d$113c0f30$33b42d90$@rwth-aachen.de>
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-index: AcnSVgWdILyzYlYeSFKyrgZVRck4hgAAf59Q
-Content-language: de
+	Mon, 11 May 2009 13:27:15 -0400
+Date: Mon, 11 May 2009 13:25:00 -0400 (EDT)
+From: "Robert P. J. Day" <rpjday@crashcourse.ca>
+X-X-Sender: rpjday@localhost.localdomain
+To: Alexey Dobriyan <adobriyan@gmail.com>
+cc: Christoph Hellwig <hch@infradead.org>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/asm] x86, 64-bit: ifdef out struct thread_struct::ip
+In-Reply-To: <b6fcc0a0905111022g1df0b1c5l95c2a072745578a0@mail.gmail.com>
+Message-ID: <alpine.LFD.2.00.0905111323470.28914@localhost.localdomain>
+References: <20090503233015.GJ16631@x200.localdomain>  <tip-0c23590f00f85467b318ad0c20c36796a5bd4c60@git.kernel.org>  <20090511160324.GA7923@infradead.org> <b6fcc0a0905111022g1df0b1c5l95c2a072745578a0@mail.gmail.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1531755699-1242062715=:28914"
+X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
+X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
+X-AntiAbuse: Original Domain - vger.kernel.org
+X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
+X-AntiAbuse: Sender Address Domain - crashcourse.ca
+X-Source: 
+X-Source-Args: 
+X-Source-Dir: 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
+--8323328-1531755699-1242062715=:28914
+Content-Type: TEXT/PLAIN; charset=ISO-8859-1
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-> -----Original Message-----
-> From: Andi Kleen [mailto:andi@firstfloor.org]
-> Sent: Monday, May 11, 2009 6:37 PM
-> To: Stefan Lankes
-> Cc: 'Andi Kleen'; linux-kernel@vger.kernel.org;
-> Lee.Schermerhorn@hp.com; linux-numa@vger.kernel.org;
-> brice.goglin@inria.fr; 'Terboven, Christian'; anmey@rz.rwth-aachen.de;
-> 'Boris Bierbaum'
-> Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
-> 
-> > By default, mbind only has an effect on new allocations. I think that
-> this
-> 
-> Nope, it affects existing pages too, it can even move pages
-> if you ask for it.
-> 
+On Mon, 11 May 2009, Alexey Dobriyan wrote:
 
-I know this possibility. I thought that "affinity-on-next-touch" fit better
-to madvise. Brice told already the technical reasons for preferring of
-madvise.
+> On Mon, May 11, 2009 at 8:03 PM, Christoph Hellwig <hch@infradead.org> wr=
+ote:
+> > On Mon, May 11, 2009 at 03:09:40PM +0000, tip-bot for Alexey Dobriyan w=
+rote:
+> >> +#ifdef CONFIG_X86_32
+> >> =A0 =A0 =A0 unsigned long =A0 =A0 =A0 =A0 =A0 ip;
+> >> +#endif
+> >> =A0#ifdef CONFIG_X86_64
+> >> =A0 =A0 =A0 unsigned long =A0 =A0 =A0 =A0 =A0 fs;
+> >> =A0#endif
+> >
+> > What happened to the good old concept of #if #else #endif?
+>
+> #else suggests alternative which is not the case.
+> ->ip and ->fs can be in different parts of thread_struct.
 
-> > For instance, Norden's PDE solvers using adaptive mesh refinements
-> (AMR) [1]
-> > is an application with a dynamic access pattern. We use this example
-> to
-> > evaluate the performance of our patch. We ran this solver on our
-> > quad-socket, dual-core Opteron 875 (2.2GHz) system running CentOS
-> 5.2. The
-> > code was already optimized for NUMA architectures. Before the arrays
-> are
-> > initialized, the threads are bound to one core. In our test case, the
-> solver
-> > needs 5318s. If we use our kernel extension, the solver needs 4489s.
-> 
-> Okay that sounds like good numbers.
-> 
-> > Currently, we are testing some other apps.
-> 
-> Please keep the list updated.
-> 
+  the arch/x86/Kconfig file certainly suggests that those are
+mutually-exclusive alternatives:
 
-I will do it.
+=2E..
+# Select 32 or 64 bit
+config 64BIT
+        bool "64-bit kernel" if ARCH =3D "x86"
+        default ARCH =3D "x86_64"
+        ---help---
+          Say yes to build a 64-bit kernel - formerly known as x86_64
+          Say no to build a 32-bit kernel - formerly known as i386
 
-Stefan
+config X86_32
+        def_bool !64BIT
 
+config X86_64
+        def_bool 64BIT
+=2E..
+
+unless there's something weird going on underneath.
+
+rday
+--
+
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+Robert P. J. Day                               Waterloo, Ontario, CANADA
+
+        Linux Consulting, Training and Annoying Kernel Pedantry.
+
+Web page:                                          http://crashcourse.ca
+Linked In:                             http://www.linkedin.com/in/rpjday
+Twitter:                                       http://twitter.com/rpjday
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--8323328-1531755699-1242062715=:28914--
