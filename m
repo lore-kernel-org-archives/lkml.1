@@ -1,81 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756267AbZEKNUx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758063AbZEKNWz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756267AbZEKNUx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 09:20:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752951AbZEKNUm
+	id S1758063AbZEKNWz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 09:22:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754414AbZEKNWq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 09:20:42 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33858 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751318AbZEKNUl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 09:20:41 -0400
-Date: Mon, 11 May 2009 15:20:27 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Han, Weidong" <weidong.han@intel.com>
-Cc: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "dwmw2@infradead.org" <dwmw2@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "iommu@lists.linux-foundation.org" <iommu@lists.linux-foundation.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>
-Subject: Re: [PATCH 2/2] Intel-IOMMU, intr-remap: source-id checking
-Message-ID: <20090511132027.GC32693@elte.hu>
-References: <1241676996-27406-1-git-send-email-weidong.han@intel.com> <1241676996-27406-2-git-send-email-weidong.han@intel.com> <1241720381.27006.8582.camel@localhost.localdomain> <715D42877B251141A38726ABF5CABF2C01A6DD4900@pdsmsx503.ccr.corp.intel.com>
+	Mon, 11 May 2009 09:22:46 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41613 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751683AbZEKNWq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 09:22:46 -0400
+To: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
+Cc: linux-kernel@vger.kernel.org, Lee.Schermerhorn@hp.com,
+       linux-numa@vger.kernel.org
+Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+From: Andi Kleen <andi@firstfloor.org>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+Date: Mon, 11 May 2009 15:22:44 +0200
+In-Reply-To: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de> (Stefan Lankes's message of "Mon, 11 May 2009 10:27:18 +0200")
+Message-ID: <87zldjn597.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <715D42877B251141A38726ABF5CABF2C01A6DD4900@pdsmsx503.ccr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Stefan Lankes <lankes@lfbs.rwth-aachen.de> writes:
+>
+> [Patch 1/4]: Extend the system call madvise with a new parameter
+> MADV_ACCESS_LWP (the same as used in Solaris). The specified memory area
 
-* Han, Weidong <weidong.han@intel.com> wrote:
+Linux does NUMA memory policies in mbind(), not madvise()
+Also if there's a new NUMA policy it should be in the standard
+Linux NUMA memory policy frame work, not inventing a new one
 
-> Siddha, Suresh B wrote:
-> > On Wed, 2009-05-06 at 23:16 -0700, Han, Weidong wrote:
-> >> @@ -634,6 +694,44 @@ static int ir_parse_ioapic_scope(struct
-> >>  			       acpi_dmar_header *header, " 0x%Lx\n",
-> >>  			       scope->enumeration_id, drhd->address);
-> >> 
-> >> +			bus = pci_find_bus(drhd->segment, scope->bus);
-> >> +			path = (struct acpi_dmar_pci_path *)(scope + 1); +			count =
-> >> (scope->length - +				 sizeof(struct acpi_dmar_device_scope))
-> >> +				/ sizeof(struct acpi_dmar_pci_path);
-> >> +
-> >> +			while (count) {
-> >> +				if (pdev)
-> >> +					pci_dev_put(pdev);
-> >> +
-> >> +				if (!bus)
-> >> +					break;
-> >> +
-> >> +				pdev = pci_get_slot(bus,
-> >> +					PCI_DEVFN(path->dev, path->fn));
-> >> +				if (!pdev)
-> >> +					break;
-> > 
-> > ir_parse_ioapic_scope() happens very early in the boot. So, I 
-> > don't think we can do the pci related discovery here.
-> > 
-> 
-> Thanks for your pointing it out. It should enable the source-id 
-> checking for io-apic's after the pci subsystem is up. I will 
-> change it.
+[I find it amazing that you did apparently so much work
+without being familiar with existing Linux NUMA policies]
 
-Note, there's ways to do early PCI quirks too, check 
-arch/x86/kernel/early-quirks.c. It's done by reading the PCI 
-configuration space directly via a careful early-capable subset of 
-the PCI config space APIs.
+Your patches seem to have a lot of overlap with 
+Lee Schermerhorn's old migrate memory on cpu migration patches.
+I don't know the status of those.
 
-But it's a method of last resort.
+> [Patch 4/4]: This part of the patch adds some counters to detect migration
+> errors and publishes these counters via /proc/vmstat. Besides this, the
+> Kconfig file is extend with the parameter CONFIG_AFFINITY_ON_NEXT_TOUCH.
+>
+> With this patch, the kernel reduces the overhead of page distribution via
+> "affinity-on-next-touch" from 2518ms to 366ms compared to the user-level
 
-	Ingo
+The interesting part is less how much faster it is compared to an user
+space implementation, but how much this migrate on touch approach
+helps in general compared to already existing policies. Some hard
+numbers on that would appreciated.
+
+Note that for the OpenMP case old kernels sometimes had trouble because
+the threads tended to be not scheduled to the final target CPU
+on the first time slice so the memory was often first-touched
+on the wrong node. Later kernels avoided that by more aggressively
+moving the threads early.
+
+This nearly sounds like a workaround for that (I hope it's more
+than that)
+
+If you present any benchmark make sure the kernel you're benching
+against does not have this issue.
+
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
