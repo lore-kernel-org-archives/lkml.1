@@ -1,80 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756565AbZEKN2v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758491AbZEKNa2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756565AbZEKN2v (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 09:28:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbZEKN1N
+	id S1758491AbZEKNa2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 09:30:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752772AbZEKNaJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 09:27:13 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:35806 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753908AbZEKN1K (ORCPT
+	Mon, 11 May 2009 09:30:09 -0400
+Received: from qw-out-2122.google.com ([74.125.92.25]:2148 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752595AbZEKNaH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 09:27:10 -0400
+	Mon, 11 May 2009 09:30:07 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=lRhjAHEph++ibiLkzAzIzr0bktkrWxp/0+4ZIUB8rojg/xR1LaO6MSBlC6SiI5x4Fw
-         cbt/lZH54LRDxnG0ikg9ifGJLcWh8FXCU4J8+w9XJYKj58r0uGVZ+6Ppgu+5fSwmnmic
-         n4D2xla6eQdZ900s+Yrl9tJV2HUib+xz6Egy8=
-From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 5/5] Use copy_wait_opts_to_user() in wait_task_continued()
-Date: Mon, 11 May 2009 15:25:54 +0200
-Message-Id: <1242048349-2766-6-git-send-email-v.mayatskih@gmail.com>
-X-Mailer: git-send-email 1.6.2.2
-In-Reply-To: <1242048349-2766-1-git-send-email-v.mayatskih@gmail.com>
-References: <1242048349-2766-1-git-send-email-v.mayatskih@gmail.com>
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=Jrfq8CPQRc5wAZL+c4L8yyyzFU2g1EXjllAmGdXk1FdNZCe/jLA95QsKKAxD1kHwcm
+         uCBNzU1u9xkYqqEvmXqdG8MSFJQZHa8beEekXFPo/npAcBbU3LlrNaqGaJBfZwInGqOK
+         2GptADLZmAw7lNufVCHmYRrbAau14imAZPuQM=
+MIME-Version: 1.0
+In-Reply-To: <20090511112801.GA20283@sirena.org.uk>
+References: <Pine.LNX.4.64.0905060829580.24668@venus.araneidae.co.uk> 
+	<20090506102202.73d6045d@hyperion.delvare> <Pine.LNX.4.64.0905081102060.14384@venus.araneidae.co.uk> 
+	<fd6b62c10905110311w6350828tf90d9c699b73fe30@mail.gmail.com> 
+	<Pine.LNX.4.64.0905111126020.20970@venus.araneidae.co.uk> 
+	<20090511112801.GA20283@sirena.org.uk>
+From: =?GB2312?B?0sHU8w==?= <wxc200@gmail.com>
+Date: Mon, 11 May 2009 21:29:53 +0800
+Message-ID: <fd6b62c10905110629w6c9a641fr878351fb9217a32e@mail.gmail.com>
+Subject: Re: [PATCH 2.6.29.2] PXA I2C: Define log level for i2c PXA error 
+	report
+To: Mark Brown <broonie@sirena.org.uk>
+Cc: Michael Abbott <michael@araneidae.co.uk>, linux-i2c@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All copy-paste getrusage() and put_user() code in wait_task_* functions
-is replaced by call to copy_wait_opts_to_user()
+2009/5/11 Mark Brown <broonie@sirena.org.uk>:
+> On Mon, May 11, 2009 at 11:31:51AM +0100, Michael Abbott wrote:
+>
+>> static struct i2c_pxa_platform_data xcep_i2c_platform_data  = {
+>>         .class = I2C_CLASS_HWMON
+>> };
+>
+>> ...
+>>         pxa_set_i2c_info(&xcep_i2c_platform_data);
+>
+>> This is called in the .init_machine method, and the target system is a
+>> PXA255.
+>
+>> However, after the error messages on startup, all the sensors seem to be
+>> detected and seem to be operating normally.
+>
+> These errors occur when attempting to talk to non-existant devices which
+> is almost certainly going to happen with the class based device probing
+> since the kernel will probe for each device at each possible address on
+> each I2C bus.
+>
+that happen when the device driver registered but the hardware doesnot
+exist.i once met this
+when my camera driver could not find the hardware camera.
 
-It makes no sense to do conditional siginfo's fill, copy_wait_opts_to_user() knows
-how to handle it right.
-
-Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
----
- kernel/exit.c |   23 ++++++++++-------------
- 1 files changed, 10 insertions(+), 13 deletions(-)
-
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 9806332..f22e82c 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1416,19 +1416,16 @@ static int wait_task_continued(struct wait_opts *wo, struct task_struct *p)
- 	get_task_struct(p);
- 	read_unlock(&tasklist_lock);
- 
--	if (!wo->wo_info) {
--		retval = wo->wo_rusage
--			? getrusage(p, RUSAGE_BOTH, wo->wo_rusage) : 0;
--		put_task_struct(p);
--		if (!retval && wo->wo_stat)
--			retval = put_user(0xffff, wo->wo_stat);
--		if (!retval)
--			retval = pid;
--	} else {
--		retval = wait_noreap_copyout(wo, p, pid, uid,
--					     CLD_CONTINUED, SIGCONT);
--		BUG_ON(retval == 0);
--	}
-+	retval = copy_wait_opts_to_user(wo, p, pid, uid,
-+					CLD_CONTINUED, SIGCONT, SIGCHLD);
-+	put_task_struct(p);
-+
-+	if (!retval && wo->wo_stat)
-+		retval = put_user(0xffff, wo->wo_stat);
-+	if (!retval)
-+		retval = pid;
-+
-+	BUG_ON(retval == 0);
- 
- 	return retval;
- }
--- 
-1.6.2.2
-
+thanks
+--wxc200
