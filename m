@@ -1,69 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760101AbZEKWZi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760079AbZEKWZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760101AbZEKWZi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 18:25:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755314AbZEKWZV
+	id S1760079AbZEKWZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 18:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759888AbZEKWZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 18:25:21 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:58945 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759318AbZEKWZS convert rfc822-to-8bit (ORCPT
+	Mon, 11 May 2009 18:25:45 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:46615 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756401AbZEKWZo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 18:25:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
-         :cc:content-type:content-transfer-encoding;
-        b=pYy+1DOCRk+0P6uiqXPGOMfqFA4YKkB169SHc/KVWnoNhjvN+WGnhEFYg685J6t3Oj
-         vx56rUyfia6eVv0vITa1k8dX+F/hVTP1oQCWLjVq8e1PrvmV6UHWOU7N6tNlW7K79oLa
-         wQ0hgjo/BqfIgWkBA9wEyAApV0pXM4+lBOjPk=
+	Mon, 11 May 2009 18:25:44 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=ljb2ZSNdnQhUeuLYltK6MIJtMcKyt3BJ6otsiOVXnaw2KtEbc509njhGfFF8+8lqt
+	h+amRFdEa+Z/PoUAXHg1A==
+Date: Mon, 11 May 2009 15:25:39 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: "H. Peter Anvin" <hpa@zytor.com>
+cc: Jack Steiner <steiner@sgi.com>, Yinghai Lu <yinghai@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] x86: fix node_possible_map logic -v2
+In-Reply-To: <4A0894A5.9000209@zytor.com>
+Message-ID: <alpine.DEB.2.00.0905111509570.2234@chino.kir.corp.google.com>
+References: <4A05269D.8000701@kernel.org> <4A0527CB.4020807@kernel.org> <20090511175312.GA27905@sgi.com> <alpine.DEB.2.00.0905111218520.23739@chino.kir.corp.google.com> <4A0894A5.9000209@zytor.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-In-Reply-To: <4A089E49.7080403@gmail.com>
-References: <dd18b0c30905111002y4aeb2033ma2fbb2730f5acdaf@mail.gmail.com> 
-	<4A089E49.7080403@gmail.com>
-From: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Date: Mon, 11 May 2009 15:24:59 -0700
-Message-ID: <43e72e890905111524t27c2659crad86643771d14a31@mail.gmail.com>
-Subject: Re: ath9k seems to be broken on 2.6.30-rc4 with a macbook pro
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Justin Mattock <justinmattock@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ath9k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 2:53 PM, Jiri Slaby <jirislaby@gmail.com> wrote:
-> Adding some CCs.
->
-> On 05/11/2009 07:02 PM, Justin Mattock wrote:
->> I've been trying to diagnose an issue
->> with 2.6.30-rc4. At first thinking it
->> was not the kernel, but the network manager
->> (in my case I use wicd).
->> with 2.6.29-rc8 the system starts up,
->> connects no problem.
->> but as soon as I load 2.6.30-rc4
->> I get limited connection to none.
->> in dmesg I see:
->>
->> [   36.337419] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 1
->> [   36.530106] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 2
->> [   36.730100] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 3
->> [   36.930101] wlan0: direct probe to AP 00:1e:2a:00:67:f0 timed out
->> [   44.421728] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 1
->> [   44.620080] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 2
->> [   44.820080] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 3
->> [   45.020076] wlan0: direct probe to AP 00:1e:2a:00:67:f0 timed out
->>
->> The type of encryption used is just
->> a standard WEP key(no WPA).
->>
->> has this been resolved already?
+On Mon, 11 May 2009, H. Peter Anvin wrote:
 
-Can you provide more details, like the AP you used, and card you have?
-(dmesg log would be nice).
+> > In your example of two cpus (0-1) that are remote to the system's only
+> > memory and two cpus (2-3) that have affinity to that memory, it appears as
+> > though the kernel is considering cpus 2-3 and the memory to be a node and
+> > cpus 0-1 to be a memoryless node.
+> > 
+> > That's a pretty useless scenario for memoryless node support, actually,
+> > unless there's a third node with memory that cpus 0-1 have a different
+> > distance to.  cpus 0-1 have no memory that is local, so the "remote" memory
+> > should be considered local to them.
+> > 
+> 
+> Should it?  It seems to me that CPUs 0-1 should be antipreferentially
+> scheduled, since they will have slower access to the memory than CPUs 2-3.
+> Since in this case all the memory is in the same place you could argue that
+> SMP distances could do the same job, which is of course true.
+> 
+> However, consider now:
+> 
+> CPU [0-1]	- no memory
+> CPU [2-3]	- memory
+> CPU [4-5]	- memory
+> 
+> Each node is equidistant, but for the memory nodes there is differences
+> between their own local memory and the remote memory.
+> 
+> CPU [0-1] cannot be considered local in either node, since they are further
+> away from the memory than either, and furthermore, unlike either of the memory
+> nodes, they have no preference for memory from either of the other two nodes
+> (quite on the contrary; they would probably benefit from drawing from both.)
+> 
 
-  Luis
+Right, there's no difference from Jack's scenario if the three nodes are 
+equiadistant.  I was thinking of a topology where cpu 0-1 was closer to, 
+for example, cpu 2-3's memory than cpu 4-5's.
+
+The particular topology you're referring to should have a slit that 
+describes the relative distances in each direction differently.  The pxms 
+that these cpus belong to will always be local to itself, but ACPI 3.0 
+allows distances for different directions between the same pxms to be 
+different.
+
+That means it's possible that cpus 0-1 above have local distance to all 
+memory and cpus 2-3 (and cpus 4-5) have remote distance to all nodes other 
+than itself.
+
+numactl --hardware would show something like this:
+
+		0	1	2
+	0	10	10	10
+	1	20	10	20
+	2	20	20	10
+
+which is valid according to the ACPI specification.  This is based on the 
+pxms to which the cpus belong so this topology would describe all members 
+of those pxms and not just memory.
