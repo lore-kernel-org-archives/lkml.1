@@ -1,77 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbZEKKLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758082AbZEKKLq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758006AbZEKKLa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 06:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756170AbZEKKLT
+	id S1758082AbZEKKLq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 06:11:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758044AbZEKKL2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 06:11:19 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:39106 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755918AbZEKKLS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 06:11:18 -0400
-Date: Mon, 11 May 2009 19:11:18 +0900 (JST)
-Message-Id: <20090511.191118.104045995.ryov@valinux.co.jp>
-To: riel@redhat.com
-Cc: vgoyal@redhat.com, akpm@linux-foundation.org, nauman@google.com,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, peterz@infradead.org
-Subject: Re: IO scheduler based IO Controller V2
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <4A0440B2.7040300@redhat.com>
-References: <20090506023332.GA1212@redhat.com>
-	<20090507.091858.226775723.ryov@valinux.co.jp>
-	<4A0440B2.7040300@redhat.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Mon, 11 May 2009 06:11:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50744 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757603AbZEKKL0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 06:11:26 -0400
+Date: Mon, 11 May 2009 10:10:35 GMT
+From: tip-bot for Pekka Enberg <penberg@cs.helsinki.fi>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       penberg@cs.helsinki.fi, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1241699741.17846.30.camel@penberg-laptop>
+References: <1241699741.17846.30.camel@penberg-laptop>
+Subject: [tip:x86/mm] x86: unify 64-bit UMA and NUMA paging_init()
+Message-ID: <tip-3551f88f6439cf4da3f5a3747b320280e30500de@git.kernel.org>
+Git-Commit-ID: 3551f88f6439cf4da3f5a3747b320280e30500de
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 10:10:38 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Rik,
+Commit-ID:  3551f88f6439cf4da3f5a3747b320280e30500de
+Gitweb:     http://git.kernel.org/tip/3551f88f6439cf4da3f5a3747b320280e30500de
+Author:     Pekka Enberg <penberg@cs.helsinki.fi>
+AuthorDate: Thu, 7 May 2009 15:35:41 +0300
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 11 May 2009 11:52:06 +0200
 
-From: Rik van Riel <riel@redhat.com>
-Subject: Re: IO scheduler based IO Controller V2
-Date: Fri, 08 May 2009 10:24:50 -0400
+x86: unify 64-bit UMA and NUMA paging_init()
 
-> Ryo Tsuruta wrote:
-> > Hi Vivek,
-> > 
-> >> Ryo, dm-ioband breaks the notion of classes and priority of CFQ because
-> >> of FIFO dispatch of buffered bios. Apart from that it tries to provide
-> >> fairness in terms of actual IO done and that would mean a seeky workload
-> >> will can use disk for much longer to get equivalent IO done and slow down
-> >> other applications. Implementing IO controller at IO scheduler level gives
-> >> us tigher control. Will it not meet your requirements? If you got specific
-> >> concerns with IO scheduler based contol patches, please highlight these and
-> >> we will see how these can be addressed.
-> > I'd like to avoid making complicated existing IO schedulers and other
-> > kernel codes and to give a choice to users whether or not to use it.
-> > I know that you chose an approach that using compile time options to
-> > get the same behavior as old system, but device-mapper drivers can be
-> > added, removed and replaced while system is running.
-> 
-> I do not believe that every use of cgroups will end up with
-> a separate logical volume for each group.
-> 
-> In fact, if you look at group-per-UID usage, which could be
-> quite common on shared web servers and shell servers, I would
-> expect all the groups to share the same filesystem.
-> 
-> I do not believe dm-ioband would be useful in that configuration,
-> while the IO scheduler based IO controller will just work.
+64-bit UMA and NUMA versions of paging_init() are almost identical.
+Therefore, merge the copy in mm/numa_64.c to mm/init_64.c to remove
+duplicate code.
 
-dm-ioband can control bandwidth on a per cgroup basis as same as
-Vivek's IO controller. Could you explain what do you want to do and
-how to configure the IO scheduler based IO controller in that case?
+[ Impact: cleanup ]
 
-Thanks,
-Ryo Tsuruta
+Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
+LKML-Reference: <1241699741.17846.30.camel@penberg-laptop>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/mm/init_64.c |    6 +++++-
+ arch/x86/mm/numa_64.c |   15 ---------------
+ 2 files changed, 5 insertions(+), 16 deletions(-)
+
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 6a1a573..be7e127 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -585,6 +585,7 @@ void __init initmem_init(unsigned long start_pfn, unsigned long end_pfn)
+ 	early_res_to_bootmem(0, end_pfn<<PAGE_SHIFT);
+ 	reserve_bootmem(bootmap, bootmap_size, BOOTMEM_DEFAULT);
+ }
++#endif
+ 
+ void __init paging_init(void)
+ {
+@@ -595,11 +596,14 @@ void __init paging_init(void)
+ 	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
+ 	max_zone_pfns[ZONE_NORMAL] = max_pfn;
+ 
++#ifdef CONFIG_NUMA
++	sparse_memory_present_with_active_regions(MAX_NUMNODES);
++#else
+ 	memory_present(0, 0, max_pfn);
++#endif
+ 	sparse_init();
+ 	free_area_init_nodes(max_zone_pfns);
+ }
+-#endif
+ 
+ /*
+  * Memory hotplug specific functions
+diff --git a/arch/x86/mm/numa_64.c b/arch/x86/mm/numa_64.c
+index 2d05a12..fb61d81 100644
+--- a/arch/x86/mm/numa_64.c
++++ b/arch/x86/mm/numa_64.c
+@@ -578,21 +578,6 @@ unsigned long __init numa_free_all_bootmem(void)
+ 	return pages;
+ }
+ 
+-void __init paging_init(void)
+-{
+-	unsigned long max_zone_pfns[MAX_NR_ZONES];
+-
+-	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
+-	max_zone_pfns[ZONE_DMA] = MAX_DMA_PFN;
+-	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
+-	max_zone_pfns[ZONE_NORMAL] = max_pfn;
+-
+-	sparse_memory_present_with_active_regions(MAX_NUMNODES);
+-	sparse_init();
+-
+-	free_area_init_nodes(max_zone_pfns);
+-}
+-
+ static __init int numa_setup(char *opt)
+ {
+ 	if (!opt)
