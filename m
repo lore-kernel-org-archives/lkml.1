@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757761AbZEKMad@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbZEKMba@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757761AbZEKMad (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 08:30:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbZEKMaY
+	id S1758137AbZEKMba (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 08:31:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZEKMbV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 08:30:24 -0400
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:42570 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753458AbZEKMaX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 08:30:23 -0400
-Message-ID: <4A081A4B.1000204@linux.vnet.ibm.com>
-Date: Mon, 11 May 2009 18:00:03 +0530
-From: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 11 May 2009 08:31:21 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39546 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753504AbZEKMbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 08:31:20 -0400
+Date: Mon, 11 May 2009 12:30:32 GMT
+From: tip-bot for Catalin Marinas <catalin.marinas@arm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       catalin.marinas@arm.com, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       catalin.marinas@arm.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <20090511122105.26556.96593.stgit@pc1117.cambridge.arm.com>
+References: <20090511122105.26556.96593.stgit@pc1117.cambridge.arm.com>
+Subject: [tip:x86/kbuild] x86: Provide _sdata in the vmlinux.lds.S file
+Message-ID: <tip-4504c6d020fc5aec7659bf7746e71b1b904571f8@git.kernel.org>
+Git-Commit-ID: 4504c6d020fc5aec7659bf7746e71b1b904571f8
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-CC: svaidy@linux.vnet.ibm.com, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       mahesh@linux.vnet.ibm.com
-Subject: [PATCH][REPOST] Don't export sched_mc_power_savings on multi-socket
-  single core system
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 12:30:35 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-My previous post got lost somewhere in lkml list. Hence reposting this 
-patch again.
+Commit-ID:  4504c6d020fc5aec7659bf7746e71b1b904571f8
+Gitweb:     http://git.kernel.org/tip/4504c6d020fc5aec7659bf7746e71b1b904571f8
+Author:     Catalin Marinas <catalin.marinas@arm.com>
+AuthorDate: Mon, 11 May 2009 13:22:00 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 11 May 2009 14:28:55 +0200
 
-Fix to prevent sched_mc_power_saving from being exported through sysfs
-for multi-scoket single core system. Max cores should be always greater than
-one (1). My earlier patch that introduced fix for not exporting
-'sched_mc_power_saving' on laptops  broke it on multi-socket single core
-system. This fix addresses issue on both laptop and multi-socket single 
-core system.
-Below are the Test results:
+x86: Provide _sdata in the vmlinux.lds.S file
 
-1. Single socket - multi-core
-       Before Patch: Does not export 'sched_mc_power_saving'
-       After Patch: Does not export 'sched_mc_power_saving'
-       Result: Pass
+_sdata is a common symbol defined by many architectures and made
+available to the kernel via asm-generic/sections.h. Kmemleak uses this
+symbol when scanning the data sections.
 
-2. Multi Socket - single core
-      Before Patch: exports 'sched_mc_power_saving'
-      After Patch: Does not export 'sched_mc_power_saving'
-      Result: Pass
+[ Impact: add new global symbol ]
 
-3. Multi Socket - Multi core
-      Before Patch: exports 'sched_mc_power_saving'
-      After Patch: exports 'sched_mc_power_saving'
+Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
+LKML-Reference: <20090511122105.26556.96593.stgit@pc1117.cambridge.arm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+ arch/x86/kernel/vmlinux.lds.S |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-Index: linux-2.6/arch/x86/include/asm/topology.h
-===================================================================
---- linux-2.6.orig/arch/x86/include/asm/topology.h
-+++ linux-2.6/arch/x86/include/asm/topology.h
-@@ -203,7 +203,8 @@ struct pci_bus;
-  void x86_pci_root_bus_res_quirks(struct pci_bus *b);
-
-  #ifdef CONFIG_SMP
--#define mc_capable()	(cpumask_weight(cpu_core_mask(0)) != nr_cpu_ids)
-+#define mc_capable()	(boot_cpu_data.x86_max_cores > 1) && \
-+			(cpumask_weight(cpu_core_mask(0)) != nr_cpu_ids)
-  #define smt_capable()			(smp_num_siblings > 1)
-  #endif
+diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
+index 4c85b2e..367e878 100644
+--- a/arch/x86/kernel/vmlinux.lds.S
++++ b/arch/x86/kernel/vmlinux.lds.S
+@@ -108,6 +108,8 @@ SECTIONS
+ 	/* Data */
+ 	. = ALIGN(PAGE_SIZE);
+ 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
++		/* Start of data section */
++		_sdata = .;
+ 		DATA_DATA
+ 		CONSTRUCTORS
+ 
