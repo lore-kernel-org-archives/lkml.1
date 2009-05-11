@@ -1,84 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754482AbZEKHkd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754589AbZEKHmT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754482AbZEKHkd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 03:40:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZEKHkX
+	id S1754589AbZEKHmT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 03:42:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753652AbZEKHmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 03:40:23 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:3358 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751273AbZEKHkW (ORCPT
+	Mon, 11 May 2009 03:42:06 -0400
+Received: from sovereign.computergmbh.de ([85.214.69.204]:52640 "EHLO
+	sovereign.computergmbh.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752453AbZEKHmF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 03:40:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=QoRMrHhTEfljtfJQjaU0NlrPeKysrZhHdLqoSojKeHLuZYEqhYDbtIeht1Y83jLbsh
-         PjPFZLQ3qTRNSItq+H75YnAfuDodzBNa9S+o/aYGXa3mc3v3q07+RSiBQg9aGX1F702g
-         KDTDpDHn/bcgIN65sgGJ75+pW1ZOSFZj1WW9I=
-Date: Mon, 11 May 2009 16:40:08 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, San Mehat <san@android.com>,
-       Arve Hjonnevag <arve@android.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 08/11 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
-Message-Id: <20090511164008.894320db.minchan.kim@barrios-desktop>
-In-Reply-To: <20090511104310.B9C1.A69D9226@jp.fujitsu.com>
-References: <20090511085750.B9AC.A69D9226@jp.fujitsu.com>
-	<alpine.DEB.2.00.0905101719040.31823@chino.kir.corp.google.com>
-	<20090511104310.B9C1.A69D9226@jp.fujitsu.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 May 2009 03:42:05 -0400
+Date: Mon, 11 May 2009 09:42:03 +0200 (CEST)
+From: Jan Engelhardt <jengelh@medozas.de>
+To: Martin Schwidefsky <schwidefsky@de.ibm.com>
+cc: Michael Abbott <michael@araneidae.co.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Re: /proc/uptime idle counter remains at 0
+In-Reply-To: <20090511093512.38ba9b70@skybase>
+Message-ID: <alpine.LSU.2.00.0905110938210.667@fbirervta.pbzchgretzou.qr>
+References: <alpine.LSU.2.00.0905090957490.27646@fbirervta.pbzchgretzou.qr> <20090510191229.71f43f3c@skybase> <alpine.LSU.2.00.0905110237310.17675@fbirervta.pbzchgretzou.qr> <Pine.LNX.4.64.0905110656180.6983@venus.araneidae.co.uk>
+ <20090511093512.38ba9b70@skybase>
+User-Agent: Alpine 2.00 (LSU 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009 10:45:05 +0900 (JST)
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
 
-> > On Mon, 11 May 2009, KOSAKI Motohiro wrote:
-> > 
-> > > > The oom killer must be invoked regardless of the order if the allocation
-> > > > is __GFP_NOFAIL, otherwise it will loop forever when reclaim fails to
-> > > > free some memory.
-> > > 
-> > > This is intensional behavior. plus you change very widely caller bahavior.
-> > > if you don't have good test program, I nak this.
-> > > 
-> > 
-> > What exactly are you objecting to?  You don't want the oom killer called 
-> > for a __GFP_NOFAIL allocation above PAGE_ALLOC_COSTLY_ORDER that could not 
-> > reclaim any memory and would prefer that it loop endlessly in the page 
-> > allocator?  What's the purpose of that if the oom killer could free a very 
-> > large memory hogging task?
-> 
-> My point is, if we change gfp-flags meaning, we should change
-> unintentional affected caller.
-> 
-> Do you oppose this?
+On Monday 2009-05-11 09:35, Martin Schwidefsky wrote:
+>> I have to confess I don't really understand the logic of what's going on 
+>> here -- in particular, what does the idle process do other than account 
+>> for time when the processor has nothing useful to do?  It does seem to me 
+>> now that the .utime and .stime fields are now less than useful -- maybe 
+>> they can be deleted now?
 >
+>The idle task does not just sleep, it will do "real" work, e.g. softirq
+>handling for interrupts / network traffic.
 
-I agree KOSAKI's opinion. 
-We already have a different flags. 
+With an RT kernel, SIRQ and such are separate tasks. That should also
+be play a role while 0 is displayed.
 
- * __GFP_REPEAT: Try hard to allocate the memory, but the allocation attempt
- * _might_ fail.  This depends upon the particular VM implementation.
- *
- * __GFP_NOFAIL: The VM implementation _must_ retry infinitely: the caller
- * cannot handle allocation failures.
+>> I've always assumed that the second field of /proc/uptime was a simple 
+>> measure of time not spent doing real work, in other words a crude measure 
+>> of spare CPU resources.  My instrument basically uses the the two fields 
+>> of this file to compute a measure of CPU loading so it can raise an alert 
+>> if the CPU doesn't have enough spare (idle) capacity.
+>
+>But it wasn't.. the old style stime of idle is a mixture of true idle
+>time and some system time.
 
-When we use __GFP_NOFAIL, we always have to use it carefully.
-If you change the meaning of __GFP_NOFAIL, the intension of them who have been used it carefully  may be lost. It's my concern.
+Then I would say let's show the idle time only (but still inculde
+the idle time when the CPU is halted).
 
-
--- 
-Kinds Regards
-Minchan Kim
