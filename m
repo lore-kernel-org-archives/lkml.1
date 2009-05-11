@@ -1,69 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758137AbZEKMba@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755344AbZEKMdT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758137AbZEKMba (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 08:31:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754882AbZEKMbV
+	id S1755344AbZEKMdT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 08:33:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754264AbZEKMdJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 08:31:21 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39546 "EHLO hera.kernel.org"
+	Mon, 11 May 2009 08:33:09 -0400
+Received: from lucidpixels.com ([75.144.35.66]:55050 "EHLO lucidpixels.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753504AbZEKMbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 08:31:20 -0400
-Date: Mon, 11 May 2009 12:30:32 GMT
-From: tip-bot for Catalin Marinas <catalin.marinas@arm.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       catalin.marinas@arm.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       catalin.marinas@arm.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <20090511122105.26556.96593.stgit@pc1117.cambridge.arm.com>
-References: <20090511122105.26556.96593.stgit@pc1117.cambridge.arm.com>
-Subject: [tip:x86/kbuild] x86: Provide _sdata in the vmlinux.lds.S file
-Message-ID: <tip-4504c6d020fc5aec7659bf7746e71b1b904571f8@git.kernel.org>
-Git-Commit-ID: 4504c6d020fc5aec7659bf7746e71b1b904571f8
-X-Mailer: tip-git-log-daemon
+	id S1752506AbZEKMdJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 08:33:09 -0400
+Date: Mon, 11 May 2009 08:33:08 -0400 (EDT)
+From: Justin Piszcz <jpiszcz@lucidpixels.com>
+To: linux-kernel@vger.kernel.org
+Subject: 2.6.29.1: hda-intel: IRQ timing workaround is activated for card
+Message-ID: <alpine.DEB.2.00.0905110830520.30983@p34.internal.lan>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 12:30:35 +0000 (UTC)
+Content-Type: TEXT/PLAIN; format=flowed; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4504c6d020fc5aec7659bf7746e71b1b904571f8
-Gitweb:     http://git.kernel.org/tip/4504c6d020fc5aec7659bf7746e71b1b904571f8
-Author:     Catalin Marinas <catalin.marinas@arm.com>
-AuthorDate: Mon, 11 May 2009 13:22:00 +0100
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 11 May 2009 14:28:55 +0200
+Hello,
 
-x86: Provide _sdata in the vmlinux.lds.S file
+Kernel: 2.6.29.1
+Distribution: Debian Testing
 
-_sdata is a common symbol defined by many architectures and made
-available to the kernel via asm-generic/sections.h. Kmemleak uses this
-symbol when scanning the data sections.
+Once and awhile I see this:
 
-[ Impact: add new global symbol ]
+[2916854.550302] hda-intel: IRQ timing workaround is activated for card #0.
+Suggest a bigger bdl_pos_adj.
 
-Signed-off-by: Catalin Marinas <catalin.marinas@arm.com>
-LKML-Reference: <20090511122105.26556.96593.stgit@pc1117.cambridge.arm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+I do not recall seeing it often (if at all < 2.6.27-8) is this anything to
+be worried about?
 
+Please cc me as I am not on the list.
 
----
- arch/x86/kernel/vmlinux.lds.S |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/arch/x86/kernel/vmlinux.lds.S b/arch/x86/kernel/vmlinux.lds.S
-index 4c85b2e..367e878 100644
---- a/arch/x86/kernel/vmlinux.lds.S
-+++ b/arch/x86/kernel/vmlinux.lds.S
-@@ -108,6 +108,8 @@ SECTIONS
- 	/* Data */
- 	. = ALIGN(PAGE_SIZE);
- 	.data : AT(ADDR(.data) - LOAD_OFFSET) {
-+		/* Start of data section */
-+		_sdata = .;
- 		DATA_DATA
- 		CONSTRUCTORS
- 
+Justin.
