@@ -1,54 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758345AbZEKR4g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758679AbZEKR4w@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758345AbZEKR4g (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 13:56:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757419AbZEKR4Z
+	id S1758679AbZEKR4w (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 13:56:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758084AbZEKR40
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 13:56:25 -0400
-Received: from kroah.org ([198.145.64.141]:55879 "EHLO coco.kroah.org"
+	Mon, 11 May 2009 13:56:26 -0400
+Received: from kroah.org ([198.145.64.141]:55886 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755389AbZEKR4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756629AbZEKR4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 11 May 2009 13:56:25 -0400
-Date: Mon, 11 May 2009 10:43:01 -0700
+Date: Mon, 11 May 2009 10:45:47 -0700
 From: Greg KH <greg@kroah.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: David Woodhouse <dwmw2@infradead.org>, Joerg Roedel <joerg.roedel@amd.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       reinette.chatre@intel.com
-Subject: Re: dma-debug: add a check dma memory leaks
-Message-ID: <20090511174301.GC4534@kroah.com>
-References: <200903302101.n2UL1O1n011970@hera.kernel.org> <1240005065.19059.19.camel@macbook.infradead.org> <20090421092016.GH17438@amd.com> <1241913552.24436.113.camel@macbook.infradead.org> <20090510020911.GA4722@kroah.com> <1241945379.24436.130.camel@macbook.infradead.org> <1241947932.19955.10.camel@pasglop>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Kay Sievers <kay.sievers@vrfy.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>,
+       Arjan van de Ven <arjan@infradead.org>,
+       Fabio Comolli <fabio.comolli@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] devtmpfs patches
+Message-ID: <20090511174547.GD4534@kroah.com>
+References: <b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com> <20090509150853.GA32394@suse.de> <20090509082233.32cbb8e4@infradead.org> <20090509161923.GA942@suse.de> <20090509223454.4642753d.akpm@linux-foundation.org> <20090510152005.GA9461@suse.de> <1241980263.9562.380.camel@laptop> <20090510221901.30c1c5a5@lxorguk.ukuu.org.uk> <ac3eb2510905101647k12a1b9ck71d43933037bac48@mail.gmail.com> <20090510180018.260bc706.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1241947932.19955.10.camel@pasglop>
+In-Reply-To: <20090510180018.260bc706.akpm@linux-foundation.org>
 User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 10, 2009 at 07:32:12PM +1000, Benjamin Herrenschmidt wrote:
-> On Sun, 2009-05-10 at 09:49 +0100, David Woodhouse wrote:
-> > > I don't understand.  Who wrote this patch, Joerg or you?  I have
-> > this in
-> > > my tree already as written by Joerg.
-> > 
-> > In that case we probably both did it, independently. I did it last
-> > night
-> > after finally catching up with Ben and talking about the possibility
-> > of
-> > moving the existing notifiers. Jörg may have done it sooner.
-> > 
-> > You can drop my version, then.
+On Sun, May 10, 2009 at 06:00:18PM -0700, Andrew Morton wrote:
+> On Mon, 11 May 2009 01:47:16 +0200 Kay Sievers <kay.sievers@vrfy.org> wrote:
 > 
-> As long as it's strictly identical :-) IE. I don't want to -move- the
-> existing notifier, but adding a "BOUND" one is fine.
+> > On Sun, May 10, 2009 at 23:19, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+> > >> /me boggles, however does one end up with that many partitions on so few
+> > >> disks?
+> > >
+> > > It happens. Tejun did the extending because libata users were really
+> > > hitting these limits.
+> > >
+> > >> /boot
+> > >> /
+> > >> /home
+> > >> /usr
+> > >> swap
+> > >> /usr/local
+> > >> /opt
+> > >>
+> > >> and I'm seriously out of sensible ideas.
+> > >
+> > > I've seen two usual variants
+> > >
+> > > __ __ __ __Fedora & Unbuntu & Debian & ....
+> > >
+> > > __ __ __ __Fedora 10 & Rawhide & Fedora 9 & ...
+> > >
+> > > for people who like to play with distros or need to test a product on them
+> > >
+> > > and once you do that 16 is quite easy
+> > 
+> > That's right. Also people with virtualization, running many guest from
+> > individual partitions, like to do that - and 16 is nothing for them.
+> > :)
+> > 
+> > Some of us run the dynamic sd minors already, and it's not unlikely we
+> > will enable it pretty soon for the distro.
+> 
+> There are plenty of setups which have lots of partitions, but very very
+> few of them are booted with any frequency.
 
-Look in the linux-next tree to verify that it is the same.
+On the contrary, opensuse had lots of very grumpy users that had 10s of
+partitions (lots of operating systems installed for testing and for
+other reasons), that did not like us switching to libata which rendered
+their partition setup as broken.
 
-Or here's a direct link to the patch:
-	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-03-driver-core/driver-core-add-bus_notify_unbound_driver-event.patch
+Hence the dynamic minors for large numbers of scsi partitions.  That
+option is now enabled in the openSUSE FACTORY tree which made that user
+group very happy.
+
+> The patchset is described as saving "a few seconds" when booting a
+> typical distro installation?  Out of what, 100 seconds?
+
+5-8 seconds.
+
+> That's pretty thin gruel, IMO, and doesn't obviously justify mucking
+> up the kernel. 
+
+No, it's a very large percentage overall.
+
+Others are talking about getting a full Linux install up and running in
+2 or less seconds, so every little bit counts now.
+
+> A 1.5 second saving on some gadget which boots in 6 seconds would be a
+> lot more interesting.
+
+That is what we are talking about here.
 
 thanks,
 
