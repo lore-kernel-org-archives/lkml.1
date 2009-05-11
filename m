@@ -1,84 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754542AbZEKHu1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752954AbZEKHxO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754542AbZEKHu1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 03:50:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbZEKHuL
+	id S1752954AbZEKHxO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 03:53:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752780AbZEKHwy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 03:50:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42317 "EHLO mx3.mail.elte.hu"
+	Mon, 11 May 2009 03:52:54 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:51246 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751777AbZEKHuJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 03:50:09 -0400
-Date: Mon, 11 May 2009 09:49:13 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH 7/7] x86/pci: update pirq_enable_irq to setup io apic
-	routing -v2
-Message-ID: <20090511074913.GA5636@elte.hu>
-References: <4A01C35C.7060207@kernel.org> <4A01C46E.8000501@kernel.org> <20090507141222.GI481@elte.hu> <20090507095256.7f87fb42@jbarnes-g45>
+	id S1753506AbZEKHwx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 03:52:53 -0400
+Date: Mon, 11 May 2009 09:52:53 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, rusty@rustcorp.com.au,
+       James.Bottomley@HansenPartnership.com, mike.miller@hp.com,
+       donari75@gmail.com, paul.clements@steeleye.com, tim@cyberelk.net,
+       Geert.Uytterhoeven@sonycom.com, davem@davemloft.net,
+       Laurent@lvivier.info, jgarzik@pobox.com, jeremy@xensource.com,
+       grant.likely@secretlab.ca, adrian@mcmen.demon.co.uk,
+       sfr@canb.auug.org.au, bzolnier@gmail.com, petkovbb@googlemail.com,
+       sshtylyov@ru.mvista.com, oakad@yahoo.com, drzeus@drzeus.cx,
+       dwmw2@infradead.org, Markus.Lidel@shadowconnect.com, wein@de.ibm.com,
+       schwidefsky@de.ibm.com, zaitcev@redhat.com,
+       fujita.tomonori@lab.ntt.co.jp
+Subject: Re: [GIT PATCH] block: unify request processing model and
+	implement peek/fetch
+Message-ID: <20090511075253.GH4694@kernel.dk>
+References: <1241751256-17435-1-git-send-email-tj@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090507095256.7f87fb42@jbarnes-g45>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1241751256-17435-1-git-send-email-tj@kernel.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jesse Barnes <jbarnes@virtuousgeek.org> wrote:
-
-> On Thu, 7 May 2009 16:12:22 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
+On Fri, May 08 2009, Tejun Heo wrote:
+> Hello,
 > 
-> > 
-> > * Yinghai Lu <yinghai@kernel.org> wrote:
-> > 
-> > > 
-> > > so we could set io apic routing only when enable device irq.
-> > > 
-> > > also could make setup_IO_APIC_irqs and setup_ioapic_dest only handle
-> > > first ioapic...
-> > > 
-> > > v2: remove one one not needed style change.
-> > >     merge the patch only setup io_apic for acpi on in
-> > > setup_IO_APIC_irqs
-> > > 
-> > > [ Impact: make mptable irq enable more like acpi is used, and
-> > > numa_irq_desc could get correct node when acpi=off ]
-> > > 
-> > > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> > > 
-> > > ---
-> > >  arch/x86/kernel/apic/io_apic.c |  148
-> > > ++++++++++++++++++++---------------------
-> > > arch/x86/pci/irq.c             |   84 ++++++++--------------- 2
-> > > files changed, 103 insertions(+), 129 deletions(-)
-> > 
-> > Jesse, did this patch have your Acked-by?
+> Upon ack, please pull from the following git tree.
 > 
-> Yeah, both of them are fine with me.  Ultimately you get to keep 
-> any broken pieces from io_apic changes anyway, right? :)
+>   git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git block-peek-fetch
+> 
+> Block layer has allowed two different models of request processing.
+> elv_next_request() is used to peek at the top of the queue, after
+> peeking, a LLD could start processing it immediately or dequeue and
+> then start processing.
+> 
+> The non-dequeuing behavior is mostly useful for simpler device drivers
+> (usually PIO based) which process requests on segment basis.  By using
+> the block layer queue tip as the current request pointer, they don't
+> have to care about request boundaries and just process things
+> segment-by-segment.
+> 
+> However, this dual mode of operations complicates and ambiguates block
+> layer API.  Block layer can't tell whether a request has begun
+> processing or not in deterministic manner.  This makes accounting
+> inaccurate and implementing high level features in block layer
+> difficult.  For example, it isn't clear when a block layer timeout
+> timer should be started or how queue queiscing for EH should be
+> implemented.  Even when problems can be worked aroudn, it makes the
+> implementation fragile.
+> 
+> Although allowing llds ignore request boundaries makes things simpler
+> for certain drivers, the number of drivers benefit form it aren't too
+> many and driver stacks which are even mildly complex have to deal with
+> request boundaries anyway.  Also, the benefit itself isn't that
+> significant.  In most cases, it is just another way of doing things
+> rather than the definitively better way.  IOW, if there were no such
+> alternative, nobody would have missed it.
+> 
+> This patchset converts all block layer llds to dequeuing model and
+> then clean up API to simplify a bit and enforce dequeueing model.
+> This patchset contains the following patches.
 
-Yeah, generally. But the wider the blame can be spread when it does 
-break, the better! ;-)
+Glad this finally got completed, thanks a lot Tejun! Applied.
 
-> Acked-by: Jesse Barnes <jbarnes@virtuousgeek.org>
+-- 
+Jens Axboe
 
-Thanks!
-
-	Ingo
