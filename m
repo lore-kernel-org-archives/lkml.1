@@ -1,34 +1,29 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754998AbZEKH3d@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754690AbZEKHf3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754998AbZEKH3d (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 03:29:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753082AbZEKH3V
+	id S1754690AbZEKHf3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 03:35:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbZEKHfQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 03:29:21 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:7079 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752551AbZEKH3U (ORCPT
+	Mon, 11 May 2009 03:35:16 -0400
+Received: from mtagate1.de.ibm.com ([195.212.17.161]:50873 "EHLO
+	mtagate1.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752203AbZEKHfO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 03:29:20 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=BNcvuwED/zI3sKydhFAtrzBY4iDChF5jAs+EsE5TPS4pBxdEjXeve+vC/vyY/l3pKR
-         OuP6pZ1ywKvn02HkbMQz+QhpdNT64fPIAG70rIlhF6hmrpJnb+MIpQgjQo+u5QyXM5Ew
-         Emu5Tke7yEQRdkhHqViSb9MJ9dXjIIbHfTV+I=
-Date: Mon, 11 May 2009 16:29:00 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch -mmotm] mm: invoke oom killer for __GFP_NOFAIL
-Message-Id: <20090511162900.f372edd1.minchan.kim@barrios-desktop>
-In-Reply-To: <alpine.DEB.2.00.0905091544470.6884@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0905091544470.6884@chino.kir.corp.google.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Mon, 11 May 2009 03:35:14 -0400
+Date: Mon, 11 May 2009 09:35:12 +0200
+From: Martin Schwidefsky <schwidefsky@de.ibm.com>
+To: Michael Abbott <michael@araneidae.co.uk>
+Cc: Jan Engelhardt <jengelh@medozas.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] Re: /proc/uptime idle counter remains at 0
+Message-ID: <20090511093512.38ba9b70@skybase>
+In-Reply-To: <Pine.LNX.4.64.0905110656180.6983@venus.araneidae.co.uk>
+References: <alpine.LSU.2.00.0905090957490.27646@fbirervta.pbzchgretzou.qr>
+	<20090510191229.71f43f3c@skybase>
+	<alpine.LSU.2.00.0905110237310.17675@fbirervta.pbzchgretzou.qr>
+	<Pine.LNX.4.64.0905110656180.6983@venus.araneidae.co.uk>
+Organization: IBM Corporation
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -36,27 +31,60 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, David. 
+On Mon, 11 May 2009 07:23:58 +0100 (BST)
+Michael Abbott <michael@araneidae.co.uk> wrote:
 
-On Sat, 9 May 2009 15:46:39 -0700 (PDT)
-David Rientjes <rientjes@google.com> wrote:
+> On Mon, 11 May 2009, Jan Engelhardt wrote:
+> > On Sunday 2009-05-10 19:12, Martin Schwidefsky wrote:
+> > >> So, were the updates to uptime.c missed, or do we now live on with 
+> > >> /proc/uptime constantly having 0?
+> 
+> Please, let's not do this -- it breaks my instrument (which currently 
+> thinks the processor is overloaded).
 
-> The oom killer must be invoked regardless of the order if the allocation
-> is __GFP_NOFAIL, otherwise it will loop forever when reclaim fails to
-> free some memory.
->
+Hmm, bad..
 
-Hmm.. if __alloc_pages_may_oom fail to allocate free page due to order > PAGE_ALLOC_COSTRY_ORDER,
+> I have to confess I don't really understand the logic of what's going on 
+> here -- in particular, what does the idle process do other than account 
+> for time when the processor has nothing useful to do?  It does seem to me 
+> now that the .utime and .stime fields are now less than useful -- maybe 
+> they can be deleted now?
 
-It will go to nopage label in __alloc_pages_slowpath.
-Then it will show the page allocation failure warning and will return. 
-Retrying depends on caller. 
-
-So, I think it won't loop forever. 
-Do I miss something ?
-
-In addition, the OOM killer can help for getting the high order pages ?
+The idle task does not just sleep, it will do "real" work, e.g. softirq
+handling for interrupts / network traffic. This is added to the stime
+field of the idle process and it does carry some information. And
+deleting these fields won't be possible as utime/stime are needed for
+the other processes as well. To selectively remove them for the idle
+process doesn't make sense to me.
  
+> I've always assumed that the second field of /proc/uptime was a simple 
+> measure of time not spent doing real work, in other words a crude measure 
+> of spare CPU resources.  My instrument basically uses the the two fields 
+> of this file to compute a measure of CPU loading so it can raise an alert 
+> if the CPU doesn't have enough spare (idle) capacity.
+
+But it wasn't.. the old style stime of idle is a mixture of true idle
+time and some system time.
+
+> So as a simple solution, I've attached a patch where I just copy the idle 
+> field processing from fs/proc/stat.c.  I expect that on a multi-processor 
+> machine things may not be quite so simple -- as up time is in elapsed 
+> wall-clock time, then so should idle time be, so we probably need to also 
+> divide by the number of processors.  Afraid I don't have a multiprocessor 
+> test system, and /proc/stat seems ok, so I've not made this refinement.
+
+Yes, on a multiprocessor in particular with cpu hotplug you need
+additional information to be able to interpret the number. I still like
+the patch because it gives the field a defined semantic: the total time
+spent by the activated cpus waiting for work measured in cputime terms.
+The semantic is still different from the old style number though.
+
+For whom it matters:
+Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
+
 -- 
-Kinds Regards
-Minchan Kim
+blue skies,
+   Martin.
+
+"Reality continues to ruin my life." - Calvin.
+
