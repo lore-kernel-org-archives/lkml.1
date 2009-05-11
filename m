@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759174AbZEKVrE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760039AbZEKVrk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759174AbZEKVrE (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 17:47:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbZEKVqx
+	id S1760039AbZEKVrk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 17:47:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbZEKVr3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 17:46:53 -0400
-Received: from mail-qy0-f129.google.com ([209.85.221.129]:62629 "EHLO
-	mail-qy0-f129.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756809AbZEKVqw convert rfc822-to-8bit (ORCPT
+	Mon, 11 May 2009 17:47:29 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:9286 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756310AbZEKVr3 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 17:46:52 -0400
+	Mon, 11 May 2009 17:47:29 -0400
 To: Arve =?iso-8859-1?Q?Hj=F8nnev=E5g?= <arve@android.com>
 Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
        linux-pm@lists.linux-foundation.org,
@@ -23,12 +23,12 @@ References: <1241655468-5750-1-git-send-email-khilman@deeprootsystems.com>
 	<d6200be20905081658l65a1b37fs28739881267786d7@mail.gmail.com>
 From: Kevin Hilman <khilman@deeprootsystems.com>
 Organization: Deep Root Systems, LLC
-Date: Mon, 11 May 2009 14:46:49 -0700
 In-Reply-To: <d6200be20905081658l65a1b37fs28739881267786d7@mail.gmail.com>
  ("Arve =?iso-8859-1?Q?Hj=F8nnev=E5g=22's?= message of "Fri\, 8 May 2009
  16\:58\:59 -0700")
-Message-ID: <87ws8nfh2u.fsf@deeprootsystems.com>
 User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+Date: Mon, 11 May 2009 14:47:26 -0700
+Message-ID: <87vdo7fh1t.fsf@deeprootsystems.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Transfer-Encoding: 8BIT
