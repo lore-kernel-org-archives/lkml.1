@@ -1,84 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759891AbZEKWPs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759465AbZEKWR1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759891AbZEKWPs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 18:15:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759557AbZEKWP3
+	id S1759465AbZEKWR1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 18:17:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757280AbZEKWRS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 18:15:29 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:36054 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759406AbZEKWP2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 18:15:28 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RFC][PATCH 1/6] mm: Introduce __GFP_NO_OOM_KILL
-Date: Tue, 12 May 2009 00:14:23 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       pm list <linux-pm@lists.linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@tuxonice.net>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-References: <200905070040.08561.rjw@sisk.pl> <200905101550.09671.rjw@sisk.pl> <alpine.DEB.2.00.0905111312140.27577@chino.kir.corp.google.com>
-In-Reply-To: <alpine.DEB.2.00.0905111312140.27577@chino.kir.corp.google.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Mon, 11 May 2009 18:17:18 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50977 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756878AbZEKWRR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 18:17:17 -0400
+Date: Mon, 11 May 2009 15:11:30 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+Cc: gregkh@suse.de, npiggin@suse.de, mel@csn.ul.ie, a.p.zijlstra@chello.nl,
+       cl@linux-foundation.org, dave@linux.vnet.ibm.com, san@android.com,
+       arve@android.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 08/11 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
+Message-Id: <20090511151130.9a949cb7.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.0905111444070.466@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.0905101502050.18804@chino.kir.corp.google.com>
+	<20090511142936.dd68005b.akpm@linux-foundation.org>
+	<alpine.DEB.2.00.0905111444070.466@chino.kir.corp.google.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905120014.24751.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 May 2009, David Rientjes wrote:
-> On Sun, 10 May 2009, Rafael J. Wysocki wrote:
+On Mon, 11 May 2009 14:45:18 -0700 (PDT)
+David Rientjes <rientjes@google.com> wrote:
+
+> On Mon, 11 May 2009, Andrew Morton wrote:
 > 
-> > Index: linux-2.6/mm/page_alloc.c
-> > ===================================================================
-> > --- linux-2.6.orig/mm/page_alloc.c
-> > +++ linux-2.6/mm/page_alloc.c
-> > @@ -1619,8 +1619,12 @@ nofail_alloc:
-> >  			goto got_pg;
-> >  		}
-> >  
-> > -		/* The OOM killer will not help higher order allocs so fail */
-> > -		if (order > PAGE_ALLOC_COSTLY_ORDER) {
-> > +		/*
-> > +		 * The OOM killer will not help higher order allocs so fail.
-> > +		 * Also fail if the caller doesn't want the OOM killer to run.
-> > +		 */
-> > +		if (order > PAGE_ALLOC_COSTLY_ORDER
-> > +				|| (gfp_mask & __GFP_NO_OOM_KILL)) {
-> >  			clear_zonelist_oom(zonelist, gfp_mask);
-> >  			goto nopage;
-> >  		}
-> > Index: linux-2.6/include/linux/gfp.h
-> > ===================================================================
-> > --- linux-2.6.orig/include/linux/gfp.h
-> > +++ linux-2.6/include/linux/gfp.h
-> > @@ -51,8 +51,9 @@ struct vm_area_struct;
-> >  #define __GFP_THISNODE	((__force gfp_t)0x40000u)/* No fallback, no policies */
-> >  #define __GFP_RECLAIMABLE ((__force gfp_t)0x80000u) /* Page is reclaimable */
-> >  #define __GFP_MOVABLE	((__force gfp_t)0x100000u)  /* Page is movable */
-> > +#define __GFP_NO_OOM_KILL ((__force gfp_t)0x200000u)  /* Don't invoke out_of_memory() */
-> >  
-> > -#define __GFP_BITS_SHIFT 21	/* Room for 21 __GFP_FOO bits */
-> > +#define __GFP_BITS_SHIFT 22	/* Number of __GFP_FOO bits */
-> >  #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
-> >  
-> >  /* This equals 0, but use constants in case they ever change */
+> > > The oom killer must be invoked regardless of the order if the allocation
+> > > is __GFP_NOFAIL, otherwise it will loop forever when reclaim fails to
+> > > free some memory.
+> > 
+> > We should discourage callers from using __GFP_NOFAIL at all.  We should
+> > electrocute callers for using __GFP_NOFAIL on large allocations.  How's about
+> > 
+> > 	WARN_ON_ONCE(order > PAGE_ALLOC_COSTLY_ORDER &&	
+> > 			(gfp_mask & __GFP_NOFAIL));
+> > or, preferably:
+> > 
+> > 	WARN_ON_ONCE(order > 0 && (gfp_mask & __GFP_NOFAIL));
 > > 
 > 
-> Nack, unnecessary in mmotm and my patch series from 
-> http://lkml.org/lkml/2009/5/10/118.
+> Not sure it would help since the oom killer will be now be called for such 
+> an allocation and that dumps the stack (and will actually show the order 
+> and gfp flags as well).
 
-Andrew, what's your opinion, please?
+No, the intent of that warning is to find all call sites which use
+__GFP_NOFAIL on order>0 so we can hunt down and eliminate them.
 
-I can wait with these patches until the dust settles in the mm land.
 
-David, which patch in your series causes this to be unnecessary?
+please review...
 
-Best,
-Rafael
+From: Andrew Morton <akpm@linux-foundation.org>
+
+__GFP_NOFAIL is a bad fiction.  Allocations _can_ fail, and callers should
+detect and suitably handle this (and not by lamely moving the infinite
+loop up to the caller level either).
+
+Attempting to use __GFP_NOFAIL for a higher-order allocation is even
+worse, so add a once-off runtime check for this to slap people around for
+even thinking about trying it.
+
+Cc: David Rientjes <rientjes@google.com>
+Cc: Mel Gorman <mel@csn.ul.ie>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ mm/page_alloc.c |   13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
+
+diff -puN mm/page_alloc.c~a mm/page_alloc.c
+--- a/mm/page_alloc.c~a
++++ a/mm/page_alloc.c
+@@ -1201,8 +1201,19 @@ static int should_fail_alloc_page(gfp_t 
+ {
+ 	if (order < fail_page_alloc.min_order)
+ 		return 0;
+-	if (gfp_mask & __GFP_NOFAIL)
++	if (gfp_mask & __GFP_NOFAIL) {
++		/*
++		 * __GFP_NOFAIL is not to be used in new code.
++		 *
++		 * All __GFP_NOFAIL callers should be fixed so that they
++		 * properly detect and handle allocation failures.
++		 *
++		 * We most definitely don't want callers attempting to allocate
++		 * greater than single-page units with __GFP_NOFAIL.
++		 */
++		WARN_ON_ONCE(order > 0);
+ 		return 0;
++	}
+ 	if (fail_page_alloc.ignore_gfp_highmem && (gfp_mask & __GFP_HIGHMEM))
+ 		return 0;
+ 	if (fail_page_alloc.ignore_gfp_wait && (gfp_mask & __GFP_WAIT))
+_
+
+
