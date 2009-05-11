@@ -1,46 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756446AbZEKIqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbZEKIqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756446AbZEKIqQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 04:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754715AbZEKIp5
+	id S1756103AbZEKIqb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 04:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbZEKIqD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 04:45:57 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:64910 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754389AbZEKIp5 (ORCPT
+	Mon, 11 May 2009 04:46:03 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:38590 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755726AbZEKIqA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 04:45:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=M4ZQi5/k3uLKa430OfAuZ8gP5u2PWEmjN0fX4vkf6WNuhu0m2kkW2EXHlTdkxuHoEn
-         u8yZ2O1vn3c3kiRmLBfiCSC/DsQMdmdC9agEnxY9Ea2q+vmF7s+XErzV1u6cU+QhNVPh
-         Im8ohl135NNcRo5BcJESAqjchS61OPykqx57o=
-Message-ID: <4A07E5C7.5030000@gmail.com>
-Date: Mon, 11 May 2009 10:45:59 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.7 Thunderbird/3.0b2
+	Mon, 11 May 2009 04:46:00 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=q8ZyltBJP0xvwszzWivo5fCne/zdrF5/fTYQT4RvTQpRvxmZhwHfTxUvxGVD8fiKm
+	zL58123HrnVAGzDUExhbg==
+Date: Mon, 11 May 2009 01:45:56 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Mel Gorman <mel@csn.ul.ie>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, San Mehat <san@android.com>,
+       Arve Hjonnevag <arve@android.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 08/11 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
+In-Reply-To: <20090511104310.B9C1.A69D9226@jp.fujitsu.com>
+Message-ID: <alpine.DEB.2.00.0905110143190.24726@chino.kir.corp.google.com>
+References: <20090511085750.B9AC.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0905101719040.31823@chino.kir.corp.google.com> <20090511104310.B9C1.A69D9226@jp.fujitsu.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Chris Clayton <chris2553@googlemail.com>
-CC: linux-wireless@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Oops in wireless from today's git
-References: <c6b1100b0905101239n564e4379v5460c281260950bc@mail.gmail.com>	 <4A074682.6010403@gmail.com>	 <c6b1100b0905101529tfafe11p3ddcbf4b604ddd29@mail.gmail.com>	 <4A07C905.8010805@gmail.com> <c6b1100b0905110138r804136aqce6111b17cabc5fb@mail.gmail.com>
-In-Reply-To: <c6b1100b0905110138r804136aqce6111b17cabc5fb@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/11/2009 10:38 AM, Chris Clayton wrote:
-> Thanks Jiri. That patch applies (with offsets) and prevents the oops.
-> I think the patch that caused this oops was sent to stable, so  I
-> guess this needs pushing to Linus quite quickly so that it can go to
-> stable too.
+On Mon, 11 May 2009, KOSAKI Motohiro wrote:
 
-Yes, you're right, it now oopses with cards that support only one 802.11
-band, but it's still better than silently corrupting memory. Of course,
-the oops-fixing patch should be merged into the stable aswell.
+> > What exactly are you objecting to?  You don't want the oom killer called 
+> > for a __GFP_NOFAIL allocation above PAGE_ALLOC_COSTLY_ORDER that could not 
+> > reclaim any memory and would prefer that it loop endlessly in the page 
+> > allocator?  What's the purpose of that if the oom killer could free a very 
+> > large memory hogging task?
+> 
+> My point is, if we change gfp-flags meaning, we should change
+> unintentional affected caller.
+> 
+> Do you oppose this?
+> 
 
-Thanks for testing.
+include/linux/gfp.h states this:
+
+ * __GFP_NOFAIL: The VM implementation _must_ retry infinitely: the caller
+ * cannot handle allocation failures.
+
+That is the only desciption given to users of __GFP_NOFAIL, so they should 
+be able to trust it.  The fact is that in mmotm it's possible for such an 
+allocation to fail without even attempting to free some memory via the oom 
+killer (and I disagree that killing a large memory hogging task will not 
+allow large allocations such as those greater than PAGE_ALLOC_COSTLY_ORDER 
+to succeed, which is a question of fragmentation and not purely VM size).
