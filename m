@@ -1,86 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbZEKVxY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759053AbZEKVxq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758239AbZEKVxY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 17:53:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbZEKVxP
+	id S1759053AbZEKVxq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 17:53:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbZEKVxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 17:53:15 -0400
-Received: from hera.kernel.org ([140.211.167.34]:39490 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753523AbZEKVxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 17:53:14 -0400
-Date: Mon, 11 May 2009 21:51:44 GMT
-From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       torvalds@linux-foundation.org, jblunck@suse.de, hch@infradead.org,
-       tglx@linutronix.de, mhiramat@redhat.com, harvey.harrison@gmail.com,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       torvalds@linux-foundation.org, jblunck@suse.de, hch@infradead.org,
-       tglx@linutronix.de, harvey.harrison@gmail.com, mhiramat@redhat.com,
-       mingo@elte.hu
-In-Reply-To: <20090511210300.17332.67549.stgit@localhost.localdomain>
-References: <20090511210300.17332.67549.stgit@localhost.localdomain>
-Subject: [tip:x86/urgent] x86, 32-bit: fix kernel_trap_sp()
-Message-ID: <tip-11d0f25f06fb67e707e6ed4bf9967b859e403639@git.kernel.org>
-Git-Commit-ID: 11d0f25f06fb67e707e6ed4bf9967b859e403639
-X-Mailer: tip-git-log-daemon
+	Mon, 11 May 2009 17:53:32 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:36312 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755696AbZEKVxb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 17:53:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=OIDNf+nPSni8QTe0OWF3onzZuDynE6iUAcENQCy0pTyEj9wcHcka8kpjH37fidlULL
+         JM4ZE41s3ys37jz+hQGWbb6FpVSpTOvvTYd1Y+Q5pezmuYeHf2jXTS7EXHMR3WKNJeLy
+         Ww1FOTojG4n9CS0f6Tib/m2xSIT8iJeYoypYA=
+Message-ID: <4A089E49.7080403@gmail.com>
+Date: Mon, 11 May 2009 23:53:13 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.7 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 21:51:46 +0000 (UTC)
+To: Justin Mattock <justinmattock@gmail.com>
+CC: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       ath9k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org
+Subject: Re: ath9k seems to be broken on 2.6.30-rc4 with a macbook pro
+References: <dd18b0c30905111002y4aeb2033ma2fbb2730f5acdaf@mail.gmail.com>
+In-Reply-To: <dd18b0c30905111002y4aeb2033ma2fbb2730f5acdaf@mail.gmail.com>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  11d0f25f06fb67e707e6ed4bf9967b859e403639
-Gitweb:     http://git.kernel.org/tip/11d0f25f06fb67e707e6ed4bf9967b859e403639
-Author:     Masami Hiramatsu <mhiramat@redhat.com>
-AuthorDate: Mon, 11 May 2009 17:03:00 -0400
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 11 May 2009 23:49:17 +0200
+Adding some CCs.
 
-x86, 32-bit: fix kernel_trap_sp()
+On 05/11/2009 07:02 PM, Justin Mattock wrote:
+> I've been trying to diagnose an issue
+> with 2.6.30-rc4. At first thinking it
+> was not the kernel, but the network manager
+> (in my case I use wicd).
+> with 2.6.29-rc8 the system starts up,
+> connects no problem.
+> but as soon as I load 2.6.30-rc4
+> I get limited connection to none.
+> in dmesg I see:
+> 
+> [   36.337419] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 1
+> [   36.530106] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 2
+> [   36.730100] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 3
+> [   36.930101] wlan0: direct probe to AP 00:1e:2a:00:67:f0 timed out
+> [   44.421728] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 1
+> [   44.620080] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 2
+> [   44.820080] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 3
+> [   45.020076] wlan0: direct probe to AP 00:1e:2a:00:67:f0 timed out
+> 
+> The type of encryption used is just
+> a standard WEP key(no WPA).
+> 
+> has this been resolved already?
+> 
+> Also I'm noticing(but not that big of a deal)
+> if I set in sysctl.conf:
+> 
+> net.ipv4.conf.all.arp_ignore=8
+> net.ipv4.conf.wlan0.arp_ignore=8
+> net.ipv4.conf.wmaster0.arp_ignore=8
+> net.ipv4.conf.lo.arp_ignore=8
+> net.ipv4.conf.all.arp_announce=2
+> net.ipv4.conf.wlan0.arp_announce=2
+> net.ipv4.conf.wmaster0.arp_announce=2
+> net.ipv4.conf.lo.arp_announce=2
+> 
+> watching a movie on hulu, about 15/20 minuets
+> into enjoyment, hulu craps out(starts re-buffering)
+> then re initializes after about 30 secs later.
+> but if I comment those out(set back to default)
+> hulu will run fine.
+> 
 
-Use &regs->sp instead of regs for getting the top of stack in kernel mode.
-(on x86-64, regs->sp always points the top of stack)
-
-[ Impact: Oprofile decodes only stack for backtracing on i386 ]
-
-Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: systemtap@sources.redhat.com
-Cc: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>
-Cc: Jan Blunck <jblunck@suse.de>
-Cc: Christoph Hellwig <hch@infradead.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>
-LKML-Reference: <20090511210300.17332.67549.stgit@localhost.localdomain>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/include/asm/ptrace.h |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
-index e304b66..aed0894 100644
---- a/arch/x86/include/asm/ptrace.h
-+++ b/arch/x86/include/asm/ptrace.h
-@@ -187,14 +187,14 @@ static inline int v8086_mode(struct pt_regs *regs)
- 
- /*
-  * X86_32 CPUs don't save ss and esp if the CPU is already in kernel mode
-- * when it traps.  So regs will be the current sp.
-+ * when it traps.  So &regs->sp will be the current sp.
-  *
-  * This is valid only for kernel mode traps.
-  */
- static inline unsigned long kernel_trap_sp(struct pt_regs *regs)
- {
- #ifdef CONFIG_X86_32
--	return (unsigned long)regs;
-+	return (unsigned long)&regs->sp;
- #else
- 	return regs->sp;
- #endif
