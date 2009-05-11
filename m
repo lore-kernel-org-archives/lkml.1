@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760310AbZEKXIb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761041AbZEKXJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760310AbZEKXIb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 19:08:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbZEKXIW
+	id S1761041AbZEKXJA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 19:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757364AbZEKXIu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 19:08:22 -0400
-Received: from moutng.kundenserver.de ([212.227.126.188]:53111 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754845AbZEKXIW (ORCPT
+	Mon, 11 May 2009 19:08:50 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:12402 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756359AbZEKXIt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 19:08:22 -0400
-From: Arnd Bergmann <arnd@arndb.de>
+	Mon, 11 May 2009 19:08:49 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=fzwUyDV2mQGxO8IZBi/vX3EU0UFTnabtuB+pXOkm7hEXlGtqdTcHaU4gP30d5Kllt
+	eHGToa9NkqoD5UxfJZJ+w==
+Date: Mon, 11 May 2009 16:08:44 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] syscalls.h add the missing sys_pipe2 declaration
-Date: Mon, 11 May 2009 23:08:20 +0000
-User-Agent: KMail/1.11.2 (Linux/2.6.29; KDE/4.2.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, Ulrich Drepper <drepper@redhat.com>
-References: <20090511222702.352192505@arndb.de> <20090511222702.352192505@arndb.de>> <200905112303.16371.arnd@arndb.de>
-In-Reply-To: <200905112303.16371.arnd@arndb.de>
+cc: Greg Kroah-Hartman <gregkh@suse.de>, npiggin@suse.de, mel@csn.ul.ie,
+       a.p.zijlstra@chello.nl, Christoph Lameter <cl@linux-foundation.org>,
+       dave@linux.vnet.ibm.com, san@android.com, arve@android.com,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 10/11 -mmotm] oom: avoid oom kill if no interruptible
+ tasks
+In-Reply-To: <20090511143906.1cde5f6e.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.2.00.0905111606030.5979@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101502470.18804@chino.kir.corp.google.com> <20090511143906.1cde5f6e.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905112308.21068.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+DiSL5ZtfkaEjZY8KlnqNNATnHkC/HuEcE7Il
- haEJON6gzFZOzDoUp0X0+GK+imABbg9DRJUl0H22MgLoVRUTep
- R9pNbhtGtOARAoy/UKvhg==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In order to build the generic syscall table, we need a declaration
-for every system call. sys_pipe2 was added without a proper declaration,
-so add this to syscalls.h now.
+On Mon, 11 May 2009, Andrew Morton wrote:
 
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
-re-sent without the wordwrap...
+> > If there are no interruptible system tasks other than kthreads,
+> 
+> It's unclear what the term "system task" means.  Just "task"?
+> 
 
- include/linux/syscalls.h |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+Yes.
 
-diff --git a/include/linux/syscalls.h b/include/linux/syscalls.h
-index 40617c1..3052084 100644
---- a/include/linux/syscalls.h
-+++ b/include/linux/syscalls.h
-@@ -433,6 +433,7 @@ asmlinkage long sys_fcntl(unsigned int fd, unsigned int cmd, unsigned long arg);
- asmlinkage long sys_fcntl64(unsigned int fd,
- 				unsigned int cmd, unsigned long arg);
- #endif
-+asmlinkage long sys_pipe2(int __user *fildes, int flags);
- asmlinkage long sys_dup(unsigned int fildes);
- asmlinkage long sys_dup2(unsigned int oldfd, unsigned int newfd);
- asmlinkage long sys_dup3(unsigned int oldfd, unsigned int newfd, int flags);
--- 
-1.6.0.4
+> > no task
+> > should be chosen for oom kill since they won't respond to the SIGKILL
+> > anyway.  Instead, we choose to simply fail page allocations if reclaim
+> > cannot free memory and hope for the best.
+> 
+> But plain old user processes enter and leave D state all the time.  The
+> task may well just be sitting there waiting for a disk read to
+> complete.  It will respond to the SIGKILL shortly after the IO
+> completes, so an appropriate action here is to just wait for that to
+> happen.
+> 
 
+Since current is in the oom killer, it's runnable.  So the only way this 
+can fail an allocation is if a kthread is looking for memory and reclaim 
+has failed and no user tasks are running.  It's not guaranteed that any 
+memory will ever become available (for instance if all userspace tasks are 
+waiting on mm->mmap_sem for an oom killed task that will never exit even 
+after having been given TIF_MEMDIE), so the best course of action is to 
+fail, if allowed.
