@@ -1,63 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbZEKTbj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754610AbZEKTdS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758803AbZEKTbj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 15:31:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbZEKTb1
+	id S1754610AbZEKTdS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 15:33:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752504AbZEKTdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 15:31:27 -0400
-Received: from thunk.org ([69.25.196.29]:34458 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752619AbZEKTb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 15:31:26 -0400
-Date: Mon, 11 May 2009 15:30:36 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Josef Bacik <josef@redhat.com>, linux-fsdevel@vger.kernel.org,
-       sandeen@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] fiemap tester
-Message-ID: <20090511193036.GE21518@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Randy Dunlap <randy.dunlap@oracle.com>,
-	Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Josef Bacik <josef@redhat.com>, linux-fsdevel@vger.kernel.org,
-	sandeen@redhat.com, linux-kernel@vger.kernel.org
-References: <20090508191649.GG9068@unused.rdu.redhat.com> <20090508161318.c73d766c.akpm@linux-foundation.org> <20090511094639.GA7488@infradead.org> <20090511171046.GA21518@mit.edu> <4A08666A.6020700@oracle.com>
+	Mon, 11 May 2009 15:33:00 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:31779 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752147AbZEKTc7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 15:32:59 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=djlBDQx84zO4eMb31jYI/gVrIWbO9CIsxxzhtUWmMrxeBpjLBiSmGv6vIj6zyleNL
+	jRuHFW9W4tUQ4mfKXH+LQ==
+Date: Mon, 11 May 2009 12:32:54 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Minchan Kim <minchan.kim@gmail.com>
+cc: Mel Gorman <mel@csn.ul.ie>, Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch -mmotm] mm: invoke oom killer for __GFP_NOFAIL
+In-Reply-To: <28c262360905110700p68f3de35xf0a1d52d2ccfd968@mail.gmail.com>
+Message-ID: <alpine.DEB.2.00.0905111229540.23739@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905091544470.6884@chino.kir.corp.google.com> <20090511162900.f372edd1.minchan.kim@barrios-desktop> <alpine.DEB.2.00.0905110138160.24726@chino.kir.corp.google.com> <28c262360905110212j9867b79wd8d90b16f6f196be@mail.gmail.com>
+ <28c262360905110421g1b079f2cr798ca95adfb8ee45@mail.gmail.com> <20090511133840.GA11624@csn.ul.ie> <28c262360905110700p68f3de35xf0a1d52d2ccfd968@mail.gmail.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A08666A.6020700@oracle.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 10:54:50AM -0700, Randy Dunlap wrote:
+On Mon, 11 May 2009, Minchan Kim wrote:
+
+> But this patch increases the probability of innocent task killing.
+> Is GFP_NOFAIL's early bailout more important than killing of innocent task ?
 > 
-> Given that we are not lawyers:
-> 
-> The current kernel tree contains >3500 files that contain the phrase
-> "All Rights Reserved".  Are they a problem?
 
-Yes, but how many of them are followed with a GPL licensing statement?
-And presumably we have a signed-off-by chain that which includes
-someone asserting that they have followed the Developer's
-Certification of Origin rules.  (That being said, it's usually better
-if the All Rights Reserved is removed, after getting explicit
-permission from the original copyright owner to make it available
-under a GPLv2 license.)
-
-The issue with the xfstests tree is the *only* copyright permission
-statement is "All Rights Reserved", and while there is an oral
-assertion from SGI that it was supposed to be released under an open
-source license, there is nothing in writing or in the source
-distribution indicating this, and it wasn't clear to me whether this
-oral assurance happened before or after SGI was purchased by
-Rackspace.
-
-						- Ted
+__GFP_NOFAIL's bailout is, by definition, a bug in the page allocator and 
+this patch fixes it.
