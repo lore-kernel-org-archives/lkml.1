@@ -1,101 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbZEKOj4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754909AbZEKOk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756169AbZEKOj4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 10:39:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbZEKOjb
+	id S1754909AbZEKOk1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 10:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbZEKOjq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 10:39:31 -0400
-Received: from e23smtp08.au.ibm.com ([202.81.31.141]:57842 "EHLO
-	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751852AbZEKOja (ORCPT
+	Mon, 11 May 2009 10:39:46 -0400
+Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:54807 "EHLO
+	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755644AbZEKOjo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 10:39:30 -0400
-Date: Mon, 11 May 2009 20:09:14 +0530
-From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
+	Mon, 11 May 2009 10:39:44 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Chuck Lever <chuck.lever@oracle.com>
+Subject: Re: svc: failed to register lockdv1 RPC service (errno 97).
+Date: Mon, 11 May 2009 16:39:42 +0200
+User-Agent: KMail/1.9.9
+Cc: Netdev <netdev@vger.kernel.org>,
        Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH][REPOST] Don't export sched_mc_power_savings
-	onmulti-socket single core system
-Message-ID: <20090511143914.GB4853@dirshya.in.ibm.com>
-Reply-To: svaidy@linux.vnet.ibm.com
-References: <4A081A4B.1000204@linux.vnet.ibm.com> <20090511123529.GH13954@elte.hu>
+       Trond Myklebust <Trond.Myklebust@netapp.com>,
+       Linux NFS mailing list <linux-nfs@vger.kernel.org>
+References: <200905110248.48695.elendil@planet.nl> <8054CA42-CAFC-4DFC-A3A9-107AF29284EE@oracle.com>
+In-Reply-To: <8054CA42-CAFC-4DFC-A3A9-107AF29284EE@oracle.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090511123529.GH13954@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905111639.43636.elendil@planet.nl>
+X-OriginalArrivalTime: 11 May 2009 14:39:44.0323 (UTC) FILETIME=[53434130:01C9D246]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Ingo Molnar <mingo@elte.hu> [2009-05-11 14:35:29]:
+On Monday 11 May 2009, you wrote:
+> On May 10, 2009, at 8:48 PM, Frans Pop wrote:
+> > After switching from 2.6.29.2 to 2.6.30-rc5 I get this new message
+> > during boot of my home server:
+> >   svc: failed to register lockdv1 RPC service (errno 97).
+>
+> Is this the only instance of this message, or do you see it several
+> times?
 
-> 
-> * Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
-> 
-> > My previous post got lost somewhere in lkml list. Hence reposting 
-> > this patch again.
-> 
-> no, it did not get lost, i gave you the feedback below more than a 
-> month ago. FYI, this resubmission has the same corrupted-patch 
-> problem.
+It's the only one.
 
-Hi Ingo,
+> > This looks to be the result of the following commit:
+> > commit 363f724cdd3d2ae554e261be995abdeb15f7bdd9
+> > Author: Chuck Lever <chuck.lever@oracle.com>
+> >    SUNRPC: rpcb_register() should handle errors silently
+> >    Move error reporting for RPC registration to rpcb_register's
+> > caller.
+> >
+> > Question is: do I really want to know this? I assume the "failure"
+> > happened with previous kernels too, but silently.
+>
+> The point of that commit was to report errors _less_ frequently.
 
-My copy of the [REPOST] seem to have tabs correct.  Anyways I have
-added an extra parentheses also in the #define. Please check and
-apply.
+:-)
 
-Thanks,
-Vaidy
+> The server-side RPC code is attempting to be more automatic about
+> which address families are supported by kernel NFS services.  This
+> message tells us that some particular case is not handled yet.  I
+> suspect you weren't seeing this error in the past at all.
 
-Don't export sched_mc_power_savings on multi-socket single core system
+Correct. Neither this exact error, nor anything remotely similar.
 
-Fix to prevent sched_mc_power_saving from being exported through sysfs
-for multi-scoket single core system. Max cores should be always greater than
-one (1). My earlier patch that introduced fix for not exporting
-'sched_mc_power_saving' on laptops  broke it on multi-socket single core
-system. This fix addresses issue on both laptop and multi-socket single
-core system.
-Below are the Test results:
+> Can you report more about your server configuration?  What
+> distribution is this?
 
-1. Single socket - multi-core
-       Before Patch: Does not export 'sched_mc_power_saving'
-       After Patch: Does not export 'sched_mc_power_saving'
-       Result: Pass
+Debian stable (Lenny).
+nfs-common and nfs-kernel-server (1.1.2)
 
-2. Multi Socket - single core
-      Before Patch: exports 'sched_mc_power_saving'
-      After Patch: Does not export 'sched_mc_power_saving'
-      Result: Pass
+I'm using nfs4. rpc.statd is not running; rpc.mountd and rpc.idmapd are.
 
-3. Multi Socket - Multi core
-      Before Patch: exports 'sched_mc_power_saving'
-      After Patch: exports 'sched_mc_power_saving'
+> Does user space have portmapper or rpcbind? 
 
+portmap (6.0)
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
+> Are you blacklisting ipv6.ko?
 
- arch/x86/include/asm/topology.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+No, the server has IPv6 enabled.
+I'm using NFS mainly from my laptop though, which does not have an IPv6 
+address for my home network.
 
+> What's the output of "rpcinfo" on your server after it has started NFSD?
 
-diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
-index f44b49a..066ef59 100644
---- a/arch/x86/include/asm/topology.h
-+++ b/arch/x86/include/asm/topology.h
-@@ -203,7 +203,8 @@ struct pci_bus;
- void x86_pci_root_bus_res_quirks(struct pci_bus *b);
- 
- #ifdef CONFIG_SMP
--#define mc_capable()	(cpumask_weight(cpu_core_mask(0)) != nr_cpu_ids)
-+#define mc_capable()	((boot_cpu_data.x86_max_cores > 1) && \
-+			(cpumask_weight(cpu_core_mask(0)) != nr_cpu_ids))
- #define smt_capable()			(smp_num_siblings > 1)
- #endif
- 
+I guess you mean the -p option?
+
+$ rpcinfo -p
+   program vers proto   port
+    100000    2   tcp    111  portmapper
+    100000    2   udp    111  portmapper
+    100003    2   udp   2049  nfs
+    100003    3   udp   2049  nfs
+    100003    4   udp   2049  nfs
+    100021    1   udp  47955  nlockmgr
+    100021    3   udp  47955  nlockmgr
+    100021    4   udp  47955  nlockmgr
+    100021    1   tcp  41860  nlockmgr
+    100021    3   tcp  41860  nlockmgr
+    100021    4   tcp  41860  nlockmgr
+    100003    2   tcp   2049  nfs
+    100003    3   tcp   2049  nfs
+    100003    4   tcp   2049  nfs
+    100005    1   udp  40032  mountd
+    100005    1   tcp  40623  mountd
+    100005    2   udp  40032  mountd
+    100005    2   tcp  40623  mountd
+    100005    3   udp  40032  mountd
+    100005    3   tcp  40623  mountd
+    391002    2   tcp    792  sgi_fam
+
+Cheers,
+FJP
