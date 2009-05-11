@@ -1,77 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752470AbZEKOa1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753121AbZEKObo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752470AbZEKOa1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 10:30:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbZEKOaN
+	id S1753121AbZEKObo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 10:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbZEKObf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 10:30:13 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:46839 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750712AbZEKOaM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 10:30:12 -0400
-Subject: Re: [PATCH] Fix MSI-X with NIU cards
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: David Miller <davem@davemloft.net>
-Cc: matthew@wil.cx, jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090510.223645.193708481.davem@davemloft.net>
-References: <20090508131333.GV8112@parisc-linux.org>
-	 <1242004911.7767.26.camel@concordia>
-	 <20090510.223645.193708481.davem@davemloft.net>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-+z82HoL7OYrdwANGKmtD"
-Date: Tue, 12 May 2009 00:30:11 +1000
-Message-Id: <1242052211.7011.4.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 11 May 2009 10:31:35 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:6975 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018AbZEKObe (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 10:31:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Gz/IVZiWEEJZxvLCZAFDAPzHRgjjQHhowDBAhL2/n38vxLAbGt0y1bP0YqTJVfdBKQ
+         XGlQPmMbJ5/VP+c72XHRx0thC++XClrGmVGid+tacNwaUbaZSNgG7z+IwEz6Y2a3H5tz
+         YGX0G2Hqm9AJkY9gQ8m0un2BvJf4WJcjIy/Q8=
+Message-ID: <4A0836CA.5070709@gmail.com>
+Date: Mon, 11 May 2009 16:31:38 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.7 Thunderbird/3.0b2
+MIME-Version: 1.0
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       e1000-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+Subject: Re: [E1000-devel] e1000: "eeprom checksum is not valid" after kexec
+References: <49F06EEB.9060500@gmail.com> <49F0D22E.6050101@gmail.com> <20090423211754.GD4017@vespa.holoscopio.com> <200904241809.45240.rjw@sisk.pl>
+In-Reply-To: <200904241809.45240.rjw@sisk.pl>
+Content-Type: text/plain; charset=ISO-8859-2
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 04/24/2009 06:09 PM, Rafael J. Wysocki wrote:
+> My understanding is that the commit pointed to by Jiri caused a problem
+> if the current mainline kernel was kexeced from an older kernel (2.6.27.x from
+> openSUSE-11.1 in this particular case), because the older kernel didn't
+> have the recent network driver fixes applied.  Is this correct?
 
---=-+z82HoL7OYrdwANGKmtD
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Exactly!
 
-On Sun, 2009-05-10 at 22:36 -0700, David Miller wrote:
-> From: Michael Ellerman <michael@ellerman.id.au>
-> Date: Mon, 11 May 2009 11:21:51 +1000
->=20
-> > So I guess this device is just silently ignoring that write?
->=20
-> No, it signals a fault on the PCI bus, which is how we noticed
-> this problem in the first place.
+> Also, I'm still interested in whether or not removig the following three lines:
+> 
+>         /* Check if we're already there */
+>         if (dev->current_state == state)
+>                 return 0;
+> 
+> from pci_set_power_state() in the current mainline kernel fixes the problem
+> in the configuration where it is readily reproducible.
 
-But the patch doesn't change that? It just removes the readl AFAICS:
+After removing those lines, the problem still persists:
+e1000: 0000:02:01.0: e1000_probe: The EEPROM Checksum Is Not Valid
 
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 6f2e629..3627732 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -455,8 +455,6 @@ static int msix_capability_init(struct pci_dev *dev,
-                entry->msi_attrib.default_irq =3D dev->irq;
-                entry->msi_attrib.pos =3D pos;
-                entry->mask_base =3D base;
--               entry->masked =3D readl(base + j * PCI_MSIX_ENTRY_SIZE +
--                                       PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
-                msix_mask_irq(entry, 1);
-=20
 
-Or has msix_mask_irq() changed since 413f81eba?
-
-cheers
-
---=-+z82HoL7OYrdwANGKmtD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkoINm4ACgkQdSjSd0sB4dLdwQCfZhPeciogvLdZSOm5UADGYWAn
-MjIAoMGLpNmE3CTixUIjzbaJ+AXFevhI
-=GsFo
------END PGP SIGNATURE-----
-
---=-+z82HoL7OYrdwANGKmtD--
 
