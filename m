@@ -1,92 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755721AbZEKS4t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755444AbZEKTAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755721AbZEKS4t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 14:56:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753377AbZEKS4k
+	id S1755444AbZEKTAf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 15:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbZEKTAZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 14:56:40 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:47796 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752988AbZEKS4j (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 14:56:39 -0400
-Date: Mon, 11 May 2009 11:51:22 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: chrisw@sous-sol.org, oleg@redhat.com, roland@redhat.com,
-       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
-Subject: Re: [patch 1/2] ptrace, security: rename ptrace_may_access =>
- ptrace_access_check
-Message-Id: <20090511115122.2cf3e98d.akpm@linux-foundation.org>
-In-Reply-To: <20090511133949.GA28533@elte.hu>
-References: <20090507002133.02D05FC39E@magilla.sf.frob.com>
-	<20090507063606.GA15220@redhat.com>
-	<20090507082027.GD12285@elte.hu>
-	<20090507083102.GA20125@redhat.com>
-	<20090507083851.GA19133@elte.hu>
-	<20090507085742.GB3036@sequoia.sous-sol.org>
-	<20090507090459.GE19133@elte.hu>
-	<20090507093124.GA355@elte.hu>
-	<20090507094947.GA4911@elte.hu>
-	<20090507125526.c257c23d.akpm@linux-foundation.org>
-	<20090511133949.GA28533@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 11 May 2009 15:00:25 -0400
+Received: from gw.goop.org ([64.81.55.164]:51327 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751832AbZEKTAY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 15:00:24 -0400
+Message-ID: <4A0875C7.7070305@goop.org>
+Date: Mon, 11 May 2009 12:00:23 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Isaku Yamahata <yamahata@valinux.co.jp>
+CC: Ingo Molnar <mingo@elte.hu>, Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [Xen-devel] [PATCH 03/11] Xen: Rename the balloon lock
+References: <1241732737-7669-1-git-send-email-jeremy@goop.org> <1241732737-7669-4-git-send-email-jeremy@goop.org> <20090508020123.GE25512%yamahata@valinux.co.jp>
+In-Reply-To: <20090508020123.GE25512%yamahata@valinux.co.jp>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009 15:39:49 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+Isaku Yamahata wrote:
+> Hi. Please please don't move the arch common variable
+> into x86 specific file. It causes link error on ia64.
+>
+> Before I sent the patches to fix it twice or so,
+> but it seems to be dropped.
+>   
 
-> 
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> 
-> > On Thu, 7 May 2009 11:49:47 +0200
-> > Ingo Molnar <mingo@elte.hu> wrote:
-> > 
-> > > The ptrace_may_access() methods are named confusingly - some 
-> > > variants return a bool, while the security subsystem methods have a 
-> > > retval convention.
-> > > 
-> > > Rename it to ptrace_access_check, to reduce the confusion factor. A 
-> > > followup patch eliminates the bool usage.
-> > 
-> > s/may_access/access_check/ is a poor change.  The new name conveys 
-> > less information than the old one.
-> > 
-> > It's quite clear what the return value from "may_access" means.  
-> 
-> it isnt clear at all. In fact there's two variants: one that returns 
-> 'int' and one that returns 'bool' - the two have inverted values.
+Sorry, I can't seem to find them.  Could you resend?
 
-Oh.  I was assuming this was a yesno-returning function.
+I guess there's the larger issue of whether the 
+xen_create_contiguous_region() code is also useful on ia64.  It seems to 
+me the options are:
 
-> > It's less clear what the return value from a function called 
-> > "access_check" means.
-> >
-> > Switching to something like ptrace_task_accessible() or 
-> > ptrace_may_access_task() would be better.
-> > 
-> > This happens quite often.  The string "check" in the name of a 
-> > predicate function is a red flag.
-> 
-> I disagree. To repeat the argument i made in this thread, the 'may' 
-> suggests/attracts a logical value, i.e. yes or no, or boolean. But 
-> that goes against the desire of actual call sites wanting a Linux 
-> retval.
-> 
-> I.e. any function name that can be plain-English answered with: 
-> 'yes' or 'no' is a red flag for a retval function.
-> 
-> You cannot answer ptrace_access_check() with 'yes' or 'no'. You 
-> could if it was ptrace_access_ok() or ptrace_may_access.
-> 
+    * it is, so we should move the code somewhere common (along with the
+      lock)
+    * it isn't so ia64 will have its own version (in which case it can
+      define its own version of the lock without much impact)
+    * or we could move the lock anyway, but there's no very obvious
+      place to put it
 
-So what _are_ the semantics of the ptrace_may_access() return value?
-
-<checks the code comments>
-
-<stomps off in a huff>
+    J
