@@ -1,80 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758524AbZEKWGS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759101AbZEKWGt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758524AbZEKWGS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 18:06:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755122AbZEKWGE
+	id S1759101AbZEKWGt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 18:06:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZEKWGj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 18:06:04 -0400
-Received: from smtp-out.google.com ([216.239.33.17]:8018 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753730AbZEKWGC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 18:06:02 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=xWs9GqHxNAw0X5nU5glQiVHDB6IkkRdlKof91ReUFYXaOFov+bQDofZMxXlqNBGR9
-	G+bhhKIlzr7bRCT96Ipng==
-Date: Mon, 11 May 2009 15:05:57 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Greg KH <gregkh@suse.de>
-cc: Andrew Morton <akpm@linux-foundation.org>, npiggin@suse.de, mel@csn.ul.ie,
-       a.p.zijlstra@chello.nl, Christoph Lameter <cl@linux-foundation.org>,
-       dave@linux.vnet.ibm.com, san@android.com, arve@android.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 05/11 -mmotm] oom: fix possible oom_dump_tasks NULL
- pointer
-In-Reply-To: <20090511214106.GB22040@suse.de>
-Message-ID: <alpine.DEB.2.00.0905111501480.2234@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101501050.18804@chino.kir.corp.google.com> <20090511141138.3e8118ab.akpm@linux-foundation.org> <alpine.DEB.2.00.0905111418560.466@chino.kir.corp.google.com>
- <20090511214106.GB22040@suse.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 11 May 2009 18:06:39 -0400
+Received: from gw.goop.org ([64.81.55.164]:43095 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757115AbZEKWGj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 18:06:39 -0400
+Message-ID: <4A08A16E.4040003@goop.org>
+Date: Mon, 11 May 2009 15:06:38 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: Ingo Molnar <mingo@elte.hu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 02/18] xen: hook io_apic read/write operations
+References: <1241730883-4917-1-git-send-email-jeremy@goop.org> <1241730883-4917-3-git-send-email-jeremy@goop.org> <20090509084201.GF3656@elte.hu> <20090509084324.GA5158@elte.hu> <4A05A408.3020006@goop.org> <20090511111904.GK4648@elte.hu> <4A086D8C.3060404@goop.org> <20090511214338.GD21232@elte.hu>
+In-Reply-To: <20090511214338.GD21232@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009, Greg KH wrote:
+Ingo Molnar wrote:
+> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+>
+>   
+>> But I do think hooking the io-apic operations makes more sense 
+>> than any other solution because we explicitly want all the other 
+>> code above it.
+>>     
+>
+> That sounds OK-ish at first sight.
+>   
 
-> > This was a source of confusion from me when I posted a smaller set earlier 
-> > that made the same changes to the staging driver, and the only reason I 
-> > sent the change here was because drivers/staging/android/lowmemorykiller.c 
-> > is in Linus' tree.
-> 
-> I have that series in my "to-apply" queue to get through this week.  I
-> will handle them.
-> 
+OK.  Shall I re-spin with io_apic_ops?
 
-Great!
-
-> I think the original lowmemorykiller.c patches have no problem getting
-> into the tree.  But, it seems that people are still disagreeing with the
-> core oom changes you have made, so those will probably take a few more
-> review cycles in order to work themselves out.
-> 
-
-Andrew merged a fixed up version of 
-oom-move-oom_adj-value-from-task_struct-to-mm_struct.patch to -mm so that 
-it's not dependent on the earlier lowmemorykiller changes.  I assume the 
-merge conflicts will be handled by whoever pushes their changes last.
-
-> I would _really_ like to see the end goal to get this lowmemorykiller
-> code out of the staging tree, and I think that is what your goal here is
-> as well.
-
-Not really, my only real change to it was making sure it would compile 
-when I moved ->oomkilladj from task_struct to mm_struct.  In the course of 
-that, I found a possible NULL pointer and coding style problems so I 
-thought I'd fix them up as well.  Then Arve posted a couple of patches 
-he'd been sitting on, so I added them early on to my series so they'd all 
-apply cleanly.
-
-> If, at the end of your series that happens, I think that would
-> be very good.
-> 
-
-Arve, San, it seems like this driver is still being actively developed 
-judging by the patches you sent me.  Any ideas?
+    J
