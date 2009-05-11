@@ -1,122 +1,161 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758064AbZEKJyx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757590AbZEKJzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758064AbZEKJyx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 05:54:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757902AbZEKJxo
+	id S1757590AbZEKJzk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 05:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757967AbZEKJyI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 05:53:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53849 "EHLO hera.kernel.org"
+	Mon, 11 May 2009 05:54:08 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53897 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757890AbZEKJxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 05:53:41 -0400
-Date: Mon, 11 May 2009 09:51:45 GMT
-From: tip-bot for Linus Torvalds <torvalds@linux-foundation.org>
+	id S1757937AbZEKJyE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 05:54:04 -0400
+Date: Mon, 11 May 2009 09:52:39 GMT
+From: tip-bot for Yinghai Lu <yinghai@kernel.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, torvalds@linux-foundation.org,
-       jesse.barnes@intel.com, yannick.roehlly@free.fr,
-       akpm@linux-foundation.org, ink@jurassic.park.msu.ru, tglx@linutronix.de,
-       mingo@elte.hu
+       yinghai@kernel.org, lenb@kernel.org, akpm@linux-foundation.org,
+       jbarnes@virtuousgeek.org, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, torvalds@linux-foundation.org,
-       jesse.barnes@intel.com, yannick.roehlly@free.fr,
-       akpm@linux-foundation.org, ink@jurassic.park.msu.ru, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <4A01A784.2050407@kernel.org>
-References: <4A01A784.2050407@kernel.org>
-Subject: [tip:x86/mm] x86, e820, pci: reserve extra free space near end of RAM
-Message-ID: <tip-45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90@git.kernel.org>
-Git-Commit-ID: 45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90
+       lenb@kernel.org, yinghai@kernel.org, jbarnes@virtuousgeek.org,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4A01C3DD.3050104@kernel.org>
+References: <4A01C3DD.3050104@kernel.org>
+Subject: [tip:irq/numa] x86/acpi: move pin_programmed bit map to io_apic.c
+Message-ID: <tip-bdfe8ac153546537ed24de69610ea781a734f785@git.kernel.org>
+Git-Commit-ID: bdfe8ac153546537ed24de69610ea781a734f785
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 09:51:48 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 09:52:41 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90
-Gitweb:     http://git.kernel.org/tip/45fbe3ee01b8e463b28c2751b5dcc0cbdc142d90
-Author:     Linus Torvalds <torvalds@linux-foundation.org>
-AuthorDate: Wed, 6 May 2009 08:06:44 -0700
+Commit-ID:  bdfe8ac153546537ed24de69610ea781a734f785
+Gitweb:     http://git.kernel.org/tip/bdfe8ac153546537ed24de69610ea781a734f785
+Author:     Yinghai Lu <yinghai@kernel.org>
+AuthorDate: Wed, 6 May 2009 10:07:41 -0700
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 11 May 2009 09:45:14 +0200
+CommitDate: Mon, 11 May 2009 10:35:08 +0200
 
-x86, e820, pci: reserve extra free space near end of RAM
+x86/acpi: move pin_programmed bit map to io_apic.c
 
-The point is to take all RAM resources we have, and
-_after_ we've added all the resources we've seen in
-the E820 tree, we then _also_ try to add fake reserved
-entries for any "round up to X" at the end of the RAM
-resources.
+Prepare to call setup_io_apic_routing() in pcibios_irq_enable()
+also remove not needed member apic_id.
 
-[ Impact: improve PCI mem-resource allocation robustness, protect "stolen RAM" ]
+[ Impact: clean up, prepare for future change ]
 
-Reported-by: Yannick Roehlly <yannick.roehlly@free.fr>
-Acked-by: Jesse Barnes <jesse.barnes@intel.com>
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: yannick.roehlly@free.fr
-LKML-Reference: <4A01A784.2050407@kernel.org>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+Cc: Len Brown <lenb@kernel.org>
+LKML-Reference: <4A01C3DD.3050104@kernel.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/e820.c |   35 +++++++++++++++++++++++++++++++++++
- 1 files changed, 35 insertions(+), 0 deletions(-)
+ arch/x86/kernel/acpi/boot.c    |   18 ++----------------
+ arch/x86/kernel/apic/io_apic.c |   25 ++++++++++++++++++++++++-
+ 2 files changed, 26 insertions(+), 17 deletions(-)
 
-diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
-index 0062813..a2335d9 100644
---- a/arch/x86/kernel/e820.c
-+++ b/arch/x86/kernel/e820.c
-@@ -1371,6 +1371,23 @@ void __init e820_reserve_resources(void)
+diff --git a/arch/x86/kernel/acpi/boot.c b/arch/x86/kernel/acpi/boot.c
+index 8019ecf..dcfbc3a 100644
+--- a/arch/x86/kernel/acpi/boot.c
++++ b/arch/x86/kernel/acpi/boot.c
+@@ -904,10 +904,8 @@ extern int es7000_plat;
+ #endif
+ 
+ static struct {
+-	int apic_id;
+ 	int gsi_base;
+ 	int gsi_end;
+-	DECLARE_BITMAP(pin_programmed, MP_MAX_IOAPIC_PIN + 1);
+ } mp_ioapic_routing[MAX_IO_APICS];
+ 
+ int mp_find_ioapic(int gsi)
+@@ -996,7 +994,6 @@ void __init mp_register_ioapic(int id, u32 address, u32 gsi_base)
+ 	 * Build basic GSI lookup table to facilitate gsi->io_apic lookups
+ 	 * and to prevent reprogramming of IOAPIC pins (PCI GSIs).
+ 	 */
+-	mp_ioapic_routing[idx].apic_id = mp_ioapics[idx].apicid;
+ 	mp_ioapic_routing[idx].gsi_base = gsi_base;
+ 	mp_ioapic_routing[idx].gsi_end = gsi_base +
+ 	    io_apic_get_redir_entries(idx);
+@@ -1189,7 +1186,7 @@ static int mp_config_acpi_gsi(struct device *dev, u32 gsi, int triggering,
+ 	mp_irq.srcbus = number;
+ 	mp_irq.srcbusirq = (((devfn >> 3) & 0x1f) << 2) | ((pin - 1) & 3);
+ 	ioapic = mp_find_ioapic(gsi);
+-	mp_irq.dstapic = mp_ioapic_routing[ioapic].apic_id;
++	mp_irq.dstapic = mp_ioapics[ioapic].apicid;
+ 	mp_irq.dstirq = mp_find_ioapic_pin(ioapic, gsi);
+ 
+ 	save_mp_irq(&mp_irq);
+@@ -1224,23 +1221,12 @@ int mp_register_gsi(struct device *dev, u32 gsi, int triggering, int polarity)
+ 
+ 	if (ioapic_pin > MP_MAX_IOAPIC_PIN) {
+ 		printk(KERN_ERR "Invalid reference to IOAPIC pin "
+-		       "%d-%d\n", mp_ioapic_routing[ioapic].apic_id,
++		       "%d-%d\n", mp_ioapics[ioapic].apicid,
+ 		       ioapic_pin);
+ 		return gsi;
  	}
+ 	mp_config_acpi_gsi(dev, gsi, triggering, polarity);
+ 
+-	/*
+-	 * Avoid pin reprogramming.  PRTs typically include entries
+-	 * with redundant pin->gsi mappings (but unique PCI devices);
+-	 * we only program the IOAPIC on the first.
+-	 */
+-	if (test_bit(ioapic_pin, mp_ioapic_routing[ioapic].pin_programmed)) {
+-		pr_debug("Pin %d-%d already programmed\n",
+-			 mp_ioapic_routing[ioapic].apic_id, ioapic_pin);
+-		return gsi;
+-	}
+-	set_bit(ioapic_pin, mp_ioapic_routing[ioapic].pin_programmed);
+ 	io_apic_set_pci_routing(dev, ioapic, ioapic_pin, gsi,
+ 				triggering == ACPI_EDGE_SENSITIVE ? 0 : 1,
+ 				polarity == ACPI_ACTIVE_HIGH ? 0 : 1);
+diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
+index 21c30e1..e279ae3 100644
+--- a/arch/x86/kernel/apic/io_apic.c
++++ b/arch/x86/kernel/apic/io_apic.c
+@@ -3922,7 +3922,7 @@ int __init io_apic_get_version(int ioapic)
+ }
+ #endif
+ 
+-int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
++static int __io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
+ 				 int triggering, int polarity)
+ {
+ 	struct irq_desc *desc;
+@@ -3959,6 +3959,29 @@ int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
+ 	return 0;
  }
  
-+/* How much should we pad RAM ending depending on where it is? */
-+static unsigned long ram_alignment(resource_size_t pos)
++static struct {
++	DECLARE_BITMAP(pin_programmed, MP_MAX_IOAPIC_PIN + 1);
++} mp_ioapic_routing[MAX_IO_APICS];
++
++int io_apic_set_pci_routing(struct device *dev, int ioapic, int pin, int irq,
++				 int triggering, int polarity)
 +{
-+	unsigned long mb = pos >> 20;
-+
-+	/* To 64kB in the first megabyte */
-+	if (!mb)
-+		return 64*1024;
-+
-+	/* To 1MB in the first 16MB */
-+	if (mb < 16)
-+		return 1024*1024;
-+
-+	/* To 32MB for anything above that */
-+	return 32*1024*1024;
-+}
-+
- void __init e820_reserve_resources_late(void)
- {
- 	int i;
-@@ -1382,6 +1399,24 @@ void __init e820_reserve_resources_late(void)
- 			insert_resource_expand_to_fit(&iomem_resource, res);
- 		res++;
- 	}
 +
 +	/*
-+	 * Try to bump up RAM regions to reasonable boundaries to
-+	 * avoid stolen RAM:
++	 * Avoid pin reprogramming.  PRTs typically include entries
++	 * with redundant pin->gsi mappings (but unique PCI devices);
++	 * we only program the IOAPIC on the first.
 +	 */
-+	for (i = 0; i < e820.nr_map; i++) {
-+		struct e820entry *entry = &e820_saved.map[i];
-+		resource_size_t start, end;
-+
-+		if (entry->type != E820_RAM)
-+			continue;
-+		start = entry->addr + entry->size;
-+		end = round_up(start, ram_alignment(start));
-+		if (start == end)
-+			continue;
-+		reserve_region_with_split(&iomem_resource, start,
-+						  end - 1, "RAM buffer");
++	if (test_bit(pin, mp_ioapic_routing[ioapic].pin_programmed)) {
++		pr_debug("Pin %d-%d already programmed\n",
++			 mp_ioapics[ioapic].apicid, pin);
++		return 0;
 +	}
- }
++	set_bit(pin, mp_ioapic_routing[ioapic].pin_programmed);
++
++	return __io_apic_set_pci_routing(dev, ioapic, pin, irq,
++					 triggering, polarity);
++}
  
- char *__init default_machine_specific_memory_setup(void)
+ int acpi_get_override_irq(int bus_irq, int *trigger, int *polarity)
+ {
