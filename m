@@ -1,59 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758533AbZEKRz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758345AbZEKR4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758533AbZEKRz6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 13:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752573AbZEKRzq
+	id S1758345AbZEKR4g (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 13:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757419AbZEKR4Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 13:55:46 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:34327 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751318AbZEKRzp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 13:55:45 -0400
-Date: Mon, 11 May 2009 18:55:13 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 00/13] devtmpfs patches
-Message-ID: <20090511185513.45ea4754@lxorguk.ukuu.org.uk>
-In-Reply-To: <ac3eb2510905111032u13051b74g81573a18e3545a81@mail.gmail.com>
-References: <20090509143742.GA27663@kroah.com>
-	<m1pregmkld.fsf@fess.ebiederm.org>
-	<ac3eb2510905110346p115dc8bbscc8921c9bd7e500d@mail.gmail.com>
-	<20090511115504.568c9a92@lxorguk.ukuu.org.uk>
-	<ac3eb2510905110434nb123423m134e848c17c3c736@mail.gmail.com>
-	<20090511141057.24a5f8ed@lxorguk.ukuu.org.uk>
-	<ac3eb2510905110714m5877da13q19b42d1c8565777c@mail.gmail.com>
-	<20090511165317.3da5326f@lxorguk.ukuu.org.uk>
-	<ac3eb2510905110928g12545518y143f7f73b3ae494a@mail.gmail.com>
-	<20090511094151.6014cafb@infradead.org>
-	<ac3eb2510905111032u13051b74g81573a18e3545a81@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 May 2009 13:56:25 -0400
+Received: from kroah.org ([198.145.64.141]:55879 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755389AbZEKR4Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 13:56:25 -0400
+Date: Mon, 11 May 2009 10:43:01 -0700
+From: Greg KH <greg@kroah.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: David Woodhouse <dwmw2@infradead.org>, Joerg Roedel <joerg.roedel@amd.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       reinette.chatre@intel.com
+Subject: Re: dma-debug: add a check dma memory leaks
+Message-ID: <20090511174301.GC4534@kroah.com>
+References: <200903302101.n2UL1O1n011970@hera.kernel.org> <1240005065.19059.19.camel@macbook.infradead.org> <20090421092016.GH17438@amd.com> <1241913552.24436.113.camel@macbook.infradead.org> <20090510020911.GA4722@kroah.com> <1241945379.24436.130.camel@macbook.infradead.org> <1241947932.19955.10.camel@pasglop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1241947932.19955.10.camel@pasglop>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The same applies when you leave initiramfs, the in-initramfs udevd
-> copy is killed, and the one from the real root is started. You may
-> miss events in-between, and need to run a full coldplug again, not
-> only to apply the policy, but also to make sure that all nodes are
-> there. The policy can run in the background for most things just fine,
-> the missing node may cause trouble.
+On Sun, May 10, 2009 at 07:32:12PM +1000, Benjamin Herrenschmidt wrote:
+> On Sun, 2009-05-10 at 09:49 +0100, David Woodhouse wrote:
+> > > I don't understand.  Who wrote this patch, Joerg or you?  I have
+> > this in
+> > > my tree already as written by Joerg.
+> > 
+> > In that case we probably both did it, independently. I did it last
+> > night
+> > after finally catching up with Ben and talking about the possibility
+> > of
+> > moving the existing notifiers. Jörg may have done it sooner.
+> > 
+> > You can drop my version, then.
+> 
+> As long as it's strictly identical :-) IE. I don't want to -move- the
+> existing notifier, but adding a "BOUND" one is fine.
 
-What a strange behaviour. Why not run a single udev instance inside the
-tmpfs you are turning into dev and will then attach to the real rootfs
-when it appears ? You only need to build /dev once.
+Look in the linux-next tree to verify that it is the same.
 
-> Yeah, and I mentioned many other ways this is useful, to do stuff in
-> parallel, to be able to rescue, and to have custom systems which do
+Or here's a direct link to the patch:
+	http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/gregkh-03-driver-core/driver-core-add-bus_notify_unbound_driver-event.patch
 
-But there are lots where it is not - and those you've mentioned where it
-might be seem rather stretched at best.
+thanks,
+
+greg k-h
