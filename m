@@ -1,69 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754436AbZEKRLq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756245AbZEKRR3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754436AbZEKRLq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 13:11:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZEKRLf
+	id S1756245AbZEKRR3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 13:17:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbZEKRRT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 13:11:35 -0400
-Received: from thunk.org ([69.25.196.29]:59017 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750943AbZEKRLe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 13:11:34 -0400
-Date: Mon, 11 May 2009 13:10:46 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Josef Bacik <josef@redhat.com>,
-       linux-fsdevel@vger.kernel.org, sandeen@redhat.com,
-       linux-kernel@vger.kernel.org
-Subject: Re: [RFC] fiemap tester
-Message-ID: <20090511171046.GA21518@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Christoph Hellwig <hch@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Josef Bacik <josef@redhat.com>, linux-fsdevel@vger.kernel.org,
-	sandeen@redhat.com, linux-kernel@vger.kernel.org
-References: <20090508191649.GG9068@unused.rdu.redhat.com> <20090508161318.c73d766c.akpm@linux-foundation.org> <20090511094639.GA7488@infradead.org>
+	Mon, 11 May 2009 13:17:19 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:40691 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751416AbZEKRRS convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 13:17:18 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090511094639.GA7488@infradead.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+In-Reply-To: <m1k54nfv9h.fsf@fess.ebiederm.org>
+References: <20090509143742.GA27663@kroah.com> <20090509161923.GA942@suse.de> 
+	<20090509223454.4642753d.akpm@linux-foundation.org> <20090510152005.GA9461@suse.de> 
+	<1241980263.9562.380.camel@laptop> <20090510221901.30c1c5a5@lxorguk.ukuu.org.uk> 
+	<ac3eb2510905101647k12a1b9ck71d43933037bac48@mail.gmail.com> 
+	<20090510170016.1e3a4d97@infradead.org> <ac3eb2510905101822t7fde14b3nf2c689621f69c925@mail.gmail.com> 
+	<m1k54nfv9h.fsf@fess.ebiederm.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Mon, 11 May 2009 19:16:58 +0200
+Message-ID: <ac3eb2510905111016u1a79defctff3578688ee36f00@mail.gmail.com>
+Subject: Re: [patch 00/13] devtmpfs patches
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 05:46:39AM -0400, Christoph Hellwig wrote:
-> 
-> Last time I brought the idea of a small in-tree test harness up at KS
-> people weren't too fond of it, but if we get more backing now we could
-> try it, otherwise we can just stick it into xfsqa which will hopefully
-> soon be generalized to a general fs QA suite.
+On Mon, May 11, 2009 at 18:40, Eric W. Biederman <ebiederm@xmission.com> wrote:
+> The goal for kernel compile options is that they do not affect the
+> kernels behavior.  The behavior in devmtmpfs clearly does not match
+> that rule.  The kernel acts very different with it compiled in
+> and with it not compiled in. So that section of the code deserves.
 
-Two questions --- first of all, has there been any progress with
-respect to fixing the licensing of the xfsqa tree.  (i.e., "All Rights
-Reserved" needs to change to a GPLv2 license)?  
+It's the same as with any other option, like the ones that enable
+dynamic minors.
 
-And would you be open to cleaning up xfsqa by for example, moving some
-of the tests out of the top-level directory, adding a modified xfs_io
-to xfsqa (modified to not avoid using XFS-specific ioctl whereever
-possible), etc.
-
-I've been collecting my own set of test programs for ext4, and I've
-thought about trying to use xfsqa, but it's not obvious to me it would
-be more or less work, since in many ways there are a lot of places
-where a lot of cleanup work and filesystem portability work would be
-needed, and it's not clear that creating a new test framework and
-collection of tests would be more or less work.
-
-(For example, of cleanup that I'd love to see, I'd really like to use
-real names for tests and not just random three digit numbers like 107,
-108, 109, all cluterring the top-level directory along with 107.out,
-108.out, 109.out, etc.)
-
-Of course, until the copyright/licensing situation is cleared up, all
-of these other issues are rather moot....
-
-					- Ted
+Kay
