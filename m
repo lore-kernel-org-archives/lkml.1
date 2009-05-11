@@ -1,106 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757882AbZEKJxu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757910AbZEKJyW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757882AbZEKJxu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 05:53:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757786AbZEKJxb
+	id S1757910AbZEKJyW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 05:54:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757446AbZEKJxl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 05:53:31 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53826 "EHLO hera.kernel.org"
+	Mon, 11 May 2009 05:53:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53844 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757757AbZEKJx3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 05:53:29 -0400
-Date: Mon, 11 May 2009 09:52:18 GMT
+	id S1757886AbZEKJxk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 05:53:40 -0400
+Date: Mon, 11 May 2009 09:51:57 GMT
 From: tip-bot for Yinghai Lu <yinghai@kernel.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, lenb@kernel.org, akpm@linux-foundation.org,
-       jbarnes@virtuousgeek.org, tglx@linutronix.de, mingo@elte.hu
+       yinghai@kernel.org, torvalds@linux-foundation.org,
+       jesse.barnes@intel.com, yannick.roehlly@free.fr,
+       akpm@linux-foundation.org, ink@jurassic.park.msu.ru, tglx@linutronix.de,
+       mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       lenb@kernel.org, yinghai@kernel.org, jbarnes@virtuousgeek.org,
-       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <4A01C3BB.1000609@kernel.org>
-References: <4A01C3BB.1000609@kernel.org>
-Subject: [tip:irq/numa] x86: fix alloc_mptable()
-Message-ID: <tip-ee214558c2e959781a406e76c5b34364da638e1d@git.kernel.org>
-Git-Commit-ID: ee214558c2e959781a406e76c5b34364da638e1d
+       yinghai@kernel.org, torvalds@linux-foundation.org,
+       jesse.barnes@intel.com, yannick.roehlly@free.fr,
+       akpm@linux-foundation.org, ink@jurassic.park.msu.ru, tglx@linutronix.de,
+       mingo@elte.hu
+In-Reply-To: <4A01A7C8.5090701@kernel.org>
+References: <4A01A7C8.5090701@kernel.org>
+Subject: [tip:x86/mm] x86/pci: remove rounding quirk from e820_setup_gap()
+Message-ID: <tip-5d423ccd7ba4285f1084e91b26805e1d0ae978ed@git.kernel.org>
+Git-Commit-ID: 5d423ccd7ba4285f1084e91b26805e1d0ae978ed
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 09:52:20 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 09:51:59 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ee214558c2e959781a406e76c5b34364da638e1d
-Gitweb:     http://git.kernel.org/tip/ee214558c2e959781a406e76c5b34364da638e1d
+Commit-ID:  5d423ccd7ba4285f1084e91b26805e1d0ae978ed
+Gitweb:     http://git.kernel.org/tip/5d423ccd7ba4285f1084e91b26805e1d0ae978ed
 Author:     Yinghai Lu <yinghai@kernel.org>
-AuthorDate: Wed, 6 May 2009 10:07:07 -0700
+AuthorDate: Wed, 6 May 2009 08:07:52 -0700
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 11 May 2009 10:35:07 +0200
+CommitDate: Mon, 11 May 2009 09:45:14 +0200
 
-x86: fix alloc_mptable()
+x86/pci: remove rounding quirk from e820_setup_gap()
 
-Fix the conditions when we stop updating the mptable due to
-running out of slots.
+Now that the e820 code explicitly reserves 'potentially dangerous'
+free physical memory address space to protect ACPI stolen RAM,
+there's no need for the rounding quirk in the PCI allocator anymore.
 
-[ Impact: fix memory corruption / non-working update_mptable boot parameter ]
+Also, this quirk was open-ended iteration that could end up reserving
+a lot of free space and potentially breaking drivers - such as the one
+reported by Yannick Roehlly <yannick.roehlly@free.fr> where there's
+a PCI device with a large memory resource.
 
+So remove it.
+
+[ Impact: make more of the PCI hole available for assigning pci devices ]
+
+Reported-by: Yannick Roehlly <yannick.roehlly@free.fr>
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Acked-by: Jesse Barnes <jesse.barnes@intel.com>
+Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Len Brown <lenb@kernel.org>
-LKML-Reference: <4A01C3BB.1000609@kernel.org>
+LKML-Reference: <4A01A7C8.5090701@kernel.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/mpparse.c |   25 +++++++++----------------
- 1 files changed, 9 insertions(+), 16 deletions(-)
+ arch/x86/kernel/e820.c |   11 +++--------
+ 1 files changed, 3 insertions(+), 8 deletions(-)
 
-diff --git a/arch/x86/kernel/mpparse.c b/arch/x86/kernel/mpparse.c
-index 70fd7e4..cd2a41a 100644
---- a/arch/x86/kernel/mpparse.c
-+++ b/arch/x86/kernel/mpparse.c
-@@ -870,24 +870,17 @@ static
- inline void __init check_irq_src(struct mpc_intsrc *m, int *nr_m_spare) {}
- #endif /* CONFIG_X86_IO_APIC */
- 
--static int check_slot(unsigned long mpc_new_phys, unsigned long mpc_new_length,
--		      int count)
-+static int
-+check_slot(unsigned long mpc_new_phys, unsigned long mpc_new_length, int count)
+diff --git a/arch/x86/kernel/e820.c b/arch/x86/kernel/e820.c
+index a2335d9..7271fa3 100644
+--- a/arch/x86/kernel/e820.c
++++ b/arch/x86/kernel/e820.c
+@@ -617,7 +617,7 @@ __init int e820_search_gap(unsigned long *gapstart, unsigned long *gapsize,
+  */
+ __init void e820_setup_gap(void)
  {
--	if (!mpc_new_phys) {
--		pr_info("No spare slots, try to append...take your risk, "
--			"new mpc_length %x\n", count);
--	} else {
--		if (count <= mpc_new_length)
--			pr_info("No spare slots, try to append..., "
--				"new mpc_length %x\n", count);
--		else {
--			pr_err("mpc_new_length %lx is too small\n",
--				mpc_new_length);
--			return -1;
--		}
-+	int ret = 0;
-+
-+	if (!mpc_new_phys || count <= mpc_new_length) {
-+		WARN(1, "update_mptable: No spare slots (length: %x)\n", count);
-+		return -1;
- 	}
+-	unsigned long gapstart, gapsize, round;
++	unsigned long gapstart, gapsize;
+ 	int found;
  
--	return 0;
-+	return ret;
- }
+ 	gapstart = 0x10000000;
+@@ -635,14 +635,9 @@ __init void e820_setup_gap(void)
+ #endif
  
- static int  __init replace_intsrc_all(struct mpc_table *mpc,
-@@ -946,7 +939,7 @@ static int  __init replace_intsrc_all(struct mpc_table *mpc,
- 		} else {
- 			struct mpc_intsrc *m = (struct mpc_intsrc *)mpt;
- 			count += sizeof(struct mpc_intsrc);
--			if (!check_slot(mpc_new_phys, mpc_new_length, count))
-+			if (check_slot(mpc_new_phys, mpc_new_length, count) < 0)
- 				goto out;
- 			assign_to_mpc_intsrc(&mp_irqs[i], m);
- 			mpc->length = count;
+ 	/*
+-	 * See how much we want to round up: start off with
+-	 * rounding to the next 1MB area.
++	 * e820_reserve_resources_late protect stolen RAM already
+ 	 */
+-	round = 0x100000;
+-	while ((gapsize >> 4) > round)
+-		round += round;
+-	/* Fun with two's complement */
+-	pci_mem_start = (gapstart + round) & -round;
++	pci_mem_start = gapstart;
+ 
+ 	printk(KERN_INFO
+ 	       "Allocating PCI resources starting at %lx (gap: %lx:%lx)\n",
