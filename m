@@ -1,95 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760079AbZEKWZ4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760023AbZEKW2f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760079AbZEKWZ4 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 18:25:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759888AbZEKWZp
+	id S1760023AbZEKW2f (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 18:28:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758511AbZEKW20
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 18:25:45 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:46615 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756401AbZEKWZo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 18:25:44 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=ljb2ZSNdnQhUeuLYltK6MIJtMcKyt3BJ6otsiOVXnaw2KtEbc509njhGfFF8+8lqt
-	h+amRFdEa+Z/PoUAXHg1A==
-Date: Mon, 11 May 2009 15:25:39 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: "H. Peter Anvin" <hpa@zytor.com>
-cc: Jack Steiner <steiner@sgi.com>, Yinghai Lu <yinghai@kernel.org>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] x86: fix node_possible_map logic -v2
-In-Reply-To: <4A0894A5.9000209@zytor.com>
-Message-ID: <alpine.DEB.2.00.0905111509570.2234@chino.kir.corp.google.com>
-References: <4A05269D.8000701@kernel.org> <4A0527CB.4020807@kernel.org> <20090511175312.GA27905@sgi.com> <alpine.DEB.2.00.0905111218520.23739@chino.kir.corp.google.com> <4A0894A5.9000209@zytor.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 11 May 2009 18:28:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:59836 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756949AbZEKW2Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 18:28:25 -0400
+Date: Mon, 11 May 2009 22:27:30 GMT
+From: tip-bot for Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       a.p.zijlstra@chello.nl, venkatesh.pallipadi@intel.com,
+       mahesh@linux.vnet.ibm.com, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, mingo@elte.hu, svaidy@linux.vnet.ibm.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       a.p.zijlstra@chello.nl, venkatesh.pallipadi@intel.com,
+       mahesh@linux.vnet.ibm.com, suresh.b.siddha@intel.com,
+       tglx@linutronix.de, mingo@elte.hu, svaidy@linux.vnet.ibm.com
+In-Reply-To: <20090511143914.GB4853@dirshya.in.ibm.com>
+References: <20090511143914.GB4853@dirshya.in.ibm.com>
+Subject: [tip:sched/core] sched: Don't export sched_mc_power_savings on multi-socket single core system
+Message-ID: <tip-2ff799d3cff1ecb274049378b28120ee5c1c5e5f@git.kernel.org>
+Git-Commit-ID: 2ff799d3cff1ecb274049378b28120ee5c1c5e5f
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 22:27:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009, H. Peter Anvin wrote:
+Commit-ID:  2ff799d3cff1ecb274049378b28120ee5c1c5e5f
+Gitweb:     http://git.kernel.org/tip/2ff799d3cff1ecb274049378b28120ee5c1c5e5f
+Author:     Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+AuthorDate: Mon, 11 May 2009 20:09:14 +0530
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 11 May 2009 23:57:56 +0200
 
-> > In your example of two cpus (0-1) that are remote to the system's only
-> > memory and two cpus (2-3) that have affinity to that memory, it appears as
-> > though the kernel is considering cpus 2-3 and the memory to be a node and
-> > cpus 0-1 to be a memoryless node.
-> > 
-> > That's a pretty useless scenario for memoryless node support, actually,
-> > unless there's a third node with memory that cpus 0-1 have a different
-> > distance to.  cpus 0-1 have no memory that is local, so the "remote" memory
-> > should be considered local to them.
-> > 
-> 
-> Should it?  It seems to me that CPUs 0-1 should be antipreferentially
-> scheduled, since they will have slower access to the memory than CPUs 2-3.
-> Since in this case all the memory is in the same place you could argue that
-> SMP distances could do the same job, which is of course true.
-> 
-> However, consider now:
-> 
-> CPU [0-1]	- no memory
-> CPU [2-3]	- memory
-> CPU [4-5]	- memory
-> 
-> Each node is equidistant, but for the memory nodes there is differences
-> between their own local memory and the remote memory.
-> 
-> CPU [0-1] cannot be considered local in either node, since they are further
-> away from the memory than either, and furthermore, unlike either of the memory
-> nodes, they have no preference for memory from either of the other two nodes
-> (quite on the contrary; they would probably benefit from drawing from both.)
-> 
+sched: Don't export sched_mc_power_savings on multi-socket single core system
 
-Right, there's no difference from Jack's scenario if the three nodes are 
-equiadistant.  I was thinking of a topology where cpu 0-1 was closer to, 
-for example, cpu 2-3's memory than cpu 4-5's.
+Fix to prevent sched_mc_power_saving from being exported through sysfs
+for multi-scoket single core system. Max cores should be always greater than
+one (1). My earlier patch that introduced fix for not exporting
+'sched_mc_power_saving' on laptops  broke it on multi-socket single core
+system. This fix addresses issue on both laptop and multi-socket single
+core system.
+Below are the Test results:
 
-The particular topology you're referring to should have a slit that 
-describes the relative distances in each direction differently.  The pxms 
-that these cpus belong to will always be local to itself, but ACPI 3.0 
-allows distances for different directions between the same pxms to be 
-different.
+1. Single socket - multi-core
+       Before Patch: Does not export 'sched_mc_power_saving'
+       After Patch: Does not export 'sched_mc_power_saving'
+       Result: Pass
 
-That means it's possible that cpus 0-1 above have local distance to all 
-memory and cpus 2-3 (and cpus 4-5) have remote distance to all nodes other 
-than itself.
+2. Multi Socket - single core
+      Before Patch: exports 'sched_mc_power_saving'
+      After Patch: Does not export 'sched_mc_power_saving'
+      Result: Pass
 
-numactl --hardware would show something like this:
+3. Multi Socket - Multi core
+      Before Patch: exports 'sched_mc_power_saving'
+      After Patch: exports 'sched_mc_power_saving'
 
-		0	1	2
-	0	10	10	10
-	1	20	10	20
-	2	20	20	10
+[ Impact: make the sched_mc_power_saving control available more consistently ]
 
-which is valid according to the ACPI specification.  This is based on the 
-pxms to which the cpus belong so this topology would describe all members 
-of those pxms and not just memory.
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Cc: Suresh B Siddha <suresh.b.siddha@intel.com>
+Cc: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+LKML-Reference: <20090511143914.GB4853@dirshya.in.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/include/asm/topology.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index f44b49a..066ef59 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -203,7 +203,8 @@ struct pci_bus;
+ void x86_pci_root_bus_res_quirks(struct pci_bus *b);
+ 
+ #ifdef CONFIG_SMP
+-#define mc_capable()	(cpumask_weight(cpu_core_mask(0)) != nr_cpu_ids)
++#define mc_capable()	((boot_cpu_data.x86_max_cores > 1) && \
++			(cpumask_weight(cpu_core_mask(0)) != nr_cpu_ids))
+ #define smt_capable()			(smp_num_siblings > 1)
+ #endif
+ 
