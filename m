@@ -1,65 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752941AbZEKC4U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754020AbZEKDAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752941AbZEKC4U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 22:56:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752350AbZEKC4G
+	id S1754020AbZEKDAg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 23:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZEKDA1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 22:56:06 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:38433 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751091AbZEKC4F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 22:56:05 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>
-Subject: Re: Q: semaphore and kmalloc(GFP_KERNEL)?
-Cc: kosaki.motohiro@jp.fujitsu.com, linux-kernel@vger.kernel.org
-In-Reply-To: <200905110230.n4B2UUXk082125@www262.sakura.ne.jp>
-References: <200905110230.n4B2UUXk082125@www262.sakura.ne.jp>
-Message-Id: <20090511115410.B0EA.A69D9226@jp.fujitsu.com>
+	Sun, 10 May 2009 23:00:27 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:62106 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752641AbZEKDA0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 23:00:26 -0400
+Message-ID: <4A079493.4030100@cn.fujitsu.com>
+Date: Mon, 11 May 2009 10:59:31 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: Li Zefan <lizf@cn.fujitsu.com>, nauman@google.com, dpshah@google.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
+Subject: Re: IO scheduler based IO Controller V2
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A014619.1040000@cn.fujitsu.com> <20090506161012.GC8180@redhat.com> <4A027348.6000808@cn.fujitsu.com> <20090508133740.GD7293@redhat.com>
+In-Reply-To: <20090508133740.GD7293@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 11 May 2009 11:56:02 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hello.
-> I got a question.
+Vivek Goyal wrote:
+...
+>>
 > 
-> When we use kmalloc(GFP_KERNEL), we cannot use spinlock.
-> We use semaphore instead.
-> 
-> What happens if a writer process got into sleep state at kmalloc()
-> without releasing a rw_semaphore for writing,
-> 
->     down_write(&sem);
->     list_for_each()
->         ...;
->     ptr = kmalloc(size, GFP_KERNEL);
->     list_add();
->     up_write(&sem);
-> 
-> and then reader processes tried to hold that rw_semaphore?
-> 
->     down_read(&sem);
->     list_for_each()
->         ...;
->     up_read(&sem);
-> 
-> Can the kernel detect that we need to let kmalloc() fail and
-> wake up the writer process so that the writer process releases
-> the rw_semaphore and reader processes can continue?
+> Thanks Li and Gui for pointing out the problem. With you script, I could
+> also produce lock validator warning as well as system freeze. I could
+> identify at least two trouble spots. With following patch things seems
+> to be fine on my system. Can you please give it a try.
 
-it can't. Plus it shouldn't.
-some caller don't want kmalloc() failure.
+  Hi Vivek,
 
+  I'v tried this patch, and seems the problem is addressed. Thanks.
 
-> (If the kernel can't detect, I worry that we experience
-> all processes sleeping for undefined duration.)
-
-
-
+-- 
+Regards
+Gui Jianfeng
 
