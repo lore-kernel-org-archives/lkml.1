@@ -1,155 +1,170 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757719AbZEKBv5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755564AbZEKCI3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757719AbZEKBv5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 21:51:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755600AbZEKBvs
+	id S1755564AbZEKCI3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 22:08:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753094AbZEKCIT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 21:51:48 -0400
-Received: from mailout1.samsung.com ([203.254.224.24]:60796 "EHLO
-	mailout1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753061AbZEKBvr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 21:51:47 -0400
-Date: Mon, 11 May 2009 10:51:32 +0900
-From: Kim Kyuwon <q1.kim@samsung.com>
-Subject: Re: [PATCH] Input: add MAX7359 key switch controller driver, v2
-In-reply-to: <20090509200118.GB1617@dtor-d630.eng.vmware.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Trilok Soni <soni.trilok@gmail.com>, LKML <linux-kernel@vger.kernel.org>,
-       linux-input@vger.kernel.org, Kyungmin Park <kyungmin.park@samsung.com>,
-       Marek Szyprowski <m.szyprowski@samsung.com>
-Message-id: <4A0784A4.1010703@samsung.com>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-transfer-encoding: 7BIT
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-References: <4A04E5EA.7000103@samsung.com>
- <5d5443650905091027w2b60f2ael520373790e6414c7@mail.gmail.com>
- <20090509200118.GB1617@dtor-d630.eng.vmware.com>
-X-OriginalArrivalTime: 11 May 2009 01:51:32.0640 (UTC)
- FILETIME=[027A9200:01C9D1DB]
+	Sun, 10 May 2009 22:08:19 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:45788 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752929AbZEKCIT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 22:08:19 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-ID: <18951.34946.451546.691693@drongo.ozlabs.ibm.com>
+Date: Mon, 11 May 2009 12:08:02 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] perf_counter: put whole group on when enabling group leader
+X-Mailer: VM 8.0.12 under 22.3.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 10, 2009 at 5:01 AM, Dmitry Torokhov <dmitry.torokhov@gmail.com> wrote:
-> P.S. I made a bunch of random changes, mostly to streamline the probe
-> code (below), hopfully I did not break anything.
->
-> diff --git a/drivers/input/keyboard/max7359_keypad.c b/drivers/input/keyboard/max7359_keypad.c
-> index 918386c..280edc3 100644
-> --- a/drivers/input/keyboard/max7359_keypad.c
-> +++ b/drivers/input/keyboard/max7359_keypad.c
-> @@ -204,71 +198,59 @@ static int __devinit max7359_probe(struct i2c_client *client,
->                                        const struct i2c_device_id *id)
->  {
->        struct max7359_keypad *keypad;
-> -       struct max7359_keypad_platform_data *pdata;
-> +       struct max7359_keypad_platform_data *pdata = client->dev.platform_data;
->        struct input_dev *input_dev;
->        int ret;
-> +       int error;
->
-> -       keypad = kzalloc(sizeof(struct max7359_keypad), GFP_KERNEL);
-> -       if (keypad == NULL) {
-> -               dev_err(&client->dev, "failed to allocate driver data\n");
-> -               return -ENOMEM;
-> +       if (!client->irq) {
-> +               dev_err(&client->dev, "The irq number should not be zero\n");
-> +               return -EINVAL;
->        }
->
-> -       keypad->client = client;
-> -       pdata = keypad->pdata = client->dev.platform_data;
-> -       i2c_set_clientdata(client, keypad);
-> -
->        /* Detect MAX7359: The initial Keys FIFO value is '0x3F' */
->        ret = max7359_read_reg(client, MAX7359_REG_KEYFIFO);
->        if (ret < 0) {
->                dev_err(&client->dev, "failed to detect device\n");
-> -               goto failed_free;
-> -       } else {
-> -               dev_info(&client->dev, "keys FIFO is 0x%02x"
-> -                               ", succeeded in detecting device\n", ret);
-> +               return -ENODEV;
->        }
->
-> -       /* Initialize MAX7359 */
-> -       max7359_initialize(client);
-> +       dev_dbg(&client->dev, "keys FIFO is 0x%02x\n", ret);
->
-> -       /* Create and register the input driver. */
-> +       keypad = kzalloc(sizeof(struct max7359_keypad), GFP_KERNEL);
->        input_dev = input_allocate_device();
-> -       if (!input_dev) {
-> -               dev_err(&client->dev, "failed to allocate input device\n");
-> -               ret = -ENOMEM;
-> -               goto failed_free;
-> +       if (!keypad || !input_dev) {
-> +               dev_err(&client->dev, "failed to allocate memory\n");
-> +               error = -ENOMEM;
-> +               goto failed_free_mem;
->        }
+Currently, if you have a group where the leader is disabled and there
+are siblings that are enabled, and then you enable the leader, we only
+put the leader on the PMU, and not its enabled siblings.  This is
+incorrect, since the enabled group members should be all on or all off
+at any given point.
 
-Hi Dmitry,
+This fixes it by adding a call to group_sched_in in
+__perf_counter_enable in the case where we're enabling a group leader.
+To avoid the need for a forward declaration this also moves
+group_sched_in up before __perf_counter_enable.  The actual content of
+group_sched_in is unchanged by this patch.
 
-Thank you for streamlining this driver. I confirmed this streamlined driver
-is nicely working on my S3C6410 board and of course I mostly like your
-changes. But I'm afraid this 'error' variable is not used at the final
-return statement in the probe function.
+[ Impact: fix bug in counter enable code ]
 
-Thanks & Regards,
-Kyuwon
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ kernel/perf_counter.c |   99 +++++++++++++++++++++++++-------------------------
+ 1 file changed, 51 insertions(+), 48 deletions(-)
 
-P.S. You may need this kind of patch.
---
-diff --git a/drivers/input/keyboard/max7359_keypad.c b/drivers/input/keyboard/max7359_keypad.c
-index 280edc3..6e09e0d 100644
---- a/drivers/input/keyboard/max7359_keypad.c
-+++ b/drivers/input/keyboard/max7359_keypad.c
-@@ -200,7 +200,6 @@ static int __devinit max7359_probe(struct i2c_client *client,
- 	struct max7359_keypad *keypad;
- 	struct max7359_keypad_platform_data *pdata = client->dev.platform_data;
- 	struct input_dev *input_dev;
--	int ret;
- 	int error;
- 
- 	if (!client->irq) {
-@@ -209,13 +208,13 @@ static int __devinit max7359_probe(struct i2c_client *client,
- 	}
- 
- 	/* Detect MAX7359: The initial Keys FIFO value is '0x3F' */
--	ret = max7359_read_reg(client, MAX7359_REG_KEYFIFO);
--	if (ret < 0) {
-+	error = max7359_read_reg(client, MAX7359_REG_KEYFIFO);
-+	if (error < 0) {
- 		dev_err(&client->dev, "failed to detect device\n");
- 		return -ENODEV;
- 	}
- 
--	dev_dbg(&client->dev, "keys FIFO is 0x%02x\n", ret);
-+	dev_dbg(&client->dev, "keys FIFO is 0x%02x\n", error);
- 
- 	keypad = kzalloc(sizeof(struct max7359_keypad), GFP_KERNEL);
- 	input_dev = input_allocate_device();
-@@ -254,8 +253,8 @@ static int __devinit max7359_probe(struct i2c_client *client,
- 	}
- 
- 	/* Register the input device */
--	ret = input_register_device(input_dev);
--	if (ret) {
-+	error = input_register_device(input_dev);
-+	if (error) {
- 		dev_err(&client->dev, "failed to register input device\n");
- 		goto failed_free_irq;
- 	}
-@@ -273,7 +272,7 @@ failed_free_irq:
- failed_free_mem:
- 	input_free_device(input_dev);
- 	kfree(keypad);
--	return ret;
-+	return error;
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index d850a1f..a5bdc93 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -419,6 +419,54 @@ counter_sched_in(struct perf_counter *counter,
+ 	return 0;
  }
  
- static int __devexit max7359_remove(struct i2c_client *client)
-
++static int
++group_sched_in(struct perf_counter *group_counter,
++	       struct perf_cpu_context *cpuctx,
++	       struct perf_counter_context *ctx,
++	       int cpu)
++{
++	struct perf_counter *counter, *partial_group;
++	int ret;
++
++	if (group_counter->state == PERF_COUNTER_STATE_OFF)
++		return 0;
++
++	ret = hw_perf_group_sched_in(group_counter, cpuctx, ctx, cpu);
++	if (ret)
++		return ret < 0 ? ret : 0;
++
++	group_counter->prev_state = group_counter->state;
++	if (counter_sched_in(group_counter, cpuctx, ctx, cpu))
++		return -EAGAIN;
++
++	/*
++	 * Schedule in siblings as one group (if any):
++	 */
++	list_for_each_entry(counter, &group_counter->sibling_list, list_entry) {
++		counter->prev_state = counter->state;
++		if (counter_sched_in(counter, cpuctx, ctx, cpu)) {
++			partial_group = counter;
++			goto group_error;
++		}
++	}
++
++	return 0;
++
++group_error:
++	/*
++	 * Groups can be scheduled in as one unit only, so undo any
++	 * partial group before returning:
++	 */
++	list_for_each_entry(counter, &group_counter->sibling_list, list_entry) {
++		if (counter == partial_group)
++			break;
++		counter_sched_out(counter, cpuctx, ctx);
++	}
++	counter_sched_out(group_counter, cpuctx, ctx);
++
++	return -EAGAIN;
++}
++
+ /*
+  * Return 1 for a group consisting entirely of software counters,
+  * 0 if the group contains any hardware counters.
+@@ -643,6 +691,9 @@ static void __perf_counter_enable(void *info)
+ 
+ 	if (!group_can_go_on(counter, cpuctx, 1))
+ 		err = -EEXIST;
++	else if (counter == leader)
++		err = group_sched_in(counter, cpuctx, ctx,
++				     smp_processor_id());
+ 	else
+ 		err = counter_sched_in(counter, cpuctx, ctx,
+ 				       smp_processor_id());
+@@ -791,54 +842,6 @@ static void perf_counter_cpu_sched_out(struct perf_cpu_context *cpuctx)
+ 	__perf_counter_sched_out(&cpuctx->ctx, cpuctx);
+ }
+ 
+-static int
+-group_sched_in(struct perf_counter *group_counter,
+-	       struct perf_cpu_context *cpuctx,
+-	       struct perf_counter_context *ctx,
+-	       int cpu)
+-{
+-	struct perf_counter *counter, *partial_group;
+-	int ret;
+-
+-	if (group_counter->state == PERF_COUNTER_STATE_OFF)
+-		return 0;
+-
+-	ret = hw_perf_group_sched_in(group_counter, cpuctx, ctx, cpu);
+-	if (ret)
+-		return ret < 0 ? ret : 0;
+-
+-	group_counter->prev_state = group_counter->state;
+-	if (counter_sched_in(group_counter, cpuctx, ctx, cpu))
+-		return -EAGAIN;
+-
+-	/*
+-	 * Schedule in siblings as one group (if any):
+-	 */
+-	list_for_each_entry(counter, &group_counter->sibling_list, list_entry) {
+-		counter->prev_state = counter->state;
+-		if (counter_sched_in(counter, cpuctx, ctx, cpu)) {
+-			partial_group = counter;
+-			goto group_error;
+-		}
+-	}
+-
+-	return 0;
+-
+-group_error:
+-	/*
+-	 * Groups can be scheduled in as one unit only, so undo any
+-	 * partial group before returning:
+-	 */
+-	list_for_each_entry(counter, &group_counter->sibling_list, list_entry) {
+-		if (counter == partial_group)
+-			break;
+-		counter_sched_out(counter, cpuctx, ctx);
+-	}
+-	counter_sched_out(group_counter, cpuctx, ctx);
+-
+-	return -EAGAIN;
+-}
+-
+ static void
+ __perf_counter_sched_in(struct perf_counter_context *ctx,
+ 			struct perf_cpu_context *cpuctx, int cpu)
