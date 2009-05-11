@@ -1,77 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbZEKSwl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753677AbZEKS4P@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754022AbZEKSwl (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 14:52:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbZEKSw2
+	id S1753677AbZEKS4P (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 14:56:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752988AbZEKSz6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 14:52:28 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:40896 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753850AbZEKSw1 (ORCPT
+	Mon, 11 May 2009 14:55:58 -0400
+Received: from an-out-0708.google.com ([209.85.132.251]:28156 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752872AbZEKSz5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 14:52:27 -0400
-Subject: Re: Probe Timeouts with 47afbaf5af9454a7a1a64591e20cbfcc27ca67a8
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Parag Warudkar <parag.lkml@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       LKML <linux-kernel@vger.kernel.org>, niel.lambrechts@gmail.com
-In-Reply-To: <alpine.LFD.2.01.0905111126320.3586@localhost.localdomain>
-References: <f7848160904301838q4883106fq8d31e2e7c0b10a14@mail.gmail.com>
-	 <1241165805.13562.2.camel@johannes.local>
-	 <f7848160905010619n74372488n45a7b7abccfe5ea7@mail.gmail.com>
-	 <alpine.LFD.2.01.0905111046310.3586@localhost.localdomain>
-	 <1242066170.3873.43.camel@johannes.local>
-	 <alpine.LFD.2.01.0905111126320.3586@localhost.localdomain>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-uTlXJn0cIbf/ABcgmApl"
-Date: Mon, 11 May 2009 20:52:19 +0200
-Message-Id: <1242067939.3873.45.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Mon, 11 May 2009 14:55:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XK64nnnFxSN6iqFFzkXpof8QWWyl9GSDa4gvc7TuF2ow3APs4kyGLBcfzycCeQ57aX
+         /l7Y8KIs8TLnCYidoe6PvBPzlcGJvqC55WC5WcUwBZPnesKUZHEgmefELgNGDP5SxMO+
+         /RjH4K9OR+Vd4uwlFn2/P7r8zoEX7hL2goVDo=
+MIME-Version: 1.0
+In-Reply-To: <20090506175906.GW8633@ZenIV.linux.org.uk>
+References: <20090506175906.GW8633@ZenIV.linux.org.uk>
+Date: Mon, 11 May 2009 13:55:57 -0500
+Message-ID: <a4e6962a0905111155h4b575a70o8453938e53b88e3d@mail.gmail.com>
+Subject: Re: oddity in v9fs_kill_super()
+From: Eric Van Hensbergen <ericvh@gmail.com>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 6, 2009 at 12:59 PM, Al Viro <viro@zeniv.linux.org.uk> wrote:
+> Is there any reason to do v9fs_dentry_release(s->s_root) in ->kill_sb()?
+> It is called when root dentry is freed and it will be freed just fine...
+>
 
---=-uTlXJn0cIbf/ABcgmApl
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Most likely unnecessary early paranoia on my part - I think that's
+been in there since 2.6.14.
+I'll look into removing it.
 
-On Mon, 2009-05-11 at 11:33 -0700, Linus Torvalds wrote:
-
-> And the kernel I'm using is top-of-git, so that fix was there.
-
-Ok.
-
-> Which was obviously exactly why I was so unhappy about this, since the=20
-> revert seemed to fix problems for me _despite_ the fix.
-
-Curious really, since with that fix and a revert it would go to -1 dBm.
-The only explanation I have is that then the Intel card defaults to some
-safe value because it doesn't support values < 0.
-
-johannes
-
---=-uTlXJn0cIbf/ABcgmApl
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKCHPaAAoJEODzc/N7+QmahPkP/jkchUF2XtDcbz0++enhnE37
-pHIVHvRO872SgR0IohO+B8VJPnK8cd+S29fLmtzU82aUUvcvCKhg2dlzs3EBx5/N
-zF833AaA7YJw1eMArlxdgbfw21KOnXf2sxBYy6bOb9fkM2cntBQ+JfnIP0il/pg9
-OUd2ITIplaIQqCdIUBjh5VFMmwkS7y+XRdBVuJLg5y2bTJBS4x1PrPA6AhEACMRU
-WoVML4S3pqITeUOGt3Hz5s5ohuxTJOOoKxi1jFouU+UBIXdOwWAH1Wl6seRco3vp
-CRFfyWSuaJwHGCb7r+3SsZaUTPA0YjWgzV0YXqv1H3e4jBAqwWAzwn6sMjaPTRkP
-AHBWKIYxSGqk4YecmDTzoD+E4FCRe/XagCNBmuXpr4eYV5LEsoaLON3Mje6NgsAH
-HOjhwnlMVUAMauGglHAPQKid8Ri35XgLtWmls1QeKBbVxG5kNGPDszaFX3eqmgAP
-DAxDVrlBIFII860pGD2jb2+Oxt0vCYGvvyCjUcJ4DOY7s4VvYTcqJiek2kSzN/5v
-6v+2ul2GlIzTHWwBnE6S4VlKLwhcxi/3jURsU1wfLW4apHvDzDWLZuY2EbA0TxLL
-QK1Yt/VJnUH2MOGTxKDICiMrCdfeI0AvMSrskhftAQVN5i60EBJgxSGATd7zGpGD
-jcmHUfONzvVFdYMkp/il
-=Pswu
------END PGP SIGNATURE-----
-
---=-uTlXJn0cIbf/ABcgmApl--
-
+        -eric
