@@ -1,129 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759473AbZEKVM7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759363AbZEKVNr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759473AbZEKVM7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 17:12:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753098AbZEKVMq
+	id S1759363AbZEKVNr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 17:13:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755115AbZEKVNh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 17:12:46 -0400
-Received: from bu3sch.de ([62.75.166.246]:49989 "EHLO vs166246.vserver.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752392AbZEKVMp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 17:12:45 -0400
-From: Michael Buesch <mb@bu3sch.de>
-To: David Dillow <dave@thedillows.org>
-Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
-Date: Mon, 11 May 2009 23:10:08 +0200
-User-Agent: KMail/1.9.9
-Cc: Michael Riepe <michael.riepe@googlemail.com>,
-       Francois Romieu <romieu@fr.zoreil.com>,
-       Rui Santos <rsantos@grupopie.com>,
-       Michael =?utf-8?q?B=C3=BCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-References: <200903041828.49972.m.bueker@berlin.de> <1242001754.4093.12.camel@obelisk.thedillows.org> <200905112248.44868.mb@bu3sch.de>
-In-Reply-To: <200905112248.44868.mb@bu3sch.de>
-X-Move-Along: Nothing to see here. No, really... Nothing.
+	Mon, 11 May 2009 17:13:37 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:60237 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753556AbZEKVNg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 17:13:36 -0400
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+References: <20090509143742.GA27663@kroah.com> <20090509161923.GA942@suse.de>
+	<20090509223454.4642753d.akpm@linux-foundation.org>
+	<20090510152005.GA9461@suse.de> <1241980263.9562.380.camel@laptop>
+	<20090510221901.30c1c5a5@lxorguk.ukuu.org.uk>
+	<ac3eb2510905101647k12a1b9ck71d43933037bac48@mail.gmail.com>
+	<20090510170016.1e3a4d97@infradead.org>
+	<ac3eb2510905101822t7fde14b3nf2c689621f69c925@mail.gmail.com>
+	<m1k54nfv9h.fsf@fess.ebiederm.org>
+	<ac3eb2510905111016u1a79defctff3578688ee36f00@mail.gmail.com>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Mon, 11 May 2009 14:13:32 -0700
+In-Reply-To: <ac3eb2510905111016u1a79defctff3578688ee36f00@mail.gmail.com> (Kay Sievers's message of "Mon\, 11 May 2009 19\:16\:58 +0200")
+Message-ID: <m1fxfbuyv7.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200905112310.08534.mb@bu3sch.de>
-Content-Type: text/plain;
-  charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
+X-XM-SPF: eid=;;;mid=;;;hst=in01.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: kay.sievers@vrfy.org, linux-kernel@vger.kernel.org, greg@kroah.com, fabio.comolli@gmail.com, akpm@linux-foundation.org, gregkh@suse.de, peterz@infradead.org, alan@lxorguk.ukuu.org.uk, arjan@infradead.org
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa02 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: ;Kay Sievers <kay.sievers@vrfy.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  1.5 XMNoVowels Alpha-numberic number with no vowels
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	* -0.7 BAYES_20 BODY: Bayesian spam probability is 5 to 20%
+	*      [score: 0.1589]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa02 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [patch 00/13] devtmpfs patches
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in01.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 May 2009 22:48:44 Michael Buesch wrote:
-> On Monday 11 May 2009 02:29:14 David Dillow wrote:
-> > > Kernel: 2.6.29.2 (x86_64)
-> > > Board: Intel D945GCLF2
-> > > BIOS version: LF94510J.86A.0099.2008.0731.0303
-> > 
-> > I'm not sure this is tied to the chip. 
-> 
-> Yeah maybe other chips are affected as well.
-> I just want to note that my failing chip/board is an Intel D945GCLF2 board
-> with onboard G-LAN, too.
-> 
-> The device XID is: XID 3c4000c0
-> (see kernel log)
-> 
-> Somebody else (I think it was Rui Santos) already reported a failing chip with that XID, too.
-> 
+Kay Sievers <kay.sievers@vrfy.org> writes:
 
-Here's a patch which blacklists MSI support by XID.
-It's currently only compile-tested, because I can't reboot the machine right now.
+> On Mon, May 11, 2009 at 18:40, Eric W. Biederman <ebiederm@xmission.com> wrote:
+>> The goal for kernel compile options is that they do not affect the
+>> kernels behavior.  The behavior in devmtmpfs clearly does not match
+>> that rule.  The kernel acts very different with it compiled in
+>> and with it not compiled in. So that section of the code deserves.
+>
+> It's the same as with any other option, like the ones that enable
+> dynamic minors.
 
-Signed-off-by: Michael Buesch <mb@bu3sch.de>
+No it's not.
 
-Index: linux-2.6.29/drivers/net/r8169.c
-===================================================================
---- linux-2.6.29.orig/drivers/net/r8169.c	2009-05-11 23:00:12.000000000 +0200
-+++ linux-2.6.29/drivers/net/r8169.c	2009-05-11 23:07:32.000000000 +0200
-@@ -1917,14 +1917,26 @@
- 
- /* Cfg9346_Unlock assumed. */
- static unsigned rtl_try_msi(struct pci_dev *pdev, void __iomem *ioaddr,
--			    const struct rtl_cfg_info *cfg)
-+			    const struct rtl_cfg_info *cfg, u32 xid)
- {
--	unsigned msi = 0;
-+	unsigned i, blacklisted = 0, msi = 0;
- 	u8 cfg2;
- 
-+	static const u32 xid_blacklist[] = {
-+		/* Blacklisted devices with (currently) broken MSI support.
-+		 * Devices are identified by XID. */
-+		0x3c4000c0,
-+	};
-+
- 	cfg2 = RTL_R8(Config2) & ~MSIEnable;
-+	for (i = 0; i < ARRAY_SIZE(xid_blacklist); i++) {
-+		if (xid == xid_blacklist[i])
-+			blacklisted = 1;
-+	}
- 	if (cfg->features & RTL_FEATURE_MSI) {
--		if (pci_enable_msi(pdev)) {
-+		if (blacklisted) {
-+			dev_info(&pdev->dev, "MSI blacklisted. Back to INTx.\n");
-+		} else if (pci_enable_msi(pdev)) {
- 			dev_info(&pdev->dev, "no MSI. Back to INTx.\n");
- 		} else {
- 			cfg2 |= MSIEnable;
-@@ -1974,6 +1986,7 @@
- 	void __iomem *ioaddr;
- 	unsigned int i;
- 	int rc;
-+	u32 xid;
- 
- 	if (netif_msg_drv(&debug)) {
- 		printk(KERN_INFO "%s Gigabit Ethernet driver %s loaded\n",
-@@ -2109,6 +2122,7 @@
- 	}
- 	tp->chipset = i;
- 
-+	xid = RTL_R32(TxConfig) & 0x7cf0f8ff;
- 	RTL_W8(Cfg9346, Cfg9346_Unlock);
- 	RTL_W8(Config1, RTL_R8(Config1) | PMEnable);
- 	RTL_W8(Config5, RTL_R8(Config5) & PMEStatus);
-@@ -2116,7 +2130,7 @@
- 		tp->features |= RTL_FEATURE_WOL;
- 	if ((RTL_R8(Config5) & (UWF | BWF | MWF)) != 0)
- 		tp->features |= RTL_FEATURE_WOL;
--	tp->features |= rtl_try_msi(pdev, ioaddr, cfg);
-+	tp->features |= rtl_try_msi(pdev, ioaddr, cfg, xid);
- 	RTL_W8(Cfg9346, Cfg9346_Lock);
- 
- 	if ((tp->mac_version <= RTL_GIGA_MAC_VER_06) &&
-@@ -2175,8 +2189,6 @@
- 	pci_set_drvdata(pdev, dev);
- 
- 	if (netif_msg_probe(tp)) {
--		u32 xid = RTL_R32(TxConfig) & 0x7cf0f8ff;
--
- 		printk(KERN_INFO "%s: %s at 0x%lx, "
- 		       "%2.2x:%2.2x:%2.2x:%2.2x:%2.2x:%2.2x, "
- 		       "XID %08x IRQ %d\n",
+The practical goal is that a distribution can enable essentially every feature
+in the kernel and not be forced to use one.
 
+The most similar example I can think of is the dhcp client in the kernel.
+Even when compiled in only if you enable it on the command line (aka ip=dhcp)
+does it enable and attempt to network boot.
 
--- 
-Greetings, Michael.
+Mouting on /dev might be sane if it was enabled by a kernel command line option.
+By default it is wrong.
+
+Dynamic minors is right on that hairy edge.  I'm puzzled know why we
+can't have the first N devices use the static assignment and the rest
+of the devices use the dynamic minors.
+
+Eric
