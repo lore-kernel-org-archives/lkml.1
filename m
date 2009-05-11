@@ -1,66 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759037AbZEKSEQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758993AbZEKSEt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759037AbZEKSEQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 14:04:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbZEKSD5
+	id S1758993AbZEKSEt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 14:04:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbZEKSEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 14:03:57 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:35527 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754220AbZEKSD4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 14:03:56 -0400
-Message-ID: <4A086835.5020400@redhat.com>
-Date: Mon, 11 May 2009 21:02:29 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 11 May 2009 14:04:37 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:64634 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756793AbZEKSEg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 14:04:36 -0400
 MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: Hollis Blanchard <hollisb@us.ibm.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net>	 <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com>	 <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com>	 <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com>	 <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com>	 <4A02D40D.7060307@redhat.com> <4A0448DF.90705@codemonkey.ws>	 <4A0570B1.30401@novell.com> <4A071F1A.1090702@codemonkey.ws>	 <4A0824C2.4000109@gmail.com> <1242059712.29194.12.camel@slate.austin.ibm.com> <4A085B06.4080803@redhat.com> <4A086590.4040602@codemonkey.ws>
-In-Reply-To: <4A086590.4040602@codemonkey.ws>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+In-Reply-To: <20090511185513.45ea4754@lxorguk.ukuu.org.uk>
+References: <20090509143742.GA27663@kroah.com> <20090511115504.568c9a92@lxorguk.ukuu.org.uk> 
+	<ac3eb2510905110434nb123423m134e848c17c3c736@mail.gmail.com> 
+	<20090511141057.24a5f8ed@lxorguk.ukuu.org.uk> <ac3eb2510905110714m5877da13q19b42d1c8565777c@mail.gmail.com> 
+	<20090511165317.3da5326f@lxorguk.ukuu.org.uk> <ac3eb2510905110928g12545518y143f7f73b3ae494a@mail.gmail.com> 
+	<20090511094151.6014cafb@infradead.org> <ac3eb2510905111032u13051b74g81573a18e3545a81@mail.gmail.com> 
+	<20090511185513.45ea4754@lxorguk.ukuu.org.uk>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Mon, 11 May 2009 20:04:16 +0200
+Message-ID: <ac3eb2510905111104g5ce4e8e6xf8b4de41454c3d2f@mail.gmail.com>
+Subject: Re: [patch 00/13] devtmpfs patches
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Anthony Liguori wrote: 
->>
->> It's a question of cost vs. benefit.  It's clear the benefit is low 
->> (but that doesn't mean it's not worth having).  The cost initially 
->> appeared to be very low, until the nested virtualization wrench was 
->> thrown into the works.  Not that nested virtualization is a reality 
->> -- even on svm where it is implemented it is not yet production 
->> quality and is disabled by default.
->>
->> Now nested virtualization is beginning to look interesting, with 
->> Windows 7's XP mode requiring virtualization extensions.  Desktop 
->> virtualization is also something likely to use device assignment 
->> (though you probably won't assign a virtio device to the XP instance 
->> inside Windows 7).
->>
->> Maybe we should revisit the mmio hypercall idea again, it might be 
->> workable if we find a way to let the guest know if it should use the 
->> hypercall or not for a given memory range.
->>
->> mmio hypercall is nice because
->> - it falls back nicely to pure mmio
->> - it optimizes an existing slow path, not just new device models
->> - it has preexisting semantics, so we have less ABI to screw up
->> - for nested virtualization + device assignment, we can drop it and 
->> get a nice speed win (or rather, less speed loss)
+On Mon, May 11, 2009 at 19:55, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> The same applies when you leave initiramfs, the in-initramfs udevd
+>> copy is killed, and the one from the real root is started. You may
+>> miss events in-between, and need to run a full coldplug again, not
+>> only to apply the policy, but also to make sure that all nodes are
+>> there. The policy can run in the background for most things just fine,
+>> the missing node may cause trouble.
 >
-> If it's a PCI device, then we can also have an interrupt which we 
-> currently lack with vmcall-based hypercalls.  This would give us 
-> guestcalls, upcalls, or whatever we've previously decided to call them.
+> What a strange behaviour. Why not run a single udev instance inside the
+> tmpfs you are turning into dev and will then attach to the real rootfs
+> when it appears ? You only need to build /dev once.
 
-Sorry, I totally failed to understand this.  Please explain.
+Because the udev in initramfs has no clue about uid/gid, has not the
+tools it needs for a full setup, has not the same rules as the one in
+the real root. Ignoring the fact, that people may run different
+versions in initramfs and the real root. There is no sane option so
+far, not to replace the udevd process from initramfs.
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+>> Yeah, and I mentioned many other ways this is useful, to do stuff in
+>> parallel, to be able to rescue, and to have custom systems which do
+>
+> But there are lots where it is not - and those you've mentioned where it
+> might be seem rather stretched at best.
 
+Right, but the information you need for all other use cases is already
+there today in /sys. This is about something new, so there is not a
+competition about features, just an option to solve a problem in a
+different way, which we prefer over the current one.
+
+Thanks,
+Kay
