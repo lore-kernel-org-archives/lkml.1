@@ -1,58 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbZEKX7U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756794AbZELAAS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757321AbZEKX7U (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 19:59:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbZEKX7I
+	id S1756794AbZELAAS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 20:00:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755743AbZEKX77
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 19:59:08 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:54365 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752097AbZEKX7H convert rfc822-to-8bit (ORCPT
+	Mon, 11 May 2009 19:59:59 -0400
+Received: from outbound-mail-130.bluehost.com ([67.222.38.30]:34324 "HELO
+	outbound-mail-130.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755102AbZEKX76 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 19:59:07 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [PATCH 3/5] perf_counter: rework ioctl()s
-Date: Tue, 12 May 2009 01:58:45 +0200
-User-Agent: KMail/1.9.9
-Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-References: <20090508165219.469818319@chello.nl> <20090508170028.837558214@chello.nl>
-In-Reply-To: <20090508170028.837558214@chello.nl>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200905120158.46314.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18YWwqDp1zYhnuMrSqtZdS+XfnpJjzCwqbEz4K
- jD+XELt6Tg8tOARnt35dawJHE/QA11sbKdFrOeYdCLJuly0VT8
- OmBhEUXS5uNDzXBzf7+kA==
+	Mon, 11 May 2009 19:59:58 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=gcMyugUFXN6AZdtnJXgEX0mfiTQnJcVBKxVWoH+eIyICqJToNDkA1xeetzmwW+f04aj0DY8MisFPrLH1e9xF6WJdvt032CI2N8Uqgm65XPcaqgT/sEFQlhAhjr+3b2ks;
+Date: Mon, 11 May 2009 16:59:50 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: David Miller <davem@davemloft.net>
+Cc: michael@ellerman.id.au, matthew@wil.cx, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix MSI-X with NIU cards
+Message-ID: <20090511165950.0188ca5c@jbarnes-g45>
+In-Reply-To: <20090511.164017.116664605.davem@davemloft.net>
+References: <1242004911.7767.26.camel@concordia>
+	<20090510.223645.193708481.davem@davemloft.net>
+	<1242052211.7011.4.camel@concordia>
+	<20090511.164017.116664605.davem@davemloft.net>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 08 May 2009, Peter Zijlstra wrote:
-> -#define PERF_COUNTER_IOC_ENABLE                _IO ('$', 0)
-> -#define PERF_COUNTER_IOC_DISABLE       _IO ('$', 1)
-> +#define PERF_COUNTER_IOC_ENABLE                _IOW('$', 0, u32)
-> +#define PERF_COUNTER_IOC_DISABLE       _IOW('$', 1, u32)
->  #define PERF_COUNTER_IOC_REFRESH       _IOW('$', 2, u32)
-> -#define PERF_COUNTER_IOC_RESET         _IO ('$', 3)
-> +#define PERF_COUNTER_IOC_RESET         _IOW('$', 3, u32)
+On Mon, 11 May 2009 16:40:17 -0700 (PDT)
+David Miller <davem@davemloft.net> wrote:
 
-These ioctl definitions look malformed:
-_IOW('$', 0, u32) means that the ioctl will read a u32 in user
-space pointed to by (u32 __user *)arg, while what perf_ioctl
-actually does is cast arg to a u32. Moreover, exported headers
-should use __u32 instead of u32.
+> From: Michael Ellerman <michael@ellerman.id.au>
+> Date: Tue, 12 May 2009 00:30:11 +1000
+> 
+> > On Sun, 2009-05-10 at 22:36 -0700, David Miller wrote:
+> >> From: Michael Ellerman <michael@ellerman.id.au>
+> >> Date: Mon, 11 May 2009 11:21:51 +1000
+> >> 
+> >> > So I guess this device is just silently ignoring that write?
+> >> 
+> >> No, it signals a fault on the PCI bus, which is how we noticed
+> >> this problem in the first place.
+> > 
+> > But the patch doesn't change that? It just removes the readl AFAICS:
+> 
+> I'm on slow satellite internet here out in the ocean, so I wish
+> the author of this patch would help with your feedback :-/
+> 
+> > Or has msix_mask_irq() changed since 413f81eba?
+> 
+> You could ask GIT, and to answer your question, indeed it has.
+> 
+> Please don't stall this patch very much, as the bug it is fixing konks
+> out one of my primary test machines from even booting up.
 
-PERF_COUNTER_IOC_REFRESH apparently was broken already, this
-patch also breaks the other definitions.
+Ok I'll stuff it into my for-linus queue now... Hopefully Matthew can
+answer the question in the meantime.
 
-	Arnd <><
+-- 
+Jesse Barnes, Intel Open Source Technology Center
