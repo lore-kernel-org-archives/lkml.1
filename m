@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758931AbZEKL4J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759193AbZEKL4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758931AbZEKL4J (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 07:56:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758714AbZEKLym
+	id S1759193AbZEKL4q (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 07:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758879AbZEKLz5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 07:54:42 -0400
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:39403 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758718AbZEKLyl (ORCPT
+	Mon, 11 May 2009 07:55:57 -0400
+Received: from e28smtp02.in.ibm.com ([59.145.155.2]:38518 "EHLO
+	e28smtp02.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757276AbZEKLz4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 07:54:41 -0400
-Date: Mon, 11 May 2009 17:24:33 +0530
+	Mon, 11 May 2009 07:55:56 -0400
+Date: Mon, 11 May 2009 17:25:51 +0530
 From: "K.Prasad" <prasad@linux.vnet.ibm.com>
 To: Alan Stern <stern@rowland.harvard.edu>,
        Steven Rostedt <rostedt@goodmis.org>,
@@ -21,147 +21,146 @@ Cc: Ingo Molnar <mingo@elte.hu>,
        Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
        Roland McGrath <roland@redhat.com>,
        Masami Hiramatsu <mhiramat@redhat.com>
-Subject: [Patch 10/12] Sample HW breakpoint over kernel data address
-Message-ID: <20090511115433.GK25673@in.ibm.com>
+Subject: [Patch 12/12] Reset bits in dr6 after the corresponding exception
+	is handled
+Message-ID: <20090511115551.GM25673@in.ibm.com>
 References: <20090511114422.133566343@prasadkr_t60p.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=samples_hw_breakpoint_10
+Content-Disposition: inline; filename=dr6_changes_12
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces a sample kernel module to demonstrate the use of Hardware
-Breakpoint feature. It places a breakpoint over the kernel variable 'pid_max'
-to monitor all write operations and emits a function-backtrace when done.
+This patch resets the bit in dr6 after the corresponding exception is
+handled in code.
 
 Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
 ---
- samples/Kconfig                         |    6 ++
- samples/Makefile                        |    3 -
- samples/hw_breakpoint/Makefile          |    1 
- samples/hw_breakpoint/data_breakpoint.c |   83 ++++++++++++++++++++++++++++++++
- 4 files changed, 92 insertions(+), 1 deletion(-)
+ arch/x86/kernel/hw_breakpoint.c |   13 +++++++++++--
+ arch/x86/kernel/kgdb.c          |    6 ++++++
+ arch/x86/kernel/kprobes.c       |    9 ++++++++-
+ arch/x86/kernel/traps.c         |    4 ++--
+ arch/x86/mm/kmmio.c             |    8 +++++++-
+ 5 files changed, 34 insertions(+), 6 deletions(-)
 
-Index: samples/Kconfig
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/traps.c
 ===================================================================
---- samples/Kconfig.orig
-+++ samples/Kconfig
-@@ -46,5 +46,11 @@ config SAMPLE_KRETPROBES
- 	default m
- 	depends on SAMPLE_KPROBES && KRETPROBES
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/traps.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/traps.c
+@@ -550,8 +550,8 @@ dotraplinkage void __kprobes do_debug(st
+ 	/* Store the virtualized DR6 value */
+ 	tsk->thread.debugreg6 = dr6;
  
-+config SAMPLE_HW_BREAKPOINT
-+	tristate "Build kernel hardware breakpoint examples -- loadable modules only"
-+	depends on HAVE_HW_BREAKPOINT && m
-+	help
-+	  This builds kernel hardware breakpoint example modules.
-+
- endif # SAMPLES
+-	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
+-						SIGTRAP) == NOTIFY_STOP)
++	if (notify_die(DIE_DEBUG, "debug", regs, PTR_ERR(&dr6), error_code,
++							SIGTRAP) == NOTIFY_STOP)
+ 		return;
  
-Index: samples/Makefile
+ 	/* It's safe to allow irq's after DR6 has been saved */
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/kgdb.c
 ===================================================================
---- samples/Makefile.orig
-+++ samples/Makefile
-@@ -1,3 +1,4 @@
- # Makefile for Linux samples code
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/kgdb.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/kgdb.c
+@@ -43,6 +43,7 @@
+ #include <linux/smp.h>
+ #include <linux/nmi.h>
  
--obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/ trace_events/
-+obj-$(CONFIG_SAMPLES)	+= markers/ kobject/ kprobes/ tracepoints/ \
-+			trace_events/ hw_breakpoint/
-Index: samples/hw_breakpoint/Makefile
++#include <asm/debugreg.h>
+ #include <asm/apicdef.h>
+ #include <asm/system.h>
+ 
+@@ -433,6 +434,11 @@ single_step_cont(struct pt_regs *regs, s
+ 			"resuming...\n");
+ 	kgdb_arch_handle_exception(args->trapnr, args->signr,
+ 				   args->err, "c", "", regs);
++	/*
++	 * Reset the BS bit in dr6 (pointed by args->err) to
++	 * denote completion of processing
++	 */
++	(*(unsigned long *)ERR_PTR(args->err)) &= ~DR_STEP;
+ 
+ 	return NOTIFY_STOP;
+ }
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/kprobes.c
 ===================================================================
---- /dev/null
-+++ samples/hw_breakpoint/Makefile
-@@ -0,0 +1 @@
-+obj-$(CONFIG_SAMPLE_HW_BREAKPOINT) += data_breakpoint.o
-Index: samples/hw_breakpoint/data_breakpoint.c
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/kprobes.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/kprobes.c
+@@ -54,6 +54,7 @@
+ #include <asm/pgtable.h>
+ #include <asm/uaccess.h>
+ #include <asm/alternative.h>
++#include <asm/debugreg.h>
+ 
+ void jprobe_return_end(void);
+ 
+@@ -967,8 +968,14 @@ int __kprobes kprobe_exceptions_notify(s
+ 			ret = NOTIFY_STOP;
+ 		break;
+ 	case DIE_DEBUG:
+-		if (post_kprobe_handler(args->regs))
++		if (post_kprobe_handler(args->regs)) {
++			/*
++			 * Reset the BS bit in dr6 (pointed by args->err) to
++			 * denote completion of processing
++			 */
++			(*(unsigned long *)ERR_PTR(args->err)) &= ~DR_STEP;
+ 			ret = NOTIFY_STOP;
++		}
+ 		break;
+ 	case DIE_GPF:
+ 		/*
+Index: linux-2.6-tip.hbkpt/arch/x86/mm/kmmio.c
 ===================================================================
---- /dev/null
-+++ samples/hw_breakpoint/data_breakpoint.c
-@@ -0,0 +1,83 @@
-+/*
-+ * data_breakpoint.c - Sample HW Breakpoint file to watch kernel data address
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
-+ *
-+ * usage: insmod data_breakpoint.ko ksym=<ksym_name>
-+ *
-+ * This file is a kernel module that places a breakpoint over ksym_name kernel
-+ * variable using Hardware Breakpoint register. The corresponding handler which
-+ * prints a backtrace is invoked everytime a write operation is performed on
-+ * that variable.
-+ *
-+ * Copyright (C) IBM Corporation, 2009
-+ */
-+#include <linux/module.h>	/* Needed by all modules */
-+#include <linux/kernel.h>	/* Needed for KERN_INFO */
-+#include <linux/init.h>		/* Needed for the macros */
+--- linux-2.6-tip.hbkpt.orig/arch/x86/mm/kmmio.c
++++ linux-2.6-tip.hbkpt/arch/x86/mm/kmmio.c
+@@ -540,8 +540,14 @@ kmmio_die_notifier(struct notifier_block
+ 	struct die_args *arg = args;
+ 
+ 	if (val == DIE_DEBUG && (arg->err & DR_STEP))
+-		if (post_kmmio_handler(arg->err, arg->regs) == 1)
++		if (post_kmmio_handler(arg->err, arg->regs) == 1) {
++			/*
++			 * Reset the BS bit in dr6 (pointed by args->err) to
++			 * denote completion of processing
++			 */
++			(*(unsigned long *)ERR_PTR(arg->err)) &= ~DR_STEP;
+ 			return NOTIFY_STOP;
++		}
+ 
+ 	return NOTIFY_DONE;
+ }
+Index: linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+===================================================================
+--- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
++++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
+@@ -296,8 +296,12 @@ int __kprobes hw_breakpoint_handler(stru
+ {
+ 	int i, cpu, rc = NOTIFY_STOP;
+ 	struct hw_breakpoint *bp;
+-	/* The DR6 value is stored in args->err */
+-	unsigned long dr7, dr6 = args->err;
++	unsigned long dr7, dr6;
++	unsigned long *dr6_p;
 +
-+#include <asm/hw_breakpoint.h>
-+
-+struct hw_breakpoint sample_hbp;
-+
-+static char ksym_name[KSYM_NAME_LEN] = "pid_max";
-+module_param_string(ksym, ksym_name, KSYM_NAME_LEN, S_IRUGO);
-+MODULE_PARM_DESC(ksym, "Kernel symbol to monitor; this module will report any"
-+			" write operations on the kernel symbol");
-+
-+void sample_hbp_handler(struct hw_breakpoint *temp, struct pt_regs
-+								*temp_regs)
-+{
-+	printk(KERN_INFO "%s value is changed\n", ksym_name);
-+	dump_stack();
-+	printk(KERN_INFO "Dump stack from sample_hbp_handler\n");
-+}
-+
-+static int __init hw_break_module_init(void)
-+{
-+	int ret;
-+
-+#ifdef CONFIG_X86
-+	sample_hbp.info.name = ksym_name;
-+	sample_hbp.info.type = HW_BREAKPOINT_WRITE;
-+	sample_hbp.info.len = HW_BREAKPOINT_LEN_4;
-+#endif /* CONFIG_X86 */
-+
-+	sample_hbp.triggered = (void *)sample_hbp_handler;
-+
-+	ret = register_kernel_hw_breakpoint(&sample_hbp);
-+
-+	if (ret < 0) {
-+		printk(KERN_INFO "Breakpoint registration failed\n");
-+		return ret;
-+	} else
-+		printk(KERN_INFO "HW Breakpoint for %s write installed\n",
-+								ksym_name);
-+
-+	return 0;
-+}
-+
-+static void __exit hw_break_module_exit(void)
-+{
-+	unregister_kernel_hw_breakpoint(&sample_hbp);
-+	printk(KERN_INFO "HW Breakpoint for %s write uninstalled\n", ksym_name);
-+}
-+
-+module_init(hw_break_module_init);
-+module_exit(hw_break_module_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("K.Prasad");
-+MODULE_DESCRIPTION("ksym breakpoint");
++	/* The DR6 value is pointed by args->err */
++	dr6_p = (unsigned long *)ERR_PTR(args->err);
++	dr6 = *dr6_p;
+ 
+ 	/* Do an early return if no trap bits are set in DR6 */
+ 	if ((dr6 & DR_TRAP_BITS) == 0)
+@@ -336,6 +340,11 @@ int __kprobes hw_breakpoint_handler(stru
+ 			rc = NOTIFY_DONE;
+ 		}
+ 		(bp->triggered)(bp, args->regs);
++		/*
++		 * Reset the 'i'th TRAP bit in dr6 to denote completion of
++		 * exception handling
++		 */
++		(*dr6_p) &= ~(DR_TRAP0 << i);
+ 	}
+ 	if (dr6 & (~DR_TRAP_BITS))
+ 		rc = NOTIFY_DONE;
 
