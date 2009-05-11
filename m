@@ -1,101 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757214AbZEKR1Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756074AbZEKR33@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757214AbZEKR1Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 13:27:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751318AbZEKR1Q
+	id S1756074AbZEKR33 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 13:29:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754430AbZEKR3Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 13:27:16 -0400
-Received: from astoria.ccjclearline.com ([64.235.106.9]:44621 "EHLO
-	astoria.ccjclearline.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751018AbZEKR1P (ORCPT
+	Mon, 11 May 2009 13:29:16 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:15362 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752641AbZEKR3O (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 13:27:15 -0400
-Date: Mon, 11 May 2009 13:25:00 -0400 (EDT)
-From: "Robert P. J. Day" <rpjday@crashcourse.ca>
-X-X-Sender: rpjday@localhost.localdomain
-To: Alexey Dobriyan <adobriyan@gmail.com>
-cc: Christoph Hellwig <hch@infradead.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@elte.hu,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/asm] x86, 64-bit: ifdef out struct thread_struct::ip
-In-Reply-To: <b6fcc0a0905111022g1df0b1c5l95c2a072745578a0@mail.gmail.com>
-Message-ID: <alpine.LFD.2.00.0905111323470.28914@localhost.localdomain>
-References: <20090503233015.GJ16631@x200.localdomain>  <tip-0c23590f00f85467b318ad0c20c36796a5bd4c60@git.kernel.org>  <20090511160324.GA7923@infradead.org> <b6fcc0a0905111022g1df0b1c5l95c2a072745578a0@mail.gmail.com>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	Mon, 11 May 2009 13:29:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type;
+        b=l2dP+wKOnEL8tyqC7TsdsogBSBlgEKLq2yMJikyKVH7ISmp2ovQGthS9J9IGY0umYd
+         QzB2PoKtHIT3CibamzvEEZ5iBWaeQMOstzOctwOMqPgsEm4tBfRSJPfGXUpPV0iP5J+z
+         QIwNyGkOlMWfruMowvClIKGzNEEj8HZK5H8jk=
+Message-ID: <4A086065.2090600@gmail.com>
+Date: Mon, 11 May 2009 13:29:09 -0400
+From: Gregory Haskins <gregory.haskins@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-1531755699-1242062715=:28914"
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - astoria.ccjclearline.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - crashcourse.ca
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+To: Avi Kivity <avi@redhat.com>
+CC: Hollis Blanchard <hollisb@us.ibm.com>,
+       Anthony Liguori <anthony@codemonkey.ws>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <20090505132005.19891.78436.stgit@dev.haskins.net>	 <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com>	 <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com>	 <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com>	 <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com>	 <4A02D40D.7060307@redhat.com> <4A0448DF.90705@codemonkey.ws>	 <4A0570B1.30401@novell.com> <4A071F1A.1090702@codemonkey.ws>	 <4A0824C2.4000109@gmail.com> <1242059712.29194.12.camel@slate.austin.ibm.com> <4A085B06.4080803@redhat.com>
+In-Reply-To: <4A085B06.4080803@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigD97507B686790E422673F29B"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigD97507B686790E422673F29B
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
---8323328-1531755699-1242062715=:28914
-Content-Type: TEXT/PLAIN; charset=ISO-8859-1
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Avi Kivity wrote:
+> Hollis Blanchard wrote:
+>> I haven't been following this conversation at all. With that in mind..=
+=2E
+>>
+>> AFAICS, a hypercall is clearly the higher-performing option, since you=
 
-On Mon, 11 May 2009, Alexey Dobriyan wrote:
+>> don't need the additional memory load (which could even cause a page
+>> fault in some circumstances) and instruction decode. That said, I'm
+>> willing to agree that this overhead is probably negligible compared to=
 
-> On Mon, May 11, 2009 at 8:03 PM, Christoph Hellwig <hch@infradead.org> wr=
-ote:
-> > On Mon, May 11, 2009 at 03:09:40PM +0000, tip-bot for Alexey Dobriyan w=
-rote:
-> >> +#ifdef CONFIG_X86_32
-> >> =A0 =A0 =A0 unsigned long =A0 =A0 =A0 =A0 =A0 ip;
-> >> +#endif
-> >> =A0#ifdef CONFIG_X86_64
-> >> =A0 =A0 =A0 unsigned long =A0 =A0 =A0 =A0 =A0 fs;
-> >> =A0#endif
-> >
-> > What happened to the good old concept of #if #else #endif?
+>> the IOp itself... Ahmdal's Law again.
+>>  =20
 >
-> #else suggests alternative which is not the case.
-> ->ip and ->fs can be in different parts of thread_struct.
+> It's a question of cost vs. benefit.  It's clear the benefit is low
+> (but that doesn't mean it's not worth having).  The cost initially
+> appeared to be very low, until the nested virtualization wrench was
+> thrown into the works.  Not that nested virtualization is a reality --
+> even on svm where it is implemented it is not yet production quality
+> and is disabled by default.
+>
+> Now nested virtualization is beginning to look interesting, with
+> Windows 7's XP mode requiring virtualization extensions.  Desktop
+> virtualization is also something likely to use device assignment
+> (though you probably won't assign a virtio device to the XP instance
+> inside Windows 7).
+>
+> Maybe we should revisit the mmio hypercall idea again, it might be
+> workable if we find a way to let the guest know if it should use the
+> hypercall or not for a given memory range.
+>
+> mmio hypercall is nice because
+> - it falls back nicely to pure mmio
+> - it optimizes an existing slow path, not just new device models
+> - it has preexisting semantics, so we have less ABI to screw up
+> - for nested virtualization + device assignment, we can drop it and
+> get a nice speed win (or rather, less speed loss)
+>
+Yeah, I agree with all this.  I am still wrestling with how to deal with
+the device-assignment problem w.r.t. shunting io requests into a
+hypercall vs letting them PF.  Are you saying we could simply ignore
+this case by disabling "MMIOoHC" when assignment is enabled?  That would
+certainly make the problem much easier to solve.
 
-  the arch/x86/Kconfig file certainly suggests that those are
-mutually-exclusive alternatives:
+-Greg
 
-=2E..
-# Select 32 or 64 bit
-config 64BIT
-        bool "64-bit kernel" if ARCH =3D "x86"
-        default ARCH =3D "x86_64"
-        ---help---
-          Say yes to build a 64-bit kernel - formerly known as x86_64
-          Say no to build a 32-bit kernel - formerly known as i386
 
-config X86_32
-        def_bool !64BIT
+--------------enigD97507B686790E422673F29B
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
-config X86_64
-        def_bool 64BIT
-=2E..
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
 
-unless there's something weird going on underneath.
+iEYEARECAAYFAkoIYGUACgkQP5K2CMvXmqHFhACfVM3BS9Ilmv6+oXDvZez+VqnI
+vwAAoIRsYbN174LoleL//jaGKOMA9tdu
+=ca1E
+-----END PGP SIGNATURE-----
 
-rday
---
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-Robert P. J. Day                               Waterloo, Ontario, CANADA
-
-        Linux Consulting, Training and Annoying Kernel Pedantry.
-
-Web page:                                          http://crashcourse.ca
-Linked In:                             http://www.linkedin.com/in/rpjday
-Twitter:                                       http://twitter.com/rpjday
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---8323328-1531755699-1242062715=:28914--
+--------------enigD97507B686790E422673F29B--
