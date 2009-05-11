@@ -1,56 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751852AbZEKEUN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751416AbZEKFU2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751852AbZEKEUN (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 00:20:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751002AbZEKET7
+	id S1751416AbZEKFU2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 01:20:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZEKFUP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 00:19:59 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:50723 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750816AbZEKET6 (ORCPT
+	Mon, 11 May 2009 01:20:15 -0400
+Received: from mtoichi11.ns.itscom.net ([219.110.2.181]:39545 "EHLO
+	mtoichi11.ns.itscom.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113AbZEKFUP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 00:19:58 -0400
-Message-ID: <4A07A724.9010405@zytor.com>
-Date: Sun, 10 May 2009 21:18:44 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86: cpu/proc.c grouping of cpuid in /proc/cpuinfo
-References: <1241941217.3200.3.camel@localhost.localdomain>
-In-Reply-To: <1241941217.3200.3.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Mon, 11 May 2009 01:20:15 -0400
+From: hooanon05@yahoo.co.jp
+Subject: Re: Q. Switch open_exec() and sys_uselib() to do_open_filp() 
+To: Al Viro <viro@ZenIV.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <20090511040019.GI8633@ZenIV.linux.org.uk>
+References: <29926.1242003317@jrobl> <20090511012828.GH8633@ZenIV.linux.org.uk> <31197.1242009975@jrobl> <20090511040019.GI8633@ZenIV.linux.org.uk>
+Date: Mon, 11 May 2009 14:20:09 +0900
+Message-ID: <7134.1242019209@jrobl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput wrote:
-> Unification of cpuid_level.
-> Also added extended_cpuid_level to make it complete.
-> 
-> So cpuid* and cpufeature flag come in same group and /proc/cpuinfo
-> looks like on AMD box:
-> 
-> cpuid level     : 1
-> ext cpuid level : 0x8000001a
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp lm 3dnowext 3dnow constant_tsc rep_good nonstop_tsc pni cx16 lahf_lm cmp_legacy svm extapic cr8_legacy 3dnowprefetch osvw skinit
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
 
-Jaswinder,
+Al Viro:
+> Nope.  It ended up in nd->intent.open.flags due to path_lookup_open().
 
-/proc/cpuinfo is a userspace API.  You CANNOT change the format of it
-without breaking applications.
+Yes.
 
-Therefore, any change which moves flags between fields or removes fields
-is unacceptable.  Adding new fields is possible, however.
 
-	-hpa
+> Then lookup_instantiate_filp() from a filesystem that might care about
+> intents did
+>         nd->intent.open.file = __dentry_open(dget(dentry), mntget(nd->mnt),
+>                                              nd->intent.open.flags - 1,
+>                                              nd->intent.open.file,
+>                                              open);
+> and nameidata_to_filp() ended up picking nd->intent.open.file.
 
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
+FS supporting lookup_instantiate_filp() is rare, isn't it?
+Simple grep told me it is called by fuse, nfsv4, cifs, and 9p only.
+In other FS, FMODE_EXEC was dropped since nameidata_to_filp() (from
+open_exec() directly) doesn't pick intent.open.flags up.
 
+Anyway, I could confirm that setting FMODE_EXEC to f_flags is intended.
+Thank you for your quick responces.
+
+
+J. R. Okajima
