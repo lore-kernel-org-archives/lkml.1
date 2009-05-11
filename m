@@ -1,101 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758505AbZEKJ5a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758573AbZEKJ6H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758505AbZEKJ5a (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 05:57:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757976AbZEKJyY
+	id S1758573AbZEKJ6H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 05:58:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758165AbZEKJzm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 05:54:24 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53926 "EHLO hera.kernel.org"
+	Mon, 11 May 2009 05:55:42 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49452 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757970AbZEKJyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 05:54:19 -0400
-Date: Mon, 11 May 2009 09:53:42 GMT
+	id S1757990AbZEKJzk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 05:55:40 -0400
+Date: Mon, 11 May 2009 09:54:15 GMT
 From: tip-bot for Yinghai Lu <yinghai@kernel.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
+       yinghai@kernel.org, akpm@linux-foundation.org, mel@csn.ul.ie,
+       tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <49BF0978.40605@kernel.org>
-References: <49BF0978.40605@kernel.org>
-Subject: [tip:x86/mm] x86: clean up and and print out initial max_pfn_mapped
-Message-ID: <tip-80989ce0643c1034822f3e339ed8d790b649abe1@git.kernel.org>
-Git-Commit-ID: 80989ce0643c1034822f3e339ed8d790b649abe1
+       yinghai@kernel.org, akpm@linux-foundation.org, mel@csn.ul.ie,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4A03E13E.6050107@kernel.org>
+References: <4A03E13E.6050107@kernel.org>
+Subject: [tip:x86/mm] x86: Allow 1MB of slack between the e820 map and SRAT, not 4GB
+Message-ID: <tip-0964b0562bb9c93194e852b47bab2397b9e11c18@git.kernel.org>
+Git-Commit-ID: 0964b0562bb9c93194e852b47bab2397b9e11c18
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 09:53:44 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 09:54:17 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  80989ce0643c1034822f3e339ed8d790b649abe1
-Gitweb:     http://git.kernel.org/tip/80989ce0643c1034822f3e339ed8d790b649abe1
+Commit-ID:  0964b0562bb9c93194e852b47bab2397b9e11c18
+Gitweb:     http://git.kernel.org/tip/0964b0562bb9c93194e852b47bab2397b9e11c18
 Author:     Yinghai Lu <yinghai@kernel.org>
-AuthorDate: Sat, 9 May 2009 23:47:42 -0700
+AuthorDate: Fri, 8 May 2009 00:37:34 -0700
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 11 May 2009 11:11:12 +0200
+CommitDate: Mon, 11 May 2009 11:38:21 +0200
 
-x86: clean up and and print out initial max_pfn_mapped
+x86: Allow 1MB of slack between the e820 map and SRAT, not 4GB
 
-Do this so we can check the range that is mapped before
-init_memory_mapping().
+It is expected that there might be slight differences between the e820
+map and the SRAT table and the intention was that 1MB of slack be allowed.
 
-To be able to print out meaningful info, we first have to fix
-64-bit to have max_pfn_mapped assigned before that call. This
-also unifies the code-path a bit.
+The calculation comparing e820ram and pxmram assumes the units are bytes,
+when they are in fact pages. This means 4GB of slack is being allowed,
+not 1MB. This patch makes the correct comparison.
 
-[ Impact: print more debug info, cleanup ]
+comment is from Mel.
+
+[ Impact: don't accept buggy SRATs that could dump up to 4G of RAM ]
 
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-LKML-Reference: <49BF0978.40605@kernel.org>
+Acked-by: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <4A03E13E.6050107@kernel.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/setup.c |    4 ++++
- arch/x86/mm/init.c      |    7 +++----
- 2 files changed, 7 insertions(+), 4 deletions(-)
+ arch/x86/mm/srat_64.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
-index 0d77e56..4031d6c 100644
---- a/arch/x86/kernel/setup.c
-+++ b/arch/x86/kernel/setup.c
-@@ -862,12 +862,16 @@ void __init setup_arch(char **cmdline_p)
- 		max_low_pfn = max_pfn;
+diff --git a/arch/x86/mm/srat_64.c b/arch/x86/mm/srat_64.c
+index c7a18aa..87b45bf 100644
+--- a/arch/x86/mm/srat_64.c
++++ b/arch/x86/mm/srat_64.c
+@@ -346,8 +346,8 @@ static int __init nodes_cover_memory(const struct bootnode *nodes)
+ 	}
  
- 	high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
-+	max_pfn_mapped = KERNEL_IMAGE_SIZE >> PAGE_SHIFT;
- #endif
- 
- #ifdef CONFIG_X86_CHECK_BIOS_CORRUPTION
- 	setup_bios_corruption_check();
- #endif
- 
-+	printk(KERN_DEBUG "initial memory mapped : 0 - %08lx\n",
-+			max_pfn_mapped<<PAGE_SHIFT);
-+
- 	reserve_brk();
- 
- 	/* max_pfn_mapped is updated here */
-diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-index 95f5ecf..92d2108 100644
---- a/arch/x86/mm/init.c
-+++ b/arch/x86/mm/init.c
-@@ -132,12 +132,11 @@ static void __init find_early_table_space(unsigned long end, int use_pse,
- 	 */
- #ifdef CONFIG_X86_32
- 	start = 0x7000;
--	e820_table_start = find_e820_area(start, max_pfn_mapped<<PAGE_SHIFT,
--					tables, PAGE_SIZE);
--#else /* CONFIG_X86_64 */
-+#else
- 	start = 0x8000;
--	e820_table_start = find_e820_area(start, end, tables, PAGE_SIZE);
- #endif
-+	e820_table_start = find_e820_area(start, max_pfn_mapped<<PAGE_SHIFT,
-+					tables, PAGE_SIZE);
- 	if (e820_table_start == -1UL)
- 		panic("Cannot find space for the kernel page tables");
- 
+ 	e820ram = max_pfn - (e820_hole_size(0, max_pfn<<PAGE_SHIFT)>>PAGE_SHIFT);
+-	/* We seem to lose 3 pages somewhere. Allow a bit of slack. */
+-	if ((long)(e820ram - pxmram) >= 1*1024*1024) {
++	/* We seem to lose 3 pages somewhere. Allow 1M of slack. */
++	if ((long)(e820ram - pxmram) >= (1<<(20 - PAGE_SHIFT))) {
+ 		printk(KERN_ERR
+ 	"SRAT: PXMs only cover %luMB of your %luMB e820 RAM. Not used.\n",
+ 			(pxmram << PAGE_SHIFT) >> 20,
