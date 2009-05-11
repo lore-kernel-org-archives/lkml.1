@@ -1,97 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbZEKI2i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755738AbZEKI3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755810AbZEKI2i (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 04:28:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755494AbZEKI1h
+	id S1755738AbZEKI3y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 04:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754374AbZEKI3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 04:27:37 -0400
-Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:62827 "EHLO
-	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755448AbZEKI1g (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 04:27:36 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-type: text/plain; charset=us-ascii
-X-IronPort-AV: E=Sophos;i="4.40,327,1238968800";   d="scan'208";a="11399189"
-From: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
-To: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 4/4]: affinity-on-next-touch
-Date: Mon, 11 May 2009 10:27:37 +0200
-Organization: Chair for Operating Systems, RWTH Aachen University
-Message-id: <001001c9d212$57d1eeb0$0775cc10$@rwth-aachen.de>
-X-Mailer: Microsoft Office Outlook 12.0
-Thread-index: AcnSEleCHNxZ7/U9SYGrgRVkr4eIkQ==
-Content-language: de
+	Mon, 11 May 2009 04:29:44 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:48261 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754137AbZEKI3m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 04:29:42 -0400
+Date: Mon, 11 May 2009 10:28:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>, Len Brown <lenb@kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: Re: [PATCH 5/7] x86/pci: add 4 more return param in
+	IO_APIC_get_PCI_irq_vector
+Message-ID: <20090511082834.GD5636@elte.hu>
+References: <4A01C35C.7060207@kernel.org> <4A01C406.2040303@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A01C406.2040303@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Patch 4/4]: This part of the patch adds some counters to detect migration
-errors and publishes these counters via /proc/vmstat. Besides this, the
-Kconfig file is extend with the parameter CONFIG_AFFINITY_ON_NEXT_TOUCH.
 
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-include/linux/vmstat.h |    6 ++++++
-mm/Kconfig             |    9 +++++++++
-mm/vmstat.c            |    6 ++++++
-3 files changed, 21 insertions(+), 0 deletions(-)
+> +int IO_APIC_get_PCI_irq_vector(int bus, int slot, int pin,
+> +				int *ioapic, int *ioapic_pin,
+> +				int *trigger, int *polarity)
 
+>  		if (io_apic_assign_pci_irqs) {
+>  			int irq;
+> +			int ioapic = -1, ioapic_pin = -1;
+> +			int triggering, polarity;
 
-diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
-index 524cd1b..64c8e66 100644
---- a/include/linux/vmstat.h
-+++ b/include/linux/vmstat.h
-@@ -51,6 +51,12 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
-                UNEVICTABLE_PGSTRANDED, /* unable to isolate on unlock */
-                UNEVICTABLE_MLOCKFREED,
- #endif
-+#ifdef CONFIG_AFFINITY_ON_NEXT_TOUCH
-+               AONT_INVALID_NODEMASK,
-+               AONT_ISOLATE_BUSY,
-+               AONT_ISOLATE_FAILED,
-+               AONT_MIGRATION_FAILED,
-+#endif
-                NR_VM_EVENT_ITEMS
- };
- 
-diff --git a/mm/Kconfig b/mm/Kconfig
-index c2b57d8..025c328 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -181,6 +181,15 @@ config MIGRATION
-          example on NUMA systems to put pages nearer to the processors
-accessing
-          the page.
- 
-+config AFFINITY_ON_NEXT_TOUCH
-+       bool "Affinity on next touch (EXPERIMENTAL)" if (EXPERIMENTAL)
-+       def_bool y
-+       depends on MIGRATION
-+       help
-+         Allows the migration of pages to the node, which has the next
-access 
-+         to the pages. This realized a page placement strategy, which is
-called 
-+         "affinity-on-next-touch".
-+
- config PHYS_ADDR_T_64BIT
-        def_bool 64BIT || ARCH_PHYS_ADDR_T_64BIT
- 
-diff --git a/mm/vmstat.c b/mm/vmstat.c
-index 66f6130..d0e9489 100644
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -708,6 +708,12 @@ static const char * const vmstat_text[] = {
-        "unevictable_pgs_stranded",
-        "unevictable_pgs_mlockfreed",
- #endif
-+#ifdef CONFIG_AFFINITY_ON_NEXT_TOUCH
-+       "aont_invalid_nodemask",
-+       "aont_isolate_busy",
-+       "aont_isolate_failed",
-+       "aont_migration_failed",
-+#endif
- #endif
- };
+please put this into a helper function/inline.
 
+>  
+> -			irq = IO_APIC_get_PCI_irq_vector(dev->bus->number, PCI_SLOT(dev->devfn), pin - 1);
+> +			irq = IO_APIC_get_PCI_irq_vector(dev->bus->number,
+> +						PCI_SLOT(dev->devfn),
+> +						pin - 1,
+> +						&ioapic, &ioapic_pin,
+> +						&triggering, &polarity);
+>  			/*
+>  			 * Busses behind bridges are typically not listed in the MP-table.
+>  			 * In this case we have to look up the IRQ based on the parent bus,
+> @@ -1235,7 +1248,10 @@ static int pirq_enable_irq(struct pci_de
+>  
+>  				pin = pci_swizzle_interrupt_pin(dev, pin);
+>  				irq = IO_APIC_get_PCI_irq_vector(bridge->bus->number,
+> -						PCI_SLOT(bridge->devfn), pin - 1);
+> +						PCI_SLOT(bridge->devfn),
+> +						pin - 1,
+> +						&ioapic, &ioapic_pin,
+> +						&triggering, &polarity);
+>  				if (irq >= 0)
+>  					dev_warn(&dev->dev, "using bridge %s "
+>  						 "INT %c to get IRQ %d\n",
+
+That function has way too many parameters. Please introduce a helper 
+structure (struct io_apic_irq_attr) where the parameters can be 
+passed along in a clean and short fashion. We update them by 
+reference anyway.
+
+I've applied the patch, but we need these cleanups too, the code has 
+become too ugly.
+
+	Ingo
