@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759695AbZEKVTd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759673AbZEKVUV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759695AbZEKVTd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 17:19:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756450AbZEKVTY
+	id S1759673AbZEKVUV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 17:20:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758564AbZEKVUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 17:19:24 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:32836 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754461AbZEKVTY (ORCPT
+	Mon, 11 May 2009 17:20:04 -0400
+Received: from mail1005.centrum.cz ([90.183.38.135]:50877 "EHLO
+	mail1005.centrum.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756450AbZEKVUD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 17:19:24 -0400
-Date: Mon, 11 May 2009 22:19:47 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: "David P. Quigley" <dpquigl@tycho.nsa.gov>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
-       Jan Blunck <jblunck@suse.de>
-Subject: Re: [patch 00/13] devtmpfs patches
-Message-ID: <20090511221947.50eda8d5@lxorguk.ukuu.org.uk>
-In-Reply-To: <ac3eb2510905111405y5541117euf84dd38d39012bd0@mail.gmail.com>
-References: <20090509143742.GA27663@kroah.com>
-	<1242063630.6624.22.camel@moss-terrapins.epoch.ncsc.mil>
-	<20090511175626.GA4758@kroah.com>
-	<1242074517.6624.183.camel@moss-terrapins.epoch.ncsc.mil>
-	<ac3eb2510905111405y5541117euf84dd38d39012bd0@mail.gmail.com>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 May 2009 17:20:03 -0400
+Date: Mon, 11 May 2009 23:19:54 +0200
+From: <trekker.dk@centrum.cz>
+To: <pavel@ucw.cz>
+Cc: <tuxonice-devel@lists.tuxonice.net>, <linux-pm@lists.linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>
+X-Mailer: Centrum Mail 5.0
+MIME-Version: 1.0
+X-Priority: 3
+Message-ID: <200905112319.8749@centrum.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <20090507120948.GA1531@ucw.cz> <200905080037.19722@centrum.cz> <20090510053840.GG1363@ucw.cz>
+In-Reply-To: <20090510053840.GG1363@ucw.cz>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> By doing its own fstype, we could also make the auto-mount optional,
-> because you could always reach the filesystem anytime later.
+______________________________________________________________
+> Od: pavel@ucw.cz
+> Komu: trekker.dk@centrum.cz
+> CC: , linux-pm@liststuxonice-devel@lists.tuxonice.net.linux-foundation.org,linux-kernel@vger.kernel.org
+> Datum: 11.05.2009 14:17
+> Předmět: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+>
+>On Fri 2009-05-08 00:37:39, trekker.dk@centrum.cz wrote:
+>> Well...
+>> 
+>> >
+>> >
+>> >To summarise disadvantages:
+>> >
+>> >- only core has 8000 LoC
+>> >- it does stuff that can be easily done in userspace
+>> >     (and that todays distros _do_ in userspace).
+>> >- it duplicates uswsusp functionality.
+>> >- compared to [u]swsusp, it received little testing
+>> >
+>> 
+>> To summarise advatages - for me tuxonice is the only hibernation method that works.
+>> (Till now I've had 3 machines - no one of them able to resume with in-kernel swsusp.)
+>> 
+>
+>Which kernels you tried, what hw it is? Can you do s2ram?
+>									Pavel
 
-Killing the automount would also fix a lot of the other problems as you
-can then mount it in the initrd and dump it when you have the real fs up,
-or you can mount it privately thanks to Al Viro's magic with mount points
-and only the daemon that must make the "real" device file system need
-have it mounted and accessible.
+Regarding hardware - 
 
-> A different fstype has the slight inconvenience, that existing
-> userspace needs to be taught to handle it explicitly, while a tmfps is
-> already handled automatically because we use tmpfs already today. But
-> that may not be too important.
+1. AMD Athlon 1700+, VIA KT333 chipset based MB, nVidia GeForce 2
+2. AMD X2 Athlon, AMD690V chipset based MB, nVidia 7600GT
+3. (current) AMD X4 Phenom II,  AMD780G chipset and nVidia 9600GT 
+(binary driver for video card every time)
 
-Thats a good thing - it stops some of the suprise behaviour the Eric
-pointed out and objected to.
+Recently I tried kernels 2.6.26, 2.6.27 and now 2.6.29. Kernel 2.6.26 hibernated, but booted
+up without recognizing image, so no attempt to resume was made.
 
-> Thanks a lot for your tests and analysis,
+Kernels 2.6.27 and 2.6.29 are able to resume, but thats about it - after resuming the box 
+doesn't respond to keyboard and I have to reset it.
 
-And I think btw the underlying failure was in the tty layer - I just need
-to find it. It's the second report vaguely of this form so something is
-lurking in the stygian depths.
+s2ram doesn't work as well. So far my best result is one succesful suspend/resume cycle; 
+second attempt to do the same ended in black screen and the computer became "confused" -
+reset (and I mean hardware reset with button on the case) didn't work - I had to turn it off
+completely.
 
-Alan
+I have been using hibernation for quite some time (starting with kernel 2.6.14 or so) 
+and never managed to get swsusp working. On the other hand tuxonice (and swsusp2
+before the renaming) is - except for some glitches - working all that time.
+
+I admit this is completely user's point of view, but I wanted to point out, that for some of us 
+tuxonice is currenty way to go.
+
+Regards
+JB
+
+>
+>-- 
+>(english) http://www.livejournal.com/~pavelmachek
+>(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+>
+
