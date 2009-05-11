@@ -1,139 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755825AbZEKI2W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755810AbZEKI2i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755825AbZEKI2W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 04:28:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbZEKI1e
+	id S1755810AbZEKI2i (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 04:28:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755494AbZEKI1h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 04:27:34 -0400
-Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:62757 "EHLO
+	Mon, 11 May 2009 04:27:37 -0400
+Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:62827 "EHLO
 	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755333AbZEKI1d (ORCPT
+	by vger.kernel.org with ESMTP id S1755448AbZEKI1g (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 04:27:33 -0400
+	Mon, 11 May 2009 04:27:36 -0400
 MIME-version: 1.0
 Content-transfer-encoding: 7BIT
 Content-type: text/plain; charset=us-ascii
-X-IronPort-AV: E=Sophos;i="4.40,327,1238968800";   d="scan'208";a="11399182"
+X-IronPort-AV: E=Sophos;i="4.40,327,1238968800";   d="scan'208";a="11399189"
 From: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
 To: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 3/4]: affinity-on-next-touch
-Date: Mon, 11 May 2009 10:27:33 +0200
+Subject: [RFC PATCH 4/4]: affinity-on-next-touch
+Date: Mon, 11 May 2009 10:27:37 +0200
 Organization: Chair for Operating Systems, RWTH Aachen University
-Message-id: <000f01c9d212$554b6ae0$ffe240a0$@rwth-aachen.de>
+Message-id: <001001c9d212$57d1eeb0$0775cc10$@rwth-aachen.de>
 X-Mailer: Microsoft Office Outlook 12.0
-Thread-index: AcnSElT14b+7OsX2RZWoLI+wcqXYOA==
+Thread-index: AcnSEleCHNxZ7/U9SYGrgRVkr4eIkQ==
 Content-language: de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Patch 3/4]: If the "untouched" bit is set, mprotect isn't permitted to
-change the permission in the page table entry. By using of
-"affinity-on-next-touch", the access permission will be set by the pte fault
-handler.
+[Patch 4/4]: This part of the patch adds some counters to detect migration
+errors and publishes these counters via /proc/vmstat. Besides this, the
+Kconfig file is extend with the parameter CONFIG_AFFINITY_ON_NEXT_TOUCH.
 
 
-mm/mprotect.c |   39 +++++++++++++++++++++++++++------------
-1 files changed, 27 insertions(+), 12 deletions(-)
+include/linux/vmstat.h |    6 ++++++
+mm/Kconfig             |    9 +++++++++
+mm/vmstat.c            |    6 ++++++
+3 files changed, 21 insertions(+), 0 deletions(-)
 
 
-diff --git a/mm/mprotect.c b/mm/mprotect.c
-index 258197b..815aa9b 100644
---- a/mm/mprotect.c
-+++ b/mm/mprotect.c
-@@ -35,9 +35,9 @@ static inline pgprot_t pgprot_modify(pgprot_t oldprot,
-pgprot_t newprot)
- }
+diff --git a/include/linux/vmstat.h b/include/linux/vmstat.h
+index 524cd1b..64c8e66 100644
+--- a/include/linux/vmstat.h
++++ b/include/linux/vmstat.h
+@@ -51,6 +51,12 @@ enum vm_event_item { PGPGIN, PGPGOUT, PSWPIN, PSWPOUT,
+                UNEVICTABLE_PGSTRANDED, /* unable to isolate on unlock */
+                UNEVICTABLE_MLOCKFREED,
  #endif
- 
--static void change_pte_range(struct mm_struct *mm, pmd_t *pmd,
--               unsigned long addr, unsigned long end, pgprot_t newprot,
--               int dirty_accountable)
-+static void change_pte_range(struct vm_area_struct *vma, 
-+               struct mm_struct *mm, pmd_t *pmd, unsigned long addr, 
-+               unsigned long end, pgprot_t newprot, int dirty_accountable)
- {
-        pte_t *pte, oldpte;
-        spinlock_t *ptl;
-@@ -48,6 +48,19 @@ static void change_pte_range(struct mm_struct *mm, pmd_t
-*pmd,
-                oldpte = *pte;
-                if (pte_present(oldpte)) {
-                        pte_t ptent;
 +#ifdef CONFIG_AFFINITY_ON_NEXT_TOUCH
-+                       if (vma_migratable(vma)) {
-+                               struct page *page = vm_normal_page(vma,
-addr,
-+                                                       oldpte);
-+                               /* 
-+                                * By using affinity-on-next-touch the page 
-+                                * fault handler will set the new page 
-+                                * permissions! 
-+                                */
-+                               if (page && PageUntouched(page))
-+                                       continue;
-+                       }
++               AONT_INVALID_NODEMASK,
++               AONT_ISOLATE_BUSY,
++               AONT_ISOLATE_FAILED,
++               AONT_MIGRATION_FAILED,
 +#endif
+                NR_VM_EVENT_ITEMS
+ };
  
-                        ptent = ptep_modify_prot_start(mm, addr, pte);
-                        ptent = pte_modify(ptent, newprot);
-@@ -78,9 +91,9 @@ static void change_pte_range(struct mm_struct *mm, pmd_t
-*pmd,
-        pte_unmap_unlock(pte - 1, ptl);
- }
-
--static inline void change_pmd_range(struct mm_struct *mm, pud_t *pud,
--               unsigned long addr, unsigned long end, pgprot_t newprot,
--               int dirty_accountable)
-+static inline void change_pmd_range(struct vm_area_struct *vma, 
-+               struct mm_struct *mm, pud_t *pud, unsigned long addr, 
-+               unsigned long end, pgprot_t newprot, int dirty_accountable)
- {
-        pmd_t *pmd;
-        unsigned long next;
-@@ -90,13 +103,14 @@ static inline void change_pmd_range(struct mm_struct
-*mm, pud_t *pud,
-                next = pmd_addr_end(addr, end);
-                if (pmd_none_or_clear_bad(pmd))
-                        continue;
--               change_pte_range(mm, pmd, addr, next, newprot,
-dirty_accountable);
-+               change_pte_range(vma, mm, pmd, addr, next, newprot, 
-+                               dirty_accountable);
-        } while (pmd++, addr = next, addr != end);
- }
+diff --git a/mm/Kconfig b/mm/Kconfig
+index c2b57d8..025c328 100644
+--- a/mm/Kconfig
++++ b/mm/Kconfig
+@@ -181,6 +181,15 @@ config MIGRATION
+          example on NUMA systems to put pages nearer to the processors
+accessing
+          the page.
  
--static inline void change_pud_range(struct mm_struct *mm, pgd_t *pgd,
--               unsigned long addr, unsigned long end, pgprot_t newprot,
--               int dirty_accountable)
-+static inline void change_pud_range(struct vm_area_struct *vma, 
-+               struct mm_struct *mm, pgd_t *pgd, unsigned long addr, 
-+               unsigned long end, pgprot_t newprot, int dirty_accountable)
- {
-        pud_t *pud;
-        unsigned long next;
-@@ -106,7 +120,8 @@ static inline void change_pud_range(struct mm_struct
-*mm, pgd_t *pgd,
-                next = pud_addr_end(addr, end);
-                if (pud_none_or_clear_bad(pud))
-                        continue;
--               change_pmd_range(mm, pud, addr, next, newprot,
-dirty_accountable);
-+               change_pmd_range(vma, mm, pud, addr, next, newprot, 
-+                               dirty_accountable);
-        } while (pud++, addr = next, addr != end);
- }
++config AFFINITY_ON_NEXT_TOUCH
++       bool "Affinity on next touch (EXPERIMENTAL)" if (EXPERIMENTAL)
++       def_bool y
++       depends on MIGRATION
++       help
++         Allows the migration of pages to the node, which has the next
+access 
++         to the pages. This realized a page placement strategy, which is
+called 
++         "affinity-on-next-touch".
++
+ config PHYS_ADDR_T_64BIT
+        def_bool 64BIT || ARCH_PHYS_ADDR_T_64BIT
  
-@@ -126,7 +141,7 @@ static void change_protection(struct vm_area_struct
-*vma,
-                next = pgd_addr_end(addr, end);
-                if (pgd_none_or_clear_bad(pgd))
-                        continue;
--               change_pud_range(mm, pgd, addr, next, newprot,
-dirty_accountable);
-+               change_pud_range(vma, mm, pgd, addr, next, newprot,
-dirty_accountable);
-        } while (pgd++, addr = next, addr != end);
-        flush_tlb_range(vma, start, end);
- }
+diff --git a/mm/vmstat.c b/mm/vmstat.c
+index 66f6130..d0e9489 100644
+--- a/mm/vmstat.c
++++ b/mm/vmstat.c
+@@ -708,6 +708,12 @@ static const char * const vmstat_text[] = {
+        "unevictable_pgs_stranded",
+        "unevictable_pgs_mlockfreed",
+ #endif
++#ifdef CONFIG_AFFINITY_ON_NEXT_TOUCH
++       "aont_invalid_nodemask",
++       "aont_isolate_busy",
++       "aont_isolate_failed",
++       "aont_migration_failed",
++#endif
+ #endif
+ };
 
