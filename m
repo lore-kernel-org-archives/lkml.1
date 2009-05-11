@@ -1,69 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758133AbZEKWAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759493AbZEKWBQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758133AbZEKWAa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 18:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754637AbZEKWAQ
+	id S1759493AbZEKWBQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 18:01:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756340AbZEKWAz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 18:00:16 -0400
-Received: from emroute3.ornl.gov ([160.91.4.110]:60193 "EHLO emroute3.ornl.gov"
+	Mon, 11 May 2009 18:00:55 -0400
+Received: from bu3sch.de ([62.75.166.246]:55293 "EHLO vs166246.vserver.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754359AbZEKWAO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 18:00:14 -0400
-X-Greylist: delayed 1817 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 May 2009 18:00:14 EDT
-Date: Mon, 11 May 2009 17:29:52 -0400
-From: David Dillow <dave@thedillows.org>
+	id S1756226AbZEKWAz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 18:00:55 -0400
+From: Michael Buesch <mb@bu3sch.de>
+To: David Dillow <dave@thedillows.org>
 Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
-In-reply-to: <200905112310.08534.mb@bu3sch.de>
-To: Michael Buesch <mb@bu3sch.de>
+Date: Mon, 11 May 2009 23:59:43 +0200
+User-Agent: KMail/1.9.9
 Cc: Michael Riepe <michael.riepe@googlemail.com>,
        Francois Romieu <romieu@fr.zoreil.com>,
        Rui Santos <rsantos@grupopie.com>,
-       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
+       Michael =?utf-8?q?B=C3=BCker?= <m.bueker@berlin.de>,
        linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Message-id: <1242077392.3716.15.camel@lap75545.ornl.gov>
-MIME-version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10)
-Content-type: text/plain
-Content-transfer-encoding: 7bit
-References: <200903041828.49972.m.bueker@berlin.de>
- <1242001754.4093.12.camel@obelisk.thedillows.org>
- <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
+References: <200903041828.49972.m.bueker@berlin.de> <200905112310.08534.mb@bu3sch.de> <1242077392.3716.15.camel@lap75545.ornl.gov>
+In-Reply-To: <1242077392.3716.15.camel@lap75545.ornl.gov>
+X-Move-Along: Nothing to see here. No, really... Nothing.
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905112359.43433.mb@bu3sch.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-11 at 23:10 +0200, Michael Buesch wrote:
-> On Monday 11 May 2009 22:48:44 Michael Buesch wrote:
-> > On Monday 11 May 2009 02:29:14 David Dillow wrote:
-> > > > Kernel: 2.6.29.2 (x86_64)
-> > > > Board: Intel D945GCLF2
-> > > > BIOS version: LF94510J.86A.0099.2008.0731.0303
+On Monday 11 May 2009 23:29:52 David Dillow wrote:
+> On Mon, 2009-05-11 at 23:10 +0200, Michael Buesch wrote:
+> > On Monday 11 May 2009 22:48:44 Michael Buesch wrote:
+> > > On Monday 11 May 2009 02:29:14 David Dillow wrote:
+> > > > > Kernel: 2.6.29.2 (x86_64)
+> > > > > Board: Intel D945GCLF2
+> > > > > BIOS version: LF94510J.86A.0099.2008.0731.0303
+> > > > 
+> > > > I'm not sure this is tied to the chip. 
 > > > 
-> > > I'm not sure this is tied to the chip. 
+> > > Yeah maybe other chips are affected as well.
+> > > I just want to note that my failing chip/board is an Intel D945GCLF2 board
+> > > with onboard G-LAN, too.
+> > > 
+> > > The device XID is: XID 3c4000c0
+> > > (see kernel log)
+> > > 
+> > > Somebody else (I think it was Rui Santos) already reported a failing chip with that XID, too.
+> > > 
 > > 
-> > Yeah maybe other chips are affected as well.
-> > I just want to note that my failing chip/board is an Intel D945GCLF2 board
-> > with onboard G-LAN, too.
-> > 
-> > The device XID is: XID 3c4000c0
-> > (see kernel log)
-> > 
-> > Somebody else (I think it was Rui Santos) already reported a failing chip with that XID, too.
-> > 
+> > Here's a patch which blacklists MSI support by XID.
+> > It's currently only compile-tested, because I can't reboot the machine right now.
 > 
-> Here's a patch which blacklists MSI support by XID.
-> It's currently only compile-tested, because I can't reboot the machine right now.
+> I was saying that I don't think the timeouts are necessarily the NIC
+> chipset -- or the bridge chip for that matter --  having issues with
+> MSI. There were some substantial IRQ handling changes in 2.6.28 and my
+> bisection of the problem seem to lead into that code. I'll try this
+> later tonight hopefully, but can you try to run 2.6.27 with the current
+> r8169 driver and see if it is solid for you? That way it is using the
+> same driver code, but avoids the IRQ changes.
+> 
+> Of course, my XID is 281000c0, so it looks like I have a different NIC
+> chip as well, so we may be chasing different problems. Still, it'd be
+> nice to rule out the IRQ changes before adding a blacklist.
 
-I was saying that I don't think the timeouts are necessarily the NIC
-chipset -- or the bridge chip for that matter --  having issues with
-MSI. There were some substantial IRQ handling changes in 2.6.28 and my
-bisection of the problem seem to lead into that code. I'll try this
-later tonight hopefully, but can you try to run 2.6.27 with the current
-r8169 driver and see if it is solid for you? That way it is using the
-same driver code, but avoids the IRQ changes.
+Ok, that perfectly makes sense.
+I can try 2.6.29's driver on 2.6.27, but I can't tell when, because I currently
+only have infrequent physical access to the machine.
 
-Of course, my XID is 281000c0, so it looks like I have a different NIC
-chip as well, so we may be chasing different problems. Still, it'd be
-nice to rule out the IRQ changes before adding a blacklist.
-
-Dave
+-- 
+Greetings, Michael.
