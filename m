@@ -1,46 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759511AbZEKU5X@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759255AbZEKVBm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759511AbZEKU5X (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 16:57:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759288AbZEKU5A
+	id S1759255AbZEKVBm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 17:01:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753063AbZEKVBd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 16:57:00 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:50789 "EHLO mx2.suse.de"
+	Mon, 11 May 2009 17:01:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:54317 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758564AbZEKU47 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 16:56:59 -0400
-Date: Mon, 11 May 2009 13:51:17 -0700
-From: Greg KH <gregkh@suse.de>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Jan Blunck <jblunck@suse.de>
-Subject: Re: [patch 01/13] Driver Core: add nodename callbacks
-Message-ID: <20090511205117.GA27815@suse.de>
-References: <20090509142601.874865281@blue.kroah.org> <20090509143631.276407654@blue.kroah.org> <20090510225246.0a77b557.sfr@canb.auug.org.au> <ac3eb2510905100619j2a76409fh775f42e4a745b4@mail.gmail.com>
+	id S1752838AbZEKVBc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 17:01:32 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [PATCH -rc] [BUGFIX] x86: fix kernel_trap_sp()
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: LKML <linux-kernel@vger.kernel.org>, systemtap@sources.redhat.com,
+       Masami Hiramatsu <mhiramat@redhat.com>,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Jan Blunck <jblunck@suse.de>, Christoph Hellwig <hch@infradead.org>
+Date: Mon, 11 May 2009 17:03:00 -0400
+Message-ID: <20090511210300.17332.67549.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <ac3eb2510905100619j2a76409fh775f42e4a745b4@mail.gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 10, 2009 at 03:19:46PM +0200, Kay Sievers wrote:
-> On Sun, May 10, 2009 at 14:52, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> 
-> >> +++ b/include/linux/device.h
-> >>  struct device {
-> >>       struct device           *parent;
-> >> +     char *(*nodename)(struct device *dev);
-> >
-> > Just wondering what this callback is for.  I didn't look really hard, but
-> > couldn't find it used anywhere.
-> 
-> You are right, that seems like a left-over which did not get used, and
-> should be removed from the patch.
+Use &regs->sp instead of regs for getting the top of stack in kernel mode.
+(on x86-64, regs->sp always points the top of stack)
 
-I've now removed it, thanks Stephen for finding this.
+[ impact: Oprofile decodes only stack for backtracing on i386 ]
 
-greg k-h
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Jan Blunck <jblunck@suse.de>
+Cc: Christoph Hellwig <hch@infradead.org>
+---
+
+ arch/x86/include/asm/ptrace.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
+index 5cdd19f..90b76b3 100644
+--- a/arch/x86/include/asm/ptrace.h
++++ b/arch/x86/include/asm/ptrace.h
+@@ -187,14 +187,14 @@ static inline int v8086_mode(struct pt_regs *regs)
+ 
+ /*
+  * X86_32 CPUs don't save ss and esp if the CPU is already in kernel mode
+- * when it traps.  So regs will be the current sp.
++ * when it traps.  So &regs->sp will be the current sp.
+  *
+  * This is valid only for kernel mode traps.
+  */
+ static inline unsigned long kernel_trap_sp(struct pt_regs *regs)
+ {
+ #ifdef CONFIG_X86_32
+-	return (unsigned long)regs;
++	return (unsigned long)&regs->sp;
+ #else
+ 	return regs->sp;
+ #endif
+
