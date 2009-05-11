@@ -1,76 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbZEKKMb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758577AbZEKKMs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757944AbZEKKMb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 06:12:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758090AbZEKKLt
+	id S1758577AbZEKKMs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 06:12:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758217AbZEKKLw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 06:11:49 -0400
-Received: from hera.kernel.org ([140.211.167.34]:50761 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758151AbZEKKLs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 06:11:48 -0400
-Date: Mon, 11 May 2009 10:10:58 GMT
-From: tip-bot for Mike Galbraith <efault@gmx.de>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, efault@gmx.de,
-       robert.richter@amd.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, robert.richter@amd.com,
-       a.p.zijlstra@chello.nl, efault@gmx.de, tglx@linutronix.de,
-       mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter, x86: clean up throttling printk
-Message-ID: <tip-8823392360dc4992f87bf4c623834d315f297493@git.kernel.org>
-Git-Commit-ID: 8823392360dc4992f87bf4c623834d315f297493
-X-Mailer: tip-git-log-daemon
+	Mon, 11 May 2009 06:11:52 -0400
+Received: from qw-out-2122.google.com ([74.125.92.27]:52411 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758138AbZEKKLu convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 06:11:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:from:date:message-id:subject:to
+         :cc:content-type:content-transfer-encoding;
+        b=En7qOzBKLYYrKNpMz7Hj6hWtnMUHwYdmLDUWeeM0hHg8C+aiFZ3MkLEvkXfiaZJVmW
+         /3PotCuW5xPszXA1cboP/YzajuwSyaqoiAkbQhwlJ4bcsMehjUF/JUn+5u7+RLLi1oAX
+         yof0wj4uWzwA1HMg4si1uHcyJgObKfoSG9IGs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 10:11:00 +0000 (UTC)
+In-Reply-To: <Pine.LNX.4.64.0905081102060.14384@venus.araneidae.co.uk>
+References: <Pine.LNX.4.64.0905060829580.24668@venus.araneidae.co.uk> 
+	<20090506102202.73d6045d@hyperion.delvare> <Pine.LNX.4.64.0905081102060.14384@venus.araneidae.co.uk>
+From: =?GB2312?B?0sHU8w==?= <wxc200@gmail.com>
+Date: Mon, 11 May 2009 18:11:35 +0800
+Message-ID: <fd6b62c10905110311w6350828tf90d9c699b73fe30@mail.gmail.com>
+Subject: Re: [PATCH 2.6.29.2] PXA I2C: Define log level for i2c PXA error 
+	report
+To: Michael Abbott <michael@araneidae.co.uk>
+Cc: Jean Delvare <khali@linux-fr.org>, linux-i2c@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  8823392360dc4992f87bf4c623834d315f297493
-Gitweb:     http://git.kernel.org/tip/8823392360dc4992f87bf4c623834d315f297493
-Author:     Mike Galbraith <efault@gmx.de>
-AuthorDate: Sun, 10 May 2009 10:53:05 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 11 May 2009 12:04:30 +0200
+2009/5/11 Michael Abbott <michael@araneidae.co.uk>
+>
+> On Wed, 6 May 2009, Jean Delvare wrote:
+> > On Wed, 6 May 2009 08:32:09 +0100 (BST), Michael Abbott wrote:
+> > > All the i2c pxa error messages should probably be KERN_DEBUG
+> > >
+> > > At least, all the printk messages should have a log level specfied,
+> > > and KERN_DEBUG seems appropriate.
+> > >
+> > > Signed-off-by: Michael Abbott <michael.abbott@diamond.ac.uk>
+> > > ---
+> > >  drivers/i2c/busses/i2c-pxa.c |    8 ++++----
+> > >  1 files changed, 4 insertions(+), 4 deletions(-)
+> > >
+> > > diff --git a/drivers/i2c/busses/i2c-pxa.c b/drivers/i2c/busses/i2c-pxa.c
+> > > index bdb1f75..8cb9160 100644
+> > > --- a/drivers/i2c/busses/i2c-pxa.c
+> > > +++ b/drivers/i2c/busses/i2c-pxa.c
+> > > @@ -210,11 +210,11 @@ static irqreturn_t i2c_pxa_handler(int this_irq, void *dev_id);
+> > >  static void i2c_pxa_scream_blue_murder(struct pxa_i2c *i2c, const char *why)
+> > >  {
+> > >     unsigned int i;
+> > > -   printk("i2c: error: %s\n", why);
+> > > -   printk("i2c: msg_num: %d msg_idx: %d msg_ptr: %d\n",
+> > > +   printk(KERN_DEBUG "i2c: error: %s\n", why);
+> > > +   printk(KERN_DEBUG "i2c: msg_num: %d msg_idx: %d msg_ptr: %d\n",
+> > >             i2c->msg_num, i2c->msg_idx, i2c->msg_ptr);
+> > > -   printk("i2c: ICR: %08x ISR: %08x\n"
+> > > -          "i2c: log: ", readl(_ICR(i2c)), readl(_ISR(i2c)));
+> > > +   printk(KERN_DEBUG "i2c: ICR: %08x ISR: %08x\n"
+> > > +          KERN_DEBUG "i2c: log: ", readl(_ICR(i2c)), readl(_ISR(i2c)));
+> > >     for (i = 0; i < i2c->irqlogidx; i++)
+> > >             printk("[%08x:%08x] ", i2c->isrlog[i], i2c->icrlog[i]);
+> > >     printk("\n");
+> >
+> > Already fixed in Linus' tree:
+> > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=154d22b04ae1741c5fcfd5d747b813a9a279abff#patch4
+>
+> Now this is very odd.  I'd assumed the error messages I was getting were
+> just noise, but the commit you point me to uses KERN_ERR instead -- and so
+> I get a brief storm of these messages on boot on my target:
+>
+> [   20.667923] i2c: error: exhausted retries
+> [   20.671962] i2c: msg_num: 0 msg_idx: -2000 msg_ptr: 0
+> [   20.677113] i2c: ICR: 000007e0 ISR: 00000002
+> [   20.677128] i2c: log: [00000446:000007e0]
+>
+> This is repeated nine times in total with exactly the same numbers.  Any
+> thoughts as to what this means?  Other than these messages on startup my
+> I2C sensors seem to work perfectly well.
+If all error messages seem like "exhausted retries",not "timeout or
+master error",there maybe some operation conflicts,and i2c controller
+cannot succeed operateing after max times retry.  And which mode do
+your i2c work?  Poll or Interrupt?
 
-perf_counter, x86: clean up throttling printk
+thanks
+--wxc200
 
-s/PERFMON/perfcounters for perfcounter interrupt throttling warning.
-
-'perfmon' is the CPU feature name that is Intel-only, while we do
-throttling in a generic way.
-
-[ Impact: cleanup ]
-
-Signed-off-by: Mike Galbraith <efault@gmx.de>
-Cc: Robert Richter <robert.richter@amd.com>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- arch/x86/kernel/cpu/perf_counter.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/perf_counter.c b/arch/x86/kernel/cpu/perf_counter.c
-index a6878b0..da27419 100644
---- a/arch/x86/kernel/cpu/perf_counter.c
-+++ b/arch/x86/kernel/cpu/perf_counter.c
-@@ -814,7 +814,7 @@ void perf_counter_unthrottle(void)
- 	cpuc = &__get_cpu_var(cpu_hw_counters);
- 	if (cpuc->interrupts >= PERFMON_MAX_INTERRUPTS) {
- 		if (printk_ratelimit())
--			printk(KERN_WARNING "PERFMON: max interrupts exceeded!\n");
-+			printk(KERN_WARNING "perfcounters: max interrupts exceeded!\n");
- 		hw_perf_restore(cpuc->throttle_ctrl);
- 	}
- 	cpuc->interrupts = 0;
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-i2c" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
