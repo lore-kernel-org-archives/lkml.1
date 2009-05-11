@@ -1,79 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758870AbZEKKOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758740AbZEKKPg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758870AbZEKKOv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 06:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758625AbZEKKNM
+	id S1758740AbZEKKPg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 06:15:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758250AbZEKKNf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 06:13:12 -0400
-Received: from fg-out-1718.google.com ([72.14.220.157]:43793 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758291AbZEKKNI (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 06:13:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=krI3vYILbNCabAYn7V9PjscUgN0kdaR4eFIkslESzP5skNu+o3ogltwytMTT2ptODc
-         L73J9BLNXruqFThUe2ezcs9S/OF4L3YFvpwLCSRJbAaPeySGgNX9ybVfQiWy0GTRLua3
-         ibWVyo7+GTegGwKkuKrgz5HJ21RVELQF/IQhw=
-From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 3/5] Use wait_copyout() in do_wait()
-Date: Mon, 11 May 2009 12:12:42 +0200
-Message-Id: <1242036759-4025-4-git-send-email-v.mayatskih@gmail.com>
-X-Mailer: git-send-email 1.6.2.2
-In-Reply-To: <1242036759-4025-1-git-send-email-v.mayatskih@gmail.com>
-References: <1242036759-4025-1-git-send-email-v.mayatskih@gmail.com>
+	Mon, 11 May 2009 06:13:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:50840 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758703AbZEKKNe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 06:13:34 -0400
+Date: Mon, 11 May 2009 10:12:53 GMT
+From: tip-bot for Paul Mackerras <paulus@samba.org>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
+       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
+       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
+In-Reply-To: <18951.48285.270311.981806@drongo.ozlabs.ibm.com>
+References: <18951.48285.270311.981806@drongo.ozlabs.ibm.com>
+Subject: [tip:perfcounters/core] perf_counter: call atomic64_set for counter->count
+Message-ID: <tip-615a3f1e055ac9b0ae74e1f935a12ea2cfe2a2ad@git.kernel.org>
+Git-Commit-ID: 615a3f1e055ac9b0ae74e1f935a12ea2cfe2a2ad
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 10:12:55 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All copy-paste getrusage() and put_user() code in wait_task_* functions
-is replaced by call to wait_copyout()
+Commit-ID:  615a3f1e055ac9b0ae74e1f935a12ea2cfe2a2ad
+Gitweb:     http://git.kernel.org/tip/615a3f1e055ac9b0ae74e1f935a12ea2cfe2a2ad
+Author:     Paul Mackerras <paulus@samba.org>
+AuthorDate: Mon, 11 May 2009 15:50:21 +1000
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 11 May 2009 12:10:54 +0200
 
-Use wait_copyout() in do_wait() to clean up user's siginfo structure.
+perf_counter: call atomic64_set for counter->count
 
-Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+A compile warning triggered because we are calling
+atomic_set(&counter->count). But since counter->count
+is an atomic64_t, we have to use atomic64_set.
+
+So the count can be set short, resulting in the reset ioctl
+only resetting the low word.
+
+[ Impact: clear counter properly during the reset ioctl ]
+
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
+LKML-Reference: <18951.48285.270311.981806@drongo.ozlabs.ibm.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
 ---
- kernel/exit.c |   15 +--------------
- 1 files changed, 1 insertions(+), 14 deletions(-)
+ kernel/perf_counter.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/kernel/exit.c b/kernel/exit.c
-index 3b2fdd9..6ee6b53 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1600,8 +1600,6 @@ end:
- 	__set_current_state(TASK_RUNNING);
- 	remove_wait_queue(&current->signal->wait_chldexit,&wait);
- 	if (wo->wo_info) {
--		struct siginfo __user *infop = wo->wo_info;
--
- 		if (retval > 0)
- 			retval = 0;
- 		else {
-@@ -1610,18 +1608,7 @@ end:
- 			 * we would set so the user can easily tell the
- 			 * difference.
- 			 */
--			if (!retval)
--				retval = put_user(0, &infop->si_signo);
--			if (!retval)
--				retval = put_user(0, &infop->si_errno);
--			if (!retval)
--				retval = put_user(0, &infop->si_code);
--			if (!retval)
--				retval = put_user(0, &infop->si_pid);
--			if (!retval)
--				retval = put_user(0, &infop->si_uid);
--			if (!retval)
--				retval = put_user(0, &infop->si_status);
-+			retval = wait_copyout(wo, 0, 0, 0, 0, 0, 0);
- 		}
- 	}
- 	return retval;
--- 
-1.6.2.2
-
-
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 7373b96..5ea0240 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -1281,7 +1281,7 @@ static unsigned int perf_poll(struct file *file, poll_table *wait)
+ static void perf_counter_reset(struct perf_counter *counter)
+ {
+ 	(void)perf_counter_read(counter);
+-	atomic_set(&counter->count, 0);
++	atomic64_set(&counter->count, 0);
+ 	perf_counter_update_userpage(counter);
+ }
+ 
