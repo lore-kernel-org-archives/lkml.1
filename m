@@ -1,141 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758449AbZEKJ5r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758505AbZEKJ5a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758449AbZEKJ5r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 05:57:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757846AbZEKJyi
+	id S1758505AbZEKJ5a (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 05:57:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757976AbZEKJyY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 05:54:38 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53954 "EHLO hera.kernel.org"
+	Mon, 11 May 2009 05:54:24 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53926 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758049AbZEKJyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 05:54:37 -0400
-Date: Mon, 11 May 2009 09:53:53 GMT
+	id S1757970AbZEKJyT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 05:54:19 -0400
+Date: Mon, 11 May 2009 09:53:42 GMT
 From: tip-bot for Yinghai Lu <yinghai@kernel.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       gorcunov@openvz.org, yinghai@kernel.org, tglx@linutronix.de,
-       eswierk@aristanetworks.com, mingo@elte.hu
+       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       yinghai@kernel.org, gorcunov@openvz.org, tglx@linutronix.de,
-       eswierk@aristanetworks.com, mingo@elte.hu
-In-Reply-To: <49FC85A9.2070702@kernel.org>
-References: <49FC85A9.2070702@kernel.org>
-Subject: [tip:x86/apic] x86: read apic ID in the !acpi_lapic case
-Message-ID: <tip-4401da6111ac58f94234417427d06a72c4048c74@git.kernel.org>
-Git-Commit-ID: 4401da6111ac58f94234417427d06a72c4048c74
+       yinghai@kernel.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <49BF0978.40605@kernel.org>
+References: <49BF0978.40605@kernel.org>
+Subject: [tip:x86/mm] x86: clean up and and print out initial max_pfn_mapped
+Message-ID: <tip-80989ce0643c1034822f3e339ed8d790b649abe1@git.kernel.org>
+Git-Commit-ID: 80989ce0643c1034822f3e339ed8d790b649abe1
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 09:53:55 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 09:53:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  4401da6111ac58f94234417427d06a72c4048c74
-Gitweb:     http://git.kernel.org/tip/4401da6111ac58f94234417427d06a72c4048c74
+Commit-ID:  80989ce0643c1034822f3e339ed8d790b649abe1
+Gitweb:     http://git.kernel.org/tip/80989ce0643c1034822f3e339ed8d790b649abe1
 Author:     Yinghai Lu <yinghai@kernel.org>
-AuthorDate: Sat, 2 May 2009 10:40:57 -0700
+AuthorDate: Sat, 9 May 2009 23:47:42 -0700
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 11 May 2009 11:29:23 +0200
+CommitDate: Mon, 11 May 2009 11:11:12 +0200
 
-x86: read apic ID in the !acpi_lapic case
+x86: clean up and and print out initial max_pfn_mapped
 
-Ed found that on 32-bit, boot_cpu_physical_apicid is not read right,
-when the mptable is broken.
+Do this so we can check the range that is mapped before
+init_memory_mapping().
 
-Interestingly, actually three paths use/set it:
+To be able to print out meaningful info, we first have to fix
+64-bit to have max_pfn_mapped assigned before that call. This
+also unifies the code-path a bit.
 
- 1. acpi: at that time that is already read from reg
- 2. mptable: only read from mptable
- 3. no madt, and no mptable, that use default apic id 0 for 64-bit, -1 for 32-bit
+[ Impact: print more debug info, cleanup ]
 
-so we could read the apic id for the 2/3 path. We trust the hardware
-register more than we trust a BIOS data structure (the mptable).
-
-We can also avoid the double set_fixmap() when acpi_lapic
-is used, and also need to move cpu_has_apic earlier and
-call apic_disable().
-
-Also when need to update the apic id, we'd better read and
-set the apic version as well - so that quirks are applied precisely.
-
-v2: make path 3 with 64bit, use -1 as apic id, so could read it later.
-v3: fix whitespace problem pointed out by Ed Swierk
-
-[ Impact: get correct apic id for bsp other than acpi path ]
-
-Reported-by: Ed Swierk <eswierk@aristanetworks.com>
 Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-Acked-by: Cyrill Gorcunov <gorcunov@openvz.org>
-LKML-Reference: <49FC85A9.2070702@kernel.org>
-[ v4: sanity-check in the ACPI case too ]
+LKML-Reference: <49BF0978.40605@kernel.org>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/x86/kernel/apic/apic.c |   31 +++++++++++++++++++++----------
- 1 files changed, 21 insertions(+), 10 deletions(-)
+ arch/x86/kernel/setup.c |    4 ++++
+ arch/x86/mm/init.c      |    7 +++----
+ 2 files changed, 7 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
-index e258bed..1ee966f 100644
---- a/arch/x86/kernel/apic/apic.c
-+++ b/arch/x86/kernel/apic/apic.c
-@@ -1456,7 +1456,6 @@ static int __init detect_init_APIC(void)
- 	}
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index 0d77e56..4031d6c 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -862,12 +862,16 @@ void __init setup_arch(char **cmdline_p)
+ 		max_low_pfn = max_pfn;
  
- 	mp_lapic_addr = APIC_DEFAULT_PHYS_BASE;
--	boot_cpu_physical_apicid = 0;
- 	return 0;
- }
- #else
-@@ -1570,6 +1569,8 @@ void __init early_init_lapic_mapping(void)
-  */
- void __init init_apic_mappings(void)
- {
-+	unsigned int new_apicid;
-+
- 	if (x2apic_mode) {
- 		boot_cpu_physical_apicid = read_apic_id();
- 		return;
-@@ -1586,21 +1587,31 @@ void __init init_apic_mappings(void)
- 	} else
- 		apic_phys = mp_lapic_addr;
+ 	high_memory = (void *)__va(max_pfn * PAGE_SIZE - 1) + 1;
++	max_pfn_mapped = KERNEL_IMAGE_SIZE >> PAGE_SHIFT;
+ #endif
  
--	set_fixmap_nocache(FIX_APIC_BASE, apic_phys);
-+	/* lets check if we may NOP'ify apic operations */
-+	if (!cpu_has_apic) {
-+		pr_info("APIC: disable apic facility\n");
-+		apic_disable();
-+		return;
-+	}
+ #ifdef CONFIG_X86_CHECK_BIOS_CORRUPTION
+ 	setup_bios_corruption_check();
+ #endif
+ 
++	printk(KERN_DEBUG "initial memory mapped : 0 - %08lx\n",
++			max_pfn_mapped<<PAGE_SHIFT);
 +
-+	/*
-+	 * acpi lapic path already maps that address in
-+	 * acpi_register_lapic_address()
-+	 */
-+	if (!acpi_lapic)
-+		set_fixmap_nocache(FIX_APIC_BASE, apic_phys);
-+
- 	apic_printk(APIC_VERBOSE, "mapped APIC to %08lx (%08lx)\n",
- 				APIC_BASE, apic_phys);
--
- 	/*
- 	 * Fetch the APIC ID of the BSP in case we have a
- 	 * default configuration (or the MP table is broken).
+ 	reserve_brk();
+ 
+ 	/* max_pfn_mapped is updated here */
+diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
+index 95f5ecf..92d2108 100644
+--- a/arch/x86/mm/init.c
++++ b/arch/x86/mm/init.c
+@@ -132,12 +132,11 @@ static void __init find_early_table_space(unsigned long end, int use_pse,
  	 */
--	if (boot_cpu_physical_apicid == -1U)
--		boot_cpu_physical_apicid = read_apic_id();
--
--	/* lets check if we may to NOP'ify apic operations */
--	if (!cpu_has_apic) {
--		pr_info("APIC: disable apic facility\n");
--		apic_disable();
-+	new_apicid = read_apic_id();
-+	if (boot_cpu_physical_apicid != new_apicid) {
-+		boot_cpu_physical_apicid = new_apicid;
-+		apic_version[new_apicid] =
-+			 GET_APIC_VERSION(apic_read(APIC_LVR));
- 	}
- }
+ #ifdef CONFIG_X86_32
+ 	start = 0x7000;
+-	e820_table_start = find_e820_area(start, max_pfn_mapped<<PAGE_SHIFT,
+-					tables, PAGE_SIZE);
+-#else /* CONFIG_X86_64 */
++#else
+ 	start = 0x8000;
+-	e820_table_start = find_e820_area(start, end, tables, PAGE_SIZE);
+ #endif
++	e820_table_start = find_e820_area(start, max_pfn_mapped<<PAGE_SHIFT,
++					tables, PAGE_SIZE);
+ 	if (e820_table_start == -1UL)
+ 		panic("Cannot find space for the kernel page tables");
  
