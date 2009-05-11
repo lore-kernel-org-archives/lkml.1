@@ -1,42 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756235AbZEKPYT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZEKPYe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756235AbZEKPYT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 11:24:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752917AbZEKPYC
+	id S1754839AbZEKPYe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 11:24:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbZEKPYG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 11:24:02 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:52493 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752485AbZEKPYB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 11:24:01 -0400
-To: jens.axboe@oracle.com
-CC: miklos@szeredi.hu, max@duempel.org, torvalds@linux-foundation.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <20090511121247.GZ4694@kernel.dk> (message from Jens Axboe on
-	Mon, 11 May 2009 14:12:47 +0200)
-Subject: Re: [patch 0/3] make splice more generic
-References: <20090507133734.450612199@szeredi.hu> <20090511121247.GZ4694@kernel.dk>
-Message-Id: <E1M3XKv-0001Su-Ds@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 11 May 2009 17:22:37 +0200
+	Mon, 11 May 2009 11:24:06 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:34152 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753169AbZEKPYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 11:24:03 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Jiri Slaby <jirislaby@gmail.com>
+Subject: Re: [E1000-devel] e1000: "eeprom checksum is not valid" after kexec
+Date: Mon, 11 May 2009 17:24:12 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
+       e1000-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>
+References: <49F06EEB.9060500@gmail.com> <200904241809.45240.rjw@sisk.pl> <4A0836CA.5070709@gmail.com>
+In-Reply-To: <4A0836CA.5070709@gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905111724.12606.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009, Jens Axboe wrote:
-> I have applied all three, thanks! However, I think we should be able to
-> pass in whether or not this is a strict splice or not. Falling back to
-> readv/writev is a good thing as it may help get the interface adopted
-> more widely, but I can also easily imagine cases where you'd want to
-> make sure that splice actually works without copies. It may even just be
-> for users to retry with alternative code paths, instead of proceeding
-> with the splice. SPLICE_F_MOVE is a soft flag in that it will move if it
-> can, but not fail if it can't. Perhaps we should add a flag that does
-> pass back an error if we can't just move pages around, SPLICE_F_STRICT
-> or something like that.
+On Monday 11 May 2009, Jiri Slaby wrote:
+> On 04/24/2009 06:09 PM, Rafael J. Wysocki wrote:
+> > My understanding is that the commit pointed to by Jiri caused a problem
+> > if the current mainline kernel was kexeced from an older kernel (2.6.27.x from
+> > openSUSE-11.1 in this particular case), because the older kernel didn't
+> > have the recent network driver fixes applied.  Is this correct?
+> 
+> Exactly!
+> 
+> > Also, I'm still interested in whether or not removig the following three lines:
+> > 
+> >         /* Check if we're already there */
+> >         if (dev->current_state == state)
+> >                 return 0;
+> > 
+> > from pci_set_power_state() in the current mainline kernel fixes the problem
+> > in the configuration where it is readily reproducible.
+> 
+> After removing those lines, the problem still persists:
+> e1000: 0000:02:01.0: e1000_probe: The EEPROM Checksum Is Not Valid
 
-Okay, seems pretty trivial.  I'll do a patch.
+So it's more complicated than I thought.  Well ...
 
-Thanks,
-Miklos
+What if the driver in question is rmmoded before kexec?
