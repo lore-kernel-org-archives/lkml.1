@@ -1,67 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757363AbZEKRH6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758278AbZEKRIX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757363AbZEKRH6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 13:07:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZEKRHr
+	id S1758278AbZEKRIX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 13:08:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbZEKRHy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 13:07:47 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38947 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750712AbZEKRHq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 13:07:46 -0400
-Message-ID: <4A085B06.4080803@redhat.com>
-Date: Mon, 11 May 2009 20:06:14 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Hollis Blanchard <hollisb@us.ibm.com>
-CC: Gregory Haskins <gregory.haskins@gmail.com>,
-       Anthony Liguori <anthony@codemonkey.ws>,
-       Gregory Haskins <ghaskins@novell.com>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net>	 <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com>	 <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com>	 <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com>	 <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com>	 <4A02D40D.7060307@redhat.com> <4A0448DF.90705@codemonkey.ws>	 <4A0570B1.30401@novell.com> <4A071F1A.1090702@codemonkey.ws>	 <4A0824C2.4000109@gmail.com> <1242059712.29194.12.camel@slate.austin.ibm.com>
-In-Reply-To: <1242059712.29194.12.camel@slate.austin.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 11 May 2009 13:07:54 -0400
+Received: from dallas.jonmasters.org ([72.29.103.172]:47498 "EHLO
+	dallas.jonmasters.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757232AbZEKRHx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 13:07:53 -0400
+Subject: Re: ANNOUNCE: LKML Summary Podcast
+From: Jon Masters <jonathan@jonmasters.org>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+In-Reply-To: <1241446095.7268.6.camel@jcmlaptop>
+References: <1241446095.7268.6.camel@jcmlaptop>
+Content-Type: text/plain
+Organization: World Organi[sz]ation Of Broken Dreams
+Date: Mon, 11 May 2009 13:07:28 -0400
+Message-Id: <1242061648.13054.102.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
+X-SA-Do-Not-Run: Yes
+X-SA-Exim-Connect-IP: 127.0.0.1
+X-SA-Exim-Mail-From: jonathan@jonmasters.org
+X-SA-Exim-Scanned: No (on dallas.jonmasters.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hollis Blanchard wrote:
-> I haven't been following this conversation at all. With that in mind...
->
-> AFAICS, a hypercall is clearly the higher-performing option, since you
-> don't need the additional memory load (which could even cause a page
-> fault in some circumstances) and instruction decode. That said, I'm
-> willing to agree that this overhead is probably negligible compared to
-> the IOp itself... Ahmdal's Law again.
->   
+On Mon, 2009-05-04 at 10:08 -0400, Jon Masters wrote:
 
-It's a question of cost vs. benefit.  It's clear the benefit is low (but 
-that doesn't mean it's not worth having).  The cost initially appeared 
-to be very low, until the nested virtualization wrench was thrown into 
-the works.  Not that nested virtualization is a reality -- even on svm 
-where it is implemented it is not yet production quality and is disabled 
-by default.
+> I'm /experimenting/ with recording a short 3-5 minute summary of LKML
+> traffic for those of us who like to listen to Podcasts. It's modeled
+> after e.g. the NYT Front Page Podcast, though not quite as cool.
+> 
+> I am hoping this of use to some people who can't read LKML every day.
+> Yesterday took 15-20 minutes to put together, and that's doable on a
+> regular basis, subject to it being of use to anyone. I figured I'm
+> reading LKML whether I do I summary recording or not. If it takes off,
+> then I'll try forming a small team to share the effort out.
+> 
+> Podcast: http://podcasts.jonmasters.org/kernel/kernel.xml
+> 
+> (it'll show up in iTunes shortly for those with iPhones)
 
-Now nested virtualization is beginning to look interesting, with Windows 
-7's XP mode requiring virtualization extensions.  Desktop virtualization 
-is also something likely to use device assignment (though you probably 
-won't assign a virtio device to the XP instance inside Windows 7).
+http://kernelnewbies.org/KernelPodcast
 
-Maybe we should revisit the mmio hypercall idea again, it might be 
-workable if we find a way to let the guest know if it should use the 
-hypercall or not for a given memory range.
+Here, I will upload the transcripts I read from (after writing them). I
+will also make available an ogg stream in due course, when I have time
+to spend scripting the creation - it's very manual still now.
 
-mmio hypercall is nice because
-- it falls back nicely to pure mmio
-- it optimizes an existing slow path, not just new device models
-- it has preexisting semantics, so we have less ABI to screw up
-- for nested virtualization + device assignment, we can drop it and get 
-a nice speed win (or rather, less speed loss)
+There were about 6,000 downloads last week, so I'll keep it going for
+the moment. I don't know if it'll be every day - but it will for the
+moment - it might end up being "every few days", and summarizing all
+threads that happen in-between. If you're interested in helping out,
+please let me know, we might be able to make this a collaborative
+script-writing exercise via the kernelnewbies website :)
 
--- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+Jon.
+
 
