@@ -1,68 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758993AbZEKSEt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759180AbZEKSFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758993AbZEKSEt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 14:04:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbZEKSEh
+	id S1759180AbZEKSFj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 14:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755354AbZEKSF3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 14:04:37 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:64634 "EHLO
+	Mon, 11 May 2009 14:05:29 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:37139 "EHLO
 	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756793AbZEKSEg (ORCPT
+	with ESMTP id S1752392AbZEKSF1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 14:04:36 -0400
+	Mon, 11 May 2009 14:05:27 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=FDI3BZSqTfqB5ucIVeJBbO9NZ1nSy7pqtWZ0kSZ/tJL5Yr1bWRaJ5i4O21g+eFSka8
+         y7s7MqN/JJHp9Y5TcIrcy0w4Bi+l66hLMBgMxofbjvkDXglH2XBcgEsJad6fQzlMwAkd
+         +baoyFkHF+NJp5sSbLopDtF/fqGq30im7c9bo=
+Date: Mon, 11 May 2009 22:05:21 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       eswierk@aristanetworks.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:x86/apic] x86: read apic ID in the !acpi_lapic case
+Message-ID: <20090511180521.GL4624@lenovo>
+References: <49FC85A9.2070702@kernel.org> <tip-4401da6111ac58f94234417427d06a72c4048c74@git.kernel.org> <20090511110234.GH4648@elte.hu> <20090511134140.GH4624@lenovo> <20090511134950.GA949@elte.hu> <4A0863C5.9070206@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <20090511185513.45ea4754@lxorguk.ukuu.org.uk>
-References: <20090509143742.GA27663@kroah.com> <20090511115504.568c9a92@lxorguk.ukuu.org.uk> 
-	<ac3eb2510905110434nb123423m134e848c17c3c736@mail.gmail.com> 
-	<20090511141057.24a5f8ed@lxorguk.ukuu.org.uk> <ac3eb2510905110714m5877da13q19b42d1c8565777c@mail.gmail.com> 
-	<20090511165317.3da5326f@lxorguk.ukuu.org.uk> <ac3eb2510905110928g12545518y143f7f73b3ae494a@mail.gmail.com> 
-	<20090511094151.6014cafb@infradead.org> <ac3eb2510905111032u13051b74g81573a18e3545a81@mail.gmail.com> 
-	<20090511185513.45ea4754@lxorguk.ukuu.org.uk>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Mon, 11 May 2009 20:04:16 +0200
-Message-ID: <ac3eb2510905111104g5ce4e8e6xf8b4de41454c3d2f@mail.gmail.com>
-Subject: Re: [patch 00/13] devtmpfs patches
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A0863C5.9070206@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 19:55, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> The same applies when you leave initiramfs, the in-initramfs udevd
->> copy is killed, and the one from the real root is started. You may
->> miss events in-between, and need to run a full coldplug again, not
->> only to apply the policy, but also to make sure that all nodes are
->> there. The policy can run in the background for most things just fine,
->> the missing node may cause trouble.
->
-> What a strange behaviour. Why not run a single udev instance inside the
-> tmpfs you are turning into dev and will then attach to the real rootfs
-> when it appears ? You only need to build /dev once.
+[Yinghai Lu - Mon, May 11, 2009 at 10:43:33AM -0700]
+...
+| >>
+| >> x86: apic - fixmap apic address even if apic disabled
+| >>
+| >> In case if apic were disabled by boot option
+| >> we still need read_apic operation. So fixmap
+| >> a fake apic area if needed.
+| >>
+| >> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
+| >> ---
+| >>  arch/x86/kernel/apic/apic.c |   17 +++++++++--------
+| >>  1 file changed, 9 insertions(+), 8 deletions(-)
+| >>
+| >> Index: linux-2.6.git/arch/x86/kernel/apic/apic.c
+| >> =====================================================================
+| >> --- linux-2.6.git.orig/arch/x86/kernel/apic/apic.c
+| >> +++ linux-2.6.git/arch/x86/kernel/apic/apic.c
+| >> @@ -1591,13 +1591,6 @@ void __init init_apic_mappings(void)
+| >>  	} else
+| >>  		apic_phys = mp_lapic_addr;
+| >>  
+| >> -	/* lets check if we may NOP'ify apic operations */
+| >> -	if (!cpu_has_apic) {
+| >> -		pr_info("APIC: disable apic facility\n");
+| >> -		apic_disable();
+| >> -		return;
+| >> -	}
+| >> -
+| >>  	/*
+| >>  	 * acpi lapic path already maps that address in
+| >>  	 * acpi_register_lapic_address()
+| >> @@ -1606,7 +1599,15 @@ void __init init_apic_mappings(void)
+| >>  		set_fixmap_nocache(FIX_APIC_BASE, apic_phys);
+| >>  
+| >>  	apic_printk(APIC_VERBOSE, "mapped APIC to %08lx (%08lx)\n",
+| >> -				APIC_BASE, apic_phys);
+| >> +			APIC_BASE, apic_phys);
+| >> +
+| >> +	/* lets check if we may NOP'ify apic operations */
+| >> +	if (!cpu_has_apic) {
+| >> +		pr_info("APIC: disable apic facility\n");
+| >> +		apic_disable();
+| >> +		return;
+| >> +	}
+| >> +
+| > 
+| > Will check this - thanks.
+| > 
+| 
+| please check this one instead.
+| 
+| [PATCH] x86: add native_apic_read_dummy
+| 
+| when apic is not used ( not there, or disable_apic ), try to install
+| dummy read too.
+| 
+| could save 4k in that case.
+| 
+| [ Impact: fix bug when try to dump APIC reg ]
+| 
+| Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+| Cc: Cyrill Gorcunov <gorcunov@openvz.org>
+| 
 
-Because the udev in initramfs has no clue about uid/gid, has not the
-tools it needs for a full setup, has not the same rules as the one in
-the real root. Ignoring the fact, that people may run different
-versions in initramfs and the real root. There is no sane option so
-far, not to replace the udevd process from initramfs.
+Thanks Yinghai, looks really attractive!
 
->> Yeah, and I mentioned many other ways this is useful, to do stuff in
->> parallel, to be able to rescue, and to have custom systems which do
->
-> But there are lots where it is not - and those you've mentioned where it
-> might be seem rather stretched at best.
+But would need a good testing (seems we
+rely on read_apic heavily in smp environment
+even if it was disabled or not supported).
 
-Right, but the information you need for all other use cases is already
-there today in /sys. This is about something new, so there is not a
-competition about features, just an option to solve a problem in a
-different way, which we prefer over the current one.
+(btw comment about disable_apic now should
+ contain apic->read as well or should be dropped
+ completely since all is selfevidence from code
+ though this is not that important i believe)
 
-Thanks,
-Kay
+	-- Cyrill
