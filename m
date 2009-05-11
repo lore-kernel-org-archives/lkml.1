@@ -1,59 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbZEKT3t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758803AbZEKTbj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758877AbZEKT3t (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 15:29:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758696AbZEKT3g
+	id S1758803AbZEKTbj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 15:31:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752453AbZEKTb1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 15:29:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:57674 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758675AbZEKT3f (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 15:29:35 -0400
-Date: Mon, 11 May 2009 12:26:59 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Al Viro <viro@ZenIV.linux.org.uk>
-cc: Jeff Mahoney <jeffm@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] dup2: Fix return value with oldfd == newfd and invalid
- fd
-In-Reply-To: <20090511191142.GK8633@ZenIV.linux.org.uk>
-Message-ID: <alpine.LFD.2.01.0905111220270.3586@localhost.localdomain>
-References: <4A086D9E.60308@suse.com> <alpine.LFD.2.01.0905111135560.3586@localhost.localdomain> <20090511191142.GK8633@ZenIV.linux.org.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 11 May 2009 15:31:27 -0400
+Received: from thunk.org ([69.25.196.29]:34458 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752619AbZEKTb0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 15:31:26 -0400
+Date: Mon, 11 May 2009 15:30:36 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Randy Dunlap <randy.dunlap@oracle.com>
+Cc: Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Josef Bacik <josef@redhat.com>, linux-fsdevel@vger.kernel.org,
+       sandeen@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC] fiemap tester
+Message-ID: <20090511193036.GE21518@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Randy Dunlap <randy.dunlap@oracle.com>,
+	Christoph Hellwig <hch@infradead.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Josef Bacik <josef@redhat.com>, linux-fsdevel@vger.kernel.org,
+	sandeen@redhat.com, linux-kernel@vger.kernel.org
+References: <20090508191649.GG9068@unused.rdu.redhat.com> <20090508161318.c73d766c.akpm@linux-foundation.org> <20090511094639.GA7488@infradead.org> <20090511171046.GA21518@mit.edu> <4A08666A.6020700@oracle.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A08666A.6020700@oracle.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Mon, 11 May 2009, Al Viro wrote:
+On Mon, May 11, 2009 at 10:54:50AM -0700, Randy Dunlap wrote:
 > 
-> I'm not sure that it's a right fix, actually.  Note that userland declaration
-> of that sucker is int dup2(int, int); so should we really take unsigned int
-> as arguments?
+> Given that we are not lawyers:
+> 
+> The current kernel tree contains >3500 files that contain the phrase
+> "All Rights Reserved".  Are they a problem?
 
-Hmm. They've been "unsigned int" for as long as our history goes back 
-(including BK), but yes, making them "int" would have hidden this issue as 
-well. 
+Yes, but how many of them are followed with a GPL licensing statement?
+And presumably we have a signed-off-by chain that which includes
+someone asserting that they have followed the Developer's
+Certification of Origin rules.  (That being said, it's usually better
+if the All Rights Reserved is removed, after getting explicit
+permission from the original copyright owner to make it available
+under a GPLv2 license.)
 
-That said, I think we had reasons to do our fd's as unsigned, ie the whole 
-"compare against MAX" thing that doesn't take negative values into 
-account.
+The issue with the xfstests tree is the *only* copyright permission
+statement is "All Rights Reserved", and while there is an oral
+assertion from SGI that it was supposed to be released under an open
+source license, there is nothing in writing or in the source
+distribution indicating this, and it wasn't clear to me whether this
+oral assurance happened before or after SGI was purchased by
+Rackspace.
 
-In fact, I think we should do more of those. Right now we literally depend 
-on things like "max_fds" being "unsigned int", and that the compiler then 
-turns all the
-
-	if (fd < fdt->max_fds)
-
-tests silently into unsigned tests even when 'fd' is 'int'.
-
-So I suspect we should probably make fs/file.c use _more_ "unsigned int" 
-rather than having less of them.
-
-			Linus
+						- Ted
