@@ -1,265 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752777AbZEKGPL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbZEKGQp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752777AbZEKGPL (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 02:15:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbZEKGO4
+	id S1753061AbZEKGQp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 02:16:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbZEKGQg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 02:14:56 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:46163 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751378AbZEKGOz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 02:14:55 -0400
-Date: Mon, 11 May 2009 16:14:42 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for May 11
-Message-Id: <20090511161442.3e9d9cb9.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Mon__11_May_2009_16_14_42_+1000_pwIp5=sPox/ll8/t"
+	Mon, 11 May 2009 02:16:36 -0400
+Received: from wf-out-1314.google.com ([209.85.200.169]:8771 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751121AbZEKGQf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 02:16:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=fDkbgX+tjAtk+oS+lxF8fU4LDSHP+tPYaJfnDrnKIkL5RsL8Cadm2Hr5kQVQ4N/jjc
+         J+CUYRRRLlAD4MQ0bzCyc4IW165C8SIyVBYghZGwORpi3yPZRWugd1fZInCFBk7FeuGB
+         XFBPzuvSh/wKoOBCblvh+OeM6Yc4lRDK6EYNM=
+MIME-Version: 1.0
+Date: Mon, 11 May 2009 14:16:36 +0800
+Message-ID: <a8e1da0905102316v1037c89cs48cb052924c250a9@mail.gmail.com>
+Subject: [PATCH 1/3] kobject : kobject_set_name_vargs leak fix
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Mon__11_May_2009_16_14_42_+1000_pwIp5=sPox/ll8/t
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+kobject_set_name_vargs will leak the old_name when return -ENOMEM,
+move the kfree(old_name) before the return path.
 
-Hi all,
+Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+---
+lib/kobject.c |    2 +-
+1 file changed, 1 insertion(+), 1 deletion(-)
 
-Changes since 20090508:
+diff -uprN linux.old/lib/kobject.c linux.new/lib/kobject.c
+--- linux.old/lib/kobject.c	2009-05-11 13:59:01.000000000 +0800
++++ linux.new/lib/kobject.c	2009-05-11 13:59:34.000000000 +0800
+@@ -221,6 +221,7 @@ int kobject_set_name_vargs(struct kobjec
+ 	if (kobj->name && !fmt)
+ 		return 0;
 
-The infiniband tree lost its build failure.
++	kfree(old_name);
+ 	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+ 	if (!kobj->name)
+ 		return -ENOMEM;
+@@ -229,7 +230,6 @@ int kobject_set_name_vargs(struct kobjec
+ 	while ((s = strchr(kobj->name, '/')))
+ 		s[0] = '!';
 
-The net tree lost a conflict.
-
-The dwmw2-iommu tree gained a conflict against the x86 tree.
-
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 136 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-CONFLICT (content): Merge conflict in arch/arm/Kconfig
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging configfs/linux-next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging tracing/auto-tracing-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-[master 7ed7512] Revert "initconst adjustments"
-Merging ide/for-next
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-CONFLICT (content): Merge conflict in include/Kbuild
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in include/linux/mmc/sdio_ids.h
-Merging wireless/master
-[master fbdc23d] Revert "rfkill: remove user_claim stuff"
-Merging mtd/master
-Merging crypto/master
-Merging vfs/for-next
-CONFLICT (content): Merge conflict in fs/fuse/inode.c
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
-req.c
-Merging cifs/master
-Merging mmc/next
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-CONFLICT (content): Merge conflict in drivers/block/hd.c
-CONFLICT (content): Merge conflict in drivers/block/mg_disk.c
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging generic-ipi/auto-generic-ipi-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in drivers/pci/intr_remapping.c
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging kmemleak/kmemleak
-CONFLICT (delete/modify): arch/x86/kernel/vmlinux_32.lds.S deleted in HEAD =
-and modified in kmemleak/kmemleak. Version kmemleak/kmemleak of arch/x86/ke=
-rnel/vmlinux_32.lds.S left in tree.
-CONFLICT (delete/modify): arch/x86/kernel/vmlinux_64.lds.S deleted in HEAD =
-and modified in kmemleak/kmemleak. Version kmemleak/kmemleak of arch/x86/ke=
-rnel/vmlinux_64.lds.S left in tree.
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-CONFLICT (content): Merge conflict in mm/slob.c
-$ git rm -f arch/x86/kernel/vmlinux_32.lds.S arch/x86/kernel/vmlinux_64.lds=
-.S
-Applying: kmemleak: fixup for x86 vmlinux.ld.S merge
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in init/main.c
-Merging quilt/usb
-CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
-Merging quilt/staging
-CONFLICT (content): Merge conflict in drivers/staging/rt2860/common/mlme.c
-CONFLICT (content): Merge conflict in drivers/staging/rt2870/common/mlme.c
-CONFLICT (content): Merge conflict in drivers/staging/rt2870/rt2870.h
-CONFLICT (content): Merge conflict in drivers/staging/rt3070/common/mlme.c
-Merging scsi-post-merge/master
-
---Signature=_Mon__11_May_2009_16_14_42_+1000_pwIp5=sPox/ll8/t
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoHwlIACgkQjjKRsyhoI8yjKQCfYDxK2QAC/BaMQX8G5ZOHaaQT
-4PUAoKZTEX26Al2AgqY7EiFtGwh7++20
-=/0hE
------END PGP SIGNATURE-----
-
---Signature=_Mon__11_May_2009_16_14_42_+1000_pwIp5=sPox/ll8/t--
+-	kfree(old_name);
+ 	return 0;
+ }
