@@ -1,93 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754335AbZEKKYy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752711AbZEKK2x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754335AbZEKKYy (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 06:24:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751827AbZEKKYn
+	id S1752711AbZEKK2x (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 06:28:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbZEKK2o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 06:24:43 -0400
-Received: from a2s31.a2hosting.com ([69.39.67.40]:51331 "EHLO
-	a2s31.a2hosting.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbZEKKYm (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 06:24:42 -0400
-From: Vassilis Virvilis <v.virvilis@biovista.com>
-Reply-To: v.virvilis@biovista.com
-Organization: Biovista
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: SATA disks resets in a md setup
-Date: Mon, 11 May 2009 13:24:38 +0300
-User-Agent: KMail/1.11.2 (Linux/2.6.29-2-686; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-References: <200905081739.46206.v.virvilis@biovista.com> <4A053229.5010406@garzik.org>
-In-Reply-To: <4A053229.5010406@garzik.org>
+	Mon, 11 May 2009 06:28:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:51610 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751024AbZEKK2n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 06:28:43 -0400
+Date: Mon, 11 May 2009 10:27:30 GMT
+From: tip-bot for Li Zefan <lizf@cn.fujitsu.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, acme@redhat.com, hpa@zytor.com,
+       mingo@redhat.com, lizf@cn.fujitsu.com, jens.axboe@oracle.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, tglx@linutronix.de,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, acme@redhat.com,
+       linux-kernel@vger.kernel.org, lizf@cn.fujitsu.com,
+       jens.axboe@oracle.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <4A07C6B3.9080802@cn.fujitsu.com>
+References: <4A07C6B3.9080802@cn.fujitsu.com>
+Subject: [tip:tracing/core] blktrace: pdu_buf of pc events should be unsigned
+Message-ID: <tip-049862579333cc6cd9e6edfd6987cd0addfd8c59@git.kernel.org>
+Git-Commit-ID: 049862579333cc6cd9e6edfd6987cd0addfd8c59
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-Message-Id: <200905111324.38715.v.virvilis@biovista.com>
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - a2s31.a2hosting.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - biovista.com
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 10:27:32 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 09 May 2009, Jeff Garzik wrote:
-> 
-> For hardware details, see 
-> http://ata.wiki.kernel.org/index.php/Libata_error_messages
+Commit-ID:  049862579333cc6cd9e6edfd6987cd0addfd8c59
+Gitweb:     http://git.kernel.org/tip/049862579333cc6cd9e6edfd6987cd0addfd8c59
+Author:     Li Zefan <lizf@cn.fujitsu.com>
+AuthorDate: Mon, 11 May 2009 14:33:23 +0800
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 11 May 2009 12:25:50 +0200
 
-thanks for the link
+blktrace: pdu_buf of pc events should be unsigned
 
-> 
-> The ATA bus is the cable connection, so an ATA bus error typically means
-> 
-> - problem with your cable, or
-> - your motherboard's SATA port, or
-> - your drive's SATA port, or
-> - "dirty power" supply, or
-> - some other cause for cable interference
-> 
+I got this:
+  8,0    1   305.417782332  2037  I   R 32 (ffffff9e 10 00 ...) [bash]
 
-Ok I changed
-	M/B,
-	PSU
-	and cables.
+It should be:
+  8,0    1   305.417782332  2037  I   R 32 (9e 10 00 ...) [bash]
 
-Now the stress test passes only one SATA reset instead of 3 or 4 before the fatal one.
+[ Impact: fix output of pc events ]
+
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>
+LKML-Reference: <4A07C6B3.9080802@cn.fujitsu.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-[ 1804.915319] ata1.01: exception Emask 0x10 SAct 0x0 SErr 0x10000 action 0xe frozen
-[ 1804.915319] ata1.01: ST-ATA: DRQ=1 with device error, dev_stat 0x0
-[ 1804.915319] ata1: SError: { PHYRdyChg }
-[ 1804.915319] ata1.01: cmd b0/d5:01:09:4f:c2/00:00:00:00:00/10 tag 0 pio 512 in
-[ 1804.915319]          res 00/00:01:09:4f:c2/00:00:00:00:00/10 Emask 0x212 (ATA bus error)
-[ 1804.915319] ata1: hard resetting link
-[ 1810.279540] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
-[ 1810.305230] ata1.00: configured for UDMA/133
-[ 1810.314698] ata1.01: configured for UDMA/133
-[ 1810.314698] ata1: EH complete
-[ 1810.318713] sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
-[ 1810.318713] sd 0:0:0:0: [sda] Write Protect is off
-[ 1810.318713] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[ 1810.318713] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-[ 1810.322654] sd 0:0:1:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-[ 1810.326655] sd 0:0:1:0: [sdb] Write Protect is off
-[ 1810.326655] sd 0:0:1:0: [sdb] Mode Sense: 00 3a 00 00
-[ 1810.326655] sd 0:0:1:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-[ 1810.330758] sd 0:0:0:0: [sda] 488397168 512-byte hardware sectors (250059 MB)
-[ 1810.330758] sd 0:0:0:0: [sda] Write Protect is off
-[ 1810.330758] sd 0:0:0:0: [sda] Mode Sense: 00 3a 00 00
-[ 1810.330758] sd 0:0:0:0: [sda] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
-[ 1810.334656] sd 0:0:1:0: [sdb] 488397168 512-byte hardware sectors (250059 MB)
-[ 1810.334656] sd 0:0:1:0: [sdb] Write Protect is off
-[ 1810.334656] sd 0:0:1:0: [sdb] Mode Sense: 00 3a 00 00
-[ 1810.334656] sd 0:0:1:0: [sdb] Write cache: enabled, read cache: enabled, doesn't support DPO or FUA
+---
+ kernel/trace/blktrace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
- Regards
-
-   .bill
+diff --git a/kernel/trace/blktrace.c b/kernel/trace/blktrace.c
+index e099f8c..05b4747 100644
+--- a/kernel/trace/blktrace.c
++++ b/kernel/trace/blktrace.c
+@@ -1065,7 +1065,7 @@ static int blk_log_action(struct trace_iterator *iter, const char *act)
+ 
+ static int blk_log_dump_pdu(struct trace_seq *s, const struct trace_entry *ent)
+ {
+-	const char *pdu_buf;
++	const unsigned char *pdu_buf;
+ 	int pdu_len;
+ 	int i, end, ret;
+ 
