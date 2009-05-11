@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757274AbZEKJUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbZEKJVl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757274AbZEKJUz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 05:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755222AbZEKJUq
+	id S1757428AbZEKJVl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 05:21:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755712AbZEKJV3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 05:20:46 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43666 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753875AbZEKJUp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 05:20:45 -0400
-Date: Mon, 11 May 2009 11:20:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ed Swierk <eswierk@aristanetworks.com>
-Subject: Re: [PATCH] x86: read apic id if it is not acpi_lapic -v2
-Message-ID: <20090511092026.GA26444@elte.hu>
-References: <20090430084145.GD21699@elte.hu> <49FBD0A2.4030309@kernel.org> <20090502070254.GA4791@lenovo> <49FC85A9.2070702@kernel.org>
+	Mon, 11 May 2009 05:21:29 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:41115 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753589AbZEKJV3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 05:21:29 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=yFArAgetLjEkjLInIgQ8rdo1BQeTXu8E0lnQuNv6UxKSB/ZjGqVYrRTQAuX9KP6eGO
+         QUQdh8QUmMLvTBxReFpLBSx2GNO2K4KcuEfW9qXdk75K5tdB9Weqx6lvu8nXJ/gYlpHQ
+         EGSoVnlD0tIdam5kgo3jwVJA5lzYP8OvUervY=
+Message-ID: <4A07EE1C.2010705@gmail.com>
+Date: Mon, 11 May 2009 11:21:32 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.7 Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <49FC85A9.2070702@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0079]
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: mingo@elte.hu, yanghy@cn.fujitsu.com, akpm@linux-foundation.org,
+       netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/1] dma-mapping: mark DMA_nBITS_MASK as deprecated fix
+References: <20090510085618D.fujita.tomonori@lab.ntt.co.jp>	<1241939066-10178-1-git-send-email-jirislaby@gmail.com> <20090511113659U.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090511113659U.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 05/11/2009 04:36 AM, FUJITA Tomonori wrote:
+> But I think that you need to resend a version of this patch against
+> tip. We need this patch in linux-next to warn some new users of these
+> deprecated macros.
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+It depends on Ingo if he doesn't mind to pick it up :).
 
-> +	new_apicid  = read_apic_id();
-> +	if (boot_cpu_physical_apicid != new_apicid) {
-> +		boot_cpu_physical_apicid  = new_apicid;
-> +		apic_version[new_apicid] =
-> +			 GET_APIC_VERSION(apic_read(APIC_LVR));
->  	}
-
-_Please_, when we override something as critical as this and change 
-the behavior of Linux (even if it's arguably a fix), we must printk 
-a single line to the syslog so that people know what's going on.
-
-You really need to make a conscious mental distinction between 
-'dangerous' code and harmless changes, and apply a lot more 
-conservative approach when you meet and touch (and introduce ...) 
-dangerous code.
-
-Thanks,
-
-	Ingo
+Anyway I though we want to merge this upstream for 1-2 releases and then
+wave and tell it goodbye to propagate not only to linux-next users. I
+would resend the patch with an entry in features removal schedule in
+that case. But it's up to you...
