@@ -1,83 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756015AbZEKOZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756148AbZEKO14@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756015AbZEKOZc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 10:25:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753735AbZEKOZS
+	id S1756148AbZEKO14 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 10:27:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752954AbZEKO1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 10:25:18 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53079 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753014AbZEKOZR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 10:25:17 -0400
-Message-ID: <4A083539.407@redhat.com>
-Date: Mon, 11 May 2009 17:24:57 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mark Langsdorf <mark.langsdorf@amd.com>,
-       Joerg Roedel <joerg.roedel@amd.com>, kvm@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][KVM][retry 1] Add support for Pause Filtering to AMD
- SVM
-References: <200905050909.58583.mark.langsdorf@amd.com> <20090507135522.GJ4059@amd.com> <200905071000.14038.mark.langsdorf@amd.com> <4A02FECC.6060609@redhat.com> <20090511141503.GC6175@elte.hu>
-In-Reply-To: <20090511141503.GC6175@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 11 May 2009 10:27:47 -0400
+Received: from tomts16.bellnexxia.net ([209.226.175.4]:43935 "EHLO
+	tomts16-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752782AbZEKO1r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 10:27:47 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmQFAJPSB0pMQW1W/2dsb2JhbACBUMsog34F
+Date: Mon, 11 May 2009 10:27:34 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       zhaolei@cn.fujitsu.com, laijs@cn.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH v3] ftrace: add a tracepoint for
+	__raise_softirq_irqoff()
+Message-ID: <20090511142734.GA12722@Krystal>
+References: <49FFDF9C.7040505@cn.fujitsu.com> <20090505161604.GA15524@Krystal> <4A07D3B3.10605@cn.fujitsu.com> <20090511134019.GB10932@Krystal> <alpine.DEB.2.00.0905111003280.14976@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0905111003280.14976@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 10:18:49 up 72 days, 10:45,  4 users,  load average: 0.19, 0.32,
+	0.62
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->   
->>>  +static int pause_interception(struct vcpu_svm *svm, struct kvm_run 
->>> *kvm_run)
->>> +{
->>> +	/* Simple yield */
->>> +	vcpu_put(&svm->vcpu);
->>> +	schedule();
->>> +	vcpu_load(&svm->vcpu);
->>> +	return 1;
->>> +
->>>       
->> Ingo, will this do anything under CFS, or will CFS note that 
->> nothing has changed in the accounting and reschedule us 
->> immediately?
->>     
->
-> The scheduler will yield to another task only if the current task 
-> has become ineligible. I.e schedule() is largely a NOP on 
-> TASK_RUNNING tasks (i.e. here).
->   
+* Steven Rostedt (rostedt@goodmis.org) wrote:
+> 
+> On Mon, 11 May 2009, Mathieu Desnoyers wrote:
+> > 
+> > Yes, we should try to fix TRACE_EVENT, but we should fix it _before_ we
+> > start using it widely. Circular header dependencies is a real problem
+> > with TRACE_EVENT right now.
+> > 
+> > Until we fix this, I will be tempted to stay with a known-good solution,
+> > which is DECLARE/DEFINE_TRACE.
+> 
+> The majority of tracepoints happen is C files. Those few cases where they 
+> are used in headers is where the issues arise.
+> 
+> But...
+> 
+> I did not want to uglify all trace event headers with:
+> 
+> #ifdef CREATE_FOO_TRACE_POINTS
+> #undef CREATE_FOO_TRACE_POINTS
+> #include <trace/define_trace.h>
+> #endif
+> 
+> We would only need to do that for those trace points that need to be 
+> included in header files. Then the declaration C file would need to define 
+> both CREATE_FOO_TRACE_POINTS and CREATE_TRACE_POINTS
+> 
+> #define CREATE_FOO_TRACE_POINTS
+> #define CRATE_TRACE_POINTS
+> #include <trace/events/foo.h>
+> 
+> 
+> But this is pretty trivial to solve, and I do not consider it a show 
+> stopper or a major header dependency problem.
+> 
+> -- Steve
+> 
 
-Especially on preemptible kernels, where the schedule() would have 
-already happened if it could cause anything, IIUC.
+Hrm, is there any way to solve it elegantly ?
 
-> I.e. this is a somewhat poor solution as far as scheduling goes. But 
-> i'm wondering what the CPU side does. Can REP-NOP really take 
-> thousands of cycles? If yes, under what circumstances?
->   
+What we really need is to see the cases where TRACE_EVENT() is used as a
+declaration vs the case where it expands
+TP_STRUCT__entry/TP_fast_assign/TP_printk as having different
+dependencies. The problem comes when we bring the include dependencies
+of the TP_fast_assign part into the tracepoint header and it becomes
+a dependency of the TRACE_EVENT() declaration-only part.
 
-The guest is running rep-nop in a loop while trying to acquire a 
-spinlock.  The hardware detects this (most likely, repeated rep-nop with 
-the same rip) and exits.  We can program the loop count; obviously if 
-we're spinning for only a short while it's better to keep spinning while 
-hoping the lock will be released soon.
+Can we do the following ?
 
-The idea is to detect that the guest is not making forward progress and 
-yield.  If I could tell the scheduler, you may charge me a couple of 
-milliseconds, I promise not to sue, that would be ideal.  Other tasks 
-can become eligible, hopefully the task holding the spinlock, and by the 
-time we're scheduled back the long running task will have finished and 
-released the lock.
+All tracepoint headers could surround the include dependencies by :
 
-For newer Linux as a guest we're better off paravirtualizing this, so we 
-can tell the host which vcpu holds the lock; in this case kvm will want 
-to say, take a couple milliseconds off my account and transfer it to 
-this task (so called directed yield).  However there's no reason to 
-paravirtualize all cpu_relax() calls.
+#ifdef BUILD_EVENTS
+#include <veryannoyingheaderdependency.h>
+#endif
+
+And then we follow this by the TRACE_EVENT() declarations.
+
+BUILD_EVENTS would only be defined in kernel/trace/events.c.
+
+I think it should work, but it looks a bit too simple, so I may have
+missed something... ?
+
+Mathieu
+
 
 -- 
-error compiling committee.c: too many arguments to function
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
