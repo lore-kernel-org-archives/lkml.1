@@ -1,64 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756103AbZEKIqb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756671AbZEKIrb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756103AbZEKIqb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 04:46:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756142AbZEKIqD
+	id S1756671AbZEKIrb (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 04:47:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754484AbZEKIrW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 04:46:03 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:38590 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755726AbZEKIqA (ORCPT
+	Mon, 11 May 2009 04:47:22 -0400
+Received: from senator.holtmann.net ([87.106.208.187]:45911 "EHLO
+	mail.holtmann.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755392AbZEKIrV (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 04:46:00 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=q8ZyltBJP0xvwszzWivo5fCne/zdrF5/fTYQT4RvTQpRvxmZhwHfTxUvxGVD8fiKm
-	zL58123HrnVAGzDUExhbg==
-Date: Mon, 11 May 2009 01:45:56 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, San Mehat <san@android.com>,
-       Arve Hjonnevag <arve@android.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 08/11 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
-In-Reply-To: <20090511104310.B9C1.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.2.00.0905110143190.24726@chino.kir.corp.google.com>
-References: <20090511085750.B9AC.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0905101719040.31823@chino.kir.corp.google.com> <20090511104310.B9C1.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+	Mon, 11 May 2009 04:47:21 -0400
+Subject: Re: Regression: Problem in using USB Bluetooth Dongle (Worked fine
+ in  2.6.24.x)
+From: Marcel Holtmann <marcel@holtmann.org>
+To: Brian Marete <bgmarete@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <6dd519ae0905110030n2abd87c0j507e476fb5622d87@mail.gmail.com>
+References: <6dd519ae0905080528j79640bb0l8fe475b2f09e6bc4@mail.gmail.com>
+	 <1241821498.4903.69.camel@localhost.localdomain>
+	 <6dd519ae0905110030n2abd87c0j507e476fb5622d87@mail.gmail.com>
+Content-Type: text/plain
+Date: Mon, 11 May 2009 01:46:54 -0700
+Message-Id: <1242031614.3384.10.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009, KOSAKI Motohiro wrote:
+Hi Brian,
 
-> > What exactly are you objecting to?  You don't want the oom killer called 
-> > for a __GFP_NOFAIL allocation above PAGE_ALLOC_COSTLY_ORDER that could not 
-> > reclaim any memory and would prefer that it loop endlessly in the page 
-> > allocator?  What's the purpose of that if the oom killer could free a very 
-> > large memory hogging task?
+> >> At least until kernel version 2.6.24, I was able to use my USB
+> >> bluetooth dongle to download contacts from my phone. I made a jump
+> >> from 2.6.24 to 2.6.27, so I am not sure exactly which kernel version
+> >> starts the problem, but all kernels from the latter (2.6.27) now do
+> >> not work. The latest kernel I have tested is 2.6.29.2.
+> >
+> > can you test 2.6.30-rc4 or bluetooth-testing.git. I am pretty sure that
+> > whatever broke in 2.6.27 has been fixed by now. Some cheapo USB dongles
+> > behaved wrongly and it was a long time not clear what caused it.
+>
+> Alas, the regression is still there in 2.6.30-rc5 which I tested over
+> the weekend.
 > 
-> My point is, if we change gfp-flags meaning, we should change
-> unintentional affected caller.
+> I also forgot to mention that, even with the kernels with the
+> regression, device pairing using the dongle still works.
 > 
-> Do you oppose this?
-> 
+> Would a packet capture (usbmon) help? Willing to capture whatever
+> other debugging data that you think may help
 
-include/linux/gfp.h states this:
+if device pairing works fine, the I guess this is a different problem.
+It could be that your USB host controller doesn't like the device. Or
+you forgot to load the EHCI driver or something. Otherwise your dongle
+should work fine. Since pairing works, what does hciconfig -a says?
 
- * __GFP_NOFAIL: The VM implementation _must_ retry infinitely: the caller
- * cannot handle allocation failures.
+Regards
 
-That is the only desciption given to users of __GFP_NOFAIL, so they should 
-be able to trust it.  The fact is that in mmotm it's possible for such an 
-allocation to fail without even attempting to free some memory via the oom 
-killer (and I disagree that killing a large memory hogging task will not 
-allow large allocations such as those greater than PAGE_ALLOC_COSTLY_ORDER 
-to succeed, which is a question of fragmentation and not purely VM size).
+Marcel
+
+
