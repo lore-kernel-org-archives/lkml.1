@@ -1,86 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757404AbZEKA3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757434AbZEKAap@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757404AbZEKA3a (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 20:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbZEKA3T
+	id S1757434AbZEKAap (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 20:30:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756761AbZEKAag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 20:29:19 -0400
-Received: from smtp.knology.net ([24.214.63.101]:45032 "EHLO smtp.knology.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753597AbZEKA3S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 20:29:18 -0400
-Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
-From: David Dillow <dave@thedillows.org>
-To: Michael Riepe <michael.riepe@googlemail.com>
-Cc: Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
-       Rui Santos <rsantos@grupopie.com>,
-       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-In-Reply-To: <4A06D8D2.4010505@googlemail.com>
-References: <200903041828.49972.m.bueker@berlin.de>
-	 <20090322211159.GA23042@electric-eye.fr.zoreil.com>
-	 <49CA1822.6050902@grupopie.com> <200904041950.04324.mb@bu3sch.de>
-	 <4A06D8D2.4010505@googlemail.com>
-Content-Type: text/plain
-Date: Sun, 10 May 2009 20:29:14 -0400
-Message-Id: <1242001754.4093.12.camel@obelisk.thedillows.org>
+	Sun, 10 May 2009 20:30:36 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:33968 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756662AbZEKAaf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 20:30:35 -0400
+Date: Mon, 11 May 2009 09:22:41 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: balbir@linux.vnet.ibm.com
+Cc: nishimura@mxp.nes.nec.co.jp,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "hugh@veritas.com" <hugh@veritas.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/2] memcg fix stale swap cache account leak v6
+Message-Id: <20090511092241.f332a1d6.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090508165636.GD4630@balbir.in.ibm.com>
+References: <20090508140528.c34ae712.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090508140910.bb07f5c6.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090508165636.GD4630@balbir.in.ibm.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-cc'ing netdev, where networking discussions have a much higher
-probability of getting a developer's attention.
-
-On Sun, 2009-05-10 at 15:38 +0200, Michael Riepe wrote:
-> Michael Buesch wrote:
+On Fri, 8 May 2009 22:26:36 +0530, Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-05-08 14:09:10]:
 > 
-> > I'm currently testing 2.6.29.1 without any additional patches but
-> > with the pci=nomsi boot option.
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > > 
-> > I didn't notice any hickups, yet. I'm running a stresstest on a GBit link for quite
-> > some time now. Earlier tests with older kernels and MSI burped earlier.
+> > In general, Linux's swp_entry handling is done by combination of lazy techniques
+> > and global LRU. It works well but when we use mem+swap controller, some more
+> > strict control is appropriate. Otherwise, swp_entry used by a cgroup will be
+> > never freed until global LRU works. In a system where memcg is well-configured,
+> > global LRU doesn't work frequently.
 > > 
-> > I will do more testing. If it turns out this is stable I will test the same kernel
-> > with Message Signaled Interrupts to see if that causes some breakage.
+> >   Example A) Assume a swap cache which is not mapped.
+> >               CPU0                            CPU1
+> > 	   zap_pte()....                  shrink_page_list()
+> > 	    free_swap_and_cache()           lock_page()
+> > 		page seems busy.
+> > 
+> >   Example B) Assume swapin-readahead.
+> > 	      CPU0			      CPU1
+> > 	   zap_pte()			  read_swap_cache_async()
+> > 					  swap_duplicate().
+> >            swap_entry_free() = 1
+> > 	   find_get_page()=> NULL.
+> > 					  add_to_swap_cache().
+> > 					  issue swap I/O. 
+> > 
+> > There are many patterns of this kind of race (but no problems).
+> > 
+> > free_swap_and_cache() is called for freeing swp_entry. But it is a best-effort
+> > function. If the swp_entry/page seems busy, swp_entry is not freed.
+> > This is not a problem because global-LRU will find SwapCache at page reclaim.
+> > 
+> > If memcg is used, on the other hand, global LRU may not work. Then, above
+> > unused SwapCache will not be freed.
+> > (unmapped SwapCache occupy swp_entry but never be freed if not on memcg's LRU)
+> > 
+> > So, even if there are no tasks in a cgroup, swp_entry usage still remains.
+> > In bad case, OOM by mem+swap controller is triggered by this "leak" of
+> > swp_entry as Nishimura reported.
+> > 
+> > Considering this issue, swapin-readahead itself is not very good for memcg.
+> > It read swap cache which will not be used. (and _unused_ swapcache will
+> > not be accounted.) Even if we account swap cache at add_to_swap_cache(),
+> > we need to account page to several _unrelated_ memcg. This is bad.
+> > 
+> > This patch tries to fix racy case of free_swap_and_cache() and page status.
+> > 
+> > After this patch applied, following test works well.
+> > 
+> >   # echo 1-2M > ../memory.limit_in_bytes
+> >   # run tasks under memcg.
+> >   # kill all tasks and make memory.tasks empty
+> >   # check memory.memsw.usage_in_bytes == memory.usage_in_bytes and
+> >     there is no _used_ swp_entry.
+> > 
+> > What this patch does is
+> >  - avoid swapin-readahead when memcg is activated.
+> >  - try to free swapcache immediately after Writeback is done.
+> >  - Handle racy case of __remove_mapping() in vmscan.c
+> > 
+> > TODO:
+> >  - tmpfs should use real readahead rather than swapin readahead...
+> > 
+> > Changelog: v5 -> v6
+> >  - works only when memcg is activated.
+> >  - check after I/O works only after writeback.
+> >  - avoid swapin-readahead when memcg is activated.
+> >  - fixed page refcnt issue.
+> > Changelog: v4->v5
+> >  - completely new design.
+> > 
+> > Reported-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > 
-> I've had this problem up to and including 2.6.29.2. Currently, I'm
-> trying 2.6.29.2 with pci=nomsi, and it's stable so far. With MSI
-> enabled, a single high-speed TCP transfer will stop after a few seconds,
-> but without MSI, I can run four simultaneous transfers to two different
-> hosts without a single hickup.
+> I know we discussed readahead changes this in the past
 > 
-> It seems to me that this particular chip really doesn't like MSI.
+> 1. the memcg_activated() check should be memcg_swap_activated(), no?
+>    In type 1, the problem can be solved by unaccounting the pages
+>    in swap_entry_free
+>    Type 2 is not a problem, since the accounting is already correct
+>    Hence my assertion that this problem occurs only when swapaccount
+>    is enabled.
+No.
+Both type-1 and type-2 have the problem that swp_entry is not freed correctly.
+This problem has nothing to do with whether mem+swap controller is enabled or not.
+
+Thanks,
+Daisuke Nishimura.
+
+> 2. I don't mind adding space overhead to swap_cgroup, if this problem
+>    can be fought that way. The approaches so far have made my head go
+>    round.
+> 3. Disabling readahead is a big decision and will need loads of
+>    review/data before we can decide to go this route.
 > 
-> Kernel: 2.6.29.2 (x86_64)
-> Board: Intel D945GCLF2
-> BIOS version: LF94510J.86A.0099.2008.0731.0303
-
-I'm not sure this is tied to the chip. I've got a similar problem on my
-X58 based system; my device is detected as an RTL8168d/8111d by the
-r8169 driver, and will go out to lunch under high TX loads under any
-kernel after 2.6.28. It seems to be perfectly solid in 2.6.27, but is
-detected as a generic RTL8169, as the MAC is unknown to that version of
-the driver.
-
-It uses MSI in both cases, so the chip seems happy with MSI in at least
-some instances.
-
-I've spent a good part of the weekend bisecting between 2.6.27 and
-2.6.28, and it does seem to be working its way into the genirq changes.
-It is too early to sure, as I've had a number of kernels that locked up
-during boot, so the bisect is a mess, and may not be pointing me in the
-right direction. For example, it is currently pointing me at 5fef06...
-"Merge branch 'linus' into genirq", which I need to figure out how to
-verify.
-
-If the problem is related to changes in the IRQ handling, it could be
-that the driver is doing something incorrect WRT interrupts, but I don't
-really expect that to be the case.
-
-I'll continue to look at getting a more clean bisection to point us at
-the root cause, perhaps keeping the version of the driver constant to
-eliminate one variable.
-
+> 
+> -- 
+> 	Balbir
