@@ -1,63 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758793AbZEKT2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758877AbZEKT3t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758793AbZEKT2l (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 15:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758203AbZEKT2G
+	id S1758877AbZEKT3t (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 15:29:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758696AbZEKT3g
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 15:28:06 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:42937 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756086AbZEKT2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 15:28:03 -0400
-Date: Mon, 11 May 2009 21:27:30 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alexey Dobriyan <adobriyan@gmail.com>
-Cc: Christoph Hellwig <hch@infradead.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/asm] x86, 64-bit: ifdef out struct thread_struct::ip
-Message-ID: <20090511192730.GF28684@elte.hu>
-References: <20090503233015.GJ16631@x200.localdomain> <tip-0c23590f00f85467b318ad0c20c36796a5bd4c60@git.kernel.org> <20090511160324.GA7923@infradead.org> <b6fcc0a0905111022g1df0b1c5l95c2a072745578a0@mail.gmail.com>
+	Mon, 11 May 2009 15:29:36 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:57674 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1758675AbZEKT3f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 15:29:35 -0400
+Date: Mon, 11 May 2009 12:26:59 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Al Viro <viro@ZenIV.linux.org.uk>
+cc: Jeff Mahoney <jeffm@suse.com>, Andrew Morton <akpm@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] dup2: Fix return value with oldfd == newfd and invalid
+ fd
+In-Reply-To: <20090511191142.GK8633@ZenIV.linux.org.uk>
+Message-ID: <alpine.LFD.2.01.0905111220270.3586@localhost.localdomain>
+References: <4A086D9E.60308@suse.com> <alpine.LFD.2.01.0905111135560.3586@localhost.localdomain> <20090511191142.GK8633@ZenIV.linux.org.uk>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <b6fcc0a0905111022g1df0b1c5l95c2a072745578a0@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Alexey Dobriyan <adobriyan@gmail.com> wrote:
 
-> On Mon, May 11, 2009 at 8:03 PM, Christoph Hellwig <hch@infradead.org> wrote:
-> > On Mon, May 11, 2009 at 03:09:40PM +0000, tip-bot for Alexey Dobriyan wrote:
-> >> +#ifdef CONFIG_X86_32
-> >>       unsigned long           ip;
-> >> +#endif
-> >>  #ifdef CONFIG_X86_64
-> >>       unsigned long           fs;
-> >>  #endif
-> >
-> > What happened to the good old concept of #if #else #endif?
+On Mon, 11 May 2009, Al Viro wrote:
 > 
-> #else suggests alternative which is not the case.
-> ->ip and ->fs can be in different parts of thread_struct.
+> I'm not sure that it's a right fix, actually.  Note that userland declaration
+> of that sucker is int dup2(int, int); so should we really take unsigned int
+> as arguments?
 
-Yes, it's cleaner to have them separate. #if / #else / #endif would 
-be shorter by one line, and it would be thicker by a big confusion 
-factor: "why is fs the alternative on 64-bit of 32-bit's ip??"
+Hmm. They've been "unsigned int" for as long as our history goes back 
+(including BK), but yes, making them "int" would have hidden this issue as 
+well. 
 
-They could also move apart later on, if structure packing 
-constraints call for it.
+That said, I think we had reasons to do our fd's as unsigned, ie the whole 
+"compare against MAX" thing that doesn't take negative values into 
+account.
 
-	Ingo
+In fact, I think we should do more of those. Right now we literally depend 
+on things like "max_fds" being "unsigned int", and that the compiler then 
+turns all the
+
+	if (fd < fdt->max_fds)
+
+tests silently into unsigned tests even when 'fd' is 'int'.
+
+So I suspect we should probably make fs/file.c use _more_ "unsigned int" 
+rather than having less of them.
+
+			Linus
