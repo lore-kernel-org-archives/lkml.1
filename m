@@ -1,27 +1,36 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755167AbZEKPhc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757108AbZEKPi1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755167AbZEKPhc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 11:37:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753702AbZEKPhN
+	id S1757108AbZEKPi1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 11:38:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753783AbZEKPiS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 11:37:13 -0400
-Received: from krynn.se.axis.com ([193.13.178.10]:52061 "EHLO
-	krynn.se.axis.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753937AbZEKPhM (ORCPT
+	Mon, 11 May 2009 11:38:18 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:48975 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752809AbZEKPiR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 11:37:12 -0400
-Date: Mon, 11 May 2009 17:35:47 +0200
-From: Jesper Nilsson <jesper.nilsson@axis.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Mikael Starvik <mikael.starvik@axis.com>,
-       Jesper Nilsson <jesper.nilsson@axis.com>
-Subject: [git pull] CRIS updates
-Message-ID: <20090511153547.GT21811@axis.com>
+	Mon, 11 May 2009 11:38:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=S0HVwG/Jn20kgK/w399SuB7A7H4mNCWGTU1ROCzEziqOIkvt1R3PBG1y2HVaFwPcSK
+         Vi7ek18cq1y6P2LMklllJF/kXpOOKkb2W8jZakwnhopvXrUuO6njImpbKSv1iHlCrxqu
+         uHBERq36XG2LYaOZgN3gTneaPaneqLVoF0C6M=
+Date: Mon, 11 May 2009 08:38:09 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Kwangwoo Lee <kwangwoo.lee@gmail.com>
+Cc: Thierry Reding <thierry.reding@avionic-design.de>,
+       Trilok Soni <soni.trilok@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
+Subject: Re: [PATCH 2/2] Input: tsc2007: do I2C transfers in non-interrupt
+	context
+Message-ID: <20090511153808.GA6973@dtor-d630.eng.vmware.com>
+References: <483a38b80905110444n7d55b967j70cf2639dff1c706@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <483a38b80905110444n7d55b967j70cf2639dff1c706@mail.gmail.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -29,80 +38,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 Hi,
 
-Four small fixes, although the merge of the boot files looks
-larger than it is.
+On Mon, May 11, 2009 at 08:44:00PM +0900, Kwangwoo Lee wrote:
+> From d5de0d22109de7564f9bf1df688acbe6b18f41db Mon Sep 17 00:00:00 2001
+> From: Kwangwoo Lee <kwangwoo.lee@gmail.com>
+> Date: Mon, 11 May 2009 20:05:50 +0900
+> Subject: [PATCH 2/2] Input: tsc2007: do I2C transfers in non-interrupt context.
+> 
+> This patch enhances pointer movements much smoother.
+> The original patch is written by Thierry.
+> 
+> Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
+> Signed-off-by: Kwangwoo Lee <kwangwoo.lee@gmail.com>
+> ---
+>  drivers/input/touchscreen/tsc2007.c |   18 ++++++++++++++----
+>  1 files changed, 14 insertions(+), 4 deletions(-)
+> 
+> diff --git a/drivers/input/touchscreen/tsc2007.c
+> b/drivers/input/touchscreen/tsc2007.c
+> index 948e167..03bbe58 100644
+> --- a/drivers/input/touchscreen/tsc2007.c
+> +++ b/drivers/input/touchscreen/tsc2007.c
+> @@ -70,6 +70,7 @@ struct ts_event {
+>  struct tsc2007 {
+>  	struct input_dev	*input;
+>  	char			phys[32];
+> +	struct work_struct	work;
 
-The following changes since commit a939b96cccdb65df80a52447ec8e4a6d79c56dbb:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://git.kernel.org/.../rafael/suspend-2.6
+Every time I see a work_struct in a driver and don't see
+cancel_work_sync() anywhere I know there are issues...
 
-are available in the git repository at:
-
-  git://repo.or.cz/cris-mirror.git for-linus
-
-Jesper Nilsson (4):
-      CRIS: Merge machine dependent boot/compressed and boot/rescue
-      CRISv32: Remove obsolete vcs_hook.o from Makefile
-      CRIS: Wire up syscalls signalfd4 to writev.
-      CRISv32: Fix typo compile error in ARTPEC-3 gpio driver.
-
- arch/cris/Makefile                                 |   14 +-
- arch/cris/arch-v10/boot/compressed/Makefile        |   27 ---
- arch/cris/arch-v10/boot/compressed/README          |   25 --
- arch/cris/arch-v10/boot/compressed/misc.c          |  246 --------------------
- arch/cris/arch-v10/kernel/entry.S                  |   14 +-
- arch/cris/arch-v32/boot/Makefile                   |   20 --
- arch/cris/arch-v32/boot/compressed/Makefile        |   26 --
- arch/cris/arch-v32/boot/rescue/Makefile            |   26 --
- arch/cris/arch-v32/drivers/mach-a3/gpio.c          |    4 +-
- arch/cris/arch-v32/kernel/Makefile                 |    2 -
- arch/cris/arch-v32/kernel/entry.S                  |    8 +
- arch/cris/{arch-v10 => }/boot/.gitignore           |    0
- arch/cris/{arch-v10 => }/boot/Makefile             |    8 +-
- arch/cris/boot/compressed/Makefile                 |   38 +++
- arch/cris/{arch-v32 => }/boot/compressed/README    |    0
- .../compressed/decompress_v10.lds}                 |    0
- .../compressed/decompress_v32.lds}                 |    0
- .../head.S => boot/compressed/head_v10.S}          |    4 +-
- .../head.S => boot/compressed/head_v32.S}          |   10 +-
- arch/cris/{arch-v32 => }/boot/compressed/misc.c    |  193 +++++++++++-----
- arch/cris/{arch-v10 => }/boot/rescue/Makefile      |   22 ++-
- .../boot/rescue/head.S => boot/rescue/head_v10.S}  |    2 +-
- .../boot/rescue/head.S => boot/rescue/head_v32.S}  |    0
- .../cris/{arch-v10 => }/boot/rescue/kimagerescue.S |    0
- .../rescue.lds => boot/rescue/rescue_v10.lds}      |    0
- .../rescue.lds => boot/rescue/rescue_v32.lds}      |    0
- arch/cris/{arch-v10 => }/boot/rescue/testrescue.S  |    0
- arch/cris/{arch-v10 => }/boot/tools/build.c        |    0
- arch/cris/include/asm/unistd.h                     |   12 +-
- 29 files changed, 240 insertions(+), 461 deletions(-)
- delete mode 100644 arch/cris/arch-v10/boot/compressed/Makefile
- delete mode 100644 arch/cris/arch-v10/boot/compressed/README
- delete mode 100644 arch/cris/arch-v10/boot/compressed/misc.c
- delete mode 100644 arch/cris/arch-v32/boot/Makefile
- delete mode 100644 arch/cris/arch-v32/boot/compressed/Makefile
- delete mode 100644 arch/cris/arch-v32/boot/rescue/Makefile
- rename arch/cris/{arch-v10 => }/boot/.gitignore (100%)
- rename arch/cris/{arch-v10 => }/boot/Makefile (65%)
- create mode 100644 arch/cris/boot/compressed/Makefile
- rename arch/cris/{arch-v32 => }/boot/compressed/README (100%)
- rename arch/cris/{arch-v10/boot/compressed/decompress.lds => boot/compressed/decompress_v10.lds} (100%)
- rename arch/cris/{arch-v32/boot/compressed/decompress.lds => boot/compressed/decompress_v32.lds} (100%)
- rename arch/cris/{arch-v10/boot/compressed/head.S => boot/compressed/head_v10.S} (97%)
- rename arch/cris/{arch-v32/boot/compressed/head.S => boot/compressed/head_v32.S} (94%)
- rename arch/cris/{arch-v32 => }/boot/compressed/misc.c (65%)
- rename arch/cris/{arch-v10 => }/boot/rescue/Makefile (63%)
- rename arch/cris/{arch-v10/boot/rescue/head.S => boot/rescue/head_v10.S} (99%)
- rename arch/cris/{arch-v32/boot/rescue/head.S => boot/rescue/head_v32.S} (100%)
- rename arch/cris/{arch-v10 => }/boot/rescue/kimagerescue.S (100%)
- rename arch/cris/{arch-v10/boot/rescue/rescue.lds => boot/rescue/rescue_v10.lds} (100%)
- rename arch/cris/{arch-v32/boot/rescue/rescue.lds => boot/rescue/rescue_v32.lds} (100%)
- rename arch/cris/{arch-v10 => }/boot/rescue/testrescue.S (100%)
- rename arch/cris/{arch-v10 => }/boot/tools/build.c (100%)
-
-
-Thanks!
-
-/^JN - Jesper Nilsson
 -- 
-               Jesper Nilsson -- jesper.nilsson@axis.com
+Dmitry
