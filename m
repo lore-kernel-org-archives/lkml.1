@@ -1,56 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754839AbZEKPYe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755823AbZEKP3Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754839AbZEKPYe (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 11:24:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754619AbZEKPYG
+	id S1755823AbZEKP3Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 11:29:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753240AbZEKP3O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 11:24:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:34152 "EHLO ogre.sisk.pl"
+	Mon, 11 May 2009 11:29:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43647 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753169AbZEKPYD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 11:24:03 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Jiri Slaby <jirislaby@gmail.com>
-Subject: Re: [E1000-devel] e1000: "eeprom checksum is not valid" after kexec
-Date: Mon, 11 May 2009 17:24:12 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Thadeu Lima de Souza Cascardo <cascardo@holoscopio.com>,
-       e1000-devel@lists.sourceforge.net, Ingo Molnar <mingo@elte.hu>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>
-References: <49F06EEB.9060500@gmail.com> <200904241809.45240.rjw@sisk.pl> <4A0836CA.5070709@gmail.com>
-In-Reply-To: <4A0836CA.5070709@gmail.com>
+	id S1752791AbZEKP3N (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 11:29:13 -0400
+Message-ID: <4A084426.2080604@redhat.com>
+Date: Mon, 11 May 2009 18:28:38 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mark Langsdorf <mark.langsdorf@amd.com>,
+       Joerg Roedel <joerg.roedel@amd.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][KVM][retry 1] Add support for Pause Filtering to AMD
+ SVM
+References: <200905050909.58583.mark.langsdorf@amd.com> <20090507135522.GJ4059@amd.com> <200905071000.14038.mark.langsdorf@amd.com> <4A02FECC.6060609@redhat.com> <20090511141503.GC6175@elte.hu> <4A083539.407@redhat.com> <20090511143320.GE6175@elte.hu> <4A083B69.6010702@redhat.com> <20090511145903.GB737@elte.hu> <4A08405E.3070709@redhat.com> <20090511151823.GC9492@elte.hu>
+In-Reply-To: <20090511151823.GC9492@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905111724.12606.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 May 2009, Jiri Slaby wrote:
-> On 04/24/2009 06:09 PM, Rafael J. Wysocki wrote:
-> > My understanding is that the commit pointed to by Jiri caused a problem
-> > if the current mainline kernel was kexeced from an older kernel (2.6.27.x from
-> > openSUSE-11.1 in this particular case), because the older kernel didn't
-> > have the recent network driver fixes applied.  Is this correct?
-> 
-> Exactly!
-> 
-> > Also, I'm still interested in whether or not removig the following three lines:
-> > 
-> >         /* Check if we're already there */
-> >         if (dev->current_state == state)
-> >                 return 0;
-> > 
-> > from pci_set_power_state() in the current mainline kernel fixes the problem
-> > in the configuration where it is readily reproducible.
-> 
-> After removing those lines, the problem still persists:
-> e1000: 0000:02:01.0: e1000_probe: The EEPROM Checksum Is Not Valid
+Ingo Molnar wrote:
+> * Avi Kivity <avi@redhat.com> wrote:
+>
+>   
+>>> I.e. the 3000 cycles value itself could be eliminated as well. 
+>>> (with just a common-sense max of say 100,000 cycles enforced)
+>>>       
+>> Yeah, though that has a much smaller effect as it's only 
+>> responsible for a few microseconds of spinning.
+>>     
+>
+> 3000 cycles would be 1-2 usecs. Isnt the VM exit+entry cost still in 
+> that range?
+>   
 
-So it's more complicated than I thought.  Well ...
+It's 3000 executions of rep nop, so you need to account for the entire 
+spinlock loop body.
 
-What if the driver in question is rmmoded before kexec?
+The Linux spinlock is
+
+             "1:\t"
+             "cmpl %0, %2\n\t"
+             "je 2f\n\t"
+             "rep ; nop\n\t"
+             "movzwl %1, %2\n\t"
+             /* don't need lfence here, because loads are in-order */
+             "jmp 1b\n"
+
+5 instructions, maybe 2-3 cycles, not counting any special rep nop 
+overhead.  Mark, any idea what the spin time is?
+
+VM entry/exit is around 1us on the newer processors.
+
+-- 
+error compiling committee.c: too many arguments to function
+
