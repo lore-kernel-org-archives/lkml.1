@@ -1,83 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757811AbZEKTCz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbZEKTDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757811AbZEKTCz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 15:02:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755173AbZEKTCo
+	id S1757187AbZEKTDf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 15:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbZEKTDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 15:02:44 -0400
-Received: from va3ehsobe002.messaging.microsoft.com ([216.32.180.12]:50157
-	"EHLO VA3EHSOBE002.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1754202AbZEKTCn (ORCPT
+	Mon, 11 May 2009 15:03:24 -0400
+Received: from straum.hexapodia.org ([64.81.70.185]:41855 "EHLO
+	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751801AbZEKTDY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 15:02:43 -0400
-X-Greylist: delayed 904 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 May 2009 15:02:43 EDT
-X-BigFish: VPS-36(z34a4jz146fK1432R62a3L98dR936eQ1805Mzz1202hzzz32i6bh43j)
-X-FB-SS: 5,
-X-WSS-ID: 0KJHTJ0-01-L9H-01
-Date: Mon, 11 May 2009 20:47:28 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@kernel.org>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip] x86: Addition of cpufeatures to friendly
-	access miscellaneous MSRs
-Message-ID: <20090511184727.GF10722@erda.amd.com>
-References: <1242058494.5139.7.camel@ht.satnam> <4A086B58.30607@zytor.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+	Mon, 11 May 2009 15:03:24 -0400
+Date: Mon, 11 May 2009 12:03:23 -0700
+From: Andy Isaacson <adi@hexapodia.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com,
+       fweisbec@gmail.com, rostedt@goodmis.org, a.p.zijlstra@chello.nl,
+       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
+       kosaki.motohiro@jp.fujitsu.com, andi@firstfloor.org, mpm@selenic.com,
+       adobriyan@gmail.com, linux-mm@kvack.org
+Subject: Re: [PATCH 4/8] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090511190323.GO21505@hexapodia.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A086B58.30607@zytor.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 11 May 2009 18:47:29.0338 (UTC) FILETIME=[EF8089A0:01C9D268]
+In-Reply-To: <20090511114554.GC4748@elte.hu>
+User-Agent: Mutt/1.4.2.3i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11.05.09 11:15:52, H. Peter Anvin wrote:
-> Jaswinder Singh Rajput wrote:
->> Jaswinder Singh Rajput (15):
->>       x86: Add cpufeature for Processor Name
->>       x86: Add cpufeatures for Advanced Power Management
->>       x86: Add cpufeature for Microcode update
->>       x86: Add cpufeature for Cache MSRs
->>       x86: Add cpufeature for Hard and Soft Poweron configuration
->>       x86: Add cpufeature for Scaleable bus speed
->>       x86: Add cpufeature for Miscellaneous Features
->>       x86: Add cpufeature for Platform feature
->>       x86: Add cpufeature for Hardware configuration
->>       x86: Add cpufeature for System configuration
->>       x86: Add cpufeature for System management mode (SMM)
->>       x86: Add cpufeature for MM configuration
->>       x86: Add cpufeature for Bus configuration
->>       x86: Add cpufeature for performance frequency APERF/MPERF
->>       x86: Add cpufeature for ancient performance monitoring
->
-> Overall, I'm rather confused what the point of this is supposed to be. 
-> There is value to centralizing CPU knowledge, but some of these flags are 
-> only used in one place, and as far as I can see in several of your patches 
-> they aren't used *at all*.
->
-> If there is no in-kernel user there is absolutely no point to this.
+On Mon, May 11, 2009 at 01:45:54PM +0200, Ingo Molnar wrote:
+> * Andrew Morton <akpm@linux-foundation.org> wrote:
+> > Yes, we could place pagemap's two auxiliary files into debugfs but 
+> > it would be rather stupid to split the feature's control files 
+> > across two pseudo filesystems, one of which may not even exist.  
+> > Plus pagemap is not a kernel debugging feature.
+> 
+> That's not what i'm suggesting though.
+> 
+> What i'm suggesting is that there's a zillion ways to enumerate and 
+> index various kernel objects, doing that in /proc is fundamentally 
+> wrong.
 
->From the pull request subject
+This sounds like you're saying that /proc/<pid>/pagemap is wrong, and
+I'm pretty sure I disagree with that statement.  debugfs is not a
+substitute for pagemap.  pagemap+kpageflags is a significant improvement
+in the memory-usage-introspection capabilities provided to Linux
+applications, and if it were harder to access (by depending on debugfs)
+it would be significantly less useful.
 
- x86: Addition of cpufeatures to friendly access miscellaneous MSRs
+> And there's no need to create a per PID/TID directory 
+> structure in /debug either, to be able to list and access objects by 
+> their PID.
+> 
+> _Especially_ when the end result is not human-readable to begin 
+> with, as it is in the pagemap/kpagecount/kpageflags case.
 
-I assume this is mainly done for dumping msrs for debugging
-purposes. I don't want to start the discussion again if this really
-should be done in kernel space. I would rather parse and decode msr
-registers in userspace. MSR tables could be easily implemented there.
+FWIW, we had a support script break due to /proc/<pid>/pagemap (it
+tarred up /proc/[0-9]*/* and /var/log/ and application logfiles and sent
+it off to support@, so once pagemap appeared the support script started
+filling up disks).  I toyed around with making pagemap read(2)s return
+-EINVAL unless the reader lseek(2)ed first[1], but decided we were
+better off just fixing the support script to enumerate interesting proc
+files, since there's no guarantee against further suprising semantics
+getting added to /proc (and we'd still need to support unpatched
+kernels).
 
-Anyway, I think this was already decided. So, maybe for debugging we
-should simply read the msrs with rdmsr_safe() and use the exception
-handler to check if the msr is implemented. This would avoid most of
-the otherwise unused cpufeature flags above.
+So while I love the capability that kpageflags and pagemap provides, its
+implementation has not been without impact.
 
--Robert
+On a slightly different tangent -- it's pretty trivial to decode pagemap
+with dd(1) and hd(1), or even perl, and it's not as if (for example)
+/proc/<pid>/maps is made much easier to interpret just because its
+contents are presented as ASCII rather than binary, so I feel like the
+design decisions of pagemap are sane and defensible.
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+"I think that forms some kind of argument about kpageflags, but I'm not
+sure if it's for or against."  -- someone witty
 
+[1] fun fact -- cp(1) and cat(1) get the expected behavior with such a
+patch, but dd(1) always lseek(2)s its input even if no skip= was
+specified.
+
+-andy
