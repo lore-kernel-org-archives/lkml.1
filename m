@@ -1,132 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760382AbZEKXAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760954AbZEKXAp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760382AbZEKXAZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 19:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760502AbZEKXAG
+	id S1760954AbZEKXAp (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 19:00:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760887AbZEKXA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 19:00:06 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:63357 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758841AbZEKXAD (ORCPT
+	Mon, 11 May 2009 19:00:26 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:23674 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760324AbZEKXAZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 19:00:03 -0400
-Message-Id: <200905112259.04714.arnd@arndb.de>
-References: <20090511222702.352192505@arndb.de>>
-User-Agent: quilt/0.46-1
-Date: Mon, 11 May 2009 22:59:04 +0000
-From: Arnd Bergmann <arnd@arndb.de>
-To: x86@kernel.org
-Cc: linux-kernel@vger.kernel.org,
-       Remis Lima Baima <remis.developer@googlemail.com>
-Subject: [PATCH] x86: fix ktermios-termio conversion
-Content-Disposition: inline
+	Mon, 11 May 2009 19:00:25 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rK3+RCzyP8JdDxBZ8ltenitqEf4302tCOCqcxnCPbycmaa6DXDP6Eyz1BE6OgAAd5c
+         R3uB3xNPj61mYXqGbQtbx1Vop15ty3rmO3D6ofxRQ7wmJEG0yrwQqrPin/I+eAt459DX
+         TcWoH+TJWFP7ZKQq/0SBZXmaSrGJduXXZB774=
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+In-Reply-To: <20090511221502.GA32530@linux.vnet.ibm.com>
+References: <20090307180816.GA30072@us.ibm.com>
+	 <20090307181232.GF30072@us.ibm.com>
+	 <7e0fb38c0905071335g7ebe972xa82faa1161f7ff0b@mail.gmail.com>
+	 <20090507212429.GA24064@linux.vnet.ibm.com>
+	 <1241735609.2907.4.camel@dhcp231-142.rdu.redhat.com>
+	 <20090507231844.GA27609@linux.vnet.ibm.com>
+	 <20090507232110.GB27609@linux.vnet.ibm.com>
+	 <4A04F5D7.2050909@gmail.com>
+	 <20090511221502.GA32530@linux.vnet.ibm.com>
+Date: Mon, 11 May 2009 19:00:25 -0400
+Message-ID: <6041d2000905111600y648b5b02gcea3d133a749d686@mail.gmail.com>
+Subject: Re: [v3][PATCH 5/5] Merge code for single andmultiple-instancemounts
+From: Marc Dionne <marc.c.dionne@gmail.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Eric Paris <eparis@redhat.com>, Eric Paris <eparis@parisplace.org>,
+       Christoph Hellwig <hch@lst.de>, Andrew Morton <akpm@osdl.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>, serue@us.ibm.com, hpa@zytor.com,
+       sukadev@us.ibm.com, linux-kernel@vger.kernel.org, jbacik@redhat.com
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18BU+8m59NMKLEZ5ifTePEGM/nwFhrQln0jm07
- jEXvL7FZ4oKi5vexv7N6YHnkPsTofn99tO6x4Z3U86mcW8HbaC
- 0Ih0oYJzPdZa0DDuARGyQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The operation with the variable 'c_line' was missing in the function
-'user_termio_to_kernel_termios'. Also the casting '*(unsigned short *)'
-in the macro 'SET_LOW_TERMIOS_BITS' was a bit 'unhealthy'. So the macro
-was removed and the function was changed to be like in other archs
-(e.g. h8300, m68k, sparc) that have a more elegant solution.
+On Mon, May 11, 2009 at 6:15 PM, Sukadev Bhattiprolu
+<sukadev@linux.vnet.ibm.com> wrote:
+> Here is a cleaner fix - When user space (/etc/rc.sysinit on RHEL5) mounts
+> devpts, this problem might be masked since the mount system call could pass
+> a non-NULL 'data' parmeter to devpts_get_sb().
+>
+> I tested this patch by directly calling the system call mount() with a NULL
+> data parameter. If you/Eric/Peter can confirm that this works for you, I will
+> send this patch to Andrew.
+>
+> Thanks,
 
-In the function 'kernel_termios_to_user_termio' the return values of
-the functions calls 'put_user' and 'copy_to_user' were not being
-checked.
+Works fine here, thanks.
 
-Signed-off-by: Remis Lima Baima <remis.developer@googlemail.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
- arch/x86/include/asm/termios.h |   54 +++++++++++++++++++++++++++------------
- 1 files changed, 37 insertions(+), 17 deletions(-)
-
-diff --git a/arch/x86/include/asm/termios.h b/arch/x86/include/asm/termios.h
-index f729563..47420df 100644
---- a/arch/x86/include/asm/termios.h
-+++ b/arch/x86/include/asm/termios.h
-@@ -54,20 +54,37 @@ struct termio {
- /*
-  * Translate a "termio" structure into a "termios". Ugh.
-  */
--#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
--	unsigned short __tmp; \
--	get_user(__tmp,&(termio)->x); \
--	*(unsigned short *) &(termios)->x = __tmp; \
--}
--
- static inline int user_termio_to_kernel_termios(struct ktermios *termios,
- 						struct termio __user *termio)
- {
--	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag);
--	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag);
--	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag);
--	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag);
--	return copy_from_user(termios->c_cc, termio->c_cc, NCC);
-+	unsigned short tmp;
-+
-+	if (get_user(tmp, &termio->c_iflag) < 0)
-+		goto fault;
-+	termios->c_iflag = (0xffff0000 & termios->c_iflag) | tmp;
-+
-+	if (get_user(tmp, &termio->c_oflag) < 0)
-+		goto fault;
-+	termios->c_oflag = (0xffff0000 & termios->c_oflag) | tmp;
-+
-+	if (get_user(tmp, &termio->c_cflag) < 0)
-+		goto fault;
-+	termios->c_cflag = (0xffff0000 & termios->c_cflag) | tmp;
-+
-+	if (get_user(tmp, &termio->c_lflag) < 0)
-+		goto fault;
-+	termios->c_lflag = (0xffff0000 & termios->c_lflag) | tmp;
-+
-+	if (get_user(termios->c_line, &termio->c_line) < 0)
-+		goto fault;
-+
-+	if (copy_from_user(termios->c_cc, termio->c_cc, NCC) != 0)
-+		goto fault;
-+
-+	return 0;
-+
-+ fault:
-+	return -EFAULT;
- }
- 
- /*
-@@ -76,12 +93,15 @@ static inline int user_termio_to_kernel_termios(struct 
-ktermios *termios,
- static inline int kernel_termios_to_user_termio(struct termio __user *termio,
- 					    struct ktermios *termios)
- {
--	put_user((termios)->c_iflag, &(termio)->c_iflag);
--	put_user((termios)->c_oflag, &(termio)->c_oflag);
--	put_user((termios)->c_cflag, &(termio)->c_cflag);
--	put_user((termios)->c_lflag, &(termio)->c_lflag);
--	put_user((termios)->c_line,  &(termio)->c_line);
--	return copy_to_user((termio)->c_cc, (termios)->c_cc, NCC);
-+	if (put_user(termios->c_iflag, &termio->c_iflag) < 0 ||
-+	    put_user(termios->c_oflag, &termio->c_oflag) < 0 ||
-+	    put_user(termios->c_cflag, &termio->c_cflag) < 0 ||
-+	    put_user(termios->c_lflag, &termio->c_lflag) < 0 ||
-+	    put_user(termios->c_line,  &termio->c_line) < 0 ||
-+	    copy_to_user(termio->c_cc, termios->c_cc, NCC) != 0)
-+		return -EFAULT;
-+
-+	return 0;
- }
- 
- static inline int user_termios_to_kernel_termios(struct ktermios *k,
--- 
-1.6.0.4
-
--- 
-
-
-
+Marc
