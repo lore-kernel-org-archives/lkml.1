@@ -1,85 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757187AbZEKTDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754622AbZEKTH0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757187AbZEKTDf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 15:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754246AbZEKTDY
+	id S1754622AbZEKTH0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 15:07:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753208AbZEKTHL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 15:03:24 -0400
-Received: from straum.hexapodia.org ([64.81.70.185]:41855 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751801AbZEKTDY (ORCPT
+	Mon, 11 May 2009 15:07:11 -0400
+Received: from mail-ew0-f224.google.com ([209.85.219.224]:57669 "EHLO
+	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752271AbZEKTHK (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 15:03:24 -0400
-Date: Mon, 11 May 2009 12:03:23 -0700
-From: Andy Isaacson <adi@hexapodia.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com,
-       fweisbec@gmail.com, rostedt@goodmis.org, a.p.zijlstra@chello.nl,
-       lizf@cn.fujitsu.com, linux-kernel@vger.kernel.org,
-       kosaki.motohiro@jp.fujitsu.com, andi@firstfloor.org, mpm@selenic.com,
-       adobriyan@gmail.com, linux-mm@kvack.org
-Subject: Re: [PATCH 4/8] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090511190323.GO21505@hexapodia.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090511114554.GC4748@elte.hu>
-User-Agent: Mutt/1.4.2.3i
+	Mon, 11 May 2009 15:07:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=SJkDuc0lVN/MOkCZ6lob5TNyXI1e1HTB5N8x1xHQrlvb3GL7aK9bDEnpDg+68nJ7rc
+         JxIesE2yQtA61oEUvgFatejFsaTZPZr2v9J3Kl9uxhKRtyoPtGSkPblDrsWpeN//A3QR
+         OIHdYWCZ/IsLqcGfLTkBZiwyIBb3A3D8OuF/U=
+Message-ID: <4A08775C.20305@gmail.com>
+Date: Mon, 11 May 2009 21:07:08 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+MIME-Version: 1.0
+To: jeremy@xensource.com
+CC: virtualization@lists.osdl.org, xen-devel@lists.xensource.com,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] xen pvfb: remove driver_data direct access of struct device
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 01:45:54PM +0200, Ingo Molnar wrote:
-> * Andrew Morton <akpm@linux-foundation.org> wrote:
-> > Yes, we could place pagemap's two auxiliary files into debugfs but 
-> > it would be rather stupid to split the feature's control files 
-> > across two pseudo filesystems, one of which may not even exist.  
-> > Plus pagemap is not a kernel debugging feature.
-> 
-> That's not what i'm suggesting though.
-> 
-> What i'm suggesting is that there's a zillion ways to enumerate and 
-> index various kernel objects, doing that in /proc is fundamentally 
-> wrong.
+To avoid direct access to the driver_data pointer in struct device, the
+functions dev_get_drvdata() and dev_set_drvdata() should be used.
 
-This sounds like you're saying that /proc/<pid>/pagemap is wrong, and
-I'm pretty sure I disagree with that statement.  debugfs is not a
-substitute for pagemap.  pagemap+kpageflags is a significant improvement
-in the memory-usage-introspection capabilities provided to Linux
-applications, and if it were harder to access (by depending on debugfs)
-it would be significantly less useful.
-
-> And there's no need to create a per PID/TID directory 
-> structure in /debug either, to be able to list and access objects by 
-> their PID.
-> 
-> _Especially_ when the end result is not human-readable to begin 
-> with, as it is in the pagemap/kpagecount/kpageflags case.
-
-FWIW, we had a support script break due to /proc/<pid>/pagemap (it
-tarred up /proc/[0-9]*/* and /var/log/ and application logfiles and sent
-it off to support@, so once pagemap appeared the support script started
-filling up disks).  I toyed around with making pagemap read(2)s return
--EINVAL unless the reader lseek(2)ed first[1], but decided we were
-better off just fixing the support script to enumerate interesting proc
-files, since there's no guarantee against further suprising semantics
-getting added to /proc (and we'd still need to support unpatched
-kernels).
-
-So while I love the capability that kpageflags and pagemap provides, its
-implementation has not been without impact.
-
-On a slightly different tangent -- it's pretty trivial to decode pagemap
-with dd(1) and hd(1), or even perl, and it's not as if (for example)
-/proc/<pid>/maps is made much easier to interpret just because its
-contents are presented as ASCII rather than binary, so I feel like the
-design decisions of pagemap are sane and defensible.
-
-"I think that forms some kind of argument about kpageflags, but I'm not
-sure if it's for or against."  -- someone witty
-
-[1] fun fact -- cp(1) and cat(1) get the expected behavior with such a
-patch, but dd(1) always lseek(2)s its input even if no skip= was
-specified.
-
--andy
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+diff --git a/drivers/input/xen-kbdfront.c b/drivers/input/xen-kbdfront.c
+index 928d2ed..b115726 100644
+--- a/drivers/input/xen-kbdfront.c
++++ b/drivers/input/xen-kbdfront.c
+@@ -114,7 +114,7 @@ static int __devinit xenkbd_probe(struct xenbus_device *dev,
+ 		xenbus_dev_fatal(dev, -ENOMEM, "allocating info structure");
+ 		return -ENOMEM;
+ 	}
+-	dev->dev.driver_data = info;
++	dev_set_drvdata(&dev->dev, info);
+ 	info->xbdev = dev;
+ 	info->irq = -1;
+ 	snprintf(info->phys, sizeof(info->phys), "xenbus/%s", dev->nodename);
+@@ -186,7 +186,7 @@ static int __devinit xenkbd_probe(struct xenbus_device *dev,
+ 
+ static int xenkbd_resume(struct xenbus_device *dev)
+ {
+-	struct xenkbd_info *info = dev->dev.driver_data;
++	struct xenkbd_info *info = dev_get_drvdata(&dev->dev);
+ 
+ 	xenkbd_disconnect_backend(info);
+ 	memset(info->page, 0, PAGE_SIZE);
+@@ -195,7 +195,7 @@ static int xenkbd_resume(struct xenbus_device *dev)
+ 
+ static int xenkbd_remove(struct xenbus_device *dev)
+ {
+-	struct xenkbd_info *info = dev->dev.driver_data;
++	struct xenkbd_info *info = dev_get_drvdata(&dev->dev);
+ 
+ 	xenkbd_disconnect_backend(info);
+ 	if (info->kbd)
+@@ -266,7 +266,7 @@ static void xenkbd_disconnect_backend(struct xenkbd_info *info)
+ static void xenkbd_backend_changed(struct xenbus_device *dev,
+ 				   enum xenbus_state backend_state)
+ {
+-	struct xenkbd_info *info = dev->dev.driver_data;
++	struct xenkbd_info *info = dev_get_drvdata(&dev->dev);
+ 	int ret, val;
+ 
+ 	switch (backend_state) {
