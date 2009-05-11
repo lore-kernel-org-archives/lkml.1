@@ -1,26 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753061AbZEKGQp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753279AbZEKGRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753061AbZEKGQp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 02:16:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751409AbZEKGQg
+	id S1753279AbZEKGRz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 02:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751665AbZEKGRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 02:16:36 -0400
-Received: from wf-out-1314.google.com ([209.85.200.169]:8771 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751121AbZEKGQf (ORCPT
+	Mon, 11 May 2009 02:17:45 -0400
+Received: from rv-out-0506.google.com ([209.85.198.236]:4461 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751409AbZEKGRp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 02:16:35 -0400
+	Mon, 11 May 2009 02:17:45 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:date:message-id:subject:from:to:content-type
          :content-transfer-encoding;
-        b=fDkbgX+tjAtk+oS+lxF8fU4LDSHP+tPYaJfnDrnKIkL5RsL8Cadm2Hr5kQVQ4N/jjc
-         J+CUYRRRLlAD4MQ0bzCyc4IW165C8SIyVBYghZGwORpi3yPZRWugd1fZInCFBk7FeuGB
-         XFBPzuvSh/wKoOBCblvh+OeM6Yc4lRDK6EYNM=
+        b=wsRlRIkLiz3WDe/gzvdQq1iRNuwk/IOQzLhPmXICAwNkocB6BnTh0CEOlLKyxD5UQH
+         rSt+HuSg6DkwOJm8E6aD0XoyeXtpZsk/jt1qcWhu+S6ECrR4Y2QufoBaIjZfayW9/zRG
+         miXYhY+Yv4xFbuVosESd3ACwPLnSpgWb1Xf6k=
 MIME-Version: 1.0
-Date: Mon, 11 May 2009 14:16:36 +0800
-Message-ID: <a8e1da0905102316v1037c89cs48cb052924c250a9@mail.gmail.com>
-Subject: [PATCH 1/3] kobject : kobject_set_name_vargs leak fix
+Date: Mon, 11 May 2009 14:17:45 +0800
+Message-ID: <a8e1da0905102317n1be27da2lc9fd4dc1265b12ce@mail.gmail.com>
+Subject: [PATCH 2/3] kobject : make kset_create check kobject_set_name return 
+	value
 From: Dave Young <hidave.darkstar@gmail.com>
 To: Greg KH <gregkh@suse.de>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
@@ -30,29 +31,32 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-kobject_set_name_vargs will leak the old_name when return -ENOMEM,
-move the kfree(old_name) before the return path.
+kset_create should check the kobject_set_name return value.
+
+Add the return value checking code.
 
 Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
 ---
-lib/kobject.c |    2 +-
-1 file changed, 1 insertion(+), 1 deletion(-)
+lib/kobject.c |    7 ++++++-
+1 file changed, 6 insertions(+), 1 deletion(-)
 
 diff -uprN linux.old/lib/kobject.c linux.new/lib/kobject.c
 --- linux.old/lib/kobject.c	2009-05-11 13:59:01.000000000 +0800
-+++ linux.new/lib/kobject.c	2009-05-11 13:59:34.000000000 +0800
-@@ -221,6 +221,7 @@ int kobject_set_name_vargs(struct kobjec
- 	if (kobj->name && !fmt)
- 		return 0;
++++ linux.new/lib/kobject.c	2009-05-11 14:00:39.000000000 +0800
+@@ -793,11 +793,16 @@ static struct kset *kset_create(const ch
+ 				struct kobject *parent_kobj)
+ {
+ 	struct kset *kset;
++	int retval;
 
-+	kfree(old_name);
- 	kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
- 	if (!kobj->name)
- 		return -ENOMEM;
-@@ -229,7 +230,6 @@ int kobject_set_name_vargs(struct kobjec
- 	while ((s = strchr(kobj->name, '/')))
- 		s[0] = '!';
-
--	kfree(old_name);
- 	return 0;
- }
+ 	kset = kzalloc(sizeof(*kset), GFP_KERNEL);
+ 	if (!kset)
+ 		return NULL;
+-	kobject_set_name(&kset->kobj, name);
++	retval = kobject_set_name(&kset->kobj, name);
++	if (retval) {
++		kfree(kset);
++		return NULL;
++	}
+ 	kset->uevent_ops = uevent_ops;
+ 	kset->kobj.parent = parent_kobj;
