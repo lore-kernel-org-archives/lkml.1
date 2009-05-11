@@ -1,124 +1,174 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753410AbZEKMho@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755142AbZEKMjd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753410AbZEKMho (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 08:37:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751563AbZEKMhf
+	id S1755142AbZEKMjd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 08:39:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751478AbZEKMjY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 08:37:35 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52744 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751062AbZEKMhd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 08:37:33 -0400
-Date: Mon, 11 May 2009 12:36:29 GMT
-From: tip-bot for KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, schwidefsky@de.ibm.com,
-       dhaval@linux.vnet.ibm.com, balajirrao@gmail.com,
-       balbir@linux.vnet.ibm.com, bharata@linux.vnet.ibm.com,
-       tglx@linutronix.de, kamezawa.hiroyu@jp.fujitsu.com,
-       kosaki.motohiro@jp.fujitsu.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, schwidefsky@de.ibm.com, balajirrao@gmail.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       bharata@linux.vnet.ibm.com, tglx@linutronix.de,
-       kosaki.motohiro@jp.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com,
-       mingo@elte.hu
-In-Reply-To: <20090509191430.3AD5.A69D9226@jp.fujitsu.com>
-References: <20090509191430.3AD5.A69D9226@jp.fujitsu.com>
-Subject: [tip:sched/core] sched: cpuacct: Use bigger percpu counter batch values for stats counters
-Message-ID: <tip-50fbed3bb72cbe38a665512771a91a96d028de46@git.kernel.org>
-Git-Commit-ID: 50fbed3bb72cbe38a665512771a91a96d028de46
-X-Mailer: tip-git-log-daemon
+	Mon, 11 May 2009 08:39:24 -0400
+Received: from e28smtp04.in.ibm.com ([59.145.155.4]:35889 "EHLO
+	e28smtp04.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751062AbZEKMjX (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 08:39:23 -0400
+From: Gautham R Shenoy <ego@in.ibm.com>
+Subject: [RFC/PATCH 0/6] lockdep: Maintain read/write states for lock_acquires
+To: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Paul E McKenney <paulmck@us.ibm.com>, Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linux-kernel@vger.kernel.org
+Date: Mon, 11 May 2009 18:09:25 +0530
+Message-ID: <20090511122936.31159.44531.stgit@sofia.in.ibm.com>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 12:36:31 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  50fbed3bb72cbe38a665512771a91a96d028de46
-Gitweb:     http://git.kernel.org/tip/50fbed3bb72cbe38a665512771a91a96d028de46
-Author:     KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-AuthorDate: Sat, 9 May 2009 19:14:58 +0900
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 11 May 2009 14:32:57 +0200
+Hi,
 
-sched: cpuacct: Use bigger percpu counter batch values for stats counters
+Lockdep, while maintaining it's dependency chains does currently not
+differentiate between the read/write acquires of a lock.
 
-percpu counters used to accumulate statistics in cpuacct controller use
-the default batch value [max(2*nr_cpus, 32)] which can be too small for
-archs that define VIRT_CPU_ACCOUNTING. In such archs, a tick could result in
-cputime updates in the range of thousands. As a result, cpuacct_update_stats()
-would end up acquiring the percpu counter spinlock on every tick which
-is not good for performance.
+Thus a dependency
+	rlock(A) ---> wlock(B)
+is treated the same as
+	wlock(A) ---> rlock(B).
 
-Let those architectures to have a bigger batch threshold so that percpu counter
-spinlock isn't taken on every tick. This change doesn't affect the archs which
-don't define VIRT_CPU_ACCOUNTING and they continue to have the default
-percpu counter batch value.
+If the implementation of the reader writer lock is such that upon the arrival
+of a writer, it ensures that all the future readers will wait till the
+completion of the writer, this non-distinction between the read and the write
+acquires doesn't matter. This is because, the reads in such implementations
+aren't recursive, since a recursive-read can deadlock in the presence of a
+writer.
+i.e in :
+	Thread1: rlock(A) ------------> rlock(A)
+	Thread2:          wlock(A)
 
- v5:
- - move cpuacct_batch initialization into sched_init()
+Thread 1 will end up blocking on the second rlock(A), while Thread 2 is blocked
+on wlock(A).
+The RW-Semaphores in the linux kernel are implemented in this fashion.
 
- v4:
-  - rewrite patch description (thanks Bharata!)
-  - append read_mostly to cpuacct_batch
-  - cpuacct_batch is initialized by sched_init_debug()
+However, if the implementation of the reader-writer lock allows
+"reader-preference", i.e it allows the writer to grab the lock iff there are
+no readers in the system, the distinction between a read/write acquire may be
+necessary, since the implementation permits, read-side recursion as a
+side-effect. rwlocks in the linux kernel follow a similar implementation.
 
- v3:
-  - revert using percpu_counter_sum()
+lockdep however refrains from making this read/write acquire distinction for
+such locks. It tries to solve the problem by not maintaining dependencies for
+the reads, and maintains dependencies only for the writes.
 
- v2:
-  - use percpu_counter_sum() instead percpu_counter_read()
+As a result, ABBA deadlocks of the following type, go unnoticed by lockdep:
 
-Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
-Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Balaji Rao <balajirrao@gmail.com>
-Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-LKML-Reference: <20090509191430.3AD5.A69D9226@jp.fujitsu.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+	Thread 1
+	=====================
+	read_lock(A);
+	spin_lock(B);
+	/* A-->B dependency is not maintained for reason mentioned */
 
+	+
+
+	Thread 2
+	=====================
+	spin_lock(B);
+	write_lock(A);
+	/* B-->A dependency maintained. But no cycle in graph.*/
+
+Peter Zijlstra had a patch to solve this by considering the only the
+first recursive-read instance of a lock in the current context while
+maintaining the dependencies. http://lkml.org/lkml/2008/4/29/212
+
+However, this had a nasty side effect since now, dependencies of the type:
+	read_lock(A) --> spin_lock(B)
+	spin_lock(B) --> read_lock(A)
+and it's variants would also be reported as a deadlock.
+
+This patchset solves the problem by recording the read/write states of the
+locks acquired in a dependency.
+
+i.e, for a dependency of the
+type
+	spin_lock(B) --> read_lock(A),
+
+in B's "locks_after" entry for this dependency, we not only store the class of A,
+but also store the the "rw-state" of both A and B. Ditto for A's
+"locks_before" entry.
+
+We define three rw-states namely:
+	STATE_WRITE
+	STATE_READ
+	STATE_RECURSIVE_READ.
+
+For each of these states, we define a set of conflicting states which can cause
+a deadlock when involved in a dependency with the former . i.e,
+	conflict_states(STATE_WRITE) =
+			STATE_WRITE | STATE_READ | STATE_RECURSIVE_READ
+	conflict_state(STATE_READ)   =  STATE_WRITE | STATE_READ
+	conflict_state(STATE_RECURSIVE_READ) = STATE_WRITE
+
+So, when we're walking the dependency graph to see if there is a cycle in the
+graph, we follow only those entries in the "locks_after" list of a given lock,
+where this lock was acquired in a rw-state which conflicts with that lock's
+current rw-state.
+
+i.e, if say lock A's current rw-state is STATE_RECURSIVE_READ,
+and the locks_after list for A looks something like this:
+
+this_class: A
+
+			A->locks_after
+	                        |
+				|
+				V
+	---------------------------------------------------
+	| dep_class: B                                    |
+	| dep_rw_state: STATE_WRITE                       |
+	| this_rw_state: STATE_WRITE                      |
+	---------------------------------------------------
+	                        |
+				|
+				V
+	---------------------------------------------------
+	| dep_class: C                                    |
+	| dep_rw_state: STATE_RECURSIVE_READ              |
+	| this_rw_state: STATE_RECURSIVE_READ             |
+	---------------------------------------------------
+	                        |
+				|
+				V
+	---------------------------------------------------
+	| dep_class: D                                    |
+	| dep_rw_state: STATE_RECURSIVE_READ              |
+	| this_rw_state: STATE_WRITE                      |
+	---------------------------------------------------
+
+Here, we follow only the entries where dep_class is B and D since these are the
+only entries where A's rw_state (STATE_WRITE) conflicts with
+it's current rw_state (STATE_RECURSIVE_READ). However, if A's current rw_state
+had been STATE_WRITE, we would have followed all the three entries.
+
+The patch-set has been tested against 2.6.30-rc3. It passes the boot-up
+self-test. However more test cases need to be added to the locking-self test
+which will be done in the future iterations of the patch.
+
+Feedback is very much appreciated.
 
 ---
- kernel/sched.c |    7 ++++++-
- 1 files changed, 6 insertions(+), 1 deletions(-)
+Gautham R Shenoy (6):
+      lockdep: Consider the rw_state of lock while validating the chain.
+      lockdep: Maintain rw_state entries in locklist
+      lockdep: Seperate lock ids for read/write acquires.
+      lockdep: Annotate Read/write states
+      lockdep: Remove strict read checks.
+      lockdep: Remove redundant read checks.
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 8908d19..873bc3b 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -872,6 +872,8 @@ static __read_mostly int scheduler_running;
-  */
- int sysctl_sched_rt_runtime = 950000;
- 
-+static __read_mostly s32 cpuacct_batch;
-+
- static inline u64 global_rt_period(void)
- {
- 	return (u64)sysctl_sched_rt_period * NSEC_PER_USEC;
-@@ -9171,6 +9173,8 @@ void __init sched_init(void)
- 	 */
- 	current->sched_class = &fair_sched_class;
- 
-+	cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
-+
- 	/* Allocate the nohz_cpu_mask if CONFIG_CPUMASK_OFFSTACK */
- 	alloc_bootmem_cpumask_var(&nohz_cpu_mask);
- #ifdef CONFIG_SMP
-@@ -10354,7 +10358,8 @@ static void cpuacct_update_stats(struct task_struct *tsk,
- 	ca = task_ca(tsk);
- 
- 	do {
--		percpu_counter_add(&ca->cpustat[idx], val);
-+		__percpu_counter_add(&ca->cpustat[idx], val, cpuacct_batch);
-+
- 		ca = ca->parent;
- 	} while (ca);
- 	rcu_read_unlock();
+
+ include/linux/lockdep.h |  153 +++++++++++++++++++++++++++++++------
+ kernel/lockdep.c        |  193 +++++++++++++++++++++++++++++------------------
+ kernel/lockdep_proc.c   |    4 -
+ 3 files changed, 247 insertions(+), 103 deletions(-)
+
+-- 
+Thanks and Regards
+gautham.
