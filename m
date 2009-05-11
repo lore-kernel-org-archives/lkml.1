@@ -1,114 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754909AbZEKOk1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756545AbZEKOkq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754909AbZEKOk1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 10:40:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755792AbZEKOjq
+	id S1756545AbZEKOkq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 10:40:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755990AbZEKOkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 10:39:46 -0400
-Received: from Cpsmtpm-eml107.kpnxchange.com ([195.121.3.11]:54807 "EHLO
-	CPSMTPM-EML107.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755644AbZEKOjo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 10:39:44 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Chuck Lever <chuck.lever@oracle.com>
-Subject: Re: svc: failed to register lockdv1 RPC service (errno 97).
-Date: Mon, 11 May 2009 16:39:42 +0200
-User-Agent: KMail/1.9.9
-Cc: Netdev <netdev@vger.kernel.org>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Linux NFS mailing list <linux-nfs@vger.kernel.org>
-References: <200905110248.48695.elendil@planet.nl> <8054CA42-CAFC-4DFC-A3A9-107AF29284EE@oracle.com>
-In-Reply-To: <8054CA42-CAFC-4DFC-A3A9-107AF29284EE@oracle.com>
+	Mon, 11 May 2009 10:40:23 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:60634 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752661AbZEKOkT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 10:40:19 -0400
+Message-ID: <4A0838E6.2000309@redhat.com>
+Date: Mon, 11 May 2009 10:40:38 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>, lkml <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       Tom Zanussi <zanussi@comcast.net>
+Subject: Re: [PATCH -tip v5 0/7] tracing: kprobe-based event tracer and x86
+ instruction decoder
+References: <20090509004829.5505.38720.stgit@localhost.localdomain> <20090509044302.GH8007@elte.hu>
+In-Reply-To: <20090509044302.GH8007@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905111639.43636.elendil@planet.nl>
-X-OriginalArrivalTime: 11 May 2009 14:39:44.0323 (UTC) FILETIME=[53434130:01C9D246]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 May 2009, you wrote:
-> On May 10, 2009, at 8:48 PM, Frans Pop wrote:
-> > After switching from 2.6.29.2 to 2.6.30-rc5 I get this new message
-> > during boot of my home server:
-> >   svc: failed to register lockdv1 RPC service (errno 97).
+Ingo Molnar wrote:
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
+> 
+>> Hi,
+>>
+>> Here are the patches of kprobe-based event tracer for x86, version 
+>> 5, which allows you to probe various kernel events through ftrace 
+>> interface.
+>>
+>> This version supports only x86(-32/-64) (but porting it on other 
+>> arch just needs kprobes/kretprobes and register and stack access 
+>> APIs).
+>>
+>> This patchset also includes x86(-64) instruction decoder which 
+>> supports non-SSE/FP opcodes and includes x86 opcode map. I think 
+>> it will be possible to share this opcode map with KVM's decoder.
+>>
+>> This series can be applied on the latest linux-2.6-tip tree.
+>>
+>> This patchset includes following changes:
+>> - Add x86 instruction decoder [1/7]
+>> - Check insertion point safety in kprobe [2/7]
+>> - Cleanup fix_riprel() with insn decoder [3/7]
+>> - Add kprobe-tracer plugin [4/7]
+>> - Fix kernel_trap_sp() on x86 according to systemtap runtime. [5/7]
+>> - Add arch-dep register and stack fetching functions [6/7]
+>> - Support fetching various status (register/stack/memory/etc.) [7/7]
+>>
+>> Future items:
+>> - .init function tracing support.
+>> - Support primitive types(long, ulong, int, uint, etc) for args.
+> 
+> Ok, this looks pretty complete already.
+> 
+> Two high-level comments:
+> 
+>  - There's no self-test - would it be possible to add one? See 
+>    trace_selftest* in kernel/trace/
+
+I'm not so sure. Currently, it seems that those self-tests are
+only for tracers which define new event-entry on ring-buffer.
+Since this tracer just use ftrace_bprintk, it might need
+another kind of selftest. e.g. comparing outputs with
+expected patterns.
+In that case, would it be better to make a user-space self test
+including filters and tracepoints?
+
+>  - No generic integration.
+
+Right, this just rides on the ftrace's printk :-)
+
+> 
+> It would be nice if these ops:
+> 
+>> E.g.
+>>   echo p do_sys_open a0 a1 a2 a3 > /debug/tracing/kprobe_events
+>>
+>>  This sets a kprobe on the top of do_sys_open() function with recording
+>> 1st to 4th arguments.
+>>
+>>   echo r do_sys_open rv rp >> /debug/tracing/kprobe_events
+> 
+> were just generally available in just about any other tracer - a bit 
+> like the event tracer.
+> 
+> It would also be nice to use the 'function attributes' facilities of 
+> the function tracer, combined with a new special syntax of the 
+> function-filter regex parser, to enable the recovery of return 
+> values (or the call arguments), for selected set of functions.
 >
-> Is this the only instance of this message, or do you see it several
-> times?
+> For example, today we can already do things like:
+> 
+>   echo 'sys_read:traceon:4' > /debug/tracing/set_ftrace_filter
+> 
+> for 'trace triggers': the above will trigger tracing to be enabled 
+> on the entry of sys_read(), 4 times.
+> 
+> Likewise, something like:
+> 
+>   echo 'sys_read:args' > /debug/tracing/set_ftrace_filter
+>   echo 'sys_read:return' > /debug/tracing/set_ftrace_filter
+> 
+> Could activate kprobes based argument and return-value tracing.
 
-It's the only one.
 
-> > This looks to be the result of the following commit:
-> > commit 363f724cdd3d2ae554e261be995abdeb15f7bdd9
-> > Author: Chuck Lever <chuck.lever@oracle.com>
-> >    SUNRPC: rpcb_register() should handle errors silently
-> >    Move error reporting for RPC registration to rpcb_register's
-> > caller.
-> >
-> > Question is: do I really want to know this? I assume the "failure"
-> > happened with previous kernels too, but silently.
->
-> The point of that commit was to report errors _less_ frequently.
+Ah, that's a good idea. And also, I have another idea for using
+filters with kprobes, which is adding new kprobe-entry as a new
+trace-event when user defines a new probe via kprobe_events.
+Thus, user can use it as a dynamic-defined tracepoint.
 
-:-)
+Thank you,
 
-> The server-side RPC code is attempting to be more automatic about
-> which address families are supported by kernel NFS services.  This
-> message tells us that some particular case is not handled yet.  I
-> suspect you weren't seeing this error in the past at all.
+-- 
+Masami Hiramatsu
 
-Correct. Neither this exact error, nor anything remotely similar.
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-> Can you report more about your server configuration?  What
-> distribution is this?
+e-mail: mhiramat@redhat.com
 
-Debian stable (Lenny).
-nfs-common and nfs-kernel-server (1.1.2)
-
-I'm using nfs4. rpc.statd is not running; rpc.mountd and rpc.idmapd are.
-
-> Does user space have portmapper or rpcbind? 
-
-portmap (6.0)
-
-> Are you blacklisting ipv6.ko?
-
-No, the server has IPv6 enabled.
-I'm using NFS mainly from my laptop though, which does not have an IPv6 
-address for my home network.
-
-> What's the output of "rpcinfo" on your server after it has started NFSD?
-
-I guess you mean the -p option?
-
-$ rpcinfo -p
-   program vers proto   port
-    100000    2   tcp    111  portmapper
-    100000    2   udp    111  portmapper
-    100003    2   udp   2049  nfs
-    100003    3   udp   2049  nfs
-    100003    4   udp   2049  nfs
-    100021    1   udp  47955  nlockmgr
-    100021    3   udp  47955  nlockmgr
-    100021    4   udp  47955  nlockmgr
-    100021    1   tcp  41860  nlockmgr
-    100021    3   tcp  41860  nlockmgr
-    100021    4   tcp  41860  nlockmgr
-    100003    2   tcp   2049  nfs
-    100003    3   tcp   2049  nfs
-    100003    4   tcp   2049  nfs
-    100005    1   udp  40032  mountd
-    100005    1   tcp  40623  mountd
-    100005    2   udp  40032  mountd
-    100005    2   tcp  40623  mountd
-    100005    3   udp  40032  mountd
-    100005    3   tcp  40623  mountd
-    391002    2   tcp    792  sgi_fam
-
-Cheers,
-FJP
