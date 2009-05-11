@@ -1,83 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753027AbZEKD40@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753839AbZEKD50@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753027AbZEKD40 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 23:56:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751801AbZEKD4R
+	id S1753839AbZEKD50 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 23:57:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751932AbZEKD5Q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 23:56:17 -0400
-Received: from casper.infradead.org ([85.118.1.10]:53514 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750824AbZEKD4Q (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 23:56:16 -0400
-Date: Sun, 10 May 2009 20:55:58 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Peter Zijlstra <peterz@infradead.org>,
-       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
-       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [patch 00/13] devtmpfs patches
-Message-ID: <20090510205558.7117182a@infradead.org>
-In-Reply-To: <ac3eb2510905101822t7fde14b3nf2c689621f69c925@mail.gmail.com>
-References: <20090509143742.GA27663@kroah.com>
-	<20090509150853.GA32394@suse.de>
-	<20090509082233.32cbb8e4@infradead.org>
-	<20090509161923.GA942@suse.de>
-	<20090509223454.4642753d.akpm@linux-foundation.org>
-	<20090510152005.GA9461@suse.de>
-	<1241980263.9562.380.camel@laptop>
-	<20090510221901.30c1c5a5@lxorguk.ukuu.org.uk>
-	<ac3eb2510905101647k12a1b9ck71d43933037bac48@mail.gmail.com>
-	<20090510170016.1e3a4d97@infradead.org>
-	<ac3eb2510905101822t7fde14b3nf2c689621f69c925@mail.gmail.com>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+	Sun, 10 May 2009 23:57:16 -0400
+Received: from chilli.pcug.org.au ([203.10.76.44]:50829 "EHLO smtps.tip.net.au"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751402AbZEKD5Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 23:57:16 -0400
+Date: Mon, 11 May 2009 13:57:07 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: qingtao.cao@windriver.com
+Cc: Andrew Morton <akpm@linux-foundation.org>, norsk5@yahoo.com,
+       bluesmoke-devel@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Subject: Re: [v0 PATCH 1/1] Use dev_name() for AMD8111/AMD8131 EDAC driver
+Message-Id: <20090511135707.21e27a5a.sfr@canb.auug.org.au>
+In-Reply-To: <4A0791D1.5040303@windriver.com>
+References: <1241660858-21105-1-git-send-email-qingtao.cao@windriver.com>
+	<1241660858-21105-2-git-send-email-qingtao.cao@windriver.com>
+	<20090507145722.b2d89e11.akpm@linux-foundation.org>
+	<4A0791D1.5040303@windriver.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+ micalg="PGP-SHA1";
+ boundary="Signature=_Mon__11_May_2009_13_57_07_+1000_7n1Bruf2zaZ7aaS4"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009 03:22:53 +0200
-Kay Sievers <kay.sievers@vrfy.org> wrote:
+--Signature=_Mon__11_May_2009_13_57_07_+1000_7n1Bruf2zaZ7aaS4
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> On Mon, May 11, 2009 at 02:00, Arjan van de Ven <arjan@infradead.org>
-> wrote:
-> > (and it seems to be irrelevant to the devtmpfs discussion anyway
-> > since Eric Biederman has shown that pulling the device numbers out
-> > of sysfs is basically free... even though it'd be nice to give that
-> > some help to make it a nice index)
-> 
-> It's not free, and it's racy to just copy over the stuff. You have to
-> subscribe to events _before_ you start reading /sys and create nodes,
-> to catch the new stuff that comes in in the meantime. You have to
-> mount an empty tmpfs, bring up a udevd-like process to subscribe to
-> events for new devices and create nodes for them, create the nodes for
-> the already existing devices found in /sys. That's all far from
-> "free", and has non-trivial dependencies.
-> 
+Hi Harry,
 
-How about we do something that is useful for more scenarios instead,
-like proposed already? A /proc or similar file that just lists the
-type,major,minor and name for the known nodes.
-This has none of the race issues you mention (since udev still later
-processes the events) but opens a LOT of flexibility. You could use it
-in your set up, but I could use it in the Moblin setup as well.
-And I suspect many other setups suddenly become possible, just because
-there now is a lost of device nodes that are "active". Debugging
-drivers, etc etc. Long list.
+On Mon, 11 May 2009 10:47:45 +0800 Harry Ciao <qingtao.cao@windriver.com> w=
+rote:
+>
+> Andrew Morton wrote:
+> >
+> > The drivers break x86-64 allmodconfig:
+> >
+> > drivers/edac/amd8111_edac.c: In function 'amd8111_lpc_bridge_init':
+> > drivers/edac/amd8111_edac.c:260: error: implicit declaration of functio=
+n '__do_inb'
+> > drivers/edac/amd8111_edac.c:274: error: implicit declaration of functio=
+n '__do_outb'
+>=20
+> Ah, this is because __do_inb so far only supported on PPC arch:
+>=20
+> cao@cao-desktop:/work/community/linux-2.6/arch$ grep __do_inb * -r
+> powerpc/include/asm/io.h:#define __do_inb(port)        _rec_inb(port)
+> powerpc/include/asm/io.h:#define __do_inb(port)       =20
+> readb((PCI_IO_ADDR)_IO_BASE + port);
+> cao@cao-desktop:/work/community/linux-2.6/arch$
+>=20
+> So far the only machine that hosts AMD8111 chip is Maple, however,=20
+> AMD8111 is of Hypertransport device and not necessarily depends on Maple=
+=20
+> nor PPC, so its Kconfig option is only depended on EDAC && EDAC_MC_EDAC=20
+> && PCI.
+>=20
+> I think I could put some words into its Kconfig help section that=20
+> AMD8111 should be selected on Maple now.
+>=20
+> What do you think? thanks!
 
-I sort of get a bad taste in my mouth from this thread to be honest;
-it really feels like "this is the code that HAS to be pushed", rather
-than working on getting something useful for a wide set of uses... even
-if it's not your initial implementation. 
+You need to make them depend on CONFIG_PPC (or use a different i/o
+interface) since the automated builds will enable them for
+all{mod,yes}config builds.  Some explanation of the dependency is, of
+course, appropriate.
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__11_May_2009_13_57_07_+1000_7n1Bruf2zaZ7aaS4
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoHohMACgkQjjKRsyhoI8xefQCguowWqqD3qiCd48ohrnheGjtk
+T/YAoLJsTzjE35O5eI6nmUXq1v0AvZVP
+=YthK
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__11_May_2009_13_57_07_+1000_7n1Bruf2zaZ7aaS4--
