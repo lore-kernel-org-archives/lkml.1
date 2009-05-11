@@ -1,76 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760925AbZEKXBd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760916AbZEKXDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760925AbZEKXBd (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 19:01:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760462AbZEKXBI
+	id S1760916AbZEKXDU (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 19:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754577AbZEKXDG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 19:01:08 -0400
-Received: from smtp-out.google.com ([216.239.45.13]:49157 "EHLO
-	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S932073AbZEKXBC (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 19:01:02 -0400
-DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
-	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
-	references:user-agent:mime-version:content-type:x-system-of-record;
-	b=RFt71bJ72MIKRRemiIdDpg6LMHfsKsnXi+S3PD8eBar3tLrivob0wYF0zuCnTokAZ
-	+RnNAuhxzTc2WX5n0ZWLw==
-Date: Mon, 11 May 2009 16:00:58 -0700 (PDT)
-From: David Rientjes <rientjes@google.com>
-X-X-Sender: rientjes@chino.kir.corp.google.com
-To: Andrew Morton <akpm@linux-foundation.org>
-cc: gregkh@suse.de, npiggin@suse.de, mel@csn.ul.ie, a.p.zijlstra@chello.nl,
-       cl@linux-foundation.org, dave@linux.vnet.ibm.com, san@android.com,
-       arve@android.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 08/11 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
-In-Reply-To: <20090511154603.0fb0acbf.akpm@linux-foundation.org>
-Message-ID: <alpine.DEB.2.00.0905111557360.5979@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101502050.18804@chino.kir.corp.google.com> <20090511142936.dd68005b.akpm@linux-foundation.org> <alpine.DEB.2.00.0905111444070.466@chino.kir.corp.google.com>
- <20090511151130.9a949cb7.akpm@linux-foundation.org> <alpine.DEB.2.00.0905111529090.2234@chino.kir.corp.google.com> <20090511154603.0fb0acbf.akpm@linux-foundation.org>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Mon, 11 May 2009 19:03:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43337 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753805AbZEKXDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 19:03:03 -0400
+Message-ID: <4A08AE22.1060901@kernel.org>
+Date: Mon, 11 May 2009 16:00:50 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-X-System-Of-Record: true
+To: David Rientjes <rientjes@google.com>
+CC: Jack Steiner <steiner@sgi.com>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] x86: fix node_possible_map logic -v2
+References: <4A05269D.8000701@kernel.org> <4A0527CB.4020807@kernel.org> <20090511175312.GA27905@sgi.com> <alpine.DEB.2.00.0905111218520.23739@chino.kir.corp.google.com> <20090511213354.GD553@sgi.com> <alpine.DEB.2.00.0905111550070.5979@chino.kir.corp.google.com>
+In-Reply-To: <alpine.DEB.2.00.0905111550070.5979@chino.kir.corp.google.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009, Andrew Morton wrote:
-
-> oh, well that was pretty useless then.  I was trying to find a handy
-> spot where we can avoid adding fastpath cycles.
+David Rientjes wrote:
+> On Mon, 11 May 2009, Jack Steiner wrote:
 > 
-> How about we sneak it into the order>0 leg inside buffered_rmqueue()?
+>> Cpus also belong to nodes. The cpu_to_node_map[] provides the mapping.
+>> I have not tried it, but I wonder what happens if you offline all of the
+>> memory of a node (probably not possible so this may be hypothetical for now).
+>> Should offlining all node memory change the node that a cpu on the node
+>> are associated with? That does not seem right.
+>>
 > 
-
-Wouldn't it be easier after my patch is merged to just check the oom 
-killer stack traces for such allocations and people complain about 
-unnecessary oom killing when memory is available but too fragmented?  The 
-gfp_flags and order are shown in the oom killer header.
-
+> No, it would simply become a memoryless node and NODE_DATA() should 
+> probably be freed or just represent spanned_pages of 0.
 > 
-> --- a/mm/page_alloc.c~page-allocator-warn-if-__gfp_nofail-is-used-for-a-large-allocation
-> +++ a/mm/page_alloc.c
-> @@ -1130,6 +1130,20 @@ again:
->  		list_del(&page->lru);
->  		pcp->count--;
->  	} else {
-> +		if (unlikely(gfp_mask & __GFP_NOFAIL)) {
-> +			/*
-> +			 * __GFP_NOFAIL is not to be used in new code.
-> +			 *
-> +			 * All __GFP_NOFAIL callers should be fixed so that they
-> +			 * properly detect and handle allocation failures.
-> +			 *
-> +			 * We most definitely don't want callers attempting to
-> +			 * allocate greater than single-page units with
-> +			 * __GFP_NOFAIL.
-> +			 */
-> +			WARN_ON_ONCE(order > 0);
-> +			return 0;
-> +		}
->  		spin_lock_irqsave(&zone->lock, flags);
->  		page = __rmqueue(zone, order, migratetype);
->  		__mod_zone_page_state(zone, NR_FREE_PAGES, -(1 << order));
+> Memoryless node support has already been merged (and needs to be fixed), 
+> but the same toplogies could be represented with memory-only nodes which 
+> may have been a better approach considering your point about memory 
+> offline and our lack of node hot-remove.
+> 
+>> Agree. FWIW, it works ok in 2.6.27. I need to bisect to find where the regression
+>> occurred.
+>>
+> 
+> I'm not so sure it will help to identify which patch caused the issue, it 
+> depends on whether we want to support memoryless nodes or not and then 
+> address the issues as they arise when there is no memory attached, which 
+> you've done in this case.
+> 
+> We can fix your particular issue by deciding how node_online_map and its 
+> superset, node_possible_map, are handled for memoryless nodes.  Such users 
+> need to iterate over N_NORMAL_MEMORY instead.
 
-That "return 0" definitely needs to be removed, though :)
+not sure his problem. it seems 2.6.28, 29, 30 all don't work for him.
+
+and current tip works on all my test systems with node that does have mem.
+
+YH
