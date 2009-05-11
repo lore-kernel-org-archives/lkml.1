@@ -1,246 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754042AbZEKN4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbZEKNzz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754042AbZEKN4Z (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 09:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754801AbZEKNz7
+	id S1755284AbZEKNzz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 09:55:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbZEKNzh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 09:55:59 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33755 "EHLO mx2.redhat.com"
+	Mon, 11 May 2009 09:55:37 -0400
+Received: from 8bytes.org ([88.198.83.132]:50354 "EHLO 8bytes.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755316AbZEKNz5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 09:55:57 -0400
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [PATCH 1/2 v2] crypto: mark algs allowed in fips mode
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-Date: Mon, 11 May 2009 09:52:43 -0400
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Neil Horman <nhorman@tuxdriver.com>
+	id S1755149AbZEKNzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 09:55:36 -0400
+Date: Mon, 11 May 2009 15:55:33 +0200
+From: Joerg Roedel <joro@8bytes.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 1/9] xen: make sure swiotlb allocation is physically
+	contigious
+Message-ID: <20090511135532.GA8671@8bytes.org>
+References: <1241741842-7966-1-git-send-email-jeremy@goop.org> <1241741842-7966-2-git-send-email-jeremy@goop.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905110952.44273.jarod@redhat.com>
+In-Reply-To: <1241741842-7966-2-git-send-email-jeremy@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Set the fips_allowed flag in testmgr.c's alg_test_descs[] for algs
-that are allowed to be used when in fips mode.
+On Thu, May 07, 2009 at 05:17:14PM -0700, Jeremy Fitzhardinge wrote:
+> Impact: make swiotlb allocation suitable for Xen
+> 
+> When allocating the swiotlb buffer under Xen, make sure the memory is
+> physically contiguous so that its really suitable for DMA.
+> 
+> Do this by allocating the memory as usual, but then call a Xen
+> function to rearrange the underlying pages to be physically
+> contiguous.
+> 
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
+> Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> ---
+>  arch/x86/kernel/pci-swiotlb.c |   10 ----------
+>  arch/x86/xen/Makefile         |    1 +
+>  arch/x86/xen/pci-swiotlb.c    |   27 +++++++++++++++++++++++++++
+>  drivers/pci/xen-iommu.c       |   16 ++++++++++++++++
+>  include/xen/swiotlb.h         |    6 ++++++
+>  5 files changed, 50 insertions(+), 10 deletions(-)
+>  create mode 100644 arch/x86/xen/pci-swiotlb.c
+>  create mode 100644 include/xen/swiotlb.h
+> 
+> diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
+> index 34f12e9..bc09da7 100644
+> --- a/arch/x86/kernel/pci-swiotlb.c
+> +++ b/arch/x86/kernel/pci-swiotlb.c
+> @@ -13,16 +13,6 @@
+>  
+>  int swiotlb __read_mostly;
+>  
+> -void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
+> -{
+> -	return alloc_bootmem_low_pages(size);
+> -}
+> -
+> -void *swiotlb_alloc(unsigned order, unsigned long nslabs)
+> -{
+> -	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
+> -}
+> -
+>  dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
+>  {
+>  	return paddr;
+> diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
+> index c4cda96..caede49 100644
+> --- a/arch/x86/xen/Makefile
+> +++ b/arch/x86/xen/Makefile
+> @@ -12,3 +12,4 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
+>  obj-$(CONFIG_SMP)		+= smp.o spinlock.o
+>  obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
+>  obj-$(CONFIG_XEN_DOM0)		+= vga.o
+> +obj-$(CONFIG_PCI_XEN)		+= pci-swiotlb.o
+> \ No newline at end of file
+> diff --git a/arch/x86/xen/pci-swiotlb.c b/arch/x86/xen/pci-swiotlb.c
+> new file mode 100644
+> index 0000000..25f0365
+> --- /dev/null
+> +++ b/arch/x86/xen/pci-swiotlb.c
+> @@ -0,0 +1,27 @@
+> +#include <linux/bootmem.h>
+> +#include <linux/gfp.h>
+> +
+> +#include <xen/swiotlb.h>
+> +#include <asm/xen/hypervisor.h>
+> +
+> +/* 
+> + * This file defines overrides for weak functions with default
+> + * implementations in lib/swiotlb.c.
+> + */
+> +
+> +void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
+> +{
+> +	void *ret = alloc_bootmem_low_pages(size);
+> +
+> +	if (ret && xen_pv_domain())
+> +		xen_swiotlb_fixup(ret, size, nslabs);
+> +
+> +	return ret;
+> +}
+> +
+> +void *swiotlb_alloc(unsigned order, unsigned long nslabs)
+> +{
+> +	/* Never called on x86.  Warn, just in case. */
 
-One caveat: des isn't actually allowed anymore, but des (and thus also
-ecb(des)) has to be permitted, because disallowing them results in
-des3_ede being unable to properly register (see des module init func).
+Can't this function be removed completly then?
 
-Also, crc32 isn't technically on the fips approved list, but I think
-it gets used in various places that necessitate it being allowed.
+> +	WARN_ON(1);
+> +	return NULL;
+> +}
+> diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
+> index 32a8b49..c593058 100644
+> --- a/drivers/pci/xen-iommu.c
+> +++ b/drivers/pci/xen-iommu.c
+> @@ -12,6 +12,7 @@
+>  #include <xen/grant_table.h>
+>  #include <xen/page.h>
+>  #include <xen/xen-ops.h>
+> +#include <xen/swiotlb.h>
+>  
+>  #include <asm/iommu.h>
+>  #include <asm/swiotlb.h>
+> @@ -34,6 +35,21 @@ do {							\
+>  	(unsigned long long)addr + size);		\
+>  } while (0)
+>  
+> +
+> +void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
+> +{
+> +	unsigned order = get_order(size);
+> +
+> +	printk(KERN_DEBUG "xen_swiotlb_fixup: buf=%p size=%zu order=%u\n",
+> +		buf, size, order);
+> +
+> +	if (WARN_ON(size != (PAGE_SIZE << order)))
+> +		return;
+> +
+> +	if (xen_create_contiguous_region((unsigned long)buf,
+> +					 order, 0xffffffff))
+                                                DMA_32BIT_MASK?
 
-This list is based on
-http://csrc.nist.gov/groups/STM/cavp/index.html
-
-Important note: allowed/approved here does NOT mean "validated", just
-that its an alg that *could* be validated.
-
-Resending with properly updated patch v2 tag.
-
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
-
----
- crypto/testmgr.c |   23 +++++++++++++++++++++++
- 1 files changed, 23 insertions(+), 0 deletions(-)
-
-diff --git a/crypto/testmgr.c b/crypto/testmgr.c
-index f4cc178..51bae62 100644
---- a/crypto/testmgr.c
-+++ b/crypto/testmgr.c
-@@ -94,6 +94,7 @@ struct alg_test_desc {
- 	const char *alg;
- 	int (*test)(const struct alg_test_desc *desc, const char *driver,
- 		    u32 type, u32 mask);
-+	int fips_allowed;	/* set if alg is allowed in fips mode */
- 
- 	union {
- 		struct aead_test_suite aead;
-@@ -1432,6 +1433,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	{
- 		.alg = "ansi_cprng",
- 		.test = alg_test_cprng,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cprng = {
- 				.vecs = ansi_cprng_aes_tv_template,
-@@ -1441,6 +1443,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "cbc(aes)",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -1516,6 +1519,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "cbc(des3_ede)",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -1546,6 +1550,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "ccm(aes)",
- 		.test = alg_test_aead,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.aead = {
- 				.enc = {
-@@ -1561,6 +1566,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "crc32c",
- 		.test = alg_test_crc32c,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = crc32c_tv_template,
-@@ -1570,6 +1576,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "ctr(aes)",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -1615,6 +1622,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "ecb(aes)",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -1720,6 +1728,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "ecb(des)",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -1735,6 +1744,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "ecb(des3_ede)",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -1870,6 +1880,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "gcm(aes)",
- 		.test = alg_test_aead,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.aead = {
- 				.enc = {
-@@ -1912,6 +1923,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "hmac(sha1)",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = hmac_sha1_tv_template,
-@@ -1921,6 +1933,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "hmac(sha224)",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = hmac_sha224_tv_template,
-@@ -1930,6 +1943,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "hmac(sha256)",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = hmac_sha256_tv_template,
-@@ -1939,6 +1953,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "hmac(sha384)",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = hmac_sha384_tv_template,
-@@ -1948,6 +1963,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "hmac(sha512)",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = hmac_sha512_tv_template,
-@@ -2029,6 +2045,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "rfc3686(ctr(aes))",
- 		.test = alg_test_skcipher,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.cipher = {
- 				.enc = {
-@@ -2044,6 +2061,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "rfc4309(ccm(aes))",
- 		.test = alg_test_aead,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.aead = {
- 				.enc = {
-@@ -2106,6 +2124,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "sha1",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = sha1_tv_template,
-@@ -2115,6 +2134,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "sha224",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = sha224_tv_template,
-@@ -2124,6 +2144,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "sha256",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = sha256_tv_template,
-@@ -2133,6 +2154,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "sha384",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = sha384_tv_template,
-@@ -2142,6 +2164,7 @@ static const struct alg_test_desc alg_test_descs[] = {
- 	}, {
- 		.alg = "sha512",
- 		.test = alg_test_hash,
-+		.fips_allowed = 1,
- 		.suite = {
- 			.hash = {
- 				.vecs = sha512_tv_template,
-
-
--- 
-Jarod Wilson
-jarod@redhat.com
-
+> +		printk(KERN_ERR "xen_create_contiguous_region failed\n");
+> +}
+>  static inline int address_needs_mapping(struct device *hwdev,
+>  						dma_addr_t addr)
+>  {
+> diff --git a/include/xen/swiotlb.h b/include/xen/swiotlb.h
+> new file mode 100644
+> index 0000000..67b7b42
+> --- /dev/null
+> +++ b/include/xen/swiotlb.h
+> @@ -0,0 +1,6 @@
+> +#ifndef _XEN_SWIOTLB_H
+> +#define _XEN_SWIOTLB_H
+> +
+> +extern void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs);
+> +
+> +#endif /* _XEN_SWIOTLB_H */
+> -- 
+> 1.6.0.6
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
