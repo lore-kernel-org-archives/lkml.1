@@ -1,58 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758087AbZEKPSf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758138AbZEKPTA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758087AbZEKPSf (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 11:18:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756360AbZEKPSE
+	id S1758138AbZEKPTA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 11:19:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755074AbZEKPSs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 11:18:04 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:46152 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754989AbZEKPSD (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 11:18:03 -0400
-To: torvalds@linux-foundation.org
-CC: miklos@szeredi.hu, jens.axboe@oracle.com, max@duempel.org,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-In-reply-to: <alpine.LFD.2.01.0905070845590.4983@localhost.localdomain>
-	(message from Linus Torvalds on Thu, 7 May 2009 08:55:03 -0700 (PDT))
-Subject: Re: [patch 0/3] make splice more generic
-References: <20090507133734.450612199@szeredi.hu> <alpine.LFD.2.01.0905070845590.4983@localhost.localdomain>
-Message-Id: <E1M3XFU-0001Ra-K7@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 11 May 2009 17:17:00 +0200
+	Mon, 11 May 2009 11:18:48 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43310 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754647AbZEKPSr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 11:18:47 -0400
+Date: Mon, 11 May 2009 17:18:23 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Avi Kivity <avi@redhat.com>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mark Langsdorf <mark.langsdorf@amd.com>,
+       Joerg Roedel <joerg.roedel@amd.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][KVM][retry 1] Add support for Pause Filtering to AMD
+	SVM
+Message-ID: <20090511151823.GC9492@elte.hu>
+References: <200905050909.58583.mark.langsdorf@amd.com> <20090507135522.GJ4059@amd.com> <200905071000.14038.mark.langsdorf@amd.com> <4A02FECC.6060609@redhat.com> <20090511141503.GC6175@elte.hu> <4A083539.407@redhat.com> <20090511143320.GE6175@elte.hu> <4A083B69.6010702@redhat.com> <20090511145903.GB737@elte.hu> <4A08405E.3070709@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A08405E.3070709@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 7 May 2009, Linus Torvalds wrote:
-> On Thu, 7 May 2009, Miklos Szeredi wrote:
-> > 
-> > One more generalization would be to allow splice to work on two
-> > non-pipes, using an internal intermediate pipe, a-la do_splice_direct().
-> 
-> You can't do that without some painful issues.
-> 
-> Or rather, you can only do it trivially for the one case where we 
-> _already_ do that, namely "sendfile()". That's exactly what sendfile() is 
-> now.
 
-Hmm yeah, almost exactly: sendfile doesn't have a "destination offset"
-argument.
+* Avi Kivity <avi@redhat.com> wrote:
 
-> That said, maybe we could allow it in a few more cases. Or maybe people 
-> think the simplification in user interfaces is worth making the IO be 
-> non-interruptible (but still killable, for example, at which point the 
-> buffered data really is dropped - but that's not different from having 
-> the buffers in user space, so at that point it's ok).
+>> I.e. the 3000 cycles value itself could be eliminated as well. 
+>> (with just a common-sense max of say 100,000 cycles enforced)
+>
+> Yeah, though that has a much smaller effect as it's only 
+> responsible for a few microseconds of spinning.
 
-That's a hard decision.  I think it's better to leave it in its
-current form.  That means more complexity in the apps, but less
-unexpected nastiness from being non-interruptible.
+3000 cycles would be 1-2 usecs. Isnt the VM exit+entry cost still in 
+that range?
 
-One more interesting use of splice() would be for things like speeding
-up "cp" on network filesystems and similarly for fs which can
-refcount/COW data blocks.  Seems like BTRFS already has an ioctl for
-this, wouldn't it be nice to do it with splice()?
-
-Thanks,
-Miklos
+	Ingo
