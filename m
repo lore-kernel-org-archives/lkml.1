@@ -1,92 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbZEKLVb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755473AbZEKLXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756652AbZEKLVb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 07:21:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752207AbZEKLVW
+	id S1755473AbZEKLXV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 07:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZEKLXK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 07:21:22 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:34178 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751024AbZEKLVV (ORCPT
+	Mon, 11 May 2009 07:23:10 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:56215 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751024AbZEKLXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 07:21:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=KjPzn6lPj/bInfGbo0gDQ2IxNRB+Z9Rw/7/HgNs/PfQ2fVwT5vUhHaKdfOgA9SBl5S
-         ZCVav+aCcByVxVhoMxkcrNoElw4jr8eCe+b8BpVN0aaMEV+drnCNJvbxXDWzamurbK7Z
-         T9amp3CgHkZ0Sn6640u/o6GvZicBigJwZO/Os=
-MIME-Version: 1.0
-In-Reply-To: <28c262360905110212j9867b79wd8d90b16f6f196be@mail.gmail.com>
-References: <alpine.DEB.2.00.0905091544470.6884@chino.kir.corp.google.com>
-	 <20090511162900.f372edd1.minchan.kim@barrios-desktop>
-	 <alpine.DEB.2.00.0905110138160.24726@chino.kir.corp.google.com>
-	 <28c262360905110212j9867b79wd8d90b16f6f196be@mail.gmail.com>
-Date: Mon, 11 May 2009 20:21:21 +0900
-Message-ID: <28c262360905110421g1b079f2cr798ca95adfb8ee45@mail.gmail.com>
-Subject: Re: [patch -mmotm] mm: invoke oom killer for __GFP_NOFAIL
-From: Minchan Kim <minchan.kim@gmail.com>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
+	Mon, 11 May 2009 07:23:09 -0400
+Date: Mon, 11 May 2009 20:23:09 +0900 (JST)
+Message-Id: <20090511.202309.112614168.ryov@valinux.co.jp>
+To: vgoyal@redhat.com
+Cc: akpm@linux-foundation.org, nauman@google.com, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, jens.axboe@oracle.com, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, guijianfeng@cn.fujitsu.com,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, peterz@infradead.org
+Subject: Re: IO scheduler based IO Controller V2
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <20090507012559.GC4187@redhat.com>
+References: <20090506023332.GA1212@redhat.com>
+	<20090507.091858.226775723.ryov@valinux.co.jp>
+	<20090507012559.GC4187@redhat.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 6:12 PM, Minchan Kim <minchan.kim@gmail.com> wrote:
-> On Mon, May 11, 2009 at 5:40 PM, David Rientjes <rientjes@google.com> wrote:
->> On Mon, 11 May 2009, Minchan Kim wrote:
->>
->>> Hmm.. if __alloc_pages_may_oom fail to allocate free page due to order > PAGE_ALLOC_COSTRY_ORDER,
->>>
->>> It will go to nopage label in __alloc_pages_slowpath.
->>> Then it will show the page allocation failure warning and will return.
->>> Retrying depends on caller.
->>>
->>
->> Correct.
->>
->>> So, I think it won't loop forever.
->>> Do I miss something ?
->>>
->>
->> __GFP_NOFAIL allocations shouldn't fail, that's the point of the gfp flag.
->> So failing without attempting to free some memory is the wrong thing to
->> do.
->
-> Thanks for quick reply.
-> I was confused by your description.
-> I thought you suggested we have to prevent loop forever.
->
->>
->>> In addition, the OOM killer can help for getting the high order pages ?
->>>
->>
->> Sure, if it selects a task that will free a lot of memory, which is it's
->> goal.
->>
->
-> How do we know any task have a lot of memory ?
-> If we select wrong task and kill one ?
->
-> I have a concern about innocent task.
+Hi Vivek,
 
-Now, I look over __out_of_memory.
-For selecting better tasks in case of PAGE_ALLOC_COSTRY_ORDER, How
-about increasing score of task which have VM_HUGETLB vma in badness ?
+From: Vivek Goyal <vgoyal@redhat.com>
+Subject: Re: IO scheduler based IO Controller V2
+Date: Wed, 6 May 2009 21:25:59 -0400
 
-> --
-> Kinds regards,
-> Minchan Kim
->
+> On Thu, May 07, 2009 at 09:18:58AM +0900, Ryo Tsuruta wrote:
+> > Hi Vivek,
+> > 
+> > > Ryo, dm-ioband breaks the notion of classes and priority of CFQ because
+> > > of FIFO dispatch of buffered bios. Apart from that it tries to provide
+> > > fairness in terms of actual IO done and that would mean a seeky workload
+> > > will can use disk for much longer to get equivalent IO done and slow down
+> > > other applications. Implementing IO controller at IO scheduler level gives
+> > > us tigher control. Will it not meet your requirements? If you got specific
+> > > concerns with IO scheduler based contol patches, please highlight these and
+> > > we will see how these can be addressed.
+> > 
+> > I'd like to avoid making complicated existing IO schedulers and other
+> > kernel codes and to give a choice to users whether or not to use it.
+> > I know that you chose an approach that using compile time options to
+> > get the same behavior as old system, but device-mapper drivers can be
+> > added, removed and replaced while system is running.
+> > 
+> 
+> Same is possible with IO scheduler based controller. If you don't want
+> cgroup stuff, don't create those. By default everything will be in root
+> group and you will get the old behavior. 
+> 
+> If you want io controller stuff, just create the cgroup, assign weight
+> and move task there. So what more choices do you want which are missing
+> here?
 
+What I mean to say is that device-mapper drivers can be completely
+removed from the kernel if not used.
 
+I know that dm-ioband has some issues which can be addressed by your
+IO controller, but I'm not sure your controller works well. So I would
+like to see some benchmark results of your IO controller.
 
--- 
-Kinds regards,
-Minchan Kim
+Thanks,
+Ryo Tsuruta
