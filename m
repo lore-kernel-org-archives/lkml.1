@@ -1,44 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbZEKB2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757534AbZEKB35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbZEKB2j (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 21:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754469AbZEKB2a
+	id S1757534AbZEKB35 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 21:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756835AbZEKB3r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 21:28:30 -0400
-Received: from zeniv.linux.org.uk ([195.92.253.2]:58088 "EHLO
-	ZenIV.linux.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752631AbZEKB23 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 21:28:29 -0400
-Date: Mon, 11 May 2009 02:28:28 +0100
-From: Al Viro <viro@ZenIV.linux.org.uk>
-To: hooanon05@yahoo.co.jp
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Q. Switch open_exec() and sys_uselib() to do_open_filp()
-Message-ID: <20090511012828.GH8633@ZenIV.linux.org.uk>
-References: <29926.1242003317@jrobl>
+	Sun, 10 May 2009 21:29:47 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:43489 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756379AbZEKB3q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 10 May 2009 21:29:46 -0400
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <29926.1242003317@jrobl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Transfer-Encoding: 7bit
+Message-ID: <18951.32643.749495.538351@drongo.ozlabs.ibm.com>
+Date: Mon, 11 May 2009 11:29:39 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 3/5] perf_counter: rework ioctl()s
+In-Reply-To: <20090508170028.837558214@chello.nl>
+References: <20090508165219.469818319@chello.nl>
+	<20090508170028.837558214@chello.nl>
+X-Mailer: VM 8.0.12 under 22.3.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 09:55:17AM +0900, hooanon05@yahoo.co.jp wrote:
-> 
-> By the commit 6e8341a11eb21826b7192d0bb88cb5b44900a9af
-> "Switch open_exec() and sys_uselib() to do_open_filp()",
-> FMODE_EXEC flag is passed to struct file. I have no objection nor
-> question about that.
-> 
-> But it is set to file->f_flags instead of f_mode.
-> Is this intended behaviour?
+Peter Zijlstra writes:
 
-It is previously existing behaviour.  Check what path_lookup_open() does
-and how had it used to be called.
+> Corey noticed that ioctl()s on grouped counters didn't work on the whole group.
+> This extends the ioctl() interface to take a second argument that is
+> interpreted as a flags field. We then provide PERF_IOC_FLAG_GROUP to toggle
+> the behaviour.
+> 
+> Having this flag gives the greatest flexibility, allowing you to individually
+> enable/disable/reset counters in a group, or all together.
 
-And no, very little about intents makes any sense, including that part.
-Call graph of the entire lookup-and-open-related machinery least of all.
-So we have to untangle that mound of mating tapeworms, one by one ;-/
+As far as enable/disable are concerned, I don't think this is really
+necessary.  My intention was that if you want to enable/disable a
+whole group you just enable/disable the leader and leave all its
+siblings enabled, since if the leader is disabled the whole group
+can't go on.
+
+Corey's problem was that we have a bug where enabling the leader only
+puts the leader on and not the enabled group members.  I meant to send
+a patch to fix that ages ago but I got distracted.  I'll send out the
+patch shortly.
+
+Paul.
