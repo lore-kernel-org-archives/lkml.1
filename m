@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759231AbZEKSmw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757967AbZEKSpO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759231AbZEKSmw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 14:42:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754018AbZEKSmn
+	id S1757967AbZEKSpO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 14:45:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753084AbZEKSo6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 14:42:43 -0400
-Received: from gw.goop.org ([64.81.55.164]:46149 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752250AbZEKSmn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 14:42:43 -0400
-Message-ID: <4A0871A2.9050502@goop.org>
-Date: Mon, 11 May 2009 11:42:42 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Joerg Roedel <joro@8bytes.org>
-CC: Ingo Molnar <mingo@elte.hu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       the arch/x86 maintainers <x86@kernel.org>,
+	Mon, 11 May 2009 14:44:58 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43326 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751392AbZEKSo6 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 14:44:58 -0400
+Date: Mon, 11 May 2009 11:40:56 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Jeff Mahoney <jeffm@suse.com>
+cc: Andrew Morton <akpm@linux-foundation.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 1/9] xen: make sure swiotlb allocation is physically	contigious
-References: <1241741842-7966-1-git-send-email-jeremy@goop.org> <1241741842-7966-2-git-send-email-jeremy@goop.org> <20090511135532.GA8671@8bytes.org>
-In-Reply-To: <20090511135532.GA8671@8bytes.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+       Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH] dup2: Fix return value with oldfd == newfd and invalid
+ fd
+In-Reply-To: <4A086D9E.60308@suse.com>
+Message-ID: <alpine.LFD.2.01.0905111135560.3586@localhost.localdomain>
+References: <4A086D9E.60308@suse.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Joerg Roedel wrote:
->> +}
->> +
->> +void *swiotlb_alloc(unsigned order, unsigned long nslabs)
->> +{
->> +	/* Never called on x86.  Warn, just in case. */
->>     
->
-> Can't this function be removed completly then?
->   
 
-The swiotlb code contains a static call, which never ends up being 
-executed, so there has to be something to be called.  But you're right 
-that there's no particular reason for this warning unless someone starts 
-to call swiotlb_alloc in the future.
 
-I'd briefly discussed the idea of eliminating the distinction between 
-boot and post-boot swiotlb allocation, but it looks tricky to implement.
+On Mon, 11 May 2009, Jeff Mahoney wrote:
+> 
+>  The return value of dup2 when oldfd == newfd and the fd isn't valid is not
+>  getting properly sign extended. We end up with 4294967287 instead of -EBADF.
 
->> +
->> +	if (xen_create_contiguous_region((unsigned long)buf,
->> +					 order, 0xffffffff))
->>     
->                                                 DMA_32BIT_MASK?
->   
+Indeed.
 
-OK (ditto other mentions).
+>  This patch uses a signed int for the error value so it is properly extended.
 
-    J
+However, I'd rather move the new variable into the block where it is used, 
+and keep the whole corner-case thing self-contained.
+
+So can you verify that this trivial variation on the patch is ok by you, 
+and I'll commit it as yours with your message? (I realize it's really 
+trivial, and I could just do this myself, but good to get the change 
+ack'ed anyway).
+
+		Linus
+
+---
+ fs/fcntl.c |    6 ++++--
+ 1 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/fs/fcntl.c b/fs/fcntl.c
+index cc8e4de..1ad7031 100644
+--- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -117,11 +117,13 @@ SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
+ {
+ 	if (unlikely(newfd == oldfd)) { /* corner case */
+ 		struct files_struct *files = current->files;
++		int retval = oldfd;
++
+ 		rcu_read_lock();
+ 		if (!fcheck_files(files, oldfd))
+-			oldfd = -EBADF;
++			retval = -EBADF;
+ 		rcu_read_unlock();
+-		return oldfd;
++		return retval;
+ 	}
+ 	return sys_dup3(oldfd, newfd, 0);
+ }
