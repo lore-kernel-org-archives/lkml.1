@@ -1,61 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbZEKQ6P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZEKQ6h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754807AbZEKQ6P (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 12:58:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752711AbZEKQ56
+	id S1756177AbZEKQ6h (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 12:58:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753458AbZEKQ61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 12:57:58 -0400
-Received: from gw.goop.org ([64.81.55.164]:54088 "EHLO mail.goop.org"
+	Mon, 11 May 2009 12:58:27 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:52799 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751845AbZEKQ55 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 12:57:57 -0400
-Message-ID: <4A085915.50300@goop.org>
-Date: Mon, 11 May 2009 09:57:57 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1752711AbZEKQ60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 12:58:26 -0400
+Date: Mon, 11 May 2009 18:58:26 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>
+Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone
+	over NFS
+Message-ID: <20090511165826.GG4694@kernel.dk>
+References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com> <20090508120119.8c93cfd7.akpm@linux-foundation.org> <20090511081415.GL4694@kernel.dk> <x49skjb21b7.fsf@segfault.boston.devel.redhat.com>
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [GIT PULL] xen: swiotlb support for Xen dom0
-References: <1241741842-7966-1-git-send-email-jeremy@goop.org> <20090511130455.GO13954@elte.hu>
-In-Reply-To: <20090511130455.GO13954@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <x49skjb21b7.fsf@segfault.boston.devel.redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->> Hi Ingo,
->>
->> This branch adds the swiotlb hooks for Xen dom0.  We use swiotlb 
->> to handle various device drivers which assume that multipage DMA 
->> transfers which are contigious in kernel memory are also 
->> contigious in machine memory (mostly lower-performance devices, as 
->> high-performance ones already do a good job of scatter-gather).
->>
->> Following Fujita's suggestion, these changes remove a lot of the 
->> placeholder stubs in arch/x86/kernel/pci-swiotlb.c and moves them 
->> into the Xen-specific arch/x86/xen/pci-swiotlb.c.  (It still 
->> relies on overriding the weak functions defined in lib/swiotlb.c.)
->>
->> The following changes since commit 2af252ab26150b4411889c9eaf1af4c5bf03de78:
->>   Jeremy Fitzhardinge (1):
->>         xen: checkpatch cleanups
->>     
->
-> Would be nice to have a pull request for this with Fujita-san's acks 
-> embedded in the commits, and with a tree based against tip:x86/xen.
->   
+On Mon, May 11 2009, Jeff Moyer wrote:
+> Jens Axboe <jens.axboe@oracle.com> writes:
+> 
+> > On Fri, May 08 2009, Andrew Morton wrote:
+> >> On Thu, 23 Apr 2009 10:01:58 -0400
+> >> Jeff Moyer <jmoyer@redhat.com> wrote:
+> >> 
+> >> > Hi,
+> >> > 
+> >> > I've been working on CFQ improvements for interleaved I/Os between
+> >> > processes, and noticed a regression in performance when using the
+> >> > deadline I/O scheduler.  The test uses a server configured with a cciss
+> >> > array and 1Gb/s ethernet.
+> >> > 
+> >> > The iozone command line was:
+> >> >   iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
+> >> > 
+> >> > The numbers in the nfsd's row represent the number of nfsd "threads".
+> >> > These numbers (in MB/s) represent the average of 5 runs.
+> >> > 
+> >> >                v2.6.29
+> >> > 
+> >> > nfsd's  |   1    |  2   |   4   |   8
+> >> > --------+---------------+-------+------
+> >> > deadline| 43207 | 67436 | 96289 | 107590
+> >> > 
+> >> >               2.6.30-rc1
+> >> > 
+> >> > nfsd's  |   1   |   2   |   4   |   8
+> >> > --------+---------------+-------+------
+> >> > deadline| 43732 | 68059 | 76659 | 83231
+> >> > 
+> >> >     2.6.30-rc3.block-for-linus
+> >> > 
+> >> > nfsd's  |   1   |   2   |   4   |   8
+> >> > --------+---------------+-------+------
+> >> > deadline| 46102 | 71151 | 83120 | 82330
+> >> > 
+> >> > 
+> >> > Notice the drop for 4 and 8 threads.  It may be worth noting that the
+> >> > default number of NFSD threads is 8.
+> >> > 
+> >> 
+> >> I guess we should ask Rafael to add this to the post-2.6.29 regression
+> >> list.
+> >
+> > I agree. It'd be nice to bisect this one down, I'm guessing some mm
+> > change has caused this writeout regression.
+> 
+> It's not writeout, it's a read test.
 
-I will regenerate the branch with the acks (and Joerg made some comments 
-which I'll address too).
+Doh sorry, I even ran these tests as well a few weeks back. So perhaps
+some read-ahead change, I didn't look into it. FWIW, on a single SATA
+drive here, it didn't show any difference.
 
-    J
+-- 
+Jens Axboe
+
