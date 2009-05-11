@@ -1,184 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbZEKKGa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758006AbZEKKLa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757194AbZEKKGa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 06:06:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbZEKKGV
+	id S1758006AbZEKKLa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 06:11:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756170AbZEKKLT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 06:06:21 -0400
-Received: from cmpxchg.org ([85.214.51.133]:50368 "EHLO cmpxchg.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755241AbZEKKGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 06:06:21 -0400
-Date: Mon, 11 May 2009 12:03:49 +0200
-From: Johannes Weiner <hannes@cmpxchg.org>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Rik van Riel <riel@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
-       tytso@mit.edu, linux-mm@kvack.org, elladan@eskimo.com, npiggin@suse.de,
-       cl@linux-foundation.org, minchan.kim@gmail.com
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class  citizen
-Message-ID: <20090511100349.GA5086@cmpxchg.org>
-References: <20090508125859.210a2a25.akpm@linux-foundation.org> <20090508230045.5346bd32@lxorguk.ukuu.org.uk> <2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com> <1241946446.6317.42.camel@laptop> <2f11576a0905100236u15d45f7fm32d470776659cfec@mail.gmail.com> <20090510144533.167010a9@lxorguk.ukuu.org.uk> <4A06EA08.1030102@redhat.com> <20090510211350.7aecc8de@lxorguk.ukuu.org.uk> <4A073B0D.4090604@redhat.com> <20090510142322.690186a4@infradead.org>
+	Mon, 11 May 2009 06:11:19 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:39106 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755918AbZEKKLS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 06:11:18 -0400
+Date: Mon, 11 May 2009 19:11:18 +0900 (JST)
+Message-Id: <20090511.191118.104045995.ryov@valinux.co.jp>
+To: riel@redhat.com
+Cc: vgoyal@redhat.com, akpm@linux-foundation.org, nauman@google.com,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       guijianfeng@cn.fujitsu.com, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, peterz@infradead.org
+Subject: Re: IO scheduler based IO Controller V2
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <4A0440B2.7040300@redhat.com>
+References: <20090506023332.GA1212@redhat.com>
+	<20090507.091858.226775723.ryov@valinux.co.jp>
+	<4A0440B2.7040300@redhat.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090510142322.690186a4@infradead.org>
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 10, 2009 at 02:23:22PM -0700, Arjan van de Ven wrote:
-> On Sun, 10 May 2009 16:37:33 -0400
-> Rik van Riel <riel@redhat.com> wrote:
-> 
-> > Alan Cox wrote:
-> > > Historically BSD tackled some of this by actually swapping
-> > > processes out once pressure got very high 
+Hi Rik,
+
+From: Rik van Riel <riel@redhat.com>
+Subject: Re: IO scheduler based IO Controller V2
+Date: Fri, 08 May 2009 10:24:50 -0400
+
+> Ryo Tsuruta wrote:
+> > Hi Vivek,
 > > 
-> > Our big problem today usually isn't throughput though,
-> > but latency - the time it takes to bring a previously
-> > inactive application back to life.
+> >> Ryo, dm-ioband breaks the notion of classes and priority of CFQ because
+> >> of FIFO dispatch of buffered bios. Apart from that it tries to provide
+> >> fairness in terms of actual IO done and that would mean a seeky workload
+> >> will can use disk for much longer to get equivalent IO done and slow down
+> >> other applications. Implementing IO controller at IO scheduler level gives
+> >> us tigher control. Will it not meet your requirements? If you got specific
+> >> concerns with IO scheduler based contol patches, please highlight these and
+> >> we will see how these can be addressed.
+> > I'd like to avoid making complicated existing IO schedulers and other
+> > kernel codes and to give a choice to users whether or not to use it.
+> > I know that you chose an approach that using compile time options to
+> > get the same behavior as old system, but device-mapper drivers can be
+> > added, removed and replaced while system is running.
 > 
-> Could we do a chain? E.g. store which page we paged out next (for the
-> vma) as part of the first pageout, and then page them just right back
-> in? Or even have a (bitmap?) of pages that have been in memory for the
-> vma, and on a re-fault, look for other pages "nearby" that used to be
-> in but are now out ?
+> I do not believe that every use of cgroups will end up with
+> a separate logical volume for each group.
+> 
+> In fact, if you look at group-per-UID usage, which could be
+> quite common on shared web servers and shell servers, I would
+> expect all the groups to share the same filesystem.
+> 
+> I do not believe dm-ioband would be useful in that configuration,
+> while the IO scheduler based IO controller will just work.
 
-I'm not sure I understand your chaining idea.
+dm-ioband can control bandwidth on a per cgroup basis as same as
+Vivek's IO controller. Could you explain what do you want to do and
+how to configure the IO scheduler based IO controller in that case?
 
-As to the virtually-related pages, I hacked up a clustering idea for
-swap-out once (and swap-in readahead should then get virtually related
-pages grouped together as well) but it didn't work out as expected.
-
-The LRU order is perhaps a better hint for access patterns than the
-relationship on a virtual address level, but at the moment we fail to
-keep the LRU order intact on swap so bets are off again...
-
-I have only black-box-benchmarked performance numbers and didn't look
-too close at it at the time, though.  If somebody wants to play with
-it, patch is attached.
-
-	Hannes
-
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 3b58602..ba11dee 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1020,6 +1020,101 @@ int isolate_lru_page(struct page *page)
- 	return ret;
- }
- 
-+static unsigned long cluster_inactive_anon_vma(struct vm_area_struct *vma,
-+					struct page *page,
-+					unsigned long *scanned,
-+					struct list_head *cluster)
-+{
-+	pte_t *pte;
-+	spinlock_t *ptl;
-+	unsigned long va, area, start, end, nr_taken = 0, nr_scanned = 0;
-+
-+	va = page_address_in_vma(page, vma);
-+	if (va == -EFAULT)
-+		return 0;
-+
-+	pte = page_check_address(page, vma->vm_mm, va, &ptl, 0);
-+	if (!pte)
-+		return 0;
-+	pte_unmap_unlock(pte, ptl);
-+
-+	area = page_cluster << PAGE_SHIFT;
-+	start = va - area;
-+	if (start < vma->vm_start)
-+		start = vma->vm_start;
-+	end = va + area;
-+	if (end > vma->vm_end)
-+		end = vma->vm_end;
-+
-+	for (va = start; va < end; va += PAGE_SIZE, nr_scanned++) {
-+		pgd_t *pgd;
-+		pud_t *pud;
-+		pmd_t *pmd;
-+		struct zone *zone;
-+		struct page *cursor;
-+
-+		pgd = pgd_offset(vma->vm_mm, va);
-+		if (!pgd_present(*pgd))
-+			continue;
-+		pud = pud_offset(pgd, va);
-+		if (!pud_present(*pud))
-+			continue;
-+		pmd = pmd_offset(pud, va);
-+		if (!pmd_present(*pmd))
-+			continue;
-+		pte = pte_offset_map_lock(vma->vm_mm, pmd, va, &ptl);
-+		if (!pte_present(*pte)) {
-+			pte_unmap_unlock(pte, ptl);
-+			continue;
-+		}
-+		cursor = vm_normal_page(vma, va, *pte);
-+		pte_unmap_unlock(pte, ptl);
-+
-+		if (!cursor || cursor == page)
-+			continue;
-+
-+		zone = page_zone(cursor);
-+		if (zone != page_zone(page))
-+			continue;
-+
-+		spin_lock_irq(&zone->lru_lock);
-+		if (!__isolate_lru_page(cursor, ISOLATE_INACTIVE, 0)) {
-+			list_move_tail(&cursor->lru, cluster);
-+			nr_taken++;
-+		}
-+		spin_unlock_irq(&zone->lru_lock);
-+	}
-+	*scanned += nr_scanned;
-+	return nr_taken;
-+}
-+
-+static unsigned long cluster_inactive_anon(struct list_head *list,
-+					unsigned long *scanned)
-+{
-+	LIST_HEAD(cluster);
-+	unsigned long nr_taken = 0, nr_scanned = 0;
-+
-+	while (!list_empty(list)) {
-+		struct page *page;
-+		struct anon_vma *anon_vma;
-+		struct vm_area_struct *vma;
-+
-+		page = list_entry(list->next, struct page, lru);
-+		list_move(&page->lru, &cluster);
-+
-+		anon_vma = page_lock_anon_vma(page);
-+		if (!anon_vma)
-+			continue;
-+		list_for_each_entry(vma, &anon_vma->head, anon_vma_node)
-+			nr_taken += cluster_inactive_anon_vma(vma, page,
-+							&nr_scanned, &cluster);
-+		page_unlock_anon_vma(anon_vma);
-+	}
-+	list_replace(&cluster, list);
-+	*scanned += nr_scanned;
-+	return nr_taken;
-+}
-+
- /*
-  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
-  * of reclaimed pages
-@@ -1061,6 +1156,11 @@ static unsigned long shrink_inactive_list(unsigned long max_scan,
- 		nr_taken = sc->isolate_pages(sc->swap_cluster_max,
- 			     &page_list, &nr_scan, sc->order, mode,
- 				zone, sc->mem_cgroup, 0, file);
-+		if (!file && mode == ISOLATE_INACTIVE) {
-+			spin_unlock_irq(&zone->lru_lock);
-+			nr_taken += cluster_inactive_anon(&page_list, &nr_scan);
-+			spin_lock_irq(&zone->lru_lock);
-+		}
- 		nr_active = clear_active_flags(&page_list, count);
- 		__count_vm_events(PGDEACTIVATE, nr_active);
- 
+Thanks,
+Ryo Tsuruta
