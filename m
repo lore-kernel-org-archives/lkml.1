@@ -1,89 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755094AbZEKIZ7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755371AbZEKI12@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755094AbZEKIZ7 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 04:25:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752936AbZEKIZu
+	id S1755371AbZEKI12 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 04:27:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754367AbZEKI1R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 04:25:50 -0400
-Received: from mtagate2.de.ibm.com ([195.212.17.162]:43893 "EHLO
-	mtagate2.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752315AbZEKIZt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 04:25:49 -0400
-Date: Mon, 11 May 2009 10:25:45 +0200
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Cc: akpm@linux-foundation.org, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, "Frank Ch. Eigler" <fche@redhat.com>,
-       Jason Baron <jbaron@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
-       fweisbec@gmail.com, laijs@cn.fujitsu.com, rostedt@goodmis.org,
-       peterz@infradead.org, jiayingz@google.com, roland@redhat.com,
-       mbligh@google.com, Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
-       Martin Schwidefsky <schwidefsky@de.ibm.com>
-Subject: Re: [RFC patch 14/20] LTTng Kernel Trace Thread Flag s390
-Message-ID: <20090511102545.3a6ae7cb@osiris.boeblingen.de.ibm.com>
-In-Reply-To: <20090509162350.477343212@polymtl.ca>
-References: <20090509162209.217414024@polymtl.ca>
-	<20090509162350.477343212@polymtl.ca>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 May 2009 04:27:17 -0400
+Received: from mta-2.ms.rz.RWTH-Aachen.DE ([134.130.7.73]:52334 "EHLO
+	mta-2.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752936AbZEKI1Q convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 04:27:16 -0400
+MIME-version: 1.0
+Content-type: text/plain; charset=iso-8859-1
+X-IronPort-AV: E=Sophos;i="4.40,327,1238968800";   d="scan'208";a="5596693"
+From: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
+To: linux-kernel@vger.kernel.org
+Subject: [RFC PATCH 0/4]: affinity-on-next-touch
+Date: Mon, 11 May 2009 10:27:18 +0200
+Organization: Chair for Operating Systems, RWTH Aachen University
+Message-id: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+Content-transfer-encoding: 8BIT
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-index: AcnSEkvdIkyzGZVNS2ubuWsjFIWUaA==
+Content-language: de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 09 May 2009 12:22:23 -0400
-Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca> wrote:
+Hello,
 
-> Add a thread flag to activate system-wide syscall tracing.
-> 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> ---
->  arch/s390/include/asm/thread_info.h |    2 ++
->  arch/s390/kernel/entry.S            |   10 ++++++++--
->  arch/s390/kernel/entry64.S          |   10 ++++++++--
->  3 files changed, 18 insertions(+), 4 deletions(-)
-> 
-> Index: linux-2.6-lttng/arch/s390/include/asm/thread_info.h
-> ===================================================================
-> --- linux-2.6-lttng.orig/arch/s390/include/asm/thread_info.h	2009-03-15 15:57:04.000000000 -0400
-> +++ linux-2.6-lttng/arch/s390/include/asm/thread_info.h	2009-03-15 15:57:17.000000000 -0400
-> @@ -90,6 +90,7 @@ static inline struct thread_info *curren
->  #define TIF_SYSCALL_AUDIT	5	/* syscall auditing active */
->  #define TIF_SINGLE_STEP		6	/* deliver sigtrap on return to user */
->  #define TIF_MCCK_PENDING	7	/* machine check handling is pending */
-> +#define TIF_KERNEL_TRACE	8	/* kernel trace active */
->  #define TIF_USEDFPU		16	/* FPU was used by this task this quantum (SMP) */
->  #define TIF_POLLING_NRFLAG	17	/* true if poll_idle() is polling 
->  					   TIF_NEED_RESCHED */
-> @@ -107,6 +108,7 @@ static inline struct thread_info *curren
->  #define _TIF_SYSCALL_AUDIT	(1<<TIF_SYSCALL_AUDIT)
->  #define _TIF_SINGLE_STEP	(1<<TIF_SINGLE_STEP)
->  #define _TIF_MCCK_PENDING	(1<<TIF_MCCK_PENDING)
-> +#define _TIF_KERNEL_TRACE	(1<<TIF_KERNEL_TRACE)
->  #define _TIF_USEDFPU		(1<<TIF_USEDFPU)
->  #define _TIF_POLLING_NRFLAG	(1<<TIF_POLLING_NRFLAG)
->  #define _TIF_31BIT		(1<<TIF_31BIT)
-> Index: linux-2.6-lttng/arch/s390/kernel/entry.S
-> ===================================================================
-> --- linux-2.6-lttng.orig/arch/s390/kernel/entry.S	2009-03-15 15:51:10.000000000 -0400
-> +++ linux-2.6-lttng/arch/s390/kernel/entry.S	2009-03-15 15:57:17.000000000 -0400
-> @@ -265,7 +265,9 @@ sysc_do_restart:
->  	sth	%r7,SP_SVCNR(%r15)
->  	sll	%r7,2		  # svc number *4
->  	l	%r8,BASED(.Lsysc_table)
-> -	tm	__TI_flags+3(%r9),(_TIF_SYSCALL_TRACE|_TIF_SYSCALL_AUDIT)
-> +	l	%r8,__TI_flags+3(%r9)
-> +	n	%r8,BASED(.Lc_tif_syscall_trace_or_audit_or_kernel_trace)
-> +	ltr	%r8,%r8
->  	l	%r8,0(%r7,%r8)	  # get system call addr.
->  	bnz	BASED(sysc_tracesys)
+I wrote a patch to support the adaptive data distribution strategy
+"affinity-on-next-touch" for NUMA architectures. The patch is in an early
+state and I am interested in your comments.
 
-That would be two more instructions (ltr is not needed) and an
-additional memory access instead of just one for the fast path just
-for debugging purposes.
-All this can be avoided if the TIF flags would be rearranged. And
-that's exactly what I already did because I needed it for something
-else.
-Please have a look at linux-next.
+The basic idea of "affinity-on-next-touch" is this: Via some runtime
+mechanism, a user-level process activates "affinity-on-next-touch" for a
+certain region of its virtual memory space. Afterwards, each page in this
+region will be migrated to that node which next tries to access it.
+Noordergraaf and van der Pas [1] have proposed to extend the OpenMP standard
+to support this strategy. Since version 9, the “affinity-on-next-touch”
+mechanism is available in Solaris and can be triggered via the madvise
+system call. Löf and Homgren [2] and Terboven et al. [3] have described
+their encouraging experiences with this implementation.
+
+Linux does not yet support "affinity-on-next-touch". Terboven et al. [3]
+have presented a user-level implementation of this strategy for Linux. To
+realize "affinity-on-next-touch" in user space, they protect a specific
+memory area from read and write accesses and install a signal handler to
+catch access violations. If a thread accesses a page in the protected memory
+area, the signal handler migrates the page to the node which handled the
+access violation. Afterwards, the signal handler clears the page protection
+and the interrupted thread is resumed. 
+
+Unfortunately, the overhead of this solution is very high. For instance, to
+distribute 512 MByte via "affinity-on-next-touch" the user-level solution
+needs 2518ms on our dual-socket, quad-core Opteron 2376 system with the
+current kernel (2.6.30-rc4). I evaluated this overhead with the following
+OpenMP code:
+
+   madvise(array, sizeof(int) * SIZE, MADV_ACCESS_LWP);
+   start = omp_get_wtime();
+   #pragma omp parallel for
+   for (j = 0; j < SIZE; j += pagesize/sizeof(int))
+      array[j]++;
+   end = omp_get_wtime();
+   printf("time: %lf ms\n", (end - start) * 1000.0);
+
+The benchmark uses 8 threads and each thread is bound to one core.
+
+I divide my patch into the following 4 parts:
+
+[Patch 1/4]: Extend the system call madvise with a new parameter
+MADV_ACCESS_LWP (the same as used in Solaris). The specified memory area
+then uses "affinity-on-next-touch".  In this case, madvise_access_lwp
+protects the memory area from read and write access. To avoid unnecessary
+list operations, the patch changes the permissions only in the page table
+entries and does not update the list of VMAs. Beside this, the system call
+madvise set also the new “untouched bit” of the "page" record.
+
+[Patch 2/4]: The pte fault handler detects, via a new "untouched bit" inside
+of the "page" record, that the page which the thread tried to access uses
+“affinity-on-next-touch”. Afterwards, the kernel reads the original
+permissions from vm_area_struct, restores them in the page tables and
+migrates the page to the current node. To accelerate page migration, the
+patch avoids unnecessary calls to migrate_prep().
+
+[Patch 3/4]: If the "untouched" bit is set, mprotect isn’t permitted to
+change the permission in the page table entry. By using of
+"affinity-on-next-touch", the access permission will be set by the pte fault
+handler.
+
+[Patch 4/4]: This part of the patch adds some counters to detect migration
+errors and publishes these counters via /proc/vmstat. Besides this, the
+Kconfig file is extend with the parameter CONFIG_AFFINITY_ON_NEXT_TOUCH.
+
+With this patch, the kernel reduces the overhead of page distribution via
+"affinity-on-next-touch" from 2518ms to 366ms compared to the user-level
+approach. Currently, I'm evaluating the performance of the patch with some
+other benchmarks and test applications (stream benchmark, Jacobi solver, PDE
+solver,...).
+
+I am very interested in your comments!
+
+Stefan
+
+[1] Noordergraaf, L., van der Pas, R.: Performance Experiences on Suns
+WildFire Prototype. In: Proceedings of the 1999 ACM/IEEE conference on
+Supercomputing,Portland, Oregon, USA (November 1999)
+
+[2] Löf, H., Holmgren, S.: affinity-on-next-touch: Increasing the
+Performance of an Industrial PDE Solver on a cc-NUMA System. In: Proceedings
+of the 19th Annual International Conference on Supercomputing, Cambridge,
+Massachusetts, USA (June 2005) 387–392
+
+[3]. Terboven, C., an Mey, D., Schmidl, D., Jin, H., Reichstein, T.: Data
+and Thread Affinity in OpenMP Programs. In: Proceedings of the 2008 Workshop
+on Memory Access on future Processors: A solved problem?, ACM International
+Conference on Computing Frontiers, Ischia, Italy (May 2008) 377–384
+
+
+
