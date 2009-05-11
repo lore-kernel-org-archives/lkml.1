@@ -1,39 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759587AbZEKVRO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759675AbZEKVSS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759587AbZEKVRO (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 17:17:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757986AbZEKVQ4
+	id S1759675AbZEKVSS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 17:18:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754245AbZEKVSD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 17:16:56 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:40474 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755786AbZEKVQz (ORCPT
+	Mon, 11 May 2009 17:18:03 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:40427 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752739AbZEKVSC (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 17:16:55 -0400
-To: lkml@MoreThan.org
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Disable generation of sse3 instructions in kernel build.
-From: Andi Kleen <andi@firstfloor.org>
-References: <200905091903.25745.lkml@morethan.org>
-Date: Mon, 11 May 2009 23:16:49 +0200
-In-Reply-To: <200905091903.25745.lkml@morethan.org> (Michael S. Zick's message of "Sat, 9 May 2009 19:03:22 -0500")
-Message-ID: <87skjbmjb2.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Mon, 11 May 2009 17:18:02 -0400
+Date: Mon, 11 May 2009 14:11:38 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+Cc: gregkh@suse.de, npiggin@suse.de, mel@csn.ul.ie, a.p.ziljstra@chello.nl,
+       cl@linux-foundation.org, dave@linux.vnet.ibm.com, san@android.com,
+       arve@android.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 05/11 -mmotm] oom: fix possible oom_dump_tasks NULL
+ pointer
+Message-Id: <20090511141138.3e8118ab.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.0905101501050.18804@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.0905101501050.18804@chino.kir.corp.google.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Michael S. Zick" <lkml@morethan.org> writes:
+On Sun, 10 May 2009 15:07:16 -0700 (PDT)
+David Rientjes <rientjes@google.com> wrote:
 
-> Ref: 2.6.30-rcX
-> The option to disable sse3 instructions needs to be added to build system for x86.
-> Otherwise strange and mysterious things happen (tm).
+> When /proc/sys/vm/oom_dump_tasks is enabled, it is possible to get a NULL
+> pointer for tasks that have detached mm's since task_lock() is not held
+> during the tasklist scan.
 
-Can you please expand a little bit? With what compiler version did you
-see problems? And in what area did they happen?
+ok.  But a better changelog would have told us how the patch fixes the
+problem?
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+
+This patch series is partially core MM and partially drivers/staging. 
+I don't normally handle staging things, so I'd need to be cherrypicking
+from this lot.  Is there any interdependency between the two things?
+
+
