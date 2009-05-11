@@ -1,70 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759267AbZEKUKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759190AbZEKUMH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759267AbZEKUKz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 16:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbZEKUKq
+	id S1759190AbZEKUMH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 16:12:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757810AbZEKULy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 16:10:46 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:62686 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754204AbZEKUKp (ORCPT
+	Mon, 11 May 2009 16:11:54 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:34995 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755711AbZEKULx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 16:10:45 -0400
-Message-ID: <4A088640.2030701@vlnb.net>
-Date: Tue, 12 May 2009 00:10:40 +0400
-From: Vladislav Bolkhovitin <vst@vlnb.net>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 11 May 2009 16:11:53 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=og5RHKOSrnZEJBjpcvC3izS2Va1YPCw2Fn4tuGBQhfr+t/GaV5yvKuFwSsaA89O/M
+	a2eMjeXJbx7NPyBvo70eQ==
+Date: Mon, 11 May 2009 13:11:45 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+cc: Andrew Morton <akpm@linux-foundation.org>, fengguang.wu@intel.com,
+       linux-pm@lists.linux-foundation.org, pavel@ucw.cz,
+       Linus Torvalds <torvalds@linux-foundation.org>, jens.axboe@oracle.com,
+       alan-jenkins@tuffmail.co.uk, linux-kernel@vger.kernel.org,
+       kernel-testers@vger.kernel.org, Mel Gorman <mel@csn.ul.ie>
+Subject: Re: [PATCH 1/5] mm: Add __GFP_NO_OOM_KILL flag
+In-Reply-To: <200905100103.23815.rjw@sisk.pl>
+Message-ID: <alpine.DEB.2.00.0905111249170.23739@chino.kir.corp.google.com>
+References: <nY3-4PrO6XH.A.xtB.yw85JB@chimera> <200905092337.39906.rjw@sisk.pl> <alpine.DEB.2.00.0905091536250.6272@chino.kir.corp.google.com> <200905100103.23815.rjw@sisk.pl>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Pavel Machek <pavel@ucw.cz>
-CC: Shannon McMackin <smcmackin@gmail.com>, linux-kernel@vger.kernel.org,
-       tuxonice-devel@lists.tuxonice.net
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <20090507120948.GA1531@ucw.cz> <200905080037.19722@centrum.cz> <gu017d$g2s$1@ger.gmane.org> <20090510053820.GF1363@ucw.cz>
-In-Reply-To: <20090510053820.GF1363@ucw.cz>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Provags-ID: V01U2FsdGVkX18Ud62Aky/kDkxFaC4JCAO+5egUHm8JCZaAYyl
- +td1wNI+CPLM2FdcP939DNevhq61nK3eR+MVV0lLT9JP7J1JmP
- KaOh3qjujX/Wk+UV5cpHA==
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, 10 May 2009, Rafael J. Wysocki wrote:
 
-Pavel Machek, on 05/10/2009 09:38 AM wrote:
-> Hi!
+> > All order 0 allocations are implicitly __GFP_NOFAIL and will loop 
+> > endlessly unless they can't block.  So if you want to simply prohibit the 
+> > oom killer from being invoked and not change the retry behavior, setting 
+> > ZONE_OOM_LOCKED for all zones will do that.  If your machine hangs, it 
+> > means nothing can be reclaimed and you can't free memory via oom killing, 
+> > so there's nothing else the page allocator can do.
 > 
->>>> To summarise disadvantages:
->>>>
->>>> - only core has 8000 LoC
->>>> - it does stuff that can be easily done in userspace
->>>>     (and that todays distros _do_ in userspace).
->>>> - it duplicates uswsusp functionality.
->>>> - compared to [u]swsusp, it received little testing
->>>>
->>> To summarise advatages - for me tuxonice is the only hibernation method that works.
->>> (Till now I've had 3 machines - no one of them able to resume with in-kernel swsusp.)
->>>
->> Just to add my 2 cents as a user of TOI.  Every distro and release I've  
->> tried has one major issue with kernel hibernation.  Upon resume when  
->> hibernating large images, there's a residual footprint in swap.  Every  
->> further hibernation creates a larger footprint, to the order of an  
->> additional 5-7% each time.  Nobody has ever cared in any forum to  
->> explain why or how I might change that.
+> But I want it to give up in this case instead of looping forever.
 > 
-> Maybe you should explain why it is a 'major issue'?
+> Look.  I have a specific problem at hand that I want to solve and the approach
+> you suggested _clearly_ _doesn't_ _work_.  I have also tried to explain to you
+> why it doesn't work, but you're ingnoring it, so I really don't know what else
+> I can say.
 > 
-> (Use swapoff -a; swapon -a to 'cure' it).
+> OTOH, the approach suggested by Andrew _does_ _work_ regardless of your
+> opinion about it.  It's been tested and it's done the job 100% of the time.  Go
+> figure.  And please stop beating the dead horse.
+> 
 
-Great advice if you have used memory > physical memory!
+Which implementation are you talking about?  You've had several:
 
-Just run two firefox's and thunderbird and you will get that pretty quickly:
+	http://marc.info/?l=linux-kernel&m=124121728429113
+	http://marc.info/?l=linux-kernel&m=124131049223733
+	http://marc.info/?l=linux-kernel&m=124165031723627
+	http://marc.info/?l=linux-kernel&m=124146681311494
 
-# free
-              total       used       free     shared    buffers     cached
-Mem:       2060560    2040656      19904          0      31452     360580
-Swap:      5358296    1475504    3882792
+The issue with your approach is that it doesn't address the problem; the 
+problem is _not_ specific to individual page allocations it is specific to 
+the STATE OF THE MACHINE.
 
+If all userspace tasks are uninterruptible when trying to reserve this 
+memory and, thus, oom killing is negligent and not going to help, that 
+needs to be addressed in the page allocator.  It is a bug for the 
+allocator to continuously retry the allocation unless __GFP_NOFAIL is set 
+if oom killing will not free memory.
 
+Adding a new __GFP_NO_OOM_KILL flag to address that isn't helpful since it 
+has nothing at all to do with the specific allocation.  It may certainly 
+be the easiest way to implement your patchset without doing VM work, but 
+it's not going to fix the problem for others.
 
-> 								Pavel
+I just posted a patch series[*] that would fix this problem for you 
+without even locking out the oom killer or adding any unnecessary gfp 
+flags.  It is based on mmotm since it has Mel's page allocator speedups.  
+Any change you do to the allocator at this point should be based on that 
+to avoid nasty merge conflicts later, so try my series out and see how it 
+works.
+
+Now, I won't engage in your personal attacks because (i) nobody else 
+cares, and (ii) it's not going to be productive.  I'll let my code do the 
+talking.
+
+ [*] http://lkml.org/lkml/2009/5/10/118
