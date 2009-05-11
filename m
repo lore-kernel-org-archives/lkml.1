@@ -1,73 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbZEKJlU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757831AbZEKJoY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757194AbZEKJlU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 05:41:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756443AbZEKJlF
+	id S1757831AbZEKJoY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 05:44:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753805AbZEKJoP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 05:41:05 -0400
-Received: from rv-out-0506.google.com ([209.85.198.235]:14795 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756438AbZEKJlE (ORCPT
+	Mon, 11 May 2009 05:44:15 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:41590 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751478AbZEKJoO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 05:41:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=VWSrfZa3VRa98vJGJKp+9Fu4LwWiiMerBsYm9AE5QsMMlDFWIeUTzPpWyrwv/hZltq
-         y0sK5aXydef93qDUzXGqi61GQIFbzkFrBY7jMGlQ/p4bQcsnYR1/KjKJ9hwXsy69Vtzh
-         yTOKNCkxjzbIZ2reYfts5YhqtIxtI72y+EdTM=
-Date: Mon, 11 May 2009 13:40:57 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ed Swierk <eswierk@aristanetworks.com>
-Subject: Re: [PATCH] x86: read apic id if it is not acpi_lapic -v2
-Message-ID: <20090511094056.GB4624@lenovo>
-References: <20090430084145.GD21699@elte.hu> <49FBD0A2.4030309@kernel.org> <20090502070254.GA4791@lenovo> <49FC85A9.2070702@kernel.org> <20090511092655.GC26444@elte.hu>
+	Mon, 11 May 2009 05:44:14 -0400
+Date: Mon, 11 May 2009 05:44:12 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Jack Stone <jwjstone@fastmail.fm>
+Cc: torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [RFC] Regression testing framework for the kernel
+Message-ID: <20090511094412.GA3665@infradead.org>
+References: <1241125556.12894.1313160577@webmail.messagingengine.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090511092655.GC26444@elte.hu>
+In-Reply-To: <1241125556.12894.1313160577@webmail.messagingengine.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Mon, May 11, 2009 at 11:26:55AM +0200]
-| 
-| * Yinghai Lu <yinghai@kernel.org> wrote:
-| 
-| > @@ -1590,21 +1591,32 @@ void __init init_apic_mappings(void)
-| >  	} else
-| >  		apic_phys = mp_lapic_addr;
-| >  
-| > -	set_fixmap_nocache(FIX_APIC_BASE, apic_phys);
-| > +	/* lets check if we may to NOP'ify apic operations */
-| > +	if (!cpu_has_apic) {
-| > +		pr_info("APIC: disable apic facility\n");
-| > +		apic_disable();
-| > +		return;
-| > +	}
-| > +
-| > +	/*
-| > +	 * acpi lapic path already map that address in
-| > +	 * acpi_register_lapic_address()
-| > +	 */
-| >  	apic_printk(APIC_VERBOSE, "mapped APIC to %08lx (%08lx)\n",
-| >  				APIC_BASE, apic_phys);
-| > +	if (acpi_lapic)
-| > +		return;
-| 
-| why do we return here? We should sanity-check the APIC ID even if we 
-| come from ACPI.
-| 
-| 	Ingo
-| 
+On Thu, Apr 30, 2009 at 11:05:56PM +0200, Jack Stone wrote:
+> Hi All,
+> 
+> I would like to suggest a new framework to test the kernel. This
+> framework would have the following goals:
+>     * Only runs at build time and has no effect on running kernel
 
-I believe we already have it checked in acpi_register_lapic_address
-so no need to do it twice. Or I miss something?
+I don't think we should ever run tests at build time unconditionally.
+If we want to integrate it with make it should at least be a separate
+make check.
 
-	-- Cyrill
+> The best way of acheiving this that I have thought of it to compile the
+> kernel source in question and
+> to link it with special framework files. These files would serve two
+> purposes: to provide the main function
+> of the program and to provide the missing symbols for the kernel code.
+> This would allow the replacement of
+> certain functions in the code. For example replacing the spin_lock and
+> spin_unlock functions would allow the
+> locking behavior to be checked.
+
+That's going to be a lot of stubs if we want to have a wide coverage.
+Then again people are alredy doing this in various places, either with
+the code in-tree but not easily buildable or out of tree, so having
+all this in a common place and a common test driver would be a defintive
+improvement.  The right approach would probably be to add stubs on a
+as-needed basis instead of trying to provide full coverage.
+
+> Usage examples:
+>     * Test the behavior of a device driver
+>          As various kernel functions can be overridden a test case could
+>          be written to simulate a given device and
+>          check that there are no regressions in the driver
+
+Not sure that is a good use.  If we want to emulate hardware I think
+we're better of using qemu for it and run a normal kernel under it.
+
+>     * Regression testing
+>          Any time a regression is found and fixed in the kernel a test
+>          case could be written to check that the
+>          regression does not reoccur later on.
+
+I think that is the primary use case. Regresion-tests for library-ish
+code that doesn't require much global state.
+
