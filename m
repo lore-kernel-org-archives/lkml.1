@@ -1,60 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757948AbZEKPMX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758045AbZEKPMi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757948AbZEKPMX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 11:12:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbZEKPMM
+	id S1758045AbZEKPMi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 11:12:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbZEKPM1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 11:12:12 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:50801 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752650AbZEKPMK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 11:12:10 -0400
-Date: Mon, 11 May 2009 17:11:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Ian Campbell <Ian.Campbell@eu.citrix.com>
-Cc: "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
-       "linux-tip-commits@vger.kernel.org" 
-	<linux-tip-commits@vger.kernel.org>
-Subject: Re: [tip:x86/xen] x86: use flush_tlb_others to implement
-	flush_tlb_all, fix
-Message-ID: <20090511151151.GA3267@elte.hu>
-References: <1241797927.15972.51.camel@zakaz.uk.xensource.com> <tip-636afdbe85d50d9b88f5283b5e6d0f8518431aac@git.kernel.org> <20090511131230.GA32693@elte.hu> <1242054041.29990.88.camel@zakaz.uk.xensource.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1242054041.29990.88.camel@zakaz.uk.xensource.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 11 May 2009 11:12:27 -0400
+Received: from viefep14-int.chello.at ([62.179.121.34]:61976 "EHLO
+	viefep14-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758026AbZEKPM0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 11:12:26 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH 3/5] perf_counter: rework ioctl()s
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <18951.32643.749495.538351@drongo.ozlabs.ibm.com>
+References: <20090508165219.469818319@chello.nl>
+	 <20090508170028.837558214@chello.nl>
+	 <18951.32643.749495.538351@drongo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Mon, 11 May 2009 17:12:21 +0200
+Message-Id: <1242054741.11251.279.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 2009-05-11 at 11:29 +1000, Paul Mackerras wrote:
+> Peter Zijlstra writes:
+> 
+> > Corey noticed that ioctl()s on grouped counters didn't work on the whole group.
+> > This extends the ioctl() interface to take a second argument that is
+> > interpreted as a flags field. We then provide PERF_IOC_FLAG_GROUP to toggle
+> > the behaviour.
+> > 
+> > Having this flag gives the greatest flexibility, allowing you to individually
+> > enable/disable/reset counters in a group, or all together.
+> 
+> As far as enable/disable are concerned, I don't think this is really
+> necessary.  My intention was that if you want to enable/disable a
+> whole group you just enable/disable the leader and leave all its
+> siblings enabled, since if the leader is disabled the whole group
+> can't go on.
+> 
+> Corey's problem was that we have a bug where enabling the leader only
+> puts the leader on and not the enabled group members.  I meant to send
+> a patch to fix that ages ago but I got distracted.  I'll send out the
+> patch shortly.
 
-* Ian Campbell <Ian.Campbell@eu.citrix.com> wrote:
+Thanks, I missed that little detail.
 
-> --- a/arch/x86/kernel/setup.c
-> +++ b/arch/x86/kernel/setup.c
-> @@ -985,6 +985,8 @@ void __init setup_arch(char **cmdline_p)
->  
->  	e820_setup_gap();
->  
-> +	init_smp_flush();
-> +
+Do we still want the new ioctl iteration flag?
 
-please test patches better:
-
-arch/x86/kernel/setup.c:1006: error: implicit declaration of function ‘init_smp_flush’
-
-	Ingo
