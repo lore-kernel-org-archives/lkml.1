@@ -1,69 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758051AbZEKUJW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759282AbZEKUJj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758051AbZEKUJW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 16:09:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZEKUJN
+	id S1759282AbZEKUJj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 16:09:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZEKUJ2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 16:09:13 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:60823 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752838AbZEKUJM convert rfc822-to-8bit (ORCPT
+	Mon, 11 May 2009 16:09:28 -0400
+Received: from av-gw2.cc.tut.fi ([130.230.130.111]:39676 "EHLO
+	av-gw2.cc.tut.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755697AbZEKUJ1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 16:09:12 -0400
+	Mon, 11 May 2009 16:09:27 -0400
+X-Greylist: delayed 12369 seconds by postgrey-1.27 at vger.kernel.org; Mon, 11 May 2009 16:09:27 EDT
+X-AuditID: 82e6826f-a8d93bb0000003e2-df-4a087fd61504 
+Message-ID: <4A0855A5.8040109@tut.fi>
+Date: Mon, 11 May 2009 19:43:17 +0300
+From: Janne Kulmala <janne.t.kulmala@tut.fi>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <1241804120.4843.7.camel@dyn9002018117.watson.ibm.com>
-References: <1240943534.4143.55.camel@dyn9002018117.watson.ibm.com>
-	 <20090429141837.beaa5d59.akpm@linux-foundation.org>
-	 <1241804120.4843.7.camel@dyn9002018117.watson.ibm.com>
-Date: Mon, 11 May 2009 16:09:12 -0400
-Message-ID: <7e0fb38c0905111309s38bb5031q3661cb16203e402b@mail.gmail.com>
-Subject: Re: integrity: nfsd imbalance bug fix
-From: Eric Paris <eparis@parisplace.org>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       hooanon05@yahoo.co.jp, jmorris@namei.org, safford@watson.ibm.com,
-       "J. Bruce Fields" <bfields@fieldses.org>, linux-nfs@vger.kernel.org,
-       Eric Paris <eparis@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Thomas Gleixner <tglx@linutronix.de>
+CC: Frans Pop <elendil@planet.nl>, linux-kernel@vger.kernel.org,
+       Steven Rostedt <rostedt@goodmis.org>, len.brown@intel.com,
+       mingo@elte.hu, johnstul@us.ibm.com
+Subject: Re: [PATCH] ACPI: do not mark TSC unstable for invalid C-states
+References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com> <200905110226.50115.elendil@planet.nl> <alpine.LFD.2.00.0905111614570.3561@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0905111614570.3561@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Brightmail-Tracker: AAAAAA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 8, 2009 at 1:35 PM, Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
-> On Wed, 2009-04-29 at 14:18 -0700, Andrew Morton wrote:
->> On Tue, 28 Apr 2009 14:32:14 -0400
->> Mimi Zohar <zohar@linux.vnet.ibm.com> wrote:
+Thomas Gleixner wrote:
+> commit a71e4917dc0ebbcb5a0ecb7ca3486643c1c9a6e2 (ACPI: idle:
+> mark_tsc_unstable() at init-time, not run-time) marks TSC unstable
+> even on non affected systems.
+> 
+> The reason is that the state enumeration does not check the cx->valid
+> flag before calling tsc_halts_in_c(), so it marks TSC unstable for any
+> enumerated albeit invalid C state which is known to turn off TSC.
+> 
+> Check cx->valid before checking whether the TSC might become unstable.
+> 
+> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+> ---
+>  drivers/acpi/processor_idle.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6/drivers/acpi/processor_idle.c
+> ===================================================================
+> --- linux-2.6.orig/drivers/acpi/processor_idle.c
+> +++ linux-2.6/drivers/acpi/processor_idle.c
+> @@ -583,7 +583,7 @@ static int acpi_processor_power_verify(s
+>  
+>  #if defined (CONFIG_GENERIC_TIME) && defined (CONFIG_X86)
+>  		/* TSC could halt in idle, so notify users */
+> -		if (tsc_halts_in_c(cx->type))
+> +		if (cx->valid && tsc_halts_in_c(cx->type))
+>  			mark_tsc_unstable("TSC halts in idle");;
 
->> > Index: security-testing-2.6/mm/shmem.c
->> > ===================================================================
->> > --- security-testing-2.6.orig/mm/shmem.c
->> > +++ security-testing-2.6/mm/shmem.c
->> > @@ -2680,7 +2680,7 @@ int shmem_zero_setup(struct vm_area_stru
->> >     if (IS_ERR(file))
->> >             return PTR_ERR(file);
->> >
->> > -   ima_shm_check(file);
->> > +   ima_opencount_get(file);
->> >     if (vma->vm_file)
->> >             fput(vma->vm_file);
->> >     vma->vm_file = file;
->>
->> Maybe do the IMA operations in (or under) shmem_file_setup() and
->> hugetlb_file_setup()?
->
-> Again, that would hide the real issue of not having done integrity
-> (permission) checking.
+Small suggestion: can we fix the double ';' here at the same time?
 
-Where are we doing integrity or permission checks on hugetlb or shm
-files?   Andrew's right, another example of this problem would be
-drivers/gpu/drm/drm_gem.c::drm_get_object_alloc() (at least in
-linux-next) which uses shmem_file_setup().  If we aren't doing
-integrity checks on shmem already, why do we care about kernel vs.
-non-kernel users?
+>  #endif
+>  		switch (cx->type) {
+> 
+> 
 
-moving the ima_opencount_get() from newseg down a layer into
-*_file_setup() would, I think, have taken care of the drm case as
-well.....
-
--Eric
+Janne
