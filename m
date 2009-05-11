@@ -1,48 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756144AbZEKPDm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757301AbZEKPD5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756144AbZEKPDm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 11:03:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbZEKPDL
+	id S1757301AbZEKPD5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 11:03:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757221AbZEKPDm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 11:03:11 -0400
-Received: from cpsmtpm-eml102.kpnxchange.com ([195.121.3.6]:62917 "EHLO
-	CPSMTPM-EML102.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753070AbZEKPDJ (ORCPT
+	Mon, 11 May 2009 11:03:42 -0400
+Received: from viefep19-int.chello.at ([62.179.121.39]:25505 "EHLO
+	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757232AbZEKPDk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 11:03:09 -0400
-From: Frans Pop <elendil@planet.nl>
-To: Thomas Gleixner <tglx@linutronix.de>
-Subject: Re: [PATCH] ACPI: do not mark TSC unstable for invalid C-states
-Date: Mon, 11 May 2009 17:03:07 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
-       len.brown@intel.com, mingo@elte.hu, johnstul@us.ibm.com
-References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com> <200905110226.50115.elendil@planet.nl> <alpine.LFD.2.00.0905111614570.3561@localhost.localdomain>
-In-Reply-To: <alpine.LFD.2.00.0905111614570.3561@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Mon, 11 May 2009 11:03:40 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH][KVM][retry 1] Add support for Pause Filtering to AMD
+ SVM
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Avi Kivity <avi@redhat.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Mark Langsdorf <mark.langsdorf@amd.com>,
+       Joerg Roedel <joerg.roedel@amd.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4A083B69.6010702@redhat.com>
+References: <200905050909.58583.mark.langsdorf@amd.com>
+	 <20090507135522.GJ4059@amd.com> <200905071000.14038.mark.langsdorf@amd.com>
+	 <4A02FECC.6060609@redhat.com> <20090511141503.GC6175@elte.hu>
+	 <4A083539.407@redhat.com> <20090511143320.GE6175@elte.hu>
+	 <4A083B69.6010702@redhat.com>
+Content-Type: text/plain
+Date: Mon, 11 May 2009 17:01:49 +0200
+Message-Id: <1242054109.11251.276.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905111703.08645.elendil@planet.nl>
-X-OriginalArrivalTime: 11 May 2009 15:03:09.0185 (UTC) FILETIME=[98A02F10:01C9D249]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 11 May 2009, Thomas Gleixner wrote:
-> commit a71e4917dc0ebbcb5a0ecb7ca3486643c1c9a6e2 (ACPI: idle:
-> mark_tsc_unstable() at init-time, not run-time) marks TSC unstable
-> even on non affected systems.
->
-> The reason is that the state enumeration does not check the cx->valid
-> flag before calling tsc_halts_in_c(), so it marks TSC unstable for any
-> enumerated albeit invalid C state which is known to turn off TSC.
->
-> Check cx->valid before checking whether the TSC might become unstable.
->
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+On Mon, 2009-05-11 at 17:51 +0300, Avi Kivity wrote:
+> Ingo Molnar wrote:
+> > * Avi Kivity <avi@redhat.com> wrote:
+> >
+> >   
+> >>> I.e. this is a somewhat poor solution as far as scheduling goes. 
+> >>> But i'm wondering what the CPU side does. Can REP-NOP really take 
+> >>> thousands of cycles? If yes, under what circumstances?
+> >>>       
+> >> The guest is running rep-nop in a loop while trying to acquire a 
+> >> spinlock.  The hardware detects this (most likely, repeated 
+> >> rep-nop with the same rip) and exits.  We can program the loop 
+> >> count; obviously if we're spinning for only a short while it's 
+> >> better to keep spinning while hoping the lock will be released 
+> >> soon.
+> >>
+> >> The idea is to detect that the guest is not making forward 
+> >> progress and yield.  If I could tell the scheduler, you may charge 
+> >> me a couple of milliseconds, I promise not to sue, that would be 
+> >> ideal. [...]
+> >>     
+> >
+> > Ok, with such a waiver, who could refuse?
+> >
+> > This really needs a new kernel-internal scheduler API though, which 
+> > does a lot of fancy things to do:
+> >
+> >         se->vruntime += 1000000;
+> >
+> > i.e. add 1 msec worth of nanoseconds to the task's timeline. (first 
+> > remove it from the rbtree, then add it back, and nice-weight it as 
+> > well) 
+> 
+> I suspected it would be as simple as this.
 
-Tested-by: Frans Pop <elendil@planet.nl>
+Is that thread guaranteed to run as SCHED_OTHER?
 
-Thanks Thomas.
