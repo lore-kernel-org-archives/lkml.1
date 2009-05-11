@@ -1,117 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759748AbZEKXyi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757321AbZEKX7U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759748AbZEKXyi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 19:54:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758351AbZEKXyZ
+	id S1757321AbZEKX7U (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 19:59:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752696AbZEKX7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 19:54:25 -0400
-Received: from sh.osrg.net ([192.16.179.4]:33464 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752445AbZEKXyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 19:54:24 -0400
-Date: Tue, 12 May 2009 08:47:46 +0900
-To: James.Bottomley@HansenPartnership.com
-Cc: fujita.tomonori@lab.ntt.co.jp, tj@kernel.org, bharrosh@panasas.com,
-       axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
-       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
-       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
-       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
-       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
-       dgilbert@interlog.com, djwong@us.ibm.com
-Subject: Re: [PATCH 03/11] block: add rq->resid_len
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <1242054809.3338.30.camel@mulgrave.int.hansenpartnership.com>
-References: <1242051500.3338.9.camel@mulgrave.int.hansenpartnership.com>
-	<20090512000249E.fujita.tomonori@lab.ntt.co.jp>
-	<1242054809.3338.30.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090512084808P.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 12 May 2009 08:47:56 +0900 (JST)
+	Mon, 11 May 2009 19:59:08 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:54365 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752097AbZEKX7H convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 19:59:07 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH 3/5] perf_counter: rework ioctl()s
+Date: Tue, 12 May 2009 01:58:45 +0200
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+References: <20090508165219.469818319@chello.nl> <20090508170028.837558214@chello.nl>
+In-Reply-To: <20090508170028.837558214@chello.nl>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200905120158.46314.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18YWwqDp1zYhnuMrSqtZdS+XfnpJjzCwqbEz4K
+ jD+XELt6Tg8tOARnt35dawJHE/QA11sbKdFrOeYdCLJuly0VT8
+ OmBhEUXS5uNDzXBzf7+kA==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009 10:13:29 -0500
-James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+On Friday 08 May 2009, Peter Zijlstra wrote:
+> -#define PERF_COUNTER_IOC_ENABLE                _IO ('$', 0)
+> -#define PERF_COUNTER_IOC_DISABLE       _IO ('$', 1)
+> +#define PERF_COUNTER_IOC_ENABLE                _IOW('$', 0, u32)
+> +#define PERF_COUNTER_IOC_DISABLE       _IOW('$', 1, u32)
+>  #define PERF_COUNTER_IOC_REFRESH       _IOW('$', 2, u32)
+> -#define PERF_COUNTER_IOC_RESET         _IO ('$', 3)
+> +#define PERF_COUNTER_IOC_RESET         _IOW('$', 3, u32)
 
-> On Mon, 2009-05-11 at 08:03 -0700, FUJITA Tomonori wrote:
-> > On Mon, 11 May 2009 09:18:20 -0500
-> > James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
-> > 
-> > > On Mon, 2009-05-11 at 14:49 +0900, FUJITA Tomonori wrote:
-> > > > On Mon, 11 May 2009 08:48:53 +0900
-> > > > Tejun Heo <tj@kernel.org> wrote:
-> > > > 
-> > > > > Hello, Boaz.
-> > > > > 
-> > > > > Boaz Harrosh wrote:
-> > > > > 
-> > > > > > Hi Tejun, I've carefully reviewed these files which I know more
-> > > > > > about.  The drivers/block files I've skipped, since I'm not familiar
-> > > > > > with this code.
-> > > > > > 
-> > > > > > Except a small fallout, it looks very good. See some comments plus
-> > > > > > Ack/review below
-> > > > > 
-> > > > > Thanks a lot for reviewing it closely.  It's really nice to have
-> > > > > careful extra pair of eyes on the changes.  :-)
-> > > > > 
-> > > > > >> --- a/drivers/message/fusion/mptsas.c
-> > > > > >> +++ b/drivers/message/fusion/mptsas.c
-> > > > > >> @@ -1357,8 +1357,7 @@ static int mptsas_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
-> > > > > >>  		smprep = (SmpPassthroughReply_t *)ioc->sas_mgmt.reply;
-> > > > > >>  		memcpy(req->sense, smprep, sizeof(*smprep));
-> > > > > >>  		req->sense_len = sizeof(*smprep);
-> > > > > >> -		req->data_len = 0;
-> > > > > >> -		rsp->data_len -= smprep->ResponseDataLength;
-> > > > > >> +		rsp->resid_len = rsp->data_len - smprep->ResponseDataLength;
-> > > > > >>  	} else {
-> > > > > >>  		printk(MYIOC_s_ERR_FMT "%s: smp passthru reply failed to be returned\n",
-> > > > > >>  		    ioc->name, __func__);
-> > > > > > 
-> > > > > > I think original code was assuming full residual count on the else side
-> > > > > > (not MPT_IOCTL_STATUS_RF_VALID). So maybe add:
-> > > > > > 
-> > > > > > +		rsp->resid_len = rsp->data_len;
-> > > > > 
-> > > > > Does resid_len make any sense w/ failed requests?  I think we would be
-> > > > > better off with declaring residual count to be undefined on request
-> > > > > failure.  Is there any place which depends on it?
-> > > > 
-> > > > IIRC, I wrote the code. I think that this doesn't matter but it's
-> > > > better not to change the behavior unless Eric ack on this change
-> > > > (maybe LSI has some management binary that assume this behavior though
-> > > > it's unlikely).
-> > > 
-> > > Actually, yes it does, for many possible reasons.
-> > > 
-> > > The first being if the device is too stupid to report an actual sector
-> > > location the next best way of determining where the error occurred is
-> > > from the residual.  We don't make use of this in kernel (perhaps we
-> > > should?) but some of the user space programs for CD/DVD burning do.
-> > 
-> > This function is for SAS management protocol. Are there many possible
-> > reasons?
-> 
-> It still indicates how much of the frame was transferred and we have the
-> information, so why not set it.  Not doing so would be different from
-> other data transfer functions and so violate the principle of least
-> surprise.
+These ioctl definitions look malformed:
+_IOW('$', 0, u32) means that the ioctl will read a u32 in user
+space pointed to by (u32 __user *)arg, while what perf_ioctl
+actually does is cast arg to a u32. Moreover, exported headers
+should use __u32 instead of u32.
 
-As I wrote in the first reply, I agree with you. I wrote the original
-code in that way. I was just curious to know if there are example
-applications that could be broken due to this behavior.
+PERF_COUNTER_IOC_REFRESH apparently was broken already, this
+patch also breaks the other definitions.
 
-
-> For SAS 1.1 ... the frames are small, so it's not that relevant.  For
-> SAS 2.0 the SMP functions become multi-frame, so I could see this
-> becoming relevant for some of the zone SMP commands.
-
-I see, thanks.
+	Arnd <><
