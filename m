@@ -1,90 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758391AbZEKSZc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757957AbZEKS0l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758391AbZEKSZc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 14:25:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbZEKSZU
+	id S1757957AbZEKS0l (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 14:26:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755727AbZEKS0c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 14:25:20 -0400
-Received: from gw.goop.org ([64.81.55.164]:52097 "EHLO mail.goop.org"
+	Mon, 11 May 2009 14:26:32 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:47671 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754989AbZEKSZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 14:25:20 -0400
-Message-ID: <4A086D8C.3060404@goop.org>
-Date: Mon, 11 May 2009 11:25:16 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1754983AbZEKS0c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 14:26:32 -0400
+Message-ID: <4A086D9E.60308@suse.com>
+Date: Mon, 11 May 2009 14:25:34 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 02/18] xen: hook io_apic read/write operations
-References: <1241730883-4917-1-git-send-email-jeremy@goop.org> <1241730883-4917-3-git-send-email-jeremy@goop.org> <20090509084201.GF3656@elte.hu> <20090509084324.GA5158@elte.hu> <4A05A408.3020006@goop.org> <20090511111904.GK4648@elte.hu>
-In-Reply-To: <20090511111904.GK4648@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Cc: Al Viro <viro@ftp.linux.org.uk>
+Subject: [PATCH] dup2: Fix return value with oldfd == newfd and invalid fd
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->> Hm, every time you see this code, you always have this 
->> quasi-Pavlovian response.
->>     
->
-> Yep, my reaction to ugly code is pretty predictable, and 
-> (hopefully!) repeatable. So calling it Pavlovian is an implicit 
-> (albeit, i suspect, unintended ;-) compliment.
->   
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-My frustration is that you've generally not replied, and so we haven't 
-been able to discuss it.  Could you be more specific about what's 
-triggering the reaction?  Is it that the change is happening at the 
-io-apic level, or that its some explicit Xen code pasted in here rather 
-than via an io_apic_ops?
+ The return value of dup2 when oldfd == newfd and the fd isn't valid is not
+ getting properly sign extended. We end up with 4294967287 instead of -EBADF.
 
->> You say "use an irqchip".  I say:
->>
->>    * We already use irqchip
->>    * but most of the interesting IO apic accesses (routing) are not
->>      done via the irqchip interface
->>    * so irqchip doesn't help
->>     
->
-> I dont see the problem. All APIs within Linux are kept minimalistic 
-> and are extended on the fly, on an on-demand basis.
->   
+ I've reproduced this on SLE11 (2.6.27.21), openSUSE Factory (2.6.29-rc5),
+ and Ubuntu 9.04 (2.6.28).
 
-Sure, where it makes sense.  One wouldn't start extending an API in a 
-completely different direction.  irq_chip currently only deals with 
-"irqs"; what those irqs mean and connect to are not its business because 
-that has all been set up elsewhere.  If you start adding interrupt 
-routing, then it starts needing to know about devices, busses, etc.  I 
-can't see how that makes much sense at all, particularly for an 
-arch-independent interface.
+ This patch uses a signed int for the error value so it is properly extended.
 
->
-> Well, my main task at this stage is to point out ugly code. I might 
-> be able to do research for you and come up with a plan for you, but 
-> that's really a courtesy in general and is not always possible for 
-> maintainers. You might argue "of all possible solutions this is the 
-> cleanest" but i havent seen you make that point.
+ Commit 6c5d0512a091480c9f981162227fdb1c9d70e555 introduced this regression.
 
-I'd love to, but Plato isn't taking my calls so I can't check.
+Reported-by: Jiri Dluhos <jdluhos@novell.com>
+Signed-off-by: Jeff Mahoney <jeffm@suse.com>
+- ---
+ fs/fcntl.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-But I do think hooking the io-apic operations makes more sense than any 
-other solution because we explicitly want all the other code above it.  
-The *only* difference between a Xen io-apic and a native io-apic is that 
-we need to access the registers with hypercalls rather than mmio.  Same 
-registers, same meanings, same settings made at the same time.  So the 
-io-apic accessors are at precisely the right level of abstraction for 
-our needs; introducing something higher-level would be an abstraction 
-impedance mismatch, and would be no better for it.
+- --- a/fs/fcntl.c
++++ b/fs/fcntl.c
+@@ -115,13 +115,14 @@ out_unlock:
+ 
+ SYSCALL_DEFINE2(dup2, unsigned int, oldfd, unsigned int, newfd)
+ {
++	int ret = oldfd;
+ 	if (unlikely(newfd == oldfd)) { /* corner case */
+ 		struct files_struct *files = current->files;
+ 		rcu_read_lock();
+ 		if (!fcheck_files(files, oldfd))
+- -			oldfd = -EBADF;
++			ret = -EBADF;
+ 		rcu_read_unlock();
+- -		return oldfd;
++		return ret;
+ 	}
+ 	return sys_dup3(oldfd, newfd, 0);
+ }
 
-An io_apic_ops makes sense to me, if adding it would stop triggering 
-your ugly-code detector.  But that's specifically what HPA objected to 
-in this series...
+- -- 
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
 
-    J
+iEYEARECAAYFAkoIbZcACgkQLPWxlyuTD7JBVACgnNFiWRb4lhW9JgqR36BnT6SD
+4uQAoJDcfqV2jsjCV340HlQLkk585Yw6
+=IBqW
+-----END PGP SIGNATURE-----
