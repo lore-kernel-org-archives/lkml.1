@@ -1,83 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbZEKJMz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755530AbZEKJNT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756544AbZEKJMz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 05:12:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752562AbZEKJMo
+	id S1755530AbZEKJNT (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 05:13:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755192AbZEKJMs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 05:12:44 -0400
-Received: from sh.osrg.net ([192.16.179.4]:41369 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752398AbZEKJMn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 05:12:43 -0400
-Date: Mon, 11 May 2009 18:11:32 +0900
-To: jens.axboe@oracle.com
-Cc: fujita.tomonori@lab.ntt.co.jp, tj@kernel.org,
-       James.Bottomley@HansenPartnership.com, bharrosh@panasas.com,
-       linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] block: let blk_end_request_all handle bidi requests
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090511090629.GO4694@kernel.dk>
-References: <1242032169-22422-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1242032169-22422-2-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<20090511090629.GO4694@kernel.dk>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Mon, 11 May 2009 05:12:48 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:47501 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754218AbZEKJMq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 05:12:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=l/4ojsKUe6BfE0yppErCk+sPzMMfNVZBrSxrpJ/q7wknbEk3qqLMw2jXoT2uFaukFh
+         /3d2Va8cDJzUc3yVGufNjMX+7ikseN3vLre2v76OjEjulollMcfMMrFVLKPnipzxZ9lM
+         vHhADatx0baeLUKEQsKfeudMolSW0HeYQPMNs=
+MIME-Version: 1.0
+In-Reply-To: <alpine.DEB.2.00.0905110138160.24726@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905091544470.6884@chino.kir.corp.google.com>
+	 <20090511162900.f372edd1.minchan.kim@barrios-desktop>
+	 <alpine.DEB.2.00.0905110138160.24726@chino.kir.corp.google.com>
+Date: Mon, 11 May 2009 18:12:46 +0900
+Message-ID: <28c262360905110212j9867b79wd8d90b16f6f196be@mail.gmail.com>
+Subject: Re: [patch -mmotm] mm: invoke oom killer for __GFP_NOFAIL
+From: Minchan Kim <minchan.kim@gmail.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Mel Gorman <mel@csn.ul.ie>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090511181242D.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Mon, 11 May 2009 18:11:33 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009 11:06:30 +0200
-Jens Axboe <jens.axboe@oracle.com> wrote:
+On Mon, May 11, 2009 at 5:40 PM, David Rientjes <rientjes@google.com> wrote:
+> On Mon, 11 May 2009, Minchan Kim wrote:
+>
+>> Hmm.. if __alloc_pages_may_oom fail to allocate free page due to order > PAGE_ALLOC_COSTRY_ORDER,
+>>
+>> It will go to nopage label in __alloc_pages_slowpath.
+>> Then it will show the page allocation failure warning and will return.
+>> Retrying depends on caller.
+>>
+>
+> Correct.
+>
+>> So, I think it won't loop forever.
+>> Do I miss something ?
+>>
+>
+> __GFP_NOFAIL allocations shouldn't fail, that's the point of the gfp flag.
+> So failing without attempting to free some memory is the wrong thing to
+> do.
 
-> On Mon, May 11 2009, FUJITA Tomonori wrote:
-> > blk_end_request_all() and __blk_end_request_all() should finish all
-> > bytes including bidi, by definition. That's what all bidi users need ,
-> > bidi requests must be complete as a whole (partial completion is
-> > impossible).
-> > 
-> > Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> > ---
-> >  include/linux/blkdev.h |   12 ++++++++++--
-> >  1 files changed, 10 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/include/linux/blkdev.h b/include/linux/blkdev.h
-> > index 8919683..3b5c564 100644
-> > --- a/include/linux/blkdev.h
-> > +++ b/include/linux/blkdev.h
-> > @@ -911,8 +911,12 @@ static inline bool blk_end_request(struct request *rq, int error,
-> >  static inline void blk_end_request_all(struct request *rq, int error)
-> >  {
-> >  	bool pending;
-> > +	unsigned int bidi_bytes = 0;
-> >  
-> > -	pending = blk_end_request(rq, error, blk_rq_bytes(rq));
-> > +	if (unlikely(blk_bidi_rq(rq)))
-> > +		bidi_bytes = blk_rq_bytes(rq->next_rq);
-> > +
-> > +	pending = blk_end_bidi_request(rq, error, blk_rq_bytes(rq), bidi_bytes);
-> >  	BUG_ON(pending);
-> >  }
-> >  
-> > @@ -963,8 +967,12 @@ static inline bool __blk_end_request(struct request *rq, int error,
-> >  static inline void __blk_end_request_all(struct request *rq, int error)
-> >  {
-> >  	bool pending;
-> > +	unsigned int bidi_bytes = 0;
-> > +
-> > +	if (unlikely(blk_bidi_rq(rq)))
-> > +		bidi_bytes = blk_rq_bytes(rq->next_rq);
-> >  
-> > -	pending = __blk_end_request(rq, error, blk_rq_bytes(rq));
-> > +	pending = __blk_end_bidi_request(rq, error, blk_rq_bytes(rq), bidi_bytes);
-> >  	BUG_ON(pending);
-> >  }
-> 
-> Looks ok, perhaps we can next get rid of the bidi naming? It's all
-> pretty much folded into one anyway, using __blk_end_bidi_request() from
-> generic end-request handling looks confusing.
+Thanks for quick reply.
+I was confused by your description.
+I thought you suggested we have to prevent loop forever.
 
-Yeah, agreed; the bidi name is confusing. I'll send another patch to
-clean up it on the top of this patchset soon.
+>
+>> In addition, the OOM killer can help for getting the high order pages ?
+>>
+>
+> Sure, if it selects a task that will free a lot of memory, which is it's
+> goal.
+>
+
+How do we know any task have a lot of memory ?
+If we select wrong task and kill one ?
+
+I have a concern about innocent task.
+
+-- 
+Kinds regards,
+Minchan Kim
