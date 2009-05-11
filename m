@@ -1,79 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbZEKNlR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755501AbZEKNln@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755204AbZEKNlR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 09:41:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbZEKNlA
+	id S1755501AbZEKNln (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 09:41:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754083AbZEKNlc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 09:41:00 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45189 "EHLO mx3.mail.elte.hu"
+	Mon, 11 May 2009 09:41:32 -0400
+Received: from mx1.emlix.com ([193.175.82.87]:37937 "EHLO mx1.emlix.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750754AbZEKNk7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 09:40:59 -0400
-Date: Mon, 11 May 2009 15:39:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: chrisw@sous-sol.org, oleg@redhat.com, roland@redhat.com,
-       linux-kernel@vger.kernel.org, viro@ZenIV.linux.org.uk
-Subject: Re: [patch 1/2] ptrace, security: rename ptrace_may_access =>
-	ptrace_access_check
-Message-ID: <20090511133949.GA28533@elte.hu>
-References: <20090507002133.02D05FC39E@magilla.sf.frob.com> <20090507063606.GA15220@redhat.com> <20090507082027.GD12285@elte.hu> <20090507083102.GA20125@redhat.com> <20090507083851.GA19133@elte.hu> <20090507085742.GB3036@sequoia.sous-sol.org> <20090507090459.GE19133@elte.hu> <20090507093124.GA355@elte.hu> <20090507094947.GA4911@elte.hu> <20090507125526.c257c23d.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090507125526.c257c23d.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	id S1751600AbZEKNlc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 09:41:32 -0400
+From: Johannes Weiner <jw@emlix.com>
+To: Chris Zankel <chris@zankel.net>
+Cc: linux-kernel@vger.kernel.org
+Subject: [patch 1/5] xtensa: always use correct stack pointer for stack traces
+Date: Mon, 11 May 2009 15:43:33 +0200
+Message-Id: <1242049417-12564-2-git-send-email-jw@emlix.com>
+In-Reply-To: <1242049417-12564-1-git-send-email-jw@emlix.com>
+References: <1242049417-12564-1-git-send-email-jw@emlix.com>
+Organization: emlix gmbh, Goettingen, Germany
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit '28a0ce7 xtensa: use correct stack pointer for stack traces'
+changed the stack tracer from always reading the stack pointer
+register to always using the saved value in the task descriptor.
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+The author was too dense to consider the fact that the saved stack
+value is stale for a running process und thus unusable for 'current'.
 
-> On Thu, 7 May 2009 11:49:47 +0200
-> Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > The ptrace_may_access() methods are named confusingly - some 
-> > variants return a bool, while the security subsystem methods have a 
-> > retval convention.
-> > 
-> > Rename it to ptrace_access_check, to reduce the confusion factor. A 
-> > followup patch eliminates the bool usage.
-> 
-> s/may_access/access_check/ is a poor change.  The new name conveys 
-> less information than the old one.
-> 
-> It's quite clear what the return value from "may_access" means.  
+What we do now is to use the stack pointer register (a1) for when the
+task is unknown - we can't help it then - or when the task is
+'current'.  For everything else use the saved stack pointer value
+contained in the task descriptor.
 
-it isnt clear at all. In fact there's two variants: one that returns 
-'int' and one that returns 'bool' - the two have inverted values.
+Signed-off-by: Johannes Weiner <jw@emlix.com>
+---
+ arch/xtensa/kernel/traps.c |   16 ++++++++++++++--
+ 1 files changed, 14 insertions(+), 2 deletions(-)
 
-> It's less clear what the return value from a function called 
-> "access_check" means.
->
-> Switching to something like ptrace_task_accessible() or 
-> ptrace_may_access_task() would be better.
-> 
-> This happens quite often.  The string "check" in the name of a 
-> predicate function is a red flag.
+diff --git a/arch/xtensa/kernel/traps.c b/arch/xtensa/kernel/traps.c
+index 9f0b711..ba9ab93 100644
+--- a/arch/xtensa/kernel/traps.c
++++ b/arch/xtensa/kernel/traps.c
+@@ -369,6 +369,18 @@ void show_regs(struct pt_regs * regs)
+ 		       regs->syscall);
+ }
+ 
++static __always_inline unsigned long *stack_pointer(struct task_struct *task)
++{
++	unsigned long *sp;
++
++	if (!task || task == current)
++		__asm__ __volatile__ ("mov %0, a1\n" : "=a"(sp));
++	else
++		sp = (unsigned long *)task->thread.sp;
++
++	return sp;
++}
++
+ void show_trace(struct task_struct *task, unsigned long *sp)
+ {
+ 	unsigned long a0, a1, pc;
+@@ -377,7 +389,7 @@ void show_trace(struct task_struct *task, unsigned long *sp)
+ 	if (sp)
+ 		a1 = (unsigned long)sp;
+ 	else
+-		a1 = task->thread.sp;
++		a1 = (unsigned long)stack_pointer(task);
+ 
+ 	sp_start = a1 & ~(THREAD_SIZE-1);
+ 	sp_end = sp_start + THREAD_SIZE;
+@@ -420,7 +432,7 @@ void show_stack(struct task_struct *task, unsigned long *sp)
+ 	unsigned long *stack;
+ 
+ 	if (!sp)
+-		sp = (unsigned long *)task->thread.sp;
++		sp = stack_pointer(task);
+  	stack = sp;
+ 
+ 	printk("\nStack: ");
+-- 
+1.6.3.rc3
 
-I disagree. To repeat the argument i made in this thread, the 'may' 
-suggests/attracts a logical value, i.e. yes or no, or boolean. But 
-that goes against the desire of actual call sites wanting a Linux 
-retval.
-
-I.e. any function name that can be plain-English answered with: 
-'yes' or 'no' is a red flag for a retval function.
-
-You cannot answer ptrace_access_check() with 'yes' or 'no'. You 
-could if it was ptrace_access_ok() or ptrace_may_access.
-
-	Ingo
