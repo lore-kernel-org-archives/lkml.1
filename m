@@ -1,89 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759452AbZEKWkx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760251AbZEKWlR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759452AbZEKWkx (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 18:40:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755830AbZEKWkk
+	id S1760251AbZEKWlR (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 18:41:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760385AbZEKWkt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 18:40:40 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:57765 "EHLO mx3.mail.elte.hu"
+	Mon, 11 May 2009 18:40:49 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38821 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755653AbZEKWkj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 18:40:39 -0400
-Date: Tue, 12 May 2009 00:40:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, systemtap@sources.redhat.com,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>, Jan Blunck <jblunck@suse.de>,
-       Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH -rc] [BUGFIX] x86: fix kernel_trap_sp()
-Message-ID: <20090511224001.GA8198@elte.hu>
-References: <20090511210300.17332.67549.stgit@localhost.localdomain> <alpine.LFD.2.01.0905111512240.3586@localhost.localdomain>
+	id S1760285AbZEKWks (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 18:40:48 -0400
+Date: Mon, 11 May 2009 22:39:32 GMT
+From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, jblunck@suse.de, hch@infradead.org,
+       tglx@linutronix.de, mhiramat@redhat.com, harvey.harrison@gmail.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, jblunck@suse.de, hch@infradead.org,
+       tglx@linutronix.de, harvey.harrison@gmail.com, mhiramat@redhat.com,
+       mingo@elte.hu
+In-Reply-To: <20090511210300.17332.67549.stgit@localhost.localdomain>
+References: <20090511210300.17332.67549.stgit@localhost.localdomain>
+Subject: [tip:x86/urgent] x86, 32-bit: fix kernel_trap_sp()
+Message-ID: <tip-8310d65ae37ce9180cd939334218df59f1ad3de6@git.kernel.org>
+Git-Commit-ID: 8310d65ae37ce9180cd939334218df59f1ad3de6
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-In-Reply-To: <alpine.LFD.2.01.0905111512240.3586@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 22:39:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Commit-ID:  8310d65ae37ce9180cd939334218df59f1ad3de6
+Gitweb:     http://git.kernel.org/tip/8310d65ae37ce9180cd939334218df59f1ad3de6
+Author:     Masami Hiramatsu <mhiramat@redhat.com>
+AuthorDate: Mon, 11 May 2009 17:03:00 -0400
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Tue, 12 May 2009 00:37:40 +0200
 
-* Linus Torvalds <torvalds@linux-foundation.org> wrote:
+x86, 32-bit: fix kernel_trap_sp()
 
-> On Mon, 11 May 2009, Masami Hiramatsu wrote:
-> >
-> > Use &regs->sp instead of regs for getting the top of stack in kernel mode.
-> > (on x86-64, regs->sp always points the top of stack)
-> 
-> Ack. 
-> 
-> That said, we have only _one_ use of this "kernel_trap_sp()" in 
-> the whole kernel, and that use is actually fairly odd too, in that 
-> it does it _before_ checking that it's in kernel mode.
-> 
-> Admittedly it will then only _use_ the value after it has checked 
-> that things are in kernel mode, but it all boils down to "ok, 
-> that's pretty odd".
-> 
-> So how about fixing that, and also fixing the naming of the 
-> function. Call it "kernel_stack_pointer()" to match its more 
-> widely used sibling function "user_stack_pointer()".
-> 
-> IOW, something like this?
+Use &regs->sp instead of regs for getting the top of stack in kernel mode.
+(on x86-64, regs->sp always points the top of stack)
 
-yeah, this is cleaner and probably a tad faster. I've applied it to 
-x86/urgent with your acked-by - or would you like to apply this 
-straight away?
+[ Impact: Oprofile decodes only stack for backtracing on i386 ]
 
-The use of the backtracing feature on the oprofile side is not very 
-common (and the bug is ancient) so i wanted to wait a few days with 
-this.
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+[ v2: rename the API to kernel_stack_pointer(), move variable inside ]
+Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: systemtap@sources.redhat.com
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Jan Blunck <jblunck@suse.de>
+Cc: Christoph Hellwig <hch@infradead.org>
+LKML-Reference: <20090511210300.17332.67549.stgit@localhost.localdomain>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
-One small detail:
 
-> +	return (unsigned long)(&regs->sp);
+---
+ arch/x86/include/asm/ptrace.h |    7 ++++---
+ arch/x86/oprofile/backtrace.c |    2 +-
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
-the original commit had:
-
-> +	return (unsigned long)&regs->sp;
-
-and this latter is correct as well due to operator priorities. No 
-strong preference from my side so i took your version as-is. I kept 
-Masami as the author and a comment for your changes.
-
-( Not sure how to express this in a changelog properly - i didnt 
-  want two commits but it was authored by two people in essence. So 
-  i went for the version that will show up in the commit 
-  notification email in a few minutes - also attached below. )
-
-	Ingo
+diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
+index e304b66..624f133 100644
+--- a/arch/x86/include/asm/ptrace.h
++++ b/arch/x86/include/asm/ptrace.h
+@@ -187,14 +187,15 @@ static inline int v8086_mode(struct pt_regs *regs)
+ 
+ /*
+  * X86_32 CPUs don't save ss and esp if the CPU is already in kernel mode
+- * when it traps.  So regs will be the current sp.
++ * when it traps.  The previous stack will be directly underneath the saved
++ * registers, and 'sp/ss' won't even have been saved. Thus the '&regs->sp'.
+  *
+  * This is valid only for kernel mode traps.
+  */
+-static inline unsigned long kernel_trap_sp(struct pt_regs *regs)
++static inline unsigned long kernel_stack_pointer(struct pt_regs *regs)
+ {
+ #ifdef CONFIG_X86_32
+-	return (unsigned long)regs;
++	return (unsigned long)(&regs->sp);
+ #else
+ 	return regs->sp;
+ #endif
+diff --git a/arch/x86/oprofile/backtrace.c b/arch/x86/oprofile/backtrace.c
+index 04df67f..044897b 100644
+--- a/arch/x86/oprofile/backtrace.c
++++ b/arch/x86/oprofile/backtrace.c
+@@ -76,9 +76,9 @@ void
+ x86_backtrace(struct pt_regs * const regs, unsigned int depth)
+ {
+ 	struct frame_head *head = (struct frame_head *)frame_pointer(regs);
+-	unsigned long stack = kernel_trap_sp(regs);
+ 
+ 	if (!user_mode_vm(regs)) {
++		unsigned long stack = kernel_stack_pointer(regs);
+ 		if (depth)
+ 			dump_trace(NULL, regs, (unsigned long *)stack, 0,
+ 				   &backtrace_ops, &depth);
