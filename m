@@ -1,61 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754981AbZEKOjj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756169AbZEKOj4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754981AbZEKOjj (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 10:39:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752093AbZEKOja
+	id S1756169AbZEKOj4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 10:39:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbZEKOjb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 10:39:30 -0400
-Received: from mail-qy0-f129.google.com ([209.85.221.129]:62331 "EHLO
-	mail-qy0-f129.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751442AbZEKOj3 convert rfc822-to-8bit (ORCPT
+	Mon, 11 May 2009 10:39:31 -0400
+Received: from e23smtp08.au.ibm.com ([202.81.31.141]:57842 "EHLO
+	e23smtp08.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751852AbZEKOja (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 10:39:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=LJVqFIQg6eIb6KSVc+8sMXVrOpQ76kJL46w51aD8QPA8K6kilaDQSZmcuwi5YMVaFS
-         fCjoT+zkiV1GD7pe8+llpF1o8z0TEcjD1UF3JOUFurBtrnDTDepOT9bKTufUQAzSSLdf
-         x7XSKWYlDmkjSvHRuvHuZQi4TwiD3pMajVY9I=
+	Mon, 11 May 2009 10:39:30 -0400
+Date: Mon, 11 May 2009 20:09:14 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [PATCH][REPOST] Don't export sched_mc_power_savings
+	onmulti-socket single core system
+Message-ID: <20090511143914.GB4853@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <4A081A4B.1000204@linux.vnet.ibm.com> <20090511123529.GH13954@elte.hu>
 MIME-Version: 1.0
-In-Reply-To: <Pine.LNX.4.64.0905110824560.7447@venus.araneidae.co.uk>
-References: <Pine.LNX.4.64.0905110740230.7176@venus.araneidae.co.uk>
-	 <20090511070029.GA20226@infradead.org>
-	 <Pine.LNX.4.64.0905110824560.7447@venus.araneidae.co.uk>
-Date: Mon, 11 May 2009 22:39:28 +0800
-Message-ID: <f17812d70905110739n1665120fncd6f6dcf798cae79@mail.gmail.com>
-Subject: Re: [PATCH] Export GPIO control symbols from mfp-pxa2xx.c
-From: Eric Miao <eric.y.miao@gmail.com>
-To: Michael Abbott <michael@araneidae.co.uk>
-Cc: Christoph Hellwig <hch@infradead.org>,
-       linux-arm-kernel@lists.arm.linux.org.uk,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090511123529.GH13954@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 3:28 PM, Michael Abbott <michael@araneidae.co.uk> wrote:
-> On Mon, 11 May 2009, Christoph Hellwig wrote:
->> On Mon, May 11, 2009 at 07:43:29AM +0100, Michael Abbott wrote:
->> > With very lightweight board support providing a number of uncommitted GPIO
->> > pins I found that my out of kernel driver needs to call symbols that
->> > aren't actually exported.  This patch adds these exports.
->> As usual we don't export symbols for out of tree drivers.
->
-> I understand that's the default condition, but presumably there's no
-> compelling reason for the mfp configuration functions to be withheld (I
-> was simply trying to obey the obsolescence instructions in pxa2xx-gpio.h!)
->
-> As for bringing this driver in tree?  Not a great deal of point, in this
-> particular case, but I have no problem with doing that.
->
+* Ingo Molnar <mingo@elte.hu> [2009-05-11 14:35:29]:
 
-I don't see many real requirements here to export them for the moment.
-By keeping these functions/symbols not-exported, I'd expect board-specific
-code (usually manipulation of these pins are board-specific) to be kept
-in the "board.c" as well, which I do think is a good practice.
+> 
+> * Mahesh Jagannath Salgaonkar <mahesh@linux.vnet.ibm.com> wrote:
+> 
+> > My previous post got lost somewhere in lkml list. Hence reposting 
+> > this patch again.
+> 
+> no, it did not get lost, i gave you the feedback below more than a 
+> month ago. FYI, this resubmission has the same corrupted-patch 
+> problem.
 
-Since your driver is out of the tree, you can certainly keep this change
-out of the tree as well :-)
+Hi Ingo,
+
+My copy of the [REPOST] seem to have tabs correct.  Anyways I have
+added an extra parentheses also in the #define. Please check and
+apply.
+
+Thanks,
+Vaidy
+
+Don't export sched_mc_power_savings on multi-socket single core system
+
+Fix to prevent sched_mc_power_saving from being exported through sysfs
+for multi-scoket single core system. Max cores should be always greater than
+one (1). My earlier patch that introduced fix for not exporting
+'sched_mc_power_saving' on laptops  broke it on multi-socket single core
+system. This fix addresses issue on both laptop and multi-socket single
+core system.
+Below are the Test results:
+
+1. Single socket - multi-core
+       Before Patch: Does not export 'sched_mc_power_saving'
+       After Patch: Does not export 'sched_mc_power_saving'
+       Result: Pass
+
+2. Multi Socket - single core
+      Before Patch: exports 'sched_mc_power_saving'
+      After Patch: Does not export 'sched_mc_power_saving'
+      Result: Pass
+
+3. Multi Socket - Multi core
+      Before Patch: exports 'sched_mc_power_saving'
+      After Patch: exports 'sched_mc_power_saving'
+
+
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+---
+
+ arch/x86/include/asm/topology.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
+
+
+diff --git a/arch/x86/include/asm/topology.h b/arch/x86/include/asm/topology.h
+index f44b49a..066ef59 100644
+--- a/arch/x86/include/asm/topology.h
++++ b/arch/x86/include/asm/topology.h
+@@ -203,7 +203,8 @@ struct pci_bus;
+ void x86_pci_root_bus_res_quirks(struct pci_bus *b);
+ 
+ #ifdef CONFIG_SMP
+-#define mc_capable()	(cpumask_weight(cpu_core_mask(0)) != nr_cpu_ids)
++#define mc_capable()	((boot_cpu_data.x86_max_cores > 1) && \
++			(cpumask_weight(cpu_core_mask(0)) != nr_cpu_ids))
+ #define smt_capable()			(smp_num_siblings > 1)
+ #endif
+ 
