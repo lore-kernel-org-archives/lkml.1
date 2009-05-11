@@ -1,47 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756340AbZEKVw1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758239AbZEKVxY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756340AbZEKVw1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 17:52:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753184AbZEKVwR
+	id S1758239AbZEKVxY (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 17:53:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754584AbZEKVxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 17:52:17 -0400
-Received: from fk-out-0910.google.com ([209.85.128.187]:11307 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752494AbZEKVwQ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 17:52:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=UaE7+EGxnBpGXcKObszS4tk8cENrzftifAxAGb7Un8O5wkyJ/KZPejaJlwk2Y3ck3/
-         3hpEbcTb167YgPUGxWkTPn4or3jHkMxAJ0QGIEb7qK631EaVJOImpdZkeu8VKxTJp0l6
-         DoAGGbE2/NIF9GlEoRXdYrZupZp6SxfWTZuT0=
-Message-ID: <4A089DFD.8060609@gmail.com>
-Date: Mon, 11 May 2009 23:51:57 +0200
-From: Jiri Slaby <jirislaby@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b3pre) Gecko/20090223 SUSE/3.0b2-8.7 Thunderbird/3.0b2
+	Mon, 11 May 2009 17:53:15 -0400
+Received: from hera.kernel.org ([140.211.167.34]:39490 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753523AbZEKVxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 17:53:14 -0400
+Date: Mon, 11 May 2009 21:51:44 GMT
+From: tip-bot for Masami Hiramatsu <mhiramat@redhat.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       torvalds@linux-foundation.org, jblunck@suse.de, hch@infradead.org,
+       tglx@linutronix.de, mhiramat@redhat.com, harvey.harrison@gmail.com,
+       mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       torvalds@linux-foundation.org, jblunck@suse.de, hch@infradead.org,
+       tglx@linutronix.de, harvey.harrison@gmail.com, mhiramat@redhat.com,
+       mingo@elte.hu
+In-Reply-To: <20090511210300.17332.67549.stgit@localhost.localdomain>
+References: <20090511210300.17332.67549.stgit@localhost.localdomain>
+Subject: [tip:x86/urgent] x86, 32-bit: fix kernel_trap_sp()
+Message-ID: <tip-11d0f25f06fb67e707e6ed4bf9967b859e403639@git.kernel.org>
+Git-Commit-ID: 11d0f25f06fb67e707e6ed4bf9967b859e403639
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-CC: Jiri Slaby <jirislaby@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Ferenc Wagner <wferi@niif.hu>,
-       Paul Fulghum <paulkf@microgate.com>
-Subject: Re: [PATCH 1/3] Char/serial: refactor ASYNC_ flags
-References: <1242049860-29501-1-git-send-email-jirislaby@gmail.com> <20090511185727.2a5bd4cb@lxorguk.ukuu.org.uk>
-In-Reply-To: <20090511185727.2a5bd4cb@lxorguk.ukuu.org.uk>
-X-Enigmail-Version: 0.96a
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 21:51:46 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/11/2009 07:57 PM, Alan Cox wrote:
-> Series all applied
+Commit-ID:  11d0f25f06fb67e707e6ed4bf9967b859e403639
+Gitweb:     http://git.kernel.org/tip/11d0f25f06fb67e707e6ed4bf9967b859e403639
+Author:     Masami Hiramatsu <mhiramat@redhat.com>
+AuthorDate: Mon, 11 May 2009 17:03:00 -0400
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 11 May 2009 23:49:17 +0200
 
-Thanks.
+x86, 32-bit: fix kernel_trap_sp()
 
-Ferenc, could you apply patches 1 and 2 and confirm that it fixes your
-problem?
+Use &regs->sp instead of regs for getting the top of stack in kernel mode.
+(on x86-64, regs->sp always points the top of stack)
+
+[ Impact: Oprofile decodes only stack for backtracing on i386 ]
+
+Signed-off-by: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: systemtap@sources.redhat.com
+Cc: Masami Hiramatsu <mhiramat@redhat.com>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Jan Blunck <jblunck@suse.de>
+Cc: Christoph Hellwig <hch@infradead.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+LKML-Reference: <20090511210300.17332.67549.stgit@localhost.localdomain>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/include/asm/ptrace.h |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
+index e304b66..aed0894 100644
+--- a/arch/x86/include/asm/ptrace.h
++++ b/arch/x86/include/asm/ptrace.h
+@@ -187,14 +187,14 @@ static inline int v8086_mode(struct pt_regs *regs)
+ 
+ /*
+  * X86_32 CPUs don't save ss and esp if the CPU is already in kernel mode
+- * when it traps.  So regs will be the current sp.
++ * when it traps.  So &regs->sp will be the current sp.
+  *
+  * This is valid only for kernel mode traps.
+  */
+ static inline unsigned long kernel_trap_sp(struct pt_regs *regs)
+ {
+ #ifdef CONFIG_X86_32
+-	return (unsigned long)regs;
++	return (unsigned long)&regs->sp;
+ #else
+ 	return regs->sp;
+ #endif
