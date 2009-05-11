@@ -1,335 +1,288 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757472AbZEKLhA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755192AbZEKLjQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757472AbZEKLhA (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 07:37:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbZEKLgu
+	id S1755192AbZEKLjQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 07:39:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754218AbZEKLjA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 07:36:50 -0400
-Received: from e28smtp03.in.ibm.com ([59.145.155.3]:46355 "EHLO
-	e28smtp03.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751852AbZEKLgt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 07:36:49 -0400
-Date: Mon, 11 May 2009 17:06:44 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [Patch 00/12] Hardware Breakpoint Interfaces
-Message-ID: <20090511113644.GB26721@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090424061338.GA23812@in.ibm.com> <Pine.LNX.4.44L0.0905041650300.6437-100000@iolanthe.rowland.org>
+	Mon, 11 May 2009 07:39:00 -0400
+Received: from gwu.lbox.cz ([62.245.111.132]:42506 "EHLO gwu.lbox.cz"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753022AbZEKLi6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 07:38:58 -0400
+Date: Mon, 11 May 2009 13:37:31 +0200
+From: Nikola Ciprich <extmaillist@linuxbox.cz>
+To: Gregory Haskins <ghaskins@novell.com>
+Cc: linux-kernel@vger.kernel.org, kvm@vger.kernel.org, agraf@suse.de,
+       pmullaney@novell.com, pmorreale@novell.com, alext@novell.com,
+       anthony@codemonkey.ws, rusty@rustcorp.com.au, netdev@vger.kernel.org,
+       avi@redhat.com, bhutchings@solarflare.com, andi@firstfloor.org,
+       gregkh@suse.de, chrisw@sous-sol.org, shemminger@vyatta.com,
+       alex.williamson@hp.com, nikola.ciprich@linuxbox.cz
+Subject: Re: [RFC PATCH v3 00/17] virtual-bus
+Message-ID: <20090511113731.GA6205@nik-comp.linuxbox.cz>
+References: <20090421183341.12548.33393.stgit@dev.haskins.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <Pine.LNX.4.44L0.0905041650300.6437-100000@iolanthe.rowland.org>
+In-Reply-To: <20090421183341.12548.33393.stgit@dev.haskins.net>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Antivirus: on proxybox by Kaspersky antivirus, engine 5.5.10, data 1956003 records(11-05-2009)
+X-Spam-Score: N/A (trusted relay)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 04, 2009 at 04:55:03PM -0400, Alan Stern wrote:
-> On Fri, 24 Apr 2009, K.Prasad wrote:
+Hi Gregory,
+
+I'd like to try Your vbus patches, but compiling 2.6.30-rc2 (or 2.6.30-rc5) fails
+with following error:
+drivers/vbus/proxy/kvm-guest-vbus: struct pci_device_id is 32 bytes.  The last of 1 is:
+0xda 0x11 0x00 0x00 0x00 0x20 0x00 0x00 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0xff 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x00
+FATAL: drivers/vbus/proxy/kvm-guest-vbus: struct pci_device_id is not terminated with a NULL entry!
+
+Do You have any idea on what might be wrong?
+thanks a lot in advance...
+BR
+nik
+
+
+
+
+On Tue, Apr 21, 2009 at 02:34:16PM -0400, Gregory Haskins wrote:
+> RFC: Virtual-Bus (applies to v2.6.30-rc2)
+> ----------------------
 > 
-> > Hi Alan,
-> > 	The following patches contain the changes mentioned below and is based
-> > on commit 335a1e07e2281795064b909aa75e3071609abd0e of -tip tree.
-> > 
-> > The changes to passing of DR6 register value in traps.c is separated into
-> > [Patch 12/12]. kprobes and HW breakpoints have been found to work fine after 
-> > the changes on an x86 box.
-> > 
-> > Kindly let me know what you think of the changes.
+> Virtual-Bus is a Linux-kernel based virtual IO resource container technology.
+> It allows you to declare virtualized device models directly within a host
+> kernel that can be uniformly accessed from a variety of environments, such
+> as KVM, userspace, lguest, Xen, etc. The goal is to reduce overhead while
+> still preserving proper isolation to achieve maximum throughput and latency
+> from your IO subsystem. It is installed on the host and configured using
+> simple filesystem operations like "mkdir" to create a new container, "ln -s"
+> to associate a device with a container, and "echo" to configure the device
+> thanks to integration with configfs/sysfs. Therefore, managing a virtual-bus
+> does not require special userspace tools.
 > 
-> They look pretty good.  However some of the older stuff still needs 
-> more work.
+> Why would we want this?
+> ----------------------
 > 
-> > --- /dev/null
-> > +++ arch/x86/include/asm/hw_breakpoint.h
+> We believe that a combination of in-kernel models, coupled with optimizations
+> in various areas such as reducing the number of context switches and executing
+> the algorithms in parallel on modern multicore CPUs will result in the best
+> possible IO performance for technologies such as virtualization.  This
+> facility aims to provide the framework for building such constructs in
+> in software in the most efficient way we believe is possible.
 > 
-> > +void arch_install_thread_hw_breakpoint(struct task_struct *tsk);
-> > +void arch_uninstall_thread_hw_breakpoint(void);
-> > +void arch_install_kernel_hw_breakpoint(void *);
+> Preliminary Results:
+> -----------------------
 > 
-> This routine doesn't exist, but maybe it should.  See below...
+> As a test, we wrote a virtual-ethernet backend and a Linux driver
+> (called venet) and tested the setup with v2.6.29 on two 8-core x86_64
+> boxes with Chelsio T3 10GE connected back to back via cross over.
+> We measured bare-metal performance, as well as a kvm guest (running the
+> same kernel) connected to the T3 via a linux-bridge+tap configuration with
+> a 1500 MTU.  The results are as follows:
 > 
+> Bare metal       : tput = 4078Mb/s, round-trip = 25593pps (39us rtt)
+> Virtio-net (PCI) : tput = 4003Mb/s, round-trip = 320pps (3125us rtt)
+> Venet      (VBUS): tput = 4050Mb/s, round-trip = 15255 (65us rtt)
+> 
+> When we jump to 9000 byte MTU, the situation looks similar
+> 
+> Bare metal       : tput = 9717Mb/s, round-trip = 30396pps (33us rtt)
+> Virtio-net (PCI) : tput = 4578Mb/s, round-trip = 249pps (4016us rtt)
+> Venet      (VBUS): tput = 5802Mb/s, round-trip = 15127 (66us rtt)
+> 
+> Note that to be fair, part of the latency response from virtio-pci is due to
+> the way that the driver/backend coalesces packets, and not a true limitation
+> of the userspace path as the results may imply.  Anthony Liguori is already
+> looking into improving this based on the results we presented here, and is
+> making good headway.
+> 
+> Also note that as of v2, we support a virtio-vbus transport, and therefore
+> will soon be able to compare "Virtio-net (VBUS)" as an additional target in
+> the near future once we have developed a virtio-net backend for the host.
+> This virtio-net(pci) to virtio-net(vbus) comparison is probably more
+> interesting than comparing to Venet as it would be more apples to apples.
+> Also it would be nice to only need one PV driver per IO subsystem in the
+> long term.
+> 
+> Changes v2->v3:
+> ------------------
+> 
+> *) VBUS now renders as a PCI/MSI device instead of via cpuid/dynirq
+> *) Dropped dynirq (replaced with MSI facility)
+> *) Dropped "reset" patch in favor of more reliably detecting reset via BUSOPEN
+> *) Incorporated more review feedback from Stephen Hemminger on vbus-enet
+>  driver
+> *) Added support for setting the guests MAC during host config (Pat Mullaney)
+> *) Cleaned up documentation per feedback from Ben Hutchings
+> *) Numerous small tweaks to clean up things like warnings, comments, etc.
+>    (Alex Tsariounov, Greg Haskins)
+> *) Fixed Kconfig dependency problem with virtio-vbus with feedback from
+>    Peter Morreale.
+> 
+> Changes v1->v2:
+> 
+> *) Incorporated review feedback from Stephen Hemminger on vbus-enet driver
+> *) Added support for connecting to vbus devices from userspace
+> *) Added support for a virtio-vbus transport to allow virtio drivers to
+>    work with vbus (needs testing and backend models).
+> 
+> Todo:
+> *) Beef up the userspace event channel ABI to support different event types
+> *) Add memory-registration support
+> *) Develop some virtio backend devices.
+> *) Support ethtool_ops for venet.
+> *) Convert from MSI to MSIX to truely support multiple vectors
+> 
+> ---------------------------------------
+> 
+> For more details, please see our Wiki at 
+> 
+> http://developer.novell.com/wiki/index.php/Virtual-bus
+> 
+> 
+> 
+> 
+> 
+> ---
+> 
+> Gregory Haskins (16):
+>       virtio: add a vbus transport
+>       vbus: add a userspace connector
+>       kvm: Add guest-side support for VBUS
+>       kvm: Add VBUS support to the host
+>       venettap: add scatter-gather support
+>       venet: add scatter-gather support
+>       venet-tap: Adds a "venet" compatible "tap" device to VBUS
+>       net: Add vbus_enet driver
+>       venet: add the ABI definitions for an 802.x packet interface
+>       ioq: add vbus helpers
+>       ioq: Add basic definitions for a shared-memory, lockless queue
+>       vbus: add a "vbus-proxy" bus model for vbus_driver objects
+>       vbus: add bus-registration notifiers
+>       vbus: add connection-client helper infrastructure
+>       vbus: add virtual-bus definitions
+>       shm-signal: shared-memory signals
+> 
+> Patrick Mullaney (1):
+>       venet-tap: add the ability to set the client's mac address via sysfs
+> 
+> 
+>  Documentation/vbus.txt           |  385 +++++++++
+>  arch/x86/Kconfig                 |   11 
+>  arch/x86/include/asm/kvm_para.h  |    1 
+>  arch/x86/kvm/Kconfig             |    9 
+>  arch/x86/kvm/Makefile            |    3 
+>  arch/x86/kvm/x86.c               |    6 
+>  arch/x86/kvm/x86.h               |   12 
+>  drivers/Makefile                 |    2 
+>  drivers/net/Kconfig              |   13 
+>  drivers/net/Makefile             |    1 
+>  drivers/net/vbus-enet.c          |  898 +++++++++++++++++++++
+>  drivers/vbus/devices/Kconfig     |   17 
+>  drivers/vbus/devices/Makefile    |    1 
+>  drivers/vbus/devices/venet-tap.c | 1641 ++++++++++++++++++++++++++++++++++++++
+>  drivers/vbus/proxy/Makefile      |    2 
+>  drivers/vbus/proxy/kvm.c         |  751 +++++++++++++++++
+>  drivers/virtio/Kconfig           |   15 
+>  drivers/virtio/Makefile          |    1 
+>  drivers/virtio/virtio_vbus.c     |  496 +++++++++++
+>  fs/proc/base.c                   |   96 ++
+>  include/linux/ioq.h              |  410 +++++++++
+>  include/linux/kvm.h              |    7 
+>  include/linux/kvm_host.h         |   26 +
+>  include/linux/kvm_para.h         |   58 +
+>  include/linux/sched.h            |    4 
+>  include/linux/shm_signal.h       |  188 ++++
+>  include/linux/vbus.h             |  166 ++++
+>  include/linux/vbus_client.h      |  115 +++
+>  include/linux/vbus_device.h      |  424 ++++++++++
+>  include/linux/vbus_driver.h      |   80 ++
+>  include/linux/vbus_userspace.h   |   48 +
+>  include/linux/venet.h            |   82 ++
+>  include/linux/virtio_vbus.h      |  163 ++++
+>  kernel/Makefile                  |    1 
+>  kernel/exit.c                    |    2 
+>  kernel/fork.c                    |    2 
+>  kernel/vbus/Kconfig              |   56 +
+>  kernel/vbus/Makefile             |   11 
+>  kernel/vbus/attribute.c          |   52 +
+>  kernel/vbus/client.c             |  543 +++++++++++++
+>  kernel/vbus/config.c             |  275 ++++++
+>  kernel/vbus/core.c               |  626 ++++++++++++++
+>  kernel/vbus/devclass.c           |  124 +++
+>  kernel/vbus/map.c                |   72 ++
+>  kernel/vbus/map.h                |   41 +
+>  kernel/vbus/proxy.c              |  216 +++++
+>  kernel/vbus/shm-ioq.c            |   89 ++
+>  kernel/vbus/userspace-client.c   |  485 +++++++++++
+>  kernel/vbus/vbus.h               |  117 +++
+>  kernel/vbus/virtio.c             |  627 +++++++++++++++
+>  lib/Kconfig                      |   21 
+>  lib/Makefile                     |    2 
+>  lib/ioq.c                        |  298 +++++++
+>  lib/shm_signal.c                 |  186 ++++
+>  virt/kvm/kvm_main.c              |   10 
+>  virt/kvm/vbus.c                  | 1392 ++++++++++++++++++++++++++++++++
+>  56 files changed, 11380 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/vbus.txt
+>  create mode 100644 drivers/net/vbus-enet.c
+>  create mode 100644 drivers/vbus/devices/Kconfig
+>  create mode 100644 drivers/vbus/devices/Makefile
+>  create mode 100644 drivers/vbus/devices/venet-tap.c
+>  create mode 100644 drivers/vbus/proxy/Makefile
+>  create mode 100644 drivers/vbus/proxy/kvm.c
+>  create mode 100644 drivers/virtio/virtio_vbus.c
+>  create mode 100644 include/linux/ioq.h
+>  create mode 100644 include/linux/shm_signal.h
+>  create mode 100644 include/linux/vbus.h
+>  create mode 100644 include/linux/vbus_client.h
+>  create mode 100644 include/linux/vbus_device.h
+>  create mode 100644 include/linux/vbus_driver.h
+>  create mode 100644 include/linux/vbus_userspace.h
+>  create mode 100644 include/linux/venet.h
+>  create mode 100644 include/linux/virtio_vbus.h
+>  create mode 100644 kernel/vbus/Kconfig
+>  create mode 100644 kernel/vbus/Makefile
+>  create mode 100644 kernel/vbus/attribute.c
+>  create mode 100644 kernel/vbus/client.c
+>  create mode 100644 kernel/vbus/config.c
+>  create mode 100644 kernel/vbus/core.c
+>  create mode 100644 kernel/vbus/devclass.c
+>  create mode 100644 kernel/vbus/map.c
+>  create mode 100644 kernel/vbus/map.h
+>  create mode 100644 kernel/vbus/proxy.c
+>  create mode 100644 kernel/vbus/shm-ioq.c
+>  create mode 100644 kernel/vbus/userspace-client.c
+>  create mode 100644 kernel/vbus/vbus.h
+>  create mode 100644 kernel/vbus/virtio.c
+>  create mode 100644 lib/ioq.c
+>  create mode 100644 lib/shm_signal.c
+>  create mode 100644 virt/kvm/vbus.c
+> 
+> -- 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
 
-Hi Alan,
-	Thank you for the comments. I discovered a few locking related
-issues in the code and had to fix them before I could send the patch
-with your suggestions applied, and hence the delay.
+-- 
+-------------------------------------
+Nikola CIPRICH
+LinuxBox.cz, s.r.o.
+28. rijna 168, 709 01 Ostrava
 
-Please find responses to your comments inline, while more changes
-accompany the patch sent separately.
+tel.:   +420 596 603 142
+fax:    +420 596 621 273
+mobil:  +420 777 093 799
 
-> > --- /dev/null
-> > +++ kernel/hw_breakpoint.c
-> 
-> > +int register_kernel_hw_breakpoint(struct hw_breakpoint *bp)
-> > +{
-> > +	int rc;
-> > +
-> > +	rc = arch_validate_hwbkpt_settings(bp, NULL);
-> > +	if (rc)
-> > +		return rc;
-> > +
-> > +	spin_lock(&hw_breakpoint_lock);
-> > +
-> > +	rc = -EINVAL;
-> > +	/* Check if we are over-committing */
-> > +	if ((hbp_kernel_pos > 0) && (!hbp_user_refcount[hbp_kernel_pos-1])) {
-> > +		hbp_kernel_pos--;
-> > +		hbp_kernel[hbp_kernel_pos] = bp;
-> > +		on_each_cpu(arch_update_kernel_hw_breakpoints, NULL, 0);
-> 
-> You shouldn't call on_each_cpu() while holding a spinlock.  The same
-> thing happens in unregister_kernel_hw_breakpoint().
-> 
+www.linuxbox.cz
 
-First, on_each_cpu() will now be changed to return only after all
-functions invoked through IPIs have returned (by changing @wait
-parameter to 1). This is required to prevent side effects of
-incrementing hbp_kernel_pos after on_each_cpu() in
-unregister_kernel_hw_breakpoint() [hbp_kernel_pos is still incremented
-after IPI and I will explain it below].
-
-on_each_cpu() isn't a blocking call (despite @wait being set to 1, which
-does a busy wait through cpu_relax()) and should be safe to invoke
-inside a spin_lock() context. I would like to know if you think
-otherwise.
-
-> > +		rc = 0;
-> > +	}
-> > +
-> > +	spin_unlock(&hw_breakpoint_lock);
-> > +	return rc;
-> > +}
-> > +EXPORT_SYMBOL_GPL(register_kernel_hw_breakpoint);
-> > +
-> > +/**
-> > + * unregister_kernel_hw_breakpoint - unregister a HW breakpoint for kernel space
-> > + * @bp: the breakpoint structure to unregister
-> > + *
-> > + * Uninstalls and unregisters @bp.
-> > + */
-> > +void unregister_kernel_hw_breakpoint(struct hw_breakpoint *bp)
-> > +{
-> > +	int i, j;
-> > +
-> > +	spin_lock(&hw_breakpoint_lock);
-> > +
-> > +	/* Find the 'bp' in our list of breakpoints for kernel */
-> > +	for (i = hbp_kernel_pos; i < HB_NUM; i++)
-> > +		if (bp == hbp_kernel[i])
-> > +			break;
-> > +
-> > +	/* Check if we did not find a match for 'bp'. If so return early */
-> > +	if (i == HB_NUM) {
-> > +		spin_unlock(&hw_breakpoint_lock);
-> > +		return;
-> > +	}
-> > +
-> > +	/*
-> > +	 * We'll shift the breakpoints one-level above to compact if
-> > +	 * unregistration creates a hole
-> > +	 */
-> > +	for (j = i; j > hbp_kernel_pos; j--)
-> > +		hbp_kernel[j] = hbp_kernel[j-1];
-> 
-> What happens if a kernel breakpoint is triggered on another CPU while
-> this loop is running?  Or what happens if the breakpoint being removed
-> is triggered on another CPU before on_each_cpu() is called below?
-> 
-> Basically, it's impossible to change the kernel breakpoints 
-> simultaneously on all CPUs.  That means you somehow have to keep both 
-> the old set and the new set around until all the CPUs are updated.
-> 
-
-I must admit that the code did not handle the above scenario. I am
-adding a per-cpu instance of 'hbp_kernel[]' called 'this_hbp_kernel[]'.
-The breakpoint handler would use the per-cpu instance which will remain
-valid throughout the execution of the handler. The per-cpu instance will
-be updated with hbp_kernel[] values in arch_update_kernel_hw_breakpoint().
-[This necessitates hbp_kernel_pos increment to happen after the IPI call
-in unregister_kernel code].
-
-> > +
-> > +	hbp_kernel[hbp_kernel_pos] = NULL;
-> > +	on_each_cpu(arch_update_kernel_hw_breakpoints, NULL, 0);
-> > +	hbp_kernel_pos++;
-> > +
-> > +	spin_unlock(&hw_breakpoint_lock);
-> > +}
-> 
-> 
-> > --- /dev/null
-> > +++ arch/x86/kernel/hw_breakpoint.c
-> 
-> > +/* Unmasked kernel DR7 value */
-> > +static unsigned long kdr7;
-> > +static const unsigned long	kdr7_masks[HB_NUM + 1] = {
-> > +	0xffff00ff,	/* LEN3, R/W3, G3, L3 */
-> > +	0xfff000fc,	/* Same for 3, 2 */
-> > +	0xff0000f0,	/* Same for 3, 2, 1 */
-> > +	0xf00f00c0,	/* Same for 3, 2, 1, 0 */
-> > +	0x00000000      /* Dummy mask used when 'pos' is HB_NUM */
-> > +};
-> 
-> These comments are completely messed up.  The comment on the first
-> line, "LEN3, R/W3, G3, L3", actually applies to the fourth value,
-> 0xf00f00c0.  Likewise for the others.
-> 
-> In the end this may not matter...
-> 
-> 
-
-The kdr7_masks[] are now removed as a result of the code re-write you
-suggested below!!
-
-> > +void arch_update_kernel_hw_breakpoints(void *unused)
-> > +{
-> > +	struct hw_breakpoint *bp;
-> > +	unsigned long dr7;
-> > +	int i;
-> > +
-> > +	get_debugreg(dr7, 7);
-> > +	/* Don't allow debug exceptions while we update the registers */
-> > +	set_debugreg(0UL, 7);
-> > +
-> > +	/* Clear all kernel-space bits in kdr7 and dr7 before we set them */
-> > +	kdr7 &= ~kdr7_masks[hbp_kernel_pos];
-> > +	dr7 &= ~kdr7_masks[hbp_kernel_pos];
-> 
-> You probably should use current->thread.debugreg7 and eliminate the
-> dr7 variable entirely.  That also means you can get rid of kdr7_masks, 
-> and it means you can increment hpb_kernel_pos before doing the 
-> on_each_cpu() call.
-> 
-
-It's a nice optimisation. I've included your suggestion.
-
-> > +
-> > +	for (i = hbp_kernel_pos; i < HB_NUM; i++) {
-> > +		bp = hbp_kernel[i];
-> > +		if (bp) {
-> > +			kdr7 |= encode_dr7(i, bp->info.len, bp->info.type);
-> > +			set_debugreg(hbp_kernel[i]->info.address, i);
-> > +		}
-> > +	}
-> 
-> Another problem: kdr7 is a global variable, and here you've got every
-> CPU recomputing it whenever a kernel breakpoint is added or removed.
-> It should be computed just once, before the on_each_cpu() call.
-> 
-
-If kdr7 needs to be updated only once, it has to be kept outside the IPI
-through the use of a wrapper routine (in arch/x86/kernel/hw_breakpoint.c
-as it is arch-specific). This would mean one more function call in
-(un)register_kernel_<> routines taking the code back to one of its previous
-designs. In a trade-off between code-brevity and efficiency, the present one
-chose the former keeping in mind some of the comments received during the
-early stages of this patch.
-
-> > +
-> > +	dr7 |= kdr7;
-> > +
-> > +	/* No need to set DR6 */
-> > +	set_debugreg(dr7, 7);
-> > +}
-> 
-> 
-> > --- arch/x86/kernel/ptrace.c.orig
-> > +++ arch/x86/kernel/ptrace.c
-> 
-> > +static int ptrace_write_dr7(struct task_struct *tsk, unsigned long data)
-> > +{
-> > +	struct thread_struct *thread = &(tsk->thread);
-> > +	unsigned long old_dr7 = thread->debugreg7;
-> > +	int i, rc = 0;
-> > +	int enabled;
-> > +	unsigned len, type;
-> > +	struct hw_breakpoint *bp;
-> > +	/*
-> > +	 * We want to use allocated memory inside a spinlock and we use the
-> > +	 * trick below
-> > +	 */
-> > +	int temp_mem_used = 0;
-> > +	void *temp_mem = kzalloc(sizeof(struct hw_breakpoint), GFP_KERNEL);
-> > +	if (!temp_mem)
-> > +		temp_mem_used = -ENOMEM;
-> 
-> I don't think this is a good idea...
-> 
-
-I agree that it turned out to be wrong. ptrace is now modified to use
-the (un)register_user_hw_breakpoint() interfaces directly and not the
-worker routines, thereby avoiding all this complexity. Please find the
-changes in the new patch.
-
-> > +restore:
-> > +	/*
-> > +	 * Loop through all the hardware breakpoints, making the
-> > +	 * appropriate changes to each.
-> > +	 */
-> > +	spin_lock(&hw_breakpoint_lock);
-> > +
-> > +	for (i = 0; i < HB_NUM; i++) {
-> > +		enabled = decode_dr7(data, i, &len, &type);
-> > +		bp = thread->hbp[i];
-> > +
-> > +		if (!enabled) {
-> > +			if (bp) {
-> > +				__unregister_user_hw_breakpoint(i, tsk);
-> > +				kfree(bp);
-> > +			}
-> > +			continue;
-> > +		}
-> > +
-> > +		if (!bp) {
-> > +			rc = -ENOMEM;
-> > +			if (temp_mem_used != -ENOMEM) {
-> > +				bp = temp_mem;
-> 
-> What happens if several new breakpoints are present at the same time?
-> You'd end up using the same memory for all of them.
-> 
-> > +				bp->info.address = thread->debugreg[i];
-> > +				bp->triggered = ptrace_triggered;
-> > +				bp->info.len = len;
-> > +				bp->info.type = type;
-> > +				temp_mem_used = 1;
-> > +				rc = __register_user_hw_breakpoint(i, tsk, bp);
-> > +				if (!rc)
-> > +					set_tsk_thread_flag(tsk, TIF_DEBUG);
-> > +				else
-> > +					kfree(bp);
-> > +			}
-> > +		} else
-> > +			rc = __modify_user_hw_breakpoint(i, tsk, bp);
-> > +
-> > +		if (rc)
-> > +			break;
-> > + 	}
-> > +	spin_unlock(&hw_breakpoint_lock);
-> > +
-> > +	/* If anything above failed, restore the original settings */
-> > +	if (rc < 0) {
-> > +		data = old_dr7;
-> > +		goto restore;
-> 
-> And now if something went wrong, you have already freed the memory
-> holding the original breakpoint structures.  It would be better to
-> keep them around until you know they aren't going to be needed.
-> 
-> Alan Stern
-> 
-
-Thanks again for your comments.
-
--- K.Prasad
-
+mobil servis: +420 737 238 656
+email servis: servis@linuxbox.cz
+-------------------------------------
