@@ -1,179 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755284AbZEKNzz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755589AbZEKN4m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755284AbZEKNzz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 09:55:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755060AbZEKNzh
+	id S1755589AbZEKN4m (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 09:56:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755088AbZEKN4N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 09:55:37 -0400
-Received: from 8bytes.org ([88.198.83.132]:50354 "EHLO 8bytes.org"
+	Mon, 11 May 2009 09:56:13 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:33772 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755149AbZEKNzg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 09:55:36 -0400
-Date: Mon, 11 May 2009 15:55:33 +0200
-From: Joerg Roedel <joro@8bytes.org>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 1/9] xen: make sure swiotlb allocation is physically
-	contigious
-Message-ID: <20090511135532.GA8671@8bytes.org>
-References: <1241741842-7966-1-git-send-email-jeremy@goop.org> <1241741842-7966-2-git-send-email-jeremy@goop.org>
+	id S1754731AbZEKN4M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 09:56:12 -0400
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [PATCH 2/2 v2] crypto: skip algs not flagged fips_allowed in fips mode
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+Date: Mon, 11 May 2009 09:53:06 -0400
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Neil Horman <nhorman@tuxdriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <1241741842-7966-2-git-send-email-jeremy@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905110953.06678.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 05:17:14PM -0700, Jeremy Fitzhardinge wrote:
-> Impact: make swiotlb allocation suitable for Xen
-> 
-> When allocating the swiotlb buffer under Xen, make sure the memory is
-> physically contiguous so that its really suitable for DMA.
-> 
-> Do this by allocating the memory as usual, but then call a Xen
-> function to rearrange the underlying pages to be physically
-> contiguous.
-> 
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
-> Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-> ---
->  arch/x86/kernel/pci-swiotlb.c |   10 ----------
->  arch/x86/xen/Makefile         |    1 +
->  arch/x86/xen/pci-swiotlb.c    |   27 +++++++++++++++++++++++++++
->  drivers/pci/xen-iommu.c       |   16 ++++++++++++++++
->  include/xen/swiotlb.h         |    6 ++++++
->  5 files changed, 50 insertions(+), 10 deletions(-)
->  create mode 100644 arch/x86/xen/pci-swiotlb.c
->  create mode 100644 include/xen/swiotlb.h
-> 
-> diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-> index 34f12e9..bc09da7 100644
-> --- a/arch/x86/kernel/pci-swiotlb.c
-> +++ b/arch/x86/kernel/pci-swiotlb.c
-> @@ -13,16 +13,6 @@
->  
->  int swiotlb __read_mostly;
->  
-> -void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
-> -{
-> -	return alloc_bootmem_low_pages(size);
-> -}
-> -
-> -void *swiotlb_alloc(unsigned order, unsigned long nslabs)
-> -{
-> -	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
-> -}
-> -
->  dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
->  {
->  	return paddr;
-> diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-> index c4cda96..caede49 100644
-> --- a/arch/x86/xen/Makefile
-> +++ b/arch/x86/xen/Makefile
-> @@ -12,3 +12,4 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
->  obj-$(CONFIG_SMP)		+= smp.o spinlock.o
->  obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
->  obj-$(CONFIG_XEN_DOM0)		+= vga.o
-> +obj-$(CONFIG_PCI_XEN)		+= pci-swiotlb.o
-> \ No newline at end of file
-> diff --git a/arch/x86/xen/pci-swiotlb.c b/arch/x86/xen/pci-swiotlb.c
-> new file mode 100644
-> index 0000000..25f0365
-> --- /dev/null
-> +++ b/arch/x86/xen/pci-swiotlb.c
-> @@ -0,0 +1,27 @@
-> +#include <linux/bootmem.h>
-> +#include <linux/gfp.h>
-> +
-> +#include <xen/swiotlb.h>
-> +#include <asm/xen/hypervisor.h>
-> +
-> +/* 
-> + * This file defines overrides for weak functions with default
-> + * implementations in lib/swiotlb.c.
-> + */
-> +
-> +void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
-> +{
-> +	void *ret = alloc_bootmem_low_pages(size);
-> +
-> +	if (ret && xen_pv_domain())
-> +		xen_swiotlb_fixup(ret, size, nslabs);
-> +
-> +	return ret;
-> +}
-> +
-> +void *swiotlb_alloc(unsigned order, unsigned long nslabs)
-> +{
-> +	/* Never called on x86.  Warn, just in case. */
+Because all fips-allowed algorithms must be self-tested before they
+can be used, they will all have entries in testmgr.c's alg_test_descs[].
+Skip self-tests for any algs not flagged as fips_approved and return
+-EINVAL when in fips mode.
 
-Can't this function be removed completly then?
+Resending with properly updated patch v2 tag.
 
-> +	WARN_ON(1);
-> +	return NULL;
-> +}
-> diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
-> index 32a8b49..c593058 100644
-> --- a/drivers/pci/xen-iommu.c
-> +++ b/drivers/pci/xen-iommu.c
-> @@ -12,6 +12,7 @@
->  #include <xen/grant_table.h>
->  #include <xen/page.h>
->  #include <xen/xen-ops.h>
-> +#include <xen/swiotlb.h>
->  
->  #include <asm/iommu.h>
->  #include <asm/swiotlb.h>
-> @@ -34,6 +35,21 @@ do {							\
->  	(unsigned long long)addr + size);		\
->  } while (0)
->  
-> +
-> +void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
-> +{
-> +	unsigned order = get_order(size);
-> +
-> +	printk(KERN_DEBUG "xen_swiotlb_fixup: buf=%p size=%zu order=%u\n",
-> +		buf, size, order);
-> +
-> +	if (WARN_ON(size != (PAGE_SIZE << order)))
-> +		return;
-> +
-> +	if (xen_create_contiguous_region((unsigned long)buf,
-> +					 order, 0xffffffff))
-                                                DMA_32BIT_MASK?
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
 
-> +		printk(KERN_ERR "xen_create_contiguous_region failed\n");
-> +}
->  static inline int address_needs_mapping(struct device *hwdev,
->  						dma_addr_t addr)
->  {
-> diff --git a/include/xen/swiotlb.h b/include/xen/swiotlb.h
-> new file mode 100644
-> index 0000000..67b7b42
-> --- /dev/null
-> +++ b/include/xen/swiotlb.h
-> @@ -0,0 +1,6 @@
-> +#ifndef _XEN_SWIOTLB_H
-> +#define _XEN_SWIOTLB_H
-> +
-> +extern void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs);
-> +
-> +#endif /* _XEN_SWIOTLB_H */
-> -- 
-> 1.6.0.6
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+---
+ crypto/testmgr.c |    8 ++++++++
+ 1 files changed, 8 insertions(+), 0 deletions(-)
+
+diff --git a/crypto/testmgr.c b/crypto/testmgr.c
+index 51bae62..f93b26d 100644
+--- a/crypto/testmgr.c
++++ b/crypto/testmgr.c
+@@ -2308,6 +2308,9 @@ int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
+ 		if (i < 0)
+ 			goto notest;
+ 
++		if (fips_enabled && !alg_test_descs[i].fips_allowed)
++			goto non_fips_alg;
++
+ 		rc = alg_test_cipher(alg_test_descs + i, driver, type, mask);
+ 		goto test_done;
+ 	}
+@@ -2316,6 +2319,9 @@ int alg_test(const char *driver, const char *alg, u32 type, u32 mask)
+ 	if (i < 0)
+ 		goto notest;
+ 
++	if (fips_enabled && !alg_test_descs[i].fips_allowed)
++		goto non_fips_alg;
++
+ 	rc = alg_test_descs[i].test(alg_test_descs + i, driver,
+ 				      type, mask);
+ test_done:
+@@ -2331,5 +2337,7 @@ test_done:
+ notest:
+ 	printk(KERN_INFO "alg: No test for %s (%s)\n", alg, driver);
+ 	return 0;
++non_fips_alg:
++	return -EINVAL;
+ }
+ EXPORT_SYMBOL_GPL(alg_test);
+
+
+-- 
+Jarod Wilson
+jarod@redhat.com
+
