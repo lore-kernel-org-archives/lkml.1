@@ -1,98 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbZEKLqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbZEKLtV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757944AbZEKLqm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 07:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZEKLqd
+	id S1757202AbZEKLtV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 07:49:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbZEKLtG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 07:46:33 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53753 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755530AbZEKLqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 07:46:32 -0400
-Date: Mon, 11 May 2009 13:45:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: fengguang.wu@intel.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       a.p.zijlstra@chello.nl, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
-       andi@firstfloor.org, mpm@selenic.com, adobriyan@gmail.com,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 4/8] proc: export more page flags in /proc/kpageflags
-Message-ID: <20090511114554.GC4748@elte.hu>
-References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu> <20090508132452.bafa287a.akpm@linux-foundation.org> <20090509104409.GB16138@elte.hu> <20090509222612.887b96e3.akpm@linux-foundation.org>
+	Mon, 11 May 2009 07:49:06 -0400
+Received: from mail-qy0-f129.google.com ([209.85.221.129]:39972 "EHLO
+	mail-qy0-f129.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754484AbZEKLtF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 07:49:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=JPqpUDP+uKe+oHiXBn/STZyomf3u2V3QPHKrtVqNswPD/PHRi60y5wos28CVBWF2r4
+         tXinpkIIi34sd3f0nX/i8rdBXGIZjntpN0yMpu2kHYMBMNYh+Iyb0ACZCNQJq1LREaSa
+         oN9JXEiFrCZ/5ptejRhc2KjtX/1y58SogyNKc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090509222612.887b96e3.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <ac3eb2510905101822t7fde14b3nf2c689621f69c925@mail.gmail.com>
+References: <20090509143742.GA27663@kroah.com>
+	 <20090509082233.32cbb8e4@infradead.org> <20090509161923.GA942@suse.de>
+	 <20090509223454.4642753d.akpm@linux-foundation.org>
+	 <20090510152005.GA9461@suse.de> <1241980263.9562.380.camel@laptop>
+	 <20090510221901.30c1c5a5@lxorguk.ukuu.org.uk>
+	 <ac3eb2510905101647k12a1b9ck71d43933037bac48@mail.gmail.com>
+	 <20090510170016.1e3a4d97@infradead.org>
+	 <ac3eb2510905101822t7fde14b3nf2c689621f69c925@mail.gmail.com>
+Date: Mon, 11 May 2009 13:49:03 +0200
+Message-ID: <b637ec0b0905110449n15340bbepb3a5adc2cee32b28@mail.gmail.com>
+Subject: Re: [patch 00/13] devtmpfs patches
+From: Fabio Comolli <fabio.comolli@gmail.com>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi
 
-* Andrew Morton <akpm@linux-foundation.org> wrote:
+On Mon, May 11, 2009 at 3:22 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
+[BIG snip]
+> Devtmpfs is the simplest, is the fastest, is the most reliable, and it
+> is the most flexible option for us. And still, nobody will be forced
+> to use it, it's entirely optional. For our systems, we decided to do
+> it that way, and we ship it already in the distro, and if there are no
+> substantial problems coming up, which we don't expect, we will
+> continue using it.
 
-> On Sat, 9 May 2009 12:44:09 +0200 Ingo Molnar <mingo@elte.hu> wrote:
-> 
-> > And because it was so crappy to be in /proc we are now also 
-> > treating it as a hard ABI, not as a debugfs interface - for that 
-> > single app that is using it.
-> 
-> We'd probably make better progress here were someone to explain 
-> what pagemap actually is.
-> 
-> pagemap is a userspace interface via which application developers 
-> (including embedded) can analyse, understand and optimise their 
-> use of memory.
-
-IMHO that's really a fancy sentence for: 'to debug how their app 
-interacts with the kernel'. Yes, it can be said without the word 
-'debug' or 'instrumentation' in it. Maybe it could also be written 
-without having any r's in it.
-
-Doing any of that does not change the meaning of the feature though.
-
-> It is not debugging feature at all, let alone a kernel debugging 
-> feature.  For this reason it is not appropriate that its 
-> interfaces be presented in debugfs.
-> 
-> Furthermore the main control file for pagemap is in 
-> /proc/<pid>/pagemap.  pagemap _cannot_ be put in debugfs because 
-> debugfs doesn't maintain the per-process subdirectories in which 
-> to place it.  /proc/<pid>/ is exactly the place where the pagemap 
-> file should appear.
-
-only if done in a stupid way.
-
-The thing is, nor are all active inodes enumerated in /debug and not 
-in /proc either. And we've stopped stuffing new instrumentation into 
-/proc about a decade ago and introduced debugfs for that.
-
-_Especially_ when some piece of instrumentation is clearly growing 
-in scope and nature, as here.
-
-> Yes, we could place pagemap's two auxiliary files into debugfs but 
-> it would be rather stupid to split the feature's control files 
-> across two pseudo filesystems, one of which may not even exist.  
-> Plus pagemap is not a kernel debugging feature.
-
-That's not what i'm suggesting though.
-
-What i'm suggesting is that there's a zillion ways to enumerate and 
-index various kernel objects, doing that in /proc is fundamentally 
-wrong. And there's no need to create a per PID/TID directory 
-structure in /debug either, to be able to list and access objects by 
-their PID.
-
-_Especially_ when the end result is not human-readable to begin 
-with, as it is in the pagemap/kpagecount/kpageflags case.
-
-	Ingo
+Can you please point me to a SuSE kernel that ships with this new feature?
+Thanks,
+Fabio
