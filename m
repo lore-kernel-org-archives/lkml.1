@@ -1,94 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbZEKOvw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755419AbZEKOwW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754985AbZEKOvw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 10:51:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbZEKOvk
+	id S1755419AbZEKOwW (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 10:52:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbZEKOwK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 10:51:40 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40242 "EHLO mx2.redhat.com"
+	Mon, 11 May 2009 10:52:10 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:43012 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752622AbZEKOvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 10:51:39 -0400
-Message-ID: <4A083B69.6010702@redhat.com>
-Date: Mon, 11 May 2009 17:51:21 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Mark Langsdorf <mark.langsdorf@amd.com>,
-       Joerg Roedel <joerg.roedel@amd.com>, kvm@vger.kernel.org,
+	id S1752661AbZEKOwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 10:52:09 -0400
+Date: Mon, 11 May 2009 16:51:59 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Mark Langsdorf <mark.langsdorf@amd.com>, joerg.roedel@amd.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH][KVM][retry 1] Add support for Pause Filtering to AMD
- SVM
-References: <200905050909.58583.mark.langsdorf@amd.com> <20090507135522.GJ4059@amd.com> <200905071000.14038.mark.langsdorf@amd.com> <4A02FECC.6060609@redhat.com> <20090511141503.GC6175@elte.hu> <4A083539.407@redhat.com> <20090511143320.GE6175@elte.hu>
-In-Reply-To: <20090511143320.GE6175@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH][KVM] Add support for Pause Filtering to AMD SVM
+Message-ID: <20090511145159.GA737@elte.hu>
+References: <200905050909.58583.mark.langsdorf@amd.com> <1242052724.11251.274.camel@twins>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242052724.11251.274.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Avi Kivity <avi@redhat.com> wrote:
->
->   
->>> I.e. this is a somewhat poor solution as far as scheduling goes. 
->>> But i'm wondering what the CPU side does. Can REP-NOP really take 
->>> thousands of cycles? If yes, under what circumstances?
->>>       
->> The guest is running rep-nop in a loop while trying to acquire a 
->> spinlock.  The hardware detects this (most likely, repeated 
->> rep-nop with the same rip) and exits.  We can program the loop 
->> count; obviously if we're spinning for only a short while it's 
->> better to keep spinning while hoping the lock will be released 
->> soon.
->>
->> The idea is to detect that the guest is not making forward 
->> progress and yield.  If I could tell the scheduler, you may charge 
->> me a couple of milliseconds, I promise not to sue, that would be 
->> ideal. [...]
->>     
->
-> Ok, with such a waiver, who could refuse?
->
-> This really needs a new kernel-internal scheduler API though, which 
-> does a lot of fancy things to do:
->
->         se->vruntime += 1000000;
->
-> i.e. add 1 msec worth of nanoseconds to the task's timeline. (first 
-> remove it from the rbtree, then add it back, and nice-weight it as 
-> well) 
 
-I suspected it would be as simple as this.
+* Peter Zijlstra <peterz@infradead.org> wrote:
 
-> And only do it if there's other tasks running on this CPU or 
-> so.
->   
+> On Tue, 2009-05-05 at 09:09 -0500, Mark Langsdorf wrote:
+> > commit 6f15c833f56267baf5abdd0fbc90a81489573053
+> > Author: Mark Langsdorf <mlangsdo@wshpnow.amd.com>
+> > Date:   Mon May 4 15:02:38 2009 -0500
+> > 
+> >     New AMD processors will support the Pause Filter Feature.
+> >     This feature creates a new field in the VMCB called Pause
+> >     Filter Count.  If Pause Filter Count is greater than 0 and
+> >     ntercepting PAUSEs is enabled, the processor will increment
+> >     an internal counter when a PAUSE instruction occurs instead
+> >     of intercepting.  When the internal counter reaches the
+> >     Pause Filter Count value, a PAUSE intercept will occur.
+> >     
+> >     This feature can be used to detect contended spinlocks,
+> >     especially when the lock holding VCPU is not scheduled.
+> >     Rescheduling another VCPU prevents the VCPU seeking the
+> >     lock from wasting its quantum by spinning idly.
+> >     
+> >     Experimental results show that most spinlocks are held
+> >     for less than 1000 PAUSE cycles or more than a few
+> >     thousand.  Default the Pause Filter Counter to 3000 to
+> >     detect the contended spinlocks.
+> >     
+> >     Processor support for this feature is indicated by a CPUID
+> >     bit.
+> >     
+> >     On a 24 core system running 4 guests each with 16 VCPUs,
+> >     this patch improved overall performance of each guest's
+> >     32 job kernbench by approximately 1%.  Further performance
+> >     improvement may be possible with a more sophisticated
+> >     yield algorithm.
+> 
+> Isn't a much better solution to the spinlock problem a usable 
+> monitor-wait implementation?
+> 
+> If we implement virt spinlocks using monitor-wait they don't spin 
+> but simply wait in place, the HV could then decide to run someone 
+> else.
+> 
+> This is the HV equivalent to futexes.
+> 
+> The only problem with this is that the current hardware has horrid 
+> mwait wakeup latencies. If this were (much) improved you don't 
+> need such ugly yield hacks like this.
 
-What would happen if there weren't?  I'd guess the task would continue 
-running (but with a warped vruntime)?
+I've considered MWAIT, but its really hard on the hw side:
 
-> _That_ would be pretty efficient, and would do the right thing when 
-> two (or more) vcpus run on the same CPU, and it would also do the 
-> right thing if there are repeated VM-exits due to pause filtering.
->
-> Please dont even think about using yield for this though - that will 
-> just add a huge hit to this task and wont result in any sane 
-> behavior - and yield is bound to some historic user-space behavior 
-> as well.
->
-> A gradual and linear back-off from the current timeline is more of a 
-> fair negotiation process between vcpus and results in more or less 
-> sane (and fair) scheduling, and no unnecessary looping.
->
-> You could even do an exponential backoff up to a limit of 1-10 msecs 
-> or so, starting at 100 usecs.
->   
+the hardware would have to generate a 'wakeup', meaning it either 
+has to trap out, or has to send an irq.
 
-Good idea, it eliminates another variable to be tuned.
+Trapping out is only possible on the release-the-lock side - which 
+is usually on the wrong physical CPU, and it also happens _too late_ 
+- such monitor/wait thingies are usually based on MESI cache, and 
+the originating CPU does not wait for everything to happen.
 
--- 
-error compiling committee.c: too many arguments to function
+An irq (on the target CPU that notices the cacheline flush) is more 
+feasible, but it is several thousand cycles to begin with.
 
+Irqs/vectors are a lot harder to add in general as well, and incur a 
+cost of several years of CPU-design-cycle latency. Furthermore, the 
+bits around MESI updates are _very_ sensitive codepaths of the CPU, 
+while REP; NOP is a slowpath to begin with.
+
+But ... especially as SMT techniques spread, something like that 
+will have to happen as well - but it will take years. Meanwhile, 
+this particular CPU feature is there, it's fairly intuitive (plus a 
+VM exit doesnt really change the CPU's behavior materially, so a lot 
+easier to validate and get OS support for), so we could use it.
+
+	Ingo
