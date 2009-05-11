@@ -1,96 +1,184 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756583AbZEKKDT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbZEKKGa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756583AbZEKKDT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 06:03:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbZEKKDG
+	id S1757194AbZEKKGa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 06:06:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755632AbZEKKGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 06:03:06 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:42083 "EHLO mx3.mail.elte.hu"
+	Mon, 11 May 2009 06:06:21 -0400
+Received: from cmpxchg.org ([85.214.51.133]:50368 "EHLO cmpxchg.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755401AbZEKKDD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 06:03:03 -0400
-Date: Mon, 11 May 2009 12:02:26 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, robert.richter@amd.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter, x86: remove
-	X86_FEATURE_ARCH_PERFMON flag for AMD cpus
-Message-ID: <20090511100226.GA31041@elte.hu>
-References: <1241002046-8832-2-git-send-email-robert.richter@amd.com> <tip-da1a776be1ac7f78bb30ececbec4c1383163b079@git.kernel.org> <1241931753.4796.15.camel@localhost.localdomain> <1241934795.4796.55.camel@localhost.localdomain> <20090510063047.GD30778@elte.hu> <1241938310.4796.67.camel@localhost.localdomain>
-MIME-Version: 1.0
+	id S1755241AbZEKKGV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 06:06:21 -0400
+Date: Mon, 11 May 2009 12:03:49 +0200
+From: Johannes Weiner <hannes@cmpxchg.org>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: Rik van Riel <riel@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Peter Zijlstra <peterz@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>, linux-kernel@vger.kernel.org,
+       tytso@mit.edu, linux-mm@kvack.org, elladan@eskimo.com, npiggin@suse.de,
+       cl@linux-foundation.org, minchan.kim@gmail.com
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first class  citizen
+Message-ID: <20090511100349.GA5086@cmpxchg.org>
+References: <20090508125859.210a2a25.akpm@linux-foundation.org> <20090508230045.5346bd32@lxorguk.ukuu.org.uk> <2f11576a0905100159m32c36a9ep9fb7cc5604c60b2@mail.gmail.com> <1241946446.6317.42.camel@laptop> <2f11576a0905100236u15d45f7fm32d470776659cfec@mail.gmail.com> <20090510144533.167010a9@lxorguk.ukuu.org.uk> <4A06EA08.1030102@redhat.com> <20090510211350.7aecc8de@lxorguk.ukuu.org.uk> <4A073B0D.4090604@redhat.com> <20090510142322.690186a4@infradead.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1241938310.4796.67.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <20090510142322.690186a4@infradead.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Sun, May 10, 2009 at 02:23:22PM -0700, Arjan van de Ven wrote:
+> On Sun, 10 May 2009 16:37:33 -0400
+> Rik van Riel <riel@redhat.com> wrote:
+> 
+> > Alan Cox wrote:
+> > > Historically BSD tackled some of this by actually swapping
+> > > processes out once pressure got very high 
+> > 
+> > Our big problem today usually isn't throughput though,
+> > but latency - the time it takes to bring a previously
+> > inactive application back to life.
+> 
+> Could we do a chain? E.g. store which page we paged out next (for the
+> vma) as part of the first pageout, and then page them just right back
+> in? Or even have a (bitmap?) of pages that have been in memory for the
+> vma, and on a re-fault, look for other pages "nearby" that used to be
+> in but are now out ?
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+I'm not sure I understand your chaining idea.
 
-> On Sun, 2009-05-10 at 08:30 +0200, Ingo Molnar wrote:
-> > * Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
-> > 
-> > > > #define X86_FEATURE_ARCH_PERFMON (3*32+11) /* Intel Architectural PerfMon */
-> > > > should be replaced by
-> > > > #define X86_FEATURE_ARCH_PERFMON (3*32+11) /* Performace Monitor */
-> > > > 
-> > > > All x86 cpus which support performance monitor should set this feature.
-> > > > 
-> > > 
-> > > Currently X86_FEATURE_ARCH_PERFMON is enabled for >= Intel Core2
-> > > 
-> > > But Performance monitor is almost supported by all Intel 
-> > > processors. I am adding few MSRs list for reference to see 
-> > > complete list please check arch/x86/kernel/cpu/cpu_debug.c
-> > 
-> > I think you are confusing two things:
-> > 
-> > - The 'architectural perfmon' CPU flag, enumerated in CPUID. (this 
-> >   is a relatively new CPUID flag that only Intel CPUs at around 
-> >   Core2 and later will report.)
-> > 
-> > - The concept of 'performance monitoring' - which has been present 
-> >   in various x86 CPUs starting at the original Pentium (P5) 15 years 
-> >   ago or so.
-> > 
-> > The X86_FEATURE_ARCH_PERFMON flag is for the architectural perfmon 
-> > CPUID feature. If you execute CPUID you'll get that from the CPU - 
-> > on Core2 and later Intel CPUs. You wont get it on AMD CPUs. You wont 
-> > get it on earlier Intel CPUs.
-> > 
-> > And since 'Architectural Performance Monitoring' is an Intel only 
-> > thing, it would not be correct to do as if AMD had the same thing. 
-> > AMD has something _similar_, but not quite the same.
-> > 
-> 
-> Thanks for clarification.
-> 
-> There is one more way to check performance monitor support for 
-> Intel by using IA32_MISC_ENABLE MSR (0x1A0) bit 7 tells whether 
-> performance monitoring is available or not.
-> 
-> But IA32_MISC_ENABLE MSR (0x1A0) is not available for Pentium and 
-> P6.
-> 
-> So better I will add new cpufeature for performance monitoring for 
-> x86:
-> 
-> X86_FEATURE_PERFMON : Performance monitor support
+As to the virtually-related pages, I hacked up a clustering idea for
+swap-out once (and swap-in readahead should then get virtually related
+pages grouped together as well) but it didn't work out as expected.
 
-What is the exact wording of IA32_MISC_ENABLE bit 7 in the Intel 
-documents?
+The LRU order is perhaps a better hint for access patterns than the
+relationship on a virtual address level, but at the moment we fail to
+keep the LRU order intact on swap so bets are off again...
 
-	Ingo
+I have only black-box-benchmarked performance numbers and didn't look
+too close at it at the time, though.  If somebody wants to play with
+it, patch is attached.
+
+	Hannes
+
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 3b58602..ba11dee 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1020,6 +1020,101 @@ int isolate_lru_page(struct page *page)
+ 	return ret;
+ }
+ 
++static unsigned long cluster_inactive_anon_vma(struct vm_area_struct *vma,
++					struct page *page,
++					unsigned long *scanned,
++					struct list_head *cluster)
++{
++	pte_t *pte;
++	spinlock_t *ptl;
++	unsigned long va, area, start, end, nr_taken = 0, nr_scanned = 0;
++
++	va = page_address_in_vma(page, vma);
++	if (va == -EFAULT)
++		return 0;
++
++	pte = page_check_address(page, vma->vm_mm, va, &ptl, 0);
++	if (!pte)
++		return 0;
++	pte_unmap_unlock(pte, ptl);
++
++	area = page_cluster << PAGE_SHIFT;
++	start = va - area;
++	if (start < vma->vm_start)
++		start = vma->vm_start;
++	end = va + area;
++	if (end > vma->vm_end)
++		end = vma->vm_end;
++
++	for (va = start; va < end; va += PAGE_SIZE, nr_scanned++) {
++		pgd_t *pgd;
++		pud_t *pud;
++		pmd_t *pmd;
++		struct zone *zone;
++		struct page *cursor;
++
++		pgd = pgd_offset(vma->vm_mm, va);
++		if (!pgd_present(*pgd))
++			continue;
++		pud = pud_offset(pgd, va);
++		if (!pud_present(*pud))
++			continue;
++		pmd = pmd_offset(pud, va);
++		if (!pmd_present(*pmd))
++			continue;
++		pte = pte_offset_map_lock(vma->vm_mm, pmd, va, &ptl);
++		if (!pte_present(*pte)) {
++			pte_unmap_unlock(pte, ptl);
++			continue;
++		}
++		cursor = vm_normal_page(vma, va, *pte);
++		pte_unmap_unlock(pte, ptl);
++
++		if (!cursor || cursor == page)
++			continue;
++
++		zone = page_zone(cursor);
++		if (zone != page_zone(page))
++			continue;
++
++		spin_lock_irq(&zone->lru_lock);
++		if (!__isolate_lru_page(cursor, ISOLATE_INACTIVE, 0)) {
++			list_move_tail(&cursor->lru, cluster);
++			nr_taken++;
++		}
++		spin_unlock_irq(&zone->lru_lock);
++	}
++	*scanned += nr_scanned;
++	return nr_taken;
++}
++
++static unsigned long cluster_inactive_anon(struct list_head *list,
++					unsigned long *scanned)
++{
++	LIST_HEAD(cluster);
++	unsigned long nr_taken = 0, nr_scanned = 0;
++
++	while (!list_empty(list)) {
++		struct page *page;
++		struct anon_vma *anon_vma;
++		struct vm_area_struct *vma;
++
++		page = list_entry(list->next, struct page, lru);
++		list_move(&page->lru, &cluster);
++
++		anon_vma = page_lock_anon_vma(page);
++		if (!anon_vma)
++			continue;
++		list_for_each_entry(vma, &anon_vma->head, anon_vma_node)
++			nr_taken += cluster_inactive_anon_vma(vma, page,
++							&nr_scanned, &cluster);
++		page_unlock_anon_vma(anon_vma);
++	}
++	list_replace(&cluster, list);
++	*scanned += nr_scanned;
++	return nr_taken;
++}
++
+ /*
+  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
+  * of reclaimed pages
+@@ -1061,6 +1156,11 @@ static unsigned long shrink_inactive_list(unsigned long max_scan,
+ 		nr_taken = sc->isolate_pages(sc->swap_cluster_max,
+ 			     &page_list, &nr_scan, sc->order, mode,
+ 				zone, sc->mem_cgroup, 0, file);
++		if (!file && mode == ISOLATE_INACTIVE) {
++			spin_unlock_irq(&zone->lru_lock);
++			nr_taken += cluster_inactive_anon(&page_list, &nr_scan);
++			spin_lock_irq(&zone->lru_lock);
++		}
+ 		nr_active = clear_active_flags(&page_list, count);
+ 		__count_vm_events(PGDEACTIVATE, nr_active);
+ 
