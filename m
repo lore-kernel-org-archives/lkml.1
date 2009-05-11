@@ -1,50 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757045AbZEKRWU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757886AbZEKRWn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757045AbZEKRWU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 13:22:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753688AbZEKRWL
+	id S1757886AbZEKRWn (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 13:22:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754695AbZEKRWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 13:22:11 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:36668 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752052AbZEKRWK convert rfc822-to-8bit (ORCPT
+	Mon, 11 May 2009 13:22:32 -0400
+Received: from mta-1.ms.rz.RWTH-Aachen.DE ([134.130.7.72]:33983 "EHLO
+	mta-1.ms.rz.rwth-aachen.de" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753890AbZEKRWa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 13:22:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=FSbVOoKMOofMGI4VIKvZGokqR+fKDxt7eRYVZ3kbmN88iLpZCGDz4JhxEMoMO0CB5p
-         r8mC1CiYJ0BJqETAZun7508gJnUPQyn9G9J2NzvR8zIaaFM2qZ2RMrL1al+9/FEAmPiG
-         cuoWbquvwIo0KyqcaE5a5SDFJyHkS9U+uWn08=
-MIME-Version: 1.0
-In-Reply-To: <20090511160324.GA7923@infradead.org>
-References: <20090503233015.GJ16631@x200.localdomain>
-	 <tip-0c23590f00f85467b318ad0c20c36796a5bd4c60@git.kernel.org>
-	 <20090511160324.GA7923@infradead.org>
-Date: Mon, 11 May 2009 21:22:09 +0400
-Message-ID: <b6fcc0a0905111022g1df0b1c5l95c2a072745578a0@mail.gmail.com>
-Subject: Re: [tip:x86/asm] x86, 64-bit: ifdef out struct thread_struct::ip
-From: Alexey Dobriyan <adobriyan@gmail.com>
-To: Christoph Hellwig <hch@infradead.org>
-Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, mingo@elte.hu, linux-tip-commits@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 11 May 2009 13:22:30 -0400
+MIME-version: 1.0
+Content-transfer-encoding: 7BIT
+Content-type: text/plain; charset=us-ascii
+X-IronPort-AV: E=Sophos;i="4.40,329,1238968800";   d="scan'208";a="5640880"
+From: Stefan Lankes <lankes@lfbs.rwth-aachen.de>
+To: "'Andi Kleen'" <andi@firstfloor.org>
+Cc: linux-kernel@vger.kernel.org, Lee.Schermerhorn@hp.com,
+       linux-numa@vger.kernel.org, brice.goglin@inria.fr,
+       "'Terboven, Christian'" <terboven@rz.rwth-aachen.de>,
+       anmey@rz.rwth-aachen.de, Boris Bierbaum <boris@lfbs.rwth-aachen.de>
+References: <000c01c9d212$4c244720$e46cd560$@rwth-aachen.de>
+ <87zldjn597.fsf@basil.nowhere.org>
+ <001501c9d248$69e2a870$3da7f950$@rwth-aachen.de>
+ <20090511163719.GA19296@one.firstfloor.org>
+In-reply-to: <20090511163719.GA19296@one.firstfloor.org>
+Subject: RE: [RFC PATCH 0/4]: affinity-on-next-touch
+Date: Mon, 11 May 2009 19:22:31 +0200
+Organization: Chair for Operating Systems, RWTH Aachen University
+Message-id: <000301c9d25d$113c0f30$33b42d90$@rwth-aachen.de>
+X-Mailer: Microsoft Office Outlook 12.0
+Thread-index: AcnSVgWdILyzYlYeSFKyrgZVRck4hgAAf59Q
+Content-language: de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 8:03 PM, Christoph Hellwig <hch@infradead.org> wrote:
-> On Mon, May 11, 2009 at 03:09:40PM +0000, tip-bot for Alexey Dobriyan wrote:
->> +#ifdef CONFIG_X86_32
->>       unsigned long           ip;
->> +#endif
->>  #ifdef CONFIG_X86_64
->>       unsigned long           fs;
->>  #endif
->
-> What happened to the good old concept of #if #else #endif?
 
-#else suggests alternative which is not the case.
-->ip and ->fs can be in different parts of thread_struct.
+
+> -----Original Message-----
+> From: Andi Kleen [mailto:andi@firstfloor.org]
+> Sent: Monday, May 11, 2009 6:37 PM
+> To: Stefan Lankes
+> Cc: 'Andi Kleen'; linux-kernel@vger.kernel.org;
+> Lee.Schermerhorn@hp.com; linux-numa@vger.kernel.org;
+> brice.goglin@inria.fr; 'Terboven, Christian'; anmey@rz.rwth-aachen.de;
+> 'Boris Bierbaum'
+> Subject: Re: [RFC PATCH 0/4]: affinity-on-next-touch
+> 
+> > By default, mbind only has an effect on new allocations. I think that
+> this
+> 
+> Nope, it affects existing pages too, it can even move pages
+> if you ask for it.
+> 
+
+I know this possibility. I thought that "affinity-on-next-touch" fit better
+to madvise. Brice told already the technical reasons for preferring of
+madvise.
+
+> > For instance, Norden's PDE solvers using adaptive mesh refinements
+> (AMR) [1]
+> > is an application with a dynamic access pattern. We use this example
+> to
+> > evaluate the performance of our patch. We ran this solver on our
+> > quad-socket, dual-core Opteron 875 (2.2GHz) system running CentOS
+> 5.2. The
+> > code was already optimized for NUMA architectures. Before the arrays
+> are
+> > initialized, the threads are bound to one core. In our test case, the
+> solver
+> > needs 5318s. If we use our kernel extension, the solver needs 4489s.
+> 
+> Okay that sounds like good numbers.
+> 
+> > Currently, we are testing some other apps.
+> 
+> Please keep the list updated.
+> 
+
+I will do it.
+
+Stefan
+
