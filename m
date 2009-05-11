@@ -1,42 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756869AbZEKNJs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757842AbZEKNKe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756869AbZEKNJs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 09:09:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751914AbZEKNJj
+	id S1757842AbZEKNKe (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 09:10:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755801AbZEKNKX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 09:09:39 -0400
-Received: from viefep13-int.chello.at ([62.179.121.33]:25923 "EHLO
-	viefep13-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751416AbZEKNJi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 09:09:38 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [RFC/PATCH 0/6] lockdep: Maintain read/write states for
- lock_acquires
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Gautham R Shenoy <ego@in.ibm.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Paul E McKenney <paulmck@us.ibm.com>,
-       Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org
-In-Reply-To: <20090511122936.31159.44531.stgit@sofia.in.ibm.com>
-References: <20090511122936.31159.44531.stgit@sofia.in.ibm.com>
-Content-Type: text/plain
-Date: Mon, 11 May 2009 15:09:35 +0200
-Message-Id: <1242047375.11251.271.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 11 May 2009 09:10:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:36993 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754859AbZEKNKS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 09:10:18 -0400
+Date: Mon, 11 May 2009 13:09:32 GMT
+From: tip-bot for Ian Campbell <Ian.Campbell@eu.citrix.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       ian.campbell@citrix.com, Jeremy.Fitzhardinge@citrix.com,
+       tglx@linutronix.de, Ian.Campbell@eu.citrix.com, mingo@elte.hu,
+       xen-devel@lists.xensource.com
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       ian.campbell@citrix.com, Jeremy.Fitzhardinge@citrix.com,
+       tglx@linutronix.de, Ian.Campbell@eu.citrix.com, mingo@elte.hu,
+       xen-devel@lists.xensource.com
+In-Reply-To: <1241797927.15972.51.camel@zakaz.uk.xensource.com>
+References: <1241797927.15972.51.camel@zakaz.uk.xensource.com>
+Subject: [tip:x86/xen] x86: use flush_tlb_others to implement flush_tlb_all, fix
+Message-ID: <tip-636afdbe85d50d9b88f5283b5e6d0f8518431aac@git.kernel.org>
+Git-Commit-ID: 636afdbe85d50d9b88f5283b5e6d0f8518431aac
+X-Mailer: tip-git-log-daemon
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 11 May 2009 13:09:34 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-11 at 18:09 +0530, Gautham R Shenoy wrote:
+Commit-ID:  636afdbe85d50d9b88f5283b5e6d0f8518431aac
+Gitweb:     http://git.kernel.org/tip/636afdbe85d50d9b88f5283b5e6d0f8518431aac
+Author:     Ian Campbell <Ian.Campbell@eu.citrix.com>
+AuthorDate: Fri, 8 May 2009 16:52:07 +0100
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Mon, 11 May 2009 15:08:08 +0200
 
-> Feedback is very much appreciated.
+x86: use flush_tlb_others to implement flush_tlb_all, fix
 
-Awesome work :-)
+"use the flush_tlb_others() call to implement flush_tlb_all()"
+causes:
+         BUG: spinlock bad magic on CPU#0, swapper/0
+          lock: c05b7588, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
+         Pid: 0, comm: swapper Not tainted 2.6.30-rc3-x86_32p-xen0-tip-01797-g3db7847 #1054
+         Call Trace:
+          [<c023e656>] spin_bug+0x96/0xf0
+          [<c023e90f>] _raw_spin_lock+0x6f/0x150
 
-Didn't spot any obvious (in so far as that that word can apply to this
-series) boo-boos.
+It can be called before the core_initcalls are run. Explicitly call
+init_smp_flush early on.
 
-More in-depth review will follow a bit later.
+Also there is no need for init_smp_flush to be __cpuinit.
 
+[ Impact: fix boot crash/warning ]
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
+Cc: Xen-devel <xen-devel@lists.xensource.com>
+Acked-by: Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>
+LKML-Reference: <1241797927.15972.51.camel@zakaz.uk.xensource.com>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ arch/x86/include/asm/tlbflush.h |    2 ++
+ arch/x86/mm/tlb.c               |    3 +--
+ init/main.c                     |    1 +
+ 3 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/include/asm/tlbflush.h b/arch/x86/include/asm/tlbflush.h
+index 16a5c84..2a4848d 100644
+--- a/arch/x86/include/asm/tlbflush.h
++++ b/arch/x86/include/asm/tlbflush.h
+@@ -129,6 +129,8 @@ static inline void reset_lazy_tlbstate(void)
+ 
+ #define local_flush_tlb() __flush_tlb()
+ 
++extern int init_smp_flush(void);
++
+ extern void flush_tlb_all(void);
+ extern void flush_tlb_current_task(void);
+ extern void flush_tlb_mm(struct mm_struct *);
+diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
+index e69bdad..0f030fb 100644
+--- a/arch/x86/mm/tlb.c
++++ b/arch/x86/mm/tlb.c
+@@ -229,7 +229,7 @@ void native_flush_tlb_others(const struct cpumask *cpumask,
+ 	flush_tlb_others_ipi(cpumask, mm, va);
+ }
+ 
+-static int __cpuinit init_smp_flush(void)
++int __init init_smp_flush(void)
+ {
+ 	int i;
+ 
+@@ -238,7 +238,6 @@ static int __cpuinit init_smp_flush(void)
+ 
+ 	return 0;
+ }
+-core_initcall(init_smp_flush);
+ 
+ void flush_tlb_current_task(void)
+ {
+diff --git a/init/main.c b/init/main.c
+index 3bbf93b..20e86f8 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -650,6 +650,7 @@ asmlinkage void __init start_kernel(void)
+ 	vfs_caches_init_early();
+ 	cpuset_init_early();
+ 	page_cgroup_init();
++	init_smp_flush();
+ 	mem_init();
+ 	enable_debug_pagealloc();
+ 	cpu_hotplug_init();
