@@ -1,121 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758670AbZEKUCi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbZEKUFs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758670AbZEKUCi (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 16:02:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757609AbZEKUCT
+	id S1758595AbZEKUFs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 16:05:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbZEKUFd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 16:02:19 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:49855 "EHLO mx2.mail.elte.hu"
+	Mon, 11 May 2009 16:05:33 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:55820 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756809AbZEKUCS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 16:02:18 -0400
-Date: Mon, 11 May 2009 22:01:43 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       eswierk@aristanetworks.com, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/apic] x86: read apic ID in the !acpi_lapic case
-Message-ID: <20090511200143.GJ28684@elte.hu>
-References: <49FC85A9.2070702@kernel.org> <tip-4401da6111ac58f94234417427d06a72c4048c74@git.kernel.org> <20090511110234.GH4648@elte.hu> <20090511134140.GH4624@lenovo> <20090511134950.GA949@elte.hu> <4A0863C5.9070206@kernel.org> <20090511180521.GL4624@lenovo>
+	id S1753765AbZEKUFc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 16:05:32 -0400
+Message-ID: <4A088523.6080003@redhat.com>
+Date: Mon, 11 May 2009 16:05:55 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090511180521.GL4624@lenovo>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Ingo Molnar <mingo@elte.hu>, lkml <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       Tom Zanussi <zanussi@comcast.net>
+Subject: Re: [PATCH -tip v5 0/7] tracing: kprobe-based event tracer and x86
+ instruction decoder
+References: <20090509004829.5505.38720.stgit@localhost.localdomain> <20090509044302.GH8007@elte.hu> <4A0838E6.2000309@redhat.com> <alpine.DEB.2.00.0905111054490.2492@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0905111054490.2492@gandalf.stny.rr.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
-
-> [Yinghai Lu - Mon, May 11, 2009 at 10:43:33AM -0700]
-> ...
-> | >>
-> | >> x86: apic - fixmap apic address even if apic disabled
-> | >>
-> | >> In case if apic were disabled by boot option
-> | >> we still need read_apic operation. So fixmap
-> | >> a fake apic area if needed.
-> | >>
-> | >> Signed-off-by: Cyrill Gorcunov <gorcunov@openvz.org>
-> | >> ---
-> | >>  arch/x86/kernel/apic/apic.c |   17 +++++++++--------
-> | >>  1 file changed, 9 insertions(+), 8 deletions(-)
-> | >>
-> | >> Index: linux-2.6.git/arch/x86/kernel/apic/apic.c
-> | >> =====================================================================
-> | >> --- linux-2.6.git.orig/arch/x86/kernel/apic/apic.c
-> | >> +++ linux-2.6.git/arch/x86/kernel/apic/apic.c
-> | >> @@ -1591,13 +1591,6 @@ void __init init_apic_mappings(void)
-> | >>  	} else
-> | >>  		apic_phys = mp_lapic_addr;
-> | >>  
-> | >> -	/* lets check if we may NOP'ify apic operations */
-> | >> -	if (!cpu_has_apic) {
-> | >> -		pr_info("APIC: disable apic facility\n");
-> | >> -		apic_disable();
-> | >> -		return;
-> | >> -	}
-> | >> -
-> | >>  	/*
-> | >>  	 * acpi lapic path already maps that address in
-> | >>  	 * acpi_register_lapic_address()
-> | >> @@ -1606,7 +1599,15 @@ void __init init_apic_mappings(void)
-> | >>  		set_fixmap_nocache(FIX_APIC_BASE, apic_phys);
-> | >>  
-> | >>  	apic_printk(APIC_VERBOSE, "mapped APIC to %08lx (%08lx)\n",
-> | >> -				APIC_BASE, apic_phys);
-> | >> +			APIC_BASE, apic_phys);
-> | >> +
-> | >> +	/* lets check if we may NOP'ify apic operations */
-> | >> +	if (!cpu_has_apic) {
-> | >> +		pr_info("APIC: disable apic facility\n");
-> | >> +		apic_disable();
-> | >> +		return;
-> | >> +	}
-> | >> +
-> | > 
-> | > Will check this - thanks.
-> | > 
-> | 
-> | please check this one instead.
-> | 
-> | [PATCH] x86: add native_apic_read_dummy
-> | 
-> | when apic is not used ( not there, or disable_apic ), try to install
-> | dummy read too.
-> | 
-> | could save 4k in that case.
-> | 
-> | [ Impact: fix bug when try to dump APIC reg ]
-> | 
-> | Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> | Cc: Cyrill Gorcunov <gorcunov@openvz.org>
-> | 
+Steven Rostedt wrote:
+> On Mon, 11 May 2009, Masami Hiramatsu wrote:
+>>> Two high-level comments:
+>>>
+>>>  - There's no self-test - would it be possible to add one? See 
+>>>    trace_selftest* in kernel/trace/
+>> I'm not so sure. Currently, it seems that those self-tests are
+>> only for tracers which define new event-entry on ring-buffer.
+>> Since this tracer just use ftrace_bprintk, it might need
+>> another kind of selftest. e.g. comparing outputs with
+>> expected patterns.
+>> In that case, would it be better to make a user-space self test
+>> including filters and tracepoints?
 > 
-> Thanks Yinghai, looks really attractive!
-> 
-> But would need a good testing (seems we
-> rely on read_apic heavily in smp environment
-> even if it was disabled or not supported).
-> 
-> (btw comment about disable_apic now should
->  contain apic->read as well or should be dropped
->  completely since all is selfevidence from code
->  though this is not that important i believe)
+> Or have the workings in the selftest in kernel. As if a user started it. 
+> It does not need to write to the ring buffer, that is just what I did. The 
+> event selftests don't check if anything was written to the ring buffer, 
+> they just make sure that the tests don't crash the system.
 
-Needs a delta patch against -tip - i got this stuff stable today but 
-i dont want to replace patches as it has a problematic track record 
-already.
+Would you mean that it is enough to enable some probes and just
+see what happened at boot time?
+That's so easy to add.
 
-	Ingo
+Thank you :-),
+
+-- 
+Masami Hiramatsu
+
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
+
+e-mail: mhiramat@redhat.com
+
