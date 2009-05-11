@@ -1,95 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757811AbZEKREV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756017AbZEKREj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757811AbZEKREV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 13:04:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbZEKRBp
+	id S1756017AbZEKREj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 13:04:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758461AbZEKRCd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 13:01:45 -0400
-Received: from hera.kernel.org ([140.211.167.34]:43755 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758094AbZEKRBo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 13:01:44 -0400
-Subject: [PATCH 15/15 -tip] x86: Add cpufeature for ancient performance
- monitoring
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@kernel.org>, Robert Richter <robert.richter@amd.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <1242060905.5139.24.camel@ht.satnam>
-References: <1242058494.5139.7.camel@ht.satnam>
-	 <1242060119.5139.9.camel@ht.satnam>  <1242060207.5139.11.camel@ht.satnam>
-	 <1242060254.5139.12.camel@ht.satnam>  <1242060301.5139.13.camel@ht.satnam>
-	 <1242060523.5139.15.camel@ht.satnam>  <1242060567.5139.16.camel@ht.satnam>
-	 <1242060601.5139.17.camel@ht.satnam>  <1242060644.5139.18.camel@ht.satnam>
-	 <1242060681.5139.19.camel@ht.satnam>  <1242060721.5139.20.camel@ht.satnam>
-	 <1242060771.5139.21.camel@ht.satnam>  <1242060812.5139.22.camel@ht.satnam>
-	 <1242060858.5139.23.camel@ht.satnam>  <1242060905.5139.24.camel@ht.satnam>
-Content-Type: text/plain
-Date: Mon, 11 May 2009 22:25:47 +0530
-Message-Id: <1242060947.5139.25.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Mon, 11 May 2009 13:02:33 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:20973 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758435AbZEKRCc (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 13:02:32 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=BCUkgGciGEk/VPSyokjVwAWTqZWXw6SRixpy9K1g4yepCK2hfbip8GmpNnMB3dbcUb
+         DhCEOThSwnIXOHwxVrXWvVs/Izz+1OpDMq4uL5ajLsDTM9a60N9IEMSvipfbDb7QiaHu
+         i9P3jG8gD8ZVQVuxZ9RVkBi1yGSAzVvslXCc4=
+MIME-Version: 1.0
+Date: Mon, 11 May 2009 10:02:32 -0700
+Message-ID: <dd18b0c30905111002y4aeb2033ma2fbb2730f5acdaf@mail.gmail.com>
+Subject: ath9k seems to be broken on 2.6.30-rc4 with a macbook pro
+From: Justin Mattock <justinmattock@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I've been trying to diagnose an issue
+with 2.6.30-rc4. At first thinking it
+was not the kernel, but the network manager
+(in my case I use wicd).
+with 2.6.29-rc8 the system starts up,
+connects no problem.
+but as soon as I load 2.6.30-rc4
+I get limited connection to none.
+in dmesg I see:
 
-X86_FEATURE_ARCH_PERFMON uses almost different MSRs as compare to
-ancient performance monitoring, so introduced X86_FEATURE_PERFMON
-to friendly access ancient performance monitor MSRs:
+[   36.337419] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 1
+[   36.530106] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 2
+[   36.730100] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 3
+[   36.930101] wlan0: direct probe to AP 00:1e:2a:00:67:f0 timed out
+[   44.421728] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 1
+[   44.620080] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 2
+[   44.820080] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 3
+[   45.020076] wlan0: direct probe to AP 00:1e:2a:00:67:f0 timed out
 
-X86_FEATURE_PERFMON : performance monitoring for !X86_FEATURE_ARCH_PERFMON
+The type of encryption used is just
+a standard WEP key(no WPA).
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/include/asm/cpufeature.h |    1 +
- arch/x86/kernel/cpu/amd.c         |    2 ++
- arch/x86/kernel/cpu/intel.c       |    4 +++-
- 3 files changed, 6 insertions(+), 1 deletions(-)
+has this been resolved already?
 
-diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
-index b91cb47..f660e99 100644
---- a/arch/x86/include/asm/cpufeature.h
-+++ b/arch/x86/include/asm/cpufeature.h
-@@ -169,6 +169,7 @@
- #define X86_FEATURE_MM_CFG 	(7*32+ 14) /* MM configuration		*/
- #define X86_FEATURE_BUS_CFG 	(7*32+ 15) /* Bus configuration		*/
- #define X86_FEATURE_PERF_FREQ 	(7*32+ 16) /* Performance frequency	*/
-+#define X86_FEATURE_PERFMON 	(7*32+ 17) /* Performance monitoring	*/
- 
- /* Virtualization flags: Linux defined */
- #define X86_FEATURE_TPR_SHADOW  (8*32+ 0) /* Intel TPR Shadow */
-diff --git a/arch/x86/kernel/cpu/amd.c b/arch/x86/kernel/cpu/amd.c
-index 4b7f7dc..849d794 100644
---- a/arch/x86/kernel/cpu/amd.c
-+++ b/arch/x86/kernel/cpu/amd.c
-@@ -481,6 +481,8 @@ static void __cpuinit init_amd(struct cpuinfo_x86 *c)
- 	if (c->x86 >= 7) {				/* K7+		*/
- 		/* MSRC001_0015 Hardware Configuration Register (HWCR)	*/
- 		set_cpu_cap(c, X86_FEATURE_HW_CFG);
-+		/* Performance monitoring support			*/
-+		set_cpu_cap(c, X86_FEATURE_PERFMON);
- 	}
- 	if (c->x86 >= 8) {				/* K8+		*/
- 		/*
-diff --git a/arch/x86/kernel/cpu/intel.c b/arch/x86/kernel/cpu/intel.c
-index 9c5169c..e3ce8c6 100644
---- a/arch/x86/kernel/cpu/intel.c
-+++ b/arch/x86/kernel/cpu/intel.c
-@@ -310,7 +310,9 @@ static void __cpuinit init_intel(struct cpuinfo_x86 *c)
- 		/* Check for version and the number of counters */
- 		if ((eax & 0xff) && (((eax>>8) & 0xff) > 1))
- 			set_cpu_cap(c, X86_FEATURE_ARCH_PERFMON);
--	}
-+	} else if (c->x86 >= 5)
-+		/* ancient performance monitoring support */
-+		set_cpu_cap(c, X86_FEATURE_PERFMON);
- 
- 	if (cpu_has_xmm2)
- 		set_cpu_cap(c, X86_FEATURE_LFENCE_RDTSC);
+Also I'm noticing(but not that big of a deal)
+if I set in sysctl.conf:
+
+net.ipv4.conf.all.arp_ignore=8
+net.ipv4.conf.wlan0.arp_ignore=8
+net.ipv4.conf.wmaster0.arp_ignore=8
+net.ipv4.conf.lo.arp_ignore=8
+net.ipv4.conf.all.arp_announce=2
+net.ipv4.conf.wlan0.arp_announce=2
+net.ipv4.conf.wmaster0.arp_announce=2
+net.ipv4.conf.lo.arp_announce=2
+
+watching a movie on hulu, about 15/20 minuets
+into enjoyment, hulu craps out(starts re-buffering)
+then re initializes after about 30 secs later.
+but if I comment those out(set back to default)
+hulu will run fine.
+
 -- 
-1.6.0.6
-
-
-
+Justin P. Mattock
