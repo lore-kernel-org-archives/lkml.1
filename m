@@ -1,113 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758630AbZEKSXR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758391AbZEKSZc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758630AbZEKSXR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 14:23:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753830AbZEKSXA
+	id S1758391AbZEKSZc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 14:25:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755161AbZEKSZU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 14:23:00 -0400
-Received: from xc.sipsolutions.net ([83.246.72.84]:51300 "EHLO
-	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753082AbZEKSW7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 14:22:59 -0400
-Subject: Re: Probe Timeouts with 47afbaf5af9454a7a1a64591e20cbfcc27ca67a8
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Parag Warudkar <parag.lkml@gmail.com>,
-       "John W. Linville" <linville@tuxdriver.com>,
-       LKML <linux-kernel@vger.kernel.org>, niel.lambrechts@gmail.com
-In-Reply-To: <alpine.LFD.2.01.0905111046310.3586@localhost.localdomain>
-References: <f7848160904301838q4883106fq8d31e2e7c0b10a14@mail.gmail.com>
-	 <1241165805.13562.2.camel@johannes.local>
-	 <f7848160905010619n74372488n45a7b7abccfe5ea7@mail.gmail.com>
-	 <alpine.LFD.2.01.0905111046310.3586@localhost.localdomain>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-43F+4Sjr8Wyi/viTfxoD"
-Date: Mon, 11 May 2009 20:22:50 +0200
-Message-Id: <1242066170.3873.43.camel@johannes.local>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1.1 
+	Mon, 11 May 2009 14:25:20 -0400
+Received: from gw.goop.org ([64.81.55.164]:52097 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754989AbZEKSZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 14:25:20 -0400
+Message-ID: <4A086D8C.3060404@goop.org>
+Date: Mon, 11 May 2009 11:25:16 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 02/18] xen: hook io_apic read/write operations
+References: <1241730883-4917-1-git-send-email-jeremy@goop.org> <1241730883-4917-3-git-send-email-jeremy@goop.org> <20090509084201.GF3656@elte.hu> <20090509084324.GA5158@elte.hu> <4A05A408.3020006@goop.org> <20090511111904.GK4648@elte.hu>
+In-Reply-To: <20090511111904.GK4648@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+>> Hm, every time you see this code, you always have this 
+>> quasi-Pavlovian response.
+>>     
+>
+> Yep, my reaction to ugly code is pretty predictable, and 
+> (hopefully!) repeatable. So calling it Pavlovian is an implicit 
+> (albeit, i suspect, unintended ;-) compliment.
+>   
 
---=-43F+4Sjr8Wyi/viTfxoD
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+My frustration is that you've generally not replied, and so we haven't 
+been able to discuss it.  Could you be more specific about what's 
+triggering the reaction?  Is it that the change is happening at the 
+io-apic level, or that its some explicit Xen code pasted in here rather 
+than via an io_apic_ops?
 
-On Mon, 2009-05-11 at 10:57 -0700, Linus Torvalds wrote:
+>> You say "use an irqchip".  I say:
+>>
+>>    * We already use irqchip
+>>    * but most of the interesting IO apic accesses (routing) are not
+>>      done via the irqchip interface
+>>    * so irqchip doesn't help
+>>     
+>
+> I dont see the problem. All APIs within Linux are kept minimalistic 
+> and are extended on the fly, on an on-demand basis.
+>   
 
-> Ok, it's -rc5, and apparently nothing has happened about this problem.=20
-> Johannes has just been stone-walling and ignoring the reports, and=20
-> claiming it's fixed when it clearly wasn't.=20
+Sure, where it makes sense.  One wouldn't start extending an API in a 
+completely different direction.  irq_chip currently only deals with 
+"irqs"; what those irqs mean and connect to are not its business because 
+that has all been set up elsewhere.  If you start adding interrupt 
+routing, then it starts needing to know about devices, busses, etc.  I 
+can't see how that makes much sense at all, particularly for an 
+arch-independent interface.
 
-?
-I always only said it was fixed in wireless-testing and that the fix was
-on the way upstream. I have no influence over more. And I worked with
-Parag in the bugzilla bug to fix the other bug he was seeing on
-wireless-testing-based wireless code up to where he could no longer
-reproduce the issue.
+>
+> Well, my main task at this stage is to point out ugly code. I might 
+> be able to do research for you and come up with a plan for you, but 
+> that's really a courtesy in general and is not always possible for 
+> maintainers. You might argue "of all possible solutions this is the 
+> cleanest" but i havent seen you make that point.
 
-> I just verified on one of my older machines (running current fedora-11,=20
-> with a 4965AGN rev=3D0x4) that the problem is real, and that reverting th=
-at=20
-> commit does indeed seem to fix it.
+I'd love to, but Plato isn't taking my calls so I can't check.
 
-http://git.kernel.org/?p=3Dlinux/kernel/git/torvalds/linux-2.6.git;a=3Dcomm=
-it;h=3Dc428c89201a57a0ce24c37ed79e540d1f4101cf3
+But I do think hooking the io-apic operations makes more sense than any 
+other solution because we explicitly want all the other code above it.  
+The *only* difference between a Xen io-apic and a native io-apic is that 
+we need to access the registers with hypercalls rather than mmio.  Same 
+registers, same meanings, same settings made at the same time.  So the 
+io-apic accessors are at precisely the right level of abstraction for 
+our needs; introducing something higher-level would be an abstraction 
+impedance mismatch, and would be no better for it.
 
-What does "older" mean here, and what kernel were you using?
+An io_apic_ops makes sense to me, if adding it would stop triggering 
+your ugly-code detector.  But that's specifically what HPA objected to 
+in this series...
 
-> So here goes: I'm going to revert that commit today or tomorrow, unless=20
-> somebody sends me a fix that I can verify. I don't want any more excuses,=
-=20
-> I don't want to hear developers dismissing bug-reports, and I _can_ verif=
-y=20
-> this problem myself.
->=20
-> We do not fix bugs by introducing new regressions and then ignoring the=20
-> reports. Especially since the bug that the commit in question fixes seems=
-=20
-> to be _way_ less important than the bug it then introduces.
-
-I never ignored the reports. I was a little mad at Parag because he was
-reporting a bug that I had just fixed, and he had even seen the original
-report. It turned out it wasn't his fault that he couldn't find the fix
-from the original thread, and I suppose I could have handled the
-duplicate report better even if Parag had known about the fix. I'm sorry
-about that.
-
-If you revert that commit (from subject), you're going to make it
-default to transmit power -1 dBm if commit c428c892 is in your tree as
-well. I have to wonder whether your testing included that commit,
-because if reverting 47afbaf5 helped I would think it did not.
-
-=46rom my perspective the bug is dealt with since commit c428c892, if you
-want to revert anything please revert _both_ c428c892 and 47afbaf5.
-
-johannes
-
-
---=-43F+4Sjr8Wyi/viTfxoD
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-
-iQIcBAABAgAGBQJKCGzzAAoJEODzc/N7+QmaCo4QAMPxqEhkaeZ5cggjmnFzehFy
-F8SJHjjxTMJLIzm2MGs6jsmopudN4dv4xWLEvxYV2YhfQJVbqzQN53uj5XbvHXhV
-a+VT3BI/uiSViH3XHcrz94N66a3/DD1/8Djpwd3NFOxPb7nlKS5HLsiq/QIvZJS2
-RSL+YaZpyFlXLRMLM+JbyuB5lLq/SERmJWMvDtTWwMMHH9cvozk3yoL1zbhvn/lP
-9NOwv+EaVVly7irjDthKQaPI6UVPhWWUaB2TX3syQ/emx5N5TXVkYXr+K4GV1qa6
-83Dv2SnvrlHl7qW6FppPwBdArkBCHhQDkjzZryaduOhRWSa7XipstF9ifGolJDwj
-kmpxZQUOljgtD+wRwGhYENxYQGoQH7/4WcsIU6jxzztvQpMs0syCODfnh7aCH83B
-pkPkPjnXG9dzoWf3U3gbqERJ5bI5sXrxp3Fpj3A4RYMCQ2tzUCyTk5lolQWbd5OH
-OyLJ1OsVtuP67zxjmgAziLRIilEM9Xm4kseFyohQPKPda/+5AW2f6UaIn67rkmLk
-fMJfEX7E+lj3WI8zFpt8yAg6XSr/JzByO9NDU/XH9ND/NEQDVX1x7ZgSg4GsDHVZ
-RS9NHL9M7jubCyAS0gQXcITomcyFArvQkDzxos9yp7YI1UfwOEk03ndIcVXezJYR
-oQKx97VKK0S4+8+VN0zg
-=wuWR
------END PGP SIGNATURE-----
-
---=-43F+4Sjr8Wyi/viTfxoD--
-
+    J
