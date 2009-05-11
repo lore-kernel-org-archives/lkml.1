@@ -1,87 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755357AbZEKRsX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757559AbZEKRvZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755357AbZEKRsX (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 13:48:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZEKRsK
+	id S1757559AbZEKRvZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 13:51:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753901AbZEKRvO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 13:48:10 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56092 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751678AbZEKRsJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 13:48:09 -0400
-Message-ID: <4A086467.1080205@redhat.com>
-Date: Mon, 11 May 2009 12:46:15 -0500
-From: Eric Sandeen <sandeen@redhat.com>
+	Mon, 11 May 2009 13:51:14 -0400
+Received: from an-out-0708.google.com ([209.85.132.244]:49021 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752392AbZEKRvO (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 13:51:14 -0400
+Message-ID: <4A086590.4040602@codemonkey.ws>
+Date: Mon, 11 May 2009 12:51:12 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
 User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Josef Bacik <josef@redhat.com>, linux-fsdevel@vger.kernel.org,
-       sandeen@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC] fiemap tester
-References: <20090508191649.GG9068@unused.rdu.redhat.com> <20090508161318.c73d766c.akpm@linux-foundation.org> <20090511094639.GA7488@infradead.org> <20090511171046.GA21518@mit.edu>
-In-Reply-To: <20090511171046.GA21518@mit.edu>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Avi Kivity <avi@redhat.com>
+CC: Hollis Blanchard <hollisb@us.ibm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Gregory Haskins <ghaskins@novell.com>,
+       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
+       kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <20090505132005.19891.78436.stgit@dev.haskins.net>	 <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com>	 <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com>	 <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com>	 <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com>	 <4A02D40D.7060307@redhat.com> <4A0448DF.90705@codemonkey.ws>	 <4A0570B1.30401@novell.com> <4A071F1A.1090702@codemonkey.ws>	 <4A0824C2.4000109@gmail.com> <1242059712.29194.12.camel@slate.austin.ibm.com> <4A085B06.4080803@redhat.com>
+In-Reply-To: <4A085B06.4080803@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Theodore Tso wrote:
-> On Mon, May 11, 2009 at 05:46:39AM -0400, Christoph Hellwig wrote:
->> Last time I brought the idea of a small in-tree test harness up at KS
->> people weren't too fond of it, but if we get more backing now we could
->> try it, otherwise we can just stick it into xfsqa which will hopefully
->> soon be generalized to a general fs QA suite.
-> 
-> Two questions --- first of all, has there been any progress with
-> respect to fixing the licensing of the xfsqa tree.  (i.e., "All Rights
-> Reserved" needs to change to a GPLv2 license)?  
+Avi Kivity wrote:
+> Hollis Blanchard wrote:
+>> I haven't been following this conversation at all. With that in mind...
+>>
+>> AFAICS, a hypercall is clearly the higher-performing option, since you
+>> don't need the additional memory load (which could even cause a page
+>> fault in some circumstances) and instruction decode. That said, I'm
+>> willing to agree that this overhead is probably negligible compared to
+>> the IOp itself... Ahmdal's Law again.
+>>   
+>
+> It's a question of cost vs. benefit.  It's clear the benefit is low 
+> (but that doesn't mean it's not worth having).  The cost initially 
+> appeared to be very low, until the nested virtualization wrench was 
+> thrown into the works.  Not that nested virtualization is a reality -- 
+> even on svm where it is implemented it is not yet production quality 
+> and is disabled by default.
+>
+> Now nested virtualization is beginning to look interesting, with 
+> Windows 7's XP mode requiring virtualization extensions.  Desktop 
+> virtualization is also something likely to use device assignment 
+> (though you probably won't assign a virtio device to the XP instance 
+> inside Windows 7).
+>
+> Maybe we should revisit the mmio hypercall idea again, it might be 
+> workable if we find a way to let the guest know if it should use the 
+> hypercall or not for a given memory range.
+>
+> mmio hypercall is nice because
+> - it falls back nicely to pure mmio
+> - it optimizes an existing slow path, not just new device models
+> - it has preexisting semantics, so we have less ABI to screw up
+> - for nested virtualization + device assignment, we can drop it and 
+> get a nice speed win (or rather, less speed loss)
 
-We've had a verbal ack from sgi that it should be under an open-source
-license.  But until that is committed to the repo....
+If it's a PCI device, then we can also have an interrupt which we 
+currently lack with vmcall-based hypercalls.  This would give us 
+guestcalls, upcalls, or whatever we've previously decided to call them.
 
-> And would you be open to cleaning up xfsqa by for example, moving some
-> of the tests out of the top-level directory, adding a modified xfs_io
-> to xfsqa (modified to not avoid using XFS-specific ioctl whereever
-> possible), etc.
+Regards,
 
-Sure.  xfs_io already can act on non-xfs filesystems, although right now
-it takes a flag to do so.  But it can do many ops* that way, and we're
-open to add more (I just sent a patch to add fallocate yesterday).
-
-As for directory layout, whatever works is likely fine.
-
-> I've been collecting my own set of test programs for ext4, and I've
-> thought about trying to use xfsqa, but it's not obvious to me it would
-> be more or less work, since in many ways there are a lot of places
-> where a lot of cleanup work and filesystem portability work would be
-> needed, and it's not clear that creating a new test framework and
-> collection of tests would be more or less work.
-
-Yes, xfsqa would/will take some work to get there I guess.  OTOH so much
-of filesystem testing could be shared, it's a shame to duplicate it for
-each filesytem, too.
-
-> (For example, of cleanup that I'd love to see, I'd really like to use
-> real names for tests and not just random three digit numbers like 107,
-> 108, 109, all cluterring the top-level directory along with 107.out,
-> 108.out, 109.out, etc.)
-
-Well they're not random, they are sequential ;)
-
-But yeah at least giving each test a description (at least a
-DESCRIPTION="tests fubarbaz") would be helpful.
-
-> Of course, until the copyright/licensing situation is cleared up, all
-> of these other issues are rather moot....
-
-I'll press SGI on this...
-
--Eric
-
-> 					- Ted
-
-*fadvise, file, print, freeze, thaw, fsync, fdatasync, getrusage,
-madvise, mincore, mmap, mread, msync, munmap, mwrite, open, stat, close,
-setfl, statfs, pread, pwrite, sendfile, truncate
+Anthony Liguori
