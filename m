@@ -1,118 +1,197 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758755AbZEKTeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759024AbZEKTeg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758755AbZEKTeV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 15:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754909AbZEKTeK
+	id S1759024AbZEKTeg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 15:34:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759136AbZEKTeV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 15:34:10 -0400
-Received: from smtprelay08.ispgateway.de ([80.67.29.8]:35391 "EHLO
-	smtprelay08.ispgateway.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751018AbZEKTeI (ORCPT
+	Mon, 11 May 2009 15:34:21 -0400
+Received: from ey-out-2122.google.com ([74.125.78.25]:24972 "EHLO
+	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759072AbZEKTeT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 15:34:08 -0400
-References: <cone.1240648971.372002.7492.1000@mentalhome> <20090426172947.GB3643@liondog.tnic> <cone.1240858632.795110.5316.1000@onepiie> <20090428072519.GA12170@liondog.tnic> <1240913055.29860.14.camel@maxim-laptop> <cone.1240949852.549814.7466.1000@mentalhome> <1240950704.3781.12.camel@maxim-laptop> <cone.1241299309.265715.3948.1000@mentalhome> <20090503184617.GA3555@liondog.tnic> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic>
-Message-ID: <cone.1242065107.695268.13534.1000@onepiie>
-X-Mailer: http://www.courier-mta.org/cone/
-From: Peter Feuerer <peter@piie.net>
-To: petkovbb@gmail.com
-Cc: LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH] Acer Aspire One Fan Control
-Date: Mon, 11 May 2009 20:05:07 +0200
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="US-ASCII"
-Content-Disposition: inline
+	Mon, 11 May 2009 15:34:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=sAwCel0ONL0McGbGvRtre7rmr1dQI5D2yklORAhh93N7PExZHFzVZsYK5h97fdYZRq
+         R5z76hkJIjIUPGxaAEBQI0b5bGPbF8fG7q+iyFnbPUGtxgeGQFKLS6h0FI6QYXEnlPK5
+         b6xkhY7+59Vwebtd+bTNgcnd0cYkMJpBYN/gE=
+Message-ID: <4A087DB9.50305@gmail.com>
+Date: Mon, 11 May 2009 21:34:17 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+MIME-Version: 1.0
+To: geoffrey.levand@am.sony.com, Geert.Uytterhoeven@sonycom.com
+CC: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] ps3: remove driver_data direct access of struct device
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Df-Sender: 404094
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+To avoid direct access to the driver_data pointer in struct device, the
+functions dev_get_drvdata() and dev_set_drvdata() should be used.
 
-Borislav Petkov writes:
-> 
-> the more I'm looking at the driver, the more I get annoyed by that
-> user/kernel mode operation split. Remind me again why the driver should
-> be loaded and not started automatically but the user should be required
-> to activate it explicitly?
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+Please review. especially note that I removed a
 
-The idea of not starting the module in kernel mode was from Matthew. And he 
-stated that it could harm the hardware when software controls the fan 
-instead of the BIOS. It may also be possible, that the warranty gets invalid 
-when you do that. Not sure about how acer would handle a defect which could 
-be caused by overheating and when they detect that software was controlling 
-the fan. That's why I think Matthew is right. 
+kfree(dev->sbd.core.driver_data);
 
-> That's not so optimal, I'd say. The kernel module should _replace_
-> the userspace program, not work alongside it, since the last is flaky
-> and unreliable, and this was the main reason the kernel module was
-> introduced in the first place - to control the fan from kernel space,
-> which is the more sane choice.
+Is that correct?
 
-The main reason to do this in kernel was the availabilty of atomic ec- read 
-and write functions. But I agree with you that either kernel or BIOS 
-should control the fan and not a userspace tool. I added the user mode just 
-because it wasn't really much more code than just an implementation of the 
-enable/disable functionality.
+ arch/powerpc/include/asm/ps3.h |    4 ++--
+ drivers/char/ps3flash.c        |   11 +++++------
+ drivers/scsi/ps3rom.c          |   10 +++++-----
+ drivers/video/ps3fb.c          |    6 +++---
+ 4 files changed, 15 insertions(+), 16 deletions(-)
 
-> What is more, if the userspace program would fail, there's no way for
-> the module to get activated again and jump in instead of the userspace
-> program to the rescue. Which goes more to show that you don't need
-> userspace control _at_ _all_ and the only two agents controlling the fan
-> should be the BIOS or the kernel module.
-
-After reading and thinking about all this a while, I agree with you. In the 
-next patch I won't allow the user to switch on/off the fan anymore.
-
-> 
-> So I think that the kernel module should take over fan control upon
-> load. This way you'll be able to get rid of all that needless complexity
-> around kernelmode/disable_kernelmode and have a simple clean design.
-
-I would really like to do that, but what do you think about the hardware damage / warranty things written above?
-
->> +
->> +	if (!force_bios[0]) {
->> +		/* check if product is a AO - Aspire One */
->> +		if (strncmp(product, "AO", 2)) {
-> 
-> I suppose this check will have to be updated if Acer release newer
-> Aspire One versions which product names are not AOXXXX anymore, right?
-> But who knows, they might fix the fan in their A1 versions :)
-
-This may really be updated if they release newer AO version. But the time 
-being all supported Aspire One versions begin with AO.
-
->> +	/* search BIOS version and BIOS vendor in BIOS settings table */
->> +	for (i = 0; bios_settings[i].version[0]; ++i) {
->> +		if (!strcmp(bios_settings[i].vendor, vendor) &&
->> +				!strcmp(bios_settings[i].version, version)) {
->> +			bios_version = i;
->> +			break;
->> +		}
->> +	}
->> +	if (bios_version == -1) {
->> +		acerhdf_error("cannot find BIOS version\n");
->> +		ret_val = -ENODEV;
->> +		goto EXIT;
->> +	}
-> 
-> you could split this function since logically you do basic checking of hardware
-> and below this line you register with the thermal core so the rest of that
-> function could go into another one, something like:
-> 
-> static int acerhdf_register(int mode) {
-> 
-> 	...
-> }
-> 
-> and then call it in the acerhdf_init() like that:
-> 
-> 	return acerhdf_register(kernelmode);
-
-Good idea.
-
-kind regards,
---peter
+diff --git a/arch/powerpc/include/asm/ps3.h b/arch/powerpc/include/asm/ps3.h
+index cdb6fd8..a55717e 100644
+--- a/arch/powerpc/include/asm/ps3.h
++++ b/arch/powerpc/include/asm/ps3.h
+@@ -421,12 +421,12 @@ static inline struct ps3_system_bus_driver *
+ static inline void ps3_system_bus_set_driver_data(
+ 	struct ps3_system_bus_device *dev, void *data)
+ {
+-	dev->core.driver_data = data;
++	dev_set_drvdata(&dev->core, data);
+ }
+ static inline void *ps3_system_bus_get_driver_data(
+ 	struct ps3_system_bus_device *dev)
+ {
+-	return dev->core.driver_data;
++	return dev_get_drvdata(&dev->core);
+ }
+ 
+ /* These two need global scope for get_dma_ops(). */
+diff --git a/drivers/char/ps3flash.c b/drivers/char/ps3flash.c
+index afbe456..6083032 100644
+--- a/drivers/char/ps3flash.c
++++ b/drivers/char/ps3flash.c
+@@ -108,7 +108,7 @@ static ssize_t ps3flash_read(struct file *file, char __user *buf, size_t count,
+ 			     loff_t *pos)
+ {
+ 	struct ps3_storage_device *dev = ps3flash_dev;
+-	struct ps3flash_private *priv = dev->sbd.core.driver_data;
++	struct ps3flash_private *priv = dev_get_drvdata(&dev->sbd.core);
+ 	u64 size, start_sector, end_sector, offset;
+ 	ssize_t sectors_read;
+ 	size_t remaining, n;
+@@ -173,7 +173,7 @@ static ssize_t ps3flash_write(struct file *file, const char __user *buf,
+ 			      size_t count, loff_t *pos)
+ {
+ 	struct ps3_storage_device *dev = ps3flash_dev;
+-	struct ps3flash_private *priv = dev->sbd.core.driver_data;
++	struct ps3flash_private *priv = dev_get_drvdata(&dev->sbd.core);
+ 	u64 size, chunk_sectors, start_write_sector, end_write_sector,
+ 	    end_read_sector, start_read_sector, head, tail, offset;
+ 	ssize_t res;
+@@ -366,7 +366,7 @@ static int __devinit ps3flash_probe(struct ps3_system_bus_device *_dev)
+ 		goto fail;
+ 	}
+ 
+-	dev->sbd.core.driver_data = priv;
++	dev_set_drvdata(&dev->sbd.core, priv);
+ 	mutex_init(&priv->mutex);
+ 
+ 	dev->bounce_size = ps3flash_bounce_buffer.size;
+@@ -392,7 +392,7 @@ fail_teardown:
+ 	ps3stor_teardown(dev);
+ fail_free_priv:
+ 	kfree(priv);
+-	dev->sbd.core.driver_data = NULL;
++	dev_set_drvdata(&dev->sbd.core, NULL);
+ fail:
+ 	ps3flash_dev = NULL;
+ 	return error;
+@@ -404,8 +404,7 @@ static int ps3flash_remove(struct ps3_system_bus_device *_dev)
+ 
+ 	misc_deregister(&ps3flash_misc);
+ 	ps3stor_teardown(dev);
+-	kfree(dev->sbd.core.driver_data);
+-	dev->sbd.core.driver_data = NULL;
++	dev_set_drvdata(&dev->sbd.core, NULL);
+ 	ps3flash_dev = NULL;
+ 	return 0;
+ }
+diff --git a/drivers/scsi/ps3rom.c b/drivers/scsi/ps3rom.c
+index ca0dd33..f2f840a 100644
+--- a/drivers/scsi/ps3rom.c
++++ b/drivers/scsi/ps3rom.c
+@@ -299,7 +299,7 @@ static irqreturn_t ps3rom_interrupt(int irq, void *data)
+ 		return IRQ_HANDLED;
+ 	}
+ 
+-	host = dev->sbd.core.driver_data;
++	host = dev_get_drvdata(&dev->sbd.core);
+ 	priv = shost_priv(host);
+ 	cmd = priv->curr_cmd;
+ 
+@@ -387,7 +387,7 @@ static int __devinit ps3rom_probe(struct ps3_system_bus_device *_dev)
+ 	}
+ 
+ 	priv = shost_priv(host);
+-	dev->sbd.core.driver_data = host;
++	dev_set_drvdata(&dev->sbd.core, host);
+ 	priv->dev = dev;
+ 
+ 	/* One device/LUN per SCSI bus */
+@@ -407,7 +407,7 @@ static int __devinit ps3rom_probe(struct ps3_system_bus_device *_dev)
+ 
+ fail_host_put:
+ 	scsi_host_put(host);
+-	dev->sbd.core.driver_data = NULL;
++	dev_set_drvdata(&dev->sbd.core, NULL);
+ fail_teardown:
+ 	ps3stor_teardown(dev);
+ fail_free_bounce:
+@@ -418,12 +418,12 @@ fail_free_bounce:
+ static int ps3rom_remove(struct ps3_system_bus_device *_dev)
+ {
+ 	struct ps3_storage_device *dev = to_ps3_storage_device(&_dev->core);
+-	struct Scsi_Host *host = dev->sbd.core.driver_data;
++	struct Scsi_Host *host = dev_get_drvdata(&dev->sbd.core);
+ 
+ 	scsi_remove_host(host);
+ 	ps3stor_teardown(dev);
+ 	scsi_host_put(host);
+-	dev->sbd.core.driver_data = NULL;
++	dev_set_drvdata(&dev->sbd.core, NULL);
+ 	kfree(dev->bounce_buf);
+ 	return 0;
+ }
+diff --git a/drivers/video/ps3fb.c b/drivers/video/ps3fb.c
+index e00c1df..55f4250 100644
+--- a/drivers/video/ps3fb.c
++++ b/drivers/video/ps3fb.c
+@@ -1210,7 +1210,7 @@ static int __devinit ps3fb_probe(struct ps3_system_bus_device *dev)
+ 	if (retval < 0)
+ 		goto err_fb_dealloc;
+ 
+-	dev->core.driver_data = info;
++	dev_set_drvdata(&dev->core, info);
+ 
+ 	dev_info(info->device, "%s %s, using %u KiB of video memory\n",
+ 		 dev_driver_string(info->dev), dev_name(info->dev),
+@@ -1248,7 +1248,7 @@ err:
+ static int ps3fb_shutdown(struct ps3_system_bus_device *dev)
+ {
+ 	int status;
+-	struct fb_info *info = dev->core.driver_data;
++	struct fb_info *info = dev_get_drvdata(&dev->core);
+ 
+ 	dev_dbg(&dev->core, " -> %s:%d\n", __func__, __LINE__);
+ 
+@@ -1268,7 +1268,7 @@ static int ps3fb_shutdown(struct ps3_system_bus_device *dev)
+ 		unregister_framebuffer(info);
+ 		fb_dealloc_cmap(&info->cmap);
+ 		framebuffer_release(info);
+-		info = dev->core.driver_data = NULL;
++		info = dev_set_drvdata(&dev->core, NULL);
+ 	}
+ 	iounmap((u8 __force __iomem *)ps3fb.dinfo);
+ 
