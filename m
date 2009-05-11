@@ -1,104 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbZEKABs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757308AbZEKACg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757279AbZEKABs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 20:01:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbZEKABj
+	id S1757308AbZEKACg (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 20:02:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753553AbZEKAC0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 20:01:39 -0400
-Received: from wf-out-1314.google.com ([209.85.200.168]:57338 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753935AbZEKABj (ORCPT
+	Sun, 10 May 2009 20:02:26 -0400
+Received: from casper.infradead.org ([85.118.1.10]:39461 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753161AbZEKACZ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 20:01:39 -0400
-Date: Sun, 10 May 2009 20:01:18 -0400 (EDT)
-From: Chris Peterson <cpeterso@cpeterso.com>
-X-X-Sender: user@ubuntu-desktop
-To: dhowells@redhat.com
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH v2] use round_jiffies() for slow work thread pool's 5 second
- cull timer
-In-Reply-To: <alpine.DEB.2.00.0905100336130.27219@ubuntu-desktop>
-Message-ID: <alpine.DEB.2.00.0905101959070.2913@ubuntu-desktop>
-References: <alpine.DEB.2.00.0905100336130.27219@ubuntu-desktop>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Sun, 10 May 2009 20:02:25 -0400
+Date: Sun, 10 May 2009 17:00:16 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>, Peter Zijlstra <peterz@infradead.org>,
+       Greg KH <gregkh@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] devtmpfs patches
+Message-ID: <20090510170016.1e3a4d97@infradead.org>
+In-Reply-To: <ac3eb2510905101647k12a1b9ck71d43933037bac48@mail.gmail.com>
+References: <20090509143742.GA27663@kroah.com>
+	<b637ec0b0905090810t188e39e3w92d9f4eff04011f1@mail.gmail.com>
+	<20090509150853.GA32394@suse.de>
+	<20090509082233.32cbb8e4@infradead.org>
+	<20090509161923.GA942@suse.de>
+	<20090509223454.4642753d.akpm@linux-foundation.org>
+	<20090510152005.GA9461@suse.de>
+	<1241980263.9562.380.camel@laptop>
+	<20090510221901.30c1c5a5@lxorguk.ukuu.org.uk>
+	<ac3eb2510905101647k12a1b9ck71d43933037bac48@mail.gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 11 May 2009 01:47:16 +0200
+Kay Sievers <kay.sievers@vrfy.org> wrote:
 
-This is a revised patch to round the slow work queue's 5 second timers to 
-whole seconds with round_jiffies(). The slow work queue uses 5 second 
-timers to cull idle threads and, after OOM, to delay new thread 
-creation.This patch also refactors the mod_timer() logic into a separate 
-helper function.
+> On Sun, May 10, 2009 at 23:19, Alan Cox <alan@lxorguk.ukuu.org.uk>
+> wrote:
+> >> /me boggles, however does one end up with that many partitions on
+> >> so few disks?
+> >
+> > It happens. Tejun did the extending because libata users were really
+> > hitting these limits.
+> >
+> >> /boot
+> >> /
+> >> /home
+> >> /usr
+> >> swap
+> >> /usr/local
+> >> /opt
+> >>
+> >> and I'm seriously out of sensible ideas.
+> >
+> > I've seen two usual variants
+> >
+> >        Fedora & Unbuntu & Debian & ....
+> >
+> >        Fedora 10 & Rawhide & Fedora 9 & ...
+> >
+> > for people who like to play with distros or need to test a product
+> > on them
+> >
+> > and once you do that 16 is quite easy
+> 
+> That's right. Also people with virtualization, running many guest from
+> individual partitions, like to do that - and 16 is nothing for them.
+> :)
+> 
+> Some of us run the dynamic sd minors already, and it's not unlikely we
+> will enable it pretty soon for the distro.
+> 
 
-Signed-off-by: Chris Peterson <cpeterso@cpeterso.com>
----
-diff --git a/kernel/slow-work.c b/kernel/slow-work.c
-index b28d191..0ef9bf9 100644
---- a/kernel/slow-work.c
-+++ b/kernel/slow-work.c
-@@ -318,6 +318,12 @@ cant_get_ref:
- }
- EXPORT_SYMBOL(slow_work_enqueue);
- 
-+static void slow_work_defer_cull_time(void)
-+{
-+	mod_timer(&slow_work_cull_timer,
-+			  round_jiffies(jiffies + SLOW_WORK_CULL_TIMEOUT));
-+}
-+
- /*
-  * Worker thread culling algorithm
-  */
-@@ -335,8 +341,7 @@ static bool slow_work_cull_thread(void)
- 		    list_empty(&vslow_work_queue) &&
- 		    atomic_read(&slow_work_thread_count) >
- 		    slow_work_min_threads) {
--			mod_timer(&slow_work_cull_timer,
--				  jiffies + SLOW_WORK_CULL_TIMEOUT);
-+			slow_work_defer_cull_time();
- 			do_cull = true;
- 		}
- 	}
-@@ -393,8 +398,7 @@ static int slow_work_thread(void *_data)
- 			    list_empty(&vslow_work_queue) &&
- 			    atomic_read(&slow_work_thread_count) >
- 			    slow_work_min_threads)
--				mod_timer(&slow_work_cull_timer,
--					  jiffies + SLOW_WORK_CULL_TIMEOUT);
-+				slow_work_defer_cull_time();
- 			continue;
- 		}
- 
-@@ -458,7 +462,7 @@ static void slow_work_new_thread_execute(struct slow_work *work)
- 		if (atomic_dec_and_test(&slow_work_thread_count))
- 			BUG(); /* we're running on a slow work thread... */
- 		mod_timer(&slow_work_oom_timer,
--			  jiffies + SLOW_WORK_OOM_TIMEOUT);
-+				round_jiffies(jiffies + SLOW_WORK_OOM_TIMEOUT));
- 	} else {
- 		/* ratelimit the starting of new threads */
- 		mod_timer(&slow_work_oom_timer, jiffies + 1);
-@@ -502,8 +506,7 @@ static int slow_work_min_threads_sysctl(struct ctl_table *table, int write,
- 			if (n < 0 && !slow_work_may_not_start_new_thread)
- 				slow_work_enqueue(&slow_work_new_thread);
- 			else if (n > 0)
--				mod_timer(&slow_work_cull_timer,
--					  jiffies + SLOW_WORK_CULL_TIMEOUT);
-+				slow_work_defer_cull_time();
- 		}
- 		mutex_unlock(&slow_work_user_lock);
- 	}
-@@ -529,8 +532,7 @@ static int slow_work_max_threads_sysctl(struct ctl_table *table, int write,
- 				atomic_read(&slow_work_thread_count);
- 
- 			if (n < 0)
--				mod_timer(&slow_work_cull_timer,
--					  jiffies + SLOW_WORK_CULL_TIMEOUT);
-+				slow_work_defer_cull_time();
- 		}
- 		mutex_unlock(&slow_work_user_lock);
- 	}
+I'm still missing why > 16 implies "dynamic"/..
+
+(and it seems to be irrelevant to the devtmpfs discussion anyway since
+Eric Biederman has shown that pulling the device numbers out of sysfs
+is basically free... even though it'd be nice to give that some help to 
+make it a nice index)
+
+
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
