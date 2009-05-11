@@ -1,69 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759292AbZEKUS5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759011AbZEKUVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759292AbZEKUS5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 16:18:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754499AbZEKUSs
+	id S1759011AbZEKUVd (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 16:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbZEKUVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 16:18:48 -0400
-Received: from ey-out-2122.google.com ([74.125.78.25]:18846 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755410AbZEKUSs (ORCPT
+	Mon, 11 May 2009 16:21:23 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:61793 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752168AbZEKUVW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 16:18:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject
-         :content-type:content-transfer-encoding;
-        b=lHNnMkd76aIenOdKEAEYT7B8lxrYoVBe6OQlVbGWCPt0P/+fxugs+8InwTVvtPIj/L
-         2CpCGrxFTKWraka6EGaIn0qererp8NszgaOxI4WaVaUmNvIkip04Yz/bdy+F8mJI9YPI
-         5GoZWWIhnOIAm1PnTkDuwzQKBpd5ivvLDoNJQ=
-Message-ID: <4A088827.7000907@gmail.com>
-Date: Mon, 11 May 2009 22:18:47 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Mon, 11 May 2009 16:21:22 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=A2I828nBo8QPah6FUWPLO3WUl9M5N07ihWlJdAnMG3S9khcMl3KitAtnCZ1PmBFQR
+	mOW5ILIsVzyozoUWQRnXg==
+Date: Mon, 11 May 2009 13:21:18 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Mel Gorman <mel@csn.ul.ie>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       San Mehat <san@android.com>, Arve Hjonnevag <arve@android.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 08/11 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
+In-Reply-To: <1242071124.8109.35426.camel@localhost.localdomain>
+Message-ID: <alpine.DEB.2.00.0905111313120.27577@chino.kir.corp.google.com>
+References: <20090511085750.B9AC.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0905101719040.31823@chino.kir.corp.google.com> <20090511104310.B9C1.A69D9226@jp.fujitsu.com> <alpine.DEB.2.00.0905110143190.24726@chino.kir.corp.google.com>
+ <1242057793.8109.34342.camel@localhost.localdomain> <alpine.DEB.2.00.0905111159130.23739@chino.kir.corp.google.com> <1242071124.8109.35426.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: krh@redhat.com, linux1394-devel@lists.sourceforge.net,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] firewire: remove driver_data direct access of struct device
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-To avoid direct access to the driver_data pointer in struct device, the
-functions dev_get_drvdata() and dev_set_drvdata() should be used.
+On Mon, 11 May 2009, Dave Hansen wrote:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-diff --git a/drivers/firewire/fw-sbp2.c b/drivers/firewire/fw-sbp2.c
-index 2bcf515..a70e66e 100644
---- a/drivers/firewire/fw-sbp2.c
-+++ b/drivers/firewire/fw-sbp2.c
-@@ -1125,7 +1125,7 @@ static int sbp2_probe(struct device *dev)
- 		return -ENOMEM;
- 
- 	tgt = (struct sbp2_target *)shost->hostdata;
--	unit->device.driver_data = tgt;
-+	dev_set_drvdata(&unit->device, tgt);
- 	tgt->unit = unit;
- 	kref_init(&tgt->kref);
- 	INIT_LIST_HEAD(&tgt->lu_list);
-@@ -1180,7 +1180,7 @@ static int sbp2_probe(struct device *dev)
- static int sbp2_remove(struct device *dev)
- {
- 	struct fw_unit *unit = fw_unit(dev);
--	struct sbp2_target *tgt = unit->device.driver_data;
-+	struct sbp2_target *tgt = dev_get_drvdata(&unit->device);
- 
- 	sbp2_target_put(tgt);
- 	return 0;
-@@ -1240,7 +1240,7 @@ static void sbp2_reconnect(struct work_struct *work)
- 
- static void sbp2_update(struct fw_unit *unit)
- {
--	struct sbp2_target *tgt = unit->device.driver_data;
-+	struct sbp2_target *tgt = dev_get_drvdata(&unit->device);
- 	struct sbp2_logical_unit *lu;
- 
- 	fw_device_enable_phys_dma(fw_device(unit->device.parent));
+> So, there are three conditions that have to be met before we get to this
+> behavior:
+> 1. order > PAGE_ALLOC_COSTLY_ORDER
+> 2. __GFP_NOFAIL set
+> 3. no progress being made
+> 
+> The two hunks of this patch really do different things to me.
+> Personally, I'd split them up.  
+> 
+> This patch's first hunk effectively says, "When we have __GFP_NOFAIL
+> set, it is now OK to OOM tasks for 'order > PAGE_ALLOC_COSTLY_ORDER'".
+> That's a little bit goofy to me.  Either OOMs help large-order allocs or
+> they don't.  __GFP_NOFAIL doesn't change how effective an OOM is.
+> 
+
+Right, but the problem is that we don't know what the oom killer did 
+(until you get to patches 10 and 11 in this series).  It would be easier 
+to use the __GFP_REPEAT retry logic to determine whether to continue 
+looping, but we currently bypass that because reclaim failed and we don't 
+know what the oom killer did.  My later patches change that, so 
+__GFP_REPEAT actually works in this case.
+
+> Yeah, adding a new warning or enhancing the existing "page allocation
+> failure" warning would be nice.
+> 
+
+Ok, it's a good idea that I never considered.
+
+> Aren't you a bit worried that people will keep adding new 'goto nopage'
+> cases in here?  Would it be more effective to just put a:
+> 
+>         if (gfp_mask & __GFP_NOFAIL)
+>                 goto restart;
+> 
+> at the very end of the function?  That should keep people from screwing
+> this up in the future a bit better.
+> 
+
+goto nopage is the only thing we have to worry about since the retry logic 
+does get invoked otherwise (and any order less than 
+PAGE_ALLOC_COSTLY_ORDER is actually implicitly __GFP_NOFAIL there, 
+regardless of reclaim progress).  We do actually need to bypass that logic 
+for a couple of cases (GFP_THISNODE and GFP_ATOMIC) where reclaim is 
+inherently denied.  We lack BUG_ON()'s for such cases undoubtedly because 
+of the performance impact in the very hot path.
+
+> Thanks for going to the trouble of trying to sort all this code out a
+> bit better.  I know it is a mess.  Could you try and beef up the
+> descriptions a bit in the next pass?  Some of the stuff about where
+> you're encountering these situations would be really helpful, especially
+> with 'git blame' these days.  
+> 
+
+Ok, thanks for the comments.
