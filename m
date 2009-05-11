@@ -1,50 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbZEJX7m@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757279AbZEKABs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756206AbZEJX7m (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 10 May 2009 19:59:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753935AbZEJX7d
+	id S1757279AbZEKABs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 10 May 2009 20:01:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754326AbZEKABj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 10 May 2009 19:59:33 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:58122 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752867AbZEJX7c (ORCPT
+	Sun, 10 May 2009 20:01:39 -0400
+Received: from wf-out-1314.google.com ([209.85.200.168]:57338 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753935AbZEKABj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 10 May 2009 19:59:32 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [patch 08/11 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, San Mehat <san@android.com>,
-       Arve Hjonnevag <arve@android.com>, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.0905101502050.18804@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101502050.18804@chino.kir.corp.google.com>
-Message-Id: <20090511085750.B9AC.A69D9226@jp.fujitsu.com>
+	Sun, 10 May 2009 20:01:39 -0400
+Date: Sun, 10 May 2009 20:01:18 -0400 (EDT)
+From: Chris Peterson <cpeterso@cpeterso.com>
+X-X-Sender: user@ubuntu-desktop
+To: dhowells@redhat.com
+cc: linux-kernel@vger.kernel.org
+Subject: [PATCH v2] use round_jiffies() for slow work thread pool's 5 second
+ cull timer
+In-Reply-To: <alpine.DEB.2.00.0905100336130.27219@ubuntu-desktop>
+Message-ID: <alpine.DEB.2.00.0905101959070.2913@ubuntu-desktop>
+References: <alpine.DEB.2.00.0905100336130.27219@ubuntu-desktop>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Mon, 11 May 2009 08:59:28 +0900 (JST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> The oom killer must be invoked regardless of the order if the allocation
-> is __GFP_NOFAIL, otherwise it will loop forever when reclaim fails to
-> free some memory.
 
-This is intensional behavior. plus you change very widely caller bahavior.
-if you don't have good test program, I nak this.
+This is a revised patch to round the slow work queue's 5 second timers to 
+whole seconds with round_jiffies(). The slow work queue uses 5 second 
+timers to cull idle threads and, after OOM, to delay new thread 
+creation.This patch also refactors the mod_timer() logic into a separate 
+helper function.
 
-
-> 
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Nick Piggin <npiggin@suse.de>
-> Cc: Christoph Lameter <cl@linux-foundation.org>
-> Cc: Dave Hansen <dave@linux.vnet.ibm.com>
-> Signed-off-by: David Rientjes <rientjes@google.com>
-
-
+Signed-off-by: Chris Peterson <cpeterso@cpeterso.com>
+---
+diff --git a/kernel/slow-work.c b/kernel/slow-work.c
+index b28d191..0ef9bf9 100644
+--- a/kernel/slow-work.c
++++ b/kernel/slow-work.c
+@@ -318,6 +318,12 @@ cant_get_ref:
+ }
+ EXPORT_SYMBOL(slow_work_enqueue);
+ 
++static void slow_work_defer_cull_time(void)
++{
++	mod_timer(&slow_work_cull_timer,
++			  round_jiffies(jiffies + SLOW_WORK_CULL_TIMEOUT));
++}
++
+ /*
+  * Worker thread culling algorithm
+  */
+@@ -335,8 +341,7 @@ static bool slow_work_cull_thread(void)
+ 		    list_empty(&vslow_work_queue) &&
+ 		    atomic_read(&slow_work_thread_count) >
+ 		    slow_work_min_threads) {
+-			mod_timer(&slow_work_cull_timer,
+-				  jiffies + SLOW_WORK_CULL_TIMEOUT);
++			slow_work_defer_cull_time();
+ 			do_cull = true;
+ 		}
+ 	}
+@@ -393,8 +398,7 @@ static int slow_work_thread(void *_data)
+ 			    list_empty(&vslow_work_queue) &&
+ 			    atomic_read(&slow_work_thread_count) >
+ 			    slow_work_min_threads)
+-				mod_timer(&slow_work_cull_timer,
+-					  jiffies + SLOW_WORK_CULL_TIMEOUT);
++				slow_work_defer_cull_time();
+ 			continue;
+ 		}
+ 
+@@ -458,7 +462,7 @@ static void slow_work_new_thread_execute(struct slow_work *work)
+ 		if (atomic_dec_and_test(&slow_work_thread_count))
+ 			BUG(); /* we're running on a slow work thread... */
+ 		mod_timer(&slow_work_oom_timer,
+-			  jiffies + SLOW_WORK_OOM_TIMEOUT);
++				round_jiffies(jiffies + SLOW_WORK_OOM_TIMEOUT));
+ 	} else {
+ 		/* ratelimit the starting of new threads */
+ 		mod_timer(&slow_work_oom_timer, jiffies + 1);
+@@ -502,8 +506,7 @@ static int slow_work_min_threads_sysctl(struct ctl_table *table, int write,
+ 			if (n < 0 && !slow_work_may_not_start_new_thread)
+ 				slow_work_enqueue(&slow_work_new_thread);
+ 			else if (n > 0)
+-				mod_timer(&slow_work_cull_timer,
+-					  jiffies + SLOW_WORK_CULL_TIMEOUT);
++				slow_work_defer_cull_time();
+ 		}
+ 		mutex_unlock(&slow_work_user_lock);
+ 	}
+@@ -529,8 +532,7 @@ static int slow_work_max_threads_sysctl(struct ctl_table *table, int write,
+ 				atomic_read(&slow_work_thread_count);
+ 
+ 			if (n < 0)
+-				mod_timer(&slow_work_cull_timer,
+-					  jiffies + SLOW_WORK_CULL_TIMEOUT);
++				slow_work_defer_cull_time();
+ 		}
+ 		mutex_unlock(&slow_work_user_lock);
+ 	}
