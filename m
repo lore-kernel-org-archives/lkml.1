@@ -1,70 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757050AbZEKQhR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757208AbZEKQiQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757050AbZEKQhR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 12:37:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZEKQhA
+	id S1757208AbZEKQiQ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 12:38:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbZEKQh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 12:37:00 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:48959 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752733AbZEKQg7 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 12:36:59 -0400
-Message-ID: <4A085455.5040108@oracle.com>
-Date: Mon, 11 May 2009 09:37:41 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Mon, 11 May 2009 12:37:58 -0400
+Received: from gw.goop.org ([64.81.55.164]:33912 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753046AbZEKQh5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 12:37:57 -0400
+Message-ID: <4A085464.5030802@goop.org>
+Date: Mon, 11 May 2009 09:37:56 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-CC: linux-next@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-       linux-media@vger.kernel.org,
-       Mauro Carvalho Chehab <mchehab@infradead.org>
-Subject: [PATCH -next] v4l2: handle unregister for non-I2C builds
-References: <20090511161442.3e9d9cb9.sfr@canb.auug.org.au>
-In-Reply-To: <20090511161442.3e9d9cb9.sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Anthony Liguori <anthony@codemonkey.ws>
+CC: Avi Kivity <avi@redhat.com>, Gregory Haskins <ghaskins@novell.com>,
+       Marcelo Tosatti <mtosatti@redhat.com>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: [RFC PATCH 0/3] generic hypercall support
+References: <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <20090506160712.GW3036@sequoia.sous-sol.org> <4A031471.7000406@novell.com> <20090507233503.GA9103@amt.cnet> <4A043E89.90403@novell.com> <4A044786.2080508@codemonkey.ws> <4A047EDE.2020806@redhat.com> <4A0481AC.7070409@codemonkey.ws>
+In-Reply-To: <4A0481AC.7070409@codemonkey.ws>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt005.oracle.com [141.146.116.14]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010205.4A0853DE.029A:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Randy Dunlap <randy.dunlap@oracle.com>
+Anthony Liguori wrote:
+> Yes, I misunderstood that they actually emulated it like that.  
+> However, ia64 has no paravirtualization support today so surely, we 
+> aren't going to be justifying this via ia64, right?
+>
 
-Build fails when CONFIG_I2C=n, so handle that case in the if block:
+Someone is actively putting a pvops infrastructure into the ia64 port, 
+along with a Xen port.  I think pieces of it got merged this last window.
 
-drivers/built-in.o: In function `v4l2_device_unregister':
-(.text+0x157821): undefined reference to `i2c_unregister_device'
-
-Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
----
- drivers/media/video/v4l2-device.c |    2 ++
- 1 file changed, 2 insertions(+)
-
---- linux-next-20090511.orig/drivers/media/video/v4l2-device.c
-+++ linux-next-20090511/drivers/media/video/v4l2-device.c
-@@ -85,6 +85,7 @@ void v4l2_device_unregister(struct v4l2_
- 	/* Unregister subdevs */
- 	list_for_each_entry_safe(sd, next, &v4l2_dev->subdevs, list) {
- 		v4l2_device_unregister_subdev(sd);
-+#if defined(CONFIG_I2C) || defined(CONFIG_I2C_MODULE)
- 		if (sd->flags & V4L2_SUBDEV_FL_IS_I2C) {
- 			struct i2c_client *client = v4l2_get_subdevdata(sd);
- 
-@@ -95,6 +96,7 @@ void v4l2_device_unregister(struct v4l2_
- 			if (client)
- 				i2c_unregister_device(client);
- 		}
-+#endif
- 	}
- }
- EXPORT_SYMBOL_GPL(v4l2_device_unregister);
-
-
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+    J
