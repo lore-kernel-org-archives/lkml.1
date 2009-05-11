@@ -1,83 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbZEKVp1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760044AbZEKVpm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760089AbZEKVp1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 17:45:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757113AbZEKVpL
+	id S1760044AbZEKVpm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 17:45:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759582AbZEKVpZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 17:45:11 -0400
-Received: from cantor.suse.de ([195.135.220.2]:52243 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756510AbZEKVpK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 17:45:10 -0400
-Date: Mon, 11 May 2009 14:41:06 -0700
-From: Greg KH <gregkh@suse.de>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, npiggin@suse.de, mel@csn.ul.ie,
-       a.p.ziljstra@chello.nl, cl@linux-foundation.org,
+	Mon, 11 May 2009 17:45:25 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:43218 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759821AbZEKVpY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 17:45:24 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=HG1eSyan7UxuRTgatQZl5k8cDg7yFe6HIVmps+eDmVDizGaUe/5zgtMH45Vk6C13S
+	0cDdGAiaX5wCB7H+n/T1g==
+Date: Mon, 11 May 2009 14:45:18 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Andrew Morton <akpm@linux-foundation.org>
+cc: Greg Kroah-Hartman <gregkh@suse.de>, npiggin@suse.de, mel@csn.ul.ie,
+       a.p.zijlstra@chello.nl, Christoph Lameter <cl@linux-foundation.org>,
        dave@linux.vnet.ibm.com, san@android.com, arve@android.com,
        linux-kernel@vger.kernel.org
-Subject: Re: [patch 05/11 -mmotm] oom: fix possible oom_dump_tasks NULL
-	pointer
-Message-ID: <20090511214106.GB22040@suse.de>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101501050.18804@chino.kir.corp.google.com> <20090511141138.3e8118ab.akpm@linux-foundation.org> <alpine.DEB.2.00.0905111418560.466@chino.kir.corp.google.com>
+Subject: Re: [patch 08/11 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
+In-Reply-To: <20090511142936.dd68005b.akpm@linux-foundation.org>
+Message-ID: <alpine.DEB.2.00.0905111444070.466@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101502050.18804@chino.kir.corp.google.com> <20090511142936.dd68005b.akpm@linux-foundation.org>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0905111418560.466@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 02:28:05PM -0700, David Rientjes wrote:
-> On Mon, 11 May 2009, Andrew Morton wrote:
+On Mon, 11 May 2009, Andrew Morton wrote:
+
+> > The oom killer must be invoked regardless of the order if the allocation
+> > is __GFP_NOFAIL, otherwise it will loop forever when reclaim fails to
+> > free some memory.
 > 
-> > On Sun, 10 May 2009 15:07:16 -0700 (PDT)
-> > David Rientjes <rientjes@google.com> wrote:
-> > 
-> > > When /proc/sys/vm/oom_dump_tasks is enabled, it is possible to get a NULL
-> > > pointer for tasks that have detached mm's since task_lock() is not held
-> > > during the tasklist scan.
-> > 
-> > ok.  But a better changelog would have told us how the patch fixes the
-> > problem?
-> > 
+> We should discourage callers from using __GFP_NOFAIL at all.  We should
+> electrocute callers for using __GFP_NOFAIL on large allocations.  How's about
 > 
-> Sure, I suppose "Add the task_lock()." could follow it.
+> 	WARN_ON_ONCE(order > PAGE_ALLOC_COSTLY_ORDER &&	
+> 			(gfp_mask & __GFP_NOFAIL));
+> or, preferably:
 > 
-> > This patch series is partially core MM and partially drivers/staging. 
-> > I don't normally handle staging things, so I'd need to be cherrypicking
-> > from this lot.  Is there any interdependency between the two things?
-> > 
+> 	WARN_ON_ONCE(order > 0 && (gfp_mask & __GFP_NOFAIL));
 > 
-> This was a source of confusion from me when I posted a smaller set earlier 
-> that made the same changes to the staging driver, and the only reason I 
-> sent the change here was because drivers/staging/android/lowmemorykiller.c 
-> is in Linus' tree.
 
-I have that series in my "to-apply" queue to get through this week.  I
-will handle them.
-
-> This patch series moves oomkilladj from struct task_struct to struct 
-> mm_struct where it more appropriately belongs.  The Android 
-> lowmemorykiller uses oomkilladj, so it will fail to compile in Linus' git 
-> if you pushed the patchset to him and the Android driver were enabled.
-> 
-> To prevent that breakage, they should probably either all go through one 
-> series so nothing ever breaks or Greg takes the staging patches and then 
-> pushes them when you push the other changes.  I thought the former would 
-> be easier for the maintainers (apparently not :).
-
-I think the original lowmemorykiller.c patches have no problem getting
-into the tree.  But, it seems that people are still disagreeing with the
-core oom changes you have made, so those will probably take a few more
-review cycles in order to work themselves out.
-
-I would _really_ like to see the end goal to get this lowmemorykiller
-code out of the staging tree, and I think that is what your goal here is
-as well.  If, at the end of your series that happens, I think that would
-be very good.
-
-thanks,
-
-greg k-h
+Not sure it would help since the oom killer will be now be called for such 
+an allocation and that dumps the stack (and will actually show the order 
+and gfp flags as well).
