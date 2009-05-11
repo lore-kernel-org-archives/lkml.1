@@ -1,76 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbZEKTZR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758461AbZEKT2H@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758178AbZEKTZR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 15:25:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZEKTZA
+	id S1758461AbZEKT2H (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 15:28:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754464AbZEKT1y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 15:25:00 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:46783 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752504AbZEKTY7 (ORCPT
+	Mon, 11 May 2009 15:27:54 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:31363 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753782AbZEKT1x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 15:24:59 -0400
-Subject: Re: PowerPC page faults
-From: Hollis Blanchard <hollisb@us.ibm.com>
-To: Anthony Liguori <anthony@codemonkey.ws>
-Cc: Gregory Haskins <ghaskins@novell.com>, Avi Kivity <avi@redhat.com>,
-       Chris Wright <chrisw@sous-sol.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
-In-Reply-To: <4A08663D.1010703@codemonkey.ws>
-References: <20090505132005.19891.78436.stgit@dev.haskins.net>
-	 <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com>
-	 <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com>
-	 <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com>
-	 <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com>
-	 <4A02D40D.7060307@redhat.com> <4A0448DF.90705@codemonkey.ws>
-	 <4A0570B1.30401@novell.com>  <4A071F1A.1090702@codemonkey.ws>
-	 <1242060260.29194.19.camel@slate.austin.ibm.com>
-	 <4A08663D.1010703@codemonkey.ws>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Mon, 11 May 2009 14:24:58 -0500
-Message-Id: <1242069898.29194.99.camel@slate.austin.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Mon, 11 May 2009 15:27:53 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=HOkg1W5fzHpR2K9UFN5rC/wmStn/2KmKSt2Nd4SDmlZKwszH8ARhSzxQrdAiFR/m5
+	9pfoTbzgK8ExJBPY8Oa0A==
+Date: Mon, 11 May 2009 12:27:49 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Jack Steiner <steiner@sgi.com>
+cc: Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] x86: fix node_possible_map logic -v2
+In-Reply-To: <20090511175312.GA27905@sgi.com>
+Message-ID: <alpine.DEB.2.00.0905111218520.23739@chino.kir.corp.google.com>
+References: <4A05269D.8000701@kernel.org> <4A0527CB.4020807@kernel.org> <20090511175312.GA27905@sgi.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-11 at 12:54 -0500, Anthony Liguori wrote:
-> For future ppcemb's, do you know if there is an equivalent of a PF exit 
-> type?  Does the hardware squirrel away the faulting address somewhere 
-> and set PC to the start of the instruction?  If so, no guest memory load 
-> should be required.
+On Mon, 11 May 2009, Jack Steiner wrote:
 
-Ahhh... you're saying that the address itself (or offset within a page)
-is the hypercall token, totally separate from IO emulation, and so we
-could ignore the access size. I guess it looks like this:
+> Do we have a clear and unambiguous definition of what a node really is?
+> In this case, is a board (socket) with cpus, a unique PXM but no memory
+> considered a node. Even though it has no memory, it is a node (depending on the
+> definition of "node") for purposes such as scheduling. The memoryless node also
+> has local IO buses that want to direct interrupts to node-local cpus.
+> 
 
-page fault vector:
-        if (faulting_address & PAGE_MASK) == vcpu->hcall_page
-                handle_hcall(faulting_address & ~PAGE_MASK)
-        else
-                if (faulting_address is IO)
-                        emulate_io(faulting_address)
-                else
-                        handle_pagefault(faulting_address)
+In your example of two cpus (0-1) that are remote to the system's only 
+memory and two cpus (2-3) that have affinity to that memory, it appears as 
+though the kernel is considering cpus 2-3 and the memory to be a node and 
+cpus 0-1 to be a memoryless node.
 
-Testing for hypercalls in the page fault handler path would add some
-overhead, and on processors with software-managed TLBs, the page fault
-path is *very* hot. Implementing the above pseudocode wouldn't be ideal,
-especially because Power processors with hardware virtualization support
-have a separate vector for hypercalls. However, I suspect it wouldn't be
-a show-stopper from a performance point of view.
+That's a pretty useless scenario for memoryless node support, actually, 
+unless there's a third node with memory that cpus 0-1 have a different 
+distance to.  cpus 0-1 have no memory that is local, so the "remote" 
+memory should be considered local to them.
 
-Note that other Power virtualization solutions (hypervisors from IBM,
-Sony, and Toshiba) use the dedicated hypercall instruction and interrupt
-vector, which after all is how the hardware was designed. To my
-knowledge, they also don't do IO emulation, so they avoid both
-conditionals in the above psuedocode.
+I don't know who has been pushing the memoryless node support, but it 
+appears as though it hasn't been fully tested yet.  The NULL pglist_data 
+here for node 0 seems appropriate since you don't need it unless you're 
+describing memory, but the kernel implies that if a bit is set in 
+node_online_map or node_possible_map that it has this associated data.
 
--- 
-Hollis Blanchard
-IBM Linux Technology Center
-
+Added Andi Kleen to the cc list.
