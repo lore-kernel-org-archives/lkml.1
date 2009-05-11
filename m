@@ -1,28 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755156AbZEKLGp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755711AbZEKLLx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755156AbZEKLGp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 07:06:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbZEKLGg
+	id S1755711AbZEKLLx (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 07:11:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753523AbZEKLLn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 07:06:36 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:48729 "EHLO mx3.mail.elte.hu"
+	Mon, 11 May 2009 07:11:43 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39949 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751406AbZEKLGg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 07:06:36 -0400
-Date: Mon, 11 May 2009 13:06:16 +0200
+	id S1753014AbZEKLLn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 07:11:43 -0400
+Date: Mon, 11 May 2009 13:10:58 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Cyrill Gorcunov <gorcunov@gmail.com>
-Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Ed Swierk <eswierk@aristanetworks.com>
-Subject: Re: [PATCH] x86: read apic id if it is not acpi_lapic -v2
-Message-ID: <20090511110616.GI4648@elte.hu>
-References: <20090430084145.GD21699@elte.hu> <49FBD0A2.4030309@kernel.org> <20090502070254.GA4791@lenovo> <49FC85A9.2070702@kernel.org> <20090511092655.GC26444@elte.hu> <20090511094056.GB4624@lenovo>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Keir Fraser <keir.fraser@eu.citrix.com>,
+       Ian Campbell <Ian.Campbell@eu.citrix.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "Linux@zytor.com" <Linux@zytor.com>,
+       "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>,
+       Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Jan Beulich <jbeulich@novell.com>, Lu <yinghai@kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Arjan van de Ven <arjan@infradead.org>
+Subject: Re: [Xen-devel] Re: [PATCH 06/16] xen: disable PAT
+Message-ID: <20090511111058.GJ4648@elte.hu>
+References: <4A05CD29.6050505@zytor.com> <C62C5B3C.AB1A%keir.fraser@eu.citrix.com> <20090510142928.66bb57bb@lxorguk.ukuu.org.uk> <4A071518.8000307@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090511094056.GB4624@lenovo>
+In-Reply-To: <4A071518.8000307@zytor.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-VirusStatus: clean
 X-ELTE-SpamScore: -1.5
@@ -37,46 +47,22 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+* H. Peter Anvin <hpa@zytor.com> wrote:
 
-> [Ingo Molnar - Mon, May 11, 2009 at 11:26:55AM +0200]
-> | 
-> | * Yinghai Lu <yinghai@kernel.org> wrote:
-> | 
-> | > @@ -1590,21 +1591,32 @@ void __init init_apic_mappings(void)
-> | >  	} else
-> | >  		apic_phys = mp_lapic_addr;
-> | >  
-> | > -	set_fixmap_nocache(FIX_APIC_BASE, apic_phys);
-> | > +	/* lets check if we may to NOP'ify apic operations */
-> | > +	if (!cpu_has_apic) {
-> | > +		pr_info("APIC: disable apic facility\n");
-> | > +		apic_disable();
-> | > +		return;
-> | > +	}
-> | > +
-> | > +	/*
-> | > +	 * acpi lapic path already map that address in
-> | > +	 * acpi_register_lapic_address()
-> | > +	 */
-> | >  	apic_printk(APIC_VERBOSE, "mapped APIC to %08lx (%08lx)\n",
-> | >  				APIC_BASE, apic_phys);
-> | > +	if (acpi_lapic)
-> | > +		return;
-> | 
-> | why do we return here? We should sanity-check the APIC ID even if we 
-> | come from ACPI.
-> | 
-> | 	Ingo
-> | 
+> Alan Cox wrote:
+> > 
+> > There are quite a few different CPUs with PAT errata. I've no idea why
+> > there are so many errata about that specific bit.
+> > 
 > 
-> I believe we already have it checked in 
-> acpi_register_lapic_address so no need to do it twice. Or I miss 
-> something?
+> I suspect it is simply because:
+> 
+> a) it moves around between the various page table formats;
+> b) the default configuration and existing OSes don't use it;
+> c) it isn't even *present* in some formats.
 
-It's better to have such checks applied redundantly instead of 
-introducing such implicit criss-cross dependencies between 
-functions. (which would break if acpi_register_lapic_address() ever 
-stopped checking the apic id - or did it differently)
+I also suspect those bits is also on the TLB miss critical path so 
+there's probably quite a bit of extra complexity around it on the 
+hardware side to keep the latency down.
 
 	Ingo
