@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758256AbZEKUGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758943AbZEKUGf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758256AbZEKUGU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 16:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755588AbZEKUF6
+	id S1758943AbZEKUGf (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 16:06:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758766AbZEKUGL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 16:05:58 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:53163 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755492AbZEKUF5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 16:05:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=ssl/5La8LlO7BHLKm8dVxcJxnf6p39zC4H2D3Cn9AXQWwokdOerqWJBmtq/sSXsld3
-         SC1YmmZGhOa0LYe6jf2y++b+F5XSNxCqpu3Zl1wzW9mlEU6ag15vzxZ2dKGPcZYK1gVB
-         IdPfKXqL4EBeD3lu8h2DIB/cVz/h4nuCIDuRI=
-Date: Tue, 12 May 2009 00:05:56 +0400
-From: Cyrill Gorcunov <gorcunov@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       eswierk@aristanetworks.com, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:x86/apic] x86: read apic ID in the !acpi_lapic case
-Message-ID: <20090511200556.GQ4624@lenovo>
-References: <49FC85A9.2070702@kernel.org> <tip-4401da6111ac58f94234417427d06a72c4048c74@git.kernel.org> <20090511110234.GH4648@elte.hu> <20090511134140.GH4624@lenovo> <20090511134950.GA949@elte.hu> <4A0863C5.9070206@kernel.org> <20090511180521.GL4624@lenovo> <20090511200143.GJ28684@elte.hu>
+	Mon, 11 May 2009 16:06:11 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:41177 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757356AbZEKUGJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 16:06:09 -0400
+Message-ID: <4A08852E.4010504@garzik.org>
+Date: Mon, 11 May 2009 16:06:06 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090511200143.GJ28684@elte.hu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
+Subject: Re: [PATCH 1/2 v2] kernel/{sched,smp}.c: fix static decl prior to
+ struct declaration
+References: <20090508184838.GA11157@havoc.gtf.org> <20090508193841.GA13831@havoc.gtf.org> <20090511112648.GA27226@elte.hu>
+In-Reply-To: <20090511112648.GA27226@elte.hu>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Ingo Molnar - Mon, May 11, 2009 at 10:01:43PM +0200]
-...
-| 
-| > Thanks Yinghai, looks really attractive!
-| > 
-| > But would need a good testing (seems we
-| > rely on read_apic heavily in smp environment
-| > even if it was disabled or not supported).
-| > 
-| > (btw comment about disable_apic now should
-| >  contain apic->read as well or should be dropped
-| >  completely since all is selfevidence from code
-| >  though this is not that important i believe)
-| 
-| Needs a delta patch against -tip - i got this stuff stable today but 
-| i dont want to replace patches as it has a problematic track record 
-| already.
-| 
-| 	Ingo
-| 
+Ingo Molnar wrote:
+> -tip testing found this build bug:
+> 
+> kernel/sched.c: In function ‘root_task_group_empty’:
+> kernel/sched.c:312: error: ‘root_task_group’ undeclared (first use in this function)
+> kernel/sched.c:312: error: (Each undeclared identifier is reported only once
+> kernel/sched.c:312: error: for each function it appears in.)
+> 
+> config attached.
 
-Yinghai, could you make one? (i'm off for today, seems will
-be able tomorrow evening only)
+Fixed and resent.
 
-	-- Cyrill
+What a rat's nest of ifdefs!  root_task_group is outside 
+CONFIG_USER_SCHED, and so I kept that property in patch v3.
+
+However, its definition in kernel/sched.h is conditional on 
+CONFIG_USER_SCHED, even though root_task_group_empty() may exist outside 
+of CONFIG_USER_SCHED, and root_task_group is referenced vi
+CONFIG_FAIR_GROUP_SCHED || CONFIG_RT_GROUP_SCHED.
+
+Starting to wish I had never patched this code in the first place (that 
+barb is directed at the code, not you...)
+
+	Jeff
+
+
+
