@@ -1,66 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753523AbZEKSw0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754022AbZEKSwl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753523AbZEKSw0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 14:52:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752256AbZEKSwR
+	id S1754022AbZEKSwl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 14:52:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753765AbZEKSw2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 14:52:17 -0400
-Received: from pfepb.post.tele.dk ([195.41.46.236]:48749 "EHLO
-	pfepb.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752524AbZEKSwQ (ORCPT
+	Mon, 11 May 2009 14:52:28 -0400
+Received: from xc.sipsolutions.net ([83.246.72.84]:40896 "EHLO
+	sipsolutions.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753850AbZEKSw1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 14:52:16 -0400
-Date: Mon, 11 May 2009 20:54:24 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-Cc: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>,
-       linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
-       Li Wei <W.Li@Sun.COM>, Michael Ellerman <michaele@au1.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
-       Martin Schwidefsky <mschwid2@linux.vnet.ibm.com>,
-       Rusty Russell <rusty@rustcorp.com.au>, Jeff Dike <jdike@addtoit.com>
-Subject: Re: [PATCH 1/4] kernel: constructor support
-Message-ID: <20090511185424.GA32234@uranus.ravnborg.org>
-References: <20090508154407.956216094@linux.vnet.ibm.com> <20090508154408.925135176@linux.vnet.ibm.com> <20090509050335.GC18129@hack> <4A07E536.9070609@linux.vnet.ibm.com>
+	Mon, 11 May 2009 14:52:27 -0400
+Subject: Re: Probe Timeouts with 47afbaf5af9454a7a1a64591e20cbfcc27ca67a8
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Parag Warudkar <parag.lkml@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       LKML <linux-kernel@vger.kernel.org>, niel.lambrechts@gmail.com
+In-Reply-To: <alpine.LFD.2.01.0905111126320.3586@localhost.localdomain>
+References: <f7848160904301838q4883106fq8d31e2e7c0b10a14@mail.gmail.com>
+	 <1241165805.13562.2.camel@johannes.local>
+	 <f7848160905010619n74372488n45a7b7abccfe5ea7@mail.gmail.com>
+	 <alpine.LFD.2.01.0905111046310.3586@localhost.localdomain>
+	 <1242066170.3873.43.camel@johannes.local>
+	 <alpine.LFD.2.01.0905111126320.3586@localhost.localdomain>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-uTlXJn0cIbf/ABcgmApl"
+Date: Mon, 11 May 2009 20:52:19 +0200
+Message-Id: <1242067939.3873.45.camel@johannes.local>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <4A07E536.9070609@linux.vnet.ibm.com>
-User-Agent: Mutt/1.4.2.1i
+X-Mailer: Evolution 2.26.1.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 10:43:34AM +0200, Peter Oberparleiter wrote:
-> Américo Wang wrote:
-> >On Fri, May 08, 2009 at 05:44:09PM +0200, Peter Oberparleiter wrote:
-> >>From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-> >>Index: linux-2.6.30-rc4/init/main.c
-> >>===================================================================
-> >>--- linux-2.6.30-rc4.orig/init/main.c
-> >>+++ linux-2.6.30-rc4/init/main.c
-> >>@@ -700,6 +700,18 @@ asmlinkage void __init start_kernel(void
-> >>	rest_init();
-> >>}
-> >>
-> >>+/* Call all constructor functions linked into the kernel. */
-> >>+static void __init do_ctors(void)
-> >>+{
-> >>+#ifdef CONFIG_CONSTRUCTORS
-> >>+	extern ctor_fn_t __ctors_start[], __ctors_end[];
-> >
-> >
-> >I would like these to be globally decleared, since they are.
-> 
-> Ok, I will move the __ctors_* declarations to include/linux/ínit.h
 
-include/asm-generic/sections.h please.
-And please add a comment too.
+--=-uTlXJn0cIbf/ABcgmApl
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-That the other entries in the same file lacks a comment is not
-the example to follow.
+On Mon, 2009-05-11 at 11:33 -0700, Linus Torvalds wrote:
 
-	Sam
+> And the kernel I'm using is top-of-git, so that fix was there.
+
+Ok.
+
+> Which was obviously exactly why I was so unhappy about this, since the=20
+> revert seemed to fix problems for me _despite_ the fix.
+
+Curious really, since with that fix and a revert it would go to -1 dBm.
+The only explanation I have is that then the Intel card defaults to some
+safe value because it doesn't support values < 0.
+
+johannes
+
+--=-uTlXJn0cIbf/ABcgmApl
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIcBAABAgAGBQJKCHPaAAoJEODzc/N7+QmahPkP/jkchUF2XtDcbz0++enhnE37
+pHIVHvRO872SgR0IohO+B8VJPnK8cd+S29fLmtzU82aUUvcvCKhg2dlzs3EBx5/N
+zF833AaA7YJw1eMArlxdgbfw21KOnXf2sxBYy6bOb9fkM2cntBQ+JfnIP0il/pg9
+OUd2ITIplaIQqCdIUBjh5VFMmwkS7y+XRdBVuJLg5y2bTJBS4x1PrPA6AhEACMRU
+WoVML4S3pqITeUOGt3Hz5s5ohuxTJOOoKxi1jFouU+UBIXdOwWAH1Wl6seRco3vp
+CRFfyWSuaJwHGCb7r+3SsZaUTPA0YjWgzV0YXqv1H3e4jBAqwWAzwn6sMjaPTRkP
+AHBWKIYxSGqk4YecmDTzoD+E4FCRe/XagCNBmuXpr4eYV5LEsoaLON3Mje6NgsAH
+HOjhwnlMVUAMauGglHAPQKid8Ri35XgLtWmls1QeKBbVxG5kNGPDszaFX3eqmgAP
+DAxDVrlBIFII860pGD2jb2+Oxt0vCYGvvyCjUcJ4DOY7s4VvYTcqJiek2kSzN/5v
+6v+2ul2GlIzTHWwBnE6S4VlKLwhcxi/3jURsU1wfLW4apHvDzDWLZuY2EbA0TxLL
+QK1Yt/VJnUH2MOGTxKDICiMrCdfeI0AvMSrskhftAQVN5i60EBJgxSGATd7zGpGD
+jcmHUfONzvVFdYMkp/il
+=Pswu
+-----END PGP SIGNATURE-----
+
+--=-uTlXJn0cIbf/ABcgmApl--
+
