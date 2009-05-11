@@ -1,34 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756647AbZEKSkh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759040AbZEKSlX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756647AbZEKSkh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 14:40:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752838AbZEKSk3
+	id S1759040AbZEKSlX (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 14:41:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbZEKSlN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 14:40:29 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49721 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752782AbZEKSk2 (ORCPT
+	Mon, 11 May 2009 14:41:13 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:49323 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752573AbZEKSlN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 14:40:28 -0400
-Date: Mon, 11 May 2009 11:31:57 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: fengguang.wu@intel.com, fweisbec@gmail.com, rostedt@goodmis.org,
-       a.p.zijlstra@chello.nl, lizf@cn.fujitsu.com,
-       linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
-       andi@firstfloor.org, mpm@selenic.com, adobriyan@gmail.com,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 4/8] proc: export more page flags in /proc/kpageflags
-Message-Id: <20090511113157.b2c56e70.akpm@linux-foundation.org>
-In-Reply-To: <20090511114554.GC4748@elte.hu>
-References: <20090508105320.316173813@intel.com>
-	<20090508111031.020574236@intel.com>
-	<20090508114742.GB17129@elte.hu>
-	<20090508132452.bafa287a.akpm@linux-foundation.org>
-	<20090509104409.GB16138@elte.hu>
-	<20090509222612.887b96e3.akpm@linux-foundation.org>
-	<20090511114554.GC4748@elte.hu>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+	Mon, 11 May 2009 14:41:13 -0400
+Date: Mon, 11 May 2009 19:40:26 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 00/13] devtmpfs patches
+Message-ID: <20090511194026.79ecd3aa@lxorguk.ukuu.org.uk>
+In-Reply-To: <ac3eb2510905111104g5ce4e8e6xf8b4de41454c3d2f@mail.gmail.com>
+References: <20090509143742.GA27663@kroah.com>
+	<20090511115504.568c9a92@lxorguk.ukuu.org.uk>
+	<ac3eb2510905110434nb123423m134e848c17c3c736@mail.gmail.com>
+	<20090511141057.24a5f8ed@lxorguk.ukuu.org.uk>
+	<ac3eb2510905110714m5877da13q19b42d1c8565777c@mail.gmail.com>
+	<20090511165317.3da5326f@lxorguk.ukuu.org.uk>
+	<ac3eb2510905110928g12545518y143f7f73b3ae494a@mail.gmail.com>
+	<20090511094151.6014cafb@infradead.org>
+	<ac3eb2510905111032u13051b74g81573a18e3545a81@mail.gmail.com>
+	<20090511185513.45ea4754@lxorguk.ukuu.org.uk>
+	<ac3eb2510905111104g5ce4e8e6xf8b4de41454c3d2f@mail.gmail.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -36,33 +41,26 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009 13:45:54 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+> Right, but the information you need for all other use cases is already
+> there today in /sys. This is about something new, so there is not a
+> competition about features, just an option to solve a problem in a
+> different way, which we prefer over the current one.
 
-> > Yes, we could place pagemap's two auxiliary files into debugfs but 
-> > it would be rather stupid to split the feature's control files 
-> > across two pseudo filesystems, one of which may not even exist.  
-> > Plus pagemap is not a kernel debugging feature.
-> 
-> That's not what i'm suggesting though.
-> 
-> What i'm suggesting is that there's a zillion ways to enumerate and 
-> index various kernel objects, doing that in /proc is fundamentally 
-> wrong. And there's no need to create a per PID/TID directory 
-> structure in /debug either, to be able to list and access objects by 
-> their PID.
+"we". You don't speak for me or a lot of people on this one.
 
-The problem with procfs was that it was growing a lot of random
-non-process-related stuff.  We never deprecated procfs - we decided
-that it should be retained for its original purpose and that
-non-process-realted things shouldn't go in there.
+Running a second udevd seems to be overkill. You know which nodes you've
+created so far so you know which series of rules to reapply.
 
-The /proc/<pid>/pagemap file clearly _is_ process-related, and
-/proc/<pid> is the natural and correct place for it to live.
+> just an option to solve a problem in a different way
 
-Yes, sure, there are any number of ways in which that data could be
-presented to userspace in other locations and via other means.  But
-there would need to be an extraordinarily good reason for violating the
-existing paradigm/expectation/etc.
+There are thousands of kernel contributors. If they all submit everything
+that solves their problem, their way we'd drown in the resulting mess.
+devfs was Richard Gooch's way perhaps we should add that back as well,
+and a variant that uses a data file for me, and a different one for Arjan.
 
+We could let everyone invent new arbitary APIs for all their device
+drivers so you need a different app for each pointing device or
+each light level sensor ....
+
+That way lies *madness*.
 
