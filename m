@@ -1,105 +1,130 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbZEKKkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754816AbZEKKr3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753437AbZEKKkm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 06:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752275AbZEKKkd
+	id S1754816AbZEKKr3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 06:47:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752525AbZEKKrT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 06:40:33 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:60748 "EHLO gir.skynet.ie"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752207AbZEKKkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 06:40:32 -0400
-Date: Mon, 11 May 2009 11:40:29 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch -mmotm] mm: invoke oom killer for __GFP_NOFAIL
-Message-ID: <20090511104029.GB19847@csn.ul.ie>
-References: <alpine.DEB.2.00.0905091544470.6884@chino.kir.corp.google.com>
+	Mon, 11 May 2009 06:47:19 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:33349 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752203AbZEKKrR convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 06:47:17 -0400
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.2.00.0905091544470.6884@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <m1pregmkld.fsf@fess.ebiederm.org>
+References: <20090509143742.GA27663@kroah.com> <20090509161923.GA942@suse.de> 
+	<20090509223454.4642753d.akpm@linux-foundation.org> <20090510152005.GA9461@suse.de> 
+	<1241980263.9562.380.camel@laptop> <20090510221901.30c1c5a5@lxorguk.ukuu.org.uk> 
+	<ac3eb2510905101647k12a1b9ck71d43933037bac48@mail.gmail.com> 
+	<20090510170016.1e3a4d97@infradead.org> <ac3eb2510905101822t7fde14b3nf2c689621f69c925@mail.gmail.com> 
+	<m1pregmkld.fsf@fess.ebiederm.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Mon, 11 May 2009 12:46:57 +0200
+Message-ID: <ac3eb2510905110346p115dc8bbscc8921c9bd7e500d@mail.gmail.com>
+Subject: Re: [patch 00/13] devtmpfs patches
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Cc: Arjan van de Ven <arjan@infradead.org>,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Fabio Comolli <fabio.comolli@gmail.com>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 09, 2009 at 03:46:39PM -0700, David Rientjes wrote:
-> The oom killer must be invoked regardless of the order if the allocation
-> is __GFP_NOFAIL, otherwise it will loop forever when reclaim fails to
-> free some memory.
-> 
-> Cc: Mel Gorman <mel@csn.ul.ie>
-> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> Cc: Nick Piggin <npiggin@suse.de>
-> Cc: Christoph Lameter <cl@linux-foundation.org>
-> Cc: Dave Hansen <dave@linux.vnet.ibm.com>
-> Signed-off-by: David Rientjes <rientjes@google.com>
-> ---
->  mm/page_alloc.c |   16 ++++++----------
->  1 files changed, 6 insertions(+), 10 deletions(-)
-> 
-> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
-> --- a/mm/page_alloc.c
-> +++ b/mm/page_alloc.c
-> @@ -1547,7 +1547,7 @@ __alloc_pages_may_oom(gfp_t gfp_mask, unsigned int order,
->  		goto out;
->  
->  	/* The OOM killer will not help higher order allocs */
-> -	if (order > PAGE_ALLOC_COSTLY_ORDER)
-> +	if (order > PAGE_ALLOC_COSTLY_ORDER && !(gfp_mask & __GFP_NOFAIL))
->  		goto out;
->  
->  	/* Exhausted what can be done so it's blamo time */
-> @@ -1763,16 +1763,12 @@ rebalance:
->  					migratetype);
->  			if (page)
->  				goto got_pg;
-> +			if ((gfp_mask & __GFP_NOFAIL) ||
-> +					order <= PAGE_ALLOC_COSTLY_ORDER)
-> +				goto restart;
->  
+On Mon, May 11, 2009 at 04:36, Eric W. Biederman <ebiederm@xmission.com> wrote:
+>> Devtmpfs is the simplest, is the fastest, is the most reliable, and it
+>> is the most flexible
+>
+> FLEXIBLE?
 
-Can this get a comment explaining the intention like the code you are
-removing had? Something like this?
+Yes, flexible because you can do whatever you want in whatever order
+and never run into problems with an empty /dev. You can even just
+ignore /dev and go ahead. There are basically no dependencyies to do
+other things in parallel.
 
-/*
- * The OOM killer only triggers for lower order allocation
- * requests and when __GFP_NOFAIL is specified to prevent
- * endlessly looping. Only retry the allocation if the OOM
- * killer was used.
- */
+>> option for us. And still, nobody will be forced
+>> to use it, it's entirely optional. For our systems, we decided to do
+>> it that way, and we ship it already in the distro, and if there are no
+>> substantial problems coming up, which we don't expect, we will
+>> continue using it.
+>
+> Yes but you are asking all of us to maintain it.  Forever in perpetuity.
+> A better case needs to be made than you have already shipped the code.
 
-Otherwise, it looks ok.
+I would be very careful with such statement if you want us to accept
+your namespace hacks in the future. I guess if we ask with your next
+round "do we want to to have to maintain this for forever" you get a
+very different answer than today.
 
-Acked-by: Mel Gorman <mel@csn.ul.ie>
+> I'm sorry you decided to ship the code before getting a review.  I
+> guess that is the definition of an experimental feature.  One not in
+> the upstream kernel.
 
-One related question, what is doing a costly-high-order allocation request
-with __GFP_NOFAIL specified?
+No, I did decide to ship it in the distro which is how things work
+since forever. And it's not in the upstream kernel now, while this
+discussion happens.
 
-> -			/*
-> -			 * The OOM killer does not trigger for high-order allocations
-> -			 * but if no progress is being made, there are no other
-> -			 * options and retrying is unlikely to help
-> -			 */
-> -			if (order > PAGE_ALLOC_COSTLY_ORDER)
-> -				goto nopage;
-> -
-> -			goto restart;
-> +			/* No freeing is possible so just fail */
-> +			goto nopage;
+>> You might not like it for whatever reason.
+>
+> I think your justification for this ``feature'' is strongly flawed.
 
+I did not hear any substantial technical argument so far.
 
->  		}
->  	}
->  
-> 
+> You claim to save 2 seconds of a process that should take less than
+> a tenth of a second.
+>
+> You claim flexibility while removing user space from the policy loop.
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+The made up numbers you are bringing up here, suggest that you never
+worked in that area, and really, can you please talk about things you
+have experience with, or get the needed one _before_ calling things
+"flawed", "slow". You even suggest non-working racy hacks instead,
+which is far from funny.
+
+> You claim speed increases when comparing to a dog slow non-tuned
+> implementation.
+
+Again. nothing is dog-slow. We just don't do unreliable bad hacks like
+you suggest. Have you ever wondered why _every_ distro does it this
+way? Maybe they are all stupid and just wait for you to tell them and
+solve their problem.
+
+>> And we consider this problem as solved.
+>
+> What backroom have you had that discussion?
+
+I wrote like ten times as many words as are in the patch, here in this
+thread. I don't think there is any backroom here.
+
+> You are presenting this as a decision already made.  I think you
+> are not playing well with others.
+
+Oh, like calling stuff "flawed", "dog-slow", while not even seen any
+of this running for real?
+
+> I don't see a case having been made that the existing user
+> space interface is broken.  Just that the udev implementation
+> is slow.
+
+That's utter nonsense. It's not slow at all, it's just slower that
+what we can do with the bit of help from the kernel.
+
+> I think a slow user space application is simply not a justification
+> for putting code in the kernel.
+
+Can you read? Did you read the many reasons why we want this? I guess not.
+
+> I think a developer using faulty arguments for their code likely
+> has not thought things through and that is enough reason to call
+> suspicion onto the code in my opinion.
+
+You seem running in circles with searching for a "suspicion". Care to
+provide a technical argument for the first time? That would be
+appreciated.
+
+Thanks,
+Kay
