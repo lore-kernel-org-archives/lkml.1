@@ -1,116 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756677AbZEKLoS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757944AbZEKLqm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756677AbZEKLoS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 07:44:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754054AbZEKLoB
+	id S1757944AbZEKLqm (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 07:46:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755611AbZEKLqd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 07:44:01 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:49400 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753022AbZEKLoA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 07:44:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=t4Ro4p3+K3o5X1UCH76DfCAIMUOr6DBCrcCCQR7fa8Arj6mzkKXV4b9qv0Fy0+5j5E
-         v2RHjj+7n0LdMdKq9q0bI0WseUGxRA/fObTcNj5FqVdXhWNPR3Yfjk0UVga7AaIcQD0N
-         +0uawTjph6V9arfBAI1kTM6hApAwv/5YQbIXQ=
+	Mon, 11 May 2009 07:46:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:53753 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755530AbZEKLqc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 07:46:32 -0400
+Date: Mon, 11 May 2009 13:45:54 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: fengguang.wu@intel.com, fweisbec@gmail.com, rostedt@goodmis.org,
+       a.p.zijlstra@chello.nl, lizf@cn.fujitsu.com,
+       linux-kernel@vger.kernel.org, kosaki.motohiro@jp.fujitsu.com,
+       andi@firstfloor.org, mpm@selenic.com, adobriyan@gmail.com,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 4/8] proc: export more page flags in /proc/kpageflags
+Message-ID: <20090511114554.GC4748@elte.hu>
+References: <20090508105320.316173813@intel.com> <20090508111031.020574236@intel.com> <20090508114742.GB17129@elte.hu> <20090508132452.bafa287a.akpm@linux-foundation.org> <20090509104409.GB16138@elte.hu> <20090509222612.887b96e3.akpm@linux-foundation.org>
 MIME-Version: 1.0
-Date: Mon, 11 May 2009 20:44:00 +0900
-Message-ID: <483a38b80905110444n7d55b967j70cf2639dff1c706@mail.gmail.com>
-Subject: [PATCH 2/2] Input: tsc2007: do I2C transfers in non-interrupt context
-From: Kwangwoo Lee <kwangwoo.lee@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       Thierry Reding <thierry.reding@avionic-design.de>
-Cc: Trilok Soni <soni.trilok@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090509222612.887b96e3.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From d5de0d22109de7564f9bf1df688acbe6b18f41db Mon Sep 17 00:00:00 2001
-From: Kwangwoo Lee <kwangwoo.lee@gmail.com>
-Date: Mon, 11 May 2009 20:05:50 +0900
-Subject: [PATCH 2/2] Input: tsc2007: do I2C transfers in non-interrupt context.
 
-This patch enhances pointer movements much smoother.
-The original patch is written by Thierry.
+* Andrew Morton <akpm@linux-foundation.org> wrote:
 
-Signed-off-by: Thierry Reding <thierry.reding@avionic-design.de>
-Signed-off-by: Kwangwoo Lee <kwangwoo.lee@gmail.com>
----
- drivers/input/touchscreen/tsc2007.c |   18 ++++++++++++++----
- 1 files changed, 14 insertions(+), 4 deletions(-)
+> On Sat, 9 May 2009 12:44:09 +0200 Ingo Molnar <mingo@elte.hu> wrote:
+> 
+> > And because it was so crappy to be in /proc we are now also 
+> > treating it as a hard ABI, not as a debugfs interface - for that 
+> > single app that is using it.
+> 
+> We'd probably make better progress here were someone to explain 
+> what pagemap actually is.
+> 
+> pagemap is a userspace interface via which application developers 
+> (including embedded) can analyse, understand and optimise their 
+> use of memory.
 
-diff --git a/drivers/input/touchscreen/tsc2007.c
-b/drivers/input/touchscreen/tsc2007.c
-index 948e167..03bbe58 100644
---- a/drivers/input/touchscreen/tsc2007.c
-+++ b/drivers/input/touchscreen/tsc2007.c
-@@ -70,6 +70,7 @@ struct ts_event {
- struct tsc2007 {
- 	struct input_dev	*input;
- 	char			phys[32];
-+	struct work_struct	work;
- 	struct hrtimer		timer;
- 	struct ts_event		tc;
+IMHO that's really a fancy sentence for: 'to debug how their app 
+interacts with the kernel'. Yes, it can be said without the word 
+'debug' or 'instrumentation' in it. Maybe it could also be written 
+without having any r's in it.
 
-@@ -173,6 +174,9 @@ static void tsc2007_send_event(void *tsc)
+Doing any of that does not change the meaning of the feature though.
 
- 		dev_dbg(&ts->client->dev, "point(%4d,%4d), pressure (%4u)\n",
- 			x, y, rt);
-+	} else {
-+		if (!ts->pendown)
-+			ts->pendown = 1;
- 	}
+> It is not debugging feature at all, let alone a kernel debugging 
+> feature.  For this reason it is not appropriate that its 
+> interfaces be presented in debugfs.
+> 
+> Furthermore the main control file for pagemap is in 
+> /proc/<pid>/pagemap.  pagemap _cannot_ be put in debugfs because 
+> debugfs doesn't maintain the per-process subdirectories in which 
+> to place it.  /proc/<pid>/ is exactly the place where the pagemap 
+> file should appear.
 
- 	hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_PERIOD),
-@@ -197,6 +201,13 @@ static int tsc2007_read_values(struct tsc2007 *tsc)
- 	return 0;
- }
+only if done in a stupid way.
 
-+static void tsc2007_work(struct work_struct *work)
-+{
-+	struct tsc2007 *ts = container_of(work, struct tsc2007, work);
-+	tsc2007_read_values(ts);
-+	tsc2007_send_event(ts);
-+}
-+
- static enum hrtimer_restart tsc2007_timer(struct hrtimer *handle)
- {
- 	struct tsc2007 *ts = container_of(handle, struct tsc2007, timer);
-@@ -218,9 +229,7 @@ static enum hrtimer_restart tsc2007_timer(struct
-hrtimer *handle)
- 	} else {
- 		/* pen is still down, continue with the measurement */
- 		dev_dbg(&ts->client->dev, "pen is still down\n");
--
--		tsc2007_read_values(ts);
--		tsc2007_send_event(ts);
-+		schedule_work(&ts->work);
- 	}
+The thing is, nor are all active inodes enumerated in /debug and not 
+in /proc either. And we've stopped stuffing new instrumentation into 
+/proc about a decade ago and introduced debugfs for that.
 
- 	spin_unlock_irqrestore(&ts->lock, flags);
-@@ -253,7 +262,7 @@ static int tsc2007_probe(struct i2c_client *client,
- 			const struct i2c_device_id *id)
- {
- 	struct tsc2007 *ts;
--	struct tsc2007_platform_data *pdata = pdata = client->dev.platform_data;
-+	struct tsc2007_platform_data *pdata = client->dev.platform_data;
- 	struct input_dev *input_dev;
- 	int err;
+_Especially_ when some piece of instrumentation is clearly growing 
+in scope and nature, as here.
 
-@@ -280,6 +289,7 @@ static int tsc2007_probe(struct i2c_client *client,
+> Yes, we could place pagemap's two auxiliary files into debugfs but 
+> it would be rather stupid to split the feature's control files 
+> across two pseudo filesystems, one of which may not even exist.  
+> Plus pagemap is not a kernel debugging feature.
 
- 	hrtimer_init(&ts->timer, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
- 	ts->timer.function = tsc2007_timer;
-+	INIT_WORK(&ts->work, tsc2007_work);
+That's not what i'm suggesting though.
 
- 	spin_lock_init(&ts->lock);
+What i'm suggesting is that there's a zillion ways to enumerate and 
+index various kernel objects, doing that in /proc is fundamentally 
+wrong. And there's no need to create a per PID/TID directory 
+structure in /debug either, to be able to list and access objects by 
+their PID.
 
--- 
-1.5.6.5
+_Especially_ when the end result is not human-readable to begin 
+with, as it is in the pagemap/kpagecount/kpageflags case.
+
+	Ingo
