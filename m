@@ -1,74 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757167AbZEKP6r@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZEKQAB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757167AbZEKP6r (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 11:58:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbZEKP6g
+	id S1756177AbZEKQAB (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 12:00:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754435AbZEKP7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 11:58:36 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:22410 "EHLO
-	IE1EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752251AbZEKP6f convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 11:58:35 -0400
-X-BigFish: VPS-13(zba6lz1432R1805MaccKzz1202hzzz32i6bh66h)
-X-Spam-TCS-SCL: 5:0
-X-WSS-ID: 0KJHLP5-01-DUO-01
-x-mimeole: Produced By Microsoft Exchange V6.5
-Content-Class: urn:content-classes:message
+	Mon, 11 May 2009 11:59:50 -0400
+Received: from smtp.citrix.com ([66.165.176.89]:18896 "EHLO SMTP.CITRIX.COM"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754028AbZEKP7t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 11:59:49 -0400
+X-IronPort-AV: E=Sophos;i="4.40,328,1238990400"; 
+   d="scan'208";a="4193495"
+Subject: Re: [tip:x86/xen] x86: use flush_tlb_others to implement
+	flush_tlb_all, fix
+From: Ian Campbell <Ian.Campbell@eu.citrix.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: "mingo@redhat.com" <mingo@redhat.com>, "hpa@zytor.com" <hpa@zytor.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Jeremy Fitzhardinge <Jeremy.Fitzhardinge@citrix.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "xen-devel@lists.xensource.com" <xen-devel@lists.xensource.com>,
+       "linux-tip-commits@vger.kernel.org" 
+	<linux-tip-commits@vger.kernel.org>
+In-Reply-To: <20090511154202.GA31655@elte.hu>
+References: <1241797927.15972.51.camel@zakaz.uk.xensource.com>
+	 <tip-636afdbe85d50d9b88f5283b5e6d0f8518431aac@git.kernel.org>
+	 <20090511131230.GA32693@elte.hu>
+	 <1242054041.29990.88.camel@zakaz.uk.xensource.com>
+	 <20090511151151.GA3267@elte.hu>
+	 <1242056394.29990.94.camel@zakaz.uk.xensource.com>
+	 <20090511154202.GA31655@elte.hu>
+Content-Type: text/plain
+Organization: Citrix Systems, Inc.
+Date: Mon, 11 May 2009 16:59:48 +0100
+Message-ID: <1242057588.29990.105.camel@zakaz.uk.xensource.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
-Subject: RE: [PATCH][KVM][retry 1] Add support for Pause Filtering to AMDSVM
-Date: Mon, 11 May 2009 10:58:24 -0500
-Message-ID: <6453C3CB8E2B3646B0D020C1126132730362094C@sausexmb4.amd.com>
-In-Reply-To: <20090511145903.GB737@elte.hu>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: [PATCH][KVM][retry 1] Add support for Pause Filtering to AMDSVM
-Thread-Index: AcnSSRqnvx6G+BR2Tc+1dtlXGPw74gABYFoQ
-References: <200905050909.58583.mark.langsdorf@amd.com> <20090507135522.GJ4059@amd.com> <200905071000.14038.mark.langsdorf@amd.com> <4A02FECC.6060609@redhat.com> <20090511141503.GC6175@elte.hu> <4A083539.407@redhat.com> <20090511143320.GE6175@elte.hu> <4A083B69.6010702@redhat.com> <20090511145903.GB737@elte.hu>
-From: "Langsdorf, Mark" <mark.langsdorf@amd.com>
-To: "Ingo Molnar" <mingo@elte.hu>, "Avi Kivity" <avi@redhat.com>
-CC: "Peter Zijlstra" <a.p.zijlstra@chello.nl>,
-       "Roedel, Joerg" <Joerg.Roedel@amd.com>, <kvm@vger.kernel.org>,
-       <linux-kernel@vger.kernel.org>
-X-OriginalArrivalTime: 11 May 2009 15:58:24.0992 (UTC) FILETIME=[51002E00:01C9D251]
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> Please dont even think about using yield for this though - 
-
-Oops.  I'm glad I waited to get some benchmark results before
-submitting that version.
-
-> >> A gradual and linear back-off from the current timeline is 
-> >> more of a fair negotiation process between vcpus and
-> >> results in more or less  
-> >> sane (and fair) scheduling, and no unnecessary looping.
-> >>
-> >> You could even do an exponential backoff up to a limit of 
-> >> 1-10 msecs or so, starting at 100 usecs.
-> >
-> > Good idea, it eliminates another variable to be tuned.
+On Mon, 2009-05-11 at 11:42 -0400, Ingo Molnar wrote:
+> * Ian Campbell <Ian.Campbell@eu.citrix.com> wrote:
 > 
-> It could be made fully self-tuning, if the filter threshold can be 
-> tuned fast enough. (an MSR write? A VM context field update?)
+> > in any case I would guess that the fix is:
+> > 
+> > --- a/arch/x86/kernel/setup.c
+> > +++ b/arch/x86/kernel/setup.c
+> > @@ -87,6 +87,7 @@
+> >  #include <asm/cacheflush.h>
+> >  #include <asm/processor.h>
+> >  #include <asm/bugs.h>
+> > +#include <asm/tlbflush.h>
+> >  
+> >  #include <asm/system.h>
+> >  #include <asm/vsyscall.h>
+> 
+> Guessing is not enough - please review the prototype position. Is it 
+> available on all configs? It is not ...
 
-VMCB field update.
+Damn, you are (of course) right. There is nothing for it to do on !SMP
+so patch below. I also observe that since it's no longer an initcall
+there is no need for a return value so included that change too.
 
-So the suggestion is to add a function similar to set_task_cpu()
-that increases the vmruntime with an exponential backoff?  Is
-that sufficient to cause a new VCPU to step in?  I'm obviously
-not very familiar with the scheduler code.
+> But even the proper fix runs into that smp_processor_id() bug i just 
+> posted.
+
+That's back to an issue in the original patch from Jeremy I think, I'll
+leave that one to him and/or tomorrow -- I've botched enough patches for
+one day!
+
+Ian.
+
+diff --git a/arch/x86/include/asm/tlbflush.h b/arch/x86/include/asm/tlbflush.h
+index a3f42bf..e1e3e6a 100644
+--- a/arch/x86/include/asm/tlbflush.h
++++ b/arch/x86/include/asm/tlbflush.h
+@@ -89,6 +89,8 @@ static inline void __flush_tlb_one(unsigned long addr)
  
-> I.e. the 3000 cycles value itself could be eliminated as well. (with 
-> just a common-sense max of say 100,000 cycles enforced)
+ #ifndef CONFIG_SMP
+ 
++static inline void init_smp_flush(void) {}
++
+ #define flush_tlb() __flush_tlb()
+ #define flush_tlb_all() __flush_tlb_all()
+ #define local_flush_tlb() __flush_tlb()
+@@ -129,7 +131,7 @@ static inline void reset_lazy_tlbstate(void)
+ 
+ #define local_flush_tlb() __flush_tlb()
+ 
+-extern int init_smp_flush(void);
++extern void init_smp_flush(void);
+ 
+ extern void flush_tlb_all(void);
+ extern void flush_tlb_current_task(void);
+diff --git a/arch/x86/mm/tlb.c b/arch/x86/mm/tlb.c
+index 03f52f5..db28919 100644
+--- a/arch/x86/mm/tlb.c
++++ b/arch/x86/mm/tlb.c
+@@ -217,14 +217,12 @@ void native_flush_tlb_others(const struct cpumask *cpumask,
+ 	flush_tlb_others_ipi(cpumask, mm, va);
+ }
+ 
+-int __init init_smp_flush(void)
++void __init init_smp_flush(void)
+ {
+ 	int i;
+ 
+ 	for (i = 0; i < ARRAY_SIZE(flush_state); i++)
+ 		spin_lock_init(&flush_state[i].tlbstate_lock);
+-
+-	return 0;
+ }
+ 
+ void flush_tlb_current_task(void)
 
-I don't understand what you're saying here.  There needs to be
-some value in the pause filter counter to trigger the intercept.
-
--Mark Langsdorf
-Operating System Research Center
-AMD
 
