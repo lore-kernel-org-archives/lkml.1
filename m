@@ -1,156 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754435AbZEKOut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754985AbZEKOvw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754435AbZEKOut (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 10:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZEKOuk
+	id S1754985AbZEKOvw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 10:51:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752661AbZEKOvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 10:50:40 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:49807 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1752453AbZEKOuj (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 10:50:39 -0400
-Date: Mon, 11 May 2009 10:50:39 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: "K.Prasad" <prasad@linux.vnet.ibm.com>
-cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>, <maneesh@linux.vnet.ibm.com>,
-       Roland McGrath <roland@redhat.com>
-Subject: Re: [Patch 00/12] Hardware Breakpoint Interfaces
-In-Reply-To: <20090511113644.GB26721@in.ibm.com>
-Message-ID: <Pine.LNX.4.44L0.0905111025500.2975-100000@iolanthe.rowland.org>
+	Mon, 11 May 2009 10:51:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40242 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752622AbZEKOvj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 10:51:39 -0400
+Message-ID: <4A083B69.6010702@redhat.com>
+Date: Mon, 11 May 2009 17:51:21 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mark Langsdorf <mark.langsdorf@amd.com>,
+       Joerg Roedel <joerg.roedel@amd.com>, kvm@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH][KVM][retry 1] Add support for Pause Filtering to AMD
+ SVM
+References: <200905050909.58583.mark.langsdorf@amd.com> <20090507135522.GJ4059@amd.com> <200905071000.14038.mark.langsdorf@amd.com> <4A02FECC.6060609@redhat.com> <20090511141503.GC6175@elte.hu> <4A083539.407@redhat.com> <20090511143320.GE6175@elte.hu>
+In-Reply-To: <20090511143320.GE6175@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009, K.Prasad wrote:
+Ingo Molnar wrote:
+> * Avi Kivity <avi@redhat.com> wrote:
+>
+>   
+>>> I.e. this is a somewhat poor solution as far as scheduling goes. 
+>>> But i'm wondering what the CPU side does. Can REP-NOP really take 
+>>> thousands of cycles? If yes, under what circumstances?
+>>>       
+>> The guest is running rep-nop in a loop while trying to acquire a 
+>> spinlock.  The hardware detects this (most likely, repeated 
+>> rep-nop with the same rip) and exits.  We can program the loop 
+>> count; obviously if we're spinning for only a short while it's 
+>> better to keep spinning while hoping the lock will be released 
+>> soon.
+>>
+>> The idea is to detect that the guest is not making forward 
+>> progress and yield.  If I could tell the scheduler, you may charge 
+>> me a couple of milliseconds, I promise not to sue, that would be 
+>> ideal. [...]
+>>     
+>
+> Ok, with such a waiver, who could refuse?
+>
+> This really needs a new kernel-internal scheduler API though, which 
+> does a lot of fancy things to do:
+>
+>         se->vruntime += 1000000;
+>
+> i.e. add 1 msec worth of nanoseconds to the task's timeline. (first 
+> remove it from the rbtree, then add it back, and nice-weight it as 
+> well) 
 
-> > You shouldn't call on_each_cpu() while holding a spinlock.  The same
-> > thing happens in unregister_kernel_hw_breakpoint().
-> > 
-> 
-> First, on_each_cpu() will now be changed to return only after all
-> functions invoked through IPIs have returned (by changing @wait
-> parameter to 1). This is required to prevent side effects of
-> incrementing hbp_kernel_pos after on_each_cpu() in
-> unregister_kernel_hw_breakpoint() [hbp_kernel_pos is still incremented
-> after IPI and I will explain it below].
+I suspected it would be as simple as this.
 
-Good.  I thought this was already done; it's lucky you noticed it
-wasn't.
+> And only do it if there's other tasks running on this CPU or 
+> so.
+>   
 
-> on_each_cpu() isn't a blocking call (despite @wait being set to 1, which
-> does a busy wait through cpu_relax()) and should be safe to invoke
-> inside a spin_lock() context. I would like to know if you think
-> otherwise.
+What would happen if there weren't?  I'd guess the task would continue 
+running (but with a warped vruntime)?
 
-I guess you're right.  Why did you change the spin_lock to 
-spin_lock_bh?
+> _That_ would be pretty efficient, and would do the right thing when 
+> two (or more) vcpus run on the same CPU, and it would also do the 
+> right thing if there are repeated VM-exits due to pause filtering.
+>
+> Please dont even think about using yield for this though - that will 
+> just add a huge hit to this task and wont result in any sane 
+> behavior - and yield is bound to some historic user-space behavior 
+> as well.
+>
+> A gradual and linear back-off from the current timeline is more of a 
+> fair negotiation process between vcpus and results in more or less 
+> sane (and fair) scheduling, and no unnecessary looping.
+>
+> You could even do an exponential backoff up to a limit of 1-10 msecs 
+> or so, starting at 100 usecs.
+>   
 
+Good idea, it eliminates another variable to be tuned.
 
-> > What happens if a kernel breakpoint is triggered on another CPU while
-> > this loop is running?  Or what happens if the breakpoint being removed
-> > is triggered on another CPU before on_each_cpu() is called below?
-> > 
-> > Basically, it's impossible to change the kernel breakpoints 
-> > simultaneously on all CPUs.  That means you somehow have to keep both 
-> > the old set and the new set around until all the CPUs are updated.
-> > 
-> 
-> I must admit that the code did not handle the above scenario. I am
-> adding a per-cpu instance of 'hbp_kernel[]' called 'this_hbp_kernel[]'.
-> The breakpoint handler would use the per-cpu instance which will remain
-> valid throughout the execution of the handler. The per-cpu instance will
-> be updated with hbp_kernel[] values in arch_update_kernel_hw_breakpoint().
-> [This necessitates hbp_kernel_pos increment to happen after the IPI call
-> in unregister_kernel code].
-
-Yes, okay.  I'm a little nervous about making this_hbp_kernel[] be
-per-cpu while hbp_kernel_pos isn't.  It means the two values will
-sometimes be out of sync with each other.  But it ought to be safe
-since during the out-of-sync periods, hbp_kernel_pos will always point
-to an empty breakpoint slot.
-
-Still, in hw_breakpoint_handler(), perhaps the "if (i >= 
-hbp_kernel_pos)" path should also check for !bp.  Just to be safe.  In 
-other words, move the 
-
-+			if (!bp)
-+				continue;
-+			rc = NOTIFY_DONE;
-
-lines outside the "if" statement.
-
-
-> > Another problem: kdr7 is a global variable, and here you've got every
-> > CPU recomputing it whenever a kernel breakpoint is added or removed.
-> > It should be computed just once, before the on_each_cpu() call.
-> > 
-> 
-> If kdr7 needs to be updated only once, it has to be kept outside the IPI
-> through the use of a wrapper routine (in arch/x86/kernel/hw_breakpoint.c
-> as it is arch-specific). This would mean one more function call in
-> (un)register_kernel_<> routines taking the code back to one of its previous
-> designs. In a trade-off between code-brevity and efficiency, the present one
-> chose the former keeping in mind some of the comments received during the
-> early stages of this patch.
-
-You don't appreciate the seriousness of this problem.  Here's the new code:
-
-+	/* Clear all kernel-space breakpoints in kdr7 */
-+	kdr7 = 0;
-(A)
-+	for (i = hbp_kernel_pos; i < HB_NUM; i++) {
-+		per_cpu(this_hbp_kernel[i], cpu) = bp = hbp_kernel[i];
-+		if (bp) {
-+			kdr7 |= encode_dr7(i, bp->info.len, bp->info.type);
-+			set_debugreg(hbp_kernel[i]->info.address, i);
-+		}
-+	}
-+
-+	/* No need to set DR6. Update the debug registers with kernel-space
-+	 * breakpoint values from kdr7 and user-space requests from the
-+	 * current process
-+	 */
-(B)
-+	set_debugreg(kdr7 | current->thread.debugreg7, 7);
-
-Suppose you send out the IPIs, and one of the CPUs happens to reach (A)
-at the same time another CPU reaches (B).  The second CPU will load an
-incorrect value into DR7.
-
-If you prefer you can replace kdr7 above with a local variable, and 
-set kdr7 to the local variable's value at the end of the function.  
-Also, in the first set_debugreg() line above, you can replace 
-hbp_kernel[i] with bp.
-
-
-> > > +	void *temp_mem = kzalloc(sizeof(struct hw_breakpoint), GFP_KERNEL);
-> > > +	if (!temp_mem)
-> > > +		temp_mem_used = -ENOMEM;
-> > 
-> > I don't think this is a good idea...
-> > 
-> 
-> I agree that it turned out to be wrong. ptrace is now modified to use
-> the (un)register_user_hw_breakpoint() interfaces directly and not the
-> worker routines, thereby avoiding all this complexity. Please find the
-> changes in the new patch.
-
-> > And now if something went wrong, you have already freed the memory
-> > holding the original breakpoint structures.  It would be better to
-> > keep them around until you know they aren't going to be needed.
-
-I still think it would be a good idea to avoid freeing any breakpoint
-structures until you know for certain they aren't needed.  Otherwise
-you might find that you're unable to allocate memory to re-create a
-structure that was already present.
-
-Alan Stern
+-- 
+error compiling committee.c: too many arguments to function
 
