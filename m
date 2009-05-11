@@ -1,82 +1,117 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760526AbZEKXur@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759748AbZEKXyi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760526AbZEKXur (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 19:50:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756758AbZEKXui
+	id S1759748AbZEKXyi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 19:54:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758351AbZEKXyZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 19:50:38 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:60522 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756094AbZEKXuh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 19:50:37 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A08B9AD.3030208@s5r6.in-berlin.de>
-Date: Tue, 12 May 2009 01:50:05 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
-MIME-Version: 1.0
-To: Roel Kluin <roel.kluin@gmail.com>, Greg Kroah-Hartman <gregkh@suse.de>
-CC: krh@redhat.com, linux1394-devel@lists.sourceforge.net,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] firewire: remove driver_data direct access of struct
- device
-References: <4A088827.7000907@gmail.com>
-In-Reply-To: <4A088827.7000907@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 11 May 2009 19:54:25 -0400
+Received: from sh.osrg.net ([192.16.179.4]:33464 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752445AbZEKXyY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 19:54:24 -0400
+Date: Tue, 12 May 2009 08:47:46 +0900
+To: James.Bottomley@HansenPartnership.com
+Cc: fujita.tomonori@lab.ntt.co.jp, tj@kernel.org, bharrosh@panasas.com,
+       axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
+       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
+       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
+       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
+       dgilbert@interlog.com, djwong@us.ibm.com
+Subject: Re: [PATCH 03/11] block: add rq->resid_len
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1242054809.3338.30.camel@mulgrave.int.hansenpartnership.com>
+References: <1242051500.3338.9.camel@mulgrave.int.hansenpartnership.com>
+	<20090512000249E.fujita.tomonori@lab.ntt.co.jp>
+	<1242054809.3338.30.camel@mulgrave.int.hansenpartnership.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090512084808P.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Tue, 12 May 2009 08:47:56 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Roel Kluin wrote:
-> To avoid direct access to the driver_data pointer in struct device, the
-> functions dev_get_drvdata() and dev_set_drvdata() should be used.
+On Mon, 11 May 2009 10:13:29 -0500
+James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+
+> On Mon, 2009-05-11 at 08:03 -0700, FUJITA Tomonori wrote:
+> > On Mon, 11 May 2009 09:18:20 -0500
+> > James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+> > 
+> > > On Mon, 2009-05-11 at 14:49 +0900, FUJITA Tomonori wrote:
+> > > > On Mon, 11 May 2009 08:48:53 +0900
+> > > > Tejun Heo <tj@kernel.org> wrote:
+> > > > 
+> > > > > Hello, Boaz.
+> > > > > 
+> > > > > Boaz Harrosh wrote:
+> > > > > 
+> > > > > > Hi Tejun, I've carefully reviewed these files which I know more
+> > > > > > about.  The drivers/block files I've skipped, since I'm not familiar
+> > > > > > with this code.
+> > > > > > 
+> > > > > > Except a small fallout, it looks very good. See some comments plus
+> > > > > > Ack/review below
+> > > > > 
+> > > > > Thanks a lot for reviewing it closely.  It's really nice to have
+> > > > > careful extra pair of eyes on the changes.  :-)
+> > > > > 
+> > > > > >> --- a/drivers/message/fusion/mptsas.c
+> > > > > >> +++ b/drivers/message/fusion/mptsas.c
+> > > > > >> @@ -1357,8 +1357,7 @@ static int mptsas_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
+> > > > > >>  		smprep = (SmpPassthroughReply_t *)ioc->sas_mgmt.reply;
+> > > > > >>  		memcpy(req->sense, smprep, sizeof(*smprep));
+> > > > > >>  		req->sense_len = sizeof(*smprep);
+> > > > > >> -		req->data_len = 0;
+> > > > > >> -		rsp->data_len -= smprep->ResponseDataLength;
+> > > > > >> +		rsp->resid_len = rsp->data_len - smprep->ResponseDataLength;
+> > > > > >>  	} else {
+> > > > > >>  		printk(MYIOC_s_ERR_FMT "%s: smp passthru reply failed to be returned\n",
+> > > > > >>  		    ioc->name, __func__);
+> > > > > > 
+> > > > > > I think original code was assuming full residual count on the else side
+> > > > > > (not MPT_IOCTL_STATUS_RF_VALID). So maybe add:
+> > > > > > 
+> > > > > > +		rsp->resid_len = rsp->data_len;
+> > > > > 
+> > > > > Does resid_len make any sense w/ failed requests?  I think we would be
+> > > > > better off with declaring residual count to be undefined on request
+> > > > > failure.  Is there any place which depends on it?
+> > > > 
+> > > > IIRC, I wrote the code. I think that this doesn't matter but it's
+> > > > better not to change the behavior unless Eric ack on this change
+> > > > (maybe LSI has some management binary that assume this behavior though
+> > > > it's unlikely).
+> > > 
+> > > Actually, yes it does, for many possible reasons.
+> > > 
+> > > The first being if the device is too stupid to report an actual sector
+> > > location the next best way of determining where the error occurred is
+> > > from the residual.  We don't make use of this in kernel (perhaps we
+> > > should?) but some of the user space programs for CD/DVD burning do.
+> > 
+> > This function is for SAS management protocol. Are there many possible
+> > reasons?
 > 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+> It still indicates how much of the frame was transferred and we have the
+> information, so why not set it.  Not doing so would be different from
+> other data transfer functions and so violate the principle of least
+> surprise.
 
-Greg has this already in his driver core tree.
+As I wrote in the first reply, I agree with you. I wrote the original
+code in that way. I was just curious to know if there are example
+applications that could be broken due to this behavior.
 
-BTW Greg, just in case, the patches
-"firewire: remove driver_data direct access of struct device" and
-"ieee1394: remove driver_data direct access of struct device"
-which you posted on April 30 are
-Acked-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
 
-> ---
-> diff --git a/drivers/firewire/fw-sbp2.c b/drivers/firewire/fw-sbp2.c
-> index 2bcf515..a70e66e 100644
-> --- a/drivers/firewire/fw-sbp2.c
-> +++ b/drivers/firewire/fw-sbp2.c
-> @@ -1125,7 +1125,7 @@ static int sbp2_probe(struct device *dev)
->  		return -ENOMEM;
->  
->  	tgt = (struct sbp2_target *)shost->hostdata;
-> -	unit->device.driver_data = tgt;
-> +	dev_set_drvdata(&unit->device, tgt);
->  	tgt->unit = unit;
->  	kref_init(&tgt->kref);
->  	INIT_LIST_HEAD(&tgt->lu_list);
-> @@ -1180,7 +1180,7 @@ static int sbp2_probe(struct device *dev)
->  static int sbp2_remove(struct device *dev)
->  {
->  	struct fw_unit *unit = fw_unit(dev);
-> -	struct sbp2_target *tgt = unit->device.driver_data;
-> +	struct sbp2_target *tgt = dev_get_drvdata(&unit->device);
->  
->  	sbp2_target_put(tgt);
->  	return 0;
-> @@ -1240,7 +1240,7 @@ static void sbp2_reconnect(struct work_struct *work)
->  
->  static void sbp2_update(struct fw_unit *unit)
->  {
-> -	struct sbp2_target *tgt = unit->device.driver_data;
-> +	struct sbp2_target *tgt = dev_get_drvdata(&unit->device);
->  	struct sbp2_logical_unit *lu;
->  
->  	fw_device_enable_phys_dma(fw_device(unit->device.parent));
+> For SAS 1.1 ... the frames are small, so it's not that relevant.  For
+> SAS 2.0 the SMP functions become multi-frame, so I could see this
+> becoming relevant for some of the zone SMP commands.
 
--- 
-Stefan Richter
--=====-=-=== -=-= -==-=
-http://arcgraph.de/sr/
+I see, thanks.
