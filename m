@@ -1,113 +1,156 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756137AbZEKPNs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758266AbZEKPOS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756137AbZEKPNs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 11:13:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758068AbZEKPNe
+	id S1758266AbZEKPOS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 11:14:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757118AbZEKPN6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 11:13:34 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:46423 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758197AbZEKPNb (ORCPT
+	Mon, 11 May 2009 11:13:58 -0400
+Received: from tomts13.bellnexxia.net ([209.226.175.34]:61448 "EHLO
+	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756662AbZEKPN5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 11:13:31 -0400
-Subject: Re: [PATCH 03/11] block: add rq->resid_len
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: tj@kernel.org, bharrosh@panasas.com, axboe@kernel.dk,
-       linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
-       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
-       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
-       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
-       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
-       dgilbert@interlog.com, djwong@us.ibm.com
-In-Reply-To: <20090512000249E.fujita.tomonori@lab.ntt.co.jp>
-References: <4A0767E5.5050205@kernel.org>
-	 <20090511145024B.fujita.tomonori@lab.ntt.co.jp>
-	 <1242051500.3338.9.camel@mulgrave.int.hansenpartnership.com>
-	 <20090512000249E.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain
-Date: Mon, 11 May 2009 10:13:29 -0500
-Message-Id: <1242054809.3338.30.camel@mulgrave.int.hansenpartnership.com>
+	Mon, 11 May 2009 11:13:57 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AmQFAKbZB0pMQW1W/2dsb2JhbACBUMs2g34F
+Date: Mon, 11 May 2009 11:13:53 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       zhaolei@cn.fujitsu.com, laijs@cn.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH v3] ftrace: add a tracepoint for
+	__raise_softirq_irqoff()
+Message-ID: <20090511151353.GA14391@Krystal>
+References: <49FFDF9C.7040505@cn.fujitsu.com> <20090505161604.GA15524@Krystal> <4A07D3B3.10605@cn.fujitsu.com> <20090511134019.GB10932@Krystal> <alpine.DEB.2.00.0905111003280.14976@gandalf.stny.rr.com> <20090511142734.GA12722@Krystal> <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 11:10:15 up 72 days, 11:36,  4 users,  load average: 0.33, 0.34,
+	0.29
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-11 at 08:03 -0700, FUJITA Tomonori wrote:
-> On Mon, 11 May 2009 09:18:20 -0500
-> James Bottomley <James.Bottomley@HansenPartnership.com> wrote:
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> > On Mon, 2009-05-11 at 14:49 +0900, FUJITA Tomonori wrote:
-> > > On Mon, 11 May 2009 08:48:53 +0900
-> > > Tejun Heo <tj@kernel.org> wrote:
-> > > 
-> > > > Hello, Boaz.
-> > > > 
-> > > > Boaz Harrosh wrote:
-> > > > 
-> > > > > Hi Tejun, I've carefully reviewed these files which I know more
-> > > > > about.  The drivers/block files I've skipped, since I'm not familiar
-> > > > > with this code.
-> > > > > 
-> > > > > Except a small fallout, it looks very good. See some comments plus
-> > > > > Ack/review below
-> > > > 
-> > > > Thanks a lot for reviewing it closely.  It's really nice to have
-> > > > careful extra pair of eyes on the changes.  :-)
-> > > > 
-> > > > >> --- a/drivers/message/fusion/mptsas.c
-> > > > >> +++ b/drivers/message/fusion/mptsas.c
-> > > > >> @@ -1357,8 +1357,7 @@ static int mptsas_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
-> > > > >>  		smprep = (SmpPassthroughReply_t *)ioc->sas_mgmt.reply;
-> > > > >>  		memcpy(req->sense, smprep, sizeof(*smprep));
-> > > > >>  		req->sense_len = sizeof(*smprep);
-> > > > >> -		req->data_len = 0;
-> > > > >> -		rsp->data_len -= smprep->ResponseDataLength;
-> > > > >> +		rsp->resid_len = rsp->data_len - smprep->ResponseDataLength;
-> > > > >>  	} else {
-> > > > >>  		printk(MYIOC_s_ERR_FMT "%s: smp passthru reply failed to be returned\n",
-> > > > >>  		    ioc->name, __func__);
-> > > > > 
-> > > > > I think original code was assuming full residual count on the else side
-> > > > > (not MPT_IOCTL_STATUS_RF_VALID). So maybe add:
-> > > > > 
-> > > > > +		rsp->resid_len = rsp->data_len;
-> > > > 
-> > > > Does resid_len make any sense w/ failed requests?  I think we would be
-> > > > better off with declaring residual count to be undefined on request
-> > > > failure.  Is there any place which depends on it?
-> > > 
-> > > IIRC, I wrote the code. I think that this doesn't matter but it's
-> > > better not to change the behavior unless Eric ack on this change
-> > > (maybe LSI has some management binary that assume this behavior though
-> > > it's unlikely).
-> > 
-> > Actually, yes it does, for many possible reasons.
-> > 
-> > The first being if the device is too stupid to report an actual sector
-> > location the next best way of determining where the error occurred is
-> > from the residual.  We don't make use of this in kernel (perhaps we
-> > should?) but some of the user space programs for CD/DVD burning do.
 > 
-> This function is for SAS management protocol. Are there many possible
-> reasons?
+> 
+> On Mon, 11 May 2009, Mathieu Desnoyers wrote:
+> 
+> > * Steven Rostedt (rostedt@goodmis.org) wrote:
+> > > 
+> > > On Mon, 11 May 2009, Mathieu Desnoyers wrote:
+> > > > 
+> > > > Yes, we should try to fix TRACE_EVENT, but we should fix it _before_ we
+> > > > start using it widely. Circular header dependencies is a real problem
+> > > > with TRACE_EVENT right now.
+> > > > 
+> > > > Until we fix this, I will be tempted to stay with a known-good solution,
+> > > > which is DECLARE/DEFINE_TRACE.
+> > > 
+> > > The majority of tracepoints happen is C files. Those few cases where they 
+> > > are used in headers is where the issues arise.
+> > > 
+> > > But...
+> > > 
+> > > I did not want to uglify all trace event headers with:
+> > > 
+> > > #ifdef CREATE_FOO_TRACE_POINTS
+> > > #undef CREATE_FOO_TRACE_POINTS
+> > > #include <trace/define_trace.h>
+> > > #endif
+> > > 
+> > > We would only need to do that for those trace points that need to be 
+> > > included in header files. Then the declaration C file would need to define 
+> > > both CREATE_FOO_TRACE_POINTS and CREATE_TRACE_POINTS
+> > > 
+> > > #define CREATE_FOO_TRACE_POINTS
+> > > #define CRATE_TRACE_POINTS
+> > > #include <trace/events/foo.h>
+> > > 
+> > > 
+> > > But this is pretty trivial to solve, and I do not consider it a show 
+> > > stopper or a major header dependency problem.
+> > > 
+> > > -- Steve
+> > > 
+> > 
+> > Hrm, is there any way to solve it elegantly ?
+> > 
+> > What we really need is to see the cases where TRACE_EVENT() is used as a
+> > declaration vs the case where it expands
+> > TP_STRUCT__entry/TP_fast_assign/TP_printk as having different
+> > dependencies. The problem comes when we bring the include dependencies
+> > of the TP_fast_assign part into the tracepoint header and it becomes
+> > a dependency of the TRACE_EVENT() declaration-only part.
+> > 
+> > Can we do the following ?
+> > 
+> > All tracepoint headers could surround the include dependencies by :
+> > 
+> > #ifdef BUILD_EVENTS
+> > #include <veryannoyingheaderdependency.h>
+> > #endif
+> > 
+> > And then we follow this by the TRACE_EVENT() declarations.
+> > 
+> > BUILD_EVENTS would only be defined in kernel/trace/events.c.
+> 
+> That file no longer exists. All the events are created with the 
+> define_trace.h or ftrace.h file.
+> 
+> We could do something like your
+> 
+> #ifdef BUILD_EVENTS /* or better name BUILDING_EVENTS ?? */
+> #include <allmyannoyingheaders.h>
+> [...]
+> #endif
+> 
+> And then have the define_trace.h file add define it. But this again adds 
+> more annoying CPP commands to all trace_event headers.
+> 
 
-It still indicates how much of the frame was transferred and we have the
-information, so why not set it.  Not doing so would be different from
-other data transfer functions and so violate the principle of least
-surprise.
+Yes, but this would solve most of the include dependency problems at
+once. We would only have dependency on preempt.h left, which alone is
+easier to deal with. And if headers don't need to include any annoying
+headers, they don't need to use the ifdef BUILDING_EVENTS. But my point
+is that when it's needed (and we already see two cases where it's
+needed, with pvops instrumentation and softirq instrumentation, and I
+guess we'll see much more), it's good to have this infrastructure in
+place, so people don't end up trying to do hacks to the kernel code
+changing inlines for function calls to try to deal with the circular
+include issue.
 
-For SAS 1.1 ... the frames are small, so it's not that relevant.  For
-SAS 2.0 the SMP functions become multi-frame, so I could see this
-becoming relevant for some of the zone SMP commands.
+I think it's
 
-James
+a) needed
+b) it does not hurt anyone who does not need it.
 
+So I would definitely recommend adding such define.
 
+Mathieu
+
+> -- Steve
+> 
+> > 
+> > I think it should work, but it looks a bit too simple, so I may have
+> > missed something... ?
+> > 
+> > Mathieu
+> > 
+> > 
+> > -- 
+> > Mathieu Desnoyers
+> > OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> > 
+
+-- 
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
