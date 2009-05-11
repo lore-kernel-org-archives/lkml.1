@@ -1,60 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757202AbZEKLtV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757574AbZEKLwE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757202AbZEKLtV (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 07:49:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755012AbZEKLtG
+	id S1757574AbZEKLwE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 07:52:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbZEKLvx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 07:49:06 -0400
-Received: from mail-qy0-f129.google.com ([209.85.221.129]:39972 "EHLO
-	mail-qy0-f129.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754484AbZEKLtF (ORCPT
+	Mon, 11 May 2009 07:51:53 -0400
+Received: from e23smtp06.au.ibm.com ([202.81.31.148]:39190 "EHLO
+	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755448AbZEKLvw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 07:49:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=JPqpUDP+uKe+oHiXBn/STZyomf3u2V3QPHKrtVqNswPD/PHRi60y5wos28CVBWF2r4
-         tXinpkIIi34sd3f0nX/i8rdBXGIZjntpN0yMpu2kHYMBMNYh+Iyb0ACZCNQJq1LREaSa
-         oN9JXEiFrCZ/5ptejRhc2KjtX/1y58SogyNKc=
+	Mon, 11 May 2009 07:51:52 -0400
+Date: Mon, 11 May 2009 17:21:42 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
+       Roland McGrath <roland@redhat.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: [Patch 00/12] Hardware Breakpoint interfaces
+Message-ID: <20090511115142.GA25673@in.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <ac3eb2510905101822t7fde14b3nf2c689621f69c925@mail.gmail.com>
-References: <20090509143742.GA27663@kroah.com>
-	 <20090509082233.32cbb8e4@infradead.org> <20090509161923.GA942@suse.de>
-	 <20090509223454.4642753d.akpm@linux-foundation.org>
-	 <20090510152005.GA9461@suse.de> <1241980263.9562.380.camel@laptop>
-	 <20090510221901.30c1c5a5@lxorguk.ukuu.org.uk>
-	 <ac3eb2510905101647k12a1b9ck71d43933037bac48@mail.gmail.com>
-	 <20090510170016.1e3a4d97@infradead.org>
-	 <ac3eb2510905101822t7fde14b3nf2c689621f69c925@mail.gmail.com>
-Date: Mon, 11 May 2009 13:49:03 +0200
-Message-ID: <b637ec0b0905110449n15340bbepb3a5adc2cee32b28@mail.gmail.com>
-Subject: Re: [patch 00/13] devtmpfs patches
-From: Fabio Comolli <fabio.comolli@gmail.com>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: Arjan van de Ven <arjan@infradead.org>,
-       Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Peter Zijlstra <peterz@infradead.org>, Greg KH <gregkh@suse.de>,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi
+Hi Alan,
+	Please find the new set of patches with the changes mentioned below.
+Kindly let me know your comments with respect to the same.
 
-On Mon, May 11, 2009 at 3:22 AM, Kay Sievers <kay.sievers@vrfy.org> wrote:
-[BIG snip]
-> Devtmpfs is the simplest, is the fastest, is the most reliable, and it
-> is the most flexible option for us. And still, nobody will be forced
-> to use it, it's entirely optional. For our systems, we decided to do
-> it that way, and we ship it already in the distro, and if there are no
-> substantial problems coming up, which we don't expect, we will
-> continue using it.
+Hi Frederic/Steven,
+	Please find a few changes in the ftrace plugin code w.r.t.
+synchronisation primitives (prefixed in the changelog with FTRACE). Kindly let
+me know your comments.
 
-Can you please point me to a SuSE kernel that ships with this new feature?
+Changelog
+-----------
+
+- on_each_cpu() call will now return only after all functions calls made through
+  IPI have finished (@wait parameter is set to 1). This is required since
+  changes made in code following on_each_cpu() [such as incrementing
+  hbp_kernel_pos] have side-effects on the execution of the functions invoked
+  through IPIs. It is also safe to make them wait inside spin_lock() context as
+  it does a busy wait using cpu_relax().
+
+- Introduced a new per-cpu array of pointers to 'struct hw_breakpoint'
+  called 'this_hbp_kernel'. This per-cpu variable helps overcome any
+  side-effects in  hbp_handler() due to parallel execution of
+  (un)register_kernel_hw_breakpoint()  on other CPUs causing 'hbp_kernel' value
+  to change.
+
+- Hardware Breakpoint exceptions due to lazy debug register switching is
+  now identified through the absence of TIF_DEBUG task flag in the current
+  process. This eliminates the  need to store the process that last set the
+  debug register in  'last_debugged_task'.
+
+- Converted spin_lock() in kernel/hw_breakpoint.c to spin_lock_bh(). This is
+  to ward-off potential circular dependancy over 'hw_breakpoint_lock' when
+  flush_thread_hw_breakpoint() is invoked in softIRQ context.
+
+- Ptrace code now directly uses the exported interfaces
+  (un)register_user_hw_breakpoint() thereby addressing some of the issues
+  pointed out in code-review here:http://lkml.org/lkml/2009/5/4/367.
+
+- An optimisation in arch_update_kernel_hw_breakpoints() code resulting in a
+  few modifications to the function and removal of kdr7_masks[] global array (as
+  pointed out by Alan Stern).
+
+- [FTRACE] Implementation of RCU based locking mechanism in the ftrace plugin
+  code (kernel/trace/trace_ksym.c), specially to avoid the potential circular
+  dependancy through ksym_collect_stats() invoked in exception context (while
+  attempting to acquite a spin_lock() already used in control-plane). All
+  add/delete operations to the hlist pointed by 'ksym_filter_head' are now
+  protected by RCU.
+
+- [FTRACE] Revert the spin_lock() based implementation in kernel/trace/trace_ksym.c
+  to mutex based one, as a result of the above change. These locks are no longer
+  required in preempt_disable() code due to RCU implementation in
+  ksym_collect_stats() and hence the change.
+
+- The patches are now based on commit 5863f0756c57cc0ce23701138bfc88ab3d1f3721
+  of -tip tree.
+
 Thanks,
-Fabio
+K.Prasad
+
