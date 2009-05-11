@@ -1,58 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758047AbZEKNQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757638AbZEKNRa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758047AbZEKNQW (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 09:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754895AbZEKNQM
+	id S1757638AbZEKNRa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 09:17:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751981AbZEKNRV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 09:16:12 -0400
-Received: from va3ehsobe004.messaging.microsoft.com ([216.32.180.14]:44684
-	"EHLO VA3EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1753816AbZEKNQK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 09:16:10 -0400
-X-BigFish: VPS-39(zz1432R62a3L98dR936eQ4015L1805Mzz1202hzzz32i6bh43j62h)
-X-Spam-TCS-SCL: 1:0
-X-WSS-ID: 0KJHE6D-04-69N-01
-Date: Mon, 11 May 2009 15:15:49 +0200
-From: Robert Richter <robert.richter@amd.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
-       paulus@samba.org, linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:perfcounters/core] perf_counter, x86: remove
-	X86_FEATURE_ARCH_PERFMON flag for AMD cpus
-Message-ID: <20090511131549.GB10722@erda.amd.com>
-References: <1241002046-8832-2-git-send-email-robert.richter@amd.com> <tip-da1a776be1ac7f78bb30ececbec4c1383163b079@git.kernel.org> <1241931753.4796.15.camel@localhost.localdomain> <1241934795.4796.55.camel@localhost.localdomain> <20090510063047.GD30778@elte.hu> <1242044024.10115.3.camel@localhost.localdomain> <20090511123935.GA10722@erda.amd.com> <1242047232.3301.15.camel@localhost.localdomain>
+	Mon, 11 May 2009 09:17:21 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:35990 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751416AbZEKNRV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 09:17:21 -0400
+Date: Mon, 11 May 2009 15:17:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
+       Li Wei <W.Li@Sun.COM>, Michael Ellerman <michaele@au1.ibm.com>
+Subject: Re: [PATCH 3/4] gcov: add gcov profiling infrastructure
+Message-ID: <20090511131708.GB32693@elte.hu>
+References: <20090507124556.041286732@linux.vnet.ibm.com> <20090507124558.618214093@linux.vnet.ibm.com> <20090507134610.GN28398@elte.hu> <4A04133B.8080501@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1242047232.3301.15.camel@localhost.localdomain>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 11 May 2009 13:15:51.0022 (UTC) FILETIME=[9B2E78E0:01C9D23A]
+In-Reply-To: <4A04133B.8080501@linux.vnet.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 11.05.09 18:37:12, Jaswinder Singh Rajput wrote:
-> > which branch is this patch against? It is not tip/perfcounters/core
-> > nor tip/master.
-> > 
-> 
-> This patch was based on
-> http://git.kernel.org/?p=linux/kernel/git/jaswinder/linux-2.6-tip.git;a=summary
-> (git tree takes some time for update)
-> 
-> These patches are still for review and I will release these patches in
-> one or two days after adding some more patches.
 
-Could you submit the patch relative to a tip tree please?
+* Peter Oberparleiter <oberpar@linux.vnet.ibm.com> wrote:
 
-Thanks,
+>>> +/* __gcov_init is called by gcc-generated constructor code for each object
+>>> + * file compiled with -fprofile-arcs. */
+>>
+>> Please use standard multi-line comments like specified in  
+>> Documentation/CodingStyle. This observation holds for basically all  
+>> the comment blocks in this file - dozens of them.
+>
+> None of the __gcov functions are ever called by the kernel 
+> directly - only by gcc generated code. I can add comments for 
+> __gcov_init as that one is actually implemented. The other 
+> functions are required to prevent linking errors but are never 
+> actually called in kernel context, therefore in my opinion it 
+> wouldn't make much sense to provide full-blown comments for them.
 
--Robert
+It isnt about the amount of comments, it is about the plain (and 
+simple to rectify) fact that the above two-lines comment is 
+inconsistent with other kernel code.
 
--- 
-Advanced Micro Devices, Inc.
-Operating System Research Center
-email: robert.richter@amd.com
+>>>                   $(asflags-y) $(AFLAGS_$(basetarget).o)
+>>>  _cpp_flags     = $(KBUILD_CPPFLAGS) $(cppflags-y) $(CPPFLAGS_$(@F))
+>>>  +# Enable gcov profiling flags for a file, directory or for all 
+>>> files depending
+>>> +# on variables GCOV_PROFILE_obj.o, GCOV_PROFILE and CONFIG_GCOV_PROFILE_ALL
+>>> +# (in this order)
+>>> +ifeq ($(CONFIG_GCOV_KERNEL),y)
+>>
+>> Please try to use winged comments in makefiles too.
+>
+> What do you mean by winged comments?
 
+This:
+
+  /*
+   * Comment .....
+   * ...... goes here:
+   */
+
+Is called a winged comment. Its makefile equivalent is:
+
+   #
+   # Comment .........
+   # ....... goes here
+   #
+
+        Ingo
