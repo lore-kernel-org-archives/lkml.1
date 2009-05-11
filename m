@@ -1,170 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759047AbZEKSCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759017AbZEKSD2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759047AbZEKSCb (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 14:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbZEKSCV
+	id S1759017AbZEKSD2 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 14:03:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbZEKSDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 14:02:21 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:48173 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750841AbZEKSCU (ORCPT
+	Mon, 11 May 2009 14:03:17 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:35910 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751772AbZEKSDQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 14:02:20 -0400
-Message-ID: <4A0866E9.90505@zytor.com>
-Date: Mon, 11 May 2009 10:56:57 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 11 May 2009 14:03:16 -0400
+Date: Mon, 11 May 2009 10:57:48 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Parag Warudkar <parag.lkml@gmail.com>,
+       Johannes Berg <johannes@sipsolutions.net>,
+       "John W. Linville" <linville@tuxdriver.com>
+cc: LKML <linux-kernel@vger.kernel.org>, niel.lambrechts@gmail.com
+Subject: Re: Probe Timeouts with 47afbaf5af9454a7a1a64591e20cbfcc27ca67a8
+In-Reply-To: <f7848160905010619n74372488n45a7b7abccfe5ea7@mail.gmail.com>
+Message-ID: <alpine.LFD.2.01.0905111046310.3586@localhost.localdomain>
+References: <f7848160904301838q4883106fq8d31e2e7c0b10a14@mail.gmail.com>  <1241165805.13562.2.camel@johannes.local> <f7848160905010619n74372488n45a7b7abccfe5ea7@mail.gmail.com>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-CC: "H. Peter Anvin" <hpa@linux.intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "vgoyal@redhat.com" <vgoyal@redhat.com>,
-       "hbabu@us.ibm.com" <hbabu@us.ibm.com>,
-       "kexec@lists.infradead.org" <kexec@lists.infradead.org>,
-       "Huang\, Ying" <ying.huang@intel.com>, "mingo@elte.hu" <mingo@elte.hu>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "sam@ravnborg.org" <sam@ravnborg.org>
-Subject: Re: RFC: x86: relocatable kernel changes (revised spec v2)
-References: <1241735222-6640-1-git-send-email-hpa@linux.intel.com>	<m14ovwz8ua.fsf@fess.ebiederm.org> <4A03C3BB.3070401@intel.com>	<m1tz3wgk3n.fsf@fess.ebiederm.org> <4A047E53.8040003@intel.com>	<4A07B534.8080606@zytor.com> <m1vdo7hn2i.fsf@fess.ebiederm.org>
-In-Reply-To: <m1vdo7hn2i.fsf@fess.ebiederm.org>
-Content-Type: multipart/mixed;
- boundary="------------050407050100090104070304"
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------050407050100090104070304
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
 
-Does this look better?
 
-	-hpa
+On Fri, 1 May 2009, Parag Warudkar wrote:
 
---------------050407050100090104070304
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="diff"
+> On 5/1/09, Johannes Berg <johannes@sipsolutions.net> wrote:
+> 
+> > I'm not sure what makes you think that it even _should_ be reverted.
+> >  Just to make that clear: it should _not_ be reverted. How did you check
+> >  that it isn't reverted in compat-wireless anyway? Must have been by code
+> >  inspection since if you had made an attempt to verify that the code in
+> >  there works, you would have found that indeed there's no reason to
+> >  revert this commit since the fix for it went in, and is literally a
+> >  single line.
+> 
+> Well I have the 04-29 compat-wireless tree and it does not work - just
+> like mainline I get timeouts. I have not been able to download later
+> versions - clicking on the URL does nothing for some reason. (Besides
+> I do not normally track compat-wireless.)
 
-diff --git a/Documentation/x86/boot.txt b/Documentation/x86/boot.txt
-index e020366..0da827c 100644
---- a/Documentation/x86/boot.txt
-+++ b/Documentation/x86/boot.txt
-@@ -50,6 +50,11 @@ Protocol 2.08:	(Kernel 2.6.26) Added crc32 checksum and ELF format
- Protocol 2.09:	(Kernel 2.6.26) Added a field of 64-bit physical
- 		pointer to single linked list of struct	setup_data.
- 
-+Protocol 2.10:	(Kernel 2.6.31?) A protocol for relaxed alignment
-+	 	beyond the kernel_alignment added, new init_size and
-+	 	pref_address fields.
-+	 	
-+
- **** MEMORY LAYOUT
- 
- The traditional memory map for the kernel loader, used for Image or
-@@ -173,7 +178,7 @@ Offset	Proto	Name		Meaning
- 022C/4	2.03+	ramdisk_max	Highest legal initrd address
- 0230/4	2.05+	kernel_alignment Physical addr alignment required for kernel
- 0234/1	2.05+	relocatable_kernel Whether kernel is relocatable or not
--0235/1	N/A	pad2		Unused
-+0235/1	2.10+	min_alignment	Minimum alignment, as a power of 2
- 0236/2	N/A	pad3		Unused
- 0238/4	2.06+	cmdline_size	Maximum size of the kernel command line
- 023C/4	2.07+	hardware_subarch Hardware subarchitecture
-@@ -182,6 +187,8 @@ Offset	Proto	Name		Meaning
- 024C/4	2.08+	payload_length	Length of kernel payload
- 0250/8	2.09+	setup_data	64-bit physical pointer to linked list
- 				of struct setup_data
-+0258/8	2.10+	pref_address	Preferred loading address
-+0260/4	2.10+	init_size	Linear memory required during initialization
- 
- (1) For backwards compatibility, if the setup_sects field contains 0, the
-     real value is 4.
-@@ -482,11 +489,19 @@ Protocol:	2.03+
-   0x37FFFFFF, you can start your ramdisk at 0x37FE0000.)
- 
- Field name:	kernel_alignment
--Type:		read (reloc)
-+Type:		read/modify (reloc)
- Offset/size:	0x230/4
--Protocol:	2.05+
-+Protocol:	2.05+ (read), 2.10+ (modify)
- 
--  Alignment unit required by the kernel (if relocatable_kernel is true.)
-+  Alignment unit required by the kernel (if relocatable_kernel is
-+  true.)  A relocatable kernel that is loaded at an alignment
-+  incompatible with the value in this field will be realigned during
-+  kernel initialization.
-+
-+  Starting with protocol version 2.10, this reflects the kernel
-+  alignment preferred for optimal performance; it is possible for the
-+  loader to modify this field to permit a lesser alignment.  See the
-+  min_alignment and pref_address field below.
- 
- Field name:	relocatable_kernel
- Type:		read (reloc)
-@@ -498,6 +513,22 @@ Protocol:	2.05+
-   After loading, the boot loader must set the code32_start field to
-   point to the loaded code, or to a boot loader hook.
- 
-+Field name:	min_alignment
-+Type:		read (reloc)
-+Offset/size:	0x235/1
-+Protocol:	2.10+
-+
-+  This field, if nonzero, indicates as a power of 2 the minimum
-+  alignment required, as opposed to preferred, by the kernel to boot.
-+  If a boot loader makes use of this field, it should update the
-+  kernel_alignment field with the alignment unit desired; typically:
-+
-+	kernel_alignment = 1 << min_alignment
-+
-+  There may be a considerable performance cost with an excessively
-+  misaligned kernel.  Therefore, a loader should typically try each
-+  power-of-two alignment from kernel_alignment down to this alignment.
-+
- Field name:	cmdline_size
- Type:		read
- Offset/size:	0x238/4
-@@ -582,6 +613,36 @@ Protocol:	2.09+
-   sure to consider the case where the linked list already contains
-   entries.
- 
-+Field name:	pref_address
-+Type:		read (reloc)
-+Offset/size:	0x258/8
-+Protocol:	2.10+
-+
-+  This field, if nonzero, represents a preferred load address for the
-+  kernel.  A relocating bootloader should attempt to load at this
-+  address if possible.
-+
-+  A non-relocatable kernel will unconditionally move itself and to run
-+  at this address.
-+
-+Field name:	init_size
-+Type:		read
-+Offset/size:	0x25c/4
-+
-+  This field indicates the amount of linear contiguous memory starting
-+  at the kernel runtime start address that the kernel needs before it
-+  is capable of examining its memory map.  This is not the same thing
-+  as the total amount of memory the kernel needs to boot, but it can
-+  be used by a relocating boot loader to help select a safe load
-+  address for the kernel.
-+
-+  The kernel runtime start address is determined by the following algorithm:
-+
-+  if (relocatable_kernel)
-+  	runtime_start = align_up(load_address, kernel_alignment)
-+  else
-+  	runtime_start = pref_address
-+
- 
- **** THE IMAGE CHECKSUM
- 
+Ok, it's -rc5, and apparently nothing has happened about this problem. 
+Johannes has just been stone-walling and ignoring the reports, and 
+claiming it's fixed when it clearly wasn't. 
 
---------------050407050100090104070304--
+I just verified on one of my older machines (running current fedora-11, 
+with a 4965AGN rev=0x4) that the problem is real, and that reverting that 
+commit does indeed seem to fix it.
+
+So here goes: I'm going to revert that commit today or tomorrow, unless 
+somebody sends me a fix that I can verify. I don't want any more excuses, 
+I don't want to hear developers dismissing bug-reports, and I _can_ verify 
+this problem myself. 
+
+We do not fix bugs by introducing new regressions and then ignoring the 
+reports. Especially since the bug that the commit in question fixes seems 
+to be _way_ less important than the bug it then introduces.
+
+		Linus
