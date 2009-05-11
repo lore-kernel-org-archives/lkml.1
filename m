@@ -1,131 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761215AbZEKXT3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760984AbZEKXUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761215AbZEKXT3 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 19:19:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755357AbZEKXTT
+	id S1760984AbZEKXUu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 19:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758079AbZEKXUk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 19:19:19 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:59550 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753901AbZEKXTS (ORCPT
+	Mon, 11 May 2009 19:20:40 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:60372 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751392AbZEKXUk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 19:19:18 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: x86@kernel.org
-Subject: [PATCH v2] x86: fix ktermios-termio conversion
-Date: Mon, 11 May 2009 23:19:17 +0000
-User-Agent: KMail/1.11.2 (Linux/2.6.29; KDE/4.2.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org,
-       Remis Lima Baima <remis.developer@googlemail.com>
-References: <20090511222702.352192505@arndb.de> <20090511222702.352192505@arndb.de>> <200905112259.04714.arnd@arndb.de>
-In-Reply-To: <200905112259.04714.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Mon, 11 May 2009 19:20:40 -0400
+Date: Mon, 11 May 2009 16:14:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Rientjes <rientjes@google.com>
+Cc: gregkh@suse.de, npiggin@suse.de, mel@csn.ul.ie, a.p.zijlstra@chello.nl,
+       cl@linux-foundation.org, dave@linux.vnet.ibm.com, san@android.com,
+       arve@android.com, linux-kernel@vger.kernel.org
+Subject: Re: [patch 08/11 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
+Message-Id: <20090511161446.4d2a32a5.akpm@linux-foundation.org>
+In-Reply-To: <alpine.DEB.2.00.0905111557360.5979@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
+	<alpine.DEB.2.00.0905101502050.18804@chino.kir.corp.google.com>
+	<20090511142936.dd68005b.akpm@linux-foundation.org>
+	<alpine.DEB.2.00.0905111444070.466@chino.kir.corp.google.com>
+	<20090511151130.9a949cb7.akpm@linux-foundation.org>
+	<alpine.DEB.2.00.0905111529090.2234@chino.kir.corp.google.com>
+	<20090511154603.0fb0acbf.akpm@linux-foundation.org>
+	<alpine.DEB.2.00.0905111557360.5979@chino.kir.corp.google.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905112319.17999.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18ceBljhUq1H2j30RS3ITxMYePbSvUdq9ceFtj
- mUygN43twnlR5TV18q80dFu8QNrAceHr/MOJgixyop5G9TCgJf
- ngVh6E8MRh80FU+uAfrHg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The operation with the variable 'c_line' was missing in the function
-'user_termio_to_kernel_termios'. Also the casting '*(unsigned short *)'
-in the macro 'SET_LOW_TERMIOS_BITS' was a bit 'unhealthy'. So the macro
-was removed and the function was changed to be like in other archs
-(e.g. h8300, m68k, sparc) that have a more elegant solution.
+On Mon, 11 May 2009 16:00:58 -0700 (PDT)
+David Rientjes <rientjes@google.com> wrote:
 
-In the function 'kernel_termios_to_user_termio' the return values of
-the functions calls 'put_user' and 'copy_to_user' were not being
-checked.
+> On Mon, 11 May 2009, Andrew Morton wrote:
+> 
+> > oh, well that was pretty useless then.  I was trying to find a handy
+> > spot where we can avoid adding fastpath cycles.
+> > 
+> > How about we sneak it into the order>0 leg inside buffered_rmqueue()?
+> > 
+> 
+> Wouldn't it be easier after my patch is merged to just check the oom 
+> killer stack traces for such allocations and people complain about 
+> unnecessary oom killing when memory is available but too fragmented?  The 
+> gfp_flags and order are shown in the oom killer header.
 
-Signed-off-by: Remis Lima Baima <remis.developer@googlemail.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
----
+That assumes that the oom-killer is triggered - in the typical
+kernel developer testing, that won't happen.
 
-initial patch was wordwrapped, resend
+I think what we should do here is to prevent people even attempting to
+use __GFP_NOFAIL with higher-order allocations.
 
- arch/x86/include/asm/termios.h |   54 +++++++++++++++++++++++++++------------
- 1 files changed, 37 insertions(+), 17 deletions(-)
+Are you aware of any callsite which is presently using __GFP_NOFAIL on
+order>0 allocations?
 
-diff --git a/arch/x86/include/asm/termios.h b/arch/x86/include/asm/termios.h
-index f729563..47420df 100644
---- a/arch/x86/include/asm/termios.h
-+++ b/arch/x86/include/asm/termios.h
-@@ -54,20 +54,37 @@ struct termio {
- /*
-  * Translate a "termio" structure into a "termios". Ugh.
-  */
--#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
--	unsigned short __tmp; \
--	get_user(__tmp,&(termio)->x); \
--	*(unsigned short *) &(termios)->x = __tmp; \
--}
--
- static inline int user_termio_to_kernel_termios(struct ktermios *termios,
- 						struct termio __user *termio)
- {
--	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag);
--	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag);
--	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag);
--	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag);
--	return copy_from_user(termios->c_cc, termio->c_cc, NCC);
-+	unsigned short tmp;
-+
-+	if (get_user(tmp, &termio->c_iflag) < 0)
-+		goto fault;
-+	termios->c_iflag = (0xffff0000 & termios->c_iflag) | tmp;
-+
-+	if (get_user(tmp, &termio->c_oflag) < 0)
-+		goto fault;
-+	termios->c_oflag = (0xffff0000 & termios->c_oflag) | tmp;
-+
-+	if (get_user(tmp, &termio->c_cflag) < 0)
-+		goto fault;
-+	termios->c_cflag = (0xffff0000 & termios->c_cflag) | tmp;
-+
-+	if (get_user(tmp, &termio->c_lflag) < 0)
-+		goto fault;
-+	termios->c_lflag = (0xffff0000 & termios->c_lflag) | tmp;
-+
-+	if (get_user(termios->c_line, &termio->c_line) < 0)
-+		goto fault;
-+
-+	if (copy_from_user(termios->c_cc, termio->c_cc, NCC) != 0)
-+		goto fault;
-+
-+	return 0;
-+
-+ fault:
-+	return -EFAULT;
- }
- 
- /*
-@@ -76,12 +93,15 @@ static inline int user_termio_to_kernel_termios(struct ktermios *termios,
- static inline int kernel_termios_to_user_termio(struct termio __user *termio,
- 					    struct ktermios *termios)
- {
--	put_user((termios)->c_iflag, &(termio)->c_iflag);
--	put_user((termios)->c_oflag, &(termio)->c_oflag);
--	put_user((termios)->c_cflag, &(termio)->c_cflag);
--	put_user((termios)->c_lflag, &(termio)->c_lflag);
--	put_user((termios)->c_line,  &(termio)->c_line);
--	return copy_to_user((termio)->c_cc, (termios)->c_cc, NCC);
-+	if (put_user(termios->c_iflag, &termio->c_iflag) < 0 ||
-+	    put_user(termios->c_oflag, &termio->c_oflag) < 0 ||
-+	    put_user(termios->c_cflag, &termio->c_cflag) < 0 ||
-+	    put_user(termios->c_lflag, &termio->c_lflag) < 0 ||
-+	    put_user(termios->c_line,  &termio->c_line) < 0 ||
-+	    copy_to_user(termio->c_cc, termios->c_cc, NCC) != 0)
-+		return -EFAULT;
-+
-+	return 0;
- }
- 
- static inline int user_termios_to_kernel_termios(struct ktermios *k,
--- 
-1.6.0.4
+I expect slub might cause this to happen due to its habit of using
+larger-than-needed orders for small objects.  For example, cxgb3 is
+passing __GFP_NOFAIL into alloc_skb().
 
+> > 
+> > --- a/mm/page_alloc.c~page-allocator-warn-if-__gfp_nofail-is-used-for-a-large-allocation
+> > +++ a/mm/page_alloc.c
+> > @@ -1130,6 +1130,20 @@ again:
+> >  		list_del(&page->lru);
+> >  		pcp->count--;
+> >  	} else {
+> > +		if (unlikely(gfp_mask & __GFP_NOFAIL)) {
+> > +			/*
+> > +			 * __GFP_NOFAIL is not to be used in new code.
+> > +			 *
+> > +			 * All __GFP_NOFAIL callers should be fixed so that they
+> > +			 * properly detect and handle allocation failures.
+> > +			 *
+> > +			 * We most definitely don't want callers attempting to
+> > +			 * allocate greater than single-page units with
+> > +			 * __GFP_NOFAIL.
+> > +			 */
+> > +			WARN_ON_ONCE(order > 0);
+> > +			return 0;
+> > +		}
+> >  		spin_lock_irqsave(&zone->lock, flags);
+> >  		page = __rmqueue(zone, order, migratetype);
+> >  		__mod_zone_page_state(zone, NR_FREE_PAGES, -(1 << order));
+> 
+> That "return 0" definitely needs to be removed, though :)
+
+The inventor of copy-n-paste has a lot to answer for.
