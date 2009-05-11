@@ -1,107 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759465AbZEKWR1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759598AbZEKWSO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759465AbZEKWR1 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 18:17:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757280AbZEKWRS
+	id S1759598AbZEKWSO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 18:18:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758992AbZEKWR5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 18:17:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50977 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1756878AbZEKWRR (ORCPT
+	Mon, 11 May 2009 18:17:57 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:50632 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758333AbZEKWR4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 18:17:17 -0400
-Date: Mon, 11 May 2009 15:11:30 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Rientjes <rientjes@google.com>
-Cc: gregkh@suse.de, npiggin@suse.de, mel@csn.ul.ie, a.p.zijlstra@chello.nl,
-       cl@linux-foundation.org, dave@linux.vnet.ibm.com, san@android.com,
-       arve@android.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 08/11 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
-Message-Id: <20090511151130.9a949cb7.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0905111444070.466@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.0905101502050.18804@chino.kir.corp.google.com>
-	<20090511142936.dd68005b.akpm@linux-foundation.org>
-	<alpine.DEB.2.00.0905111444070.466@chino.kir.corp.google.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 11 May 2009 18:17:56 -0400
+Message-ID: <4A08A411.9060104@codemonkey.ws>
+Date: Mon, 11 May 2009 17:17:53 -0500
+From: Anthony Liguori <anthony@codemonkey.ws>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Hollis Blanchard <hollisb@us.ibm.com>
+CC: Gregory Haskins <ghaskins@novell.com>, Avi Kivity <avi@redhat.com>,
+       Chris Wright <chrisw@sous-sol.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       linux-kernel@vger.kernel.org, kvm@vger.kernel.org
+Subject: Re: PowerPC page faults
+References: <20090505132005.19891.78436.stgit@dev.haskins.net>	 <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com>	 <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com>	 <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com>	 <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com>	 <4A02D40D.7060307@redhat.com> <4A0448DF.90705@codemonkey.ws>	 <4A0570B1.30401@novell.com>  <4A071F1A.1090702@codemonkey.ws>	 <1242060260.29194.19.camel@slate.austin.ibm.com>	 <4A08663D.1010703@codemonkey.ws> <1242069898.29194.99.camel@slate.austin.ibm.com>
+In-Reply-To: <1242069898.29194.99.camel@slate.austin.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009 14:45:18 -0700 (PDT)
-David Rientjes <rientjes@google.com> wrote:
+Hollis Blanchard wrote:
+> On Mon, 2009-05-11 at 12:54 -0500, Anthony Liguori wrote:
+>   
+>> For future ppcemb's, do you know if there is an equivalent of a PF exit 
+>> type?  Does the hardware squirrel away the faulting address somewhere 
+>> and set PC to the start of the instruction?  If so, no guest memory load 
+>> should be required.
+>>     
+>
+> Ahhh... you're saying that the address itself (or offset within a page)
+> is the hypercall token, totally separate from IO emulation, and so we
+> could ignore the access size.
 
-> On Mon, 11 May 2009, Andrew Morton wrote:
-> 
-> > > The oom killer must be invoked regardless of the order if the allocation
-> > > is __GFP_NOFAIL, otherwise it will loop forever when reclaim fails to
-> > > free some memory.
-> > 
-> > We should discourage callers from using __GFP_NOFAIL at all.  We should
-> > electrocute callers for using __GFP_NOFAIL on large allocations.  How's about
-> > 
-> > 	WARN_ON_ONCE(order > PAGE_ALLOC_COSTLY_ORDER &&	
-> > 			(gfp_mask & __GFP_NOFAIL));
-> > or, preferably:
-> > 
-> > 	WARN_ON_ONCE(order > 0 && (gfp_mask & __GFP_NOFAIL));
-> > 
-> 
-> Not sure it would help since the oom killer will be now be called for such 
-> an allocation and that dumps the stack (and will actually show the order 
-> and gfp flags as well).
+No, I'm not being nearly that clever.
 
-No, the intent of that warning is to find all call sites which use
-__GFP_NOFAIL on order>0 so we can hunt down and eliminate them.
+I was suggesting that hardware virtualization support in future PPC 
+systems might contain a mechanism to intercept a guest-mode TLB miss.  
+If it did, it would be useful if that guest-mode TLB miss "exit" 
+contained extra information somewhere that included the PC of the 
+faulting instruction, the address response for the fault, and enough 
+information to handle the fault without instruction decoding.
 
+I assume all MMIO comes from the same set of instructions in PPC?  
+Something like ld/st instructions?  Presumably all you need to know from 
+instruction decoding is the destination register and whether it was a 
+read or write?
 
-please review...
+Or am I oversimplifying?  Does the current hardware spec contain this 
+sort of assistance?
 
-From: Andrew Morton <akpm@linux-foundation.org>
+Regards,
 
-__GFP_NOFAIL is a bad fiction.  Allocations _can_ fail, and callers should
-detect and suitably handle this (and not by lamely moving the infinite
-loop up to the caller level either).
-
-Attempting to use __GFP_NOFAIL for a higher-order allocation is even
-worse, so add a once-off runtime check for this to slap people around for
-even thinking about trying it.
-
-Cc: David Rientjes <rientjes@google.com>
-Cc: Mel Gorman <mel@csn.ul.ie>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
----
-
- mm/page_alloc.c |   13 ++++++++++++-
- 1 file changed, 12 insertions(+), 1 deletion(-)
-
-diff -puN mm/page_alloc.c~a mm/page_alloc.c
---- a/mm/page_alloc.c~a
-+++ a/mm/page_alloc.c
-@@ -1201,8 +1201,19 @@ static int should_fail_alloc_page(gfp_t 
- {
- 	if (order < fail_page_alloc.min_order)
- 		return 0;
--	if (gfp_mask & __GFP_NOFAIL)
-+	if (gfp_mask & __GFP_NOFAIL) {
-+		/*
-+		 * __GFP_NOFAIL is not to be used in new code.
-+		 *
-+		 * All __GFP_NOFAIL callers should be fixed so that they
-+		 * properly detect and handle allocation failures.
-+		 *
-+		 * We most definitely don't want callers attempting to allocate
-+		 * greater than single-page units with __GFP_NOFAIL.
-+		 */
-+		WARN_ON_ONCE(order > 0);
- 		return 0;
-+	}
- 	if (fail_page_alloc.ignore_gfp_highmem && (gfp_mask & __GFP_HIGHMEM))
- 		return 0;
- 	if (fail_page_alloc.ignore_gfp_wait && (gfp_mask & __GFP_WAIT))
-_
-
+Anthony Liguori
 
