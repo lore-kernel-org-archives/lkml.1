@@ -1,79 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760892AbZEKW75@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760382AbZEKXAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760892AbZEKW75 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 18:59:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759890AbZEKW7q
+	id S1760382AbZEKXAZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 19:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760502AbZEKXAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 18:59:46 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:53735 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758559AbZEKW7p (ORCPT
+	Mon, 11 May 2009 19:00:06 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:63357 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758841AbZEKXAD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 18:59:45 -0400
-Subject: Re: [PATCH] scsi: libsas depends on HAS_DMA
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <1242082233.27353.9.camel@mulgrave.int.hansenpartnership.com>
-References: <20090511222702.352192505@arndb.de> >
-	 <200905112240.20171.arnd@arndb.de>
-	 <1242082233.27353.9.camel@mulgrave.int.hansenpartnership.com>
-Content-Type: text/plain
-Date: Mon, 11 May 2009 22:59:44 +0000
-Message-Id: <1242082784.27353.13.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Mon, 11 May 2009 19:00:03 -0400
+Message-Id: <200905112259.04714.arnd@arndb.de>
+References: <20090511222702.352192505@arndb.de>>
+User-Agent: quilt/0.46-1
+Date: Mon, 11 May 2009 22:59:04 +0000
+From: Arnd Bergmann <arnd@arndb.de>
+To: x86@kernel.org
+Cc: linux-kernel@vger.kernel.org,
+       Remis Lima Baima <remis.developer@googlemail.com>
+Subject: [PATCH] x86: fix ktermios-termio conversion
+Content-Disposition: inline
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+X-Provags-ID: V01U2FsdGVkX18BU+8m59NMKLEZ5ifTePEGM/nwFhrQln0jm07
+ jEXvL7FZ4oKi5vexv7N6YHnkPsTofn99tO6x4Z3U86mcW8HbaC
+ 0Ih0oYJzPdZa0DDuARGyQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-11 at 22:50 +0000, James Bottomley wrote:
-> On Mon, 2009-05-11 at 22:40 +0000, Arnd Bergmann wrote:
-> > libsas uses the DMA mapping API, so it cannot be
-> > built on architectures that don't support DMA.
-> > 
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-> > ---
-> >  drivers/scsi/libsas/Kconfig |    2 +-
-> >  1 files changed, 1 insertions(+), 1 deletions(-)
-> > 
-> > diff --git a/drivers/scsi/libsas/Kconfig b/drivers/scsi/libsas/Kconfig
-> > index 18f33cd..59e00fa 100644
-> > --- a/drivers/scsi/libsas/Kconfig
-> > +++ b/drivers/scsi/libsas/Kconfig
-> > @@ -24,7 +24,7 @@
-> >  
-> >  config SCSI_SAS_LIBSAS
-> >  	tristate "SAS Domain Transport Attributes"
-> > -	depends on SCSI
-> > +	depends on SCSI && HAS_DMA
-> 
-> Our unfortunate Kconfig system can cause problems if you do this:
-> SCSI_SAS_LIBSAS is used as a select for drivers that need it, so either
-> they'd need to select this themselves, or you need some other solution.
+The operation with the variable 'c_line' was missing in the function
+'user_termio_to_kernel_termios'. Also the casting '*(unsigned short *)'
+in the macro 'SET_LOW_TERMIOS_BITS' was a bit 'unhealthy'. So the macro
+was removed and the function was changed to be like in other archs
+(e.g. h8300, m68k, sparc) that have a more elegant solution.
 
-Actually, looking at this further, the problem is only in the ata
-compatibility layer because of the way libata does dma mapping on behalf
-of drivers, so the solution below (just disable SATA support if HAS_DMA
-isn't defined) will work without requiring select dependency
-modification.
+In the function 'kernel_termios_to_user_termio' the return values of
+the functions calls 'put_user' and 'copy_to_user' were not being
+checked.
 
-James
-
+Signed-off-by: Remis Lima Baima <remis.developer@googlemail.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
+ arch/x86/include/asm/termios.h |   54 +++++++++++++++++++++++++++------------
+ 1 files changed, 37 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/scsi/libsas/Kconfig b/drivers/scsi/libsas/Kconfig
-index 18f33cd..f462a0e 100644
---- a/drivers/scsi/libsas/Kconfig
-+++ b/drivers/scsi/libsas/Kconfig
-@@ -33,6 +33,7 @@ config SCSI_SAS_LIBSAS
- config SCSI_SAS_ATA
- 	bool "ATA support for libsas (requires libata)"
- 	depends on SCSI_SAS_LIBSAS
-+	depends on HAS_DMA
- 	depends on ATA = y || ATA = SCSI_SAS_LIBSAS
- 	help
- 		Builds in ATA support into libsas.  Will necessitate
+diff --git a/arch/x86/include/asm/termios.h b/arch/x86/include/asm/termios.h
+index f729563..47420df 100644
+--- a/arch/x86/include/asm/termios.h
++++ b/arch/x86/include/asm/termios.h
+@@ -54,20 +54,37 @@ struct termio {
+ /*
+  * Translate a "termio" structure into a "termios". Ugh.
+  */
+-#define SET_LOW_TERMIOS_BITS(termios, termio, x) { \
+-	unsigned short __tmp; \
+-	get_user(__tmp,&(termio)->x); \
+-	*(unsigned short *) &(termios)->x = __tmp; \
+-}
+-
+ static inline int user_termio_to_kernel_termios(struct ktermios *termios,
+ 						struct termio __user *termio)
+ {
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_iflag);
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_oflag);
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_cflag);
+-	SET_LOW_TERMIOS_BITS(termios, termio, c_lflag);
+-	return copy_from_user(termios->c_cc, termio->c_cc, NCC);
++	unsigned short tmp;
++
++	if (get_user(tmp, &termio->c_iflag) < 0)
++		goto fault;
++	termios->c_iflag = (0xffff0000 & termios->c_iflag) | tmp;
++
++	if (get_user(tmp, &termio->c_oflag) < 0)
++		goto fault;
++	termios->c_oflag = (0xffff0000 & termios->c_oflag) | tmp;
++
++	if (get_user(tmp, &termio->c_cflag) < 0)
++		goto fault;
++	termios->c_cflag = (0xffff0000 & termios->c_cflag) | tmp;
++
++	if (get_user(tmp, &termio->c_lflag) < 0)
++		goto fault;
++	termios->c_lflag = (0xffff0000 & termios->c_lflag) | tmp;
++
++	if (get_user(termios->c_line, &termio->c_line) < 0)
++		goto fault;
++
++	if (copy_from_user(termios->c_cc, termio->c_cc, NCC) != 0)
++		goto fault;
++
++	return 0;
++
++ fault:
++	return -EFAULT;
+ }
+ 
+ /*
+@@ -76,12 +93,15 @@ static inline int user_termio_to_kernel_termios(struct 
+ktermios *termios,
+ static inline int kernel_termios_to_user_termio(struct termio __user *termio,
+ 					    struct ktermios *termios)
+ {
+-	put_user((termios)->c_iflag, &(termio)->c_iflag);
+-	put_user((termios)->c_oflag, &(termio)->c_oflag);
+-	put_user((termios)->c_cflag, &(termio)->c_cflag);
+-	put_user((termios)->c_lflag, &(termio)->c_lflag);
+-	put_user((termios)->c_line,  &(termio)->c_line);
+-	return copy_to_user((termio)->c_cc, (termios)->c_cc, NCC);
++	if (put_user(termios->c_iflag, &termio->c_iflag) < 0 ||
++	    put_user(termios->c_oflag, &termio->c_oflag) < 0 ||
++	    put_user(termios->c_cflag, &termio->c_cflag) < 0 ||
++	    put_user(termios->c_lflag, &termio->c_lflag) < 0 ||
++	    put_user(termios->c_line,  &termio->c_line) < 0 ||
++	    copy_to_user(termio->c_cc, termios->c_cc, NCC) != 0)
++		return -EFAULT;
++
++	return 0;
+ }
+ 
+ static inline int user_termios_to_kernel_termios(struct ktermios *k,
+-- 
+1.6.0.4
+
+-- 
+
 
 
