@@ -1,167 +1,251 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbZEMDLy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758646AbZEMDMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758856AbZEMDLy (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 23:11:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756082AbZEMDGR
+	id S1758646AbZEMDMW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 23:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755914AbZEMDGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 23:06:17 -0400
-Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:36226
+	Tue, 12 May 2009 23:06:18 -0400
+Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:36229
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753723AbZEMDGH (ORCPT
+	with ESMTP id S1756048AbZEMDGH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 May 2009 23:06:07 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 01/10] xen: make sure swiotlb allocation is physically contigious
-Date: Tue, 12 May 2009 14:50:42 -0700
-Message-Id: <1242165051-6636-2-git-send-email-jeremy@goop.org>
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Juan Quintela <quintela@redhat.com>
+Subject: [PATCH 01/16] xen dom0: Make hvc_xen console work for dom0.
+Date: Tue, 12 May 2009 14:28:23 -0700
+Message-Id: <1242163718-2934-2-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1242165051-6636-1-git-send-email-jeremy@goop.org>
-References: <1242165051-6636-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1242163718-2934-1-git-send-email-jeremy@goop.org>
+References: <1242163718-2934-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When allocating the swiotlb buffer under Xen, make sure the memory is
-physically contiguous so that its really suitable for DMA.
+Use the console hypercalls for dom0 console.
 
-Do this by allocating the memory as usual, but then call a Xen
-function to rearrange the underlying pages to be physically
-contiguous.
-
-[ Impact: make swiotlb allocation suitable for Xen ]
-
+[ Impact: Add Xen dom0 console ]
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
-Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Signed-off-by: Juan Quintela <quintela@redhat.com>
 ---
- arch/x86/kernel/pci-swiotlb.c |   10 ----------
- arch/x86/xen/Makefile         |    1 +
- arch/x86/xen/pci-swiotlb.c    |   27 +++++++++++++++++++++++++++
- drivers/pci/xen-iommu.c       |   16 ++++++++++++++++
- include/xen/swiotlb.h         |    6 ++++++
- 5 files changed, 50 insertions(+), 10 deletions(-)
- create mode 100644 arch/x86/xen/pci-swiotlb.c
- create mode 100644 include/xen/swiotlb.h
+ drivers/char/hvc_xen.c |   99 ++++++++++++++++++++++++++++++++----------------
+ drivers/xen/events.c   |    2 +-
+ include/xen/events.h   |    2 +
+ 3 files changed, 69 insertions(+), 34 deletions(-)
 
-diff --git a/arch/x86/kernel/pci-swiotlb.c b/arch/x86/kernel/pci-swiotlb.c
-index 221a385..880b7bc 100644
---- a/arch/x86/kernel/pci-swiotlb.c
-+++ b/arch/x86/kernel/pci-swiotlb.c
-@@ -13,16 +13,6 @@
+diff --git a/drivers/char/hvc_xen.c b/drivers/char/hvc_xen.c
+index eba999f..11071ed 100644
+--- a/drivers/char/hvc_xen.c
++++ b/drivers/char/hvc_xen.c
+@@ -55,7 +55,7 @@ static inline void notify_daemon(void)
+ 	notify_remote_via_evtchn(xen_start_info->console.domU.evtchn);
+ }
  
- int swiotlb __read_mostly;
- 
--void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
--{
--	return alloc_bootmem_low_pages(size);
--}
--
--void *swiotlb_alloc(unsigned order, unsigned long nslabs)
--{
--	return (void *)__get_free_pages(GFP_DMA | __GFP_NOWARN, order);
--}
--
- dma_addr_t swiotlb_phys_to_bus(struct device *hwdev, phys_addr_t paddr)
+-static int write_console(uint32_t vtermno, const char *data, int len)
++static int domU_write_console(uint32_t vtermno, const char *data, int len)
  {
- 	return paddr;
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index c4cda96..caede49 100644
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -12,3 +12,4 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
- obj-$(CONFIG_SMP)		+= smp.o spinlock.o
- obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
- obj-$(CONFIG_XEN_DOM0)		+= vga.o
-+obj-$(CONFIG_PCI_XEN)		+= pci-swiotlb.o
-\ No newline at end of file
-diff --git a/arch/x86/xen/pci-swiotlb.c b/arch/x86/xen/pci-swiotlb.c
-new file mode 100644
-index 0000000..7665d3b
---- /dev/null
-+++ b/arch/x86/xen/pci-swiotlb.c
-@@ -0,0 +1,27 @@
-+#include <linux/bootmem.h>
-+#include <linux/gfp.h>
+ 	struct xencons_interface *intf = xencons_interface();
+ 	XENCONS_RING_IDX cons, prod;
+@@ -76,7 +76,7 @@ static int write_console(uint32_t vtermno, const char *data, int len)
+ 	return sent;
+ }
+ 
+-static int read_console(uint32_t vtermno, char *buf, int len)
++static int domU_read_console(uint32_t vtermno, char *buf, int len)
+ {
+ 	struct xencons_interface *intf = xencons_interface();
+ 	XENCONS_RING_IDX cons, prod;
+@@ -97,28 +97,63 @@ static int read_console(uint32_t vtermno, char *buf, int len)
+ 	return recv;
+ }
+ 
+-static struct hv_ops hvc_ops = {
+-	.get_chars = read_console,
+-	.put_chars = write_console,
++static struct hv_ops domU_hvc_ops = {
++	.get_chars = domU_read_console,
++	.put_chars = domU_write_console,
+ 	.notifier_add = notifier_add_irq,
+ 	.notifier_del = notifier_del_irq,
+ 	.notifier_hangup = notifier_hangup_irq,
+ };
+ 
+-static int __init xen_init(void)
++static int dom0_read_console(uint32_t vtermno, char *buf, int len)
++{
++	return HYPERVISOR_console_io(CONSOLEIO_read, len, buf);
++}
 +
-+#include <xen/swiotlb.h>
-+#include <asm/xen/hypervisor.h>
-+
-+/* 
-+ * This file defines overrides for weak functions with default
-+ * implementations in lib/swiotlb.c.
++/*
++ * Either for a dom0 to write to the system console, or a domU with a
++ * debug version of Xen
 + */
-+
-+void * __init swiotlb_alloc_boot(size_t size, unsigned long nslabs)
++static int dom0_write_console(uint32_t vtermno, const char *str, int len)
 +{
-+	void *ret = alloc_bootmem_low_pages(size);
++	int rc = HYPERVISOR_console_io(CONSOLEIO_write, len, (char *)str);
++	if (rc < 0)
++		return 0;
 +
-+	if (ret && xen_pv_domain())
-+		xen_swiotlb_fixup(ret, size, nslabs);
-+
-+	return ret;
++	return len;
 +}
 +
-+void *swiotlb_alloc(unsigned order, unsigned long nslabs)
-+{
-+	/* Never called on x86.  Warn, just in case it ever is. */
-+	WARN_ON(1);
-+	return NULL;
-+}
-diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
-index ac6bcdb..8c034b8 100644
---- a/drivers/pci/xen-iommu.c
-+++ b/drivers/pci/xen-iommu.c
-@@ -12,6 +12,7 @@
- #include <xen/grant_table.h>
- #include <xen/page.h>
- #include <xen/xen-ops.h>
-+#include <xen/swiotlb.h>
- 
- #include <asm/iommu.h>
- #include <asm/swiotlb.h>
-@@ -34,6 +35,21 @@ do {							\
- 	(unsigned long long)addr + size);		\
- } while (0)
- 
++static struct hv_ops dom0_hvc_ops = {
++	.get_chars = dom0_read_console,
++	.put_chars = dom0_write_console,
++	.notifier_add = notifier_add_irq,
++	.notifier_del = notifier_del_irq,
++	.notifier_hangup = notifier_hangup_irq,
++};
 +
-+void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs)
-+{
-+	unsigned order = get_order(size);
-+
-+	printk(KERN_DEBUG "xen_swiotlb_fixup: buf=%p size=%zu order=%u\n",
-+		buf, size, order);
-+
-+	if (WARN_ON(size != (PAGE_SIZE << order)))
-+		return;
-+
-+	if (xen_create_contiguous_region((unsigned long)buf,
-+					 order, DMA_BIT_MASK(32)))
-+		printk(KERN_ERR "xen_create_contiguous_region failed\n");
-+}
- static inline int address_needs_mapping(struct device *hwdev,
- 						dma_addr_t addr)
++static int __init xen_hvc_init(void)
  {
-diff --git a/include/xen/swiotlb.h b/include/xen/swiotlb.h
-new file mode 100644
-index 0000000..67b7b42
---- /dev/null
-+++ b/include/xen/swiotlb.h
-@@ -0,0 +1,6 @@
-+#ifndef _XEN_SWIOTLB_H
-+#define _XEN_SWIOTLB_H
+ 	struct hvc_struct *hp;
++	struct hv_ops *ops;
+ 
+-	if (!xen_pv_domain() ||
+-	    xen_initial_domain() ||
+-	    !xen_start_info->console.domU.evtchn)
++	if (!xen_pv_domain())
+ 		return -ENODEV;
+ 
+-	xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
++	if (xen_initial_domain()) {
++		ops = &dom0_hvc_ops;
++		xencons_irq = bind_virq_to_irq(VIRQ_CONSOLE, 0);
++	} else {
++		if (!xen_start_info->console.domU.evtchn)
++			return -ENODEV;
 +
-+extern void xen_swiotlb_fixup(void *buf, size_t size, unsigned long nslabs);
++		ops = &domU_hvc_ops;
++		xencons_irq = bind_evtchn_to_irq(xen_start_info->console.domU.evtchn);
++	}
 +
-+#endif /* _XEN_SWIOTLB_H */
+ 	if (xencons_irq < 0)
+ 		xencons_irq = 0; /* NO_IRQ */
+ 
+-	hp = hvc_alloc(HVC_COOKIE, xencons_irq, &hvc_ops, 256);
++	hp = hvc_alloc(HVC_COOKIE, xencons_irq, ops, 256);
+ 	if (IS_ERR(hp))
+ 		return PTR_ERR(hp);
+ 
+@@ -135,7 +170,7 @@ void xen_console_resume(void)
+ 		rebind_evtchn_irq(xen_start_info->console.domU.evtchn, xencons_irq);
+ }
+ 
+-static void __exit xen_fini(void)
++static void __exit xen_hvc_fini(void)
+ {
+ 	if (hvc)
+ 		hvc_remove(hvc);
+@@ -143,29 +178,24 @@ static void __exit xen_fini(void)
+ 
+ static int xen_cons_init(void)
+ {
++	struct hv_ops *ops;
++
+ 	if (!xen_pv_domain())
+ 		return 0;
+ 
+-	hvc_instantiate(HVC_COOKIE, 0, &hvc_ops);
++	ops = &domU_hvc_ops;
++	if (xen_initial_domain())
++		ops = &dom0_hvc_ops;
++
++	hvc_instantiate(HVC_COOKIE, 0, ops);
++
+ 	return 0;
+ }
+ 
+-module_init(xen_init);
+-module_exit(xen_fini);
++module_init(xen_hvc_init);
++module_exit(xen_hvc_fini);
+ console_initcall(xen_cons_init);
+ 
+-static void raw_console_write(const char *str, int len)
+-{
+-	while(len > 0) {
+-		int rc = HYPERVISOR_console_io(CONSOLEIO_write, len, (char *)str);
+-		if (rc <= 0)
+-			break;
+-
+-		str += rc;
+-		len -= rc;
+-	}
+-}
+-
+ #ifdef CONFIG_EARLY_PRINTK
+ static void xenboot_write_console(struct console *console, const char *string,
+ 				  unsigned len)
+@@ -173,19 +203,22 @@ static void xenboot_write_console(struct console *console, const char *string,
+ 	unsigned int linelen, off = 0;
+ 	const char *pos;
+ 
+-	raw_console_write(string, len);
++	dom0_write_console(0, string, len);
++
++	if (xen_initial_domain())
++		return;
+ 
+-	write_console(0, "(early) ", 8);
++	domU_write_console(0, "(early) ", 8);
+ 	while (off < len && NULL != (pos = strchr(string+off, '\n'))) {
+ 		linelen = pos-string+off;
+ 		if (off + linelen > len)
+ 			break;
+-		write_console(0, string+off, linelen);
+-		write_console(0, "\r\n", 2);
++		domU_write_console(0, string+off, linelen);
++		domU_write_console(0, "\r\n", 2);
+ 		off += linelen + 1;
+ 	}
+ 	if (off < len)
+-		write_console(0, string+off, len-off);
++		domU_write_console(0, string+off, len-off);
+ }
+ 
+ struct console xenboot_console = {
+@@ -197,7 +230,7 @@ struct console xenboot_console = {
+ 
+ void xen_raw_console_write(const char *str)
+ {
+-	raw_console_write(str, strlen(str));
++	dom0_write_console(0, str, strlen(str));
+ }
+ 
+ void xen_raw_printk(const char *fmt, ...)
+diff --git a/drivers/xen/events.c b/drivers/xen/events.c
+index 1cd2a0e..97f4b39 100644
+--- a/drivers/xen/events.c
++++ b/drivers/xen/events.c
+@@ -410,7 +410,7 @@ static int bind_ipi_to_irq(unsigned int ipi, unsigned int cpu)
+ }
+ 
+ 
+-static int bind_virq_to_irq(unsigned int virq, unsigned int cpu)
++int bind_virq_to_irq(unsigned int virq, unsigned int cpu)
+ {
+ 	struct evtchn_bind_virq bind_virq;
+ 	int evtchn, irq;
+diff --git a/include/xen/events.h b/include/xen/events.h
+index e68d59a..9f24b64 100644
+--- a/include/xen/events.h
++++ b/include/xen/events.h
+@@ -12,6 +12,8 @@ int bind_evtchn_to_irqhandler(unsigned int evtchn,
+ 			      irq_handler_t handler,
+ 			      unsigned long irqflags, const char *devname,
+ 			      void *dev_id);
++int bind_virq_to_irq(unsigned int virq, unsigned int cpu);
++
+ int bind_virq_to_irqhandler(unsigned int virq, unsigned int cpu,
+ 			    irq_handler_t handler,
+ 			    unsigned long irqflags, const char *devname,
 -- 
 1.6.0.6
 
