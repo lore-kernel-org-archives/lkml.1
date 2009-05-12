@@ -1,102 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZELF0Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753484AbZELF1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754660AbZELF0Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 01:26:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbZELF0P
+	id S1753484AbZELF1o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 01:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbZELF1e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 01:26:15 -0400
-Received: from mga09.intel.com ([134.134.136.24]:38111 "EHLO mga09.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752120AbZELF0P convert rfc822-to-8bit (ORCPT
+	Tue, 12 May 2009 01:27:34 -0400
+Received: from toq2-srv.bellnexxia.net ([209.226.175.121]:64261 "EHLO
+	toq2-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752506AbZELF1e convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 01:26:15 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,180,1241420400"; 
-   d="scan'208";a="514638760"
-From: "Cihula, Joseph" <joseph.cihula@intel.com>
-To: Ingo Molnar <mingo@elte.hu>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>, "Wang, Shane" <shane.wang@intel.com>
-Date: Mon, 11 May 2009 22:26:11 -0700
-Subject: RE: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
-	support
-Thread-Topic: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
-	support
-Thread-Index: AcnPw3vNIdgMe1TeShGlomO7j5w9IAC/lv6A
-Message-ID: <4F65016F6CB04E49BFFA15D4F7B798D998BA8303@orsmsx506.amr.corp.intel.com>
-References: <4A03B9C3.9090607@intel.com> <20090508095748.GH3559@elte.hu>
-In-Reply-To: <20090508095748.GH3559@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Tue, 12 May 2009 01:27:34 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AnFUAH+aCErR4q/5/2dsb2JhbACLJ4JNsx6KEoNvBQ
+X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
+X-Originating-IP: [65.120.56.2]
+From: Payment Agent <brookscottages@bellnet.ca>
+Reply-To: agtpauladams01@btinternet.com
+To: <info@org>
+Subject: May Winner
+Date: Tue, 12 May 2009 1:02:24 -0400
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090512050224.OELE1649.tomts47-srv.bellnexxia.net@toip52-bus.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> From: Ingo Molnar [mailto:mingo@elte.hu]
-> Sent: Friday, May 08, 2009 2:58 AM
->
-> * Joseph Cihula <joseph.cihula@intel.com> wrote:
->
-> > +   /* if we're being called before the 1:1 mapping is set up then just
-> > +      return and let the normal shutdown happen; this should only be
-> > +      due to very early panic() */
-> > +   if (!tboot_pg_dir)
-> > +           return;
->
-> Please use the customary comment style:
->
->   /*
->    * Comment .....
->    * ...... goes here:
->    */
->
-> specified in Documentation/CodingStyle. Please fix this in all other
-> multi-line comments in your patch as well.
+ou have just been awarded £1,000,000 00 GBP, get back via.
+Names:........
+Address:......
+Country:......
+Sex/Tel.......
 
-Will do.
-
-> > +   if (shutdown_type == TB_SHUTDOWN_S3) {
-> > +           tboot_shared->num_mac_regions = 3;
-> > +           /* S3 resume code */
-> > +           tboot_shared->mac_regions[0].start =
-> > +                   PFN_PHYS(PFN_DOWN(acpi_wakeup_address));
-> > +           tboot_shared->mac_regions[0].size =
-> > +                   PFN_UP(WAKEUP_SIZE) << PAGE_SHIFT;
-> > +           /* AP trampoline code */
-> > +           tboot_shared->mac_regions[1].start =
-> > +                   PFN_PHYS(PFN_DOWN(virt_to_phys(trampoline_base)));
-> > +           tboot_shared->mac_regions[1].size =
-> > +                   PFN_UP(TRAMPOLINE_SIZE) << PAGE_SHIFT;
-> > +           /* kernel code + data + bss */
-> > +           tboot_shared->mac_regions[2].start =
-> > +                   PFN_PHYS(PFN_DOWN(virt_to_phys(&_text)));
-> > +           tboot_shared->mac_regions[2].size =
-> > +                   PFN_PHYS(PFN_UP(virt_to_phys(&_end))) -
-> > +                   PFN_PHYS(PFN_DOWN(virt_to_phys(&_text)));
-> > +   }
-> > +
-> > +   tboot_shared->shutdown_type = shutdown_type;
-> > +
-> > +   switch_to_tboot_pt();
-> > +
-> > +   ((void(*)(void))(unsigned long)tboot_shared->shutdown_entry)();
->
-> shutdown_entry should probably have a proper function pointer type,
-> to avoid this ugliness.
-
-Since pointer types are different lengths depending on whether it is a 32b or 64b build environment, that would not allow a separately-compiled tboot to be used with both 32b and 64b kernels.
-
-Joe
