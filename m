@@ -1,158 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbZELJwu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760568AbZELJxa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760096AbZELJwu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 05:52:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbZELJwf
+	id S1760568AbZELJxa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 05:53:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758537AbZELJxO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 05:52:35 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:13412 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752352AbZELJwd (ORCPT
+	Tue, 12 May 2009 05:53:14 -0400
+Received: from rankki.sonarnerd.net ([83.145.240.118]:41051 "EHLO
+	mail.sonarnerd.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755970AbZELJxN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 05:52:33 -0400
-Message-ID: <4A0946D6.4010405@panasas.com>
-Date: Tue, 12 May 2009 12:52:22 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Tue, 12 May 2009 05:53:13 -0400
+Message-ID: <4A094707.5040307@sonarnerd.net>
+Date: Tue, 12 May 2009 12:53:11 +0300
+From: Jussi Laako <jussi@sonarnerd.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-CC: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
-       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
-       sshtylyov@ru.mvista.com, mike.miller@hp.com, Eric.Moore@lsi.com,
-       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
-       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
-       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
-       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
-       Doug Gilbert <dgilbert@interlog.com>,
-       "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [PATCH 03/11] block: add rq->resid_len
-References: <1241423927-11871-1-git-send-email-tj@kernel.org> <1241423927-11871-4-git-send-email-tj@kernel.org> <4A06DFAB.40205@panasas.com> <4A0767E5.5050205@kernel.org> <4A080C9D.9000109@panasas.com> <4A08C26E.80801@kernel.org> <4A093782.80701@panasas.com> <4A093C54.2060706@kernel.org>
-In-Reply-To: <4A093C54.2060706@kernel.org>
+To: Peter Zijlstra <peterz@infradead.org>
+CC: James Courtier-Dutton <James@superbug.co.uk>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, d.faggioli@sssup.it
+Subject: Re: [RFC][PATCH] Multimedia scheduling class, take 2
+References: <4959198A.3020209@sonarnerd.net>	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net>	 <1231756114.19771.6.camel@laptop> <496C6294.2040707@sonarnerd.net>	 <4971D3D5.6040801@superbug.co.uk>  <497CF128.2060903@sonarnerd.net>	 <1232954745.4863.4.camel@laptop>  <4A07E044.8040807@sonarnerd.net> <1242107859.11251.301.camel@twins>
+In-Reply-To: <1242107859.11251.301.camel@twins>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 May 2009 09:52:30.0432 (UTC) FILETIME=[5D79EE00:01C9D2E7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/12/2009 12:07 PM, Tejun Heo wrote:
-> Hello, Boaz.
-> 
-> Boaz Harrosh wrote:
->>> When a request failed, the whole buffer is garbage.
->> ret is the transferred size, right? I don't see any check for  
->> success/failure in below code.
->>
->>> There's no
->>> partial transfer.  There shouldn't be.  I don't think residual count
->>> on request failure means anything. 
->> That's not true, there are many cases when transfer failed eventually
->> but some bytes are valid. Even the simple read/write case. Imagine a 
->> very large transfer with last sector encounter a "bad sector". that can
->> be critical, (trying to rescue a disk). And many other examples.
-> 
-> No, it doesn't work like that.  As I wrote before, those partial
-> transfers are returned to the issuer as partial _SUCCESS_ not partial
-> failure.  ie. it's successful request w/ positive residual count not
-> the other way around.  The error is communicated to the issuer when
-> the leftover is re-issued.  There's no such thing as partial failure.
-> 
-> Please consider write failing after successfully writing certain
-> number of bytes.  A failed write command MUST NOT cause any actual
-> write on the device.
-> 
+Peter Zijlstra wrote:
+> As to the patch, I still think its an exceedingly bad idea to create
+> such a horridly ill defined scheduler class. There's nothing that keeps
+> people from stuffing everything in there and either generating DoS
+> issues or still generating bad interactivity.
 
-I know for sure that scsi has other cases. The above is a per-command
-per-sense-information. Some commands might write/read some bytes and still return
-CHECK-CONDITION with some sense-info+residual pertaining what was actually
-executed.
+Lite patch practically exports nice levels as scheduling priorities in
+order to make it possible to assign different levels to different
+threads of the same process.
 
-> Residual count is not about how many bytes have been transferred.  The
-> number of transferred bytes itself doesn't mean a thing because it
-> changes depending on which transfer protocol is used regardless of
-> where the actual failure is.  Residual count is about how many bytes
-> have been actually produced or consumed and when a command fails none
-> should have been.
-> 
+> I certainly don't think the current situation is bad enough to warrant
+> things like that, media on my machines works peachy (*cheer* for XV on
+> R600).
 
-See above. I know for a fact that this is not always the case, and that
-it is a per command. In fact I relay on such behaviour in the osd filesystems.
-If the midlayer would filter such cases for me I would have had data
-corruptions.
+Naturally pretty much anything works when CPU load is under 25%. When
+the load on low power embedded system is around 95-100% things get
+hairier...
 
-[Read passed end of osd-object will read up to end, and return a warning
- check condition. With a choice of returning zero-bytes at invalid bytes
- or returning residual]
+"Buy faster CPU" is not always an option...
 
-> Please note that in the above 'command' and 'residual count' are not
-> as defined in SCSI.  Those terms refer to how those concepts are used
-> in the kernel and via SG_IO interface.
-> 
 
-I do have Kernel code that relays on this. I do use bsg's SG_IO successfully
-that has above behaviour.
-
-That is: total transparency of residual count and sense information
-communicated between user-code and target. Then user-code can make intelligent
-decisions based on what he's done. And this is what the Kernel policy
-should be. No more, no less.
-
->>> Also, the 'whenever possible'
->>> doesn't mean much when the issuer can't determine whether the value is
->>> valid or not.  On success, we should guarantee resid count is valid,
->>> on failure, I don't see a way we can.
->>>
->> Code is as strong as it's weakest link, right? If lower
->> driver/firmware is brain-dead, what can we do? But why give up where
->> you can do better?
->>
->> The scsi standard is very clear about what every one should do with
->> the residual and what it means at every stage, everyone should do
->> his part. Here at the middle layer we need to correctly translate
->> what lower level returned and pass it up the chain.
->>
->> Must stacks are amateuristic in regard to error handling but some
->> are not, what
->>
->> should we strive for, if we can? 
-> 
-> No it's not about being good or bad.  It's about being plain
-> undefined.  There is no value in setting an inherently undefined value
-> to certain values in certain corner cases.
-> 
-
-Again. With some commands/subsystems these are undefined, with some
-like SCSI, they are very well defined in all cases. (Even in the undefined
-cases). So please keep them intact, some code might want to relay on this.
-
-(On the undefined cases Kernel should set a policy on what is returned)
-
->>>> I know that in iscsi a negative residual is possible which means
->>>> over-flow. That is: the target had more data to give then the buffer
->>>> had space for. (which is not an error at all)
->>> Hmm... I've never seen negative residual in use.  Is it even defined?
->> It is defined, as I explained before. But yes no one uses it in Kernel.
->> The "good" low-level drivers fix it up by setting resid to zero, in that
->> case. (other wise the upper layers might crash)
-> 
-> If the upper layer might crash if the value is negative, I think it's
-> quite understandable to call negative values to be undefined.  Or
-> should we call it unsupported?
-> 
-
-Yes, unsupported.
-
-Since current meaning means success, actually, and there is no real extra information
-that users need.
-Look at it this way, until today negative meant Zero with extra information which
-no one cares for.
-
-> Thanks.
-> 
-
-Cheers
-Boaz
+	- Jussi
