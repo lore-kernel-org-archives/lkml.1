@@ -1,72 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758857AbZELDza@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759143AbZELDzq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758857AbZELDza (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 23:55:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbZELDzT
+	id S1759143AbZELDzq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 23:55:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758124AbZELDzd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 23:55:19 -0400
-Received: from mga03.intel.com ([143.182.124.21]:42979 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752951AbZELDzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 23:55:18 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,179,1241420400"; 
-   d="scan'208";a="141727521"
-Subject: [PATCH]X86: make sparse mem work in non-NUMA mode
-From: Shaohua Li <shaohua.li@intel.com>
-To: lkml <linux-kernel@vger.kernel.org>
-Cc: "Yang, Sheng" <sheng.yang@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Content-Type: text/plain
-Date: Tue, 12 May 2009 11:55:17 +0800
-Message-Id: <1242100517.10593.7.camel@sli10-desk.sh.intel.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 11 May 2009 23:55:33 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:34473 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757945AbZELDzb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 23:55:31 -0400
+Message-ID: <4A08F330.6070006@novell.com>
+Date: Mon, 11 May 2009 23:55:28 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+MIME-Version: 1.0
+To: Davide Libenzi <davidel@xmailserver.org>
+CC: Gregory Haskins <ghaskins@novell.com>, viro@ZenIV.linux.org.uk,
+       kvm@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       avi@redhat.com
+Subject: Re: [KVM PATCH v4 2/2] kvm: add support for irqfd via eventfd-notification
+ interface
+References: <20090504175657.26758.12503.stgit@dev.haskins.net> <20090504175750.26758.7023.stgit@dev.haskins.net> <4A0175F0.1090705@novell.com> <alpine.DEB.1.10.0905060818000.32007@makko.or.mcafeemobile.com> <4A01AEC1.8020201@novell.com> <alpine.DEB.1.10.0905061834080.32606@makko.or.mcafeemobile.com> <4A024214.9090002@novell.com> <alpine.DEB.1.10.0905080805510.16601@makko.or.mcafeemobile.com>
+In-Reply-To: <alpine.DEB.1.10.0905080805510.16601@makko.or.mcafeemobile.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enig8A799D05683BD512A2AA5631"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With sparse, memory holes should not be marked present for memmap.
-This patch makes sparse really works on non-NUMA mode.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig8A799D05683BD512A2AA5631
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-Signed-off-by: Sheng Yang <sheng.yang@intel.com>
+Davide Libenzi wrote:
+> On Wed, 6 May 2009, Gregory Haskins wrote:
+>
+>  =20
+>> If there isn't any more feedback on the series from Al, Avi,
+>> etc...please formally submit your eventfd patch so this series is
+>> available for Avi to pull in for inclusion when/if he deems it fit.
+>>    =20
+>
+> Did you decide you will be using those bits?
+>  =20
 
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index 749559e..bc95c7a 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -761,15 +761,15 @@ void __init initmem_init(unsigned long start_pfn,
- 	highstart_pfn = highend_pfn = max_pfn;
- 	if (max_pfn > max_low_pfn)
- 		highstart_pfn = max_low_pfn;
--	memory_present(0, 0, highend_pfn);
- 	e820_register_active_regions(0, 0, highend_pfn);
-+	sparse_memory_present_with_active_regions(0);
- 	printk(KERN_NOTICE "%ldMB HIGHMEM available.\n",
- 		pages_to_mb(highend_pfn - highstart_pfn));
- 	num_physpages = highend_pfn;
- 	high_memory = (void *) __va(highstart_pfn * PAGE_SIZE - 1) + 1;
- #else
--	memory_present(0, 0, max_low_pfn);
- 	e820_register_active_regions(0, 0, max_low_pfn);
-+	sparse_memory_present_with_active_regions(0);
- 	num_physpages = max_low_pfn;
- 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE - 1) + 1;
- #endif
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 1753e80..dcf099c 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -638,7 +638,7 @@ void __init paging_init(void)
- 	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
- 	max_zone_pfns[ZONE_NORMAL] = max_pfn;
- 
--	memory_present(0, 0, max_pfn);
-+	sparse_memory_present_with_active_regions(0);
- 	sparse_init();
- 	free_area_init_nodes(max_zone_pfns);
- }
+Hi Davide,
+  It appears that we will not end up needing them since the new version
+I am about to push goes back to creating the eventfd in userspace to
+begin with, per Avi's request.  Regardless, thank you kindly for your
+help here, and also for your poll suggestion which we will definitely be
+using.
+
+Regards,
+-Greg
 
 
+
+--------------enig8A799D05683BD512A2AA5631
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkoI8zAACgkQlOSOBdgZUxl3mACferlOZkHf8Qx1/O797wmbanvN
+dB8An0rEqCIBKw/5Ocfgni2k8SeqIxPC
+=J30F
+-----END PGP SIGNATURE-----
+
+--------------enig8A799D05683BD512A2AA5631--
