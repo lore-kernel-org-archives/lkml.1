@@ -1,151 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759819AbZELCr0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760127AbZELCrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759819AbZELCr0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 22:47:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757387AbZELCrQ
+	id S1760127AbZELCrl (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 22:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759377AbZELCrU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 22:47:16 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:44962 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755328AbZELCrP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 22:47:15 -0400
-Date: Tue, 12 May 2009 11:47:15 +0900
-From: Isaku Yamahata <yamahata@valinux.co.jp>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [PATCH 03/11] Xen: Rename the balloon lock
-Message-ID: <20090512024715.GD22497%yamahata@valinux.co.jp>
-References: <1241732737-7669-1-git-send-email-jeremy@goop.org> <1241732737-7669-4-git-send-email-jeremy@goop.org> <20090508020123.GE25512%yamahata@valinux.co.jp> <4A0875C7.7070305@goop.org>
-Mime-Version: 1.0
+	Mon, 11 May 2009 22:47:20 -0400
+Received: from mx1.redhat.com ([66.187.233.31]:46675 "EHLO mx1.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759057AbZELCrT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 22:47:19 -0400
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A0875C7.7070305@goop.org>
-User-Agent: Mutt/1.5.6i
+Content-Transfer-Encoding: 7bit
+From: Roland McGrath <roland@redhat.com>
+To: Ingo Molnar <mingo@elte.hu>
+X-Fcc: ~/Mail/linus
+Cc: Jason Baron <jbaron@redhat.com>, Tom Zanussi <tzanussi@gmail.com>,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com, laijs@cn.fujitsu.com,
+       rostedt@goodmis.org, peterz@infradead.org, mathieu.desnoyers@polymtl.ca,
+       jiayingz@google.com, mbligh@google.com, fche@redhat.com
+Subject: Re: [RFC] convert ftrace syscall tracer to TRACE_EVENT()
+In-Reply-To: Ingo Molnar's message of  Saturday, 9 May 2009 10:37:37 +0200 <20090509083737.GE3656@elte.hu>
+References: <20090508210347.GA3121@redhat.com>
+	<20090509083737.GE3656@elte.hu>
+X-Shopping-List: (1) Lubricating annoyers
+   (2) Promiscuous bureaucratic harmonizers
+   (3) Barbarous complaisant wavechord inquisitions
+Message-Id: <20090512024437.F19ADFC35D@magilla.sf.frob.com>
+Date: Mon, 11 May 2009 19:44:37 -0700 (PDT)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 12:00:23PM -0700, Jeremy Fitzhardinge wrote:
-> Isaku Yamahata wrote:
-> >Hi. Please please don't move the arch common variable
-> >into x86 specific file. It causes link error on ia64.
-> >
-> >Before I sent the patches to fix it twice or so,
-> >but it seems to be dropped.
-> >  
-> 
-> Sorry, I can't seem to find them.  Could you resend?
-> 
-> I guess there's the larger issue of whether the 
-> xen_create_contiguous_region() code is also useful on ia64.  It seems to 
-> me the options are:
-> 
->    * it is, so we should move the code somewhere common (along with the
->      lock)
->    * it isn't so ia64 will have its own version (in which case it can
->      define its own version of the lock without much impact)
->    * or we could move the lock anyway, but there's no very obvious
->      place to put it
-> 
+> Firstly, it adds two new tracepoints to every system call. That is 
+> unnecessary - we already have the TIF flag based callbacks, and we 
+> can use the existing syscall attributes table to get to tracepoints 
+> - without slow down (or impacting) the fast path in any way.
 
-I see now the issue. My choice at the moment is the last option.
-The copyright notice was taken from drivers/xen/balloon.c.
-I don't have strong opinion about the place, so feel free to move it
-as long as it is linked on IA64.
+This is one of the key differences of this approach.  It has very different
+trade-offs.  I'm afraid that you might be sweeping this issue under the rug
+inadvertently.  I see two major thrusts of Jason's proposal, and I think we
+should be clear about each of those on its own separate merits.
 
-Non-pv_ops ia64 xen kernel has its own xen_create_contiguous_region().
-But I suppose the code can be consolidated if you accept sprinkle some
-if (xen_feature(XENFEAT_auto_translated_physmap)), so I'm willing to work on
-the first option once the x86 pv_ops dom0 is stabilized/committed.
+#1 is the mechanism for getting to a tracing path.
 
-thanks,
+If you use TIF_SYSCALL_TRACE (or new equivalents) then this is a choice you
+make for the task (or all tasks, or whichever subset you choose).  This
+means every system call in that task takes the slow path for tracing.
+(The slow path is slow primarily to enable fetching and changing all user
+registers, which is not needed for just tracing syscall arguments/results.)
 
-commit 2017dc931ca350eaad9cacd97e74b9c2eb4990b9
-Author: Isaku Yamahata <yamahata@valinux.co.jp>
-Date:   Tue May 12 11:22:05 2009 +0900
+Conversely, an actual tracepoint in a syscall function or its wrapper
+always affects every task, but only affects that particular syscall's code
+path.  If the tracepoint on sys_reboot is enabled, that has no effect
+whatsoever on the paths taken by any task's sys_read calls.  OTOH, if the
+sys_read tracepoint is enabled (with whatever filtering), that makes each
+and every sys_read call by each and every task go through the tracepoint
+callback path.  The "collateral damage" overhead paid by "uninteresting"
+tasks (whose tracepoint hits are all filtered out) is whatever cost the
+filtering code has.
 
-    Impact: link fix on ia64
-    
-    Move the variable, xen_reservation_lock, to common place.
-    IA64 also needs it.
-    
-    Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
+#2 is the richness of the method for handling syscall arguments.
 
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index 360e546..e25a78e 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -65,13 +65,6 @@
- 
- #define MMU_UPDATE_HISTO	30
- 
--/*
-- * Protects atomic reservation decrease/increase against concurrent increases.
-- * Also protects non-atomic updates of current_pages and driver_pages, and
-- * balloon lists.
-- */
--DEFINE_SPINLOCK(xen_reservation_lock);
--
- #ifdef CONFIG_XEN_DEBUG_FS
- 
- static struct {
-diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
-index ff8accc..ec6ddab 100644
---- a/drivers/xen/Makefile
-+++ b/drivers/xen/Makefile
-@@ -1,4 +1,4 @@
--obj-y	+= grant-table.o features.o events.o manage.o
-+obj-y	+= grant-table.o features.o events.o manage.o reslock.o
- obj-y	+= xenbus/
- 
- obj-$(CONFIG_HOTPLUG_CPU)	+= cpu_hotplug.o
-diff --git a/drivers/xen/reslock.c b/drivers/xen/reslock.c
-new file mode 100644
-index 0000000..cfe0638
---- /dev/null
-+++ b/drivers/xen/reslock.c
-@@ -0,0 +1,36 @@
-+/******************************************************************************
-+ * revlock.c
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License version 2
-+ * as published by the Free Software Foundation; or, when distributed
-+ * separately from the Linux kernel or incorporated into other
-+ * software packages, subject to the following license:
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this source file (the "Software"), to deal in the Software without
-+ * restriction, including without limitation the rights to use, copy, modify,
-+ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
-+ * and to permit persons to whom the Software is furnished to do so, subject to
-+ * the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
-+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
-+ * IN THE SOFTWARE.
-+ */
-+
-+#include <linux/spinlock.h>
-+
-+/*
-+ * Protects atomic reservation decrease/increase against concurrent increases.
-+ * Also protects non-atomic updates of current_pages and driver_pages, and
-+ * balloon lists.
-+ */
-+DEFINE_SPINLOCK(xen_reservation_lock);
+(I have the impression this one was Jason's motivation.)  The new(ish)
+syscall definition macros make it easy(ish) to pull out parameter types and
+names statically at kernel build time, and do intelligent things with
+those.  As Jason is already looking into in his second pass, you can find a
+way to exploit this either with direct tracepoints, or via syscall register
+values fetched with syscall_get_arguments().
 
 
--- 
-yamahata
+Thanks,
+Roland
