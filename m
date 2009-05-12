@@ -1,80 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755218AbZELV3k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbZELVaJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755218AbZELV3k (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 17:29:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbZELV3I
+	id S1755904AbZELVaJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 17:30:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbZELV3x
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 17:29:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53685 "EHLO mx2.redhat.com"
+	Tue, 12 May 2009 17:29:53 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53698 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752228AbZELV3F (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 17:29:05 -0400
-Subject: Re: [PATCH] IMA: do not measure everything opened by root by
- default
-From: Eric Paris <eparis@redhat.com>
-To: Mimi Zohar <zohar@linux.vnet.ibm.com>
-Cc: jmorris@namei.org, linux-kernel@vger.kernel.org,
-       Dave Safford <safford@watson.ibm.com>
-In-Reply-To: <1242163111.8494.23.camel@dyn9002018117.watson.ibm.com>
-References: <20090512191423.6903.37464.stgit@dhcp231-142.rdu.redhat.com>
-	 <1242163111.8494.23.camel@dyn9002018117.watson.ibm.com>
-Content-Type: text/plain
-Date: Tue, 12 May 2009 17:27:18 -0400
-Message-Id: <1242163638.3142.8.camel@dhcp231-142.rdu.redhat.com>
-Mime-Version: 1.0
-Content-Transfer-Encoding: 7bit
+	id S1755208AbZELV3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 17:29:48 -0400
+Date: Wed, 13 May 2009 00:28:02 +0300
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Cc: virtualization@lists.linux-foundation.org,
+       Sheng Yang <sheng@linux.intel.com>, Matthew Wilcox <matthew@wil.cx>,
+       kvm@vger.kernel.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
+       Matthew Wilcox <willy@linux.intel.com>
+Subject: Re: [PATCH] msi-x: let drivers retry when not enough vectors
+Message-ID: <20090512212802.GC28935@redhat.com>
+References: <20090507082841.GA31751@redhat.com> <20090507095302.GI8112@parisc-linux.org> <200905071819.54426.sheng@linux.intel.com> <200905080925.01398.rusty@rustcorp.com.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905080925.01398.rusty@rustcorp.com.au>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-12 at 17:18 -0400, Mimi Zohar wrote:
-> On Tue, 2009-05-12 at 15:14 -0400, Eric Paris wrote:
-> > The IMA default policy measures every single file opened by root.  This is
-> > terrible for most users.  Consider a system (like mine) with virtual machine
-> > images.  When those images are touched (which happens at boot for me) those
-> > images are measured.  This is just way too much for the default case.
-> > 
-> > Signed-off-by: Eric Paris <eparis@redhat.com>
+On Fri, May 08, 2009 at 09:25:00AM +0930, Rusty Russell wrote:
+> On Thu, 7 May 2009 07:49:53 pm Sheng Yang wrote:
+> > On Thursday 07 May 2009 17:53:02 Matthew Wilcox wrote:
+> > > Here's a good example.  Let's suppose you have a driver which supports
+> > > two different models of cards, one has 16 MSI-X interrupts, the other
+> > > has 10.  You can call pci_enable_msix() asking for 16 vectors.  If your
+> > > card is model A, you get 16 interrupts.  If your card is model B, it says
+> > > "you can have 10".
 > 
-> The question of what to measure is a major issue. If you measure too
-> much, performance is affected, but if you measure too little, then the
-> measurement list will not contain everything that could affect the
-> Trusted Computing Base(TCB), such as configuration files and scripts.
+> Sheng is absolutely right, that's a horrid API.
 > 
-> The solution is not to remove the rule that measures everything read
-> by root, but to replace the default IMA configuration file with an LSM
-> specific one, which should be done early in the etc init scripts or
-> initrd.  LTP contains a sample script to replace the default IMA policy
-> (testcases/kernel/security/integrity/ima/tests/ima_policy.sh).
+> If it actually enabled that number and returned it, it might make sense (cf. 
+> write() returning less bytes than you give it).  But overloading the return 
+> value to save an explicit call is just ugly; it's not worth saving a few lines 
+> of code at cost of making all the drivers subtle and tricksy.
 > 
-> The following SELinux integrity rule, prevents /var/log/messages from
-> being measured. (Dependent on "integrity: lsm audit rule matching fix"
-> patch in the security-testing tree.)
+> Fail with -ENOSPC or something.
 > 
-> dont_measure func=PATH_CHECK mask=MAY_READ obj_type=var_log_t
-> 
-> By defining an equivalent SELinux integrity rule for each virtual
-> machine image type, the virtual machine images will not be measured.
-> This is far better than not measuring everything in the TCB.
-> 
-> Mimi Zohar
+> Rusty.
 
-While the TCB might be interesting to you I'm going to guess that 99% of
-users don't care at all.  I don't think the kernel should ship with such
-an overhead just to make the options available to the few.
+I do agree that returning a positive value from pci_enable_msix
+it an ugly API (but note that this is the API that linux currently has).
 
-Every distro that wants to ship with IMA compiled in the kernel is going
-to need to carry their own ima policy and they are going to have to
-change userspace so they can load that policy by default.  This is turn
-means that every distro is going to, by default, leave ima
-uncustomizable since we can only load a single policy.
+Here's a wrapper that I ended up with in my driver:
 
-Maybe we'd like to allow multiple policy loads?  That doesn't seem great
-to me...
+static int enable_msix(struct pci_dev *dev, struct msix_entry *entries,
+		       int *options, int noptions)
+{
+        int i;
+        for (i = 0; i < noptions; ++i)
+                if (!pci_enable_msix(dev, entries, options[i]))
+                        return options[i];
+        return -EBUSY;
+}
 
-If the 'right default' for every distro's common user is to not read and
-measure every single file root touches it's the 'right default' in the
-kernel.  Any distro owner want to disagree?
+This gets an array of options for # of vectors and tries them one after
+the other until an option that the system can support is found.
+On success, we get the # of vectors actually enabled, and
+driver can then use them as it sees fit.
 
--Eric
+Is there interest in moving something like this to pci.h?
 
+-- 
+MST
