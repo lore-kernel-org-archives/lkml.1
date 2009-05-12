@@ -1,91 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758613AbZELJ31@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759602AbZELJa4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758613AbZELJ31 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 05:29:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756989AbZELJ2J
+	id S1759602AbZELJa4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 05:30:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757392AbZELJ2b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 05:28:09 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:57265 "EHLO
+	Tue, 12 May 2009 05:28:31 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:43647 "EHLO
 	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756401AbZELJ16 (ORCPT
+	with ESMTP id S1754471AbZELJ16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 May 2009 05:27:58 -0400
 X-Auth-Info: SW86gYjGNZFYAYzC1vffV/RycqGknKTJts49L9FhgY8=
-Message-Id: <20090512092758.056333830@denx.de>
+Message-Id: <20090512092758.213114373@denx.de>
 User-Agent: quilt/0.47-1
-Date: Tue, 12 May 2009 11:28:03 +0200
+Date: Tue, 12 May 2009 11:28:04 +0200
 From: Wolfgang Grandegger <wg@grandegger.com>
 To: netdev@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Sebastian Haas <haas@ems-wuensche.com>,
-       Markus Plessing <plessing@ems-wuensche.com>,
+Cc: linux-kernel@vger.kernel.org, Per Dalen <per.dalen@cnw.se>,
        Wolfgang Grandegger <wg@grandegger.com>
-Subject: [PATCH v2 6/7] [PATCH 6/8] can: SJA1000 driver for EMS PCI cards
+Subject: [PATCH v2 7/7] [PATCH 7/8] can: SJA1000 driver for Kvaser PCI cards
 References: <20090512092757.048938233@denx.de>
-Content-Disposition: inline; filename=06-sja1000-ems-pci-driver.patch
+Content-Disposition: inline; filename=07-sja1000-kvaser-pci-driver.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The patch adds support for the one or two channel CPC-PCI and CPC-PCIe
-cards from EMS Dr. Thomas Wuensche (http://www.ems-wuensche.de).
+The patch adds support for the PCI cards: PCIcan and PCIcanx
+(1, 2 or 4 channel) from Kvaser (http://www.kvaser.com).
 
-Signed-off-by: Sebastian Haas <haas@ems-wuensche.com>
-Signed-off-by: Markus Plessing <plessing@ems-wuensche.com>
+Signed-off-by: Per Dalen <per.dalen@cnw.se>
 Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
 ---
- drivers/net/can/Kconfig           |    7 
- drivers/net/can/sja1000/Makefile  |    1 
- drivers/net/can/sja1000/ems_pci.c |  328 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 336 insertions(+)
- create mode 100644 drivers/net/can/sja1000/ems_pci.c
+ drivers/net/can/Kconfig              |    7 
+ drivers/net/can/sja1000/Makefile     |    1 
+ drivers/net/can/sja1000/kvaser_pci.c |  415 +++++++++++++++++++++++++++++++++++
+ 3 files changed, 423 insertions(+)
+ create mode 100644 drivers/net/can/sja1000/kvaser_pci.c
 
 Index: net-next-2.6/drivers/net/can/Kconfig
 ===================================================================
---- net-next-2.6.orig/drivers/net/can/Kconfig	2009-05-12 10:47:26.411720627 +0200
-+++ net-next-2.6/drivers/net/can/Kconfig	2009-05-12 10:47:27.116970063 +0200
-@@ -51,6 +51,13 @@
- 	  boards from Phytec (http://www.phytec.de) like the PCM027,
- 	  PCM038.
+--- net-next-2.6.orig/drivers/net/can/Kconfig	2009-05-12 10:47:27.116970063 +0200
++++ net-next-2.6/drivers/net/can/Kconfig	2009-05-12 10:47:27.844971068 +0200
+@@ -58,6 +58,13 @@
+ 	  This driver is for the one or two channel CPC-PCI and CPC-PCIe
+ 	  cards from EMS Dr. Thomas Wuensche (http://www.ems-wuensche.de).
  
-+config CAN_EMS_PCI
-+	tristate "EMS CPC-PCI and CPC-PCIe Card"
++config CAN_KVASER_PCI
++	tristate "Kvaser PCIcanx and Kvaser PCIcan PCI Cards"
 +	depends on PCI && CAN_SJA1000
 +	---help---
-+	  This driver is for the one or two channel CPC-PCI and CPC-PCIe
-+	  cards from EMS Dr. Thomas Wuensche (http://www.ems-wuensche.de).
++	  This driver is for the the PCIcanx and PCIcan cards (1, 2 or
++	  4 channel) from Kvaser (http://www.kvaser.com).
 +
  config CAN_DEBUG_DEVICES
  	bool "CAN devices debugging messages"
  	depends on CAN
 Index: net-next-2.6/drivers/net/can/sja1000/Makefile
 ===================================================================
---- net-next-2.6.orig/drivers/net/can/sja1000/Makefile	2009-05-12 10:47:26.412720490 +0200
-+++ net-next-2.6/drivers/net/can/sja1000/Makefile	2009-05-12 10:47:27.116970063 +0200
-@@ -4,5 +4,6 @@
- 
+--- net-next-2.6.orig/drivers/net/can/sja1000/Makefile	2009-05-12 10:47:27.116970063 +0200
++++ net-next-2.6/drivers/net/can/sja1000/Makefile	2009-05-12 10:47:27.845970931 +0200
+@@ -5,5 +5,6 @@
  obj-$(CONFIG_CAN_SJA1000) += sja1000.o
  obj-$(CONFIG_CAN_SJA1000_PLATFORM) += sja1000_platform.o
-+obj-$(CONFIG_CAN_EMS_PCI) += ems_pci.o
+ obj-$(CONFIG_CAN_EMS_PCI) += ems_pci.o
++obj-$(CONFIG_CAN_KVASER_PCI) += kvaser_pci.o
  
  ccflags-$(CONFIG_CAN_DEBUG_DEVICES) := -DDEBUG
-Index: net-next-2.6/drivers/net/can/sja1000/ems_pci.c
+Index: net-next-2.6/drivers/net/can/sja1000/kvaser_pci.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ net-next-2.6/drivers/net/can/sja1000/ems_pci.c	2009-05-12 10:47:27.120968957 +0200
-@@ -0,0 +1,328 @@
++++ net-next-2.6/drivers/net/can/sja1000/kvaser_pci.c	2009-05-12 10:47:27.849970943 +0200
+@@ -0,0 +1,415 @@
 +/*
-+ * Copyright (C) 2007 Wolfgang Grandegger <wg@grandegger.com>
-+ * Copyright (C) 2008 Markus Plessing <plessing@ems-wuensche.com>
-+ * Copyright (C) 2008 Sebastian Haas <haas@ems-wuensche.com>
++ * Copyright (C) 2008 Per Dalen <per.dalen@cnw.se>
++ *
++ * Parts of this software are based on (derived) the following:
++ *
++ * - Kvaser linux driver, version 4.72 BETA
++ *   Copyright (C) 2002-2007 KVASER AB
++ *
++ * - Lincan driver, version 0.3.3, OCERA project
++ *   Copyright (C) 2004 Pavel Pisa
++ *   Copyright (C) 2001 Arnaud Westenberg
++ *
++ * - Socketcan SJA1000 drivers
++ *   Copyright (C) 2007 Wolfgang Grandegger <wg@grandegger.com>
++ *   Copyright (c) 2002-2007 Volkswagen Group Electronic Research
++ *   Copyright (c) 2003 Matthias Brukner, Trajet Gmbh, Rebenring 33,
++ *   38106 Braunschweig, GERMANY
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the version 2 of the GNU General Public License
 + * as published by the Free Software Foundation
 + *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-+ * GNU General Public License for more details.
++ * This program is distributed in the hope that it will be useful, but
++ * WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
++ * General Public License for more details.
 + *
 + * You should have received a copy of the GNU General Public License
 + * along with this program; if not, write to the Free Software Foundation,
@@ -104,38 +115,27 @@ Index: net-next-2.6/drivers/net/can/sja1000/ems_pci.c
 +
 +#include "sja1000.h"
 +
-+#define DRV_NAME  "ems_pci"
++#define DRV_NAME  "kvaser_pci"
 +
-+MODULE_AUTHOR("Sebastian Haas <haas@ems-wuenche.com>");
-+MODULE_DESCRIPTION("Socket-CAN driver for EMS CPC-PCI/PCIe CAN cards");
-+MODULE_SUPPORTED_DEVICE("EMS CPC-PCI/PCIe CAN card");
++MODULE_AUTHOR("Per Dalen <per.dalen@cnw.se>");
++MODULE_DESCRIPTION("Socket-CAN driver for KVASER PCAN PCI cards");
++MODULE_SUPPORTED_DEVICE("KVASER PCAN PCI CAN card");
 +MODULE_LICENSE("GPL v2");
 +
-+#define EMS_PCI_MAX_CHAN 2
++#define MAX_NO_OF_CHANNELS        4 /* max no of channels on
++				       a single card */
 +
-+struct ems_pci_card {
-+	int channels;
-+
++struct kvaser_pci {
++	int channel;
 +	struct pci_dev *pci_dev;
-+	struct net_device *net_dev[EMS_PCI_MAX_CHAN];
-+
++	struct net_device *slave_dev[MAX_NO_OF_CHANNELS-1];
 +	void __iomem *conf_addr;
-+	void __iomem *base_addr;
++	void __iomem *res_addr;
++	int no_channels;
++	u8 xilinx_ver;
 +};
 +
-+#define EMS_PCI_CAN_CLOCK (16000000 / 2)
-+
-+/*
-+ * Register definitions and descriptions are from LinCAN 0.3.3.
-+ *
-+ * PSB4610 PITA-2 bridge control registers
-+ */
-+#define PITA2_ICR           0x00	/* Interrupt Control Register */
-+#define PITA2_ICR_INT0      0x00000002	/* [RC] INT0 Active/Clear */
-+#define PITA2_ICR_INT0_EN   0x00020000	/* [RW] Enable INT0 */
-+
-+#define PITA2_MISC          0x1c	/* Miscellaneous Register */
-+#define PITA2_MISC_CONFIG   0x04000000	/* Multiplexed parallel interface */
++#define KVASER_PCI_CAN_CLOCK      (16000000 / 2)
 +
 +/*
 + * The board configuration is probably following:
@@ -145,260 +145,345 @@ Index: net-next-2.6/drivers/net/can/sja1000/ems_pci.c
 + * Setting the OCR register to 0xDA is a good idea.
 + * This means  normal output mode , push-pull and the correct polarity.
 + */
-+#define EMS_PCI_OCR         (OCR_TX0_PUSHPULL | OCR_TX1_PUSHPULL)
++#define KVASER_PCI_OCR            (OCR_TX0_PUSHPULL | OCR_TX1_PUSHPULL)
 +
 +/*
 + * In the CDR register, you should set CBP to 1.
-+ * You will probably also want to set the clock divider value to 7
-+ * (meaning direct oscillator output) because the second SJA1000 chip
-+ * is driven by the first one CLKOUT output.
++ * You will probably also want to set the clock divider value to 0
++ * (meaning divide-by-2), the Pelican bit, and the clock-off bit
++ * (you will have no need for CLKOUT anyway).
 + */
-+#define EMS_PCI_CDR             (CDR_CBP | CDR_CLKOUT_MASK)
-+#define EMS_PCI_MEM_SIZE        4096  /* Size of the remapped io-memory */
-+#define EMS_PCI_CAN_BASE_OFFSET 0x400 /* offset where the controllers starts */
-+#define EMS_PCI_CAN_CTRL_SIZE   0x200 /* memory size for each controller */
-+
-+#define EMS_PCI_PORT_BYTES  0x4     /* Each register occupies 4 bytes */
-+
-+#define EMS_PCI_VENDOR_ID   0x110a  /* PCI device and vendor ID */
-+#define EMS_PCI_DEVICE_ID   0x2104
-+
-+static struct pci_device_id ems_pci_tbl[] = {
-+	{EMS_PCI_VENDOR_ID, EMS_PCI_DEVICE_ID, PCI_ANY_ID, PCI_ANY_ID,},
-+	{0,}
-+};
-+MODULE_DEVICE_TABLE(pci, ems_pci_tbl);
++#define KVASER_PCI_CDR            (CDR_CBP | CDR_CLKOUT_MASK)
 +
 +/*
-+ * Helper to read internal registers from card logic (not CAN)
++ * These register values are valid for revision 14 of the Xilinx logic.
 + */
-+static u8 ems_pci_readb(struct ems_pci_card *card, unsigned int port)
++#define XILINX_VERINT             7   /* Lower nibble simulate interrupts,
++					 high nibble version number. */
++
++#define XILINX_PRESUMED_VERSION   14
++
++/*
++ * Important S5920 registers
++ */
++#define S5920_INTCSR              0x38
++#define S5920_PTCR                0x60
++#define INTCSR_ADDON_INTENABLE_M  0x2000
++
++
++#define KVASER_PCI_PORT_BYTES     0x20
++
++#define PCI_CONFIG_PORT_SIZE      0x80      /* size of the config io-memory */
++#define PCI_PORT_SIZE             0x80      /* size of a channel io-memory */
++#define PCI_PORT_XILINX_SIZE      0x08      /* size of a xilinx io-memory */
++
++#define KVASER_PCI_VENDOR_ID1     0x10e8    /* the PCI device and vendor IDs */
++#define KVASER_PCI_DEVICE_ID1     0x8406
++
++#define KVASER_PCI_VENDOR_ID2     0x1a07    /* the PCI device and vendor IDs */
++#define KVASER_PCI_DEVICE_ID2     0x0008
++
++static struct pci_device_id kvaser_pci_tbl[] = {
++	{KVASER_PCI_VENDOR_ID1, KVASER_PCI_DEVICE_ID1, PCI_ANY_ID, PCI_ANY_ID,},
++	{KVASER_PCI_VENDOR_ID2, KVASER_PCI_DEVICE_ID2, PCI_ANY_ID, PCI_ANY_ID,},
++	{ 0,}
++};
++
++MODULE_DEVICE_TABLE(pci, kvaser_pci_tbl);
++
++static u8 kvaser_pci_read_reg(const struct net_device *dev, int port)
 +{
-+	return readb((void __iomem *)card->base_addr
-+			+ (port * EMS_PCI_PORT_BYTES));
++	return ioread8((void __iomem *)(dev->base_addr + port));
 +}
 +
-+static u8 ems_pci_read_reg(const struct net_device *dev, int port)
++static void kvaser_pci_write_reg(const struct net_device *dev, int port, u8 val)
 +{
-+	return readb((void __iomem *)dev->base_addr
-+			+ (port * EMS_PCI_PORT_BYTES));
++	iowrite8(val, (void __iomem *)(dev->base_addr + port));
 +}
 +
-+static void ems_pci_write_reg(const struct net_device *dev, int port, u8 val)
-+{
-+	writeb(val, (void __iomem *)dev->base_addr
-+		+ (port * EMS_PCI_PORT_BYTES));
-+}
-+
-+static void ems_pci_post_irq(const struct net_device *dev)
++static void kvaser_pci_disable_irq(struct net_device *dev)
 +{
 +	struct sja1000_priv *priv = netdev_priv(dev);
-+	struct ems_pci_card *card = (struct ems_pci_card *)priv->priv;
++	struct kvaser_pci *board = priv->priv;
++	u32 tmp;
 +
-+	/* reset int flag of pita */
-+	writel(PITA2_ICR_INT0_EN | PITA2_ICR_INT0, card->conf_addr
-+		+ PITA2_ICR);
++	/* Disable interrupts from card */
++	tmp = ioread32(board->conf_addr + S5920_INTCSR);
++	tmp &= ~INTCSR_ADDON_INTENABLE_M;
++	iowrite32(tmp, board->conf_addr + S5920_INTCSR);
 +}
 +
-+/*
-+ * Check if a CAN controller is present at the specified location
-+ * by trying to set 'em into the PeliCAN mode
-+ */
-+static inline int ems_pci_check_chan(struct net_device *dev)
++static void kvaser_pci_enable_irq(struct net_device *dev)
 +{
-+	unsigned char res;
++	struct sja1000_priv *priv = netdev_priv(dev);
++	struct kvaser_pci *board = priv->priv;
++	u32 tmp;
 +
-+	/* Make sure SJA1000 is in reset mode */
-+	ems_pci_write_reg(dev, REG_MOD, 1);
-+
-+	ems_pci_write_reg(dev, REG_CDR, CDR_PELICAN);
-+
-+	/* read reset-values */
-+	res = ems_pci_read_reg(dev, REG_CDR);
-+
-+	if (res == CDR_PELICAN)
-+		return 1;
-+
-+	return 0;
++	/* Enable interrupts from card */
++	tmp = ioread32(board->conf_addr + S5920_INTCSR);
++	tmp |= INTCSR_ADDON_INTENABLE_M;
++	iowrite32(tmp, board->conf_addr + S5920_INTCSR);
 +}
 +
-+static void ems_pci_del_card(struct pci_dev *pdev)
++static int number_of_sja1000_chip(void __iomem *base_addr)
 +{
-+	struct ems_pci_card *card = pci_get_drvdata(pdev);
-+	struct net_device *dev;
-+	int i = 0;
++	u8 status;
++	int i;
 +
-+	for (i = 0; i < card->channels; i++) {
-+		dev = card->net_dev[i];
-+
-+		if (!dev)
-+			continue;
-+
-+		dev_info(&pdev->dev, "Removing %s.\n", dev->name);
-+		unregister_sja1000dev(dev);
-+		free_sja1000dev(dev);
++	for (i = 0; i < MAX_NO_OF_CHANNELS; i++) {
++		/* reset chip */
++		iowrite8(MOD_RM, base_addr +
++			 (i * KVASER_PCI_PORT_BYTES) + REG_MOD);
++		status = ioread8(base_addr +
++				 (i * KVASER_PCI_PORT_BYTES) + REG_MOD);
++		udelay(10);
++		/* check reset bit */
++		if (!(status & MOD_RM))
++			break;
 +	}
 +
-+	if (card->base_addr != NULL)
-+		pci_iounmap(card->pci_dev, card->base_addr);
++	return i;
++}
 +
-+	if (card->conf_addr != NULL)
-+		pci_iounmap(card->pci_dev, card->conf_addr);
++static void kvaser_pci_del_chan(struct net_device *dev)
++{
++	struct sja1000_priv *priv;
++	struct kvaser_pci *board;
++	int i;
 +
-+	kfree(card);
++	if (!dev)
++		return;
++	priv = netdev_priv(dev);
++	if (!priv)
++		return;
++	board = priv->priv;
++	if (!board)
++		return;
 +
++	dev_info(&board->pci_dev->dev, "Removing device %s\n",
++		 dev->name);
++
++	for (i = 0; i < board->no_channels - 1; i++) {
++		if (board->slave_dev[i]) {
++			dev_info(&board->pci_dev->dev, "Removing device %s\n",
++				 board->slave_dev[i]->name);
++			unregister_sja1000dev(board->slave_dev[i]);
++			free_sja1000dev(board->slave_dev[i]);
++		}
++	}
++	unregister_sja1000dev(dev);
++
++	/* Disable PCI interrupts */
++	kvaser_pci_disable_irq(dev);
++
++	pci_iounmap(board->pci_dev, (void __iomem *)dev->base_addr);
++	pci_iounmap(board->pci_dev, board->conf_addr);
++	pci_iounmap(board->pci_dev, board->res_addr);
++
++	free_sja1000dev(dev);
++}
++
++static int kvaser_pci_add_chan(struct pci_dev *pdev, int channel,
++			       struct net_device **master_dev,
++			       void __iomem *conf_addr,
++			       void __iomem *res_addr,
++			       unsigned long base_addr)
++{
++	struct net_device *dev;
++	struct sja1000_priv *priv;
++	struct kvaser_pci *board;
++	int err, init_step;
++
++	dev = alloc_sja1000dev(sizeof(struct kvaser_pci));
++	if (dev == NULL)
++		return -ENOMEM;
++
++	priv = netdev_priv(dev);
++	board = priv->priv;
++
++	board->pci_dev = pdev;
++	board->channel = channel;
++
++	/*S5920*/
++	board->conf_addr = conf_addr;
++
++	/*XILINX board wide address*/
++	board->res_addr = res_addr;
++
++	if (channel == 0) {
++		board->xilinx_ver =
++			ioread8(board->res_addr + XILINX_VERINT) >> 4;
++		init_step = 2;
++
++		/* Assert PTADR# - we're in passive mode so the other bits are
++		   not important */
++		iowrite32(0x80808080UL, board->conf_addr + S5920_PTCR);
++
++		/* Disable interrupts from card */
++		kvaser_pci_disable_irq(dev);
++		/* Enable interrupts from card */
++		kvaser_pci_enable_irq(dev);
++	} else {
++		struct sja1000_priv *master_priv = netdev_priv(*master_dev);
++		struct kvaser_pci *master_board = master_priv->priv;
++		master_board->slave_dev[channel - 1] = dev;
++		master_board->no_channels = channel + 1;
++		board->xilinx_ver = master_board->xilinx_ver;
++	}
++
++	dev->base_addr = base_addr + channel * KVASER_PCI_PORT_BYTES;
++
++	priv->read_reg = kvaser_pci_read_reg;
++	priv->write_reg = kvaser_pci_write_reg;
++
++	priv->can.clock.freq = KVASER_PCI_CAN_CLOCK;
++
++	priv->ocr = KVASER_PCI_OCR;
++	priv->cdr = KVASER_PCI_CDR;
++
++	/* Register and setup interrupt handling */
++	dev->irq = pdev->irq;
++	init_step = 4;
++
++	dev_info(&pdev->dev, "base_addr=%#lx conf_addr=%p irq=%d\n",
++		 dev->base_addr, board->conf_addr, dev->irq);
++
++	SET_NETDEV_DEV(dev, &pdev->dev);
++
++	/* Register SJA1000 device */
++	err = register_sja1000dev(dev);
++	if (err) {
++		dev_err(&pdev->dev, "Registering device failed (err=%d)\n",
++			err);
++		goto failure;
++	}
++
++	if (channel == 0)
++		*master_dev = dev;
++
++	return 0;
++
++failure:
++	kvaser_pci_del_chan(dev);
++	return err;
++}
++
++static int __devinit kvaser_pci_init_one(struct pci_dev *pdev,
++					 const struct pci_device_id *ent)
++{
++	int err;
++	struct net_device *master_dev = NULL;
++	struct sja1000_priv *priv;
++	struct kvaser_pci *board;
++	int no_channels;
++	void __iomem *base_addr = NULL;
++	void __iomem *conf_addr = NULL;
++	void __iomem *res_addr = NULL;
++	int i;
++
++	dev_info(&pdev->dev, "initializing device %04x:%04x\n",
++		 pdev->vendor, pdev->device);
++
++	err = pci_enable_device(pdev);
++	if (err)
++		goto failure;
++
++	err = pci_request_regions(pdev, DRV_NAME);
++	if (err)
++		goto failure_release_pci;
++
++	/*S5920*/
++	conf_addr = pci_iomap(pdev, 0, PCI_CONFIG_PORT_SIZE);
++	if (conf_addr == NULL) {
++		err = -ENODEV;
++		goto failure_iounmap;
++	}
++
++	/*XILINX board wide address*/
++	res_addr = pci_iomap(pdev, 2, PCI_PORT_XILINX_SIZE);
++	if (res_addr == NULL) {
++		err = -ENOMEM;
++		goto failure_iounmap;
++	}
++
++	base_addr = pci_iomap(pdev, 1, PCI_PORT_SIZE);
++	if (base_addr == NULL) {
++		err = -ENOMEM;
++		goto failure_iounmap;
++	}
++
++	no_channels = number_of_sja1000_chip(base_addr);
++	if (no_channels == 0) {
++		err = -ENOMEM;
++		goto failure_iounmap;
++	}
++
++	for (i = 0; i < no_channels; i++) {
++		err = kvaser_pci_add_chan(pdev, i, &master_dev,
++					  conf_addr, res_addr,
++					  (unsigned long)base_addr);
++		if (err)
++			goto failure_cleanup;
++	}
++
++	priv = netdev_priv(master_dev);
++	board = priv->priv;
++
++	dev_info(&pdev->dev, "xilinx version=%d number of channels=%d\n",
++		 board->xilinx_ver, board->no_channels);
++
++	pci_set_drvdata(pdev, master_dev);
++	return 0;
++
++failure_cleanup:
++	kvaser_pci_del_chan(master_dev);
++
++failure_iounmap:
++	if (conf_addr == NULL)
++		pci_iounmap(pdev, conf_addr);
++	if (res_addr == NULL)
++		pci_iounmap(pdev, res_addr);
++	if (base_addr == NULL)
++		pci_iounmap(pdev, base_addr);
++
++	pci_release_regions(pdev);
++
++failure_release_pci:
++	pci_disable_device(pdev);
++
++failure:
++	return err;
++
++}
++
++static void __devexit kvaser_pci_remove_one(struct pci_dev *pdev)
++{
++	struct net_device *dev = pci_get_drvdata(pdev);
++
++	kvaser_pci_del_chan(dev);
++
++	pci_release_regions(pdev);
 +	pci_disable_device(pdev);
 +	pci_set_drvdata(pdev, NULL);
 +}
 +
-+static void ems_pci_card_reset(struct ems_pci_card *card)
-+{
-+	/* Request board reset */
-+	writeb(0, card->base_addr);
-+}
-+
-+/*
-+ * Probe PCI device for EMS CAN signature and register each available
-+ * CAN channel to SJA1000 Socket-CAN subsystem.
-+ */
-+static int __devinit ems_pci_add_card(struct pci_dev *pdev,
-+					const struct pci_device_id *ent)
-+{
-+	struct sja1000_priv *priv;
-+	struct net_device *dev;
-+	struct ems_pci_card *card;
-+	int err, i;
-+
-+	/* Enabling PCI device */
-+	if (pci_enable_device(pdev) < 0) {
-+		dev_err(&pdev->dev, "Enabling PCI device failed\n");
-+		return -ENODEV;
-+	}
-+
-+	/* Allocating card structures to hold addresses, ... */
-+	card = kzalloc(sizeof(struct ems_pci_card), GFP_KERNEL);
-+	if (card == NULL) {
-+		dev_err(&pdev->dev, "Unable to allocate memory\n");
-+		pci_disable_device(pdev);
-+		return -ENOMEM;
-+	}
-+
-+	pci_set_drvdata(pdev, card);
-+
-+	card->pci_dev = pdev;
-+
-+	card->channels = 0;
-+
-+	/* Remap PITA configuration space, and controller memory area */
-+	card->conf_addr = pci_iomap(pdev, 0, EMS_PCI_MEM_SIZE);
-+	if (card->conf_addr == NULL) {
-+		err = -ENOMEM;
-+
-+		goto failure_cleanup;
-+	}
-+
-+	card->base_addr = pci_iomap(pdev, 1, EMS_PCI_MEM_SIZE);
-+	if (card->base_addr == NULL) {
-+		err = -ENOMEM;
-+
-+		goto failure_cleanup;
-+	}
-+
-+	/* Configure PITA-2 parallel interface (enable MUX) */
-+	writel(PITA2_MISC_CONFIG, card->conf_addr + PITA2_MISC);
-+
-+	/* Check for unique EMS CAN signature */
-+	if (ems_pci_readb(card, 0) != 0x55 ||
-+	    ems_pci_readb(card, 1) != 0xAA ||
-+	    ems_pci_readb(card, 2) != 0x01 ||
-+	    ems_pci_readb(card, 3) != 0xCB ||
-+	    ems_pci_readb(card, 4) != 0x11) {
-+		dev_err(&pdev->dev, "Not EMS Dr. Thomas Wuensche interface\n");
-+
-+		err = -ENODEV;
-+		goto failure_cleanup;
-+	}
-+
-+	ems_pci_card_reset(card);
-+
-+	/* Detect available channels */
-+	for (i = 0; i < EMS_PCI_MAX_CHAN; i++) {
-+		dev = alloc_sja1000dev(0);
-+		if (dev == NULL) {
-+			err = -ENOMEM;
-+			goto failure_cleanup;
-+		}
-+
-+		card->net_dev[i] = dev;
-+		priv = netdev_priv(dev);
-+		priv->priv = card;
-+
-+		dev->irq = pdev->irq;
-+		dev->base_addr = (unsigned long)(card->base_addr
-+						+ EMS_PCI_CAN_BASE_OFFSET
-+						+ (i * EMS_PCI_CAN_CTRL_SIZE));
-+
-+		/* Check if channel is present */
-+		if (ems_pci_check_chan(dev)) {
-+			priv->read_reg  = ems_pci_read_reg;
-+			priv->write_reg = ems_pci_write_reg;
-+			priv->post_irq  = ems_pci_post_irq;
-+			priv->can.clock.freq = EMS_PCI_CAN_CLOCK;
-+			priv->ocr = EMS_PCI_OCR;
-+			priv->cdr = EMS_PCI_CDR;
-+
-+			SET_NETDEV_DEV(dev, &pdev->dev);
-+
-+			/* Enable interrupts from card */
-+			writel(PITA2_ICR_INT0_EN, card->conf_addr + PITA2_ICR);
-+
-+			/* Register SJA1000 device */
-+			err = register_sja1000dev(dev);
-+			if (err) {
-+				dev_err(&pdev->dev, "Registering device failed "
-+							"(err=%d)\n", err);
-+				free_sja1000dev(dev);
-+				goto failure_cleanup;
-+			}
-+
-+			card->channels++;
-+
-+			dev_info(&pdev->dev, "Channel #%d at %#lX, irq %d\n",
-+						i + 1, dev->base_addr,
-+						dev->irq);
-+		} else {
-+			free_sja1000dev(dev);
-+		}
-+	}
-+
-+	return 0;
-+
-+failure_cleanup:
-+	dev_err(&pdev->dev, "Error: %d. Cleaning Up.\n", err);
-+
-+	ems_pci_del_card(pdev);
-+
-+	return err;
-+}
-+
-+static struct pci_driver ems_pci_driver = {
++static struct pci_driver kvaser_pci_driver = {
 +	.name = DRV_NAME,
-+	.id_table = ems_pci_tbl,
-+	.probe = ems_pci_add_card,
-+	.remove = ems_pci_del_card,
++	.id_table = kvaser_pci_tbl,
++	.probe = kvaser_pci_init_one,
++	.remove = __devexit_p(kvaser_pci_remove_one),
 +};
 +
-+static int __init ems_pci_init(void)
++static int __init kvaser_pci_init(void)
 +{
-+	return pci_register_driver(&ems_pci_driver);
++	return pci_register_driver(&kvaser_pci_driver);
 +}
 +
-+static void __exit ems_pci_exit(void)
++static void __exit kvaser_pci_exit(void)
 +{
-+	pci_unregister_driver(&ems_pci_driver);
++	pci_unregister_driver(&kvaser_pci_driver);
 +}
 +
-+module_init(ems_pci_init);
-+module_exit(ems_pci_exit);
-+
++module_init(kvaser_pci_init);
++module_exit(kvaser_pci_exit);
 
