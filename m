@@ -1,75 +1,151 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760026AbZELCY5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759819AbZELCr0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760026AbZELCY5 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 22:24:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbZELCYs
+	id S1759819AbZELCr0 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 22:47:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757387AbZELCrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 22:24:48 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:39163 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751914AbZELCYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 22:24:47 -0400
-Message-ID: <4A08DDE2.1080708@garzik.org>
-Date: Mon, 11 May 2009 22:24:34 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Rusty Russell <rusty@rustcorp.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
-Subject: Re: [RFC PATCH 2/2] kernel/sched.c: VLA in middle of struct
-References: <20090508184838.GA11157@havoc.gtf.org> <20090508185015.GA11320@havoc.gtf.org> <20090508190944.GB12130@elte.hu> <200905101819.41765.rusty@rustcorp.com.au> <20090511105816.GG4648@elte.hu> <4A088DF4.7080305@garzik.org> <20090511204933.GA7737@elte.hu>
-In-Reply-To: <20090511204933.GA7737@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Mon, 11 May 2009 22:47:16 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:44962 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755328AbZELCrP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 22:47:15 -0400
+Date: Tue, 12 May 2009 11:47:15 +0900
+From: Isaku Yamahata <yamahata@valinux.co.jp>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Xen-devel <xen-devel@lists.xensource.com>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: [Xen-devel] [PATCH 03/11] Xen: Rename the balloon lock
+Message-ID: <20090512024715.GD22497%yamahata@valinux.co.jp>
+References: <1241732737-7669-1-git-send-email-jeremy@goop.org> <1241732737-7669-4-git-send-email-jeremy@goop.org> <20090508020123.GE25512%yamahata@valinux.co.jp> <4A0875C7.7070305@goop.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A0875C7.7070305@goop.org>
+User-Agent: Mutt/1.5.6i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
->>>>> That cpumask[] should probably be cpumask[0], to document the
->>>>> aliasing to ->span and ->cpus properly.
->>>> If the comment wasn't sufficient documentation, I don't think that  
->>>> would help :(
->>> It's a visual helper: it matches up with how we do these 'zero size  
->>> array means dynamic structure continuation' tricks generally.
->>>
->>> I first mis-parsed the code for a second when seeing cpumask[].  
->>> cpumask[0] stands out like a sore thumb. And we dont read comments  
->>> anyway ;-)
->>>
->>> Jeff, i suspect you found this because you are working on something  
->>> rather interesting? :) If yes, would it help your project if we did  
->>> the cpumask[0] cleanup and pushed it upstream immediately?
->> I think cpumask[0] would be more clear and consistent with the 
->> rest of the kernel.
->>
->> But unfortunately for the twin projects of (a) static analysis and 
->> checking with 'sparse', and (b) compiling under another compiler, 
->> VLA-in-middle-of-struct is a killer in either case.
+On Mon, May 11, 2009 at 12:00:23PM -0700, Jeremy Fitzhardinge wrote:
+> Isaku Yamahata wrote:
+> >Hi. Please please don't move the arch common variable
+> >into x86 specific file. It causes link error on ia64.
+> >
+> >Before I sent the patches to fix it twice or so,
+> >but it seems to be dropped.
+> >  
 > 
-> even if at the end of the struct?
+> Sorry, I can't seem to find them.  Could you resend?
+> 
+> I guess there's the larger issue of whether the 
+> xen_create_contiguous_region() code is also useful on ia64.  It seems to 
+> me the options are:
+> 
+>    * it is, so we should move the code somewhere common (along with the
+>      lock)
+>    * it isn't so ia64 will have its own version (in which case it can
+>      define its own version of the lock without much impact)
+>    * or we could move the lock anyway, but there's no very obvious
+>      place to put it
+> 
 
-Putting the VLA at the end of the struct would be a huge help, yes.
+I see now the issue. My choice at the moment is the last option.
+The copyright notice was taken from drivers/xen/balloon.c.
+I don't have strong opinion about the place, so feel free to move it
+as long as it is linked on IA64.
 
-For example, struct sched_group and struct sched_domain are OK as-is 
-(though "[0]" would be preferred).
+Non-pv_ops ia64 xen kernel has its own xen_create_contiguous_region().
+But I suppose the code can be consolidated if you accept sprinkle some
+if (xen_feature(XENFEAT_auto_translated_physmap)), so I'm willing to work on
+the first option once the x86 pv_ops dom0 is stabilized/committed.
 
-It is the definition of struct static_sched_group and struct 
-static_sched_domain that creates the problem, because with the bitmap 
-following cpumask[] and span[], the VLA is no longer at the end of the 
-struct.
+thanks,
 
-VLA-in-the-middle raises the complexity required of the compiler quite a 
-bit.  As a result, VLA-in-middle is not implemented in sparse or clang 
-(LLVM's C front-end and static analyzer).
+commit 2017dc931ca350eaad9cacd97e74b9c2eb4990b9
+Author: Isaku Yamahata <yamahata@valinux.co.jp>
+Date:   Tue May 12 11:22:05 2009 +0900
 
-	Jeff
+    Impact: link fix on ia64
+    
+    Move the variable, xen_reservation_lock, to common place.
+    IA64 also needs it.
+    
+    Signed-off-by: Isaku Yamahata <yamahata@valinux.co.jp>
+
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 360e546..e25a78e 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -65,13 +65,6 @@
+ 
+ #define MMU_UPDATE_HISTO	30
+ 
+-/*
+- * Protects atomic reservation decrease/increase against concurrent increases.
+- * Also protects non-atomic updates of current_pages and driver_pages, and
+- * balloon lists.
+- */
+-DEFINE_SPINLOCK(xen_reservation_lock);
+-
+ #ifdef CONFIG_XEN_DEBUG_FS
+ 
+ static struct {
+diff --git a/drivers/xen/Makefile b/drivers/xen/Makefile
+index ff8accc..ec6ddab 100644
+--- a/drivers/xen/Makefile
++++ b/drivers/xen/Makefile
+@@ -1,4 +1,4 @@
+-obj-y	+= grant-table.o features.o events.o manage.o
++obj-y	+= grant-table.o features.o events.o manage.o reslock.o
+ obj-y	+= xenbus/
+ 
+ obj-$(CONFIG_HOTPLUG_CPU)	+= cpu_hotplug.o
+diff --git a/drivers/xen/reslock.c b/drivers/xen/reslock.c
+new file mode 100644
+index 0000000..cfe0638
+--- /dev/null
++++ b/drivers/xen/reslock.c
+@@ -0,0 +1,36 @@
++/******************************************************************************
++ * revlock.c
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License version 2
++ * as published by the Free Software Foundation; or, when distributed
++ * separately from the Linux kernel or incorporated into other
++ * software packages, subject to the following license:
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this source file (the "Software"), to deal in the Software without
++ * restriction, including without limitation the rights to use, copy, modify,
++ * merge, publish, distribute, sublicense, and/or sell copies of the Software,
++ * and to permit persons to whom the Software is furnished to do so, subject to
++ * the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
++ * IN THE SOFTWARE.
++ */
++
++#include <linux/spinlock.h>
++
++/*
++ * Protects atomic reservation decrease/increase against concurrent increases.
++ * Also protects non-atomic updates of current_pages and driver_pages, and
++ * balloon lists.
++ */
++DEFINE_SPINLOCK(xen_reservation_lock);
 
 
-
+-- 
+yamahata
