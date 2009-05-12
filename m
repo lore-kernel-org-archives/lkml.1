@@ -1,42 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753392AbZELQQl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757689AbZELQQ7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753392AbZELQQl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 12:16:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755809AbZELQQK
+	id S1757689AbZELQQ7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 12:16:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754993AbZELQQq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 12:16:10 -0400
-Received: from relay1.sgi.com ([192.48.179.29]:33431 "EHLO relay.sgi.com"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1755300AbZELQQI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 12:16:08 -0400
-Date: Tue, 12 May 2009 11:16:05 -0500
-From: Jack Steiner <steiner@sgi.com>
-To: Yinghai Lu <yhlu.kernel@gmail.com>
-Cc: David Rientjes <rientjes@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] x86: fix node_possible_map logic -v2
-Message-ID: <20090512161605.GB19747@sgi.com>
-References: <4A05269D.8000701@kernel.org> <4A0527CB.4020807@kernel.org> <20090511175312.GA27905@sgi.com> <alpine.DEB.2.00.0905111218520.23739@chino.kir.corp.google.com> <4A0894A5.9000209@zytor.com> <alpine.DEB.2.00.0905111509570.2234@chino.kir.corp.google.com> <20090512150622.GA10015@sgi.com> <86802c440905120810x6ea4b228t14ca19376dc13f13@mail.gmail.com>
+	Tue, 12 May 2009 12:16:46 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:8605 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757161AbZELQQp convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 12:16:45 -0400
+Message-Id: <4A09BD0E020000780000081C@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Tue, 12 May 2009 17:16:46 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Nick Piggin" <npiggin@suse.de>, "H. Peter Anvin" <hpa@zytor.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: uses of cmpxchg/xadd in spinlock.h and rwsem.h vs.
+	 CONFIG_M386
+References: <4A09AF8402000078000007DC@vpn.id2.novell.com>
+ <4A099AF0.8020001@zytor.com> <20090512155702.GB31131@wotan.suse.de>
+ <4A099DFC.7040905@zytor.com>
+In-Reply-To: <4A099DFC.7040905@zytor.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Content-Disposition: inline
-In-Reply-To: <86802c440905120810x6ea4b228t14ca19376dc13f13@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 08:10:18AM -0700, Yinghai Lu wrote:
-> jack,
-> 
-> can you confirm:
-> 1. without this patch, your system still have problem?
-> 2. does current tip/master work for you?
+>>> "H. Peter Anvin" <hpa@zytor.com> 12.05.09 18:04 >>>
+>Nick Piggin wrote:
+>> 
+>> Is it time to get rid of attempts to support SMP kernels that run on 386, then?
+>> Considering we don't actually support SMP 386, and if there is any 386 systems
+>> then they're going to be running custom kernels anyway.
+>> 
+>
+>Makes sense to me.  We have never supported SMP 386 to the best of my
+>knowledge, and a patch to rip that out would be appreciated.
 
-The current tip/master fails with or without the patch. AFAICT, the
-failure is identical in both cases.
+But why shouldn't a distro be allowed to configure a kernel that runs (UP) on
+i386 and also MP on modern systems?
 
---- jack
+Jan
+
