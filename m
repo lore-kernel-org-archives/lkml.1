@@ -1,264 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754351AbZELFqk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbZELFq4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754351AbZELFqk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 01:46:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752224AbZELFq2
+	id S1755894AbZELFq4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 01:46:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbZELFqi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 01:46:28 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:54524 "EHLO smtps.tip.net.au"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751630AbZELFq1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 01:46:27 -0400
-Date: Tue, 12 May 2009 15:46:14 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: linux-next@vger.kernel.org
-Cc: LKML <linux-kernel@vger.kernel.org>
-Subject: linux-next: Tree for May 12
-Message-Id: <20090512154614.bfc768b0.sfr@canb.auug.org.au>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Tue__12_May_2009_15_46_14_+1000_U67eoXGFgGlRqXhc"
+	Tue, 12 May 2009 01:46:38 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:57047 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755011AbZELFqg convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 01:46:36 -0400
+X-MimeOLE: Produced By Microsoft Exchange V6.5
+Content-class: urn:content-classes:message
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+Subject: RE: PowerPC page faults
+Date: Tue, 12 May 2009 13:46:25 +0800
+Message-ID: <0A1FE637C2C7E148B9573BB60CC630E52565C7@zch01exm26.fsl.freescale.net>
+In-Reply-To: <4A08A411.9060104@codemonkey.ws>
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+Thread-Topic: PowerPC page faults
+Thread-Index: AcnShtV9dp5v9rCnRjK9TXlhqltW3wAN5zCg
+References: <20090505132005.19891.78436.stgit@dev.haskins.net>	 <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com>	 <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com>	 <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com>	 <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com>	 <4A02D40D.7060307@redhat.com> <4A0448DF.90705@codemonkey.ws>	 <4A0570B1.30401@novell.com>  <4A071F1A.1090702@codemonkey.ws>	 <1242060260.29194.19.camel@slate.austin.ibm.com>	 <4A08663D.1010703@codemonkey.ws> <1242069898.29194.99.camel@slate.austin.ibm.com> <4A08A411.9060104@codemonkey.ws>
+From: "Liu Yu-B13201" <Yu.Liu@freescale.com>
+To: "Anthony Liguori" <anthony@codemonkey.ws>,
+       "Hollis Blanchard" <hollisb@us.ibm.com>
+Cc: "Gregory Haskins" <ghaskins@novell.com>, "Avi Kivity" <avi@redhat.com>,
+       "Chris Wright" <chrisw@sous-sol.org>,
+       "Gregory Haskins" <gregory.haskins@gmail.com>,
+       <linux-kernel@vger.kernel.org>, <kvm@vger.kernel.org>
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Tue__12_May_2009_15_46_14_+1000_U67eoXGFgGlRqXhc
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+ 
 
-Hi all,
+> -----Original Message-----
+> From: kvm-owner@vger.kernel.org 
+> [mailto:kvm-owner@vger.kernel.org] On Behalf Of Anthony Liguori
+> Sent: Tuesday, May 12, 2009 6:18 AM
+> To: Hollis Blanchard
+> Cc: Gregory Haskins; Avi Kivity; Chris Wright; Gregory 
+> Haskins; linux-kernel@vger.kernel.org; kvm@vger.kernel.org
+> Subject: Re: PowerPC page faults
+> 
+> Hollis Blanchard wrote:
+> > On Mon, 2009-05-11 at 12:54 -0500, Anthony Liguori wrote:
+> >   
+> >> For future ppcemb's, do you know if there is an equivalent 
+> of a PF exit 
+> >> type?  Does the hardware squirrel away the faulting 
+> address somewhere 
+> >> and set PC to the start of the instruction?  If so, no 
+> guest memory load 
+> >> should be required.
+> >>     
+> >
+> > Ahhh... you're saying that the address itself (or offset 
+> within a page)
+> > is the hypercall token, totally separate from IO emulation, 
+> and so we
+> > could ignore the access size.
+> 
+> No, I'm not being nearly that clever.
+> 
+> I was suggesting that hardware virtualization support in future PPC 
+> systems might contain a mechanism to intercept a guest-mode 
+> TLB miss.  
+> If it did, it would be useful if that guest-mode TLB miss "exit" 
+> contained extra information somewhere that included the PC of the 
+> faulting instruction, the address response for the fault, and enough 
+> information to handle the fault without instruction decoding.
 
-Changes since 20090511:
+I don't think this can come true if it is software managed TLB.
+For guest will never know the content of its TLB without the help of software.
 
-The driver-core tree gained a build failure for which I reverted a commit.
+> 
+> I assume all MMIO comes from the same set of instructions in PPC?  
+> Something like ld/st instructions?  Presumably all you need 
+> to know from 
+> instruction decoding is the destination register and whether it was a 
+> read or write?
 
-The staging tree lost a conflict.
+Yes, but more there is a search in guest TLB to see if it is a guest TLB miss currently.
+A big overhead, especially for a large TLB without being organized by sth. like rbtree.
 
-----------------------------------------------------------------------------
-
-I have created today's linux-next tree at
-git://git.kernel.org/pub/scm/linux/kernel/git/sfr/linux-next.git
-(patches at
-http://www.kernel.org/pub/linux/kernel/people/sfr/linux-next/).  If you
-are tracking the linux-next tree using git, you should not use "git pull"
-to do so as that will try to merge the new linux-next release with the
-old one.  You should use "git fetch" as mentioned in the FAQ on the wiki
-(see below).
-
-You can see which trees have been included by looking in the Next/Trees
-file in the source.  There are also quilt-import.log and merge.log files
-in the Next directory.  Between each merge, the tree was built with
-a ppc64_defconfig for powerpc and an allmodconfig for x86_64. After the
-final fixups (if any), it is also built with powerpc allnoconfig (32 and
-64 bit), ppc44x_defconfig and allyesconfig (minus
-CONFIG_PROFILE_ALL_BRANCHES) and i386, sparc and sparc64 defconfig.
-These builds also have CONFIG_ENABLE_WARN_DEPRECATED,
-CONFIG_ENABLE_MUST_CHECK and CONFIG_DEBUG_INFO disabled when necessary.
-
-Below is a summary of the state of the merge.
-
-We are up to 136 trees (counting Linus' and 18 trees of patches pending for
-Linus' tree), more are welcome (even if they are currently empty).
-Thanks to those who have contributed, and to those who haven't, please do.
-
-Status of my local build tests will be at
-http://kisskb.ellerman.id.au/linux-next .  If maintainers want to give
-advice about cross compilers/configs that work, we are always open to add
-more builds.
-
-Thanks to Jan Dittmer for adding the linux-next tree to his build tests
-at http://l4x.org/k/ , the guys at http://test.kernel.org/ and Randy
-Dunlap for doing many randconfig builds.
-
-There is a wiki covering stuff to do with linux-next at
-http://linux.f-seidel.de/linux-next/pmwiki/ .  Thanks to Frank Seidel.
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-$ git checkout master
-$ git reset --hard stable
-Merging origin/master
-Merging fixes/fixes
-Merging arm-current/master
-Merging m68k-current/for-linus
-Merging powerpc-merge/merge
-Merging sparc-current/master
-Merging scsi-rc-fixes/master
-Merging net-current/master
-Merging sound-current/for-linus
-Merging pci-current/for-linus
-Merging wireless-current/master
-Merging kbuild-current/master
-Merging quilt/driver-core.current
-Merging quilt/usb.current
-Merging cpufreq-current/fixes
-Merging input-current/for-linus
-Merging md-current/for-linus
-Merging audit-current/for-linus
-Merging crypto-current/master
-Merging dwmw2/master
-Merging arm/devel
-CONFLICT (content): Merge conflict in arch/arm/Kconfig
-Merging avr32/avr32-arch
-Merging blackfin/for-linus
-Merging cris/for-next
-Merging ia64/test
-Merging m68k/for-next
-Merging m68knommu/for-next
-Merging mips/mips-for-linux-next
-Merging parisc/master
-Merging powerpc/next
-Merging 4xx/next
-Merging galak/next
-Merging pxa/for-next
-Merging s390/features
-Merging sh/master
-Merging sparc/master
-Merging x86/auto-x86-next
-Merging xtensa/master
-Merging configfs/linux-next
-Merging ext4/next
-Merging fatfs/master
-Merging fuse/for-next
-Merging gfs2/master
-Merging jfs/next
-Merging nfs/linux-next
-Merging nfsd/nfsd-next
-Merging nilfs2/for-next
-Merging ocfs2/linux-next
-Merging squashfs/master
-Merging v9fs/for-next
-CONFLICT (content): Merge conflict in net/9p/protocol.c
-Merging ubifs/linux-next
-Merging xfs/master
-Merging tip-core/auto-core-next
-Merging cpus4096/auto-cpus4096-next
-Merging tracing/auto-tracing-next
-Merging genirq/auto-genirq-next
-Merging safe-poison-pointers/auto-safe-poison-pointers-next
-Merging sched/auto-sched-next
-Merging stackprotector/auto-stackprotector-next
-Merging timers/auto-timers-next
-Merging pci/linux-next
-Merging quilt/device-mapper
-Merging hid/for-next
-Merging quilt/i2c
-Merging quilt/jdelvare-hwmon
-Merging quilt/kernel-doc
-Merging v4l-dvb/master
-Merging quota/for_next
-Merging kbuild/master
-[master bd9cc77] Revert "initconst adjustments"
-Merging ide/for-next
-Merging libata/NEXT
-Merging infiniband/for-next
-Merging acpi/test
-Merging ieee1394/for-next
-Merging ubi/linux-next
-Merging kvm/master
-Merging dlm/next
-Merging scsi/master
-CONFLICT (content): Merge conflict in include/Kbuild
-Merging async_tx/next
-Merging udf/for_next
-Merging net/master
-CONFLICT (content): Merge conflict in include/linux/mmc/sdio_ids.h
-Merging wireless/master
-[master 05d3861] Revert "rfkill: remove user_claim stuff"
-Merging mtd/master
-Merging crypto/master
-Merging vfs/for-next
-CONFLICT (content): Merge conflict in fs/fuse/inode.c
-Merging sound/for-next
-Merging cpufreq/next
-Merging quilt/rr
-CONFLICT (content): Merge conflict in arch/x86/kernel/cpu/cpufreq/acpi-cpuf=
-req.c
-Merging cifs/master
-Merging mmc/next
-Merging input/next
-Merging bkl-removal/bkl-removal
-Merging lsm/for-next
-Merging block/for-next
-CONFLICT (content): Merge conflict in drivers/block/hd.c
-CONFLICT (content): Merge conflict in drivers/block/mg_disk.c
-Merging embedded/master
-Merging firmware/master
-Merging pcmcia/master
-Merging battery/master
-Merging leds/for-mm
-Merging backlight/for-mm
-Merging kgdb/kgdb-next
-Merging slab/for-next
-Merging uclinux/for-next
-Merging md/for-next
-Merging mfd/for-next
-Merging hdlc/hdlc-next
-Merging drm/drm-next
-Merging voltage/for-next
-Merging security-testing/next
-Merging lblnet/master
-Merging quilt/ttydev
-Merging agp/agp-next
-Merging generic-ipi/auto-generic-ipi-next
-Merging oprofile/auto-oprofile-next
-Merging fastboot/auto-fastboot-next
-Merging sparseirq/auto-sparseirq-next
-Merging iommu/auto-iommu-next
-Merging uwb/for-upstream
-Merging watchdog/master
-Merging bdev/master
-Merging dwmw2-iommu/master
-CONFLICT (content): Merge conflict in drivers/pci/intel-iommu.c
-CONFLICT (content): Merge conflict in drivers/pci/intr_remapping.c
-Merging cputime/cputime
-Merging osd/linux-next
-Merging jc_docs/docs-next
-Merging nommu/master
-Merging trivial/for-next
-Merging audit/for-next
-Merging omap/for-next
-Merging quilt/aoe
-Merging kmemleak/kmemleak
-CONFLICT (delete/modify): arch/x86/kernel/vmlinux_32.lds.S deleted in HEAD =
-and modified in kmemleak/kmemleak. Version kmemleak/kmemleak of arch/x86/ke=
-rnel/vmlinux_32.lds.S left in tree.
-CONFLICT (delete/modify): arch/x86/kernel/vmlinux_64.lds.S deleted in HEAD =
-and modified in kmemleak/kmemleak. Version kmemleak/kmemleak of arch/x86/ke=
-rnel/vmlinux_64.lds.S left in tree.
-CONFLICT (content): Merge conflict in lib/Kconfig.debug
-CONFLICT (content): Merge conflict in mm/slob.c
-$ git rm -f arch/x86/kernel/vmlinux_32.lds.S arch/x86/kernel/vmlinux_64.lds=
-.S
-Applying: kmemleak: fixup for x86 vmlinux.ld.S merge
-Merging suspend/linux-next
-Merging bluetooth/master
-Merging quilt/driver-core
-CONFLICT (content): Merge conflict in init/main.c
-[master 57ae06f] Revert "Driver core: move dev_get/set_drvdata to drivers/b=
-ase/dd.c"
-Merging quilt/usb
-CONFLICT (content): Merge conflict in drivers/usb/serial/sierra.c
-Merging quilt/staging
-CONFLICT (content): Merge conflict in drivers/staging/rt2860/common/mlme.c
-CONFLICT (content): Merge conflict in drivers/staging/rt2870/common/mlme.c
-CONFLICT (content): Merge conflict in drivers/staging/rt3070/common/mlme.c
-Merging scsi-post-merge/master
-
---Signature=_Tue__12_May_2009_15_46_14_+1000_U67eoXGFgGlRqXhc
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoJDSYACgkQjjKRsyhoI8y+HgCgmncDB2F0aR1+09DTr5Rzg9tk
-RmoAoKgVpjlzm5kRlopM5SpC2rdHvUZk
-=lnAb
------END PGP SIGNATURE-----
-
---Signature=_Tue__12_May_2009_15_46_14_+1000_U67eoXGFgGlRqXhc--
