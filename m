@@ -1,111 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758733AbZELLFX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757827AbZELLJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758733AbZELLFX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 07:05:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbZELLFH
+	id S1757827AbZELLJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 07:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755149AbZELLJQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 07:05:07 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:32124 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751174AbZELLFF convert rfc822-to-8bit (ORCPT
+	Tue, 12 May 2009 07:09:16 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:32162 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752925AbZELLJO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 07:05:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=NvIzkfAqZJAx0VzmilSUmPShCqvt0B9fkEqlGGfv4zyMyEnZV3mkUqys4BoNDD3p5+
-         h9/fVnf8af5K2H5T8KUZcB2KvKaxK7eolHoVCchodj6h+UWFtUNHTvNKwZ8udyRLg7Bv
-         KHPb295uB0gckr7TJneHR1De83DXLE+cs9Yg0=
+	Tue, 12 May 2009 07:09:14 -0400
+Message-ID: <4A09589A.5030800@panasas.com>
+Date: Tue, 12 May 2009 14:08:10 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-In-Reply-To: <20090512094210.GD32292@elte.hu>
-References: <1242117459.31161.11.camel@centos51>
-	 <1242119738.11251.322.camel@twins> <20090512094210.GD32292@elte.hu>
-Date: Tue, 12 May 2009 20:05:06 +0900
-Message-ID: <49b7c2350905120405w3591a92bj265dff000929a928@mail.gmail.com>
-Subject: Re: [PATCH]sched: fix typo in sched-rt-group.txt file
-From: GeunSik Lim <leemgs1@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       tglx <tglx@linutronix.de>, williams <williams@redhat.com>
+To: Tejun Heo <tj@kernel.org>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
+       sshtylyov@ru.mvista.com, mike.miller@hp.com, Eric.Moore@lsi.com,
+       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
+       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
+       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
+       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
+       Doug Gilbert <dgilbert@interlog.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH 03/11] block: add rq->resid_len
+References: <1241423927-11871-1-git-send-email-tj@kernel.org> <1241423927-11871-4-git-send-email-tj@kernel.org> <4A06DFAB.40205@panasas.com> <4A0767E5.5050205@kernel.org> <4A080C9D.9000109@panasas.com> <4A08C26E.80801@kernel.org> <4A093782.80701@panasas.com> <4A093C54.2060706@kernel.org> <4A0946D6.4010405@panasas.com> <4A094A11.2030300@kernel.org>
+In-Reply-To: <4A094A11.2030300@kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 May 2009 11:08:17.0738 (UTC) FILETIME=[F3E1C2A0:01C9D2F1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/12 Ingo Molnar <mingo@elte.hu>:
->
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> wrote:
->
->> On Tue, 2009-05-12 at 17:37 +0900, GeunSik Lim wrote:
->> >
->> >
->> > Dear Ingo,
->> >
->> > I found typo about the range of static priority ( = realtime priority )
->> > in "./Documentation/scheduler/sched-rt-group.txt" file.
->> >
->> > If I don't understand static priority levels, Correct me.
+On 05/12/2009 01:06 PM, Tejun Heo wrote:
+> Hello, Boaz.
+> 
+> Boaz Harrosh wrote:
+>>> Please consider write failing after successfully writing certain
+>>> number of bytes.  A failed write command MUST NOT cause any actual
+>>> write on the device.
+>>>
+>> I know for sure that scsi has other cases. The above is a
+>> per-command per-sense-information. Some commands might write/read
+>> some bytes and still return CHECK-CONDITION with some
+>> sense-info+residual pertaining what was actually executed.
+> 
+> I see, so we're talking about two different layers here.  At least at
+> the block layer, there's nothing like partial failure.  I highly doubt
+> it would work with buffer bouncing and etc.  A failed request is a
+> failed request.  It may have sense request but doesn't have any
+> meaningful actual data.
+> 
+
+You are right, on reads I might be screwed.
+
+>>> Residual count is not about how many bytes have been transferred.  The
+>>> number of transferred bytes itself doesn't mean a thing because it
+>>> changes depending on which transfer protocol is used regardless of
+>>> where the actual failure is.  Residual count is about how many bytes
+>>> have been actually produced or consumed and when a command fails none
+>>> should have been.
+>>>
+>> See above. I know for a fact that this is not always the case, and
+>> that it is a per command. In fact I relay on such behaviour in the
+>> osd filesystems.  If the midlayer would filter such cases for me I
+>> would have had data corruptions.
 >>
->> Right, that 'confusion' stems from the fact that our in-kernel priority
->> lists do consider all 140 priorities.
+>> [Read passed end of osd-object will read up to end, and return a
+>>  warning check condition. With a choice of returning zero-bytes at
+>>  invalid bytes or returning residual]
+> 
+> Umm... If it's going through block layer, it should be split in such a
+> way that the initial partial part is completed successuflly and then
+> the latter part fails when re-issued.  Not sure whether that would be
+> possible for your code tho.
+> 
+>>> Please note that in the above 'command' and 'residual count' are not
+>>> as defined in SCSI.  Those terms refer to how those concepts are used
+>>> in the kernel and via SG_IO interface.
+>> I do have Kernel code that relays on this. I do use bsg's SG_IO
+>> successfully that has above behaviour.
 >>
->> The patch looks good though.
+>> That is: total transparency of residual count and sense information
+>> communicated between user-code and target. Then user-code can make
+>> intelligent decisions based on what he's done. And this is what the
+>> Kernel policy should be. No more, no less.
+> 
+> I'm not sure the said code is safe with regard to buffer bouncing and
+> all.
+> 
+> ...
+>>> No it's not about being good or bad.  It's about being plain
+>>> undefined.  There is no value in setting an inherently undefined value
+>>> to certain values in certain corner cases.
+>>>
+>> Again. With some commands/subsystems these are undefined, with some
+>> like SCSI, they are very well defined in all cases. (Even in the
+>> undefined cases). So please keep them intact, some code might want
+>> to relay on this.
 >>
->> > commit d6af702008117ca489a2f5476239d1688a517e98
->> > Author: GeunSik,Lim <leemgs1@gmail.com>
->> > Date:   Tue May 12 17:20:32 2009 +0900
->> >
->> >     sched: fix typo in sched-rt-group.txt file
->> >
->> >     Fix typo about static priority's range.
->> >      Kernel Space priority: 0   to 99   --> User Space RT priority 99 to 0
->> >      Kernel Space priority: 100 to 139  --> User Space nice -20 to 19
->> >
->> >     Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
->> >
->> > diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
->> > index 5ba4d3f..1537146 100644
->> > --- a/Documentation/scheduler/sched-rt-group.txt
->> > +++ b/Documentation/scheduler/sched-rt-group.txt
->> > @@ -169,7 +169,7 @@ get their allocated time.
->> >
->> >  Implementing SCHED_EDF might take a while to complete. Priority Inheritance is
->> >  the biggest challenge as the current linux PI infrastructure is geared towards
->> > -the limited static priority levels 0-139. With deadline scheduling you need to
->> > +the limited static priority levels 0-99. With deadline scheduling you need to
->
-> SCHED_FIFO goes from 1 to 99. So it's either 0-98 or 1-99. From
-> sched_setscheduler(2):
->
->       Processes scheduled under one of  the  real-time  policies  (SCHED_FIFO,
->       SCHED_RR) have a sched_priority value in the range 1 (low) to 99 (high).
->
->        Ingo
->
+>> (On the undefined cases Kernel should set a policy on what is
+>> returned)
+> 
+> IIUC, it's undefined at the block layer, well, at least till now and
+> it working for your code could just be dumb luck (bouncing not
+> happened or data transfer direction is to device or whatever).
+> 
+> So, basically, your code which depends on residual count on failure is
+> broken.  :-(
+> 
 
-Thank you for explanation about userspace rt priority's range like
-sched_setscheduler(2).
+Yes, you are unfortunately, totally right. As I sent the last patches
+(blk_make_request) I realized that current osd code has a bug in that
+it does not bounce properly, all of the buffers. Since there is only
+iscsi transports, which are byte-aligned, and the network does it's
+own highmem bouncing, in practice there is no such bug.
 
-Processes scheduled with SCHED_OTHER (or SCHED_BATCH) must be assigned
-the static priority 0.  Processes scheduled under SCHED_FIFO (or
-SCHED_RR) can have a static priority in the range 1 to 99.
+But you are right, not thanks to block policy.
 
-So, I think that the below summary is right.
-* Kernel Space priority: 0(high) to 99(low) --> User Space RT priority
-99(high) to 0(low)
+> Thanks.
+> 
 
-Is it incorrect?
+The solution to this, I think, is that the bouncing layer should receive a
+residual count, and not bounce anything beyond what's transferred. (On reads,
+writes does nothing), and zero-out the rest. This of course means that all
+block drivers make sure residual is properly set, the way it should as explained
+in this thread. (SCSI does the right thing where it can, for example
+see scsi_execute())
 
-
--- 
-Regards,
-GeunSik Lim
---
-To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Thanks for bringing this up. Another unfortunate item on my todo list.
+Boaz
