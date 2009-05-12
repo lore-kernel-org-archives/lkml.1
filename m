@@ -1,90 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755894AbZELFq4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754807AbZELF57@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755894AbZELFq4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 01:46:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754447AbZELFqi
+	id S1754807AbZELF57 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 01:57:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752294AbZELF5u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 01:46:38 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:57047 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755011AbZELFqg convert rfc822-to-8bit (ORCPT
+	Tue, 12 May 2009 01:57:50 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:60399 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750712AbZELF5t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 01:46:36 -0400
-X-MimeOLE: Produced By Microsoft Exchange V6.5
-Content-class: urn:content-classes:message
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-Subject: RE: PowerPC page faults
-Date: Tue, 12 May 2009 13:46:25 +0800
-Message-ID: <0A1FE637C2C7E148B9573BB60CC630E52565C7@zch01exm26.fsl.freescale.net>
-In-Reply-To: <4A08A411.9060104@codemonkey.ws>
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-Thread-Topic: PowerPC page faults
-Thread-Index: AcnShtV9dp5v9rCnRjK9TXlhqltW3wAN5zCg
-References: <20090505132005.19891.78436.stgit@dev.haskins.net>	 <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com>	 <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com>	 <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com>	 <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com>	 <4A02D40D.7060307@redhat.com> <4A0448DF.90705@codemonkey.ws>	 <4A0570B1.30401@novell.com>  <4A071F1A.1090702@codemonkey.ws>	 <1242060260.29194.19.camel@slate.austin.ibm.com>	 <4A08663D.1010703@codemonkey.ws> <1242069898.29194.99.camel@slate.austin.ibm.com> <4A08A411.9060104@codemonkey.ws>
-From: "Liu Yu-B13201" <Yu.Liu@freescale.com>
-To: "Anthony Liguori" <anthony@codemonkey.ws>,
-       "Hollis Blanchard" <hollisb@us.ibm.com>
-Cc: "Gregory Haskins" <ghaskins@novell.com>, "Avi Kivity" <avi@redhat.com>,
-       "Chris Wright" <chrisw@sous-sol.org>,
-       "Gregory Haskins" <gregory.haskins@gmail.com>,
-       <linux-kernel@vger.kernel.org>, <kvm@vger.kernel.org>
-X-Brightmail-Tracker: AAAAAQAAAWE=
+	Tue, 12 May 2009 01:57:49 -0400
+Subject: Re: [RFC][PATCH] Multimedia scheduling class, take 2
+From: Peter Zijlstra <peterz@infradead.org>
+To: Jussi Laako <jussi@sonarnerd.net>
+Cc: James Courtier-Dutton <James@superbug.co.uk>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>, d.faggioli@sssup.it
+In-Reply-To: <4A07E044.8040807@sonarnerd.net>
+References: <4959198A.3020209@sonarnerd.net>
+	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net>
+	 <1231756114.19771.6.camel@laptop> <496C6294.2040707@sonarnerd.net>
+	 <4971D3D5.6040801@superbug.co.uk>  <497CF128.2060903@sonarnerd.net>
+	 <1232954745.4863.4.camel@laptop>  <4A07E044.8040807@sonarnerd.net>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Date: Tue, 12 May 2009 07:57:39 +0200
+Message-Id: <1242107859.11251.301.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-
-> -----Original Message-----
-> From: kvm-owner@vger.kernel.org 
-> [mailto:kvm-owner@vger.kernel.org] On Behalf Of Anthony Liguori
-> Sent: Tuesday, May 12, 2009 6:18 AM
-> To: Hollis Blanchard
-> Cc: Gregory Haskins; Avi Kivity; Chris Wright; Gregory 
-> Haskins; linux-kernel@vger.kernel.org; kvm@vger.kernel.org
-> Subject: Re: PowerPC page faults
+On Mon, 2009-05-11 at 11:22 +0300, Jussi Laako wrote:
+> Hi,
 > 
-> Hollis Blanchard wrote:
-> > On Mon, 2009-05-11 at 12:54 -0500, Anthony Liguori wrote:
-> >   
-> >> For future ppcemb's, do you know if there is an equivalent 
-> of a PF exit 
-> >> type?  Does the hardware squirrel away the faulting 
-> address somewhere 
-> >> and set PC to the start of the instruction?  If so, no 
-> guest memory load 
-> >> should be required.
-> >>     
-> >
-> > Ahhh... you're saying that the address itself (or offset 
-> within a page)
-> > is the hypercall token, totally separate from IO emulation, 
-> and so we
-> > could ignore the access size.
+> Peter Zijlstra wrote:
+> > Right, and I think the solution to this problem is twofold, 1)
+> > application writers should start writing (soft) realtime applications if
+> > they want (soft) realtime behaviour -- there's just no way around that.
 > 
-> No, I'm not being nearly that clever.
+> Just to avoid need for reviewing and reworking ~800 klocs of user space
+> code in just gstreamer, here's a second take on patches. This time
+> splitting things into smaller pieces. Attached patch exposes 40
+> priorities ~ nice values as something accessible through
+> sched_()/pthreads API in order to control priorities of individual
+> threads. Current Linux implementation of SCHED_OTHER is broken in a way,
+> that it exposes only one single priority level - 0. Thus no possibility
+> to properly control priorities of threads through pthread API. This is
+> patch is against 2.6.29.2 and not tested, but builds. I can also send
+> rest of the changes as separate small feature patches as needed.
+> However, before doing any more work I would like to hear opinions on
+> this and especially what is wrong with the code or idea...
 > 
-> I was suggesting that hardware virtualization support in future PPC 
-> systems might contain a mechanism to intercept a guest-mode 
-> TLB miss.  
-> If it did, it would be useful if that guest-mode TLB miss "exit" 
-> contained extra information somewhere that included the PC of the 
-> faulting instruction, the address response for the fault, and enough 
-> information to handle the fault without instruction decoding.
-
-I don't think this can come true if it is software managed TLB.
-For guest will never know the content of its TLB without the help of software.
-
+> > And 2), the kernel can help by providing a deadline based scheduler,
+> > which should make the above easier and less likely to mess up the rest
+> > of the system. ie. a deadline scheduled application will not exceed its
+> > allotted budget, unlike a FIFO scheduled app.
 > 
-> I assume all MMIO comes from the same set of instructions in PPC?  
-> Something like ld/st instructions?  Presumably all you need 
-> to know from 
-> instruction decoding is the destination register and whether it was a 
-> read or write?
+> Any news on this one?
 
-Yes, but more there is a search in guest TLB to see if it is a guest TLB miss currently.
-A big overhead, especially for a large TLB without being organized by sth. like rbtree.
+Utter lack of time on my side to work on any of the problems there.
 
+As to the patch, I still think its an exceedingly bad idea to create
+such a horridly ill defined scheduler class. There's nothing that keeps
+people from stuffing everything in there and either generating DoS
+issues or still generating bad interactivity.
+
+I certainly don't think the current situation is bad enough to warrant
+things like that, media on my machines works peachy (*cheer* for XV on
+R600).
+
+I happen to know that Dario (CC'ed) has been working on a userspace
+framework to ease the use of writing soft-realtime (soft as in media
+based applications) in C, mitigating a lot of the risks of using
+SCHED_FIFO and the like.
+
+Perhaps he's willing to expand on that.
