@@ -1,43 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbZELGY6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756882AbZELG1p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756656AbZELGY6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 02:24:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbZELGYt
+	id S1756882AbZELG1p (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 02:27:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753949AbZELG1f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 02:24:49 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:43792 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752382AbZELGYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 02:24:48 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18953.5677.63000.658678@drongo.ozlabs.ibm.com>
-Date: Tue, 12 May 2009 16:24:45 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Ingo Molnar <mingo@elte.hu>, Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+	Tue, 12 May 2009 02:27:35 -0400
+Received: from viefep20-int.chello.at ([62.179.121.40]:61191 "EHLO
+	viefep20-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753897AbZELG1f (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 02:27:35 -0400
+X-SourceIP: 213.93.53.227
 Subject: Re: [PATCH 3/5] perf_counter: rework ioctl()s
-In-Reply-To: <1242054741.11251.279.camel@twins>
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Ingo Molnar <mingo@elte.hu>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+In-Reply-To: <18953.5533.398597.677737@drongo.ozlabs.ibm.com>
 References: <20090508165219.469818319@chello.nl>
-	<20090508170028.837558214@chello.nl>
-	<18951.32643.749495.538351@drongo.ozlabs.ibm.com>
-	<1242054741.11251.279.camel@twins>
-X-Mailer: VM 8.0.12 under 22.3.1 (powerpc-unknown-linux-gnu)
+	 <20090508170028.837558214@chello.nl> <200905120158.46314.arnd@arndb.de>
+	 <1242108700.11251.304.camel@twins>
+	 <18953.5533.398597.677737@drongo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Tue, 12 May 2009 08:27:30 +0200
+Message-Id: <1242109650.11251.313.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra writes:
-
-> Thanks, I missed that little detail.
+On Tue, 2009-05-12 at 16:22 +1000, Paul Mackerras wrote:
+> Peter Zijlstra writes:
 > 
-> Do we still want the new ioctl iteration flag?
+> > Hmm, are you saying that the 3rd argument to unlocked_ioctl is actually
+> > (void __user *) instead of unsigned long?
+> 
+> He's saying (correctly) that using _IOR or _IOW implies that the ioctl
+> is going to read or write the memory location pointed to by the 3rd
+> argument to unlocked_ioctl.  If the 3rd argument is just a number, not
+> an address, I believe you should use _IO.
 
-Not sure; it might be useful sometimes, I guess.  We do need to clear
-up the confusion about whether one does ioctl(fd, ..., flag) or
-ioctl(fd, ..., &flag), and if the former we shouldn't be using _IOW,
-as Arnd pointed out.
+Oh, somewhat confusing all this. Would be good to spell out these things
+somewhere. Documentation/ioctl/ seems less than helpful.
 
-Paul.
