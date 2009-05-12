@@ -1,145 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZELN5T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752318AbZELN7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754018AbZELN5T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 09:57:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbZELN5D
+	id S1752318AbZELN7x (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 09:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752327AbZELN7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 09:57:03 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:53905 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751224AbZELN5B (ORCPT
+	Tue, 12 May 2009 09:59:39 -0400
+Received: from welcomes-you.com ([85.214.50.128]:49693 "EHLO
+	smtp.welcomes-you.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751914AbZELN7i (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 09:57:01 -0400
-Date: Tue, 12 May 2009 15:56:57 +0200
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-kernel@vger.kernel.org
-Cc: Ville Syrjala <syrjala@sci.fi>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] w1-gpio: add external pull-up enable callback
-Message-ID: <20090512135657.GA24045@buzzloop.caiaq.de>
-References: <1241527413-22920-1-git-send-email-daniel@caiaq.de>
+	Tue, 12 May 2009 09:59:38 -0400
+Message-ID: <4A0980C6.2080204@aei.mpg.de>
+Date: Tue, 12 May 2009 15:59:34 +0200
+From: Carsten Aulbert <carsten.aulbert@aei.mpg.de>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1241527413-22920-1-git-send-email-daniel@caiaq.de>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org, linux-net@vger.kernel.org
+Subject: Re: sky2 problem with WARNING: at net/sched/sch_generic.c:219
+References: <4A0924FF.7040502@aei.mpg.de>
+In-Reply-To: <4A0924FF.7040502@aei.mpg.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc Andrew Morton)
+Hi again,
 
-Andrew,
+Carsten Aulbert schrieb:
 
-could you add this to your patch queue? It's been acked by Ville Syrjala
-and Evgeniy Polyakov.
+> Anyone an idea what this is about?
 
-Thanks,
-Daniel
+Further testing and debugging revealed that it's probably related to
+wrong autosensing. It should be rx/tx:off but rx is set to on. So far no
+idea why this happens (and why the device goes "offline" for some time).
+Anyone with an idea?
 
+Cheers
 
->From 6a99f9453d9b0ad2dd705c012014063977781bf3 Mon Sep 17 00:00:00 2001
-From: Daniel Mack <daniel@caiaq.de>
-Date: Tue, 5 May 2009 14:35:04 +0200
-Subject: [PATCH] w1-gpio: add external pull-up enable callback
+Carsten
 
-On embedded devices, sleep mode conditions can be tricky to handle,
-Especially when processors tend to pull-down the w1 bus during sleep.
-Bus slaves (such as the ds2760) may interpret this as a reason for
-power-down conditions and entirely switch off the device.
-
-This patch adds a callback function pointer to let users switch on and
-off the external pull-up resistor. This lets the outside world know
-whether the processor is currently actively driving the bus or not.
-
-When this callback is not provided, the code behaviour won't change.
-
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Acked-by: Ville Syrjala <syrjala@sci.fi>
-Acked-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
----
- drivers/w1/masters/w1-gpio.c |   35 +++++++++++++++++++++++++++++++++++
- include/linux/w1-gpio.h      |    1 +
- 2 files changed, 36 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/w1/masters/w1-gpio.c b/drivers/w1/masters/w1-gpio.c
-index a411702..6f8866d 100644
---- a/drivers/w1/masters/w1-gpio.c
-+++ b/drivers/w1/masters/w1-gpio.c
-@@ -74,6 +74,9 @@ static int __init w1_gpio_probe(struct platform_device *pdev)
- 	if (err)
- 		goto free_gpio;
- 
-+	if (pdata->enable_external_pullup)
-+		pdata->enable_external_pullup(1);
-+
- 	platform_set_drvdata(pdev, master);
- 
- 	return 0;
-@@ -91,6 +94,9 @@ static int __exit w1_gpio_remove(struct platform_device *pdev)
- 	struct w1_bus_master *master = platform_get_drvdata(pdev);
- 	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
- 
-+	if (pdata->enable_external_pullup)
-+		pdata->enable_external_pullup(0);
-+
- 	w1_remove_master_device(master);
- 	gpio_free(pdata->pin);
- 	kfree(master);
-@@ -98,12 +104,41 @@ static int __exit w1_gpio_remove(struct platform_device *pdev)
- 	return 0;
- }
- 
-+#ifdef CONFIG_PM
-+
-+static int w1_gpio_suspend(struct platform_device *pdev, pm_message_t state)
-+{
-+	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
-+
-+	if (pdata->enable_external_pullup)
-+		pdata->enable_external_pullup(0);
-+
-+	return 0;
-+}
-+
-+static int w1_gpio_resume(struct platform_device *pdev)
-+{
-+	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
-+
-+	if (pdata->enable_external_pullup)
-+		pdata->enable_external_pullup(1);
-+
-+	return 0;
-+}
-+
-+#else
-+#define w1_gpio_suspend	NULL
-+#define w1_gpio_resume	NULL
-+#endif
-+
- static struct platform_driver w1_gpio_driver = {
- 	.driver = {
- 		.name	= "w1-gpio",
- 		.owner	= THIS_MODULE,
- 	},
- 	.remove	= __exit_p(w1_gpio_remove),
-+	.suspend = w1_gpio_suspend,
-+	.resume = w1_gpio_resume,
- };
- 
- static int __init w1_gpio_init(void)
-diff --git a/include/linux/w1-gpio.h b/include/linux/w1-gpio.h
-index 9797fec..3adeff8 100644
---- a/include/linux/w1-gpio.h
-+++ b/include/linux/w1-gpio.h
-@@ -18,6 +18,7 @@
- struct w1_gpio_platform_data {
- 	unsigned int pin;
- 	unsigned int is_open_drain:1;
-+	void (*enable_external_pullup)(int enable);
- };
- 
- #endif /* _LINUX_W1_GPIO_H */
--- 
-1.6.2.1
 
