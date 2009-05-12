@@ -1,93 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753349AbZELFVt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754660AbZELF0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753349AbZELFVt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 01:21:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbZELFVk
+	id S1754660AbZELF0Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 01:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbZELF0P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 01:21:40 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:57927 "EHLO mx2.suse.de"
+	Tue, 12 May 2009 01:26:15 -0400
+Received: from mga09.intel.com ([134.134.136.24]:38111 "EHLO mga09.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752284AbZELFVj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 01:21:39 -0400
-Date: Tue, 12 May 2009 07:21:39 +0200
-From: Nick Piggin <npiggin@suse.de>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: [patch] mm: madvise correct return code
-Message-ID: <20090512052139.GE32535@wotan.suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.9i
+	id S1752120AbZELF0P convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 01:26:15 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,180,1241420400"; 
+   d="scan'208";a="514638760"
+From: "Cihula, Joseph" <joseph.cihula@intel.com>
+To: Ingo Molnar <mingo@elte.hu>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "arjan@linux.intel.com" <arjan@linux.intel.com>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
+       "jmorris@namei.org" <jmorris@namei.org>,
+       "jbeulich@novell.com" <jbeulich@novell.com>,
+       "peterm@redhat.com" <peterm@redhat.com>,
+       "Wei, Gang" <gang.wei@intel.com>, "Wang, Shane" <shane.wang@intel.com>
+Date: Mon, 11 May 2009 22:26:11 -0700
+Subject: RE: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
+	support
+Thread-Topic: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
+	support
+Thread-Index: AcnPw3vNIdgMe1TeShGlomO7j5w9IAC/lv6A
+Message-ID: <4F65016F6CB04E49BFFA15D4F7B798D998BA8303@orsmsx506.amr.corp.intel.com>
+References: <4A03B9C3.9090607@intel.com> <20090508095748.GH3559@elte.hu>
+In-Reply-To: <20090508095748.GH3559@elte.hu>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a pretty obscure case, but it doesn't hurt to follow standards
-if they're there. I can't imagine any real program relying on a 0 range
-madvise call with invalid behaviour *not* failing... We have this in
-SLES11 FWIW, and no problems reported.
---
+> From: Ingo Molnar [mailto:mingo@elte.hu]
+> Sent: Friday, May 08, 2009 2:58 AM
+>
+> * Joseph Cihula <joseph.cihula@intel.com> wrote:
+>
+> > +   /* if we're being called before the 1:1 mapping is set up then just
+> > +      return and let the normal shutdown happen; this should only be
+> > +      due to very early panic() */
+> > +   if (!tboot_pg_dir)
+> > +           return;
+>
+> Please use the customary comment style:
+>
+>   /*
+>    * Comment .....
+>    * ...... goes here:
+>    */
+>
+> specified in Documentation/CodingStyle. Please fix this in all other
+> multi-line comments in your patch as well.
 
-mm: madvise correct return code
+Will do.
 
-The posix_madvise() function succeeds (and does nothing) when called with
-parameters (NULL, 0, -1); according to LSB tests, it should fail with EINVAL
-because -1 is not a valid flag.
+> > +   if (shutdown_type == TB_SHUTDOWN_S3) {
+> > +           tboot_shared->num_mac_regions = 3;
+> > +           /* S3 resume code */
+> > +           tboot_shared->mac_regions[0].start =
+> > +                   PFN_PHYS(PFN_DOWN(acpi_wakeup_address));
+> > +           tboot_shared->mac_regions[0].size =
+> > +                   PFN_UP(WAKEUP_SIZE) << PAGE_SHIFT;
+> > +           /* AP trampoline code */
+> > +           tboot_shared->mac_regions[1].start =
+> > +                   PFN_PHYS(PFN_DOWN(virt_to_phys(trampoline_base)));
+> > +           tboot_shared->mac_regions[1].size =
+> > +                   PFN_UP(TRAMPOLINE_SIZE) << PAGE_SHIFT;
+> > +           /* kernel code + data + bss */
+> > +           tboot_shared->mac_regions[2].start =
+> > +                   PFN_PHYS(PFN_DOWN(virt_to_phys(&_text)));
+> > +           tboot_shared->mac_regions[2].size =
+> > +                   PFN_PHYS(PFN_UP(virt_to_phys(&_end))) -
+> > +                   PFN_PHYS(PFN_DOWN(virt_to_phys(&_text)));
+> > +   }
+> > +
+> > +   tboot_shared->shutdown_type = shutdown_type;
+> > +
+> > +   switch_to_tboot_pt();
+> > +
+> > +   ((void(*)(void))(unsigned long)tboot_shared->shutdown_entry)();
+>
+> shutdown_entry should probably have a proper function pointer type,
+> to avoid this ugliness.
 
-When called with a valid address and size, it correctly fails.
+Since pointer types are different lengths depending on whether it is a 32b or 64b build environment, that would not allow a separately-compiled tboot to be used with both 32b and 64b kernels.
 
-So perform an initial check for valid flags first.
-
-Reported-by: Jiri Dluhos <jdluhos@novell.com>
-Signed-off-by: Nick Piggin <npiggin@suse.de>
----
- mm/madvise.c |   23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
-
-Index: linux-2.6/mm/madvise.c
-===================================================================
---- linux-2.6.orig/mm/madvise.c
-+++ linux-2.6/mm/madvise.c
-@@ -247,12 +247,30 @@ madvise_vma(struct vm_area_struct *vma,
- 		break;
- 
- 	default:
--		error = -EINVAL;
-+		BUG();
- 		break;
- 	}
- 	return error;
- }
- 
-+static int
-+madvise_behavior_valid(int behavior)
-+{
-+	switch (behavior) {
-+	case MADV_DOFORK:
-+	case MADV_DONTFORK:
-+	case MADV_NORMAL:
-+	case MADV_SEQUENTIAL:
-+	case MADV_RANDOM:
-+	case MADV_REMOVE:
-+	case MADV_WILLNEED:
-+	case MADV_DONTNEED:
-+		return 1;
-+
-+	default:
-+		return 0;
-+	}
-+}
- /*
-  * The madvise(2) system call.
-  *
-@@ -298,6 +316,9 @@ SYSCALL_DEFINE3(madvise, unsigned long,
- 	int write;
- 	size_t len;
- 
-+	if (!madvise_behavior_valid(behavior))
-+		return error;
-+
- 	write = madvise_need_mmap_write(behavior);
- 	if (write)
- 		down_write(&current->mm->mmap_sem);
+Joe
