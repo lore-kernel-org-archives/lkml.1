@@ -1,44 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752848AbZELTK2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751762AbZELTPj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752848AbZELTK2 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 15:10:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751485AbZELTKJ
+	id S1751762AbZELTPj (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 15:15:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbZELTPa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 15:10:09 -0400
-Received: from charlotte.tuxdriver.com ([70.61.120.58]:41578 "EHLO
-	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751062AbZELTKH (ORCPT
+	Tue, 12 May 2009 15:15:30 -0400
+Received: from x35.xmailserver.org ([64.71.152.41]:43574 "EHLO
+	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832AbZELTP3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 15:10:07 -0400
-Date: Tue, 12 May 2009 15:09:59 -0400
-From: Neil Horman <nhorman@tuxdriver.com>
-To: Jarod Wilson <jarod@redhat.com>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2 v2] crypto: skip algs not flagged fips_allowed in
-	fips mode
-Message-ID: <20090512190959.GG5019@hmsreliant.think-freely.org>
-References: <200905110953.06678.jarod@redhat.com>
+	Tue, 12 May 2009 15:15:29 -0400
+X-AuthUser: davidel@xmailserver.org
+Date: Tue, 12 May 2009 12:10:23 -0700 (PDT)
+From: Davide Libenzi <davidel@xmailserver.org>
+X-X-Sender: davide@makko.or.mcafeemobile.com
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+cc: Andrew Morton <akpm@linux-foundation.org>, Hiroyuki.Mach@gmail.com,
+       rohit verma <rohit.170309@gmail.com>
+Subject: [patch] epoll - fix size check in epoll_create
+Message-ID: <alpine.DEB.1.10.0905121207100.29869@makko.or.mcafeemobile.com>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
+X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905110953.06678.jarod@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-Spam-Score: -1.4 (-)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 09:53:06AM -0400, Jarod Wilson wrote:
-> Because all fips-allowed algorithms must be self-tested before they
-> can be used, they will all have entries in testmgr.c's alg_test_descs[].
-> Skip self-tests for any algs not flagged as fips_approved and return
-> -EINVAL when in fips mode.
-> 
-> Resending with properly updated patch v2 tag.
-> 
-> Signed-off-by: Jarod Wilson <jarod@redhat.com>
-> 
-Acked-by: Neil Horman <nhorman@tuxdriver.com>
+Andrew, this one-liner fixes a size check WRT the manual pages, that had 
+been broken somewhere in the past (might have been Uli with the 
+open-with-flags changes, though I'm not sure).
 
-> 
+
+
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+
+
+- Davide
+
+
+---
+ fs/eventpoll.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+Index: linux-2.6.mod/fs/eventpoll.c
+===================================================================
+--- linux-2.6.mod.orig/fs/eventpoll.c	2009-05-12 12:05:36.000000000 -0700
++++ linux-2.6.mod/fs/eventpoll.c	2009-05-12 12:05:56.000000000 -0700
+@@ -1212,7 +1212,7 @@ SYSCALL_DEFINE1(epoll_create1, int, flag
+ 
+ SYSCALL_DEFINE1(epoll_create, int, size)
+ {
+-	if (size < 0)
++	if (size <= 0)
+ 		return -EINVAL;
+ 
+ 	return sys_epoll_create1(0);
+
