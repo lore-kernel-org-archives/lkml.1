@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760185AbZELCxU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760213AbZELCxw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760185AbZELCxU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 22:53:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754148AbZELCxI
+	id S1760213AbZELCxw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 22:53:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759086AbZELCxm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 22:53:08 -0400
-Received: from mga03.intel.com ([143.182.124.21]:62080 "EHLO mga03.intel.com"
+	Mon, 11 May 2009 22:53:42 -0400
+Received: from mga14.intel.com ([143.182.124.37]:44743 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755140AbZELCxG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 22:53:06 -0400
+	id S1757709AbZELCxm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 22:53:42 -0400
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="4.41,179,1241420400"; 
-   d="scan'208";a="141713617"
-Date: Tue, 12 May 2009 10:52:46 +0800
+   d="scan'208";a="141713745"
+Date: Tue, 12 May 2009 10:53:19 +0800
 From: Wu Fengguang <fengguang.wu@intel.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
@@ -26,9 +26,8 @@ Cc: "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
        "cl@linux-foundation.org" <cl@linux-foundation.org>,
        "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
        "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: [PATCH -mm] vmscan: make mapped executable pages the first class
-	citizen
-Message-ID: <20090512025246.GC7518@localhost>
+Subject: [PATCH -mm] vmscan: merge duplicate code in shrink_active_list()
+Message-ID: <20090512025319.GD7518@localhost>
 References: <20090430195439.e02edc26.akpm@linux-foundation.org> <49FB01C1.6050204@redhat.com> <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org> <20090507134410.0618b308.akpm@linux-foundation.org> <20090508081608.GA25117@localhost> <20090508125859.210a2a25.akpm@linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -39,161 +38,36 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Protect referenced PROT_EXEC mapped pages from being deactivated.
+The "move pages to active list" and "move pages to inactive list"
+code blocks are mostly identical and can be served by a function.
 
-PROT_EXEC(or its internal presentation VM_EXEC) pages normally belong to some
-currently running executables and their linked libraries, they shall really be
-cached aggressively to provide good user experiences.
+Thanks to Andrew Morton for pointing this out.
 
-Thanks to Johannes Weiner for the advice to reuse the VMA walk in
-page_referenced() to get the PROT_EXEC bit.
-
-
-[more details]
-
-( The consequences of this patch will have to be discussed together with
-  Rik van Riel's recent patch "vmscan: evict use-once pages first". )
-
-( Some of the good points and insights are taken into this changelog.
-  Thanks to all the involved people for the great LKML discussions. )
-
-the problem
------------
-
-For a typical desktop, the most precious working set is composed of
-*actively accessed*
-	(1) memory mapped executables
-	(2) and their anonymous pages
-	(3) and other files
-	(4) and the dcache/icache/.. slabs
-while the least important data are
-	(5) infrequently used or use-once files
-
-For a typical desktop, one major problem is busty and large amount of (5)
-use-once files flushing out the working set.
-
-Inside the working set, (4) dcache/icache have already been too sticky ;-)
-So we only have to care (2) anonymous and (1)(3) file pages.
-
-anonymous pages
----------------
-Anonymous pages are effectively immune to the streaming IO attack, because we
-now have separate file/anon LRU lists. When the use-once files crowd into the
-file LRU, the list's "quality" is significantly lowered. Therefore the scan
-balance policy in get_scan_ratio() will choose to scan the (low quality) file
-LRU much more frequently than the anon LRU.
-
-file pages
-----------
-Rik proposed to *not* scan the active file LRU when the inactive list grows
-larger than active list. This guarantees that when there are use-once streaming
-IO, and the working set is not too large(so that active_size < inactive_size),
-the active file LRU will *not* be scanned at all. So the not-too-large working
-set can be well protected.
-
-But there are also situations where the file working set is a bit large so that
-(active_size >= inactive_size), or the streaming IOs are not purely use-once.
-In these cases, the active list will be scanned slowly. Because the current
-shrink_active_list() policy is to deactivate active pages regardless of their
-referenced bits. The deactivated pages become susceptible to the streaming IO
-attack: the inactive list could be scanned fast (500MB / 50MBps = 10s) so that
-the deactivated pages don't have enough time to get re-referenced. Because a
-user tend to switch between windows in intervals from seconds to minutes.
-
-This patch holds mapped executable pages in the active list as long as they
-are referenced during each full scan of the active list.  Because the active
-list is normally scanned much slower, they get longer grace time (eg. 100s)
-for further references, which better matches the pace of user operations.
-
-side effects
-------------
-
-This patch is safe in general, it restores the pre-2.6.28 mmap() behavior
-but in a much smaller and well targeted scope.
-
-One may worry about some one to abuse the PROT_EXEC heuristic.  But as
-Andrew Morton stated, there are other tricks to getting that sort of boost.
-
-Another concern is the PROT_EXEC mapped pages growing large in rare cases,
-and therefore hurting reclaim efficiency. But a sane application targeted for
-large audience will never use PROT_EXEC for data mappings. If some home made
-application tries to abuse that bit, it shall be aware of the consequences,
-which won't be disastrous even in the worst case.
-
-CC: Elladan <elladan@eskimo.com>
-CC: Nick Piggin <npiggin@suse.de>
-CC: Johannes Weiner <hannes@cmpxchg.org>
-CC: Christoph Lameter <cl@linux-foundation.org>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Acked-by: Peter Zijlstra <peterz@infradead.org>
-Acked-by: Rik van Riel <riel@redhat.com>
 Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 ---
- mm/vmscan.c |   41 +++++++++++++++++++++++++++++++++++++++--
- 1 file changed, 39 insertions(+), 2 deletions(-)
+ mm/vmscan.c |   84 ++++++++++++++++++++------------------------------
+ 1 file changed, 35 insertions(+), 49 deletions(-)
 
 --- linux.orig/mm/vmscan.c
 +++ linux/mm/vmscan.c
-@@ -1233,6 +1233,7 @@ static void shrink_active_list(unsigned 
- 	unsigned long pgscanned;
- 	unsigned long vm_flags;
- 	LIST_HEAD(l_hold);	/* The pages which were snipped off */
-+	LIST_HEAD(l_active);
- 	LIST_HEAD(l_inactive);
- 	struct page *page;
- 	struct pagevec pvec;
-@@ -1272,8 +1273,21 @@ static void shrink_active_list(unsigned 
+@@ -1225,6 +1225,36 @@ static inline void note_zone_scanning_pr
+  * But we had to alter page->flags anyway.
+  */
  
- 		/* page_referenced clears PageReferenced */
- 		if (page_mapping_inuse(page) &&
--		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags))
-+		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
- 			pgmoved++;
-+			/*
-+			 * Identify referenced, file-backed active pages and
-+			 * give them one more trip around the active list. So
-+			 * that executable code get better chances to stay in
-+			 * memory under moderate memory pressure.  Anon pages
-+			 * are ignored, since JVM can create lots of anon
-+			 * VM_EXEC pages.
-+			 */
-+			if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
-+				list_add(&page->lru, &l_active);
-+				continue;
-+			}
-+		}
- 
- 		list_add(&page->lru, &l_inactive);
- 	}
-@@ -1282,7 +1296,6 @@ static void shrink_active_list(unsigned 
- 	 * Move the pages to the [file or anon] inactive list.
- 	 */
- 	pagevec_init(&pvec, 1);
--	lru = LRU_BASE + file * LRU_FILE;
- 
- 	spin_lock_irq(&zone->lru_lock);
- 	/*
-@@ -1294,6 +1307,7 @@ static void shrink_active_list(unsigned 
- 	reclaim_stat->recent_rotated[!!file] += pgmoved;
- 
- 	pgmoved = 0;  /* count pages moved to inactive list */
-+	lru = LRU_BASE + file * LRU_FILE;
- 	while (!list_empty(&l_inactive)) {
- 		page = lru_to_page(&l_inactive);
- 		prefetchw_prev_lru_page(page, &l_inactive, flags);
-@@ -1316,6 +1330,29 @@ static void shrink_active_list(unsigned 
- 	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
- 	__count_zone_vm_events(PGREFILL, zone, pgscanned);
- 	__count_vm_events(PGDEACTIVATE, pgmoved);
++void move_active_pages_to_lru(enum lru_list lru, struct list_head *list)
++{
++	unsigned long pgmoved = 0;
 +
-+	pgmoved = 0;  /* count pages moved back to active list */
-+	lru = LRU_ACTIVE + file * LRU_FILE;
-+	while (!list_empty(&l_active)) {
-+		page = lru_to_page(&l_active);
-+		prefetchw_prev_lru_page(page, &l_active, flags);
++	while (!list_empty(&list)) {
++		page = lru_to_page(&list);
++		prefetchw_prev_lru_page(page, &list, flags);
++
 +		VM_BUG_ON(PageLRU(page));
 +		SetPageLRU(page);
++
 +		VM_BUG_ON(!PageActive(page));
++		if (lru < LRU_ACTIVE)
++			ClearPageActive(page);
 +
 +		list_move(&page->lru, &zone->lru[lru].list);
 +		mem_cgroup_add_lru_list(page, lru);
@@ -207,7 +81,87 @@ Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 +		}
 +	}
 +	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
-+
++	if (lru < LRU_ACTIVE)
++		__count_vm_events(PGDEACTIVATE, pgmoved);
++}
+ 
+ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
+ 			struct scan_control *sc, int priority, int file)
+@@ -1254,6 +1284,7 @@ static void shrink_active_list(unsigned 
+ 	}
+ 	reclaim_stat->recent_scanned[!!file] += pgmoved;
+ 
++	__count_zone_vm_events(PGREFILL, zone, pgscanned);
+ 	if (file)
+ 		__mod_zone_page_state(zone, NR_ACTIVE_FILE, -pgmoved);
+ 	else
+@@ -1293,65 +1324,20 @@ static void shrink_active_list(unsigned 
+ 	}
+ 
+ 	/*
+-	 * Move the pages to the [file or anon] inactive list.
++	 * Move pages back to the lru list.
+ 	 */
+ 	pagevec_init(&pvec, 1);
+ 
+ 	spin_lock_irq(&zone->lru_lock);
+ 	/*
+-	 * Count referenced pages from currently used mappings as
+-	 * rotated, even though they are moved to the inactive list.
++	 * Count referenced pages from currently used mappings as rotated.
+ 	 * This helps balance scan pressure between file and anonymous
+ 	 * pages in get_scan_ratio.
+ 	 */
+ 	reclaim_stat->recent_rotated[!!file] += pgmoved;
+ 
+-	pgmoved = 0;  /* count pages moved to inactive list */
+-	lru = LRU_BASE + file * LRU_FILE;
+-	while (!list_empty(&l_inactive)) {
+-		page = lru_to_page(&l_inactive);
+-		prefetchw_prev_lru_page(page, &l_inactive, flags);
+-		VM_BUG_ON(PageLRU(page));
+-		SetPageLRU(page);
+-		VM_BUG_ON(!PageActive(page));
+-		ClearPageActive(page);
+-
+-		list_move(&page->lru, &zone->lru[lru].list);
+-		mem_cgroup_add_lru_list(page, lru);
+-		pgmoved++;
+-		if (!pagevec_add(&pvec, page)) {
+-			spin_unlock_irq(&zone->lru_lock);
+-			if (buffer_heads_over_limit)
+-				pagevec_strip(&pvec);
+-			__pagevec_release(&pvec);
+-			spin_lock_irq(&zone->lru_lock);
+-		}
+-	}
+-	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
+-	__count_zone_vm_events(PGREFILL, zone, pgscanned);
+-	__count_vm_events(PGDEACTIVATE, pgmoved);
+-
+-	pgmoved = 0;  /* count pages moved back to active list */
+-	lru = LRU_ACTIVE + file * LRU_FILE;
+-	while (!list_empty(&l_active)) {
+-		page = lru_to_page(&l_active);
+-		prefetchw_prev_lru_page(page, &l_active, flags);
+-		VM_BUG_ON(PageLRU(page));
+-		SetPageLRU(page);
+-		VM_BUG_ON(!PageActive(page));
+-
+-		list_move(&page->lru, &zone->lru[lru].list);
+-		mem_cgroup_add_lru_list(page, lru);
+-		pgmoved++;
+-		if (!pagevec_add(&pvec, page)) {
+-			spin_unlock_irq(&zone->lru_lock);
+-			if (buffer_heads_over_limit)
+-				pagevec_strip(&pvec);
+-			__pagevec_release(&pvec);
+-			spin_lock_irq(&zone->lru_lock);
+-		}
+-	}
+-	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
++	move_active_pages_to_lru(LRU_ACTIVE + file * LRU_FILE, &l_active);
++	move_active_pages_to_lru(LRU_BASE   + file * LRU_FILE, &l_inactive);
+ 
  	spin_unlock_irq(&zone->lru_lock);
  	if (buffer_heads_over_limit)
- 		pagevec_strip(&pvec);
