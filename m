@@ -1,131 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759001AbZELCM0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759855AbZELCO6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759001AbZELCM0 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 22:12:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755421AbZELCMP
+	id S1759855AbZELCO6 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 22:14:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757609AbZELCOr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 22:12:15 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:57121 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754628AbZELCMP (ORCPT
+	Mon, 11 May 2009 22:14:47 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:9217 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757305AbZELCOq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 22:12:15 -0400
-Subject: [PATCH] tsc_khz= boot option to avoid TSC calibration variance
-From: john stultz <johnstul@us.ibm.com>
-To: George Spelvin <linux@horizon.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-Cc: ulrich.windl@rz.uni-regensburg.de, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, Clark Williams <williams@redhat.com>,
-       zippel@linux-m68k.org, Ingo Molnar <mingo@elte.hu>
-Content-Type: text/plain
-Date: Mon, 11 May 2009 19:12:01 -0700
-Message-Id: <1242094321.7214.156.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
-Content-Transfer-Encoding: 7bit
+	Mon, 11 May 2009 22:14:46 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mime-version:content-type
+         :content-disposition:user-agent;
+        b=Pm5W9dI0IOey2cZm5H0UWn3R2bA69kaCP6jqQjCZ9QI6g3PYoU1lW46S8X5JtzP6N/
+         XPyx2V1AQwvcsdufItVY1l5OJWXosonTlHKQuZBUC27IxgrDDS0jQ81KlvKDNIFLk6c4
+         IlcJjRx1iJkspaNfEaPv1xfE/Rs8iOO66LY4s=
+Date: Mon, 11 May 2009 19:14:39 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-input@vger.kernel.org
+Subject: [git pull] Input updates for 2.6.30-rc5
+Message-ID: <20090512021438.GB1965@dtor-d630.eng.vmware.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All, 
+Hi Linus,
 
-Despite recent tweaking, TSC calibration variance is still biting users
-who care about keeping close sync with NTP servers over reboots.
+Please pull from:
 
-Here's a recent example:
-http://lkml.indiana.edu/hypermail/linux/kernel/0905.0/02061.html
+	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
+or
+	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
 
-The problem is, each reboot, we have to calibrate the TSC, and any
-error, regardless of how small, in the calibrated freq has to be
-corrected for by NTP. Assuming the error is within 500ppm NTP can
-correct this, but until it finds the proper correction value for the new
-TSC freq, users may see time offsets from the NTP server.
+to receive updates for the input subsystem.
 
-In my experience, its fairly easy to see 100khz variance from reboot to
-reboot with 2.6.30-rc.
+Changelog:
+---------
 
-While I think its worth trying to improve the calibration further, there
-will likely be a trade-off between very accurate calibration and fast
-boot times.
+Adrian Batzill (1):
+      Input: atkbd - add force release keys quirk for Amilo Xi 3650
 
-To mitigate this, I wanted to provide a tsc_khz= boot option. This would
-allow users to set the tsc_khz value at boot-up, assuming they are
-within 1Mhz of the calibrated value (to protect against bad values).
-Once the tsc_khz value is set in grub, the box will always boot with the
-same value, so the NTP drift value prior to reboot will still be correct
-after rebooting.
+Jussi Kivilinna (1):
+      Input: ff-memless - fix signed to unsigned bit overflow
 
-Thanks to George Spelvin for the idea:
-	http://lkml.indiana.edu/hypermail/linux/kernel/0905.0/02807.html
+Thierry Reding (1):
+      Input: tsc2007 - fix locking in hrtimer handler
 
-Also thanks to George Spelvin for noticing and fixing the bogus
-frequency comparison check in my original RFC'ed patch. This version of
-the patch includes his much better comparison.
+Tim Cole (1):
+      Input: joydev - blacklist digitizers
 
-Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index e87bdbf..4c5d6aa 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2402,6 +2402,13 @@ and is between 256 and 4096 characters. It is defined in the file
- 			Used to enable high-resolution timer mode on older
- 			hardware, and in virtualized environment.
- 
-+	tsc_khz=	[x86] Set the TSC freq value.
-+			Format: <khz>
-+			Used to avoid TSC calibration error.
-+			The specified tsc_khz value must be accurate to the
-+			calibrated tsc value by 0.1%. Otherwise the calibrated
-+			value will be used.
-+
- 	turbografx.map[2|3]=	[HW,JOY]
- 			TurboGraFX parallel port interface
- 			Format:
-diff --git a/arch/x86/kernel/tsc.c b/arch/x86/kernel/tsc.c
-index d57de05..d47c871 100644
---- a/arch/x86/kernel/tsc.c
-+++ b/arch/x86/kernel/tsc.c
-@@ -825,15 +825,40 @@ static void __init init_tsc_clocksource(void)
- 	clocksource_register(&clocksource_tsc);
- }
- 
-+unsigned long tsc_khz_specified;
-+static int __init tsc_khz_specified_setup(char *str)
-+{
-+	tsc_khz_specified = simple_strtoul(str, NULL, 0);
-+	return 1;
-+}
-+
-+__setup("tsc_khz=", tsc_khz_specified_setup);
-+
-+
- void __init tsc_init(void)
- {
- 	u64 lpj;
- 	int cpu;
-+	long difference;
- 
- 	if (!cpu_has_tsc)
- 		return;
- 
- 	tsc_khz = calibrate_tsc();
-+
-+	/*
-+	 * If the calibrated TSC freq and user specified
-+	 * TSC freq are close enough, pick the what the
-+	 * user told us.
-+	 */
-+	difference = abs(tsc_khz - tsc_khz_specified);
-+	if (difference <= tsc_khz >> 10) {      /* 1/1024 = 976 ppm */
-+		printk(KERN_INFO "Using user defined TSC freq: %lu.%03lu MHz\n",
-+			tsc_khz_specified/1000,
-+			tsc_khz_specified%1000);
-+		tsc_khz = tsc_khz_specified;
-+	}
-+
- 	cpu_khz = tsc_khz;
- 
- 	if (!tsc_khz) {
+Diffstat:
+--------
 
+ drivers/input/ff-memless.c          |    2 +-
+ drivers/input/joydev.c              |    8 +++++++-
+ drivers/input/keyboard/atkbd.c      |   16 ++++++++++++++++
+ drivers/input/touchscreen/tsc2007.c |    5 +++--
+ 4 files changed, 27 insertions(+), 4 deletions(-)
+
+-- 
+Dmitry
 
