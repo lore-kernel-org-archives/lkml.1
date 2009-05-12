@@ -1,125 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760428AbZELJxH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760096AbZELJwu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760428AbZELJxH (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 05:53:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758537AbZELJwh
+	id S1760096AbZELJwu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 05:52:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbZELJwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 05:52:37 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:32154 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753556AbZELJwd (ORCPT
+	Tue, 12 May 2009 05:52:35 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:13412 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752352AbZELJwd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 May 2009 05:52:33 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=subject:from:reply-to:to:cc:content-type:organization:date
-         :message-id:mime-version:x-mailer;
-        b=fOo8z5zTmJBuTeC7pwaxzImNZD2ix+rFKL8ZJuA+om/zag2JA++AEccDjeY9TKmH5j
-         AnlVpxp4RZ3CKaH4jUSjxCyI4N0ZOEDNwico9RYGXtoDqJsawo9cBc5XF6+rDpQtOFDG
-         ldhXA5QdaMjOJbkp3HRuZLh5bRulKuj+i336I=
-Subject: [PATCH]sched: fix typo in sched-rt-group.txt file
-From: GeunSik Lim <leemgs1@gmail.com>
-Reply-To: leemgs1@gmail.com
-To: Ingo Molnar <mingo@elte.hu>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       tglx <tglx@linutronix.de>, williams <williams@redhat.com>,
-       a.p.zijlstra@chello.nl
-Content-Type: multipart/mixed; boundary="=-9amiSwTwJ4yBkhGS20Rt"
-Organization: Private
-Date: Tue, 12 May 2009 17:37:39 +0900
-Message-Id: <1242117459.31161.11.camel@centos51>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.0 (2.8.0-40.el5_1.1) 
+Message-ID: <4A0946D6.4010405@panasas.com>
+Date: Tue, 12 May 2009 12:52:22 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+MIME-Version: 1.0
+To: Tejun Heo <tj@kernel.org>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
+       sshtylyov@ru.mvista.com, mike.miller@hp.com, Eric.Moore@lsi.com,
+       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
+       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
+       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
+       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
+       Doug Gilbert <dgilbert@interlog.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH 03/11] block: add rq->resid_len
+References: <1241423927-11871-1-git-send-email-tj@kernel.org> <1241423927-11871-4-git-send-email-tj@kernel.org> <4A06DFAB.40205@panasas.com> <4A0767E5.5050205@kernel.org> <4A080C9D.9000109@panasas.com> <4A08C26E.80801@kernel.org> <4A093782.80701@panasas.com> <4A093C54.2060706@kernel.org>
+In-Reply-To: <4A093C54.2060706@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 May 2009 09:52:30.0432 (UTC) FILETIME=[5D79EE00:01C9D2E7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 05/12/2009 12:07 PM, Tejun Heo wrote:
+> Hello, Boaz.
+> 
+> Boaz Harrosh wrote:
+>>> When a request failed, the whole buffer is garbage.
+>> ret is the transferred size, right? I don't see any check for  
+>> success/failure in below code.
+>>
+>>> There's no
+>>> partial transfer.  There shouldn't be.  I don't think residual count
+>>> on request failure means anything. 
+>> That's not true, there are many cases when transfer failed eventually
+>> but some bytes are valid. Even the simple read/write case. Imagine a 
+>> very large transfer with last sector encounter a "bad sector". that can
+>> be critical, (trying to rescue a disk). And many other examples.
+> 
+> No, it doesn't work like that.  As I wrote before, those partial
+> transfers are returned to the issuer as partial _SUCCESS_ not partial
+> failure.  ie. it's successful request w/ positive residual count not
+> the other way around.  The error is communicated to the issuer when
+> the leftover is re-issued.  There's no such thing as partial failure.
+> 
+> Please consider write failing after successfully writing certain
+> number of bytes.  A failed write command MUST NOT cause any actual
+> write on the device.
+> 
 
---=-9amiSwTwJ4yBkhGS20Rt
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+I know for sure that scsi has other cases. The above is a per-command
+per-sense-information. Some commands might write/read some bytes and still return
+CHECK-CONDITION with some sense-info+residual pertaining what was actually
+executed.
 
+> Residual count is not about how many bytes have been transferred.  The
+> number of transferred bytes itself doesn't mean a thing because it
+> changes depending on which transfer protocol is used regardless of
+> where the actual failure is.  Residual count is about how many bytes
+> have been actually produced or consumed and when a command fails none
+> should have been.
+> 
 
+See above. I know for a fact that this is not always the case, and that
+it is a per command. In fact I relay on such behaviour in the osd filesystems.
+If the midlayer would filter such cases for me I would have had data
+corruptions.
 
+[Read passed end of osd-object will read up to end, and return a warning
+ check condition. With a choice of returning zero-bytes at invalid bytes
+ or returning residual]
 
-Dear Ingo,
+> Please note that in the above 'command' and 'residual count' are not
+> as defined in SCSI.  Those terms refer to how those concepts are used
+> in the kernel and via SG_IO interface.
+> 
 
-I found typo about the range of static priority ( = realtime priority )
-in "./Documentation/scheduler/sched-rt-group.txt" file.
+I do have Kernel code that relays on this. I do use bsg's SG_IO successfully
+that has above behaviour.
 
-If I don't understand static priority levels, Correct me.
+That is: total transparency of residual count and sense information
+communicated between user-code and target. Then user-code can make intelligent
+decisions based on what he's done. And this is what the Kernel policy
+should be. No more, no less.
 
+>>> Also, the 'whenever possible'
+>>> doesn't mean much when the issuer can't determine whether the value is
+>>> valid or not.  On success, we should guarantee resid count is valid,
+>>> on failure, I don't see a way we can.
+>>>
+>> Code is as strong as it's weakest link, right? If lower
+>> driver/firmware is brain-dead, what can we do? But why give up where
+>> you can do better?
+>>
+>> The scsi standard is very clear about what every one should do with
+>> the residual and what it means at every stage, everyone should do
+>> his part. Here at the middle layer we need to correctly translate
+>> what lower level returned and pass it up the chain.
+>>
+>> Must stacks are amateuristic in regard to error handling but some
+>> are not, what
+>>
+>> should we strive for, if we can? 
+> 
+> No it's not about being good or bad.  It's about being plain
+> undefined.  There is no value in setting an inherently undefined value
+> to certain values in certain corner cases.
+> 
 
-commit d6af702008117ca489a2f5476239d1688a517e98
-Author: GeunSik,Lim <leemgs1@gmail.com>
-Date:   Tue May 12 17:20:32 2009 +0900
+Again. With some commands/subsystems these are undefined, with some
+like SCSI, they are very well defined in all cases. (Even in the undefined
+cases). So please keep them intact, some code might want to relay on this.
 
-    sched: fix typo in sched-rt-group.txt file
-    
-    Fix typo about static priority's range.
-     Kernel Space priority: 0   to 99   --> User Space RT priority 99 to 0
-     Kernel Space priority: 100 to 139  --> User Space nice -20 to 19
-    
-    Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+(On the undefined cases Kernel should set a policy on what is returned)
 
-diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
-index 5ba4d3f..1537146 100644
---- a/Documentation/scheduler/sched-rt-group.txt
-+++ b/Documentation/scheduler/sched-rt-group.txt
-@@ -169,7 +169,7 @@ get their allocated time.
- 
- Implementing SCHED_EDF might take a while to complete. Priority Inheritance is
- the biggest challenge as the current linux PI infrastructure is geared towards
--the limited static priority levels 0-139. With deadline scheduling you need to
-+the limited static priority levels 0-99. With deadline scheduling you need to
- do deadline inheritance (since priority is inversely proportional to the
- deadline delta (deadline - now).
- 
+>>>> I know that in iscsi a negative residual is possible which means
+>>>> over-flow. That is: the target had more data to give then the buffer
+>>>> had space for. (which is not an error at all)
+>>> Hmm... I've never seen negative residual in use.  Is it even defined?
+>> It is defined, as I explained before. But yes no one uses it in Kernel.
+>> The "good" low-level drivers fix it up by setting resid to zero, in that
+>> case. (other wise the upper layers might crash)
+> 
+> If the upper layer might crash if the value is negative, I think it's
+> quite understandable to call negative values to be undefined.  Or
+> should we call it unsupported?
+> 
 
+Yes, unsupported.
 
------------------------------------------------
-To unsubscribe from this list: send the line "unsubscribe linux-***" 
-in the body of a message to majordomo@vger.kernel.org
-More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Please read the FAQ at  http://www.tux.org/lkml/
+Since current meaning means success, actually, and there is no real extra information
+that users need.
+Look at it this way, until today negative meant Zero with extra information which
+no one cares for.
 
-GeunSik Lim (ELS - OS Group - S/W Lab - SAIT - SAMSUNG)
-e-Mail  :1) geunsik.lim@samsung.com
-         2) leemgs@gmail.com , leemgs1@gmail.com
-HomePage: http://intomail.dnip.net/invain/me/
------------------------------------------------
+> Thanks.
+> 
 
---=-9amiSwTwJ4yBkhGS20Rt
-Content-Disposition: attachment; filename=fix-typo-static-priority-levels.patch
-Content-Type: text/x-patch; name=fix-typo-static-priority-levels.patch; charset=euckr
-Content-Transfer-Encoding: 7bit
-
-commit d6af702008117ca489a2f5476239d1688a517e98
-Author: GeunSik,Lim <leemgs1@gmail.com>
-Date:   Tue May 12 17:20:32 2009 +0900
-
-    sched: fix typo in sched-rt-group.txt file
-    
-    Fix typo about static priority's range.
-     Kernel Space priority: 0   to 99   --> User Space RT priority 99 to 0
-     Kernel Space priority: 100 to 139  --> User Space nice -20 to 19
-    
-    Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
-
-diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
-index 5ba4d3f..1537146 100644
---- a/Documentation/scheduler/sched-rt-group.txt
-+++ b/Documentation/scheduler/sched-rt-group.txt
-@@ -169,7 +169,7 @@ get their allocated time.
- 
- Implementing SCHED_EDF might take a while to complete. Priority Inheritance is
- the biggest challenge as the current linux PI infrastructure is geared towards
--the limited static priority levels 0-139. With deadline scheduling you need to
-+the limited static priority levels 0-99. With deadline scheduling you need to
- do deadline inheritance (since priority is inversely proportional to the
- deadline delta (deadline - now).
- 
-
---=-9amiSwTwJ4yBkhGS20Rt--
-
+Cheers
+Boaz
