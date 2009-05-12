@@ -1,114 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753325AbZELJq3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753438AbZELJuW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753325AbZELJq3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 05:46:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbZELJqT
+	id S1753438AbZELJuW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 05:50:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752352AbZELJuH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 05:46:19 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:57973 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751834AbZELJqS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 05:46:18 -0400
-Date: Tue, 12 May 2009 11:45:44 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Cihula, Joseph" <joseph.cihula@intel.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jmorris@namei.org" <jmorris@namei.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>, "Wang, Shane" <shane.wang@intel.com>
-Subject: Re: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
-	support
-Message-ID: <20090512094544.GE32292@elte.hu>
-References: <4A03B9C3.9090607@intel.com> <20090508095748.GH3559@elte.hu> <4F65016F6CB04E49BFFA15D4F7B798D998BA8303@orsmsx506.amr.corp.intel.com>
+	Tue, 12 May 2009 05:50:07 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:59600 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1752007AbZELJuF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 05:50:05 -0400
+Message-ID: <4A094677.5090900@cn.fujitsu.com>
+Date: Tue, 12 May 2009 17:50:47 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4F65016F6CB04E49BFFA15D4F7B798D998BA8303@orsmsx506.amr.corp.intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Steven Rostedt <rostedt@goodmis.org>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, fweisbec@gmail.com, zhaolei@cn.fujitsu.com,
+       laijs@cn.fujitsu.com, Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH v3] ftrace: add a tracepoint for	__raise_softirq_irqoff()
+References: <49FFDF9C.7040505@cn.fujitsu.com> <20090505161604.GA15524@Krystal> <4A07D3B3.10605@cn.fujitsu.com> <20090511134019.GB10932@Krystal> <alpine.DEB.2.00.0905111003280.14976@gandalf.stny.rr.com> <20090511142734.GA12722@Krystal> <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com> <20090511151353.GA14391@Krystal>
+In-Reply-To: <20090511151353.GA14391@Krystal>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Cihula, Joseph <joseph.cihula@intel.com> wrote:
 
-> > From: Ingo Molnar [mailto:mingo@elte.hu]
-> > Sent: Friday, May 08, 2009 2:58 AM
-> >
-> > * Joseph Cihula <joseph.cihula@intel.com> wrote:
-> >
-> > > +   /* if we're being called before the 1:1 mapping is set up then just
-> > > +      return and let the normal shutdown happen; this should only be
-> > > +      due to very early panic() */
-> > > +   if (!tboot_pg_dir)
-> > > +           return;
-> >
-> > Please use the customary comment style:
-> >
-> >   /*
-> >    * Comment .....
-> >    * ...... goes here:
-> >    */
-> >
-> > specified in Documentation/CodingStyle. Please fix this in all other
-> > multi-line comments in your patch as well.
+Mathieu Desnoyers wrote:
+> * Steven Rostedt (rostedt@goodmis.org) wrote:
+>>
+>>
+>> On Mon, 11 May 2009, Mathieu Desnoyers wrote:
+>>
+>>> * Steven Rostedt (rostedt@goodmis.org) wrote:
+>>>> On Mon, 11 May 2009, Mathieu Desnoyers wrote:
+>>>>> Yes, we should try to fix TRACE_EVENT, but we should fix it _before_ we
+>>>>> start using it widely. Circular header dependencies is a real problem
+>>>>> with TRACE_EVENT right now.
+
+> Yes, but this would solve most of the include dependency problems at
+> once. We would only have dependency on preempt.h left, which alone is
+> easier to deal with. And if headers don't need to include any annoying
+> headers, they don't need to use the ifdef BUILDING_EVENTS. But my point
+> is that when it's needed (and we already see two cases where it's
+> needed, with pvops instrumentation and softirq instrumentation, and I
+> guess we'll see much more), it's good to have this infrastructure in
+> place, so people don't end up trying to do hacks to the kernel code
+> changing inlines for function calls to try to deal with the circular
+> include issue.
 > 
-> Will do.
+> I think it's
 > 
-> > > +   if (shutdown_type == TB_SHUTDOWN_S3) {
-> > > +           tboot_shared->num_mac_regions = 3;
-> > > +           /* S3 resume code */
-> > > +           tboot_shared->mac_regions[0].start =
-> > > +                   PFN_PHYS(PFN_DOWN(acpi_wakeup_address));
-> > > +           tboot_shared->mac_regions[0].size =
-> > > +                   PFN_UP(WAKEUP_SIZE) << PAGE_SHIFT;
-> > > +           /* AP trampoline code */
-> > > +           tboot_shared->mac_regions[1].start =
-> > > +                   PFN_PHYS(PFN_DOWN(virt_to_phys(trampoline_base)));
-> > > +           tboot_shared->mac_regions[1].size =
-> > > +                   PFN_UP(TRAMPOLINE_SIZE) << PAGE_SHIFT;
-> > > +           /* kernel code + data + bss */
-> > > +           tboot_shared->mac_regions[2].start =
-> > > +                   PFN_PHYS(PFN_DOWN(virt_to_phys(&_text)));
-> > > +           tboot_shared->mac_regions[2].size =
-> > > +                   PFN_PHYS(PFN_UP(virt_to_phys(&_end))) -
-> > > +                   PFN_PHYS(PFN_DOWN(virt_to_phys(&_text)));
-> > > +   }
-> > > +
-> > > +   tboot_shared->shutdown_type = shutdown_type;
-> > > +
-> > > +   switch_to_tboot_pt();
-> > > +
-> > > +   ((void(*)(void))(unsigned long)tboot_shared->shutdown_entry)();
-> >
-> > shutdown_entry should probably have a proper function pointer 
-> > type, to avoid this ugliness.
+> a) needed
+> b) it does not hurt anyone who does not need it.
 > 
-> Since pointer types are different lengths depending on whether it 
-> is a 32b or 64b build environment, that would not allow a 
-> separately-compiled tboot to be used with both 32b and 64b 
-> kernels.
+> So I would definitely recommend adding such define.
+> 
 
-then the sign extension is done slightly wrong/unclean i guess. 
-Wouldnt:
+Sorry for my poor English.
+Problem is not only in TP_printk, but also in TP_PROTO if we add a
+tracer in header file.
+So, it can't be solved only by "get rid of including ftrace parts"
 
-> > > +   ((void(*)(void))(long)tboot_shared->shutdown_entry)();
+Take v2 patch for example: 
+(it is at: http://marc.info/?l=linux-kernel&m=124081169727739&w=2) 
 
-be better? Or is shutdown_entry always mapped into [0..2GB) on 
-64-bit? Even then, not sign-extending RIP addresses is wrong and 
-invites bugs/restrictions.
+In order to trace __raise_softirq_irqoff(), we should add 
+a trace function in  __raise_softirq_irqoff() and include 
+<include/trace/irq.h> in interrupte.h. 
+If we put <include/trace/irq.h> on top of linux/irq.h,
+we will see a warning of "struct softirq_action declared
+inside parameter list" in compile. It is because struct irqaction's
+definition is bypasswd before TP_PROTO.
 
-	Ingo
+To say it simple: 
+sched.c:
+include interrupte.h
+	|
+	|-->include irq.h
+	|	|-->include interrupte.h (bypassed)
+	|	|-->TP_PROTO(int irq, struct irqaction *action),
+	|	    (but struct softirq_action is not declared before,
+	|	     it raise a compile warning:struct softirq_action declared
+	|	     inside parameter list.
+	|-> ......
+	
+I can't see the solvent for this in your discuss or I understand wrong? 
+
+Xiao
+
+> Mathieu
+> 
+>> -- Steve
+>>
+>>> I think it should work, but it looks a bit too simple, so I may have
+>>> missed something... ?
+>>>
+>>> Mathieu
+>>>
+>>>
+>>> -- 
+>>> Mathieu Desnoyers
+>>> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+>>>
+> 
