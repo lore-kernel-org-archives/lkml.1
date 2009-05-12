@@ -1,115 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1750859AbZELENA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759806AbZELENX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1750859AbZELENA (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 00:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752156AbZELELH
+	id S1759806AbZELENX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 00:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbZELELj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 00:11:07 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:43653 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750986AbZELEK7 (ORCPT
+	Tue, 12 May 2009 00:11:39 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:40380 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753567AbZELELi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 00:10:59 -0400
-Message-Id: <20090512040832.681953177@goodmis.org>
-User-Agent: quilt/0.46-1
-Date: Tue, 12 May 2009 00:08:32 -0400
-From: Steven Rostedt <rostedt@goodmis.org>
-To: linux-kernel@vger.kernel.org
-Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 0/5] [GIT PULL] ring-buffer: optimize to 17% performance increase
+	Tue, 12 May 2009 00:11:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=YshIz5Ut51YVGIDAWpl9LmIAWV2dSNCfuM/23a84vrmXyeNKDGXlCoiSEFf4xpLqcM
+         GenBv3dfQZgvsZNmsl15ZQT2kKlXSLvT+4Fp7TnPDhkByjNp1xxbvrswFzNtndA08r5f
+         3jFLppjph5eGcjz7lMudhhgG6+aCarCjm/I78=
+MIME-Version: 1.0
+In-Reply-To: <1239293911.4529.7144.camel@localhost.localdomain>
+References: <49DE0C36.4070507@ti.com>
+	 <1239293911.4529.7144.camel@localhost.localdomain>
+Date: Tue, 12 May 2009 12:11:38 +0800
+Message-ID: <af3ea28a0905112111r1fa73a84j4cf9604d53288bb@mail.gmail.com>
+Subject: Re: [PATCH] Allow deferrable timers for intervals tv2-tv5 to be 
+	deferred
+From: ye janboe <janboe.ye@gmail.com>
+To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
+Cc: Jon Hunter <jon-hunter@ti.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+hi, Jon, Venki
 
-Ingo,
+This patch is same as Jouni Hogander's which has been acked by Venki
+at 30 Jun 2008.
+http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-06/msg11866.html
 
-This patch series tunes the ring buffer to be a bit faster. I used
-the ring-buffer-benmark test to help give a good idea on the
-performance of the buffer. I ran it on an 2.8 GHz 4way box on an
-idle system. I only wanted to test the write without the reader, since
-the reader can produce some cacheline bouncing. To do this I inserted
-the benchmark module with the "disable_reader=1" option.
+why Jouni Hogander's patch could not be accepted by LKML?
 
-Note, when I disable the ring buffer and run the test, I get an average
-of 87 ns. Thus the overhead of the test is 87ns, and I will show both
-the full time and the 87 subtracted from the time (in parenthesis).
+Thanks
 
-I'm also including the size of the ring_buffer.o object since some changes
-helped in shrinking the text segments too.
+Janboe
 
-Before the patch series:
-
-benchmark:  307 ns (220 ns)
-   text    data     bss     dec     hex filename
-  16554      24      12   16590    40ce kernel/trace/ring_buffer.o
-          
-         
-commit 1cd8d7358948909ab80b254eb14bcebc555ad417
-ring-buffer: remove type parameter from rb_reserve_next_event
-             
-benchmark: 302 ns (215 ns)
-   text    data     bss     dec     hex filename
-  16538      24      12   16574    40be kernel/trace/ring_buffer.o
-    
-commit be957c447f7233a67904a1b11eb3ab61e702bf4d
-ring-buffer: move calculation of event length
-
-benchmark: 293 ns (206 ns)
-   text    data     bss     dec     hex filename
-  16490      24      12   16526    408e kernel/trace/ring_buffer.o
-    
-commit 0f0c85fc80adbbd2265d89867d743f929d516805
-ring-buffer: small optimizations
-
-benchmark: 285 ns (198 ns)
-   text    data     bss     dec     hex filename
-  16474      24      12   16510    407e kernel/trace/ring_buffer.o
-
-commit 88eb0125362f2ab272cbaf84252cf101ddc2dec9
-ring-buffer: use internal time stamp function
-
-benchmark: 282 ns (195 ns)
-   text    data     bss     dec     hex filename
-  16474      24      12   16510    407e kernel/trace/ring_buffer.o
-
-
-commit 168b6b1d0594c7866caa73b12f3b8d91075695f2
-ring-buffer: move code around to remove some branches
-
-benchmark: 270 ns (183 ns)
-   text    data     bss     dec     hex filename
-  16490      24      12   16526    408e kernel/trace/ring_buffer.o
-
-Thus we went from an average of 220 ns per recording, to 183 ns.
-Which is about a 17% performance gain.
-
-For your information:
-
-Adding a reader that reads via pages (like splice), the time jumps to
-326 ns.
-
-Adding a reader that reades event by event it jumps to (with lots
-of overruns)
-469 ns.
-
-But disabling the ring buffer, the overhead for the test jumps from 87 ns
-to 113 ns, making the ring buffer cost with busy reader: 213 ns and 356 ns.
-
-Please pull the latest tip/tracing/ftrace tree, which can be found at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/ftrace
-
-
-Steven Rostedt (5):
-      ring-buffer: remove type parameter from rb_reserve_next_event
-      ring-buffer: move calculation of event length
-      ring-buffer: small optimizations
-      ring-buffer: use internal time stamp function
-      ring-buffer: move code around to remove some branches
-
-----
- kernel/trace/ring_buffer.c |   63 +++++++++++++++++++++++++-------------------
- 1 files changed, 36 insertions(+), 27 deletions(-)
--- 
+2009/4/10 Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>:
+> On Thu, 2009-04-09 at 07:54 -0700, Jon Hunter wrote:
+>> In the current kernel implementation only kernel timers for time
+>> interval tv1 are being deferred. This patch allows any timer that is
+>> configured as deferrable to be defer regardless of time interval.
+>>
+>> This patch was previously discussed on another the thread [1] and Ack'ed
+>>   by Venki Pallipadi the author of the original deferrable timer patch.
+>>
+>> Venki, could you also ack this patch for confirmation?
+>>
+>> Cheers
+>> Jon
+>>
+>> [1] http://marc.info/?l=linux-kernel&m=123196343531966&w=2
+>>
+>>
+>
+> Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+>
+>> Signed-off-by: Jon Hunter <jon-hunter@ti.com>
+>> ---
+>>   kernel/timer.c |    3 +++
+>>   1 files changed, 3 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/kernel/timer.c b/kernel/timer.c
+>> index b455556..6ab6e96 100644
+>> --- a/kernel/timer.c
+>> +++ b/kernel/timer.c
+>> @@ -1012,6 +1012,9 @@ cascade:
+>>               index = slot = timer_jiffies & TVN_MASK;
+>>               do {
+>>                       list_for_each_entry(nte, varp->vec + slot, entry) {
+>> +                             if (tbase_get_deferrable(nte->base))
+>> +                                     continue;
+>> +
+>>                               found = 1;
+>>                               if (time_before(nte->expires, expires))
+>>                                       expires = nte->expires;
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
