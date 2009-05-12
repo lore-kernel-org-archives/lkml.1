@@ -1,75 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759560AbZELLgu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759951AbZELLnp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759560AbZELLgu (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 07:36:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbZELLgj
+	id S1759951AbZELLnp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 07:43:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbZELLnf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 07:36:39 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:26414 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752038AbZELLgi convert rfc822-to-8bit (ORCPT
+	Tue, 12 May 2009 07:43:35 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:58945 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751174AbZELLne (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 07:36:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=FnxBg4Zz1htWB6NtBAqyQL3Y7rd3uuNWLyPUppLw7sxChjxXe9TqOpPe2nh/a2mNkv
-         Ipb42Lr/e8hISjUAyb93Uohj/qQAswRcg7GEhn0igjOIbJE9AIgdhAi7LvekBJOdt8h3
-         hNqjXzBO2kvyE/34HXXhzlsKLRus7DJO8u7tY=
+	Tue, 12 May 2009 07:43:34 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH v2] x86: fix ktermios-termio conversion
+Date: Tue, 12 May 2009 13:42:18 +0200
+User-Agent: KMail/1.9.9
+Cc: x86@kernel.org, linux-kernel@vger.kernel.org,
+       Remis Lima Baima <remis.developer@googlemail.com>,
+       linux-arch@vger.kernel.org
+References: <20090511222702.352192505@arndb.de> <200905121104.31275.arnd@arndb.de> <20090512091010.GD18004@elte.hu>
+In-Reply-To: <20090512091010.GD18004@elte.hu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-In-Reply-To: <1242106795.11251.286.camel@twins>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
-	 <alpine.DEB.2.00.0905101502050.18804@chino.kir.corp.google.com>
-	 <20090511142936.dd68005b.akpm@linux-foundation.org>
-	 <alpine.DEB.2.00.0905111444070.466@chino.kir.corp.google.com>
-	 <20090511151130.9a949cb7.akpm@linux-foundation.org>
-	 <1242106795.11251.286.camel@twins>
-Date: Tue, 12 May 2009 20:36:38 +0900
-X-Google-Sender-Auth: 279d069fe635e387
-Message-ID: <2f11576a0905120436k2e846494n802cf4cf6aefec7a@mail.gmail.com>
-Subject: Re: [patch 08/11 -mmotm] oom: invoke oom killer for __GFP_NOFAIL
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, gregkh@suse.de, npiggin@suse.de,
-       mel@csn.ul.ie, cl@linux-foundation.org, dave@linux.vnet.ibm.com,
-       san@android.com, arve@android.com, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905121342.19093.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+Sz9/51bM1AkDh9NgHAd2jvaTG8CQi3kbqc8B
+ 76jq1e7Rs1RJ0XA2BQmNqCWzuCCeSWZdUNJY8Q4WLZpZK3Wwzu
+ csKJVTQcwOYUg/1/0Z29w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> > Not sure it would help since the oom killer will be now be called for such
->> > an allocation and that dumps the stack (and will actually show the order
->> > and gfp flags as well).
->>
->> No, the intent of that warning is to find all call sites which use
->> __GFP_NOFAIL on order>0 so we can hunt down and eliminate them.
->>
->>
->> please review...
->
-> Fully agreed, people should use banker's algorithm to guarantee
-> progress, not create deadlocks with inf loops.
->
-> Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
+On Tuesday 12 May 2009, Ingo Molnar wrote:
+> hm, on x86 you could use get_user_try / get_user_ex() / 
+> get_user_catch() approach to linearize the dependencies and reduce 
+> register pressure.
 
-me too.
+Yes, but that would not help my intention of making the file more
+generic. The x86 code was copied into a number of architectures, and
+at least arm, m32r, parisc, sh and xtensa have big-endian configurations
+where the implementation is wrong.
 
->
->> From: Andrew Morton <akpm@linux-foundation.org>
->>
->> __GFP_NOFAIL is a bad fiction.  Allocations _can_ fail, and callers should
->> detect and suitably handle this (and not by lamely moving the infinite
->> loop up to the caller level either).
->>
->> Attempting to use __GFP_NOFAIL for a higher-order allocation is even
->> worse, so add a once-off runtime check for this to slap people around for
->> even thinking about trying it.
->>
->> Cc: David Rientjes <rientjes@google.com>
->> Cc: Mel Gorman <mel@csn.ul.ie>
->> Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+I only realized that while writing this email though and I guess I
+need to fix those as well now ;-) 
+
+	Arnd <><
