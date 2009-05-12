@@ -1,52 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756758AbZELPcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754202AbZELPce@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756758AbZELPcV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZELPcJ
+	id S1754202AbZELPce (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:32:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755299AbZELPcM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:32:09 -0400
-Received: from zcars04e.nortel.com ([47.129.242.56]:35124 "EHLO
-	zcars04e.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751949AbZELPcG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:32:06 -0400
-Message-ID: <4A099670.5060902@nortel.com>
-Date: Tue, 12 May 2009 09:32:00 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
-MIME-Version: 1.0
-To: Jussi Laako <jussi@sonarnerd.net>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       James Courtier-Dutton <James@superbug.co.uk>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       d.faggioli@sssup.it
-Subject: Re: [RFC][PATCH] Multimedia scheduling class, take 2
-References: <4959198A.3020209@sonarnerd.net>	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net>	 <1231756114.19771.6.camel@laptop> <496C6294.2040707@sonarnerd.net>	 <4971D3D5.6040801@superbug.co.uk>  <497CF128.2060903@sonarnerd.net>	 <1232954745.4863.4.camel@laptop>  <4A07E044.8040807@sonarnerd.net> <1242107859.11251.301.camel@twins> <4A094707.5040307@sonarnerd.net>
-In-Reply-To: <4A094707.5040307@sonarnerd.net>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 12 May 2009 11:32:12 -0400
+Received: from sh.osrg.net ([192.16.179.4]:50470 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754663AbZELPcL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 11:32:11 -0400
+Date: Wed, 13 May 2009 00:31:08 +0900
+To: tj@kernel.org
+Cc: fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org
+Subject: Re: [PATCH 0/2] swim3: use blk_end_request_all()
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4A0994FF.1030909@kernel.org>
+References: <1242127787-29842-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+	<4A0994FF.1030909@kernel.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 May 2009 15:32:04.0064 (UTC) FILETIME=[CD1B7600:01C9D316]
+Message-Id: <20090513003226E.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 13 May 2009 00:31:08 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jussi Laako wrote:
-> Peter Zijlstra wrote:
-> 
->>As to the patch, I still think its an exceedingly bad idea to create
->>such a horridly ill defined scheduler class. There's nothing that keeps
->>people from stuffing everything in there and either generating DoS
->>issues or still generating bad interactivity.
-> 
-> 
-> Lite patch practically exports nice levels as scheduling priorities in
-> order to make it possible to assign different levels to different
-> threads of the same process.
+On Wed, 13 May 2009 00:25:51 +0900
+Tejun Heo <tj@kernel.org> wrote:
 
-If all you're trying to do is allow different threads to run at
-different nice levels, what about extending sys_setpriority() to take a
-"which" of PRIO_THREAD?  We'd probably have to call the syscall directly
-until/unless libc picks up the new option.
+> Hello,
+> 
+> FUJITA Tomonori wrote:
+> > This is against for-2.6.31 branch in the block tree.
+> > 
+> > Tejun, don't we need to use blk_end_request_all() when we hit the
+> > maximum retry count in swim3_interrupt? Looks like we can't handle a
+> > request properly if we doesn't complete the request there.
+> 
+> Ummm.... why so?  Can you elaborate the bug scenario a bit?  I was
+> trying to keep the original behavior whereever possible.
 
-Chris
+If when a request hits the maximum retry count and
+swim3_end_request_cur() doesn't complete the request there, where the
+request will be freed?
+
+
+> > There are some other places to use blk_end_request_all if we need to.
+> 
+> There are some other places where end_request_all can be used but I
+> hope there isn't any place where we should but aren't.  :-)
+> 
+> Thanks.
+> 
+> -- 
+> tejun
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
