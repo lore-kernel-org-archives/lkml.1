@@ -1,93 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760720AbZELMkq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760841AbZELMlZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760720AbZELMkq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 08:40:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758882AbZELMkS
+	id S1760841AbZELMlZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 08:41:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756198AbZELMlP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 08:40:18 -0400
-Received: from mtagate8.de.ibm.com ([195.212.29.157]:41851 "EHLO
-	mtagate8.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753169AbZELMkP (ORCPT
+	Tue, 12 May 2009 08:41:15 -0400
+Received: from mail.deathmatch.net ([72.66.92.28]:1946 "EHLO
+	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758263AbZELMlO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 08:40:15 -0400
-In-Reply-To: <4A0889A3.8020803@gmail.com>
-References: <4A0889A3.8020803@gmail.com>
-Subject: Re: [PATCH] ehca: remove driver_data direct access of struct device
-X-KeepSent: 8BA31CF1:C84202F8-C12575B4:004501A2;
- type=4; name=$KeepSent
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: general@lists.openfabrics.org, lkml <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>
-X-Mailer: Lotus Notes Release 8.5 December 05, 2008
-Message-ID: <OF8BA31CF1.C84202F8-ONC12575B4.004501A2-C12575B4.004599CE@de.ibm.com>
-From: Hoang-Nam Nguyen <HNGUYEN@de.ibm.com>
-Date: Tue, 12 May 2009 14:40:13 +0200
-X-MIMETrack: Serialize by Router on D12ML065/12/M/IBM(Release 8.0.1|February 07, 2008) at
- 12/05/2009 14:40:14
+	Tue, 12 May 2009 08:41:14 -0400
+Date: Tue, 12 May 2009 08:38:26 -0400
+From: Bob Copeland <me@bobcopeland.com>
+To: Frans Pop <elendil@planet.nl>
+Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>, p0g0@madwifi-project.org,
+       madwifi-project@venema.h4ckr.net, Cliff.Holden@atheros.com,
+       mb@bu3sch.de, nbd@openwrt.org, mickflemm@gmail.com, proski@gnu.org,
+       juhosg@openwrt.org, linux-kernel@vger.kernel.org
+Subject: Re: [madwifi-project] Death to MadWifi!
+Message-ID: <20090512123826.GA19410@hash.localnet>
+References: <43e72e890905111627r54fd4fa4r26d9511c1fd625a2@mail.gmail.com> <4A0908AB.1070606@madwifi-project.org> <4A0908AB.1070606@madwifi-project.org> <43e72e890905112332j3e32fb8q942fb75f882b2384@mail.gmail.com> <200905121114.24355.elendil@planet.nl>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905121114.24355.elendil@planet.nl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
-Thanks for this patch. But I've to NACK because
-1) Greg KH has already done a similar patch in his tree.
-See http://lists.openfabrics.org/pipermail/general/2009-May/059442.html
-2) Your patch is incomplete
+On Tue, May 12, 2009 at 11:14:21AM +0200, Frans Pop wrote:
+> The way FOSS normally works is that one variant of alternative software 
+> will gradually die a natural death once a clear superior is established. 
+> There should be no need for members of rival projects to try to actively 
+> kill eachother off (the rival project that is, not its members).
 
-Regards
-Nam
+I agree, free software is about choice, and I really don't have a problem
+with people using madwifi if it works for them, especially as it is now
+open source (*not* the case when ath5k was born, and it would probably
+still be closed source today without the work of Luis and Atheros, and
+Jiri and Nick).
 
-Roel Kluin <roel.kluin@gmail.com> wrote on 11.05.2009 22:25:07:
+Of course, it reduces our pool of testers when people use madwifi, and I 
+do have a vested interest in seeing ath5k succeed.  But ath5k is still
+a young driver and maturing, so for now, madwifi may work better for some.
+For me, ease of compilation was enough; I switched the day it was merged
+into mainline even though it didn't work at all on my hardware at the time.
+Now, it is quite stable here and I don't miss madwifi at all.
 
-> From:
->
-> Roel Kluin <roel.kluin@gmail.com>
->
-> To:
->
-> Hoang-Nam Nguyen/Germany/IBM@IBMDE
->
-> Cc:
->
-> general@lists.openfabrics.org, lkml <linux-kernel@vger.kernel.org>:
->
-> Date:
->
-> 11.05.2009 22:25
->
-> Subject:
->
-> [PATCH] ehca: remove driver_data direct access of struct device
->
-> To avoid direct access to the driver_data pointer in struct device, the
-> functions dev_get_drvdata() and dev_set_drvdata() should be used.
->
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
-> ---
-> diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/
-> infiniband/hw/ehca/ehca_main.c
-> index 368311c..5acfb4c 100644
-> --- a/drivers/infiniband/hw/ehca/ehca_main.c
-> +++ b/drivers/infiniband/hw/ehca/ehca_main.c
-> @@ -749,7 +749,7 @@ static int __devinit ehca_probe(struct of_device
-*dev,
->
->     shca->ofdev = dev;
->     shca->ipz_hca_handle.handle = *handle;
-> -   dev->dev.driver_data = shca;
-> +   dev_set_drvdata(&dev->dev, shca);
->
->     ret = ehca_sense_attributes(shca);
->     if (ret < 0) {
-> @@ -878,7 +878,7 @@ probe1:
->
->  static int __devexit ehca_remove(struct of_device *dev)
->  {
-> -   struct ehca_shca *shca = dev->dev.driver_data;
-> +   struct ehca_shca *shca = dev_get_drvdata(&dev->dev);
->     unsigned long flags;
->     int ret;
->
+For what it is worth, I find it rather counter-productive when people on
+irc suggest using ath5k to solve every madwifi problem, for example, for
+AP mode, which clearly isn't enabled in even 2.6.30 and has bugs with the
+TIM in the wireless-testing kernel[1].  That sort of thing just leads to
+pissed off users.  Then said users go rant in bugzilla, claiming the kernel
+developers are in league with the illuminati to steal their working setup
+and rain misery down upon them[2].
+
+Anyway, it is shameful to criticize Luis' intentions, who has done
+nothing but work to get Atheros invested in the free software community;
+I say that as someone with zero ties to Atheros other than having their
+hardware.  Just look at the tree now, there are three fully open source
+Atheros drivers, one of which was written entirely on Atheros' dime.
+ 
+> P.S. This is the only post I've seen from this thread as apparently it 
+> started somewhere other than LKML.
+
+Same here, well, hopefully the thread will at least result in more
+ath5k bug reports.
+
+[1] I have a patch.
+[2] We aren't (officially, at least).
+
+-- 
+Bob Copeland %% www.bobcopeland.com
 
