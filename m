@@ -1,68 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbZELVrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755907AbZELVte@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754836AbZELVrZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 17:47:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbZELVrP
+	id S1755907AbZELVte (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 17:49:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbZELVtZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 17:47:15 -0400
-Received: from tomts13-srv.bellnexxia.net ([209.226.175.34]:55485 "EHLO
-	tomts13-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751772AbZELVrP (ORCPT
+	Tue, 12 May 2009 17:49:25 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:37231 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751271AbZELVtY convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 17:47:15 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ar0FAMmGCUpMQW1W/2dsb2JhbACBUM0VhAIF
-Date: Tue, 12 May 2009 17:47:14 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Roel Kluin <roel.kluin@gmail.com>
-Cc: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] asm-generic: fix local_add_unless macro
-Message-ID: <20090512214714.GA27519@Krystal>
-References: <49787DB4.8080308@gmail.com> <20090123154520.GB7774@Krystal> <4A09EAC9.2030104@gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <4A09EAC9.2030104@gmail.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 17:46:35 up 73 days, 18:12,  7 users,  load average: 0.93, 0.63,
-	0.45
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Tue, 12 May 2009 17:49:24 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=i2zyevgvKqnTU0RLsb55eTePmrtSfFoQu32RzwGoEh8I6jbeSJTu2fAa098x8IwPTM
+         2KxCh3Ef0O4hDiyGdb1Q0FWyyJA5j03B+Nx4oKY651gLN2b5mZd0jt2IfD2p9RGD137J
+         zqszlbuNHWOrM+bPb4C9xycXDbOgyVzaPycYE=
+MIME-Version: 1.0
+In-Reply-To: <f74141980905121422p140d1649jcfb3d94aacd42f02@mail.gmail.com>
+References: <f74141980905121422p140d1649jcfb3d94aacd42f02@mail.gmail.com>
+Date: Wed, 13 May 2009 01:49:24 +0400
+Message-ID: <a4423d670905121449p3f1112d3rf2e4a1e57cd076e@mail.gmail.com>
+Subject: Re: jsm: two or more 4/8-port boards can not initialize ports 
+	properly
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: "Alexander Y. Fomichev" <git.user@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Roel Kluin (roel.kluin@gmail.com) wrote:
-> ------------------------------>8-------------8<---------------------------------
-> `local_add_unless(x, y, z)' will be expanded to `(&(x)->y, (y), (x))', but 
-> `&(x)->y' should be `&(x)->a'
-> 
-> Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+2009/5/13 Alexander Y. Fomichev <git.user@gmail.com>:
+> G' day
+>
+> The patch bellow fix for me problem with jsm_uart_port_init
+> which still thinking it works for 2-ports borads only.
+> drivers/serial/jsm/jsm_tty.c +462
+> brd->channels[i]->uart_port.line = brd->channels[i]->ch_portnum +
+> brd->boardnum * 2;
+>
+>                         ^^^^^^^^^^^^^^^^^^^^^^
+> so for line numbers of the second and further boards
+> may/will be assigned values with the same range.
+> in my case of two digi neo-8 -- 6 ports of 8 failed to be
+> added for the second board.
 
-It looks good to me.
+Hi Alexander,
 
-Acked-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
-> ---
-> Was this patch lost? it's still not in current git.
-> 
-> diff --git a/include/asm-generic/local.h b/include/asm-generic/local.h
-> index dbd6150..fc21844 100644
-> --- a/include/asm-generic/local.h
-> +++ b/include/asm-generic/local.h
-> @@ -42,7 +42,7 @@ typedef struct
->  
->  #define local_cmpxchg(l, o, n) atomic_long_cmpxchg((&(l)->a), (o), (n))
->  #define local_xchg(l, n) atomic_long_xchg((&(l)->a), (n))
-> -#define local_add_unless(l, a, u) atomic_long_add_unless((&(l)->a), (a), (u))
-> +#define local_add_unless(l, _a, u) atomic_long_add_unless((&(l)->a), (_a), (u))
->  #define local_inc_not_zero(l) atomic_long_inc_not_zero(&(l)->a)
->  
->  /* Non-atomic variants, ie. preemption disabled and won't be touched
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Your patch is broken, your mail client wraps long lines.
+Please read Documentation/email-clients.txt.
+Please add linux-serial@vger.kernel.org,
+alan@lxorguk.ukuu.org.uk and Scott.Kilau@digi.com to CC list.
+Please add Signed-off-by line as described in Documentation/SubmittingPatches
