@@ -1,62 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbZELRTB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751454AbZELRVa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756809AbZELRTB (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 13:19:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbZELRSt
+	id S1751454AbZELRVa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 13:21:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752997AbZELRVS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 13:18:49 -0400
-Received: from mtagate2.uk.ibm.com ([194.196.100.162]:59148 "EHLO
-	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753685AbZELRSs (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 13:18:48 -0400
-Date: Tue, 12 May 2009 19:18:48 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: tom.leiming@gmail.com, arjan@infradead.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] kernel/async.c:introduce async_schedule*_atomic
-Message-ID: <20090512191848.25764af6@gondolin>
-In-Reply-To: <20090512165227.GE6255@nowhere>
-References: <1242141222-8454-1-git-send-email-tom.leiming@gmail.com>
-	<20090512154456.GC6255@nowhere>
-	<20090512160434.GD6255@nowhere>
-	<20090512183105.09e628f0@gondolin>
-	<20090512165227.GE6255@nowhere>
-Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
- Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 May 2009 13:21:18 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:46744 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752181AbZELRVR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 13:21:17 -0400
+Message-ID: <4A09AFD1.5090604@suse.com>
+Date: Tue, 12 May 2009 13:20:17 -0400
+From: Jeff Mahoney <jeffm@suse.com>
+Organization: SUSE Labs, Novell, Inc
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       linux-parisc@vger.kernel.org, Al Viro <viro@zeniv.linux.org.uk>,
+       reiserfs-devel@vger.kernel.org
+Subject: Re: 2.6.30-rc5: reiserfs is broken on parisc (bisected)
+References: <a4423d670905120940r5de3eab7v7e8e92d89107b962@mail.gmail.com>
+In-Reply-To: <a4423d670905120940r5de3eab7v7e8e92d89107b962@mail.gmail.com>
+X-Enigmail-Version: 0.95.2
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009 18:52:29 +0200,
-Frederic Weisbecker <fweisbec@gmail.com> wrote:
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-> This division would make more sense indeed.
+Alexander Beregalov wrote:
+> Hi
 > 
-> - async_schedule_inatomic() would be nosync() and would use
->   GFP_ATOMIC. I guess the case where we want to run
->   a job synchronously from atomic in case of async failure is too rare
->   (non-existent?).
-
-It would add complexity for those callers providing a function that is
-safe to be called in both contexts.
-
-> - async_schedule_nosync() would be only nosync() and would use
->   GFP_KERNEL
+> ab17c4f02156c4f75d7fa43a5aa2a7f942d47201 is the first bad commit
+> (reiserfs: fixup xattr_root caching)
 > 
-> I'm not sure the second case will ever be used though.
-
-It might make sense for the "just fail if we cannot get memory" case.
-
+> Kernel panics when init tries to remount rootfs (reiserfs) with
+> read-write access.
+> Read-only access works fine.
 > 
-> Another alternative would be to define a single async_schedule_nosync()
-> which also takes a gfp flag.
+> No more messages on the screen before panic.
+> 
+> Is it endianess related?
 
-Wouldn't async_schedule() then need a gfp flag as well?
+No, not at all. There was a problem with the xattr code if the kernel
+was built with xattrs disabled. It assumed that
+REISERFS_SB(s)->xattr_root would be available, which isn't the case when
+xattrs aren't enabled. Part of it has been cleaned up in -git1, and I've
+sent Al some additional patches to fix the rest of it up.
+
+There's a thread called "reiserfs xattr fixups" that contains 4 patches.
+The patch marked with * is the one I believe will fix your problem.
+
+- - reiserfs: cleanup ifdefs
+- - reiserfs: deal with NULL xattr root w/ xattrs disabled *
+- - reiserfs: fixup perms when xattrs are disabled
+- - reiserfs: allow exposing privroot w/ xattrs enabled
+
+- -Jeff
+
+- --
+Jeff Mahoney
+SUSE Labs
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkoJr9EACgkQLPWxlyuTD7JbfACfSV+WiMxReRCr/YRDT8IBf7M8
+jVkAn3fhf3R1i5cyi/YJ+vtO/WTd6Lre
+=90Xq
+-----END PGP SIGNATURE-----
