@@ -1,62 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756808AbZELWha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754836AbZELWmz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756808AbZELWha (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 18:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbZELWhT
+	id S1754836AbZELWmz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 18:42:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZELWmp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 18:37:19 -0400
-Received: from rere.qmqm.pl ([89.167.52.164]:51792 "EHLO rere.qmqm.pl"
+	Tue, 12 May 2009 18:42:45 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:7337 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751359AbZELWhS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 18:37:18 -0400
-Date: Wed, 13 May 2009 00:37:18 +0200
-From: =?iso-8859-2?Q?Micha=B3_Miros=B3aw?= <mirq-linux@rere.qmqm.pl>
-To: linux-mtd@lists.infradead.org, dwmw2@infradead.org
-Cc: linux-kernel@vger.kernel.org
-Subject: [PATCH/RESEND 2.6.29.3] MTD: Add SST39SF040 chip to jedec_probe
-Message-ID: <20090512223718.GB26588@rere.qmqm.pl>
-References: <20081118010902.GA4130@rere.qmqm.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-2
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20081118010902.GA4130@rere.qmqm.pl>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1751980AbZELWmo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 18:42:44 -0400
+X-IronPort-AV: E=Sophos;i="4.41,184,1241420400"; 
+   d="scan'208";a="171203480"
+Subject: Re: [stable] [PATCH] NFS: Fix the notifications when renaming onto
+ an existing file
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+To: Greg KH <greg@kroah.com>
+Cc: stable@kernel.org, linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20090512223105.GA16679@kroah.com>
+References: <20090512222420.6972.25308.stgit@heimdal.trondhjem.org>
+	 <20090512223105.GA16679@kroah.com>
+Content-Type: text/plain
+Content-Transfer-Encoding: 7bit
+Organization: NetApp
+Date: Tue, 12 May 2009 18:42:40 -0400
+Message-Id: <1242168160.5407.18.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 12 May 2009 22:42:45.0271 (UTC) FILETIME=[F7AABA70:01C9D352]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add SST39SF040 chip (like SST39SF020A but bigger - 4Mbit).
+On Tue, 2009-05-12 at 15:31 -0700, Greg KH wrote:
+> On Tue, May 12, 2009 at 06:24:20PM -0400, Trond Myklebust wrote:
+> > NFS appears to be returning an unnecessary "delete" notification when
+> > we're doing an atomic rename. See
+> > 
+> >   http://bugzilla.gnome.org/show_bug.cgi?id=575684
+> > 
+> > The fix is to get rid of the redundant call to d_delete().
+> > 
+> > Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+> > ---
+> > Please apply to 2.6.27 - 2.6.29 stable series...
+> 
+> Is this already in Linus's tree?  If so, what is the git commit id?
 
-Signed-off-by: Micha³ Miros³aw <mirq-linux@rere.qmqm.pl>
+Sorry, I forgot to include that. The commit id in mainline is
+b1e4adf4ea41bb8b5a7bfc1a7001f137e65495df.
 
---- linux-2.6.27.6-brfix1/drivers/mtd/chips/jedec_probe.c	2008-11-16 14:24:30.000000000 +0100
-+++ rechot/drivers/mtd/chips/jedec_probe.c	2008-11-18 01:28:10.000000000 +0100
-@@ -165,6 +165,7 @@
- #define SST39LF040	0x00D7
- #define SST39SF010A	0x00B5
- #define SST39SF020A	0x00B6
-+#define SST39SF040	0x00B7
- #define SST49LF004B	0x0060
- #define SST49LF040B	0x0050
- #define SST49LF008A	0x005a
-@@ -1392,6 +1393,18 @@
- 		}
- 	}, {
- 		.mfr_id		= MANUFACTURER_SST,
-+		.dev_id		= SST39SF040,
-+		.name		= "SST 39SF040",
-+		.devtypes	= CFI_DEVICETYPE_X8,
-+		.uaddr		= MTD_UADDR_0x5555_0x2AAA,
-+		.dev_size	= SIZE_512KiB,
-+		.cmd_set	= P_ID_AMD_STD,
-+		.nr_regions	= 1,
-+		.regions	= {
-+			ERASEINFO(0x01000,128),
-+		}
-+	}, {
-+		.mfr_id		= MANUFACTURER_SST,
- 		.dev_id		= SST49LF040B,
- 		.name		= "SST 49LF040B",
- 		.devtypes	= CFI_DEVICETYPE_X8,
+Cheers
+  Trond
 
+-- 
+Trond Myklebust
+Linux NFS client maintainer
+
+NetApp
+Trond.Myklebust@netapp.com
+www.netapp.com
