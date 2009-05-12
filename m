@@ -1,60 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756692AbZELPHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbZELPIw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756692AbZELPHm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbZELPH3
+	id S1756745AbZELPIw (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:08:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbZELPIk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:07:29 -0400
-Received: from sh.osrg.net ([192.16.179.4]:44812 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752276AbZELPH1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:07:27 -0400
-Date: Wed, 13 May 2009 00:06:21 +0900
-To: bharrosh@panasas.com
-Cc: fujita.tomonori@lab.ntt.co.jp, k-ueda@ct.jp.nec.com, tj@kernel.org,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       benh@kernel.crashing.org
-Subject: Re: [PATCH] swim3: use blk_end_request instead of
- blk_update_request
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4A098B8D.10107@panasas.com>
-References: <1242127787-29842-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<1242127787-29842-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-	<4A098B8D.10107@panasas.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
+	Tue, 12 May 2009 11:08:40 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:29962 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752121AbZELPIi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 11:08:38 -0400
+Message-ID: <4A0990E1.7080508@panasas.com>
+Date: Tue, 12 May 2009 18:08:17 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+MIME-Version: 1.0
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: tj@kernel.org, axboe@kernel.dk, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, linux-ide@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
+       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
+       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
+       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
+       dgilbert@interlog.com, djwong@us.ibm.com
+Subject: Re: [PATCH 03/11] block: add rq->resid_len
+References: <4A080C9D.9000109@panasas.com>	<20090511235852Z.fujita.tomonori@lab.ntt.co.jp>	<4A093A34.3020101@panasas.com> <20090513000150H.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090513000150H.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Message-Id: <20090513000742X.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 13 May 2009 00:06:22 +0900 (JST)
+X-OriginalArrivalTime: 12 May 2009 15:08:37.0874 (UTC) FILETIME=[86F3E520:01C9D313]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009 17:45:33 +0300
-Boaz Harrosh <bharrosh@panasas.com> wrote:
-
-> On 05/12/2009 02:29 PM, FUJITA Tomonori wrote:
-> > swim3 is the only user of blk_update_request(). Let's use
-> > blk_end_request instead of blk_update_request. swim3 doesn't need to
-> > update a request manually. 
+On 05/12/2009 06:00 PM, FUJITA Tomonori wrote:
+> On Tue, 12 May 2009 11:58:28 +0300
+> Boaz Harrosh <bharrosh@panasas.com> wrote:
 > 
+>> On 05/11/2009 05:59 PM, FUJITA Tomonori wrote:
+>>> On Mon, 11 May 2009 14:31:41 +0300
+>>> Boaz Harrosh <bharrosh@panasas.com> wrote:
+>>>
+>>>>>>> diff --git a/drivers/scsi/libsas/sas_expander.c b/drivers/scsi/libsas/sas_expander.c
+>>>>>>> index 3da02e4..6605ec9 100644
+>>>>>>> --- a/drivers/scsi/libsas/sas_expander.c
+>>>>>>> +++ b/drivers/scsi/libsas/sas_expander.c
+>>>>>>> @@ -1936,12 +1936,8 @@ int sas_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
+>>>>>>>  			       bio_data(rsp->bio), rsp->data_len);
+>>>>>>>  	if (ret > 0) {
+>>>>>>>  		/* positive number is the untransferred residual */
+>>>>>>> -		rsp->data_len = ret;
+>>>>>>> -		req->data_len = 0;
+>>>>>>> +		rsp->resid_len = ret;
+>>>>>>>  		ret = 0;
+>>>>>>> -	} else if (ret == 0) {
+>>>>>>> -		rsp->data_len = 0;
+>>>>>>> -		req->data_len = 0;
+>>>>>>>  	}
+>>>>>>>  
+>>>>>>>  	return ret;
+>>>>>> This is actually a bug fix, as well as a strait conversion
+>>>>> Can you elaborate a bit about the bug fix part?
+>>>>>
+>>>> Nothing big really, just that before (according to the comment), the theoretical
+>>>> negative case would be full-residual. and now it is zero (untouched).
+>>>>
+>>>> I know that in iscsi a negative residual is possible which means over-flow. That is:
+>>>> the target had more data to give then the buffer had space for. (which is not an error at all)
+>>> Hmm, iSCSI? This code is for SAS management Protocol.
+>>>
+>> I gave that as an example of what the scsi standard says about negative
+>> residual count return from the target. If SAS as sepecific and different
+>> meaning to negative residual, it should be noted and handled.
 > 
-> > In addition, we can unexport
-> > blk_update_request().
-> > 
+> Please read the code first.
 > 
-> blk_update_request() was meant for request-based-multi-path, and not for swim3
-> please see:
->     32fab448 block: add request update interface
-> 
-> CC: Kiyoshi Ueda<k-ueda@ct.jp.nec.com>
+> If sas_smp_handler() returns a negative value, a lld doesn't transfer
+> anything. The original code used full-residual. The original code is
+> fine. Your 'this is a bug fix' claim is wrong. We need to revert the
+> original behavior though.
 
-I see, thanks. Looks like we need to export it but I still think that
-the bug fix patch for swim3 is valid and it's better for swim3 to use
-blk_end_request().
+Please read my full reply, I said yes old code was better, but not
+good enough, error status must be returned also in this case.
 
+This code is already submitted are you sending a fix?
 
-> I think Tejun Heo was just using that in some recent block layer, transformation.
-> Tejun?
-
-At least, there is no users of it in Jens' for-2.6.31.
+Thanks
+Boaz
