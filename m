@@ -1,71 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760477AbZELMSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758295AbZELMa1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760477AbZELMSU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 08:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754647AbZELMSK
+	id S1758295AbZELMa1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 08:30:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754263AbZELMaO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 08:18:10 -0400
-Received: from mail.atmel.fr ([81.80.104.162]:53636 "EHLO atmel-es2.atmel.fr"
+	Tue, 12 May 2009 08:30:14 -0400
+Received: from mail.atmel.fr ([81.80.104.162]:43520 "EHLO atmel-es2.atmel.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753909AbZELMSJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 08:18:09 -0400
-X-Greylist: delayed 525 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 May 2009 08:18:04 EDT
-Message-ID: <4A0966D8.3080100@atmel.com>
-Date: Tue, 12 May 2009 14:08:56 +0200
+	id S1752229AbZELMaN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 08:30:13 -0400
+Message-ID: <4A096BCB.3030403@atmel.com>
+Date: Tue, 12 May 2009 14:30:03 +0200
 From: Nicolas Ferre <nicolas.ferre@atmel.com>
 Organization: atmel
 User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Ben Nizette <bn@niasdigital.com>,
-       Andrew Morton <akpm@linux-foundation.org>
-CC: Haavard Skinnemoen <hskinnemoen@atmel.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       kernel <kernel@avr32linux.org>
-Subject: Re: [PATCH] atmel-lcdc: Fix pixclock upper bound detection
-References: <1241918979.3246.10.camel@linux-51e8.site>
-In-Reply-To: <1241918979.3246.10.camel@linux-51e8.site>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+To: =?ISO-8859-15?Q?Daniel_Gl=F6ckner?= <dg@emlix.com>
+CC: linux-fbdev-devel@lists.sourceforge.net, Ben Nizette <bn@niasdigital.com>,
+       Linux Kernel list <linux-kernel@vger.kernel.org>
+Subject: Re: atmel_lcdfb: max pixclock check
+References: <49F1C0E4.9050906@emlix.com>
+In-Reply-To: <49F1C0E4.9050906@emlix.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ben Nizette :
-> AFAICT the code which checks that the requested pixclock value is within
-> bounds is incorrect.  It ensures that the lcdc core clock is at least
-> (bytes per pixel) times higher than the pixel clock rather than just
-> greater than or equal to.
+Daniel Glöckner :
+> Hi,
+> in the current Atmel LCD framebuffer driver there is the following check in the
+> fb_check_var callback:
 > 
-> There are tighter restrictions on the pixclock value as a function of
-> bus width for STN panels but even then it isn't a simple relationship as
-> currently checked for.  IMO either something like the below patch should
-> be applied or else more detailed checking logic should be implemented
-> which takes in to account the panel type as well.
+> if ((PICOS2KHZ(var->pixclock) * var->bits_per_pixel / 8) > clk_value_khz) {
+> 	dev_err(dev, "%lu KHz pixel clock is too fast\n",
+> 		PICOS2KHZ(var->pixclock));
+> 	return -EINVAL;
+> }
 > 
-> CMIIW :-)
-> 
-> Signed-off-by: Ben Nizette <bn@niasdigital.com>
+> I can't find any constraint like this in the data sheets and application note.
+> What I can find is a minimum for clk_value_khz/PICOS2KHZ(var->pixclock)
+> depending on the display type, scan mode, and interface width.
 
-Acked-by: Nicolas Ferre <nicolas.ferre@atmel.com>
+Indeed, I have just acked a patch from Ben Nizette removing this constrain.
+http://lkml.org/lkml/2009/5/12/189
 
-> ---
-> diff --git a/drivers/video/atmel_lcdfb.c b/drivers/video/atmel_lcdfb.c
-> index 9a577a8..5779641 100644
-> --- a/drivers/video/atmel_lcdfb.c
-> +++ b/drivers/video/atmel_lcdfb.c
-> @@ -351,7 +351,7 @@ static int atmel_lcdfb_check_var(struct fb_var_screeninfo *var,
->  	dev_dbg(dev, "  bpp:        %u\n", var->bits_per_pixel);
->  	dev_dbg(dev, "  clk:        %lu KHz\n", clk_value_khz);
->  
-> -	if ((PICOS2KHZ(var->pixclock) * var->bits_per_pixel / 8) > clk_value_khz) {
-> +	if (PICOS2KHZ(var->pixclock) > clk_value_khz) {
->  		dev_err(dev, "%lu KHz pixel clock is too fast\n", PICOS2KHZ(var->pixclock));
->  		return -EINVAL;
->  	}
-> 
-> 
-> 
+> Is the quoted if-statement correct or should it be changed to a minimum clock
+> divider check?
 
+We can imagine such a check depending on display type. Patches welcome ;-)
 
+> And while we're at it, is it correct to return -EINVAL here instead of changing
+> var->pixclock to the closest supported value?
+
+I do not know... Maybe someone on linux-fb-devel can answer ?
+
+Bye,
 -- 
 Nicolas Ferre
