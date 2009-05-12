@@ -1,141 +1,178 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756919AbZELPOd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756885AbZELPPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756919AbZELPOd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:14:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbZELPNx
+	id S1756885AbZELPPI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756464AbZELPOA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:13:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58932 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754524AbZELPNv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:13:51 -0400
-From: Glauber Costa <glommer@redhat.com>
-To: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, avi@redhat.com,
-       "H. Peter Anvin" <hpa@zytor.com>, Gleb Natapov <gleb@redhat.com>
-Subject: [PATCH 2/2] deal with interrupt shadow state for emulated instruction
-Date: Tue, 12 May 2009 11:13:50 -0400
-Message-Id: <1242141230-22514-3-git-send-email-glommer@redhat.com>
-In-Reply-To: <1242141230-22514-2-git-send-email-glommer@redhat.com>
-References: <1242141230-22514-1-git-send-email-glommer@redhat.com>
- <1242141230-22514-2-git-send-email-glommer@redhat.com>
+	Tue, 12 May 2009 11:14:00 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:51111 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756082AbZELPN4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 11:13:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=ct0D5XfSYcZ9stfeDuNZWaJ02+C3QYLvtR/ppsb1IWyyx4CMo0fbvAryVOq97b78EM
+         jiFg7+URi+FXkN7/o2XfagCbCBDQucNEc1Xgwl93K1xlsDNwLoSNFbxlxpvYxc6o//ca
+         GsDfif1UsyJlu+7oF3iZ2j20aUzrFYL/PiOdk=
+From: tom.leiming@gmail.com
+To: arjan@infradead.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Ming Lei <tom.leiming@gmail.com>
+Subject: [PATCH] kernel/async.c:introduce async_schedule*_atomic
+Date: Tue, 12 May 2009 23:13:42 +0800
+Message-Id: <1242141222-8454-1-git-send-email-tom.leiming@gmail.com>
+X-Mailer: git-send-email 1.6.0.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-we currently unblock shadow interrupt state when we skip an instruction,
-but failing to do so when we actually emulate one. This blocks interrupts
-in key instruction blocks, in particular sti; hlt; sequences
+From: Ming Lei <tom.leiming@gmail.com>
 
-If the instruction emulated is an sti, we have to block shadow interrupts.
-The same goes for mov ss. pop ss also needs it, but we don't currently
-emulate it.
+The async_schedule* may not be called in atomic contexts if out of
+memory or if there's too much work pending already, because the
+async function to be called may sleep.
 
-Without this patch, I cannot boot gpxe option roms at vmx machines.
-This is described at https://bugzilla.redhat.com/show_bug.cgi?id=494469
+This patch fixes the comment of async_schedule*, and introduces
+async_schedules*_atomic to allow them called from atomic contexts
+safely.
 
-Signed-off-by: Glauber Costa <glommer@redhat.com>
-CC: H. Peter Anvin <hpa@zytor.com>
-CC: Avi Kivity <avi@redhat.com>
-CC: Gleb Natapov <gleb@redhat.com>
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
 ---
- arch/x86/include/asm/kvm_x86_emulate.h |    3 +++
- arch/x86/kvm/x86.c                     |    6 +++++-
- arch/x86/kvm/x86_emulate.c             |   26 +++++++++++++++++++++++++-
- 3 files changed, 33 insertions(+), 2 deletions(-)
+ include/linux/async.h |    3 ++
+ kernel/async.c        |   56 ++++++++++++++++++++++++++++++++++++++++++------
+ 2 files changed, 52 insertions(+), 7 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_x86_emulate.h b/arch/x86/include/asm/kvm_x86_emulate.h
-index be40d6e..b7ed2c4 100644
---- a/arch/x86/include/asm/kvm_x86_emulate.h
-+++ b/arch/x86/include/asm/kvm_x86_emulate.h
-@@ -155,6 +155,9 @@ struct x86_emulate_ctxt {
- 	int mode;
- 	u32 cs_base;
+diff --git a/include/linux/async.h b/include/linux/async.h
+index 68a9530..ede9849 100644
+--- a/include/linux/async.h
++++ b/include/linux/async.h
+@@ -19,6 +19,9 @@ typedef void (async_func_ptr) (void *data, async_cookie_t cookie);
+ extern async_cookie_t async_schedule(async_func_ptr *ptr, void *data);
+ extern async_cookie_t async_schedule_domain(async_func_ptr *ptr, void *data,
+ 					    struct list_head *list);
++extern async_cookie_t async_schedule_atomic(async_func_ptr *ptr, void *data);
++extern async_cookie_t async_schedule_domain_atomic(async_func_ptr *ptr, \
++					void *data, struct list_head *list);
+ extern void async_synchronize_full(void);
+ extern void async_synchronize_full_domain(struct list_head *list);
+ extern void async_synchronize_cookie(async_cookie_t cookie);
+diff --git a/kernel/async.c b/kernel/async.c
+index 968ef94..6bf565b 100644
+--- a/kernel/async.c
++++ b/kernel/async.c
+@@ -172,12 +172,13 @@ out:
+ }
  
-+	/* interruptibility state, as a result of execution of STI or MOV SS */
-+	int interruptibility;
-+
- 	/* decode cache */
- 	struct decode_cache decode;
- };
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 3d8fcc5..b45baff 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -2362,7 +2362,7 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
- 			u16 error_code,
- 			int emulation_type)
+ 
+-static async_cookie_t __async_schedule(async_func_ptr *ptr, void *data, struct list_head *running)
++static async_cookie_t __async_schedule(async_func_ptr *ptr, void *data, \
++				struct list_head *running, int atomic)
  {
--	int r;
-+	int r, shadow_mask;
- 	struct decode_cache *c;
+ 	struct async_entry *entry;
+ 	unsigned long flags;
+ 	async_cookie_t newcookie;
+-	
++	int  sync_run = 0;
  
- 	kvm_clear_exception_queue(vcpu);
-@@ -2416,6 +2416,10 @@ int emulate_instruction(struct kvm_vcpu *vcpu,
+ 	/* allow irq-off callers */
+ 	entry = kzalloc(sizeof(struct async_entry), GFP_ATOMIC);
+@@ -186,7 +187,9 @@ static async_cookie_t __async_schedule(async_func_ptr *ptr, void *data, struct l
+ 	 * If we're out of memory or if there's too much work
+ 	 * pending already, we execute synchronously.
+ 	 */
+-	if (!async_enabled || !entry || atomic_read(&entry_count) > MAX_WORK) {
++	sync_run = !async_enabled || !entry || \
++			atomic_read(&entry_count) > MAX_WORK;
++	if (sync_run && !atomic) {
+ 		kfree(entry);
+ 		spin_lock_irqsave(&async_lock, flags);
+ 		newcookie = next_cookie++;
+@@ -195,7 +198,10 @@ static async_cookie_t __async_schedule(async_func_ptr *ptr, void *data, struct l
+ 		/* low on memory.. run synchronously */
+ 		ptr(data, newcookie);
+ 		return newcookie;
++	} else if (sync_run) {
++		return 0;
  	}
- 
- 	r = x86_emulate_insn(&vcpu->arch.emulate_ctxt, &emulate_ops);
-+	shadow_mask = vcpu->arch.emulate_ctxt.interruptibility;
 +
-+	if (r == 0)
-+		kvm_x86_ops->set_interrupt_shadow(vcpu, shadow_mask);
+ 	entry->func = ptr;
+ 	entry->data = data;
+ 	entry->running = running;
+@@ -215,15 +221,31 @@ static async_cookie_t __async_schedule(async_func_ptr *ptr, void *data, struct l
+  * @data: data pointer to pass to the function
+  *
+  * Returns an async_cookie_t that may be used for checkpointing later.
+- * Note: This function may be called from atomic or non-atomic contexts.
++ * Note:This function may be called from non-atomic contexts,and not
++ * 	called from atomic contexts with safety. Please use
++ * 	async_schedule_atomic in atomic contexts.
+  */
+ async_cookie_t async_schedule(async_func_ptr *ptr, void *data)
+ {
+-	return __async_schedule(ptr, data, &async_running);
++	return __async_schedule(ptr, data, &async_running, 0);
+ }
+ EXPORT_SYMBOL_GPL(async_schedule);
  
- 	if (vcpu->arch.pio.string)
- 		return EMULATE_DO_MMIO;
-diff --git a/arch/x86/kvm/x86_emulate.c b/arch/x86/kvm/x86_emulate.c
-index d2664fc..b847523 100644
---- a/arch/x86/kvm/x86_emulate.c
-+++ b/arch/x86/kvm/x86_emulate.c
-@@ -1372,6 +1372,8 @@ x86_emulate_insn(struct x86_emulate_ctxt *ctxt, struct x86_emulate_ops *ops)
- 	int io_dir_in;
- 	int rc = 0;
- 
-+	ctxt->interruptibility = 0;
+ /**
++ * async_schedule_atomic - schedule a function for asynchronous execution
++ * @ptr: function to execute asynchronously
++ * @data: data pointer to pass to the function
++ *
++ * Returns an async_cookie_t that may be used for checkpointing later.
++ * Note: This function can be called from atomic contexts safely.
++ */
++async_cookie_t async_schedule_atomic(async_func_ptr *ptr, void *data)
++{
++	return __async_schedule(ptr, data, &async_running, 1);
++}
++EXPORT_SYMBOL_GPL(async_schedule_atomic);
 +
- 	/* Shadow copy of register state. Committed on successful emulation.
- 	 * NOTE: we can copy them from vcpu as x86_decode_insn() doesn't
- 	 * modify them.
-@@ -1618,6 +1620,15 @@ special_insn:
- 		int err;
++/**
+  * async_schedule_domain - schedule a function for asynchronous execution within a certain domain
+  * @ptr: function to execute asynchronously
+  * @data: data pointer to pass to the function
+@@ -233,16 +255,36 @@ EXPORT_SYMBOL_GPL(async_schedule);
+  * @running may be used in the async_synchronize_*_domain() functions
+  * to wait within a certain synchronization domain rather than globally.
+  * A synchronization domain is specified via the running queue @running to use.
+- * Note: This function may be called from atomic or non-atomic contexts.
++ * Note:This function may be called from non-atomic contexts,and not
++ * 	called from atomic contexts with safety. Please use
++ * 	async_schedule_domain_atomic in atomic contexts.
+  */
+ async_cookie_t async_schedule_domain(async_func_ptr *ptr, void *data,
+ 				     struct list_head *running)
+ {
+-	return __async_schedule(ptr, data, running);
++	return __async_schedule(ptr, data, running, 0);
+ }
+ EXPORT_SYMBOL_GPL(async_schedule_domain);
  
- 		sel = c->src.val;
-+		if (c->modrm_reg == VCPU_SREG_SS) {
-+			u32 int_shadow =
-+			kvm_x86_ops->get_interrupt_shadow(ctxt->vcpu,
-+							  X86_SHADOW_INT_MOV_SS);
-+			/* See sti emulation for an explanation of this */
-+			if (!(int_shadow & X86_SHADOW_INT_MOV_SS))
-+				ctxt->interruptibility = X86_SHADOW_INT_MOV_SS;
-+		}
-+
- 		if (c->modrm_reg <= 5) {
- 			type_bits = (c->modrm_reg == 1) ? 9 : 1;
- 			err = kvm_load_segment_descriptor(ctxt->vcpu, sel,
-@@ -1846,10 +1857,23 @@ special_insn:
- 		ctxt->eflags &= ~X86_EFLAGS_IF;
- 		c->dst.type = OP_NONE;	/* Disable writeback. */
- 		break;
--	case 0xfb: /* sti */
-+	case 0xfb: { /* sti */
-+		u32 int_shadow =
-+		kvm_x86_ops->get_interrupt_shadow(ctxt->vcpu,
-+						  X86_SHADOW_INT_STI);
-+		/*
-+		 * an sti; sti; sequence only disable interrupts for the first
-+		 * instruction. So, if the last instruction, be it emulated or
-+		 * not, left the system with the INT_STI flag enabled, it
-+		 * means that the last instruction is an sti. We should not
-+		 * leave the flag on in this case
-+		 */
-+		if (!(int_shadow & X86_SHADOW_INT_STI))
-+			ctxt->interruptibility = X86_SHADOW_INT_STI;
- 		ctxt->eflags |= X86_EFLAGS_IF;
- 		c->dst.type = OP_NONE;	/* Disable writeback. */
- 		break;
-+	}
- 	case 0xfc: /* cld */
- 		ctxt->eflags &= ~EFLG_DF;
- 		c->dst.type = OP_NONE;	/* Disable writeback. */
+ /**
++ * async_schedule_domain_atomic - schedule a function for asynchronous execution within a certain domain
++ * @ptr: function to execute asynchronously
++ * @data: data pointer to pass to the function
++ * @running: running list for the domain
++ *
++ * Returns an async_cookie_t that may be used for checkpointing later.
++ * @running may be used in the async_synchronize_*_domain() functions
++ * to wait within a certain synchronization domain rather than globally.
++ * A synchronization domain is specified via the running queue @running to use.
++ * Note: This function can be called from atomic contexts safely.
++ */
++async_cookie_t async_schedule_domain_atomic(async_func_ptr *ptr, void *data,
++				     struct list_head *running)
++{
++	return __async_schedule(ptr, data, running, 1);
++}
++EXPORT_SYMBOL_GPL(async_schedule_domain_atomic);
++/**
+  * async_synchronize_full - synchronize all asynchronous function calls
+  *
+  * This function waits until all asynchronous function calls have been done.
 -- 
-1.5.6.6
+1.6.0.GIT
 
