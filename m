@@ -1,63 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752799AbZELNtd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbZELNts@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752799AbZELNtd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 09:49:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751752AbZELNtY
+	id S1753826AbZELNts (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 09:49:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZELNt3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 09:49:24 -0400
-Received: from depni.sinp.msu.ru ([213.131.7.21]:34086 "EHLO depni.sinp.msu.ru"
+	Tue, 12 May 2009 09:49:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:52116 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751284AbZELNtX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 09:49:23 -0400
-X-Greylist: delayed 1743 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 May 2009 09:49:23 EDT
-From: Serge Belyshev <belyshev@depni.sinp.msu.ru>
-To: john stultz <johnstul@us.ibm.com>
-Cc: George Spelvin <linux@horizon.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       ulrich.windl@rz.uni-regensburg.de, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, Clark Williams <williams@redhat.com>,
-       zippel@linux-m68k.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] tsc_khz= boot option to avoid TSC calibration variance
-References: <1242094321.7214.156.camel@localhost.localdomain>
-Date: Tue, 12 May 2009 17:20:00 +0400
-In-Reply-To: <1242094321.7214.156.camel@localhost.localdomain> (john stultz's
-	message of "Mon, 11 May 2009 19:12:01 -0700")
-Message-ID: <87d4aejw5b.fsf@depni.sinp.msu.ru>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754027AbZELNt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 09:49:28 -0400
+Subject: Re: [PATCH -tip] x86: cpu/proc.c adding extended_cpuid_level for
+ /proc/cpuinfo
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Borislav Petkov <borislav.petkov@amd.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <20090512133950.GA15474@aftab>
+References: <1242112482.3283.1.camel@localhost.localdomain>
+	 <20090512133950.GA15474@aftab>
+Content-Type: text/plain
+Date: Tue, 12 May 2009 19:19:37 +0530
+Message-Id: <1242136177.14832.0.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-john stultz <johnstul@us.ibm.com> writes:
+On Tue, 2009-05-12 at 15:39 +0200, Borislav Petkov wrote:
+> Hi,
+> 
+> On Tue, May 12, 2009 at 12:44:42PM +0530, Jaswinder Singh Rajput wrote:
+> > 
+> > Here are 2 patches for adding new field extended_cpuid_level, please
+> > choose PATCH whichever is more appropriate:
+> > 
+> > PATCH 1:
+> > Subject: [PATCH] x86: cpu/proc.c adding extended_cpuid_level for /proc/cpuinfo
+> > 
+> > extended_cpuid_level also gives useful information like cpuid_level
+> > and very useful for AMD processors.
+> > 
+> > Adding extended_cpuid_level in /proc/cpuinfo completes cpuid_level info.
+> 
+> and this is needed because... ?!
+> 
 
-> Once the tsc_khz value is set in grub, the box will always boot with the
-                                                      ^^^^^^
-> same value, so the NTP drift value prior to reboot will still be correct
-> after rebooting.
-No, it won't, because...
+why we need cpuid_level ?
 
->  	tsc_khz = calibrate_tsc();
-> +
-> +	/*
-> +	 * If the calibrated TSC freq and user specified
-> +	 * TSC freq are close enough, pick the what the
-> +	 * user told us.
-> +	 */
-> +	difference = abs(tsc_khz - tsc_khz_specified);
-> +	if (difference <= tsc_khz >> 10) {      /* 1/1024 = 976 ppm */
-> +		printk(KERN_INFO "Using user defined TSC freq: %lu.%03lu MHz\n",
-> +			tsc_khz_specified/1000,
-> +			tsc_khz_specified%1000);
-> +		tsc_khz = tsc_khz_specified;
-> +	}
-> +
 
-... of this "if".
-
-Please *please* don't set arbitrary limits.  Just use user supplied value.
-
-Or at the very least print big red warning if you are going to ignore a user
-supplied option (and have another tsc_khz_really= option to override faulty
-calibration routine).
