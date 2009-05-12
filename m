@@ -1,48 +1,220 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbZELPie@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757380AbZELPj1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755769AbZELPie (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:38:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756029AbZELPiP
+	id S1757380AbZELPj1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:39:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754879AbZELPjP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:38:15 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:41809 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755992AbZELPiN (ORCPT
+	Tue, 12 May 2009 11:39:15 -0400
+Received: from mtagate3.de.ibm.com ([195.212.29.152]:33031 "EHLO
+	mtagate3.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbZELPjO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:38:13 -0400
-Date: Tue, 12 May 2009 17:43:26 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Jack Steiner <steiner@sgi.com>
-Cc: David Rientjes <rientjes@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 3/3] x86: fix node_possible_map logic -v2
-Message-ID: <20090512154326.GJ19296@one.firstfloor.org>
-References: <4A05269D.8000701@kernel.org> <4A0527CB.4020807@kernel.org> <20090511175312.GA27905@sgi.com> <alpine.DEB.2.00.0905111218520.23739@chino.kir.corp.google.com> <4A0894A5.9000209@zytor.com> <alpine.DEB.2.00.0905111509570.2234@chino.kir.corp.google.com> <20090512150622.GA10015@sgi.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090512150622.GA10015@sgi.com>
-User-Agent: Mutt/1.4.2.1i
+	Tue, 12 May 2009 11:39:14 -0400
+Message-Id: <20090512153854.759364524@linux.vnet.ibm.com>
+User-Agent: quilt/0.48-1
+Date: Tue, 12 May 2009 17:38:52 +0200
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
+       Li Wei <W.Li@Sun.COM>, Michael Ellerman <michaele@au1.ibm.com>,
+       Ingo Molnar <mingo@elte.hu>,
+       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
+       Martin Schwidefsky <mschwid2@linux.vnet.ibm.com>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       WANG Cong <xiyou.wangcong@gmail.com>, Sam Ravnborg <sam@ravnborg.org>,
+       Jeff Dike <jdike@addtoit.com>
+Subject: [PATCH 1/4] kernel: constructor support
+References: <20090512153851.939166562@linux.vnet.ibm.com>
+Content-Disposition: inline; filename=kernel-constructor-support.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> We actually have configurations that match both scenarios above. The
-> system is a blade-based system with 2 processor sockets per blade.
-> Memory is socket attached and each socket is in a unique PXM.
+From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
 
-Jack, I think the interesting part would be: If you assign the CPUs
-to the next nearby node with memory. Do you see any unacceptable performance
-problems from that?
+Call constructors (gcc-generated initcall-like functions) during
+kernel start and module load. Constructors are e.g. used for gcov data
+initialization.
 
-I'm sure the problem could be solved, but it would be quite some work,
-and that would be only worth spending if it's actually a significant
-benefit.
+Disable constructor support for usermode Linux to prevent conflicts
+with host glibc.
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Signed-off-by: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+Acked-by: Rusty Russell <rusty@rustcorp.com.au>
+Acked-by: WANG Cong <xiyou.wangcong@gmail.com>
+Cc: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jeff Dike <jdike@addtoit.com>
+---
+ include/asm-generic/sections.h    |    3 +++
+ include/asm-generic/vmlinux.lds.h |   11 ++++++++++-
+ include/linux/init.h              |    3 +++
+ include/linux/module.h            |    6 ++++++
+ init/Kconfig                      |    5 +++++
+ init/main.c                       |   12 ++++++++++++
+ kernel/module.c                   |   16 ++++++++++++++++
+ 7 files changed, 55 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.30-rc5/include/asm-generic/vmlinux.lds.h
+===================================================================
+--- linux-2.6.30-rc5.orig/include/asm-generic/vmlinux.lds.h
++++ linux-2.6.30-rc5/include/asm-generic/vmlinux.lds.h
+@@ -332,6 +332,14 @@
+ /* Section used for early init (in .S files) */
+ #define HEAD_TEXT  *(HEAD_TEXT_SECTION)
+ 
++#ifdef CONFIG_CONSTRUCTORS
++#define KERNEL_CTORS()	VMLINUX_SYMBOL(__ctors_start) = .; \
++			*(.ctors)			   \
++			VMLINUX_SYMBOL(__ctors_end) = .;
++#else
++#define KERNEL_CTORS()
++#endif
++
+ /* init and exit section handling */
+ #define INIT_DATA							\
+ 	*(.init.data)							\
+@@ -340,7 +348,8 @@
+ 	CPU_DISCARD(init.data)						\
+ 	CPU_DISCARD(init.rodata)					\
+ 	MEM_DISCARD(init.data)						\
+-	MEM_DISCARD(init.rodata)
++	MEM_DISCARD(init.rodata)					\
++	KERNEL_CTORS()
+ 
+ #define INIT_TEXT							\
+ 	*(.init.text)							\
+Index: linux-2.6.30-rc5/include/linux/init.h
+===================================================================
+--- linux-2.6.30-rc5.orig/include/linux/init.h
++++ linux-2.6.30-rc5/include/linux/init.h
+@@ -136,6 +136,9 @@ typedef void (*exitcall_t)(void);
+ extern initcall_t __con_initcall_start[], __con_initcall_end[];
+ extern initcall_t __security_initcall_start[], __security_initcall_end[];
+ 
++/* Used for contructor calls. */
++typedef void (*ctor_fn_t)(void);
++
+ /* Defined in init/main.c */
+ extern int do_one_initcall(initcall_t fn);
+ extern char __initdata boot_command_line[];
+Index: linux-2.6.30-rc5/include/linux/module.h
+===================================================================
+--- linux-2.6.30-rc5.orig/include/linux/module.h
++++ linux-2.6.30-rc5/include/linux/module.h
+@@ -354,6 +354,12 @@ struct module
+ 	local_t ref;
+ #endif
+ #endif
++
++#ifdef CONFIG_CONSTRUCTORS
++	/* Constructor functions. */
++	ctor_fn_t *ctors;
++	unsigned int num_ctors;
++#endif
+ };
+ #ifndef MODULE_ARCH_INIT
+ #define MODULE_ARCH_INIT {}
+Index: linux-2.6.30-rc5/init/main.c
+===================================================================
+--- linux-2.6.30-rc5.orig/init/main.c
++++ linux-2.6.30-rc5/init/main.c
+@@ -700,6 +700,17 @@ asmlinkage void __init start_kernel(void
+ 	rest_init();
+ }
+ 
++/* Call all constructor functions linked into the kernel. */
++static void __init do_ctors(void)
++{
++#ifdef CONFIG_CONSTRUCTORS
++	ctor_fn_t *call = (ctor_fn_t *) __ctors_start;
++
++	for (; call < (ctor_fn_t *) __ctors_end; call++)
++		(*call)();
++#endif
++}
++
+ int initcall_debug;
+ core_param(initcall_debug, initcall_debug, bool, 0644);
+ 
+@@ -780,6 +791,7 @@ static void __init do_basic_setup(void)
+ 	usermodehelper_init();
+ 	driver_init();
+ 	init_irq_proc();
++	do_ctors();
+ 	do_initcalls();
+ }
+ 
+Index: linux-2.6.30-rc5/kernel/module.c
+===================================================================
+--- linux-2.6.30-rc5.orig/kernel/module.c
++++ linux-2.6.30-rc5/kernel/module.c
+@@ -2172,6 +2172,10 @@ static noinline struct module *load_modu
+ 					sizeof(*mod->tracepoints),
+ 					&mod->num_tracepoints);
+ #endif
++#ifdef CONFIG_CONSTRUCTORS
++	mod->ctors = section_objs(hdr, sechdrs, secstrings, ".ctors",
++				  sizeof(*mod->ctors), &mod->num_ctors);
++#endif
+ 
+ #ifdef CONFIG_MODVERSIONS
+ 	if ((mod->num_syms && !mod->crcs)
+@@ -2328,6 +2332,17 @@ static noinline struct module *load_modu
+ 	goto free_hdr;
+ }
+ 
++/* Call module constructors. */
++static void do_mod_ctors(struct module *mod)
++{
++#ifdef CONFIG_CONSTRUCTORS
++	unsigned long i;
++
++	for (i = 0; i < mod->num_ctors; i++)
++		mod->ctors[i]();
++#endif
++}
++
+ /* This is where the real work happens */
+ SYSCALL_DEFINE3(init_module, void __user *, umod,
+ 		unsigned long, len, const char __user *, uargs)
+@@ -2356,6 +2371,7 @@ SYSCALL_DEFINE3(init_module, void __user
+ 	blocking_notifier_call_chain(&module_notify_list,
+ 			MODULE_STATE_COMING, mod);
+ 
++	do_mod_ctors(mod);
+ 	/* Start the module */
+ 	if (mod->init != NULL)
+ 		ret = do_one_initcall(mod->init);
+Index: linux-2.6.30-rc5/init/Kconfig
+===================================================================
+--- linux-2.6.30-rc5.orig/init/Kconfig
++++ linux-2.6.30-rc5/init/Kconfig
+@@ -16,6 +16,11 @@ config DEFCONFIG_LIST
+ 	default "$ARCH_DEFCONFIG"
+ 	default "arch/$ARCH/defconfig"
+ 
++config CONSTRUCTORS
++	bool
++	depends on !UML
++	default y
++
+ menu "General setup"
+ 
+ config EXPERIMENTAL
+Index: linux-2.6.30-rc5/include/asm-generic/sections.h
+===================================================================
+--- linux-2.6.30-rc5.orig/include/asm-generic/sections.h
++++ linux-2.6.30-rc5/include/asm-generic/sections.h
+@@ -14,6 +14,9 @@ extern char __kprobes_text_start[], __kp
+ extern char __initdata_begin[], __initdata_end[];
+ extern char __start_rodata[], __end_rodata[];
+ 
++/* Start and end of .ctors section - used for constructor calls. */
++extern char __ctors_start[], __ctors_end[];
++
+ /* function descriptor handling (if any).  Override
+  * in asm/sections.h */
+ #ifndef dereference_function_descriptor
+
+
