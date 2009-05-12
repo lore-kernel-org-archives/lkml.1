@@ -1,68 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755587AbZELRAr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbZELRBF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755587AbZELRAr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 13:00:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZELRAi
+	id S1753957AbZELRBF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 13:01:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754945AbZELRAk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 13:00:38 -0400
-Received: from zrtps0kp.nortel.com ([47.140.192.56]:58628 "EHLO
-	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751177AbZELRAh (ORCPT
+	Tue, 12 May 2009 13:00:40 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:50550 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754295AbZELRAj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 13:00:37 -0400
-Message-ID: <4A09AB2E.8030002@nortel.com>
-Date: Tue, 12 May 2009 11:00:30 -0600
-From: "Chris Friesen" <cfriesen@nortel.com>
-User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
-X-Accept-Language: en-us, en
+	Tue, 12 May 2009 13:00:39 -0400
+Date: Tue, 12 May 2009 16:59:40 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 2/3] x86: add numa_move_cpus_to_node
+In-Reply-To: <4A089E53.8010106@kernel.org>
+Message-ID: <alpine.DEB.1.10.0905121658140.14226@qirst.com>
+References: <4A05269D.8000701@kernel.org> <4A052721.4010201@kernel.org> <alpine.DEB.1.10.0905112126410.28512@qirst.com> <4A089E53.8010106@kernel.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
-To: Jussi Laako <jussi@sonarnerd.net>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       James Courtier-Dutton <James@superbug.co.uk>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       d.faggioli@sssup.it
-Subject: Re: [RFC][PATCH] Multimedia scheduling class, take 2
-References: <4959198A.3020209@sonarnerd.net>	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net>	 <1231756114.19771.6.camel@laptop> <496C6294.2040707@sonarnerd.net>	 <4971D3D5.6040801@superbug.co.uk>  <497CF128.2060903@sonarnerd.net>	 <1232954745.4863.4.camel@laptop>  <4A07E044.8040807@sonarnerd.net> <1242107859.11251.301.camel@twins> <4A094707.5040307@sonarnerd.net> <4A099670.5060902@nortel.com> <4A09A525.4080107@sonarnerd.net>
-In-Reply-To: <4A09A525.4080107@sonarnerd.net>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 May 2009 17:00:34.0466 (UTC) FILETIME=[2A5A8020:01C9D323]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jussi Laako wrote:
-> Chris Friesen wrote:
-> 
->>If all you're trying to do is allow different threads to run at
->>different nice levels, what about extending sys_setpriority() to take a
->>"which" of PRIO_THREAD?  We'd probably have to call the syscall directly
->>until/unless libc picks up the new option.
-> 
-> 
-> How would this be mapped to a POSIX standard API?
+On Mon, 11 May 2009, Yinghai Lu wrote:
 
-You'd call sys_setpriority.  Actually, you'd probably have to call
-syscall(__NR_getpriority...) until glibc picks up the new option.
+> > This going to be fun for the allocators that have put their queues on the
+> > respective nodes. How are the various OS structures that were allocated on
+> > the node that is downed / upped relocated?
+>
+> NODE_DATA is new allocated on that node is backed on line for the first time.
+>
+> per_cpu will still stay with old near node. because per_cpu is somehow preallocated for all possible cpu.
 
-Then for the "which" field, instead of PRIO_PROCESS you would use a new
-PRIO_THREAD (or PRIO_TASK, whichever makes more sense) which would only
-set the nice level for the specific thread specified in the "who" field.
+Slab allocators and page allocator use neither NODE_DATA nor percpu
 
-Of course, without glibc/pthreads support you would only be able to set
-the nice level for the current thread since you don't have any way to
-map from "pthread_t *" to tid.  And you wouldn't be able to create new
-threads with a particular nice level already set.  But that argument
-holds true for a new sched policy as well, because glibc checks the
-policy internally and only knows about the normal three.
+It may be best to bring the processors down and up again if the node
+assignment changes. That will cause the allocators to reallocate the per
+cpu resources on the right node.
 
-> I would like to see
-> something which works straight out with
-> pthread_setschedprio()/pthread_getschedparam(). In order it to work
-> correctly it also needs sys_sched_get_priority_min and
-> sys_sched_get_priority_max.
-
-This option extends the "nice" API rather than the static priority API,
-so all of the above would still have a static priority of 0 for SCHED_OTHER.
-
-Chris
