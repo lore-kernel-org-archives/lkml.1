@@ -1,82 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754587AbZELWCr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZELWDG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754587AbZELWCr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 18:02:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZELWCg
+	id S1756177AbZELWDG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 18:03:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZELWCo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 18:02:36 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:56205 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751271AbZELWCf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 18:02:35 -0400
-Date: Tue, 12 May 2009 15:00:16 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Deepak Saxena <dsaxena@plexity.net>
-cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 8250: Don't restore NS16550 mode when console suspend
- is disabled
-In-Reply-To: <20090512210015.GA25540@plexity.net>
-Message-ID: <alpine.LFD.2.01.0905121452190.3343@localhost.localdomain>
-References: <20090512210015.GA25540@plexity.net>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 12 May 2009 18:02:44 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:35110 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753773AbZELWCm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 18:02:42 -0400
+Message-ID: <4A09F216.70203@redhat.com>
+Date: Tue, 12 May 2009 18:03:02 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Ingo Molnar <mingo@elte.hu>
+CC: Steven Rostedt <rostedt@goodmis.org>, lkml <linux-kernel@vger.kernel.org>,
+       Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>,
+       "K.Prasad" <prasad@linux.vnet.ibm.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>
+Subject: Re: [PATCH -tip v5 0/7] tracing: kprobe-based event tracer and x86
+ instruction decoder
+References: <20090509004829.5505.38720.stgit@localhost.localdomain> <20090509044302.GH8007@elte.hu>
+In-Reply-To: <20090509044302.GH8007@elte.hu>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Tue, 12 May 2009, Deepak Saxena wrote:
+Ingo Molnar wrote:
+> * Masami Hiramatsu <mhiramat@redhat.com> wrote:
 > 
-> Commit b5b82df6, from May 2007, breaks no_console_suspend on the OLPC 
-> XO laptop. Basically what happens is that upon returning from resume, 
-> serial8250_resume_port() will reconfigure the port for high speed
-> mode and all console output will be garbled, making debug of the 
-> resume path painful. This patch modifies serial8250_resume_port() to 
-> not touch the port in the case where it is the console port and console 
-> suspend is disabled.
+>> Hi,
+>>
+>> Here are the patches of kprobe-based event tracer for x86, version 
+>> 5, which allows you to probe various kernel events through ftrace 
+>> interface.
+>>
+>> This version supports only x86(-32/-64) (but porting it on other 
+>> arch just needs kprobes/kretprobes and register and stack access 
+>> APIs).
+>>
+>> This patchset also includes x86(-64) instruction decoder which 
+>> supports non-SSE/FP opcodes and includes x86 opcode map. I think 
+>> it will be possible to share this opcode map with KVM's decoder.
+>>
+>> This series can be applied on the latest linux-2.6-tip tree.
+>>
+>> This patchset includes following changes:
+>> - Add x86 instruction decoder [1/7]
+>> - Check insertion point safety in kprobe [2/7]
+>> - Cleanup fix_riprel() with insn decoder [3/7]
+>> - Add kprobe-tracer plugin [4/7]
+>> - Fix kernel_trap_sp() on x86 according to systemtap runtime. [5/7]
+>> - Add arch-dep register and stack fetching functions [6/7]
+>> - Support fetching various status (register/stack/memory/etc.) [7/7]
+>>
+>> Future items:
+>> - .init function tracing support.
+>> - Support primitive types(long, ulong, int, uint, etc) for args.
 > 
-> Signed-off-by: Deepak Saxena <dsaxena@laptop.org>
+> Ok, this looks pretty complete already.
 > 
-> ---
-> The OLPC tree has been carrying a workaround for about two years but
-> this patch is not the version we've been using. That one can be
-> found at http://dev.laptop.org/~dsaxena/patches/console_suspend_old.patch.
-> I prefer the approach of handling this in the 8250 driver itself.
+> Two high-level comments:
+> 
+>  - There's no self-test - would it be possible to add one? See 
+>    trace_selftest* in kernel/trace/
+> 
+>  - No generic integration.
 
-Hmm. I already applied this, but then after looking closer, I undid that. 
-Why? It looks buggy:
+Hmm, Ingo, could you tell me what I can do for the integration?
+Would you means that I should use filters?
 
-> -	if (up->capabilities & UART_NATSEMI) {
-> +	if ((up->capabilities & UART_NATSEMI) && 
-> +	     (!uart_console(&up->port) && console_suspend_enabled)) {
->  		unsigned char tmp;
+Thank you,
 
-Isn't that second test wrong? Should it not be
+-- 
+Masami Hiramatsu
 
-	if ((up->capabilities & UART_NATSEMI) &&
-		(console_suspend_enabled || !uart_console(&up->port)) {
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-instead?
+e-mail: mhiramat@redhat.com
 
-In fact, I'd suggest making a helper function called 
-"do_suspend_uart(up)", something like
-
-	/*
-	 * Suspend the uart port unless it's a console. 
-	 *
-	 * But suspend even consoles if "console_suspend_enabled"
-	 * is set.
-	 */
-	static inline int do_suspend_uart(struct uart_port *port)
-	{
-		return console_suspend_enabled || !uart_console(port);
-	}
-
-and then make all these things (including the _existing_ cases in 
-uart_suspend_port() use that helper function, rather than writing it out.
-
-		Linus
