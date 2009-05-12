@@ -1,61 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbZELNWT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753941AbZELNXW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754566AbZELNWT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 09:22:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbZELNWF
+	id S1753941AbZELNXW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 09:23:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751274AbZELNXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 09:22:05 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36897 "EHLO mx2.redhat.com"
+	Tue, 12 May 2009 09:23:11 -0400
+Received: from smtp28.orange.fr ([80.12.242.101]:42449 "EHLO smtp28.orange.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751452AbZELNWE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 09:22:04 -0400
-Message-ID: <4A09778B.5030809@redhat.com>
-Date: Tue, 12 May 2009 09:20:11 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first	class
- citizen
-References: <20090430195439.e02edc26.akpm@linux-foundation.org> <49FB01C1.6050204@redhat.com> <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org> <20090507134410.0618b308.akpm@linux-foundation.org> <20090508081608.GA25117@localhost> <20090508125859.210a2a25.akpm@linux-foundation.org> <20090512025058.GA7518@localhost>
-In-Reply-To: <20090512025058.GA7518@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1751095AbZELNXK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 09:23:10 -0400
+X-ME-UUID: 20090512132309671.A3EBB80000AE@mwinf2823.orange.fr
+Subject: Re: [madwifi-project] Death to MadWifi!
+From: Xavier Bestel <xavier.bestel@free.fr>
+To: Bob Copeland <me@bobcopeland.com>
+Cc: Frans Pop <elendil@planet.nl>, "Luis R. Rodriguez" <mcgrof@gmail.com>,
+       p0g0@madwifi-project.org, madwifi-project@venema.h4ckr.net,
+       Cliff.Holden@atheros.com, mb@bu3sch.de, nbd@openwrt.org,
+       mickflemm@gmail.com, proski@gnu.org, juhosg@openwrt.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090512123826.GA19410@hash.localnet>
+References: <43e72e890905111627r54fd4fa4r26d9511c1fd625a2@mail.gmail.com>
+	 <4A0908AB.1070606@madwifi-project.org>
+	 <4A0908AB.1070606@madwifi-project.org>
+	 <43e72e890905112332j3e32fb8q942fb75f882b2384@mail.gmail.com>
+	 <200905121114.24355.elendil@planet.nl>
+	 <20090512123826.GA19410@hash.localnet>
+Content-Type: text/plain
+Date: Tue, 12 May 2009 15:22:33 +0200
+Message-Id: <1242134553.2139.25.camel@skunk>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.3) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
+On Tue, 2009-05-12 at 08:38 -0400, Bob Copeland wrote:
+> For what it is worth, I find it rather counter-productive when people on
+> irc suggest using ath5k to solve every madwifi problem, for example, for
+> AP mode, which clearly isn't enabled in even 2.6.30 and has bugs with the
+> TIM in the wireless-testing kernel[1].  That sort of thing just leads to
+> pissed off users.
 
->> Also, the change makes this comment:
->>
->> 	spin_lock_irq(&zone->lru_lock);
->> 	/*
->> 	 * Count referenced pages from currently used mappings as
->> 	 * rotated, even though they are moved to the inactive list.
->> 	 * This helps balance scan pressure between file and anonymous
->> 	 * pages in get_scan_ratio.
->> 	 */
->> 	reclaim_stat->recent_rotated[!!file] += pgmoved;
->>
->> inaccurate.
-> 
-> Good catch, I'll just remove the stale "even though they are moved to
-> the inactive list".
+I'm one of them. Hours dealing with hostapd and ath5k, and then
+realizing that AP mode just isn't there.
+It'll be a while before I'll try it again, even if madwifi has its own
+ways of pissing me off.
 
-Well, it is still true for !VM_EXEC pages.
+	Xav
 
--- 
-All rights reversed.
+
