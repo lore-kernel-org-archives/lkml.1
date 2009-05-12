@@ -1,111 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758899AbZELCVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760026AbZELCY5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758899AbZELCVh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 22:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757744AbZELCV2
+	id S1760026AbZELCY5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 22:24:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752435AbZELCYs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 22:21:28 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:51344 "EHLO bilbo.ozlabs.org"
+	Mon, 11 May 2009 22:24:48 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:39163 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755530AbZELCV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 22:21:27 -0400
-Subject: Re: [PATCH] Fix MSI-X with NIU cards
-From: Michael Ellerman <michael@ellerman.id.au>
-Reply-To: michael@ellerman.id.au
-To: David Miller <davem@davemloft.net>
-Cc: matthew@wil.cx, jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090511.164017.116664605.davem@davemloft.net>
-References: <1242004911.7767.26.camel@concordia>
-	 <20090510.223645.193708481.davem@davemloft.net>
-	 <1242052211.7011.4.camel@concordia>
-	 <20090511.164017.116664605.davem@davemloft.net>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-GjJiVWLdYs1x1jPVsSmk"
-Date: Tue, 12 May 2009 12:21:26 +1000
-Message-Id: <1242094886.7421.26.camel@concordia>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1751914AbZELCYr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 22:24:47 -0400
+Message-ID: <4A08DDE2.1080708@garzik.org>
+Date: Mon, 11 May 2009 22:24:34 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Rusty Russell <rusty@rustcorp.com.au>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
+       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
+Subject: Re: [RFC PATCH 2/2] kernel/sched.c: VLA in middle of struct
+References: <20090508184838.GA11157@havoc.gtf.org> <20090508185015.GA11320@havoc.gtf.org> <20090508190944.GB12130@elte.hu> <200905101819.41765.rusty@rustcorp.com.au> <20090511105816.GG4648@elte.hu> <4A088DF4.7080305@garzik.org> <20090511204933.GA7737@elte.hu>
+In-Reply-To: <20090511204933.GA7737@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Ingo Molnar wrote:
+>>>>> That cpumask[] should probably be cpumask[0], to document the
+>>>>> aliasing to ->span and ->cpus properly.
+>>>> If the comment wasn't sufficient documentation, I don't think that  
+>>>> would help :(
+>>> It's a visual helper: it matches up with how we do these 'zero size  
+>>> array means dynamic structure continuation' tricks generally.
+>>>
+>>> I first mis-parsed the code for a second when seeing cpumask[].  
+>>> cpumask[0] stands out like a sore thumb. And we dont read comments  
+>>> anyway ;-)
+>>>
+>>> Jeff, i suspect you found this because you are working on something  
+>>> rather interesting? :) If yes, would it help your project if we did  
+>>> the cpumask[0] cleanup and pushed it upstream immediately?
+>> I think cpumask[0] would be more clear and consistent with the 
+>> rest of the kernel.
+>>
+>> But unfortunately for the twin projects of (a) static analysis and 
+>> checking with 'sparse', and (b) compiling under another compiler, 
+>> VLA-in-middle-of-struct is a killer in either case.
+> 
+> even if at the end of the struct?
 
---=-GjJiVWLdYs1x1jPVsSmk
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Putting the VLA at the end of the struct would be a huge help, yes.
 
-On Mon, 2009-05-11 at 16:40 -0700, David Miller wrote:
-> From: Michael Ellerman <michael@ellerman.id.au>
-> Date: Tue, 12 May 2009 00:30:11 +1000
->=20
-> > On Sun, 2009-05-10 at 22:36 -0700, David Miller wrote:
-> >> From: Michael Ellerman <michael@ellerman.id.au>
-> >> Date: Mon, 11 May 2009 11:21:51 +1000
-> >>=20
-> >> > So I guess this device is just silently ignoring that write?
-> >>=20
-> >> No, it signals a fault on the PCI bus, which is how we noticed
-> >> this problem in the first place.
-> >=20
-> > But the patch doesn't change that? It just removes the readl AFAICS:
->=20
-> I'm on slow satellite internet here out in the ocean, so I wish
-> the author of this patch would help with your feedback :-/
+For example, struct sched_group and struct sched_domain are OK as-is 
+(though "[0]" would be preferred).
 
-Me too :) *cough*
+It is the definition of struct static_sched_group and struct 
+static_sched_domain that creates the problem, because with the bitmap 
+following cpumask[] and span[], the VLA is no longer at the end of the 
+struct.
 
-> > Or has msix_mask_irq() changed since 413f81eba?
->=20
-> You could ask GIT, and to answer your question, indeed it has.
+VLA-in-the-middle raises the complexity required of the compiler quite a 
+bit.  As a result, VLA-in-middle is not implemented in sparse or clang 
+(LLVM's C front-end and static analyzer).
 
-Sorry it was late. I don't think it has actually:
+	Jeff
 
-concordia powerpc $ git log 413f81eba..1d80cac0f drivers/pci/msi.c=20
-concordia powerpc $=20
 
-And I don't see any changes in Jesse's git tree via gitweb.
-
-I still see:
-
-158 static void msix_mask_irq(struct msi_desc *desc, u32 flag)             =
-    =20
-159 {
-160         u32 mask_bits =3D desc->masked;
-161         unsigned offset =3D desc->msi_attrib.entry_nr * PCI_MSIX_ENTRY_=
-SIZE +
-162                                         PCI_MSIX_ENTRY_VECTOR_CTRL_OFFS=
-ET;
-163         mask_bits &=3D ~1;
-164         mask_bits |=3D flag;
-165         writel(mask_bits, desc->mask_base + offset);
-166         desc->masked =3D mask_bits;
-167 }
-
-So I don't see how this patch works, all it's doing is moving the readl().
-
-> Please don't stall this patch very much, as the bug it is fixing konks
-> out one of my primary test machines from even booting up.
-
-Sure, chuck it in. I just don't get how it's solving the problem, and it
-looks like it's writing to the mask bit without reading the reserved
-ones first, which seems to violate the spec AFAICS[1]. But we can fix it
-later.
-
-cheers
-
-[1]: I probably don't have the latest version.
-
---=-GjJiVWLdYs1x1jPVsSmk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkoI3SIACgkQdSjSd0sB4dLu1QCghJykMBNfBbxcjKi6gQRO9IJ8
-HKkAnRemDWXbc8kdt+veMx9Lw/xeltCe
-=uRej
------END PGP SIGNATURE-----
-
---=-GjJiVWLdYs1x1jPVsSmk--
 
