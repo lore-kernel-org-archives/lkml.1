@@ -1,90 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754220AbZELIzg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbZELI7y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754220AbZELIzg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 04:55:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751018AbZELIz0
+	id S1752504AbZELI7y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 04:59:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbZELI7m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 04:55:26 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:50641 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750841AbZELIzZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 04:55:25 -0400
-Date: Tue, 12 May 2009 10:54:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>,
-       LKML <linux-kernel@vger.kernel.org>, viro@zeniv.linux.org.uk,
-       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
-Subject: Re: [RFC PATCH 2/2] kernel/sched.c: VLA in middle of struct
-Message-ID: <20090512085402.GA18004@elte.hu>
-References: <20090508184838.GA11157@havoc.gtf.org> <20090508185015.GA11320@havoc.gtf.org> <20090508190944.GB12130@elte.hu> <200905101819.41765.rusty@rustcorp.com.au> <20090511105816.GG4648@elte.hu> <4A088DF4.7080305@garzik.org> <20090511204933.GA7737@elte.hu> <4A08DDE2.1080708@garzik.org>
+	Tue, 12 May 2009 04:59:42 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:19396 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1750943AbZELI7l (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 04:59:41 -0400
+Message-ID: <4A093A34.3020101@panasas.com>
+Date: Tue, 12 May 2009 11:58:28 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A08DDE2.1080708@garzik.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+CC: tj@kernel.org, axboe@kernel.dk, linux-kernel@vger.kernel.org,
+       jeff@garzik.org, linux-ide@vger.kernel.org,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
+       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
+       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
+       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
+       dgilbert@interlog.com, djwong@us.ibm.com
+Subject: Re: [PATCH 03/11] block: add rq->resid_len
+References: <4A06DFAB.40205@panasas.com>	<4A0767E5.5050205@kernel.org>	<4A080C9D.9000109@panasas.com> <20090511235852Z.fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <20090511235852Z.fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 May 2009 08:58:35.0104 (UTC) FILETIME=[D5120E00:01C9D2DF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Jeff Garzik <jeff@garzik.org> wrote:
-
-> Ingo Molnar wrote:
->>>>>> That cpumask[] should probably be cpumask[0], to document the
->>>>>> aliasing to ->span and ->cpus properly.
->>>>> If the comment wasn't sufficient documentation, I don't think 
->>>>> that  would help :(
->>>> It's a visual helper: it matches up with how we do these 'zero size 
->>>>  array means dynamic structure continuation' tricks generally.
->>>>
->>>> I first mis-parsed the code for a second when seeing cpumask[].   
->>>> cpumask[0] stands out like a sore thumb. And we dont read comments  
->>>> anyway ;-)
->>>>
->>>> Jeff, i suspect you found this because you are working on something 
->>>>  rather interesting? :) If yes, would it help your project if we 
->>>> did  the cpumask[0] cleanup and pushed it upstream immediately?
->>> I think cpumask[0] would be more clear and consistent with the rest 
->>> of the kernel.
+On 05/11/2009 05:59 PM, FUJITA Tomonori wrote:
+> On Mon, 11 May 2009 14:31:41 +0300
+> Boaz Harrosh <bharrosh@panasas.com> wrote:
+> 
+>>>>> diff --git a/drivers/scsi/libsas/sas_expander.c b/drivers/scsi/libsas/sas_expander.c
+>>>>> index 3da02e4..6605ec9 100644
+>>>>> --- a/drivers/scsi/libsas/sas_expander.c
+>>>>> +++ b/drivers/scsi/libsas/sas_expander.c
+>>>>> @@ -1936,12 +1936,8 @@ int sas_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
+>>>>>  			       bio_data(rsp->bio), rsp->data_len);
+>>>>>  	if (ret > 0) {
+>>>>>  		/* positive number is the untransferred residual */
+>>>>> -		rsp->data_len = ret;
+>>>>> -		req->data_len = 0;
+>>>>> +		rsp->resid_len = ret;
+>>>>>  		ret = 0;
+>>>>> -	} else if (ret == 0) {
+>>>>> -		rsp->data_len = 0;
+>>>>> -		req->data_len = 0;
+>>>>>  	}
+>>>>>  
+>>>>>  	return ret;
+>>>> This is actually a bug fix, as well as a strait conversion
+>>> Can you elaborate a bit about the bug fix part?
 >>>
->>> But unfortunately for the twin projects of (a) static analysis and  
->>> checking with 'sparse', and (b) compiling under another compiler,  
->>> VLA-in-middle-of-struct is a killer in either case.
+>> Nothing big really, just that before (according to the comment), the theoretical
+>> negative case would be full-residual. and now it is zero (untouched).
 >>
->> even if at the end of the struct?
->
-> Putting the VLA at the end of the struct would be a huge help, 
-> yes.
->
-> For example, struct sched_group and struct sched_domain are OK 
-> as-is (though "[0]" would be preferred).
->
-> It is the definition of struct static_sched_group and struct 
-> static_sched_domain that creates the problem, because with the 
-> bitmap following cpumask[] and span[], the VLA is no longer at the 
-> end of the struct.
->
-> VLA-in-the-middle raises the complexity required of the compiler 
-> quite a bit.  As a result, VLA-in-middle is not implemented in 
-> sparse or clang (LLVM's C front-end and static analyzer).
+>> I know that in iscsi a negative residual is possible which means over-flow. That is:
+>> the target had more data to give then the buffer had space for. (which is not an error at all)
+> 
+> Hmm, iSCSI? This code is for SAS management Protocol.
+> 
 
-feel free to send patches for this - i dont have those build modes 
-to test that it's sufficient. I'd suggest to go the simplest path: 
-remove all the vla aliasing tricks: just make struct sched_domain 
-use a plain struct cpumask and eliminate static_sched_domain 
-altogether.
+I gave that as an example of what the scsi standard says about negative
+residual count return from the target. If SAS as sepecific and different
+meaning to negative residual, it should be noted and handled.
 
-The memory overhead is marginal as most of our sched domains are 
-static allocated (and full size) anyway.
+> smp_execute_task returns a negative value for some errors (ENOMEM, the
+> hardware doesn't respond, etc). It's not related with 'transferred
+> buffer length' at all.
 
-	Ingo
+This is a serious problem, and a violation of the block/scsi stacks. If so, then
+in that case error/status should be set properly. And residual cleared.
+
+Failing to return an error might theoretically be catastrophic. If what
+you say is certain then previous behaviour is better then after this patch.
+
+I'm not at all familiar with this code. Could you send a patch to
+fix these things?
+
+Thanks
+Boaz
