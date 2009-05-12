@@ -1,87 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753813AbZELNhW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754403AbZELNk1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753813AbZELNhW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 09:37:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751636AbZELNhH
+	id S1754403AbZELNk1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 09:40:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752062AbZELNkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 09:37:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:44488 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750943AbZELNhF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 09:37:05 -0400
-Message-ID: <4A097A80.9000502@redhat.com>
-Date: Tue, 12 May 2009 09:32:48 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Tue, 12 May 2009 09:40:17 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:5383 "EHLO
+	WA4EHSOBE006.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751805AbZELNkQ convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 09:40:16 -0400
+X-BigFish: VPS-23(zz1432R98dR1805M936fJzz1202hzzz32i6bh6di43j61h)
+X-Spam-TCS-SCL: 0:0
+X-WSS-ID: 0KJJ9YR-02-UVX-01
+Date: Tue, 12 May 2009 15:39:50 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] x86: cpu/proc.c adding extended_cpuid_level for
+	/proc/cpuinfo
+Message-ID: <20090512133950.GA15474@aftab>
+References: <1242112482.3283.1.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Wu Fengguang <fengguang.wu@intel.com>
-CC: Minchan Kim <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm] vmscan: merge duplicate code in	shrink_active_list()
-References: <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org> <20090507134410.0618b308.akpm@linux-foundation.org> <20090508081608.GA25117@localhost> <20090508125859.210a2a25.akpm@linux-foundation.org> <20090512025319.GD7518@localhost> <20090512162633.352313d6.minchan.kim@barrios-desktop> <20090512114807.GC5926@localhost>
-In-Reply-To: <20090512114807.GC5926@localhost>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <1242112482.3283.1.camel@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 12 May 2009 13:39:53.0281 (UTC) FILETIME=[213F7B10:01C9D307]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wu Fengguang wrote:
-> On Tue, May 12, 2009 at 03:26:33PM +0800, Minchan Kim wrote:
->> On Tue, 12 May 2009 10:53:19 +0800
->> Wu Fengguang <fengguang.wu@intel.com> wrote:
->>
->>> The "move pages to active list" and "move pages to inactive list"
->>> code blocks are mostly identical and can be served by a function.
->>>
->>> Thanks to Andrew Morton for pointing this out.
->>>
->>> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
->>> ---
->>>  mm/vmscan.c |   84 ++++++++++++++++++++------------------------------
->>>  1 file changed, 35 insertions(+), 49 deletions(-)
->>>
->>> --- linux.orig/mm/vmscan.c
->>> +++ linux/mm/vmscan.c
->>> @@ -1225,6 +1225,36 @@ static inline void note_zone_scanning_pr
->>>   * But we had to alter page->flags anyway.
->>>   */
->>>  
->>> +void move_active_pages_to_lru(enum lru_list lru, struct list_head *list)
->>> +{
->>> +	unsigned long pgmoved = 0;
->>> +
->>> +	while (!list_empty(&list)) {
->>> +		page = lru_to_page(&list);
->>> +		prefetchw_prev_lru_page(page, &list, flags);
->>> +
->>> +		VM_BUG_ON(PageLRU(page));
->>> +		SetPageLRU(page);
->>> +
->>> +		VM_BUG_ON(!PageActive(page));
->>> +		if (lru < LRU_ACTIVE)
->>> +			ClearPageActive(page);
->> Arithmetic on the LRU list is not good code for redability, I think. 
->> How about adding comment? 
->>
->> if (lru < LRU_ACTIVE) /* In case of moving from active list to inactive */
->>
->> Ignore me if you think this is trivial. 
-> 
-> Good suggestion. Or this simple one: "we are de-activating"?
+Hi,
 
-lru < LRU_ACTIVE will never be true for file pages,
-either active or inactive.
+On Tue, May 12, 2009 at 12:44:42PM +0530, Jaswinder Singh Rajput wrote:
+> 
+> Here are 2 patches for adding new field extended_cpuid_level, please
+> choose PATCH whichever is more appropriate:
+> 
+> PATCH 1:
+> Subject: [PATCH] x86: cpu/proc.c adding extended_cpuid_level for /proc/cpuinfo
+> 
+> extended_cpuid_level also gives useful information like cpuid_level
+> and very useful for AMD processors.
+> 
+> Adding extended_cpuid_level in /proc/cpuinfo completes cpuid_level info.
+
+and this is needed because... ?!
 
 -- 
-All rights reversed.
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
