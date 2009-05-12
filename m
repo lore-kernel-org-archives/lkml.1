@@ -1,71 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756222AbZELPGc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756241AbZELPHS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756222AbZELPGc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:06:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755325AbZELPFq
+	id S1756241AbZELPHS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:07:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752454AbZELPG6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:05:46 -0400
-Received: from e6.ny.us.ibm.com ([32.97.182.146]:54311 "EHLO e6.ny.us.ibm.com"
+	Tue, 12 May 2009 11:06:58 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:45289 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754322AbZELPFp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:05:45 -0400
-Subject: Re: [RFC] Replace the watermark-related union in struct zone with 
- awatermark[] array V2
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: David Rientjes <rientjes@google.com>,
-       Linux Memory Management List <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090512141331.GI25923@csn.ul.ie>
-References: <1240408407-21848-1-git-send-email-mel@csn.ul.ie>
-	 <1240408407-21848-19-git-send-email-mel@csn.ul.ie>
-	 <alpine.DEB.2.00.0904221251350.14558@chino.kir.corp.google.com>
-	 <20090427170054.GE912@csn.ul.ie>
-	 <alpine.DEB.2.00.0904271340320.11972@chino.kir.corp.google.com>
-	 <20090427205400.GA23510@csn.ul.ie>
-	 <alpine.DEB.2.00.0904271400450.11972@chino.kir.corp.google.com>
-	 <20090430133524.GC21997@csn.ul.ie> <1241099300.29485.96.camel@nimitz>
-	 <20090512141331.GI25923@csn.ul.ie>
-Content-Type: text/plain
-Date: Tue, 12 May 2009 08:05:39 -0700
-Message-Id: <1242140739.8109.40078.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1751914AbZELPG5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 11:06:57 -0400
+Date: Tue, 12 May 2009 17:06:31 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       eswierk@aristanetworks.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:irq/numa] x86: read apic ID in the !acpi_lapic case
+Message-ID: <20090512150631.GA32067@elte.hu>
+References: <49FC85A9.2070702@kernel.org> <tip-4797f6b021a3fa399942245d07a1feb30df81bb8@git.kernel.org> <20090512112205.GA12108@elte.hu> <20090512145128.GA10220@lenovo> <20090512145808.GA20587@elte.hu> <4A099013.6040708@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A099013.6040708@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-12 at 15:13 +0100, Mel Gorman wrote:
-> Changelog since V1
->   o Use N_wmark_pages accessors instead of array accesses
-> 
-> Patch page-allocator-use-allocation-flags-as-an-index-to-the-zone-watermark
-> from -mm added a union to struct zone where the watermarks could be accessed
-> with either zone->pages_* or a pages_mark array. The concern was that this
-> aliasing caused more confusion that it helped.
-> 
-> This patch replaces the union with a watermark array that is indexed with
-> WMARK_* defines accessed via helpers. All call sites that use zone->pages_*
-> are updated to use the helpers for accessing the values and the array
-> offsets for setting.
-> 
-> Signed-off-by: Mel Gorman <mel@csn.ul.ie>
-> --- 
->  Documentation/sysctl/vm.txt |   11 ++++++-----
->  Documentation/vm/balance    |   18 +++++++++---------
->  arch/m32r/mm/discontig.c    |    6 +++---
->  include/linux/mmzone.h      |   20 ++++++++++++++------
->  mm/page_alloc.c             |   41 +++++++++++++++++++++--------------------
->  mm/vmscan.c                 |   39 +++++++++++++++++++++------------------
->  mm/vmstat.c                 |    6 +++---
->  7 files changed, 77 insertions(+), 64 deletions(-)
 
-Looks nice.  It net adds a few lines of code, but that's mostly from the
-#defines and not added complexity or lots of line wrapping.  
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
-Ackedf-by: Dave Hansen <dave@linux.vnet.ibm.com>
+> Ingo Molnar wrote:
+> > * Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+> > 
+> >> [Ingo Molnar - Tue, May 12, 2009 at 01:22:05PM +0200]
+> >> | 
+> >> | this build bug is still unfixed:
+> >> | 
+> >> | drivers/pci/hotplug/ibmphp_core.c:165: error: expected identifier before ‘&’ token
+> >> | drivers/pci/hotplug/ibmphp_core.c:166: error: too few arguments to function ‘IO_APIC_get_PCI_irq_vector’
+> >> | 
+> >> | 	Ingo
+> >> | 
+> >>
+> >> Grrr... this line looks really suspicious inideed
+> >>
+> >> 			for (i = 0; i < 4; i++)
+> >> 				(*cur_slot)->irq[i] = IO_APIC_get_PCI_irq_vector((int) (*cur_slot)->bus,
+> >> --->						(int) (*cur_slot)->device, i.
+> >> 						&ioapic, &ioapic_pin,
+> >> 						&triggering, &polarity);
+> >>
+> >> but it's _not_ 'cause of this commit, since
+> >> we didn't even touch this file :) The point
+> >> symbol should be changed to comma. Just a
+> >> misprint I believe. Appened patch should do
+> >> the trick.
+> > 
+> > Yinghai touched it:
+> > 
+> > e20c06f: x86/pci: add 4 more return parameters to IO_APIC_get_PCI_irq_vector()
+> > 
+> i put the fix in
+> [PATCH] x86: introduce io_apic_irq_attr -v2
+> <4A08ACD3.2070401@kernel.org>
 
--- Dave
+which is so wrong to be put into a cleanup patch ...
 
+anyway, i applied Cyrill's patch.
+
+	Ingo
