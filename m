@@ -1,108 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760779AbZELMmT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbZELMxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760779AbZELMmT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 08:42:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756198AbZELMmE
+	id S1752917AbZELMxT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 08:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZELMxE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 08:42:04 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:41211 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753169AbZELMmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 08:42:01 -0400
-Date: Tue, 12 May 2009 14:42:02 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Rientjes <rientjes@google.com>, mel@csn.ul.ie,
-       a.p.zijlstra@chello.nl, npiggin@suse.de, cl@linux-foundation.org,
-       dave@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Divy Le Ray <divy@chelsio.com>
-Subject: Re: [patch -mmotm] mm: invoke oom killer for __GFP_NOFAIL
-Message-ID: <20090512124201.GO4140@kernel.dk>
-References: <alpine.DEB.2.00.0905091544470.6884@chino.kir.corp.google.com> <20090511134038.5cf1ad3b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090511134038.5cf1ad3b.akpm@linux-foundation.org>
+	Tue, 12 May 2009 08:53:04 -0400
+Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:46847 "EHLO
+	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751018AbZELMxD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 08:53:03 -0400
+Subject: Re: [patch 00/13] devtmpfs patches
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: "David P. Quigley" <dpquigl@tycho.nsa.gov>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
+       Jan Blunck <jblunck@suse.de>, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@parisplace.org>
+In-Reply-To: <ac3eb2510905111405y5541117euf84dd38d39012bd0@mail.gmail.com>
+References: <20090509143742.GA27663@kroah.com>
+	 <1242063630.6624.22.camel@moss-terrapins.epoch.ncsc.mil>
+	 <20090511175626.GA4758@kroah.com>
+	 <1242074517.6624.183.camel@moss-terrapins.epoch.ncsc.mil>
+	 <ac3eb2510905111405y5541117euf84dd38d39012bd0@mail.gmail.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Tue, 12 May 2009 08:45:44 -0400
+Message-Id: <1242132344.31807.48.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11 2009, Andrew Morton wrote:
-> On Sat, 9 May 2009 15:46:39 -0700 (PDT)
-> David Rientjes <rientjes@google.com> wrote:
+On Mon, 2009-05-11 at 23:05 +0200, Kay Sievers wrote:
+> On Mon, May 11, 2009 at 22:41, David P. Quigley <dpquigl@tycho.nsa.gov> wrote:
 > 
-> > The oom killer must be invoked regardless of the order if the allocation
-> > is __GFP_NOFAIL, otherwise it will loop forever when reclaim fails to
-> > free some memory.
+> > This however does highlight a problem with the fact that device node
+> > labeling isn't being done properly. It should be possible to create this
+> > fs with a different name such that it doesn't appear as a tmpfs file
+> > system to SELinux. If it appears as a devtmpfs file system then we can
+> > specify the root label and labels on the other devices properly in
+> > policy.
 > 
-> Sigh.  We're supposed to be deleting __GFP_NOFAIL.  I added it as a way
-> of easily finding lame error-handling-challenged callers which need to
-> be fixed up.  So of course we went and added lots more callers.
+> That could be done, if it solves this problem. Damn, now we have the
+> naming problem back again. :)
 > 
-> y:/usr/src/linux-2.6.30-rc5> grep -rl GFP_NOFAIL . 
-> ./arch/x86/xen/mmu.c
-> ./arch/sparc/kernel/mdesc.c
-> ./mm/page_alloc.c
-> ./mm/failslab.c
-> ./block/cfq-iosched.c
-> ./fs/bio-integrity.c
-> ./fs/ntfs/ChangeLog
-> ./fs/ntfs/malloc.h
-> ./fs/reiserfs/journal.c
-> ./fs/gfs2/meta_io.c
-> ./fs/gfs2/rgrp.c
-> ./fs/gfs2/dir.c
-> ./fs/gfs2/log.c
-> ./fs/jbd/transaction.c
-> ./fs/jbd/journal.c
-> ./fs/jbd2/transaction.c
-> ./fs/jbd2/journal.c
-> ./drivers/net/cxgb3/cxgb3_main.c
-> ./drivers/net/cxgb3/cxgb3_offload.c
-> ./include/linux/slab.h
-> ./include/linux/gfp.h
+> By doing its own fstype, we could also make the auto-mount optional,
+> because you could always reach the filesystem anytime later.
 > 
-> JBD (and hence JBD2) are the original sinners.
+> A different fstype has the slight inconvenience, that existing
+> userspace needs to be taught to handle it explicitly, while a tmfps is
+> already handled automatically because we use tmpfs already today. But
+> that may not be too important.
 > 
-> That net driver should be taught to just handle the allocation failure,
-> please.
-> 
-> 
-> It's super-uber-bad to be using __GFP_NOFAIL in an IO scheduler!  But maybe
-> that's just a brainfart:
-> 
-> 			/*
-> 			 * Inform the allocator of the fact that we will
-> 			 * just repeat this allocation if it fails, to allow
-> 			 * the allocator to do whatever it needs to attempt to
-> 			 * free memory.
-> 			 */
-> 
-> If "we will just repeat this allocation" means what it says then we
-> should use __GFP_NORETRY here, then retry the allocation if it failed. 
-> But a) this risks getting stuck in a hot loop in CFQ and b) we really
-> really don't want to be looping infinitely for memory relcaim down in
-> the guts of the block layer!
-> 
-> From my reading, this function is called from get_request_wait(), via
-> 
-> 	rq = get_request(q, rw_flags, bio, GFP_NOIO);
-> 
-> so we can't even do pageout here.
-> 
-> Jens, this all looks quite risky.
+> Thanks a lot for your tests and analysis,
 
-I agree, it's not all that pretty. That particular piece of code has
-been there since v3 of CFQ at least, probably even earlier. So it is
-2-3 years old at least.
+I don't think merely changing the fstype will suffice; that merely lets
+us assign a different default security context to inodes in the
+filesystem (e.g. device_t vs tmpfs_t), but doesn't address the fact that
+use of devtmpfs rather than just udev seems to alter the permission
+checking upon an open(2) by mingetty, thereby breaking existing
+policies.  Previously mingetty didn't require permissions to mknod; with
+devtmpfs, it does.  I'm wondering if devtmpfs is internally performing
+operations that ought to be done in kernel context rather than the
+context of the userspace process that initiated the open(2).
 
-I'll see what I can do about improving it. There's no easy solution to
-this, we can't do any sort of pool backing since cfqq allocations could
-persist forever. So it's probably better to handle the failure to
-allocate by just stuffing the request directly on the dispatch queue and
-just forget about the whole thing. If it happens only once in a blue
-moon, it doesn't matter. If it happens regularly, not good...
+Also, I was wondering why the existing restorecon -R /dev that is
+performed by /etc/rc.sysinit to fix up the security contexts on the
+initial /dev tree prior to policy load doesn't seem to be getting
+applied when devtmpfs is enabled.  Does devtmpfs pass through setxattr()
+requests to the underlying tmpfs mount?
 
 -- 
-Jens Axboe
+Stephen Smalley
+National Security Agency
 
