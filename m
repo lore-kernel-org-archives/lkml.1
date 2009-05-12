@@ -1,93 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759553AbZELAZk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbZELAaI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759553AbZELAZk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 20:25:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbZELAZb
+	id S1757950AbZELAaI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 20:30:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757280AbZELA3v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 20:25:31 -0400
-Received: from gw.goop.org ([64.81.55.164]:43946 "EHLO mail.goop.org"
+	Mon, 11 May 2009 20:29:51 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37017 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754973AbZELAZb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 20:25:31 -0400
-Message-ID: <4A08C1F9.1020308@goop.org>
-Date: Mon, 11 May 2009 17:25:29 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1756359AbZELA3u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 20:29:50 -0400
+Message-ID: <4A08C26E.80801@kernel.org>
+Date: Tue, 12 May 2009 09:27:26 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: Xen-devel <xen-devel@lists.xensource.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: [Xen-devel] [GIT PULL] x86: paravirt_ops updates
-References: <1241728373-3537-1-git-send-email-jeremy@goop.org>
-In-Reply-To: <1241728373-3537-1-git-send-email-jeremy@goop.org>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
+       sshtylyov@ru.mvista.com, mike.miller@hp.com, Eric.Moore@lsi.com,
+       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
+       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
+       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
+       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
+       Doug Gilbert <dgilbert@interlog.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH 03/11] block: add rq->resid_len
+References: <1241423927-11871-1-git-send-email-tj@kernel.org> <1241423927-11871-4-git-send-email-tj@kernel.org> <4A06DFAB.40205@panasas.com> <4A0767E5.5050205@kernel.org> <4A080C9D.9000109@panasas.com>
+In-Reply-To: <4A080C9D.9000109@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 00:27:30 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeremy Fitzhardinge wrote:
-> Hi Ingo,
->
-> This series has a some changes to x86 paravirt_ops:
->   
+Hello, Boaz.
 
-Ping?  Did you overlook these changes, or have you just not had a chance 
-to look at them?
+Boaz Harrosh wrote:
+> On 05/11/2009 02:48 AM, Tejun Heo wrote:
+>> Does resid_len make any sense w/ failed requests?  I think we would be
+>> better off with declaring residual count to be undefined on request
+>> failure.  Is there any place which depends on it?
+>>
+>> That said, the value is eventually exported to userland, so it might
+>> be better to not change it.  Eh... I don't know.
+> 
+> When possible, residual should be exact because the residual amount
+> is not bounced and might even be zeroed-out for security, as the
+> meaning of residual is that these bytes are garbage.
 
-Thanks,
-    J
+When a request failed, the whole buffer is garbage.  There's no
+partial transfer.  There shouldn't be.  I don't think residual count
+on request failure means anything.  Also, the 'whenever possible'
+doesn't mean much when the issuer can't determine whether the value is
+valid or not.  On success, we should guarantee resid count is valid,
+on failure, I don't see a way we can.
 
-> x86/paravirt: split paravirt definitions into paravirt_types.h
->
->   Move all the type-like definitions into asm/paravirt_types.h
->
-> x86: split out core __math_state_restore
->
->   Split out the core of math_state_restore() into __math_state_restore(),
->   which just does what's needed for a context switch (ie, assumes
->   TS is already clear, and that the fpu context exists).
->
-> x86-32: make sure clts is batched during context switch
-> x86-64: move unlazy_fpu() into lazy cpu state part of context switch
-> x86-64: move clts into batch cpu state updates when preloading fpu
->
->   Make sure the TS state updates during context switch are performed in
->   the lazy CPU update region so that they can be batched when running
->   paravirtualized.
->
-> The following changes since commit 9ce5424d75e56891905b77d1589924765e62059a:
->   Ingo Molnar (1):
->         Merge branch 'x86/urgent'
->
-> are available in the git repository at:
->
->   git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git x86/paravirt
->
-> Jeremy Fitzhardinge (5):
->       x86/paravirt: split paravirt definitions into paravirt_types.h
->       x86: split out core __math_state_restore
->       x86-32: make sure clts is batched during context switch
->       x86-64: move unlazy_fpu() into lazy cpu state part of context switch
->       x86-64: move clts into batch cpu state updates when preloading fpu
->
->  arch/x86/include/asm/i387.h           |    1 +
->  arch/x86/include/asm/paravirt.h       |  711 +--------------------------------
->  arch/x86/include/asm/paravirt_types.h |  720 +++++++++++++++++++++++++++++++++
->  arch/x86/kernel/process_32.c          |   27 +-
->  arch/x86/kernel/process_64.c          |   34 +-
->  arch/x86/kernel/traps.c               |   33 +-
->  6 files changed, 783 insertions(+), 743 deletions(-)
->  create mode 100644 arch/x86/include/asm/paravirt_types.h
->
-> Thanks,
-> 	J
->
-> _______________________________________________
-> Xen-devel mailing list
-> Xen-devel@lists.xensource.com
-> http://lists.xensource.com/xen-devel
->   
+>>>> index 3da02e4..6605ec9 100644
+>>>> --- a/drivers/scsi/libsas/sas_expander.c
+>>>> +++ b/drivers/scsi/libsas/sas_expander.c
+>>>> @@ -1936,12 +1936,8 @@ int sas_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
+>>>>  			       bio_data(rsp->bio), rsp->data_len);
+>>>>  	if (ret > 0) {
+>>>>  		/* positive number is the untransferred residual */
+>>>> -		rsp->data_len = ret;
+>>>> -		req->data_len = 0;
+>>>> +		rsp->resid_len = ret;
+>>>>  		ret = 0;
+>>>> -	} else if (ret == 0) {
+>>>> -		rsp->data_len = 0;
+>>>> -		req->data_len = 0;
+>>>>  	}
+>>>>  
+>>>>  	return ret;
+>>> This is actually a bug fix, as well as a strait conversion
+>> Can you elaborate a bit about the bug fix part?
+> 
+> Nothing big really, just that before (according to the comment), the
+> theoretical negative case would be full-residual. and now it is zero
+> (untouched).
 
+Yeah, the same thing as above, I suppose.
+
+> I know that in iscsi a negative residual is possible which means
+> over-flow. That is: the target had more data to give then the buffer
+> had space for. (which is not an error at all)
+
+Hmm... I've never seen negative residual in use.  Is it even defined?
+
+>>> The above is just a case of:
+>>>
+>>> -		int leftover = (req->hard_nr_sectors << 9);
+>>> -
+>>> -		if (blk_pc_request(req))
+>>> -			leftover = req->data_len;
+>>> +		int leftover = blk_rq_bytes();
+>>>
+>>> Which you separated into to stages, much later right?
+>> Aieee.. yeah, that's one stupid misconversion.  That function should
+>> just use blk_end_request_all().  Will fix.  Thanks for spotting it.
+> 
+> Yes, there is a couple of other places that have that with the
+> meaning of blk_end_request_all() (Have I commented on one?). Are you
+> doing this conversion in these patchset? or this is for a second
+> pass?
+
+If you spot some, please go ahead and submit patches.  I don't have
+any patch in my queue which hasn't been posted.
+
+Thanks.
+
+-- 
+tejun
