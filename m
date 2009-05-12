@@ -1,80 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754283AbZELOIU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZELOJQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754283AbZELOIU (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 10:08:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbZELOIF
+	id S1755304AbZELOJQ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 10:09:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753478AbZELOIy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 10:08:05 -0400
-Received: from iolanthe.rowland.org ([192.131.102.54]:57500 "HELO
-	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1751062AbZELOID (ORCPT
+	Tue, 12 May 2009 10:08:54 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:43633 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752495AbZELOIw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 10:08:03 -0400
-Date: Tue, 12 May 2009 10:08:01 -0400 (EDT)
-From: Alan Stern <stern@rowland.harvard.edu>
-X-X-Sender: stern@iolanthe.rowland.org
-To: Clemens Ladisch <clemens@ladisch.de>
-cc: David Fries <david@fries.net>, David Griffith <dgriffi@cs.csubak.edu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>,
-       <todd@fries.net>
-Subject: Re: bad endpoint address, MOTU FastLane
-In-Reply-To: <4A092B5C.603@ladisch.de>
-Message-ID: <Pine.LNX.4.44L0.0905121000020.2799-100000@iolanthe.rowland.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Tue, 12 May 2009 10:08:52 -0400
+Subject: Re: [PATCH 03/11] block: add rq->resid_len
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, bharrosh@panasas.com,
+       axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
+       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
+       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
+       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
+       dgilbert@interlog.com, djwong@us.ibm.com
+In-Reply-To: <4A09115D.3080009@kernel.org>
+References: <1241423927-11871-4-git-send-email-tj@kernel.org>
+	 <4A06DFAB.40205@panasas.com> <4A0767E5.5050205@kernel.org>
+	 <20090511145024B.fujita.tomonori@lab.ntt.co.jp>
+	 <1242051500.3338.9.camel@mulgrave.int.hansenpartnership.com>
+	 <4A08C094.2060602@kernel.org>
+	 <1242099783.19949.8.camel@mulgrave.int.hansenpartnership.com>
+	 <4A09115D.3080009@kernel.org>
+Content-Type: text/plain
+Date: Tue, 12 May 2009 09:08:49 -0500
+Message-Id: <1242137329.3308.6.camel@mulgrave.int.hansenpartnership.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009, Clemens Ladisch wrote:
-
-> David Fries wrote:
-> > usb_submit_urb returns -22 EINVAL invalid argument as it is trying to
-> > submit an interrupt packet to what is registered as an isoc endpoint.
-
-How does one know which type the endpoint really is?  Through prior 
-experience with the device?
-
-> > The second interface has the same end point addresses as the first.
-> > Any suggestions on how to deal with this class of broken hardware?
+On Tue, 2009-05-12 at 15:04 +0900, Tejun Heo wrote:
+> Hello, James.
+> 
+> James Bottomley wrote:
+> >> * Not well defined.  What does it mean really?  It can't indicate
+> >>   successful partial transfer.  If the request partially succeeded,
+> >>   the required behavior is to successfully complete the request
+> >>   partially with residual count and then fail the latter part when
+> >>   issued again.  If the failure applies to the whole request but
+> >>   location information is useful, it should be carried in the sense
+> >>   data.
 > > 
-> > I:* If#= 0 Alt= 0 ...
-> > E:  Ad=81(I) Atr=03(Int.) MxPS=   4 Ivl=1ms
-> > I:* If#= 1 Alt= 0 ...
-> > E:  Ad=81(I) Atr=01(Isoc) MxPS=   4 Ivl=1ms
+> > The definition is the amount of data transfer requested less the actual
+> > that went over the wire ... that's certainly a well defined quantity;
+> > although, one could argue about what this means in the device.
+> > Certainly I agree that just because the data was transferred to or from
+> > the device is no guarantee that the device did anything with it (or
+> > transferred it accurately).
 > 
-> AFAICS the USB core memorizes the descriptor belonging to a specific
-> endpoint number whenever usb_set_interface() is called.  In this case,
-> the second interface is initialized later, so the second set of
-> descriptors wins.
-> 
-> The driver could call usb_set_interface() again for the first interface
-> so that the USB core takes notice of the first set of endpoints again.
-> Please try the patch below.
-> 
-> I guess I'll have to write another quirk for this.
-> 
-> 
-> --- linux/sound/usb/usbmidi.c
-> +++ linux/sound/usb/usbmidi.c
-> @@ -1779,6 +1779,7 @@
->  		err = snd_usbmidi_detect_per_port_endpoints(umidi, endpoints);
->  		break;
->  	case QUIRK_MIDI_RAW:
-> +		usb_set_interface(umidi->chip->dev, 0, 0);
->  		umidi->usb_protocol_ops = &snd_usbmidi_raw_ops;
->  		err = snd_usbmidi_detect_per_port_endpoints(umidi, endpoints);
->  		break;
+> I think it's more like how many bytes are valid where the validity is
+> defined as the number of meaningful bytes on dev -> host commands and
+> the number of bytes the device actually consumed on the other
+> direction.  Please note that this is different from the number of
+> bytes transferred due to padding or under other error conditions.
 
-This is only a bandaid.  The underlying problem is still there.  
-Basically, the second interface shouldn't exist at all.  The only
-proper way to deal with it is to pretend there's only one interface --
-which would mean changing the descriptors before the kernel parses
-them.
+For failed commands we don't have that information.  All we know is how
+many bytes were actually transferred (because the HBA keeps a count), so
+it's the actual transfer count we use to construct the residual.  No
+imputation of validity or otherwise.  It just says I transferred this
+amount, based on the error make of it what you will.
 
-A much easier approach is to throw the device away and replace it with 
-something that _is_ compliant with the USB specification.
+> >> * What about corner values?  What does 0 or full resid count on
+> >>   failure mean?
+> > 
+> > 0 means everything transferred, full residual means nothing did.
+> 
+> Yeap, I was wondering about the combination 0 resid count + failure.
+> What would it mean?  All bytes are valid but the command failed?
 
-Alan Stern
+Well, there are certain SCSI conditions called deferred errors and the
+like where we return Check Condition but everything's OK, redisual count
+should be zero, same goes for recovered errors ... there are actually
+lots of things we can get back as an "error" which means I'm warning you
+of something, but the transfer was OK.  Likewise we get unit attentions
+(essentialy AENs) which mean I'm telling you something before you start,
+so please try again.  Here residual would be the full transfer.   Also,
+we have the nasty USB case where no error return but an actual residual
+tells you something really went wrong.
+
+> >> * Different layers of failing.  In SG_IO interface, a request may fail
+> >>   with -EIO way before it reaches block layer.  Residual count can't
+> >>   be set to any meaningful value in these cases.  We can set it to
+> >>   full count for these fast fail paths, but do we really wanna go
+> >>   there?  Another problem is when a driver is missing SG_IO
+> >>   capability.  Who's responsible for setting resid count in that case?
+> >>   How is upper layer gonna determine a SG_IO failed because lower
+> >>   level driver didn't support it or it genuinely failed?
+> > 
+> > Well, I prefer the concept of transfer length, which would be
+> > initialised to zero ... however, residuals should be initialised to
+> > the actual transfer count.
+> > 
+> >> I think it's just silly to give any meaning to resid count when the
+> >> request fails.  It's best to leave the field unmodified or just
+> >> declare it undefined.
+> > 
+> > It's current behaviour.  Technically that makes it part of the SG_IO
+> > ABI ... although it could be deprecated if someone can verify there are
+> > no current users.
+> 
+> The behavior wasn't guaranteed before the change in paths including
+> SG_IO fast fail one.  libata and ide have been and are completely
+> funky about residual counts anyway so I highly doubt anyone has been
+> depending on it.
+> 
+> There's nothing wrong with keeping the original behavior in itself but
+> to me it looks like it would be a bad precedence when no one should
+> depend on the behavior.
+
+OK, that's what we'll do then, thanks.
+
+James
+
 
