@@ -1,72 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbZELSdr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbZELSgL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757215AbZELSdr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 14:33:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754330AbZELSdi
+	id S1755691AbZELSgL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 14:36:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZELSf4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 14:33:38 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:40318 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753343AbZELSdh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 14:33:37 -0400
-Date: Tue, 12 May 2009 20:33:02 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       eswierk@aristanetworks.com, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:irq/numa] x86: read apic ID in the !acpi_lapic case
-Message-ID: <20090512183302.GA4000@elte.hu>
-References: <49FC85A9.2070702@kernel.org> <tip-4797f6b021a3fa399942245d07a1feb30df81bb8@git.kernel.org> <20090512112205.GA12108@elte.hu> <20090512145128.GA10220@lenovo> <20090512145808.GA20587@elte.hu> <4A099013.6040708@kernel.org> <20090512150631.GA32067@elte.hu> <20090512164617.GA21673@elte.hu> <4A09C068.3010308@kernel.org>
+	Tue, 12 May 2009 14:35:56 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:41427 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751785AbZELSf4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 14:35:56 -0400
+Date: Tue, 12 May 2009 14:35:54 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>
+cc: Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] threaded-irqs: fix comment to say IRQ_WAKE_THREAD
+Message-ID: <alpine.DEB.2.00.0905121431020.13338@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A09C068.3010308@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+Trying to implement a driver to use threaded irqs, I was confused when the 
+return value to use that was described in the comment above 
+request_threaded_irq was not defined.
 
-> Ingo Molnar wrote:
-> > got this on a testbox:
-> > 
-> > [    0.113333] WARNING: at arch/x86/kernel/apic/apic.c:253 warn_slowpath_null+0x28/0x50()
-> > 
-> > 	Ingo
-> > 
-> > [    0.000000] Initializing cgroup subsys cpuset
-> > [    0.000000] Linux version 2.6.30-rc5-tip-01553-g4bc9bac-dirty (mingo@sirius) (gcc version 4.3.2 20081105 (Red Hat 4.3.2-7) (GCC) ) #48764 SMP PREEMPT Tue May 12 18:30:18 CEST 2009
-> > [    0.000000] Command line: root=/dev/sda1 earlyprintk=serial,ttyS0,115200 console=ttyS0,115200 console=tty debug initcall_debug apic=verbose sysrq_always_enabled 5 ignore_loglevel nosmp no_hz=off highres=0 nmi_watchdog=0 noapic nolapic_timer hpet=disable idle=poll notsc acpi=off
-> 
-> you should use
-> nolapic and noapic_timer
-> 
-> /* same as disableapic, for compatibility */
-> static int __init setup_nolapic(char *arg)
-> {
->         return setup_disableapic(arg);
-> }
-> early_param("nolapic", setup_nolapic);
-> 
-> static int __init parse_disable_apic_timer(char *arg)
-> {
->         disable_apic_timer = 1;
->         return 0;
-> }
-> early_param("noapictimer", parse_disable_apic_timer);
+Turns out that the enum is IRQ_WAKE_THREAD where as the comment said 
+IRQ_THREAD_WAKE.
 
-What do you mean? This warning never triggered before on this 
-test-box. This is a plain regression.
+[Impact: do not confuse developers with wrong comments ]
 
-	Ingo
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
+index 2734eca..eb47f8b 100644
+--- a/kernel/irq/manage.c
++++ b/kernel/irq/manage.c
+@@ -851,7 +851,7 @@ EXPORT_SYMBOL(free_irq);
+  *	still called in hard interrupt context and has to check
+  *	whether the interrupt originates from the device. If yes it
+  *	needs to disable the interrupt on the device and return
+- *	IRQ_THREAD_WAKE which will wake up the handler thread and run
++ *	IRQ_WAKE_THREAD which will wake up the handler thread and run
+  *	@thread_fn. This split handler design is necessary to support
+  *	shared interrupts.
+  *
