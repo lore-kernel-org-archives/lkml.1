@@ -1,95 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759806AbZELENX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754078AbZELEfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759806AbZELENX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 00:13:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753422AbZELELj
+	id S1754078AbZELEfy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 00:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751064AbZELEfo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 00:11:39 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:40380 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753567AbZELELi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 00:11:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=YshIz5Ut51YVGIDAWpl9LmIAWV2dSNCfuM/23a84vrmXyeNKDGXlCoiSEFf4xpLqcM
-         GenBv3dfQZgvsZNmsl15ZQT2kKlXSLvT+4Fp7TnPDhkByjNp1xxbvrswFzNtndA08r5f
-         3jFLppjph5eGcjz7lMudhhgG6+aCarCjm/I78=
+	Tue, 12 May 2009 00:35:44 -0400
+Received: from mga03.intel.com ([143.182.124.21]:37678 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751052AbZELEfo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 00:35:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,179,1241420400"; 
+   d="scan'208";a="141735651"
+Date: Tue, 12 May 2009 12:35:22 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "cl@linux-foundation.org" <cl@linux-foundation.org>,
+       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
+	class citizen
+Message-ID: <20090512043522.GA17079@localhost>
+References: <49FB01C1.6050204@redhat.com> <20090501123541.7983a8ae.akpm@linux-foundation.org> <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org> <20090507134410.0618b308.akpm@linux-foundation.org> <20090508081608.GA25117@localhost> <20090508125859.210a2a25.akpm@linux-foundation.org> <20090512025058.GA7518@localhost>
 MIME-Version: 1.0
-In-Reply-To: <1239293911.4529.7144.camel@localhost.localdomain>
-References: <49DE0C36.4070507@ti.com>
-	 <1239293911.4529.7144.camel@localhost.localdomain>
-Date: Tue, 12 May 2009 12:11:38 +0800
-Message-ID: <af3ea28a0905112111r1fa73a84j4cf9604d53288bb@mail.gmail.com>
-Subject: Re: [PATCH] Allow deferrable timers for intervals tv2-tv5 to be 
-	deferred
-From: ye janboe <janboe.ye@gmail.com>
-To: "Pallipadi, Venkatesh" <venkatesh.pallipadi@intel.com>
-Cc: Jon Hunter <jon-hunter@ti.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090512025058.GA7518@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hi, Jon, Venki
+On Tue, May 12, 2009 at 10:50:58AM +0800, Wu Fengguang wrote:
+> > Now.  How do we know that this patch improves Linux?
+> 
+> Hmm, it seems hard to get measurable performance numbers.
+> 
+> But we know that the running executable code is precious and shall be
+> protected, and the patch protects them in this way:
+> 
+>         before patch: will be reclaimed if not referenced in I
+>         after  patch: will be reclaimed if not referenced in I+A
 
-This patch is same as Jouni Hogander's which has been acked by Venki
-at 30 Jun 2008.
-http://linux.derkeiler.com/Mailing-Lists/Kernel/2008-06/msg11866.html
+s/will/may/, to be more exact.
 
-why Jouni Hogander's patch could not be accepted by LKML?
+> where
+>         A = time to fully scan the active   file LRU
+>         I = time to fully scan the inactive file LRU
+> 
+> Note that normally A >> I.
+> 
+> Therefore this patch greatly prolongs the in-cache time of executable code,
+> when there are moderate memory pressures.
 
-Thanks
+Thanks,
+Fengguang
 
-Janboe
-
-2009/4/10 Pallipadi, Venkatesh <venkatesh.pallipadi@intel.com>:
-> On Thu, 2009-04-09 at 07:54 -0700, Jon Hunter wrote:
->> In the current kernel implementation only kernel timers for time
->> interval tv1 are being deferred. This patch allows any timer that is
->> configured as deferrable to be defer regardless of time interval.
->>
->> This patch was previously discussed on another the thread [1] and Ack'ed
->>   by Venki Pallipadi the author of the original deferrable timer patch.
->>
->> Venki, could you also ack this patch for confirmation?
->>
->> Cheers
->> Jon
->>
->> [1] http://marc.info/?l=linux-kernel&m=123196343531966&w=2
->>
->>
->
-> Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
->
->> Signed-off-by: Jon Hunter <jon-hunter@ti.com>
->> ---
->>   kernel/timer.c |    3 +++
->>   1 files changed, 3 insertions(+), 0 deletions(-)
->>
->> diff --git a/kernel/timer.c b/kernel/timer.c
->> index b455556..6ab6e96 100644
->> --- a/kernel/timer.c
->> +++ b/kernel/timer.c
->> @@ -1012,6 +1012,9 @@ cascade:
->>               index = slot = timer_jiffies & TVN_MASK;
->>               do {
->>                       list_for_each_entry(nte, varp->vec + slot, entry) {
->> +                             if (tbase_get_deferrable(nte->base))
->> +                                     continue;
->> +
->>                               found = 1;
->>                               if (time_before(nte->expires, expires))
->>                                       expires = nte->expires;
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
