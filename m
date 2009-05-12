@@ -1,58 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760650AbZELKH7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759697AbZELKLT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760650AbZELKH7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 06:07:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751941AbZELKHi
+	id S1759697AbZELKLT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 06:11:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754214AbZELKLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 06:07:38 -0400
-Received: from ch-smtp02.sth.basefarm.net ([80.76.149.213]:49470 "EHLO
-	ch-smtp02.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1760664AbZELKHg (ORCPT
+	Tue, 12 May 2009 06:11:06 -0400
+Received: from e39.co.us.ibm.com ([32.97.110.160]:53534 "EHLO
+	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750886AbZELKLD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 06:07:36 -0400
-Date: Tue, 12 May 2009 12:05:23 +0200
-To: jbarnes@virtuousgeek.org
-Cc: linux-kernel@vger.kernel.org, trivial@kernel.org
-Message-ID: <20090512100523.GA31131@mea.homelinux.org>
+	Tue, 12 May 2009 06:11:03 -0400
+Date: Tue, 12 May 2009 15:40:57 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Ingo Molnar <mingo@elte.hu>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
+       schwidefsky@de.ibm.com, balajirrao@gmail.com, dhaval@linux.vnet.ibm.com,
+       bharata@linux.vnet.ibm.com, tglx@linutronix.de,
+       kamezawa.hiroyu@jp.fujitsu.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:sched/core] sched: cpuacct: Use bigger percpu counter
+	batch values for stats counters
+Message-ID: <20090512101057.GD6351@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <tip-50fbed3bb72cbe38a665512771a91a96d028de46@git.kernel.org> <20090511150709.GA23787@elte.hu> <20090512185836.D635.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-User-Agent: Mutt/1.5.13 (2006-08-11)
-From: Mats Erik Andersson <mats.andersson@gisladisker.se>
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Rcpt-To: too long (recipient list exceeded maximum allowed size of 20 bytes)
-X-SA-Exim-Mail-From: mats.andersson@gisladisker.se
-Subject: [PATCH 1/1] pci: expose SMBus on Asus notebook A6L
-Content-Type: text/plain; charset=us-ascii
-X-SA-Exim-Version: 4.2.1 (built Tue, 09 Jan 2007 17:23:22 +0000)
-X-SA-Exim-Scanned: Yes (on aun.utmark.mea)
-X-Originating-IP: 83.253.242.141
-X-Scan-Result: No virus found in message 1M3otY-0001bu-7H.
-X-Scan-Signature: ch-smtp02.sth.basefarm.net 1M3otY-0001bu-7H 61d4a0599a58ff1cb6bcc7e44a22db0a
+In-Reply-To: <20090512185836.D635.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Mats Erik Andersson <mats.andersson@gisladisker.se>
+* KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> [2009-05-12 19:01:25]:
 
-Addition of one unknown subsystem identifier to the
-quirks handler for chipset i82855GM_HB on notebook
-Asus A6L. This exposes the otherwise hidden SMBus
-controller within the south bridge ICH4-M.
+> > 
+> > * tip-bot for KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > 
+> > > Commit-ID:  50fbed3bb72cbe38a665512771a91a96d028de46
+> > > Gitweb:     http://git.kernel.org/tip/50fbed3bb72cbe38a665512771a91a96d028de46
+> > > Author:     KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> > > AuthorDate: Sat, 9 May 2009 19:14:58 +0900
+> > > Committer:  Ingo Molnar <mingo@elte.hu>
+> > > CommitDate: Mon, 11 May 2009 14:32:57 +0200
+> > > 
+> > > sched: cpuacct: Use bigger percpu counter batch values for stats counters
+> > 
+> > -tip testing found a build failure with this patch:
+> > 
+> > kernel/sched.c:9278: error: ?$B!Fpercpu_counter_batch?$B!G undeclared (first use in this function)
+> > kernel/sched.c:9278: error: (Each undeclared identifier is reported only once
+> > kernel/sched.c:9278: error: for each function it appears in.)
+> 
+> Oh, my fault again. Good catch!
+> 
+> 
+> 
+> Changelog:
+>   since V5
+>   - fix build error when UP
+> 
+>   since V4
+>   - move cpuacct_batch initialization into sched_init()
+> 
+>   since V3
+>   - rewirte patch description (thanks Bharata!)
+>   - append read_mostly to cpuacct_batch
+>   - cpuacct_batch is initialized by sched_init()
+> 
+>   since v2
+>   - revert using percpu_counter_sum()
+> 
+>   since v1
+>   - use percpu_counter_sum() instead percpu_counter_read()
+> 
+> 
+> ---------------------------------------------------------
+> Subject: [PATCH v6] cpuacct: Use bigger percpu counter batch values for stats counters on archs that have VIRT_CPU_ACCOUNTING=y
+> 
+> percpu counters used to accumulate statistics in cpuacct controller use
+> the default batch value [max(2*nr_cpus, 32)] which can be too small for
+> archs that define VIRT_CPU_ACCOUNTING. In such archs, a tick could result in
+> cputime updates in the range of thousands. As a result, cpuacct_update_stats()
+> would end up acquiring the percpu counter spinlock on every tick which
+> is not good for performance.
+> 
+> Let those architectures to have a bigger batch threshold so that percpu counter
+> spinlock isn't taken on every tick. This change doesn't affect the archs which
+> don't define VIRT_CPU_ACCOUNTING and they continue to have the default
+> percpu counter batch value.
+> 
+> Cc: Balaji Rao <balajirrao@gmail.com>
+> Cc: Dhaval Giani <dhaval@linux.vnet.ibm.com>
+> Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
+> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> Cc: Ingo Molnar <mingo@elte.hu>
+> Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>
+> Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
+> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  kernel/sched.c |    9 ++++++++-
+>  1 file changed, 8 insertions(+), 1 deletion(-)
+> 
+> Index: b/kernel/sched.c
+> ===================================================================
+> --- a/kernel/sched.c	2009-05-12 13:12:59.000000000 +0900
+> +++ b/kernel/sched.c	2009-05-12 13:28:53.000000000 +0900
+> @@ -870,6 +870,8 @@ static __read_mostly int scheduler_runni
+>   */
+>  int sysctl_sched_rt_runtime = 950000;
+> 
+> +static __read_mostly s32 cpuacct_batch;
+> +
+>  static inline u64 global_rt_period(void)
+>  {
+>  	return (u64)sysctl_sched_rt_period * NSEC_PER_USEC;
+> @@ -9284,6 +9286,10 @@ void __init sched_init(void)
+> 
+>  	perf_counter_init();
+> 
+> +#ifdef CONFIGCONFIG_SMP
+> +	cpuacct_batch = jiffies_to_cputime(percpu_counter_batch);
+> +#endif
 
-Signed-off-by: Mats Erik Andersson <mats.andersson@gisladisker.se>
----
+Slow down and compile patches before sending them out.. please. That
+is a basic expectation if you expect it to be merged.
 
-Tried and successfully used on kernel 2.6.29 and 2.6.23.17.
-
---- drivers/pci/quirks.c.orig	2009-05-09 00:47:21.000000000 +0200
-+++ drivers/pci/quirks.c	2009-05-12 11:20:04.000000000 +0200
-@@ -1068,8 +1068,9 @@ static void __init asus_hides_smbus_host
- 		else if (dev->device == PCI_DEVICE_ID_INTEL_82855GM_HB)
- 			switch (dev->subsystem_device) {
- 			case 0x1751: /* M2N notebook */
- 			case 0x1821: /* M5N notebook */
-+			case 0x1897: /* A6L notebook */
- 				asus_hides_smbus = 1;
- 			}
- 		else if (dev->device == PCI_DEVICE_ID_INTEL_82855PM_HB)
- 			switch (dev->subsystem_device) {
+-- 
+	Balbir
