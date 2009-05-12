@@ -1,53 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756320AbZELHw5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757834AbZELHz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756320AbZELHw5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 03:52:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754163AbZELHws
+	id S1757834AbZELHz2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 03:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755025AbZELHzN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 03:52:48 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:65186 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753994AbZELHwr (ORCPT
+	Tue, 12 May 2009 03:55:13 -0400
+Received: from out1.smtp.messagingengine.com ([66.111.4.25]:41751 "EHLO
+	out1.smtp.messagingengine.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754815AbZELHzL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 03:52:47 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: [PATCH 3/5] perf_counter: rework ioctl()s
-Date: Tue, 12 May 2009 09:52:12 +0200
-User-Agent: KMail/1.9.9
-Cc: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-References: <20090508165219.469818319@chello.nl> <1242109650.11251.313.camel@twins> <1242112226.11251.315.camel@twins>
-In-Reply-To: <1242112226.11251.315.camel@twins>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Tue, 12 May 2009 03:55:11 -0400
+X-Sasl-enc: tnPKOpNlPYt4kA6wWTFyjUy+BqsZXiYbOO5/wzgCtiIV 1242114911
+Message-ID: <4A092B5C.603@ladisch.de>
+Date: Tue, 12 May 2009 09:55:08 +0200
+From: Clemens Ladisch <clemens@ladisch.de>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
+To: David Fries <david@fries.net>
+CC: David Griffith <dgriffi@cs.csubak.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org, todd@fries.net
+Subject: Re: bad endpoint address, MOTU FastLane
+References: <20090511221203.GB4300@spacedout.fries.net>
+In-Reply-To: <20090511221203.GB4300@spacedout.fries.net>
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905120952.12847.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1823ZjjQsyaxfGHj4oupTnZ/ZWb0HsgXPgcfA7
- LB6HaNVGf7DU9XEo3EvoNEfLJwy4LgNt7RygPtnJseMQfgSoYM
- CC6qlugKjUNlXaSACI+9w==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 May 2009, Peter Zijlstra wrote:
-> Ah, so _IO() gets an unsigned long 3rd argument.
-> _IOW() treats the 3rd arg as a (type __user *) and copies the bits over
-> _IOR() copies the bits back out to userspace
-> _IORW() does both
+David Fries wrote:
+> usb_submit_urb returns -22 EINVAL invalid argument as it is trying to
+> submit an interrupt packet to what is registered as an isoc endpoint.
+> The second interface has the same end point addresses as the first.
+> Any suggestions on how to deal with this class of broken hardware?
 > 
-> In which case the below should fix things up, no?
-> 
+> I:* If#= 0 Alt= 0 ...
+> E:  Ad=81(I) Atr=03(Int.) MxPS=   4 Ivl=1ms
+> I:* If#= 1 Alt= 0 ...
+> E:  Ad=81(I) Atr=01(Isoc) MxPS=   4 Ivl=1ms
 
-Yes, this looks good now.
+AFAICS the USB core memorizes the descriptor belonging to a specific
+endpoint number whenever usb_set_interface() is called.  In this case,
+the second interface is initialized later, so the second set of
+descriptors wins.
 
-Thanks,
+The driver could call usb_set_interface() again for the first interface
+so that the USB core takes notice of the first set of endpoints again.
+Please try the patch below.
 
-	Arnd <><
+I guess I'll have to write another quirk for this.
+
+
+--- linux/sound/usb/usbmidi.c
++++ linux/sound/usb/usbmidi.c
+@@ -1779,6 +1779,7 @@
+ 		err = snd_usbmidi_detect_per_port_endpoints(umidi, endpoints);
+ 		break;
+ 	case QUIRK_MIDI_RAW:
++		usb_set_interface(umidi->chip->dev, 0, 0);
+ 		umidi->usb_protocol_ops = &snd_usbmidi_raw_ops;
+ 		err = snd_usbmidi_detect_per_port_endpoints(umidi, endpoints);
+ 		break;
