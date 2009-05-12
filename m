@@ -1,62 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752208AbZELUDq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZELUEA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752208AbZELUDq (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 16:03:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751973AbZELUDe
+	id S1754205AbZELUEA (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 16:04:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbZELUDg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Tue, 12 May 2009 16:03:36 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38380 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751955AbZELUDe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 May 2009 16:03:34 -0400
-Received: from sca-es-mail-1.Sun.COM ([192.18.43.132]:56526 "EHLO
-	sca-es-mail-1.sun.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751498AbZELUDe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 16:03:34 -0400
-MIME-version: 1.0
-Content-transfer-encoding: 7BIT
-Content-disposition: inline
-Content-type: text/plain; CHARSET=US-ASCII
-Date: Tue, 12 May 2009 14:03:10 -0600
-From: Andreas Dilger <adilger@sun.com>
-Subject: Re: Help to edit inode content
-In-reply-to: <20aa8c370905120902o71ab9adflb8619e2a9ae343d0@mail.gmail.com>
-To: ranjith kannikara <ranjithkannikara@gmail.com>
-Cc: Bryan Donlan <bdonlan@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-ext4@vger.kernel.org
-Message-id: <20090512200310.GP3209@webber.adilger.int>
-X-GPG-Key: 1024D/0D35BED6
-X-GPG-Fingerprint: 7A37 5D79 BF1B CECA D44F  8A29 A488 39F5 0D35 BED6
-References: <20aa8c370905120847j4b19175akbdcafc0db2004567@mail.gmail.com>
- <3e8340490905120856w62c6c5cexa247937bf7e84002@mail.gmail.com>
- <20aa8c370905120902o71ab9adflb8619e2a9ae343d0@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: linux-crypto@vger.kernel.org
+Subject: Re: [PATCH] crypto: tcrypt: add option to not exit on success
+Date: Tue, 12 May 2009 16:02:45 -0400
+User-Agent: KMail/1.11.2 (Linux/2.6.29.1-102.fc11.x86_64; KDE/4.2.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, Herbert Xu <herbert@gondor.apana.org.au>,
+       Neil Horman <nhorman@tuxdriver.com>
+References: <200905111006.32675.jarod@redhat.com>
+In-Reply-To: <200905111006.32675.jarod@redhat.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905121602.45960.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 12, 2009  21:32 +0530, ranjith kannikara wrote:
-> On Tue, May 12, 2009 at 9:26 PM, Bryan Donlan <bdonlan@gmail.com> wrote:
-> > On Tue, May 12, 2009 at 11:47 AM, ranjith kannikara
-> > <ranjithkannikara@gmail.com> wrote:
-> >> I am a computer science engineering student. We have started a project
-> >> to make an application to recover deleted files from an ext3
-> >> filesystem. For that we have a doubt . Can we edit the inode content?
-> >> ie the recovery will be robust if we could edit the inode contents and
-> >> give the pointer address manually or through a code. The inode is
-> >> being created in the kernel mode and is it possible to edit those
-> >> contents if the code is allowed to have the kernel mode permissions..?
->
-> But we would like to know whether it is possible to edit the inode
-> because it will make the recovery easy and robust. ie he know the
-> details of the inode of the file which had been deleted is it possible
-> to edit the content of that inode with the pointers of the deleted
-> file.?
+On Monday 11 May 2009 10:06:32 Jarod Wilson wrote:
+> At present, the tcrypt module always exits with an -EAGAIN upon
+> successfully completing all the tests its been asked to run. There
+> are cases where it would be much simpler to verify all tests passed
+> if tcrypt simply stayed loaded (i.e. returned 0). Specifically, in
+> fips mode, all self-tests need to be run from the initrd, and its
+> much simpler to check the ret from modprobe for success than to
+> scrape dmesg. To make this doable, I've simply added a module param
+> to allow this behavior, leaving the default behavior more or less
+> the same as before, although now we're tracking all success/failure
+> rets as well.
 
-Are you asking whether it is possible to modify the on-disk structure
-of the ext3 inode?  Generally that is NOT allowed because it will of
-course break all existing filesystems if not done with extreme care.
+I've been reminded that a self-test failure in fips mode means an
+immediate panic, so modprobe never sees the ret in that case, but if
+the module load failed for other reasons, a non-zero return value
+from modprobe is possible w/o traversing the code paths that trigger
+a self-test failure panic. For one, if the tcrypt module were to go
+missing for some reason, modprobe would have a non-zero ret, and the
+initrd would need to handle panicking the system.
 
-Cheers, Andreas
---
-Andreas Dilger
-Sr. Staff Engineer, Lustre Group
-Sun Microsystems of Canada, Inc.
+Would there be any objections to dropping the noexit parameter
+entirely and just making its behavior the default? It would make
+all users regardless of fips mode notice failures more readily.
 
+-- 
+Jarod Wilson
+jarod@redhat.com
