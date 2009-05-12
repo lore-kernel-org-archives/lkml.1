@@ -1,106 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbZELGH3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756594AbZELGLS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755241AbZELGH3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 02:07:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbZELGHM
+	id S1756594AbZELGLS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 02:11:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753724AbZELGLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 02:07:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37599 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753266AbZELGHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 02:07:10 -0400
-Message-ID: <4A09115D.3080009@kernel.org>
-Date: Tue, 12 May 2009 15:04:13 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, bharrosh@panasas.com,
-       axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
-       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
-       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
-       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
-       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
-       dgilbert@interlog.com, djwong@us.ibm.com
-Subject: Re: [PATCH 03/11] block: add rq->resid_len
-References: <1241423927-11871-4-git-send-email-tj@kernel.org>	 <4A06DFAB.40205@panasas.com> <4A0767E5.5050205@kernel.org>	 <20090511145024B.fujita.tomonori@lab.ntt.co.jp>	 <1242051500.3338.9.camel@mulgrave.int.hansenpartnership.com>	 <4A08C094.2060602@kernel.org> <1242099783.19949.8.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1242099783.19949.8.camel@mulgrave.int.hansenpartnership.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 12 May 2009 02:11:05 -0400
+Received: from fms-01.valinux.co.jp ([210.128.90.1]:41010 "EHLO
+	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753678AbZELGLE (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 02:11:04 -0400
+Date: Tue, 12 May 2009 15:11:04 +0900 (JST)
+Message-Id: <20090512.151104.71103166.ryov@valinux.co.jp>
+To: lizf@cn.fujitsu.com
+Cc: Alan.Brunelle@hp.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
+From: Ryo Tsuruta <ryov@valinux.co.jp>
+In-Reply-To: <4A08F1B3.4060700@cn.fujitsu.com>
+References: <20090507.092322.71121515.ryov@valinux.co.jp>
+	<20090511.193115.189717098.ryov@valinux.co.jp>
+	<4A08F1B3.4060700@cn.fujitsu.com>
+X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 06:04:21 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, James.
+Hi Li,
 
-James Bottomley wrote:
->> * Not well defined.  What does it mean really?  It can't indicate
->>   successful partial transfer.  If the request partially succeeded,
->>   the required behavior is to successfully complete the request
->>   partially with residual count and then fail the latter part when
->>   issued again.  If the failure applies to the whole request but
->>   location information is useful, it should be carried in the sense
->>   data.
+From: Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
+Date: Tue, 12 May 2009 11:49:07 +0800
+
+> Ryo Tsuruta wrote:
+> > Hi Li,
+> > 
+> > From: Ryo Tsuruta <ryov@valinux.co.jp>
+> > Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
+> > Date: Thu, 07 May 2009 09:23:22 +0900 (JST)
+> > 
+> >> Hi Li,
+> >>
+> >> From: Li Zefan <lizf@cn.fujitsu.com>
+> >> Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
+> >> Date: Mon, 04 May 2009 11:24:27 +0800
+> >>
+> >>> Ryo Tsuruta wrote:
+> >>>> Hi Alan,
+> >>>>
+> >>>>> Hi Ryo -
+> >>>>>
+> >>>>> I don't know if you are taking in patches, but whilst trying to uncover
+> >>>>> some odd behavior I added some blktrace messages to dm-ioband-ctl.c. If
+> >>>>> you're keeping one code base for old stuff (2.6.18-ish RHEL stuff) and
+> >>>>> upstream you'll have to #if around these (the blktrace message stuff
+> >>>>> came in around 2.6.26 or 27 I think).
+> >>>>>
+> >>>>> My test case was to take a single 400GB storage device, put two 200GB
+> >>>>> partitions on it and then see what the "penalty" or overhead for adding
+> >>>>> dm-ioband on top. To do this I simply created an ext2 FS on each
+> >>>>> partition in parallel (two processes each doing a mkfs to one of the
+> >>>>> partitions). Then I put two dm-ioband devices on top of the two
+> >>>>> partitions (setting the weight to 100 in both cases - thus they should
+> >>>>> have equal access).
+> >>>>>
+> >>>>> Using default values I was seeing /very/ large differences - on the
+> >>>>> order of 3X. When I bumped the number of tokens to a large number
+> >>>>> (10,240) the timings got much closer (<2%). I have found that using
+> >>>>> weight-iosize performs worse than weight (closer to 5% penalty).
+> >>>> I could reproduce similar results. One dm-ioband device seems to stop
+> >>>> issuing I/Os for a few seconds at times. I'll investigate more on that.
+> >>>>  
+> >>>>> I'll try to formalize these results as I go forward and report out on
+> >>>>> them. In any event, I thought I'd share this patch with you if you are
+> >>>>> interested...
+> >>>> Thanks. I'll include your patche into the next release.
+> >>>>  
+> >>> IMO we should use TRACE_EVENT instead of adding new blk_add_trace_msg().
+> >> Thanks for your suggestion. I'll use TRACE_EVENT instead.
+> > 
+> > blk_add_trace_msg() supports both blktrace and tracepoints. I can
+> > get messages from dm-ioband through debugfs. Could you expain why
+> > should we use TRACE_EVENT instead?
+> > 
 > 
-> The definition is the amount of data transfer requested less the actual
-> that went over the wire ... that's certainly a well defined quantity;
-> although, one could argue about what this means in the device.
-> Certainly I agree that just because the data was transferred to or from
-> the device is no guarantee that the device did anything with it (or
-> transferred it accurately).
-
-I think it's more like how many bytes are valid where the validity is
-defined as the number of meaningful bytes on dev -> host commands and
-the number of bytes the device actually consumed on the other
-direction.  Please note that this is different from the number of
-bytes transferred due to padding or under other error conditions.
-
->> * What about corner values?  What does 0 or full resid count on
->>   failure mean?
+> Actually blk_add_trace_msg() has nothing to do with tracepoints..
 > 
-> 0 means everything transferred, full residual means nothing did.
-
-Yeap, I was wondering about the combination 0 resid count + failure.
-What would it mean?  All bytes are valid but the command failed?
-
->> * Different layers of failing.  In SG_IO interface, a request may fail
->>   with -EIO way before it reaches block layer.  Residual count can't
->>   be set to any meaningful value in these cases.  We can set it to
->>   full count for these fast fail paths, but do we really wanna go
->>   there?  Another problem is when a driver is missing SG_IO
->>   capability.  Who's responsible for setting resid count in that case?
->>   How is upper layer gonna determine a SG_IO failed because lower
->>   level driver didn't support it or it genuinely failed?
+> If we use blk_add_trace_msg() is dm, we can use it in md, various block
+> drivers and even ext4. So the right thing is, if a subsystem wants to add
+> trace facility, it should use tracepoints/TRACE_EVENT.
 > 
-> Well, I prefer the concept of transfer length, which would be
-> initialised to zero ... however, residuals should be initialised to
-> the actual transfer count.
+> With TRACE_EVENT, you can get output through debugfs too, and it can be used
+> together with blktrace:
 > 
->> I think it's just silly to give any meaning to resid count when the
->> request fails.  It's best to leave the field unmodified or just
->> declare it undefined.
+>  # echo 1 > /sys/block/dm/trace/enable
+>  # echo blk > /debugfs/tracing/current_tracer
+>  # echo dm-ioband-foo > /debugfs/tracing/tracing/set_event
+>  # cat /deubgfs/tracing/trace_pipe
+>  
+> And you can enable dm-ioband-foo while disabling dm-ioband-bar, and you can
+> use filter feature too.
+
+Thanks for explaining.
+The base kernel of current dm tree (2.6.30-rc4) has not supported
+dm-device tracing yet. I'll consider using TRACE_EVENT when the base
+kernel supports dm-device tracing.
+
 > 
-> It's current behaviour.  Technically that makes it part of the SG_IO
-> ABI ... although it could be deprecated if someone can verify there are
-> no current users.
+> >>>>> Here's a sampling from some blktrace output (sorry for the wrapping) - I
+> >>>>> should note that I'm a bit scared to see such large numbers of holds
+> >>>>> going on when the token count should be >5,000 for each device...
+> >>>>> Holding these back in an equal access situation is inhibiting the block
+> >>>>> I/O layer to merge (most) of these (as mkfs performs lots & lots of
+> >>>>> small but sequential I/Os).
+> >> Thanks,
+> >> Ryo Tsuruta
+> > 
+> > Thanks,
+> > Ryo Tsuruta
+> > 
 
-The behavior wasn't guaranteed before the change in paths including
-SG_IO fast fail one.  libata and ide have been and are completely
-funky about residual counts anyway so I highly doubt anyone has been
-depending on it.
-
-There's nothing wrong with keeping the original behavior in itself but
-to me it looks like it would be a bad precedence when no one should
-depend on the behavior.
-
-Thanks.
-
--- 
-tejun
+Thanks,
+Ryo Tsuruta
