@@ -1,31 +1,35 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757689AbZELRWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757415AbZELRVs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757689AbZELRWZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 13:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752200AbZELRWO
+	id S1757415AbZELRVs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 13:21:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756407AbZELRVX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 13:22:14 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:53249 "EHLO
+	Tue, 12 May 2009 13:21:23 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:43712 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751454AbZELRWO (ORCPT
+	with ESMTP id S1755310AbZELRVW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 13:22:14 -0400
-Date: Tue, 12 May 2009 17:21:16 -0400 (EDT)
+	Tue, 12 May 2009 13:21:22 -0400
+Date: Tue, 12 May 2009 17:20:02 -0400 (EDT)
 From: Christoph Lameter <cl@linux-foundation.org>
 X-X-Sender: cl@qirst.com
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+To: Rik van Riel <riel@redhat.com>
+cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Wu Fengguang <fengguang.wu@intel.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 2/3] x86: add numa_move_cpus_to_node
-In-Reply-To: <4A09AEFB.4070808@kernel.org>
-Message-ID: <alpine.DEB.1.10.0905121720430.24066@qirst.com>
-References: <4A05269D.8000701@kernel.org> <4A052721.4010201@kernel.org> <alpine.DEB.1.10.0905112126410.28512@qirst.com> <4A089E53.8010106@kernel.org> <alpine.DEB.1.10.0905121658140.14226@qirst.com> <4A09AEFB.4070808@kernel.org>
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+Subject: Re: [PATCH -mm] vmscan: protect a fraction of file backed mapped
+ pages from reclaim
+In-Reply-To: <4A09AC91.4060506@redhat.com>
+Message-ID: <alpine.DEB.1.10.0905121718040.24066@qirst.com>
+References: <20090508125859.210a2a25.akpm@linux-foundation.org> <20090512025246.GC7518@localhost> <20090512120002.D616.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0905121650090.14226@qirst.com> <4A09AC91.4060506@redhat.com>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -33,10 +37,15 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009, Yinghai Lu wrote:
+On Tue, 12 May 2009, Rik van Riel wrote:
 
-> or let user util do that? aka before hotadd mem to that node, use /sys to bring
-> the cpu offine and put the cpus online after mem is added ?
+> The patch that only allows active file pages to be deactivated
+> if the active file LRU is larger than the inactive file LRU should
+> protect the working set from being evicted due to streaming IO.
 
-Ok then we wont need the kernel.
+Streaming I/O means access once? What exactly are the criteria for a page
+to be part of streaming I/O? AFAICT the definition is more dependent on
+the software running than on a certain usage pattern discernible to the
+VM. Software may after all perform multiple scans over a stream of data or
+go back to prior locations in the file.
 
