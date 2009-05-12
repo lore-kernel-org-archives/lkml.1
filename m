@@ -1,68 +1,307 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753954AbZELRIk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZELRMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753954AbZELRIk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 13:08:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752557AbZELRIa
+	id S1755304AbZELRMd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 13:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751498AbZELRMX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 13:08:30 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40294 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752208AbZELRIa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 13:08:30 -0400
-Message-ID: <4A09AC91.4060506@redhat.com>
-Date: Tue, 12 May 2009 13:06:25 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
+	Tue, 12 May 2009 13:12:23 -0400
+Received: from e23smtp09.au.ibm.com ([202.81.31.142]:36598 "EHLO
+	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751167AbZELRMW (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 13:12:22 -0400
+Date: Tue, 12 May 2009 22:42:10 +0530
+From: "K.Prasad" <prasad@linux.vnet.ibm.com>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Steven Rostedt <rostedt@goodmis.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH -mm] vmscan: protect a fraction of file backed mapped
- pages from reclaim
-References: <20090508125859.210a2a25.akpm@linux-foundation.org> <20090512025246.GC7518@localhost> <20090512120002.D616.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0905121650090.14226@qirst.com>
-In-Reply-To: <alpine.DEB.1.10.0905121650090.14226@qirst.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+       Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
+       Roland McGrath <roland@redhat.com>
+Subject: Re: [Patch 00/12] Hardware Breakpoint Interfaces
+Message-ID: <20090512171210.GC6033@in.ibm.com>
+Reply-To: prasad@linux.vnet.ibm.com
+References: <20090512140525.GA6033@in.ibm.com> <Pine.LNX.4.44L0.0905121035280.2824-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0905121035280.2824-100000@iolanthe.rowland.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> All these expiration modifications do not take into account that a desktop
-> may sit idle for hours while some other things run in the background (like
-> backups at night or updatedb and other maintenance things). This still
-> means that the desktop will be usuable in the morning.
+On Tue, May 12, 2009 at 10:55:10AM -0400, Alan Stern wrote:
+> On Tue, 12 May 2009, K.Prasad wrote:
+> 
+> > I agree it keeps the code much safer. Here's the relevant code-snippet:
+> > 
+> > 		if (i >= hbp_kernel_pos)
+> > 			bp = per_cpu(this_hbp_kernel[i], cpu);
+> > 		else {
+> > 			bp = current->thread.hbp[i];
+> > 			rc = NOTIFY_DONE;
+> > 		}
+> > 		/*
+> > 		 * bp can be NULL due to lazy debug register switching
+> > 		 * for
+> > 		 * user-space requests or the exception was triggered in
+> > 		 * the
+> > 		 * mismatch window when 'hbp_kernel_pos' and
+> > 		 * 'this_hbp_kernel[]'
+> > 		 * are out-of-sync
+> > 		 */
+> 
+> The comment could be a little more grammatical and more succinct.  For 
+> example:
+> 
+> 		/*
+> 		 * bp can be NULL due to lazy debug register switching
+> 		 * or to the delay between updates of hbp_kernel_pos 
+> 		 * and this_hbp_kernel.
+> 		 */
+> 
 
-New file pages start on the inactive list and will get reclaimed
-after one access. Only file pages that get accessed multiple times
-get promoted to the active file LRU.
+Ok.
 
-The patch that only allows active file pages to be deactivated
-if the active file LRU is larger than the inactive file LRU should
-protect the working set from being evicted due to streaming IO.
+> > > Okay.  Let's suppose a single userspace breakpoint has already been
+> > > allocated and set up as breakpoint 0.  Now another ptrace call comes
+> > > along, in which bp 0 is disabled and bp 1 is requested.  This is your
+> > > case (i); the breakpoint structure for bp 0 will be deallocated.  But
+> > > maybe something goes wrong with the register_user_hw_breakpoint() call
+> > > for bp 1, so we have to restore the old settings.  The code will try to
+> > > allocate a new breakpoint structure to hold bp 0; what happens if
+> > > that allocation fails?  The user program will know that the write to
+> > > DR7 didn't succeed, so it will think the pre-existing breakpoint is
+> > > still valid.  But it isn't.
+> > > 
+> > > If instead you had avoided deallocated the structure for bp 0 until the 
+> > > end, then there would be no need to reallocate it during the restore 
+> > > and so the restore would succeed.
+> > > 
+> > > Alan Stern
+> > 
+> > Thanks for explaining the case so well, I did not foresee it! The
+> > ptrace_write_dr7() is modified to perform changes in two-passes. The first
+> > one will effect all register/modify operations while the second one will
+> > unregister. One issue that I see in this method is if/when virtual debug
+> > registers are implemented, we may incorrectly deny a register request
+> > for want of physical debug registers (because they have not been free-ed
+> > through an earlier unregister operation). Let me know if you think it
+> > can be done better. Here's the new ptrace_write_dr7():
+> > 
+> > 
+> > static int ptrace_write_dr7(struct task_struct *tsk, unsigned long data)
+> > {
+> > 	struct thread_struct *thread = &(tsk->thread);
+> > 	unsigned long old_dr7 = thread->debugreg7;
+> > 	int i, rc = 0;
+> > 	int enabled, second_pass_reqd = 1;
+> > 	unsigned len, type;
+> > 	struct hw_breakpoint *bp;
+> > 
+> > 	data &= ~DR_CONTROL_RESERVED;
+> > restore:
+> > 	/*
+> > 	 * Loop through all the hardware breakpoints, making the
+> > 	 * appropriate changes to each.
+> > 	 */
+> > 	for (i = 0; i < HB_NUM; i++) {
+> > 		enabled = decode_dr7(data, i, &len, &type);
+> > 		bp = thread->hbp[i];
+> > 
+> > 		if (!enabled) {
+> > 			if (bp) {
+> > 				/* Don't unregister the breakpoints right-away,
+> > 				 * unless all register_user_hw_breakpoint()
+> > 				 * requests have succeeded. This prevents
+> > 				 * any window of opportunity for debug
+> > 				 * register grabbing by other users.
+> > 				 */
+> > 				if (second_pass_reqd)
+> > 					continue;
+> > 				unregister_user_hw_breakpoint(tsk, bp);
+> > 				kfree(bp);
+> > 			}
+> > 			continue;
+> > 		}
+> > 
+> > 		if (!bp) {
+> > 			rc = -ENOMEM;
+> > 			bp = kzalloc(sizeof(struct hw_breakpoint), GFP_KERNEL);
+> > 			if (bp) {
+> > 				bp->info.address = thread->debugreg[i];
+> > 				bp->triggered = ptrace_triggered;
+> > 				bp->info.len = len;
+> > 				bp->info.type = type;
+> > 				rc = register_user_hw_breakpoint(tsk, bp);
+> > 				if (!rc)
+> > 					set_tsk_thread_flag(tsk, TIF_DEBUG);
+> > 				else
+> > 					kfree(bp);
+> > 			}
+> > 		} else {
+> > 			spin_lock_bh(&hw_breakpoint_lock);
+> > 			rc = __modify_user_hw_breakpoint(i, tsk, bp);
+> > 			spin_unlock_bh(&hw_breakpoint_lock);
+> 
+> With these changes, __register_user_hw_breakpoint() and 
+> __unregister_user_hw_breakpoint() no longer need to be separate 
+> routines.  Similarly, __modify_user_hw_breakpoint() can be renamed 
+> without the "__" prefix, and it can acquire the spinlock instead of 
+> making the caller do the locking.
+>
+> Then hw_breakpoint_lock can be made static.  There's no need to lock it 
+> in ptrace_get_debugreg() any more.
+> 
 
-Even if the working set is currently idle.
+hmmh...The (un)register_user_<> and __(un)register_user_<> break-up
+looks so modular and am not sure if combining them would be of any
+benefit (and as you might be aware, the compiler can always choose
+to inline though). And doing this might not be helpful if we like to
+virtualise the debug registers (as in the original implementation) in
+the future.
 
-> I have had some success with a patch that protects a pages in the file
-> cache from being unmapped if the mapped pages are below a certain
-> percentage of the file cache. Its another VM knob to define the percentage
-> though.
+The __modify_user_hw_breakpoint() had the "__" prefix because it had
+"int pos" as a parameter, although it can be eliminated by adding a loop
+that iterates through the breakpoints of "tsk". If you prefer
+modify_user_hw_breakpoint(), I will introduce the same in
+kernel/hw_breakpoint.c which acts as a wrapper over __modify_user_<> and
+takes the hw_breakpoint_lock.
 
-That is another way of protecting mapped file pages, but it does
-not have the side effect of protecting the page cache working set
-on eg. file servers or mysql or postgresql installs with default
-tunables (which rely heavily on the page cache to cache the right
-things).
+Let me know what you think on the above.
 
--- 
-All rights reversed.
+> > 		}
+> > 
+> > 		if (rc)
+> > 			break;
+> > 	}
+> > 
+> > 	/* If anything above failed, restore the original settings */
+> > 	if (rc < 0) {
+> > 		data = old_dr7;
+> > 		second_pass_reqd = 0;
+> > 		goto restore;
+> > 	}
+> > 	if (second_pass_reqd) {
+> > 		/* Enter the second-pass after disabling 'second_pass_reqd' */
+> > 		second_pass_reqd = 0;
+> > 		goto restore;
+> > 	}
+> > 	return rc;
+> > }
+> > 
+> > I will repost the patchset along with the changes explained above.
+> 
+> I think it would be less confusing if you change the name
+> "second_pass_reqd" to just "second_pass", setting it to 0 the first
+> time through and 1 the second time.  So at the end:
+> 
+> 	/*
+> 	 * Make a second pass to free the remaining unused breakpoints
+> 	 * or to restore the original breakpoints if an error occurred.
+> 	 */
+> 	if (!second_pass) {
+> 		second_pass = 1;
+> 		if (rc < 0)
+> 			data = old_dr7;
+> 		goto restore;
+> 	}
+> 
+> Also, you need to be more careful about the value of rc.  The error 
+> code you return should be the error that caused the first pass to fail.  
+> Errors or successes during the second pass shouldn't overwrite that 
+> value.
+> 
+> Alan Stern
+> 
+
+Ok. Will change the code as suggested. The return values in the above
+implementation will be modified in the second pass here:
+
+rc = __modify_user_hw_breakpoint(i, tsk, bp);
+
+I will save the 'rc' value from the first pass in a separate variable
+and use that as the return value. Operations in the second pass (such as
+unregister/modify are not expected to fail).
+
+Here's the revised code:
+
+/*
+ * Handle ptrace writes to debug register 7.
+ */
+static int ptrace_write_dr7(struct task_struct *tsk, unsigned long data)
+{
+	struct thread_struct *thread = &(tsk->thread);
+	unsigned long old_dr7 = thread->debugreg7;
+	int i, orig_ret, rc = 0;
+	int enabled, second_pass = 0;
+	unsigned len, type;
+	struct hw_breakpoint *bp;
+
+	data &= ~DR_CONTROL_RESERVED;
+restore:
+	/*
+	 * Loop through all the hardware breakpoints, making the
+	 * appropriate changes to each.
+	 */
+	for (i = 0; i < HB_NUM; i++) {
+		enabled = decode_dr7(data, i, &len, &type);
+		bp = thread->hbp[i];
+
+		if (!enabled) {
+			if (bp) {
+				/* Don't unregister the breakpoints right-away,
+				 * unless all register_user_hw_breakpoint()
+				 * requests have succeeded. This prevents
+				 * any window of opportunity for debug
+				 * register grabbing by other users.
+				 */
+				if (!second_pass)
+					continue;
+				unregister_user_hw_breakpoint(tsk, bp);
+				kfree(bp);
+			}
+			continue;
+		}
+		if (!bp) {
+			rc = -ENOMEM;
+			bp = kzalloc(sizeof(struct hw_breakpoint), GFP_KERNEL);
+			if (bp) {
+				bp->info.address = thread->debugreg[i];
+				bp->triggered = ptrace_triggered;
+				bp->info.len = len;
+				bp->info.type = type;
+				rc = register_user_hw_breakpoint(tsk, bp);
+				if (!rc)
+					set_tsk_thread_flag(tsk, TIF_DEBUG);
+				else
+					kfree(bp);
+			}
+		} else {
+			spin_lock_bh(&hw_breakpoint_lock);
+			rc = __modify_user_hw_breakpoint(i, tsk, bp);
+			spin_unlock_bh(&hw_breakpoint_lock);
+		}
+		if (rc)
+			break;
+	}
+	/*
+	 * Make a second pass to free the remaining unused breakpoints
+	 * or to restore the original breakpoints if an error occurred.
+	 */
+	if (!second_pass) {
+		second_pass = 1;
+		if (rc < 0) {
+			orig_ret = rc;
+			data = old_dr7;
+		}
+		goto restore;
+	}
+	return ((orig_ret < 0) ? orig_ret : rc); 
+}
+
+Thanks,
+K.Prasad
+
