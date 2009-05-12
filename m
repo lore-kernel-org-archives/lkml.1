@@ -1,111 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757701AbZELDnY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbZELDsZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757701AbZELDnY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 23:43:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753875AbZELDnJ
+	id S1756652AbZELDsZ (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 23:48:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbZELDsM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 23:43:09 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:58369 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753489AbZELDnH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 23:43:07 -0400
-Subject: Re: [PATCH 03/11] block: add rq->resid_len
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Tejun Heo <tj@kernel.org>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, bharrosh@panasas.com,
-       axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
-       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
-       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
-       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
-       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
-       dgilbert@interlog.com, djwong@us.ibm.com
-In-Reply-To: <4A08C094.2060602@kernel.org>
-References: <1241423927-11871-4-git-send-email-tj@kernel.org>
-	 <4A06DFAB.40205@panasas.com> <4A0767E5.5050205@kernel.org>
-	 <20090511145024B.fujita.tomonori@lab.ntt.co.jp>
-	 <1242051500.3338.9.camel@mulgrave.int.hansenpartnership.com>
-	 <4A08C094.2060602@kernel.org>
-Content-Type: text/plain
-Date: Mon, 11 May 2009 22:43:03 -0500
-Message-Id: <1242099783.19949.8.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+	Mon, 11 May 2009 23:48:12 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:50437 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1751181AbZELDsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 23:48:11 -0400
+Message-ID: <4A08F1B3.4060700@cn.fujitsu.com>
+Date: Tue, 12 May 2009 11:49:07 +0800
+From: Li Zefan <lizf@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+MIME-Version: 1.0
+To: Ryo Tsuruta <ryov@valinux.co.jp>
+CC: Alan.Brunelle@hp.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org
+Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
+References: <20090427.184417.189717449.ryov@valinux.co.jp>	<49FE5FEB.6040207@cn.fujitsu.com>	<20090507.092322.71121515.ryov@valinux.co.jp> <20090511.193115.189717098.ryov@valinux.co.jp>
+In-Reply-To: <20090511.193115.189717098.ryov@valinux.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-12 at 09:19 +0900, Tejun Heo wrote:
-> Hello, all.
+Ryo Tsuruta wrote:
+> Hi Li,
 > 
-> James Bottomley wrote:
-> >>> Does resid_len make any sense w/ failed requests?  I think we would be
-> >>> better off with declaring residual count to be undefined on request
-> >>> failure.  Is there any place which depends on it?
-> >> IIRC, I wrote the code. I think that this doesn't matter but it's
-> >> better not to change the behavior unless Eric ack on this change
-> >> (maybe LSI has some management binary that assume this behavior though
-> >> it's unlikely).
-> > 
-> > Actually, yes it does, for many possible reasons.
-> > 
-> > The first being if the device is too stupid to report an actual sector
-> > location the next best way of determining where the error occurred is
-> > from the residual.  We don't make use of this in kernel (perhaps we
-> > should?) but some of the user space programs for CD/DVD burning do.
+> From: Ryo Tsuruta <ryov@valinux.co.jp>
+> Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
+> Date: Thu, 07 May 2009 09:23:22 +0900 (JST)
 > 
-> Really?  Residual count on command success is used but on failure?
-> That's a dangerous territory.  When a SG_IO fails, the only data the
-> app should be accessing is the sense data if the status indicates its
-> validity.  The problems with residual count on failed command are...
+>> Hi Li,
+>>
+>> From: Li Zefan <lizf@cn.fujitsu.com>
+>> Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
+>> Date: Mon, 04 May 2009 11:24:27 +0800
+>>
+>>> Ryo Tsuruta wrote:
+>>>> Hi Alan,
+>>>>
+>>>>> Hi Ryo -
+>>>>>
+>>>>> I don't know if you are taking in patches, but whilst trying to uncover
+>>>>> some odd behavior I added some blktrace messages to dm-ioband-ctl.c. If
+>>>>> you're keeping one code base for old stuff (2.6.18-ish RHEL stuff) and
+>>>>> upstream you'll have to #if around these (the blktrace message stuff
+>>>>> came in around 2.6.26 or 27 I think).
+>>>>>
+>>>>> My test case was to take a single 400GB storage device, put two 200GB
+>>>>> partitions on it and then see what the "penalty" or overhead for adding
+>>>>> dm-ioband on top. To do this I simply created an ext2 FS on each
+>>>>> partition in parallel (two processes each doing a mkfs to one of the
+>>>>> partitions). Then I put two dm-ioband devices on top of the two
+>>>>> partitions (setting the weight to 100 in both cases - thus they should
+>>>>> have equal access).
+>>>>>
+>>>>> Using default values I was seeing /very/ large differences - on the
+>>>>> order of 3X. When I bumped the number of tokens to a large number
+>>>>> (10,240) the timings got much closer (<2%). I have found that using
+>>>>> weight-iosize performs worse than weight (closer to 5% penalty).
+>>>> I could reproduce similar results. One dm-ioband device seems to stop
+>>>> issuing I/Os for a few seconds at times. I'll investigate more on that.
+>>>>  
+>>>>> I'll try to formalize these results as I go forward and report out on
+>>>>> them. In any event, I thought I'd share this patch with you if you are
+>>>>> interested...
+>>>> Thanks. I'll include your patche into the next release.
+>>>>  
+>>> IMO we should use TRACE_EVENT instead of adding new blk_add_trace_msg().
+>> Thanks for your suggestion. I'll use TRACE_EVENT instead.
 > 
-> * Not well defined.  What does it mean really?  It can't indicate
->   successful partial transfer.  If the request partially succeeded,
->   the required behavior is to successfully complete the request
->   partially with residual count and then fail the latter part when
->   issued again.  If the failure applies to the whole request but
->   location information is useful, it should be carried in the sense
->   data.
+> blk_add_trace_msg() supports both blktrace and tracepoints. I can
+> get messages from dm-ioband through debugfs. Could you expain why
+> should we use TRACE_EVENT instead?
+> 
 
-The definition is the amount of data transfer requested less the actual
-that went over the wire ... that's certainly a well defined quantity;
-although, one could argue about what this means in the device.
-Certainly I agree that just because the data was transferred to or from
-the device is no guarantee that the device did anything with it (or
-transferred it accurately).
+Actually blk_add_trace_msg() has nothing to do with tracepoints..
 
-> * What about corner values?  What does 0 or full resid count on
->   failure mean?
+If we use blk_add_trace_msg() is dm, we can use it in md, various block
+drivers and even ext4. So the right thing is, if a subsystem wants to add
+trace facility, it should use tracepoints/TRACE_EVENT.
 
-0 means everything transferred, full residual means nothing did.
+With TRACE_EVENT, you can get output through debugfs too, and it can be used
+together with blktrace:
 
-> * Different layers of failing.  In SG_IO interface, a request may fail
->   with -EIO way before it reaches block layer.  Residual count can't
->   be set to any meaningful value in these cases.  We can set it to
->   full count for these fast fail paths, but do we really wanna go
->   there?  Another problem is when a driver is missing SG_IO
->   capability.  Who's responsible for setting resid count in that case?
->   How is upper layer gonna determine a SG_IO failed because lower
->   level driver didn't support it or it genuinely failed?
+ # echo 1 > /sys/block/dm/trace/enable
+ # echo blk > /debugfs/tracing/current_tracer
+ # echo dm-ioband-foo > /debugfs/tracing/tracing/set_event
+ # cat /deubgfs/tracing/trace_pipe
+ 
+And you can enable dm-ioband-foo while disabling dm-ioband-bar, and you can
+use filter feature too.
 
-Well, I prefer the concept of transfer length, which would be
-initialised to zero ... however, residuals should be initialised to the
-actual transfer count.
-
-> I think it's just silly to give any meaning to resid count when the
-> request fails.  It's best to leave the field unmodified or just
-> declare it undefined.
-
-It's current behaviour.  Technically that makes it part of the SG_IO
-ABI ... although it could be deprecated if someone can verify there are
-no current users.
-
-James
+>>>>> Here's a sampling from some blktrace output (sorry for the wrapping) - I
+>>>>> should note that I'm a bit scared to see such large numbers of holds
+>>>>> going on when the token count should be >5,000 for each device...
+>>>>> Holding these back in an equal access situation is inhibiting the block
+>>>>> I/O layer to merge (most) of these (as mkfs performs lots & lots of
+>>>>> small but sequential I/Os).
+>> Thanks,
+>> Ryo Tsuruta
+> 
+> Thanks,
+> Ryo Tsuruta
+> 
 
 
