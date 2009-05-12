@@ -1,114 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753437AbZELNe3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753952AbZELNfT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753437AbZELNe3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 09:34:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZELNeT
+	id S1753952AbZELNfT (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 09:35:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752198AbZELNfF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 09:34:19 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54286 "EHLO hera.kernel.org"
+	Tue, 12 May 2009 09:35:05 -0400
+Received: from ozlabs.org ([203.10.76.45]:53839 "EHLO ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751989AbZELNeS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 09:34:18 -0400
-Date: Tue, 12 May 2009 13:33:31 GMT
-From: tip-bot for Paul Mackerras <paulus@samba.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <18953.25733.53359.147452@cargo.ozlabs.ibm.com>
-References: <18953.25733.53359.147452@cargo.ozlabs.ibm.com>
-Subject: [tip:perfcounters/core] perf_counter: call hw_perf_save_disable/restore around group_sched_in
-Message-ID: <tip-e758a33d6fc5b9d6a3ae489863d04fcecad8120b@git.kernel.org>
-Git-Commit-ID: e758a33d6fc5b9d6a3ae489863d04fcecad8120b
-X-Mailer: tip-git-log-daemon
+	id S1752194AbZELNfD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 09:35:03 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [RFC PATCH 2/2] kernel/sched.c: VLA in middle of struct
+Date: Tue, 12 May 2009 23:04:51 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Ingo Molnar <mingo@elte.hu>, Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Mike Travis <travis@sgi.com>, LKML <linux-kernel@vger.kernel.org>,
+       viro@zeniv.linux.org.uk, Andrew Morton <akpm@linux-foundation.org>,
+       roland@redhat.com
+References: <20090508184838.GA11157@havoc.gtf.org> <200905101819.41765.rusty@rustcorp.com.au> <20090510150954.GA21561@havoc.gtf.org>
+In-Reply-To: <20090510150954.GA21561@havoc.gtf.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 13:33:33 +0000 (UTC)
+Message-Id: <200905122304.52395.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  e758a33d6fc5b9d6a3ae489863d04fcecad8120b
-Gitweb:     http://git.kernel.org/tip/e758a33d6fc5b9d6a3ae489863d04fcecad8120b
-Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Tue, 12 May 2009 21:59:01 +1000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 12 May 2009 15:31:06 +0200
+On Mon, 11 May 2009 12:39:54 am Jeff Garzik wrote:
+> On Sun, May 10, 2009 at 06:19:40PM +0930, Rusty Russell wrote:
+> > Yeah, it's kinda nasty.  Generally, sched_group is dynamically allocated,
+> > so we just allocate sizeof(struct sched_group) + size of nr_cpu_ids bits.
+> >
+> > These ones are static, and it was easier to put this hack in than make
+> > them dynamic.  There's nothing wrong with it, until we really want
+> > NR_CPUS == bignum, or we want to get rid of NR_CPUS altogether for
+> > CONFIG_CPUMASKS_OFFSTACK (which would be very clean, but not clearly
+> > worthwhile).
+>
+> Nothing wrong with it, except
+>
+> - C99 only defines variable-length automatic arrays
+> - VLA in the middle of a struct are difficult to optimize
+> - gcc's VLA handling WILL change, as gcc docs state
+> - other compilers -- and sparse -- puke all over VLAs, making
+>   static analysis impossible for all code with this weirdism
 
-perf_counter: call hw_perf_save_disable/restore around group_sched_in
+Jeff, you seem confused.  In my copy of the standard, you'd know this is called 
+a "flexible array member"; it's not a variable length array.  The only GCC 
+specific issue I can find here is that you're not normally allowed to embed 
+structs with them in another struct (according to the gcc docs; I can't 
+actually find this clearly stated in the standard).
 
-I noticed that when enabling a group via the PERF_COUNTER_IOC_ENABLE
-ioctl on the group leader, the counters weren't enabled and counting
-immediately on return from the ioctl, but did start counting a little
-while later (presumably after a context switch).
+> > But more importantly, my comment is obviously unclear, since your patch
+> > shows you didn't understand the purpose of the field: The cpus bitmap
+> > *is* the sg-
+> >
+> > >cpumask[] array.
+>
+> I guess you missed the
+> (1) "this patch is only intended to spark discussion",
+> (2) a reference to the comment, and
+> (3) "NOT-signed-off-by" portions of my email.
 
-The reason was that __perf_counter_enable calls group_sched_in which
-calls hw_perf_group_sched_in, which on powerpc assumes that the caller
-has called hw_perf_save_disable already.  Until commit 46d686c6
-("perf_counter: put whole group on when enabling group leader") it was
-true that all callers of group_sched_in had called
-hw_perf_save_disable first, and the powerpc hw_perf_group_sched_in
-relies on that (there isn't an x86 version).
+Terribly sorry, I was too polite.  Your patch was so broken it didn't make any 
+sense.  At all.
 
-This fixes the problem by putting calls to hw_perf_save_disable /
-hw_perf_restore around the calls to group_sched_in and
-counter_sched_in in __perf_counter_enable.  Having the calls to
-hw_perf_save_disable/restore around the counter_sched_in call is
-harmless and makes this call consistent with the other call sites
-of counter_sched_in, which have all called hw_perf_save_disable first.
+Anyway, since [] is C99, I thought it preferable to [0] which is a gcc 
+extension.  However, if C99 is really so braindead as to disallow this fairly 
+standard trick, so I'm happy to go with the gcc extension.[1]
 
-[ Impact: more precise counter group disable/enable functionality ]
-
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-LKML-Reference: <18953.25733.53359.147452@cargo.ozlabs.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
-
-
----
- kernel/perf_counter.c |   19 ++++++++++++-------
- 1 files changed, 12 insertions(+), 7 deletions(-)
-
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 5ea0240..ff166c1 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -663,6 +663,7 @@ static void __perf_counter_enable(void *info)
- 	struct perf_cpu_context *cpuctx = &__get_cpu_var(perf_cpu_context);
- 	struct perf_counter_context *ctx = counter->ctx;
- 	struct perf_counter *leader = counter->group_leader;
-+	unsigned long pmuflags;
- 	unsigned long flags;
- 	int err;
- 
-@@ -689,14 +690,18 @@ static void __perf_counter_enable(void *info)
- 	if (leader != counter && leader->state != PERF_COUNTER_STATE_ACTIVE)
- 		goto unlock;
- 
--	if (!group_can_go_on(counter, cpuctx, 1))
-+	if (!group_can_go_on(counter, cpuctx, 1)) {
- 		err = -EEXIST;
--	else if (counter == leader)
--		err = group_sched_in(counter, cpuctx, ctx,
--				     smp_processor_id());
--	else
--		err = counter_sched_in(counter, cpuctx, ctx,
--				       smp_processor_id());
-+	} else {
-+		pmuflags = hw_perf_save_disable();
-+		if (counter == leader)
-+			err = group_sched_in(counter, cpuctx, ctx,
-+					     smp_processor_id());
-+		else
-+			err = counter_sched_in(counter, cpuctx, ctx,
-+					       smp_processor_id());
-+		hw_perf_restore(pmuflags);
-+	}
- 
- 	if (err) {
- 		/*
+Thanks,
+Rusty.
+[1] Well, not happy.  But y'know...
