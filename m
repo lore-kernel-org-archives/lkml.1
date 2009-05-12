@@ -1,126 +1,89 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757869AbZELPku@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756029AbZELPnO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757869AbZELPku (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:40:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756225AbZELPjU
+	id S1756029AbZELPnO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:43:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751167AbZELPm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:39:20 -0400
-Received: from mtagate6.de.ibm.com ([195.212.29.155]:38352 "EHLO
-	mtagate6.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754952AbZELPjQ (ORCPT
+	Tue, 12 May 2009 11:42:58 -0400
+Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:55988 "EHLO
+	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751075AbZELPm5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:39:16 -0400
-Message-Id: <20090512153900.784747296@linux.vnet.ibm.com>
-User-Agent: quilt/0.48-1
-Date: Tue, 12 May 2009 17:38:55 +0200
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Huang Ying <ying.huang@intel.com>,
-       Li Wei <W.Li@Sun.COM>, Michael Ellerman <michaele@au1.ibm.com>,
-       Ingo Molnar <mingo@elte.hu>,
-       Heiko Carstens <heicars2@linux.vnet.ibm.com>,
-       Martin Schwidefsky <mschwid2@linux.vnet.ibm.com>
-Subject: [PATCH 4/4] gcov: enable GCOV_PROFILE_ALL for x86_64
-References: <20090512153851.939166562@linux.vnet.ibm.com>
-Content-Disposition: inline; filename=gcov-profile-all-x86_64.patch
+	Tue, 12 May 2009 11:42:57 -0400
+Subject: Re: [patch 00/13] devtmpfs patches
+From: Stephen Smalley <sds@tycho.nsa.gov>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: "David P. Quigley" <dpquigl@tycho.nsa.gov>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
+       Jan Blunck <jblunck@suse.de>, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@parisplace.org>, David Howells <dhowells@redhat.com>
+In-Reply-To: <ac3eb2510905120810n101dff08yfa945a2ab4b17168@mail.gmail.com>
+References: <20090509143742.GA27663@kroah.com>
+	 <1242063630.6624.22.camel@moss-terrapins.epoch.ncsc.mil>
+	 <20090511175626.GA4758@kroah.com>
+	 <1242074517.6624.183.camel@moss-terrapins.epoch.ncsc.mil>
+	 <ac3eb2510905111405y5541117euf84dd38d39012bd0@mail.gmail.com>
+	 <1242132344.31807.48.camel@localhost.localdomain>
+	 <ac3eb2510905120810n101dff08yfa945a2ab4b17168@mail.gmail.com>
+Content-Type: text/plain
+Organization: National Security Agency
+Date: Tue, 12 May 2009 11:35:28 -0400
+Message-Id: <1242142528.31807.80.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
+On Tue, 2009-05-12 at 17:10 +0200, Kay Sievers wrote:
+> On Tue, May 12, 2009 at 14:45, Stephen Smalley <sds@tycho.nsa.gov> wrote:
+> 
+> > I don't think merely changing the fstype will suffice; that merely lets
+> > us assign a different default security context to inodes in the
+> > filesystem (e.g. device_t vs tmpfs_t), but doesn't address the fact that
+> > use of devtmpfs rather than just udev seems to alter the permission
+> > checking upon an open(2) by mingetty, thereby breaking existing
+> > policies.
+> 
+> It will be its own filesystem type and no longer be auto-mounted in
+> initramfs at all. There is an option to request an auto-mount it for
+> the case the kernel mounted the rootfs. This is to allow the rescue
+> setup to work.
+> 
+> > Previously mingetty didn't require permissions to mknod; with
+> > devtmpfs, it does.  I'm wondering if devtmpfs is internally performing
+> > operations that ought to be done in kernel context rather than the
+> > context of the userspace process that initiated the open(2).
+> 
+> How may that look like?
 
-Enable gcov profiling of the entire kernel on x86_64. Required changes
-include disabling profiling for:
+I think the issue is that the devtmpfs functions are calling vfs helpers
+to create and unlink the device nodes, and those helpers apply
+permission checks based on the current process' credentials.  I think a
+similar issue arose in sysfs a while ago.  Options are to either bypass
+the vfs helpers to avoid that permission checking for what I think are
+intended to be kernel-internal operations, or to override credentials
+temporarily around the calls to the vfs helpers, ala:
+new_cred = prepare_kernel_cred(NULL); 
+old_cred  = override_creds(new_cred);
+rc = vfs_mknod(...);
+revert_creds(old_cred);
 
-* arch/kernel/acpi/realmode and arch/kernel/boot/compressed:
-  not linked to main kernel
-* arch/vdso, arch/kernel/vsyscall_64 and arch/kernel/hpet:
-  profiling causes segfaults during boot (incompatible context)
-
-Signed-off-by: Peter Oberparleiter <oberpar@linux.vnet.ibm.com>
----
- arch/x86/boot/Makefile                 |    1 +
- arch/x86/boot/compressed/Makefile      |    1 +
- arch/x86/kernel/Makefile               |    2 ++
- arch/x86/kernel/acpi/realmode/Makefile |    1 +
- arch/x86/vdso/Makefile                 |    1 +
- kernel/gcov/Kconfig                    |    2 +-
- 6 files changed, 7 insertions(+), 1 deletion(-)
-
-Index: linux-2.6.30-rc5/kernel/gcov/Kconfig
-===================================================================
---- linux-2.6.30-rc5.orig/kernel/gcov/Kconfig
-+++ linux-2.6.30-rc5/kernel/gcov/Kconfig
-@@ -34,7 +34,7 @@ config GCOV_KERNEL
- config GCOV_PROFILE_ALL
- 	bool "Profile entire Kernel"
- 	depends on GCOV_KERNEL
--	depends on S390 || X86_32
-+	depends on S390 || X86
- 	default n
- 	---help---
- 	This options activates profiling for the entire kernel.
-Index: linux-2.6.30-rc5/arch/x86/kernel/acpi/realmode/Makefile
-===================================================================
---- linux-2.6.30-rc5.orig/arch/x86/kernel/acpi/realmode/Makefile
-+++ linux-2.6.30-rc5/arch/x86/kernel/acpi/realmode/Makefile
-@@ -42,6 +42,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os 
- 		   $(call cc-option, -mpreferred-stack-boundary=2)
- KBUILD_CFLAGS	+= $(call cc-option, -m32)
- KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
-+GCOV_PROFILE := n
- 
- WAKEUP_OBJS = $(addprefix $(obj)/,$(wakeup-y))
- 
-Index: linux-2.6.30-rc5/arch/x86/boot/Makefile
-===================================================================
---- linux-2.6.30-rc5.orig/arch/x86/boot/Makefile
-+++ linux-2.6.30-rc5/arch/x86/boot/Makefile
-@@ -69,6 +69,7 @@ KBUILD_CFLAGS	:= $(LINUXINCLUDE) -g -Os 
- 		   $(call cc-option, -mpreferred-stack-boundary=2)
- KBUILD_CFLAGS	+= $(call cc-option, -m32)
- KBUILD_AFLAGS	:= $(KBUILD_CFLAGS) -D__ASSEMBLY__
-+GCOV_PROFILE := n
- 
- $(obj)/bzImage: asflags-y  := $(SVGA_MODE)
- 
-Index: linux-2.6.30-rc5/arch/x86/boot/compressed/Makefile
-===================================================================
---- linux-2.6.30-rc5.orig/arch/x86/boot/compressed/Makefile
-+++ linux-2.6.30-rc5/arch/x86/boot/compressed/Makefile
-@@ -15,6 +15,7 @@ KBUILD_CFLAGS += $(call cc-option,-ffree
- KBUILD_CFLAGS += $(call cc-option,-fno-stack-protector)
- 
- KBUILD_AFLAGS  := $(KBUILD_CFLAGS) -D__ASSEMBLY__
-+GCOV_PROFILE := n
- 
- LDFLAGS := -m elf_$(UTS_MACHINE)
- LDFLAGS_vmlinux := -T
-Index: linux-2.6.30-rc5/arch/x86/vdso/Makefile
-===================================================================
---- linux-2.6.30-rc5.orig/arch/x86/vdso/Makefile
-+++ linux-2.6.30-rc5/arch/x86/vdso/Makefile
-@@ -123,6 +123,7 @@ quiet_cmd_vdso = VDSO    $@
- 		       -Wl,-T,$(filter %.lds,$^) $(filter %.o,$^)
- 
- VDSO_LDFLAGS = -fPIC -shared $(call ld-option, -Wl$(comma)--hash-style=sysv)
-+GCOV_PROFILE := n
- 
- #
- # Install the unstripped copy of vdso*.so listed in $(vdso-install-y).
-Index: linux-2.6.30-rc5/arch/x86/kernel/Makefile
-===================================================================
---- linux-2.6.30-rc5.orig/arch/x86/kernel/Makefile
-+++ linux-2.6.30-rc5/arch/x86/kernel/Makefile
-@@ -24,6 +24,8 @@ CFLAGS_vsyscall_64.o	:= $(PROFILING) -g0
- CFLAGS_hpet.o		:= $(nostackp)
- CFLAGS_tsc.o		:= $(nostackp)
- CFLAGS_paravirt.o	:= $(nostackp)
-+GCOV_PROFILE_vsyscall_64.o	:= n
-+GCOV_PROFILE_hpet.o		:= n
- 
- obj-y			:= process_$(BITS).o signal.o entry_$(BITS).o
- obj-y			+= traps.o irq.o irq_$(BITS).o dumpstack_$(BITS).o
-
+> > Also, I was wondering why the existing restorecon -R /dev that is
+> > performed by /etc/rc.sysinit to fix up the security contexts on the
+> > initial /dev tree prior to policy load doesn't seem to be getting
+> > applied when devtmpfs is enabled.  Does devtmpfs pass through setxattr()
+> > requests to the underlying tmpfs mount?
+> 
+> It's a plain tmpfs, nothing different from a manual mounted one, just
+> that the kernel has created the instance and remembered the vfs mount
+> to put stuff into it, regardless of where is is mounted, or maybe not
+> mounted at all.
+> 
+> Thanks,
+> Kay
+-- 
+Stephen Smalley
+National Security Agency
 
