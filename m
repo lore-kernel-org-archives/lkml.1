@@ -1,75 +1,139 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758123AbZELK74@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758213AbZELLAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758123AbZELK74 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 06:59:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754952AbZELK7q
+	id S1758213AbZELLAY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 07:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756657AbZELK7u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 06:59:46 -0400
-Received: from casper.infradead.org ([85.118.1.10]:41885 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754363AbZELK7p (ORCPT
+	Tue, 12 May 2009 06:59:50 -0400
+Received: from rcpt-expgw.biglobe.ne.jp ([133.205.19.68]:33026 "EHLO
+	rcpt-expgw.biglobe.ne.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757308AbZELK7s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 06:59:45 -0400
-Subject: [PATCH] perf_counter: fix ioctl()s
-From: Peter Zijlstra <peterz@infradead.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Paul Mackerras <paulus@samba.org>, Ingo Molnar <mingo@elte.hu>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <200905120952.12847.arnd@arndb.de>
-References: <20090508165219.469818319@chello.nl>
-	 <1242109650.11251.313.camel@twins> <1242112226.11251.315.camel@twins>
-	 <200905120952.12847.arnd@arndb.de>
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
-Date: Tue, 12 May 2009 12:59:33 +0200
-Message-Id: <1242125974.11251.329.camel@twins>
+	Tue, 12 May 2009 06:59:48 -0400
+X-Biglobe-Sender: <d-nishimura@mtf.biglobe.ne.jp>
+Date: Tue, 12 May 2009 19:58:23 +0900
+From: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: d-nishimura@mtf.biglobe.ne.jp,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][BUGFIX] memcg: fix for deadlock between
+ lock_page_cgroup and mapping tree_lock
+Message-Id: <20090512195823.15c5cb80.d-nishimura@mtf.biglobe.ne.jp>
+In-Reply-To: <20090512171356.3d3a7554.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090512140648.0974cb10.nishimura@mxp.nes.nec.co.jp>
+	<20090512160901.8a6c5f64.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090512170007.ad7f5c7b.nishimura@mxp.nes.nec.co.jp>
+	<20090512171356.3d3a7554.kamezawa.hiroyu@jp.fujitsu.com>
+Reply-To: nishimura@mxp.nes.nec.co.jp
+X-Mailer: Sylpheed 2.5.0rc2 (GTK+ 2.12.12; i386-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-X-Bad-Reply: References and In-Reply-To but no 'Re:' in Subject.
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-12 at 09:52 +0200, Arnd Bergmann wrote:
-> On Tuesday 12 May 2009, Peter Zijlstra wrote:
-> > Ah, so _IO() gets an unsigned long 3rd argument.
-> > _IOW() treats the 3rd arg as a (type __user *) and copies the bits over
-> > _IOR() copies the bits back out to userspace
-> > _IORW() does both
+On Tue, 12 May 2009 17:13:56 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+
+> On Tue, 12 May 2009 17:00:07 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > hmm, I see.
+> > cache_charge is outside of tree_lock, so moving uncharge would make sense.
+> > IMHO, we should make the period of spinlock as small as possible,
+> > and charge/uncharge of pagecache/swapcache is protected by page lock, not tree_lock.
 > > 
-> > In which case the below should fix things up, no?
-> > 
-> 
-> Yes, this looks good now.
+> How about this ?
+Looks good conceptually, but it cannot be built :)
 
----
-Arnd spotted that I misunderstood and wrongly used the 3rd ioctl
-argument. Fix up the perf counter ioctl()s to use the 3rd argument as
-value -- as opposed to a pointer as would now be the case.
+It needs a fix like this.
+Passed build test with enabling/disabling both CONFIG_MEM_RES_CTLR
+and CONFIG_SWAP.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
- include/linux/perf_counter.h |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+===
+ include/linux/swap.h |    5 +++++
+ mm/memcontrol.c      |    4 +++-
+ mm/swap_state.c      |    4 +---
+ mm/vmscan.c          |    2 +-
+ 4 files changed, 10 insertions(+), 5 deletions(-)
 
-diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-index 614f921..6a9cebc 100644
---- a/include/linux/perf_counter.h
-+++ b/include/linux/perf_counter.h
-@@ -159,10 +159,10 @@ struct perf_counter_hw_event {
- /*
-  * Ioctls that can be done on a perf counter fd:
-  */
--#define PERF_COUNTER_IOC_ENABLE		_IOW('$', 0, u32)
--#define PERF_COUNTER_IOC_DISABLE	_IOW('$', 1, u32)
--#define PERF_COUNTER_IOC_REFRESH	_IOW('$', 2, u32)
--#define PERF_COUNTER_IOC_RESET		_IOW('$', 3, u32)
-+#define PERF_COUNTER_IOC_ENABLE		_IO('$', 0)
-+#define PERF_COUNTER_IOC_DISABLE	_IO('$', 1)
-+#define PERF_COUNTER_IOC_REFRESH	_IO('$', 2)
-+#define PERF_COUNTER_IOC_RESET		_IO('$', 3)
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index caf0767..6ea541d 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -431,6 +431,11 @@ static inline swp_entry_t get_swap_page(void)
+ #define has_swap_token(x) 0
+ #define disable_swap_token() do { } while(0)
  
- enum perf_counter_ioc_flags {
- 	PERF_IOC_FLAG_GROUP		= 1U << 0,
-
++static inline void
++mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
++{
++}
++
+ #endif /* CONFIG_SWAP */
+ #endif /* __KERNEL__*/
+ #endif /* _LINUX_SWAP_H */
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 0c9c1ad..89523cf 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1488,8 +1488,9 @@ void mem_cgroup_uncharge_cache_page(struct page *page)
+ 	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
+ }
+ 
++#ifdef CONFIG_SWAP
+ /*
+- * called from __delete_from_swap_cache() and drop "page" account.
++ * called after __delete_from_swap_cache() and drop "page" account.
+  * memcg information is recorded to swap_cgroup of "ent"
+  */
+ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+@@ -1506,6 +1507,7 @@ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+ 	if (memcg)
+ 		css_put(&memcg->css);
+ }
++#endif
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ /*
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index 87f10d4..7624c89 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -109,8 +109,6 @@ int add_to_swap_cache(struct page *page, swp_entry_t entry, gfp_t gfp_mask)
+  */
+ void __delete_from_swap_cache(struct page *page)
+ {
+-	swp_entry_t ent = {.val = page_private(page)};
+-
+ 	VM_BUG_ON(!PageLocked(page));
+ 	VM_BUG_ON(!PageSwapCache(page));
+ 	VM_BUG_ON(PageWriteback(page));
+@@ -190,7 +188,7 @@ void delete_from_swap_cache(struct page *page)
+ 	__delete_from_swap_cache(page);
+ 	spin_unlock_irq(&swapper_space.tree_lock);
+ 
+-	mem_cgroup_uncharge_swapcache(page, ent);
++	mem_cgroup_uncharge_swapcache(page, entry);
+ 	swap_free(entry);
+ 	page_cache_release(page);
+ }
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 6c5988d..a7d7a06 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -470,7 +470,7 @@ static int __remove_mapping(struct address_space *mapping, struct page *page)
+ 		swp_entry_t swap = { .val = page_private(page) };
+ 		__delete_from_swap_cache(page);
+ 		spin_unlock_irq(&mapping->tree_lock);
+-		mem_cgroup_uncharge_swapcache(page);
++		mem_cgroup_uncharge_swapcache(page, swap);
+ 		swap_free(swap);
+ 	} else {
+ 		__remove_from_page_cache(page);
+===
