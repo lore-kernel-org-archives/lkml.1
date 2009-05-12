@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbZELX30@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbZELX27@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756967AbZELX30 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 19:29:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756328AbZELXZc
+	id S1758445AbZELX27 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 19:28:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbZELXZc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 12 May 2009 19:25:32 -0400
-Received: from 75-149-38-2-SFBA.hfc.comcastbusiness.net ([75.149.38.2]:36197
+Received: from 75-149-38-2-SFBA.hfc.comcastbusiness.net ([75.149.38.2]:36198
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753812AbZELXZ0 (ORCPT
+	with ESMTP id S1753793AbZELXZ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 May 2009 19:25:26 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -16,9 +16,9 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 11/17] xen: don't setup acpi interrupt unless there is one
-Date: Tue, 12 May 2009 16:25:18 -0700
-Message-Id: <1242170724-13349-12-git-send-email-jeremy@goop.org>
+Subject: [PATCH 12/17] xen: use acpi_get_override_irq() to get triggering for legacy irqs
+Date: Tue, 12 May 2009 16:25:19 -0700
+Message-Id: <1242170724-13349-13-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1242170724-13349-1-git-send-email-jeremy@goop.org>
 References: <1242170724-13349-1-git-send-email-jeremy@goop.org>
@@ -28,39 +28,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-If the SCI hasn't been set, then presumably we're not running
-with acpi, don't bother setting up the interrupt.
+We need to set up proper IO apic entries for legacy irqs, which are
+not normally configured by either normal acpi interrupt routing or
+PNP.
 
-[ Impact: compatibility with pre-ACPI machines ]
+This also generalizes the acpi interrupt setup, so we can remove it
+as a special case.
+
+[ Impact: compatibility with legacy/ISA hardware ]
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/pci.c |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
+ arch/x86/xen/pci.c |   24 ++++++++++--------------
+ 1 files changed, 10 insertions(+), 14 deletions(-)
 
 diff --git a/arch/x86/xen/pci.c b/arch/x86/xen/pci.c
-index 402a5bd..00ad6df 100644
+index 00ad6df..db0c74c 100644
 --- a/arch/x86/xen/pci.c
 +++ b/arch/x86/xen/pci.c
-@@ -69,13 +69,12 @@ void __init xen_setup_pirqs(void)
- 	/*
- 	 * Set up acpi interrupt in acpi_gbl_FADT.sci_interrupt.
- 	 */
--	irq = xen_allocate_pirq(acpi_gbl_FADT.sci_interrupt);
-+	if (acpi_gbl_FADT.sci_interrupt > 0) {
-+		irq = xen_allocate_pirq(acpi_gbl_FADT.sci_interrupt);
+@@ -65,19 +65,15 @@ void __init xen_setup_pirqs(void)
+ {
+ 	int irq;
  
--	printk(KERN_INFO "xen: allocated irq %d for acpi %d\n",
--	       irq, acpi_gbl_FADT.sci_interrupt);
+-#ifdef CONFIG_ACPI
+-	/*
+-	 * Set up acpi interrupt in acpi_gbl_FADT.sci_interrupt.
+-	 */
+-	if (acpi_gbl_FADT.sci_interrupt > 0) {
+-		irq = xen_allocate_pirq(acpi_gbl_FADT.sci_interrupt);
 -
--	/* Blerk. */
--	acpi_gbl_FADT.sci_interrupt = irq;
-+		printk(KERN_INFO "xen: allocated irq %d for acpi %d\n",
-+		       irq, acpi_gbl_FADT.sci_interrupt);
-+	}
- #endif
- 
+-		printk(KERN_INFO "xen: allocated irq %d for acpi %d\n",
+-		       irq, acpi_gbl_FADT.sci_interrupt);
+-	}
+-#endif
+-
  	/* Pre-allocate legacy irqs */
+-	for (irq = 0; irq < NR_IRQS_LEGACY; irq++)
+-		xen_allocate_pirq(irq);
++	for (irq = 0; irq < NR_IRQS_LEGACY; irq++) {
++		int trigger, polarity;
++
++		if (acpi_get_override_irq(irq, &trigger, &polarity) == -1)
++			continue;
++
++		xen_register_gsi(irq,
++			trigger ? ACPI_LEVEL_SENSITIVE : ACPI_EDGE_SENSITIVE,
++			polarity ? ACPI_ACTIVE_LOW : ACPI_ACTIVE_HIGH);
++	}
+ }
 -- 
 1.6.0.6
 
