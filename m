@@ -1,79 +1,313 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752917AbZELMxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753050AbZELNB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752917AbZELMxT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 08:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZELMxE
+	id S1753050AbZELNB2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 09:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751678AbZELNBT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 08:53:04 -0400
-Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:46847 "EHLO
-	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751018AbZELMxD (ORCPT
+	Tue, 12 May 2009 09:01:19 -0400
+Received: from mail-ew0-f224.google.com ([209.85.219.224]:39702 "EHLO
+	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751318AbZELNBR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 08:53:03 -0400
-Subject: Re: [patch 00/13] devtmpfs patches
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: "David P. Quigley" <dpquigl@tycho.nsa.gov>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
-       Jan Blunck <jblunck@suse.de>, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@parisplace.org>
-In-Reply-To: <ac3eb2510905111405y5541117euf84dd38d39012bd0@mail.gmail.com>
-References: <20090509143742.GA27663@kroah.com>
-	 <1242063630.6624.22.camel@moss-terrapins.epoch.ncsc.mil>
-	 <20090511175626.GA4758@kroah.com>
-	 <1242074517.6624.183.camel@moss-terrapins.epoch.ncsc.mil>
-	 <ac3eb2510905111405y5541117euf84dd38d39012bd0@mail.gmail.com>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Tue, 12 May 2009 08:45:44 -0400
-Message-Id: <1242132344.31807.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 May 2009 09:01:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=rP+nqsmgQ5zy0boYVp9AN6AlgzS3iw9JSD9Z/rLGj4vC/GKiQTb4ZGnIceZx84KRIi
+         +fIwqGdVmIl0oCL8jLXEypY0+K8bVQkb6J13ezYuQsoW1xQnoH3s0pOvGeG/fWppry35
+         VY8RIE+4Oxamt5dSwYTE4Xx+NxQEiSDaMMkRY=
+Date: Tue, 12 May 2009 15:01:12 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Li Zefan <lizf@cn.fujitsu.com>,
+       Tom Zanussi <tzanussi@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Pekka Enberg <penberg@cs.helsinki.fi>, Andi Kleen <andi@firstfloor.org>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Larry Woodman <lwoodman@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
+       Alexey Dobriyan <adobriyan@gmail.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [rfc] object collection tracing (was: [PATCH 5/5] proc: export
+	more page flags in /proc/kpageflags)
+Message-ID: <20090512130110.GA6255@nowhere>
+References: <84144f020904280219p197d5ceag846ae9a80a76884e@mail.gmail.com> <20090428092918.GC21085@elte.hu> <20090428183237.EBDE.A69D9226@jp.fujitsu.com> <20090428093833.GE21085@elte.hu> <20090428095551.GB21168@localhost> <20090428110553.GD25347@elte.hu> <20090428113616.GA22439@localhost> <20090428121751.GA28157@elte.hu> <20090428133108.GA23560@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090428133108.GA23560@localhost>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-11 at 23:05 +0200, Kay Sievers wrote:
-> On Mon, May 11, 2009 at 22:41, David P. Quigley <dpquigl@tycho.nsa.gov> wrote:
+On Tue, Apr 28, 2009 at 09:31:08PM +0800, Wu Fengguang wrote:
+> On Tue, Apr 28, 2009 at 08:17:51PM +0800, Ingo Molnar wrote:
+> > tent-Transfer-Encoding: quoted-printable
+> > Status: RO
+> > Content-Length: 5480
+> > Lines: 161
+> > 
+> > 
+> > * Wu Fengguang <fengguang.wu@intel.com> wrote:
+> > 
+> > > > The above 'get object state' interface (which allows passive 
+> > > > sampling) - integrated into the tracing framework - would serve 
+> > > > that goal, agreed?
+> > > 
+> > > Agreed. That could in theory a good complement to dynamic 
+> > > tracings.
+> > > 
+> > > Then what will be the canonical form for all the 'get object 
+> > > state' interfaces - "object.attr=value", or whatever? [...]
+> > 
+> > Lemme outline what i'm thinking of.
+> > 
+> > I'd call the feature "object collection tracing", which would live 
+> > in /debug/tracing, accessed via such files:
+> > 
+> >   /debug/tracing/objects/mm/pages/
+> >   /debug/tracing/objects/mm/pages/format
+> >   /debug/tracing/objects/mm/pages/filter
+> >   /debug/tracing/objects/mm/pages/trace_pipe
+> >   /debug/tracing/objects/mm/pages/stats
+> >   /debug/tracing/objects/mm/pages/events/
+> > 
+> > here's the (proposed) semantics of those files:
+> > 
+> > 1) /debug/tracing/objects/mm/pages/
+> > 
+> > There's a subsystem / object basic directory structure to make it 
+> > easy and intuitive to find our way around there.
+> > 
+> > 2) /debug/tracing/objects/mm/pages/format
+> > 
+> > the format file:
+> > 
+> >   /debug/tracing/objects/mm/pages/format
+> > 
+> > Would reuse the existing dynamic-tracepoint structured-logging 
+> > descriptor format and code (this is upstream already):
+> > 
+> >  [root@phoenix sched_signal_send]# pwd
+> >  /debug/tracing/events/sched/sched_signal_send
+> > 
+> >  [root@phoenix sched_signal_send]# cat format 
+> >  name: sched_signal_send
+> >  ID: 24
+> >  format:
+> > 	field:unsigned short common_type;		offset:0;	size:2;
+> > 	field:unsigned char common_flags;		offset:2;	size:1;
+> > 	field:unsigned char common_preempt_count;	offset:3;	size:1;
+> > 	field:int common_pid;				offset:4;	size:4;
+> > 	field:int common_tgid;				offset:8;	size:4;
+> > 
+> > 	field:int sig;					offset:12;	size:4;
+> > 	field:char comm[TASK_COMM_LEN];			offset:16;	size:16;
+> > 	field:pid_t pid;				offset:32;	size:4;
+> > 
+> >  print fmt: "sig: %d  task %s:%d", REC->sig, REC->comm, REC->pid
+> > 
+> > These format descriptors enumerate fields, types and sizes, in a 
+> > structured way that user-space tools can parse easily. (The binary 
+> > records that come from the trace_pipe file follow this format 
+> > description.)
+> > 
+> > 3) /debug/tracing/objects/mm/pages/filter
+> > 
+> > This is the tracing filter that can be set based on the 'format' 
+> > descriptor. So with the above (signal-send tracepoint) you can 
+> > define such filter expressions:
+> > 
+> >   echo "(sig == 10 && comm == bash) || sig == 13" > filter
+> > 
+> > To restrict the 'scope' of the object collection along pretty much 
+> > any key or combination of keys. (Or you can leave it as it is and 
+> > dump all objects and do keying in user-space.)
+> > 
+> > [ Using in-kernel filtering is obviously faster that streaming it 
+> >   out to user-space - but there might be details and types of 
+> >   visualization you want to do in user-space - so we dont want to 
+> >   restrict things here. ]
+> > 
+> > For the mm object collection tracepoint i could imagine such filter 
+> > expressions:
+> > 
+> >   echo "type == shared && file == /sbin/init" > filter
+> > 
+> > To dump all shared pages that are mapped to /sbin/init.
+> > 
+> > 4) /debug/tracing/objects/mm/pages/trace_pipe
+> > 
+> > The 'trace_pipe' file can be used to dump all objects in the 
+> > collection, which match the filter ('all objects' by default). The 
+> > record format is described in 'format'.
+> > 
+> > trace_pipe would be a reuse of the existing trace_pipe code: it is a 
+> > modern, poll()-able, read()-able, splice()-able pipe abstraction.
+> > 
+> > 5) /debug/tracing/objects/mm/pages/stats
+> > 
+> > The 'stats' file would be a reuse of the existing histogram code of 
+> > the tracing code. We already make use of it for the branch tracers 
+> > and for the workqueue tracer - it could be extended to be applicable 
+> > to object collections as well.
+> > 
+> > The advantage there would be that there's no dumping at all - all 
+> > the integration is done straight in the kernel. ( The 'filter' 
+> > condition is listened to - increasing flexibility. The filter file 
+> > could perhaps also act as a default histogram key. )
+> > 
+> > 6) /debug/tracing/objects/mm/pages/events/
+> > 
+> > The 'events' directory offers links back to existing dynamic 
+> > tracepoints that are under /debug/tracing/events/. This would serve 
+> > as an additional coherent force that keeps dynamic tracepoints 
+> > collected by subsystem and by object type as well. (Tools could make 
+> > use of this information as well - without being aware of actual 
+> > object semantics.)
+> > 
+> > 
+> > There would be a number of other object collections we could 
+> > enumerate:
+> > 
+> >  tasks:
+> > 
+> >   /debug/tracing/objects/sched/tasks/
+> > 
+> >  active inodes known to the kernel:
+> > 
+> >   /debug/tracing/objects/fs/inodes/
+> > 
+> >  interrupts:
+> > 
+> >   /debug/tracing/objects/hw/irqs/
+> > 
+> > etc.
+> > 
+> > These would use the same 'object collection' framework. Once done we 
+> > can use it for many other thing too.
+> > 
+> > Note how organically integrated it all is with the tracing 
+> > framework. You could start from an 'object view' to get an overview 
+> > and then go towards a more dynamic view of specific object 
+> > attributes (or specific objects), as you drill down on a specific 
+> > problem you want to analyze.
+> > 
+> > How does this all sound to you?
 > 
-> > This however does highlight a problem with the fact that device node
-> > labeling isn't being done properly. It should be possible to create this
-> > fs with a different name such that it doesn't appear as a tmpfs file
-> > system to SELinux. If it appears as a devtmpfs file system then we can
-> > specify the root label and labels on the other devices properly in
-> > policy.
+> Great! I saw much opportunity to adapt the not yet submitted
+> /proc/filecache interface to the proposed framework.
 > 
-> That could be done, if it solves this problem. Damn, now we have the
-> naming problem back again. :)
+> Its basic form is:
 > 
-> By doing its own fstype, we could also make the auto-mount optional,
-> because you could always reach the filesystem anytime later.
+> #      ino       size   cached cached% refcnt state       age accessed  process         dev             file
+> [snip]
+>        320          1        4     100      1    D-     50443     1085 udevd           00:11(tmpfs)     /.udev/uevent_seqnum
+>     460725        123      124     100     35    --     50444     6795 touch           08:02(sda2)      /lib/libpthread-2.9.so
+>     460727         31       32     100     14    --     50444     2007 touch           08:02(sda2)      /lib/librt-2.9.so
+>     458865         97       80      82      1    --     50444       49 mount           08:02(sda2)      /lib/libdevmapper.so.1.02.1
+>     460090         15       16     100      1    --     50444       48 mount           08:02(sda2)      /lib/libuuid.so.1.2
+>     458866         46       48     100      1    --     50444       47 mount           08:02(sda2)      /lib/libblkid.so.1.0
+>     460732         43       44     100     69    --     50444     3581 rcS             08:02(sda2)      /lib/libnss_nis-2.9.so
+>     460739         87       88     100     73    --     50444     3597 rcS             08:02(sda2)      /lib/libnsl-2.9.so
+>     460726         31       32     100     69    --     50444     3581 rcS             08:02(sda2)      /lib/libnss_compat-2.9.so
+>     458804        250      252     100     11    --     50445     8175 rcS             08:02(sda2)      /lib/libncurses.so.5.6
+>     229540        780      752      96      3    --     50445     7594 init            08:02(sda2)      /bin/bash
+>     460735         15       16     100     89    --     50445    17581 init            08:02(sda2)      /lib/libdl-2.9.so
+>     460721       1344     1340      99    117    --     50445    48732 init            08:02(sda2)      /lib/libc-2.9.so
+>     458801        107      104      97     24    --     50445     3586 init            08:02(sda2)      /lib/libselinux.so.1
+>     671870         37       24      65      1    --     50446        1 swapper         08:02(sda2)      /sbin/init
+>        175          1    24412     100      1    --     50446        0 swapper         00:01(rootfs)    /dev/root
 > 
-> A different fstype has the slight inconvenience, that existing
-> userspace needs to be taught to handle it explicitly, while a tmfps is
-> already handled automatically because we use tmpfs already today. But
-> that may not be too important.
+> The patch basically does a traversal through one or more of the inode
+> lists to produce the output:
+>         inode_in_use
+>         inode_unused
+>         sb->s_dirty
+>         sb->s_io
+>         sb->s_more_io
+>         sb->s_inodes
 > 
-> Thanks a lot for your tests and analysis,
+> The filtering feature is a necessity for this interface - or it will
+> take considerable time to do a full listing. It supports the following
+> filters:
+>         { LS_OPT_DIRTY,         "dirty"         },
+>         { LS_OPT_CLEAN,         "clean"         },
+>         { LS_OPT_INUSE,         "inuse"         },
+>         { LS_OPT_EMPTY,         "empty"         },
+>         { LS_OPT_ALL,           "all"           },
+>         { LS_OPT_DEV,           "dev=%s"        },
+> 
+> There are two possible challenges for the conversion:
+> 
+> - One trick it does is to select different lists to traverse on
+>   different filter options. Will this be possible in the object
+>   tracing framework?
 
-I don't think merely changing the fstype will suffice; that merely lets
-us assign a different default security context to inodes in the
-filesystem (e.g. device_t vs tmpfs_t), but doesn't address the fact that
-use of devtmpfs rather than just udev seems to alter the permission
-checking upon an open(2) by mingetty, thereby breaking existing
-policies.  Previously mingetty didn't require permissions to mknod; with
-devtmpfs, it does.  I'm wondering if devtmpfs is internally performing
-operations that ought to be done in kernel context rather than the
-context of the userspace process that initiated the open(2).
 
-Also, I was wondering why the existing restorecon -R /dev that is
-performed by /etc/rc.sysinit to fix up the security contexts on the
-initial /dev tree prior to policy load doesn't seem to be getting
-applied when devtmpfs is enabled.  Does devtmpfs pass through setxattr()
-requests to the underlying tmpfs mount?
 
--- 
-Stephen Smalley
-National Security Agency
+Yeah, I guess.
+
+
+
+> - The file name lookup(last field) is the performance killer. Is it
+>   possible to skip the file name lookup when the filter failed on the
+>   leading fields?
+
+
+objects collection lays on trace events where filters basically ignore
+a whole entry in case of non-matching. Not sure if we can easily only
+ignore one field.
+
+But I guess we can do something about the performances...
+
+Could you send us the (sob'ed) patch you made which implements this.
+I could try to adapt it to object collection.
+
+Thanks,
+Frederic.
+
+
+> Will the object tracing interface allow such flexibilities?
+> (Sorry I'm not yet familiar with the tracing framework.)
+> 
+> > Can you see any conceptual holes in the scheme, any use-case that 
+> > /proc/kpageflags supports but the object collection approach does 
+> > not?
+> 
+> kpageflags is simply a big (perhaps sparse) binary array.
+> I'd still prefer to retain its current form - the kernel patches and
+> user space tools are all ready made, and I see no benefits in
+> converting to the tracing framework.
+> 
+> > Would you be interested in seeing something like this, if we tried 
+> > to implement it in the tracing tree? The majority of the code 
+> > already exists, we just need interest from the MM side and we have 
+> > to hook it all up. (it is by no means trivial to do - but looks like
+> > a very exciting feature.)
+> 
+> Definitely! /proc/filecache has another 'page view':
+> 
+>         # head /proc/filecache
+>         # file /bin/bash
+>         # flags R:referenced A:active M:mmap U:uptodate D:dirty W:writeback X:readahead P:private O:owner b:buffer d:dirty w:writeback
+>         # idx   len     state           refcnt
+>         0       1       RAMU________    4
+>         3       8       RAMU________    4
+>         12      1       RAMU________    4
+>         14      5       RAMU________    4
+>         20      7       RAMU________    4
+>         27      2       RAMU________    5
+>         29      1       RAMU________    4
+> 
+> Which is also a good candidate. However I still need to investigate
+> whether it offers considerable margins over the mincore() syscall.
+> 
+> Thanks and Regards,
+> Fengguang
 
