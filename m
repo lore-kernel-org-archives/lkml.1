@@ -1,47 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZELUwj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbZELVCY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755304AbZELUwj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 16:52:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752595AbZELUw2
+	id S1752433AbZELVCY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 17:02:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbZELVCN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 16:52:28 -0400
-Received: from tac.ki.iif.hu ([193.6.222.43]:56017 "EHLO tac.ki.iif.hu"
+	Tue, 12 May 2009 17:02:13 -0400
+Received: from THUNK.ORG ([69.25.196.29]:34661 "EHLO thunker.thunk.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752334AbZELUw2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 16:52:28 -0400
-From: Ferenc Wagner <wferi@niif.hu>
-To: Jiri Slaby <jirislaby@gmail.com>
-Cc: Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org, Paul Fulghum <paulkf@microgate.com>
-Subject: Re: [PATCH 1/3] Char/serial: refactor ASYNC_ flags
-References: <1242049860-29501-1-git-send-email-jirislaby@gmail.com>
-	<20090511185727.2a5bd4cb@lxorguk.ukuu.org.uk>
-	<4A089DFD.8060609@gmail.com>
-Date: Tue, 12 May 2009 22:52:18 +0200
-In-Reply-To: <4A089DFD.8060609@gmail.com> (Jiri Slaby's message of "Mon, 11
-	May 2009 23:51:57 +0200")
-Message-ID: <87y6t2niwt.fsf@tac.ki.iif.hu>
-User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
+	id S1752189AbZELVCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 17:02:13 -0400
+Date: Tue, 12 May 2009 17:01:54 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Joseph Cihula <joseph.cihula@intel.com>
+Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
+       hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
+       jmorris@namei.org, jbeulich@novell.com, peterm@redhat.com,
+       gang.wei@intel.com, shane.wang@intel.com, John Gilmore <gnu@toad.com>
+Subject: Re: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
+	support
+Message-ID: <20090512210154.GC23773@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
+	Joseph Cihula <joseph.cihula@intel.com>,
+	linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
+	hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
+	jmorris@namei.org, jbeulich@novell.com, peterm@redhat.com,
+	gang.wei@intel.com, shane.wang@intel.com,
+	John Gilmore <gnu@toad.com>
+References: <4A03B9C3.9090607@intel.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A03B9C3.9090607@intel.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jiri Slaby <jirislaby@gmail.com> writes:
+On Thu, May 07, 2009 at 09:49:07PM -0700, Joseph Cihula wrote:
+> Linux support for Intel(R) Trusted Execution Technology.
 
-> On 05/11/2009 07:57 PM, Alan Cox wrote:
->
->> Series all applied
->
-> Thanks.
->
-> Ferenc, could you apply patches 1 and 2 and confirm that it fixes your
-> problem?
+It should be noted that one of the prime purposes of the Trusted
+Execution Technology (TXT), aka LaGrande Technology is for DRM
+enforcement systems that can be nearly uncrackable.
 
-Yes, adding these two patches to 2.6.30-rc5 fixes my problem.
-Thank you very much!
--- 
+It can be used for other things, such as restricting who can look at
+your medical records (basically, the same technology that prevents you
+from breaking the DRM on say, a high-definition movie from Hollywood)
+can also be used to enforced who can look at your certain records,
+such as medical records in a highly secure and non-circumvental
+fashion.
+
+Ross Anderson was one of the first to write about these concerns, over
+five years ago:
+
+     http://www.cl.cam.ac.uk/~rja14/tcpa-faq.html
+
+It's interesting that his 2003 document was able to predict the
+emergence of the LaGrande Technology (see question 15 in the above
+FAQ).
+
+So we should expect a certain amount of controversy and people
+lobbying to resist the acceptance of this patch.
+
 Regards,
-Feri.
+
+						- Ted
