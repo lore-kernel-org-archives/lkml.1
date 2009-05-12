@@ -1,48 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbZELPvk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbZELPxX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759421AbZELPvk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:51:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbZELPva
+	id S1758166AbZELPxX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:53:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZELPxJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:51:30 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:56049 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751002AbZELPv3 (ORCPT
+	Tue, 12 May 2009 11:53:09 -0400
+Received: from bombadil.infradead.org ([18.85.46.34]:45855 "EHLO
+	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751881AbZELPxI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:51:29 -0400
-Message-ID: <4A099AF0.8020001@zytor.com>
-Date: Tue, 12 May 2009 08:51:12 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Tue, 12 May 2009 11:53:08 -0400
+Date: Tue, 12 May 2009 11:53:01 -0400
+From: Christoph Hellwig <hch@infradead.org>
+To: Ray Lee <ray-lk@madrabbit.org>
+Cc: Ferenc Wagner <wferi@niif.hu>, Christoph Hellwig <hch@infradead.org>,
+       Andrew Morton <akpm@linux-foundation.org>, xfs@oss.sgi.com,
+       linux-kernel@vger.kernel.org, Anton Salikhmetov <salikhmetov@gmail.com>
+Subject: Re: mmap vs mtime in 2.6.26 and up
+Message-ID: <20090512155301.GA23160@infradead.org>
+References: <874ovws94s.fsf@tac.ki.iif.hu> <87ljp2v6vt.fsf@tac.ki.iif.hu> <2c0942db0905120837g702b457bm52a412293925021a@mail.gmail.com>
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Nick Piggin <npiggin@suse.de>, linux-kernel@vger.kernel.org
-Subject: Re: uses of cmpxchg/xadd in spinlock.h and rwsem.h vs. CONFIG_M386
-References: <4A09AF8402000078000007DC@vpn.id2.novell.com>
-In-Reply-To: <4A09AF8402000078000007DC@vpn.id2.novell.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <2c0942db0905120837g702b457bm52a412293925021a@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> While looking at a completely different issue I happened to grep for uses of
-> xadd, and it would appear to me that there got uses added that would make
-> a M386-configured SMP kernel die on an actual i386.
-> 
-> Oh, for the rwsem case I see - it would use the RWSEM_GENERIC_SPINLOCK case
-> when selecting M386. But I see nothing similar for the ticket spinlocks - am
-> I overlooking something?
+On Tue, May 12, 2009 at 08:37:43AM -0700, Ray Lee wrote:
+> > I've noticed that the last modification times of our RRD files got
+> > stuck after upgrading from 2.6.24 to 2.6.26 (Debian Etch -> Lenny; I
+> > also tested with 2.6.30-rc5, they are still stuck). ??It has some
+> > literature, most notably kernel bug #2645, but that's closed long ago
+> > and the resulting patch http://lkml.org/lkml/2008/1/22/370 is present
+> > in my kernels. ??Still, the test program (version 3 from the bug report)
+> > gives failures:
 
-It's quite possible we break 386 on a regular basis... I'm not sure how
-many people even in the embedded industry run current kernels on
-386-compatible hardware.  Most embedded hardware is at least 486.
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+The problem is pretty simple.  do_wp_page and __do_fault use
+file_update_time to update ctime and mtime.  But this function is only
+a helper for simply filesystems that have a binary inode dirty/non dirty
+state and keep the m/ctime purely in the Linux inode.  It must not be
+called from generic code as more complex filesystems need a notification
+through ->setattr to update the timestamps.  This will also affect other
+filesystems like ubifs.  I'm not entirely sure why it ever worked
+before, we must have picked up those c/mtime updates by accident
+somehow.
