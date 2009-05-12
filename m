@@ -1,57 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbZELJ16@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757249AbZELJ2k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756653AbZELJ16 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 05:27:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbZELJ1r
+	id S1757249AbZELJ2k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 05:28:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756521AbZELJ2A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 05:27:47 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:45241 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752410AbZELJ1r (ORCPT
+	Tue, 12 May 2009 05:28:00 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:47810 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755115AbZELJ16 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 05:27:47 -0400
-Message-ID: <4A094110.3030501@monstr.eu>
-Date: Tue, 12 May 2009 11:27:44 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au
-Subject: Re: [PATCH 00/12] Microblaze fixes for 2.6.31
-References: <20090511232019.927138561@arndb.de>>
-In-Reply-To: <20090511232019.927138561@arndb.de>>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Tue, 12 May 2009 05:27:58 -0400
+X-Auth-Info: IeFB5inhHJvOUJiFfrjglV2k1Tzebo2/gryh21fYr7k=
+Message-Id: <20090512092757.048938233@denx.de>
+User-Agent: quilt/0.47-1
+Date: Tue, 12 May 2009 11:27:57 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+To: netdev@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH v2 0/7] can: CAN network device driver interface and drivers
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
-> Hi Michal,
-> 
-> These are some cleanups and bug fixes that I came
-> across while working on my asm-generic headers.
-> 
-> Since I don't have actual hardware, they are
-> compile tested only. Please test and queue up
-> for 2.6.31.
-> 
-> Feel free to pull the whole series from
-> git.kernel.org:/pub/scm/linux/kernel/git/arnd/playground.git microblaze-cleanups
+Hello,
 
-All changes except this one ([PATCH 11/12] microblaze: dont include asm/mmu.h in
-hw_exception_handler) were added to for-linus branch
+here comes v2 of the patch series posted some time ago. See
+
+  http://marc.info/?l=linux-netdev&m=123507025810612&w=4.
+
+Changes since v1:
+
+- The SysFS interface has been replaced by the Netlink interface as
+  suggested by Patrick. For further information have a look to
+  chapter 6.5 of "Documentation/networking/can.txt" and the header
+  file "include/linux/can/netdev.h". The patch for the "ip" program of
+  the iproute2 utility suite will be provided separately.
+
+- The restart function is now properly protected by "dev->tx_lock"
+  using the "netif_tx_[lock|unlock]" functions.
+
+- For the  restart, the device driver must now handle CAN_MODE_STOP as
+  well, apart from CAN_MODE_START to avoid race conditions.
+
+- The "irq_lock" member of "struct can_priv" has been removed. The CAN
+  controller driver may should provide its own synchronization if
+  necessary.
+
+- The restart function is now protected by "dev->tx_lock" using the
+  "netif_tx_lock/unlock" functions.
+
+- Cleanup timer usage for the restart function.
+
+- The unused do_set/get_ctrlmode member of "struct can_priv" have been
+  removed.
+
+- "const" has been added to "struct net_device" for some functions not
+  allowed to touch that structure.
+
+- The library functions "can_set_bittiming" and "can_close_cleanup" have
+  been renamed to the more general names "open_candev" and
+  "close_candev", respectively.
+
+- Use "del_timer_sync" instead of "del_timer" for the  re-start timer.
+
+- The macro "ND2D()" has been replaced by "dev->dev.parent" as it does
+  not make the code more readable.
+
+- Fix improper BTR setting for triple-sampling for the SJA1000 as
+  pointed out by Oliver.
+
+- Dont use __u8 but __u32 as before for some members of "struct
+  can_bittiming[_const]" to avoid alignment trouble.
+
+- Definitions shared with user-space applications have been moved to
+  "include/linux/can/netlink.h".
+
+- Various other minor correction suggested on the netdev ML.
+
+- The MSCAN driver for the MPC5200 has been removed. It needs to be
+  presented on the Linuxppc-dev and Devicetree-discuss ML as well,
+  which will be done by a sub-sequent patch.
+
+- Add more source code documentation, especially for the structures
+  and functions related to bit-timing.
+
+The PF_CAN protocol family for the Controller Area Network is available
+in the kernel since version 2.6.25 but drivers for real CAN devices are
+still missing. This patch series adds a generic CAN network device
+driver interface and, as a start, a few drivers. It is the result of the
+on-going discussion and development of the Socket-CAN project hosted at
+the BerliOS web-server (http://developer.berlios.de/projects/socketcan).
+The patch series consists of the following patches:
+
+ 1/8) can: Documentation for the CAN device driver interface
+ 2/8) can: Update MAINTAINERS and CREDITS file
+ 3/8) can: CAN Network device driver and Netlink interface
+ 4/8) can: Driver for the SJA1000 CAN controller
+ 5/8) can: SJA1000 generic platform bus driver
+ 6/8) can: SJA1000 driver for EMS PCI cards
+ 7/8) can: SJA1000 driver for Kvaser PCI cards
+
+Please consider these patches for inclusion.
 
 Thanks,
-Michal
 
+Wolfgang.
 
-> 
-> 	Arnd <><
-> 
-
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
