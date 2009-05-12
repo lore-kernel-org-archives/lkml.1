@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758590AbZELHMh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbZELHNy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758590AbZELHMh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 03:12:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759160AbZELHMP
+	id S1758609AbZELHNy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 03:13:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755775AbZELHNo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 03:12:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38464 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759101AbZELHMP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 03:12:15 -0400
-Date: Tue, 12 May 2009 03:11:09 -0400
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: Steven Rostedt <rostedt@goodmis.org>, akpm@linux-foundation.org,
-       Amerigo Wang <amwang@redhat.com>
-Message-Id: <20090512071156.5664.17626.sendpatchset@localhost.localdomain>
-In-Reply-To: <20090512071148.5664.91161.sendpatchset@localhost.localdomain>
-References: <20090512071148.5664.91161.sendpatchset@localhost.localdomain>
-Subject: [PATCH] trace: fix a wrong usage of simple_read_from_buffer()
+	Tue, 12 May 2009 03:13:44 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:36404 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753850AbZELHNn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 03:13:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=subject:from:to:content-type:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=ggRUPgWEH8tAkilbro9ZvSiB1z9J8AspQHcd7P6bPYk2EvTUx2m5MzuP7rQii0OB2P
+         1mBjiQP/K+vY5aWKaZgGJ1FaSPcKn8fM1v0KdTnT/68lXmADf/GQqIVrRt5YyClqRuuO
+         cbYOw5DLgiQtO+C6LQRfD3tUzUn9VG4H2qQek=
+Subject: [PATCH] Trivial spelling fix in ppc code comments
+From: Sankar P <sankar.curiosity@gmail.com>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "trivial@kernel.org" <trivial@kernel.org>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Tue, 12 May 2009 12:41:13 +0530
+Message-Id: <1242112273.736.6.camel@blr-psankar.blr.novell.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fixes a trivial spelling error in powerpc code comments. 
 
-The last argument of simple_read_from_buffer() is the amount of the
-available bytes in the buffer, not the size of the buffer.
-
-Signed-off-by: WANG Cong <amwang@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Sankar P <sankar.curiosity@gmail.com>
 
 ---
-diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-index a884c09..3a0bc70 100644
---- a/kernel/trace/trace.c
-+++ b/kernel/trace/trace.c
-@@ -2125,7 +2125,7 @@ tracing_cpumask_read(struct file *filp, char __user *ubuf,
- 		goto out_err;
- 	}
- 	len += sprintf(mask_str + len, "\n");
--	count = simple_read_from_buffer(ubuf, count, ppos, mask_str, NR_CPUS+1);
-+	count = simple_read_from_buffer(ubuf, count, ppos, mask_str, len);
- 
- out_err:
- 	mutex_unlock(&tracing_cpumask_update_lock);
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 89497fb..3b52c80 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -2,7 +2,7 @@
+  * PowerPC64 SLB support.
+  *
+  * Copyright (C) 2004 David Gibson <dwg@au.ibm.com>, IBM
+- * Based on earlier code writteh by:
++ * Based on earlier code written by:
+  * Dave Engebretsen and Mike Corrigan {engebret|mikejc}@us.ibm.com
+  *    Copyright (c) 2001 Dave Engebretsen
+  * Copyright (C) 2002 Anton Blanchard <anton@au.ibm.com>, IBM
+
+
