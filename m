@@ -1,74 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754400AbZELJkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756363AbZELJmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754400AbZELJkm (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 05:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752646AbZELJkd
+	id S1756363AbZELJmW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 05:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbZELJmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 05:40:33 -0400
-Received: from mail46.e.nsc.no ([193.213.115.46]:57050 "EHLO mail46.e.nsc.no"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752284AbZELJkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 05:40:32 -0400
-Date: Tue, 12 May 2009 11:40:02 +0200
-From: Henrik Austad <henrik@austad.us>
-To: Jussi Laako <jussi@sonarnerd.net>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       James Courtier-Dutton <James@superbug.co.uk>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH] Multimedia scheduling class, take 2
-Message-ID: <20090512094002.GA26113@januz.myftp.org>
-References: <4959198A.3020209@sonarnerd.net> <1230622925.16718.26.camel@twins> <4959DE51.2020605@sonarnerd.net> <1231756114.19771.6.camel@laptop> <496C6294.2040707@sonarnerd.net> <4971D3D5.6040801@superbug.co.uk> <497CF128.2060903@sonarnerd.net> <1232954745.4863.4.camel@laptop> <4A07E044.8040807@sonarnerd.net>
+	Tue, 12 May 2009 05:42:12 -0400
+Received: from mail-qy0-f129.google.com ([209.85.221.129]:33941 "EHLO
+	mail-qy0-f129.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751113AbZELJmM convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 05:42:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=H6Ufuj+TsBZPPpT2AnkO+1uOSWppMYuymvZAi7sWQCQn607Qh0P+ECHxKWCHyLVhm5
+         a089B8cHQmJoRfTYXlp1HhPNE4L1lKTgF7h27HLCfqJCJ/MaJWsR9i/Ld5VnNN1pOkOk
+         1sSgAkGkG4OUzAIZI9eQyhX+bjV8EeowV+yGg=
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="GvXjxJ+pjyke8COw"
-Content-Disposition: inline
-In-Reply-To: <4A07E044.8040807@sonarnerd.net>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <Pine.LNX.4.64.0905121023100.25624@venus.araneidae.co.uk>
+References: <Pine.LNX.4.64.0905110928410.10720@venus.araneidae.co.uk>
+	 <f17812d70905110734o3bbb716fjabc61c748904b1ec@mail.gmail.com>
+	 <Pine.LNX.4.64.0905121023100.25624@venus.araneidae.co.uk>
+Date: Tue, 12 May 2009 17:42:11 +0800
+Message-ID: <f17812d70905120242s2baa41edx8ab66b4b921dbbff@mail.gmail.com>
+Subject: Re: [PATCH 1/2] XCEP PXA255 Processor Board
+From: Eric Miao <eric.y.miao@gmail.com>
+To: Michael Abbott <michael@araneidae.co.uk>
+Cc: linux-arm-kernel@lists.arm.linux.org.uk,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+>> > +MACHINE_START(XCEP, "Iskratel XCEP")
+>> > +       .phys_io        = 0x80000000,
+>> > +       .io_pg_offst    = 0xf8000000,
+>> ...... you sure this is correct? Please have a reference to other platforms.
+> Now this is very odd.  I've updated these two fields to conform to other
+> PXA architectures ... but it looks as if these fields don't actually make
+> any difference.  I dug a little, and the only place I could find them
+> being used is in arch/arm/kernel/head.S (as MACHINFO_PGOFFIO and _PHYSIO),
+> and only there if CONFIG_DEBUG_LL is defined.
+>
 
---GvXjxJ+pjyke8COw
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, May 11, 2009 at 11:22:28AM +0300, Jussi Laako wrote:
-> Hi,
->=20
-> Peter Zijlstra wrote:
-> [..]
-> > And 2), the kernel can help by providing a deadline based scheduler,
-> > which should make the above easier and less likely to mess up the rest
-> > of the system. ie. a deadline scheduled application will not exceed its
-> > allotted budget, unlike a FIFO scheduled app.
->=20
-> Any news on this one?
-
-I'm still working on my SCHED_PFAIR stab. Expect an RFC someday soon
-
-pfair is a deadline-driven algorithm that also executes the tasks at a=20
-steady rate, minimizing jitter as well as meeting deadlines. This give=20
-tasks better expressiveness when it comes to instructing the scheduler how=
-=20
-to treat the task. I'll give a more formal intro in the upcoming RFC :)
-
---=20
-henrik
-
-
---GvXjxJ+pjyke8COw
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEARECAAYFAkoJQ/IACgkQ6k5VT6v45lk1JQCfXoNDlhsXc5hGBi7R+vro32fM
-WyAAn0oHYyAdkt/gRLQwj5gWL3LJo62F
-=aO2B
------END PGP SIGNATURE-----
-
---GvXjxJ+pjyke8COw--
+You are right on this. These are mostly used for the initial mapping
+of the IO registers so that low-level debug output like UART output
+can work at the very early stage. You will find this very handful if
+you are debugging on early bring-up.
