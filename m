@@ -1,73 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752809AbZELUNM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754647AbZELUPh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752809AbZELUNM (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 16:13:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbZELUM4
+	id S1754647AbZELUPh (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 16:15:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbZELUPY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 16:12:56 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33229 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751699AbZELUM4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 16:12:56 -0400
-Date: Tue, 12 May 2009 20:12:29 GMT
-From: tip-bot for Steven Rostedt <rostedt@goodmis.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rostedt@goodmis.org, tglx@linutronix.de
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rostedt@goodmis.org, tglx@linutronix.de
-In-Reply-To: <alpine.DEB.2.00.0905121431020.13338@gandalf.stny.rr.com>
-References: <alpine.DEB.2.00.0905121431020.13338@gandalf.stny.rr.com>
-Subject: [tip:irq/urgent] genirq: fix comment to say IRQ_WAKE_THREAD
-Message-ID: <tip-39a2eddb9b62959dc55c6978b5eaeb3dd57c5ff2@git.kernel.org>
-Git-Commit-ID: 39a2eddb9b62959dc55c6978b5eaeb3dd57c5ff2
-X-Mailer: tip-git-log-daemon
+	Tue, 12 May 2009 16:15:24 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:53245 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751690AbZELUPW convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 16:15:22 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XjOMsnirU8ygnYvV+IhSSSJv/E7M850XGn4rS2lCY0on6ze8kmQ4P5zsFXUsNIfE7l
+         fnSJd27O2CecTzqksbbECyPLqaaKm7VY2B2L3BQC1AUxJ5dup3bf6eiugfBhgyRivMKN
+         lUrXxlrjsG2DGzxbhMEvrH9ynPYE7zcrq6pA4=
 MIME-Version: 1.0
+In-Reply-To: <20090512190254.GB1957@kroah.com>
+References: <1242127393-4298-1-git-send-email-a.beregalov@gmail.com>
+	 <20090512164448.GJ16247@kroah.com>
+	 <a4423d670905121037i3ea96b01s68367c082802684d@mail.gmail.com>
+	 <20090512190254.GB1957@kroah.com>
+Date: Wed, 13 May 2009 00:15:21 +0400
+Message-ID: <a4423d670905121315g503f4f0ep6a60e9051a2aeb9d@mail.gmail.com>
+Subject: Re: [PATCH] Staging: agnx: switch config_interface to 
+	bss_info_changed
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Greg KH <greg@kroah.com>, "John W. Linville" <linville@tuxdriver.com>,
+       linux-wireless@vger.kernel.org
+Cc: gregkh@suse.de, johannes@sipsolutions.net, linux-next@vger.kernel.org,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 20:12:30 +0000 (UTC)
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  39a2eddb9b62959dc55c6978b5eaeb3dd57c5ff2
-Gitweb:     http://git.kernel.org/tip/39a2eddb9b62959dc55c6978b5eaeb3dd57c5ff2
-Author:     Steven Rostedt <rostedt@goodmis.org>
-AuthorDate: Tue, 12 May 2009 14:35:54 -0400
-Committer:  Thomas Gleixner <tglx@linutronix.de>
-CommitDate: Tue, 12 May 2009 22:11:29 +0200
+2009/5/12 Greg KH <greg@kroah.com>:
+> On Tue, May 12, 2009 at 09:37:56PM +0400, Alexander Beregalov wrote:
+>> 2009/5/12 Greg KH <greg@kroah.com>:
+>> > On Tue, May 12, 2009 at 03:23:13PM +0400, Alexander Beregalov wrote:
+>> >> Fix this build error:
+>> >> drivers/staging/agnx/pci.c: In function 'agnx_config_interface':
+>> >> drivers/staging/agnx/pci.c:315: error: dereferencing pointer to incomplete type
+>> >> ..
+>> >> drivers/staging/agnx/pci.c:424: error: unknown field 'config_interface' specified in initializer
+>> >>
+>> >> config_interface was removed in 2d0ddec5b2b
+>> >> ("mac80211: unify config_interface and bss_info_changed")
+>> >
+>> > I do not see that patch in Linus's tree.  Is it in some other tree
+>> > (wireless?) and not yet in mainline?
+>> Yes, it is in wireless from linux-next.
+>> You asked to send patches based on linux-next, right?
+>> Should I always mark patches for staging-next tree as [PATCH -next] ?
+>
+> Hm, yes, -staging patches need to be against -next, but I have to be
+> able to build these somehow on my own without the wireless tree...
+>
+> I think something like this might better go through the wireless tree as
+> it depends on changes that happen there.  Sound good to you?
+Ok, thanks Greg.
 
-genirq: fix comment to say IRQ_WAKE_THREAD
-
-Trying to implement a driver to use threaded irqs, I was confused when the 
-return value to use that was described in the comment above 
-request_threaded_irq was not defined.
-
-Turns out that the enum is IRQ_WAKE_THREAD where as the comment said 
-IRQ_THREAD_WAKE.
-
-[Impact: do not confuse developers with wrong comments ]
-
-Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
-LKML-Reference: <alpine.DEB.2.00.0905121431020.13338@gandalf.stny.rr.com>
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-
-
----
- kernel/irq/manage.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/irq/manage.c b/kernel/irq/manage.c
-index 2734eca..eb47f8b 100644
---- a/kernel/irq/manage.c
-+++ b/kernel/irq/manage.c
-@@ -851,7 +851,7 @@ EXPORT_SYMBOL(free_irq);
-  *	still called in hard interrupt context and has to check
-  *	whether the interrupt originates from the device. If yes it
-  *	needs to disable the interrupt on the device and return
-- *	IRQ_THREAD_WAKE which will wake up the handler thread and run
-+ *	IRQ_WAKE_THREAD which will wake up the handler thread and run
-  *	@thread_fn. This split handler design is necessary to support
-  *	shared interrupts.
-  *
+> If so, please send them to the wireless maintainer.
+John, will you apply it?
