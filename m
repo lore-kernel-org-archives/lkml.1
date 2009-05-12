@@ -1,74 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755354AbZELRud@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755362AbZELRxs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755354AbZELRud (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 13:50:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751377AbZELRuY
+	id S1755362AbZELRxs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 13:53:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752038AbZELRxj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 13:50:24 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:33661 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750709AbZELRuX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 13:50:23 -0400
-Date: Tue, 12 May 2009 19:48:48 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-Cc: "H. Peter Anvin" <hpa@kernel.org>, Robert Richter <robert.richter@amd.com>,
-       Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 5/10 -tip] x86: check_powernow() for K8 and later user
-	of Advanced Power Management features
-Message-ID: <20090512174848.GA3313@elte.hu>
-References: <1242142530.2547.11.camel@ht.satnam> <1242142623.2547.13.camel@ht.satnam> <1242142692.2547.15.camel@ht.satnam> <1242142753.2547.16.camel@ht.satnam> <1242142807.2547.18.camel@ht.satnam> <1242142849.2547.19.camel@ht.satnam>
+	Tue, 12 May 2009 13:53:39 -0400
+Received: from rankki.sonarnerd.net ([83.145.240.118]:33593 "EHLO
+	mail.sonarnerd.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752062AbZELRxi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 13:53:38 -0400
+Message-ID: <4A09B7A1.2060706@sonarnerd.net>
+Date: Tue, 12 May 2009 20:53:37 +0300
+From: Jussi Laako <jussi@sonarnerd.net>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242142849.2547.19.camel@ht.satnam>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Chris Friesen <cfriesen@nortel.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       James Courtier-Dutton <James@superbug.co.uk>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       d.faggioli@sssup.it
+Subject: Re: [RFC][PATCH] Multimedia scheduling class, take 2
+References: <4959198A.3020209@sonarnerd.net>	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net>	 <1231756114.19771.6.camel@laptop> <496C6294.2040707@sonarnerd.net>	 <4971D3D5.6040801@superbug.co.uk>  <497CF128.2060903@sonarnerd.net>	 <1232954745.4863.4.camel@laptop>  <4A07E044.8040807@sonarnerd.net> <1242107859.11251.301.camel@twins> <4A094707.5040307@sonarnerd.net> <4A099670.5060902@nortel.com> <4A09A525.4080107@sonarnerd.net> <4A09AB2E.8030002@nortel.com>
+In-Reply-To: <4A09AB2E.8030002@nortel.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Chris Friesen wrote:
+> Of course, without glibc/pthreads support you would only be able to set
+> the nice level for the current thread since you don't have any way to
+> map from "pthread_t *" to tid.  And you wouldn't be able to create new
+> threads with a particular nice level already set.
 
-* Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
+This is the problem... It has to work this way, otherwise it's pretty
+useless.
 
-> -		eax = cpuid_eax(CPUID_GET_MAX_CAPABILITIES);
-> -		if (eax < CPUID_FREQ_VOLT_CAPABILITIES) {
-> +		/* Advanced Power Management capabilities */
-> +		if (c->x86_capability[9]) {
->  			printk(KERN_INFO PFX
->  			       "No frequency change capabilities detected\n");
->  			goto out;
->  		}
+> But that argument
+> holds true for a new sched policy as well, because glibc checks the
+> policy internally and only knows about the normal three.
 
-How is the new check equivalent to the old one? It isnt and this is 
-a bug.
+Don't tell that to my system, where also SCHED_IDLE, SCHED_BATCH (which
+are btw not listed on POSIX either) ...and... SCHED_MM work. It goes
+directly to kernel which does the checks and fails if it sees fit.
 
-Also, open-coding x86_capability[9] like that is quite unclean. Were 
-we ever to reorder those bits internally, this could would break.
+> This option extends the "nice" API rather than the static priority API,
+> so all of the above would still have a static priority of 0 for SCHED_OTHER.
 
-But i see what you are trying to do. A better method might be to add 
-a new helper:
+For extending "nice" API, I would first ask for extension in POSIX, and
+once it's there I could think about implementation.
 
-+#define X86_FEATURE_TS         (9*32+ 0) /* Temperatue sensor          */
-+#define X86_FEATURE_FID                (9*32+ 1) /* Frequency ID control	*/
-+#define X86_FEATURE_VID                (9*32+ 2) /* Voltage ID control		*/
-+#define X86_FEATURE_TTP                (9*32+ 3) /* Thermal trip   	*/
-+#define X86_FEATURE_HTC                (9*32+ 4) /* Hardware thermal control   */
-+#define X86_FEATURE_STC                (9*32+ 5) /* Software thermal control   */
-+#define X86_FEATURE_100MHZSTEPS        (9*32+ 6) /* 100 MHz multiplier control */
-+#define X86_FEATURE_HWPSTATE   (9*32+ 7) /* Hardware P-State control   */
-+#define X86_FEATURE_CONSTANT_TSC (9*32+ 8) /* Constant rate TSC ticks  */
+And still this doesn't solve the second level problem.
 
-... to represent the 'is any of these set' property.
 
-[ btw., there's a typo in the X86_FEATURE_TS comment above ]
-
-	Ingo
+	- Jussi
