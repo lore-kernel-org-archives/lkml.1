@@ -1,52 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756147AbZELP1y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754775AbZELPaG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756147AbZELP1y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:27:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752703AbZELP1p
+	id S1754775AbZELPaG (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:30:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752276AbZELP3w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:27:45 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56097 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752554AbZELP1o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:27:44 -0400
-Message-ID: <4A099562.7020805@kernel.org>
-Date: Wed, 13 May 2009 00:27:30 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 12 May 2009 11:29:52 -0400
+Received: from pf.FreeDaemonHosting.com ([66.210.104.252]:30339 "EHLO
+	FreeDaemonHosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751136AbZELP3u (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 11:29:50 -0400
+X-Greylist: delayed 300 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 May 2009 11:29:50 EDT
+X-DSPAM-Result: Innocent
+X-DSPAM-Confidence: 0.6000
+X-DSPAM-Improbability: 1 in 151 chance of being spam
+X-DSPAM-Probability: 0.0023
+X-DSPAM-Signature: 2114,4a09946752506774120641
+Date: Tue, 12 May 2009 10:22:10 -0500
+From: "Todd T. Fries" <todd@fries.net>
+To: Alan Stern <stern@rowland.harvard.edu>
+Cc: Clemens Ladisch <clemens@ladisch.de>, David Fries <david@fries.net>,
+       David Griffith <dgriffi@cs.csubak.edu>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-usb@vger.kernel.org
+Subject: Re: bad endpoint address, MOTU FastLane
+Message-ID: <20090512152153.GA16714@fries.net>
+Reply-To: todd@fries.net
+References: <4A092B5C.603@ladisch.de> <Pine.LNX.4.44L0.0905121000020.2799-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, jens.axboe@oracle.com,
-       linux-kernel@vger.kernel.org, benh@kernel.crashing.org
-Subject: Re: [PATCH] swim3: use blk_end_request instead of blk_update_request
-References: <1242127787-29842-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1242127787-29842-3-git-send-email-fujita.tomonori@lab.ntt.co.jp> <4A098B8D.10107@panasas.com>
-In-Reply-To: <4A098B8D.10107@panasas.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 15:27:34 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Pine.LNX.4.44L0.0905121000020.2799-100000@iolanthe.rowland.org>
+X-Operating-System: OpenBSD g4.fries.net 4.5 GENERIC
+X-PGP-Fingerprint: B6 3B 70 46 BC 0F 8C DD  14 D4 C7 D1 47 F6 23 FA
+X-HOMEPAGE: http://todd.fries.net
+X-COMPANY: http://FreeDaemonConsulting.com
+X-tra-email: todd@{fries.net,OpenBSD.org} toddfries@gmail.com
+X-IM: toddfries:AIM 115268457:ICQ todd@fries.net:MSN
+X-Jabber: toddfries@gmail.com todd@fries.net todd@freedaemon.com
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-FDH-MailScanner-Information: http://FreeDaemonHosting.com/MailScanner.html
+X-MailScanner-ID: n4CFMqnF006963
+X-FDH-MailScanner: clean
+X-FDH-MailScanner-From: todd@fries.net
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+I'm actually the owner of said device, and have actually purchased
+something that is complaint.  However, not all owners of said device
+are as able or willing.
 
-Boaz Harrosh wrote:
-> blk_update_request() was meant for request-based-multi-path, and not for swim3
-> please see:
->     32fab448 block: add request update interface
-> 
-> CC: Kiyoshi Ueda<k-ueda@ct.jp.nec.com>
-> 
-> I think Tejun Heo was just using that in some recent block layer,
-> transformation.
-> Tejun?
+The point in my opinion is that it used to work and now after an upgrade
+(to support a pchdtv.com tuner) the MOTU doesn't, only the software has
+changed.  Thanks for giving me one more reason to avoid Linux.
 
-Yeah, conversion was easy that way.  I think it's sane to have
-blk_update_request() exported as long as request internal tinkering is
-kept in block layer proper.
+IMHO the principal of 'be generous in what you accept, strict in what you give..'
+for specs applies here..
 
-Thanks.
+Worst case, quirk entry, eh?
+
+Penned by Alan Stern on 20090512 10:08.01, we have:
+| On Tue, 12 May 2009, Clemens Ladisch wrote:
+| 
+| > David Fries wrote:
+| > > usb_submit_urb returns -22 EINVAL invalid argument as it is trying to
+| > > submit an interrupt packet to what is registered as an isoc endpoint.
+| 
+| How does one know which type the endpoint really is?  Through prior 
+| experience with the device?
+| 
+| > > The second interface has the same end point addresses as the first.
+| > > Any suggestions on how to deal with this class of broken hardware?
+| > > 
+| > > I:* If#= 0 Alt= 0 ...
+| > > E:  Ad=81(I) Atr=03(Int.) MxPS=   4 Ivl=1ms
+| > > I:* If#= 1 Alt= 0 ...
+| > > E:  Ad=81(I) Atr=01(Isoc) MxPS=   4 Ivl=1ms
+| > 
+| > AFAICS the USB core memorizes the descriptor belonging to a specific
+| > endpoint number whenever usb_set_interface() is called.  In this case,
+| > the second interface is initialized later, so the second set of
+| > descriptors wins.
+| > 
+| > The driver could call usb_set_interface() again for the first interface
+| > so that the USB core takes notice of the first set of endpoints again.
+| > Please try the patch below.
+| > 
+| > I guess I'll have to write another quirk for this.
+| > 
+| > 
+| > --- linux/sound/usb/usbmidi.c
+| > +++ linux/sound/usb/usbmidi.c
+| > @@ -1779,6 +1779,7 @@
+| >  		err = snd_usbmidi_detect_per_port_endpoints(umidi, endpoints);
+| >  		break;
+| >  	case QUIRK_MIDI_RAW:
+| > +		usb_set_interface(umidi->chip->dev, 0, 0);
+| >  		umidi->usb_protocol_ops = &snd_usbmidi_raw_ops;
+| >  		err = snd_usbmidi_detect_per_port_endpoints(umidi, endpoints);
+| >  		break;
+| 
+| This is only a bandaid.  The underlying problem is still there.  
+| Basically, the second interface shouldn't exist at all.  The only
+| proper way to deal with it is to pretend there's only one interface --
+| which would mean changing the descriptors before the kernel parses
+| them.
+| 
+| A much easier approach is to throw the device away and replace it with 
+| something that _is_ compliant with the USB specification.
+| 
+| Alan Stern
 
 -- 
-tejun
+Todd Fries .. todd@fries.net
+
+ _____________________________________________
+|                                             \  1.636.410.0632 (voice)
+| Free Daemon Consulting, LLC                 \  1.405.227.9094 (voice)
+| http://FreeDaemonConsulting.com             \  1.866.792.3418 (FAX)
+| "..in support of free software solutions."  \          250797 (FWD)
+|                                             \
+ \\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+                                                 
+              37E7 D3EB 74D0 8D66 A68D  B866 0326 204E 3F42 004A
+                        http://todd.fries.net/pgp.txt
+
