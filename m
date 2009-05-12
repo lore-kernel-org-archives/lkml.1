@@ -1,76 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbZELBkt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbZELBrr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759057AbZELBkt (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 21:40:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754778AbZELBki
+	id S1760027AbZELBrr (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 21:47:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757266AbZELBri
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 21:40:38 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:23450 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752120AbZELBkh convert rfc822-to-8bit (ORCPT
+	Mon, 11 May 2009 21:47:38 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:35782 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754868AbZELBrh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 21:40:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=K8luqwJjMf58t+upcmIcEbGbGwgd2L6iKAiCvq6MznJA0z6PMowivV/QBSoAjKwK+g
-         cGIHRNJTQroY0zcKYM4HZ9NeLri4RpsJkOJJiFnNBR9EEYlheo9EC9FRhWS3xPzr39sx
-         evfv/WopfmLZ+lihcuJUN+YLUi0DpVRRFbL3I=
-MIME-Version: 1.0
-In-Reply-To: <20090511154122.GB6973@dtor-d630.eng.vmware.com>
-References: <483a38b80905110444n7d55b967j70cf2639dff1c706@mail.gmail.com>
-	 <20090511153808.GA6973@dtor-d630.eng.vmware.com>
-	 <20090511154122.GB6973@dtor-d630.eng.vmware.com>
-Date: Tue, 12 May 2009 10:40:38 +0900
-Message-ID: <483a38b80905111840k6b7e7aaao9b70f17753bebada@mail.gmail.com>
-Subject: Re: [PATCH 2/2] Input: tsc2007: do I2C transfers in non-interrupt 
-	context
-From: Kwangwoo Lee <kwangwoo.lee@gmail.com>
-To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Cc: Thierry Reding <thierry.reding@avionic-design.de>,
-       Trilok Soni <soni.trilok@gmail.com>, linux-input@vger.kernel.org,
-       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Mon, 11 May 2009 21:47:37 -0400
+Date: Tue, 12 May 2009 10:46:03 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 2/3] fix swap cache account leak at swapin-readahead
+Message-Id: <20090512104603.ac4ca1f4.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-On Tue, May 12, 2009 at 12:41 AM, Dmitry Torokhov
-<dmitry.torokhov@gmail.com> wrote:
-> On Mon, May 11, 2009 at 08:38:09AM -0700, Dmitry Torokhov wrote:
->> Hi,
->> On Mon, May 11, 2009 at 08:44:00PM +0900, Kwangwoo Lee wrote:
->> > From d5de0d22109de7564f9bf1df688acbe6b18f41db Mon Sep 17 00:00:00 2001
->> > From: Kwangwoo Lee <kwangwoo.lee@gmail.com>
->> > Date: Mon, 11 May 2009 20:05:50 +0900
->> > Subject: [PATCH 2/2] Input: tsc2007: do I2C transfers in non-interrupt context.
->> >
->> > This patch enhances pointer movements much smoother.
->> > The original patch is written by Thierry.
->> >
->> > --- a/drivers/input/touchscreen/tsc2007.c
->> > +++ b/drivers/input/touchscreen/tsc2007.c
->> > @@ -70,6 +70,7 @@ struct ts_event {
->> >  struct tsc2007 {
->> >     struct input_dev        *input;
->> >     char                    phys[32];
->> > +   struct work_struct      work;
->>
->> Every time I see a work_struct in a driver and don't see
->> cancel_work_sync() anywhere I know there are issues...
->>
+In general, Linux's swp_entry handling is done by combination of lazy techniques
+and global LRU. It works well but when we use mem+swap controller, some more
+strict control is appropriate. Otherwise, swp_entry used by a cgroup will be
+never freed until global LRU works. In a system where memcg is well-configured,
+global LRU doesn't work frequently.
 
-Thanks for your comment. I also missed that thing, sorry.
+  Example) Assume swapin-readahead.
+	      CPU0			      CPU1
+	   zap_pte()			  read_swap_cache_async()
+					  swap_duplicate().
+           swap_entry_free() = 1
+	   find_get_page()=> NULL.
+					  add_to_swap_cache().
+					  issue swap I/O. 
 
-> Also, why do we need to chain irq->timer->work now? Surely we can bypass
-> the timer if we have to read in process context.
+There are many patterns of this kind of race (but no problems).
 
-It's good point. I'll check again.
-Thanks.
+free_swap_and_cache() is called for freeing swp_entry. But it is a best-effort
+function. If the swp_entry/page seems busy, swp_entry is not freed.
+This is not a problem because global-LRU will find SwapCache at page reclaim.
 
--- 
-Kwangwoo Lee <kwangwoo.lee@gmail.com>
+If memcg is used, on the other hand, global LRU may not work. Then, above
+unused SwapCache will not be freed.
+(unmapped SwapCache occupy swp_entry but never be freed if not on memcg's LRU)
+
+So, even if there are no tasks in a cgroup, swp_entry usage still remains.
+In bad case, OOM by mem+swap controller is triggered by this "leak" of
+swp_entry as Nishimura reported.
+
+Considering this issue, swapin-readahead itself is not very good for memcg.
+It read swap cache which will not be used. (and _unused_ swapcache will
+not be accounted.) Even if we account swap cache at add_to_swap_cache(),
+we need to account page to several _unrelated_ memcg. This is bad.
+
+This patch tries to fix racy case of free_swap_and_cache() and page status.
+
+After this patch applied, following test works well.
+
+  # echo 1-2M > ../memory.limit_in_bytes
+  # run tasks under memcg.
+  # kill all tasks and make memory.tasks empty
+  # check memory.memsw.usage_in_bytes == memory.usage_in_bytes and
+    there is no _used_ swp_entry.
+
+What this patch does is
+ - avoid swapin-readahead when memcg is activated.
+
+Changelog: v6 -> v7
+ - just handle races in readahead.
+ - races in writeback is handled in the next patch.
+
+Changelog: v5 -> v6
+ - works only when memcg is activated.
+ - check after I/O works only after writeback.
+ - avoid swapin-readahead when memcg is activated.
+ - fixed page refcnt issue.
+Changelog: v4->v5
+ - completely new design.
+
+Reported-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+---
+ mm/swap_state.c |   20 +++++++++++++++++---
+ 1 file changed, 17 insertions(+), 3 deletions(-)
+
+Index: mmotm-2.6.30-May07/mm/swap_state.c
+===================================================================
+--- mmotm-2.6.30-May07.orig/mm/swap_state.c
++++ mmotm-2.6.30-May07/mm/swap_state.c
+@@ -349,9 +349,9 @@ struct page *read_swap_cache_async(swp_e
+ struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
+ 			struct vm_area_struct *vma, unsigned long addr)
+ {
+-	int nr_pages;
++	int nr_pages = 1;
+ 	struct page *page;
+-	unsigned long offset;
++	unsigned long offset = 0;
+ 	unsigned long end_offset;
+ 
+ 	/*
+@@ -360,8 +360,22 @@ struct page *swapin_readahead(swp_entry_
+ 	 * No, it's very unlikely that swap layout would follow vma layout,
+ 	 * more likely that neighbouring swap pages came from the same node:
+ 	 * so use the same "addr" to choose the same node for each swap read.
++	 *
++	 * But, when memcg is used, swapin readahead give us some bad
++	 * effects. There are 2 big problems in general.
++	 * 1. Swapin readahead tend to use/read _not required_ memory.
++	 *    And _not required_ memory is only freed by global LRU.
++	 * 2. We can't charge pages for swap-cache readahead because
++	 *    we should avoid account memory in a cgroup which a
++	 *    thread call this function is not related to.
++	 * And swapin-readahead have racy condition with
++	 * free_swap_and_cache(). This also annoys memcg.
++	 * Then, if memcg is really used, we avoid readahead.
+ 	 */
+-	nr_pages = valid_swaphandles(entry, &offset);
++
++	if (!mem_cgroup_activated())
++		nr_pages = valid_swaphandles(entry, &offset);
++
+ 	for (end_offset = offset + nr_pages; offset < end_offset; offset++) {
+ 		/* Ok, do the async read-ahead now */
+ 		page = read_swap_cache_async(swp_entry(swp_type(entry), offset),
+
