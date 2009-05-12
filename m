@@ -1,73 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759654AbZELAye@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759796AbZELA6y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759654AbZELAye (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 20:54:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754611AbZELAyW
+	id S1759796AbZELA6y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 20:58:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757327AbZELA6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 20:54:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:33715 "EHLO hera.kernel.org"
+	Mon, 11 May 2009 20:58:44 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:50366 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753807AbZELAyV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 20:54:21 -0400
-Message-ID: <4A08C871.9000100@kernel.org>
-Date: Tue, 12 May 2009 09:53:05 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1756784AbZELA6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 20:58:43 -0400
+Message-ID: <4A08C9C0.6040202@pobox.com>
+Date: Mon, 11 May 2009 20:58:40 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Konrad Rzeszutek <konrad@virtualiron.com>
-CC: device-mapper development <dm-devel@redhat.com>,
-       Kay Sievers <kay.sievers@vrfy.org>, jeff@garzik.org,
-       linux-scsi@vger.kernel.org, Mauelshagen@redhat.com,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       jens.axboe@oracle.com, martin.petersen@oracle.com
-Subject: Re: [dm-devel] Re: [PATCH 1/3] block: add alt_size
-References: <1241828002-12742-1-git-send-email-tj@kernel.org> <1241828002-12742-2-git-send-email-tj@kernel.org> <ac3eb2510905090645u5e482ffcu4b3ddc26e81247e6@mail.gmail.com> <4A058D5C.6030206@kernel.org> <20090511134534.GA32678@mars.virtualiron.com>
-In-Reply-To: <20090511134534.GA32678@mars.virtualiron.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: [PATCH] ata: libata depends on HAS_DMA
+References: <20090511222702.352192505@arndb.de>> <200905112238.55404.arnd@arndb.de>
+In-Reply-To: <200905112238.55404.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 00:53:10 +0000 (UTC)
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Konrad Rzeszutek wrote:
-> .. snip ..
->>> Also, values with magic block counts, while there is no way to get the
->>> blocksize with the same interface, are pretty weird. I think the
->>> current "size" attribute is just a bug.
->> Logical block size is fixed at 512 bytes.  Offset and size are always
->> represented in multiples of 512 bytes and only get converted to
->> hardware block size in the lld.
+Arnd Bergmann wrote:
+> libata uses the DMA mapping API, so it cannot be built
+> on architectures that don't have DMA support.
 > 
-> That interpretation is at odds with the work that Martin Peterson is
-> doing with the 4K support. In the e-mail titled: "Re: [PATCH 4 of 8] sd:
-> Physical block size and alignment support",
-> Message-ID:<yq1ab67b51p.fsf@sermon.lab.mkp.net> he says:
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/ata/Kconfig |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> "
-> 	Konrad> about what a 'logical block', and 'physical block' is
-> 	Konrad> vs. 'hardware sector' ?
-> 
-> 	Well, another item on my todo list is to kill the notion of hardware
-> 	sector completely.  The protocols have been referring to logical blocks
-> 	for ages.
-> 
-> 	It hasn't been a big problem until now because logical block size has
-> 	been equal to the hardware sector size.  That's no longer a valid
-> 	assumption.
-> "
-> 
-> Are the ATA/SCSI/etc specs at odds with each other about this?
+> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+> index 9120717..f076268 100644
+> --- a/drivers/ata/Kconfig
+> +++ b/drivers/ata/Kconfig
+> @@ -4,7 +4,7 @@
+>  
+>  menuconfig ATA
+>  	tristate "Serial ATA (prod) and Parallel ATA (experimental) drivers"
+> -	depends on HAS_IOMEM
+> +	depends on HAS_IOMEM && HAS_DMA
+>  	depends on BLOCK
+>  	depends on !(M32R || M68K) || BROKEN
 
-Hardware specs aren't of concern here.  The logical block concept is
-there simply to give 9 bit addressing advantage, nothing more, nothing
-less.  If hardware's sector size doesn't match it, the lld should be
-mapping the sector addresses and sizes and cdrom and a few other
-drives have been doing that for ages.  There's nothing new about
-devices with sectors larger than 512 bytes.
+What specifically is breaking?
 
-Thanks.
+Ideally we should be able to work with PIO-only...
 
--- 
-tejun
+	JEff
+
+
+
+
