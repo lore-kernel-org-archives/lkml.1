@@ -1,49 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759943AbZELAsk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759877AbZELAuz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759943AbZELAsk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 20:48:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755501AbZELAsc
+	id S1759877AbZELAuz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 20:50:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757905AbZELAuq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 20:48:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:37852 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755256AbZELAsb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 20:48:31 -0400
-From: Eric Paris <eparis@redhat.com>
-Subject: [PATCH] securityfs: securityfs_remove should handle IS_ERR pointers
-To: jmorris@namei.org
-Cc: linux-kernel@vger.kernel.org
-Date: Mon, 11 May 2009 20:47:15 -0400
-Message-ID: <20090512004714.4111.46789.stgit@dhcp231-142.rdu.redhat.com>
-User-Agent: StGIT/0.14.3
+	Mon, 11 May 2009 20:50:46 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:36517 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753377AbZELAup (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 20:50:45 -0400
+Message-ID: <4A08C79C.5090501@zytor.com>
+Date: Mon, 11 May 2009 17:49:32 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
+       Robert Richter <robert.richter@amd.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [git-pull -tip] x86: Addition of cpufeatures to friendly access
+ miscellaneous MSRs
+References: <1242058494.5139.7.camel@ht.satnam>  <4A086B58.30607@zytor.com> <1242088979.2504.13.camel@ht.satnam>
+In-Reply-To: <1242088979.2504.13.camel@ht.satnam>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Both of the securityfs users (TPM and IMA) can call securityfs_remove and pass
-an IS_ERR(dentry) in their failure paths.  This patch handles those rather
-than panicing when it tries to start deferencing some negative memory.
+Jaswinder Singh Rajput wrote:
+> 
+> The basic point of these patchset is to friendly access miscellaneous
+> MSRs in kernel and userspace.
+> 
+> Some of these patches are using hardware cpufeature and others are
+> software.
+> 
+> In kernel some of these MSRs are frequently used and doing checking
+> before accessing these MSR in various places.
+> 
+> So I think it will be right approach to check in one place and set
+> related cpufeature and in other places we only need to check cpufeature
+> and then access MSR.
+> 
+> This patchset is only adding cpufeature. I will release accessing
+> cpufeatures in upcoming series.
+> 
 
-Signed-off-by: Eric Paris <eparis@redhat.com>
----
+For those that have in-kernel users, this is fine (and valid), but this 
+is the wrong order in which to do things, since you patchset doesn't 
+verify where those happen.  Rather, it's better to follow each 
+cpufeature with its users rather than a batch of producers followed by a 
+set of consumers.
 
- security/inode.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Note: I do *not* consider debugfs only consumers to be valid in this 
+context.
 
-diff --git a/security/inode.c b/security/inode.c
-index f3b91bf..f7496c6 100644
---- a/security/inode.c
-+++ b/security/inode.c
-@@ -287,7 +287,7 @@ void securityfs_remove(struct dentry *dentry)
- {
- 	struct dentry *parent;
- 
--	if (!dentry)
-+	if (!dentry || IS_ERR(dentry))
- 		return;
- 
- 	parent = dentry->d_parent;
+	-hpa
 
