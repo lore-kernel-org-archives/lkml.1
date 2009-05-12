@@ -1,55 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758708AbZELAiM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759298AbZELAmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758708AbZELAiM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 20:38:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbZELAh4
+	id S1759298AbZELAmu (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 20:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753288AbZELAml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 20:37:56 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:56169 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752569AbZELAhz convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 20:37:55 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] move PIT_TICK_RATE to linux/timex.h
-Date: Tue, 12 May 2009 02:36:35 +0200
-User-Agent: KMail/1.9.9
-Cc: linux-arch@vger.kernel.org, x86@kernel.org, rth@twiddle.net,
-       ralf@linux-mips.org, tiwai@suse.de, dmitry.torokhov@gmail.com,
-       mingo@elte.hu, linux-kernel@vger.kernel.org, alan@lxorguk.ukuu.org.uk
-References: <20090511222702.352192505@arndb.de> <200905112255.37215.arnd@arndb.de> <20090511170146.143a1551.akpm@linux-foundation.org>
-In-Reply-To: <20090511170146.143a1551.akpm@linux-foundation.org>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
- =?utf-8?q?3zb?=)
- =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
- =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
-Message-Id: <200905120236.36242.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19m9a9r2MbE0PGCZTmokNajk35bn4uQaAVoVbk
- HzS6m4mb6twLfrtljYGp/zuV+5CFzp5Vejf0I9EVd1DJrGRmld
- SD0q1RDrGTjXoXZxNxAuA==
+	Mon, 11 May 2009 20:42:41 -0400
+Received: from hera.kernel.org ([140.211.167.34]:53271 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753105AbZELAmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 20:42:40 -0400
+Subject: Re: [git-pull -tip] x86: Addition of cpufeatures to friendly
+ access miscellaneous MSRs
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
+       Robert Richter <robert.richter@amd.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A086B58.30607@zytor.com>
+References: <1242058494.5139.7.camel@ht.satnam>  <4A086B58.30607@zytor.com>
+Content-Type: text/plain
+Date: Tue, 12 May 2009 06:12:59 +0530
+Message-Id: <1242088979.2504.13.camel@ht.satnam>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tuesday 12 May 2009, Andrew Morton wrote:
-> So the type got changed in arch/x86/include/asm/timex.h.  Did you check
-> whether that changes anything? I did a quick check and didn't see any
-> obvious problems..
+On Mon, 2009-05-11 at 11:15 -0700, H. Peter Anvin wrote:
+> Jaswinder Singh Rajput wrote:
+> > 
+> > Jaswinder Singh Rajput (15):
+> >       x86: Add cpufeature for Processor Name
+> >       x86: Add cpufeatures for Advanced Power Management
+> >       x86: Add cpufeature for Microcode update
+> >       x86: Add cpufeature for Cache MSRs
+> >       x86: Add cpufeature for Hard and Soft Poweron configuration
+> >       x86: Add cpufeature for Scaleable bus speed
+> >       x86: Add cpufeature for Miscellaneous Features
+> >       x86: Add cpufeature for Platform feature
+> >       x86: Add cpufeature for Hardware configuration
+> >       x86: Add cpufeature for System configuration
+> >       x86: Add cpufeature for System management mode (SMM)
+> >       x86: Add cpufeature for MM configuration
+> >       x86: Add cpufeature for Bus configuration
+> >       x86: Add cpufeature for performance frequency APERF/MPERF
+> >       x86: Add cpufeature for ancient performance monitoring
+> > 
+> 
+> Overall, I'm rather confused what the point of this is supposed to be. 
+> There is value to centralizing CPU knowledge, but some of these flags 
+> are only used in one place, and as far as I can see in several of your 
+> patches they aren't used *at all*.
+> 
+> If there is no in-kernel user there is absolutely no point to this.
+> 
 
-I did not check if the object file changes, just checked that the
-macro is not used in assembly code, which would break.
+The basic point of these patchset is to friendly access miscellaneous
+MSRs in kernel and userspace.
 
-Note that for Alpha, the actual value changed from 1193182UL to
-1193180UL. This is unlikely to make a difference, and probably
-can only improve accuracy. There was a discussion on the correct
-value of CLOCK_TICK_RATE a few years ago, after which every existing
-instance was getting changed to 1193182. According to the specification,
-it should be 1193181.818181...
+Some of these patches are using hardware cpufeature and others are
+software.
 
-	Arnd <><
+In kernel some of these MSRs are frequently used and doing checking
+before accessing these MSR in various places.
+
+So I think it will be right approach to check in one place and set
+related cpufeature and in other places we only need to check cpufeature
+and then access MSR.
+
+This patchset is only adding cpufeature. I will release accessing
+cpufeatures in upcoming series.
+
+--
+JSR
+
