@@ -1,92 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755305AbZELTQz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753725AbZELTYn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755305AbZELTQz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 15:16:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751860AbZELTQp
+	id S1753725AbZELTYn (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 15:24:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751454AbZELTYe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 15:16:45 -0400
-Received: from blaine.gmane.org ([80.91.229.8]:35624 "EHLO hugh.gmane.org"
+	Tue, 12 May 2009 15:24:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56656 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751073AbZELTQo convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 15:16:44 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=LvAh6372vDYNgx6ie0d8qQ/IcOTAaHjPae5wxHk38WQnFYHcEc9c9fUIGl+F3/DO8L
-         ebceIVi4UuvWqTKVEgrX7uNaS7Xcj/PuN09HQik9EJsgtBRHnA4hCJJ3sWDoKl1mr6L9
-         Xf2co5scbtqLkBkAWr7+bd67fQ/PrlGLrmUUw=
+	id S1750974AbZELTYd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 15:24:33 -0400
+Message-ID: <4A09CCBB.2000306@kernel.org>
+Date: Tue, 12 May 2009 12:23:39 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <20090512103905.0D68E1FD10@chi.die-welt.net>
-References: <dd18b0c30905111002y4aeb2033ma2fbb2730f5acdaf@mail.gmail.com>
-	 <4A089E49.7080403@gmail.com>
-	 <20090512103905.0D68E1FD10@chi.die-welt.net>
-Date: Tue, 12 May 2009 07:28:04 -0700
-Message-ID: <dd18b0c30905120728v156d4e1g808a853d23ba0ae6@mail.gmail.com>
-Subject: Re: ath9k seems to be broken on 2.6.30-rc4 with a macbook pro
-From: Justin Mattock <justinmattock@gmail.com>
-To: Evgeni Golov <sargentd@die-welt.net>
-Cc: Jiri Slaby 
-	<public-jirislaby-Re5JQEeQqe8AvxtiuMwx3w@hugh.gmane.org>,
-       Justin Mattock 
-	<public-justinmattock-Re5JQEeQqe8AvxtiuMwx3w@hugh.gmane.org>,
-       Linux Kernel Mailing List 
-	<public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>,
-       public-ath9k-devel-xDcbHBWguxHbcTqmT+pZeQ@hugh.gmane.org,
-       public-linux-wireless-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org
+To: Ingo Molnar <mingo@elte.hu>
+CC: Cyrill Gorcunov <gorcunov@gmail.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       eswierk@aristanetworks.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:irq/numa] x86: read apic ID in the !acpi_lapic case
+References: <tip-4797f6b021a3fa399942245d07a1feb30df81bb8@git.kernel.org> <20090512112205.GA12108@elte.hu> <20090512145128.GA10220@lenovo> <20090512145808.GA20587@elte.hu> <4A099013.6040708@kernel.org> <20090512150631.GA32067@elte.hu> <20090512164617.GA21673@elte.hu> <4A09C068.3010308@kernel.org> <20090512183302.GA4000@elte.hu> <4A09C157.7010407@kernel.org> <20090512190538.GA9769@elte.hu>
+In-Reply-To: <20090512190538.GA9769@elte.hu>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-TMDA-Confirmed: Tue, 12 May 2009 19:39:17 +0200
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+please check
 
+[PATCH] x86: don't call read_apic_id if !cpu_has_apic
 
+should not call that if apic is disabled.
 
-On Tue, May 12, 2009 at 3:39 AM, Evgeni Golov <sargentd@die-welt.net> wrote:
->
->
-> On Mon, 11 May 2009 23:53:13 +0200 Jiri Slaby wrote:
->
->> > in dmesg I see:
->> >
->> > [   36.337419] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 1
->> > [   36.530106] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 2
->> > [   36.730100] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 3
->> > [   36.930101] wlan0: direct probe to AP 00:1e:2a:00:67:f0 timed out
->> > [   44.421728] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 1
->> > [   44.620080] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 2
->> > [   44.820080] wlan0: direct probe to AP 00:1e:2a:00:67:f0 try 3
->> > [   45.020076] wlan0: direct probe to AP 00:1e:2a:00:67:f0 timed out
->> >
->> > The type of encryption used is just
->> > a standard WEP key(no WPA).
->
-> Same here with 2.6.30-rc4, b43 and either Cisco (MAC-Addr starts with
-> 00:40:96) or HP ProCurve (??? - they do WiFi? - MAC-Addr starts with
-> 00:1F:FE) APs. No encryption, quite noisy environment (University).
->
-> No problem with ipw2200 (actually 2915) in the same hardware (Thinkpad
-> X31). Neither with the b43 and a standard Linksys WRT54GL (in the same!
-> noisy university-env).
->
-> Regards
-> Evgeni
->
->
+[ Impact:  fix calling to read_apic_id ]
 
-are you able to connect?
-(or is the connection connecting but really
-poor quality?)
-over here 2.6.29-rc8 connects like
-theirs no tomorrow, as soon as
-I throw in 2.6.30-rc4 it just dead(although
-on some accounts I did get some kind of
-reaction, but not much, just what I see in dmesg).
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
 
--- 
-Justin P. Mattock
+---
+ arch/x86/kernel/apic/apic_flat_64.c |    2 +-
+ arch/x86/kernel/cpu/amd.c           |    2 +-
+ arch/x86/kernel/cpu/common.c        |    8 +++++++-
+ arch/x86/kernel/cpu/intel.c         |    6 +++---
+ 4 files changed, 12 insertions(+), 6 deletions(-)
 
-
+Index: linux-2.6/arch/x86/kernel/apic/apic_flat_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/apic/apic_flat_64.c
++++ linux-2.6/arch/x86/kernel/apic/apic_flat_64.c
+@@ -161,7 +161,7 @@ static int flat_apic_id_registered(void)
+ 
+ static int flat_phys_pkg_id(int initial_apic_id, int index_msb)
+ {
+-	return hard_smp_processor_id() >> index_msb;
++	return initial_apic_id >> index_msb;
+ }
+ 
+ struct apic apic_flat =  {
+Index: linux-2.6/arch/x86/kernel/cpu/amd.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/amd.c
++++ linux-2.6/arch/x86/kernel/cpu/amd.c
+@@ -272,7 +272,7 @@ static void __cpuinit srat_detect_node(s
+ #if defined(CONFIG_NUMA) && defined(CONFIG_X86_64)
+ 	int cpu = smp_processor_id();
+ 	int node;
+-	unsigned apicid = hard_smp_processor_id();
++	unsigned apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
+ 
+ 	node = c->phys_proc_id;
+ 	if (apicid_to_node[apicid] != NUMA_NO_NODE)
+Index: linux-2.6/arch/x86/kernel/cpu/intel.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/intel.c
++++ linux-2.6/arch/x86/kernel/cpu/intel.c
+@@ -252,12 +252,12 @@ static void __cpuinit intel_workarounds(
+ }
+ #endif
+ 
+-static void __cpuinit srat_detect_node(void)
++static void __cpuinit srat_detect_node(struct cpuinfo_x86 *c)
+ {
+ #if defined(CONFIG_NUMA) && defined(CONFIG_X86_64)
+ 	unsigned node;
+ 	int cpu = smp_processor_id();
+-	int apicid = hard_smp_processor_id();
++	int apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
+ 
+ 	/* Don't do the funky fallback heuristics the AMD version employs
+ 	   for now. */
+@@ -423,7 +423,7 @@ static void __cpuinit init_intel(struct
+ 	}
+ 
+ 	/* Work around errata */
+-	srat_detect_node();
++	srat_detect_node(c);
+ 
+ 	if (cpu_has(c, X86_FEATURE_VMX))
+ 		detect_vmx_virtcap(c);
+Index: linux-2.6/arch/x86/kernel/cpu/common.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/cpu/common.c
++++ linux-2.6/arch/x86/kernel/cpu/common.c
+@@ -763,6 +763,12 @@ static void __cpuinit identify_cpu(struc
+ 	if (this_cpu->c_identify)
+ 		this_cpu->c_identify(c);
+ 
++	/* Clear/Set all flags overriden by options, after probe */
++	for (i = 0; i < NCAPINTS; i++) {
++		c->x86_capability[i] &= ~cpu_caps_cleared[i];
++		c->x86_capability[i] |= cpu_caps_set[i];
++	}
++
+ #ifdef CONFIG_X86_64
+ 	c->apicid = apic->phys_pkg_id(c->initial_apicid, 0);
+ #endif
+@@ -810,7 +816,7 @@ static void __cpuinit identify_cpu(struc
+ 	init_hypervisor(c);
+ 
+ 	/*
+-	 * Clear/Set all flags overriden by options, need do it
++	 * Finally Clear/Set all flags overriden by options, need do it
+ 	 * before following smp all cpus cap AND.
+ 	 */
+ 	for (i = 0; i < NCAPINTS; i++) {
