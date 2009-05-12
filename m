@@ -1,63 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755385AbZELUWZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756479AbZELUVz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755385AbZELUWZ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 16:22:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbZELUWJ
+	id S1756479AbZELUVz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 16:21:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753936AbZELUVO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 16:22:09 -0400
-Received: from e1.ny.us.ibm.com ([32.97.182.141]:47690 "EHLO e1.ny.us.ibm.com"
+	Tue, 12 May 2009 16:21:14 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:36182 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753190AbZELUWG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 16:22:06 -0400
-Subject: Re: NFS regression?  Odd delays and lockups accessing an NFS
-	export.
-From: Frank Filz <ffilzlnx@us.ibm.com>
-To: jacliburn@bellsouth.net
-Cc: Grant Coady <gcoady.lk@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, neilb@suse.de,
-       bfields@fieldses.org, linux-nfs@vger.kernel.org
-In-Reply-To: <48A9CF89.9090304@bellsouth.net>
-References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
-	 <20080818185048.GO20684@miggy.org>  <48A9CF89.9090304@bellsouth.net>
-Content-Type: text/plain
-Organization: IBM Linux Technology Center
-Date: Tue, 12 May 2009 13:27:58 -0700
-Message-Id: <1242160078.2404.6.camel@dyn9047022153>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.8.3 (2.8.3-2.fc6) 
-Content-Transfer-Encoding: 7bit
+	id S1751498AbZELUVH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 16:21:07 -0400
+From: Glauber Costa <glommer@redhat.com>
+To: kvm@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, avi@redhat.com
+Subject: [PATCH 0/2] Deal with shadow interrupts after emulated instructions
+Date: Tue, 12 May 2009 16:21:04 -0400
+Message-Id: <1242159666-27492-1-git-send-email-glommer@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2008-08-18 at 14:37 -0500, J. K. Cliburn wrote:
-> Athanasius wrote:
-> > On Mon, Aug 18, 2008 at 12:02:20PM +1000, Grant Coady wrote:
-> >> I've been using NFS here for years, lately there's something odd going on 
-> >> since about a month or so.  Previously reported last month:
-> >> http://www.gossamer-threads.com/lists/linux/kernel/951419?page=last
-> >>
-> >> Now with 2.6.27-rc3 on one of the client boxes I get a complete stall 
-> >> at odd times when accessing the server's exported directory, cannot 
-> >> see a pattern to it.  Eventually recovers after a Ctrl-C.  Nothing in 
-> >> the server or client log files.  Not easy to reproduce either.
-> > 
-> >   I wonder if this is what I've been seeing.  I've been otherwise too
-> > busy to properly report it, thinking that *someone* else must also be
-> > seeing it and it's being worked on, else it's a subtle configuration
-> > problem my end.
-> > 
-> >   I first started seeing this with 2.6.26 on the client end, 
-> 
-> I see you're running the atl1 driver on your client.  I'm chasing an 
-> intermittent bug in that driver that seems to be affected by certain 
-> offload parameters.  Try disabling TSO and see if things improve.
-
-Was this ever resolved? We're seeing a similar hangup in a 2.6.27
-kernel.
-
-Thanks
-
-Frank Filz
+Same story, more avi's comments merged.
 
 
