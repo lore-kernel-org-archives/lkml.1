@@ -1,52 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753826AbZELNts@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754018AbZELN5T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753826AbZELNts (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 09:49:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754192AbZELNt3
+	id S1754018AbZELN5T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 09:57:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751371AbZELN5D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 09:49:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52116 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754027AbZELNt2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 09:49:28 -0400
-Subject: Re: [PATCH -tip] x86: cpu/proc.c adding extended_cpuid_level for
- /proc/cpuinfo
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Borislav Petkov <borislav.petkov@amd.com>
-Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090512133950.GA15474@aftab>
-References: <1242112482.3283.1.camel@localhost.localdomain>
-	 <20090512133950.GA15474@aftab>
-Content-Type: text/plain
-Date: Tue, 12 May 2009 19:19:37 +0530
-Message-Id: <1242136177.14832.0.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 May 2009 09:57:03 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:53905 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751224AbZELN5B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 09:57:01 -0400
+Date: Tue, 12 May 2009 15:56:57 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: linux-kernel@vger.kernel.org
+Cc: Ville Syrjala <syrjala@sci.fi>, Evgeniy Polyakov <johnpol@2ka.mipt.ru>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] w1-gpio: add external pull-up enable callback
+Message-ID: <20090512135657.GA24045@buzzloop.caiaq.de>
+References: <1241527413-22920-1-git-send-email-daniel@caiaq.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1241527413-22920-1-git-send-email-daniel@caiaq.de>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-12 at 15:39 +0200, Borislav Petkov wrote:
-> Hi,
-> 
-> On Tue, May 12, 2009 at 12:44:42PM +0530, Jaswinder Singh Rajput wrote:
-> > 
-> > Here are 2 patches for adding new field extended_cpuid_level, please
-> > choose PATCH whichever is more appropriate:
-> > 
-> > PATCH 1:
-> > Subject: [PATCH] x86: cpu/proc.c adding extended_cpuid_level for /proc/cpuinfo
-> > 
-> > extended_cpuid_level also gives useful information like cpuid_level
-> > and very useful for AMD processors.
-> > 
-> > Adding extended_cpuid_level in /proc/cpuinfo completes cpuid_level info.
-> 
-> and this is needed because... ?!
-> 
+(cc Andrew Morton)
 
-why we need cpuid_level ?
+Andrew,
 
+could you add this to your patch queue? It's been acked by Ville Syrjala
+and Evgeniy Polyakov.
+
+Thanks,
+Daniel
+
+
+>From 6a99f9453d9b0ad2dd705c012014063977781bf3 Mon Sep 17 00:00:00 2001
+From: Daniel Mack <daniel@caiaq.de>
+Date: Tue, 5 May 2009 14:35:04 +0200
+Subject: [PATCH] w1-gpio: add external pull-up enable callback
+
+On embedded devices, sleep mode conditions can be tricky to handle,
+Especially when processors tend to pull-down the w1 bus during sleep.
+Bus slaves (such as the ds2760) may interpret this as a reason for
+power-down conditions and entirely switch off the device.
+
+This patch adds a callback function pointer to let users switch on and
+off the external pull-up resistor. This lets the outside world know
+whether the processor is currently actively driving the bus or not.
+
+When this callback is not provided, the code behaviour won't change.
+
+Signed-off-by: Daniel Mack <daniel@caiaq.de>
+Acked-by: Ville Syrjala <syrjala@sci.fi>
+Acked-by: Evgeniy Polyakov <johnpol@2ka.mipt.ru>
+---
+ drivers/w1/masters/w1-gpio.c |   35 +++++++++++++++++++++++++++++++++++
+ include/linux/w1-gpio.h      |    1 +
+ 2 files changed, 36 insertions(+), 0 deletions(-)
+
+diff --git a/drivers/w1/masters/w1-gpio.c b/drivers/w1/masters/w1-gpio.c
+index a411702..6f8866d 100644
+--- a/drivers/w1/masters/w1-gpio.c
++++ b/drivers/w1/masters/w1-gpio.c
+@@ -74,6 +74,9 @@ static int __init w1_gpio_probe(struct platform_device *pdev)
+ 	if (err)
+ 		goto free_gpio;
+ 
++	if (pdata->enable_external_pullup)
++		pdata->enable_external_pullup(1);
++
+ 	platform_set_drvdata(pdev, master);
+ 
+ 	return 0;
+@@ -91,6 +94,9 @@ static int __exit w1_gpio_remove(struct platform_device *pdev)
+ 	struct w1_bus_master *master = platform_get_drvdata(pdev);
+ 	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
+ 
++	if (pdata->enable_external_pullup)
++		pdata->enable_external_pullup(0);
++
+ 	w1_remove_master_device(master);
+ 	gpio_free(pdata->pin);
+ 	kfree(master);
+@@ -98,12 +104,41 @@ static int __exit w1_gpio_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++#ifdef CONFIG_PM
++
++static int w1_gpio_suspend(struct platform_device *pdev, pm_message_t state)
++{
++	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
++
++	if (pdata->enable_external_pullup)
++		pdata->enable_external_pullup(0);
++
++	return 0;
++}
++
++static int w1_gpio_resume(struct platform_device *pdev)
++{
++	struct w1_gpio_platform_data *pdata = pdev->dev.platform_data;
++
++	if (pdata->enable_external_pullup)
++		pdata->enable_external_pullup(1);
++
++	return 0;
++}
++
++#else
++#define w1_gpio_suspend	NULL
++#define w1_gpio_resume	NULL
++#endif
++
+ static struct platform_driver w1_gpio_driver = {
+ 	.driver = {
+ 		.name	= "w1-gpio",
+ 		.owner	= THIS_MODULE,
+ 	},
+ 	.remove	= __exit_p(w1_gpio_remove),
++	.suspend = w1_gpio_suspend,
++	.resume = w1_gpio_resume,
+ };
+ 
+ static int __init w1_gpio_init(void)
+diff --git a/include/linux/w1-gpio.h b/include/linux/w1-gpio.h
+index 9797fec..3adeff8 100644
+--- a/include/linux/w1-gpio.h
++++ b/include/linux/w1-gpio.h
+@@ -18,6 +18,7 @@
+ struct w1_gpio_platform_data {
+ 	unsigned int pin;
+ 	unsigned int is_open_drain:1;
++	void (*enable_external_pullup)(int enable);
+ };
+ 
+ #endif /* _LINUX_W1_GPIO_H */
+-- 
+1.6.2.1
 
