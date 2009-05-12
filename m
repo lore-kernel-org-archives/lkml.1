@@ -1,65 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbZELQhk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755412AbZELQkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753597AbZELQhk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 12:37:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbZELQhb
+	id S1755412AbZELQkd (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 12:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753452AbZELQkX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 12:37:31 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:49492 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750832AbZELQha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 12:37:30 -0400
-Date: Tue, 12 May 2009 18:37:30 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Nick Piggin <npiggin@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>, mel@csn.ul.ie,
-       a.p.zijlstra@chello.nl, cl@linux-foundation.org,
-       dave@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       Divy Le Ray <divy@chelsio.com>
-Subject: Re: [patch -mmotm] mm: invoke oom killer for __GFP_NOFAIL
-Message-ID: <20090512163730.GQ4140@kernel.dk>
-References: <alpine.DEB.2.00.0905091544470.6884@chino.kir.corp.google.com> <20090511134038.5cf1ad3b.akpm@linux-foundation.org> <20090512124201.GO4140@kernel.dk> <20090512130546.GA15793@wotan.suse.de>
+	Tue, 12 May 2009 12:40:23 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:53462 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753335AbZELQkV (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 12:40:21 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=xOkaJukdnecC7i+w7COEkw3xSfBfmhlMWcmcKrdEISsHaoI17keL8q9F0ZcFO3E52a
+         3io3XM8o7aG0vzuIQiAVhmQ2ClJ0a8SgSQpJ0mx1lmye3zpKLI3sduoxfaOnp61+Lwel
+         Fy8nvxA8Vv80dyXB9fmlD11+GjGbRwCxpYL1M=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090512130546.GA15793@wotan.suse.de>
+Date: Tue, 12 May 2009 20:40:20 +0400
+Message-ID: <a4423d670905120940r5de3eab7v7e8e92d89107b962@mail.gmail.com>
+Subject: 2.6.30-rc5: reiserfs is broken on parisc (bisected)
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       linux-parisc@vger.kernel.org, Jeff Mahoney <jeffm@suse.com>,
+       Al Viro <viro@zeniv.linux.org.uk>, reiserfs-devel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12 2009, Nick Piggin wrote:
-> On Tue, May 12, 2009 at 02:42:02PM +0200, Jens Axboe wrote:
-> > On Mon, May 11 2009, Andrew Morton wrote:
-> > > On Sat, 9 May 2009 15:46:39 -0700 (PDT)
-> > > David Rientjes <rientjes@google.com> wrote:
-> > > 
-> > > > The oom killer must be invoked regardless of the order if the allocation
-> > > > is __GFP_NOFAIL, otherwise it will loop forever when reclaim fails to
-> > > > free some memory.
-> > > 
-> > > Sigh.  We're supposed to be deleting __GFP_NOFAIL.  I added it as a way
-> > > of easily finding lame error-handling-challenged callers which need to
-> > > be fixed up.  So of course we went and added lots more callers.
-> > > 
-> > > y:/usr/src/linux-2.6.30-rc5> grep -rl GFP_NOFAIL . 
-> > > ./fs/bio-integrity.c
-> 
-> This is no good either, it seems to be in the bio submission path.
-> 
-> It needs a mempool or something.
+Hi
 
-mempool cannot help here, since the allocation is tied to the process
-(and IO) life time.
+ab17c4f02156c4f75d7fa43a5aa2a7f942d47201 is the first bad commit
+(reiserfs: fixup xattr_root caching)
 
-> It has a dead code "fallback" that returns an error, but I suspect that's
-> not really acceptable.
+Kernel panics when init tries to remount rootfs (reiserfs) with
+read-write access.
+Read-only access works fine.
 
-It's not that difficult to handle an error there, it just means that we
-lose any process association with that request. It's mostly making sure
-that all the bits and pieces deal with that correctly, but it should not
-be very hard.
+No more messages on the screen before panic.
 
--- 
-Jens Axboe
-
+Is it endianess related?
