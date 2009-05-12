@@ -1,45 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757117AbZELPnw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757862AbZELPof@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757117AbZELPnw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:43:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZELPnn
+	id S1757862AbZELPof (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:44:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755172AbZELPoZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:43:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34591 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751002AbZELPnm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:43:42 -0400
-Message-ID: <4A09991E.9010903@kernel.org>
-Date: Wed, 13 May 2009 00:43:26 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 12 May 2009 11:44:25 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:53302 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753180AbZELPoY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 11:44:24 -0400
+Date: Tue, 12 May 2009 11:44:24 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "Todd T. Fries" <todd@fries.net>
+cc: Clemens Ladisch <clemens@ladisch.de>, David Fries <david@fries.net>,
+       David Griffith <dgriffi@cs.csubak.edu>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       <linux-kernel@vger.kernel.org>, <linux-usb@vger.kernel.org>
+Subject: Re: bad endpoint address, MOTU FastLane
+In-Reply-To: <20090512152153.GA16714@fries.net>
+Message-ID: <Pine.LNX.4.44L0.0905121140550.17241-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: remap allocator for per-CPU memory
-References: <4A09B23B02000078000007F1@vpn.id2.novell.com>
-In-Reply-To: <4A09B23B02000078000007F1@vpn.id2.novell.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 15:43:30 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> Didn't the addition of this allocator introduce another case that
-> needs special treatment in pageattr.c? Since large pages are used
-> for mapping the allocated memory, but only part of the initially
-> allocated large pages are actually retained, there's now the
-> potential for TLB aliases with different cache attributes for those
-> parts of these pages that get passed back through free_bootmem().
+On Tue, 12 May 2009, Todd T. Fries wrote:
 
-Hmmm.... yes, the large page mapping and the returned part of it would
-alias each other.  What changes should be made for it?  Dunno much
-about how pageattr works.
+> I'm actually the owner of said device, and have actually purchased
+> something that is complaint.  However, not all owners of said device
+> are as able or willing.
+> 
+> The point in my opinion is that it used to work and now after an upgrade
+> (to support a pchdtv.com tuner) the MOTU doesn't, only the software has
+> changed.  Thanks for giving me one more reason to avoid Linux.
 
-Thanks.
+The fact that it worked before was, as I said, a mere coincidence.  You 
+don't seem to appreciate just how badly out-of-spec this device is.
 
--- 
-tejun
+> IMHO the principal of 'be generous in what you accept, strict in what you give..'
+> for specs applies here..
+
+That pinciple doesn't help much if what you're trying to accept is 
+self-contradictory, as it is in this case.
+
+> Worst case, quirk entry, eh?
+
+If the quirk entry helps, feel free to use it.  And don't be surprised 
+if future software upgrades cause similar problems.
+
+Alan Stern
+
