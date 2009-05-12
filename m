@@ -1,83 +1,113 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754408AbZELOef@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755584AbZELOfO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754408AbZELOef (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 10:34:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752724AbZELOeZ
+	id S1755584AbZELOfO (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 10:35:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753056AbZELOez
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 10:34:25 -0400
-Received: from hera.kernel.org ([140.211.167.34]:45341 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752091AbZELOeY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 10:34:24 -0400
-Date: Tue, 12 May 2009 14:33:28 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       a.p.zijlstra@chello.nl, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:core/urgent] lockdep: increase MAX_LOCKDEP_ENTRIES
-Message-ID: <tip-bbcc73ee0c8684b11cce247ad98d6929a0bdfcaf@git.kernel.org>
-Git-Commit-ID: bbcc73ee0c8684b11cce247ad98d6929a0bdfcaf
-X-Mailer: tip-git-log-daemon
+	Tue, 12 May 2009 10:34:55 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:34032 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1752004AbZELOey (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 10:34:54 -0400
+Date: Tue, 12 May 2009 10:34:53 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+cc: Tejun Heo <tj@kernel.org>, FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       <bharrosh@panasas.com>, <axboe@kernel.dk>,
+       <linux-kernel@vger.kernel.org>, <jeff@garzik.org>,
+       <linux-ide@vger.kernel.org>, <linux-scsi@vger.kernel.org>,
+       <bzolnier@gmail.com>, <petkovbb@googlemail.com>,
+       <sshtylyov@ru.mvista.com>, <mike.miller@hp.com>, <Eric.Moore@lsi.com>,
+       <zaitcev@redhat.com>, <Geert.Uytterhoeven@sonycom.com>,
+       <sfr@canb.auug.org.au>, <grant.likely@secretlab.ca>,
+       <paul.clements@steeleye.com>, <tim@cyberelk.net>,
+       <jeremy@xensource.com>, <adrian@mcmen.demon.co.uk>, <oakad@yahoo.com>,
+       <dwmw2@infradead.org>, <schwidefsky@de.ibm.com>,
+       <ballabio_dario@emc.com>, <davem@davemloft.net>,
+       <rusty@rustcorp.com.au>, <Markus.Lidel@shadowconnect.com>,
+       <dgilbert@interlog.com>, <djwong@us.ibm.com>
+Subject: Re: [PATCH 03/11] block: add rq->resid_len
+In-Reply-To: <1242137329.3308.6.camel@mulgrave.int.hansenpartnership.com>
+Message-ID: <Pine.LNX.4.44L0.0905121023220.2824-100000@iolanthe.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 14:33:31 +0000 (UTC)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  bbcc73ee0c8684b11cce247ad98d6929a0bdfcaf
-Gitweb:     http://git.kernel.org/tip/bbcc73ee0c8684b11cce247ad98d6929a0bdfcaf
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Tue, 12 May 2009 16:29:13 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 12 May 2009 16:32:17 +0200
+On Tue, 12 May 2009, James Bottomley wrote:
 
-lockdep: increase MAX_LOCKDEP_ENTRIES
+> On Tue, 2009-05-12 at 15:04 +0900, Tejun Heo wrote:
+> > Hello, James.
+> > 
+> > James Bottomley wrote:
+> > >> * Not well defined.  What does it mean really?  It can't indicate
+> > >>   successful partial transfer.  If the request partially succeeded,
+> > >>   the required behavior is to successfully complete the request
+> > >>   partially with residual count and then fail the latter part when
+> > >>   issued again.  If the failure applies to the whole request but
+> > >>   location information is useful, it should be carried in the sense
+> > >>   data.
+> > > 
+> > > The definition is the amount of data transfer requested less the actual
+> > > that went over the wire ... that's certainly a well defined quantity;
+> > > although, one could argue about what this means in the device.
+> > > Certainly I agree that just because the data was transferred to or from
+> > > the device is no guarantee that the device did anything with it (or
+> > > transferred it accurately).
+> > 
+> > I think it's more like how many bytes are valid where the validity is
+> > defined as the number of meaningful bytes on dev -> host commands and
+> > the number of bytes the device actually consumed on the other
+> > direction.  Please note that this is different from the number of
+> > bytes transferred due to padding or under other error conditions.
+> 
+> For failed commands we don't have that information.  All we know is how
+> many bytes were actually transferred (because the HBA keeps a count), so
+> it's the actual transfer count we use to construct the residual.  No
+> imputation of validity or otherwise.  It just says I transferred this
+> amount, based on the error make of it what you will.
 
-Now that lockdep coverage has increased it has become easier to
-run out of entries:
+It might help to agree on terminology.  For example, in the USB
+mass-storage protocol, "Error" means the command or its result could
+not be transferred at all -- a problem at the link layer.  "Failure"
+means the command was received and possibly executed to some extent,
+but the device returned Check Condition status.  "Success" means the 
+same as failure except that the device returned Okay status rather than 
+Check Condition.
 
-[   21.401387] BUG: MAX_LOCKDEP_ENTRIES too low!
-[   21.402007] turning off the locking correctness validator.
-[   21.402007] Pid: 1555, comm: S99local Not tainted 2.6.30-rc5-tip #2
-[   21.402007] Call Trace:
-[   21.402007]  [<ffffffff81069789>] add_lock_to_list+0x53/0xba
-[   21.402007]  [<ffffffff810eb615>] ? lookup_mnt+0x19/0x53
-[   21.402007]  [<ffffffff8106be14>] check_prev_add+0x14b/0x1c7
-[   21.402007]  [<ffffffff8106c304>] validate_chain+0x474/0x52a
-[   21.402007]  [<ffffffff8106c6fc>] __lock_acquire+0x342/0x3c7
-[   21.402007]  [<ffffffff8106c842>] lock_acquire+0xc1/0xe5
-[   21.402007]  [<ffffffff810eb615>] ? lookup_mnt+0x19/0x53
-[   21.402007]  [<ffffffff8153aedc>] _spin_lock+0x31/0x66
+So for an error, the residue is meaningless (although you could say
+that it was equal to the full transfer length if you want).  For a
+failure or a success it is meaningful, and it need not be the same as
+the amount of data transferred.
 
-Double the size - as we've done in the past.
+Incidentally, as long as we're trying to be precise about terminology,
+the correct term is "residue", not "residual".  In fact, the last time
+I checked a copy of the SCSI spec the word "residual" did not occur
+anywhere in it.
 
-[ Impact: allow lockdep to cover more locks ]
+> > >> * What about corner values?  What does 0 or full resid count on
+> > >>   failure mean?
+> > > 
+> > > 0 means everything transferred, full residual means nothing did.
+> > 
+> > Yeap, I was wondering about the combination 0 resid count + failure.
+> > What would it mean?  All bytes are valid but the command failed?
+> 
+> Well, there are certain SCSI conditions called deferred errors and the
+> like where we return Check Condition but everything's OK, redisual count
+> should be zero, same goes for recovered errors ... there are actually
+> lots of things we can get back as an "error" which means I'm warning you
+> of something, but the transfer was OK.  Likewise we get unit attentions
+> (essentialy AENs) which mean I'm telling you something before you start,
+> so please try again.  Here residual would be the full transfer.   Also,
+> we have the nasty USB case where no error return but an actual residual
+> tells you something really went wrong.
 
-Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+These should all be described either as failures or as successes with
+a partial transfer, not as errors.
 
+Alan Stern
 
----
- kernel/lockdep_internals.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/kernel/lockdep_internals.h b/kernel/lockdep_internals.h
-index a2cc7e9..ce523ac 100644
---- a/kernel/lockdep_internals.h
-+++ b/kernel/lockdep_internals.h
-@@ -54,7 +54,7 @@ enum {
-  * table (if it's not there yet), and we check it for lock order
-  * conflicts and deadlocks.
-  */
--#define MAX_LOCKDEP_ENTRIES	8192UL
-+#define MAX_LOCKDEP_ENTRIES	16384UL
- 
- #define MAX_LOCKDEP_CHAINS_BITS	14
- #define MAX_LOCKDEP_CHAINS	(1UL << MAX_LOCKDEP_CHAINS_BITS)
