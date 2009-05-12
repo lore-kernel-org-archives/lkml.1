@@ -1,294 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752925AbZELFAs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752921AbZELFK2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752925AbZELFAs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 01:00:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZELFAh
+	id S1752921AbZELFK2 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 01:10:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751362AbZELFKH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 01:00:37 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59726 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751188AbZELFAg (ORCPT
+	Tue, 12 May 2009 01:10:07 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:36061 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832AbZELFKF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 01:00:36 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>
-Subject: Re: whole system lock-up on low memory
-Cc: kosaki.motohiro@jp.fujitsu.com,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A076A1F.4080300@datenparkplatz.de>
-References: <4A076A1F.4080300@datenparkplatz.de>
-Message-Id: <20090512135800.D62F.A69D9226@jp.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+	Tue, 12 May 2009 01:10:05 -0400
+Date: Tue, 12 May 2009 14:06:48 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: [PATCH 4/3] memcg: call uncharge_swapcache outside of tree_lock
+ (Re: [PATCH 0/3] fix stale swap cache account leak  in memcg v7)
+Message-Id: <20090512140648.0974cb10.nishimura@mxp.nes.nec.co.jp>
+In-Reply-To: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Tue, 12 May 2009 14:00:33 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi,
-> 
-> 
-> vanilla linux 2.6.29.3, AMD64, tested on openSUSE 11.1 and Kubuntu 9.04.
-> 
-> 
-> I observe the following behaviour:
-> 
-> When any user application (non-kernel, non-root) consumes all the
-> available system memory, the system freezes completely instead of any
-> application being killed by the oom-killer.
-> 
-> The mouse pointer stalls, and there is a seemingly endless loop of
-> hard-disc access, even when no swap space on any harddisc is activated.
-> 
-> IMO, this is severe, because any application can practically crash the
-> system (e.g. in case of a memory-leak), causing data loss in case of
-> unsaved data.
-> 
-> 
-> To reproduce this, I've attached a small C++ utility
-> (compiles with g++ memory_overcommit.cc -o memory_overcommit.bin) which
-> allocates chunks of memory of user defined size.
-> 
-> On the Ubuntu system, the system freeze can be observed with swap
-> enabled on a cryptographic swap partition (dm-crypt; /etc/crypttab).
-> With openSUSE the lock-up also occurs with deactivated swap.
-> (swapoff -a).
-> 
-> Tested from a KDE terminal window as regular urser, the
-> steps to reproduce are:
-> 
-> * use cryptographic swap partition or disable swap
->   (maybe also reproducible with normal swap; but apparently not on Suse)
-> 
-> * compile and invoke the attached code:
->   ./memory_overcommit.bin
-> 
-> * enter a number (in MiB) of memory that is slightly smaller than the
-> available memory and press "enter" key once.
-> 
-> * enter a smaller number (minimum 1 MiB) and confirm again, do the same
-> again,..., successively approaching the limit of available memory with
-> smaller chunks.
-> 
-> * finally, when most of the memory/buffers/cache are used-up, the system
-> becomes unresponsive and constant, heavy harddisk-access commences.
-
-umm, I don't reproduce this.
-oom-killer kill the reproduce prgram ASAP.
-
-system don't enter unresponsible state.
-
-
-my test environment:
-
-kernel: 2.6.30-rc4-mmotm
-CPU: ia64 x 8
-MEM: 8GB
-
-
-
-> 
-> Sometimes, killing the X-server or shutting down via hotkeys works after
-> several minutes of waiting, but this is not consistent.
-> 
-> 
-> I've reported this issue on the Ubuntu bug tracker before:
-> https://bugs.launchpad.net/ubuntu/+bug/283420
-> 
-> but as stated above, I also had the problem on another system.
-> 
-> 
-> I'd be glad if I could help if you need further information.
-> 
-> 
-> Attachement: one file, memory_overcommit.cc
-> (also here: http://datenparkplatz.de/DiesUndDas/memory_overcommit.cc)
-> ---
-> #include <cassert>
-> #include <cerrno>
-> #include <clocale>
-> #include <cstdio>
-> #include <cstdlib>
-> #include <cstring>
-> #include <limits>
-> 
-> using std::exit;
-> using std::numeric_limits;
-> using std::printf;
-> using std::size_t;
-> using std::strlen;
-> 
-> void read_answer(char* buffer, size_t buffer_size)
-> {
->         assert(buffer_size > 1);
-> 
->         char const* ret = std::fgets(buffer, buffer_size, stdin);
->         if(ret == 0)
->         {
->                 printf("\nSorry, there was an error while reading the
-> answer. This program will now terminate.\n");
-> 
->                 exit(EXIT_FAILURE);
-> 
->         }
-> 
->         else if(strlen(buffer) == buffer_size - 1 && buffer[buffer_size
-> - 2] != '\n')
->         {
-> 
->                 printf("Sorry, you answer is too long (possibly out of
-> range). This program will now terminate.\n");
-> 
->                 exit(EXIT_FAILURE);
-> 
->         }
-> 
-> }
-> 
-> 
-> size_t determine_size(char const* s)
-> {
->         assert(strlen(s) > 0);
-> 
->         char* endptr = 0;
->         errno = 0;
->         unsigned long v = std::strtoul(s, &endptr, 10);
->         if(strlen(s) == 1 || endptr != s + strlen(s) - 1)
->         {
->                 printf("\nSorry, your answer does not appear to be
-> valid. This program will now terminate.\n");
-> 
->                 exit(EXIT_FAILURE);
-> 
->         }
-> 
->         else if((v == numeric_limits<unsigned long>::max() && errno ==
-> ERANGE) || v == 0
->                 || numeric_limits<unsigned long>::max() / (1024 * 1024)
-> < v)
->         {
-> 
->                 printf("\nSorry, that value is out of range. This
-> program will now terminate.\n");
->                 exit(EXIT_FAILURE);
-> 
->         }
-> 
->         v *= 1024 * 1024;
-> 
-> 
->         assert(numeric_limits<size_t>::is_specialized);
->         if(v > numeric_limits<size_t>::max() )
->         {
->                 printf("\nSorry, that value is out of range. This
-> program will now terminate.\n");
->                 exit(EXIT_FAILURE);
-> 
->         }
-> 
-> 
->         return v;
-> }
-> 
-> bool inquire_repeat(size_t& v)
-> {
->         printf("\nShould a new allocation be made? You can enter:\n"
->                         "==> \"No\" to quit,\n"
->                         "==> Any Number of MiB to change the chunk size
-> and continue, or\n"
->                         "==> Hit return to continue with last chunk
-> size.\n\nYour answer: ");
-> 
->         char answer[20];
->         read_answer(answer, sizeof(answer) );
->         if(std::strcmp(answer, "\n") == 0) {
->                 return true;
->         }
->         else if(std::strcmp(answer, "No\n") == 0) {
->                 return false;
->         }
-> 
->         v = determine_size(answer);
->         return true;
-> }
-> 
-> 
-> int main() {
->         #ifdef _POSIX_C_SOURCE
->         std::setlocale(LC_ALL, ""); // Prepare thousands grouping in output.
->         #endif
-> 
->         printf("\n\nThis program allows to repeatedly allocate chunks of
-> memory of user-specified size. "
->                "\nAfter each allocation the user can choose to repeat or
-> to quit the program.\n\nFirst, please enter now "
-> 
->                "the amount of memory in MiB (1024 * 1024 bytes) \nto
-> allocate in each round: ");
->         char answer[20];
-> 
->         read_answer(answer, sizeof(answer) );
-> 
-> 
->         size_t alloc_size = determine_size(answer);
-> 
->         size_t total = 0;
->         do {
->                 printf("\n   >>> Starting to allocate chunk...\n");
->                 std::fflush(stdout);
->                 void* p = std::malloc(alloc_size);
->                 if(!p) {
->                         printf("\n   > The last memory allocation failed."
->                                "\n   > This means the system reported
-> the out-of-memory condition orderly."
->                                "\nThis program will now terminate.\n");
-> 
->                         exit(0);
-> 
->                 }
-> 
->                 std::memset(p, 0, alloc_size);
-> 
->                 printf("   >>> A chunk was just allocated! <<<\n");
->                 if(numeric_limits<size_t>::max() - total >= alloc_size)
->                 {
->                         total += alloc_size;
-> 
->                         #ifdef _POSIX_C_SOURCE
->                         char const* fmt_string = "   The total number of
-> bytes allocated is now %'zu.\n";
->                         #else
->                         char const* fmt_string = "   The total number of
-> bytes allocated is now %zu.\n";
->                         #endif
-> 
->                         printf(fmt_string, total);
->                 }
->                 else {
->                         #ifdef _POSIX_C_SOURCE
->                         char const* fmt_string = "   More than %'zu
-> bytes have been allocated in total by now.\n";
->                         #else
->                         char const* fmt_string = "   More than %zu bytes
-> have been allocated in total by now.\n";
->                         #endif
-> 
->                         printf(fmt_string, total);
->                         total = numeric_limits<size_t>::max();
->                 }
->         } while(inquire_repeat(alloc_size) );
-> 
->         printf("\nQuit was requested. This program will now terminate.\n");
-> }
-> 
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+On Tue, 12 May 2009 10:44:01 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> I hope this version gets acks..
+> ==
+> As Nishimura reported, there is a race at handling swap cache.
+> 
+> Typical cases are following (from Nishimura's mail)
+> 
+> 
+> == Type-1 ==
+>   If some pages of processA has been swapped out, it calls free_swap_and_cache().
+>   And if at the same time, processB is calling read_swap_cache_async() about
+>   a swap entry *that is used by processA*, a race like below can happen.
+> 
+>             processA                   |           processB
+>   -------------------------------------+-------------------------------------
+>     (free_swap_and_cache())            |  (read_swap_cache_async())
+>                                        |    swap_duplicate()
+>                                        |    __set_page_locked()
+>                                        |    add_to_swap_cache()
+>       swap_entry_free() == 0           |
+>       find_get_page() -> found         |
+>       try_lock_page() -> fail & return |
+>                                        |    lru_cache_add_anon()
+>                                        |      doesn't link this page to memcg's
+>                                        |      LRU, because of !PageCgroupUsed.
+> 
+>   This type of leak can be avoided by setting /proc/sys/vm/page-cluster to 0.
+> 
+> 
+> == Type-2 ==
+>     Assume processA is exiting and pte points to a page(!PageSwapCache).
+>     And processB is trying reclaim the page.
+> 
+>               processA                   |           processB
+>     -------------------------------------+-------------------------------------
+>       (page_remove_rmap())               |  (shrink_page_list())
+>          mem_cgroup_uncharge_page()      |
+>             ->uncharged because it's not |
+>               PageSwapCache yet.         |
+>               So, both mem/memsw.usage   |
+>               are decremented.           |
+>                                          |    add_to_swap() -> added to swap cache.
+> 
+>     If this page goes thorough without being freed for some reason, this page
+>     doesn't goes back to memcg's LRU because of !PageCgroupUsed.
+> 
+> 
+> Considering Type-1, it's better to avoid swapin-readahead when memcg is used.
+> swapin-readahead just read swp_entries which are near to requested entry. So,
+> pages not to be used can be on memory (on global LRU). When memcg is used,
+> this is not good behavior anyway.
+> 
+> Considering Type-2, the page should be freed from SwapCache right after WriteBack.
+> Free swapped out pages as soon as possible is a good nature to memcg, anyway.
+> 
+> The patch set includes followng
+>  [1/3] add mem_cgroup_is_activated() function. which tell us memcg is _really_ used.
+>  [2/3] fix swap cache handling race by avoidng readahead.
+>  [3/3] fix swap cache handling race by check swapcount again.
+> 
+> Result is good under my test.
+> 
+These patches seem to work well on my side too.
 
 
+BTW, we need one more fix which I found in a long term test last week.
+After this patch, it survived all through the weekend in my test.
 
+I don't know why we've never hit this bug so far.
+I think I hit it because my memcg_free_unused_swapcache() patch increases
+the possibility of calling mem_cgroup_uncharge_swapcache().
+
+Thanks,
+Daisuke Nishimura.
+===
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+
+memcg: call mem_cgroup_uncharge_swapcache() outside of tree_lock
+
+It's rare, but I hit a spinlock lockup.
+
+    BUG: spinlock lockup on CPU#2, page01/24205, ffffffff806faf18
+    Pid: 24205, comm: page01 Not tainted 2.6.30-rc4-5845621d #1
+    Call Trace:
+     <IRQ>  [<ffffffff80294f93>] ? test_clear_page_writeback+0x4d/0xff
+     [<ffffffff803752bc>] ? _raw_spin_lock+0xfb/0x122
+     [<ffffffff804ee9ba>] ? _spin_lock_irqsave+0x59/0x70
+     [<ffffffff80294f93>] ? test_clear_page_writeback+0x4d/0xff
+     [<ffffffff8029649c>] ? rotate_reclaimable_page+0x87/0x8e
+     [<ffffffff80294f93>] ? test_clear_page_writeback+0x4d/0xff
+     [<ffffffff8028d4ed>] ? end_page_writeback+0x1c/0x3d
+     [<ffffffff802ac4c6>] ? end_swap_bio_write+0x57/0x65
+     [<ffffffff803516d9>] ? __end_that_request_first+0x1f3/0x2e4
+     [<ffffffff803515f2>] ? __end_that_request_first+0x10c/0x2e4
+     [<ffffffff803517e5>] ? end_that_request_data+0x1b/0x4c
+     [<ffffffff8035225a>] ? blk_end_io+0x1c/0x76
+     [<ffffffffa0060702>] ? scsi_io_completion+0x1dc/0x467 [scsi_mod]
+     [<ffffffff80356394>] ? blk_done_softirq+0x66/0x76
+     [<ffffffff8024002e>] ? __do_softirq+0xae/0x182
+     [<ffffffff8020cb3c>] ? call_softirq+0x1c/0x2a
+     [<ffffffff8020de9a>] ? do_softirq+0x31/0x83
+     [<ffffffff8020d57b>] ? do_IRQ+0xa9/0xbf
+     [<ffffffff8020c393>] ? ret_from_intr+0x0/0xf
+     <EOI>  [<ffffffff8026fd56>] ? res_counter_uncharge+0x67/0x70
+     [<ffffffff802bf04a>] ? __mem_cgroup_uncharge_common+0xbd/0x158
+     [<ffffffff802a0f55>] ? unmap_vmas+0x7ef/0x829
+     [<ffffffff802a8a3a>] ? page_remove_rmap+0x1b/0x36
+     [<ffffffff802a0c11>] ? unmap_vmas+0x4ab/0x829
+     [<ffffffff802a5243>] ? exit_mmap+0xa7/0x11c
+     [<ffffffff80239009>] ? mmput+0x41/0x9f
+     [<ffffffff8023cf7b>] ? exit_mm+0x101/0x10c
+     [<ffffffff8023e481>] ? do_exit+0x1a4/0x61e
+     [<ffffffff80259391>] ? trace_hardirqs_on_caller+0x11d/0x148
+     [<ffffffff8023e96e>] ? do_group_exit+0x73/0xa5
+     [<ffffffff8023e9b2>] ? sys_exit_group+0x12/0x16
+     [<ffffffff8020b96b>] ? system_call_fastpath+0x16/0x1b
+
+This is caused when:
+
+CPU1: __mem_cgroup_uncharge_common(), which is holding page_cgroup lock,
+      is interuppted and end_swap_bio_write(), which tries to hold
+      swapper_space.tree_lock, is called in the interrupt context.
+CPU2: mem_cgroup_uncharge_swapcache(), which is called under swapper_space.tree_lock,
+      is spinning at lock_page_cgroup() in __mem_cgroup_uncharge_common().
+
+IIUC, there is no need that mem_cgroup_uncharge_swapcache() should be called under
+swapper_space.tree.lock, so move it outside the tree_lock.
+
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+---
+ include/linux/swap.h |    5 +++++
+ mm/memcontrol.c      |    2 +-
+ mm/swap_state.c      |    4 +---
+ mm/vmscan.c          |    1 +
+ 4 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index caf0767..6ea541d 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -431,6 +431,11 @@ static inline swp_entry_t get_swap_page(void)
+ #define has_swap_token(x) 0
+ #define disable_swap_token() do { } while(0)
+ 
++static inline void
++mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
++{
++}
++
+ #endif /* CONFIG_SWAP */
+ #endif /* __KERNEL__*/
+ #endif /* _LINUX_SWAP_H */
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 0c9c1ad..379f200 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1489,7 +1489,7 @@ void mem_cgroup_uncharge_cache_page(struct page *page)
+ }
+ 
+ /*
+- * called from __delete_from_swap_cache() and drop "page" account.
++ * called after __delete_from_swap_cache() and drop "page" account.
+  * memcg information is recorded to swap_cgroup of "ent"
+  */
+ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index e389ef2..7624c89 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -109,8 +109,6 @@ int add_to_swap_cache(struct page *page, swp_entry_t entry, gfp_t gfp_mask)
+  */
+ void __delete_from_swap_cache(struct page *page)
+ {
+-	swp_entry_t ent = {.val = page_private(page)};
+-
+ 	VM_BUG_ON(!PageLocked(page));
+ 	VM_BUG_ON(!PageSwapCache(page));
+ 	VM_BUG_ON(PageWriteback(page));
+@@ -121,7 +119,6 @@ void __delete_from_swap_cache(struct page *page)
+ 	total_swapcache_pages--;
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
+ 	INC_CACHE_INFO(del_total);
+-	mem_cgroup_uncharge_swapcache(page, ent);
+ }
+ 
+ /**
+@@ -191,6 +188,7 @@ void delete_from_swap_cache(struct page *page)
+ 	__delete_from_swap_cache(page);
+ 	spin_unlock_irq(&swapper_space.tree_lock);
+ 
++	mem_cgroup_uncharge_swapcache(page, entry);
+ 	swap_free(entry);
+ 	page_cache_release(page);
+ }
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 337be66..e674cd1 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -470,6 +470,7 @@ static int __remove_mapping(struct address_space *mapping, struct page *page)
+ 		swp_entry_t swap = { .val = page_private(page) };
+ 		__delete_from_swap_cache(page);
+ 		spin_unlock_irq(&mapping->tree_lock);
++		mem_cgroup_uncharge_swapcache(page, swap);
+ 		swap_free(swap);
+ 	} else {
+ 		__remove_from_page_cache(page);
