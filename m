@@ -1,51 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753957AbZELRBF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbZELRDF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753957AbZELRBF (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 13:01:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754945AbZELRAk
+	id S1754932AbZELRDF (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 13:03:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750825AbZELRCw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 13:00:40 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:50550 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754295AbZELRAj (ORCPT
+	Tue, 12 May 2009 13:02:52 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:52695 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751136AbZELRCv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 13:00:39 -0400
-Date: Tue, 12 May 2009 16:59:40 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Yinghai Lu <yinghai@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 2/3] x86: add numa_move_cpus_to_node
-In-Reply-To: <4A089E53.8010106@kernel.org>
-Message-ID: <alpine.DEB.1.10.0905121658140.14226@qirst.com>
-References: <4A05269D.8000701@kernel.org> <4A052721.4010201@kernel.org> <alpine.DEB.1.10.0905112126410.28512@qirst.com> <4A089E53.8010106@kernel.org>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 12 May 2009 13:02:51 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=iBytqgwUmEc0uMLxxq1xHwujCjbiXleGUGAl+SBPKxEzPyuIgWSwXZgkV9Lz72hklw
+         U5bZrIIQIEnAeIShHh6clKCasMtM50ToNLl4N6c9FnYfLWQBq6yIa/xHnF+0R5JldVoI
+         sS7s3V4g8GlcTovBGBfHiw1KwdvHI4C+0MB2w=
+Date: Tue, 12 May 2009 21:02:46 +0400
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Yinghai Lu <yinghai@kernel.org>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       eswierk@aristanetworks.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:irq/numa] x86: read apic ID in the !acpi_lapic case
+Message-ID: <20090512170246.GB12820@lenovo>
+References: <49FC85A9.2070702@kernel.org> <tip-4797f6b021a3fa399942245d07a1feb30df81bb8@git.kernel.org> <20090512112205.GA12108@elte.hu> <20090512145128.GA10220@lenovo> <20090512145808.GA20587@elte.hu> <4A099013.6040708@kernel.org> <20090512150631.GA32067@elte.hu> <20090512164617.GA21673@elte.hu>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090512164617.GA21673@elte.hu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 11 May 2009, Yinghai Lu wrote:
+[Ingo Molnar - Tue, May 12, 2009 at 06:46:17PM +0200]
+| 
+| got this on a testbox:
+| 
+| [    0.113333] WARNING: at arch/x86/kernel/apic/apic.c:253 warn_slowpath_null+0x28/0x50()
+| 
+| 	Ingo
+|
 
-> > This going to be fun for the allocators that have put their queues on the
-> > respective nodes. How are the various OS structures that were allocated on
-> > the node that is downed / upped relocated?
->
-> NODE_DATA is new allocated on that node is backed on line for the first time.
->
-> per_cpu will still stay with old near node. because per_cpu is somehow preallocated for all possible cpu.
+It's expected (unfortunately). If we have SMP compiled kernel
+we still rely on apic_read heavily. Since for fake'ed apic
+we just return 0 for any reading I suspect we could just drop
+WARN_ON_ONCE for native_apic_read_dummy. Yinghai?
 
-Slab allocators and page allocator use neither NODE_DATA nor percpu
-
-It may be best to bring the processors down and up again if the node
-assignment changes. That will cause the allocators to reallocate the per
-cpu resources on the right node.
-
+(well, actually we should clean up callees but it would require
+ some effort)
+ 
+	-- Cyrill
