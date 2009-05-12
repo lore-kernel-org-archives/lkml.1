@@ -1,83 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758359AbZELLpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759117AbZELLq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758359AbZELLpX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 07:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751270AbZELLpJ
+	id S1759117AbZELLq6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 07:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754241AbZELLqt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 07:45:09 -0400
-Received: from mga14.intel.com ([143.182.124.37]:17904 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751845AbZELLpI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 07:45:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,182,1241420400"; 
-   d="scan'208";a="141847977"
-Date: Tue, 12 May 2009 19:44:56 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm] vmscan: report vm_flags in page_referenced()
-Message-ID: <20090512114456.GB5926@localhost>
-References: <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org> <20090507134410.0618b308.akpm@linux-foundation.org> <20090508081608.GA25117@localhost> <20090508125859.210a2a25.akpm@linux-foundation.org> <20090512025153.GB7518@localhost> <1242109389.11251.310.camel@twins> <20090512154413.ca39795e.minchan.kim@barrios-desktop>
+	Tue, 12 May 2009 07:46:49 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:63966 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751270AbZELLqs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 07:46:48 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: monstr@monstr.eu
+Subject: Re: [PATCH 11/12] microblaze: dont include asm/mmu.h in hw_exception_handler
+Date: Tue, 12 May 2009 13:46:43 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au
+References: <20090511232019.927138561@arndb.de> <200905121313.35501.arnd@arndb.de> <4A095C6B.9030303@monstr.eu>
+In-Reply-To: <4A095C6B.9030303@monstr.eu>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090512154413.ca39795e.minchan.kim@barrios-desktop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905121346.43859.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX18Ssmmarc96nUR8GpBA1vMk3sGnIy9+VcfEsvF
+ BKUk+r5tYNNYoDiyxCuo7kHlZI9W/qjbD7uwfElzos6QbXRqB1
+ 3oN0xVwR0cvjGgI3lm0Qg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 02:44:13PM +0800, Minchan Kim wrote:
-> On Tue, 12 May 2009 08:23:09 +0200
-> Peter Zijlstra <peterz@infradead.org> wrote:
-> 
-> > On Tue, 2009-05-12 at 10:51 +0800, Wu Fengguang wrote:
-> > > @@ -406,6 +408,7 @@ static int page_referenced_anon(struct p
-> > >                 if (mem_cont && !mm_match_cgroup(vma->vm_mm, mem_cont))
-> > >                         continue;
-> > >                 referenced += page_referenced_one(page, vma, &mapcount);
-> > > +               *vm_flags |= vma->vm_flags;
-> > >                 if (!mapcount)
-> > >                         break;
-> > >         }
-> > 
-> > Shouldn't that read:
-> > 
-> >   if (page_referenced_on(page, vma, &mapcount)) {
-> >     referenced++;
-> >     *vm_flags |= vma->vm_flags;
-> >   }
-> > 
-> > So that we only add the vma-flags of those vmas that actually have a
-> > young bit set?
-> > 
-> > In which case it'd be more at home in page_referenced_one():
-> > 
-> > @@ -381,6 +381,8 @@ out_unmap:
-> >  	(*mapcount)--;
-> >  	pte_unmap_unlock(pte, ptl);
-> >  out:
-> > +	if (referenced)
-> > +		*vm_flags |= vma->vm_flags;
-> >  	return referenced;
-> >  }
-> 
-> Good. I am ACK for peter's suggestion.
-> It can prevent setting vm_flag for worng vma which don't have the page.
+On Tuesday 12 May 2009, Michal Simek wrote:
+> I have no problem to remove mmu.h from it but I have to move that one TLB macro to
+> different sensible include file. It is related with mmu that's why I think someone in past
+> add it to this file. The main point is which file. Any tip?
 
-Good suggestions!  I realized now it is a flaky idea to not do that in
-page_referenced_one(), hehe.
+Since the hardware shares a number of properties with ppc440, I guess you
+are right that it makes sense to keep the kernel implementation similar to
+arch/powerpc/include/asm/mmu-44x.h. Please keep it the way you have it
+now, I'll just add #ifndef __ASSEMBLY__ to the asm-generic file.
 
-Thanks,
-Fengguang
+	Arnd <><
