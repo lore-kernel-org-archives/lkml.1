@@ -1,80 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760432AbZELJdg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755828AbZELJiq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760432AbZELJdg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 05:33:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760175AbZELJcx
+	id S1755828AbZELJiq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 05:38:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754028AbZELJig
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 05:32:53 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60107 "EHLO hera.kernel.org"
+	Tue, 12 May 2009 05:38:36 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:37327 "EHLO gir.skynet.ie"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760229AbZELJcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 05:32:52 -0400
-Date: Tue, 12 May 2009 09:32:21 GMT
-From: tip-bot for Shaohua Li <shaohua.li@intel.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       sheng.yang@intel.com, shaohua.li@intel.com, tglx@linutronix.de,
-       mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       sheng.yang@intel.com, tglx@linutronix.de, shaohua.li@intel.com,
-       mingo@elte.hu
-In-Reply-To: <1242117600.22431.0.camel@sli10-desk.sh.intel.com>
-References: <1242117600.22431.0.camel@sli10-desk.sh.intel.com>
-Subject: [tip:x86/mm] x86: make sparse mem work in non-NUMA mode
-Message-ID: <tip-ed077b58f6146684069975122b1728a9d248a501@git.kernel.org>
-Git-Commit-ID: ed077b58f6146684069975122b1728a9d248a501
-X-Mailer: tip-git-log-daemon
+	id S1752208AbZELJif (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 05:38:35 -0400
+Date: Tue, 12 May 2009 10:38:32 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: David Rientjes <rientjes@google.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Peter Ziljstra <a.p.ziljstra@chello.nl>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       Dave Hansen <dave@linux.vnet.ibm.com>, San Mehat <san@android.com>,
+       Arve Hj?nnev?g <arve@android.com>, linux-kernel@vger.kernel.org
+Subject: Re: [patch 05/11 -mmotm] oom: fix possible oom_dump_tasks NULL
+	pointer
+Message-ID: <20090512093832.GC25923@csn.ul.ie>
+References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101501050.18804@chino.kir.corp.google.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 09:32:23 +0000 (UTC)
+In-Reply-To: <alpine.DEB.2.00.0905101501050.18804@chino.kir.corp.google.com>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ed077b58f6146684069975122b1728a9d248a501
-Gitweb:     http://git.kernel.org/tip/ed077b58f6146684069975122b1728a9d248a501
-Author:     Shaohua Li <shaohua.li@intel.com>
-AuthorDate: Tue, 12 May 2009 16:40:00 +0800
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 12 May 2009 11:26:35 +0200
+On Sun, May 10, 2009 at 03:07:16PM -0700, David Rientjes wrote:
+> When /proc/sys/vm/oom_dump_tasks is enabled, it is possible to get a NULL
+> pointer for tasks that have detached mm's since task_lock() is not held
+> during the tasklist scan.
+> 
+> Acked-by: Nick Piggin <npiggin@suse.de>
+> Signed-off-by: David Rientjes <rientjes@google.com>
 
-x86: make sparse mem work in non-NUMA mode
+Minor nit. The Acked-by should come after the Signed-off-by.
 
-With sparse memory, holes should not be marked present for memmap.
-This patch makes sure sparsemem really works on SMP mode (!NUMA).
+The window during which p->mm was a valid point and become an invalid
+one is *extremely* small but sure, it's there.
 
-[ Impact: use less memory to map fragmented RAM, avoid boot-OOM/crash ]
+Acked-by: Mel Gorman <mel@csn.ul.ie>
 
-Signed-off-by: Shaohua Li <shaohua.li@intel.com>
-Signed-off-by: Sheng Yang <sheng.yang@intel.com>
-LKML-Reference: <1242117600.22431.0.camel@sli10-desk.sh.intel.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+I would have preferred if the core VM patches were in a different set to
+the driver patches. Maybe there is an interdependency later but this patch
+at least looks standalone.
 
+> ---
+>  mm/oom_kill.c |   24 +++++++++++++++---------
+>  1 files changed, 15 insertions(+), 9 deletions(-)
+> 
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -284,22 +284,28 @@ static void dump_tasks(const struct mem_cgroup *mem)
+>  	printk(KERN_INFO "[ pid ]   uid  tgid total_vm      rss cpu oom_adj "
+>  	       "name\n");
+>  	do_each_thread(g, p) {
+> -		/*
+> -		 * total_vm and rss sizes do not exist for tasks with a
+> -		 * detached mm so there's no need to report them.
+> -		 */
+> -		if (!p->mm)
+> -			continue;
+> +		struct mm_struct *mm;
+> +
+>  		if (mem && !task_in_mem_cgroup(p, mem))
+>  			continue;
+>  		if (!thread_group_leader(p))
+>  			continue;
+>  
+>  		task_lock(p);
+> +		mm = p->mm;
+> +		if (!mm) {
+> +			/*
+> +			 * total_vm and rss sizes do not exist for tasks with no
+> +			 * mm so there's no need to report them; they can't be
+> +			 * oom killed anyway.
+> +			 */
+> +			task_unlock(p);
+> +			continue;
+> +		}
+>  		printk(KERN_INFO "[%5d] %5d %5d %8lu %8lu %3d     %3d %s\n",
+> -		       p->pid, __task_cred(p)->uid, p->tgid,
+> -		       p->mm->total_vm, get_mm_rss(p->mm), (int)task_cpu(p),
+> -		       p->oomkilladj, p->comm);
+> +		       p->pid, __task_cred(p)->uid, p->tgid, mm->total_vm,
+> +		       get_mm_rss(mm), (int)task_cpu(p), p->oomkilladj,
+> +		       p->comm);
+>  		task_unlock(p);
+>  	} while_each_thread(g, p);
+>  }
+> 
 
----
- arch/x86/mm/init_32.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index fef1d90..949708d 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -706,15 +706,15 @@ void __init initmem_init(unsigned long start_pfn,
- 	highstart_pfn = highend_pfn = max_pfn;
- 	if (max_pfn > max_low_pfn)
- 		highstart_pfn = max_low_pfn;
--	memory_present(0, 0, highend_pfn);
- 	e820_register_active_regions(0, 0, highend_pfn);
-+	sparse_memory_present_with_active_regions(0);
- 	printk(KERN_NOTICE "%ldMB HIGHMEM available.\n",
- 		pages_to_mb(highend_pfn - highstart_pfn));
- 	num_physpages = highend_pfn;
- 	high_memory = (void *) __va(highstart_pfn * PAGE_SIZE - 1) + 1;
- #else
--	memory_present(0, 0, max_low_pfn);
- 	e820_register_active_regions(0, 0, max_low_pfn);
-+	sparse_memory_present_with_active_regions(0);
- 	num_physpages = max_low_pfn;
- 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE - 1) + 1;
- #endif
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
