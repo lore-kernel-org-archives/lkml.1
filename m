@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758860AbZEMDMj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbZEMDM6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758860AbZEMDMj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 23:12:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755272AbZEMDGT
+	id S1758856AbZEMDM6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 23:12:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbZEMDGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 23:06:19 -0400
-Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:36223
+	Tue, 12 May 2009 23:06:20 -0400
+Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:36222
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756004AbZEMDGI (ORCPT
+	with ESMTP id S1756006AbZEMDGJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 23:06:08 -0400
+	Tue, 12 May 2009 23:06:09 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
@@ -17,9 +17,9 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Jeremy Fitzhardinge <jeremy@goop.org>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 11/16] xen: allow enable use of VGA console on dom0
-Date: Tue, 12 May 2009 14:28:33 -0700
-Message-Id: <1242163718-2934-12-git-send-email-jeremy@goop.org>
+Subject: [PATCH 12/16] xen/dom0: add XEN_DOM0 config option
+Date: Tue, 12 May 2009 14:28:34 -0700
+Message-Id: <1242163718-2934-13-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1242163718-2934-1-git-send-email-jeremy@goop.org>
 References: <1242163718-2934-1-git-send-email-jeremy@goop.org>
@@ -27,200 +27,69 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Get the information about the VGA console hardware from Xen, and put
-it into the form the bootloader normally generates, so that the rest
-of the kernel can deal with VGA as usual.
+Allow dom0 to be configured.  Requires more patches to do something useful.
+Also announce whether we're running dom0 as part of xen boot message.
 
-[ Impact: make VGA console work in dom0 ]
+[ Impact: add Kconfig to enable XEN_DOM0 ]
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/Makefile       |    3 +-
- arch/x86/xen/enlighten.c    |   10 ++++++
- arch/x86/xen/vga.c          |   67 +++++++++++++++++++++++++++++++++++++++++++
- arch/x86/xen/xen-ops.h      |   11 +++++++
- include/xen/interface/xen.h |   39 +++++++++++++++++++++++++
- 5 files changed, 129 insertions(+), 1 deletions(-)
- create mode 100644 arch/x86/xen/vga.c
+ arch/x86/xen/Kconfig     |   26 ++++++++++++++++++++++++++
+ arch/x86/xen/enlighten.c |    6 ++++--
+ 2 files changed, 30 insertions(+), 2 deletions(-)
 
-diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
-index 3b767d0..c4cda96 100644
---- a/arch/x86/xen/Makefile
-+++ b/arch/x86/xen/Makefile
-@@ -10,4 +10,5 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
- 			grant-table.o suspend.o
- 
- obj-$(CONFIG_SMP)		+= smp.o spinlock.o
--obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
-\ No newline at end of file
-+obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
-+obj-$(CONFIG_XEN_DOM0)		+= vga.o
+diff --git a/arch/x86/xen/Kconfig b/arch/x86/xen/Kconfig
+index b83e119..fe69286 100644
+--- a/arch/x86/xen/Kconfig
++++ b/arch/x86/xen/Kconfig
+@@ -36,3 +36,29 @@ config XEN_DEBUG_FS
+ 	help
+ 	  Enable statistics output and various tuning options in debugfs.
+ 	  Enabling this option may incur a significant performance overhead.
++
++config XEN_DOM0
++	bool "Enable Xen privileged domain support"
++	depends on XEN && X86_IO_APIC && ACPI
++	help
++	  The Xen hypervisor requires a privileged domain ("dom0") to
++	  actually manage the machine, provide devices drivers, etc.
++	  This option enables dom0 support.  A dom0 kernel can also
++	  run as an unprivileged domU kernel, or a kernel running
++	  native on bare hardware.
++
++# Dummy symbol since people have come to rely on the PRIVILEGED_GUEST
++# name in tools.
++config XEN_PRIVILEGED_GUEST
++	def_bool XEN_DOM0
++
++config XEN_PCI_PASSTHROUGH
++       bool #"Enable support for Xen PCI passthrough devices"
++       depends on XEN && PCI
++       help
++         Enable support for passing PCI devices through to
++	 unprivileged domains. (COMPLETELY UNTESTED)
++
++config XEN_DOM0_PCI
++       def_bool y
++       depends on XEN_DOM0 && PCI
 diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 339163f..79b9b84 100644
+index 79b9b84..784971d 100644
 --- a/arch/x86/xen/enlighten.c
 +++ b/arch/x86/xen/enlighten.c
-@@ -1093,6 +1093,16 @@ asmlinkage void __init xen_start_kernel(void)
- 		add_preferred_console("xenboot", 0, NULL);
- 		add_preferred_console("tty", 0, NULL);
- 		add_preferred_console("hvc", 0, NULL);
-+
-+		boot_params.screen_info.orig_video_isVGA = 0;
-+	} else {
-+		const struct dom0_vga_console_info *info =
-+			(void *)((char *)xen_start_info +
-+				 xen_start_info->console.dom0.info_off);
-+
-+		xen_init_vga(info, xen_start_info->console.dom0.info_size);
-+		xen_start_info->console.domU.mfn = 0;
-+		xen_start_info->console.domU.evtchn = 0;
- 	}
+@@ -172,9 +172,11 @@ static void __init xen_banner(void)
  
- 	pat_disable("PAT disabled on Xen");
-diff --git a/arch/x86/xen/vga.c b/arch/x86/xen/vga.c
-new file mode 100644
-index 0000000..1cd7f4d
---- /dev/null
-+++ b/arch/x86/xen/vga.c
-@@ -0,0 +1,67 @@
-+#include <linux/screen_info.h>
-+#include <linux/init.h>
-+
-+#include <asm/bootparam.h>
-+#include <asm/setup.h>
-+
-+#include <xen/interface/xen.h>
-+
-+#include "xen-ops.h"
-+
-+void __init xen_init_vga(const struct dom0_vga_console_info *info, size_t size)
-+{
-+	struct screen_info *screen_info = &boot_params.screen_info;
-+
-+	/* This is drawn from a dump from vgacon:startup in
-+	 * standard Linux. */
-+	screen_info->orig_video_mode = 3;
-+	screen_info->orig_video_isVGA = 1;
-+	screen_info->orig_video_lines = 25;
-+	screen_info->orig_video_cols = 80;
-+	screen_info->orig_video_ega_bx = 3;
-+	screen_info->orig_video_points = 16;
-+	screen_info->orig_y = screen_info->orig_video_lines - 1;
-+
-+	switch (info->video_type) {
-+	case XEN_VGATYPE_TEXT_MODE_3:
-+		if (size < offsetof(struct dom0_vga_console_info, u.text_mode_3)
-+		    + sizeof(info->u.text_mode_3))
-+			break;
-+		screen_info->orig_video_lines = info->u.text_mode_3.rows;
-+		screen_info->orig_video_cols = info->u.text_mode_3.columns;
-+		screen_info->orig_x = info->u.text_mode_3.cursor_x;
-+		screen_info->orig_y = info->u.text_mode_3.cursor_y;
-+		screen_info->orig_video_points =
-+			info->u.text_mode_3.font_height;
-+		break;
-+
-+	case XEN_VGATYPE_VESA_LFB:
-+		if (size < offsetof(struct dom0_vga_console_info,
-+				    u.vesa_lfb.gbl_caps))
-+			break;
-+		screen_info->orig_video_isVGA = VIDEO_TYPE_VLFB;
-+		screen_info->lfb_width = info->u.vesa_lfb.width;
-+		screen_info->lfb_height = info->u.vesa_lfb.height;
-+		screen_info->lfb_depth = info->u.vesa_lfb.bits_per_pixel;
-+		screen_info->lfb_base = info->u.vesa_lfb.lfb_base;
-+		screen_info->lfb_size = info->u.vesa_lfb.lfb_size;
-+		screen_info->lfb_linelength = info->u.vesa_lfb.bytes_per_line;
-+		screen_info->red_size = info->u.vesa_lfb.red_size;
-+		screen_info->red_pos = info->u.vesa_lfb.red_pos;
-+		screen_info->green_size = info->u.vesa_lfb.green_size;
-+		screen_info->green_pos = info->u.vesa_lfb.green_pos;
-+		screen_info->blue_size = info->u.vesa_lfb.blue_size;
-+		screen_info->blue_pos = info->u.vesa_lfb.blue_pos;
-+		screen_info->rsvd_size = info->u.vesa_lfb.rsvd_size;
-+		screen_info->rsvd_pos = info->u.vesa_lfb.rsvd_pos;
-+		if (size >= offsetof(struct dom0_vga_console_info,
-+				     u.vesa_lfb.gbl_caps)
-+		    + sizeof(info->u.vesa_lfb.gbl_caps))
-+			screen_info->capabilities = info->u.vesa_lfb.gbl_caps;
-+		if (size >= offsetof(struct dom0_vga_console_info,
-+				     u.vesa_lfb.mode_attrs)
-+		    + sizeof(info->u.vesa_lfb.mode_attrs))
-+			screen_info->vesa_attributes = info->u.vesa_lfb.mode_attrs;
-+		break;
-+	}
-+}
-diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
-index 6ff6203..40abcef 100644
---- a/arch/x86/xen/xen-ops.h
-+++ b/arch/x86/xen/xen-ops.h
-@@ -72,6 +72,17 @@ static inline void xen_smp_init(void) {}
- #endif
+ 	printk(KERN_INFO "Booting paravirtualized kernel on %s\n",
+ 	       pv_info.name);
+-	printk(KERN_INFO "Xen version: %d.%d%s%s\n",
++	printk(KERN_INFO "Xen version: %d.%d%s%s%s\n",
+ 	       version >> 16, version & 0xffff, extra.extraversion,
+-	       xen_feature(XENFEAT_mmu_pt_update_preserve_ad) ? " (preserve-AD)" : "");
++	       xen_feature(XENFEAT_mmu_pt_update_preserve_ad) ?
++			" (preserve-AD)" : "",
++	       xen_initial_domain() ? " (dom0)" : "");
+ }
  
- 
-+struct dom0_vga_console_info;
-+
-+#ifdef CONFIG_XEN_DOM0
-+void xen_init_vga(const struct dom0_vga_console_info *, size_t size);
-+#else
-+static inline void xen_init_vga(const struct dom0_vga_console_info *info,
-+				size_t size)
-+{
-+}
-+#endif
-+
- /* Declare an asm function, along with symbols needed to make it
-    inlineable */
- #define DECL_ASM(ret, name, ...)		\
-diff --git a/include/xen/interface/xen.h b/include/xen/interface/xen.h
-index 18b5599..412326d 100644
---- a/include/xen/interface/xen.h
-+++ b/include/xen/interface/xen.h
-@@ -449,6 +449,45 @@ struct start_info {
- 	int8_t cmd_line[MAX_GUEST_CMDLINE];
- };
- 
-+struct dom0_vga_console_info {
-+	uint8_t video_type; /* DOM0_VGA_CONSOLE_??? */
-+#define XEN_VGATYPE_TEXT_MODE_3 0x03
-+#define XEN_VGATYPE_VESA_LFB    0x23
-+
-+	union {
-+		struct {
-+			/* Font height, in pixels. */
-+			uint16_t font_height;
-+			/* Cursor location (column, row). */
-+			uint16_t cursor_x, cursor_y;
-+			/* Number of rows and columns (dimensions in characters). */
-+			uint16_t rows, columns;
-+		} text_mode_3;
-+
-+		struct {
-+			/* Width and height, in pixels. */
-+			uint16_t width, height;
-+			/* Bytes per scan line. */
-+			uint16_t bytes_per_line;
-+			/* Bits per pixel. */
-+			uint16_t bits_per_pixel;
-+			/* LFB physical address, and size (in units of 64kB). */
-+			uint32_t lfb_base;
-+			uint32_t lfb_size;
-+			/* RGB mask offsets and sizes, as defined by VBE 1.2+ */
-+			uint8_t  red_pos, red_size;
-+			uint8_t  green_pos, green_size;
-+			uint8_t  blue_pos, blue_size;
-+			uint8_t  rsvd_pos, rsvd_size;
-+
-+			/* VESA capabilities (offset 0xa, VESA command 0x4f00). */
-+			uint32_t gbl_caps;
-+			/* Mode attributes (offset 0x0, VESA command 0x4f01). */
-+			uint16_t mode_attrs;
-+		} vesa_lfb;
-+	} u;
-+};
-+
- /* These flags are passed in the 'flags' field of start_info_t. */
- #define SIF_PRIVILEGED    (1<<0)  /* Is the domain privileged? */
- #define SIF_INITDOMAIN    (1<<1)  /* Is this the initial control domain? */
+ static __read_mostly unsigned int cpuid_leaf1_edx_mask = ~0;
 -- 
 1.6.0.6
 
