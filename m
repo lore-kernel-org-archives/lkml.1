@@ -1,90 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755567AbZELW0B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755921AbZELW0g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755567AbZELW0B (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 18:26:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752228AbZELWZv
+	id S1755921AbZELW0g (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 18:26:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbZELW0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 18:25:51 -0400
-Received: from blaine.gmane.org ([80.91.229.8]:34952 "EHLO hugh.gmane.org"
+	Tue, 12 May 2009 18:26:25 -0400
+Received: from mx2.netapp.com ([216.240.18.37]:51318 "EHLO mx2.netapp.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752739AbZELWZv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 18:25:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZngVKQx2CdoQONvNakOy9jRD9fmCGDn3U26GcyA4M8irP0RslCBGHHh2DffSy5zylk
-         0z5X27HRezIj9eLZzwU4N8nQ5DWYnt2K+mJmcwhE2SRHz6OnWx3KSVJ+2HGGhcgE2AY0
-         Xzhvi8cjN1Qn8FmlGV1OZMfA+zKZjFvKF1KCc=
+	id S1752228AbZELW0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 18:26:25 -0400
+X-IronPort-AV: E=Sophos;i="4.41,184,1241420400"; 
+   d="scan'208";a="171192781"
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [PATCH] NFS: Fix the notifications when renaming onto an existing
+ file
+To: stable@kernel.org
+Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Tue, 12 May 2009 18:24:20 -0400
+Message-ID: <20090512222420.6972.25308.stgit@heimdal.trondhjem.org>
+User-Agent: StGIT/0.14.2
 MIME-Version: 1.0
-In-Reply-To: <20090512174636.8EBDA1FD10@chi.die-welt.net>
-References: <dd18b0c30905111002y4aeb2033ma2fbb2730f5acdaf@mail.gmail.com>
-	 <4A089E49.7080403@gmail.com>
-	 <20090512103905.0D68E1FD10@chi.die-welt.net>
-	 <dd18b0c30905120728v156d4e1g808a853d23ba0ae6@mail.gmail.com>
-	 <20090512174636.8EBDA1FD10@chi.die-welt.net>
-Date: Tue, 12 May 2009 13:04:28 -0700
-Message-ID: <dd18b0c30905121304k6df44362v76e8e7ae6da3b76f@mail.gmail.com>
-Subject: Re: ath9k seems to be broken on 2.6.30-rc4 with a macbook pro
-From: Justin Mattock <justinmattock@gmail.com>
-To: Evgeni Golov <sargentd@die-welt.net>
-Cc: Jiri Slaby 
-	<public-jirislaby-Re5JQEeQqe8AvxtiuMwx3w@hugh.gmane.org>,
-       Justin Mattock 
-	<public-justinmattock-Re5JQEeQqe8AvxtiuMwx3w@hugh.gmane.org>,
-       Linux Kernel Mailing List 
-	<public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>,
-       public-ath9k-devel-xDcbHBWguxHbcTqmT+pZeQ@hugh.gmane.org,
-       public-linux-wireless-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Evolution 2.26.1 
+X-OriginalArrivalTime: 12 May 2009 22:26:20.0678 (UTC) FILETIME=[ACCDC260:01C9D350]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+NFS appears to be returning an unnecessary "delete" notification when
+we're doing an atomic rename. See
+
+  http://bugzilla.gnome.org/show_bug.cgi?id=575684
+
+The fix is to get rid of the redundant call to d_delete().
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+Please apply to 2.6.27 - 2.6.29 stable series...
 
 
-On Tue, May 12, 2009 at 10:46 AM, Evgeni Golov <sargentd@die-welt.net> wrote:
-> On Tue, 12 May 2009 07:28:04 -0700 Justin Mattock wrote:
->
->> > Same here with 2.6.30-rc4, b43 and either Cisco (MAC-Addr starts with
->> > 00:40:96) or HP ProCurve (??? - they do WiFi? - MAC-Addr starts with
->> > 00:1F:FE) APs. No encryption, quite noisy environment (University).
->> >
->> > No problem with ipw2200 (actually 2915) in the same hardware (Thinkpad
->> > X31). Neither with the b43 and a standard Linksys WRT54GL (in the same!
->> > noisy university-env).
->> >
->> > Regards
->> > Evgeni
->> >
->> >
->>
->> are you able to connect?
->> (or is the connection connecting but really
->> poor quality?)
->> over here 2.6.29-rc8 connects like
->> theirs no tomorrow, as soon as
->> I throw in 2.6.30-rc4 it just dead(although
->> on some accounts I did get some kind of
->> reaction, but not much, just what I see in dmesg).
->
-> 2.6.29: fairly stable, even if not as good as with an intel card.
-> 2.6.30-rc4: tons of timeouts, may connect 1 in 100 tries, connection
-> will drop after some (short) time.
->
-> --
-> Bruce Schneier Fact Number 79:
-> Bruce Schneier once decrypted a box of AlphaBits.
->
+ fs/nfs/dir.c |    9 ++++-----
+ 1 files changed, 4 insertions(+), 5 deletions(-)
 
-O.K. after trial and error reverting this:
-http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=47afbaf5af9454a7a1a64591e20cbfcc27ca67a8;hp=853da11b94e674445e93660f47a5f0aeeea09623
 
-brings life back to the macbook with 2.6.30-rc4
-(not sure about the iphone anomaly though, I'll keep
-an eye on that)
-
--- 
-Justin P. Mattock
+diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
+index 672368f..3b2f697 100644
+--- a/fs/nfs/dir.c
++++ b/fs/nfs/dir.c
+@@ -1624,8 +1624,7 @@ static int nfs_rename(struct inode *old_dir, struct dentry *old_dentry,
+ 		} else if (atomic_read(&new_dentry->d_count) > 1)
+ 			/* dentry still busy? */
+ 			goto out;
+-	} else
+-		nfs_drop_nlink(new_inode);
++	}
+ 
+ go_ahead:
+ 	/*
+@@ -1638,10 +1637,8 @@ go_ahead:
+ 	}
+ 	nfs_inode_return_delegation(old_inode);
+ 
+-	if (new_inode != NULL) {
++	if (new_inode != NULL)
+ 		nfs_inode_return_delegation(new_inode);
+-		d_delete(new_dentry);
+-	}
+ 
+ 	error = NFS_PROTO(old_dir)->rename(old_dir, &old_dentry->d_name,
+ 					   new_dir, &new_dentry->d_name);
+@@ -1650,6 +1647,8 @@ out:
+ 	if (rehash)
+ 		d_rehash(rehash);
+ 	if (!error) {
++		if (new_inode != NULL)
++			nfs_drop_nlink(new_inode);
+ 		d_move(old_dentry, new_dentry);
+ 		nfs_set_verifier(new_dentry,
+ 					nfs_save_change_attribute(new_dir));
 
