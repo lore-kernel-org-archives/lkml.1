@@ -1,58 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759987AbZEKV2k@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759741AbZEKV2y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759987AbZEKV2k (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 17:28:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759782AbZEKV2V
+	id S1759741AbZEKV2y (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 17:28:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759919AbZEKV2X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 17:28:21 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:39146 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1759921AbZEKV2U (ORCPT
+	Mon, 11 May 2009 17:28:23 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:33131 "EHLO
+	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1759872AbZEKV2X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 17:28:20 -0400
-Date: Mon, 11 May 2009 14:22:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: David Rientjes <rientjes@google.com>
-Cc: gregkh@suse.de, npiggin@suse.de, mel@csn.ul.ie, a.p.ziljstra@chello.nl,
-       cl@linux-foundation.org, dave@linux.vnet.ibm.com, san@android.com,
-       arve@android.com, linux-kernel@vger.kernel.org
-Subject: Re: [patch 07/11 -mmotm] oom: prevent possible OOM_DISABLE livelock
-Message-Id: <20090511142234.0648b43b.akpm@linux-foundation.org>
-In-Reply-To: <alpine.DEB.2.00.0905101501470.18804@chino.kir.corp.google.com>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
-	<alpine.DEB.2.00.0905101501470.18804@chino.kir.corp.google.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 11 May 2009 17:28:23 -0400
+Date: Mon, 11 May 2009 21:27:32 -0400 (EDT)
+From: Christoph Lameter <cl@linux-foundation.org>
+X-X-Sender: cl@qirst.com
+To: Yinghai Lu <yinghai@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 2/3] x86: add numa_move_cpus_to_node
+In-Reply-To: <4A052721.4010201@kernel.org>
+Message-ID: <alpine.DEB.1.10.0905112126410.28512@qirst.com>
+References: <4A05269D.8000701@kernel.org> <4A052721.4010201@kernel.org>
+User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 10 May 2009 15:07:19 -0700 (PDT)
-David Rientjes <rientjes@google.com> wrote:
->
+On Fri, 8 May 2009, Yinghai Lu wrote:
 
-The changelog perplexes me.
+> when node only have hot add range and don't have other static range.
+> that node will not be onlined, and cpus on that will be linked to nearby
+> node with memory.
+> then when that host add range is added later, we need to linked those cpus
+> back.
 
-> This moves the check for OOM_DISABLE to the badness heuristic while
-> holding task_lock().
+This going to be fun for the allocators that have put their queues on the
+respective nodes. How are the various OS structures that were allocated on
+the node that is downed / upped relocated?
 
-why?
-
->  Badness scores of 0 are now explicitly prohibited
-> from being oom killed
-
-why?
-
-> and since the oom_adj value is a characteristic of
-> an mm and not a task, it is no longer necessary to check the oom_adj
-> value for threads sharing the same memory (except when simply issuing
-> SIGKILLs for threads in other thread groups).
-
-ok...
-
-
-The title says that this patch fixes a livelock.  But the changelog
-didn't describe that livelock and didn't tell us how the patch fixed
-it.
