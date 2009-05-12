@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756433AbZELPKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755304AbZELPL1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756433AbZELPKa (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZELPKU
+	id S1755304AbZELPL1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:11:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753916AbZELPLO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:10:20 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:50766 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751274AbZELPKT (ORCPT
+	Tue, 12 May 2009 11:11:14 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:51899 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752007AbZELPLN convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:10:19 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=qB1itI9VsIfCZ5rD+cPkhJ52aICMqo1W+cGSX9FYesXYvBRX98o0KyxRdDpKJPKWeT
-         mbO0eJicP+o0Cj1bYrNvtdFYGgLGkaXaXj5lUgJU8m5BnH6IEQbHIZ3OktFT/sDLc4LT
-         U9tZJm03kA6XK+sW2Vz22bs9B4+pdaWrKgz/M=
+	Tue, 12 May 2009 11:11:13 -0400
 MIME-Version: 1.0
-In-Reply-To: <20090512150622.GA10015@sgi.com>
-References: <4A05269D.8000701@kernel.org> <4A0527CB.4020807@kernel.org>
-	 <20090511175312.GA27905@sgi.com>
-	 <alpine.DEB.2.00.0905111218520.23739@chino.kir.corp.google.com>
-	 <4A0894A5.9000209@zytor.com>
-	 <alpine.DEB.2.00.0905111509570.2234@chino.kir.corp.google.com>
-	 <20090512150622.GA10015@sgi.com>
-Date: Tue, 12 May 2009 08:10:18 -0700
-Message-ID: <86802c440905120810x6ea4b228t14ca19376dc13f13@mail.gmail.com>
-Subject: Re: [PATCH 3/3] x86: fix node_possible_map logic -v2
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Jack Steiner <steiner@sgi.com>
-Cc: David Rientjes <rientjes@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1242132344.31807.48.camel@localhost.localdomain>
+References: <20090509143742.GA27663@kroah.com> <1242063630.6624.22.camel@moss-terrapins.epoch.ncsc.mil> 
+	<20090511175626.GA4758@kroah.com> <1242074517.6624.183.camel@moss-terrapins.epoch.ncsc.mil> 
+	<ac3eb2510905111405y5541117euf84dd38d39012bd0@mail.gmail.com> 
+	<1242132344.31807.48.camel@localhost.localdomain>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Tue, 12 May 2009 17:10:53 +0200
+Message-ID: <ac3eb2510905120810n101dff08yfa945a2ab4b17168@mail.gmail.com>
+Subject: Re: [patch 00/13] devtmpfs patches
+To: Stephen Smalley <sds@tycho.nsa.gov>
+Cc: "David P. Quigley" <dpquigl@tycho.nsa.gov>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
+       Jan Blunck <jblunck@suse.de>, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@parisplace.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-jack,
+On Tue, May 12, 2009 at 14:45, Stephen Smalley <sds@tycho.nsa.gov> wrote:
 
-can you confirm:
-1. without this patch, your system still have problem?
-2. does current tip/master work for you?
+> I don't think merely changing the fstype will suffice; that merely lets
+> us assign a different default security context to inodes in the
+> filesystem (e.g. device_t vs tmpfs_t), but doesn't address the fact that
+> use of devtmpfs rather than just udev seems to alter the permission
+> checking upon an open(2) by mingetty, thereby breaking existing
+> policies.
 
-YH
+It will be its own filesystem type and no longer be auto-mounted in
+initramfs at all. There is an option to request an auto-mount it for
+the case the kernel mounted the rootfs. This is to allow the rescue
+setup to work.
+
+> Previously mingetty didn't require permissions to mknod; with
+> devtmpfs, it does.  I'm wondering if devtmpfs is internally performing
+> operations that ought to be done in kernel context rather than the
+> context of the userspace process that initiated the open(2).
+
+How may that look like?
+
+> Also, I was wondering why the existing restorecon -R /dev that is
+> performed by /etc/rc.sysinit to fix up the security contexts on the
+> initial /dev tree prior to policy load doesn't seem to be getting
+> applied when devtmpfs is enabled.  Does devtmpfs pass through setxattr()
+> requests to the underlying tmpfs mount?
+
+It's a plain tmpfs, nothing different from a manual mounted one, just
+that the kernel has created the instance and remembered the vfs mount
+to put stuff into it, regardless of where is is mounted, or maybe not
+mounted at all.
+
+Thanks,
+Kay
