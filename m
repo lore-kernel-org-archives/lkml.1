@@ -1,110 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756652AbZELDsZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758857AbZELDza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756652AbZELDsZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 23:48:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753489AbZELDsM
+	id S1758857AbZELDza (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 23:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754400AbZELDzT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 23:48:12 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50437 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751181AbZELDsL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 23:48:11 -0400
-Message-ID: <4A08F1B3.4060700@cn.fujitsu.com>
-Date: Tue, 12 May 2009 11:49:07 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
-MIME-Version: 1.0
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-CC: Alan.Brunelle@hp.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org
-Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
-References: <20090427.184417.189717449.ryov@valinux.co.jp>	<49FE5FEB.6040207@cn.fujitsu.com>	<20090507.092322.71121515.ryov@valinux.co.jp> <20090511.193115.189717098.ryov@valinux.co.jp>
-In-Reply-To: <20090511.193115.189717098.ryov@valinux.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
+	Mon, 11 May 2009 23:55:19 -0400
+Received: from mga03.intel.com ([143.182.124.21]:42979 "EHLO mga03.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752951AbZELDzS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 23:55:18 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,179,1241420400"; 
+   d="scan'208";a="141727521"
+Subject: [PATCH]X86: make sparse mem work in non-NUMA mode
+From: Shaohua Li <shaohua.li@intel.com>
+To: lkml <linux-kernel@vger.kernel.org>
+Cc: "Yang, Sheng" <sheng.yang@intel.com>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Content-Type: text/plain
+Date: Tue, 12 May 2009 11:55:17 +0800
+Message-Id: <1242100517.10593.7.camel@sli10-desk.sh.intel.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ryo Tsuruta wrote:
-> Hi Li,
-> 
-> From: Ryo Tsuruta <ryov@valinux.co.jp>
-> Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
-> Date: Thu, 07 May 2009 09:23:22 +0900 (JST)
-> 
->> Hi Li,
->>
->> From: Li Zefan <lizf@cn.fujitsu.com>
->> Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
->> Date: Mon, 04 May 2009 11:24:27 +0800
->>
->>> Ryo Tsuruta wrote:
->>>> Hi Alan,
->>>>
->>>>> Hi Ryo -
->>>>>
->>>>> I don't know if you are taking in patches, but whilst trying to uncover
->>>>> some odd behavior I added some blktrace messages to dm-ioband-ctl.c. If
->>>>> you're keeping one code base for old stuff (2.6.18-ish RHEL stuff) and
->>>>> upstream you'll have to #if around these (the blktrace message stuff
->>>>> came in around 2.6.26 or 27 I think).
->>>>>
->>>>> My test case was to take a single 400GB storage device, put two 200GB
->>>>> partitions on it and then see what the "penalty" or overhead for adding
->>>>> dm-ioband on top. To do this I simply created an ext2 FS on each
->>>>> partition in parallel (two processes each doing a mkfs to one of the
->>>>> partitions). Then I put two dm-ioband devices on top of the two
->>>>> partitions (setting the weight to 100 in both cases - thus they should
->>>>> have equal access).
->>>>>
->>>>> Using default values I was seeing /very/ large differences - on the
->>>>> order of 3X. When I bumped the number of tokens to a large number
->>>>> (10,240) the timings got much closer (<2%). I have found that using
->>>>> weight-iosize performs worse than weight (closer to 5% penalty).
->>>> I could reproduce similar results. One dm-ioband device seems to stop
->>>> issuing I/Os for a few seconds at times. I'll investigate more on that.
->>>>  
->>>>> I'll try to formalize these results as I go forward and report out on
->>>>> them. In any event, I thought I'd share this patch with you if you are
->>>>> interested...
->>>> Thanks. I'll include your patche into the next release.
->>>>  
->>> IMO we should use TRACE_EVENT instead of adding new blk_add_trace_msg().
->> Thanks for your suggestion. I'll use TRACE_EVENT instead.
-> 
-> blk_add_trace_msg() supports both blktrace and tracepoints. I can
-> get messages from dm-ioband through debugfs. Could you expain why
-> should we use TRACE_EVENT instead?
-> 
+With sparse, memory holes should not be marked present for memmap.
+This patch makes sparse really works on non-NUMA mode.
 
-Actually blk_add_trace_msg() has nothing to do with tracepoints..
+Signed-off-by: Shaohua Li <shaohua.li@intel.com>
+Signed-off-by: Sheng Yang <sheng.yang@intel.com>
 
-If we use blk_add_trace_msg() is dm, we can use it in md, various block
-drivers and even ext4. So the right thing is, if a subsystem wants to add
-trace facility, it should use tracepoints/TRACE_EVENT.
-
-With TRACE_EVENT, you can get output through debugfs too, and it can be used
-together with blktrace:
-
- # echo 1 > /sys/block/dm/trace/enable
- # echo blk > /debugfs/tracing/current_tracer
- # echo dm-ioband-foo > /debugfs/tracing/tracing/set_event
- # cat /deubgfs/tracing/trace_pipe
+diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
+index 749559e..bc95c7a 100644
+--- a/arch/x86/mm/init_32.c
++++ b/arch/x86/mm/init_32.c
+@@ -761,15 +761,15 @@ void __init initmem_init(unsigned long start_pfn,
+ 	highstart_pfn = highend_pfn = max_pfn;
+ 	if (max_pfn > max_low_pfn)
+ 		highstart_pfn = max_low_pfn;
+-	memory_present(0, 0, highend_pfn);
+ 	e820_register_active_regions(0, 0, highend_pfn);
++	sparse_memory_present_with_active_regions(0);
+ 	printk(KERN_NOTICE "%ldMB HIGHMEM available.\n",
+ 		pages_to_mb(highend_pfn - highstart_pfn));
+ 	num_physpages = highend_pfn;
+ 	high_memory = (void *) __va(highstart_pfn * PAGE_SIZE - 1) + 1;
+ #else
+-	memory_present(0, 0, max_low_pfn);
+ 	e820_register_active_regions(0, 0, max_low_pfn);
++	sparse_memory_present_with_active_regions(0);
+ 	num_physpages = max_low_pfn;
+ 	high_memory = (void *) __va(max_low_pfn * PAGE_SIZE - 1) + 1;
+ #endif
+diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
+index 1753e80..dcf099c 100644
+--- a/arch/x86/mm/init_64.c
++++ b/arch/x86/mm/init_64.c
+@@ -638,7 +638,7 @@ void __init paging_init(void)
+ 	max_zone_pfns[ZONE_DMA32] = MAX_DMA32_PFN;
+ 	max_zone_pfns[ZONE_NORMAL] = max_pfn;
  
-And you can enable dm-ioband-foo while disabling dm-ioband-bar, and you can
-use filter feature too.
-
->>>>> Here's a sampling from some blktrace output (sorry for the wrapping) - I
->>>>> should note that I'm a bit scared to see such large numbers of holds
->>>>> going on when the token count should be >5,000 for each device...
->>>>> Holding these back in an equal access situation is inhibiting the block
->>>>> I/O layer to merge (most) of these (as mkfs performs lots & lots of
->>>>> small but sequential I/Os).
->> Thanks,
->> Ryo Tsuruta
-> 
-> Thanks,
-> Ryo Tsuruta
-> 
+-	memory_present(0, 0, max_pfn);
++	sparse_memory_present_with_active_regions(0);
+ 	sparse_init();
+ 	free_area_init_nodes(max_zone_pfns);
+ }
 
 
