@@ -1,72 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759855AbZELCO6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759517AbZELCPq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759855AbZELCO6 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 22:14:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757609AbZELCOr
+	id S1759517AbZELCPq (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 22:15:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757632AbZELCPf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 22:14:47 -0400
-Received: from rv-out-0506.google.com ([209.85.198.227]:9217 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757305AbZELCOq (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 22:14:46 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mime-version:content-type
-         :content-disposition:user-agent;
-        b=Pm5W9dI0IOey2cZm5H0UWn3R2bA69kaCP6jqQjCZ9QI6g3PYoU1lW46S8X5JtzP6N/
-         XPyx2V1AQwvcsdufItVY1l5OJWXosonTlHKQuZBUC27IxgrDDS0jQ81KlvKDNIFLk6c4
-         IlcJjRx1iJkspaNfEaPv1xfE/Rs8iOO66LY4s=
-Date: Mon, 11 May 2009 19:14:39 -0700
-From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-input@vger.kernel.org
-Subject: [git pull] Input updates for 2.6.30-rc5
-Message-ID: <20090512021438.GB1965@dtor-d630.eng.vmware.com>
+	Mon, 11 May 2009 22:15:35 -0400
+Received: from hera.kernel.org ([140.211.167.34]:40468 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757270AbZELCPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 22:15:34 -0400
+Message-ID: <4A08DBBA.1000208@kernel.org>
+Date: Tue, 12 May 2009 11:15:22 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       Jens Axboe <jens.axboe@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH block#for-2.6.31] scsi: fix resid_len mis-conversion in scsi_end_request()
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 02:15:27 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Linus,
+Commit c3a4d78c580de4edc9ef0f7c59812fb02ceb037f introduced
+rq->data_len and converted residual count users to it.  While
+converting, it mistakenly converted scsi_end_request() to finish
+requests with residual count when it wants to do is fully complete the
+request.  Fix it by using blk_end_request_all() instead.
 
-Please pull from:
+This bug was spotted by Boaz Harrosh.
 
-	git://git.kernel.org/pub/scm/linux/kernel/git/dtor/input.git for-linus
-or
-	master.kernel.org:/pub/scm/linux/kernel/git/dtor/input.git for-linus
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Spotted-by: Boaz Harrosh <bharrosh@panasas.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+---
+ drivers/scsi/scsi_lib.c |    7 +------
+ 1 file changed, 1 insertion(+), 6 deletions(-)
 
-to receive updates for the input subsystem.
-
-Changelog:
----------
-
-Adrian Batzill (1):
-      Input: atkbd - add force release keys quirk for Amilo Xi 3650
-
-Jussi Kivilinna (1):
-      Input: ff-memless - fix signed to unsigned bit overflow
-
-Thierry Reding (1):
-      Input: tsc2007 - fix locking in hrtimer handler
-
-Tim Cole (1):
-      Input: joydev - blacklist digitizers
-
-
-Diffstat:
---------
-
- drivers/input/ff-memless.c          |    2 +-
- drivers/input/joydev.c              |    8 +++++++-
- drivers/input/keyboard/atkbd.c      |   16 ++++++++++++++++
- drivers/input/touchscreen/tsc2007.c |    5 +++--
- 4 files changed, 27 insertions(+), 4 deletions(-)
-
--- 
-Dmitry
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index a54bec9..e410d66 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -546,14 +546,9 @@ static struct scsi_cmnd *scsi_end_request(struct scsi_cmnd *cmd, int error,
+ 	 * to queue the remainder of them.
+ 	 */
+ 	if (blk_end_request(req, error, bytes)) {
+-		int leftover = blk_rq_bytes(req);
+-
+-		if (blk_pc_request(req))
+-			leftover = req->resid_len;
+-
+ 		/* kill remainder if no retrys */
+ 		if (error && scsi_noretry_cmd(cmd))
+-			blk_end_request(req, error, leftover);
++			blk_end_request_all(req, error);
+ 		else {
+ 			if (requeue) {
+ 				/*
 
