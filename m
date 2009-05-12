@@ -1,116 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759173AbZELCGZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758738AbZELCIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759173AbZELCGZ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 22:06:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755140AbZELCGQ
+	id S1758738AbZELCIO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 22:08:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756652AbZELCHx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 22:06:16 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41493 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754654AbZELCGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 22:06:15 -0400
-Date: Mon, 11 May 2009 22:05:28 -0400
-From: Amerigo Wang <amwang@redhat.com>
-To: linux-kernel@vger.kernel.org
-Cc: akpm@linux-foundation.org, Amerigo Wang <amwang@redhat.com>,
-       Ingo Molnar <mingo@elte.hu>
-Message-Id: <20090512020614.4891.63987.sendpatchset@localhost.localdomain>
-Subject: [PATCH] x86: merge process.c a bit
+	Mon, 11 May 2009 22:07:53 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:35124 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755503AbZELCHw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 22:07:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=nia3O5+5r6r1oUOrvk6AiQ+mw0ayKoo8Bf7SIwdwj/B6r9j+g7EF5rokOLSXWbT0xd
+         zK6hTak7FQdlYs/gHnK3jmTk7cVLSsenMGFT571xo/g1xz9Q7FAwnRa4OHp+vR+emhJf
+         WIzGCzgLdOqxR2T3WT/The9NjA2GR7nkVa9ek=
+MIME-Version: 1.0
+In-Reply-To: <200905111850.01096.dmitry.torokhov@gmail.com>
+References: <483a38b80905110441t703adbd6sab31bcf19b507fc9@mail.gmail.com>
+	 <200905111850.01096.dmitry.torokhov@gmail.com>
+Date: Tue, 12 May 2009 11:07:52 +0900
+Message-ID: <483a38b80905111907v3a14fe56r7e565bc9a56a0342@mail.gmail.com>
+Subject: Re: [PATCH 1/2] Input: tsc2007: fix locking method against the 
+	current rc kernel
+From: Kwangwoo Lee <kwangwoo.lee@gmail.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Thierry Reding <thierry.reding@avionic-design.de>,
+       Trilok Soni <soni.trilok@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Merge arch_align_stack() and arch_randomize_brk(), since
-they are the same.
+On Tue, May 12, 2009 at 10:50 AM, Dmitry Torokhov
+<dmitry.torokhov@gmail.com> wrote:
+> Hi Kwangwoo,
+>
+> On Monday 11 May 2009 04:41:35 Kwangwoo Lee wrote:
+>> Hi Dmitry,
+>>
+>> The following patch fixes bug in tsc2007.
+>> It is not working correctly in the current rc kernels.
+>> IMHO, this patch should go in the 2.6.30
+>>
+>
+> I agree, it is in my for-linus branch now.
+>
+>> Can you advise me about "From: email" part?
+>> I splited Thierry's patch. So the original "From: email" is followed:
+>>
+>> From: Thierry Reding <thierry.reding@avionic-design.de>
+>>
+>> Thank you,
+>> Kwangwoo Lee
+>>
+>> From 749ee3a4a2c2fe1f41601481e47cb26d8ccec20d Mon Sep 17 00:00:00 2001
+>> From: Kwangwoo Lee <kwangwoo.lee@gmail.com>
+>
+> This is the last "from" tag in the e-mail so my scripts picked that up.
+> I adjusted the commit so now it shows Thierry as the original author.
 
-Tested on x86_64.
+That's good. Thanks.
 
-Cc: Ingo Molnar <mingo@elte.hu>
-
----
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index ca98915..2b9a8d0 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -8,6 +8,7 @@
- #include <linux/module.h>
- #include <linux/pm.h>
- #include <linux/clockchips.h>
-+#include <linux/random.h>
- #include <trace/power.h>
- #include <asm/system.h>
- #include <asm/apic.h>
-@@ -613,3 +614,16 @@ static int __init idle_setup(char *str)
- }
- early_param("idle", idle_setup);
- 
-+unsigned long arch_align_stack(unsigned long sp)
-+{
-+	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
-+		sp -= get_random_int() % 8192;
-+	return sp & ~0xf;
-+}
-+
-+unsigned long arch_randomize_brk(struct mm_struct *mm)
-+{
-+	unsigned long range_end = mm->brk + 0x02000000;
-+	return randomize_range(mm->brk, range_end, 0) ? : mm->brk;
-+}
-+
-diff --git a/arch/x86/kernel/process_32.c b/arch/x86/kernel/process_32.c
-index 76f8f84..a3bb049 100644
---- a/arch/x86/kernel/process_32.c
-+++ b/arch/x86/kernel/process_32.c
-@@ -33,7 +33,6 @@
- #include <linux/module.h>
- #include <linux/kallsyms.h>
- #include <linux/ptrace.h>
--#include <linux/random.h>
- #include <linux/personality.h>
- #include <linux/tick.h>
- #include <linux/percpu.h>
-@@ -497,15 +496,3 @@ unsigned long get_wchan(struct task_struct *p)
- 	return 0;
- }
- 
--unsigned long arch_align_stack(unsigned long sp)
--{
--	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
--		sp -= get_random_int() % 8192;
--	return sp & ~0xf;
--}
--
--unsigned long arch_randomize_brk(struct mm_struct *mm)
--{
--	unsigned long range_end = mm->brk + 0x02000000;
--	return randomize_range(mm->brk, range_end, 0) ? : mm->brk;
--}
-diff --git a/arch/x86/kernel/process_64.c b/arch/x86/kernel/process_64.c
-index b751a41..34386f7 100644
---- a/arch/x86/kernel/process_64.c
-+++ b/arch/x86/kernel/process_64.c
-@@ -32,7 +32,6 @@
- #include <linux/delay.h>
- #include <linux/module.h>
- #include <linux/ptrace.h>
--#include <linux/random.h>
- #include <linux/notifier.h>
- #include <linux/kprobes.h>
- #include <linux/kdebug.h>
-@@ -660,15 +659,3 @@ long sys_arch_prctl(int code, unsigned long addr)
- 	return do_arch_prctl(current, code, addr);
- }
- 
--unsigned long arch_align_stack(unsigned long sp)
--{
--	if (!(current->personality & ADDR_NO_RANDOMIZE) && randomize_va_space)
--		sp -= get_random_int() % 8192;
--	return sp & ~0xf;
--}
--
--unsigned long arch_randomize_brk(struct mm_struct *mm)
--{
--	unsigned long range_end = mm->brk + 0x02000000;
--	return randomize_range(mm->brk, range_end, 0) ? : mm->brk;
--}
+-- 
+Kwangwoo Lee <kwangwoo.lee@gmail.com>
