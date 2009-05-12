@@ -1,529 +1,315 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758154AbZEMDJt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757846AbZEMDKK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758154AbZEMDJt (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 23:09:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756187AbZEMDGJ
+	id S1757846AbZEMDKK (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 23:10:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756229AbZEMDGK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 23:06:09 -0400
-Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:36220
+	Tue, 12 May 2009 23:06:10 -0400
+Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:36225
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755530AbZEMDGD (ORCPT
+	with ESMTP id S1755908AbZEMDGD (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 May 2009 23:06:03 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Alex Nixon <alex.nixon@citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Ian Campbell <ian.campbell@citrix.com>
-Subject: [PATCH 07/10] Xen/x86/PCI: Add support for the Xen PCI subsystem
-Date: Tue, 12 May 2009 14:48:08 -0700
-Message-Id: <1242164891-3859-8-git-send-email-jeremy@goop.org>
+       Stephen Tweedie <sct@redhat.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 04/16] xen dom0: Add support for the platform_ops hypercall
+Date: Tue, 12 May 2009 14:28:26 -0700
+Message-Id: <1242163718-2934-5-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1242164891-3859-1-git-send-email-jeremy@goop.org>
-References: <1242164891-3859-1-git-send-email-jeremy@goop.org>
+In-Reply-To: <1242163718-2934-1-git-send-email-jeremy@goop.org>
+References: <1242163718-2934-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alex Nixon <alex.nixon@citrix.com>
+From: Stephen Tweedie <sct@redhat.com>
 
-On boot, the system will search to see if a Xen iommu/pci subsystem is
-available.  If the kernel detects it's running in a domain rather than
-on bare hardware, this subsystem will be used.  Otherwise, it falls
-back to using hardware as usual.
+Minimal changes to get platform ops (renamed dom0_ops on pv_ops) working
+on pv_ops builds.  Pulls in upstream linux-2.6.18-xen.hg's platform.h
 
-The frontend stub lives in arch/x86/pci-xen.c, alongside other
-sub-arch PCI init code (e.g. olpc.c)
+[ Impact: add Xen hypercall definitions ]
 
-(All subsequent fixes, API changes and swiotlb operations folded in.)
-
-[ Impact: add core of Xen PCI support ]
-Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
+Signed-off-by: Stephen Tweedie <sct@redhat.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
-Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
-Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
 ---
- arch/x86/Kconfig                 |    4 +
- arch/x86/include/asm/io.h        |    2 +
- arch/x86/include/asm/pci_x86.h   |    1 +
- arch/x86/include/asm/xen/iommu.h |   12 ++
- arch/x86/kernel/pci-dma.c        |    3 +
- arch/x86/pci/Makefile            |    1 +
- arch/x86/pci/init.c              |    6 +
- arch/x86/pci/xen.c               |   51 +++++++
- drivers/pci/Makefile             |    2 +
- drivers/pci/xen-iommu.c          |  271 ++++++++++++++++++++++++++++++++++++++
- 10 files changed, 353 insertions(+), 0 deletions(-)
- create mode 100644 arch/x86/include/asm/xen/iommu.h
- create mode 100644 arch/x86/pci/xen.c
- create mode 100644 drivers/pci/xen-iommu.c
+ arch/x86/include/asm/xen/hypercall.h |    8 ++
+ include/xen/interface/platform.h     |  222 ++++++++++++++++++++++++++++++++++
+ include/xen/interface/xen.h          |    2 +
+ 3 files changed, 232 insertions(+), 0 deletions(-)
+ create mode 100644 include/xen/interface/platform.h
 
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index df9e885..15cc23a 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1829,6 +1829,10 @@ config PCI_OLPC
- 	def_bool y
- 	depends on PCI && OLPC && (PCI_GOOLPC || PCI_GOANY)
+diff --git a/arch/x86/include/asm/xen/hypercall.h b/arch/x86/include/asm/xen/hypercall.h
+index 9c371e4..6528f3b 100644
+--- a/arch/x86/include/asm/xen/hypercall.h
++++ b/arch/x86/include/asm/xen/hypercall.h
+@@ -45,6 +45,7 @@
+ #include <xen/interface/xen.h>
+ #include <xen/interface/sched.h>
+ #include <xen/interface/physdev.h>
++#include <xen/interface/platform.h>
  
-+config PCI_XEN
-+	def_bool y
-+	depends on XEN_PCI_PASSTHROUGH || XEN_DOM0_PCI
-+
- config PCI_DOMAINS
- 	def_bool y
- 	depends on PCI
-diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-index 7373932..57c7b26 100644
---- a/arch/x86/include/asm/io.h
-+++ b/arch/x86/include/asm/io.h
-@@ -7,6 +7,8 @@
- #include <asm-generic/int-ll64.h>
- #include <asm/page.h>
+ /*
+  * The hypercall asms have to meet several constraints:
+@@ -282,6 +283,13 @@ HYPERVISOR_set_timer_op(u64 timeout)
+ }
  
-+extern int isapnp_disable;
-+
- #define build_mmio_read(name, size, type, reg, barrier) \
- static inline type name(const volatile void __iomem *addr) \
- { type ret; asm volatile("mov" size " %1,%0":reg (ret) \
-diff --git a/arch/x86/include/asm/pci_x86.h b/arch/x86/include/asm/pci_x86.h
-index 5401ca2..34f03a4 100644
---- a/arch/x86/include/asm/pci_x86.h
-+++ b/arch/x86/include/asm/pci_x86.h
-@@ -107,6 +107,7 @@ extern int pci_direct_probe(void);
- extern void pci_direct_init(int type);
- extern void pci_pcbios_init(void);
- extern int pci_olpc_init(void);
-+extern int pci_xen_init(void);
- extern void __init dmi_check_pciprobe(void);
- extern void __init dmi_check_skip_isa_align(void);
- 
-diff --git a/arch/x86/include/asm/xen/iommu.h b/arch/x86/include/asm/xen/iommu.h
-new file mode 100644
-index 0000000..75df312
---- /dev/null
-+++ b/arch/x86/include/asm/xen/iommu.h
-@@ -0,0 +1,12 @@
-+#ifndef ASM_X86__XEN_IOMMU_H
-+
-+#ifdef CONFIG_PCI_XEN
-+extern void xen_iommu_init(void);
-+#else
-+static inline void xen_iommu_init(void)
+ static inline int
++HYPERVISOR_dom0_op(struct xen_platform_op *platform_op)
 +{
++	platform_op->interface_version = XENPF_INTERFACE_VERSION;
++	return _hypercall1(int, dom0_op, platform_op);
 +}
-+#endif
 +
-+#endif
-+
-diff --git a/arch/x86/kernel/pci-dma.c b/arch/x86/kernel/pci-dma.c
-index 745579b..e486c40 100644
---- a/arch/x86/kernel/pci-dma.c
-+++ b/arch/x86/kernel/pci-dma.c
-@@ -10,6 +10,7 @@
- #include <asm/gart.h>
- #include <asm/calgary.h>
- #include <asm/amd_iommu.h>
-+#include <asm/xen/iommu.h>
- 
- static int forbid_dac __read_mostly;
- 
-@@ -275,6 +276,8 @@ static int __init pci_iommu_init(void)
- 	dma_debug_add_bus(&pci_bus_type);
- #endif
- 
-+	xen_iommu_init();
-+
- 	calgary_iommu_init();
- 
- 	intel_iommu_init();
-diff --git a/arch/x86/pci/Makefile b/arch/x86/pci/Makefile
-index d49202e..64182c5 100644
---- a/arch/x86/pci/Makefile
-+++ b/arch/x86/pci/Makefile
-@@ -4,6 +4,7 @@ obj-$(CONFIG_PCI_BIOS)		+= pcbios.o
- obj-$(CONFIG_PCI_MMCONFIG)	+= mmconfig_$(BITS).o direct.o mmconfig-shared.o
- obj-$(CONFIG_PCI_DIRECT)	+= direct.o
- obj-$(CONFIG_PCI_OLPC)		+= olpc.o
-+obj-$(CONFIG_PCI_XEN)		+= xen.o
- 
- obj-y				+= fixup.o
- obj-$(CONFIG_ACPI)		+= acpi.o
-diff --git a/arch/x86/pci/init.c b/arch/x86/pci/init.c
-index 25a1f8e..4e2f90a 100644
---- a/arch/x86/pci/init.c
-+++ b/arch/x86/pci/init.c
-@@ -15,10 +15,16 @@ static __init int pci_arch_init(void)
- 	if (!(pci_probe & PCI_PROBE_NOEARLY))
- 		pci_mmcfg_early_init();
- 
-+#ifdef CONFIG_PCI_XEN
-+	if (!pci_xen_init())
-+		return 0;
-+#endif
-+
- #ifdef CONFIG_PCI_OLPC
- 	if (!pci_olpc_init())
- 		return 0;	/* skip additional checks if it's an XO */
- #endif
-+
- #ifdef CONFIG_PCI_BIOS
- 	pci_pcbios_init();
- #endif
-diff --git a/arch/x86/pci/xen.c b/arch/x86/pci/xen.c
++static inline int
+ HYPERVISOR_set_debugreg(int reg, unsigned long value)
+ {
+ 	return _hypercall2(int, set_debugreg, reg, value);
+diff --git a/include/xen/interface/platform.h b/include/xen/interface/platform.h
 new file mode 100644
-index 0000000..1b922aa
+index 0000000..83e4714
 --- /dev/null
-+++ b/arch/x86/pci/xen.c
-@@ -0,0 +1,51 @@
-+/*
-+ * Xen PCI Frontend Stub - puts some "dummy" functions in to the Linux
-+ * 			   x86 PCI core to support the Xen PCI Frontend
++++ b/include/xen/interface/platform.h
+@@ -0,0 +1,222 @@
++/******************************************************************************
++ * platform.h
 + *
-+ *   Author: Ryan Wilson <hap9@epoch.ncsc.mil>
++ * Hardware platform operations. Intended for use by domain-0 kernel.
++ *
++ * Permission is hereby granted, free of charge, to any person obtaining a copy
++ * of this software and associated documentation files (the "Software"), to
++ * deal in the Software without restriction, including without limitation the
++ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
++ * sell copies of the Software, and to permit persons to whom the Software is
++ * furnished to do so, subject to the following conditions:
++ *
++ * The above copyright notice and this permission notice shall be included in
++ * all copies or substantial portions of the Software.
++ *
++ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
++ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
++ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
++ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
++ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
++ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
++ * DEALINGS IN THE SOFTWARE.
++ *
++ * Copyright (c) 2002-2006, K Fraser
 + */
-+#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/pci.h>
-+#include <linux/acpi.h>
 +
-+#include <asm/io.h>
-+#include <asm/pci_x86.h>
++#ifndef __XEN_PUBLIC_PLATFORM_H__
++#define __XEN_PUBLIC_PLATFORM_H__
 +
-+#include <asm/xen/hypervisor.h>
++#include "xen.h"
 +
-+static int xen_pcifront_enable_irq(struct pci_dev *dev)
-+{
-+	return 0;
-+}
++#define XENPF_INTERFACE_VERSION 0x03000001
 +
-+int __init pci_xen_init(void)
-+{
-+	if (!xen_pv_domain() || xen_initial_domain())
-+		return -ENODEV;
-+
-+	printk(KERN_INFO "PCI: setting up Xen PCI frontend stub\n");
-+
-+	pcibios_set_cache_line_size();
-+
-+	pcibios_enable_irq = xen_pcifront_enable_irq;
-+	pcibios_disable_irq = NULL;
-+
-+#ifdef CONFIG_ACPI
-+	/* Keep ACPI out of the picture */
-+	acpi_noirq = 1;
-+#endif
-+
-+#ifdef CONFIG_ISAPNP
-+	/* Stop isapnp from probing */
-+	isapnp_disable = 1;
-+#endif
-+
-+	/* Ensure a device still gets scanned even if it's fn number
-+	 * is non-zero.
-+	 */
-+	pci_scan_all_fns = 1;
-+
-+	return 0;
-+}
-+
-diff --git a/drivers/pci/Makefile b/drivers/pci/Makefile
-index ba6af16..8db0cb5 100644
---- a/drivers/pci/Makefile
-+++ b/drivers/pci/Makefile
-@@ -27,6 +27,8 @@ obj-$(CONFIG_HT_IRQ) += htirq.o
- # Build Intel IOMMU support
- obj-$(CONFIG_DMAR) += dmar.o iova.o intel-iommu.o
- 
-+# Build Xen IOMMU support
-+obj-$(CONFIG_PCI_XEN) += xen-iommu.o
- obj-$(CONFIG_INTR_REMAP) += dmar.o intr_remapping.o
- 
- obj-$(CONFIG_PCI_IOV) += iov.o
-diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
-new file mode 100644
-index 0000000..ac6bcdb
---- /dev/null
-+++ b/drivers/pci/xen-iommu.c
-@@ -0,0 +1,271 @@
-+#include <linux/types.h>
-+#include <linux/mm.h>
-+#include <linux/string.h>
-+#include <linux/pci.h>
-+#include <linux/module.h>
-+#include <linux/version.h>
-+#include <linux/scatterlist.h>
-+#include <linux/io.h>
-+#include <linux/bug.h>
-+
-+#include <xen/interface/xen.h>
-+#include <xen/grant_table.h>
-+#include <xen/page.h>
-+#include <xen/xen-ops.h>
-+
-+#include <asm/iommu.h>
-+#include <asm/swiotlb.h>
-+#include <asm/tlbflush.h>
-+
-+#define IOMMU_BUG_ON(test)				\
-+do {							\
-+	if (unlikely(test)) {				\
-+		printk(KERN_ALERT "Fatal DMA error! "	\
-+		       "Please use 'swiotlb=force'\n");	\
-+		BUG();					\
-+	}						\
-+} while (0)
-+
-+/* Print address range with message */
-+#define PAR(msg, addr, size)					\
-+do {							\
-+	printk(msg "[%#llx - %#llx]\n",			\
-+	(unsigned long long)addr,			\
-+	(unsigned long long)addr + size);		\
-+} while (0)
-+
-+static inline int address_needs_mapping(struct device *hwdev,
-+						dma_addr_t addr)
-+{
-+	dma_addr_t mask = DMA_BIT_MASK(32);
-+	int ret;
-+
-+	/* If the device has a mask, use it, otherwise default to 32 bits */
-+	if (hwdev)
-+		mask = *hwdev->dma_mask;
-+
-+	ret = (addr & ~mask) != 0;
-+
-+	if (ret) {
-+		printk(KERN_ERR "dma address needs mapping\n");
-+		printk(KERN_ERR "mask: %#llx\n address: [%#llx]\n", mask, addr);
-+	}
-+	return ret;
-+}
-+
-+static int check_pages_physically_contiguous(unsigned long pfn,
-+					     unsigned int offset,
-+					     size_t length)
-+{
-+	unsigned long next_mfn;
-+	int i;
-+	int nr_pages;
-+
-+	next_mfn = pfn_to_mfn(pfn);
-+	nr_pages = (offset + length + PAGE_SIZE-1) >> PAGE_SHIFT;
-+
-+	for (i = 1; i < nr_pages; i++) {
-+		if (pfn_to_mfn(++pfn) != ++next_mfn)
-+			return 0;
-+	}
-+	return 1;
-+}
-+
-+static int range_straddles_page_boundary(phys_addr_t p, size_t size)
-+{
-+	unsigned long pfn = PFN_DOWN(p);
-+	unsigned int offset = p & ~PAGE_MASK;
-+
-+	if (offset + size <= PAGE_SIZE)
-+		return 0;
-+	if (check_pages_physically_contiguous(pfn, offset, size))
-+		return 0;
-+	return 1;
-+}
-+
-+static inline void xen_dma_unmap_page(struct page *page)
-+{
-+	/* Xen TODO: 2.6.18 xen calls __gnttab_dma_unmap_page here
-+	 * to deal with foreign pages.  We'll need similar logic here at
-+	 * some point.
-+	 */
-+}
-+
-+/* Gets dma address of a page */
-+static inline dma_addr_t xen_dma_map_page(struct page *page)
-+{
-+	/* Xen TODO: 2.6.18 xen calls __gnttab_dma_map_page here to deal
-+	 * with foreign pages.  We'll need similar logic here at some
-+	 * point.
-+	 */
-+	return ((dma_addr_t)pfn_to_mfn(page_to_pfn(page))) << PAGE_SHIFT;
-+}
-+
-+static int xen_map_sg(struct device *hwdev, struct scatterlist *sg,
-+		      int nents,
-+		      enum dma_data_direction direction,
-+		      struct dma_attrs *attrs)
-+{
-+	struct scatterlist *s;
-+	struct page *page;
-+	int i, rc;
-+
-+	BUG_ON(direction == DMA_NONE);
-+	WARN_ON(nents == 0 || sg[0].length == 0);
-+
-+	for_each_sg(sg, s, nents, i) {
-+		BUG_ON(!sg_page(s));
-+		page = sg_page(s);
-+		s->dma_address = xen_dma_map_page(page) + s->offset;
-+		s->dma_length = s->length;
-+		IOMMU_BUG_ON(range_straddles_page_boundary(
-+				page_to_phys(page), s->length));
-+	}
-+
-+	rc = nents;
-+
-+	flush_write_buffers();
-+	return rc;
-+}
-+
-+static void xen_unmap_sg(struct device *hwdev, struct scatterlist *sg,
-+			 int nents,
-+			 enum dma_data_direction direction,
-+			 struct dma_attrs *attrs)
-+{
-+	struct scatterlist *s;
-+	struct page *page;
-+	int i;
-+
-+	for_each_sg(sg, s, nents, i) {
-+		page = pfn_to_page(mfn_to_pfn(PFN_DOWN(s->dma_address)));
-+		xen_dma_unmap_page(page);
-+	}
-+}
-+
-+static void *xen_alloc_coherent(struct device *dev, size_t size,
-+				dma_addr_t *dma_handle, gfp_t gfp)
-+{
-+	void *ret;
-+	unsigned int order = get_order(size);
-+	unsigned long vstart;
-+	u64 mask;
-+
-+	/* ignore region specifiers */
-+	gfp &= ~(__GFP_DMA | __GFP_HIGHMEM);
-+
-+	if (dma_alloc_from_coherent(dev, size, dma_handle, &ret))
-+		return ret;
-+
-+	if (dev == NULL || (dev->coherent_dma_mask < DMA_BIT_MASK(32)))
-+		gfp |= GFP_DMA;
-+
-+	vstart = __get_free_pages(gfp, order);
-+	ret = (void *)vstart;
-+
-+	if (dev != NULL && dev->coherent_dma_mask)
-+		mask = dev->coherent_dma_mask;
-+	else
-+		mask = DMA_BIT_MASK(32);
-+
-+	if (ret != NULL) {
-+		if (xen_create_contiguous_region(vstart, order,
-+						 fls64(mask)) != 0) {
-+			free_pages(vstart, order);
-+			return NULL;
-+		}
-+		memset(ret, 0, size);
-+		*dma_handle = virt_to_machine(ret).maddr;
-+	}
-+	return ret;
-+}
-+
-+static void xen_free_coherent(struct device *dev, size_t size,
-+			      void *vaddr, dma_addr_t dma_addr)
-+{
-+	int order = get_order(size);
-+
-+	if (dma_release_from_coherent(dev, order, vaddr))
-+		return;
-+
-+	xen_destroy_contiguous_region((unsigned long)vaddr, order);
-+	free_pages((unsigned long)vaddr, order);
-+}
-+
-+static dma_addr_t xen_map_page(struct device *dev, struct page *page,
-+			       unsigned long offset, size_t size,
-+			       enum dma_data_direction direction,
-+			       struct dma_attrs *attrs)
-+{
-+	dma_addr_t dma;
-+
-+	BUG_ON(direction == DMA_NONE);
-+
-+	WARN_ON(size == 0);
-+
-+	dma = xen_dma_map_page(page) + offset;
-+
-+	IOMMU_BUG_ON(address_needs_mapping(dev, dma));
-+	flush_write_buffers();
-+	return dma;
-+}
-+
-+static void xen_unmap_page(struct device *dev, dma_addr_t dma_addr,
-+			   size_t size,
-+			   enum dma_data_direction direction,
-+			   struct dma_attrs *attrs)
-+{
-+	BUG_ON(direction == DMA_NONE);
-+	xen_dma_unmap_page(pfn_to_page(mfn_to_pfn(PFN_DOWN(dma_addr))));
-+}
-+
-+static struct dma_map_ops xen_dma_ops = {
-+	.dma_supported = NULL,
-+
-+	.alloc_coherent = xen_alloc_coherent,
-+	.free_coherent = xen_free_coherent,
-+
-+	.map_page = xen_map_page,
-+	.unmap_page = xen_unmap_page,
-+
-+	.map_sg = xen_map_sg,
-+	.unmap_sg = xen_unmap_sg,
-+
-+	.mapping_error = NULL,
-+
-+	.is_phys = 0,
++/*
++ * Set clock such that it would read <secs,nsecs> after 00:00:00 UTC,
++ * 1 January, 1970 if the current system time was <system_time>.
++ */
++#define XENPF_settime             17
++struct xenpf_settime {
++    /* IN variables. */
++    uint32_t secs;
++    uint32_t nsecs;
++    uint64_t system_time;
 +};
++typedef struct xenpf_settime xenpf_settime_t;
++DEFINE_GUEST_HANDLE_STRUCT(xenpf_settime_t);
 +
-+static struct dma_map_ops xen_swiotlb_dma_ops = {
-+	.dma_supported = swiotlb_dma_supported,
-+
-+	.alloc_coherent = xen_alloc_coherent,
-+	.free_coherent = xen_free_coherent,
-+
-+	.map_page = swiotlb_map_page,
-+	.unmap_page = swiotlb_unmap_page,
-+
-+	.map_sg = swiotlb_map_sg_attrs,
-+	.unmap_sg = swiotlb_unmap_sg_attrs,
-+
-+	.mapping_error = swiotlb_dma_mapping_error,
-+
-+	.is_phys = 0,
++/*
++ * Request memory range (@mfn, @mfn+@nr_mfns-1) to have type @type.
++ * On x86, @type is an architecture-defined MTRR memory type.
++ * On success, returns the MTRR that was used (@reg) and a handle that can
++ * be passed to XENPF_DEL_MEMTYPE to accurately tear down the new setting.
++ * (x86-specific).
++ */
++#define XENPF_add_memtype         31
++struct xenpf_add_memtype {
++    /* IN variables. */
++    unsigned long mfn;
++    uint64_t nr_mfns;
++    uint32_t type;
++    /* OUT variables. */
++    uint32_t handle;
++    uint32_t reg;
 +};
++typedef struct xenpf_add_memtype xenpf_add_memtype_t;
++DEFINE_GUEST_HANDLE_STRUCT(xenpf_add_memtype_t);
 +
-+void __init xen_iommu_init(void)
-+{
-+	if (!xen_pv_domain())
-+		return;
++/*
++ * Tear down an existing memory-range type. If @handle is remembered then it
++ * should be passed in to accurately tear down the correct setting (in case
++ * of overlapping memory regions with differing types). If it is not known
++ * then @handle should be set to zero. In all cases @reg must be set.
++ * (x86-specific).
++ */
++#define XENPF_del_memtype         32
++struct xenpf_del_memtype {
++    /* IN variables. */
++    uint32_t handle;
++    uint32_t reg;
++};
++typedef struct xenpf_del_memtype xenpf_del_memtype_t;
++DEFINE_GUEST_HANDLE_STRUCT(xenpf_del_memtype_t);
 +
-+	printk(KERN_INFO "Xen: Initializing Xen DMA ops\n");
++/* Read current type of an MTRR (x86-specific). */
++#define XENPF_read_memtype        33
++struct xenpf_read_memtype {
++    /* IN variables. */
++    uint32_t reg;
++    /* OUT variables. */
++    unsigned long mfn;
++    uint64_t nr_mfns;
++    uint32_t type;
++};
++typedef struct xenpf_read_memtype xenpf_read_memtype_t;
++DEFINE_GUEST_HANDLE_STRUCT(xenpf_read_memtype_t);
 +
-+	force_iommu = 0;
-+	dma_ops = &xen_dma_ops;
++#define XENPF_microcode_update    35
++struct xenpf_microcode_update {
++    /* IN variables. */
++    GUEST_HANDLE(void) data;          /* Pointer to microcode data */
++    uint32_t length;                  /* Length of microcode data. */
++};
++typedef struct xenpf_microcode_update xenpf_microcode_update_t;
++DEFINE_GUEST_HANDLE_STRUCT(xenpf_microcode_update_t);
 +
-+	if (swiotlb) {
-+		printk(KERN_INFO "Xen: Enabling DMA fallback to swiotlb\n");
-+		dma_ops = &xen_swiotlb_dma_ops;
-+	}
-+}
++#define XENPF_platform_quirk      39
++#define QUIRK_NOIRQBALANCING      1 /* Do not restrict IO-APIC RTE targets */
++#define QUIRK_IOAPIC_BAD_REGSEL   2 /* IO-APIC REGSEL forgets its value    */
++#define QUIRK_IOAPIC_GOOD_REGSEL  3 /* IO-APIC REGSEL behaves properly     */
++struct xenpf_platform_quirk {
++    /* IN variables. */
++    uint32_t quirk_id;
++};
++typedef struct xenpf_platform_quirk xenpf_platform_quirk_t;
++DEFINE_GUEST_HANDLE_STRUCT(xenpf_platform_quirk_t);
 +
++#define XENPF_firmware_info       50
++#define XEN_FW_DISK_INFO          1 /* from int 13 AH=08/41/48 */
++#define XEN_FW_DISK_MBR_SIGNATURE 2 /* from MBR offset 0x1b8 */
++#define XEN_FW_VBEDDC_INFO        3 /* from int 10 AX=4f15 */
++struct xenpf_firmware_info {
++	/* IN variables. */
++	uint32_t type;
++	uint32_t index;
++	/* OUT variables. */
++	union {
++		struct {
++			/* Int13, Fn48: Check Extensions Present. */
++			uint8_t device;                   /* %dl: bios device number */
++			uint8_t version;                  /* %ah: major version      */
++			uint16_t interface_support;       /* %cx: support bitmap     */
++			/* Int13, Fn08: Legacy Get Device Parameters. */
++			uint16_t legacy_max_cylinder;     /* %cl[7:6]:%ch: max cyl # */
++			uint8_t legacy_max_head;          /* %dh: max head #         */
++			uint8_t legacy_sectors_per_track; /* %cl[5:0]: max sector #  */
++			/* Int13, Fn41: Get Device Parameters (as filled into %ds:%esi). */
++			/* NB. First uint16_t of buffer must be set to buffer size.      */
++			GUEST_HANDLE(void) edd_params;
++		} disk_info; /* XEN_FW_DISK_INFO */
++		struct {
++			uint8_t device;                   /* bios device number  */
++			uint32_t mbr_signature;           /* offset 0x1b8 in mbr */
++		} disk_mbr_signature; /* XEN_FW_DISK_MBR_SIGNATURE */
++		struct {
++			/* Int10, AX=4F15: Get EDID info. */
++			uint8_t capabilities;
++			uint8_t edid_transfer_time;
++			/* must refer to 128-byte buffer */
++			GUEST_HANDLE(uchar) edid;
++		} vbeddc_info; /* XEN_FW_VBEDDC_INFO */
++	} u;
++};
++typedef struct xenpf_firmware_info xenpf_firmware_info_t;
++DEFINE_GUEST_HANDLE_STRUCT(xenpf_firmware_info_t);
++
++#define XENPF_enter_acpi_sleep    51
++struct xenpf_enter_acpi_sleep {
++	/* IN variables */
++	uint16_t pm1a_cnt_val;      /* PM1a control value. */
++	uint16_t pm1b_cnt_val;      /* PM1b control value. */
++	uint32_t sleep_state;       /* Which state to enter (Sn). */
++	uint32_t flags;             /* Must be zero. */
++};
++typedef struct xenpf_enter_acpi_sleep xenpf_enter_acpi_sleep_t;
++DEFINE_GUEST_HANDLE_STRUCT(xenpf_enter_acpi_sleep_t);
++
++#define XENPF_change_freq         52
++struct xenpf_change_freq {
++	/* IN variables */
++	uint32_t flags; /* Must be zero. */
++	uint32_t cpu;   /* Physical cpu. */
++	uint64_t freq;  /* New frequency (Hz). */
++};
++typedef struct xenpf_change_freq xenpf_change_freq_t;
++DEFINE_GUEST_HANDLE_STRUCT(xenpf_change_freq_t);
++
++/*
++ * Get idle times (nanoseconds since boot) for physical CPUs specified in the
++ * @cpumap_bitmap with range [0..@cpumap_nr_cpus-1]. The @idletime array is
++ * indexed by CPU number; only entries with the corresponding @cpumap_bitmap
++ * bit set are written to. On return, @cpumap_bitmap is modified so that any
++ * non-existent CPUs are cleared. Such CPUs have their @idletime array entry
++ * cleared.
++ */
++#define XENPF_getidletime         53
++struct xenpf_getidletime {
++	/* IN/OUT variables */
++	/* IN: CPUs to interrogate; OUT: subset of IN which are present */
++	GUEST_HANDLE(uchar) cpumap_bitmap;
++	/* IN variables */
++	/* Size of cpumap bitmap. */
++	uint32_t cpumap_nr_cpus;
++	/* Must be indexable for every cpu in cpumap_bitmap. */
++	GUEST_HANDLE(uint64_t) idletime;
++	/* OUT variables */
++	/* System time when the idletime snapshots were taken. */
++	uint64_t now;
++};
++typedef struct xenpf_getidletime xenpf_getidletime_t;
++DEFINE_GUEST_HANDLE_STRUCT(xenpf_getidletime_t);
++
++struct xen_platform_op {
++	uint32_t cmd;
++	uint32_t interface_version; /* XENPF_INTERFACE_VERSION */
++	union {
++		struct xenpf_settime           settime;
++		struct xenpf_add_memtype       add_memtype;
++		struct xenpf_del_memtype       del_memtype;
++		struct xenpf_read_memtype      read_memtype;
++		struct xenpf_microcode_update  microcode;
++		struct xenpf_platform_quirk    platform_quirk;
++		struct xenpf_firmware_info     firmware_info;
++		struct xenpf_enter_acpi_sleep  enter_acpi_sleep;
++		struct xenpf_change_freq       change_freq;
++		struct xenpf_getidletime       getidletime;
++		uint8_t                        pad[128];
++	} u;
++};
++typedef struct xen_platform_op xen_platform_op_t;
++DEFINE_GUEST_HANDLE_STRUCT(xen_platform_op_t);
++
++#endif /* __XEN_PUBLIC_PLATFORM_H__ */
+diff --git a/include/xen/interface/xen.h b/include/xen/interface/xen.h
+index 2befa3e..18b5599 100644
+--- a/include/xen/interface/xen.h
++++ b/include/xen/interface/xen.h
+@@ -461,6 +461,8 @@ typedef uint8_t xen_domain_handle_t[16];
+ #define __mk_unsigned_long(x) x ## UL
+ #define mk_unsigned_long(x) __mk_unsigned_long(x)
+ 
++DEFINE_GUEST_HANDLE(uint64_t);
++
+ #else /* __ASSEMBLY__ */
+ 
+ /* In assembly code we cannot use C numeric constant suffixes. */
 -- 
 1.6.0.6
 
