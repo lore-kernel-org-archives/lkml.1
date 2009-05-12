@@ -1,80 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756760AbZELGXr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756656AbZELGY6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756760AbZELGXr (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 02:23:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbZELGXi
+	id S1756656AbZELGY6 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 02:24:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753484AbZELGYt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 02:23:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:45563 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752553AbZELGXh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 02:23:37 -0400
-Subject: Re: [PATCH -mm] vmscan: report vm_flags in page_referenced()
-From: Peter Zijlstra <peterz@infradead.org>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-In-Reply-To: <20090512025153.GB7518@localhost>
-References: <20090430195439.e02edc26.akpm@linux-foundation.org>
-	 <49FB01C1.6050204@redhat.com>
-	 <20090501123541.7983a8ae.akpm@linux-foundation.org>
-	 <20090503031539.GC5702@localhost> <1241432635.7620.4732.camel@twins>
-	 <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org>
-	 <20090507134410.0618b308.akpm@linux-foundation.org>
-	 <20090508081608.GA25117@localhost>
-	 <20090508125859.210a2a25.akpm@linux-foundation.org>
-	 <20090512025153.GB7518@localhost>
-Content-Type: text/plain
+	Tue, 12 May 2009 02:24:49 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:43792 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752382AbZELGYs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 02:24:48 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Date: Tue, 12 May 2009 08:23:09 +0200
-Message-Id: <1242109389.11251.310.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Message-ID: <18953.5677.63000.658678@drongo.ozlabs.ibm.com>
+Date: Tue, 12 May 2009 16:24:45 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Ingo Molnar <mingo@elte.hu>, Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       linux-kernel@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 3/5] perf_counter: rework ioctl()s
+In-Reply-To: <1242054741.11251.279.camel@twins>
+References: <20090508165219.469818319@chello.nl>
+	<20090508170028.837558214@chello.nl>
+	<18951.32643.749495.538351@drongo.ozlabs.ibm.com>
+	<1242054741.11251.279.camel@twins>
+X-Mailer: VM 8.0.12 under 22.3.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-12 at 10:51 +0800, Wu Fengguang wrote:
-> @@ -406,6 +408,7 @@ static int page_referenced_anon(struct p
->                 if (mem_cont && !mm_match_cgroup(vma->vm_mm, mem_cont))
->                         continue;
->                 referenced += page_referenced_one(page, vma, &mapcount);
-> +               *vm_flags |= vma->vm_flags;
->                 if (!mapcount)
->                         break;
->         }
+Peter Zijlstra writes:
 
-Shouldn't that read:
+> Thanks, I missed that little detail.
+> 
+> Do we still want the new ioctl iteration flag?
 
-  if (page_referenced_on(page, vma, &mapcount)) {
-    referenced++;
-    *vm_flags |= vma->vm_flags;
-  }
+Not sure; it might be useful sometimes, I guess.  We do need to clear
+up the confusion about whether one does ioctl(fd, ..., flag) or
+ioctl(fd, ..., &flag), and if the former we shouldn't be using _IOW,
+as Arnd pointed out.
 
-So that we only add the vma-flags of those vmas that actually have a
-young bit set?
-
-In which case it'd be more at home in page_referenced_one():
-
-@@ -381,6 +381,8 @@ out_unmap:
- 	(*mapcount)--;
- 	pte_unmap_unlock(pte, ptl);
- out:
-+	if (referenced)
-+		*vm_flags |= vma->vm_flags;
- 	return referenced;
- }
- 
-
-Otherwise seems like a nice series, but please post the next version in
-a new thread, this one is getting a bit unwieldy ;-)
+Paul.
