@@ -1,22 +1,24 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759667AbZELMGJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760862AbZELMG1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759667AbZELMGJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 08:06:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbZELMFy
+	id S1760862AbZELMG1 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 08:06:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758359AbZELMGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 08:05:54 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:32914 "EHLO mx2.redhat.com"
+	Tue, 12 May 2009 08:06:00 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:32918 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752581AbZELMFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 08:05:53 -0400
-Date: Tue, 12 May 2009 13:58:38 +0200
+	id S1759697AbZELMF6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 08:05:58 -0400
+Date: Tue, 12 May 2009 13:58:50 +0200
 From: Stanislaw Gruszka <sgruszka@redhat.com>
 To: Thomas Gleixner <tglx@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Oleg Nesterov <oleg@redhat.com>,
        Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
        Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH resend 0/2] itimers: periodic timers fixes
-Message-ID: <20090512135838.79b6778e@dhcp-lab-109.englab.brq.redhat.com>
+Subject: [PATCH resend 1/2] itimers: merge ITIMER_VIRT and ITIMER_PROF
+ common code
+Message-ID: <20090512135850.35e082ae@dhcp-lab-109.englab.brq.redhat.com>
 Organization: RedHat
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -25,187 +27,369 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Both cpu itimers have same data flow in the few places, this patch make
+unification of code related with VIRT and PROF itimers.
 
-We found the periodic timers ITIMER_PROF and ITIMER_VIRT are unreliable, they 
-have systematic timing error. For example period of 10000 us will not be
-represented by the kernel as 10 ticks, but 11 (for HZ=1000). The reason is that
-the frequency of the hardware timer can only be chosen in discrete steps and
-the actual frequency is about 1000.152 Hz. So 10 ticks would take only about
-9.9985 ms, the kernel decides it must never return earlier than requested, so
-it rounds the period up to 11 ticks. This results in a systematic multiplicative
-timing error of -10 %. The situation is even worse where application try to
-request with 1 thick period. It will get the signal once per two kernel ticks,
-not on every tick. The systematic multiplicative timing error is -50 %. He have
-program [1] that shows itimers systematic error, results are below [2]. 
+Signed-off-by: Stanislaw Gruszka <sgruszka@redhat.com>
+---
+ include/linux/sched.h     |   11 +++-
+ kernel/fork.c             |    8 +-
+ kernel/itimer.c           |  142 ++++++++++++++++++++-------------------------
+ kernel/posix-cpu-timers.c |   74 +++++++++++-------------
+ 4 files changed, 111 insertions(+), 124 deletions(-)
 
-To fix situation we wrote two patches. First one just simplify code related
-with itimers. Second is fix. It change intervals measurement resolutions and
-correct times when signal is generated. However this add some drawback, that
-I'm not sure if are acceptable:
-
-- the time between two consecutive tics can be smaller than requested
-  interval
-
-- intervals values which are returned to user by getitimer() are not
-  rounded up
-
-Second drawback mean that applications which first call setitimer() then
-call getitimer() to see if interval was round up and then correct timings,
-will potentially stop works. However this can be only problem with requested
-interval smaller than 1/HZ, as for intervals > 1/Hz we can generate signals
-with proper resolution.
-
-Compered to previous patches periodic itimer related fields of signal_struct
-where arranged into struct cpu_itimer - this helps compiler generate smaller
-binary code.
-
-Cheers
-Stanislaw Gruszka
-
-[1] PROGRAM SHOWS ITIMERS SYSTEMATIC ERRORS
-
-=============================================================================
-
-/*
- * Measures the systematic error of a periodic timer.
- * Best run on an otherwise idle system, so that the simplifying assumption
- * cpu_time_consumed_by_this_process==real_elapsed_time  holds.
- */
-
-#include <sys/time.h>
-#include <signal.h>
-#include <stdio.h>
-#include <stdlib.h>
-
-/* This is what profiling with gcc -pg uses: */
-#define SIGNAL SIGPROF
-#define ITIMER ITIMER_PROF
-
-//#define SIGNAL SIGVTALRM
-//#define ITIMER ITIMER_VIRTUAL
-
-//#define SIGNAL SIGALRM
-//#define ITIMER ITIMER_REAL
-
-#define ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
-
-const int test_periods_us[] = {
-	10000,  /* glibc's value for x86(_64) */
-	9998,   /* this value would cause a much smaller error */
-	1000    /* and this is what is used for profiling on ia64 */
-};
-
-volatile int prof_counter;
-
-void handler(int signr)
-{
-	prof_counter++;
-}
-
-void test_func(void)
-{
-	int i = 0;
-	int count = 0;
-
-	for(i=0; i<2000000000; i++)
-		count++;
-}
-
-double timeval_diff(const struct timeval *start, const struct timeval *end)
-{
-	return (end->tv_sec - start->tv_sec) + (end->tv_usec - start->tv_usec)/1000000.0;
-}
-
-void measure_itimer_error(int period_us)
-{
-	struct sigaction act;
-	struct timeval start, end;
-	double real_time, counted_time;
-
-	prof_counter = 0;
-
-	/* setup a periodic timer */
-	struct timeval period_tv = {
-		.tv_sec = 0,
-		.tv_usec = period_us
-	};
-	struct itimerval timer = {
-		.it_interval = period_tv,
-		.it_value = period_tv
-	};
-	act.sa_handler = handler;
-	sigemptyset(&act.sa_mask);
-	act.sa_flags = 0;
-	if (sigaction(SIGNAL, &act, NULL) < 0) {
-		printf("sigaction failed\n");
-		exit(1);
-	}
-	if (setitimer(ITIMER, &timer, NULL) < 0) {
-		perror("setitimer");
-		exit(1);
-	}
-
-	/* run a busy loop and measure it */
-	gettimeofday(&start, NULL);
-	test_func();
-	gettimeofday(&end, NULL);
-
-	/* disable the timer */
-	timer.it_value.tv_usec = 0;
-	if (setitimer(ITIMER, &timer, NULL) < 0) {
-		perror("setitimer");
-		exit(1);
-	}
-
-	counted_time = prof_counter * period_us / 1000000.0;
-	real_time = timeval_diff(&start, &end);
-	printf("Requested a period of %d us and counted to %d, that should be %.2f s\n",
-		period_us, prof_counter, counted_time);
-	printf("Meanwhile real time elapsed: %.2f s\n", real_time);
-	printf("The error was %.1f %%\n\n", (counted_time/real_time - 1.0)*100.0);
-}
-
-int main()
-{
-	int i;
-	for (i=0; i<ARRAY_SIZE(test_periods_us); i++)
-		measure_itimer_error(test_periods_us[i]);
-	return 0;
-}
-
-===============================================================================
-
-
-[2] TEST PROGRAM RESULTS 
-
-Test program results for unpatched kernel:
-==========================================
-
-Requested a period of 10000 us and counted to 646, that should be 6.46 s
-Meanwhile real time elapsed: 7.12 s
-The error was -9.3 %
-
-Requested a period of 9998 us and counted to 710, that should be 7.10 s
-Meanwhile real time elapsed: 7.12 s
-The error was -0.2 %
-
-Requested a period of 1000 us and counted to 3563, that should be 3.56 s
-Meanwhile real time elapsed: 7.19 s
-The error was -50.4 %
-
-Test program results after patches applied:
-===========================================
-
-Requested a period of 10000 us and counted to 711, that should be 7.11 s
-Meanwhile real time elapsed: 7.12 s
-The error was -0.1 %
-
-Requested a period of 9998 us and counted to 710, that should be 7.10 s
-Meanwhile real time elapsed: 7.11 s
-The error was -0.2 %
-
-Requested a period of 1000 us and counted to 7123, that should be 7.12 s
-Meanwhile real time elapsed: 7.13 s
-The error was -0.1 %
-
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index b4c38bc..58430e7 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -454,6 +454,14 @@ struct pacct_struct {
+ 	unsigned long		ac_minflt, ac_majflt;
+ };
+ 
++struct cpu_itimer {
++	cputime_t expires;
++	cputime_t incr;
++};
++
++#define IT_PROF 0
++#define IT_VIRT 1
++
+ /**
+  * struct task_cputime - collected CPU time counts
+  * @utime:		time spent in user mode, in &cputime_t units
+@@ -540,8 +548,7 @@ struct signal_struct {
+ 	ktime_t it_real_incr;
+ 
+ 	/* ITIMER_PROF and ITIMER_VIRTUAL timers for the process */
+-	cputime_t it_prof_expires, it_virt_expires;
+-	cputime_t it_prof_incr, it_virt_incr;
++	struct cpu_itimer it[2];
+ 
+ 	/*
+ 	 * Thread group totals for process CPU timers.
+diff --git a/kernel/fork.c b/kernel/fork.c
+index b9e2edd..a6225d3 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -790,10 +790,10 @@ static void posix_cpu_timers_init_group(struct signal_struct *sig)
+ 	thread_group_cputime_init(sig);
+ 
+ 	/* Expiration times and increments. */
+-	sig->it_virt_expires = cputime_zero;
+-	sig->it_virt_incr = cputime_zero;
+-	sig->it_prof_expires = cputime_zero;
+-	sig->it_prof_incr = cputime_zero;
++	sig->it[IT_PROF].expires = cputime_zero;
++	sig->it[IT_PROF].incr = cputime_zero;
++	sig->it[IT_VIRT].expires = cputime_zero;
++	sig->it[IT_VIRT].incr = cputime_zero;
+ 
+ 	/* Cached expiration times. */
+ 	sig->cputime_expires.prof_exp = cputime_zero;
+diff --git a/kernel/itimer.c b/kernel/itimer.c
+index 58762f7..ba66eac 100644
+--- a/kernel/itimer.c
++++ b/kernel/itimer.c
+@@ -41,10 +41,37 @@ static struct timeval itimer_get_remtime(struct hrtimer *timer)
+ 	return ktime_to_timeval(rem);
+ }
+ 
++static void get_cpu_itimer(struct task_struct *tsk, struct cpu_itimer *it,
++			   struct itimerval *value)
++{
++	cputime_t cval, cinterval;
++
++	spin_lock_irq(&tsk->sighand->siglock);
++
++	cval = it->expires;
++	cinterval = it->incr;
++	if (!cputime_eq(cval, cputime_zero)) {
++		struct task_cputime cputime;
++		cputime_t utime;
++
++		thread_group_cputimer(tsk, &cputime);
++		utime = cputime.utime;
++		if (cputime_le(cval, utime)) { /* about to fire */
++			cval = jiffies_to_cputime(1);
++		} else {
++			cval = cputime_sub(cval, utime);
++		}
++	}
++
++	spin_unlock_irq(&tsk->sighand->siglock);
++
++	cputime_to_timeval(cval, &value->it_value);
++	cputime_to_timeval(cinterval, &value->it_interval);
++}
++
+ int do_getitimer(int which, struct itimerval *value)
+ {
+ 	struct task_struct *tsk = current;
+-	cputime_t cinterval, cval;
+ 
+ 	switch (which) {
+ 	case ITIMER_REAL:
+@@ -55,44 +82,10 @@ int do_getitimer(int which, struct itimerval *value)
+ 		spin_unlock_irq(&tsk->sighand->siglock);
+ 		break;
+ 	case ITIMER_VIRTUAL:
+-		spin_lock_irq(&tsk->sighand->siglock);
+-		cval = tsk->signal->it_virt_expires;
+-		cinterval = tsk->signal->it_virt_incr;
+-		if (!cputime_eq(cval, cputime_zero)) {
+-			struct task_cputime cputime;
+-			cputime_t utime;
+-
+-			thread_group_cputimer(tsk, &cputime);
+-			utime = cputime.utime;
+-			if (cputime_le(cval, utime)) { /* about to fire */
+-				cval = jiffies_to_cputime(1);
+-			} else {
+-				cval = cputime_sub(cval, utime);
+-			}
+-		}
+-		spin_unlock_irq(&tsk->sighand->siglock);
+-		cputime_to_timeval(cval, &value->it_value);
+-		cputime_to_timeval(cinterval, &value->it_interval);
++		get_cpu_itimer(tsk, &tsk->signal->it[IT_VIRT], value);
+ 		break;
+ 	case ITIMER_PROF:
+-		spin_lock_irq(&tsk->sighand->siglock);
+-		cval = tsk->signal->it_prof_expires;
+-		cinterval = tsk->signal->it_prof_incr;
+-		if (!cputime_eq(cval, cputime_zero)) {
+-			struct task_cputime times;
+-			cputime_t ptime;
+-
+-			thread_group_cputimer(tsk, &times);
+-			ptime = cputime_add(times.utime, times.stime);
+-			if (cputime_le(cval, ptime)) { /* about to fire */
+-				cval = jiffies_to_cputime(1);
+-			} else {
+-				cval = cputime_sub(cval, ptime);
+-			}
+-		}
+-		spin_unlock_irq(&tsk->sighand->siglock);
+-		cputime_to_timeval(cval, &value->it_value);
+-		cputime_to_timeval(cinterval, &value->it_interval);
++		get_cpu_itimer(tsk, &tsk->signal->it[IT_PROF], value);
+ 		break;
+ 	default:
+ 		return(-EINVAL);
+@@ -128,6 +121,36 @@ enum hrtimer_restart it_real_fn(struct hrtimer *timer)
+ 	return HRTIMER_NORESTART;
+ }
+ 
++static void set_cpu_itimer(struct task_struct *tsk, struct cpu_itimer *it,
++			   unsigned int clock_id, struct itimerval *value,
++			   struct itimerval *ovalue)
++{
++	cputime_t cval, cinterval, nval, ninterval;
++
++	nval = timeval_to_cputime(&value->it_value);
++	ninterval = timeval_to_cputime(&value->it_interval);
++
++	spin_lock_irq(&tsk->sighand->siglock);
++
++	cval = it->expires;
++	cinterval = it->incr;
++	if (!cputime_eq(cval, cputime_zero) ||
++	    !cputime_eq(nval, cputime_zero)) {
++		if (cputime_gt(nval, cputime_zero))
++			nval = cputime_add(nval, jiffies_to_cputime(1));
++		set_process_cpu_timer(tsk, clock_id, &nval, &cval);
++	}
++	it->expires = nval;
++	it->incr = ninterval;
++
++	spin_unlock_irq(&tsk->sighand->siglock);
++
++	if (ovalue) {
++		cputime_to_timeval(cval, &ovalue->it_value);
++		cputime_to_timeval(cinterval, &ovalue->it_interval);
++	}
++}
++
+ /*
+  * Returns true if the timeval is in canonical form
+  */
+@@ -139,7 +162,6 @@ int do_setitimer(int which, struct itimerval *value, struct itimerval *ovalue)
+ 	struct task_struct *tsk = current;
+ 	struct hrtimer *timer;
+ 	ktime_t expires;
+-	cputime_t cval, cinterval, nval, ninterval;
+ 
+ 	/*
+ 	 * Validate the timevals in value.
+@@ -174,48 +196,12 @@ again:
+ 		spin_unlock_irq(&tsk->sighand->siglock);
+ 		break;
+ 	case ITIMER_VIRTUAL:
+-		nval = timeval_to_cputime(&value->it_value);
+-		ninterval = timeval_to_cputime(&value->it_interval);
+-		spin_lock_irq(&tsk->sighand->siglock);
+-		cval = tsk->signal->it_virt_expires;
+-		cinterval = tsk->signal->it_virt_incr;
+-		if (!cputime_eq(cval, cputime_zero) ||
+-		    !cputime_eq(nval, cputime_zero)) {
+-			if (cputime_gt(nval, cputime_zero))
+-				nval = cputime_add(nval,
+-						   jiffies_to_cputime(1));
+-			set_process_cpu_timer(tsk, CPUCLOCK_VIRT,
+-					      &nval, &cval);
+-		}
+-		tsk->signal->it_virt_expires = nval;
+-		tsk->signal->it_virt_incr = ninterval;
+-		spin_unlock_irq(&tsk->sighand->siglock);
+-		if (ovalue) {
+-			cputime_to_timeval(cval, &ovalue->it_value);
+-			cputime_to_timeval(cinterval, &ovalue->it_interval);
+-		}
++		set_cpu_itimer(tsk, &tsk->signal->it[IT_VIRT], CPUCLOCK_VIRT,
++			       value, ovalue);
+ 		break;
+ 	case ITIMER_PROF:
+-		nval = timeval_to_cputime(&value->it_value);
+-		ninterval = timeval_to_cputime(&value->it_interval);
+-		spin_lock_irq(&tsk->sighand->siglock);
+-		cval = tsk->signal->it_prof_expires;
+-		cinterval = tsk->signal->it_prof_incr;
+-		if (!cputime_eq(cval, cputime_zero) ||
+-		    !cputime_eq(nval, cputime_zero)) {
+-			if (cputime_gt(nval, cputime_zero))
+-				nval = cputime_add(nval,
+-						   jiffies_to_cputime(1));
+-			set_process_cpu_timer(tsk, CPUCLOCK_PROF,
+-					      &nval, &cval);
+-		}
+-		tsk->signal->it_prof_expires = nval;
+-		tsk->signal->it_prof_incr = ninterval;
+-		spin_unlock_irq(&tsk->sighand->siglock);
+-		if (ovalue) {
+-			cputime_to_timeval(cval, &ovalue->it_value);
+-			cputime_to_timeval(cinterval, &ovalue->it_interval);
+-		}
++		set_cpu_itimer(tsk, &tsk->signal->it[IT_PROF], CPUCLOCK_PROF,
++			       value, ovalue);
+ 		break;
+ 	default:
+ 		return -EINVAL;
+diff --git a/kernel/posix-cpu-timers.c b/kernel/posix-cpu-timers.c
+index bece7c0..654e655 100644
+--- a/kernel/posix-cpu-timers.c
++++ b/kernel/posix-cpu-timers.c
+@@ -17,8 +17,8 @@ void update_rlimit_cpu(unsigned long rlim_new)
+ 	cputime_t cputime;
+ 
+ 	cputime = secs_to_cputime(rlim_new);
+-	if (cputime_eq(current->signal->it_prof_expires, cputime_zero) ||
+-	    cputime_gt(current->signal->it_prof_expires, cputime)) {
++	if (cputime_eq(current->signal->it[IT_PROF].expires, cputime_zero) ||
++	    cputime_gt(current->signal->it[IT_PROF].expires, cputime)) {
+ 		spin_lock_irq(&current->sighand->siglock);
+ 		set_process_cpu_timer(current, CPUCLOCK_PROF, &cputime, NULL);
+ 		spin_unlock_irq(&current->sighand->siglock);
+@@ -620,18 +620,18 @@ static void arm_timer(struct k_itimer *timer, union cpu_time_count now)
+ 			default:
+ 				BUG();
+ 			case CPUCLOCK_VIRT:
+-				if (!cputime_eq(p->signal->it_virt_expires,
++				if (!cputime_eq(p->signal->it[IT_VIRT].expires,
+ 						cputime_zero) &&
+-				    cputime_lt(p->signal->it_virt_expires,
++				    cputime_lt(p->signal->it[IT_VIRT].expires,
+ 					       timer->it.cpu.expires.cpu))
+ 					break;
+ 				p->signal->cputime_expires.virt_exp =
+ 					timer->it.cpu.expires.cpu;
+ 				break;
+ 			case CPUCLOCK_PROF:
+-				if (!cputime_eq(p->signal->it_prof_expires,
++				if (!cputime_eq(p->signal->it[IT_PROF].expires,
+ 						cputime_zero) &&
+-				    cputime_lt(p->signal->it_prof_expires,
++				    cputime_lt(p->signal->it[IT_PROF].expires,
+ 					       timer->it.cpu.expires.cpu))
+ 					break;
+ 				i = p->signal->rlim[RLIMIT_CPU].rlim_cur;
+@@ -1070,6 +1070,28 @@ static void stop_process_timers(struct task_struct *tsk)
+ 	spin_unlock_irqrestore(&cputimer->lock, flags);
+ }
+ 
++static void check_cpu_itimer(struct task_struct *tsk, struct cpu_itimer *it,
++			     cputime_t *expires, cputime_t cur_time, int signo)
++{
++	if (cputime_eq(it->expires, cputime_zero))
++		return;
++
++	if (cputime_ge(cur_time, it->expires)) {
++		it->expires = it->incr;
++		if (!cputime_eq(it->expires, cputime_zero)) {
++			it->expires = cputime_add(it->expires, cur_time);
++		}
++
++		__group_send_sig_info(signo, SEND_SIG_PRIV, tsk);
++	}
++
++	if (!cputime_eq(it->expires, cputime_zero) &&
++	    (cputime_eq(*expires, cputime_zero) ||
++	     cputime_lt(it->expires, *expires))) {
++		*expires = it->expires;
++	}
++}
++
+ /*
+  * Check for any per-thread CPU timers that have fired and move them
+  * off the tsk->*_timers list onto the firing list.  Per-thread timers
+@@ -1089,10 +1111,10 @@ static void check_process_timers(struct task_struct *tsk,
+ 	 * Don't sample the current process CPU clocks if there are no timers.
+ 	 */
+ 	if (list_empty(&timers[CPUCLOCK_PROF]) &&
+-	    cputime_eq(sig->it_prof_expires, cputime_zero) &&
++	    cputime_eq(sig->it[IT_PROF].expires, cputime_zero) &&
+ 	    sig->rlim[RLIMIT_CPU].rlim_cur == RLIM_INFINITY &&
+ 	    list_empty(&timers[CPUCLOCK_VIRT]) &&
+-	    cputime_eq(sig->it_virt_expires, cputime_zero) &&
++	    cputime_eq(sig->it[IT_VIRT].expires, cputime_zero) &&
+ 	    list_empty(&timers[CPUCLOCK_SCHED])) {
+ 		stop_process_timers(tsk);
+ 		return;
+@@ -1152,38 +1174,10 @@ static void check_process_timers(struct task_struct *tsk,
+ 	/*
+ 	 * Check for the special case process timers.
+ 	 */
+-	if (!cputime_eq(sig->it_prof_expires, cputime_zero)) {
+-		if (cputime_ge(ptime, sig->it_prof_expires)) {
+-			/* ITIMER_PROF fires and reloads.  */
+-			sig->it_prof_expires = sig->it_prof_incr;
+-			if (!cputime_eq(sig->it_prof_expires, cputime_zero)) {
+-				sig->it_prof_expires = cputime_add(
+-					sig->it_prof_expires, ptime);
+-			}
+-			__group_send_sig_info(SIGPROF, SEND_SIG_PRIV, tsk);
+-		}
+-		if (!cputime_eq(sig->it_prof_expires, cputime_zero) &&
+-		    (cputime_eq(prof_expires, cputime_zero) ||
+-		     cputime_lt(sig->it_prof_expires, prof_expires))) {
+-			prof_expires = sig->it_prof_expires;
+-		}
+-	}
+-	if (!cputime_eq(sig->it_virt_expires, cputime_zero)) {
+-		if (cputime_ge(utime, sig->it_virt_expires)) {
+-			/* ITIMER_VIRTUAL fires and reloads.  */
+-			sig->it_virt_expires = sig->it_virt_incr;
+-			if (!cputime_eq(sig->it_virt_expires, cputime_zero)) {
+-				sig->it_virt_expires = cputime_add(
+-					sig->it_virt_expires, utime);
+-			}
+-			__group_send_sig_info(SIGVTALRM, SEND_SIG_PRIV, tsk);
+-		}
+-		if (!cputime_eq(sig->it_virt_expires, cputime_zero) &&
+-		    (cputime_eq(virt_expires, cputime_zero) ||
+-		     cputime_lt(sig->it_virt_expires, virt_expires))) {
+-			virt_expires = sig->it_virt_expires;
+-		}
+-	}
++	check_cpu_itimer(tsk, &sig->it[IT_PROF], &prof_expires, ptime, SIGPROF);
++	check_cpu_itimer(tsk, &sig->it[IT_VIRT], &virt_expires, utime,
++			 SIGVTALRM);
