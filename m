@@ -1,67 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbZELJOf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755173AbZELJPv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755361AbZELJOf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 05:14:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbZELJOZ
+	id S1755173AbZELJPv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 05:15:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752168AbZELJPl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 05:14:25 -0400
-Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:59155 "EHLO
-	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751013AbZELJOZ (ORCPT
+	Tue, 12 May 2009 05:15:41 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:4741 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752160AbZELJPk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 05:14:25 -0400
-From: Frans Pop <elendil@planet.nl>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Subject: Re: [madwifi-project] Death to MadWifi!
-Date: Tue, 12 May 2009 11:14:21 +0200
-User-Agent: KMail/1.9.9
-Cc: p0g0@madwifi-project.org, madwifi-project@venema.h4ckr.net,
-       Cliff.Holden@atheros.com, mb@bu3sch.de, nbd@openwrt.org,
-       mickflemm@gmail.com, proski@gnu.org, me@bobcopeland.com,
-       juhosg@openwrt.org, linux-kernel@vger.kernel.org
-References: <43e72e890905111627r54fd4fa4r26d9511c1fd625a2@mail.gmail.com> <4A0908AB.1070606@madwifi-project.org> <4A0908AB.1070606@madwifi-project.org> <43e72e890905112332j3e32fb8q942fb75f882b2384@mail.gmail.com>
-In-reply-To: <43e72e890905112332j3e32fb8q942fb75f882b2384@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+	Tue, 12 May 2009 05:15:40 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [PATCH]sched: fix typo in sched-rt-group.txt file
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: leemgs1@gmail.com
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel <linux-kernel@vger.kernel.org>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       tglx <tglx@linutronix.de>, williams <williams@redhat.com>
+In-Reply-To: <1242117459.31161.11.camel@centos51>
+References: <1242117459.31161.11.camel@centos51>
+Content-Type: text/plain
+Date: Tue, 12 May 2009 11:15:38 +0200
+Message-Id: <1242119738.11251.322.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905121114.24355.elendil@planet.nl>
-X-OriginalArrivalTime: 12 May 2009 09:14:24.0642 (UTC) FILETIME=[0B0A0E20:01C9D2E2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Luis R. Rodriguez wrote:
-> Trust me, I'm not concerned at all -- reason for me sending this
-> e-mail was having to hear a rant from a user about MadWifi being such
-> crap and about devices not being supported properly.
+On Tue, 2009-05-12 at 17:37 +0900, GeunSik Lim wrote:
+> 
+> 
+> Dear Ingo,
+> 
+> I found typo about the range of static priority ( = realtime priority )
+> in "./Documentation/scheduler/sched-rt-group.txt" file.
+> 
+> If I don't understand static priority levels, Correct me.
 
-Let me give at least one counter example.
+Right, that 'confusion' stems from the fact that our in-kernel priority
+lists do consider all 140 priorities.
 
-I have used madwifi in the past but switched to ath5k when it came 
-available for my old Trust Atheros-based PCMCIA card, mostly because of 
-the ease of compilation and partly because of the better "free-ness".
+The patch looks good though.
 
-There is at least one area where the madwifi driver was and probably still 
-is far superior: properly blinking the leds on the card to show the 
-power/connection state and during data transfer.
+> commit d6af702008117ca489a2f5476239d1688a517e98
+> Author: GeunSik,Lim <leemgs1@gmail.com>
+> Date:   Tue May 12 17:20:32 2009 +0900
+> 
+>     sched: fix typo in sched-rt-group.txt file
+>     
+>     Fix typo about static priority's range.
+>      Kernel Space priority: 0   to 99   --> User Space RT priority 99 to 0
+>      Kernel Space priority: 100 to 139  --> User Space nice -20 to 19
+>     
+>     Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+> 
+> diff --git a/Documentation/scheduler/sched-rt-group.txt b/Documentation/scheduler/sched-rt-group.txt
+> index 5ba4d3f..1537146 100644
+> --- a/Documentation/scheduler/sched-rt-group.txt
+> +++ b/Documentation/scheduler/sched-rt-group.txt
+> @@ -169,7 +169,7 @@ get their allocated time.
+>  
+>  Implementing SCHED_EDF might take a while to complete. Priority Inheritance is
+>  the biggest challenge as the current linux PI infrastructure is geared towards
+> -the limited static priority levels 0-139. With deadline scheduling you need to
+> +the limited static priority levels 0-99. With deadline scheduling you need to
+>  do deadline inheritance (since priority is inversely proportional to the
+>  deadline delta (deadline - now).
+>  
+> 
+> 
+> -----------------------------------------------
+> To unsubscribe from this list: send the line "unsubscribe linux-***" 
+> in the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> GeunSik Lim (ELS - OS Group - S/W Lab - SAIT - SAMSUNG)
+> e-Mail  :1) geunsik.lim@samsung.com
+>          2) leemgs@gmail.com , leemgs1@gmail.com
+> HomePage: http://intomail.dnip.net/invain/me/
+> -----------------------------------------------
 
-It's not a major issue and though I've mentioned this at least once in a 
-bug report or mail, this admittedly was back when there were more 
-important things to fix. I probably should submit a proper bug report 
-about it now.
-
-I'm not asking for this to be fixed with this mail. I only mention it 
-because the title and tone of this mail, and the fact of its recurring 
-theme, offend me somewhat.
-The way FOSS normally works is that one variant of alternative software 
-will gradually die a natural death once a clear superior is established. 
-There should be no need for members of rival projects to try to actively 
-kill eachother off (the rival project that is, not its members).
-
-Cheers,
-FJP
-
-P.S. This is the only post I've seen from this thread as apparently it 
-started somewhere other than LKML.
