@@ -1,46 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754932AbZELQez@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753597AbZELQhk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754932AbZELQez (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 12:34:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZELQeq
+	id S1753597AbZELQhk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 12:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752404AbZELQhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 12:34:46 -0400
-Received: from rankki.sonarnerd.net ([83.145.240.118]:27588 "EHLO
-	mail.sonarnerd.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751955AbZELQep (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 12:34:45 -0400
-Message-ID: <4A09A525.4080107@sonarnerd.net>
-Date: Tue, 12 May 2009 19:34:45 +0300
-From: Jussi Laako <jussi@sonarnerd.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 12 May 2009 12:37:31 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:49492 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750832AbZELQha (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 12:37:30 -0400
+Date: Tue, 12 May 2009 18:37:30 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Nick Piggin <npiggin@suse.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, mel@csn.ul.ie,
+       a.p.zijlstra@chello.nl, cl@linux-foundation.org,
+       dave@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       Divy Le Ray <divy@chelsio.com>
+Subject: Re: [patch -mmotm] mm: invoke oom killer for __GFP_NOFAIL
+Message-ID: <20090512163730.GQ4140@kernel.dk>
+References: <alpine.DEB.2.00.0905091544470.6884@chino.kir.corp.google.com> <20090511134038.5cf1ad3b.akpm@linux-foundation.org> <20090512124201.GO4140@kernel.dk> <20090512130546.GA15793@wotan.suse.de>
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       James Courtier-Dutton <James@superbug.co.uk>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       d.faggioli@sssup.it
-Subject: Re: [RFC][PATCH] Multimedia scheduling class, take 2
-References: <4959198A.3020209@sonarnerd.net>	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net>	 <1231756114.19771.6.camel@laptop> <496C6294.2040707@sonarnerd.net>	 <4971D3D5.6040801@superbug.co.uk>  <497CF128.2060903@sonarnerd.net>	 <1232954745.4863.4.camel@laptop>  <4A07E044.8040807@sonarnerd.net> <1242107859.11251.301.camel@twins> <4A094707.5040307@sonarnerd.net> <4A099670.5060902@nortel.com>
-In-Reply-To: <4A099670.5060902@nortel.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090512130546.GA15793@wotan.suse.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-> If all you're trying to do is allow different threads to run at
-> different nice levels, what about extending sys_setpriority() to take a
-> "which" of PRIO_THREAD?  We'd probably have to call the syscall directly
-> until/unless libc picks up the new option.
+On Tue, May 12 2009, Nick Piggin wrote:
+> On Tue, May 12, 2009 at 02:42:02PM +0200, Jens Axboe wrote:
+> > On Mon, May 11 2009, Andrew Morton wrote:
+> > > On Sat, 9 May 2009 15:46:39 -0700 (PDT)
+> > > David Rientjes <rientjes@google.com> wrote:
+> > > 
+> > > > The oom killer must be invoked regardless of the order if the allocation
+> > > > is __GFP_NOFAIL, otherwise it will loop forever when reclaim fails to
+> > > > free some memory.
+> > > 
+> > > Sigh.  We're supposed to be deleting __GFP_NOFAIL.  I added it as a way
+> > > of easily finding lame error-handling-challenged callers which need to
+> > > be fixed up.  So of course we went and added lots more callers.
+> > > 
+> > > y:/usr/src/linux-2.6.30-rc5> grep -rl GFP_NOFAIL . 
+> > > ./fs/bio-integrity.c
+> 
+> This is no good either, it seems to be in the bio submission path.
+> 
+> It needs a mempool or something.
 
-How would this be mapped to a POSIX standard API? I would like to see
-something which works straight out with
-pthread_setschedprio()/pthread_getschedparam(). In order it to work
-correctly it also needs sys_sched_get_priority_min and
-sys_sched_get_priority_max.
+mempool cannot help here, since the allocation is tied to the process
+(and IO) life time.
 
+> It has a dead code "fallback" that returns an error, but I suspect that's
+> not really acceptable.
 
-	- Jussi
+It's not that difficult to handle an error there, it just means that we
+lose any process association with that request. It's mostly making sure
+that all the bits and pieces deal with that correctly, but it should not
+be very hard.
+
+-- 
+Jens Axboe
+
