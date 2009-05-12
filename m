@@ -1,82 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755921AbZELW0g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756289AbZELW1o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755921AbZELW0g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 18:26:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbZELW0Z
+	id S1756289AbZELW1o (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 18:27:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752284AbZELW1b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 18:26:25 -0400
-Received: from mx2.netapp.com ([216.240.18.37]:51318 "EHLO mx2.netapp.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752228AbZELW0Z (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 18:26:25 -0400
-X-IronPort-AV: E=Sophos;i="4.41,184,1241420400"; 
-   d="scan'208";a="171192781"
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [PATCH] NFS: Fix the notifications when renaming onto an existing
- file
-To: stable@kernel.org
-Cc: linux-nfs@vger.kernel.org, linux-kernel@vger.kernel.org
-Date: Tue, 12 May 2009 18:24:20 -0400
-Message-ID: <20090512222420.6972.25308.stgit@heimdal.trondhjem.org>
-User-Agent: StGIT/0.14.2
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+	Tue, 12 May 2009 18:27:31 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:44056 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752245AbZELW1a (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 18:27:30 -0400
+Subject: Re: [PATCH] tsc_khz= boot option to avoid TSC calibration variance
+From: john stultz <johnstul@us.ibm.com>
+To: Ulrich Windl <ulrich.windl@rz.uni-regensburg.de>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       Clark Williams <williams@redhat.com>, zippel@linux-m68k.org,
+       Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4A095139.30347.48783F@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+References: <1242094321.7214.156.camel@localhost.localdomain>
+	 <4A095139.30347.48783F@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
+Content-Type: text/plain
+Date: Tue, 12 May 2009 15:26:11 -0700
+Message-Id: <1242167171.3462.13.camel@localhost>
+Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
-X-OriginalArrivalTime: 12 May 2009 22:26:20.0678 (UTC) FILETIME=[ACCDC260:01C9D350]
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-NFS appears to be returning an unnecessary "delete" notification when
-we're doing an atomic rename. See
+On Tue, 2009-05-12 at 10:36 +0200, Ulrich Windl wrote:
+> On 11 May 2009 at 19:12, john stultz wrote:
+> 
+> > All, 
+> > 
+> > Despite recent tweaking, TSC calibration variance is still biting users
+> > who care about keeping close sync with NTP servers over reboots.
+> > 
+> > Here's a recent example:
+> > http://lkml.indiana.edu/hypermail/linux/kernel/0905.0/02061.html
+> > 
+> > The problem is, each reboot, we have to calibrate the TSC, and any
+> > error, regardless of how small, in the calibrated freq has to be
+> > corrected for by NTP. Assuming the error is within 500ppm NTP can
+> > correct this, but until it finds the proper correction value for the new
+> > TSC freq, users may see time offsets from the NTP server.
+> > 
+> > In my experience, its fairly easy to see 100khz variance from reboot to
+> > reboot with 2.6.30-rc.
+> > 
+> > While I think its worth trying to improve the calibration further, there
+> > will likely be a trade-off between very accurate calibration and fast
+> > boot times.
+> > 
+> > To mitigate this, I wanted to provide a tsc_khz= boot option. This would
+> > allow users to set the tsc_khz value at boot-up, assuming they are
+> > within 1Mhz of the calibrated value (to protect against bad values).
+> > Once the tsc_khz value is set in grub, the box will always boot with the
+> > same value, so the NTP drift value prior to reboot will still be correct
+> > after rebooting.
+> 
+> [...]
+> 
+> Hi everyone!
+> 
+> I was thinking a little bit on the issue, and I wondered (assuming the TSC 
+> calibration and the hardware is somewhat stable) whether one should invent a 
+> mechanism similar to the RTC or random pool; i.e. load the last value that was 
+> stored or accumulated before. For the TSC calibaration one could build the average 
+> of previous calibration values (if the value jumps between different numbers).
+> That would require a sysctl (or equivalent) interface however.
 
-  http://bugzilla.gnome.org/show_bug.cgi?id=575684
+I still feel that a sysctrl or /sys/ interface for this sort of thing is
+overkill. It creates yet another interface we have to manage, and really
+doesn't improve the situation more then the boot option would.
+Additionally it would require quite a bit of work at the clocksource
+level to allow for re-calibration (currently we avoid this by
+disqualifying the TSC if it changes freq). 
 
-The fix is to get rid of the redundant call to d_delete().
+That said, I've gotten very few positive comments from my patch, so I'm
+going to give it one more spin (to address Serge's point) and if folks
+are still feeling blah about it I'll stop pushing it.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
----
-Please apply to 2.6.27 - 2.6.29 stable series...
-
-
- fs/nfs/dir.c |    9 ++++-----
- 1 files changed, 4 insertions(+), 5 deletions(-)
-
-
-diff --git a/fs/nfs/dir.c b/fs/nfs/dir.c
-index 672368f..3b2f697 100644
---- a/fs/nfs/dir.c
-+++ b/fs/nfs/dir.c
-@@ -1624,8 +1624,7 @@ static int nfs_rename(struct inode *old_dir, struct dentry *old_dentry,
- 		} else if (atomic_read(&new_dentry->d_count) > 1)
- 			/* dentry still busy? */
- 			goto out;
--	} else
--		nfs_drop_nlink(new_inode);
-+	}
- 
- go_ahead:
- 	/*
-@@ -1638,10 +1637,8 @@ go_ahead:
- 	}
- 	nfs_inode_return_delegation(old_inode);
- 
--	if (new_inode != NULL) {
-+	if (new_inode != NULL)
- 		nfs_inode_return_delegation(new_inode);
--		d_delete(new_dentry);
--	}
- 
- 	error = NFS_PROTO(old_dir)->rename(old_dir, &old_dentry->d_name,
- 					   new_dir, &new_dentry->d_name);
-@@ -1650,6 +1647,8 @@ out:
- 	if (rehash)
- 		d_rehash(rehash);
- 	if (!error) {
-+		if (new_inode != NULL)
-+			nfs_drop_nlink(new_inode);
- 		d_move(old_dentry, new_dentry);
- 		nfs_set_verifier(new_dentry,
- 					nfs_save_change_attribute(new_dir));
+thanks
+-john
 
