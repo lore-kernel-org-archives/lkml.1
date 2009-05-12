@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756346AbZELXZh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbZELXZv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756346AbZELXZh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 19:25:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752888AbZELXZZ
+	id S1756244AbZELXZv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 19:25:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752962AbZELXZZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 12 May 2009 19:25:25 -0400
-Received: from 75-149-38-2-SFBA.hfc.comcastbusiness.net ([75.149.38.2]:36158
+Received: from 75-149-38-2-SFBA.hfc.comcastbusiness.net ([75.149.38.2]:36160
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752382AbZELXZY (ORCPT
+	with ESMTP id S1752687AbZELXZY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 May 2009 19:25:24 -0400
-X-Greylist: delayed 436 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 May 2009 19:25:24 EDT
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
+       Jeremy Fitzhardinge <jeremy@goop.org>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 02/17] x86: add io_apic_ops to allow interception
-Date: Tue, 12 May 2009 16:25:09 -0700
-Message-Id: <1242170724-13349-3-git-send-email-jeremy@goop.org>
+Subject: [PATCH 04/17] xen: create dummy ioapic mapping
+Date: Tue, 12 May 2009 16:25:11 -0700
+Message-Id: <1242170724-13349-5-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1242170724-13349-1-git-send-email-jeremy@goop.org>
 References: <1242170724-13349-1-git-send-email-jeremy@goop.org>
@@ -27,135 +27,38 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+We don't allow direct access to the IO apic, so make sure that any
+request to map it just "maps" non-present pages.  We should see any
+attempts at direct access explode nicely.
 
-Xen dom0 needs to paravirtualize IO operations to the IO APIC, so add
-a io_apic_ops for it to intercept.  Do this as ops structure because
-there's at least some chance that another paravirtualized environment
-may want to intercept these.
+[ Impact: debuggability (make failures obvious) ]
 
-[Impact: indirect IO APIC access via io_apic_ops]
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/io_apic.h |    9 +++++++
- arch/x86/kernel/apic/io_apic.c |   50 +++++++++++++++++++++++++++++++++++++--
- 2 files changed, 56 insertions(+), 3 deletions(-)
+ arch/x86/xen/mmu.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/arch/x86/include/asm/io_apic.h b/arch/x86/include/asm/io_apic.h
-index 9d826e4..8cbfe73 100644
---- a/arch/x86/include/asm/io_apic.h
-+++ b/arch/x86/include/asm/io_apic.h
-@@ -21,6 +21,15 @@
- #define IO_APIC_REDIR_LEVEL_TRIGGER	(1 << 15)
- #define IO_APIC_REDIR_MASKED		(1 << 16)
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 331e52d..139c8de 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -1919,6 +1919,16 @@ static void xen_set_fixmap(unsigned idx, phys_addr_t phys, pgprot_t prot)
+ 		pte = pfn_pte(phys, prot);
+ 		break;
  
-+struct io_apic_ops {
-+	void (*init)(void);
-+	unsigned int (*read)(unsigned int apic, unsigned int reg);
-+	void (*write)(unsigned int apic, unsigned int reg, unsigned int value);
-+	void (*modify)(unsigned int apic, unsigned int reg, unsigned int value);
-+};
++#ifdef CONFIG_X86_IO_APIC
++	case FIX_IO_APIC_BASE_0 ... FIX_IO_APIC_BASE_END:
++		/*
++		 * We just don't map the IO APIC - all access is via
++		 * hypercalls.  Keep the address in the pte for reference.
++		 */
++		pte = pfn_pte(phys, PAGE_NONE);
++		break;
++#endif
 +
-+void __init set_io_apic_ops(const struct io_apic_ops *);
-+
- /*
-  * The structure of the IO-APIC:
-  */
-diff --git a/arch/x86/kernel/apic/io_apic.c b/arch/x86/kernel/apic/io_apic.c
-index 30da617..c24f116 100644
---- a/arch/x86/kernel/apic/io_apic.c
-+++ b/arch/x86/kernel/apic/io_apic.c
-@@ -66,6 +66,25 @@
- 
- #define __apicdebuginit(type) static type __init
- 
-+static void __init __ioapic_init_mappings(void);
-+static unsigned int __io_apic_read(unsigned int apic, unsigned int reg);
-+static void __io_apic_write(unsigned int apic, unsigned int reg,
-+			    unsigned int val);
-+static void __io_apic_modify(unsigned int apic, unsigned int reg,
-+			     unsigned int val);
-+
-+static struct io_apic_ops io_apic_ops = {
-+	.init = __ioapic_init_mappings,
-+	.read = __io_apic_read,
-+	.write = __io_apic_write,
-+	.modify = __io_apic_modify,
-+};
-+
-+void __init set_io_apic_ops(const struct io_apic_ops *ops)
-+{
-+	io_apic_ops = *ops;
-+}
-+
- /*
-  *      Is the SiS APIC rmw bug present ?
-  *      -1 = don't know, 0 = no, 1 = yes
-@@ -385,6 +404,24 @@ set_extra_move_desc(struct irq_desc *desc, const struct cpumask *mask)
- }
- #endif
- 
-+static inline unsigned int io_apic_read(unsigned int apic, unsigned int reg)
-+{
-+	return io_apic_ops.read(apic, reg);
-+}
-+
-+static inline void io_apic_write(unsigned int apic, unsigned int reg,
-+				 unsigned int value)
-+{
-+	io_apic_ops.write(apic, reg, value);
-+}
-+
-+static inline void io_apic_modify(unsigned int apic, unsigned int reg,
-+				  unsigned int value)
-+{
-+	io_apic_ops.modify(apic, reg, value);
-+}
-+
-+
- struct io_apic {
- 	unsigned int index;
- 	unsigned int unused[3];
-@@ -405,14 +442,15 @@ static inline void io_apic_eoi(unsigned int apic, unsigned int vector)
- 	writel(vector, &io_apic->eoi);
- }
- 
--static inline unsigned int io_apic_read(unsigned int apic, unsigned int reg)
-+static unsigned int __io_apic_read(unsigned int apic, unsigned int reg)
- {
- 	struct io_apic __iomem *io_apic = io_apic_base(apic);
- 	writel(reg, &io_apic->index);
- 	return readl(&io_apic->data);
- }
- 
--static inline void io_apic_write(unsigned int apic, unsigned int reg, unsigned int value)
-+static void __io_apic_write(unsigned int apic, unsigned int reg,
-+			    unsigned int value)
- {
- 	struct io_apic __iomem *io_apic = io_apic_base(apic);
- 	writel(reg, &io_apic->index);
-@@ -425,7 +463,8 @@ static inline void io_apic_write(unsigned int apic, unsigned int reg, unsigned i
-  *
-  * Older SiS APIC requires we rewrite the index register
-  */
--static inline void io_apic_modify(unsigned int apic, unsigned int reg, unsigned int value)
-+static void __io_apic_modify(unsigned int apic, unsigned int reg,
-+			     unsigned int value)
- {
- 	struct io_apic __iomem *io_apic = io_apic_base(apic);
- 
-@@ -4141,6 +4180,11 @@ static struct resource * __init ioapic_setup_resources(void)
- 
- void __init ioapic_init_mappings(void)
- {
-+	io_apic_ops.init();
-+}
-+
-+static void __init __ioapic_init_mappings(void)
-+{
- 	unsigned long ioapic_phys, idx = FIX_IO_APIC_BASE_0;
- 	struct resource *ioapic_res;
- 	int i;
+ 	case FIX_PARAVIRT_BOOTMAP:
+ 		/* This is an MFN, but it isn't an IO mapping from the
+ 		   IO domain */
 -- 
 1.6.0.6
 
