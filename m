@@ -1,60 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751762AbZELTPj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754085AbZELTPz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751762AbZELTPj (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 15:15:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751073AbZELTPa
+	id S1754085AbZELTPz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 15:15:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZELTPj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 15:15:30 -0400
-Received: from x35.xmailserver.org ([64.71.152.41]:43574 "EHLO
-	x35.xmailserver.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750832AbZELTP3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 15:15:29 -0400
-X-AuthUser: davidel@xmailserver.org
-Date: Tue, 12 May 2009 12:10:23 -0700 (PDT)
-From: Davide Libenzi <davidel@xmailserver.org>
-X-X-Sender: davide@makko.or.mcafeemobile.com
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-cc: Andrew Morton <akpm@linux-foundation.org>, Hiroyuki.Mach@gmail.com,
-       rohit verma <rohit.170309@gmail.com>
-Subject: [patch] epoll - fix size check in epoll_create
-Message-ID: <alpine.DEB.1.10.0905121207100.29869@makko.or.mcafeemobile.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
-X-GPG-FINGRPRINT: CFAE 5BEE FD36 F65E E640  56FE 0974 BF23 270F 474E
-X-GPG-PUBLIC_KEY: http://www.xmailserver.org/davidel.asc
+	Tue, 12 May 2009 15:15:39 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37727 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752799AbZELTPi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 15:15:38 -0400
+From: Eric Paris <eparis@redhat.com>
+Subject: [PATCH] IMA: remove read permissions on the ima policy file
+To: zohar@linux.vnet.ibm.com
+Cc: jmorris@namei.org, linux-kernel@vger.kernel.org
+Date: Tue, 12 May 2009 15:13:55 -0400
+Message-ID: <20090512191355.6874.31248.stgit@dhcp231-142.rdu.redhat.com>
+User-Agent: StGIT/0.14.3
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew, this one-liner fixes a size check WRT the manual pages, that had 
-been broken somewhere in the past (might have been Uli with the 
-open-with-flags changes, though I'm not sure).
+The IMA policy file does not implement read.  Trying to just open/read/close
+the file will load a blank policy and you cannot then change the policy
+without a reboot.  This removes the read permission from the file so one must
+at least be attempting to write...
 
-
-
-Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
-
-
-- Davide
-
-
+Signed-off-by: Eric Paris <eparis@redhat.com>
 ---
- fs/eventpoll.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6.mod/fs/eventpoll.c
-===================================================================
---- linux-2.6.mod.orig/fs/eventpoll.c	2009-05-12 12:05:36.000000000 -0700
-+++ linux-2.6.mod/fs/eventpoll.c	2009-05-12 12:05:56.000000000 -0700
-@@ -1212,7 +1212,7 @@ SYSCALL_DEFINE1(epoll_create1, int, flag
- 
- SYSCALL_DEFINE1(epoll_create, int, size)
+ security/integrity/ima/ima_fs.c |    6 +++++-
+ 1 files changed, 5 insertions(+), 1 deletions(-)
+
+diff --git a/security/integrity/ima/ima_fs.c b/security/integrity/ima/ima_fs.c
+index 510186f..2a829da 100644
+--- a/security/integrity/ima/ima_fs.c
++++ b/security/integrity/ima/ima_fs.c
+@@ -15,6 +15,7 @@
+  *	implemenents security file system for reporting
+  *	current measurement list and IMA statistics
+  */
++#include <linux/fcntl.h>
+ #include <linux/module.h>
+ #include <linux/seq_file.h>
+ #include <linux/rculist.h>
+@@ -283,6 +284,9 @@ static atomic_t policy_opencount = ATOMIC_INIT(1);
+  */
+ int ima_open_policy(struct inode * inode, struct file * filp)
  {
--	if (size < 0)
-+	if (size <= 0)
- 		return -EINVAL;
++	/* No point in being allowed to open it if you aren't going to write */
++	if (!(filp->f_flags & O_WRONLY))
++		return -EACCES;
+ 	if (atomic_dec_and_test(&policy_opencount))
+ 		return 0;
+ 	return -EBUSY;
+@@ -349,7 +353,7 @@ int ima_fs_init(void)
+ 		goto out;
  
- 	return sys_epoll_create1(0);
+ 	ima_policy = securityfs_create_file("policy",
+-					    S_IRUSR | S_IRGRP | S_IWUSR,
++					    S_IWUSR,
+ 					    ima_dir, NULL,
+ 					    &ima_measure_policy_ops);
+ 	if (IS_ERR(ima_policy))
 
