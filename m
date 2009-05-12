@@ -1,255 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752599AbZELX67@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755025AbZELX76@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752599AbZELX67 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 19:58:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZELX6t
+	id S1755025AbZELX76 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 19:59:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZELX7s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 19:58:49 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:33245 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751980AbZELX6s (ORCPT
+	Tue, 12 May 2009 19:59:48 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41149 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752160AbZELX7r (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 19:58:48 -0400
-Subject: Re: [RFC][PATCH] Dynamic Tick: Allow 32-bit machines to sleep   
- formorethan2.15 seconds
-From: john stultz <johnstul@us.ibm.com>
-To: Jon Hunter <jon-hunter@ti.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+	Tue, 12 May 2009 19:59:47 -0400
+Date: Wed, 13 May 2009 08:58:16 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A0A07D6.90408@ti.com>
-References: <49ECE615.2010800@ti.com>  <20090421063523.GA8020@elte.hu>
-	 <1240345936.6080.6.camel@localhost>  <49EE54B4.9020700@ti.com>
-	 <1240358525.6080.40.camel@localhost>  <4A02F5A3.3050004@ti.com>
-	 <1241744048.7518.132.camel@localhost.localdomain> <4A04584E.4020307@ti.com>
-	 <1241830281.7297.21.camel@localhost.localdomain>  <4A0A07D6.90408@ti.com>
-Content-Type: text/plain
-Date: Tue, 12 May 2009 16:58:47 -0700
-Message-Id: <1242172727.3462.55.camel@localhost>
+Subject: Re: [PATCH 2/3] fix swap cache account leak at swapin-readahead
+Message-Id: <20090513085816.13dc7709.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090512112359.GA20771@cmpxchg.org>
+References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090512104603.ac4ca1f4.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090512112359.GA20771@cmpxchg.org>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-12 at 18:35 -0500, Jon Hunter wrote:
-> john stultz wrote:
-> > Yea. NSEC_PER_SEC/HZ would probably be safe. I was initially thinking
-> > being more paranoid and just dividing it in half, but that's probably a
-> > bit silly.
-> 
-> Thanks, I have added the code to subtract NSEC_PER_SEC/HZ. Should we 
-> have any concerns about the adjustment of the mult value? This is the 
-> only thing that could impact the value returned from 
-> timekeeping_max_deferment(). I am not familiar with exactly how this is 
-> working so just wanted to ask.
+On Tue, 12 May 2009 13:24:00 +0200
+Johannes Weiner <hannes@cmpxchg.org> wrote:
 
-Well, the mult adjustments should be quite small, especially compared to
-the NSEC_PER_SEC/HZ adjustment.
-
-Hmm... Although, I guess we could get bitten if the max_deferment was
-like an hour, and the adjustment was enough that it scaled out to and we
-ended up being a second late or so. So you have a point.
-
-But since the clockevent driver is not scaled, we probably can get away
-with using the orig_mult value instead of mult, and be ok.
-
-Alternatively instead of NSEC_PER_SEC/HZ, we could always drop the
-larger of NSEC_PER_SEC/HZ or max_deferment/10? That way we should scale
-up without a problem. 
-
-I suspect it would be tough to hit this issue though.
-
-> > As far the decision to defer if the next even is greater then one jiffy
-> > away, that seems reasonable, but I'd not embed that into the
-> > timekeeping_max_deferrment(). 
+> On Tue, May 12, 2009 at 10:46:03AM +0900, KAMEZAWA Hiroyuki wrote:
+> > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 > > 
-> > I'm suggesting we drop timekeeping_max_deferrment() down since that's
-> > the absolute maximum and we're sure to break if we actually wait that
-> > long (since the time between clocksource reads would certainly be longer
-> > due to execution delay). 1HZ seems reasonable, since we should easily be
-> > able to run the tick code twice in that time, as well as it should be
-> > easily within the interrupt programming granularity.
+> > In general, Linux's swp_entry handling is done by combination of lazy techniques
+> > and global LRU. It works well but when we use mem+swap controller, some more
+> > strict control is appropriate. Otherwise, swp_entry used by a cgroup will be
+> > never freed until global LRU works. In a system where memcg is well-configured,
+> > global LRU doesn't work frequently.
 > > 
-> > Any additional decisions as to how far out we should be before we start
-> > skipping ticks would be up to the tick resched code, and shouldn't be in
-> > the timekeeping function.
+> >   Example) Assume swapin-readahead.
+> > 	      CPU0			      CPU1
+> > 	   zap_pte()			  read_swap_cache_async()
+> > 					  swap_duplicate().
+> >            swap_entry_free() = 1
+> > 	   find_get_page()=> NULL.
+> > 					  add_to_swap_cache().
+> > 					  issue swap I/O. 
 > > 
-> > Sound sane? If so add that in and I'll ack it.
+> > There are many patterns of this kind of race (but no problems).
+> > 
+> > free_swap_and_cache() is called for freeing swp_entry. But it is a best-effort
+> > function. If the swp_entry/page seems busy, swp_entry is not freed.
+> > This is not a problem because global-LRU will find SwapCache at page reclaim.
+> > 
+> > If memcg is used, on the other hand, global LRU may not work. Then, above
+> > unused SwapCache will not be freed.
+> > (unmapped SwapCache occupy swp_entry but never be freed if not on memcg's LRU)
+> > 
+> > So, even if there are no tasks in a cgroup, swp_entry usage still remains.
+> > In bad case, OOM by mem+swap controller is triggered by this "leak" of
+> > swp_entry as Nishimura reported.
+> > 
+> > Considering this issue, swapin-readahead itself is not very good for memcg.
+> > It read swap cache which will not be used. (and _unused_ swapcache will
+> > not be accounted.) Even if we account swap cache at add_to_swap_cache(),
+> > we need to account page to several _unrelated_ memcg. This is bad.
+> > 
+> > This patch tries to fix racy case of free_swap_and_cache() and page status.
+> > 
+> > After this patch applied, following test works well.
+> > 
+> >   # echo 1-2M > ../memory.limit_in_bytes
+> >   # run tasks under memcg.
+> >   # kill all tasks and make memory.tasks empty
+> >   # check memory.memsw.usage_in_bytes == memory.usage_in_bytes and
+> >     there is no _used_ swp_entry.
+> > 
+> > What this patch does is
+> >  - avoid swapin-readahead when memcg is activated.
+> > 
+> > Changelog: v6 -> v7
+> >  - just handle races in readahead.
+> >  - races in writeback is handled in the next patch.
+> > 
+> > Changelog: v5 -> v6
+> >  - works only when memcg is activated.
+> >  - check after I/O works only after writeback.
+> >  - avoid swapin-readahead when memcg is activated.
+> >  - fixed page refcnt issue.
+> > Changelog: v4->v5
+> >  - completely new design.
+> > 
+> > Reported-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > ---
+> >  mm/swap_state.c |   20 +++++++++++++++++---
+> >  1 file changed, 17 insertions(+), 3 deletions(-)
+> > 
+> > Index: mmotm-2.6.30-May07/mm/swap_state.c
+> > ===================================================================
+> > --- mmotm-2.6.30-May07.orig/mm/swap_state.c
+> > +++ mmotm-2.6.30-May07/mm/swap_state.c
+> > @@ -349,9 +349,9 @@ struct page *read_swap_cache_async(swp_e
+> >  struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
+> >  			struct vm_area_struct *vma, unsigned long addr)
+> >  {
+> > -	int nr_pages;
+> > +	int nr_pages = 1;
+> >  	struct page *page;
+> > -	unsigned long offset;
+> > +	unsigned long offset = 0;
+> >  	unsigned long end_offset;
+> >  
+> >  	/*
+> > @@ -360,8 +360,22 @@ struct page *swapin_readahead(swp_entry_
+> >  	 * No, it's very unlikely that swap layout would follow vma layout,
+> >  	 * more likely that neighbouring swap pages came from the same node:
+> >  	 * so use the same "addr" to choose the same node for each swap read.
+> > +	 *
+> > +	 * But, when memcg is used, swapin readahead give us some bad
+> > +	 * effects. There are 2 big problems in general.
+> > +	 * 1. Swapin readahead tend to use/read _not required_ memory.
+> > +	 *    And _not required_ memory is only freed by global LRU.
+> > +	 * 2. We can't charge pages for swap-cache readahead because
+> > +	 *    we should avoid account memory in a cgroup which a
+> > +	 *    thread call this function is not related to.
+> > +	 * And swapin-readahead have racy condition with
+> > +	 * free_swap_and_cache(). This also annoys memcg.
+> > +	 * Then, if memcg is really used, we avoid readahead.
+> >  	 */
+> > -	nr_pages = valid_swaphandles(entry, &offset);
+> > +
+> > +	if (!mem_cgroup_activated())
+> > +		nr_pages = valid_swaphandles(entry, &offset);
+> > +
+> >  	for (end_offset = offset + nr_pages; offset < end_offset; offset++) {
+> >  		/* Ok, do the async read-ahead now */
+> >  		page = read_swap_cache_async(swp_entry(swp_type(entry), offset),
 > 
-> Yes, agree. See below. By the way I have kept the below patch separate 
-> from the original I posted here:
+> Having nr_pages set to 1 and offset to zero will actually enter hat
+> loop and try to read a swap slot at offset zero, including a
+> superfluous page allocation, just to fail at the swap_duplicate()
+> (swap slot 0 is swap header -> SWAP_MAP_BAD).
 > 
-> http://marc.info/?l=linux-kernel&m=124026224019895&w=2
-> 
-> I was not sure if you would prefer to keep these as two patch series or 
-> make it one single patch. Let me know if you would like me to combine or 
-> re-post as a two patch series.
+Hmm ?
+ swp_entry(swp_type(entry), offset),
+can be zero ?
 
-Two patches should be fine.
+> How about:
+> 
+> 	if (mem_cgroup_activated())
+> 		goto pivot;
+> 	nr_pages = valid_swaphandles(...);
+> 	for (readahead loop)
+> 		...
+> pivot:
+> 	return read_swap_cache_async();
+> 
+> That will also save you the runtime initialization of nr_pages and
+> offset completely when the cgroup is active.  And you'll have only one
+> branch and no second one for offset < end_offset in the loop.  And the
+> lru draining, but I'm not sure about that.  I think it's not needed.
+> 
+Hmm. I'm not sure why lru_add_drain()->read_swap_cache_async() is inserted before returing
+to caller. Is the page to be returned isn't necessary to be on LRU ?
 
-> Please note that the environment I have been running some basic tests on 
-> is a single core ARM device. I just wanted to let you know in case you 
-> have any concerns with this.
-> 
-> > This looks *much* better to me. Thanks for reworking it!
-> 
-> Great! No problem. Thanks for your help and feedback.
-> 
-> Cheers
-> Jon
-> 
-> 
-> Signed-off-by: Jon Hunter <jon-hunter@ti.com>
-
-Looks good overall. We may want to add the -10% (or -5%) to be totally
-safe, but that's likely just me being paranoid.
-
-Also one more safety issue below.
-
-Otherwise,
-Acked-by: John Stultz <johnstul@us.ibm.com>
-
-
-thanks
--john
-
-
-> ---
->   include/linux/time.h      |    1 +
->   kernel/time/tick-sched.c  |   36 +++++++++++++++++++++++++-----------
->   kernel/time/timekeeping.c |   19 +++++++++++++++++++
->   3 files changed, 45 insertions(+), 11 deletions(-)
-> 
-> diff --git a/include/linux/time.h b/include/linux/time.h
-> index 242f624..090be07 100644
-> --- a/include/linux/time.h
-> +++ b/include/linux/time.h
-> @@ -130,6 +130,7 @@ extern void monotonic_to_bootbased(struct timespec *ts);
-> 
->   extern struct timespec timespec_trunc(struct timespec t, unsigned gran);
->   extern int timekeeping_valid_for_hres(void);
-> +extern s64 timekeeping_max_deferment(void);
->   extern void update_wall_time(void);
->   extern void update_xtime_cache(u64 nsec);
-> 
-> diff --git a/kernel/time/tick-sched.c b/kernel/time/tick-sched.c
-> index d3f1ef4..f0155ae 100644
-> --- a/kernel/time/tick-sched.c
-> +++ b/kernel/time/tick-sched.c
-> @@ -217,6 +217,7 @@ void tick_nohz_stop_sched_tick(int inidle)
->   	ktime_t last_update, expires, now;
->   	struct clock_event_device *dev = __get_cpu_var(tick_cpu_device).evtdev;
->   	int cpu;
-> +	s64 time_delta, max_time_delta;
-> 
->   	local_irq_save(flags);
-> 
-> @@ -264,6 +265,7 @@ void tick_nohz_stop_sched_tick(int inidle)
->   		seq = read_seqbegin(&xtime_lock);
->   		last_update = last_jiffies_update;
->   		last_jiffies = jiffies;
-> +		max_time_delta = timekeeping_max_deferment();
->   	} while (read_seqretry(&xtime_lock, seq));
-> 
->   	/* Get the next timer wheel timer */
-> @@ -283,11 +285,22 @@ void tick_nohz_stop_sched_tick(int inidle)
->   	if ((long)delta_jiffies >= 1) {
-> 
->   		/*
-> -		* calculate the expiry time for the next timer wheel
-> -		* timer
-> -		*/
-> -		expires = ktime_add_ns(last_update, tick_period.tv64 *
-> -				   delta_jiffies);
-> +		 * Calculate the time delta for the next timer event.
-> +		 * If the time delta exceeds the maximum time delta
-> +		 * permitted by the current clocksource then adjust
-> +		 * the time delta accordingly to ensure the
-> +		 * clocksource does not wrap.
-> +		 */
-> +		time_delta = tick_period.tv64 * delta_jiffies;
-> +
-> +		if (time_delta > max_time_delta)
-> +			time_delta = max_time_delta;
-> +
-> +		/*
-> +		 * calculate the expiry time for the next timer wheel
-> +		 * timer
-> +		 */
-> +		expires = ktime_add_ns(last_update, time_delta);
-> 
->   		/*
->   		 * If this cpu is the one which updates jiffies, then
-> @@ -300,7 +313,7 @@ void tick_nohz_stop_sched_tick(int inidle)
->   		if (cpu == tick_do_timer_cpu)
->   			tick_do_timer_cpu = TICK_DO_TIMER_NONE;
-> 
-> -		if (delta_jiffies > 1)
-> +		if (time_delta > tick_period.tv64)
->   			cpumask_set_cpu(cpu, nohz_cpu_mask);
-> 
->   		/* Skip reprogram of event if its not changed */
-> @@ -332,12 +345,13 @@ void tick_nohz_stop_sched_tick(int inidle)
->   		ts->idle_sleeps++;
-> 
->   		/*
-> -		 * delta_jiffies >= NEXT_TIMER_MAX_DELTA signals that
-> -		 * there is no timer pending or at least extremly far
-> -		 * into the future (12 days for HZ=1000). In this case
-> -		 * we simply stop the tick timer:
-> +		 * time_delta >= (tick_period.tv64 * NEXT_TIMER_MAX_DELTA)
-> +		 * signals that there is no timer pending or at least
-> +		 * extremely far into the future (12 days for HZ=1000).
-> +		 * In this case we simply stop the tick timer:
->   		 */
-> -		if (unlikely(delta_jiffies >= NEXT_TIMER_MAX_DELTA)) {
-> +		if (unlikely(time_delta >=
-> +				(tick_period.tv64 * NEXT_TIMER_MAX_DELTA))) {
->   			ts->idle_expires.tv64 = KTIME_MAX;
->   			if (ts->nohz_mode == NOHZ_MODE_HIGHRES)
->   				hrtimer_cancel(&ts->sched_timer);
-> diff --git a/kernel/time/timekeeping.c b/kernel/time/timekeeping.c
-> index 687dff4..7617fbe 100644
-> --- a/kernel/time/timekeeping.c
-> +++ b/kernel/time/timekeeping.c
-> @@ -271,6 +271,25 @@ int timekeeping_valid_for_hres(void)
->   }
-> 
->   /**
-> + * timekeeping_max_deferment - Returns max time the clocksource can be 
-> deferred
-> + *
-> + * IMPORTANT: Must be called with xtime_lock held!
-> + */
-> +s64 timekeeping_max_deferment(void)
-> +{
-> +	s64 max_nsecs;
-> +
-> +	/*
-> +	 * Limit the time the clocksource can be
-> +	 * deferred by one jiffie period to ensure
-> +	 * that the clocksource will not wrap.
-> +	 */
-> +	max_nsecs = cyc2ns(clock, clock->mask) - (NSEC_PER_SEC/HZ);
-> +
-
-This seems really unlikely, but you might want to add something like:
-
-	if (max_nsecs < 0)
-		max_nsecs = 0;
-
-To avoid negative underflows. I don't see how a system could be running
-in highres mode if the clocksource isn't continuous for longer then a
-tick, but probably a good idea none the less.
+Thanks,
+-Kame
 
 
-> +	return max_nsecs;
-> +}
-> +
-> +/**
->    * read_persistent_clock -  Return time in seconds from the persistent 
-> clock.
->    *
->    * Weak dummy function for arches that do not yet support it.
+
+> 	Hannes
+> 
 
