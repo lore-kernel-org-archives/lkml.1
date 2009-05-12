@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758856AbZEMDM6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759113AbZEMDNX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758856AbZEMDM6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 23:12:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756059AbZEMDGU
+	id S1759113AbZEMDNX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 23:13:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755530AbZEMDGV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 23:06:20 -0400
-Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:36222
+	Tue, 12 May 2009 23:06:21 -0400
+Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:36220
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756006AbZEMDGJ (ORCPT
+	with ESMTP id S1756018AbZEMDGJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 May 2009 23:06:09 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -15,11 +15,11 @@ To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Juan Quintela <quintela@redhat.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 12/16] xen/dom0: add XEN_DOM0 config option
-Date: Tue, 12 May 2009 14:28:34 -0700
-Message-Id: <1242163718-2934-13-git-send-email-jeremy@goop.org>
+Subject: [PATCH 02/16] xen dom0: Initialize xenbus for dom0.
+Date: Tue, 12 May 2009 14:28:24 -0700
+Message-Id: <1242163718-2934-3-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1242163718-2934-1-git-send-email-jeremy@goop.org>
 References: <1242163718-2934-1-git-send-email-jeremy@goop.org>
@@ -27,69 +27,75 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Allow dom0 to be configured.  Requires more patches to do something useful.
-Also announce whether we're running dom0 as part of xen boot message.
+From: Juan Quintela <quintela@redhat.com>
 
-[ Impact: add Kconfig to enable XEN_DOM0 ]
+Do initial xenbus/xenstore setup in dom0.  In dom0 we need to actually
+allocate the xenstore resources, rather than being given them from
+outside.
+
+[ Impact: initialize Xenbus ]
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Juan Quintela <quintela@redhat.com>
 ---
- arch/x86/xen/Kconfig     |   26 ++++++++++++++++++++++++++
- arch/x86/xen/enlighten.c |    6 ++++--
- 2 files changed, 30 insertions(+), 2 deletions(-)
+ drivers/xen/xenbus/xenbus_probe.c |   30 +++++++++++++++++++++++++++++-
+ 1 files changed, 29 insertions(+), 1 deletions(-)
 
-diff --git a/arch/x86/xen/Kconfig b/arch/x86/xen/Kconfig
-index b83e119..fe69286 100644
---- a/arch/x86/xen/Kconfig
-+++ b/arch/x86/xen/Kconfig
-@@ -36,3 +36,29 @@ config XEN_DEBUG_FS
- 	help
- 	  Enable statistics output and various tuning options in debugfs.
- 	  Enabling this option may incur a significant performance overhead.
-+
-+config XEN_DOM0
-+	bool "Enable Xen privileged domain support"
-+	depends on XEN && X86_IO_APIC && ACPI
-+	help
-+	  The Xen hypervisor requires a privileged domain ("dom0") to
-+	  actually manage the machine, provide devices drivers, etc.
-+	  This option enables dom0 support.  A dom0 kernel can also
-+	  run as an unprivileged domU kernel, or a kernel running
-+	  native on bare hardware.
-+
-+# Dummy symbol since people have come to rely on the PRIVILEGED_GUEST
-+# name in tools.
-+config XEN_PRIVILEGED_GUEST
-+	def_bool XEN_DOM0
-+
-+config XEN_PCI_PASSTHROUGH
-+       bool #"Enable support for Xen PCI passthrough devices"
-+       depends on XEN && PCI
-+       help
-+         Enable support for passing PCI devices through to
-+	 unprivileged domains. (COMPLETELY UNTESTED)
-+
-+config XEN_DOM0_PCI
-+       def_bool y
-+       depends on XEN_DOM0 && PCI
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 79b9b84..784971d 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -172,9 +172,11 @@ static void __init xen_banner(void)
+diff --git a/drivers/xen/xenbus/xenbus_probe.c b/drivers/xen/xenbus/xenbus_probe.c
+index d42e25d..6a05725 100644
+--- a/drivers/xen/xenbus/xenbus_probe.c
++++ b/drivers/xen/xenbus/xenbus_probe.c
+@@ -780,6 +780,7 @@ void xenbus_probe(struct work_struct *unused)
+ static int __init xenbus_probe_init(void)
+ {
+ 	int err = 0;
++	unsigned long page = 0;
  
- 	printk(KERN_INFO "Booting paravirtualized kernel on %s\n",
- 	       pv_info.name);
--	printk(KERN_INFO "Xen version: %d.%d%s%s\n",
-+	printk(KERN_INFO "Xen version: %d.%d%s%s%s\n",
- 	       version >> 16, version & 0xffff, extra.extraversion,
--	       xen_feature(XENFEAT_mmu_pt_update_preserve_ad) ? " (preserve-AD)" : "");
-+	       xen_feature(XENFEAT_mmu_pt_update_preserve_ad) ?
-+			" (preserve-AD)" : "",
-+	       xen_initial_domain() ? " (dom0)" : "");
+ 	DPRINTK("");
+ 
+@@ -800,7 +801,31 @@ static int __init xenbus_probe_init(void)
+ 	 * Domain0 doesn't have a store_evtchn or store_mfn yet.
+ 	 */
+ 	if (xen_initial_domain()) {
+-		/* dom0 not yet supported */
++		struct evtchn_alloc_unbound alloc_unbound;
++
++		/* Allocate Xenstore page */
++		page = get_zeroed_page(GFP_KERNEL);
++		if (!page)
++			return -ENOMEM;
++
++		xen_store_mfn = xen_start_info->store_mfn =
++			pfn_to_mfn(virt_to_phys((void *)page) >>
++				   PAGE_SHIFT);
++
++		/* Next allocate a local port which xenstored can bind to */
++		alloc_unbound.dom        = DOMID_SELF;
++		alloc_unbound.remote_dom = 0;
++
++		err = HYPERVISOR_event_channel_op(EVTCHNOP_alloc_unbound,
++						  &alloc_unbound);
++		if (err == -ENOSYS)
++			goto out_unreg_front;
++
++		BUG_ON(err);
++		xen_store_evtchn = xen_start_info->store_evtchn =
++			alloc_unbound.port;
++
++		xen_store_interface = mfn_to_virt(xen_store_mfn);
+ 	} else {
+ 		xenstored_ready = 1;
+ 		xen_store_evtchn = xen_start_info->store_evtchn;
+@@ -836,6 +861,9 @@ static int __init xenbus_probe_init(void)
+ 	bus_unregister(&xenbus_frontend.bus);
+ 
+   out_error:
++	if (page != 0)
++		free_page(page);
++
+ 	return err;
  }
  
- static __read_mostly unsigned int cpuid_leaf1_edx_mask = ~0;
 -- 
 1.6.0.6
 
