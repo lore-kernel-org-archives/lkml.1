@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754467AbZELJM3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755361AbZELJOf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754467AbZELJM3 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 05:12:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751954AbZELJMU
+	id S1755361AbZELJOf (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 05:14:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751174AbZELJOZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 05:12:20 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:7236 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751695AbZELJMT (ORCPT
+	Tue, 12 May 2009 05:14:25 -0400
+Received: from cpsmtpm-eml105.kpnxchange.com ([195.121.3.9]:59155 "EHLO
+	CPSMTPM-EML105.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751013AbZELJOZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 05:12:19 -0400
-Message-ID: <4A093D6E.7060309@monstr.eu>
-Date: Tue, 12 May 2009 11:12:14 +0200
-From: Michal Simek <monstr@monstr.eu>
-Reply-To: monstr@monstr.eu
-User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
+	Tue, 12 May 2009 05:14:25 -0400
+From: Frans Pop <elendil@planet.nl>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: Re: [madwifi-project] Death to MadWifi!
+Date: Tue, 12 May 2009 11:14:21 +0200
+User-Agent: KMail/1.9.9
+Cc: p0g0@madwifi-project.org, madwifi-project@venema.h4ckr.net,
+       Cliff.Holden@atheros.com, mb@bu3sch.de, nbd@openwrt.org,
+       mickflemm@gmail.com, proski@gnu.org, me@bobcopeland.com,
+       juhosg@openwrt.org, linux-kernel@vger.kernel.org
+References: <43e72e890905111627r54fd4fa4r26d9511c1fd625a2@mail.gmail.com> <4A0908AB.1070606@madwifi-project.org> <4A0908AB.1070606@madwifi-project.org> <43e72e890905112332j3e32fb8q942fb75f882b2384@mail.gmail.com>
+In-reply-To: <43e72e890905112332j3e32fb8q942fb75f882b2384@mail.gmail.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-CC: linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au
-Subject: Re: [PATCH 11/12] microblaze: dont include asm/mmu.h in hw_exception_handler
-References: <20090511232019.927138561@arndb.de>> <20090511232345.746701938@arndb.de>>
-In-Reply-To: <20090511232345.746701938@arndb.de>>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="us-ascii"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905121114.24355.elendil@planet.nl>
+X-OriginalArrivalTime: 12 May 2009 09:14:24.0642 (UTC) FILETIME=[0B0A0E20:01C9D2E2]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Arnd Bergmann wrote:
+Luis R. Rodriguez wrote:
+> Trust me, I'm not concerned at all -- reason for me sending this
+> e-mail was having to hear a rant from a user about MadWifi being such
+> crap and about devices not being supported properly.
 
+Let me give at least one counter example.
 
-1. Please do not attach your patches - use in-line patches - it is easier for me and for others to
-review it.
+I have used madwifi in the past but switched to ath5k when it came 
+available for my old Trust Atheros-based PCMCIA card, mostly because of 
+the ease of compilation and partly because of the better "free-ness".
 
-2. I have to reject this patch.
-- currently you are right that I should remove mmu.h from hw_exception...S for noMMU kernel
-- but on the other hand I need mmu.h for mmu patches - because of MICROBLAZE_TLB_SIZE
-  - if you think that mmu.h shouldn't be included we have to move this definition to another file
-  - you can look at my next branch to see mmu context
+There is at least one area where the madwifi driver was and probably still 
+is far superior: properly blinking the leds on the card to show the 
+power/connection state and during data transfer.
 
-Thanks,
-Michal
+It's not a major issue and though I've mentioned this at least once in a 
+bug report or mail, this admittedly was back when there were more 
+important things to fix. I probably should submit a proper bug report 
+about it now.
 
+I'm not asking for this to be fixed with this mail. I only mention it 
+because the title and tone of this mail, and the fact of its recurring 
+theme, offend me somewhat.
+The way FOSS normally works is that one variant of alternative software 
+will gradually die a natural death once a clear superior is established. 
+There should be no need for members of rival projects to try to actively 
+kill eachother off (the rival project that is, not its members).
 
+Cheers,
+FJP
 
-
--- 
-Michal Simek, Ing. (M.Eng)
-w: www.monstr.eu p: +42-0-721842854
+P.S. This is the only post I've seen from this thread as apparently it 
+started somewhere other than LKML.
