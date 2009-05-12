@@ -1,70 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752433AbZELVCY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbZELVFq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752433AbZELVCY (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 17:02:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752208AbZELVCN
+	id S1753577AbZELVFq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 17:05:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbZELVFg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 17:02:13 -0400
-Received: from THUNK.ORG ([69.25.196.29]:34661 "EHLO thunker.thunk.org"
+	Tue, 12 May 2009 17:05:36 -0400
+Received: from www.tglx.de ([62.245.132.106]:38066 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752189AbZELVCN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 17:02:13 -0400
-Date: Tue, 12 May 2009 17:01:54 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: Joseph Cihula <joseph.cihula@intel.com>
-Cc: linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
-       hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
-       jmorris@namei.org, jbeulich@novell.com, peterm@redhat.com,
-       gang.wei@intel.com, shane.wang@intel.com, John Gilmore <gnu@toad.com>
-Subject: Re: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
-	support
-Message-ID: <20090512210154.GC23773@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	Joseph Cihula <joseph.cihula@intel.com>,
-	linux-kernel@vger.kernel.org, mingo@elte.hu, arjan@linux.intel.com,
-	hpa@zytor.com, andi@firstfloor.org, chrisw@sous-sol.org,
-	jmorris@namei.org, jbeulich@novell.com, peterm@redhat.com,
-	gang.wei@intel.com, shane.wang@intel.com,
-	John Gilmore <gnu@toad.com>
-References: <4A03B9C3.9090607@intel.com>
+	id S1752724AbZELVFf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 17:05:35 -0400
+Date: Tue, 12 May 2009 23:04:04 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
+       Robert Richter <robert.richter@amd.com>, Dave Jones <davej@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 3/10 -tip] x86: Add cpufeatures for Advanced Power
+ Management
+In-Reply-To: <1242155190.2492.73.camel@ht.satnam>
+Message-ID: <alpine.LFD.2.00.0905122219420.3561@localhost.localdomain>
+References: <1242142530.2547.11.camel@ht.satnam>  <1242142623.2547.13.camel@ht.satnam>  <1242142692.2547.15.camel@ht.satnam>  <1242142753.2547.16.camel@ht.satnam> <1242155190.2492.73.camel@ht.satnam>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A03B9C3.9090607@intel.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 07, 2009 at 09:49:07PM -0700, Joseph Cihula wrote:
-> Linux support for Intel(R) Trusted Execution Technology.
+Jaswinder,
 
-It should be noted that one of the prime purposes of the Trusted
-Execution Technology (TXT), aka LaGrande Technology is for DRM
-enforcement systems that can be nearly uncrackable.
+On Wed, 13 May 2009, Jaswinder Singh Rajput wrote:
+> +	/* Advanced Power Management (Function 8000_0007h), edx */
+> +	if (c->extended_cpuid_level >= 0x80000007) {
+> +		c->x86_capability[9] = cpuid_edx(0x80000007);
 
-It can be used for other things, such as restricting who can look at
-your medical records (basically, the same technology that prevents you
-from breaking the DRM on say, a high-definition movie from Hollywood)
-can also be used to enforced who can look at your certain records,
-such as medical records in a highly secure and non-circumvental
-fashion.
+In the reply to [Patch 5/10] Ingo wrote:
+>> Also, open-coding x86_capability[9] like that is quite unclean. Were 
+>> we ever to reorder those bits internally, this could would break.
 
-Ross Anderson was one of the first to write about these concerns, over
-five years ago:
+Do you really believe that open-coding x86_capability[9] in .../common.c
+is better than the open-coding in ../powernow-k8.c ?
 
-     http://www.cl.cam.ac.uk/~rja14/tcpa-faq.html
+Again, open-coding is wrong and error prone. Ingo explicitely asked for a
+helper function. All you did is moving the open-coded hard wired array
+reference to a different place.
 
-It's interesting that his 2003 document was able to predict the
-emergence of the LaGrande Technology (see question 15 in the above
-FAQ).
+Please start to listen to the review comments as long as people are
+willing to look at your patches. Seriously, the noise/useful ratio of
+your patches is annoying and adds an unjustified burden to the
+maintainers of that code.
 
-So we should expect a certain amount of controversy and people
-lobbying to resist the acceptance of this patch.
+Thanks,
 
-Regards,
-
-						- Ted
+	tglx
