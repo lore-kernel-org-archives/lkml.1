@@ -1,49 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755343AbZELOnf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755534AbZELOpt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755343AbZELOnf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 10:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752690AbZELOn0
+	id S1755534AbZELOpt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 10:45:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZELOpk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 10:43:26 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:52338 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752300AbZELOnZ (ORCPT
+	Tue, 12 May 2009 10:45:40 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:37224 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752663AbZELOpj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 10:43:25 -0400
-Date: Tue, 12 May 2009 07:36:07 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Robin Holt <holt@sgi.com>
-cc: Masami Hiramatsu <mhiramat@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, systemtap@sources.redhat.com,
-       Harvey Harrison <harvey.harrison@gmail.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Jan Blunck <jblunck@suse.de>, Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH -rc] [BUGFIX] x86: fix kernel_trap_sp()
-In-Reply-To: <20090512112300.GL7601@sgi.com>
-Message-ID: <alpine.LFD.2.01.0905120732580.3586@localhost.localdomain>
-References: <20090511210300.17332.67549.stgit@localhost.localdomain> <alpine.LFD.2.01.0905111512240.3586@localhost.localdomain> <20090512112300.GL7601@sgi.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Tue, 12 May 2009 10:45:39 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=iRkAm4IiiJLzNtcR3lAil8t6CRnnhC4NKEabzuyr9ufhh6JIRDTycdcLQxdEVVKeFL
+         R5mpfBf8Z+IkmDdGMMayplQ9NtqFXkl0jkov35XLKUUFxIA3cVj9YjSFKGnaPNLatoIK
+         Y8ZM7dmGjr3+YpGXWcY/oaKkD/F8A2myOI5yY=
+Message-ID: <4A098B8D.10107@panasas.com>
+Date: Tue, 12 May 2009 17:45:33 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, Tejun Heo <tj@kernel.org>
+CC: jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
+       benh@kernel.crashing.org
+Subject: Re: [PATCH] swim3: use blk_end_request instead of blk_update_request
+References: <1242127787-29842-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1242127787-29842-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1242127787-29842-3-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On 05/12/2009 02:29 PM, FUJITA Tomonori wrote:
+> swim3 is the only user of blk_update_request(). Let's use
+> blk_end_request instead of blk_update_request. swim3 doesn't need to
+> update a request manually. 
 
 
-On Tue, 12 May 2009, Robin Holt wrote:
-> >   */
-> > -static inline unsigned long kernel_trap_sp(struct pt_regs *regs)
-> > +static inline unsigned long kernel_stack_pointer(struct pt_regs *regs)
+> In addition, we can unexport
+> blk_update_request().
 > 
-> Why not have it return an unsigned long *?
 
-I considered it, but since part of the point of the patch was to make it 
-look like the mirror of "user_stack_pointer()", returning "unsigned long" 
-looked more appropriate.
+blk_update_request() was meant for request-based-multi-path, and not for swim3
+please see:
+    32fab448 block: add request update interface
 
-But I have no really strong opinions. I wouldn't object to making it 
-return "unsigned long *" either.
+CC: Kiyoshi Ueda<k-ueda@ct.jp.nec.com>
 
-		Linus
+I think Tejun Heo was just using that in some recent block layer, transformation.
+Tejun?
+
+> Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+> ---
+>  drivers/block/swim3.c |   23 +++++++++++++----------
+>  1 files changed, 13 insertions(+), 10 deletions(-)
+> 
+
+Boaz
