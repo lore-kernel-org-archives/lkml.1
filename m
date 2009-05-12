@@ -1,64 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZELU1w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755753AbZELUaL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbZELU1w (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 16:27:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751191AbZELU1m
+	id S1755753AbZELUaL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 16:30:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752456AbZELU3y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 16:27:42 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:45935 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750832AbZELU1l (ORCPT
+	Tue, 12 May 2009 16:29:54 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:57715 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751191AbZELU3x (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 16:27:41 -0400
-Date: Tue, 12 May 2009 16:26:50 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: Rik van Riel <riel@redhat.com>
-cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH -mm] vmscan: protect a fraction of file backed mapped
- pages from reclaim
-In-Reply-To: <4A09D957.2070908@redhat.com>
-Message-ID: <alpine.DEB.1.10.0905121623560.16057@qirst.com>
-References: <20090508125859.210a2a25.akpm@linux-foundation.org> <20090512025246.GC7518@localhost> <20090512120002.D616.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0905121650090.14226@qirst.com> <4A09AC91.4060506@redhat.com> <alpine.DEB.1.10.0905121718040.24066@qirst.com>
- <4A09B46D.9010705@redhat.com> <alpine.DEB.1.10.0905121801080.19973@qirst.com> <4A09D957.2070908@redhat.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 12 May 2009 16:29:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
+         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=rJm891ZewpszQi39QYXvWLa95uUHE5+yoUX9FPrFyv92zqkryfBa2UWVaBOWHpGKM0
+         ZWR+TLYEHQIQXnp5a1HYhpFXzyHZ88ZHu8ru53GwcCafVhlAZ3Gj8BxIRMLzi4nE6AdD
+         qrZw2IeW7LjIB14T6R1bjmRiJ6lwojzmNVIrs=
+Message-ID: <4A09DC3E.2080807@googlemail.com>
+Date: Tue, 12 May 2009 22:29:50 +0200
+From: Michael Riepe <michael.riepe@googlemail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: de-de, de, en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: David Dillow <dave@thedillows.org>
+CC: Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       =?ISO-8859-15?Q?Michael_B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+References: <200903041828.49972.m.bueker@berlin.de> <1242001754.4093.12.camel@obelisk.thedillows.org> <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de> <1242077392.3716.15.camel@lap75545.ornl.gov>
+In-Reply-To: <1242077392.3716.15.camel@lap75545.ornl.gov>
+X-Enigmail-Version: 0.91.0.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009, Rik van Riel wrote:
+Hi!
 
-> How many do you want before you're satisfied that this
-> benefits a significant number of workloads?
+David Dillow wrote:
 
-One would be a good starter.
+> I was saying that I don't think the timeouts are necessarily the NIC
+> chipset -- or the bridge chip for that matter --  having issues with
+> MSI. There were some substantial IRQ handling changes in 2.6.28 and my
+> bisection of the problem seem to lead into that code. I'll try this
+> later tonight hopefully, but can you try to run 2.6.27 with the current
+> r8169 driver and see if it is solid for you? That way it is using the
+> same driver code, but avoids the IRQ changes.
 
-> How many numbers do you want to feel safe that no workloads
-> suffer badly from this patch?
->
-> Also, wow would you measure a concept as nebulous as desktop
-> interactivity?
+Unfortunately, 2.6.27 won't build with r8169.c copied from 2.6.29.
 
-Measure the response to desktop clicks? I.e. retrieve an URL with a
-webbrowser that was running when the other load started.
-
-> Btw, the patch has gone into the Fedora kernel RPM to get
-> a good amount of user testing.  I'll let you know what the
-> users say (if anything).
-
-I have not seen a single reference to a measurement taken with this patch.
-
-Maybe that is because I have not looked at the threads that discuss
-measurements with this patch. Where are they?
+-- 
+Michael "Tired" Riepe <michael.riepe@googlemail.com>
+X-Tired: Each morning I get up I die a little
