@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757263AbZEMDH0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757116AbZEMDHq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757263AbZEMDH0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 23:07:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754987AbZEMDGA
+	id S1757116AbZEMDHq (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 23:07:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZEMDGA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Tue, 12 May 2009 23:06:00 -0400
-Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:36212
+Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:36200
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753967AbZEMDF5 (ORCPT
+	with ESMTP id S1754631AbZEMDF5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 May 2009 23:05:57 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -15,10 +15,11 @@ To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
+       Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 15/16] x86: don't need "changed" parameter for set_io_bitmap()
-Date: Tue, 12 May 2009 14:28:37 -0700
-Message-Id: <1242163718-2934-16-git-send-email-jeremy@goop.org>
+Subject: [PATCH 09/16] xen: implement XENMEM_machphys_mapping
+Date: Tue, 12 May 2009 14:28:31 -0700
+Message-Id: <1242163718-2934-10-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1242163718-2934-1-git-send-email-jeremy@goop.org>
 References: <1242163718-2934-1-git-send-email-jeremy@goop.org>
@@ -26,142 +27,199 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+From: Ian Campbell <ian.campbell@citrix.com>
 
-The "changed" parameter isn't really used, so don't bother passing it.
-(xen_set_io_bitmap can keep track of it for itself, if it wants.)
+This hypercall allows Xen to specify a non-default location for the
+machine to physical mapping. This capability is used when running a 32
+bit domain 0 on a 64 bit hypervisor to shrink the hypervisor hole to
+exactly the size required.
 
-[ Impact: cleanup ]
+[ Impact: add Xen hypercall definitions ]
 
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/paravirt.h  |    6 +++---
- arch/x86/include/asm/processor.h |    2 +-
- arch/x86/kernel/ioport.c         |    9 +++------
- arch/x86/kernel/process.c        |    4 ++--
- arch/x86/xen/enlighten.c         |    5 +----
- 5 files changed, 10 insertions(+), 16 deletions(-)
+ arch/x86/include/asm/xen/interface.h    |    6 +++---
+ arch/x86/include/asm/xen/interface_32.h |    5 +++++
+ arch/x86/include/asm/xen/interface_64.h |   13 +------------
+ arch/x86/include/asm/xen/page.h         |    7 ++++---
+ arch/x86/xen/enlighten.c                |    7 +++++++
+ arch/x86/xen/mmu.c                      |   15 +++++++++++++++
+ include/xen/interface/memory.h          |   13 +++++++++++++
+ 7 files changed, 48 insertions(+), 18 deletions(-)
 
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index 8b02fd0..c7136e8 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -157,7 +157,7 @@ struct pv_cpu_ops {
+diff --git a/arch/x86/include/asm/xen/interface.h b/arch/x86/include/asm/xen/interface.h
+index e8506c1..1c10c88 100644
+--- a/arch/x86/include/asm/xen/interface.h
++++ b/arch/x86/include/asm/xen/interface.h
+@@ -61,9 +61,9 @@ DEFINE_GUEST_HANDLE(void);
+ #define HYPERVISOR_VIRT_START mk_unsigned_long(__HYPERVISOR_VIRT_START)
+ #endif
  
- 	void (*set_iopl_mask)(unsigned mask);
- 	void (*set_io_bitmap)(struct thread_struct *thread,
--	                      int changed, unsigned long bytes_updated);
-+			      unsigned long bytes_updated);
+-#ifndef machine_to_phys_mapping
+-#define machine_to_phys_mapping ((unsigned long *)HYPERVISOR_VIRT_START)
+-#endif
++#define MACH2PHYS_VIRT_START  mk_unsigned_long(__MACH2PHYS_VIRT_START)
++#define MACH2PHYS_VIRT_END    mk_unsigned_long(__MACH2PHYS_VIRT_END)
++#define MACH2PHYS_NR_ENTRIES  ((MACH2PHYS_VIRT_END-MACH2PHYS_VIRT_START)>>__MACH2PHYS_SHIFT)
  
- 	void (*wbinvd)(void);
- 	void (*io_delay)(void);
-@@ -1005,9 +1005,9 @@ static inline void set_iopl_mask(unsigned mask)
- }
+ /* Maximum number of virtual CPUs in multi-processor guests. */
+ #define MAX_VIRT_CPUS 32
+diff --git a/arch/x86/include/asm/xen/interface_32.h b/arch/x86/include/asm/xen/interface_32.h
+index 42a7e00..8413688 100644
+--- a/arch/x86/include/asm/xen/interface_32.h
++++ b/arch/x86/include/asm/xen/interface_32.h
+@@ -32,6 +32,11 @@
+ /* And the trap vector is... */
+ #define TRAP_INSTR "int $0x82"
  
- static inline void set_io_bitmap(struct thread_struct *thread,
--                                 int changed, unsigned long bytes_updated)
-+				 unsigned long bytes_updated)
- {
--	PVOP_VCALL3(pv_cpu_ops.set_io_bitmap, thread, changed, bytes_updated);
-+	PVOP_VCALL2(pv_cpu_ops.set_io_bitmap, thread, bytes_updated);
- }
++#define __MACH2PHYS_VIRT_START 0xF5800000
++#define __MACH2PHYS_VIRT_END   0xF6800000
++
++#define __MACH2PHYS_SHIFT      2
++
+ /*
+  * Virtual addresses beyond this are not modifiable by guest OSes. The
+  * machine->physical mapping table starts at this address, read-only.
+diff --git a/arch/x86/include/asm/xen/interface_64.h b/arch/x86/include/asm/xen/interface_64.h
+index 100d266..839a481 100644
+--- a/arch/x86/include/asm/xen/interface_64.h
++++ b/arch/x86/include/asm/xen/interface_64.h
+@@ -39,18 +39,7 @@
+ #define __HYPERVISOR_VIRT_END   0xFFFF880000000000
+ #define __MACH2PHYS_VIRT_START  0xFFFF800000000000
+ #define __MACH2PHYS_VIRT_END    0xFFFF804000000000
+-
+-#ifndef HYPERVISOR_VIRT_START
+-#define HYPERVISOR_VIRT_START mk_unsigned_long(__HYPERVISOR_VIRT_START)
+-#define HYPERVISOR_VIRT_END   mk_unsigned_long(__HYPERVISOR_VIRT_END)
+-#endif
+-
+-#define MACH2PHYS_VIRT_START  mk_unsigned_long(__MACH2PHYS_VIRT_START)
+-#define MACH2PHYS_VIRT_END    mk_unsigned_long(__MACH2PHYS_VIRT_END)
+-#define MACH2PHYS_NR_ENTRIES  ((MACH2PHYS_VIRT_END-MACH2PHYS_VIRT_START)>>3)
+-#ifndef machine_to_phys_mapping
+-#define machine_to_phys_mapping ((unsigned long *)HYPERVISOR_VIRT_START)
+-#endif
++#define __MACH2PHYS_SHIFT       3
  
- /* The paravirtualized I/O functions */
-diff --git a/arch/x86/include/asm/processor.h b/arch/x86/include/asm/processor.h
-index 1c70563..ed0e363 100644
---- a/arch/x86/include/asm/processor.h
-+++ b/arch/x86/include/asm/processor.h
-@@ -545,7 +545,7 @@ static inline void native_set_iopl_mask(unsigned mask)
- }
+ /*
+  * int HYPERVISOR_set_segment_base(unsigned int which, unsigned long base)
+diff --git a/arch/x86/include/asm/xen/page.h b/arch/x86/include/asm/xen/page.h
+index bf5f7d3..d5fb2e8 100644
+--- a/arch/x86/include/asm/xen/page.h
++++ b/arch/x86/include/asm/xen/page.h
+@@ -5,6 +5,7 @@
+ #include <linux/types.h>
+ #include <linux/spinlock.h>
+ #include <linux/pfn.h>
++#include <linux/mm.h>
  
- extern void native_set_io_bitmap(struct thread_struct *thread,
--				 int changed, unsigned long updated_bytes);
-+				 unsigned long updated_bytes);
+ #include <asm/uaccess.h>
+ #include <asm/page.h>
+@@ -35,6 +36,8 @@ typedef struct xpaddr {
+ #define MAX_DOMAIN_PAGES						\
+     ((unsigned long)((u64)CONFIG_XEN_MAX_DOMAIN_MEMORY * 1024 * 1024 * 1024 / PAGE_SIZE))
  
- static inline void
- native_load_sp0(struct tss_struct *tss, struct thread_struct *thread)
-diff --git a/arch/x86/kernel/ioport.c b/arch/x86/kernel/ioport.c
-index b5c1918..0a421d3 100644
---- a/arch/x86/kernel/ioport.c
-+++ b/arch/x86/kernel/ioport.c
-@@ -31,7 +31,7 @@ static void set_bitmap(unsigned long *bitmap, unsigned int base,
- }
++extern unsigned long *machine_to_phys_mapping;
++extern unsigned int   machine_to_phys_order;
  
- void native_set_io_bitmap(struct thread_struct *t,
--			  int changed, unsigned long bytes_updated)
-+			  unsigned long bytes_updated)
- {
- 	struct tss_struct *tss;
+ extern unsigned long get_phys_to_machine(unsigned long pfn);
+ extern void set_phys_to_machine(unsigned long pfn, unsigned long mfn);
+@@ -62,10 +65,8 @@ static inline unsigned long mfn_to_pfn(unsigned long mfn)
+ 	if (xen_feature(XENFEAT_auto_translated_physmap))
+ 		return mfn;
  
-@@ -54,7 +54,6 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
- {
- 	struct thread_struct *t = &current->thread;
- 	unsigned int i, max_long, bytes, bytes_updated;
--	int changed;
+-#if 0
+ 	if (unlikely((mfn >> machine_to_phys_order) != 0))
+-		return max_mapnr;
+-#endif
++		return ~0;
  
- 	if ((from + num <= from) || (from + num > IO_BITMAP_BITS))
- 		return -EINVAL;
-@@ -75,9 +74,7 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
- 		memset(bitmap, 0xff, IO_BITMAP_BYTES);
- 		t->io_bitmap_ptr = bitmap;
- 		set_thread_flag(TIF_IO_BITMAP);
--		changed = 1;
--	} else
--		changed = 0;
-+	}
- 
+ 	pfn = 0;
  	/*
- 	 * do it in the per-thread copy
-@@ -104,7 +101,7 @@ asmlinkage long sys_ioperm(unsigned long from, unsigned long num, int turn_on)
- 
- 	t->io_bitmap_max = bytes;
- 
--	set_io_bitmap(t, changed, bytes_updated);
-+	set_io_bitmap(t, bytes_updated);
- 
- 	preempt_enable();
- 
-diff --git a/arch/x86/kernel/process.c b/arch/x86/kernel/process.c
-index 0c1a4fb..a520f7a 100644
---- a/arch/x86/kernel/process.c
-+++ b/arch/x86/kernel/process.c
-@@ -74,7 +74,7 @@ void exit_thread(void)
- 		preempt_disable();
- 		t->io_bitmap_ptr = NULL;
- 		clear_thread_flag(TIF_IO_BITMAP);
--		set_io_bitmap(t, 1, t->io_bitmap_max);
-+		set_io_bitmap(t, t->io_bitmap_max);
- 		t->io_bitmap_max = 0;
- 		preempt_enable();
- 		kfree(bp);
-@@ -209,7 +209,7 @@ void __switch_to_xtra(struct task_struct *prev_p, struct task_struct *next_p,
- 
- 	if (test_tsk_thread_flag(next_p, TIF_IO_BITMAP) ||
- 	    test_tsk_thread_flag(prev_p, TIF_IO_BITMAP))
--		set_io_bitmap(next, 1,
-+		set_io_bitmap(next,
- 			      max(prev->io_bitmap_max, next->io_bitmap_max));
- }
- 
 diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 3317c91..12e4d9c 100644
+index f15a555..339163f 100644
 --- a/arch/x86/xen/enlighten.c
 +++ b/arch/x86/xen/enlighten.c
-@@ -606,13 +606,10 @@ static void xen_set_iopl_mask(unsigned mask)
+@@ -65,6 +65,11 @@ DEFINE_PER_CPU(struct vcpu_info, xen_vcpu_info);
+ enum xen_domain_type xen_domain_type = XEN_NATIVE;
+ EXPORT_SYMBOL_GPL(xen_domain_type);
+ 
++unsigned long *machine_to_phys_mapping = (void *)MACH2PHYS_VIRT_START;
++EXPORT_SYMBOL(machine_to_phys_mapping);
++unsigned int   machine_to_phys_order;
++EXPORT_SYMBOL(machine_to_phys_order);
++
+ struct start_info *xen_start_info;
+ EXPORT_SYMBOL_GPL(xen_start_info);
+ 
+@@ -979,6 +984,8 @@ asmlinkage void __init xen_start_kernel(void)
+ 
+ 	xen_setup_features();
+ 
++	xen_setup_machphys_mapping();
++
+ 	/* Install Xen paravirt ops */
+ 	pv_info = xen_info;
+ 	pv_init_ops = xen_init_ops;
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 48806c5..05cfd30 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -57,6 +57,7 @@
+ #include <xen/page.h>
+ #include <xen/interface/xen.h>
+ #include <xen/interface/version.h>
++#include <xen/interface/memory.h>
+ #include <xen/hvc-console.h>
+ 
+ #include "multicalls.h"
+@@ -1729,6 +1730,20 @@ static __init void xen_map_identity_early(pmd_t *pmd, unsigned long max_pfn)
+ 	set_page_prot(pmd, PAGE_KERNEL_RO);
  }
  
- static void xen_set_io_bitmap(struct thread_struct *thread,
--			      int changed, unsigned long bytes_updated)
-+			      unsigned long bytes_updated)
++void __init xen_setup_machphys_mapping(void)
++{
++	struct xen_machphys_mapping mapping;
++	unsigned long machine_to_phys_nr_ents;
++
++	if (HYPERVISOR_memory_op(XENMEM_machphys_mapping, &mapping) == 0) {
++		machine_to_phys_mapping = (unsigned long *)mapping.v_start;
++		machine_to_phys_nr_ents = mapping.max_mfn + 1;
++	} else {
++		machine_to_phys_nr_ents = MACH2PHYS_NR_ENTRIES;
++	}
++	machine_to_phys_order = fls(machine_to_phys_nr_ents - 1);
++}
++
+ #ifdef CONFIG_X86_64
+ static void convert_pfn_mfn(void *v)
  {
- 	struct physdev_set_iobitmap set_iobitmap;
+diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
+index e6c6bcb..f548f7c 100644
+--- a/include/xen/interface/memory.h
++++ b/include/xen/interface/memory.h
+@@ -97,6 +97,19 @@ struct xen_machphys_mfn_list {
+ DEFINE_GUEST_HANDLE_STRUCT(xen_machphys_mfn_list);
  
--	if (!changed)
--		return;
--
- 	set_xen_guest_handle(set_iobitmap.bitmap,
- 			     (char *)thread->io_bitmap_ptr);
- 	set_iobitmap.nr_ports = thread->io_bitmap_ptr ? IO_BITMAP_BITS : 0;
+ /*
++ * Returns the location in virtual address space of the machine_to_phys
++ * mapping table. Architectures which do not have a m2p table, or which do not
++ * map it by default into guest address space, do not implement this command.
++ * arg == addr of xen_machphys_mapping_t.
++ */
++#define XENMEM_machphys_mapping     12
++struct xen_machphys_mapping {
++    unsigned long v_start, v_end; /* Start and end virtual addresses.   */
++    unsigned long max_mfn;        /* Maximum MFN that can be looked up. */
++};
++DEFINE_GUEST_HANDLE_STRUCT(xen_machphys_mapping_t);
++
++/*
+  * Sets the GPFN at which a particular page appears in the specified guest's
+  * pseudophysical address space.
+  * arg == addr of xen_add_to_physmap_t.
 -- 
 1.6.0.6
 
