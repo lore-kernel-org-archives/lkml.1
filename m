@@ -1,93 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752504AbZELI7y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754637AbZELJET@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752504AbZELI7y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 04:59:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751575AbZELI7m
+	id S1754637AbZELJET (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 05:04:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752731AbZELJEJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 04:59:42 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:19396 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750943AbZELI7l (ORCPT
+	Tue, 12 May 2009 05:04:09 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:56644 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751392AbZELJEI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 04:59:41 -0400
-Message-ID: <4A093A34.3020101@panasas.com>
-Date: Tue, 12 May 2009 11:58:28 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Tue, 12 May 2009 05:04:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=lu1hVUu1RSv3BTdMwpZQMNrpq1Xv8oJJj8zzp3dd8pK8sX5+3sgMPLG3tMNRPfMGgo
+         Gpx9wZfkyhGJ4AkSjof9vwvPeBfzTjIW/l0CKaSm6OKYTCtAeBnw/G9NHRjiAaCkma9r
+         70YdZRa6PxgBeupQbv3zu/0+bEPLJS6Gn8YLA=
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: tj@kernel.org, axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, linux-ide@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
-       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
-       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
-       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
-       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
-       dgilbert@interlog.com, djwong@us.ibm.com
-Subject: Re: [PATCH 03/11] block: add rq->resid_len
-References: <4A06DFAB.40205@panasas.com>	<4A0767E5.5050205@kernel.org>	<4A080C9D.9000109@panasas.com> <20090511235852Z.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090511235852Z.fujita.tomonori@lab.ntt.co.jp>
+Date: Tue, 12 May 2009 17:04:07 +0800
+Message-ID: <8fda62c20905120204oafee94bn96af7230c7995929@mail.gmail.com>
+Subject: ALSA for SoC audio support full duplex problem
+From: jinjin xu <freebsdxjj@gmail.com>
+To: linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 May 2009 08:58:35.0104 (UTC) FILETIME=[D5120E00:01C9D2DF]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/11/2009 05:59 PM, FUJITA Tomonori wrote:
-> On Mon, 11 May 2009 14:31:41 +0300
-> Boaz Harrosh <bharrosh@panasas.com> wrote:
-> 
->>>>> diff --git a/drivers/scsi/libsas/sas_expander.c b/drivers/scsi/libsas/sas_expander.c
->>>>> index 3da02e4..6605ec9 100644
->>>>> --- a/drivers/scsi/libsas/sas_expander.c
->>>>> +++ b/drivers/scsi/libsas/sas_expander.c
->>>>> @@ -1936,12 +1936,8 @@ int sas_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
->>>>>  			       bio_data(rsp->bio), rsp->data_len);
->>>>>  	if (ret > 0) {
->>>>>  		/* positive number is the untransferred residual */
->>>>> -		rsp->data_len = ret;
->>>>> -		req->data_len = 0;
->>>>> +		rsp->resid_len = ret;
->>>>>  		ret = 0;
->>>>> -	} else if (ret == 0) {
->>>>> -		rsp->data_len = 0;
->>>>> -		req->data_len = 0;
->>>>>  	}
->>>>>  
->>>>>  	return ret;
->>>> This is actually a bug fix, as well as a strait conversion
->>> Can you elaborate a bit about the bug fix part?
->>>
->> Nothing big really, just that before (according to the comment), the theoretical
->> negative case would be full-residual. and now it is zero (untouched).
->>
->> I know that in iscsi a negative residual is possible which means over-flow. That is:
->> the target had more data to give then the buffer had space for. (which is not an error at all)
-> 
-> Hmm, iSCSI? This code is for SAS management Protocol.
-> 
+I use 2.6.21.5-cfs-v19 on S3C6410(arm),use wm8987 sound card(i2s interface)
 
-I gave that as an example of what the scsi standard says about negative
-residual count return from the target. If SAS as sepecific and different
-meaning to negative residual, it should be noted and handled.
+It is not work correct  in full duplex.
+I grep and diff the drivers
 
-> smp_execute_task returns a negative value for some errors (ENOMEM, the
-> hardware doesn't respond, etc). It's not related with 'transferred
-> buffer length' at all.
+ens1370.c:
 
-This is a serious problem, and a violation of the block/scsi stacks. If so, then
-in that case error/status should be set properly. And residual cleared.
+  snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_PLAYBACK, &snd_ensoniq_playback1_ops);
 
-Failing to return an error might theoretically be catastrophic. If what
-you say is certain then previous behaviour is better then after this patch.
+  snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_CAPTURE, &snd_ensoniq_capture_ops);
 
-I'm not at all familiar with this code. Could you send a patch to
-fix these things?
 
-Thanks
-Boaz
+soc-core.c:
+
+        if (playback)
+        {
+
+                snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_PLAYBACK, &soc_pcm_ops);
+
+        }
+
+        if (capture)
+        {
+
+                snd_pcm_set_ops(pcm, SNDRV_PCM_STREAM_CAPTURE, &soc_pcm_ops);
+        }
+
+
+ens1370.c use two different fops for playback and record(I test it in
+Vmware,It can run on full duplex)
+soc-core.c use the same fops for  playback and record
+
+It that the problem ?
+So how to fix it for support full duplex?
+
+Thanks!
