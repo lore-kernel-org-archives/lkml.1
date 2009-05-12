@@ -1,53 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756589AbZELRib@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756544AbZELRlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756589AbZELRib (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 13:38:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753626AbZELRiI
+	id S1756544AbZELRlt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 13:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753021AbZELRlk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 13:38:08 -0400
-Received: from rankki.sonarnerd.net ([83.145.240.118]:36212 "EHLO
-	mail.sonarnerd.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754192AbZELRiH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 13:38:07 -0400
-Message-ID: <4A09B3FE.5030503@sonarnerd.net>
-Date: Tue, 12 May 2009 20:38:06 +0300
-From: Jussi Laako <jussi@sonarnerd.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 12 May 2009 13:41:40 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42670 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751318AbZELRlj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 13:41:39 -0400
+Message-ID: <4A09B46D.9010705@redhat.com>
+Date: Tue, 12 May 2009 13:39:57 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-To: Raistlin <raistlin@linux.it>
-CC: Chris Friesen <cfriesen@nortel.com>, Peter Zijlstra <peterz@infradead.org>,
-       James Courtier-Dutton <James@superbug.co.uk>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [RFC][PATCH] Multimedia scheduling class, take 2
-References: <4959198A.3020209@sonarnerd.net>	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net>	 <1231756114.19771.6.camel@laptop> <496C6294.2040707@sonarnerd.net>	 <4971D3D5.6040801@superbug.co.uk>  <497CF128.2060903@sonarnerd.net>	 <1232954745.4863.4.camel@laptop>  <4A07E044.8040807@sonarnerd.net>	 <1242107859.11251.301.camel@twins> <4A094707.5040307@sonarnerd.net>	 <4A099670.5060902@nortel.com>  <4A09A525.4080107@sonarnerd.net> <1242146758.4792.19.camel@Palantir>
-In-Reply-To: <1242146758.4792.19.camel@Palantir>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+Subject: Re: [PATCH -mm] vmscan: protect a fraction of file backed mapped
+ pages from reclaim
+References: <20090508125859.210a2a25.akpm@linux-foundation.org> <20090512025246.GC7518@localhost> <20090512120002.D616.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0905121650090.14226@qirst.com> <4A09AC91.4060506@redhat.com> <alpine.DEB.1.10.0905121718040.24066@qirst.com>
+In-Reply-To: <alpine.DEB.1.10.0905121718040.24066@qirst.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Raistlin wrote:
-> Well, I'm not sure I can see why, since nor a "SCHED_MM" scheduling
-> policy, nor having priorities for SCHED_OTHER (different from nice
-> levels) is _not_ POSIX compliant, is it?
+Christoph Lameter wrote:
+> On Tue, 12 May 2009, Rik van Riel wrote:
+> 
+>> The patch that only allows active file pages to be deactivated
+>> if the active file LRU is larger than the inactive file LRU should
+>> protect the working set from being evicted due to streaming IO.
+> 
+> Streaming I/O means access once? 
 
-It is still accessible through the normal API. POSIX specifies just a
-set of standard schedulers and gives OS free choice of defining more.
-These are still accessible through the same functions. I could modify
-the patch to not introduce a new policy and to just modify the existing
-SCHED_OTHER the same way (and AFAIK it would still comply with POSIX), I
-just wanted to have these separate for the other changes and to keep the
-old behavior intact.
+Yeah, "used-once pages" would be a better criteria, since
+you could go through a gigantic set of used-once pages without
+doing linear IO.
 
-POSIX just defines API where there is concept of policy(int) and
-priority(int) and a method to query minimum and maximum priority for
-given policy. Then it defines base set of policies, but not their
-priority ranges or such.
+I expect that some databases might do that.
 
-Your proposal would need introduction of completely new function...
+> What exactly are the criteria for a page
+> to be part of streaming I/O? AFAICT the definition is more dependent on
+> the software running than on a certain usage pattern discernible to the
+> VM. Software may after all perform multiple scans over a stream of data or
+> go back to prior locations in the file.
 
 
-	- Jussi
+-- 
+All rights reversed.
