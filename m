@@ -1,180 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753163AbZELXN4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754906AbZELXYZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753163AbZELXN4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 19:13:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752598AbZELXNq
+	id S1754906AbZELXYZ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 19:24:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751271AbZELXYJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 19:13:46 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:36935 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752509AbZELXNq convert rfc822-to-8bit (ORCPT
+	Tue, 12 May 2009 19:24:09 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:48415 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750832AbZELXYG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 19:13:46 -0400
+	Tue, 12 May 2009 19:24:06 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=UCRtt+XPD/3HUvJ6fY5mkkxeyjOwrdJHXWb1fhg3pZKHom4lX0arweLZH38ZiCIm9p
-         k8cgyII+MchEpQYaTlJ9PXTpCJIqgYwszyx6mmgyx95M9CbDnak2tISwLZMUH0QVXec4
-         yQm66qYAJrqbwzBPgCCyYGJMBGUcyxEvAyxmo=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=j7lNETZlj+0JLyu97yqwGkEuua3hG5qjV++PgrWErdBB7nWX0TsmmT5jRUA3+1zFs2
+         4bnR1wP/own+bf3zuBmCErlxgntfXyxPTxcJRtqm0OwGxb/qqa73vu+1K7iyBGLt1eIN
+         qf1xyfjWHzW3XRclBBi2Biyw6+8VkrtxlzvQA=
+Message-ID: <4A0A050D.4000804@gmail.com>
+Date: Tue, 12 May 2009 17:23:57 -0600
+From: Robert Hancock <hancockrwd@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-In-Reply-To: <20090512215838.GA24411@sgi.com>
-References: <20090511175312.GA27905@sgi.com> <4A0894A5.9000209@zytor.com>
-	 <alpine.DEB.2.00.0905111509570.2234@chino.kir.corp.google.com>
-	 <20090512150622.GA10015@sgi.com>
-	 <86802c440905120810x6ea4b228t14ca19376dc13f13@mail.gmail.com>
-	 <20090512161605.GB19747@sgi.com>
-	 <86802c440905120940r3d3261dap9d1843a9c832b582@mail.gmail.com>
-	 <20090512180349.GA1479@sgi.com>
-	 <86802c440905121431q682e8924l427a5257da01c370@mail.gmail.com>
-	 <20090512215838.GA24411@sgi.com>
-Date: Tue, 12 May 2009 16:13:46 -0700
-Message-ID: <86802c440905121613h799b2c54x9b8734c0f01fafb1@mail.gmail.com>
-Subject: Re: [PATCH 3/3] x86: fix node_possible_map logic -v2
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Jack Steiner <steiner@sgi.com>
-Cc: David Rientjes <rientjes@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Andy Isaacson <adi@hexapodia.org>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
+Subject: Re: [2.6.30-rc2] CD-R: wodim intermittent failures: [sr0] Add. Sense:
+ Logical block address out of range, sector 0
+References: <20090421015234.GA7014@hexapodia.org> <20090422144904.407df635.akpm@linux-foundation.org> <49F00EBB.7040504@gmail.com> <20090423070713.GF19113@hexapodia.org> <20090512215256.GA22095@hexapodia.org>
+In-Reply-To: <20090512215256.GA22095@hexapodia.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 2:58 PM, Jack Steiner <steiner@sgi.com> wrote:
->>
->> x2apic related?
->
-> No.
->
->
->
->>
->> can you disable x2apic in kernel?
->
-> Yes - We have a BIOS option to allow us to boot either in legacy apic mode OR
-> in x2apic mode.
->
-> Both behave the same...
->
->
->        <6>Initializing cgroup subsys cpuset
->        <6>Initializing cgroup subsys cpu
->        <5>Linux version 2.6.30-rc5-next-20090512-medusa (steiner@alcatraz.americas.sgi.com) (gcc version 4.2.4) #7 SMP Tue May 12 16:54:27 CDT 2009
->        <6>Command line: root=/dev/hda2 init=/bin/bash console=ttyS0,38400n8 fprom lpj=10000 nohpet loglevel=8 iommu=off dma32_size=4096
->        <6>KERNEL supported cpus:
->        <6>  Intel GenuineIntel
->        <6>  AMD AuthenticAMD
->        <6>  Centaur CentaurHauls
->        <6>BIOS-provided physical RAM map:
->        <6> BIOS-e820: 0000000000000000 - 0000000000006000 (usable)
->        <6> BIOS-e820: 0000000000006000 - 0000000000200000 (reserved)
->        <6> BIOS-e820: 0000000000200000 - 0000000010000000 (usable)
->        <6> BIOS-e820: 0000000080000000 - 0000000090000000 (reserved)
->        <6> BIOS-e820: 00000000f0000000 - 00000000fc000000 (reserved)
->        <6> BIOS-e820: 00000000fed1c000 - 00000000fed20000 (reserved)
->        <6> BIOS-e820: 00000000fff60000 - 00000000fff6c000 (reserved)
->        <6> BIOS-e820: 00000fe000000000 - 00000fe018000000 (reserved)
->        <6>EFI v1.00 by SGI
->        <6> ACPI 2.0=0xe0200  UVsystab=0xe08c0
->        <6>EFI: mem00: type=7, attr=0x8, range=[0x0000000000000000-0x0000000000006000) (0MB)
->        <6>EFI: mem01: type=5, attr=0x8000000000001000, range=[0x0000000000006000-0x00000000000b0000) (0MB)
->        <6>EFI: mem02: type=6, attr=0x8000000000000008, range=[0x00000000000b0000-0x0000000000200000) (1MB)
->        <6>EFI: mem03: type=7, attr=0x8, range=[0x0000000000200000-0x0000000010000000) (254MB)
->        <6>EFI: mem04: type=6, attr=0x8000000000000001, range=[0x0000000080000000-0x0000000090000000) (256MB)
->        <6>EFI: mem05: type=6, attr=0x8000000000000001, range=[0x00000000f0000000-0x00000000fc000000) (192MB)
->        <6>EFI: mem06: type=6, attr=0x8000000000000001, range=[0x00000000fed1c000-0x00000000fed20000) (0MB)
->        <6>EFI: mem07: type=6, attr=0x8000000000000001, range=[0x00000000fff60000-0x00000000fff6c000) (0MB)
->        <6>EFI: mem08: type=11, attr=0x8000000000000001, range=[0x00000fe000000000-0x00000fe018000000) (384MB)
->        <6>DMI not present or invalid.
->        <6>last_pfn = 0x10000 max_arch_pfn = 0x100000000
->        <7>MTRR default type: write-back
->        <7>MTRR fixed ranges enabled:
->        <7>  00000-FFFFF write-back
->        <7>MTRR variable ranges enabled:
->        <7>  0 base 0   F0000000 mask FFF F0000000 uncachable
->        <7>  1 base E0  00000000 mask FF0 00000000 uncachable
->        <7>  2 base F0  00000000 mask FF0 00000000 uncachable
->        <7>  3 base F00 00000000 mask FF0000000000 uncachable
->        <7>  4 disabled
->        <7>  5 disabled
->        <7>  6 disabled
->        <7>  7 disabled
->        <6>x86 PAT enabled: cpu 0, old 0x606060606060606, new 0x7010600070106
->        <6>init_memory_mapping: 0000000000000000-0000000010000000
->        <7> 0000000000 - 0010000000 page 2M
->        <7>kernel direct mapping tables up to 10000000 @ 93a000-93c000
->        <4>ACPI: RSDP 00000000000e0200 00024 (v02       )
->        <4>ACPI: XSDT 00000000000e0240 00054 (v01    SGI      UVL 00010001 FPRM 00000001)
->        <4>ACPI: APIC 00000000000e02e0 00074 (v01    SGI      UVL 00010001 FPRM 00000001)
->        <4>ACPI: SRAT 00000000000e0380 00078 (v01    SGI      UVL 00010001 FPRM 00000001)
->        <4>ACPI: SLIT 00000000000e05e0 00030 (v01    SGI      UVL 00010001 FPRM 00000001)
->        <4>ACPI: MCFG 00000000000e0640 0004C (v01    SGI      UVL 00010001 FPRM 00000001)
->        <4>ACPI: FACP 00000000000e06a0 000F4 (v03    SGI      UVL 00030001 FPRM 00000001)
->        <4>ACPI: DSDT 00000000000e02a0 00030 (v01    SGI      UVL 00010001 FPRM 00000001)
->        <4>ACPI: FACS 00000000000e07a0 00040
->        <4>ACPI: DMAR 00000000000e0860 0004C (v01    SGI      UVL 00010001 FPRM 00000001)
->        <7>ACPI: Local APIC address 0xfee00000
->        <6>SRAT: PXM 0 -> APIC 0 -> Node 0
->        <6>SRAT: PXM 1 -> APIC 128 -> Node 1
->        <6>SRAT: Node 1 PXM 1 0-fff6c000
->        <7>NUMA: Using 63 for the hash shift.
->        <6>Bootmem setup node 1 0000000000000000-0000000010000000
->        <6>  NODE_DATA [0000000000939a80 - 000000000096da7f]
->        <6>  bootmap [000000000096e000 -  000000000096ffff] pages 2
->        <6>(7 early reservations) ==> bootmem [0000000000 - 0010000000]
->        <6>  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
->        <6>  #1 [0000006000 - 0000008000]       TRAMPOLINE ==> [0000006000 - 0000008000]
->        <6>  #2 [0000200000 - 0000939a5c]    TEXT DATA BSS ==> [0000200000 - 0000939a5c]
->        <6>  #3 [000009f000 - 00000e0900]    BIOS reserved ==> [000009f000 - 00000e0900]
->        <6>  #4 [00000e0a68 - 0000100000]    BIOS reserved ==> [00000e0a68 - 0000100000]
->        <6>  #5 [00000e0900 - 00000e0a68]       EFI memmap ==> [00000e0900 - 00000e0a68]
->        <6>  #6 [0000001000 - 0000001030]        ACPI SLIT ==> [0000001000 - 0000001030]
->        <7> [ffffe20000000000-ffffe200003fffff] PMD -> [ffff880001200000-ffff8800015fffff] on node 1
->        <4>Zone PFN ranges:
->        <4>  DMA      0x00000000 -> 0x00001000
->        <4>  DMA32    0x00001000 -> 0x00100000
->        <4>  Normal   0x00100000 -> 0x00100000
->        <4>Movable zone start PFN for each node
->        <4>early_node_map[2] active PFN ranges
->        <4>    1: 0x00000000 -> 0x00000006
->        <4>    1: 0x00000200 -> 0x00010000
->        <7>On node 1 totalpages: 65030
->        <7>  DMA zone: 56 pages used for memmap
->        <7>  DMA zone: 1948 pages reserved
->        <7>  DMA zone: 1586 pages, LIFO batch:0
->        <7>  DMA32 zone: 840 pages used for memmap
->        <7>  DMA32 zone: 60600 pages, LIFO batch:15
->        <6>ACPI: PM-Timer IO Port: 0x1008
->        <7>ACPI: Local APIC address 0xfee00000
->        <6>ACPI: LAPIC (acpi_id[0x00] lapic_id[0x00] enabled)
->        <6>ACPI: LAPIC (acpi_id[0x01] lapic_id[0x80] enabled)
->        <6>ACPI: LAPIC_NMI (acpi_id[0x00] high edge lint[0x1])
->        <6>ACPI: LAPIC_NMI (acpi_id[0x01] high edge lint[0x1])
->        <6>ACPI: IOAPIC (id[0x08] address[0xfec00000] gsi_base[0])
->        <6>IOAPIC[0]: apic_id 8, version 0, address 0xfec00000, GSI 0-23
->        <6>ACPI: IOAPIC (id[0x09] address[0xfec80000] gsi_base[24])
->        <6>IOAPIC[1]: apic_id 9, version 0, address 0xfec80000, GSI 24-24
->        <6>ACPI: INT_SRC_OVR (bus 0 bus_irq 0 global_irq 2 high edge)
->        <6>ACPI: INT_SRC_OVR (bus 0 bus_irq 9 global_irq 9 high level)
->        <7>ACPI: IRQ0 used by override.
->        <7>ACPI: IRQ2 used by override.
->        <7>ACPI: IRQ9 used by override.
->        <6>Using ACPI (MADT) for SMP configuration information
->        <6>SMP: Allowing 2 CPUs, 0 hotplug CPUs
->        <6>init_cpu_to_node:
->        <6>cpu 0 -> apicid 0x0 -> node 1
->        <6>cpu 1 -> apicid 0x80 -> node 1
->        <7>nr_irqs_gsi: 25
->        <6>PM: Registered nosave memory: 0000000000006000 - 0000000000200000
->        <6>Allocating PCI resources starting at 18000000 (gap: 10000000:70000000)
->        <6>NR_CPUS:4096 nr_cpumask_bits:2 nr_cpu_ids:2 nr_node_ids:2
+Andy Isaacson wrote:
+> On Thu, Apr 23, 2009 at 12:07:13AM -0700, Andy Isaacson wrote:
+>> On Thu, Apr 23, 2009 at 12:46:19AM -0600, Robert Hancock wrote:
+>>>> Oh well, let's tentatively assume that we have a post-2.6.29 regression
+>>>> in the libata ahci driver.
+>>> I tend to doubt it's a problem in ahci itself, I would guess it's higher 
+>>> up the stack. Or could be that it's not a kernel bug, just some change 
+>>> in timing that triggers the problem.
+>>>
+>>> What's supposed to stop udev/hal from poking at the drive while wodim is 
+>>> writing to the disc, anyway?
+>> wodim opens O_EXCL, and it does occasionally complain about not being
+>> able to open, then sleeping and retrying.
+> 
+> I just saw this again with 2.6.30-rc5-00096-ga4d7749 and got some nice
+> stack traces, for both hald-addon-storage and wodim:
+> 
+> [ 2041.201084] INFO: task hald-addon-stor:3804 blocked for more than 120 seconds.
+> [ 2041.201108]  ffff8801145056f8 0000000000000086 ffff880118c66120 0000000000000086
+> [ 2041.201118]  00000000000110c0 000000000000c848 ffff8801144b2cc0 ffff8800d8008000
+> [ 2041.201127]  ffff8801144b3060 0000000118ddd460 ffff8801145056b8 ffffffff81296405
+> [ 2041.201135] Call Trace:
+> [ 2041.201153]  [<ffffffff81296405>] ? scsi_setup_blk_pc_cmnd+0x145/0x180
+> [ 2041.201162]  [<ffffffff8128f32c>] ? scsi_pool_alloc_command+0x2c/0x80
+> [ 2041.201171]  [<ffffffff812a70ad>] ? sr_prep_fn+0x4d/0x5b0
+> [ 2041.201180]  [<ffffffff81413ae9>] schedule+0x9/0x20
+> [ 2041.201187]  [<ffffffff81413fa5>] schedule_timeout+0x145/0x180
+> [ 2041.201196]  [<ffffffff811d32a7>] ? kobject_put+0x27/0x60
+> [ 2041.201203]  [<ffffffff81413d4d>] wait_for_common+0x14d/0x180
+> [ 2041.201214]  [<ffffffff81038e30>] ? default_wake_function+0x0/0x10
+> [ 2041.201224]  [<ffffffff811c02b3>] ? __generic_unplug_device+0x33/0x40
+> [ 2041.201231]  [<ffffffff81413e18>] wait_for_completion+0x18/0x20
+> [ 2041.201239]  [<ffffffff811c4cd5>] blk_execute_rq+0x65/0xb0
+> [ 2041.201246]  [<ffffffff811c0fd0>] ? freed_request+0x30/0x60
+> [ 2041.201255]  [<ffffffff81296f22>] scsi_execute+0xf2/0x150
+> [ 2041.201262]  [<ffffffff812971a8>] scsi_execute_req+0xd8/0x150
+> [ 2041.201271]  [<ffffffff812a6796>] sr_test_unit_ready+0x66/0x100
+> [ 2041.201280]  [<ffffffff810d6e49>] ? kmem_cache_alloc+0x79/0x110
+> [ 2041.201288]  [<ffffffff812a76ca>] sr_media_change+0xba/0x2f0
+> [ 2041.201298]  [<ffffffff8105d6dc>] ? lock_hrtimer_base+0x2c/0x60
+> [ 2041.201308]  [<ffffffff8130f3b8>] media_changed+0x68/0xb0
+> [ 2041.201316]  [<ffffffff8130f437>] cdrom_media_changed+0x37/0x40
+> [ 2041.201324]  [<ffffffff812a68a4>] sr_block_media_changed+0x14/0x20
+> [ 2041.201333]  [<ffffffff811090fe>] check_disk_change+0x2e/0x70
+> [ 2041.201341]  [<ffffffff81313ddb>] cdrom_open+0x1ab/0xb60
+> [ 2041.201349]  [<ffffffff8105a566>] ? remove_wait_queue+0x46/0x60
+> [ 2041.201357]  [<ffffffff810ee496>] ? poll_freewait+0x46/0xb0
+> [ 2041.201365]  [<ffffffff810ee8e9>] ? do_sys_poll+0x3e9/0x4c0
+> [ 2041.201372]  [<ffffffff810ef340>] ? __pollwait+0x0/0x100
+> [ 2041.201380]  [<ffffffff810ef440>] ? pollwake+0x0/0x50
+> [ 2041.201387]  [<ffffffff811d361a>] ? kobject_get+0x1a/0x30
+> [ 2041.201394]  [<ffffffff811c70bf>] ? get_disk+0x2f/0x90
+> [ 2041.201401]  [<ffffffff811d361a>] ? kobject_get+0x1a/0x30
+> [ 2041.201409]  [<ffffffff812a6a6a>] sr_block_open+0x7a/0xd0
+> [ 2041.201417]  [<ffffffff8110a24e>] __blkdev_get+0x21e/0x3a0
+> [ 2041.201426]  [<ffffffff810f761a>] ? mntput_no_expire+0x2a/0x140
+> [ 2041.201433]  [<ffffffff8110a3db>] blkdev_get+0xb/0x10
+> [ 2041.201440]  [<ffffffff8110a44c>] blkdev_open+0x6c/0xc0
+> [ 2041.201449]  [<ffffffff810dc5d6>] __dentry_open+0xe6/0x2e0
+> [ 2041.201456]  [<ffffffff8110a3e0>] ? blkdev_open+0x0/0xc0
+> [ 2041.201463]  [<ffffffff810dc8d7>] nameidata_to_filp+0x57/0x70
+> [ 2041.201471]  [<ffffffff810eb6f2>] do_filp_open+0x2a2/0x9d0
+> [ 2041.201479]  [<ffffffff810cb5ad>] ? free_pages_and_swap_cache+0x8d/0xb0
+> [ 2041.201489]  [<ffffffff810c2640>] ? unmap_region+0x140/0x160
+> [ 2041.201496]  [<ffffffff810f5c8a>] ? alloc_fd+0x4a/0x140
+> [ 2041.201503]  [<ffffffff810dc41b>] do_sys_open+0x7b/0x100
+> [ 2041.201510]  [<ffffffff810dc4cb>] sys_open+0x1b/0x20
+> [ 2041.201519]  [<ffffffff8100bf2b>] system_call_fastpath+0x16/0x1b
+> [ 2041.201542] INFO: task wodim:6398 blocked for more than 120 seconds.
+> [ 2041.201562] "echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+> [ 2041.201568] wodim         D 0000000000000000     0  6398   5313
+> [ 2041.201575]  ffff8800d805d868 0000000000000082 ffff880118ed40d0 0000000000000000
+> [ 2041.201584]  00000000000110c0 000000000000c848 ffff8800d4164320 ffff88011b884320
+> [ 2041.201593]  ffff8800d41646c0 0000000118ed5e48 000000010005d5b2 ffff880118ed4000
+> [ 2041.201602] Call Trace:
+> [ 2041.201610]  [<ffffffff81413ae9>] schedule+0x9/0x20
+> [ 2041.201617]  [<ffffffff81413fa5>] schedule_timeout+0x145/0x180
+> [ 2041.201625]  [<ffffffff81295590>] ? scsi_request_fn+0xd0/0x570
+> [ 2041.201632]  [<ffffffff81413d4d>] wait_for_common+0x14d/0x180
+> [ 2041.201641]  [<ffffffff81038e30>] ? default_wake_function+0x0/0x10
+> [ 2041.201649]  [<ffffffff811c029a>] ? __generic_unplug_device+0x1a/0x40
+> [ 2041.201656]  [<ffffffff81413e18>] wait_for_completion+0x18/0x20
+> [ 2041.201663]  [<ffffffff811c4cd5>] blk_execute_rq+0x65/0xb0
+> [ 2041.201669]  [<ffffffff811c4896>] ? blk_rq_append_bio+0x26/0x70
+> [ 2041.201676]  [<ffffffff811c4a8a>] ? blk_rq_map_user+0x1aa/0x2a0
+> [ 2041.201684]  [<ffffffff8104bc4e>] ? capable+0xe/0x50
+> [ 2041.201691]  [<ffffffff811c8734>] sg_io+0x1d4/0x400
+> [ 2041.201699]  [<ffffffff810a8cd2>] ? mempool_free_slab+0x12/0x20
+> [ 2041.201707]  [<ffffffff811c9015>] scsi_cmd_ioctl+0x2e5/0x4d0
+> [ 2041.201715]  [<ffffffff81038c48>] ? try_to_wake_up+0x148/0x330
+> [ 2041.201723]  [<ffffffff81038e3d>] ? default_wake_function+0xd/0x10
+> [ 2041.201732]  [<ffffffff81312add>] cdrom_ioctl+0x3d/0x1050
+> [ 2041.201741]  [<ffffffff8124d1f2>] ? n_tty_receive_buf+0x772/0x11e0
+> [ 2041.201750]  [<ffffffff812a690b>] sr_block_ioctl+0x5b/0xb0
+> [ 2041.201757]  [<ffffffff811c606e>] __blkdev_driver_ioctl+0x8e/0xa0
+> [ 2041.201765]  [<ffffffff811c616d>] blkdev_ioctl+0xad/0x9e0
+> [ 2041.201772]  [<ffffffff810a6df4>] ? filemap_fault+0x144/0x450
+> [ 2041.201778]  [<ffffffff810a68f2>] ? unlock_page+0x22/0x30
+> [ 2041.201786]  [<ffffffff810bc2bd>] ? __do_fault+0x42d/0x4e0
+> [ 2041.201795]  [<ffffffff81108eb5>] block_ioctl+0x35/0x40
+> [ 2041.201802]  [<ffffffff810ed0c1>] vfs_ioctl+0x31/0xa0
+> [ 2041.201809]  [<ffffffff810ed1ba>] do_vfs_ioctl+0x8a/0x570
+> [ 2041.201816]  [<ffffffff811d77b1>] ? __up_read+0x91/0xb0
+> [ 2041.201824]  [<ffffffff8105dff9>] ? up_read+0x9/0x10
+> [ 2041.201831]  [<ffffffff810ed739>] sys_ioctl+0x99/0xa0
+> [ 2041.201840]  [<ffffffff8100bf2b>] system_call_fastpath+0x16/0x1b
+> 
+> Looking at hald/linux/addons/addon-storage.c it does appear to
+> open(O_EXCL) as well, so perhaps the O_EXCL multiple-open logic broke
+> recently?
+> 
+> Complete dmesg, kconfig, and so on at
+> 
+> http://web.hexapodia.org/~adi/sysinfo/1242164411_cvpe4300_2.6.30-rc5-dmar-00096-ga4d7749/
+> 
+> -andy
 
-How about change NR_CPUS to 128?
+I'm not sure how this is supposed to work. The only place I can see any 
+O_EXCL handling is in the sg driver. But if you access the sr device 
+directly, it doesn't seem like that would have any effect.
 
-will find one system that only have node1 has memory.
-
-YH
+CCing linux-scsi. Could be there's a bad user-space assumption here, or 
+something.
