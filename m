@@ -1,124 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbZELGCp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755241AbZELGH3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755804AbZELGCp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 02:02:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752649AbZELGCg
+	id S1755241AbZELGH3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 02:07:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753667AbZELGHM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 02:02:36 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:42308 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751600AbZELGCf (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 02:02:35 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:mail-followup-to:references
-         :mime-version:content-type:content-disposition
-         :content-transfer-encoding:in-reply-to:user-agent;
-        b=J1KTIhCXoEa5t44wyR50rtiXCaTDOnihMCydx53ZgfDX4oCKd8YIwoN4YVICHOsdNE
-         bYL1/kjyfpQzAI/vXv+sLSQxLWlIRI+nLcH9MK/yfeeo5gMrIjwOCbPmvE7XoffAlhFq
-         nMmeWmFEdIUpE+qKZORzU/i1GpCJhbdNiWhgc=
-Date: Tue, 12 May 2009 08:02:31 +0200
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: Peter Feuerer <peter@piie.net>
-Cc: LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
-       Matthew Garrett <mjg59@srcf.ucam.org>,
-       Maxim Levitsky <maximlevitsky@gmail.com>
-Subject: Re: [PATCH] Acer Aspire One Fan Control
-Message-ID: <20090512060231.GB26286@liondog.tnic>
-Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
-	Peter Feuerer <peter@piie.net>, LKML <linux-kernel@vger.kernel.org>,
-	lenb@kernel.org, Matthew Garrett <mjg59@srcf.ucam.org>,
-	Maxim Levitsky <maximlevitsky@gmail.com>
-References: <cone.1240858632.795110.5316.1000@onepiie> <20090428072519.GA12170@liondog.tnic> <1240913055.29860.14.camel@maxim-laptop> <cone.1240949852.549814.7466.1000@mentalhome> <1240950704.3781.12.camel@maxim-laptop> <cone.1241299309.265715.3948.1000@mentalhome> <20090503184617.GA3555@liondog.tnic> <cone.1241648222.299676.7476.1000@mentalhome> <20090509171432.GA31126@liondog.tnic> <cone.1242065107.695268.13534.1000@onepiie>
+	Tue, 12 May 2009 02:07:12 -0400
+Received: from hera.kernel.org ([140.211.167.34]:37599 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753266AbZELGHK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 02:07:10 -0400
+Message-ID: <4A09115D.3080009@kernel.org>
+Date: Tue, 12 May 2009 15:04:13 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <cone.1242065107.695268.13534.1000@onepiie>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: James Bottomley <James.Bottomley@HansenPartnership.com>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, bharrosh@panasas.com,
+       axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
+       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
+       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
+       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
+       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
+       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
+       dgilbert@interlog.com, djwong@us.ibm.com
+Subject: Re: [PATCH 03/11] block: add rq->resid_len
+References: <1241423927-11871-4-git-send-email-tj@kernel.org>	 <4A06DFAB.40205@panasas.com> <4A0767E5.5050205@kernel.org>	 <20090511145024B.fujita.tomonori@lab.ntt.co.jp>	 <1242051500.3338.9.camel@mulgrave.int.hansenpartnership.com>	 <4A08C094.2060602@kernel.org> <1242099783.19949.8.camel@mulgrave.int.hansenpartnership.com>
+In-Reply-To: <1242099783.19949.8.camel@mulgrave.int.hansenpartnership.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 06:04:21 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+Hello, James.
 
-On Mon, May 11, 2009 at 08:05:07PM +0200, Peter Feuerer wrote:
-> Hello,
->
-> Borislav Petkov writes:
->>
->> the more I'm looking at the driver, the more I get annoyed by that
->> user/kernel mode operation split. Remind me again why the driver should
->> be loaded and not started automatically but the user should be required
->> to activate it explicitly?
->
-> The idea of not starting the module in kernel mode was from Matthew. And 
-> he stated that it could harm the hardware when software controls the fan  
-> instead of the BIOS. It may also be possible, that the warranty gets 
-> invalid when you do that. Not sure about how acer would handle a defect 
-> which could be caused by overheating and when they detect that software 
-> was controlling the fan. That's why I think Matthew is right. 
+James Bottomley wrote:
+>> * Not well defined.  What does it mean really?  It can't indicate
+>>   successful partial transfer.  If the request partially succeeded,
+>>   the required behavior is to successfully complete the request
+>>   partially with residual count and then fail the latter part when
+>>   issued again.  If the failure applies to the whole request but
+>>   location information is useful, it should be carried in the sense
+>>   data.
+> 
+> The definition is the amount of data transfer requested less the actual
+> that went over the wire ... that's certainly a well defined quantity;
+> although, one could argue about what this means in the device.
+> Certainly I agree that just because the data was transferred to or from
+> the device is no guarantee that the device did anything with it (or
+> transferred it accurately).
 
-We actually don't have any reliable source for the temperature envelope
-of the surrounding hardware, right? Quick search didn't reveal anything
-here. I only came across a bunch of freeware tools which do fan control
-of the aspire ones but all the temperature trip points for the fan in
-those were ranging from 50 - 63° which leads to think that those all are
-kinda "common sense"-settings the authors came up with without any hard
-data from the manufacturer.
+I think it's more like how many bytes are valid where the validity is
+defined as the number of meaningful bytes on dev -> host commands and
+the number of bytes the device actually consumed on the other
+direction.  Please note that this is different from the number of
+bytes transferred due to padding or under other error conditions.
 
-For example, mine has a Seagate Momentum ATA-8 ST9160310AS hdd and its
-spec[¹] says:
+>> * What about corner values?  What does 0 or full resid count on
+>>   failure mean?
+> 
+> 0 means everything transferred, full residual means nothing did.
 
-"2.10.1       Ambient temperature
+Yeap, I was wondering about the combination 0 resid count + failure.
+What would it mean?  All bytes are valid but the command failed?
 
-Ambient temperature is defined as the temperature of the environment
-immediately surrounding the drive. Actual drive case temperature should
-not exceed 65°C (149°F) within the operating ambient conditions."
+>> * Different layers of failing.  In SG_IO interface, a request may fail
+>>   with -EIO way before it reaches block layer.  Residual count can't
+>>   be set to any meaningful value in these cases.  We can set it to
+>>   full count for these fast fail paths, but do we really wanna go
+>>   there?  Another problem is when a driver is missing SG_IO
+>>   capability.  Who's responsible for setting resid count in that case?
+>>   How is upper layer gonna determine a SG_IO failed because lower
+>>   level driver didn't support it or it genuinely failed?
+> 
+> Well, I prefer the concept of transfer length, which would be
+> initialised to zero ... however, residuals should be initialised to
+> the actual transfer count.
+> 
+>> I think it's just silly to give any meaning to resid count when the
+>> request fails.  It's best to leave the field unmodified or just
+>> declare it undefined.
+> 
+> It's current behaviour.  Technically that makes it part of the SG_IO
+> ABI ... although it could be deprecated if someone can verify there are
+> no current users.
 
->From what I could measure here empirically, the fan starts in low RPM
-mode at around 37°C and and gets cranked up to max when the temp
-reaches ~55°C. This envelope in the BIOS code is taking surrounding
-devices into consideration, I guess and am wondering whether the 67°C
-setting in your driver is still within safe limits, hmmm?
+The behavior wasn't guaranteed before the change in paths including
+SG_IO fast fail one.  libata and ide have been and are completely
+funky about residual counts anyway so I highly doubt anyone has been
+depending on it.
 
-[..]
+There's nothing wrong with keeping the original behavior in itself but
+to me it looks like it would be a bad precedence when no one should
+depend on the behavior.
 
->> What is more, if the userspace program would fail, there's no way
->> for the module to get activated again and jump in instead of the
->> userspace program to the rescue. Which goes more to show that you
->> don't need userspace control _at_ _all_ and the only two agents
->> controlling the fan should be the BIOS or the kernel module.
->
-> After reading and thinking about all this a while, I agree with you.
-> In the next patch I won't allow the user to switch on/off the fan
-> anymore.
-
-Cool.
-
->> So I think that the kernel module should take over fan control
->> upon load. This way you'll be able to get rid of all that needless
->> complexity around kernelmode/disable_kernelmode and have a simple
->> clean design.
->
-> I would really like to do that, but what do you think about the
->hardware damage / warranty things written above?
-
-It seems that the BIOS setting is lower/safer so, yes, you're right, we
-don't want to void any warranties, so the BIOS control _should_ actually
-be the default since we are not at all sure whether moving the envelope
-up the temperature scale won't hurt the hardware.
-
-/me would love to see some reliable info on that from the manufacturer...
-
-[..]
-
-Thanks for your work.
-
-
-¹http://www.seagate.com/staticfiles/support/disc/manuals/notebook/momentus/5400.4/SATA/100468842a.pdf
+Thanks.
 
 -- 
-Regards/Gruss,
-    Boris.
+tejun
