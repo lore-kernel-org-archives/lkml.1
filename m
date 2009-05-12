@@ -1,1069 +1,266 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760325AbZELInf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757484AbZELIoV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760325AbZELInf (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 04:43:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759592AbZELImL
+	id S1757484AbZELIoV (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 04:44:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759768AbZELImO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 04:42:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41714 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759458AbZELIlp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 04:41:45 -0400
-Date: Tue, 12 May 2009 08:39:31 GMT
-From: tip-bot for Dmitry Adamushko <dmitry.adamushko@gmail.com>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       peter.oruba@amd.com, andreas.herrmann3@amd.com, rusty@rustcorp.com.au,
-       hugh@veritas.com, arjan@infradead.org, akpm@linux-foundation.org,
-       dmitry.adamushko@gmail.com, tglx@linutronix.de, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       peter.oruba@amd.com, rusty@rustcorp.com.au, andreas.herrmann3@amd.com,
-       hugh@veritas.com, arjan@infradead.org, akpm@linux-foundation.org,
-       dmitry.adamushko@gmail.com, tglx@linutronix.de, mingo@elte.hu
-In-Reply-To: <1242078507.5560.9.camel@earth>
-References: <1242078507.5560.9.camel@earth>
-Subject: [tip:x86/microcode] x86: microcode: use smp_call_function_single instead of set_cpus_allowed, cleanup of synchronization logic
-Message-ID: <tip-871b72dd1e12afc3f024479531d25a9339d2e3f9@git.kernel.org>
-Git-Commit-ID: 871b72dd1e12afc3f024479531d25a9339d2e3f9
-X-Mailer: tip-git-log-daemon
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 08:39:33 +0000 (UTC)
+	Tue, 12 May 2009 04:42:14 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:55500 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756486AbZELIlm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 04:41:42 -0400
+From: Li Yang <leoli@freescale.com>
+To: akpm@linux-foundation.org, galak@kernel.crashing.org, davem@davemloft.net,
+       mporter@kernel.crashing.org
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
+       Zhang Wei <zw@zh-kernel.org>
+Subject: [PATCH 1/6] rapidio: add common mapping APIs for RapidIO memory access
+Date: Tue, 12 May 2009 16:35:58 +0800
+Message-Id: <1242117363-14949-1-git-send-email-leoli@freescale.com>
+X-Mailer: git-send-email 1.5.4
+X-OriginalArrivalTime: 12 May 2009 08:41:22.0296 (UTC) FILETIME=[6D780F80:01C9D2DD]
+X-Brightmail-Tracker: AAAAAQAAAWE=
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  871b72dd1e12afc3f024479531d25a9339d2e3f9
-Gitweb:     http://git.kernel.org/tip/871b72dd1e12afc3f024479531d25a9339d2e3f9
-Author:     Dmitry Adamushko <dmitry.adamushko@gmail.com>
-AuthorDate: Mon, 11 May 2009 23:48:27 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Tue, 12 May 2009 10:36:44 +0200
+Add the mapping functions used to support direct IO memory access of
+rapidIO.
 
-x86: microcode: use smp_call_function_single instead of set_cpus_allowed, cleanup of synchronization logic
-
-* Solve issues described in 6f66cbc63081fd70e3191b4dbb796746780e5ae1
-  in a way that doesn't resort to set_cpus_allowed();
-
-* in fact, only collect_cpu_info and apply_microcode callbacks
-  must run on a target cpu, others will do just fine on any other.
-  smp_call_function_single() (as suggested by Ingo) is used to run
-  these callbacks on a target cpu.
-
-* cleanup of synchronization logic of the 'microcode_core' part
-
-  The generic 'microcode_core' part guarantees that only a single cpu
-  (be it a full-fledged cpu, one of the cores or HT)
-  is being updated at any particular moment of time.
-
-  In general, there is no need for any additional sync. mechanism in
-  arch-specific parts (the patch removes existing spinlocks).
-
-  See also the "Synchronization" section in microcode_core.c.
-
-* return -EINVAL instead of -1 (which is translated into -EPERM) in
-  microcode_write(), reload_cpu() and mc_sysdev_add(). Other suggestions
-  for an error code?
-
-* use 'enum ucode_state' as return value of request_microcode_{fw, user}
-  to gain more flexibility by distinguishing between real error cases
-  and situations when an appropriate ucode was not found (which is not an
-  error per-se).
-
-* some minor cleanups
-
-Thanks a lot to Hugh Dickins for review/suggestions/testing!
-
-   Reference: http://marc.info/?l=linux-kernel&m=124025889012541&w=2
-
-[ Impact: refactor and clean up microcode driver locking code ]
-
-Signed-off-by: Dmitry Adamushko <dmitry.adamushko@gmail.com>
-Acked-by: Hugh Dickins <hugh@veritas.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Rusty Russell <rusty@rustcorp.com.au>
-Cc: Andreas Herrmann <andreas.herrmann3@amd.com>
-Cc: Peter Oruba <peter.oruba@amd.com>
-Cc: Arjan van de Ven <arjan@infradead.org>
-LKML-Reference: <1242078507.5560.9.camel@earth>
-[ did some more cleanups ]
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
- arch/x86/include/asm/microcode.h  |   25 ++
- arch/x86/kernel/microcode_amd.c   |   58 ++----
- arch/x86/kernel/microcode_core.c  |  326 +++++++++++++++++++++-----------------
- arch/x86/kernel/microcode_intel.c |   92 +++-------
- 4 files changed, 261 insertions(+), 240 deletions(-)
-
-(~20 new comment lines)
-
-
+Signed-off-by: Zhang Wei <zw@zh-kernel.org>
+Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- arch/x86/include/asm/microcode.h  |   25 ++-
- arch/x86/kernel/microcode_amd.c   |   58 +++----
- arch/x86/kernel/microcode_core.c  |  329 +++++++++++++++++++++----------------
- arch/x86/kernel/microcode_intel.c |   90 ++++-------
- 4 files changed, 262 insertions(+), 240 deletions(-)
+ drivers/rapidio/rio.c   |   95 +++++++++++++++++++++++++++++++++++++++++++++++
+ include/linux/rio.h     |   25 ++++++++++++
+ include/linux/rio_drv.h |   24 +++++++++---
+ 3 files changed, 138 insertions(+), 6 deletions(-)
 
-diff --git a/arch/x86/include/asm/microcode.h b/arch/x86/include/asm/microcode.h
-index c882664..ef51b50 100644
---- a/arch/x86/include/asm/microcode.h
-+++ b/arch/x86/include/asm/microcode.h
-@@ -9,20 +9,31 @@ struct cpu_signature {
+diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
+index 6395c78..224a076 100644
+--- a/drivers/rapidio/rio.c
++++ b/drivers/rapidio/rio.c
+@@ -2,6 +2,8 @@
+  * RapidIO interconnect services
+  * (RapidIO Interconnect Specification, http://www.rapidio.org)
+  *
++ * Copyright (C) 2007-2009 Freescale Semiconductor, Inc.
++ *
+  * Copyright 2005 MontaVista Software, Inc.
+  * Matt Porter <mporter@kernel.crashing.org>
+  *
+@@ -24,11 +26,23 @@
+ #include <linux/spinlock.h>
+ #include <linux/slab.h>
+ #include <linux/interrupt.h>
++#include <linux/dma-mapping.h>
++#include <linux/hardirq.h>
  
- struct device;
+ #include "rio.h"
  
-+enum ucode_state { UCODE_ERROR, UCODE_OK, UCODE_NFOUND };
+ static LIST_HEAD(rio_mports);
+ 
++static DEFINE_SPINLOCK(rio_config_lock);
 +
- struct microcode_ops {
--	int  (*request_microcode_user) (int cpu, const void __user *buf, size_t size);
--	int  (*request_microcode_fw) (int cpu, struct device *device);
-+	enum ucode_state (*request_microcode_user) (int cpu,
-+				const void __user *buf, size_t size);
- 
--	void (*apply_microcode) (int cpu);
-+	enum ucode_state (*request_microcode_fw) (int cpu,
-+				struct device *device);
- 
--	int  (*collect_cpu_info) (int cpu, struct cpu_signature *csig);
- 	void (*microcode_fini_cpu) (int cpu);
++struct resource rio_resource = {
++	.name	= "RapidIO GSM",
++	.start	= 0,
++	.end	= -1,
++	.flags	= IORESOURCE_MEM,
++};
++EXPORT_SYMBOL(rio_resource);
 +
-+	/*
-+	 * The generic 'microcode_core' part guarantees that
-+	 * the callbacks below run on a target cpu when they
-+	 * are being called.
-+	 * See also the "Synchronization" section in microcode_core.c.
-+	 */
-+	int (*apply_microcode) (int cpu);
-+	int (*collect_cpu_info) (int cpu, struct cpu_signature *csig);
- };
- 
- struct ucode_cpu_info {
--	struct cpu_signature cpu_sig;
--	int valid;
--	void *mc;
-+	struct cpu_signature	cpu_sig;
-+	int			valid;
-+	void			*mc;
- };
- extern struct ucode_cpu_info ucode_cpu_info[];
- 
-diff --git a/arch/x86/kernel/microcode_amd.c b/arch/x86/kernel/microcode_amd.c
-index 453b579..c8be20f 100644
---- a/arch/x86/kernel/microcode_amd.c
-+++ b/arch/x86/kernel/microcode_amd.c
-@@ -13,25 +13,13 @@
-  *  Licensed under the terms of the GNU General Public
-  *  License version 2. See file COPYING for details.
-  */
--#include <linux/platform_device.h>
--#include <linux/capability.h>
--#include <linux/miscdevice.h>
- #include <linux/firmware.h>
--#include <linux/spinlock.h>
--#include <linux/cpumask.h>
- #include <linux/pci_ids.h>
- #include <linux/uaccess.h>
- #include <linux/vmalloc.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/mutex.h>
--#include <linux/sched.h>
--#include <linux/init.h>
--#include <linux/slab.h>
--#include <linux/cpu.h>
- #include <linux/pci.h>
--#include <linux/fs.h>
--#include <linux/mm.h>
- 
- #include <asm/microcode.h>
- #include <asm/processor.h>
-@@ -79,9 +67,6 @@ struct microcode_amd {
- #define UCODE_CONTAINER_SECTION_HDR	8
- #define UCODE_CONTAINER_HEADER_SIZE	12
- 
--/* serialize access to the physical write */
--static DEFINE_SPINLOCK(microcode_update_lock);
--
- static struct equiv_cpu_entry *equiv_cpu_table;
- 
- static int collect_cpu_info_amd(int cpu, struct cpu_signature *csig)
-@@ -144,9 +129,8 @@ static int get_matching_microcode(int cpu, void *mc, int rev)
- 	return 1;
+ /**
+  * rio_local_get_device_id - Get the base/extended device id for a port
+  * @port: RIO master port from which to get the deviceid
+@@ -333,6 +347,87 @@ int rio_release_outb_dbell(struct rio_dev *rdev, struct resource *res)
  }
  
--static void apply_microcode_amd(int cpu)
-+static int apply_microcode_amd(int cpu)
- {
--	unsigned long flags;
- 	u32 rev, dummy;
- 	int cpu_num = raw_smp_processor_id();
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu_num;
-@@ -156,25 +140,25 @@ static void apply_microcode_amd(int cpu)
- 	BUG_ON(cpu_num != cpu);
- 
- 	if (mc_amd == NULL)
--		return;
-+		return 0;
- 
--	spin_lock_irqsave(&microcode_update_lock, flags);
- 	wrmsrl(MSR_AMD64_PATCH_LOADER, (u64)(long)&mc_amd->hdr.data_code);
- 	/* get patch id after patching */
- 	rdmsr(MSR_AMD64_PATCH_LEVEL, rev, dummy);
--	spin_unlock_irqrestore(&microcode_update_lock, flags);
- 
- 	/* check current patch id and patch's id for match */
- 	if (rev != mc_amd->hdr.patch_id) {
- 		printk(KERN_ERR "microcode: CPU%d: update failed "
- 		       "(for patch_level=0x%x)\n", cpu, mc_amd->hdr.patch_id);
--		return;
+ /**
++ * rio_map_inb_region -- Mapping inbound memory region.
++ * @mport: Master port.
++ * @mem: Memory struction for mapping.
++ * @rflags: Flags for mapping.
++ *
++ * Return: 0 -- Success.
++ *
++ * This function will create the mapping from rio space to local mem.
++ */
++int rio_map_inb_region(struct rio_mport *mport, struct resource *rio_res,
++			dma_addr_t local, u32 rflags)
++{
++	int rc = 0;
++	unsigned long flags;
++
++	if (!mport->mops)
 +		return -1;
- 	}
- 
- 	printk(KERN_INFO "microcode: CPU%d: updated (new patch_level=0x%x)\n",
- 	       cpu, rev);
- 
- 	uci->cpu_sig.rev = rev;
++	spin_lock_irqsave(&rio_config_lock, flags);
++	rc = mport->mops->map_inb(mport, local, rio_res->start,
++				resource_size(rio_res), rflags);
++	spin_unlock_irqrestore(&rio_config_lock, flags);
++	return rc;
++}
 +
-+	return 0;
- }
- 
- static int get_ucode_data(void *to, const u8 *from, size_t n)
-@@ -263,7 +247,8 @@ static void free_equiv_cpu_table(void)
- 	}
- }
- 
--static int generic_load_microcode(int cpu, const u8 *data, size_t size)
-+static enum ucode_state
-+generic_load_microcode(int cpu, const u8 *data, size_t size)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 	const u8 *ucode_ptr = data;
-@@ -272,12 +257,13 @@ static int generic_load_microcode(int cpu, const u8 *data, size_t size)
- 	int new_rev = uci->cpu_sig.rev;
- 	unsigned int leftover;
- 	unsigned long offset;
-+	enum ucode_state state = UCODE_OK;
- 
- 	offset = install_equiv_cpu_table(ucode_ptr);
- 	if (!offset) {
- 		printk(KERN_ERR "microcode: failed to create "
- 		       "equivalent cpu table\n");
--		return -EINVAL;
-+		return UCODE_ERROR;
- 	}
- 
- 	ucode_ptr += offset;
-@@ -312,28 +298,27 @@ static int generic_load_microcode(int cpu, const u8 *data, size_t size)
- 			pr_debug("microcode: CPU%d found a matching microcode "
- 				 "update with version 0x%x (current=0x%x)\n",
- 				 cpu, new_rev, uci->cpu_sig.rev);
--		} else
-+		} else {
- 			vfree(new_mc);
--	}
-+			state = UCODE_ERROR;
-+		}
-+	} else
-+		state = UCODE_NFOUND;
- 
- 	free_equiv_cpu_table();
- 
--	return (int)leftover;
-+	return state;
- }
- 
--static int request_microcode_fw(int cpu, struct device *device)
-+static enum ucode_state request_microcode_fw(int cpu, struct device *device)
- {
- 	const char *fw_name = "amd-ucode/microcode_amd.bin";
- 	const struct firmware *firmware;
--	int ret;
--
--	/* We should bind the task to the CPU */
--	BUG_ON(cpu != raw_smp_processor_id());
-+	enum ucode_state ret;
- 
--	ret = request_firmware(&firmware, fw_name, device);
--	if (ret) {
-+	if (request_firmware(&firmware, fw_name, device)) {
- 		printk(KERN_ERR "microcode: failed to load file %s\n", fw_name);
--		return ret;
-+		return UCODE_NFOUND;
- 	}
- 
- 	ret = generic_load_microcode(cpu, firmware->data, firmware->size);
-@@ -343,11 +328,12 @@ static int request_microcode_fw(int cpu, struct device *device)
- 	return ret;
- }
- 
--static int request_microcode_user(int cpu, const void __user *buf, size_t size)
-+static enum ucode_state
-+request_microcode_user(int cpu, const void __user *buf, size_t size)
- {
- 	printk(KERN_INFO "microcode: AMD microcode update via "
- 	       "/dev/cpu/microcode not supported\n");
--	return -1;
-+	return UCODE_ERROR;
- }
- 
- static void microcode_fini_cpu_amd(int cpu)
-diff --git a/arch/x86/kernel/microcode_core.c b/arch/x86/kernel/microcode_core.c
-index 98c470c..9c44615 100644
---- a/arch/x86/kernel/microcode_core.c
-+++ b/arch/x86/kernel/microcode_core.c
-@@ -71,27 +71,18 @@
-  *		Thanks to Stuart Swales for pointing out this bug.
-  */
- #include <linux/platform_device.h>
--#include <linux/capability.h>
- #include <linux/miscdevice.h>
--#include <linux/firmware.h>
-+#include <linux/capability.h>
- #include <linux/smp_lock.h>
--#include <linux/spinlock.h>
--#include <linux/cpumask.h>
--#include <linux/uaccess.h>
--#include <linux/vmalloc.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/mutex.h>
--#include <linux/sched.h>
--#include <linux/init.h>
--#include <linux/slab.h>
- #include <linux/cpu.h>
- #include <linux/fs.h>
- #include <linux/mm.h>
- 
- #include <asm/microcode.h>
- #include <asm/processor.h>
--#include <asm/msr.h>
- 
- MODULE_DESCRIPTION("Microcode Update Driver");
- MODULE_AUTHOR("Tigran Aivazian <tigran@aivazian.fsnet.co.uk>");
-@@ -101,36 +92,110 @@ MODULE_LICENSE("GPL");
- 
- static struct microcode_ops	*microcode_ops;
- 
--/* no concurrent ->write()s are allowed on /dev/cpu/microcode */
-+/*
-+ * Synchronization.
++/**
++ * rio_map_outb_region -- Mapping outbound memory region.
++ * @mport: Master port.
++ * @tid: Target RapidIO device id.
++ * @mem: Memory struction for mapping.
++ * @rflags: Flags for mapping.
 + *
-+ * All non cpu-hotplug-callback call sites use:
++ * Return: 0 -- Success.
 + *
-+ * - microcode_mutex to synchronize with each other;
-+ * - get/put_online_cpus() to synchronize with
-+ *   the cpu-hotplug-callback call sites.
-+ *
-+ * We guarantee that only a single cpu is being
-+ * updated at any particular moment of time.
++ * This function will create the mapping from local iomem to rio space.
 + */
- static DEFINE_MUTEX(microcode_mutex);
- 
- struct ucode_cpu_info		ucode_cpu_info[NR_CPUS];
- EXPORT_SYMBOL_GPL(ucode_cpu_info);
- 
-+/*
-+ * Operations that are run on a target cpu:
-+ */
++int rio_map_outb_region(struct rio_mport *mport, u16 tid,
++		struct resource *rio_res, phys_addr_t lstart, u32 rflags)
++{
++	int rc = 0;
++	unsigned long flags;
 +
-+struct cpu_info_ctx {
-+	struct cpu_signature	*cpu_sig;
-+	int			err;
++	if (!mport->mops)
++		return -1;
++	spin_lock_irqsave(&rio_config_lock, flags);
++	rc = mport->mops->map_outb(mport, lstart, rio_res->start,
++				resource_size(rio_res), tid, rflags);
++	spin_unlock_irqrestore(&rio_config_lock, flags);
++	return rc;
++}
++
++/**
++ * rio_unmap_inb_region -- Unmap the inbound memory region
++ * @mport: Master port
++ * @mem: Memory struction for unmapping.
++ */
++void rio_unmap_inb_region(struct rio_mport *mport, dma_addr_t lstart)
++{
++	unsigned long flags;
++	if (!mport->mops)
++		return;
++	spin_lock_irqsave(&rio_config_lock, flags);
++	mport->mops->unmap_inb(mport, lstart);
++	spin_unlock_irqrestore(&rio_config_lock, flags);
++}
++
++/**
++ * rio_unmap_outb_region -- Unmap the outbound memory region
++ * @mport: Master port
++ * @mem: Memory struction for unmapping.
++ */
++void rio_unmap_outb_region(struct rio_mport *mport, phys_addr_t lstart)
++{
++	unsigned long flags;
++	if (!mport->mops)
++		return;
++	spin_lock_irqsave(&rio_config_lock, flags);
++	mport->mops->unmap_outb(mport, lstart);
++	spin_unlock_irqrestore(&rio_config_lock, flags);
++}
++
++/**
+  * rio_mport_get_feature - query for devices' extended features
+  * @port: Master port to issue transaction
+  * @local: Indicate a local master port or remote device access
+diff --git a/include/linux/rio.h b/include/linux/rio.h
+index dc0c755..dd61538 100644
+--- a/include/linux/rio.h
++++ b/include/linux/rio.h
+@@ -176,6 +176,7 @@ struct rio_mport {
+ 	struct rio_msg outb_msg[RIO_MAX_MBOX];
+ 	int host_deviceid;	/* Host device ID */
+ 	struct rio_ops *ops;	/* maintenance transaction functions */
++	struct rio_mem_ops *mops; /* Memory functions */
+ 	unsigned char id;	/* port ID, unique among all ports */
+ 	unsigned char index;	/* port index, unique among all port
+ 				   interfaces of the same type */
+@@ -185,6 +186,7 @@ struct rio_mport {
+ 				 */
+ 	enum rio_phy_type phy_type;	/* RapidIO phy type */
+ 	unsigned char name[40];
++	struct device *dev;
+ 	void *priv;		/* Master port private data */
+ };
+ 
+@@ -319,6 +321,29 @@ struct rio_route_ops {
+ 			 u16 table, u16 route_destid, u8 * route_port);
+ };
+ 
++extern struct resource rio_resource;
++#define request_rio_region(start, n, name, flag) \
++		__request_region(&rio_resource, (start), (n), (name), (flag))
++#define release_rio_region(start, n) __release_region(&rio_resource, (start), (n))
++
++/**
++ * Struct for RIO memory definition.
++ * @map_inb: The function for mapping inbound memory window.
++ * @map_outb: The function for mapping outbound memory window.
++ * @unmap_inb: The function for unmapping inbound memory window.
++ * @unmap_outb: The function for unmapping outbound memory window.
++ */
++struct rio_mem_ops {
++	int (*map_inb) (struct rio_mport *, dma_addr_t lstart,
++			resource_size_t rstart,
++			resource_size_t size, u32 flags);
++	int (*map_outb) (struct rio_mport *, phys_addr_t lstart,
++			resource_size_t rstart,
++			resource_size_t size, u16 tid, u32 flags);
++	void (*unmap_inb) (struct rio_mport *, dma_addr_t lstart);
++	void (*unmap_outb) (struct rio_mport *, phys_addr_t lstart);
 +};
 +
-+static void collect_cpu_info_local(void *arg)
+ /* Architecture and hardware-specific functions */
+ extern int rio_init_mports(void);
+ extern void rio_register_mport(struct rio_mport *);
+diff --git a/include/linux/rio_drv.h b/include/linux/rio_drv.h
+index c93a58a..685f2da 100644
+--- a/include/linux/rio_drv.h
++++ b/include/linux/rio_drv.h
+@@ -332,6 +332,16 @@ static inline void rio_init_dbell_res(struct resource *res, u16 start, u16 end)
+ 	res->flags = RIO_RESOURCE_DOORBELL;
+ }
+ 
++static inline void rio_init_io_res(struct resource *res, resource_size_t start,
++		resource_size_t size, const char *name, unsigned long flag)
 +{
-+	struct cpu_info_ctx *ctx = arg;
-+
-+	ctx->err = microcode_ops->collect_cpu_info(smp_processor_id(),
-+						   ctx->cpu_sig);
++	memset(res, 0, sizeof(struct resource));
++	res->start = start;
++	res->end = start + size - 1;
++	res->name = name;
++	res->flags = flag;
 +}
 +
-+static int collect_cpu_info_on_target(int cpu, struct cpu_signature *cpu_sig)
-+{
-+	struct cpu_info_ctx ctx = { .cpu_sig = cpu_sig, .err = 0 };
-+	int ret;
-+
-+	ret = smp_call_function_single(cpu, collect_cpu_info_local, &ctx, 1);
-+	if (!ret)
-+		ret = ctx.err;
-+
-+	return ret;
-+}
-+
-+static int collect_cpu_info(int cpu)
-+{
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
-+	int ret;
-+
-+	memset(uci, 0, sizeof(*uci));
-+
-+	ret = collect_cpu_info_on_target(cpu, &uci->cpu_sig);
-+	if (!ret)
-+		uci->valid = 1;
-+
-+	return ret;
-+}
-+
-+struct apply_microcode_ctx {
-+	int err;
-+};
-+
-+static void apply_microcode_local(void *arg)
-+{
-+	struct apply_microcode_ctx *ctx = arg;
-+
-+	ctx->err = microcode_ops->apply_microcode(smp_processor_id());
-+}
-+
-+static int apply_microcode_on_target(int cpu)
-+{
-+	struct apply_microcode_ctx ctx = { .err = 0 };
-+	int ret;
-+
-+	ret = smp_call_function_single(cpu, apply_microcode_local, &ctx, 1);
-+	if (!ret)
-+		ret = ctx.err;
-+
-+	return ret;
-+}
-+
- #ifdef CONFIG_MICROCODE_OLD_INTERFACE
- static int do_microcode_update(const void __user *buf, size_t size)
- {
--	cpumask_t old;
- 	int error = 0;
- 	int cpu;
- 
--	old = current->cpus_allowed;
--
- 	for_each_online_cpu(cpu) {
- 		struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
-+		enum ucode_state ustate;
- 
- 		if (!uci->valid)
- 			continue;
- 
--		set_cpus_allowed_ptr(current, &cpumask_of_cpu(cpu));
--		error = microcode_ops->request_microcode_user(cpu, buf, size);
--		if (error < 0)
--			goto out;
--		if (!error)
--			microcode_ops->apply_microcode(cpu);
-+		ustate = microcode_ops->request_microcode_user(cpu, buf, size);
-+		if (ustate == UCODE_ERROR) {
-+			error = -1;
-+			break;
-+		} else if (ustate == UCODE_OK)
-+			apply_microcode_on_target(cpu);
- 	}
--out:
--	set_cpus_allowed_ptr(current, &old);
-+
- 	return error;
- }
- 
-@@ -143,19 +208,17 @@ static int microcode_open(struct inode *unused1, struct file *unused2)
- static ssize_t microcode_write(struct file *file, const char __user *buf,
- 			       size_t len, loff_t *ppos)
- {
--	ssize_t ret;
-+	ssize_t ret = -EINVAL;
- 
- 	if ((len >> PAGE_SHIFT) > num_physpages) {
--		printk(KERN_ERR "microcode: too much data (max %ld pages)\n",
--		       num_physpages);
--		return -EINVAL;
-+		pr_err("microcode: too much data (max %ld pages)\n", num_physpages);
-+		return ret;
- 	}
- 
- 	get_online_cpus();
- 	mutex_lock(&microcode_mutex);
- 
--	ret = do_microcode_update(buf, len);
--	if (!ret)
-+	if (do_microcode_update(buf, len) == 0)
- 		ret = (ssize_t)len;
- 
- 	mutex_unlock(&microcode_mutex);
-@@ -165,15 +228,15 @@ static ssize_t microcode_write(struct file *file, const char __user *buf,
- }
- 
- static const struct file_operations microcode_fops = {
--	.owner		= THIS_MODULE,
--	.write		= microcode_write,
--	.open		= microcode_open,
-+	.owner			= THIS_MODULE,
-+	.write			= microcode_write,
-+	.open			= microcode_open,
- };
- 
- static struct miscdevice microcode_dev = {
--	.minor		= MICROCODE_MINOR,
--	.name		= "microcode",
--	.fops		= &microcode_fops,
-+	.minor			= MICROCODE_MINOR,
-+	.name			= "microcode",
-+	.fops			= &microcode_fops,
- };
- 
- static int __init microcode_dev_init(void)
-@@ -182,9 +245,7 @@ static int __init microcode_dev_init(void)
- 
- 	error = misc_register(&microcode_dev);
- 	if (error) {
--		printk(KERN_ERR
--			"microcode: can't misc_register on minor=%d\n",
--			MICROCODE_MINOR);
-+		pr_err("microcode: can't misc_register on minor=%d\n", MICROCODE_MINOR);
- 		return error;
- 	}
- 
-@@ -205,42 +266,51 @@ MODULE_ALIAS_MISCDEV(MICROCODE_MINOR);
- /* fake device for request_firmware */
- static struct platform_device	*microcode_pdev;
- 
--static long reload_for_cpu(void *unused)
-+static int reload_for_cpu(int cpu)
- {
--	struct ucode_cpu_info *uci = ucode_cpu_info + smp_processor_id();
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 	int err = 0;
- 
- 	mutex_lock(&microcode_mutex);
- 	if (uci->valid) {
--		err = microcode_ops->request_microcode_fw(smp_processor_id(),
--							  &microcode_pdev->dev);
--		if (!err)
--			microcode_ops->apply_microcode(smp_processor_id());
-+		enum ucode_state ustate;
-+
-+		ustate = microcode_ops->request_microcode_fw(cpu, &microcode_pdev->dev);
-+		if (ustate == UCODE_OK)
-+			apply_microcode_on_target(cpu);
-+		else
-+			if (ustate == UCODE_ERROR)
-+				err = -EINVAL;
- 	}
- 	mutex_unlock(&microcode_mutex);
-+
- 	return err;
- }
- 
- static ssize_t reload_store(struct sys_device *dev,
- 			    struct sysdev_attribute *attr,
--			    const char *buf, size_t sz)
-+			    const char *buf, size_t size)
- {
--	char *end;
--	unsigned long val = simple_strtoul(buf, &end, 0);
--	int err = 0;
-+	unsigned long val;
- 	int cpu = dev->id;
-+	int ret = 0;
-+	char *end;
- 
-+	val = simple_strtoul(buf, &end, 0);
- 	if (end == buf)
- 		return -EINVAL;
-+
- 	if (val == 1) {
- 		get_online_cpus();
- 		if (cpu_online(cpu))
--			err = work_on_cpu(cpu, reload_for_cpu, NULL);
-+			ret = reload_for_cpu(cpu);
- 		put_online_cpus();
- 	}
--	if (err)
--		return err;
--	return sz;
-+
-+	if (!ret)
-+		ret = size;
-+
-+	return ret;
- }
- 
- static ssize_t version_show(struct sys_device *dev,
-@@ -271,11 +341,11 @@ static struct attribute *mc_default_attrs[] = {
- };
- 
- static struct attribute_group mc_attr_group = {
--	.attrs		= mc_default_attrs,
--	.name		= "microcode",
-+	.attrs			= mc_default_attrs,
-+	.name			= "microcode",
- };
- 
--static void __microcode_fini_cpu(int cpu)
-+static void microcode_fini_cpu(int cpu)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
-@@ -283,103 +353,68 @@ static void __microcode_fini_cpu(int cpu)
- 	uci->valid = 0;
- }
- 
--static void microcode_fini_cpu(int cpu)
--{
--	mutex_lock(&microcode_mutex);
--	__microcode_fini_cpu(cpu);
--	mutex_unlock(&microcode_mutex);
--}
--
--static void collect_cpu_info(int cpu)
-+static enum ucode_state microcode_resume_cpu(int cpu)
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
--	memset(uci, 0, sizeof(*uci));
--	if (!microcode_ops->collect_cpu_info(cpu, &uci->cpu_sig))
--		uci->valid = 1;
-+	if (!uci->mc)
-+		return UCODE_NFOUND;
-+
-+	pr_debug("microcode: CPU%d updated upon resume\n", cpu);
-+	apply_microcode_on_target(cpu);
-+
-+	return UCODE_OK;
- }
- 
--static int microcode_resume_cpu(int cpu)
-+static enum ucode_state microcode_init_cpu(int cpu)
- {
--	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
--	struct cpu_signature nsig;
-+	enum ucode_state ustate;
- 
--	pr_debug("microcode: CPU%d resumed\n", cpu);
-+	if (collect_cpu_info(cpu))
-+		return UCODE_ERROR;
- 
--	if (!uci->mc)
--		return 1;
-+	/* --dimm. Trigger a delayed update? */
-+	if (system_state != SYSTEM_RUNNING)
-+		return UCODE_NFOUND;
- 
--	/*
--	 * Let's verify that the 'cached' ucode does belong
--	 * to this cpu (a bit of paranoia):
--	 */
--	if (microcode_ops->collect_cpu_info(cpu, &nsig)) {
--		__microcode_fini_cpu(cpu);
--		printk(KERN_ERR "failed to collect_cpu_info for resuming cpu #%d\n",
--				cpu);
--		return -1;
--	}
-+	ustate = microcode_ops->request_microcode_fw(cpu, &microcode_pdev->dev);
- 
--	if ((nsig.sig != uci->cpu_sig.sig) || (nsig.pf != uci->cpu_sig.pf)) {
--		__microcode_fini_cpu(cpu);
--		printk(KERN_ERR "cached ucode doesn't match the resuming cpu #%d\n",
--				cpu);
--		/* Should we look for a new ucode here? */
--		return 1;
-+	if (ustate == UCODE_OK) {
-+		pr_debug("microcode: CPU%d updated upon init\n", cpu);
-+		apply_microcode_on_target(cpu);
- 	}
- 
--	return 0;
-+	return ustate;
- }
- 
--static long microcode_update_cpu(void *unused)
-+static enum ucode_state microcode_update_cpu(int cpu)
- {
--	struct ucode_cpu_info *uci = ucode_cpu_info + smp_processor_id();
--	int err = 0;
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
-+	enum ucode_state ustate;
- 
--	/*
--	 * Check if the system resume is in progress (uci->valid != NULL),
--	 * otherwise just request a firmware:
--	 */
--	if (uci->valid) {
--		err = microcode_resume_cpu(smp_processor_id());
--	} else {
--		collect_cpu_info(smp_processor_id());
--		if (uci->valid && system_state == SYSTEM_RUNNING)
--			err = microcode_ops->request_microcode_fw(
--					smp_processor_id(),
--					&microcode_pdev->dev);
--	}
--	if (!err)
--		microcode_ops->apply_microcode(smp_processor_id());
--	return err;
--}
-+	if (uci->valid)
-+		ustate = microcode_resume_cpu(cpu);
-+	else
-+		ustate = microcode_init_cpu(cpu);
- 
--static int microcode_init_cpu(int cpu)
--{
--	int err;
--	mutex_lock(&microcode_mutex);
--	err = work_on_cpu(cpu, microcode_update_cpu, NULL);
--	mutex_unlock(&microcode_mutex);
--
--	return err;
-+	return ustate;
- }
- 
- static int mc_sysdev_add(struct sys_device *sys_dev)
- {
- 	int err, cpu = sys_dev->id;
--	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
- 	if (!cpu_online(cpu))
- 		return 0;
- 
- 	pr_debug("microcode: CPU%d added\n", cpu);
--	memset(uci, 0, sizeof(*uci));
- 
- 	err = sysfs_create_group(&sys_dev->kobj, &mc_attr_group);
- 	if (err)
- 		return err;
- 
--	err = microcode_init_cpu(cpu);
-+	if (microcode_init_cpu(cpu) == UCODE_ERROR)
-+		err = -EINVAL;
- 
- 	return err;
- }
-@@ -400,19 +435,30 @@ static int mc_sysdev_remove(struct sys_device *sys_dev)
- static int mc_sysdev_resume(struct sys_device *dev)
- {
- 	int cpu = dev->id;
-+	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 
- 	if (!cpu_online(cpu))
- 		return 0;
- 
--	/* only CPU 0 will apply ucode here */
--	microcode_update_cpu(NULL);
-+	/*
-+	 * All non-bootup cpus are still disabled,
-+	 * so only CPU 0 will apply ucode here.
-+	 *
-+	 * Moreover, there can be no concurrent
-+	 * updates from any other places at this point.
-+	 */
-+	WARN_ON(cpu != 0);
-+
-+	if (uci->valid && uci->mc)
-+		microcode_ops->apply_microcode(cpu);
-+
- 	return 0;
- }
- 
- static struct sysdev_driver mc_sysdev_driver = {
--	.add		= mc_sysdev_add,
--	.remove		= mc_sysdev_remove,
--	.resume		= mc_sysdev_resume,
-+	.add			= mc_sysdev_add,
-+	.remove			= mc_sysdev_remove,
-+	.resume			= mc_sysdev_resume,
- };
- 
- static __cpuinit int
-@@ -425,15 +471,12 @@ mc_cpu_callback(struct notifier_block *nb, unsigned long action, void *hcpu)
- 	switch (action) {
- 	case CPU_ONLINE:
- 	case CPU_ONLINE_FROZEN:
--		if (microcode_init_cpu(cpu))
--			printk(KERN_ERR "microcode: failed to init CPU%d\n",
--			       cpu);
-+		microcode_update_cpu(cpu);
- 	case CPU_DOWN_FAILED:
- 	case CPU_DOWN_FAILED_FROZEN:
- 		pr_debug("microcode: CPU%d added\n", cpu);
- 		if (sysfs_create_group(&sys_dev->kobj, &mc_attr_group))
--			printk(KERN_ERR "microcode: Failed to create the sysfs "
--				"group for CPU%d\n", cpu);
-+			pr_err("microcode: Failed to create group for CPU%d\n", cpu);
- 		break;
- 	case CPU_DOWN_PREPARE:
- 	case CPU_DOWN_PREPARE_FROZEN:
-@@ -465,13 +508,10 @@ static int __init microcode_init(void)
- 		microcode_ops = init_amd_microcode();
- 
- 	if (!microcode_ops) {
--		printk(KERN_ERR "microcode: no support for this CPU vendor\n");
-+		pr_err("microcode: no support for this CPU vendor\n");
- 		return -ENODEV;
- 	}
- 
--	error = microcode_dev_init();
--	if (error)
--		return error;
- 	microcode_pdev = platform_device_register_simple("microcode", -1,
- 							 NULL, 0);
- 	if (IS_ERR(microcode_pdev)) {
-@@ -480,23 +520,31 @@ static int __init microcode_init(void)
- 	}
- 
- 	get_online_cpus();
-+	mutex_lock(&microcode_mutex);
-+
- 	error = sysdev_driver_register(&cpu_sysdev_class, &mc_sysdev_driver);
-+
-+	mutex_unlock(&microcode_mutex);
- 	put_online_cpus();
-+
- 	if (error) {
--		microcode_dev_exit();
- 		platform_device_unregister(microcode_pdev);
- 		return error;
- 	}
- 
-+	error = microcode_dev_init();
-+	if (error)
-+		return error;
-+
- 	register_hotcpu_notifier(&mc_cpu_notifier);
- 
--	printk(KERN_INFO
--	       "Microcode Update Driver: v" MICROCODE_VERSION
-+	pr_info("Microcode Update Driver: v" MICROCODE_VERSION
- 	       " <tigran@aivazian.fsnet.co.uk>,"
- 	       " Peter Oruba\n");
- 
- 	return 0;
- }
-+module_init(microcode_init);
- 
- static void __exit microcode_exit(void)
- {
-@@ -505,16 +553,17 @@ static void __exit microcode_exit(void)
- 	unregister_hotcpu_notifier(&mc_cpu_notifier);
- 
- 	get_online_cpus();
-+	mutex_lock(&microcode_mutex);
-+
- 	sysdev_driver_unregister(&cpu_sysdev_class, &mc_sysdev_driver);
-+
-+	mutex_unlock(&microcode_mutex);
- 	put_online_cpus();
- 
- 	platform_device_unregister(microcode_pdev);
- 
- 	microcode_ops = NULL;
- 
--	printk(KERN_INFO
--	       "Microcode Update Driver: v" MICROCODE_VERSION " removed.\n");
-+	pr_info("Microcode Update Driver: v" MICROCODE_VERSION " removed.\n");
- }
--
--module_init(microcode_init);
- module_exit(microcode_exit);
-diff --git a/arch/x86/kernel/microcode_intel.c b/arch/x86/kernel/microcode_intel.c
-index 149b9ec..0d334dd 100644
---- a/arch/x86/kernel/microcode_intel.c
-+++ b/arch/x86/kernel/microcode_intel.c
-@@ -70,24 +70,11 @@
-  *		Fix sigmatch() macro to handle old CPUs with pf == 0.
-  *		Thanks to Stuart Swales for pointing out this bug.
-  */
--#include <linux/platform_device.h>
--#include <linux/capability.h>
--#include <linux/miscdevice.h>
- #include <linux/firmware.h>
--#include <linux/smp_lock.h>
--#include <linux/spinlock.h>
--#include <linux/cpumask.h>
- #include <linux/uaccess.h>
--#include <linux/vmalloc.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/mutex.h>
--#include <linux/sched.h>
--#include <linux/init.h>
--#include <linux/slab.h>
--#include <linux/cpu.h>
--#include <linux/fs.h>
--#include <linux/mm.h>
-+#include <linux/vmalloc.h>
- 
- #include <asm/microcode.h>
- #include <asm/processor.h>
-@@ -150,13 +137,9 @@ struct extended_sigtable {
- 
- #define exttable_size(et) ((et)->count * EXT_SIGNATURE_SIZE + EXT_HEADER_SIZE)
- 
--/* serialize access to the physical write to MSR 0x79 */
--static DEFINE_SPINLOCK(microcode_update_lock);
--
- static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
- {
- 	struct cpuinfo_x86 *c = &cpu_data(cpu_num);
--	unsigned long flags;
- 	unsigned int val[2];
- 
- 	memset(csig, 0, sizeof(*csig));
-@@ -176,18 +159,14 @@ static int collect_cpu_info(int cpu_num, struct cpu_signature *csig)
- 		csig->pf = 1 << ((val[1] >> 18) & 7);
- 	}
- 
--	/* serialize access to the physical write to MSR 0x79 */
--	spin_lock_irqsave(&microcode_update_lock, flags);
--
- 	wrmsr(MSR_IA32_UCODE_REV, 0, 0);
- 	/* see notes above for revision 1.07.  Apparent chip bug */
- 	sync_core();
- 	/* get the current revision from MSR 0x8B */
- 	rdmsr(MSR_IA32_UCODE_REV, val[0], csig->rev);
--	spin_unlock_irqrestore(&microcode_update_lock, flags);
- 
--	pr_debug("microcode: collect_cpu_info : sig=0x%x, pf=0x%x, rev=0x%x\n",
--			csig->sig, csig->pf, csig->rev);
-+	printk(KERN_INFO "microcode: CPU%d sig=0x%x, pf=0x%x, revision=0x%x\n",
-+			cpu_num, csig->sig, csig->pf, csig->rev);
- 
- 	return 0;
- }
-@@ -318,11 +297,10 @@ get_matching_microcode(struct cpu_signature *cpu_sig, void *mc, int rev)
- 	return 0;
- }
- 
--static void apply_microcode(int cpu)
-+static int apply_microcode(int cpu)
- {
- 	struct microcode_intel *mc_intel;
- 	struct ucode_cpu_info *uci;
--	unsigned long flags;
- 	unsigned int val[2];
- 	int cpu_num;
- 
-@@ -334,10 +312,7 @@ static void apply_microcode(int cpu)
- 	BUG_ON(cpu_num != cpu);
- 
- 	if (mc_intel == NULL)
--		return;
--
--	/* serialize access to the physical write to MSR 0x79 */
--	spin_lock_irqsave(&microcode_update_lock, flags);
-+		return 0;
- 
- 	/* write microcode via MSR 0x79 */
- 	wrmsr(MSR_IA32_UCODE_WRITE,
-@@ -351,30 +326,32 @@ static void apply_microcode(int cpu)
- 	/* get the current revision from MSR 0x8B */
- 	rdmsr(MSR_IA32_UCODE_REV, val[0], val[1]);
- 
--	spin_unlock_irqrestore(&microcode_update_lock, flags);
- 	if (val[1] != mc_intel->hdr.rev) {
--		printk(KERN_ERR "microcode: CPU%d update from revision "
--				"0x%x to 0x%x failed\n",
--			cpu_num, uci->cpu_sig.rev, val[1]);
--		return;
-+		printk(KERN_ERR "microcode: CPU%d update "
-+				"to revision 0x%x failed\n",
-+			cpu_num, mc_intel->hdr.rev);
-+		return -1;
- 	}
--	printk(KERN_INFO "microcode: CPU%d updated from revision "
--			 "0x%x to 0x%x, date = %04x-%02x-%02x \n",
--		cpu_num, uci->cpu_sig.rev, val[1],
-+	printk(KERN_INFO "microcode: CPU%d updated to revision "
-+			 "0x%x, date = %04x-%02x-%02x \n",
-+		cpu_num, val[1],
- 		mc_intel->hdr.date & 0xffff,
- 		mc_intel->hdr.date >> 24,
- 		(mc_intel->hdr.date >> 16) & 0xff);
- 
- 	uci->cpu_sig.rev = val[1];
-+
-+	return 0;
- }
- 
--static int generic_load_microcode(int cpu, void *data, size_t size,
--		int (*get_ucode_data)(void *, const void *, size_t))
-+static enum ucode_state generic_load_microcode(int cpu, void *data, size_t size,
-+				int (*get_ucode_data)(void *, const void *, size_t))
- {
- 	struct ucode_cpu_info *uci = ucode_cpu_info + cpu;
- 	u8 *ucode_ptr = data, *new_mc = NULL, *mc;
- 	int new_rev = uci->cpu_sig.rev;
- 	unsigned int leftover = size;
-+	enum ucode_state state = UCODE_OK;
- 
- 	while (leftover) {
- 		struct microcode_header_intel mc_header;
-@@ -412,11 +389,15 @@ static int generic_load_microcode(int cpu, void *data, size_t size,
- 		leftover  -= mc_size;
- 	}
- 
--	if (!new_mc)
-+	if (leftover) {
-+		if (new_mc)
-+			vfree(new_mc);
-+		state = UCODE_ERROR;
- 		goto out;
-+	}
- 
--	if (leftover) {
--		vfree(new_mc);
-+	if (!new_mc) {
-+		state = UCODE_NFOUND;
- 		goto out;
- 	}
- 
-@@ -427,9 +408,8 @@ static int generic_load_microcode(int cpu, void *data, size_t size,
- 	pr_debug("microcode: CPU%d found a matching microcode update with"
- 		 " version 0x%x (current=0x%x)\n",
- 			cpu, new_rev, uci->cpu_sig.rev);
--
-- out:
--	return (int)leftover;
-+out:
-+	return state;
- }
- 
- static int get_ucode_fw(void *to, const void *from, size_t n)
-@@ -438,21 +418,19 @@ static int get_ucode_fw(void *to, const void *from, size_t n)
- 	return 0;
- }
- 
--static int request_microcode_fw(int cpu, struct device *device)
-+static enum ucode_state request_microcode_fw(int cpu, struct device *device)
- {
- 	char name[30];
- 	struct cpuinfo_x86 *c = &cpu_data(cpu);
- 	const struct firmware *firmware;
--	int ret;
-+	enum ucode_state ret;
- 
--	/* We should bind the task to the CPU */
--	BUG_ON(cpu != raw_smp_processor_id());
- 	sprintf(name, "intel-ucode/%02x-%02x-%02x",
- 		c->x86, c->x86_model, c->x86_mask);
--	ret = request_firmware(&firmware, name, device);
--	if (ret) {
-+
-+	if (request_firmware(&firmware, name, device)) {
- 		pr_debug("microcode: data file %s load failed\n", name);
--		return ret;
-+		return UCODE_NFOUND;
- 	}
- 
- 	ret = generic_load_microcode(cpu, (void *)firmware->data,
-@@ -468,11 +446,9 @@ static int get_ucode_user(void *to, const void *from, size_t n)
- 	return copy_from_user(to, from, n);
- }
- 
--static int request_microcode_user(int cpu, const void __user *buf, size_t size)
-+static enum ucode_state
-+request_microcode_user(int cpu, const void __user *buf, size_t size)
- {
--	/* We should bind the task to the CPU */
--	BUG_ON(cpu != raw_smp_processor_id());
--
- 	return generic_load_microcode(cpu, (void *)buf, size, &get_ucode_user);
- }
- 
+ /**
+  * RIO_DEVICE - macro used to describe a specific RIO device
+  * @dev: the 16 bit RIO device ID
+@@ -406,12 +416,13 @@ extern int rio_release_inb_dbell(struct rio_mport *, u16, u16);
+ extern struct resource *rio_request_outb_dbell(struct rio_dev *, u16, u16);
+ extern int rio_release_outb_dbell(struct rio_dev *, struct resource *);
+ 
+-/* Memory region management */
+-int rio_claim_resource(struct rio_dev *, int);
+-int rio_request_regions(struct rio_dev *, char *);
+-void rio_release_regions(struct rio_dev *);
+-int rio_request_region(struct rio_dev *, int, char *);
+-void rio_release_region(struct rio_dev *, int);
++/* Memory low-level mapping functions */
++extern int rio_map_inb_region(struct rio_mport *, struct resource *,
++				dma_addr_t, u32);
++extern int rio_map_outb_region(struct rio_mport *, u16, struct resource *,
++				phys_addr_t, u32);
++extern void rio_unmap_inb_region(struct rio_mport *, dma_addr_t);
++extern void rio_unmap_outb_region(struct rio_mport *, phys_addr_t);
+ 
+ /* LDM support */
+ int rio_register_driver(struct rio_driver *);
+@@ -461,5 +472,6 @@ extern u16 rio_local_get_device_id(struct rio_mport *port);
+ extern struct rio_dev *rio_get_device(u16 vid, u16 did, struct rio_dev *from);
+ extern struct rio_dev *rio_get_asm(u16 vid, u16 did, u16 asm_vid, u16 asm_did,
+ 				   struct rio_dev *from);
++extern u32 rio_get_mport_id(struct rio_mport *);
+ 
+ #endif				/* LINUX_RIO_DRV_H */
+-- 
+1.5.4
+
