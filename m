@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753753AbZELSLd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754306AbZELSOW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753753AbZELSLd (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 14:11:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZELSLX
+	id S1754306AbZELSOW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 14:14:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752656AbZELSOL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 14:11:23 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53616 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751274AbZELSLW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 14:11:22 -0400
-Message-ID: <4A09BBCC.80801@redhat.com>
-Date: Tue, 12 May 2009 21:11:24 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Tue, 12 May 2009 14:14:11 -0400
+Received: from va3ehsobe005.messaging.microsoft.com ([216.32.180.15]:5164 "EHLO
+	VA3EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1753343AbZELSOK convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 14:14:10 -0400
+X-BigFish: VPS-8(zz1432R98dR1805M936fJzz1202hzz3198u327alz32i6bh6di61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,8,
+X-WSS-ID: 0KJJMN5-02-6E4-01
+Date: Tue, 12 May 2009 20:13:58 +0200
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH -tip] x86: cpu/proc.c adding extended_cpuid_level for
+	/proc/cpuinfo
+Message-ID: <20090512181358.GC19143@aftab>
+References: <1242112482.3283.1.camel@localhost.localdomain> <20090512133950.GA15474@aftab> <1242136177.14832.0.camel@ht.satnam> <20090512141027.GA19143@aftab> <4A09A688.6080603@zytor.com>
 MIME-Version: 1.0
-To: Glauber Costa <glommer@redhat.com>
-CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>, Gleb Natapov <gleb@redhat.com>
-Subject: Re: [PATCH 1/2] replace drop_interrupt_shadow by set_interrupt_shadow
-References: <1242141230-22514-1-git-send-email-glommer@redhat.com> <1242141230-22514-2-git-send-email-glommer@redhat.com>
-In-Reply-To: <1242141230-22514-2-git-send-email-glommer@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <4A09A688.6080603@zytor.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-OriginalArrivalTime: 12 May 2009 18:13:58.0085 (UTC) FILETIME=[6B1D6F50:01C9D32D]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Glauber Costa wrote:
-> This patch replaces drop_interrupt_shadow with the more
-> general set_interrupt_shadow, that can either drop or raise
-> it, depending on its parameter.
->
->  }
->  
-> +static u32 svm_get_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
-> +{
-> +	struct vcpu_svm *svm = to_svm(vcpu);
-> +	u32 ret = 0;
-> +
-> +	if (svm->vmcb->control.int_state & SVM_INTERRUPT_SHADOW_MASK)
-> +		ret |= X86_SHADOW_INT_STI && X86_SHADOW_INT_MOV_SS;
-> +	return ret & mask;
-> +}
->   
+Hi,
 
-&& -> |.
+On Tue, May 12, 2009 at 09:40:40AM -0700, H. Peter Anvin wrote:
+> Borislav Petkov wrote:
+> >>>
+> >> why we need cpuid_level ?
+> > 
+> > It is already visible in userspace. I think you've got an answer to a
+> > very similar question already:
+> > 
+> > http://marc.info/?l=linux-kernel&m=124206571628464
+> > 
+> 
+> extended_cpuid_level should be motivated, but probably does make sense.
 
-> +
-> +static void vmx_set_interrupt_shadow(struct kvm_vcpu *vcpu, int mask)
-> +{
-> +	u32 interruptibility_old = vmcs_read32(GUEST_INTERRUPTIBILITY_INFO);
-> +	u32 interruptibility = interruptibility_old;
-> +
-> +	interruptibility &= ~((GUEST_INTR_STATE_STI | GUEST_INTR_STATE_MOV_SS));
->   
+I still fail to see the need for adding that to /proc/cpuinfo,
+especially if you can do the whole exercise from userspace. But I'm sure
+you have a good example.
 
-May drop one layer of parentheses.
+>  It hardly "completes" /proc/cpuinfo; especially if you consider that
+> there are at least three additional ranges in wide use (two used by a
+> single vendor only, and the third by virtualization software.)
 
-
+I think both vendors use the two ranges :-o).
 
 -- 
-I have a truly marvellous patch that fixes the bug which this
-signature is too narrow to contain.
+Regards/Gruss,
+Boris.
+
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
 
