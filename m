@@ -1,256 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbZELISL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbZELIZN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758950AbZELISL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 04:18:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756006AbZELIRy
+	id S1758109AbZELIZN (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 04:25:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbZELIYv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 04:17:54 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:27070 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755951AbZELIRv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 04:17:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=l3Ai4a9WlokrIhi+nC3gPUU1FzA9e/cQOHfM610w7mEsgXK/QWGtC9eMyrjM+lXBGZ
-         gciLtaD9yKPnqAZjhuA977c99YFbML2LLvnEws+77GDtSGSWS8l8STLE8geuG+ELQM8s
-         vHAgiB3Kl5Tv1AxMA3SK8BJdOeAnUjDKGvLrE=
-Date: Tue, 12 May 2009 17:17:29 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH -mm] vmscan: make mapped executable pages the first
- class citizen
-Message-Id: <20090512171729.3fe475d1.minchan.kim@barrios-desktop>
-In-Reply-To: <20090512025246.GC7518@localhost>
-References: <20090430195439.e02edc26.akpm@linux-foundation.org>
-	<49FB01C1.6050204@redhat.com>
-	<20090501123541.7983a8ae.akpm@linux-foundation.org>
-	<20090503031539.GC5702@localhost>
-	<1241432635.7620.4732.camel@twins>
-	<20090507121101.GB20934@localhost>
-	<20090507151039.GA2413@cmpxchg.org>
-	<20090507134410.0618b308.akpm@linux-foundation.org>
-	<20090508081608.GA25117@localhost>
-	<20090508125859.210a2a25.akpm@linux-foundation.org>
-	<20090512025246.GC7518@localhost>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 May 2009 04:24:51 -0400
+Received: from hera.kernel.org ([140.211.167.34]:58768 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755292AbZELIYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 04:24:49 -0400
+Message-ID: <4A093259.30606@kernel.org>
+Date: Tue, 12 May 2009 17:24:57 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: v.virvilis@biovista.com
+CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
+       Linux IDE mailing list <linux-ide@vger.kernel.org>
+Subject: Re: SATA disks resets in a md setup
+References: <200905081739.46206.v.virvilis@biovista.com> <4A053229.5010406@garzik.org> <200905111324.38715.v.virvilis@biovista.com>
+In-Reply-To: <200905111324.38715.v.virvilis@biovista.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 08:23:43 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009 10:52:46 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+Vassilis Virvilis wrote:
+> Ok I changed
+> 	M/B,
+> 	PSU
+> 	and cables.
+> 
+> Now the stress test passes only one SATA reset instead of 3 or 4 before the fatal one.
+> 
+> 
+> [ 1804.915319] ata1.01: exception Emask 0x10 SAct 0x0 SErr 0x10000 action 0xe frozen
+> [ 1804.915319] ata1.01: ST-ATA: DRQ=1 with device error, dev_stat 0x0
+> [ 1804.915319] ata1: SError: { PHYRdyChg }
+> [ 1804.915319] ata1.01: cmd b0/d5:01:09:4f:c2/00:00:00:00:00/10 tag 0 pio 512 in
+> [ 1804.915319]          res 00/00:01:09:4f:c2/00:00:00:00:00/10 Emask 0x212 (ATA bus error)
+> [ 1804.915319] ata1: hard resetting link
+> [ 1810.279540] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
 
-That is great explanation. :)
+PHYRdyChg under load is very symptomatic of inadequate power supply.
+If you run "smartctl -a" on the device before and after the error,
+what counters change?
 
-Now, we just need any numbers. 
-But, as you know, It is difficult to get the numbers for various workloads. 
+If you have two PSUs around, one thing worth trying is to power up the
+second PSU separately and put half of the drives on the separate PSU
+and see whether the problem goes away or the pattern of failures
+changes.  PSU can be easily powered up w/o motherboard.
 
-I don't know it is job of you or us ?? 
-MM tree is always not stable. It's place to test freely for various workloads.
-
-If we can justify patch at least, we can test it after merge once. 
-(Of course, It depends on Andrew )
-After long testing without any regresssions, we can merge this into linus tree. 
-
-I think this patch is enough. 
-
-Wu Fengguang 
-Please, resend this patch series with modifying 'merge duplicate code in shrink_active_list' patch. 
-
-Thanks for your great effort. :)
-
-> Protect referenced PROT_EXEC mapped pages from being deactivated.
-> 
-> PROT_EXEC(or its internal presentation VM_EXEC) pages normally belong to some
-> currently running executables and their linked libraries, they shall really be
-> cached aggressively to provide good user experiences.
-> 
-> Thanks to Johannes Weiner for the advice to reuse the VMA walk in
-> page_referenced() to get the PROT_EXEC bit.
-> 
-> 
-> [more details]
-> 
-> ( The consequences of this patch will have to be discussed together with
->   Rik van Riel's recent patch "vmscan: evict use-once pages first". )
-> 
-> ( Some of the good points and insights are taken into this changelog.
->   Thanks to all the involved people for the great LKML discussions. )
-> 
-> the problem
-> -----------
-> 
-> For a typical desktop, the most precious working set is composed of
-> *actively accessed*
-> 	(1) memory mapped executables
-> 	(2) and their anonymous pages
-> 	(3) and other files
-> 	(4) and the dcache/icache/.. slabs
-> while the least important data are
-> 	(5) infrequently used or use-once files
-> 
-> For a typical desktop, one major problem is busty and large amount of (5)
-> use-once files flushing out the working set.
-> 
-> Inside the working set, (4) dcache/icache have already been too sticky ;-)
-> So we only have to care (2) anonymous and (1)(3) file pages.
-> 
-> anonymous pages
-> ---------------
-> Anonymous pages are effectively immune to the streaming IO attack, because we
-> now have separate file/anon LRU lists. When the use-once files crowd into the
-> file LRU, the list's "quality" is significantly lowered. Therefore the scan
-> balance policy in get_scan_ratio() will choose to scan the (low quality) file
-> LRU much more frequently than the anon LRU.
-> 
-> file pages
-> ----------
-> Rik proposed to *not* scan the active file LRU when the inactive list grows
-> larger than active list. This guarantees that when there are use-once streaming
-> IO, and the working set is not too large(so that active_size < inactive_size),
-> the active file LRU will *not* be scanned at all. So the not-too-large working
-> set can be well protected.
-> 
-> But there are also situations where the file working set is a bit large so that
-> (active_size >= inactive_size), or the streaming IOs are not purely use-once.
-> In these cases, the active list will be scanned slowly. Because the current
-> shrink_active_list() policy is to deactivate active pages regardless of their
-> referenced bits. The deactivated pages become susceptible to the streaming IO
-> attack: the inactive list could be scanned fast (500MB / 50MBps = 10s) so that
-> the deactivated pages don't have enough time to get re-referenced. Because a
-> user tend to switch between windows in intervals from seconds to minutes.
-> 
-> This patch holds mapped executable pages in the active list as long as they
-> are referenced during each full scan of the active list.  Because the active
-> list is normally scanned much slower, they get longer grace time (eg. 100s)
-> for further references, which better matches the pace of user operations.
-> 
-> side effects
-> ------------
-> 
-> This patch is safe in general, it restores the pre-2.6.28 mmap() behavior
-> but in a much smaller and well targeted scope.
-> 
-> One may worry about some one to abuse the PROT_EXEC heuristic.  But as
-> Andrew Morton stated, there are other tricks to getting that sort of boost.
-> 
-> Another concern is the PROT_EXEC mapped pages growing large in rare cases,
-> and therefore hurting reclaim efficiency. But a sane application targeted for
-> large audience will never use PROT_EXEC for data mappings. If some home made
-> application tries to abuse that bit, it shall be aware of the consequences,
-> which won't be disastrous even in the worst case.
-> 
-> CC: Elladan <elladan@eskimo.com>
-> CC: Nick Piggin <npiggin@suse.de>
-> CC: Johannes Weiner <hannes@cmpxchg.org>
-> CC: Christoph Lameter <cl@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Acked-by: Peter Zijlstra <peterz@infradead.org>
-> Acked-by: Rik van Riel <riel@redhat.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> ---
->  mm/vmscan.c |   41 +++++++++++++++++++++++++++++++++++++++--
->  1 file changed, 39 insertions(+), 2 deletions(-)
-> 
-> --- linux.orig/mm/vmscan.c
-> +++ linux/mm/vmscan.c
-> @@ -1233,6 +1233,7 @@ static void shrink_active_list(unsigned 
->  	unsigned long pgscanned;
->  	unsigned long vm_flags;
->  	LIST_HEAD(l_hold);	/* The pages which were snipped off */
-> +	LIST_HEAD(l_active);
->  	LIST_HEAD(l_inactive);
->  	struct page *page;
->  	struct pagevec pvec;
-> @@ -1272,8 +1273,21 @@ static void shrink_active_list(unsigned 
->  
->  		/* page_referenced clears PageReferenced */
->  		if (page_mapping_inuse(page) &&
-> -		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags))
-> +		    page_referenced(page, 0, sc->mem_cgroup, &vm_flags)) {
->  			pgmoved++;
-> +			/*
-> +			 * Identify referenced, file-backed active pages and
-> +			 * give them one more trip around the active list. So
-> +			 * that executable code get better chances to stay in
-> +			 * memory under moderate memory pressure.  Anon pages
-> +			 * are ignored, since JVM can create lots of anon
-> +			 * VM_EXEC pages.
-> +			 */
-> +			if ((vm_flags & VM_EXEC) && !PageAnon(page)) {
-> +				list_add(&page->lru, &l_active);
-> +				continue;
-> +			}
-> +		}
->  
->  		list_add(&page->lru, &l_inactive);
->  	}
-> @@ -1282,7 +1296,6 @@ static void shrink_active_list(unsigned 
->  	 * Move the pages to the [file or anon] inactive list.
->  	 */
->  	pagevec_init(&pvec, 1);
-> -	lru = LRU_BASE + file * LRU_FILE;
->  
->  	spin_lock_irq(&zone->lru_lock);
->  	/*
-> @@ -1294,6 +1307,7 @@ static void shrink_active_list(unsigned 
->  	reclaim_stat->recent_rotated[!!file] += pgmoved;
->  
->  	pgmoved = 0;  /* count pages moved to inactive list */
-> +	lru = LRU_BASE + file * LRU_FILE;
->  	while (!list_empty(&l_inactive)) {
->  		page = lru_to_page(&l_inactive);
->  		prefetchw_prev_lru_page(page, &l_inactive, flags);
-> @@ -1316,6 +1330,29 @@ static void shrink_active_list(unsigned 
->  	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
->  	__count_zone_vm_events(PGREFILL, zone, pgscanned);
->  	__count_vm_events(PGDEACTIVATE, pgmoved);
-> +
-> +	pgmoved = 0;  /* count pages moved back to active list */
-> +	lru = LRU_ACTIVE + file * LRU_FILE;
-> +	while (!list_empty(&l_active)) {
-> +		page = lru_to_page(&l_active);
-> +		prefetchw_prev_lru_page(page, &l_active, flags);
-> +		VM_BUG_ON(PageLRU(page));
-> +		SetPageLRU(page);
-> +		VM_BUG_ON(!PageActive(page));
-> +
-> +		list_move(&page->lru, &zone->lru[lru].list);
-> +		mem_cgroup_add_lru_list(page, lru);
-> +		pgmoved++;
-> +		if (!pagevec_add(&pvec, page)) {
-> +			spin_unlock_irq(&zone->lru_lock);
-> +			if (buffer_heads_over_limit)
-> +				pagevec_strip(&pvec);
-> +			__pagevec_release(&pvec);
-> +			spin_lock_irq(&zone->lru_lock);
-> +		}
-> +	}
-> +	__mod_zone_page_state(zone, NR_LRU_BASE + lru, pgmoved);
-> +
->  	spin_unlock_irq(&zone->lru_lock);
->  	if (buffer_heads_over_limit)
->  		pagevec_strip(&pvec);
-
+  http://modtown.co.uk/mt/article2.php?id=psumod
 
 -- 
-Kinds Regards
-Minchan Kim
+tejun
