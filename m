@@ -1,95 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756786AbZELQn6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756521AbZELQqS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756786AbZELQn6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 12:43:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754510AbZELQns
+	id S1756521AbZELQqS (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 12:46:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753521AbZELQqB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 12:43:48 -0400
-Received: from yw-out-2324.google.com ([74.125.46.29]:48558 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754346AbZELQnr convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 12:43:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=SsgE3yVgbq1rsrbDeazTAh+0h3AqDneOJc7TGUPh2OUEZrOzkxKWK5WPgSakvs72CS
-         1En2IeDHrsBEMzk1onu/6rwiL8ewZWLvo5jJt5lXezuFPRU4fFCRwEYSaMfGolQ2vVbg
-         X1C9mTnobPMuh2GRLENMd66w56QKWCfiH7XJA=
-MIME-Version: 1.0
-In-Reply-To: <b6c5339f0905120803l497131e9k7efc1b26aeb14448@mail.gmail.com>
-References: <dd18b0c30905111002y4aeb2033ma2fbb2730f5acdaf@mail.gmail.com>
-	 <4A089E49.7080403@gmail.com> <1242080334.1991.11.camel@unix>
-	 <b6c5339f0905120803l497131e9k7efc1b26aeb14448@mail.gmail.com>
-Date: Tue, 12 May 2009 09:43:47 -0700
-Message-ID: <dd18b0c30905120943o3ec60f03y2dca9b95f519210a@mail.gmail.com>
-Subject: Re: ath9k seems to be broken on 2.6.30-rc4 with a macbook pro
-From: Justin Mattock <justinmattock@gmail.com>
-To: Bob Copeland <bcopeland@gmail.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       ath9k-devel@venema.h4ckr.net, linux-wireless@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Tue, 12 May 2009 12:46:01 -0400
+Received: from ms01.sssup.it ([193.205.80.99]:34332 "EHLO sssup.it"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752766AbZELQqA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 12:46:00 -0400
+Subject: Re: [RFC][PATCH] Multimedia scheduling class, take 2
+From: Raistlin <raistlin@linux.it>
+To: Jussi Laako <jussi@sonarnerd.net>
+Cc: Chris Friesen <cfriesen@nortel.com>, Peter Zijlstra <peterz@infradead.org>,
+       James Courtier-Dutton <James@superbug.co.uk>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
+In-Reply-To: <4A09A525.4080107@sonarnerd.net>
+References: <4959198A.3020209@sonarnerd.net>
+	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net>
+	 <1231756114.19771.6.camel@laptop> <496C6294.2040707@sonarnerd.net>
+	 <4971D3D5.6040801@superbug.co.uk>  <497CF128.2060903@sonarnerd.net>
+	 <1232954745.4863.4.camel@laptop>  <4A07E044.8040807@sonarnerd.net>
+	 <1242107859.11251.301.camel@twins> <4A094707.5040307@sonarnerd.net>
+	 <4A099670.5060902@nortel.com>  <4A09A525.4080107@sonarnerd.net>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-SX5SXAnY5hJnWbMcl8XF"
+Date: Tue, 12 May 2009 18:45:58 +0200
+Message-Id: <1242146758.4792.19.camel@Palantir>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 8:03 AM, Bob Copeland <bcopeland@gmail.com> wrote:
-> On Mon, May 11, 2009 at 6:18 PM, Justin P. Mattock
-> <justinmattock@gmail.com> wrote:
->> Cool.
->> Another odd thing Ive experienced as well
->> with 2.6.29-rc8 is if my iphone is
->> connected to the router I'll have a hard time connecting
->> to anything until I disconnect the iphone
->> from the router.(my guess is the router is getting
->> old).
->
-> So the iphone causes problems when connecting from another machine
-> with ath9k, but it works ok in other kernels, or when iphone is not
-> connected?  It could be related to power saving.
->
-> --
-> Bob Copeland %% www.bobcopeland.com
->
 
-The setup I have is one router(netgear cheap but
-works)
-with macbook pro, imac, and an iphone. I guess I'm an
-apple groupie, minus the OS!!
-(two dells also, that I'm going to bring back from the
-dead when I get a chance).
+--=-SX5SXAnY5hJnWbMcl8XF
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-With 2.6.29-rc8 I've noticed this twice
-the first time about a month ago.
-basically I turned on the macbook
-had the radio streaming, as well as T.V.
-then a few seconds later all connections
-died on the macbook, then after freaking
-out I decided to reset the router, but still
-system runs(macbook) and then everything
-dies. Then freaking out for the second time,
-I decided to shut everything off of the router
-except the macbook, and voila no problem streaming.
-Then after about ten minuets of non interruption
-I turned the iphone wireless back on, and bam
-the macbook had a dead connection again.
-(leaving me dazed and confused, and that's without
-any liquid propulsion).
-The second time with the same kernel
-was about a few days ago, but this time
-after resetting the router, shutting everything
-off except the macbook, and then turning the
-iphone back on seemed to run fine.(leading me
-to believe something might be wrong with the
-router).
+On Tue, 2009-05-12 at 19:34 +0300, Jussi Laako wrote:
+> Chris Friesen wrote:
+> > If all you're trying to do is allow different threads to run at
+> > different nice levels, what about extending sys_setpriority() to take a
+> > "which" of PRIO_THREAD?  We'd probably have to call the syscall directl=
+y
+> > until/unless libc picks up the new option.
+>=20
+> How would this be mapped to a POSIX standard API? I would like to see
+> something which works straight out with
+> pthread_setschedprio()/pthread_getschedparam(). In order it to work
+> correctly it also needs sys_sched_get_priority_min and
+> sys_sched_get_priority_max.
+>=20
+Well, I'm not sure I can see why, since nor a "SCHED_MM" scheduling
+policy, nor having priorities for SCHED_OTHER (different from nice
+levels) is _not_ POSIX compliant, is it?
 
-As for 2.6.30-rc4 not sure, still need to
-get the wireless running smoothly, and then
-I'll go from there.
+Dario
 
+--=20
+<<This happens because I choose it to happen!>> (Raistlin Majere)
+----------------------------------------------------------------------
+Dario Faggioli, ReTiS Lab, Scuola Superiore Sant'Anna, Pisa  (Italy)
 
--- 
-Justin P. Mattock
+http://blog.linux.it/raistlin / raistlin@ekiga.net /
+dario.faggioli@jabber.org
+
+--=-SX5SXAnY5hJnWbMcl8XF
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkoJp7sACgkQk4XaBE3IOsQGPACfX7AUFGQ9I5bbjrJGBzgnN4nm
+Z38An0N/E6qFtftzNBOoqM5bbUYYgse2
+=juVI
+-----END PGP SIGNATURE-----
+
+--=-SX5SXAnY5hJnWbMcl8XF--
+
