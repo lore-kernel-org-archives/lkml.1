@@ -1,98 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755299AbZELPiV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755769AbZELPie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755299AbZELPiV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:38:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751603AbZELPiF
+	id S1755769AbZELPie (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756029AbZELPiP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:38:05 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:19889 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751274AbZELPiC convert rfc822-to-8bit (ORCPT
+	Tue, 12 May 2009 11:38:15 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:41809 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755992AbZELPiN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:38:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:from:date
-         :x-google-sender-auth:message-id:subject:to:cc:content-type
-         :content-transfer-encoding;
-        b=OL8Cdd++tcjuW69uK7cr/6XzOtMyNPeEfVqwzD1rhHQ3opZcj6z+ket9u1OaVs407F
-         ssrheN/TSLZ4hl7+Ib+oTCjpMKqjIMXiiiYnJX46fTXMRvXGWSK0F6Z0AkbM0a78Iyp6
-         WQcDHu+AGjm/ea9KcavAHkVtd1Ys+hSWnr4zc=
-MIME-Version: 1.0
-In-Reply-To: <87ljp2v6vt.fsf@tac.ki.iif.hu>
-References: <874ovws94s.fsf@tac.ki.iif.hu> <87ljp2v6vt.fsf@tac.ki.iif.hu>
-From: Ray Lee <ray-lk@madrabbit.org>
-Date: Tue, 12 May 2009 08:37:43 -0700
-X-Google-Sender-Auth: ec4c982b364e7599
-Message-ID: <2c0942db0905120837g702b457bm52a412293925021a@mail.gmail.com>
-Subject: Re: mmap vs mtime in 2.6.26 and up
-To: Ferenc Wagner <wferi@niif.hu>, Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, xfs@oss.sgi.com
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Tue, 12 May 2009 11:38:13 -0400
+Date: Tue, 12 May 2009 17:43:26 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Jack Steiner <steiner@sgi.com>
+Cc: David Rientjes <rientjes@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Yinghai Lu <yinghai@kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 3/3] x86: fix node_possible_map logic -v2
+Message-ID: <20090512154326.GJ19296@one.firstfloor.org>
+References: <4A05269D.8000701@kernel.org> <4A0527CB.4020807@kernel.org> <20090511175312.GA27905@sgi.com> <alpine.DEB.2.00.0905111218520.23739@chino.kir.corp.google.com> <4A0894A5.9000209@zytor.com> <alpine.DEB.2.00.0905111509570.2234@chino.kir.corp.google.com> <20090512150622.GA10015@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090512150622.GA10015@sgi.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(Adding Christoph Hellwig, xfs list, Andrew Morton to cc:)
+> We actually have configurations that match both scenarios above. The
+> system is a blade-based system with 2 processor sockets per blade.
+> Memory is socket attached and each socket is in a unique PXM.
 
-On Tue, May 12, 2009 at 5:32 AM, Ferenc Wagner <wferi@niif.hu> wrote:
-> Hi,
->
-> I've noticed that the last modification times of our RRD files got
-> stuck after upgrading from 2.6.24 to 2.6.26 (Debian Etch -> Lenny; I
-> also tested with 2.6.30-rc5, they are still stuck).  It has some
-> literature, most notably kernel bug #2645, but that's closed long ago
-> and the resulting patch http://lkml.org/lkml/2008/1/22/370 is present
-> in my kernels.  Still, the test program (version 3 from the bug report)
-> gives failures:
->
-> $ ./mmap_test junk
-> Modifying junk...
-> Flushing data using sync()...
-> Failure: time not changed.
-> Not modifying junk...
-> Flushing data using msync()...
-> Success: time not changed.
-> Not modifying junk...
-> Flushing data using fsync()...
-> Success: time not changed.
-> Modifying junk...
-> Flushing data using msync()...
-> Failure: time not changed.
-> Modifying junk...
-> Flushing data using fsync()...
-> Failure: time not changed.
->
-> Is this as expected?  I reckon the bug wasn't solved fully, but it
-> seems to be worse that that.
+Jack, I think the interesting part would be: If you assign the CPUs
+to the next nearby node with memory. Do you see any unacceptable performance
+problems from that?
 
+I'm sure the problem could be solved, but it would be quite some work,
+and that would be only worth spending if it's actually a significant
+benefit.
 
-I don't think that's expected. Further, the test program (v3) from
-that bugzilla http://bugzilla.kernel.org/show_bug.cgi?id=2645 works
-for me under ext3, so perhaps this is an xfs-specific issue.
-
-
->
-> I don't know if it's related or not, but another anomaly appeared
-> after the upgrade: minutes-long remount times.  The machine always was
-> under a fair load (10), but mount /usr -oremount,rw never took
-> noticeable time.  The IO load pushes two other filesystems.  Now
-> strace -tt shows:
->
-> [...]
-> 01:24:08.463813 stat64("/sbin/mount.xfs", 0xbfa40eb0) = -1 ENOENT (No such file or directory)
-> 01:24:08.463904 mount("/dev/mapper/noc7-usr", "/usr", 0x894a2c8, MS_MGC_VAL|MS_NODEV|MS_REMOUNT, NULL) = 0
-> 01:26:58.705387 readlink("/dev", 0xbfa3ef3b, 4096) = -1 EINVAL (Invalid argument)
-> [...]
->
-> After this, remount ro and rw again are quick for some time.
-> (I couldn't test this part with 2.6.30-rc5, but again, this may be
-> totally unrelated.)
->
-> This bug is quite serious in our environment, as it thwarts the backup
-> software.  The file system is xfs; rw,nosuid,nodev,nobarrier,noquota.
-> --
-> Regards,
-> Feri.
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
