@@ -1,49 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755967AbZELSsz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755498AbZELSy3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755967AbZELSsz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 14:48:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752181AbZELSsq
+	id S1755498AbZELSy3 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 14:54:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752147AbZELSyU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 14:48:46 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:58227 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752147AbZELSsp (ORCPT
+	Tue, 12 May 2009 14:54:20 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:62655 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751955AbZELSyT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 14:48:45 -0400
-Message-ID: <4A09C444.9070809@zytor.com>
-Date: Tue, 12 May 2009 11:47:32 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Borislav Petkov <borislav.petkov@amd.com>
-CC: Jaswinder Singh Rajput <jaswinder@kernel.org>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH -tip] x86: cpu/proc.c adding extended_cpuid_level for
- /proc/cpuinfo
-References: <1242112482.3283.1.camel@localhost.localdomain> <20090512133950.GA15474@aftab> <1242136177.14832.0.camel@ht.satnam> <20090512141027.GA19143@aftab> <4A09A688.6080603@zytor.com> <20090512181358.GC19143@aftab>
-In-Reply-To: <20090512181358.GC19143@aftab>
-Content-Type: text/plain; charset=UTF-8
+	Tue, 12 May 2009 14:54:19 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: Ar0FAJFcCUpMQW1W/2dsb2JhbACBUMw+hAIF
+Date: Tue, 12 May 2009 14:54:16 -0400
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: Bert Wesarg <bert.wesarg@googlemail.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH urcu] Use pthread_equal() for pthread_t's equality test
+Message-ID: <20090512185415.GA22500@Krystal>
+References: <1233911220-27912-1-git-send-email-bert.wesarg@googlemail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <1233911220-27912-1-git-send-email-bert.wesarg@googlemail.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 14:52:56 up 73 days, 15:19,  6 users,  load average: 0.50, 0.29,
+	0.22
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Borislav Petkov wrote:
-> 
->>  It hardly "completes" /proc/cpuinfo; especially if you consider that
->> there are at least three additional ranges in wide use (two used by a
->> single vendor only, and the third by virtualization software.)
-> 
-> I think both vendors use the two ranges :-o).
+* Bert Wesarg (bert.wesarg@googlemail.com) wrote:
+> Signed-off-by: Bert Wesarg <bert.wesarg@googlemail.com>
+> ---
+>  urcu.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
 
-No, I'm taking about the 0x8086xxxx and 0xC000xxxx used by two other
-vendors (neither of which you and I work for, and at least one of which
-is defunct.)
+Hi Bert,
 
-	-hpa
+I have to ask all userspace RCU committers for permission to move the
+code to LGPL. IBM already gave their approval. Is it OK with you wrt to
+the patch you posted here ?
+
+Mathieu
+
+> diff --git a/urcu.c b/urcu.c
+> index d0d6138..e401d8d 100644
+> --- a/urcu.c
+> +++ b/urcu.c
+> @@ -185,7 +185,7 @@ void urcu_remove_reader(pthread_t id)
+>  
+>  	assert(reader_data != NULL);
+>  	for (index = reader_data; index < reader_data + num_readers; index++) {
+> -		if (index->tid == id) {
+> +		if (pthread_equal(index->tid, id)) {
+>  			memcpy(index, &reader_data[num_readers - 1],
+>  				sizeof(struct reader_data));
+>  			reader_data[num_readers - 1].tid = 0;
+> -- 
+> 1.6.1.rc4
+> 
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
