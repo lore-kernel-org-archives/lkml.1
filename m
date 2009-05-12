@@ -1,57 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbZELTpl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752674AbZELTt4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753788AbZELTpl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 15:45:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbZELTpc
+	id S1752674AbZELTt4 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 15:49:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZELTtq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 15:45:32 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:62179 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751991AbZELTpc convert rfc822-to-8bit (ORCPT
+	Tue, 12 May 2009 15:49:46 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:54146 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750974AbZELTtp convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 15:45:32 -0400
-Date: Tue, 12 May 2009 21:45:31 +0200
-Message-Id: <711906814@web.de>
+	Tue, 12 May 2009 15:49:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=KFFQK4E1AVEdmuc54twLybOG2uq1ARCkXLMo6OfcodKYDQ1hualJ33DDovVMO8hMWv
+         V0p3TmwQr3wM5B135AoFbwMe5P+CbKoE5xIpVRm/2947GsZbrGSsIMoON+LVqQxbCPRH
+         SOfLC44jv8g9+LcxswEkjZeEedCP3VZD4NxP8=
 MIME-Version: 1.0
-From: devzero@web.de
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Alok Kataria <akataria@vmware.com>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Reduce the default HZ value
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX19eo5mpcPCPIDxAd2KY5KWYy2UUdc0upD8VoZ4fGK0DgUH9d
- CVUUXX2NMEe96NlHc12ti3U5XnhEZaq87sCnIIlvfeqSzkgTqM=
-Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <4A09C444.9070809@zytor.com>
+References: <1242112482.3283.1.camel@localhost.localdomain>
+	 <20090512133950.GA15474@aftab> <1242136177.14832.0.camel@ht.satnam>
+	 <20090512141027.GA19143@aftab> <4A09A688.6080603@zytor.com>
+	 <20090512181358.GC19143@aftab> <4A09C444.9070809@zytor.com>
+Date: Tue, 12 May 2009 21:49:45 +0200
+Message-ID: <9ea470500905121249i5fddf318lde5377d3d438854a@mail.gmail.com>
+Subject: Re: [PATCH -tip] x86: cpu/proc.c adding extended_cpuid_level for 
+	/proc/cpuinfo
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Borislav Petkov <borislav.petkov@amd.com>,
+       Jaswinder Singh Rajput <jaswinder@kernel.org>,
+       Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> > As a side note Red Hat ships runtime configurable tick behaviour in RHEL
->> > these days. HZ is fixed but the ticks can be bunched up. That was done as
->> > a quick fix to keep stuff portable but its a lot more sensible than
->> > randomly messing with the HZ value and its not much code either.
->> > 
->> Hi Alan, 
->> 
->> I guess you are talking about the tick_divider patch ? 
->> And that's still same as reducing the HZ value only that it can be done
->> dynamically (boot time), right ? 
+Hi,
+
+On Tue, May 12, 2009 at 8:47 PM, H. Peter Anvin <hpa@zytor.com> wrote:
+> Borislav Petkov wrote:
+>>
+>>>  It hardly "completes" /proc/cpuinfo; especially if you consider that
+>>> there are at least three additional ranges in wide use (two used by a
+>>> single vendor only, and the third by virtualization software.)
+>>
+>> I think both vendors use the two ranges :-o).
+>>
 >
->Yes - which has the advantage that you can select different behaviours
->rather than distributions having to build with HZ=1000 either for
->compatibility or responsiveness can still allow users to drop to a lower
->HZ value if doing stuff like HPC.
->
->Basically it removes the need to argue about it at build time and lets
->the user decide.
+> No, I'm taking about the 0x8086xxxx and 0xC000xxxx used by two other
+> vendors (neither of which you and I work for, and at least one of which
+> is defunct.)
 
-any reason why this did not reach mainline?
-is it because there were issues with clocksource=pit ?
+Ah, yes. Gotcha.
 
-regards
-roland
-
-______________________________________________________
-GRATIS für alle WEB.DE-Nutzer: Die maxdome Movie-FLAT!
-Jetzt freischalten unter http://movieflat.web.de
-
+-- 
+Regards/Gruss,
+Boris
