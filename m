@@ -1,97 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755611AbZELGok@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757781AbZELGp7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755611AbZELGok (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 02:44:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbZELGob
+	id S1757781AbZELGp7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 02:45:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755029AbZELGpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 02:44:31 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:48418 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754063AbZELGoa (ORCPT
+	Tue, 12 May 2009 02:45:50 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:50797 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753707AbZELGpt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 02:44:30 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=DMw8Ok86qg7374PRMLWgdk5ncnk+wJ1CWYFIr/3rQmzQ9fyJ0fW00tUl6f2rJcMvMj
-         MKS2M82vUEaeF9far3qAWaK9SIvMW2C9kSMv3IGyf51fSJ8/spj1YDjpW1WmCO4IbRpL
-         w7cKkTKDUp6RrUyTzR7gPN5yeC1/zK/s+xuTQ=
-Date: Tue, 12 May 2009 15:44:13 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH -mm] vmscan: report vm_flags in page_referenced()
-Message-Id: <20090512154413.ca39795e.minchan.kim@barrios-desktop>
-In-Reply-To: <1242109389.11251.310.camel@twins>
-References: <20090430195439.e02edc26.akpm@linux-foundation.org>
-	<49FB01C1.6050204@redhat.com>
-	<20090501123541.7983a8ae.akpm@linux-foundation.org>
-	<20090503031539.GC5702@localhost>
-	<1241432635.7620.4732.camel@twins>
-	<20090507121101.GB20934@localhost>
-	<20090507151039.GA2413@cmpxchg.org>
-	<20090507134410.0618b308.akpm@linux-foundation.org>
-	<20090508081608.GA25117@localhost>
-	<20090508125859.210a2a25.akpm@linux-foundation.org>
-	<20090512025153.GB7518@localhost>
-	<1242109389.11251.310.camel@twins>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Tue, 12 May 2009 02:45:49 -0400
+Date: Tue, 12 May 2009 08:51:05 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "Michael S. Zick" <lkml@morethan.org>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: Disable generation of sse3 instructions in kernel build.
+Message-ID: <20090512065104.GC19296@one.firstfloor.org>
+References: <200905091903.25745.lkml@morethan.org> <87skjbmjb2.fsf@basil.nowhere.org> <200905111847.46187.lkml@morethan.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905111847.46187.lkml@morethan.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009 08:23:09 +0200
-Peter Zijlstra <peterz@infradead.org> wrote:
+[sending again with linux-kernel cc. Please don't drop cc list like this]
 
-> On Tue, 2009-05-12 at 10:51 +0800, Wu Fengguang wrote:
-> > @@ -406,6 +408,7 @@ static int page_referenced_anon(struct p
-> >                 if (mem_cont && !mm_match_cgroup(vma->vm_mm, mem_cont))
-> >                         continue;
-> >                 referenced += page_referenced_one(page, vma, &mapcount);
-> > +               *vm_flags |= vma->vm_flags;
-> >                 if (!mapcount)
-> >                         break;
-> >         }
+> On Mon May 11 2009, you wrote:
+> > "Michael S. Zick" <lkml@morethan.org> writes:
+> > 
+> > > Ref: 2.6.30-rcX
+> > > The option to disable sse3 instructions needs to be added to build system for x86.
+> > > Otherwise strange and mysterious things happen (tm).
+> > 
+> > Can you please expand a little bit? With what compiler version did you        
+> > see problems? And in what area did they happen?
+> > 
 > 
-> Shouldn't that read:
-> 
->   if (page_referenced_on(page, vma, &mapcount)) {
->     referenced++;
->     *vm_flags |= vma->vm_flags;
->   }
-> 
-> So that we only add the vma-flags of those vmas that actually have a
-> young bit set?
-> 
-> In which case it'd be more at home in page_referenced_one():
-> 
-> @@ -381,6 +381,8 @@ out_unmap:
->  	(*mapcount)--;
->  	pte_unmap_unlock(pte, ptl);
->  out:
-> +	if (referenced)
-> +		*vm_flags |= vma->vm_flags;
->  	return referenced;
->  }
+> Sorry about the comment - it was based on the preceding code comment - perhaps now outdated.
 
-Good. I am ACK for peter's suggestion.
-It can prevent setting vm_flag for worng vma which don't have the page.
+It's not outdated. I wrote it originally.
+
+> 
+> Once upon a time, the kernel did not touch the co-processor registers (any style of them) on x86 -
+> see the preceding code comment and existing contents of the flag line being changed.
+> 
+> If the kernel now saves/restores the co-processor registers - then only the code comment needs
+> to be changed and the existing contents of the flag line be brought into line.           
+
+No the kernel doesn't do that. At least not automatically.
+
+The reason these options are there is that at least some older gcc versions had
+corner cases where they could generate instructions to touch MMX or SSE registers
+even when the code doesn't use any floating point.  That's why these options
+were originally added to make sure this doesn't happen in the kernel,
+where it would corrupt user data or crash.
+
+But sse3 is just an extension of sse2 and when sse2 is enabled then
+sse3 should be implicitely too. Unless some gcc version is really broken in this
+regard, but I hope not. That is why I was asking if you've actually
+seen failures from this.
+
+Apparently you did not though. So your patch is not needed.
+
+-Andi
 
 -- 
-Kinds Regards
-Minchan Kim
+ak@linux.intel.com -- Speaking for myself only.
