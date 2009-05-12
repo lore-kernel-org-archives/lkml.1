@@ -1,239 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757215AbZELQz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755587AbZELRAr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757215AbZELQz6 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 12:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbZELQzs
+	id S1755587AbZELRAr (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 13:00:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752619AbZELRAi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 12:55:48 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:37719 "EHLO
-	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750825AbZELQzr (ORCPT
+	Tue, 12 May 2009 13:00:38 -0400
+Received: from zrtps0kp.nortel.com ([47.140.192.56]:58628 "EHLO
+	zrtps0kp.nortel.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751177AbZELRAh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 12:55:47 -0400
-Date: Tue, 12 May 2009 16:54:21 -0400 (EDT)
-From: Christoph Lameter <cl@linux-foundation.org>
-X-X-Sender: cl@qirst.com
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH -mm] vmscan: protect a fraction of file backed mapped
- pages from reclaim
-In-Reply-To: <20090512120002.D616.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.1.10.0905121650090.14226@qirst.com>
-References: <20090508125859.210a2a25.akpm@linux-foundation.org> <20090512025246.GC7518@localhost> <20090512120002.D616.A69D9226@jp.fujitsu.com>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Tue, 12 May 2009 13:00:37 -0400
+Message-ID: <4A09AB2E.8030002@nortel.com>
+Date: Tue, 12 May 2009 11:00:30 -0600
+From: "Chris Friesen" <cfriesen@nortel.com>
+User-Agent: Mozilla Thunderbird 1.0.2-6 (X11/20050513)
+X-Accept-Language: en-us, en
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jussi Laako <jussi@sonarnerd.net>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       James Courtier-Dutton <James@superbug.co.uk>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       d.faggioli@sssup.it
+Subject: Re: [RFC][PATCH] Multimedia scheduling class, take 2
+References: <4959198A.3020209@sonarnerd.net>	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net>	 <1231756114.19771.6.camel@laptop> <496C6294.2040707@sonarnerd.net>	 <4971D3D5.6040801@superbug.co.uk>  <497CF128.2060903@sonarnerd.net>	 <1232954745.4863.4.camel@laptop>  <4A07E044.8040807@sonarnerd.net> <1242107859.11251.301.camel@twins> <4A094707.5040307@sonarnerd.net> <4A099670.5060902@nortel.com> <4A09A525.4080107@sonarnerd.net>
+In-Reply-To: <4A09A525.4080107@sonarnerd.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 May 2009 17:00:34.0466 (UTC) FILETIME=[2A5A8020:01C9D323]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-All these expiration modifications do not take into account that a desktop
-may sit idle for hours while some other things run in the background (like
-backups at night or updatedb and other maintenance things). This still
-means that the desktop will be usuable in the morning.
+Jussi Laako wrote:
+> Chris Friesen wrote:
+> 
+>>If all you're trying to do is allow different threads to run at
+>>different nice levels, what about extending sys_setpriority() to take a
+>>"which" of PRIO_THREAD?  We'd probably have to call the syscall directly
+>>until/unless libc picks up the new option.
+> 
+> 
+> How would this be mapped to a POSIX standard API?
 
-I have had some success with a patch that protects a pages in the file
-cache from being unmapped if the mapped pages are below a certain
-percentage of the file cache. Its another VM knob to define the percentage
-though.
+You'd call sys_setpriority.  Actually, you'd probably have to call
+syscall(__NR_getpriority...) until glibc picks up the new option.
 
+Then for the "which" field, instead of PRIO_PROCESS you would use a new
+PRIO_THREAD (or PRIO_TASK, whichever makes more sense) which would only
+set the nice level for the specific thread specified in the "who" field.
 
-Subject: Do not evict mapped pages
+Of course, without glibc/pthreads support you would only be able to set
+the nice level for the current thread since you don't have any way to
+map from "pthread_t *" to tid.  And you wouldn't be able to create new
+threads with a particular nice level already set.  But that argument
+holds true for a new sched policy as well, because glibc checks the
+policy internally and only knows about the normal three.
 
-It is quite annoying when important executable pages of the user interface
-are evicted from memory because backup or some other function runs and no one
-is clicking any buttons for awhile. Once you get back to the desktop and
-try to click a link one is in for a surprise. It can take quite a long time
-for the desktop to recover from the swap outs.
+> I would like to see
+> something which works straight out with
+> pthread_setschedprio()/pthread_getschedparam(). In order it to work
+> correctly it also needs sys_sched_get_priority_min and
+> sys_sched_get_priority_max.
 
-This patch ensures that mapped pages in the file cache are not evicted if there
-are a sufficient number of unmapped pages present. A similar technique is
-already in use under NUMA for zone reclaim. The same method can be used to
-protect mapped pages from reclaim.
+This option extends the "nice" API rather than the static priority API,
+so all of the above would still have a static priority of 0 for SCHED_OTHER.
 
-The percentage of file backed pages protected is set via
-/proc/sys/vm/file_mapped_ratio. This defaults to 20%.
-
-Signed-off-by: Christoph Lameter <cl@linux-foundation.org>
-
----
- Documentation/sysctl/vm.txt |   14 ++++++++++++++
- include/linux/swap.h        |    1 +
- kernel/sysctl.c             |   13 ++++++++++++-
- mm/vmscan.c                 |   32 ++++++++++++++++++++++++++++----
- 4 files changed, 55 insertions(+), 5 deletions(-)
-
-Index: linux-2.6/mm/vmscan.c
-===================================================================
---- linux-2.6.orig/mm/vmscan.c	2009-05-11 21:37:15.397876418 -0500
-+++ linux-2.6/mm/vmscan.c	2009-05-11 21:37:23.287875742 -0500
-@@ -585,7 +585,8 @@ void putback_lru_page(struct page *page)
-  */
- static unsigned long shrink_page_list(struct list_head *page_list,
- 					struct scan_control *sc,
--					enum pageout_io sync_writeback)
-+					enum pageout_io sync_writeback,
-+					int unmap_mapped)
- {
- 	LIST_HEAD(ret_pages);
- 	struct pagevec freed_pvec;
-@@ -616,7 +617,7 @@ static unsigned long shrink_page_list(st
- 		if (unlikely(!page_evictable(page, NULL)))
- 			goto cull_mlocked;
-
--		if (!sc->may_unmap && page_mapped(page))
-+		if (!unmap_mapped && page_mapped(page))
- 			goto keep_locked;
-
- 		/* Double the slab pressure for mapped and swapcache pages */
-@@ -1047,6 +1048,12 @@ int isolate_lru_page(struct page *page)
- }
-
- /*
-+ * Percentage of pages of the file lru necessary for unmapping of
-+ * pages to occur during reclaim.
-+ */
-+int sysctl_file_unmap_ratio = 20;
-+
-+/*
-  * shrink_inactive_list() is a helper for shrink_zone().  It returns the number
-  * of reclaimed pages
-  */
-@@ -1059,10 +1066,26 @@ static unsigned long shrink_inactive_lis
- 	unsigned long nr_scanned = 0;
- 	unsigned long nr_reclaimed = 0;
- 	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
-+	int unmap_mapped = 0;
-
- 	pagevec_init(&pvec, 1);
-
- 	lru_add_drain();
-+
-+	/*
-+	 * Only allow unmapping of file backed pages if the amount of file
-+	 * mapped page becomes greater than a certain percentage of the file
-+	 * lru (+ free memory in order to avoid useless unmaps before memory
-+	 * fills up).
-+	 */
-+	if (sc->may_unmap && (!file ||
-+		zone_page_state(zone, NR_FILE_MAPPED) * 100 >
-+			(zone_page_state(zone, NR_FREE_PAGES) +
-+			zone_page_state(zone, NR_ACTIVE_FILE) +
-+			zone_page_state(zone, NR_INACTIVE_FILE))
-+				* sysctl_file_unmap_ratio))
-+					unmap_mapped = 1;
-+
- 	spin_lock_irq(&zone->lru_lock);
- 	do {
- 		struct page *page;
-@@ -1111,7 +1134,8 @@ static unsigned long shrink_inactive_lis
- 		spin_unlock_irq(&zone->lru_lock);
-
- 		nr_scanned += nr_scan;
--		nr_freed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC);
-+		nr_freed = shrink_page_list(&page_list, sc, PAGEOUT_IO_ASYNC,
-+									unmap_mapped);
-
- 		/*
- 		 * If we are direct reclaiming for contiguous pages and we do
-@@ -1131,7 +1155,7 @@ static unsigned long shrink_inactive_lis
- 			count_vm_events(PGDEACTIVATE, nr_active);
-
- 			nr_freed += shrink_page_list(&page_list, sc,
--							PAGEOUT_IO_SYNC);
-+						PAGEOUT_IO_SYNC, unmap_mapped);
- 		}
-
- 		nr_reclaimed += nr_freed;
-Index: linux-2.6/include/linux/swap.h
-===================================================================
---- linux-2.6.orig/include/linux/swap.h	2009-05-11 21:37:15.417879047 -0500
-+++ linux-2.6/include/linux/swap.h	2009-05-11 21:37:23.287875742 -0500
-@@ -221,6 +221,7 @@ extern unsigned long shrink_all_memory(u
- extern int vm_swappiness;
- extern int remove_mapping(struct address_space *mapping, struct page *page);
- extern long vm_total_pages;
-+extern int sysctl_file_unmap_ratio;
-
- #ifdef CONFIG_NUMA
- extern int zone_reclaim_mode;
-Index: linux-2.6/kernel/sysctl.c
-===================================================================
---- linux-2.6.orig/kernel/sysctl.c	2009-05-11 21:37:15.467877848 -0500
-+++ linux-2.6/kernel/sysctl.c	2009-05-11 21:37:23.307877270 -0500
-@@ -92,7 +92,6 @@ extern int rcutorture_runnable;
-
- /* Constants used for minimum and  maximum */
- #ifdef CONFIG_DETECT_SOFTLOCKUP
--static int sixty = 60;
- static int neg_one = -1;
- #endif
-
-@@ -100,6 +99,7 @@ static int zero;
- static int __maybe_unused one = 1;
- static int __maybe_unused two = 2;
- static unsigned long one_ul = 1;
-+static int sixty = 60;
- static int one_hundred = 100;
- static int one_thousand = 1000;
-
-@@ -1141,6 +1141,17 @@ static struct ctl_table vm_table[] = {
- 		.strategy	= &sysctl_intvec,
- 		.extra1		= &min_percpu_pagelist_fract,
- 	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "file_mapped_ratio",
-+		.data		= &sysctl_file_unmap_ratio,
-+		.maxlen		= sizeof(sysctl_file_unmap_ratio),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec_minmax,
-+		.strategy	= &sysctl_intvec,
-+		.extra1		= &zero,
-+		.extra2		= &sixty,
-+	},
- #ifdef CONFIG_MMU
- 	{
- 		.ctl_name	= VM_MAX_MAP_COUNT,
-Index: linux-2.6/Documentation/sysctl/vm.txt
-===================================================================
---- linux-2.6.orig/Documentation/sysctl/vm.txt	2009-05-11 21:45:43.937878597 -0500
-+++ linux-2.6/Documentation/sysctl/vm.txt	2009-05-11 21:52:57.217874275 -0500
-@@ -26,6 +26,7 @@ Currently, these files are in /proc/sys/
- - dirty_ratio
- - dirty_writeback_centisecs
- - drop_caches
-+- file_mapped_ratio
- - hugepages_treat_as_movable
- - hugetlb_shm_group
- - laptop_mode
-@@ -140,6 +141,19 @@ user should run `sync' first.
-
- ==============================================================
-
-+file_mapped_ratio
-+
-+A percentage of the file backed pages in memory. If there are more
-+mapped pages than this percentage then reclaim will unmap pages
-+from the memory of processes.
-+
-+The main function of this ratio is to protect pags in use
-+by proceses from streaming I/O and other operations that
-+put a lot of churn on the page cache and would usually evict
-+most pages.
-+
-+==============================================================
-+
- hugepages_treat_as_movable
-
- This parameter is only useful when kernelcore= is specified at boot time to
+Chris
