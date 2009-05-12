@@ -1,268 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753671AbZELOUT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755674AbZELOUk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753671AbZELOUT (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 10:20:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752769AbZELOT7
+	id S1755674AbZELOUk (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 10:20:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbZELOUZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 10:19:59 -0400
-Received: from e23smtp02.au.ibm.com ([202.81.31.144]:44463 "EHLO
-	e23smtp02.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754167AbZELOT6 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 10:19:58 -0400
-Date: Tue, 12 May 2009 19:49:44 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
-       Roland McGrath <roland@redhat.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [Patch 11/12] ftrace plugin for kernel symbol tracing using
-	HWBreakpoint interfaces - v4
-Message-ID: <20090512141944.GB6033@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090511114422.133566343@prasadkr_t60p.in.ibm.com> <20090511115502.GL25673@in.ibm.com> <20090511221427.GB5965@nowhere>
+	Tue, 12 May 2009 10:20:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:34874 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755239AbZELOUY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 10:20:24 -0400
+Message-ID: <4A0985BE.7000403@redhat.com>
+Date: Tue, 12 May 2009 10:20:46 -0400
+From: Masami Hiramatsu <mhiramat@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090511221427.GB5965@nowhere>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Robin Holt <holt@sgi.com>
+CC: Linus Torvalds <torvalds@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, systemtap@sources.redhat.com,
+       Harvey Harrison <harvey.harrison@gmail.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Jan Blunck <jblunck@suse.de>, Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH -rc] [BUGFIX] x86: fix kernel_trap_sp()
+References: <20090511210300.17332.67549.stgit@localhost.localdomain> <alpine.LFD.2.01.0905111512240.3586@localhost.localdomain> <20090512112300.GL7601@sgi.com>
+In-Reply-To: <20090512112300.GL7601@sgi.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 12:14:29AM +0200, Frederic Weisbecker wrote:
-> On Mon, May 11, 2009 at 05:25:02PM +0530, K.Prasad wrote:
-> > This patch adds an ftrace plugin to detect and profile memory access over kernel
-> > variables. It uses HW Breakpoint interfaces to 'watch memory addresses.
-> > 
-> > +void ksym_collect_stats(unsigned long hbp_hit_addr)
-> > +{
-> > +	struct hlist_node *node;
-> > +	struct trace_ksym *entry;
-> > +
-> > +	rcu_read_lock();
-> > +	hlist_for_each_entry_rcu(entry, node, &ksym_filter_head, ksym_hlist) {
-> > +		if ((entry->ksym_addr == hbp_hit_addr) &&
-> > +		    (entry->counter <= MAX_UL_INT)) {
-> > +			entry->counter++;
-> > +			break;
-> > +		}
-> > +	}
-> > +	rcu_read_unlock();
+Robin Holt wrote:
+> On Mon, May 11, 2009 at 03:24:07PM -0700, Linus Torvalds wrote:
+>>
+>> On Mon, 11 May 2009, Masami Hiramatsu wrote:
+>>> Use &regs->sp instead of regs for getting the top of stack in kernel mode.
+>>> (on x86-64, regs->sp always points the top of stack)
+>> Ack. 
+>>
+>> That said, we have only _one_ use of this "kernel_trap_sp()" in the whole 
+>> kernel, and that use is actually fairly odd too, in that it does it 
+>> _before_ checking that it's in kernel mode.
+>>
+>> Admittedly it will then only _use_ the value after it has checked that 
+>> things are in kernel mode, but it all boils down to "ok, that's pretty 
+>> odd".
+>>
+>> So how about fixing that, and also fixing the naming of the function. Call 
+>> it "kernel_stack_pointer()" to match its more widely used sibling function
+>> "user_stack_pointer()".
+>>
+>> IOW, something like this?
+>>
+>> 		Linus
+>>
+>> ---
+>>  arch/x86/include/asm/ptrace.h |    7 ++++---
+>>  arch/x86/oprofile/backtrace.c |    2 +-
+>>  2 files changed, 5 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
+>> index e304b66..624f133 100644
+>> --- a/arch/x86/include/asm/ptrace.h
+>> +++ b/arch/x86/include/asm/ptrace.h
+>> @@ -187,14 +187,15 @@ static inline int v8086_mode(struct pt_regs *regs)
+>>  
+>>  /*
+>>   * X86_32 CPUs don't save ss and esp if the CPU is already in kernel mode
+>> - * when it traps.  So regs will be the current sp.
+>> + * when it traps.  The previous stack will be directly underneath the saved
+>> + * registers, and 'sp/ss' won't even have been saved. Thus the '&regs->sp'.
+>>   *
+>>   * This is valid only for kernel mode traps.
+>>   */
+>> -static inline unsigned long kernel_trap_sp(struct pt_regs *regs)
+>> +static inline unsigned long kernel_stack_pointer(struct pt_regs *regs)
 > 
-> 
-> 
-> rcu looks a good idea to maintain your list.
->
+> Why not have it return an unsigned long *?
+>>  {
+>>  #ifdef CONFIG_X86_32
+>> -	return (unsigned long)regs;
+>> +	return (unsigned long)(&regs->sp);
+>>  #else
+>>  	return regs->sp;
 
-True, and there weren't many choices either. The earlier implementations
-with mutex/spin_lock turned out to be incorrect in their own way (while
-mutexes cannot be used inside exception handler context, spinlocks led to
-potential circular dependancy).
- 
-> > +static int process_new_ksym_entry(char *ksymname, int op, unsigned long addr)
-> > +{
-> > +	struct trace_ksym *entry;
-> > +	int ret;
-> > +
-> > +	if (ksym_filter_entry_count >= KSYM_TRACER_MAX) {
-> > +		printk(KERN_ERR "ksym_tracer: Maximum limit:(%d) reached. No"
-> > +		" new requests for tracing can be accepted now.\n",
-> > +			KSYM_TRACER_MAX);
-> > +		return -ENOSPC;
-> > +	}
-> > +
-> > +	entry = kzalloc(sizeof(struct trace_ksym), GFP_KERNEL);
-> > +	if (!entry)
-> > +		return -ENOMEM;
-> > +
-> > +	entry->ksym_hbp = kzalloc(sizeof(struct hw_breakpoint), GFP_KERNEL);
-> > +	if (!entry->ksym_hbp) {
-> > +		kfree(entry);
-> > +		return -ENOMEM;
-> > +	}
-> > +
-> > +	entry->ksym_hbp->info.name = ksymname;
-> > +	entry->ksym_hbp->info.type = op;
-> > +	entry->ksym_addr = entry->ksym_hbp->info.address = addr;
-> > +#ifdef CONFIG_X86
-> > +	entry->ksym_hbp->info.len = HW_BREAKPOINT_LEN_4;
-> > +#endif
-> > +	entry->ksym_hbp->triggered = (void *)ksym_hbp_handler;
-> > +
-> > +	ret = register_kernel_hw_breakpoint(entry->ksym_hbp);
-> > +	if (ret < 0) {
-> > +		printk(KERN_INFO "ksym_tracer request failed. Try again"
-> > +					" later!!\n");
-> > +		kfree(entry->ksym_hbp);
-> > +		kfree(entry);
-> > +		return -EAGAIN;
-> > +	}
-> > +	hlist_add_head_rcu(&(entry->ksym_hlist), &ksym_filter_head);
-> 
-> 
-> And then ksym_tracer_mutex protect concurrent writers.
-> 
-> 
+Perhaps, you might forget that this line needs a cast :-).
 
-Yes, they synchronise read/write operations over the list pointed by
-ksym_filter_head.
+Anyway, IMHO, it does not come from coding, but meaning.
+kernel/user_stack_pointer() just return
+"the value of stack pointer register", not a "stack pointer".
 
-> > +	ksym_filter_entry_count++;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static ssize_t ksym_trace_filter_read(struct file *filp, char __user *ubuf,
-> > +						size_t count, loff_t *ppos)
-> > +{
-> > +	struct trace_ksym *entry;
-> > +	struct hlist_node *node;
-> > +	char buf[KSYM_FILTER_ENTRY_LEN * KSYM_TRACER_MAX];
-> > +	ssize_t ret, cnt = 0;
-> > +
-> > +	mutex_lock(&ksym_tracer_mutex);
-> > +
-> > +	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
-> 
-> 
-> 
-> And here you don't use the rcu version.
-> I guess it's fine since you're protected by the writer lock...
-> 
+Thank you,
 
-I couldn't use RCU here because the simple_read_from_buffer() is
-inatomic, and hence the mutex.
+>>  #endif
+>> diff --git a/arch/x86/oprofile/backtrace.c b/arch/x86/oprofile/backtrace.c
+>> index 04df67f..044897b 100644
+>> --- a/arch/x86/oprofile/backtrace.c
+>> +++ b/arch/x86/oprofile/backtrace.c
+>> @@ -76,9 +76,9 @@ void
+>>  x86_backtrace(struct pt_regs * const regs, unsigned int depth)
+>>  {
+>>  	struct frame_head *head = (struct frame_head *)frame_pointer(regs);
+>> -	unsigned long stack = kernel_trap_sp(regs);
+>>  
+>>  	if (!user_mode_vm(regs)) {
+>> +		unsigned long stack = kernel_stack_pointer(regs);
+> 
+> Make this an unsigned long *?
+> 
+>>  		if (depth)
+>>  			dump_trace(NULL, regs, (unsigned long *)stack, 0,
+> 
+> Then get rid of the cast?
+> 
+> Robin
 
-> > +		cnt += snprintf(&buf[cnt], KSYM_FILTER_ENTRY_LEN - cnt, "%s:",
-> > +				entry->ksym_hbp->info.name);
-> > +		if (entry->ksym_hbp->info.type == HW_BREAKPOINT_WRITE)
-> > +			cnt += snprintf(&buf[cnt], KSYM_FILTER_ENTRY_LEN - cnt,
-> > +								"-w-\n");
-> > +		else if (entry->ksym_hbp->info.type == HW_BREAKPOINT_RW)
-> > +			cnt += snprintf(&buf[cnt], KSYM_FILTER_ENTRY_LEN - cnt,
-> > +								"rw-\n");
-> > +	}
-> > +	ret = simple_read_from_buffer(ubuf, count, ppos, buf, strlen(buf));
-> > +	mutex_unlock(&ksym_tracer_mutex);
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static ssize_t ksym_trace_filter_write(struct file *file,
-> > +					const char __user *buffer,
-> > +						size_t count, loff_t *ppos)
-> > +{
-> > +	struct trace_ksym *entry;
-> > +	struct hlist_node *node;
-> > +	char *input_string, *ksymname = NULL;
-> > +	unsigned long ksym_addr = 0;
-> > +	int ret, op, changed = 0;
-> > +
-> > +	/* Ignore echo "" > ksym_trace_filter */
-> > +	if (count == 0)
-> > +		return 0;
-> > +
-> > +	input_string = kzalloc(count, GFP_KERNEL);
-> > +	if (!input_string)
-> > +		return -ENOMEM;
-> > +
-> > +	if (copy_from_user(input_string, buffer, count)) {
-> > +		kfree(input_string);
-> > +		return -EFAULT;
-> > +	}
-> > +
-> > +	ret = op = parse_ksym_trace_str(input_string, &ksymname, &ksym_addr);
-> > +	if (ret < 0) {
-> > +		kfree(input_string);
-> > +		return ret;
-> > +	}
-> > +
-> > +	mutex_lock(&ksym_tracer_mutex);
-> > +
-> > +	ret = -EINVAL;
-> > +	hlist_for_each_entry(entry, node, &ksym_filter_head, ksym_hlist) {
-> 
-> 
-> 
-> Same here, ok...
-> 
-> 
-> > +static int ksym_trace_init(struct trace_array *tr)
-> > +{
-> > +	int cpu, ret = 0;
-> > +
-> > +	for_each_online_cpu(cpu)
-> > +		tracing_reset(tr, cpu);
-> > +
-> > +	ksym_tracing_enabled = 1;
-> > +	ksym_trace_array = tr;
-> > +
-> > +#ifdef CONFIG_FTRACE_SELFTEST
-> > +	/* Check if we are re-entering self-test code during initialisation */
-> > +	if (ksym_selftest_dummy)
-> > +		goto ret_path;
-> > +
-> > +	ksym_selftest_dummy = 0;
-> > +
-> > +	/* Register the read-write tracing request */
-> > +	ret = process_new_ksym_entry(KSYM_SELFTEST_ENTRY, HW_BREAKPOINT_RW,
-> > +					(unsigned long)(&ksym_selftest_dummy));
-> > +
-> > +	if (ret < 0) {
-> > +		printk(KERN_CONT "ksym_trace read-write startup test failed\n");
-> > +		goto ret_path;
-> > +	}
-> > +	/* Perform a read and a write operation over the dummy variable to
-> > +	 * trigger the tracer
-> > +	 */
-> > +	if (ksym_selftest_dummy == 0)
-> > +		ksym_selftest_dummy++;
-> > +ret_path:
-> > +#endif /* CONFIG_FTRACE_SELFTEST */
-> 
-> 
-> It means that each time your tracer is selected, it will perform a selftest.
-> I think we only need this selftest once during the boot.
-> I would rather see that in the real selftest callback (trace_selftest_startup_kysm).
->
+-- 
+Masami Hiramatsu
 
-> > +   if (ksym_selftest_dummy)
-> > +           goto ret_path;
+Software Engineer
+Hitachi Computer Products (America) Inc.
+Software Solutions Division
 
-The above check will help prevent a re-run of the test everytime init is
-executed.
-
-A part of the selftest was kept in trace_ksym.c (and hence in
-ksym_trace_init()) in order to use functions local to this file, such as
-process_new_ksym_entry().
- 
-> > +__init static int init_ksym_trace(void)
-> > +{
-> > +	struct dentry *d_tracer;
-> > +	struct dentry *entry;
-> > +
-> > +	d_tracer = tracing_init_dentry();
-> > +	ksym_filter_entry_count = 0;
-> > +
-> > +	entry = debugfs_create_file("ksym_trace_filter", 0666, d_tracer,
-> 
-> 
-> 
-> Still writeable for everyone?
-> 
-> Thanks,
-> Frederic.
->
-
-Looks like I missed the change! Please find the next patchset to contain
-a '644' permission mode.
-
-Thanks for reviewing the code.
-
--- K.Prasad
+e-mail: mhiramat@redhat.com
 
