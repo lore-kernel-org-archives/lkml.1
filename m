@@ -1,75 +1,210 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755904AbZELVaJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754726AbZELVbt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755904AbZELVaJ (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 17:30:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755385AbZELV3x
+	id S1754726AbZELVbt (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 17:31:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751888AbZELVbe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 17:29:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:53698 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755208AbZELV3s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 17:29:48 -0400
-Date: Wed, 13 May 2009 00:28:02 +0300
-From: "Michael S. Tsirkin" <mst@redhat.com>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Cc: virtualization@lists.linux-foundation.org,
-       Sheng Yang <sheng@linux.intel.com>, Matthew Wilcox <matthew@wil.cx>,
-       kvm@vger.kernel.org, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org, jbarnes@virtuousgeek.org,
-       Matthew Wilcox <willy@linux.intel.com>
-Subject: Re: [PATCH] msi-x: let drivers retry when not enough vectors
-Message-ID: <20090512212802.GC28935@redhat.com>
-References: <20090507082841.GA31751@redhat.com> <20090507095302.GI8112@parisc-linux.org> <200905071819.54426.sheng@linux.intel.com> <200905080925.01398.rusty@rustcorp.com.au>
+	Tue, 12 May 2009 17:31:34 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:50802 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751377AbZELVbd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 17:31:33 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Zuwvki3jTe9e8Z5hdeOjXG5LH0u5/Ll4St24mspWL07C5Uz5WRMYjltpJFZRtdHNTo
+         BPE5bIVdN5RYFwQvDk0SF6BQY2XVM0lhM2W+ZXHstSwTZ0B++ESYINu4CeSi/lPQ8Qfr
+         FsOrmACMByJfxp995HmEyxO/831d/MQzVhYAc=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905080925.01398.rusty@rustcorp.com.au>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <20090512180349.GA1479@sgi.com>
+References: <4A05269D.8000701@kernel.org> <20090511175312.GA27905@sgi.com>
+	 <alpine.DEB.2.00.0905111218520.23739@chino.kir.corp.google.com>
+	 <4A0894A5.9000209@zytor.com>
+	 <alpine.DEB.2.00.0905111509570.2234@chino.kir.corp.google.com>
+	 <20090512150622.GA10015@sgi.com>
+	 <86802c440905120810x6ea4b228t14ca19376dc13f13@mail.gmail.com>
+	 <20090512161605.GB19747@sgi.com>
+	 <86802c440905120940r3d3261dap9d1843a9c832b582@mail.gmail.com>
+	 <20090512180349.GA1479@sgi.com>
+Date: Tue, 12 May 2009 14:31:33 -0700
+Message-ID: <86802c440905121431q682e8924l427a5257da01c370@mail.gmail.com>
+Subject: Re: [PATCH 3/3] x86: fix node_possible_map logic -v2
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Jack Steiner <steiner@sgi.com>
+Cc: David Rientjes <rientjes@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 08, 2009 at 09:25:00AM +0930, Rusty Russell wrote:
-> On Thu, 7 May 2009 07:49:53 pm Sheng Yang wrote:
-> > On Thursday 07 May 2009 17:53:02 Matthew Wilcox wrote:
-> > > Here's a good example.  Let's suppose you have a driver which supports
-> > > two different models of cards, one has 16 MSI-X interrupts, the other
-> > > has 10.  You can call pci_enable_msix() asking for 16 vectors.  If your
-> > > card is model A, you get 16 interrupts.  If your card is model B, it says
-> > > "you can have 10".
-> 
-> Sheng is absolutely right, that's a horrid API.
-> 
-> If it actually enabled that number and returned it, it might make sense (cf. 
-> write() returning less bytes than you give it).  But overloading the return 
-> value to save an explicit call is just ugly; it's not worth saving a few lines 
-> of code at cost of making all the drivers subtle and tricksy.
-> 
-> Fail with -ENOSPC or something.
-> 
-> Rusty.
+On Tue, May 12, 2009 at 11:03 AM, Jack Steiner <steiner@sgi.com> wrote:
+> On Tue, May 12, 2009 at 09:40:52AM -0700, Yinghai Lu wrote:
+>> On Tue, May 12, 2009 at 9:16 AM, Jack Steiner <steiner@sgi.com> wrote:
+>> > On Tue, May 12, 2009 at 08:10:18AM -0700, Yinghai Lu wrote:
+>> >> jack,
+>> >>
+>> >> can you confirm:
+>> >> 1. without this patch, your system still have problem?
+>> >> 2. does current tip/master work for you?
+>> >
+>> > The current tip/master fails with or without the patch. AFAICT, the
+>> > failure is identical in both cases.
+>>
+>> ok, can you try attach patch to check cpu_to_node mapping?
+>
+> The boot messages are somewhat inconsistent:
+>
+> Earlier in boot:
+>
+>        <6>Setting APIC routing to cluster x2apic.
+>        <6>SRAT: PXM 0 -> APIC 0 -> Node 0
+>        <6>SRAT: PXM 1 -> APIC 128 -> Node 1
+>        <6>SRAT: Node 1 PXM 1 0-fff6c000
+>
+>
+> but at the point of your debug messages:
+>
+>        <6>cpu 0 -> apicid 0x0 -> node 1
+>        <6>cpu 1 -> apicid 0x80 -> node 1
 
-I do agree that returning a positive value from pci_enable_msix
-it an ugly API (but note that this is the API that linux currently has).
+that mean cpu0 is mapping to node1, because node0 doesn't memory installed.
 
-Here's a wrapper that I ended up with in my driver:
+>
+>
+>
+>
+>
+> BIOS log:
+>
+>        PROM>> Build ACPI tables
+>        PROM>>   RSDP at 0x00000000000e0200
+>        PROM>>   XSDT at 0x00000000000e0240
+>        PROM>>   DSDT at 0x00000000000e02a0
+>        PROM>>   MADT at 0x00000000000e02e0 (0xa0)
+>        PROM>>     sapic: cpu 0, socket 0, lcpu 0, proc_id 0x0, id 0x00, eid 0x00, apicid 0x0000,
+>        PROM>>     sapic: cpu 1, socket 1, lcpu 0, proc_id 0x1, id 0x00, eid 0x80, apicid 0x0080,
+>        PROM>>     io_apic: id 8, base 0, entries 24, prq 0, arb 0
+>        PROM>>     io_apic: id 9, base 24, entries 24, prq 1, arb 9
+>        PROM>>     lapic_nmi: acpi_id 0, flags 0x5, lint 1
+>        PROM>>     lapic_nmi: acpi_id 1, flags 0x5, lint 1
+>        PROM>>     int_src_ovr: bus 0, bus_irq 0, global_irq 2, flags 5
+>        PROM>>     int_src_ovr: bus 0, bus_irq 9, global_irq 9, flags 13
+>        PROM>>   SRAT at 0x00000000000e0380
+>        PROM>>     Memory:
+>        PROM>>       blade 1, soc 1: paddr 0x0 - 0xfff6c000 (3GB + 1023MB + 442368), pxm 1
+>        PROM>>     Processor at 00000000000e03d8:
+>        PROM>>       soc 0, lcpu 0: sapicid 0x0000, pxm 0
+>        PROM>>       soc 1, lcpu 0: sapicid 0x0080, pxm 1
+>        PROM>>   SLIT at 0x00000000000e05e0, dim 2
+>        PROM>>       10  21
+>        PROM>>       21  10
+>        PROM>>   FADT at 0x00000000000e06a0
+>        PROM>>   FACS at 0x00000000000e07a0
+>        PROM>>   DMAR at 0x00000000000e0860
+>
+> Kernel log:
+>        <6>Initializing cgroup subsys cpuset
+>        <6>Initializing cgroup subsys cpu
+>        <5>Linux version 2.6.30-rc5-next-20090512-medusa (steiner@alcatraz.americas.sgi.com) (gcc version 4.2.4) #4 SMP Tue May 12 12:55:26 CDT 2009
+>        <6>Command line: root=/dev/hda2 init=/bin/bash console=ttyS0,38400n8 fprom lpj=10000 nohpet loglevel=8 iommu=off dma32_size=4096
+>        <6>KERNEL supported cpus:
+>        <6>  Intel GenuineIntel
+>        <6>  AMD AuthenticAMD
+>        <6>  Centaur CentaurHauls
+>        <6>BIOS-provided physical RAM map:
+>        <6> BIOS-e820: 0000000000000000 - 0000000000006000 (usable)
+>        <6> BIOS-e820: 0000000000006000 - 0000000000200000 (reserved)
+>        <6> BIOS-e820: 0000000000200000 - 0000000010000000 (usable)
+>        <6> BIOS-e820: 0000000080000000 - 0000000090000000 (reserved)
+>        <6> BIOS-e820: 00000000f0000000 - 00000000fc000000 (reserved)
+>        <6> BIOS-e820: 00000000fed1c000 - 00000000fed20000 (reserved)
+>        <6> BIOS-e820: 00000000fff60000 - 00000000fff6c000 (reserved)
+>        <6> BIOS-e820: 00000fe000000000 - 00000fe018000000 (reserved)
+>        <6>EFI v1.00 by SGI
+>        <6> ACPI 2.0=0xe0200  UVsystab=0xe08c0
+>        <6>EFI: mem00: type=7, attr=0x8, range=[0x0000000000000000-0x0000000000006000) (0MB)
+>        <6>EFI: mem01: type=5, attr=0x8000000000001000, range=[0x0000000000006000-0x00000000000b0000) (0MB)
+>        <6>EFI: mem02: type=6, attr=0x8000000000000008, range=[0x00000000000b0000-0x0000000000200000) (1MB)
+>        <6>EFI: mem03: type=7, attr=0x8, range=[0x0000000000200000-0x0000000010000000) (254MB)
+>        <6>EFI: mem04: type=6, attr=0x8000000000000001, range=[0x0000000080000000-0x0000000090000000) (256MB)
+>        <6>EFI: mem05: type=6, attr=0x8000000000000001, range=[0x00000000f0000000-0x00000000fc000000) (192MB)
+>        <6>EFI: mem06: type=6, attr=0x8000000000000001, range=[0x00000000fed1c000-0x00000000fed20000) (0MB)
+>        <6>EFI: mem07: type=6, attr=0x8000000000000001, range=[0x00000000fff60000-0x00000000fff6c000) (0MB)
+>        <6>EFI: mem08: type=11, attr=0x8000000000000001, range=[0x00000fe000000000-0x00000fe018000000) (384MB)
+>        <6>DMI not present or invalid.
+>        <6>last_pfn = 0x10000 max_arch_pfn = 0x100000000
+>        <7>MTRR default type: write-back
+>        <7>MTRR fixed ranges enabled:
+>        <7>  00000-FFFFF write-back
+>        <7>MTRR variable ranges enabled:
+>        <7>  0 base 0   F0000000 mask FFF F0000000 uncachable
+>        <7>  1 base E0  00000000 mask FF0 00000000 uncachable
+>        <7>  2 base F0  00000000 mask FF0 00000000 uncachable
+>        <7>  3 base F00 00000000 mask FF0000000000 uncachable
+>        <7>  4 disabled
+>        <7>  5 disabled
+>        <7>  6 disabled
+>        <7>  7 disabled
+>        <6>x86 PAT enabled: cpu 0, old 0x606060606060606, new 0x7010600070106
+>        <6>x2apic enabled by BIOS, switching to x2apic ops
+>        <6>init_memory_mapping: 0000000000000000-0000000010000000
+>        <7> 0000000000 - 0010000000 page 2M
+>        <7>kernel direct mapping tables up to 10000000 @ 93a000-93c000
+>        <4>ACPI: RSDP 00000000000e0200 00024 (v02       )
+>        <4>ACPI: XSDT 00000000000e0240 00054 (v01    SGI      UVX 00010001 FPRM 00000001)
+>        <4>ACPI: APIC 00000000000e02e0 00086 (v01    SGI      UVX 00010001 FPRM 00000001)
+>        <4>ACPI: SRAT 00000000000e0380 00078 (v01    SGI      UVX 00010001 FPRM 00000001)
+>        <4>ACPI: SLIT 00000000000e05e0 00030 (v01    SGI      UVX 00010001 FPRM 00000001)
+>        <4>ACPI: MCFG 00000000000e0640 0004C (v01    SGI      UVX 00010001 FPRM 00000001)
+>        <4>ACPI: FACP 00000000000e06a0 000F4 (v03    SGI      UVX 00030001 FPRM 00000001)
+>        <4>ACPI: DSDT 00000000000e02a0 00030 (v01    SGI      UVX 00010001 FPRM 00000001)
+>        <4>ACPI: FACS 00000000000e07a0 00040
+>        <4>ACPI: DMAR 00000000000e0860 0004C (v01    SGI      UVX 00010001 FPRM 00000001)
+>        <7>ACPI: Local APIC address 0xfee00000
+>        <6>Setting APIC routing to cluster x2apic.
+>        <6>SRAT: PXM 0 -> APIC 0 -> Node 0
+>        <6>SRAT: PXM 1 -> APIC 128 -> Node 1
+>        <6>SRAT: Node 1 PXM 1 0-fff6c000
+>        <7>NUMA: Using 63 for the hash shift.
+>        <6>Bootmem setup node 1 0000000000000000-0000000010000000
+>        <6>  NODE_DATA [0000000000939a80 - 000000000096da7f]
+>        <6>  bootmap [000000000096e000 -  000000000096ffff] pages 2
+>        <6>(7 early reservations) ==> bootmem [0000000000 - 0010000000]
+>        <6>  #0 [0000000000 - 0000001000]   BIOS data page ==> [0000000000 - 0000001000]
+>        <6>  #1 [0000006000 - 0000008000]       TRAMPOLINE ==> [0000006000 - 0000008000]
+>        <6>  #2 [0000200000 - 0000939a5c]    TEXT DATA BSS ==> [0000200000 - 0000939a5c]
+>        <6>  #3 [000009f000 - 00000e0900]    BIOS reserved ==> [000009f000 - 00000e0900]
+>        <6>  #4 [00000e0a68 - 0000100000]    BIOS reserved ==> [00000e0a68 - 0000100000]
+>        <6>  #5 [00000e0900 - 00000e0a68]       EFI memmap ==> [00000e0900 - 00000e0a68]
+>        <6>  #6 [0000001000 - 0000001030]        ACPI SLIT ==> [0000001000 - 0000001030]
+>        <7> [ffffe20000000000-ffffe200003fffff] PMD -> [ffff880001200000-ffff8800015fffff] on node 1
+>        <4>Zone PFN ranges:
+>        <4>  DMA      0x00000000 -> 0x00001000
+>        <4>  DMA32    0x00001000 -> 0x00100000
+>        <4>  Normal   0x00100000 -> 0x00100000
+>        <4>Movable zone start PFN for each node
+>        <4>early_node_map[2] active PFN ranges
+>        <4>    1: 0x00000000 -> 0x00000006
+>        <4>    1: 0x00000200 -> 0x00010000
+>        <7>On node 1 totalpages: 65030
+>        <7>  DMA zone: 56 pages used for memmap
+>        <7>  DMA zone: 1948 pages reserved
+>        <7>  DMA zone: 1586 pages, LIFO batch:0
+>        <7>  DMA32 zone: 840 pages used for memmap
+>        <7>  DMA32 zone: 60600 pages, LIFO batch:15
+>        <6>ACPI: PM-Timer IO Port: 0x1008
+>        <7>ACPI: Local APIC address 0xfee00000
+>        <6>Setting APIC routing to cluster x2apic.
 
-static int enable_msix(struct pci_dev *dev, struct msix_entry *entries,
-		       int *options, int noptions)
-{
-        int i;
-        for (i = 0; i < noptions; ++i)
-                if (!pci_enable_msix(dev, entries, options[i]))
-                        return options[i];
-        return -EBUSY;
-}
+x2apic related?
 
-This gets an array of options for # of vectors and tries them one after
-the other until an option that the system can support is found.
-On success, we get the # of vectors actually enabled, and
-driver can then use them as it sees fit.
+can you disable x2apic in kernel?
 
-Is there interest in moving something like this to pci.h?
-
--- 
-MST
+YH
