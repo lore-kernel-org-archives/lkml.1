@@ -1,173 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758317AbZEMAer@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754902AbZEMAfy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758317AbZEMAer (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 20:34:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758257AbZEMAeX
+	id S1754902AbZEMAfy (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 20:35:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbZEMAfm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 20:34:23 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:33200 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758261AbZEMAeV (ORCPT
+	Tue, 12 May 2009 20:35:42 -0400
+Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:58529
+	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752962AbZEMAfm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 20:34:21 -0400
-Date: Wed, 13 May 2009 09:32:50 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][BUGFIX] memcg: fix for deadlock between
- lock_page_cgroup and mapping tree_lock
-Message-Id: <20090513093250.7803d3d0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090513092828.cbaa5a76.nishimura@mxp.nes.nec.co.jp>
-References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090512140648.0974cb10.nishimura@mxp.nes.nec.co.jp>
-	<20090512160901.8a6c5f64.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090512170007.ad7f5c7b.nishimura@mxp.nes.nec.co.jp>
-	<20090512171356.3d3a7554.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090512195823.15c5cb80.d-nishimura@mtf.biglobe.ne.jp>
-	<20090513085949.3c4b7b97.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090513092828.cbaa5a76.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 May 2009 20:35:42 -0400
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Alex Nixon <alex.nixon@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: [PATCH 02/10] xen: Allow unprivileged Xen domains to create iomap pages
+Date: Tue, 12 May 2009 14:48:03 -0700
+Message-Id: <1242164891-3859-3-git-send-email-jeremy@goop.org>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1242164891-3859-1-git-send-email-jeremy@goop.org>
+References: <1242164891-3859-1-git-send-email-jeremy@goop.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 May 2009 09:28:28 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+From: Alex Nixon <alex.nixon@citrix.com>
 
-> On Wed, 13 May 2009 08:59:49 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > On Tue, 12 May 2009 19:58:23 +0900
-> > Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> wrote:
-> > 
-> > > On Tue, 12 May 2009 17:13:56 +0900
-> > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > > 
-> > > > On Tue, 12 May 2009 17:00:07 +0900
-> > > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > > > hmm, I see.
-> > > > > cache_charge is outside of tree_lock, so moving uncharge would make sense.
-> > > > > IMHO, we should make the period of spinlock as small as possible,
-> > > > > and charge/uncharge of pagecache/swapcache is protected by page lock, not tree_lock.
-> > > > > 
-> > > > How about this ?
-> > > Looks good conceptually, but it cannot be built :)
-> > > 
-> > > It needs a fix like this.
-> > > Passed build test with enabling/disabling both CONFIG_MEM_RES_CTLR
-> > > and CONFIG_SWAP.
-> > > 
-> > ok, will update. can I add you Signed-off-by on the patch ?
-> > 
-> Sure.
-> 
-> 	Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
-> The patch(with my fix applied) seems to work fine, I need run it
-> for more long time though.
-> 
-Ok, I'll treat this as an independent issue, not as "4/4".
+PV DomU domains are allowed to map hardware MFNs for PCI passthrough,
+but are not generally allowed to map raw machine pages.  In particular,
+various pieces of code try to map DMI and ACPI tables in the ISA ROM
+range.  We disallow _PAGE_IOMAP for those mappings, so that they are
+redirected to a set of local zeroed pages we reserve for that purpose.
 
-Thanks,
--Kame
+[ Impact: prevent passthrough of ISA space, as we only allow PCI ]
+Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+---
+ arch/x86/xen/enlighten.c |    6 +++---
+ arch/x86/xen/mmu.c       |   18 +++++++++++++++---
+ 2 files changed, 18 insertions(+), 6 deletions(-)
 
-
-> > Thanks,
-> > -Kame
-> > > ===
-> > >  include/linux/swap.h |    5 +++++
-> > >  mm/memcontrol.c      |    4 +++-
-> > >  mm/swap_state.c      |    4 +---
-> > >  mm/vmscan.c          |    2 +-
-> > >  4 files changed, 10 insertions(+), 5 deletions(-)
-> > > 
-> > > diff --git a/include/linux/swap.h b/include/linux/swap.h
-> > > index caf0767..6ea541d 100644
-> > > --- a/include/linux/swap.h
-> > > +++ b/include/linux/swap.h
-> > > @@ -431,6 +431,11 @@ static inline swp_entry_t get_swap_page(void)
-> > >  #define has_swap_token(x) 0
-> > >  #define disable_swap_token() do { } while(0)
-> > >  
-> > > +static inline void
-> > > +mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
-> > > +{
-> > > +}
-> > > +
-> > >  #endif /* CONFIG_SWAP */
-> > >  #endif /* __KERNEL__*/
-> > >  #endif /* _LINUX_SWAP_H */
-> > > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> > > index 0c9c1ad..89523cf 100644
-> > > --- a/mm/memcontrol.c
-> > > +++ b/mm/memcontrol.c
-> > > @@ -1488,8 +1488,9 @@ void mem_cgroup_uncharge_cache_page(struct page *page)
-> > >  	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
-> > >  }
-> > >  
-> > > +#ifdef CONFIG_SWAP
-> > >  /*
-> > > - * called from __delete_from_swap_cache() and drop "page" account.
-> > > + * called after __delete_from_swap_cache() and drop "page" account.
-> > >   * memcg information is recorded to swap_cgroup of "ent"
-> > >   */
-> > >  void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
-> > > @@ -1506,6 +1507,7 @@ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
-> > >  	if (memcg)
-> > >  		css_put(&memcg->css);
-> > >  }
-> > > +#endif
-> > >  
-> > >  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
-> > >  /*
-> > > diff --git a/mm/swap_state.c b/mm/swap_state.c
-> > > index 87f10d4..7624c89 100644
-> > > --- a/mm/swap_state.c
-> > > +++ b/mm/swap_state.c
-> > > @@ -109,8 +109,6 @@ int add_to_swap_cache(struct page *page, swp_entry_t entry, gfp_t gfp_mask)
-> > >   */
-> > >  void __delete_from_swap_cache(struct page *page)
-> > >  {
-> > > -	swp_entry_t ent = {.val = page_private(page)};
-> > > -
-> > >  	VM_BUG_ON(!PageLocked(page));
-> > >  	VM_BUG_ON(!PageSwapCache(page));
-> > >  	VM_BUG_ON(PageWriteback(page));
-> > > @@ -190,7 +188,7 @@ void delete_from_swap_cache(struct page *page)
-> > >  	__delete_from_swap_cache(page);
-> > >  	spin_unlock_irq(&swapper_space.tree_lock);
-> > >  
-> > > -	mem_cgroup_uncharge_swapcache(page, ent);
-> > > +	mem_cgroup_uncharge_swapcache(page, entry);
-> > >  	swap_free(entry);
-> > >  	page_cache_release(page);
-> > >  }
-> > > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > > index 6c5988d..a7d7a06 100644
-> > > --- a/mm/vmscan.c
-> > > +++ b/mm/vmscan.c
-> > > @@ -470,7 +470,7 @@ static int __remove_mapping(struct address_space *mapping, struct page *page)
-> > >  		swp_entry_t swap = { .val = page_private(page) };
-> > >  		__delete_from_swap_cache(page);
-> > >  		spin_unlock_irq(&mapping->tree_lock);
-> > > -		mem_cgroup_uncharge_swapcache(page);
-> > > +		mem_cgroup_uncharge_swapcache(page, swap);
-> > >  		swap_free(swap);
-> > >  	} else {
-> > >  		__remove_from_page_cache(page);
-> > > ===
-> > > --
-> > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> > > the body of a message to majordomo@vger.kernel.org
-> > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> > > Please read the FAQ at  http://www.tux.org/lkml/
-> > > 
-> > 
-> 
+diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
+index 12e4d9c..adb4fe0 100644
+--- a/arch/x86/xen/enlighten.c
++++ b/arch/x86/xen/enlighten.c
+@@ -1051,11 +1051,11 @@ asmlinkage void __init xen_start_kernel(void)
+ 
+ 	/* Prevent unwanted bits from being set in PTEs. */
+ 	__supported_pte_mask &= ~_PAGE_GLOBAL;
+-	if (xen_initial_domain())
+-		__supported_pte_mask |= _PAGE_IOMAP;
+-	else
++	if (!xen_initial_domain())
+ 		__supported_pte_mask &= ~(_PAGE_PWT | _PAGE_PCD);
+ 
++	__supported_pte_mask |= _PAGE_IOMAP;
++
+ #ifdef CONFIG_X86_64
+ 	/* Work out if we support NX */
+ 	check_efer();
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index 331e52d..370e1b8 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -49,6 +49,7 @@
+ #include <asm/mmu_context.h>
+ #include <asm/setup.h>
+ #include <asm/paravirt.h>
++#include <asm/e820.h>
+ #include <asm/linkage.h>
+ 
+ #include <asm/xen/hypercall.h>
+@@ -378,7 +379,7 @@ static bool xen_page_pinned(void *ptr)
+ 
+ static bool xen_iomap_pte(pte_t pte)
+ {
+-	return xen_initial_domain() && (pte_flags(pte) & _PAGE_IOMAP);
++	return pte_flags(pte) & _PAGE_IOMAP;
+ }
+ 
+ static void xen_set_iomap_pte(pte_t *ptep, pte_t pteval)
+@@ -580,10 +581,21 @@ PV_CALLEE_SAVE_REGS_THUNK(xen_pgd_val);
+ 
+ pte_t xen_make_pte(pteval_t pte)
+ {
+-	if (unlikely(xen_initial_domain() && (pte & _PAGE_IOMAP)))
++	phys_addr_t addr = (pte & PTE_PFN_MASK);
++
++	/*
++	 * Unprivileged domains are allowed to do IOMAPpings for
++	 * PCI passthrough, but not map ISA space.  The ISA
++	 * mappings are just dummy local mappings to keep other
++	 * parts of the kernel happy.
++	 */
++	if (unlikely(pte & _PAGE_IOMAP) &&
++	    (xen_initial_domain() || addr >= ISA_END_ADDRESS)) {
+ 		pte = iomap_pte(pte);
+-	else
++	} else {
++		pte &= ~_PAGE_IOMAP;
+ 		pte = pte_pfn_to_mfn(pte);
++	}
+ 
+ 	return native_make_pte(pte);
+ }
+-- 
+1.6.0.6
 
