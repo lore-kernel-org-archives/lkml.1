@@ -1,114 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760051AbZELL56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbZELL7T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760051AbZELL56 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 07:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756075AbZELL5t
+	id S1757821AbZELL7T (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 07:59:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbZELL7J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 07:57:49 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:38077 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755865AbZELL5r (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 07:57:47 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=ERpfAnvP92ghzz/sJ6+L034ea+IBkKoN9i2uWEm7wGvEfsHONvKtWrsQJplpG0CcMb
-         i2olYk9iSJ9Qsb08wZGglWaEv2yJ/Yv0mQMgA09wUrht1iE/O+9cntwzjRzwBiGPp7x3
-         pDRty3Pnggp7FQJLMbwQ/YdWC6JCvXARhRhbE=
-Date: Tue, 12 May 2009 20:57:37 +0900
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Minchan Kim <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "cl@linux-foundation.org" <cl@linux-foundation.org>,
-       "kosaki.motohiro@jp.fujitsu.com" <kosaki.motohiro@jp.fujitsu.com>
-Subject: Re: [PATCH -mm] vmscan: merge duplicate code in
- shrink_active_list()
-Message-Id: <20090512205737.b27824a3.minchan.kim@barrios-desktop>
-In-Reply-To: <20090512114807.GC5926@localhost>
-References: <20090501123541.7983a8ae.akpm@linux-foundation.org>
-	<20090503031539.GC5702@localhost>
-	<1241432635.7620.4732.camel@twins>
-	<20090507121101.GB20934@localhost>
-	<20090507151039.GA2413@cmpxchg.org>
-	<20090507134410.0618b308.akpm@linux-foundation.org>
-	<20090508081608.GA25117@localhost>
-	<20090508125859.210a2a25.akpm@linux-foundation.org>
-	<20090512025319.GD7518@localhost>
-	<20090512162633.352313d6.minchan.kim@barrios-desktop>
-	<20090512114807.GC5926@localhost>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 May 2009 07:59:09 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:47165 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751174AbZELL7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 07:59:08 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18953.25733.53359.147452@cargo.ozlabs.ibm.com>
+Date: Tue, 12 May 2009 21:59:01 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Ingo Molnar <mingo@elte.hu>
+CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] perf_counter: call hw_perf_save_disable/restore
+   around group_sched_in
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009 19:48:07 +0800
-Wu Fengguang <fengguang.wu@intel.com> wrote:
+I noticed that when enabling a group via the PERF_COUNTER_IOC_ENABLE
+ioctl on the group leader, the counters weren't enabled and counting
+immediately on return from the ioctl, but did start counting a little
+while later (presumably after a context switch).
 
-> On Tue, May 12, 2009 at 03:26:33PM +0800, Minchan Kim wrote:
-> > On Tue, 12 May 2009 10:53:19 +0800
-> > Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > 
-> > > The "move pages to active list" and "move pages to inactive list"
-> > > code blocks are mostly identical and can be served by a function.
-> > > 
-> > > Thanks to Andrew Morton for pointing this out.
-> > > 
-> > > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > > ---
-> > >  mm/vmscan.c |   84 ++++++++++++++++++++------------------------------
-> > >  1 file changed, 35 insertions(+), 49 deletions(-)
-> > > 
-> > > --- linux.orig/mm/vmscan.c
-> > > +++ linux/mm/vmscan.c
-> > > @@ -1225,6 +1225,36 @@ static inline void note_zone_scanning_pr
-> > >   * But we had to alter page->flags anyway.
-> > >   */
-> > >  
-> > > +void move_active_pages_to_lru(enum lru_list lru, struct list_head *list)
-> > > +{
-> > > +	unsigned long pgmoved = 0;
-> > > +
-> > > +	while (!list_empty(&list)) {
-> > > +		page = lru_to_page(&list);
-> > > +		prefetchw_prev_lru_page(page, &list, flags);
-> > > +
-> > > +		VM_BUG_ON(PageLRU(page));
-> > > +		SetPageLRU(page);
-> > > +
-> > > +		VM_BUG_ON(!PageActive(page));
-> > > +		if (lru < LRU_ACTIVE)
-> > > +			ClearPageActive(page);
-> > 
-> > Arithmetic on the LRU list is not good code for redability, I think. 
-> > How about adding comment? 
-> > 
-> > if (lru < LRU_ACTIVE) /* In case of moving from active list to inactive */
-> > 
-> > Ignore me if you think this is trivial. 
-> 
-> Good suggestion. Or this simple one: "we are de-activating"?
-> 
+The reason was that __perf_counter_enable calls group_sched_in which
+calls hw_perf_group_sched_in, which on powerpc assumes that the caller
+has called hw_perf_save_disable already.  Until commit 46d686c6
+("perf_counter: put whole group on when enabling group leader") it was
+true that all callers of group_sched_in had called
+hw_perf_save_disable first, and the powerpc hw_perf_group_sched_in
+relies on that (there isn't an x86 version).
 
-Looks good to me :)
+This fixes the problem by putting calls to hw_perf_save_disable /
+hw_perf_restore around the calls to group_sched_in and
+counter_sched_in in __perf_counter_enable.  Having the calls to
+hw_perf_save_disable/restore around the counter_sched_in call is
+harmless and makes this call consistent with the other call sites
+of counter_sched_in, which have all called hw_perf_save_disable first.
 
-> Thanks,
-> Fengguang
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ kernel/perf_counter.c |   19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
 
-
--- 
-Kinds Regards
-Minchan Kim
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 5ea0240..ff166c1 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -663,6 +663,7 @@ static void __perf_counter_enable(void *info)
+ 	struct perf_cpu_context *cpuctx = &__get_cpu_var(perf_cpu_context);
+ 	struct perf_counter_context *ctx = counter->ctx;
+ 	struct perf_counter *leader = counter->group_leader;
++	unsigned long pmuflags;
+ 	unsigned long flags;
+ 	int err;
+ 
+@@ -689,14 +690,18 @@ static void __perf_counter_enable(void *info)
+ 	if (leader != counter && leader->state != PERF_COUNTER_STATE_ACTIVE)
+ 		goto unlock;
+ 
+-	if (!group_can_go_on(counter, cpuctx, 1))
++	if (!group_can_go_on(counter, cpuctx, 1)) {
+ 		err = -EEXIST;
+-	else if (counter == leader)
+-		err = group_sched_in(counter, cpuctx, ctx,
+-				     smp_processor_id());
+-	else
+-		err = counter_sched_in(counter, cpuctx, ctx,
+-				       smp_processor_id());
++	} else {
++		pmuflags = hw_perf_save_disable();
++		if (counter == leader)
++			err = group_sched_in(counter, cpuctx, ctx,
++					     smp_processor_id());
++		else
++			err = counter_sched_in(counter, cpuctx, ctx,
++					       smp_processor_id());
++		hw_perf_restore(pmuflags);
++	}
+ 
+ 	if (err) {
+ 		/*
