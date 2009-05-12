@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758118AbZEMDRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbZEMDSW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758118AbZEMDRz (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 23:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756431AbZEMDGc
+	id S1760112AbZEMDSW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 23:18:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756110AbZEMDGd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 23:06:32 -0400
-Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:36226
+	Tue, 12 May 2009 23:06:33 -0400
+Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:36241
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1756110AbZEMDGM (ORCPT
+	with ESMTP id S1756136AbZEMDGN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 23:06:12 -0400
+	Tue, 12 May 2009 23:06:13 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
 To: Ingo Molnar <mingo@elte.hu>
 Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy@goop.org>,
+       Ian Campbell <ian.campbell@citrix.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 07/16] xen/dom0: use _PAGE_IOMAP in ioremap to do machine mappings
-Date: Tue, 12 May 2009 14:28:29 -0700
-Message-Id: <1242163718-2934-8-git-send-email-jeremy@goop.org>
+Subject: [PATCH 08/16] xen/dom0: Use host E820 map
+Date: Tue, 12 May 2009 14:28:30 -0700
+Message-Id: <1242163718-2934-9-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1242163718-2934-1-git-send-email-jeremy@goop.org>
 References: <1242163718-2934-1-git-send-email-jeremy@goop.org>
@@ -27,180 +27,132 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In a Xen domain, ioremap operates on machine addresses, not
-pseudo-physical addresses.  We use _PAGE_IOMAP to determine whether a
-mapping is intended for machine addresses.
+From: Ian Campbell <ian.campbell@citrix.com>
 
-[ Impact: allow Xen domain to map real hardware ]
+Unlike the non-paravirt Xen port we do not have distinct psuedo-physical
+and I/O memory resource-spaces and therefore resources in the two
+can clash. Fix this by registering a memory map which matches the
+underlying I/O map. Currently this wastes the memory in the reserved
+regions. Eventually we should remap this memory to the end of the
+address space.
 
+[ Impact: synthesize virtual E820 using real one as template ]
+
+Signed-off-by: Ian Campbell <ian.campbell@citrix.com>
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/include/asm/xen/page.h |    8 +---
- arch/x86/xen/enlighten.c        |    4 ++-
- arch/x86/xen/mmu.c              |   69 +++++++++++++++++++++++++++++++++++++-
- 3 files changed, 72 insertions(+), 9 deletions(-)
+ arch/x86/xen/setup.c           |   45 +++++++++++++++++++++++++++++++++++++--
+ include/xen/interface/memory.h |   29 +++++++++++++++++++++++++
+ 2 files changed, 71 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86/include/asm/xen/page.h b/arch/x86/include/asm/xen/page.h
-index 018a0a4..bf5f7d3 100644
---- a/arch/x86/include/asm/xen/page.h
-+++ b/arch/x86/include/asm/xen/page.h
-@@ -112,13 +112,9 @@ static inline xpaddr_t machine_to_phys(xmaddr_t machine)
-  */
- static inline unsigned long mfn_to_local_pfn(unsigned long mfn)
+diff --git a/arch/x86/xen/setup.c b/arch/x86/xen/setup.c
+index dc55171..805ae53 100644
+--- a/arch/x86/xen/setup.c
++++ b/arch/x86/xen/setup.c
+@@ -19,6 +19,7 @@
+ 
+ #include <xen/page.h>
+ #include <xen/interface/callback.h>
++#include <xen/interface/memory.h>
+ #include <xen/interface/physdev.h>
+ #include <xen/features.h>
+ 
+@@ -36,16 +37,54 @@ extern void xen_syscall32_target(void);
+ /**
+  * machine_specific_memory_setup - Hook for machine specific memory setup.
+  **/
+-
+ char * __init xen_memory_setup(void)
  {
--	extern unsigned long max_mapnr;
- 	unsigned long pfn = mfn_to_pfn(mfn);
--	if ((pfn < max_mapnr)
--	    && !xen_feature(XENFEAT_auto_translated_physmap)
--	    && (get_phys_to_machine(pfn) != mfn))
--		return max_mapnr; /* force !pfn_valid() */
--	/* XXX fixme; not true with sparsemem */
-+	if (get_phys_to_machine(pfn) != mfn)
-+		return -1; /* force !pfn_valid() */
- 	return pfn;
- }
+ 	unsigned long max_pfn = xen_start_info->nr_pages;
++	unsigned long long mem_end;
++	int rc;
++	struct xen_memory_map memmap;
++	/*
++	 * This is rather large for a stack variable but this early in
++	 * the boot process we know we have plenty slack space.
++	 */
++	struct e820entry map[E820MAX];
++	int op = xen_initial_domain() ?
++		XENMEM_machine_memory_map :
++		XENMEM_memory_map;
++	int i;
  
-diff --git a/arch/x86/xen/enlighten.c b/arch/x86/xen/enlighten.c
-index 89f47da..f15a555 100644
---- a/arch/x86/xen/enlighten.c
-+++ b/arch/x86/xen/enlighten.c
-@@ -1029,7 +1029,9 @@ asmlinkage void __init xen_start_kernel(void)
- 
- 	/* Prevent unwanted bits from being set in PTEs. */
- 	__supported_pte_mask &= ~_PAGE_GLOBAL;
--	if (!xen_initial_domain())
-+	if (xen_initial_domain())
-+		__supported_pte_mask |= _PAGE_IOMAP;
-+	else
- 		__supported_pte_mask &= ~(_PAGE_PWT | _PAGE_PCD);
- 
- #ifdef CONFIG_X86_64
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index dc840ed..48806c5 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -375,6 +375,28 @@ static bool xen_page_pinned(void *ptr)
- 	return PagePinned(page);
- }
- 
-+static bool xen_iomap_pte(pte_t pte)
-+{
-+	return xen_initial_domain() && (pte_flags(pte) & _PAGE_IOMAP);
-+}
+ 	max_pfn = min(MAX_DOMAIN_PAGES, max_pfn);
++	mem_end = PFN_PHYS((u64)max_pfn);
 +
-+static void xen_set_iomap_pte(pte_t *ptep, pte_t pteval)
-+{
-+	struct multicall_space mcs;
-+	struct mmu_update *u;
++	memmap.nr_entries = E820MAX;
++	set_xen_guest_handle(memmap.buffer, map);
 +
-+	mcs = xen_mc_entry(sizeof(*u));
-+	u = mcs.args;
-+
-+	/* ptep might be kmapped when using 32-bit HIGHPTE */
-+	u->ptr = arbitrary_virt_to_machine(ptep).maddr;
-+	u->val = pte_val_ma(pteval);
-+
-+	MULTI_mmu_update(mcs.mc, mcs.args, 1, NULL, DOMID_IO);
-+
-+	xen_mc_issue(PARAVIRT_LAZY_MMU);
-+}
-+
- static void xen_extend_mmu_update(const struct mmu_update *update)
- {
- 	struct multicall_space mcs;
-@@ -451,6 +473,11 @@ void set_pte_mfn(unsigned long vaddr, unsigned long mfn, pgprot_t flags)
- void xen_set_pte_at(struct mm_struct *mm, unsigned long addr,
- 		    pte_t *ptep, pte_t pteval)
- {
-+	if (xen_iomap_pte(pteval)) {
-+		xen_set_iomap_pte(ptep, pteval);
-+		goto out;
++	rc = HYPERVISOR_memory_op(op, &memmap);
++	if (rc == -ENOSYS) {
++		memmap.nr_entries = 1;
++		map[0].addr = 0ULL;
++		map[0].size = mem_end;
++		/* 8MB slack (to balance backend allocations). */
++		map[0].size += 8ULL << 20;
++		map[0].type = E820_RAM;
++		rc = 0;
 +	}
-+
- 	ADD_STATS(set_pte_at, 1);
- //	ADD_STATS(set_pte_at_pinned, xen_page_pinned(ptep));
- 	ADD_STATS(set_pte_at_current, mm == current->mm);
-@@ -521,8 +548,25 @@ static pteval_t pte_pfn_to_mfn(pteval_t val)
- 	return val;
- }
++	BUG_ON(rc);
  
-+static pteval_t iomap_pte(pteval_t val)
-+{
-+	if (val & _PAGE_PRESENT) {
-+		unsigned long pfn = (val & PTE_PFN_MASK) >> PAGE_SHIFT;
-+		pteval_t flags = val & PTE_FLAGS_MASK;
-+
-+		/* We assume the pte frame number is a MFN, so
-+		   just use it as-is. */
-+		val = ((pteval_t)pfn << PAGE_SHIFT) | flags;
+ 	e820.nr_map = 0;
+-
+-	e820_add_region(0, PFN_PHYS((u64)max_pfn), E820_RAM);
++	for (i = 0; i < memmap.nr_entries; i++) {
++		unsigned long long end = map[i].addr + map[i].size;
++		if (map[i].type == E820_RAM) {
++			if (map[i].addr > mem_end)
++				continue;
++			if (end > mem_end) {
++				/* Truncate region to max_mem. */
++				map[i].size -= end - mem_end;
++			}
++		}
++		if (map[i].size > 0)
++			e820_add_region(map[i].addr, map[i].size, map[i].type);
 +	}
-+
-+	return val;
-+}
-+
- pteval_t xen_pte_val(pte_t pte)
- {
-+	if (xen_initial_domain() && (pte.pte & _PAGE_IOMAP))
-+		return pte.pte;
-+
- 	return pte_mfn_to_pfn(pte.pte);
- }
- PV_CALLEE_SAVE_REGS_THUNK(xen_pte_val);
-@@ -535,7 +579,11 @@ PV_CALLEE_SAVE_REGS_THUNK(xen_pgd_val);
  
- pte_t xen_make_pte(pteval_t pte)
- {
--	pte = pte_pfn_to_mfn(pte);
-+	if (unlikely(xen_initial_domain() && (pte & _PAGE_IOMAP)))
-+		pte = iomap_pte(pte);
-+	else
-+		pte = pte_pfn_to_mfn(pte);
-+
- 	return native_make_pte(pte);
- }
- PV_CALLEE_SAVE_REGS_THUNK(xen_make_pte);
-@@ -591,6 +639,11 @@ void xen_set_pud(pud_t *ptr, pud_t val)
+ 	/*
+ 	 * Even though this is normal, usable memory under Xen, reserve
+diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
+index af36ead..e6c6bcb 100644
+--- a/include/xen/interface/memory.h
++++ b/include/xen/interface/memory.h
+@@ -142,4 +142,33 @@ struct xen_translate_gpfn_list {
+ };
+ DEFINE_GUEST_HANDLE_STRUCT(xen_translate_gpfn_list);
  
- void xen_set_pte(pte_t *ptep, pte_t pte)
- {
-+	if (xen_iomap_pte(pte)) {
-+		xen_set_iomap_pte(ptep, pte);
-+		return;
-+	}
++/*
++ * Returns the pseudo-physical memory map as it was when the domain
++ * was started (specified by XENMEM_set_memory_map).
++ * arg == addr of struct xen_memory_map.
++ */
++#define XENMEM_memory_map           9
++struct xen_memory_map {
++    /*
++     * On call the number of entries which can be stored in buffer. On
++     * return the number of entries which have been stored in
++     * buffer.
++     */
++    unsigned int nr_entries;
 +
- 	ADD_STATS(pte_update, 1);
- //	ADD_STATS(pte_update_pinned, xen_page_pinned(ptep));
- 	ADD_STATS(pte_update_batched, paravirt_get_lazy_mode() == PARAVIRT_LAZY_MMU);
-@@ -607,6 +660,11 @@ void xen_set_pte(pte_t *ptep, pte_t pte)
- #ifdef CONFIG_X86_PAE
- void xen_set_pte_atomic(pte_t *ptep, pte_t pte)
- {
-+	if (xen_iomap_pte(pte)) {
-+		xen_set_iomap_pte(ptep, pte);
-+		return;
-+	}
++    /*
++     * Entries in the buffer are in the same format as returned by the
++     * BIOS INT 0x15 EAX=0xE820 call.
++     */
++    GUEST_HANDLE(void) buffer;
++};
++DEFINE_GUEST_HANDLE_STRUCT(xen_memory_map);
 +
- 	set_64bit((u64 *)ptep, native_pte_val(pte));
- }
- 
-@@ -1824,9 +1882,16 @@ static void xen_set_fixmap(unsigned idx, phys_addr_t phys, pgprot_t prot)
- 		pte = pfn_pte(phys, prot);
- 		break;
- 
--	default:
-+	case FIX_PARAVIRT_BOOTMAP:
-+		/* This is an MFN, but it isn't an IO mapping from the
-+		   IO domain */
- 		pte = mfn_pte(phys, prot);
- 		break;
++/*
++ * Returns the real physical memory map. Passes the same structure as
++ * XENMEM_memory_map.
++ * arg == addr of struct xen_memory_map.
++ */
++#define XENMEM_machine_memory_map   10
 +
-+	default:
-+		/* By default, set_fixmap is used for hardware mappings */
-+		pte = mfn_pte(phys, __pgprot(pgprot_val(prot) | _PAGE_IOMAP));
-+		break;
- 	}
- 
- 	__native_set_fixmap(idx, pte);
+ #endif /* __XEN_PUBLIC_MEMORY_H__ */
 -- 
 1.6.0.6
 
