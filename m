@@ -1,262 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758869AbZELHLL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758335AbZELHMW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758869AbZELHLL (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 03:11:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756731AbZELHKj
+	id S1758335AbZELHMW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 03:12:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756760AbZELHML
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 03:10:39 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:48687 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753500AbZELHKi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 03:10:38 -0400
-Date: Tue, 12 May 2009 16:09:01 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 4/3] memcg: call uncharge_swapcache outside of tree_lock
- (Re: [PATCH 0/3] fix stale swap cache account leak  in memcg v7)
-Message-Id: <20090512160901.8a6c5f64.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090512140648.0974cb10.nishimura@mxp.nes.nec.co.jp>
-References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090512140648.0974cb10.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Tue, 12 May 2009 03:12:11 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38458 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752635AbZELHMJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 03:12:09 -0400
+Date: Tue, 12 May 2009 03:11:00 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: Steven Rostedt <rostedt@goodmis.org>, akpm@linux-foundation.org,
+       Amerigo Wang <amwang@redhat.com>
+Message-Id: <20090512071148.5664.91161.sendpatchset@localhost.localdomain>
+Subject: [PATCH] trace: clean up some code
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009 14:06:48 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-> On Tue, 12 May 2009 10:44:01 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > I hope this version gets acks..
-> > ==
-> > As Nishimura reported, there is a race at handling swap cache.
-> > 
-> > Typical cases are following (from Nishimura's mail)
-> > 
-> > 
-> > == Type-1 ==
-> >   If some pages of processA has been swapped out, it calls free_swap_and_cache().
-> >   And if at the same time, processB is calling read_swap_cache_async() about
-> >   a swap entry *that is used by processA*, a race like below can happen.
-> > 
-> >             processA                   |           processB
-> >   -------------------------------------+-------------------------------------
-> >     (free_swap_and_cache())            |  (read_swap_cache_async())
-> >                                        |    swap_duplicate()
-> >                                        |    __set_page_locked()
-> >                                        |    add_to_swap_cache()
-> >       swap_entry_free() == 0           |
-> >       find_get_page() -> found         |
-> >       try_lock_page() -> fail & return |
-> >                                        |    lru_cache_add_anon()
-> >                                        |      doesn't link this page to memcg's
-> >                                        |      LRU, because of !PageCgroupUsed.
-> > 
-> >   This type of leak can be avoided by setting /proc/sys/vm/page-cluster to 0.
-> > 
-> > 
-> > == Type-2 ==
-> >     Assume processA is exiting and pte points to a page(!PageSwapCache).
-> >     And processB is trying reclaim the page.
-> > 
-> >               processA                   |           processB
-> >     -------------------------------------+-------------------------------------
-> >       (page_remove_rmap())               |  (shrink_page_list())
-> >          mem_cgroup_uncharge_page()      |
-> >             ->uncharged because it's not |
-> >               PageSwapCache yet.         |
-> >               So, both mem/memsw.usage   |
-> >               are decremented.           |
-> >                                          |    add_to_swap() -> added to swap cache.
-> > 
-> >     If this page goes thorough without being freed for some reason, this page
-> >     doesn't goes back to memcg's LRU because of !PageCgroupUsed.
-> > 
-> > 
-> > Considering Type-1, it's better to avoid swapin-readahead when memcg is used.
-> > swapin-readahead just read swp_entries which are near to requested entry. So,
-> > pages not to be used can be on memory (on global LRU). When memcg is used,
-> > this is not good behavior anyway.
-> > 
-> > Considering Type-2, the page should be freed from SwapCache right after WriteBack.
-> > Free swapped out pages as soon as possible is a good nature to memcg, anyway.
-> > 
-> > The patch set includes followng
-> >  [1/3] add mem_cgroup_is_activated() function. which tell us memcg is _really_ used.
-> >  [2/3] fix swap cache handling race by avoidng readahead.
-> >  [3/3] fix swap cache handling race by check swapcount again.
-> > 
-> > Result is good under my test.
-> > 
-> These patches seem to work well on my side too.
-> 
-> 
-> BTW, we need one more fix which I found in a long term test last week.
-> After this patch, it survived all through the weekend in my test.
-> 
-> I don't know why we've never hit this bug so far.
-> I think I hit it because my memcg_free_unused_swapcache() patch increases
-> the possibility of calling mem_cgroup_uncharge_swapcache().
-> 
-> Thanks,
-> Daisuke Nishimura.
-> ===
-> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
-> memcg: call mem_cgroup_uncharge_swapcache() outside of tree_lock
-> 
-> It's rare, but I hit a spinlock lockup.
-> 
->     BUG: spinlock lockup on CPU#2, page01/24205, ffffffff806faf18
->     Pid: 24205, comm: page01 Not tainted 2.6.30-rc4-5845621d #1
->     Call Trace:
->      <IRQ>  [<ffffffff80294f93>] ? test_clear_page_writeback+0x4d/0xff
->      [<ffffffff803752bc>] ? _raw_spin_lock+0xfb/0x122
->      [<ffffffff804ee9ba>] ? _spin_lock_irqsave+0x59/0x70
->      [<ffffffff80294f93>] ? test_clear_page_writeback+0x4d/0xff
->      [<ffffffff8029649c>] ? rotate_reclaimable_page+0x87/0x8e
->      [<ffffffff80294f93>] ? test_clear_page_writeback+0x4d/0xff
->      [<ffffffff8028d4ed>] ? end_page_writeback+0x1c/0x3d
->      [<ffffffff802ac4c6>] ? end_swap_bio_write+0x57/0x65
->      [<ffffffff803516d9>] ? __end_that_request_first+0x1f3/0x2e4
->      [<ffffffff803515f2>] ? __end_that_request_first+0x10c/0x2e4
->      [<ffffffff803517e5>] ? end_that_request_data+0x1b/0x4c
->      [<ffffffff8035225a>] ? blk_end_io+0x1c/0x76
->      [<ffffffffa0060702>] ? scsi_io_completion+0x1dc/0x467 [scsi_mod]
->      [<ffffffff80356394>] ? blk_done_softirq+0x66/0x76
->      [<ffffffff8024002e>] ? __do_softirq+0xae/0x182
->      [<ffffffff8020cb3c>] ? call_softirq+0x1c/0x2a
->      [<ffffffff8020de9a>] ? do_softirq+0x31/0x83
->      [<ffffffff8020d57b>] ? do_IRQ+0xa9/0xbf
->      [<ffffffff8020c393>] ? ret_from_intr+0x0/0xf
->      <EOI>  [<ffffffff8026fd56>] ? res_counter_uncharge+0x67/0x70
->      [<ffffffff802bf04a>] ? __mem_cgroup_uncharge_common+0xbd/0x158
->      [<ffffffff802a0f55>] ? unmap_vmas+0x7ef/0x829
->      [<ffffffff802a8a3a>] ? page_remove_rmap+0x1b/0x36
->      [<ffffffff802a0c11>] ? unmap_vmas+0x4ab/0x829
->      [<ffffffff802a5243>] ? exit_mmap+0xa7/0x11c
->      [<ffffffff80239009>] ? mmput+0x41/0x9f
->      [<ffffffff8023cf7b>] ? exit_mm+0x101/0x10c
->      [<ffffffff8023e481>] ? do_exit+0x1a4/0x61e
->      [<ffffffff80259391>] ? trace_hardirqs_on_caller+0x11d/0x148
->      [<ffffffff8023e96e>] ? do_group_exit+0x73/0xa5
->      [<ffffffff8023e9b2>] ? sys_exit_group+0x12/0x16
->      [<ffffffff8020b96b>] ? system_call_fastpath+0x16/0x1b
-> 
-> This is caused when:
-> 
-> CPU1: __mem_cgroup_uncharge_common(), which is holding page_cgroup lock,
->       is interuppted and end_swap_bio_write(), which tries to hold
->       swapper_space.tree_lock, is called in the interrupt context.
-> CPU2: mem_cgroup_uncharge_swapcache(), which is called under swapper_space.tree_lock,
->       is spinning at lock_page_cgroup() in __mem_cgroup_uncharge_common().
-> 
-> IIUC, there is no need that mem_cgroup_uncharge_swapcache() should be called under
-> swapper_space.tree.lock, so move it outside the tree_lock.
-> 
+64 bytes are big enough to hold "%ld" of any unsigned long, thus no need to
+use snprintf.
 
-I understand the problem, but, wait a bit. NACK to this patch itself.
+Plus, kill an unnecessary local variable.
 
-1. I placed _uncharge_ inside tree_lock because __remove_from_page_cache() does.
-   (i.e. using the same logic.)
-   So, plz change both logic at once.(change caller of  mem_cgroup_uncharge_cache_page())
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>
 
-2. Shouldn't we disable IRQ while __mem_cgroup_uncharge_common() rather than moving
-   function ?
-
-Thanks,
--Kame
-
-
-
-
-
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> ---
->  include/linux/swap.h |    5 +++++
->  mm/memcontrol.c      |    2 +-
->  mm/swap_state.c      |    4 +---
->  mm/vmscan.c          |    1 +
->  4 files changed, 8 insertions(+), 4 deletions(-)
-> 
-> diff --git a/include/linux/swap.h b/include/linux/swap.h
-> index caf0767..6ea541d 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -431,6 +431,11 @@ static inline swp_entry_t get_swap_page(void)
->  #define has_swap_token(x) 0
->  #define disable_swap_token() do { } while(0)
->  
-> +static inline void
-> +mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
-> +{
-> +}
-> +
->  #endif /* CONFIG_SWAP */
->  #endif /* __KERNEL__*/
->  #endif /* _LINUX_SWAP_H */
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 0c9c1ad..379f200 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -1489,7 +1489,7 @@ void mem_cgroup_uncharge_cache_page(struct page *page)
->  }
->  
->  /*
-> - * called from __delete_from_swap_cache() and drop "page" account.
-> + * called after __delete_from_swap_cache() and drop "page" account.
->   * memcg information is recorded to swap_cgroup of "ent"
->   */
->  void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
-> diff --git a/mm/swap_state.c b/mm/swap_state.c
-> index e389ef2..7624c89 100644
-> --- a/mm/swap_state.c
-> +++ b/mm/swap_state.c
-> @@ -109,8 +109,6 @@ int add_to_swap_cache(struct page *page, swp_entry_t entry, gfp_t gfp_mask)
->   */
->  void __delete_from_swap_cache(struct page *page)
->  {
-> -	swp_entry_t ent = {.val = page_private(page)};
-> -
->  	VM_BUG_ON(!PageLocked(page));
->  	VM_BUG_ON(!PageSwapCache(page));
->  	VM_BUG_ON(PageWriteback(page));
-> @@ -121,7 +119,6 @@ void __delete_from_swap_cache(struct page *page)
->  	total_swapcache_pages--;
->  	__dec_zone_page_state(page, NR_FILE_PAGES);
->  	INC_CACHE_INFO(del_total);
-> -	mem_cgroup_uncharge_swapcache(page, ent);
->  }
->  
->  /**
-> @@ -191,6 +188,7 @@ void delete_from_swap_cache(struct page *page)
->  	__delete_from_swap_cache(page);
->  	spin_unlock_irq(&swapper_space.tree_lock);
->  
-> +	mem_cgroup_uncharge_swapcache(page, entry);
->  	swap_free(entry);
->  	page_cache_release(page);
->  }
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 337be66..e674cd1 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -470,6 +470,7 @@ static int __remove_mapping(struct address_space *mapping, struct page *page)
->  		swp_entry_t swap = { .val = page_private(page) };
->  		__delete_from_swap_cache(page);
->  		spin_unlock_irq(&mapping->tree_lock);
-> +		mem_cgroup_uncharge_swapcache(page, swap);
->  		swap_free(swap);
->  	} else {
->  		__remove_from_page_cache(page);
-> 
-
+---
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index a884c09..c31cc05 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2641,10 +2641,8 @@ tracing_max_lat_read(struct file *filp, char __user *ubuf,
+ 	char buf[64];
+ 	int r;
+ 
+-	r = snprintf(buf, sizeof(buf), "%ld\n",
++	r = sprintf(buf, "%ld\n",
+ 		     *ptr == (unsigned long)-1 ? -1 : nsecs_to_usecs(*ptr));
+-	if (r > sizeof(buf))
+-		r = sizeof(buf);
+ 	return simple_read_from_buffer(ubuf, cnt, ppos, buf, r);
+ }
+ 
+diff --git a/kernel/trace/trace_stack.c b/kernel/trace/trace_stack.c
+index c750f65..007e435 100644
+--- a/kernel/trace/trace_stack.c
++++ b/kernel/trace/trace_stack.c
+@@ -143,9 +143,7 @@ stack_max_size_read(struct file *filp, char __user *ubuf,
+ 	char buf[64];
+ 	int r;
+ 
+-	r = snprintf(buf, sizeof(buf), "%ld\n", *ptr);
+-	if (r > sizeof(buf))
+-		r = sizeof(buf);
++	r = sprintf(buf, "%ld\n", *ptr);
+ 	return simple_read_from_buffer(ubuf, count, ppos, buf, r);
+ }
+ 
+@@ -301,11 +299,7 @@ static const struct seq_operations stack_trace_seq_ops = {
+ 
+ static int stack_trace_open(struct inode *inode, struct file *file)
+ {
+-	int ret;
+-
+-	ret = seq_open(file, &stack_trace_seq_ops);
+-
+-	return ret;
++	return seq_open(file, &stack_trace_seq_ops);
+ }
+ 
+ static const struct file_operations stack_trace_fops = {
