@@ -1,53 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754524AbZELO7G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752263AbZELO7b@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754524AbZELO7G (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 10:59:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752229AbZELO6w
+	id S1752263AbZELO7b (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 10:59:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753663AbZELO7U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 10:58:52 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:35770 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752156AbZELO6w (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 10:58:52 -0400
-Date: Tue, 12 May 2009 17:04:08 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Tobias Doerffel <tobias.doerffel@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Specific support for Intel Atom architecture
-Message-ID: <20090512150408.GH19296@one.firstfloor.org>
-References: <200904301408.09370.tobias.doerffel@gmail.com> <877i0xib7d.fsf@basil.nowhere.org> <a36005b50905120720p14e0ea0av79f99551262a920a@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 12 May 2009 10:59:20 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:32825 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753070AbZELO7T (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 10:59:19 -0400
+Date: Tue, 12 May 2009 16:58:08 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Cyrill Gorcunov <gorcunov@gmail.com>
+Cc: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       yinghai@kernel.org, tglx@linutronix.de, eswierk@aristanetworks.com,
+       linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:irq/numa] x86: read apic ID in the !acpi_lapic case
+Message-ID: <20090512145808.GA20587@elte.hu>
+References: <49FC85A9.2070702@kernel.org> <tip-4797f6b021a3fa399942245d07a1feb30df81bb8@git.kernel.org> <20090512112205.GA12108@elte.hu> <20090512145128.GA10220@lenovo>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <a36005b50905120720p14e0ea0av79f99551262a920a@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090512145128.GA10220@lenovo>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-VirusStatus: clean
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 07:20:14AM -0700, Ulrich Drepper wrote:
-> On Mon, May 4, 2009 at 12:22 AM, Andi Kleen <andi@firstfloor.org> wrote:
-> > This should be obsolete anyways, you can just uses CORE2. They have compatible ISAs.
+
+* Cyrill Gorcunov <gorcunov@gmail.com> wrote:
+
+> [Ingo Molnar - Tue, May 12, 2009 at 01:22:05PM +0200]
+> | 
+> | this build bug is still unfixed:
+> | 
+> | drivers/pci/hotplug/ibmphp_core.c:165: error: expected identifier before ‘&’ token
+> | drivers/pci/hotplug/ibmphp_core.c:166: error: too few arguments to function ‘IO_APIC_get_PCI_irq_vector’
+> | 
+> | 	Ingo
+> | 
 > 
-> Only correct if you don't plan to use the movbe instruction.  The
-> kernel would be the one place where I can imagine this to make sense.
+> Grrr... this line looks really suspicious inideed
+> 
+> 			for (i = 0; i < 4; i++)
+> 				(*cur_slot)->irq[i] = IO_APIC_get_PCI_irq_vector((int) (*cur_slot)->bus,
+> --->						(int) (*cur_slot)->device, i.
+> 						&ioapic, &ioapic_pin,
+> 						&triggering, &polarity);
+> 
+> but it's _not_ 'cause of this commit, since
+> we didn't even touch this file :) The point
+> symbol should be changed to comma. Just a
+> misprint I believe. Appened patch should do
+> the trick.
 
-The problem is that you can't express the situations where
-movbe is better than bswap (you need both and the old and the new
-value) in inline assembler in a way that gcc decides automatically.
+Yinghai touched it:
 
-I also doubt there are many (any?) situations in the kernel where
-the destruction of the old register is a problem in the kernel;
-e.g. the network stack normally doesn't care.
+e20c06f: x86/pci: add 4 more return parameters to IO_APIC_get_PCI_irq_vector()
 
-My understanding is that movbe is really mainly useful for 
-some special situations where you run a emulator/jit for 
-a BE ISA, but that's not something the kernel does.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	Ingo
