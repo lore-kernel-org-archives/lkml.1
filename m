@@ -1,57 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754219AbZELJ0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756653AbZELJ16@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754219AbZELJ0U (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 05:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752605AbZELJ0L
+	id S1756653AbZELJ16 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 05:27:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbZELJ1r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 05:26:11 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:44273 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752295AbZELJ0K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 05:26:10 -0400
-Date: Tue, 12 May 2009 11:26:01 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Arnd Bergmann <arnd@arndb.de>, x86@kernel.org,
-       linux-kernel@vger.kernel.org,
-       Remis Lima Baima <remis.developer@googlemail.com>
-Subject: Re: [PATCH v2] x86: fix ktermios-termio conversion
-Message-ID: <20090512092601.GB29796@elte.hu>
-References: <20090511222702.352192505@arndb.de> <200905112319.17999.arnd@arndb.de> <20090512075513.GA14122@elte.hu> <200905121104.31275.arnd@arndb.de> <20090512091010.GD18004@elte.hu> <20090512102105.291afe53@lxorguk.ukuu.org.uk>
+	Tue, 12 May 2009 05:27:47 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:45241 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752410AbZELJ1r (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 05:27:47 -0400
+Message-ID: <4A094110.3030501@monstr.eu>
+Date: Tue, 12 May 2009 11:27:44 +0200
+From: Michal Simek <monstr@monstr.eu>
+Reply-To: monstr@monstr.eu
+User-Agent: Thunderbird 2.0.0.18 (X11/20081120)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090512102105.291afe53@lxorguk.ukuu.org.uk>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linux-kernel@vger.kernel.org, microblaze-uclinux@itee.uq.edu.au
+Subject: Re: [PATCH 00/12] Microblaze fixes for 2.6.31
+References: <20090511232019.927138561@arndb.de>>
+In-Reply-To: <20090511232019.927138561@arndb.de>>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-
-> > hm, on x86 you could use get_user_try / get_user_ex() / 
-> > get_user_catch() approach to linearize the dependencies and 
-> > reduce register pressure.
+Arnd Bergmann wrote:
+> Hi Michal,
 > 
-> It used *once*, in a path that is never executed except by some 
-> ancient binaries. It isn't worth the effort.
+> These are some cleanups and bug fixes that I came
+> across while working on my asm-generic headers.
+> 
+> Since I don't have actual hardware, they are
+> compile tested only. Please test and queue up
+> for 2.6.31.
+> 
+> Feel free to pull the whole series from
+> git.kernel.org:/pub/scm/linux/kernel/git/arnd/playground.git microblaze-cleanups
 
-i know, and i tested the patch so i know what effects it has.
+All changes except this one ([PATCH 11/12] microblaze: dont include asm/mmu.h in
+hw_exception_handler) were added to for-linus branch
 
-I never made any argument about inlining, it's obviously correct to 
-have a use-once function inline.
+Thanks,
+Michal
 
-My argument was very simple: the patch causes +150 bytes of bloat. 
-The try/ex/catch method can help reduce register pressure and can 
-reducethe size of code quite visibly.
 
-	Ingo
+> 
+> 	Arnd <><
+> 
+
+
+-- 
+Michal Simek, Ing. (M.Eng)
+w: www.monstr.eu p: +42-0-721842854
