@@ -1,129 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756845AbZELTIW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753994AbZELTIv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756845AbZELTIW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 15:08:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753000AbZELTIG
+	id S1753994AbZELTIv (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 15:08:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754363AbZELTIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 15:08:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54710 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752872AbZELTIF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 15:08:05 -0400
-Subject: Re: [PATCH 4/10 -tip] x86: check_powernow() for K7 user of
- Advanced Power Management features
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@kernel.org>, Robert Richter <robert.richter@amd.com>,
-       Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       x86 maintainers <x86@kernel.org>
-In-Reply-To: <1242142807.2547.18.camel@ht.satnam>
-References: <1242142530.2547.11.camel@ht.satnam>
-	 <1242142623.2547.13.camel@ht.satnam>  <1242142692.2547.15.camel@ht.satnam>
-	 <1242142753.2547.16.camel@ht.satnam>  <1242142807.2547.18.camel@ht.satnam>
-Content-Type: text/plain
-Date: Wed, 13 May 2009 00:37:59 +0530
-Message-Id: <1242155279.2492.75.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 May 2009 15:08:38 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:41558 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753174AbZELTIh (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 15:08:37 -0400
+Date: Tue, 12 May 2009 15:08:23 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Jarod Wilson <jarod@redhat.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/2 v2] crypto: mark algs allowed in fips mode
+Message-ID: <20090512190823.GF5019@hmsreliant.think-freely.org>
+References: <200905110952.44273.jarod@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905110952.44273.jarod@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-12 at 21:10 +0530, Jaswinder Singh Rajput wrote:
-> use X86_FEATURE_FID and X86_FEATURE_VID to determine K7 PowerNOW.
+On Mon, May 11, 2009 at 09:52:43AM -0400, Jarod Wilson wrote:
+> Set the fips_allowed flag in testmgr.c's alg_test_descs[] for algs
+> that are allowed to be used when in fips mode.
 > 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
->  arch/x86/kernel/cpu/cpufreq/powernow-k7.c |   16 ++++++----------
->  1 files changed, 6 insertions(+), 10 deletions(-)
+> One caveat: des isn't actually allowed anymore, but des (and thus also
+> ecb(des)) has to be permitted, because disallowing them results in
+> des3_ede being unable to properly register (see des module init func).
 > 
-> diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k7.c b/arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-> index 3c28ccd..1f35474 100644
-> --- a/arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-> +++ b/arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-> @@ -118,7 +118,6 @@ static int check_fsb(unsigned int fsbspeed)
->  static int check_powernow(void)
->  {
->  	struct cpuinfo_x86 *c = &cpu_data(0);
-> -	unsigned int maxei, eax, ebx, ecx, edx;
->  
->  	if ((c->x86_vendor != X86_VENDOR_AMD) || (c->x86 != 6)) {
->  #ifdef MODULE
-> @@ -128,9 +127,8 @@ static int check_powernow(void)
->  		return 0;
->  	}
->  
-> -	/* Get maximum capabilities */
-> -	maxei = cpuid_eax(0x80000000);
-> -	if (maxei < 0x80000007) {	/* Any powernow info ? */
-> +	/* Advanced Power Management capabilities */
-> +	if (c->x86_capability[9]) {	/* Any powernow info ? */
+> Also, crc32 isn't technically on the fips approved list, but I think
+> it gets used in various places that necessitate it being allowed.
+> 
+> This list is based on
+> http://csrc.nist.gov/groups/STM/cavp/index.html
+> 
+> Important note: allowed/approved here does NOT mean "validated", just
+> that its an alg that *could* be validated.
+> 
+> Resending with properly updated patch v2 tag.
+> 
+> Signed-off-by: Jarod Wilson <jarod@redhat.com>
+> 
+Acked-by: Neil Horman <nhorman@tuxdriver.com>
 
-[PATCH -tip] x86: check_powernow() for K7 user of Advanced Power Management features
-
-use X86_FEATURE_POWER_MGMT, X86_FEATURE_FID and X86_FEATURE_VID
-to determine K7 PowerNOW.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/cpu/cpufreq/powernow-k7.c |   16 ++++++----------
- 1 files changed, 6 insertions(+), 10 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k7.c b/arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-index 3c28ccd..965f235 100644
---- a/arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-+++ b/arch/x86/kernel/cpu/cpufreq/powernow-k7.c
-@@ -118,7 +118,6 @@ static int check_fsb(unsigned int fsbspeed)
- static int check_powernow(void)
- {
- 	struct cpuinfo_x86 *c = &cpu_data(0);
--	unsigned int maxei, eax, ebx, ecx, edx;
- 
- 	if ((c->x86_vendor != X86_VENDOR_AMD) || (c->x86 != 6)) {
- #ifdef MODULE
-@@ -128,9 +127,8 @@ static int check_powernow(void)
- 		return 0;
- 	}
- 
--	/* Get maximum capabilities */
--	maxei = cpuid_eax(0x80000000);
--	if (maxei < 0x80000007) {	/* Any powernow info ? */
-+	/* Advanced Power Management capabilities */
-+	if (!cpu_has(c, X86_FEATURE_POWER_MGMT)) {	/* Any powernow info */
- #ifdef MODULE
- 		printk(KERN_INFO PFX "No powernow capabilities detected\n");
- #endif
-@@ -143,23 +141,21 @@ static int check_powernow(void)
- 		have_a0 = 1;
- 	}
- 
--	cpuid(0x80000007, &eax, &ebx, &ecx, &edx);
--
- 	/* Check we can actually do something before we say anything.*/
--	if (!(edx & (1 << 1 | 1 << 2)))
-+	if (!cpu_has(c, X86_FEATURE_FID) && !cpu_has(c, X86_FEATURE_VID))
- 		return 0;
- 
- 	printk(KERN_INFO PFX "PowerNOW! Technology present. Can scale: ");
- 
--	if (edx & 1 << 1) {
-+	if (cpu_has(c, X86_FEATURE_FID)) {
- 		printk("frequency");
- 		can_scale_bus = 1;
- 	}
- 
--	if ((edx & (1 << 1 | 1 << 2)) == 0x6)
-+	if (cpu_has(c, X86_FEATURE_FID) && cpu_has(c, X86_FEATURE_VID))
- 		printk(" and ");
- 
--	if (edx & 1 << 2) {
-+	if (cpu_has(c, X86_FEATURE_VID)) {
- 		printk("voltage");
- 		can_scale_vid = 1;
- 	}
--- 
-1.6.0.6
-
-
-
+> 
