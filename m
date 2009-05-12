@@ -1,91 +1,211 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757821AbZELL7T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759667AbZELMGJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757821AbZELL7T (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 07:59:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbZELL7J
+	id S1759667AbZELMGJ (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 08:06:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755556AbZELMFy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 07:59:09 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:47165 "EHLO bilbo.ozlabs.org"
+	Tue, 12 May 2009 08:05:54 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:32914 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751174AbZELL7I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 07:59:08 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1752581AbZELMFx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 08:05:53 -0400
+Date: Tue, 12 May 2009 13:58:38 +0200
+From: Stanislaw Gruszka <sgruszka@redhat.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Ingo Molnar <mingo@elte.hu>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH resend 0/2] itimers: periodic timers fixes
+Message-ID: <20090512135838.79b6778e@dhcp-lab-109.englab.brq.redhat.com>
+Organization: RedHat
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Message-ID: <18953.25733.53359.147452@cargo.ozlabs.ibm.com>
-Date: Tue, 12 May 2009 21:59:01 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] perf_counter: call hw_perf_save_disable/restore
-   around group_sched_in
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I noticed that when enabling a group via the PERF_COUNTER_IOC_ENABLE
-ioctl on the group leader, the counters weren't enabled and counting
-immediately on return from the ioctl, but did start counting a little
-while later (presumably after a context switch).
+Hi.
 
-The reason was that __perf_counter_enable calls group_sched_in which
-calls hw_perf_group_sched_in, which on powerpc assumes that the caller
-has called hw_perf_save_disable already.  Until commit 46d686c6
-("perf_counter: put whole group on when enabling group leader") it was
-true that all callers of group_sched_in had called
-hw_perf_save_disable first, and the powerpc hw_perf_group_sched_in
-relies on that (there isn't an x86 version).
+We found the periodic timers ITIMER_PROF and ITIMER_VIRT are unreliable, they 
+have systematic timing error. For example period of 10000 us will not be
+represented by the kernel as 10 ticks, but 11 (for HZ=1000). The reason is that
+the frequency of the hardware timer can only be chosen in discrete steps and
+the actual frequency is about 1000.152 Hz. So 10 ticks would take only about
+9.9985 ms, the kernel decides it must never return earlier than requested, so
+it rounds the period up to 11 ticks. This results in a systematic multiplicative
+timing error of -10 %. The situation is even worse where application try to
+request with 1 thick period. It will get the signal once per two kernel ticks,
+not on every tick. The systematic multiplicative timing error is -50 %. He have
+program [1] that shows itimers systematic error, results are below [2]. 
 
-This fixes the problem by putting calls to hw_perf_save_disable /
-hw_perf_restore around the calls to group_sched_in and
-counter_sched_in in __perf_counter_enable.  Having the calls to
-hw_perf_save_disable/restore around the counter_sched_in call is
-harmless and makes this call consistent with the other call sites
-of counter_sched_in, which have all called hw_perf_save_disable first.
+To fix situation we wrote two patches. First one just simplify code related
+with itimers. Second is fix. It change intervals measurement resolutions and
+correct times when signal is generated. However this add some drawback, that
+I'm not sure if are acceptable:
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
- kernel/perf_counter.c |   19 ++++++++++++-------
- 1 file changed, 12 insertions(+), 7 deletions(-)
+- the time between two consecutive tics can be smaller than requested
+  interval
 
-diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-index 5ea0240..ff166c1 100644
---- a/kernel/perf_counter.c
-+++ b/kernel/perf_counter.c
-@@ -663,6 +663,7 @@ static void __perf_counter_enable(void *info)
- 	struct perf_cpu_context *cpuctx = &__get_cpu_var(perf_cpu_context);
- 	struct perf_counter_context *ctx = counter->ctx;
- 	struct perf_counter *leader = counter->group_leader;
-+	unsigned long pmuflags;
- 	unsigned long flags;
- 	int err;
- 
-@@ -689,14 +690,18 @@ static void __perf_counter_enable(void *info)
- 	if (leader != counter && leader->state != PERF_COUNTER_STATE_ACTIVE)
- 		goto unlock;
- 
--	if (!group_can_go_on(counter, cpuctx, 1))
-+	if (!group_can_go_on(counter, cpuctx, 1)) {
- 		err = -EEXIST;
--	else if (counter == leader)
--		err = group_sched_in(counter, cpuctx, ctx,
--				     smp_processor_id());
--	else
--		err = counter_sched_in(counter, cpuctx, ctx,
--				       smp_processor_id());
-+	} else {
-+		pmuflags = hw_perf_save_disable();
-+		if (counter == leader)
-+			err = group_sched_in(counter, cpuctx, ctx,
-+					     smp_processor_id());
-+		else
-+			err = counter_sched_in(counter, cpuctx, ctx,
-+					       smp_processor_id());
-+		hw_perf_restore(pmuflags);
-+	}
- 
- 	if (err) {
- 		/*
+- intervals values which are returned to user by getitimer() are not
+  rounded up
+
+Second drawback mean that applications which first call setitimer() then
+call getitimer() to see if interval was round up and then correct timings,
+will potentially stop works. However this can be only problem with requested
+interval smaller than 1/HZ, as for intervals > 1/Hz we can generate signals
+with proper resolution.
+
+Compered to previous patches periodic itimer related fields of signal_struct
+where arranged into struct cpu_itimer - this helps compiler generate smaller
+binary code.
+
+Cheers
+Stanislaw Gruszka
+
+[1] PROGRAM SHOWS ITIMERS SYSTEMATIC ERRORS
+
+=============================================================================
+
+/*
+ * Measures the systematic error of a periodic timer.
+ * Best run on an otherwise idle system, so that the simplifying assumption
+ * cpu_time_consumed_by_this_process==real_elapsed_time  holds.
+ */
+
+#include <sys/time.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+/* This is what profiling with gcc -pg uses: */
+#define SIGNAL SIGPROF
+#define ITIMER ITIMER_PROF
+
+//#define SIGNAL SIGVTALRM
+//#define ITIMER ITIMER_VIRTUAL
+
+//#define SIGNAL SIGALRM
+//#define ITIMER ITIMER_REAL
+
+#define ARRAY_SIZE(a) (sizeof(a)/sizeof(a[0]))
+
+const int test_periods_us[] = {
+	10000,  /* glibc's value for x86(_64) */
+	9998,   /* this value would cause a much smaller error */
+	1000    /* and this is what is used for profiling on ia64 */
+};
+
+volatile int prof_counter;
+
+void handler(int signr)
+{
+	prof_counter++;
+}
+
+void test_func(void)
+{
+	int i = 0;
+	int count = 0;
+
+	for(i=0; i<2000000000; i++)
+		count++;
+}
+
+double timeval_diff(const struct timeval *start, const struct timeval *end)
+{
+	return (end->tv_sec - start->tv_sec) + (end->tv_usec - start->tv_usec)/1000000.0;
+}
+
+void measure_itimer_error(int period_us)
+{
+	struct sigaction act;
+	struct timeval start, end;
+	double real_time, counted_time;
+
+	prof_counter = 0;
+
+	/* setup a periodic timer */
+	struct timeval period_tv = {
+		.tv_sec = 0,
+		.tv_usec = period_us
+	};
+	struct itimerval timer = {
+		.it_interval = period_tv,
+		.it_value = period_tv
+	};
+	act.sa_handler = handler;
+	sigemptyset(&act.sa_mask);
+	act.sa_flags = 0;
+	if (sigaction(SIGNAL, &act, NULL) < 0) {
+		printf("sigaction failed\n");
+		exit(1);
+	}
+	if (setitimer(ITIMER, &timer, NULL) < 0) {
+		perror("setitimer");
+		exit(1);
+	}
+
+	/* run a busy loop and measure it */
+	gettimeofday(&start, NULL);
+	test_func();
+	gettimeofday(&end, NULL);
+
+	/* disable the timer */
+	timer.it_value.tv_usec = 0;
+	if (setitimer(ITIMER, &timer, NULL) < 0) {
+		perror("setitimer");
+		exit(1);
+	}
+
+	counted_time = prof_counter * period_us / 1000000.0;
+	real_time = timeval_diff(&start, &end);
+	printf("Requested a period of %d us and counted to %d, that should be %.2f s\n",
+		period_us, prof_counter, counted_time);
+	printf("Meanwhile real time elapsed: %.2f s\n", real_time);
+	printf("The error was %.1f %%\n\n", (counted_time/real_time - 1.0)*100.0);
+}
+
+int main()
+{
+	int i;
+	for (i=0; i<ARRAY_SIZE(test_periods_us); i++)
+		measure_itimer_error(test_periods_us[i]);
+	return 0;
+}
+
+===============================================================================
+
+
+[2] TEST PROGRAM RESULTS 
+
+Test program results for unpatched kernel:
+==========================================
+
+Requested a period of 10000 us and counted to 646, that should be 6.46 s
+Meanwhile real time elapsed: 7.12 s
+The error was -9.3 %
+
+Requested a period of 9998 us and counted to 710, that should be 7.10 s
+Meanwhile real time elapsed: 7.12 s
+The error was -0.2 %
+
+Requested a period of 1000 us and counted to 3563, that should be 3.56 s
+Meanwhile real time elapsed: 7.19 s
+The error was -50.4 %
+
+Test program results after patches applied:
+===========================================
+
+Requested a period of 10000 us and counted to 711, that should be 7.11 s
+Meanwhile real time elapsed: 7.12 s
+The error was -0.1 %
+
+Requested a period of 9998 us and counted to 710, that should be 7.10 s
+Meanwhile real time elapsed: 7.11 s
+The error was -0.2 %
+
+Requested a period of 1000 us and counted to 7123, that should be 7.12 s
+Meanwhile real time elapsed: 7.13 s
+The error was -0.1 %
+
