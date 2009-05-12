@@ -1,50 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756244AbZELQSw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754860AbZELQbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756244AbZELQSw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 12:18:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751075AbZELQSm
+	id S1754860AbZELQbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 12:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751881AbZELQbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 12:18:42 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:33068 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750712AbZELQSl (ORCPT
+	Tue, 12 May 2009 12:31:09 -0400
+Received: from mtagate7.de.ibm.com ([195.212.29.156]:46239 "EHLO
+	mtagate7.de.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751151AbZELQbI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 12:18:41 -0400
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: "Jan Beulich" <JBeulich@novell.com>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Thomas Gleixner" <tglx@linutronix.de>,
-       "Nick Piggin" <npiggin@suse.de>, <hpa@zytor.com>,
-       <linux-kernel@vger.kernel.org>
-Subject: Re: uses of cmpxchg/xadd in spinlock.h and rwsem.h vs. CONFIG_M386
-References: <4A09AF8402000078000007DC@vpn.id2.novell.com>
-X-Yow: I was making donuts and now I'm on a bus!
-Date: Tue, 12 May 2009 18:18:37 +0200
-In-Reply-To: <4A09AF8402000078000007DC@vpn.id2.novell.com> (Jan Beulich's
-	message of "Tue, 12 May 2009 16:19:00 +0100")
-Message-ID: <m2vdo6l2g2.fsf@igel.home>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.93 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Tue, 12 May 2009 12:31:08 -0400
+Date: Tue, 12 May 2009 18:31:05 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: tom.leiming@gmail.com, arjan@infradead.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] kernel/async.c:introduce async_schedule*_atomic
+Message-ID: <20090512183105.09e628f0@gondolin>
+In-Reply-To: <20090512160434.GD6255@nowhere>
+References: <1242141222-8454-1-git-send-email-tom.leiming@gmail.com>
+	<20090512154456.GC6255@nowhere>
+	<20090512160434.GD6255@nowhere>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-"Jan Beulich" <JBeulich@novell.com> writes:
+On Tue, 12 May 2009 18:04:35 +0200,
+Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-> While looking at a completely different issue I happened to grep for uses of
-> xadd, and it would appear to me that there got uses added that would make
-> a M386-configured SMP kernel die on an actual i386.
->
-> Oh, for the rwsem case I see - it would use the RWSEM_GENERIC_SPINLOCK case
-> when selecting M386. But I see nothing similar for the ticket spinlocks - am
-> I overlooking something?
+> On Tue, May 12, 2009 at 05:44:58PM +0200, Frederic Weisbecker wrote:
+> > On Tue, May 12, 2009 at 11:13:42PM +0800, tom.leiming@gmail.com wrote:
+> > >   * Returns an async_cookie_t that may be used for checkpointing later.
+> > > - * Note: This function may be called from atomic or non-atomic contexts.
+> > > + * Note:This function may be called from non-atomic contexts,and not
+> > > + * 	called from atomic contexts with safety. Please use
+> > > + * 	async_schedule_atomic in atomic contexts.
+> 
+> 
+> I suggest to add a comment which explains the reason for which it is unsafe
+> to call it in atomic context: because the scheduled work might be synchronously
+> executed.
+> 
+> One could believe this is because async_schedule() internally uses
+> a function which might sleep whereas the actual problem may come
+> from the scheduled function.
 
-This came up before, see
-<http://marc.info/?l=linux-kernel&m=123141659309208&w=2>.
+I'm wondering whether this is not mixing two different things up:
+- Making async_schedule_* safe from an atomic context.
+- Disallowing calling the function synchronously if asynchronous
+  scheduling failed.
 
-Andreas.
+Perhaps we want async_schedule_nosync() in addition?
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+> 
+> BTW, now that we have an atomic safe version, may be we could
+> also adapt the kmalloc GFP flags subsequently?
+
+Yes, that would make sense.
