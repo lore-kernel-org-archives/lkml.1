@@ -1,57 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756570AbZELVcP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753577AbZELVqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756570AbZELVcP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 17:32:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752781AbZELVb4
+	id S1753577AbZELVqU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 17:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751772AbZELVqA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 17:31:56 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:37488 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751888AbZELVbz (ORCPT
+	Tue, 12 May 2009 17:46:00 -0400
+Received: from fg-out-1718.google.com ([72.14.220.157]:30092 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751271AbZELVp7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 17:31:55 -0400
+	Tue, 12 May 2009 17:45:59 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=DbciS8vRzOcvC8XLAMa5usLV7vD9meoGgyCDFZk2UQEGQFSv46Ggn8b8s7wLEz1PtT
-         skhuLmgx537mmZrRYtlWm89yC+C/eGmMrhNapg3I6UwBpOJkdMBVS+XHlQB/vRq2mGqu
-         QUYYMGQc/WjSTbY9pfTEsAEsV8aVXS/GCKchQ=
-Message-ID: <4A09EAC9.2030104@gmail.com>
-Date: Tue, 12 May 2009 23:31:53 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
+         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=vrnLgPJwCW48Q7GUOvV3CGSu3UKN6fZEjE5cG7boQgbz9/LC0IQyphBeH10xdaBByS
+         hWMzOCTgVEa8yBlp48sT7+i+x15Oad1FgKmmdYOrZpz1REIAu5otW7RT5W6+4Y7T96sT
+         igrRfYSrBcNTsKQaXoFPW4clggnhVg3f7rWm4=
+Message-ID: <4A09EE13.3020102@googlemail.com>
+Date: Tue, 12 May 2009 23:45:55 +0200
+From: Michael Riepe <michael.riepe@googlemail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: de-de, de, en-us, en
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] asm-generic: fix local_add_unless macro
-References: <49787DB4.8080308@gmail.com> <20090123154520.GB7774@Krystal>
-In-Reply-To: <20090123154520.GB7774@Krystal>
+To: Krzysztof Halasa <khc@pm.waw.pl>
+CC: Michael Buesch <mb@bu3sch.de>, David Dillow <dave@thedillows.org>,
+       Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       =?ISO-8859-15?Q?Michael_B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+References: <200903041828.49972.m.bueker@berlin.de>	<4A06D8D2.4010505@googlemail.com>	<1242001754.4093.12.camel@obelisk.thedillows.org>	<200905112248.44868.mb@bu3sch.de> <m3eiuufufj.fsf@intrepid.localdomain>
+In-Reply-To: <m3eiuufufj.fsf@intrepid.localdomain>
+X-Enigmail-Version: 0.91.0.0
 Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------------------------------->8-------------8<---------------------------------
-`local_add_unless(x, y, z)' will be expanded to `(&(x)->y, (y), (x))', but 
-`&(x)->y' should be `&(x)->a'
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-Was this patch lost? it's still not in current git.
 
-diff --git a/include/asm-generic/local.h b/include/asm-generic/local.h
-index dbd6150..fc21844 100644
---- a/include/asm-generic/local.h
-+++ b/include/asm-generic/local.h
-@@ -42,7 +42,7 @@ typedef struct
- 
- #define local_cmpxchg(l, o, n) atomic_long_cmpxchg((&(l)->a), (o), (n))
- #define local_xchg(l, n) atomic_long_xchg((&(l)->a), (n))
--#define local_add_unless(l, a, u) atomic_long_add_unless((&(l)->a), (a), (u))
-+#define local_add_unless(l, _a, u) atomic_long_add_unless((&(l)->a), (_a), (u))
- #define local_inc_not_zero(l) atomic_long_inc_not_zero(&(l)->a)
- 
- /* Non-atomic variants, ie. preemption disabled and won't be touched
+Krzysztof Halasa wrote:
+> Michael Buesch <mb@bu3sch.de> writes:
+> 
+> 
+>>Yeah maybe other chips are affected as well.
+>>I just want to note that my failing chip/board is an Intel D945GCLF2 board
+>>with onboard G-LAN, too.
+>>
+>>The device XID is: XID 3c4000c0
+> 
+> 
+> I have an on-board RTL8111C (at least the docs say so) with this same
+> XID and it's working correctly.
+
+How do lspci and dmesg report the chip? For mine, lspci says it's a
+"RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 02)" while
+the kernel reports "RTL8168c/8111c at 0xffffc200000f6000,
+00:1c:c0:b6:1a:4a, XID 3c4000c0".
+
+This reminds me of the early ATA/USB bridges from Genesys Logic... many
+revisions, and each one broken in a different way. :-(
+
+-- 
+Michael "Tired" Riepe <michael.riepe@googlemail.com>
+X-Tired: Each morning I get up I die a little
