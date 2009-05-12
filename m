@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758445AbZELX27@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758497AbZELX3n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758445AbZELX27 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 19:28:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbZELXZc
+	id S1758497AbZELX3n (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 19:29:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756361AbZELXZd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 19:25:32 -0400
-Received: from 75-149-38-2-SFBA.hfc.comcastbusiness.net ([75.149.38.2]:36198
+	Tue, 12 May 2009 19:25:33 -0400
+Received: from 75-149-38-2-SFBA.hfc.comcastbusiness.net ([75.149.38.2]:36199
 	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753793AbZELXZ0 (ORCPT
+	with ESMTP id S1753947AbZELXZ0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Tue, 12 May 2009 19:25:26 -0400
 From: Jeremy Fitzhardinge <jeremy@goop.org>
@@ -16,9 +16,9 @@ Cc: the arch/x86 maintainers <x86@kernel.org>,
        Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Xen-devel <xen-devel@lists.xensource.com>,
        Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 12/17] xen: use acpi_get_override_irq() to get triggering for legacy irqs
-Date: Tue, 12 May 2009 16:25:19 -0700
-Message-Id: <1242170724-13349-13-git-send-email-jeremy@goop.org>
+Subject: [PATCH 13/17] xen: initialize irq 0 too
+Date: Tue, 12 May 2009 16:25:20 -0700
+Message-Id: <1242170724-13349-14-git-send-email-jeremy@goop.org>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1242170724-13349-1-git-send-email-jeremy@goop.org>
 References: <1242170724-13349-1-git-send-email-jeremy@goop.org>
@@ -28,54 +28,30 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 
-We need to set up proper IO apic entries for legacy irqs, which are
-not normally configured by either normal acpi interrupt routing or
-PNP.
+IRQ 0 is valid, so make sure it gets initialized properly too.
+(Though in practice it doesn't matter, because its the timer
+interrupt we don't use under Xen.)
 
-This also generalizes the acpi interrupt setup, so we can remove it
-as a special case.
-
-[ Impact: compatibility with legacy/ISA hardware ]
+[ Impact: theoretical bugfix, cleanup ]
 
 Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
 ---
- arch/x86/xen/pci.c |   24 ++++++++++--------------
- 1 files changed, 10 insertions(+), 14 deletions(-)
+ arch/x86/xen/pci.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/arch/x86/xen/pci.c b/arch/x86/xen/pci.c
-index 00ad6df..db0c74c 100644
+index db0c74c..381b7ab 100644
 --- a/arch/x86/xen/pci.c
 +++ b/arch/x86/xen/pci.c
-@@ -65,19 +65,15 @@ void __init xen_setup_pirqs(void)
- {
- 	int irq;
+@@ -53,7 +53,7 @@ int xen_register_gsi(u32 gsi, int triggering, int polarity)
  
--#ifdef CONFIG_ACPI
--	/*
--	 * Set up acpi interrupt in acpi_gbl_FADT.sci_interrupt.
--	 */
--	if (acpi_gbl_FADT.sci_interrupt > 0) {
--		irq = xen_allocate_pirq(acpi_gbl_FADT.sci_interrupt);
--
--		printk(KERN_INFO "xen: allocated irq %d for acpi %d\n",
--		       irq, acpi_gbl_FADT.sci_interrupt);
--	}
--#endif
--
- 	/* Pre-allocate legacy irqs */
--	for (irq = 0; irq < NR_IRQS_LEGACY; irq++)
--		xen_allocate_pirq(irq);
-+	for (irq = 0; irq < NR_IRQS_LEGACY; irq++) {
-+		int trigger, polarity;
-+
-+		if (acpi_get_override_irq(irq, &trigger, &polarity) == -1)
-+			continue;
-+
-+		xen_register_gsi(irq,
-+			trigger ? ACPI_LEVEL_SENSITIVE : ACPI_EDGE_SENSITIVE,
-+			polarity ? ACPI_ACTIVE_LOW : ACPI_ACTIVE_HIGH);
-+	}
- }
+ 	printk(KERN_DEBUG "xen: --> irq=%d\n", irq);
+ 
+-	if (irq > 0)
++	if (irq >= 0)
+ 		xen_set_io_apic_routing(irq,
+ 					triggering == ACPI_EDGE_SENSITIVE ? 0 : 1,
+ 					polarity == ACPI_ACTIVE_HIGH ? 0 : 1);
 -- 
 1.6.0.6
 
