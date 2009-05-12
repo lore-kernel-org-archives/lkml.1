@@ -1,60 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbZELIZN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758585AbZELI1z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758109AbZELIZN (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 04:25:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbZELIYv
+	id S1758585AbZELI1z (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 04:27:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755048AbZELI1i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 04:24:51 -0400
-Received: from hera.kernel.org ([140.211.167.34]:58768 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755292AbZELIYt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 04:24:49 -0400
-Message-ID: <4A093259.30606@kernel.org>
-Date: Tue, 12 May 2009 17:24:57 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Tue, 12 May 2009 04:27:38 -0400
+Received: from torres.zugschlus.de ([85.214.68.41]:49555 "EHLO
+	torres.zugschlus.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753725AbZELI1h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 04:27:37 -0400
+X-Greylist: delayed 2701 seconds by postgrey-1.27 at vger.kernel.org; Tue, 12 May 2009 04:27:37 EDT
+Date: Tue, 12 May 2009 09:42:35 +0200
+From: Marc Haber <mh+linux-kernel@zugschlus.de>
+To: linux-kernel@vger.kernel.org
+Subject: tua6100_sleep: i2c error when trying to tune saa7146 based  DVB
+	card
+Message-ID: <20090512074235.GA22900@torres.zugschlus.de>
 MIME-Version: 1.0
-To: v.virvilis@biovista.com
-CC: Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-       Linux IDE mailing list <linux-ide@vger.kernel.org>
-Subject: Re: SATA disks resets in a md setup
-References: <200905081739.46206.v.virvilis@biovista.com> <4A053229.5010406@garzik.org> <200905111324.38715.v.virvilis@biovista.com>
-In-Reply-To: <200905111324.38715.v.virvilis@biovista.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 08:23:43 +0000 (UTC)
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vassilis Virvilis wrote:
-> Ok I changed
-> 	M/B,
-> 	PSU
-> 	and cables.
-> 
-> Now the stress test passes only one SATA reset instead of 3 or 4 before the fatal one.
-> 
-> 
-> [ 1804.915319] ata1.01: exception Emask 0x10 SAct 0x0 SErr 0x10000 action 0xe frozen
-> [ 1804.915319] ata1.01: ST-ATA: DRQ=1 with device error, dev_stat 0x0
-> [ 1804.915319] ata1: SError: { PHYRdyChg }
-> [ 1804.915319] ata1.01: cmd b0/d5:01:09:4f:c2/00:00:00:00:00/10 tag 0 pio 512 in
-> [ 1804.915319]          res 00/00:01:09:4f:c2/00:00:00:00:00/10 Emask 0x212 (ATA bus error)
-> [ 1804.915319] ata1: hard resetting link
-> [ 1810.279540] ata1: SATA link up 3.0 Gbps (SStatus 123 SControl 300)
+Recently, my entertainment PC has begun to refuse tuning to my
+favorite stations, logging "tua6100_sleep: i2c error" when I try to do
+so. Kaffeine says "can't tune DVB".
 
-PHYRdyChg under load is very symptomatic of inadequate power supply.
-If you run "smartctl -a" on the device before and after the error,
-what counters change?
+Other stations work just fine.
 
-If you have two PSUs around, one thing worth trying is to power up the
-second PSU separately and put half of the drives on the separate PSU
-and see whether the problem goes away or the pattern of failures
-changes.  PSU can be easily powered up w/o motherboard.
+The box has a saa7146 equipped budget DVB-S card which used to work
+fine previously. I have first seen this behavior in kernel 2.6.29, and
+still see it in 2.6.29.3.
 
-  http://modtown.co.uk/mt/article2.php?id=psumod
+If you need any more data, please ask and I'll try to deliver it.
+
+Greetings
+Marc
 
 -- 
-tejun
+-----------------------------------------------------------------------------
+Marc Haber         | "I don't trust Computers. They | Mailadresse im Header
+Mannheim, Germany  |  lose things."    Winona Ryder | Fon: *49 621 72739834
+Nordisch by Nature |  How to make an American Quilt | Fax: *49 3221 2323190
