@@ -1,85 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758265AbZELPqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758312AbZELPrX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758265AbZELPqs (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757766AbZELPqg
+	id S1758312AbZELPrX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:47:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751177AbZELPrL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:46:36 -0400
-Received: from hera.kernel.org ([140.211.167.34]:51040 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756192AbZELPqf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:46:35 -0400
-Subject: [PATCH 1/10 -tip] x86: Add cpufeature for Processor Name
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: "H. Peter Anvin" <hpa@kernel.org>, Robert Richter <robert.richter@amd.com>,
-       Dave Jones <davej@redhat.com>, LKML <linux-kernel@vger.kernel.org>,
-       x86 maintainers <x86@kernel.org>
-In-Reply-To: <1242142530.2547.11.camel@ht.satnam>
-References: <1242142530.2547.11.camel@ht.satnam>
-Content-Type: text/plain
-Date: Tue, 12 May 2009 21:07:03 +0530
-Message-Id: <1242142623.2547.13.camel@ht.satnam>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Tue, 12 May 2009 11:47:11 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:9078 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750813AbZELPrK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 11:47:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=GeshgjTTXWlt9Bd2riUG8+eJpauJ/8GfwoF0KmjRfreFJVS2GTjW5rL0hi/TjVMeZI
+         3l7sfl92UgJVLcDNydPO6Ot8NeBZGjk6HFtZ9ECuLVCf6gIvLU3MyJIbBoQ2lo2/dWx7
+         HSKCFGpKbb6vMyb/MDIp4FyJgY16t15gotExA=
+MIME-Version: 1.0
+Date: Tue, 12 May 2009 21:17:11 +0530
+Message-ID: <20aa8c370905120847j4b19175akbdcafc0db2004567@mail.gmail.com>
+Subject: Help to edit inode content
+From: ranjith kannikara <ranjithkannikara@gmail.com>
+To: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
+I am a computer science engineering student. We have started a project
+to make an application to recover deleted files from an ext3
+filesystem. For that we have a doubt . Can we edit the inode content?
+ie the recovery will be robust if we could edit the inode contents and
+give the pointer address manually or through a code. The inode is
+being created in the kernel mode and is it possible to edit those
+contents if the code is allowed to have the kernel mode permissions..?
 
-Processor Name / Brand String (Function 8000_0002h, 8000_0003h, 8000_0004h)
-Functions 8000_0002h, 8000_0003h, and 8000_0004h each return up to 16 ASCII
-bytes of the processor name in the EAX, EBX, ECX and EDX registers.
-
-X86_FEATURE_PNAME will be useful for displaying MSRs like AMD:
-MSRC001_00[35:30] Processor Name String Registers
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/include/asm/cpufeature.h |    5 +++--
- arch/x86/kernel/cpu/common.c      |   10 ++++++++++
- 2 files changed, 13 insertions(+), 2 deletions(-)
-
-diff --git a/arch/x86/include/asm/cpufeature.h b/arch/x86/include/asm/cpufeature.h
-index 13cc6a5..e1a4cc4 100644
---- a/arch/x86/include/asm/cpufeature.h
-+++ b/arch/x86/include/asm/cpufeature.h
-@@ -153,8 +153,9 @@
-  * Auxiliary flags: Linux defined - For features scattered in various
-  * CPUID levels like 0x6, 0xA etc
-  */
--#define X86_FEATURE_IDA		(7*32+ 0) /* Intel Dynamic Acceleration */
--#define X86_FEATURE_ARAT	(7*32+ 1) /* Always Running APIC Timer */
-+#define X86_FEATURE_IDA		(7*32+ 0) /* Intel Dynamic Acceleration	*/
-+#define X86_FEATURE_ARAT	(7*32+ 1) /* Always Running APIC Timer	*/
-+#define X86_FEATURE_PNAME	(7*32+ 2) /* Processor Name		*/
- 
- /* Virtualization flags: Linux defined */
- #define X86_FEATURE_TPR_SHADOW  (8*32+ 0) /* Intel TPR Shadow */
-diff --git a/arch/x86/kernel/cpu/common.c b/arch/x86/kernel/cpu/common.c
-index e7fd5c4..542684c 100644
---- a/arch/x86/kernel/cpu/common.c
-+++ b/arch/x86/kernel/cpu/common.c
-@@ -563,6 +563,16 @@ static void __cpuinit get_cpu_cap(struct cpuinfo_x86 *c)
- 		}
- 	}
- 
-+	/*
-+	 * Processor Name / Brand String
-+	 * (Function 8000_0002h, 8000_0003h, 8000_0004h)
-+	 * Functions 8000_0002h, 8000_0003h, and 8000_0004h each return up to
-+	 * 16 ASCII bytes of the processor name in the EAX, EBX, ECX and EDX
-+	 * registers.
-+	 */
-+	if (c->extended_cpuid_level >= 0x80000004)
-+		set_cpu_cap(c, X86_FEATURE_PNAME);
-+
- 	if (c->extended_cpuid_level >= 0x80000008) {
- 		u32 eax = cpuid_eax(0x80000008);
- 
--- 
-1.6.0.6
-
-
-
+Regards
+Ranju..
