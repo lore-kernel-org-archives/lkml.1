@@ -1,45 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757534AbZELRO5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbZELRSp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757534AbZELRO5 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 13:14:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755993AbZELRNb
+	id S1755434AbZELRSp (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 13:18:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbZELRSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 13:13:31 -0400
-Received: from kroah.org ([198.145.64.141]:35203 "EHLO coco.kroah.org"
+	Tue, 12 May 2009 13:18:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56299 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755434AbZELRN2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 13:13:28 -0400
-Date: Tue, 12 May 2009 09:44:48 -0700
-From: Greg KH <greg@kroah.com>
-To: Alexander Beregalov <a.beregalov@gmail.com>
-Cc: gregkh@suse.de, johannes@sipsolutions.net, linux-next@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Staging: agnx: switch config_interface to
-	bss_info_changed
-Message-ID: <20090512164448.GJ16247@kroah.com>
-References: <1242127393-4298-1-git-send-email-a.beregalov@gmail.com>
+	id S1751955AbZELRSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 13:18:31 -0400
+Message-ID: <4A09AEFB.4070808@kernel.org>
+Date: Tue, 12 May 2009 10:16:43 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242127393-4298-1-git-send-email-a.beregalov@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Subject: Re: [PATCH 2/3] x86: add numa_move_cpus_to_node
+References: <4A05269D.8000701@kernel.org> <4A052721.4010201@kernel.org> <alpine.DEB.1.10.0905112126410.28512@qirst.com> <4A089E53.8010106@kernel.org> <alpine.DEB.1.10.0905121658140.14226@qirst.com>
+In-Reply-To: <alpine.DEB.1.10.0905121658140.14226@qirst.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 03:23:13PM +0400, Alexander Beregalov wrote:
-> Fix this build error:
-> drivers/staging/agnx/pci.c: In function 'agnx_config_interface':
-> drivers/staging/agnx/pci.c:315: error: dereferencing pointer to incomplete type
-> ..
-> drivers/staging/agnx/pci.c:424: error: unknown field 'config_interface' specified in initializer
+Christoph Lameter wrote:
+> On Mon, 11 May 2009, Yinghai Lu wrote:
 > 
-> config_interface was removed in 2d0ddec5b2b
-> ("mac80211: unify config_interface and bss_info_changed")
+>>> This going to be fun for the allocators that have put their queues on the
+>>> respective nodes. How are the various OS structures that were allocated on
+>>> the node that is downed / upped relocated?
+>> NODE_DATA is new allocated on that node is backed on line for the first time.
+>>
+>> per_cpu will still stay with old near node. because per_cpu is somehow preallocated for all possible cpu.
+> 
+> Slab allocators and page allocator use neither NODE_DATA nor percpu
+> 
+> It may be best to bring the processors down and up again if the node
+> assignment changes. That will cause the allocators to reallocate the per
+> cpu resources on the right node.
 
-I do not see that patch in Linus's tree.  Is it in some other tree
-(wireless?) and not yet in mainline?
+or let user util do that? aka before hotadd mem to that node, use /sys to bring
+the cpu offine and put the cpus online after mem is added ?
 
-confused,
-
-greg k-h
+YH
