@@ -1,79 +1,123 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbZELTG0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753219AbZELTGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755434AbZELTG0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 15:06:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751531AbZELTGP
+	id S1753219AbZELTGl (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 15:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753508AbZELTGS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 15:06:15 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:53716 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751377AbZELTGO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 15:06:14 -0400
-Date: Tue, 12 May 2009 21:05:38 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Cyrill Gorcunov <gorcunov@gmail.com>, mingo@redhat.com, hpa@zytor.com,
-       linux-kernel@vger.kernel.org, tglx@linutronix.de,
-       eswierk@aristanetworks.com, linux-tip-commits@vger.kernel.org
-Subject: Re: [tip:irq/numa] x86: read apic ID in the !acpi_lapic case
-Message-ID: <20090512190538.GA9769@elte.hu>
-References: <tip-4797f6b021a3fa399942245d07a1feb30df81bb8@git.kernel.org> <20090512112205.GA12108@elte.hu> <20090512145128.GA10220@lenovo> <20090512145808.GA20587@elte.hu> <4A099013.6040708@kernel.org> <20090512150631.GA32067@elte.hu> <20090512164617.GA21673@elte.hu> <4A09C068.3010308@kernel.org> <20090512183302.GA4000@elte.hu> <4A09C157.7010407@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A09C157.7010407@kernel.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-VirusStatus: clean
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Tue, 12 May 2009 15:06:18 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:56104 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751794AbZELTGR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 15:06:17 -0400
+X-Auth-Info: k3T3G/Fq7O/YLaBabSNwGiDjPMJqKGI4/ZpxrfvbdvA=
+From: Wolfgang Denk <wd@denx.de>
+To: linuxppc-dev@ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Wolfgang Denk <wd@denx.de>,
+       Scott Wood <scottwood@freescale.com>,
+       Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash size
+Date: Tue, 12 May 2009 21:06:14 +0200
+Message-Id: <1242155174-2513-1-git-send-email-wd@denx.de>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+The current device tree for the MPC8272ADS assumes a mapping of 32 MB
+of NOR flash at 0xFE00.0000, while there are actually only 8 MB on
+the boards, mapped at 0xFF80.0000. When booting an uImage with such a
+device tree, the kernel crashes because 0xFE00.0000 is not mapped.
 
-* Yinghai Lu <yinghai@kernel.org> wrote:
+Also introduce aliases for serial[01] and ethernet[01].
 
-> Ingo Molnar wrote:
-> > * Yinghai Lu <yinghai@kernel.org> wrote:
-> > 
-> >> Ingo Molnar wrote:
-> >>> got this on a testbox:
-> >>>
-> >>> [    0.113333] WARNING: at arch/x86/kernel/apic/apic.c:253 warn_slowpath_null+0x28/0x50()
-> >>>
-> >>> 	Ingo
-> >>>
-> >>> [    0.000000] Initializing cgroup subsys cpuset
-> >>> [    0.000000] Linux version 2.6.30-rc5-tip-01553-g4bc9bac-dirty (mingo@sirius) (gcc version 4.3.2 20081105 (Red Hat 4.3.2-7) (GCC) ) #48764 SMP PREEMPT Tue May 12 18:30:18 CEST 2009
-> >>> [    0.000000] Command line: root=/dev/sda1 earlyprintk=serial,ttyS0,115200 console=ttyS0,115200 console=tty debug initcall_debug apic=verbose sysrq_always_enabled 5 ignore_loglevel nosmp no_hz=off highres=0 nmi_watchdog=0 noapic nolapic_timer hpet=disable idle=poll notsc acpi=off
-> >> you should use
-> >> nolapic and noapic_timer
-> >>
-> >> /* same as disableapic, for compatibility */
-> >> static int __init setup_nolapic(char *arg)
-> >> {
-> >>         return setup_disableapic(arg);
-> >> }
-> >> early_param("nolapic", setup_nolapic);
-> >>
-> >> static int __init parse_disable_apic_timer(char *arg)
-> >> {
-> >>         disable_apic_timer = 1;
-> >>         return 0;
-> >> }
-> >> early_param("noapictimer", parse_disable_apic_timer);
-> > 
-> > What do you mean? This warning never triggered before on this 
-> > test-box. This is a plain regression.
-> 
-> just a reminder: that in your command there are some typo: should 
-> use nolapic and noapic_timer.
+Signed-off-by: Wolfgang Denk <wd@denx.de>
+Cc: Scott Wood <scottwood@freescale.com>
+cc: Kumar Gala <galak@kernel.crashing.org>
+---
+I am not really sure what the typical flash size on MPC8272ADS boards
+is. The board I used for testing is marked as "Prototype", so it may
+not be the release configuration. On the other hand, the manual also
+says 8 MB, Vitaly Borduk confirms 8 MB on his board, too, and Scott
+Wood eventually tested only with cuImage which fixes up the localbus
+mappings, thus eventually concealing the issue.
 
-ah, ok - indeed. But that is irrelevant to the bugreport.
+I'm posting this as reference in case the 8 MB should turn out to be
+correct. -- wd
 
-	Ingo
+ arch/powerpc/boot/dts/mpc8272ads.dts |   19 +++++++++++++------
+ 1 files changed, 13 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
+index 2a1929a..60f3327 100644
+--- a/arch/powerpc/boot/dts/mpc8272ads.dts
++++ b/arch/powerpc/boot/dts/mpc8272ads.dts
+@@ -17,6 +17,13 @@
+ 	#address-cells = <1>;
+ 	#size-cells = <1>;
+ 
++	aliases {
++		ethernet0 = &eth0;
++		ethernet1 = &eth1;
++		serial0 = &scc1;
++		serial1 = &scc4;
++	};
++
+ 	cpus {
+ 		#address-cells = <1>;
+ 		#size-cells = <0>;
+@@ -46,13 +53,13 @@
+ 		#size-cells = <1>;
+ 		reg = <0xf0010100 0x40>;
+ 
+-		ranges = <0x0 0x0 0xfe000000 0x2000000
++		ranges = <0x0 0x0 0xff800000 0x00800000
+ 		          0x1 0x0 0xf4500000 0x8000
+ 		          0x3 0x0 0xf8200000 0x8000>;
+ 
+ 		flash@0,0 {
+ 			compatible = "jedec-flash";
+-			reg = <0x0 0x0 0x2000000>;
++			reg = <0x0 0x0 0x00800000>;
+ 			bank-width = <4>;
+ 			device-width = <1>;
+ 		};
+@@ -144,7 +151,7 @@
+ 				reg = <0x119f0 0x10 0x115f0 0x10>;
+ 			};
+ 
+-			serial@11a00 {
++			scc1: serial@11a00 {
+ 				device_type = "serial";
+ 				compatible = "fsl,mpc8272-scc-uart",
+ 				             "fsl,cpm2-scc-uart";
+@@ -155,7 +162,7 @@
+ 				fsl,cpm-command = <0x800000>;
+ 			};
+ 
+-			serial@11a60 {
++			scc4: serial@11a60 {
+ 				device_type = "serial";
+ 				compatible = "fsl,mpc8272-scc-uart",
+ 				             "fsl,cpm2-scc-uart";
+@@ -192,7 +199,7 @@
+ 				};
+ 			};
+ 
+-			ethernet@11300 {
++			eth0: ethernet@11300 {
+ 				device_type = "network";
+ 				compatible = "fsl,mpc8272-fcc-enet",
+ 				             "fsl,cpm2-fcc-enet";
+@@ -205,7 +212,7 @@
+ 				fsl,cpm-command = <0x12000300>;
+ 			};
+ 
+-			ethernet@11320 {
++			eth1: ethernet@11320 {
+ 				device_type = "network";
+ 				compatible = "fsl,mpc8272-fcc-enet",
+ 				             "fsl,cpm2-fcc-enet";
+-- 
+1.6.0.6
+
