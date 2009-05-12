@@ -1,102 +1,294 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754255AbZELEha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752925AbZELFAs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754255AbZELEha (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 00:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751518AbZELEhV
+	id S1752925AbZELFAs (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 01:00:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751803AbZELFAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 00:37:21 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:59173 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751270AbZELEhU (ORCPT
+	Tue, 12 May 2009 01:00:37 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59726 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751188AbZELFAg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 00:37:20 -0400
-Date: Tue, 12 May 2009 13:32:38 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: nishimura@mxp.nes.nec.co.jp, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 2/3] fix swap cache account leak at swapin-readahead
-Message-Id: <20090512133238.0fb41722.nishimura@mxp.nes.nec.co.jp>
-In-Reply-To: <20090512104603.ac4ca1f4.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090512104603.ac4ca1f4.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 May 2009 01:00:36 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Ulrich Lukas <stellplatz-nr.13a@datenparkplatz.de>
+Subject: Re: whole system lock-up on low memory
+Cc: kosaki.motohiro@jp.fujitsu.com,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A076A1F.4080300@datenparkplatz.de>
+References: <4A076A1F.4080300@datenparkplatz.de>
+Message-Id: <20090512135800.D62F.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Tue, 12 May 2009 14:00:33 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009 10:46:03 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> Hi,
 > 
-> In general, Linux's swp_entry handling is done by combination of lazy techniques
-> and global LRU. It works well but when we use mem+swap controller, some more
-> strict control is appropriate. Otherwise, swp_entry used by a cgroup will be
-> never freed until global LRU works. In a system where memcg is well-configured,
-> global LRU doesn't work frequently.
 > 
->   Example) Assume swapin-readahead.
-> 	      CPU0			      CPU1
-> 	   zap_pte()			  read_swap_cache_async()
-> 					  swap_duplicate().
->            swap_entry_free() = 1
-> 	   find_get_page()=> NULL.
-> 					  add_to_swap_cache().
-> 					  issue swap I/O. 
+> vanilla linux 2.6.29.3, AMD64, tested on openSUSE 11.1 and Kubuntu 9.04.
 > 
-> There are many patterns of this kind of race (but no problems).
 > 
-> free_swap_and_cache() is called for freeing swp_entry. But it is a best-effort
-> function. If the swp_entry/page seems busy, swp_entry is not freed.
-> This is not a problem because global-LRU will find SwapCache at page reclaim.
+> I observe the following behaviour:
 > 
-> If memcg is used, on the other hand, global LRU may not work. Then, above
-> unused SwapCache will not be freed.
-> (unmapped SwapCache occupy swp_entry but never be freed if not on memcg's LRU)
+> When any user application (non-kernel, non-root) consumes all the
+> available system memory, the system freezes completely instead of any
+> application being killed by the oom-killer.
 > 
-> So, even if there are no tasks in a cgroup, swp_entry usage still remains.
-> In bad case, OOM by mem+swap controller is triggered by this "leak" of
-> swp_entry as Nishimura reported.
+> The mouse pointer stalls, and there is a seemingly endless loop of
+> hard-disc access, even when no swap space on any harddisc is activated.
 > 
-> Considering this issue, swapin-readahead itself is not very good for memcg.
-> It read swap cache which will not be used. (and _unused_ swapcache will
-> not be accounted.) Even if we account swap cache at add_to_swap_cache(),
-> we need to account page to several _unrelated_ memcg. This is bad.
+> IMO, this is severe, because any application can practically crash the
+> system (e.g. in case of a memory-leak), causing data loss in case of
+> unsaved data.
 > 
-> This patch tries to fix racy case of free_swap_and_cache() and page status.
 > 
-> After this patch applied, following test works well.
+> To reproduce this, I've attached a small C++ utility
+> (compiles with g++ memory_overcommit.cc -o memory_overcommit.bin) which
+> allocates chunks of memory of user defined size.
 > 
->   # echo 1-2M > ../memory.limit_in_bytes
->   # run tasks under memcg.
->   # kill all tasks and make memory.tasks empty
->   # check memory.memsw.usage_in_bytes == memory.usage_in_bytes and
->     there is no _used_ swp_entry.
+> On the Ubuntu system, the system freeze can be observed with swap
+> enabled on a cryptographic swap partition (dm-crypt; /etc/crypttab).
+> With openSUSE the lock-up also occurs with deactivated swap.
+> (swapoff -a).
 > 
-> What this patch does is
->  - avoid swapin-readahead when memcg is activated.
+> Tested from a KDE terminal window as regular urser, the
+> steps to reproduce are:
 > 
-> Changelog: v6 -> v7
->  - just handle races in readahead.
->  - races in writeback is handled in the next patch.
+> * use cryptographic swap partition or disable swap
+>   (maybe also reproducible with normal swap; but apparently not on Suse)
 > 
-> Changelog: v5 -> v6
->  - works only when memcg is activated.
->  - check after I/O works only after writeback.
->  - avoid swapin-readahead when memcg is activated.
->  - fixed page refcnt issue.
-> Changelog: v4->v5
->  - completely new design.
+> * compile and invoke the attached code:
+>   ./memory_overcommit.bin
 > 
-> Reported-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> * enter a number (in MiB) of memory that is slightly smaller than the
+> available memory and press "enter" key once.
+> 
+> * enter a smaller number (minimum 1 MiB) and confirm again, do the same
+> again,..., successively approaching the limit of available memory with
+> smaller chunks.
+> 
+> * finally, when most of the memory/buffers/cache are used-up, the system
+> becomes unresponsive and constant, heavy harddisk-access commences.
 
-Looks good to me.
+umm, I don't reproduce this.
+oom-killer kill the reproduce prgram ASAP.
 
-	Reviewed-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+system don't enter unresponsible state.
+
+
+my test environment:
+
+kernel: 2.6.30-rc4-mmotm
+CPU: ia64 x 8
+MEM: 8GB
+
+
+
+> 
+> Sometimes, killing the X-server or shutting down via hotkeys works after
+> several minutes of waiting, but this is not consistent.
+> 
+> 
+> I've reported this issue on the Ubuntu bug tracker before:
+> https://bugs.launchpad.net/ubuntu/+bug/283420
+> 
+> but as stated above, I also had the problem on another system.
+> 
+> 
+> I'd be glad if I could help if you need further information.
+> 
+> 
+> Attachement: one file, memory_overcommit.cc
+> (also here: http://datenparkplatz.de/DiesUndDas/memory_overcommit.cc)
+> ---
+> #include <cassert>
+> #include <cerrno>
+> #include <clocale>
+> #include <cstdio>
+> #include <cstdlib>
+> #include <cstring>
+> #include <limits>
+> 
+> using std::exit;
+> using std::numeric_limits;
+> using std::printf;
+> using std::size_t;
+> using std::strlen;
+> 
+> void read_answer(char* buffer, size_t buffer_size)
+> {
+>         assert(buffer_size > 1);
+> 
+>         char const* ret = std::fgets(buffer, buffer_size, stdin);
+>         if(ret == 0)
+>         {
+>                 printf("\nSorry, there was an error while reading the
+> answer. This program will now terminate.\n");
+> 
+>                 exit(EXIT_FAILURE);
+> 
+>         }
+> 
+>         else if(strlen(buffer) == buffer_size - 1 && buffer[buffer_size
+> - 2] != '\n')
+>         {
+> 
+>                 printf("Sorry, you answer is too long (possibly out of
+> range). This program will now terminate.\n");
+> 
+>                 exit(EXIT_FAILURE);
+> 
+>         }
+> 
+> }
+> 
+> 
+> size_t determine_size(char const* s)
+> {
+>         assert(strlen(s) > 0);
+> 
+>         char* endptr = 0;
+>         errno = 0;
+>         unsigned long v = std::strtoul(s, &endptr, 10);
+>         if(strlen(s) == 1 || endptr != s + strlen(s) - 1)
+>         {
+>                 printf("\nSorry, your answer does not appear to be
+> valid. This program will now terminate.\n");
+> 
+>                 exit(EXIT_FAILURE);
+> 
+>         }
+> 
+>         else if((v == numeric_limits<unsigned long>::max() && errno ==
+> ERANGE) || v == 0
+>                 || numeric_limits<unsigned long>::max() / (1024 * 1024)
+> < v)
+>         {
+> 
+>                 printf("\nSorry, that value is out of range. This
+> program will now terminate.\n");
+>                 exit(EXIT_FAILURE);
+> 
+>         }
+> 
+>         v *= 1024 * 1024;
+> 
+> 
+>         assert(numeric_limits<size_t>::is_specialized);
+>         if(v > numeric_limits<size_t>::max() )
+>         {
+>                 printf("\nSorry, that value is out of range. This
+> program will now terminate.\n");
+>                 exit(EXIT_FAILURE);
+> 
+>         }
+> 
+> 
+>         return v;
+> }
+> 
+> bool inquire_repeat(size_t& v)
+> {
+>         printf("\nShould a new allocation be made? You can enter:\n"
+>                         "==> \"No\" to quit,\n"
+>                         "==> Any Number of MiB to change the chunk size
+> and continue, or\n"
+>                         "==> Hit return to continue with last chunk
+> size.\n\nYour answer: ");
+> 
+>         char answer[20];
+>         read_answer(answer, sizeof(answer) );
+>         if(std::strcmp(answer, "\n") == 0) {
+>                 return true;
+>         }
+>         else if(std::strcmp(answer, "No\n") == 0) {
+>                 return false;
+>         }
+> 
+>         v = determine_size(answer);
+>         return true;
+> }
+> 
+> 
+> int main() {
+>         #ifdef _POSIX_C_SOURCE
+>         std::setlocale(LC_ALL, ""); // Prepare thousands grouping in output.
+>         #endif
+> 
+>         printf("\n\nThis program allows to repeatedly allocate chunks of
+> memory of user-specified size. "
+>                "\nAfter each allocation the user can choose to repeat or
+> to quit the program.\n\nFirst, please enter now "
+> 
+>                "the amount of memory in MiB (1024 * 1024 bytes) \nto
+> allocate in each round: ");
+>         char answer[20];
+> 
+>         read_answer(answer, sizeof(answer) );
+> 
+> 
+>         size_t alloc_size = determine_size(answer);
+> 
+>         size_t total = 0;
+>         do {
+>                 printf("\n   >>> Starting to allocate chunk...\n");
+>                 std::fflush(stdout);
+>                 void* p = std::malloc(alloc_size);
+>                 if(!p) {
+>                         printf("\n   > The last memory allocation failed."
+>                                "\n   > This means the system reported
+> the out-of-memory condition orderly."
+>                                "\nThis program will now terminate.\n");
+> 
+>                         exit(0);
+> 
+>                 }
+> 
+>                 std::memset(p, 0, alloc_size);
+> 
+>                 printf("   >>> A chunk was just allocated! <<<\n");
+>                 if(numeric_limits<size_t>::max() - total >= alloc_size)
+>                 {
+>                         total += alloc_size;
+> 
+>                         #ifdef _POSIX_C_SOURCE
+>                         char const* fmt_string = "   The total number of
+> bytes allocated is now %'zu.\n";
+>                         #else
+>                         char const* fmt_string = "   The total number of
+> bytes allocated is now %zu.\n";
+>                         #endif
+> 
+>                         printf(fmt_string, total);
+>                 }
+>                 else {
+>                         #ifdef _POSIX_C_SOURCE
+>                         char const* fmt_string = "   More than %'zu
+> bytes have been allocated in total by now.\n";
+>                         #else
+>                         char const* fmt_string = "   More than %zu bytes
+> have been allocated in total by now.\n";
+>                         #endif
+> 
+>                         printf(fmt_string, total);
+>                         total = numeric_limits<size_t>::max();
+>                 }
+>         } while(inquire_repeat(alloc_size) );
+> 
+>         printf("\nQuit was requested. This program will now terminate.\n");
+> }
+> 
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+
 
