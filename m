@@ -1,109 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759717AbZELBqs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758798AbZELBu1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759717AbZELBqs (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 21:46:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758234AbZELBqj
+	id S1758798AbZELBu1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 21:50:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757279AbZELBuL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 21:46:39 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:51369 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757758AbZELBqi (ORCPT
+	Mon, 11 May 2009 21:50:11 -0400
+Received: from rv-out-0506.google.com ([209.85.198.237]:7147 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756363AbZELBuJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 21:46:38 -0400
-Date: Tue, 12 May 2009 10:45:04 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 1/3] add check for mem cgroup is activated
-Message-Id: <20090512104504.4e722ccc.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 11 May 2009 21:50:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=xe4zwbAOScKQOu+I3b9PlPIBCWU28yV0a97Da4XqQltZBG+bgQTxGaqqnOG12pgEBb
+         ozWWE951sz8vr7IqYWM04Tp6sCCG8r5Cd+ld4DfZQlERiPX21CKaFua06WWqqybpwt3M
+         LgiuqE2JvEu0LcsAvbV4RtqtmCHvug6VwSQrc=
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Kwangwoo Lee <kwangwoo.lee@gmail.com>
+Subject: Re: [PATCH 1/2] Input: tsc2007: fix locking method against the current rc kernel
+Date: Mon, 11 May 2009 18:50:00 -0700
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc4; KDE/4.2.2; x86_64; ; )
+Cc: Thierry Reding <thierry.reding@avionic-design.de>,
+       Trilok Soni <soni.trilok@gmail.com>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
+References: <483a38b80905110441t703adbd6sab31bcf19b507fc9@mail.gmail.com>
+In-Reply-To: <483a38b80905110441t703adbd6sab31bcf19b507fc9@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905111850.01096.dmitry.torokhov@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Hi Kwangwoo,
 
-There is a function "mem_cgroup_disabled()" which returns
-  - memcg is configured ?
-  - disabled by boot option ?
-This is check is useful to confirm whether we have to call memcg's hook or not.
+On Monday 11 May 2009 04:41:35 Kwangwoo Lee wrote:
+> Hi Dmitry,
+>
+> The following patch fixes bug in tsc2007.
+> It is not working correctly in the current rc kernels.
+> IMHO, this patch should go in the 2.6.30
+>
 
-But, even when memcg is configured (and not disabled), it's not really used
-until mounted. This patch adds mem_cgroup_activated() to check memcg is
-mounted or not at least once.
-(Will be used in later patch.)
+I agree, it is in my for-linus branch now.
 
-IIUC, only very careful users set boot option of memcg to be disabled and
-most of people will not be aware of that memcg is enabled at default.
-So, if memcg wants to affect to global VM behavior or to add some overheads,
-there is cases that this check is better than mem_cgroup_disabled().
+> Can you advise me about "From: email" part?
+> I splited Thierry's patch. So the original "From: email" is followed:
+>
+> From: Thierry Reding <thierry.reding@avionic-design.de>
+>
+> Thank you,
+> Kwangwoo Lee
+>
+> From 749ee3a4a2c2fe1f41601481e47cb26d8ccec20d Mon Sep 17 00:00:00 2001
+> From: Kwangwoo Lee <kwangwoo.lee@gmail.com>
 
-Acked-by: Balbir Singh <balbir@linux.vnet.bim.com>
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
----
-Index: mmotm-2.6.30-May07/include/linux/memcontrol.h
-===================================================================
---- mmotm-2.6.30-May07.orig/include/linux/memcontrol.h
-+++ mmotm-2.6.30-May07/include/linux/memcontrol.h
-@@ -115,6 +115,8 @@ static inline bool mem_cgroup_disabled(v
- 		return true;
- 	return false;
- }
-+/* Returns strue if mem_cgroup is enabled and really used (mounted). */
-+bool mem_cgroup_activated(void);
- 
- extern bool mem_cgroup_oom_called(struct task_struct *task);
- void mem_cgroup_update_mapped_file_stat(struct page *page, int val);
-@@ -229,6 +231,11 @@ static inline bool mem_cgroup_disabled(v
- 	return true;
- }
- 
-+static inline bool mem_cgroup_activated(void)
-+{
-+	return false;
-+}
-+
- static inline bool mem_cgroup_oom_called(struct task_struct *task)
- {
- 	return false;
-Index: mmotm-2.6.30-May07/mm/memcontrol.c
-===================================================================
---- mmotm-2.6.30-May07.orig/mm/memcontrol.c
-+++ mmotm-2.6.30-May07/mm/memcontrol.c
-@@ -2577,6 +2577,17 @@ static void mem_cgroup_move_task(struct 
- 	mutex_unlock(&memcg_tasklist);
- }
- 
-+static bool __mem_cgroup_activated = false;
-+bool mem_cgroup_activated(void)
-+{
-+	return __mem_cgroup_activated;
-+}
-+
-+static void mem_cgroup_bind(struct cgroup_subsys *ss, struct cgroup *root)
-+{
-+	__mem_cgroup_activated = true;
-+}
-+
- struct cgroup_subsys mem_cgroup_subsys = {
- 	.name = "memory",
- 	.subsys_id = mem_cgroup_subsys_id,
-@@ -2585,6 +2596,7 @@ struct cgroup_subsys mem_cgroup_subsys =
- 	.destroy = mem_cgroup_destroy,
- 	.populate = mem_cgroup_populate,
- 	.attach = mem_cgroup_move_task,
-+	.bind = mem_cgroup_bind,
- 	.early_init = 0,
- 	.use_id = 1,
- };
+This is the last "from" tag in the e-mail so my scripts picked that up.
+I adjusted the commit so now it shows Thierry as the original author.
 
+Thanks.
+
+-- 
+Dmitry
