@@ -1,113 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758926AbZELHPg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759979AbZELHRz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758926AbZELHPg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 03:15:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753641AbZELHP0
+	id S1759979AbZELHRz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 03:17:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758770AbZELHRp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 03:15:26 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55659 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752646AbZELHPZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 03:15:25 -0400
-Subject: [PATCH -tip] x86: cpu/proc.c adding extended_cpuid_level for
- /proc/cpuinfo
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Tue, 12 May 2009 12:44:42 +0530
-Message-Id: <1242112482.3283.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Tue, 12 May 2009 03:17:45 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:33348 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758066AbZELHRn (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 03:17:43 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=IqZddSMUtIG2nOa0cpuIJwtC8ObRN/SvtQEbWE4IVcAah3HLTUUCap1YuVbEU98uoI
+         hhm5Z3uPFKTh7pMMi/KlgpAMD3Ai3Ku5ct726IGZ7IoTvm15O2sPPvhz/SV/x53Srijp
+         JyPOG9S/I47y7K7rFD8zMlgowI1aJAQ031+lo=
+Date: Tue, 12 May 2009 09:17:39 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Borislav Petkov <petkovbb@googlemail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 09/14] ide-atapi: use local sense buffer
+Message-ID: <20090512071739.GA24565@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Borislav Petkov <petkovbb@googlemail.com>,
+	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <1241855134-4984-1-git-send-email-petkovbb@gmail.com> <1241855134-4984-10-git-send-email-petkovbb@gmail.com> <200905102332.39043.bzolnier@gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200905102332.39043.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-Here are 2 patches for adding new field extended_cpuid_level, please
-choose PATCH whichever is more appropriate:
+On Sun, May 10, 2009 at 11:32:38PM +0200, Bartlomiej Zolnierkiewicz wrote:
 
-PATCH 1:
-Subject: [PATCH] x86: cpu/proc.c adding extended_cpuid_level for /proc/cpuinfo
+[..]
 
-extended_cpuid_level also gives useful information like cpuid_level
-and very useful for AMD processors.
+all done, testing...
 
-Adding extended_cpuid_level in /proc/cpuinfo completes cpuid_level info.
+> > -	pc->req_xfer = blk_rq_bytes(sense_rq);
+> 
+> I think that we can remove ->req_xfer now completely, patch #13.5? :)
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/cpu/proc.c |    6 +++++-
- 1 files changed, 5 insertions(+), 1 deletions(-)
+Well, the trivial thing would be to replace the pc->req_xfer with the
+naked number representing the cmd length, which is ugly. I'll think of
+something more elegant when merging all those ide_create.*cmd into their
+users. As always, I'm open to suggestions, of course :).
 
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index 523bf39..1279e16 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -39,6 +39,7 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- 		   "fpu\t\t: %s\n"
- 		   "fpu_exception\t: %s\n"
- 		   "cpuid level\t: %d\n"
-+		   "ext cpuid level\t: 0x%x\n"
- 		   "wp\t\t: %s\n",
- 		   c->fdiv_bug ? "yes" : "no",
- 		   c->hlt_works_ok ? "no" : "yes",
-@@ -47,6 +48,7 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- 		   c->hard_math ? "yes" : "no",
- 		   fpu_exception ? "yes" : "no",
- 		   c->cpuid_level,
-+		   c->extended_cpuid_level,
- 		   c->wp_works_ok ? "yes" : "no");
- }
- #else
-@@ -56,8 +58,10 @@ static void show_cpuinfo_misc(struct seq_file *m, struct cpuinfo_x86 *c)
- 		   "fpu\t\t: yes\n"
- 		   "fpu_exception\t: yes\n"
- 		   "cpuid level\t: %d\n"
-+		   "ext cpuid level\t: 0x%x\n"
- 		   "wp\t\t: yes\n",
--		   c->cpuid_level);
-+		   c->cpuid_level,
-+		   c->extended_cpuid_level);
- }
- #endif
- 
 -- 
-1.6.0.6
-
-
-OR
-
-PATCH 2:
-Subject: [PATCH] x86: cpu/proc.c adding extended_cpuid_level for /proc/cpuinfo
-
-extended_cpuid_level also gives useful information like cpuid_level
-and very useful for AMD processors.
-
-Adding extended_cpuid_level in /proc/cpuinfo completes cpuid_level info.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/kernel/cpu/proc.c |    4 +++-
- 1 files changed, 3 insertions(+), 1 deletions(-)
-
-diff --git a/arch/x86/kernel/cpu/proc.c b/arch/x86/kernel/cpu/proc.c
-index 523bf39..a965bf7 100644
---- a/arch/x86/kernel/cpu/proc.c
-+++ b/arch/x86/kernel/cpu/proc.c
-@@ -102,7 +102,9 @@ static int show_cpuinfo(struct seq_file *m, void *v)
- 	show_cpuinfo_core(m, c, cpu);
- 	show_cpuinfo_misc(m, c);
- 
--	seq_printf(m, "flags\t\t:");
-+	seq_printf(m, "ext cpuid level\t: 0x%x\n"
-+		   "flags\t\t:",
-+		   c->extended_cpuid_level);
- 	for (i = 0; i < 32*NCAPINTS; i++)
- 		if (cpu_has(c, i) && x86_cap_flags[i] != NULL)
- 			seq_printf(m, " %s", x86_cap_flags[i]);
--- 
-1.6.0.6
-
-
+Regards/Gruss,
+    Boris.
