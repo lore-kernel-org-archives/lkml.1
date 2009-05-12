@@ -1,135 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759633AbZELBtT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759168AbZELBNj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759633AbZELBtT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 21:49:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757279AbZELBtH
+	id S1759168AbZELBNj (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 21:13:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754868AbZELBNa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 21:49:07 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:55210 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757239AbZELBtG (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 21:49:06 -0400
-Date: Tue, 12 May 2009 10:47:30 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: [PATCH 3/3] fix stale swap cache at writeback.
-Message-Id: <20090512104730.78bf5ab0.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Mon, 11 May 2009 21:13:30 -0400
+Received: from e7.ny.us.ibm.com ([32.97.182.137]:47343 "EHLO e7.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753724AbZELBN3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 21:13:29 -0400
+Subject: Re: [tip:timers/ntp] ntp: adjust SHIFT_PLL to improve NTP
+ convergence
+From: john stultz <johnstul@us.ibm.com>
+To: mingo@redhat.com, hpa@zytor.com, riel@redhat.com,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       tglx@linutronix.de, mingo@elte.hu
+Cc: linux-tip-commits@vger.kernel.org,
+       Bernhard Schiffner <bernhard@schiffner-limbach.de>
+In-Reply-To: <tip-22cfbbfd9f67b67fe073010f51cb71d3632387d5@git.kernel.org>
+References: <200905051956.n45JuVo9025575@imap1.linux-foundation.org>
+	 <tip-22cfbbfd9f67b67fe073010f51cb71d3632387d5@git.kernel.org>
+Content-Type: text/plain
+Date: Mon, 11 May 2009 18:13:13 -0700
+Message-Id: <1242090794.7214.131.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+On Wed, 2009-05-06 at 09:46 +0000, tip-bot for john stultz wrote:
+> Commit-ID:  22cfbbfd9f67b67fe073010f51cb71d3632387d5
+> Gitweb:     http://git.kernel.org/tip/22cfbbfd9f67b67fe073010f51cb71d3632387d5
+> Author:     john stultz <johnstul@us.ibm.com>
+> AuthorDate: Wed, 6 May 2009 11:43:57 +0200
+> Committer:  Ingo Molnar <mingo@elte.hu>
+> CommitDate: Wed, 6 May 2009 11:44:02 +0200
+> 
+> ntp: adjust SHIFT_PLL to improve NTP convergence
+> 
+> The conversion to the ntpv4 reference model
+> f19923937321244e7dc334767eb4b67e0e3d5c74 ("ntp: convert to the NTP4
+> reference model") in 2.6.19 added nanosecond resolution the adjtimex
+> interface, but also changed the "stiffness" of the frequency adjustments,
+> causing NTP convergence time to greatly increase.
+> 
+> SHIFT_PLL, which reduces the stiffness of the freq adjustments, was
+> designed to be inversely linked to HZ, and the reference value of 4 was
+> designed for Unix systems using HZ=100.  However Linux's clock steering
+> code mostly independent of HZ.
+> 
+> So this patch reduces the SHIFT_PLL value from 4 to 2, which causes NTPd
+> behavior to match kernels prior to 2.6.19, greatly reducing convergence
+> times, and improving close synchronization through environmental thermal
+> changes.
+> 
+> The patch also changes some l's to L's in nearby code to avoid misreading
+> 50l as 501.
+> 
+> [ Impact: tweak NTP algorithm for faster convergence ]
 
-memcg: free unused swapcache on swapout path
 
-Recaliming anonymous memory in vmscan.c does following 2 steps.
-  1. add to swap and unmap.
-  2. pageout
-But above 2 steps doesn't occur at once. There are many chances
-to avoid pageout and _really_ unused pages are swapped out by
-visit-and-check-again logic of LRU rotation.
-But this behavior has troubles with memcg.
+Bernhard Schiffner noticed I had a few comment typos in this patch,
+(note: to save embarrassment, when making typos, avoid copying and
+pasting them) so this patch corrects them. 
 
-memcg cannot handle !PageCgroupUsed swapcache the owner process of which
-has been exited.
+Signed-off-by: John Stultz <johnstul@us.ibm.com>
 
-This patch is for handling such swap caches created by a race like below:
+diff --git a/include/linux/timex.h b/include/linux/timex.h
+index 0daf961..9910e3b 100644
+--- a/include/linux/timex.h
++++ b/include/linux/timex.h
+@@ -179,7 +179,7 @@ struct timex {
+  * NTP convergence time. A higher value makes it stiffer, increasing
+  * convergence time, but making the clock more stable.
+  *
+- * In David Mills' nanokenrel reference implmentation SHIFT_PLL is 4.
++ * In David Mills' nanokernel reference implementation SHIFT_PLL is 4.
+  * However this seems to increase convergence time much too long.
+  *
+  * https://lists.ntp.org/pipermail/hackers/2008-January/003487.html
+@@ -196,7 +196,7 @@ struct timex {
+  *
+  * SHIFT_FLL is used as a dampening factor to define how much we
+  * adjust the frequency correction for a given offset in FLL mode.
+- * In David Mills' nanokenrel reference implmentation SHIFT_PLL is 2.
++ * In David Mills' nanokernel reference implementation SHIFT_FLL is 2.
+  *
+  * MAXTC establishes the maximum time constant of the PLL.
+  */
 
-    Assume processA is exiting and pte points to a page(!PageSwapCache).
-    And processB is trying reclaim the page.
-
-              processA                   |           processB
-    -------------------------------------+-------------------------------------
-      (page_remove_rmap())               |  (shrink_page_list())
-         mem_cgroup_uncharge_page()      |
-            ->uncharged because it's not |
-              PageSwapCache yet.         |
-              So, both mem/memsw.usage   |
-              are decremented.           |
-                                         |    add_to_swap() -> added to swap cache.
-
-    If this page goes thorough without being freed for some reason, this page
-    doesn't goes back to memcg's LRU because of !PageCgroupUsed.
-
-These swap cache cannot be freed in memcg's LRU scanning, and swp_entry cannot
-be freed properly as a result.
-This patch adds a hook after add_to_swap() to check the page is mapped by a
-process or not, and frees it if it has been unmapped already.
-
-If a page has been on swap cache already when the owner process calls
-page_remove_rmap() -> mem_cgroup_uncharge_page(), the page is not uncharged.
-It goes back to memcg's LRU even if it goes through shrink_page_list()
-without being freed, so this patch ignores these case.
-
-Changelog: from Nishimura's original one.
- - moved functions to vmscan.c
-
-Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
----
-Index: mmotm-2.6.30-May07/mm/vmscan.c
-===================================================================
---- mmotm-2.6.30-May07.orig/mm/vmscan.c
-+++ mmotm-2.6.30-May07/mm/vmscan.c
-@@ -586,6 +586,32 @@ void putback_lru_page(struct page *page)
- }
- #endif /* CONFIG_UNEVICTABLE_LRU */
- 
-+#if defined(CONFIG_CGROUP_MEM_RES_CTLR) && defined(CONFIG_SWAP)
-+
-+static int memcg_free_unused_swapcache(struct page *page)
-+{
-+	VM_BUG_ON(!PageLocked(page));
-+	VM_BUG_ON(!PageSwapCache(page));
-+
-+	if (mem_cgroup_disabled())
-+		return 0;
-+	/*
-+	 * What we do here is checking the page is accounted by memcg or not.
-+	 * page_mapped() is enough check for avoding race.
-+	 */
-+	if (!PageAnon(page) || page_mapped(page))
-+		return 0;
-+	return try_to_free_swap(page);	/* checks page_swapcount */
-+}
-+
-+#else
-+
-+static int memcg_free_unused_swapcache(struct page *page)
-+{
-+	return 0;
-+}
-+
-+#endif
- 
- /*
-  * shrink_page_list() returns the number of reclaimed pages
-@@ -663,6 +689,14 @@ static unsigned long shrink_page_list(st
- 				goto keep_locked;
- 			if (!add_to_swap(page))
- 				goto activate_locked;
-+			/*
-+			 * The owner process might have uncharged the page
-+			 * (by page_remove_rmap()) before it has been added
-+			 * to swap cache.
-+			 * Check it here to avoid making it stale.
-+			 */
-+			if (memcg_free_unused_swapcache(page))
-+				goto keep_locked;
- 			may_enter_fs = 1;
- 		}
- 
 
