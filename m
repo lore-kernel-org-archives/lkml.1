@@ -1,54 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755434AbZELRSp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756809AbZELRTB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755434AbZELRSp (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 13:18:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbZELRSc
+	id S1756809AbZELRTB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 13:19:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751955AbZELRSt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 13:18:32 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56299 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751955AbZELRSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 13:18:31 -0400
-Message-ID: <4A09AEFB.4070808@kernel.org>
-Date: Tue, 12 May 2009 10:16:43 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Christoph Lameter <cl@linux-foundation.org>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 2/3] x86: add numa_move_cpus_to_node
-References: <4A05269D.8000701@kernel.org> <4A052721.4010201@kernel.org> <alpine.DEB.1.10.0905112126410.28512@qirst.com> <4A089E53.8010106@kernel.org> <alpine.DEB.1.10.0905121658140.14226@qirst.com>
-In-Reply-To: <alpine.DEB.1.10.0905121658140.14226@qirst.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Tue, 12 May 2009 13:18:49 -0400
+Received: from mtagate2.uk.ibm.com ([194.196.100.162]:59148 "EHLO
+	mtagate2.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753685AbZELRSs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 13:18:48 -0400
+Date: Tue, 12 May 2009 19:18:48 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Frederic Weisbecker <fweisbec@gmail.com>
+Cc: tom.leiming@gmail.com, arjan@infradead.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] kernel/async.c:introduce async_schedule*_atomic
+Message-ID: <20090512191848.25764af6@gondolin>
+In-Reply-To: <20090512165227.GE6255@nowhere>
+References: <1242141222-8454-1-git-send-email-tom.leiming@gmail.com>
+	<20090512154456.GC6255@nowhere>
+	<20090512160434.GD6255@nowhere>
+	<20090512183105.09e628f0@gondolin>
+	<20090512165227.GE6255@nowhere>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Christoph Lameter wrote:
-> On Mon, 11 May 2009, Yinghai Lu wrote:
-> 
->>> This going to be fun for the allocators that have put their queues on the
->>> respective nodes. How are the various OS structures that were allocated on
->>> the node that is downed / upped relocated?
->> NODE_DATA is new allocated on that node is backed on line for the first time.
->>
->> per_cpu will still stay with old near node. because per_cpu is somehow preallocated for all possible cpu.
-> 
-> Slab allocators and page allocator use neither NODE_DATA nor percpu
-> 
-> It may be best to bring the processors down and up again if the node
-> assignment changes. That will cause the allocators to reallocate the per
-> cpu resources on the right node.
+On Tue, 12 May 2009 18:52:29 +0200,
+Frederic Weisbecker <fweisbec@gmail.com> wrote:
 
-or let user util do that? aka before hotadd mem to that node, use /sys to bring
-the cpu offine and put the cpus online after mem is added ?
+> This division would make more sense indeed.
+> 
+> - async_schedule_inatomic() would be nosync() and would use
+>   GFP_ATOMIC. I guess the case where we want to run
+>   a job synchronously from atomic in case of async failure is too rare
+>   (non-existent?).
 
-YH
+It would add complexity for those callers providing a function that is
+safe to be called in both contexts.
+
+> - async_schedule_nosync() would be only nosync() and would use
+>   GFP_KERNEL
+> 
+> I'm not sure the second case will ever be used though.
+
+It might make sense for the "just fail if we cannot get memory" case.
+
+> 
+> Another alternative would be to define a single async_schedule_nosync()
+> which also takes a gfp flag.
+
+Wouldn't async_schedule() then need a gfp flag as well?
