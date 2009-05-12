@@ -1,57 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754789AbZELOZV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754421AbZELOZi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754789AbZELOZV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 10:25:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752530AbZELOZG
+	id S1754421AbZELOZi (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 10:25:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754500AbZELOZR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 10:25:06 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:62318 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752521AbZELOZF (ORCPT
+	Tue, 12 May 2009 10:25:17 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:30105 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754346AbZELOZP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 10:25:05 -0400
-Date: Tue, 12 May 2009 10:25:05 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/5] [GIT PULL] ring-buffer: optimize to 17% performance
- increase
-In-Reply-To: <alpine.DEB.2.00.0905120923250.13234@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.2.00.0905121022560.13234@gandalf.stny.rr.com>
-References: <20090512040832.681953177@goodmis.org> <20090512083301.GA20435@elte.hu> <alpine.DEB.2.00.0905120923250.13234@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Tue, 12 May 2009 10:25:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Kh+T9J3QA/E50z7ueaymO/3FCacXcheHtz60c2dOV6/Adczo1NG+c6qXVJF9pp5ibi
+         l1Ppn8trgUvtqZ9o2QhIDp2qJlPCbqbA6Oe6634UVqMr8cxwfOQpqOfUf2/hP5qegvv/
+         3jmYHooXy6dvgGbBrTvZRjerOn7V8QbfUW3DU=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+In-Reply-To: <877i0xib7d.fsf@basil.nowhere.org>
+References: <200904301408.09370.tobias.doerffel@gmail.com>
+	 <877i0xib7d.fsf@basil.nowhere.org>
+Date: Tue, 12 May 2009 07:20:14 -0700
+Message-ID: <a36005b50905120720p14e0ea0av79f99551262a920a@mail.gmail.com>
+Subject: Re: Specific support for Intel Atom architecture
+From: Ulrich Drepper <drepper@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Tobias Doerffel <tobias.doerffel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, May 4, 2009 at 12:22 AM, Andi Kleen <andi@firstfloor.org> wrote:
+> This should be obsolete anyways, you can just uses CORE2. They have compatible ISAs.
 
-On Tue, 12 May 2009, Steven Rostedt wrote:
-> > 
-> > It's also interesting to see that text size went down when speed 
-> > went up. I'm wondering how these compiler options:
-> 
-> But that was not always the case. The biggest boost in performance of the 
-> series (the last patch) also increased the size.
-> 
-> > 
-> >   CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-> >   CONFIG_OPTIMIZE_INLINING=y
-> 
-> Note, my test runs had both the above configure options disabled.
-> I'll run it again and see how they affect the results:
-
-Here's the results:
-
-size=n inline=n  270 
-size=n inline=y  290
-size=y inline=n  315
-size=y inline=y  372 (ouch!)
-
-Thus it seems to keep both optimizations off is best for performance.
-
--- Steve
-
-
+Only correct if you don't plan to use the movbe instruction.  The
+kernel would be the one place where I can imagine this to make sense.
