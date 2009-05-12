@@ -1,130 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753909AbZELJJ0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754496AbZELJKI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753909AbZELJJ0 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 05:09:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750832AbZELJJQ
+	id S1754496AbZELJKI (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 05:10:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751834AbZELJJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 05:09:16 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:48706 "EHLO gir.skynet.ie"
+	Tue, 12 May 2009 05:09:51 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42120 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750709AbZELJJP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 05:09:15 -0400
-Date: Tue, 12 May 2009 10:09:12 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: David Rientjes <rientjes@google.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Ziljstra <a.p.ziljstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, San Mehat <san@android.com>,
-       Arve Hj?nnev?g <arve@android.com>, linux-kernel@vger.kernel.org
-Subject: Re: [patch 01/11 -mmotm] lowmemorykiller: Only iterate over
-	process list when needed.
-Message-ID: <20090512090912.GA25923@csn.ul.ie>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
+	id S1751914AbZELJJu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 05:09:50 -0400
+Message-ID: <4A093C54.2060706@kernel.org>
+Date: Tue, 12 May 2009 18:07:32 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
+       sshtylyov@ru.mvista.com, mike.miller@hp.com, Eric.Moore@lsi.com,
+       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
+       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
+       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
+       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
+       Doug Gilbert <dgilbert@interlog.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH 03/11] block: add rq->resid_len
+References: <1241423927-11871-1-git-send-email-tj@kernel.org> <1241423927-11871-4-git-send-email-tj@kernel.org> <4A06DFAB.40205@panasas.com> <4A0767E5.5050205@kernel.org> <4A080C9D.9000109@panasas.com> <4A08C26E.80801@kernel.org> <4A093782.80701@panasas.com>
+In-Reply-To: <4A093782.80701@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 09:06:20 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 10, 2009 at 03:07:05PM -0700, David Rientjes wrote:
-> From: Arve Hjønnevåg <arve@android.com>
+Hello, Boaz.
+
+Boaz Harrosh wrote:
+>> When a request failed, the whole buffer is garbage.
 > 
-> Use NR_ACTIVE plus NR_INACTIVE as a size estimate for our fake cache
-> instead the sum of rss. Neither method is accurate.
+> ret is the transferred size, right? I don't see any check for  
+> success/failure in below code.
 > 
-
-If neither estimate is accurate (and I agree), then explain why this is
-better and why better decisions are made as a result.
-
-I would assume it's because pages can be double accounted when using RSS
-due to shared pages and you might over-estimate the amount of memory
-really in use. If that reasoning is correct, say that.
-
-> Also skip the process scan, if the amount of memory available is above
-> the largest threshold set.
+>> There's no
+>> partial transfer.  There shouldn't be.  I don't think residual count
+>> on request failure means anything. 
 > 
+> That's not true, there are many cases when transfer failed eventually
+> but some bytes are valid. Even the simple read/write case. Imagine a 
+> very large transfer with last sector encounter a "bad sector". that can
+> be critical, (trying to rescue a disk). And many other examples.
 
-Patches should do one thing, please split if possible. This patch aspect
-seems to be the if check early on so the splitting should not be
-difficult.
+No, it doesn't work like that.  As I wrote before, those partial
+transfers are returned to the issuer as partial _SUCCESS_ not partial
+failure.  ie. it's successful request w/ positive residual count not
+the other way around.  The error is communicated to the issuer when
+the leftover is re-issued.  There's no such thing as partial failure.
 
-In that statement, you check nr_to_scan <= 0, how can you scan a
-negative number of things? Say in the description that the process scan
-is set if min_adj is such a high value that it cannot be used to
-discriminate between processes for suitability to kill.
+Please consider write failing after successfully writing certain
+number of bytes.  A failed write command MUST NOT cause any actual
+write on the device.
 
-> Signed-off-by: Arve Hjønnevåg <arve@android.com>
-> ---
->  drivers/staging/android/lowmemorykiller.c |   35 +++++++++++++++++-----------
->  1 files changed, 21 insertions(+), 14 deletions(-)
+Residual count is not about how many bytes have been transferred.  The
+number of transferred bytes itself doesn't mean a thing because it
+changes depending on which transfer protocol is used regardless of
+where the actual failure is.  Residual count is about how many bytes
+have been actually produced or consumed and when a command fails none
+should have been.
+
+>> Also, the 'whenever possible'
+>> doesn't mean much when the issuer can't determine whether the value is
+>> valid or not.  On success, we should guarantee resid count is valid,
+>> on failure, I don't see a way we can.
+>>
 > 
-> diff --git a/drivers/staging/android/lowmemorykiller.c b/drivers/staging/android/lowmemorykiller.c
-> --- a/drivers/staging/android/lowmemorykiller.c
-> +++ b/drivers/staging/android/lowmemorykiller.c
-> @@ -71,23 +71,30 @@ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
->  	}
->  	if(nr_to_scan > 0)
->  		lowmem_print(3, "lowmem_shrink %d, %x, ofree %d, ma %d\n", nr_to_scan, gfp_mask, other_free, min_adj);
-> +	rem = global_page_state(NR_ACTIVE) + global_page_state(NR_INACTIVE);
-> +	if (nr_to_scan <= 0 || min_adj == OOM_ADJUST_MAX + 1) {
-> +		lowmem_print(5, "lowmem_shrink %d, %x, return %d\n", nr_to_scan, gfp_mask, rem);
-> +		return rem;
-> +	}
-> +
->  	read_lock(&tasklist_lock);
->  	for_each_process(p) {
-> -		if(p->oomkilladj >= 0 && p->mm) {
-> -			tasksize = get_mm_rss(p->mm);
-> -			if(nr_to_scan > 0 && tasksize > 0 && p->oomkilladj >= min_adj) {
-> -				if(selected == NULL ||
-> -				   p->oomkilladj > selected->oomkilladj ||
-> -				   (p->oomkilladj == selected->oomkilladj &&
-> -				    tasksize > selected_tasksize)) {
-> -					selected = p;
-> -					selected_tasksize = tasksize;
-> -					lowmem_print(2, "select %d (%s), adj %d, size %d, to kill\n",
-> -					             p->pid, p->comm, p->oomkilladj, tasksize);
-> -				}
-> -			}
-> -			rem += tasksize;
-> +		if (p->oomkilladj < min_adj || !p->mm)
-> +			continue;
-> +		tasksize = get_mm_rss(p->mm);
-> +		if (tasksize <= 0)
-> +			continue;
+> Code is as strong as it's weakest link, right? If lower
+> driver/firmware is brain-dead, what can we do? But why give up where
+> you can do better?
+>
+> The scsi standard is very clear about what every one should do with
+> the residual and what it means at every stage, everyone should do
+> his part. Here at the middle layer we need to correctly translate
+> what lower level returned and pass it up the chain.
+> 
+> Must stacks are amateuristic in regard to error handling but some
+> are not, what
+>
+> should we strive for, if we can? 
 
-It's also odd to consider the possibility of a negative tasksize.
+No it's not about being good or bad.  It's about being plain
+undefined.  There is no value in setting an inherently undefined value
+to certain values in certain corner cases.
 
-That aside, RSS is the sum of two longs (or atomic_long_t depending) and
-tasksize here is a signed integer. Are you not at the risk of
-overflowing and this check being unable to do anything useful if all the
-processes of interest are using large amounts of memory?
+>>> I know that in iscsi a negative residual is possible which means
+>>> over-flow. That is: the target had more data to give then the buffer
+>>> had space for. (which is not an error at all)
+>> Hmm... I've never seen negative residual in use.  Is it even defined?
+> 
+> It is defined, as I explained before. But yes no one uses it in Kernel.
+> The "good" low-level drivers fix it up by setting resid to zero, in that
+> case. (other wise the upper layers might crash)
 
-> +		if (selected) {
-> +			if (p->oomkilladj < selected->oomkilladj)
-> +				continue;
-> +			if (p->oomkilladj == selected->oomkilladj &&
-> +			    tasksize <= selected_tasksize)
-> +				continue;
->  		}
-> +		selected = p;
-> +		selected_tasksize = tasksize;
-> +		lowmem_print(2, "select %d (%s), adj %d, size %d, to kill\n",
-> +		             p->pid, p->comm, p->oomkilladj, tasksize);
->  	}
->  	if(selected != NULL) {
->  		lowmem_print(1, "send sigkill to %d (%s), adj %d, size %d\n",
+If the upper layer might crash if the value is negative, I think it's
+quite understandable to call negative values to be undefined.  Or
+should we call it unsupported?
 
-I'm hoping it has been discussed elsewhere why the normal OOM killer is not
-being used instead of this driver thing.
+Thanks.
 
 -- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+tejun
