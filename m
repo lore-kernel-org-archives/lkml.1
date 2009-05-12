@@ -1,50 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbZELPxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757954AbZELPyU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbZELPxX (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZELPxJ
+	id S1757954AbZELPyU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:54:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752614AbZELPyA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:53:09 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:45855 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751881AbZELPxI (ORCPT
+	Tue, 12 May 2009 11:54:00 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:19325 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753368AbZELPx6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:53:08 -0400
-Date: Tue, 12 May 2009 11:53:01 -0400
-From: Christoph Hellwig <hch@infradead.org>
-To: Ray Lee <ray-lk@madrabbit.org>
-Cc: Ferenc Wagner <wferi@niif.hu>, Christoph Hellwig <hch@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, xfs@oss.sgi.com,
-       linux-kernel@vger.kernel.org, Anton Salikhmetov <salikhmetov@gmail.com>
-Subject: Re: mmap vs mtime in 2.6.26 and up
-Message-ID: <20090512155301.GA23160@infradead.org>
-References: <874ovws94s.fsf@tac.ki.iif.hu> <87ljp2v6vt.fsf@tac.ki.iif.hu> <2c0942db0905120837g702b457bm52a412293925021a@mail.gmail.com>
+	Tue, 12 May 2009 11:53:58 -0400
+Message-ID: <4A099B8A.1020401@panasas.com>
+Date: Tue, 12 May 2009 18:53:46 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2c0942db0905120837g702b457bm52a412293925021a@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org
-	See http://www.infradead.org/rpr.html
+To: Tejun Heo <tj@kernel.org>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
+       sshtylyov@ru.mvista.com, mike.miller@hp.com, Eric.Moore@lsi.com,
+       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
+       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
+       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
+       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
+       Doug Gilbert <dgilbert@interlog.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH 03/11] block: add rq->resid_len
+References: <1241423927-11871-1-git-send-email-tj@kernel.org> <1241423927-11871-4-git-send-email-tj@kernel.org> <4A06DFAB.40205@panasas.com> <4A0767E5.5050205@kernel.org> <4A080C9D.9000109@panasas.com> <4A08C26E.80801@kernel.org> <4A093782.80701@panasas.com> <4A093C54.2060706@kernel.org> <4A0946D6.4010405@panasas.com> <4A094A11.2030300@kernel.org> <4A09589A.5030800@panasas.com> <4A0993BA.7090505@kernel.org>
+In-Reply-To: <4A0993BA.7090505@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 12 May 2009 15:53:57.0863 (UTC) FILETIME=[DC314770:01C9D319]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 08:37:43AM -0700, Ray Lee wrote:
-> > I've noticed that the last modification times of our RRD files got
-> > stuck after upgrading from 2.6.24 to 2.6.26 (Debian Etch -> Lenny; I
-> > also tested with 2.6.30-rc5, they are still stuck). ??It has some
-> > literature, most notably kernel bug #2645, but that's closed long ago
-> > and the resulting patch http://lkml.org/lkml/2008/1/22/370 is present
-> > in my kernels. ??Still, the test program (version 3 from the bug report)
-> > gives failures:
+On 05/12/2009 06:20 PM, Tejun Heo wrote:
+> Boaz Harrosh wrote:
+> 
+>> The solution to this, I think, is that the bouncing layer should
+>> receive a residual count, and not bounce anything beyond what's
+>> transferred. (On reads, writes does nothing), and zero-out the
+>> rest. This of course means that all block drivers make sure residual
+>> is properly set, the way it should as explained in this
+>> thread. (SCSI does the right thing where it can, for example see
+>> scsi_execute())
+> 
+> Umm... shouldn't the request just be successfully finished with
+> positive residue count and with sense data if necessary?  Block layer
+> request failure means, and has always meant, complete failure.
+> 
 
-The problem is pretty simple.  do_wp_page and __do_fault use
-file_update_time to update ctime and mtime.  But this function is only
-a helper for simply filesystems that have a binary inode dirty/non dirty
-state and keep the m/ctime purely in the Linux inode.  It must not be
-called from generic code as more complex filesystems need a notification
-through ->setattr to update the timestamps.  This will also affect other
-filesystems like ubifs.  I'm not entirely sure why it ever worked
-before, we must have picked up those c/mtime updates by accident
-somehow.
+I see, however if so then bouncing must take into consideration the residual
+count in the successful case, so not to copy garbage bytes. And drivers audited
+to make sure residual is set accordingly.
+
+I wish we would set resid_len to data_len at begining and let drivers
+reset that on success properly, like SCSI does. I'll look at it farther
+when I have a bit of time.
+
+Finally I see a distinct separate usage for the request->error member?
+
+> Thanks.
+> 
+
+Thanks
+Boaz
