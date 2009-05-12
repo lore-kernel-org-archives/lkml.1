@@ -1,69 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759517AbZELCPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758899AbZELCVh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759517AbZELCPq (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 22:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757632AbZELCPf
+	id S1758899AbZELCVh (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 22:21:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757744AbZELCV2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 22:15:35 -0400
-Received: from hera.kernel.org ([140.211.167.34]:40468 "EHLO hera.kernel.org"
+	Mon, 11 May 2009 22:21:28 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:51344 "EHLO bilbo.ozlabs.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757270AbZELCPe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 22:15:34 -0400
-Message-ID: <4A08DBBA.1000208@kernel.org>
-Date: Tue, 12 May 2009 11:15:22 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       Jens Axboe <jens.axboe@oracle.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Subject: [PATCH block#for-2.6.31] scsi: fix resid_len mis-conversion in scsi_end_request()
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 02:15:27 +0000 (UTC)
+	id S1755530AbZELCV1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 22:21:27 -0400
+Subject: Re: [PATCH] Fix MSI-X with NIU cards
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: David Miller <davem@davemloft.net>
+Cc: matthew@wil.cx, jbarnes@virtuousgeek.org, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090511.164017.116664605.davem@davemloft.net>
+References: <1242004911.7767.26.camel@concordia>
+	 <20090510.223645.193708481.davem@davemloft.net>
+	 <1242052211.7011.4.camel@concordia>
+	 <20090511.164017.116664605.davem@davemloft.net>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-GjJiVWLdYs1x1jPVsSmk"
+Date: Tue, 12 May 2009 12:21:26 +1000
+Message-Id: <1242094886.7421.26.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit c3a4d78c580de4edc9ef0f7c59812fb02ceb037f introduced
-rq->data_len and converted residual count users to it.  While
-converting, it mistakenly converted scsi_end_request() to finish
-requests with residual count when it wants to do is fully complete the
-request.  Fix it by using blk_end_request_all() instead.
 
-This bug was spotted by Boaz Harrosh.
+--=-GjJiVWLdYs1x1jPVsSmk
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Spotted-by: Boaz Harrosh <bharrosh@panasas.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
----
- drivers/scsi/scsi_lib.c |    7 +------
- 1 file changed, 1 insertion(+), 6 deletions(-)
+On Mon, 2009-05-11 at 16:40 -0700, David Miller wrote:
+> From: Michael Ellerman <michael@ellerman.id.au>
+> Date: Tue, 12 May 2009 00:30:11 +1000
+>=20
+> > On Sun, 2009-05-10 at 22:36 -0700, David Miller wrote:
+> >> From: Michael Ellerman <michael@ellerman.id.au>
+> >> Date: Mon, 11 May 2009 11:21:51 +1000
+> >>=20
+> >> > So I guess this device is just silently ignoring that write?
+> >>=20
+> >> No, it signals a fault on the PCI bus, which is how we noticed
+> >> this problem in the first place.
+> >=20
+> > But the patch doesn't change that? It just removes the readl AFAICS:
+>=20
+> I'm on slow satellite internet here out in the ocean, so I wish
+> the author of this patch would help with your feedback :-/
 
-diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-index a54bec9..e410d66 100644
---- a/drivers/scsi/scsi_lib.c
-+++ b/drivers/scsi/scsi_lib.c
-@@ -546,14 +546,9 @@ static struct scsi_cmnd *scsi_end_request(struct scsi_cmnd *cmd, int error,
- 	 * to queue the remainder of them.
- 	 */
- 	if (blk_end_request(req, error, bytes)) {
--		int leftover = blk_rq_bytes(req);
--
--		if (blk_pc_request(req))
--			leftover = req->resid_len;
--
- 		/* kill remainder if no retrys */
- 		if (error && scsi_noretry_cmd(cmd))
--			blk_end_request(req, error, leftover);
-+			blk_end_request_all(req, error);
- 		else {
- 			if (requeue) {
- 				/*
+Me too :) *cough*
+
+> > Or has msix_mask_irq() changed since 413f81eba?
+>=20
+> You could ask GIT, and to answer your question, indeed it has.
+
+Sorry it was late. I don't think it has actually:
+
+concordia powerpc $ git log 413f81eba..1d80cac0f drivers/pci/msi.c=20
+concordia powerpc $=20
+
+And I don't see any changes in Jesse's git tree via gitweb.
+
+I still see:
+
+158 static void msix_mask_irq(struct msi_desc *desc, u32 flag)             =
+    =20
+159 {
+160         u32 mask_bits =3D desc->masked;
+161         unsigned offset =3D desc->msi_attrib.entry_nr * PCI_MSIX_ENTRY_=
+SIZE +
+162                                         PCI_MSIX_ENTRY_VECTOR_CTRL_OFFS=
+ET;
+163         mask_bits &=3D ~1;
+164         mask_bits |=3D flag;
+165         writel(mask_bits, desc->mask_base + offset);
+166         desc->masked =3D mask_bits;
+167 }
+
+So I don't see how this patch works, all it's doing is moving the readl().
+
+> Please don't stall this patch very much, as the bug it is fixing konks
+> out one of my primary test machines from even booting up.
+
+Sure, chuck it in. I just don't get how it's solving the problem, and it
+looks like it's writing to the mask bit without reading the reserved
+ones first, which seems to violate the spec AFAICS[1]. But we can fix it
+later.
+
+cheers
+
+[1]: I probably don't have the latest version.
+
+--=-GjJiVWLdYs1x1jPVsSmk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkoI3SIACgkQdSjSd0sB4dLu1QCghJykMBNfBbxcjKi6gQRO9IJ8
+HKkAnRemDWXbc8kdt+veMx9Lw/xeltCe
+=uRej
+-----END PGP SIGNATURE-----
+
+--=-GjJiVWLdYs1x1jPVsSmk--
 
