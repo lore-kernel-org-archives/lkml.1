@@ -1,175 +1,231 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755875AbZELVWS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754377AbZELV3Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755875AbZELVWS (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 17:22:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751612AbZELVWD
+	id S1754377AbZELV3Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 17:29:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752392AbZELV3G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 17:22:03 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:44524 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751377AbZELVWB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 17:22:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=Ce0nxA3ecL/5h5GHNSxxha5mQiCu3C7Vc1uaZ54e/IQYr+wKQivR06B6VR917U9pXw
-         7HvAKsWUHH2sD//q3CAj5kjEbI2sQTgWIIBrggLLQiXHBQVA6+IQLKsKFUps7MJ9rcjp
-         5dPCB6WDKjdLJP8IqTnIKFSteHBv6SU6VccgA=
+	Tue, 12 May 2009 17:29:06 -0400
+Received: from tac.ki.iif.hu ([193.6.222.43]:37393 "EHLO tac.ki.iif.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751980AbZELV3E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 17:29:04 -0400
+From: Ferenc Wagner <wferi@niif.hu>
+To: linux-kernel@vger.kernel.org, openipmi-developer@lists.sourceforge.net
+Subject: modprobe ipmi_si hangs under 2.6.30-rc5
+Date: Tue, 12 May 2009 23:28:59 +0200
+Message-ID: <87tz3qnh7o.fsf@tac.ki.iif.hu>
+User-Agent: Gnus/5.110006 (No Gnus v0.6) Emacs/21.4 (gnu/linux)
 MIME-Version: 1.0
-Date: Wed, 13 May 2009 01:22:00 +0400
-Message-ID: <f74141980905121422p140d1649jcfb3d94aacd42f02@mail.gmail.com>
-Subject: jsm: two or more 4/8-port boards can not initialize ports properly
-From: "Alexander Y. Fomichev" <git.user@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-G' day
+Hi,
 
-The patch bellow fix for me problem with jsm_uart_port_init
-which still thinking it works for 2-ports borads only.
-drivers/serial/jsm/jsm_tty.c +462
-brd->channels[i]->uart_port.line = brd->channels[i]->ch_portnum +
-brd->boardnum * 2;
+On a Dell PowerEdge 2650 2.6.30-rc5 can't load the ipmi_si module.
+2.6.29 has no such problems:
 
-                         ^^^^^^^^^^^^^^^^^^^^^^
-so for line numbers of the second and further boards
-may/will be assigned values with the same range.
-in my case of two digi neo-8 -- 6 ports of 8 failed to be
-added for the second board.
+[   46.292160] IPMI System Interface driver.
+[   46.300321] ipmi_si: Trying SMBIOS-specified smic state machine at i/o address 0xecf4, slave address 0x20, irq 0
+[   46.408212] ipmi: Found new BMC (man_id: 0x0002a2,  prod_id: 0x0000, dev_id: 0x00)
+[   46.423454] IPMI smic interface initialized
 
-[    1.331294] serial 0000:04:09.0: PCI INT A -> GSI 51 (level, low) -> IRQ 51
-[    1.338337] serial 0000:04:09.0: PCI INT A disabled
-[    1.343313] serial 0000:03:09.0: PCI INT A -> GSI 27 (level, low) -> IRQ 27
-[    1.350345] serial 0000:03:09.0: PCI INT A disabled
-[    1.355482] jsm 0000:04:09.0: PCI INT A -> GSI 51 (level, low) -> IRQ 51
-[    1.362279] IRQ 51/JSM: IRQF_DISABLED is not guaranteed on shared IRQs
-[    1.368905] ttyn0 at MMIO 0x0 (irq = 51) is a jsm
-[    1.374079] Added device
-[    1.376771] ttyn1 at MMIO 0x0 (irq = 51) is a jsm
-[    1.381796] Added device
-[    1.384485] ttyn2 at MMIO 0x0 (irq = 51) is a jsm
-[    1.389502] Added device
-[    1.392191] ttyn3 at MMIO 0x0 (irq = 51) is a jsm
-[    1.397200] Added device
-[    1.399886] ttyn4 at MMIO 0x0 (irq = 51) is a jsm
-[    1.404886] Added device
-[    1.407573] ttyn5 at MMIO 0x0 (irq = 51) is a jsm
-[    1.412578] Added device
-[    1.415260] ttyn6 at MMIO 0x0 (irq = 51) is a jsm
-[    1.420267] Added device
-[    1.422947] ttyn7 at MMIO 0x0 (irq = 51) is a jsm
-[    1.427955] Added device
-[    1.430642] jsm 0000:04:09.0: board 1: Digi Neo (rev 9), irq 51
-[    1.436660] jsm 0000:03:09.0: PCI INT A -> GSI 27 (level, low) -> IRQ 27
-[    1.443446] IRQ 27/JSM: IRQF_DISABLED is not guaranteed on shared IRQs
-[    1.450077] Added device failed
-[    1.453286] Added device failed
-[    1.456492] Added device failed
-[    1.459691] Added device failed
-[    1.462899] Added device failed
-[    1.466105] Added device failed
-[    1.469314] ttyn8 at MMIO 0x0 (irq = 27) is a jsm
-[    1.474377] Added device
-[    1.477074] ttyn9 at MMIO 0x0 (irq = 27) is a jsm
-[    1.482101] Added device
-[    1.484793] jsm 0000:03:09.0: board 2: Digi Neo (rev 2), irq 27
+But under 2.6.30-rc5:
 
----------------------------------------------------------------------------------------------------
-diff -urNp a/drivers/serial/jsm/jsm.h b/drivers/serial/jsm/jsm.h
---- a/drivers/serial/jsm/jsm.h  2009-05-12 17:29:02.117674090 +0400
-+++ b/drivers/serial/jsm/jsm.h  2009-05-12 17:51:35.197811282 +0400
-@@ -61,6 +61,7 @@ enum {
-        if ((DBG_##nlevel & jsm_debug))                 \
-        dev_printk(KERN_##klevel, pdev->dev, fmt, ## args)
+# modprobe ipmi_si bt_debug=7 smic_debug=7 kcs_debug=7
 
-+#define MAXBOARDS      32
- #define MAXPORTS       8
- #define MAX_STOPS_SENT 5
+[  867.851694] IPMI System Interface driver.
+[  867.859771] ipmi_si: Trying SMBIOS-specified smic state machine at i/o address 0xecf4, slave address 0x20, irq 0
+[  867.880250] start_smic_transaction - 18 01
+[  867.880263] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.880271] smic_event - state = 1, flags = 0x4c, status = 0xc0
+[  867.880278] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.884133] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.884142] smic_event - state = 2, flags = 0x4c, status = 0xc0
+[  867.884150] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.888117] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.888125] smic_event - state = 3, flags = 0x4c, status = 0xc1
+[  867.888133] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.892229] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.892245] smic_event - state = 5, flags = 0x0c, status = 0xc3
+[  867.892256] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.892270] smic_event - state = 6, flags = 0x0c, status = 0xc3
+[  867.896996] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.897008] smic_event - state = 6, flags = 0xcc, status = 0xc3
+[  867.897020] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.904022] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.904031] smic_event - state = 7, flags = 0xcc, status = 0xc4
+[  867.904038] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.908101] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.908109] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.908117] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.912129] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.912137] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.912145] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.916104] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.916112] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.916120] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.920106] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.920114] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.920121] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.924100] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.924108] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.924115] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.928115] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.928123] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.928130] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.932102] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.932110] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.932118] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.936111] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.936119] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.936127] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.940110] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.940118] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.940127] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.944123] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.944131] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.944139] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.948194] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.948205] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.948215] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.952111] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.952119] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.952127] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.956114] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.956121] smic_event - state = 8, flags = 0xcc, status = 0xc6
+[  867.956129] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.960112] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.960120] smic_event - state = 9, flags = 0x4c, status = 0xc0
+[  867.960126] smic_get result - 1c 01 00 00 00 03 38 01 3f a2 02 00 00 00
+[  867.960155] start_smic_transaction - 18 2f
+[  867.960164] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.960172] smic_event - state = 1, flags = 0x4c, status = 0xc0
+[  867.960179] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.964196] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.964204] smic_event - state = 2, flags = 0x4c, status = 0xc0
+[  867.964211] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.968106] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.968114] smic_event - state = 3, flags = 0x4c, status = 0xc1
+[  867.968122] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.972110] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.972118] smic_event - state = 5, flags = 0xcc, status = 0xc3
+[  867.972124] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.972130] smic_event - state = 6, flags = 0xcc, status = 0xc3
+[  867.972137] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.976133] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.976144] smic_event - state = 7, flags = 0xcc, status = 0xc4
+[  867.976155] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.981016] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.981024] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.981032] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.985138] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.985145] smic_event - state = 8, flags = 0xcc, status = 0xc5
+[  867.985153] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.989106] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.989114] smic_event - state = 8, flags = 0xcc, status = 0xc6
+[  867.989121] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.993115] smic_event - smic->smic_timeout = 2000000, time = 100
+[  867.993123] smic_event - state = 9, flags = 0x4c, status = 0xc0
+[  867.993129] smic_get result - 1c 2f 00 2c
+[  867.993141] start_smic_transaction - 18 30 08
+[  867.993351] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.993360] smic_event - state = 1, flags = 0x4c, status = 0xc0
+[  867.993367] smic_event - smic->smic_timeout = 2000000, time = 0
+[...]
+[  867.996183] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.996190] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.996197] smic_event - state = 9, flags = 0x4c, status = 0xc0
+[  867.996203] smic_get result - 1c 30 00
+[  867.996215] smic_event - state = 0, flags = 0x4c, status = 0xc0
+[  867.996220] start_smic_transaction - 18 31
+[  867.996229] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.996236] smic_event - state = 1, flags = 0x4c, status = 0xc0
+[  867.996243] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.996250] smic_event - smic->smic_timeout = 2000000, time = 0
+[  867.996256] smic_event - smic->smic_timeout = 2000000, time = 0
+[...]
 
-@@ -94,6 +95,7 @@ enum {
 
- struct jsm_board;
- struct jsm_channel;
-+extern struct jsm_board *jsm_boards[];
+This goes on through megabytes.  The modprobe process didn't terminate
+for 10 minutes, and there was some output like this (cleaned from
+smic_events all around the place by hand):
 
- /************************************************************************
-  * Per board operations structure                                      *
-diff -urNp a/drivers/serial/jsm/jsm_driver.c b/drivers/serial/jsm/jsm_driver.c
---- a/drivers/serial/jsm/jsm_driver.c   2009-05-12 17:29:02.117674090 +0400
-+++ b/drivers/serial/jsm/jsm_driver.c   2009-05-12 17:55:42.597168409 +0400
-@@ -52,6 +52,8 @@ int jsm_debug;
- module_param(jsm_debug, int, 0);
- MODULE_PARM_DESC(jsm_debug, "Driver debugging level");
+INFO: task modprobe:6414 blocked for more than 120 seconds.
+"echo 0 > /proc/sys/kernel/hung_task_timeout_secs" disables this message.
+modprobe      D f6805780 0  6414   4077
+ f48dfe68 00000082 00000000 f6805780
+ f48dfe48 f90271cf c046acc0 f64f6a0c
+ 2002132c f6da1300 f6da14b4 c182acc0
+ 00000002 f64f6a0c 186f5ef2 000000ca
+ f48dfe30 c0123c40 00000000 f64f69e0
+ f48dfe30 00000282 00000001 c032456c
+Call Trace:
+ [<f90271cf>] ? i_ipmi_request+0x8f5/0x916 [ipmi_msghandler]
+ [<c0123c40>] ? check_preempt_wakeup+0x146/0x180
+ [<c01292c3>] ? try_to_wake_up+0x1f3/0x1fd
+ [<c011c70a>] ? default_spin_lock_flags+0x8/0xe
+ [<c031b81a>] schedule+0x8/0x17
+ [<f9028745>] ipmi_register_smi+0x3ca/0xba1 [ipmi_msghandler]
+ [<c028681c>] ? put_device+0xf/0x11
+ [<c028782a>] ? device_add+0x497/0x516
+ [<c013f2e7>] ? autoremove_wake_function+0x0/0x33
+ [<fc2d939c>] try_smi_init+0x58f/0x726 [ipmi_si]
+ [<fc2dc3e5>] init_ipmi_si+0x3e2/0x748 [ipmi_si]
+ [<c010304f>] do_one_initcall+0x4a/0x115
+ [<fc2dc003>] ? init_ipmi_si+0x0/0x748 [ipmi_si]
+ [<c0142c0b>] ? __blocking_notifier_call_chain+0x40/0x4c
+ [<c014ff97>] sys_init_module+0x87/0x18b
+ [<c0107c94>] sysenter_do_call+0x12/0x28
 
-+struct jsm_board *jsm_boards[MAXBOARDS];
-+
- static int __devinit jsm_probe_one(struct pci_dev *pdev, const struct
-pci_device_id *ent)
- {
-        int rc = 0;
-@@ -80,6 +82,7 @@ static int __devinit jsm_probe_one(struc
 
-        /* store the info for the board we've found */
-        brd->boardnum = adapter_count++;
-+       jsm_boards[brd->boardnum] = brd;
-        brd->pci_dev = pdev;
-        if (pdev->device == PCIE_DEVICE_ID_NEO_4_IBM)
-                brd->maxports = 4;
-@@ -171,6 +174,7 @@ static int __devinit jsm_probe_one(struc
-  out_iounmap:
-        iounmap(brd->re_map_membase);
-  out_kfree_brd:
-+       jsm_boards[brd->boardnum] = NULL;
-        kfree(brd);
-  out_release_regions:
-        pci_release_regions(pdev);
-@@ -203,6 +207,7 @@ static void __devexit jsm_remove_one(str
-        pci_release_regions(pdev);
-        pci_disable_device(pdev);
-        kfree(brd->flipbuf);
-+       jsm_boards[brd->boardnum] = NULL;
-        kfree(brd);
- }
+lspci -x of Class ff00:
 
-diff -urNp a/drivers/serial/jsm/jsm_tty.c b/drivers/serial/jsm/jsm_tty.c
---- a/drivers/serial/jsm/jsm_tty.c      2009-05-12 17:28:51.849172254 +0400
-+++ b/drivers/serial/jsm/jsm_tty.c      2009-05-12 17:59:49.287494614 +0400
-@@ -432,8 +432,9 @@ int __devinit jsm_tty_init(struct jsm_bo
+00:04.0 Class ff00: Dell Embedded Remote Access or ERA/O
+00: 28 10 0c 00 17 01 90 02 00 00 00 ff 10 20 80 00
+10: 08 00 b8 fe f9 ec 00 00 e9 ec 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 28 10 0c 00
+30: 00 00 00 fe 48 00 00 00 00 00 00 00 0b 01 00 00
 
- int __devinit jsm_uart_port_init(struct jsm_board *brd)
- {
--       int i;
-+       int i, j;
-        struct jsm_channel *ch;
-+       u32 jsm_ports = 0;
+00:04.1 Class ff00: Dell Remote Access Card III
+00: 28 10 08 00 03 01 90 02 00 00 00 ff 10 20 80 00
+10: 00 20 10 fe 81 ec 00 00 08 00 b0 fe 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 28 10 08 00
+30: 00 00 00 00 48 00 00 00 00 00 00 00 0a 02 00 00
 
-        if (!brd)
-                return -ENXIO;
-@@ -446,6 +447,10 @@ int __devinit jsm_uart_port_init(struct
+00:04.2 Class ff00: Dell Embedded Remote Access: BMC/SMIC device
+00: 28 10 0d 00 03 01 90 02 00 00 00 ff 10 20 80 00
+10: f5 ec 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+20: 00 00 00 00 00 00 00 00 00 00 00 00 28 10 0d 00
+30: 00 00 00 00 48 00 00 00 00 00 00 00 07 03 00 00
 
-        brd->nasync = brd->maxports;
 
-+       for (j = 0; j < brd->boardnum; j++)
-+               if (jsm_boards[j])
-+                       jsm_ports += jsm_boards[j]->maxports;
-+
-        /* Set up channel variables */
-        for (i = 0; i < brd->nasync; i++, ch = brd->channels[i]) {
+lspci -nv of the same:
 
-@@ -459,7 +464,7 @@ int __devinit jsm_uart_port_init(struct
-                brd->channels[i]->uart_port.membase = brd->re_map_membase;
-                brd->channels[i]->uart_port.fifosize = 16;
-                brd->channels[i]->uart_port.ops = &jsm_ops;
--               brd->channels[i]->uart_port.line =
-brd->channels[i]->ch_portnum + brd->boardnum * 2;
-+               brd->channels[i]->uart_port.line =
-brd->channels[i]->ch_portnum + jsm_ports;
-                if (uart_add_one_port (&jsm_uart_driver,
-&brd->channels[i]->uart_port))
-                        printk(KERN_INFO "Added device failed\n");
+00:04.0 ff00: 1028:000c
+	Subsystem: 1028:000c
+	Flags: bus master, medium devsel, latency 32, IRQ 11
+	Memory at feb80000 (32-bit, prefetchable) [size=4K]
+	I/O ports at ecf8 [size=8]
+	I/O ports at ece8 [size=8]
+	Expansion ROM at fe000000 [disabled] [size=64K]
+	Capabilities: [48] Power Management version 2
+
+00:04.1 ff00: 1028:0008
+	Subsystem: 1028:0008
+	Flags: medium devsel, IRQ 23
+	Memory at fe102000 (32-bit, non-prefetchable) [size=4K]
+	I/O ports at ec80 [size=64]
+	Memory at feb00000 (32-bit, prefetchable) [size=512K]
+	Capabilities: [48] Power Management version 2
+	Kernel driver in use: serial
+
+00:04.2 ff00: 1028:000d
+	Subsystem: 1028:000d
+	Flags: medium devsel, IRQ 7
+	I/O ports at ecf4 [size=4]
+	Capabilities: [48] Power Management version 2
+-- 
+Regards,
+Feri.
