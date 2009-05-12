@@ -1,61 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759877AbZELAuz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759725AbZELAx4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759877AbZELAuz (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 11 May 2009 20:50:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757905AbZELAuq
+	id S1759725AbZELAx4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 11 May 2009 20:53:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757281AbZELAxn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 11 May 2009 20:50:46 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36517 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753377AbZELAup (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 11 May 2009 20:50:45 -0400
-Message-ID: <4A08C79C.5090501@zytor.com>
-Date: Mon, 11 May 2009 17:49:32 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Mon, 11 May 2009 20:53:43 -0400
+Received: from hera.kernel.org ([140.211.167.34]:33637 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754587AbZELAxl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 11 May 2009 20:53:41 -0400
+Message-ID: <4A08C7A3.50201@kernel.org>
+Date: Tue, 12 May 2009 09:49:39 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
-       Robert Richter <robert.richter@amd.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [git-pull -tip] x86: Addition of cpufeatures to friendly access
- miscellaneous MSRs
-References: <1242058494.5139.7.camel@ht.satnam>  <4A086B58.30607@zytor.com> <1242088979.2504.13.camel@ht.satnam>
-In-Reply-To: <1242088979.2504.13.camel@ht.satnam>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
+       linux-ide@vger.kernel.org, James.Bottomley@HansenPartnership.com,
+       linux-scsi@vger.kernel.org, bzolnier@gmail.com, petkovbb@googlemail.com,
+       sshtylyov@ru.mvista.com, mike.miller@hp.com, Eric.Moore@lsi.com,
+       stern@rowland.harvard.edu, fujita.tomonori@lab.ntt.co.jp,
+       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
+       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
+       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
+       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
+       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
+       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com
+Subject: Re: [GIT PATCH] block,scsi,ide: unify sector and data_len, take#2
+References: <1241423927-11871-1-git-send-email-tj@kernel.org> <4A0814A9.5040603@panasas.com>
+In-Reply-To: <4A0814A9.5040603@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Tue, 12 May 2009 00:49:44 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput wrote:
-> 
-> The basic point of these patchset is to friendly access miscellaneous
-> MSRs in kernel and userspace.
-> 
-> Some of these patches are using hardware cpufeature and others are
-> software.
-> 
-> In kernel some of these MSRs are frequently used and doing checking
-> before accessing these MSR in various places.
-> 
-> So I think it will be right approach to check in one place and set
-> related cpufeature and in other places we only need to check cpufeature
-> and then access MSR.
-> 
-> This patchset is only adding cpufeature. I will release accessing
-> cpufeatures in upcoming series.
-> 
+Hello, Boaz.
 
-For those that have in-kernel users, this is fine (and valid), but this 
-is the wrong order in which to do things, since you patchset doesn't 
-verify where those happen.  Rather, it's better to follow each 
-cpufeature with its users rather than a batch of producers followed by a 
-set of consumers.
+Boaz Harrosh wrote:
+> I've inspected all scsi touching patches and refrained from comments
+> on the simple rename bunch. They all look very good accept that one
+> place. (which will effect 2 patches)
+>
+> There are few more places that can use blk_end_request_all() after
+> these changes.
+> 
+> (The same internet outage on this reply)
 
-Note: I do *not* consider debugfs only consumers to be valid in this 
-context.
+The tree is now in Jens' tree, so it won't be rebased from this point
+on.  Please go ahead and submit patches.
 
-	-hpa
+Thanks.
 
+-- 
+tejun
