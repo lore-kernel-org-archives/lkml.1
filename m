@@ -1,94 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756745AbZELPIw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756433AbZELPKa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756745AbZELPIw (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 11:08:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752581AbZELPIk
+	id S1756433AbZELPKa (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 11:10:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752919AbZELPKU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 11:08:40 -0400
-Received: from gw-ca.panasas.com ([209.116.51.66]:29962 "EHLO
-	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752121AbZELPIi (ORCPT
+	Tue, 12 May 2009 11:10:20 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:50766 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751274AbZELPKT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 11:08:38 -0400
-Message-ID: <4A0990E1.7080508@panasas.com>
-Date: Tue, 12 May 2009 18:08:17 +0300
-From: Boaz Harrosh <bharrosh@panasas.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
+	Tue, 12 May 2009 11:10:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=qB1itI9VsIfCZ5rD+cPkhJ52aICMqo1W+cGSX9FYesXYvBRX98o0KyxRdDpKJPKWeT
+         mbO0eJicP+o0Cj1bYrNvtdFYGgLGkaXaXj5lUgJU8m5BnH6IEQbHIZ3OktFT/sDLc4LT
+         U9tZJm03kA6XK+sW2Vz22bs9B4+pdaWrKgz/M=
 MIME-Version: 1.0
-To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-CC: tj@kernel.org, axboe@kernel.dk, linux-kernel@vger.kernel.org,
-       jeff@garzik.org, linux-ide@vger.kernel.org,
-       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
-       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
-       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
-       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
-       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
-       dgilbert@interlog.com, djwong@us.ibm.com
-Subject: Re: [PATCH 03/11] block: add rq->resid_len
-References: <4A080C9D.9000109@panasas.com>	<20090511235852Z.fujita.tomonori@lab.ntt.co.jp>	<4A093A34.3020101@panasas.com> <20090513000150H.fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <20090513000150H.fujita.tomonori@lab.ntt.co.jp>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <20090512150622.GA10015@sgi.com>
+References: <4A05269D.8000701@kernel.org> <4A0527CB.4020807@kernel.org>
+	 <20090511175312.GA27905@sgi.com>
+	 <alpine.DEB.2.00.0905111218520.23739@chino.kir.corp.google.com>
+	 <4A0894A5.9000209@zytor.com>
+	 <alpine.DEB.2.00.0905111509570.2234@chino.kir.corp.google.com>
+	 <20090512150622.GA10015@sgi.com>
+Date: Tue, 12 May 2009 08:10:18 -0700
+Message-ID: <86802c440905120810x6ea4b228t14ca19376dc13f13@mail.gmail.com>
+Subject: Re: [PATCH 3/3] x86: fix node_possible_map logic -v2
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Jack Steiner <steiner@sgi.com>
+Cc: David Rientjes <rientjes@google.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 12 May 2009 15:08:37.0874 (UTC) FILETIME=[86F3E520:01C9D313]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/12/2009 06:00 PM, FUJITA Tomonori wrote:
-> On Tue, 12 May 2009 11:58:28 +0300
-> Boaz Harrosh <bharrosh@panasas.com> wrote:
-> 
->> On 05/11/2009 05:59 PM, FUJITA Tomonori wrote:
->>> On Mon, 11 May 2009 14:31:41 +0300
->>> Boaz Harrosh <bharrosh@panasas.com> wrote:
->>>
->>>>>>> diff --git a/drivers/scsi/libsas/sas_expander.c b/drivers/scsi/libsas/sas_expander.c
->>>>>>> index 3da02e4..6605ec9 100644
->>>>>>> --- a/drivers/scsi/libsas/sas_expander.c
->>>>>>> +++ b/drivers/scsi/libsas/sas_expander.c
->>>>>>> @@ -1936,12 +1936,8 @@ int sas_smp_handler(struct Scsi_Host *shost, struct sas_rphy *rphy,
->>>>>>>  			       bio_data(rsp->bio), rsp->data_len);
->>>>>>>  	if (ret > 0) {
->>>>>>>  		/* positive number is the untransferred residual */
->>>>>>> -		rsp->data_len = ret;
->>>>>>> -		req->data_len = 0;
->>>>>>> +		rsp->resid_len = ret;
->>>>>>>  		ret = 0;
->>>>>>> -	} else if (ret == 0) {
->>>>>>> -		rsp->data_len = 0;
->>>>>>> -		req->data_len = 0;
->>>>>>>  	}
->>>>>>>  
->>>>>>>  	return ret;
->>>>>> This is actually a bug fix, as well as a strait conversion
->>>>> Can you elaborate a bit about the bug fix part?
->>>>>
->>>> Nothing big really, just that before (according to the comment), the theoretical
->>>> negative case would be full-residual. and now it is zero (untouched).
->>>>
->>>> I know that in iscsi a negative residual is possible which means over-flow. That is:
->>>> the target had more data to give then the buffer had space for. (which is not an error at all)
->>> Hmm, iSCSI? This code is for SAS management Protocol.
->>>
->> I gave that as an example of what the scsi standard says about negative
->> residual count return from the target. If SAS as sepecific and different
->> meaning to negative residual, it should be noted and handled.
-> 
-> Please read the code first.
-> 
-> If sas_smp_handler() returns a negative value, a lld doesn't transfer
-> anything. The original code used full-residual. The original code is
-> fine. Your 'this is a bug fix' claim is wrong. We need to revert the
-> original behavior though.
+jack,
 
-Please read my full reply, I said yes old code was better, but not
-good enough, error status must be returned also in this case.
+can you confirm:
+1. without this patch, your system still have problem?
+2. does current tip/master work for you?
 
-This code is already submitted are you sending a fix?
-
-Thanks
-Boaz
+YH
