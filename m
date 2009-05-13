@@ -1,156 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761101AbZEMTkZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761474AbZEMTmr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761101AbZEMTkZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 15:40:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755814AbZEMTkJ
+	id S1761474AbZEMTmr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 15:42:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752669AbZEMTmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 15:40:09 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:59206 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752395AbZEMTkH (ORCPT
+	Wed, 13 May 2009 15:42:38 -0400
+Received: from einhorn.in-berlin.de ([192.109.42.8]:39080 "EHLO
+	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752590AbZEMTmh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 15:40:07 -0400
-Date: Wed, 13 May 2009 12:34:09 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com,
-       linux-kernel@vger.kernel.org, pavel@ucw.cz, nigel@tuxonice.net,
-       rientjes@google.com, linux-mm@kvack.org
-Subject: Re: [PATCH 4/6] PM/Hibernate: Rework shrinking of memory
-Message-Id: <20090513123409.302f4307.akpm@linux-foundation.org>
-In-Reply-To: <200905131039.26778.rjw@sisk.pl>
-References: <200905070040.08561.rjw@sisk.pl>
-	<200905101548.57557.rjw@sisk.pl>
-	<200905131032.53624.rjw@sisk.pl>
-	<200905131039.26778.rjw@sisk.pl>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 May 2009 15:42:37 -0400
+X-Envelope-From: stefanr@s5r6.in-berlin.de
+Date: Wed, 13 May 2009 21:42:14 +0200 (CEST)
+From: Stefan Richter <stefanr@s5r6.in-berlin.de>
+Subject: [PATCH] firewire: core: improve check for local node
+To: linux1394-devel@lists.sourceforge.net
+cc: linux-kernel@vger.kernel.org
+Message-ID: <tkrat.250cf8d21adf9e43@s5r6.in-berlin.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; CHARSET=us-ascii
+Content-Disposition: INLINE
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 May 2009 10:39:25 +0200
-"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+My recently added test for a device being local in fw-cdev.c got it
+slightly wrong:  Comparisons of node IDs are only valid if the
+generation is current, which I forgot to check.  Better would be a
+direct comparison of fw_node pointers but this only works in a current
+generation too.
 
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> 
-> Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
-> just once to make some room for the image and then allocates memory
-> to apply more pressure to the memory management subsystem, if
-> necessary.
-> 
-> Unfortunately, we don't seem to be able to drop shrink_all_memory()
-> entirely just yet, because that would lead to huge performance
-> regressions in some test cases.
-> 
+The best way is to cache the property of being local in an fw_device
+flag when the device is created.  This even makes the code more readable
+and, so I'm told, will be good to have for an RFC-2734 driver too.
 
-Isn't this a somewhat large problem?  The main point (I thought) was
-to remove shrink_all_memory().  Instead, we're retaining it and adding
-even more stuff?
+Signed-off-by: Stefan Richter <stefanr@s5r6.in-berlin.de>
+---
+ drivers/firewire/fw-cdev.c   |    6 +-----
+ drivers/firewire/fw-device.c |    3 ++-
+ drivers/firewire/fw-device.h |    1 +
+ 3 files changed, 4 insertions(+), 6 deletions(-)
 
-> +/**
-> + * compute_fraction - Compute approximate fraction x * (a/b)
-> + * @x: Number to multiply.
-> + * @numerator: Numerator of the fraction (a).
-> + * @denominator: Denominator of the fraction (b).
->   *
-> - *	Notice: all userland should be stopped before it is called, or
-> - *	livelock is possible.
-> + * Compute an approximate value of the expression x * (a/b), where a is less
-> + * than b, all x, a, b are unsigned longs and x * a may be greater than the
-> + * maximum unsigned long.
->   */
-> +static unsigned long compute_fraction(
-> +	unsigned long x, unsigned long numerator, unsigned long denominator)
+Index: linux-2.6.30/drivers/firewire/fw-cdev.c
+===================================================================
+--- linux-2.6.30.orig/drivers/firewire/fw-cdev.c
++++ linux-2.6.30/drivers/firewire/fw-cdev.c
+@@ -739,15 +739,11 @@ static void release_descriptor(struct cl
+ static int ioctl_add_descriptor(struct client *client, void *buffer)
+ {
+ 	struct fw_cdev_add_descriptor *request = buffer;
+-	struct fw_card *card = client->device->card;
+ 	struct descriptor_resource *r;
+ 	int ret;
+ 
+ 	/* Access policy: Allow this ioctl only on local nodes' device files. */
+-	spin_lock_irq(&card->lock);
+-	ret = client->device->node_id != card->local_node->node_id;
+-	spin_unlock_irq(&card->lock);
+-	if (ret)
++	if (!client->device->is_local)
+ 		return -ENOSYS;
+ 
+ 	if (request->length > 256)
+Index: linux-2.6.30/drivers/firewire/fw-device.c
+===================================================================
+--- linux-2.6.30.orig/drivers/firewire/fw-device.c
++++ linux-2.6.30/drivers/firewire/fw-device.c
+@@ -1042,6 +1042,7 @@ void fw_node_event(struct fw_card *card,
+ 		device->node = fw_node_get(node);
+ 		device->node_id = node->node_id;
+ 		device->generation = card->generation;
++		device->is_local = node == card->local_node;
+ 		mutex_init(&device->client_list_mutex);
+ 		INIT_LIST_HEAD(&device->client_list);
+ 
+@@ -1075,7 +1076,7 @@ void fw_node_event(struct fw_card *card,
+ 			    FW_DEVICE_INITIALIZING) == FW_DEVICE_RUNNING) {
+ 			PREPARE_DELAYED_WORK(&device->work, fw_device_refresh);
+ 			schedule_delayed_work(&device->work,
+-				node == card->local_node ? 0 : INITIAL_DELAY);
++				device->is_local ? 0 : INITIAL_DELAY);
+ 		}
+ 		break;
+ 
+Index: linux-2.6.30/drivers/firewire/fw-device.h
+===================================================================
+--- linux-2.6.30.orig/drivers/firewire/fw-device.h
++++ linux-2.6.30/drivers/firewire/fw-device.h
+@@ -80,6 +80,7 @@ struct fw_device {
+ 	u32 *config_rom;
+ 	size_t config_rom_length;
+ 	int config_rom_retries;
++	unsigned is_local:1;
+ 	unsigned cmc:1;
+ 	unsigned bc_implemented:2;
+ 
 
-I can't say I'm a great fan of the code layout here.
-
-static unsigned long compute_fraction(unsigned long x, unsigned long numerator, unsigned long denominator)
-
-or
-
-static unsigned long compute_fraction(unsigned long x, unsigned long numerator,
-					unsigned long denominator)
-
-would be more typical.
-
-
-> +{
-> +	unsigned long ratio = (numerator << FRACTION_SHIFT) / denominator;
->  
-> -#define SHRINK_BITE	10000
-> -static inline unsigned long __shrink_memory(long tmp)
-> +	x *= ratio;
-> +	return x >> FRACTION_SHIFT;
-> +}
-
-Strange function.  Would it not be simpler/clearer to do it with 64-bit
-scalars, multiplication and do_div()?
-
-> +static unsigned long highmem_size(
-> +	unsigned long size, unsigned long highmem, unsigned long count)
-> +{
-> +	return highmem > count / 2 ?
-> +			compute_fraction(size, highmem, count) :
-> +			size - compute_fraction(size, count - highmem, count);
-> +}
-
-This would be considerably easier to follow if we know what the three
-arguments represent.  Amount of memory?  In what units?  `count' of
-what?
-
-The `count/2' thing there is quite mysterious.
-
-<does some reverse-engineering>
-
-OK, `count' is "the number of pageframes we can use".  (I don't think I
-helped myself a lot there).  But what's up with that divde-by-two?
-
-<considers poking at callers to work out what `size' is>
-
-<gives up>
-
-Is this code as clear as we can possibly make it??
-
-> +#else
-> +static inline unsigned long preallocate_image_highmem(unsigned long nr_pages)
-> +{
-> +	return 0;
-> +}
-> +
-> +static inline unsigned long highmem_size(
-> +	unsigned long size, unsigned long highmem, unsigned long count)
->  {
-> -	if (tmp > SHRINK_BITE)
-> -		tmp = SHRINK_BITE;
-> -	return shrink_all_memory(tmp);
-> +	return 0;
->  }
-> +#endif /* CONFIG_HIGHMEM */
->  
-> +/**
-> + * swsusp_shrink_memory -  Make the kernel release as much memory as needed
-> + *
-> + * To create a hibernation image it is necessary to make a copy of every page
-> + * frame in use.  We also need a number of page frames to be free during
-> + * hibernation for allocations made while saving the image and for device
-> + * drivers, in case they need to allocate memory from their hibernation
-> + * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
-> + * respectively, both of which are rough estimates).  To make this happen, we
-> + * compute the total number of available page frames and allocate at least
-> + *
-> + * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
-> + *
-> + * of them, which corresponds to the maximum size of a hibernation image.
-> + *
-> + * If image_size is set below the number following from the above formula,
-> + * the preallocation of memory is continued until the total number of saveable
-> + * pages in the system is below the requested image size or it is impossible to
-> + * allocate more memory, whichever happens first.
-> + */
-
-OK, that helps.
-
+-- 
+Stefan Richter
+-=====-==--= -=-= -==-=
+http://arcgraph.de/sr/
 
