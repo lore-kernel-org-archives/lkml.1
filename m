@@ -1,76 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761320AbZEMTxg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756114AbZEMT5B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761320AbZEMTxg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 15:53:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbZEMTx1
+	id S1756114AbZEMT5B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 15:57:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754662AbZEMT4t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 15:53:27 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:34156 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752232AbZEMTx0 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 15:53:26 -0400
-Date: Wed, 13 May 2009 12:48:05 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: linux@arm.linux.org.uk, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-       hartleys@visionengravers.com, mcrapet@gmail.com, fred99@carolina.rr.com,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: Re: [PATCH] Double check memmap is actually valid with a memmap has
- unexpected holes V2
-Message-Id: <20090513124805.9c70c43c.akpm@linux-foundation.org>
-In-Reply-To: <20090513163448.GA18006@csn.ul.ie>
-References: <20090505082944.GA25904@csn.ul.ie>
-	<20090505083614.GA28688@n2100.arm.linux.org.uk>
-	<20090505084928.GC25904@csn.ul.ie>
-	<20090513163448.GA18006@csn.ul.ie>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Wed, 13 May 2009 15:56:49 -0400
+Received: from waste.org ([66.93.16.53]:45261 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753350AbZEMT4s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 15:56:48 -0400
+Date: Wed, 13 May 2009 14:55:19 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: Chris Peterson <cpeterso@cpeterso.com>, linux-kernel@vger.kernel.org,
+       NetDev <netdev@vger.kernel.org>
+Subject: Re: [PATCH] [resend] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
+Message-ID: <20090513195519.GL31071@waste.org>
+References: <alpine.DEB.2.00.0905130118140.15823@ubuntu-desktop> <20090513060850.GZ31071@waste.org> <a24804730905130017t545b7645x71ab7a1c8ab4af78@mail.gmail.com> <20090513142535.GB31071@waste.org> <4A0B21DF.9050702@garzik.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A0B21DF.9050702@garzik.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 May 2009 17:34:48 +0100
-Mel Gorman <mel@csn.ul.ie> wrote:
-
-> pfn_valid() is meant to be able to tell if a given PFN has valid memmap
-> associated with it or not. In FLATMEM, it is expected that holes always
-> have valid memmap as long as there is valid PFNs either side of the hole.
-> In SPARSEMEM, it is assumed that a valid section has a memmap for the
-> entire section.
+On Wed, May 13, 2009 at 03:39:11PM -0400, Jeff Garzik wrote:
+> Matt Mackall wrote:
+> >On Wed, May 13, 2009 at 12:17:29AM -0700, Chris Peterson wrote:
+> >>>The future model will continue to sample network
+> >>>devices on theory that they -might- be less than 100% observable and
+> >>>that can only increase our total (unmeasurable) amount of entropy.
+> >>That sounds reasonable to me. So should all net drivers now specify
+> >>IRQF_SAMPLE_RANDOM?
+> >>
+> >>Or even simpler: could request_irq() assume IRQF_SAMPLE_RANDOM for any
+> >>interrupt that is not (say) IRQF_IRQPOLL or IRQF_PERCPU?
+> >
+> >Maybe. We don't want IRQ latency to suffer. So before we turn on
+> >sampling of -all- sources, we need to make sampling lighter weight and
+> >we need a way to say 'we have enough' so that we're not consuming CPU
+> >when our pools are 'full'. We could turn it on now and rely on the
+> >current trickle logic, but it's nice to have the water main off when
+> >doing significant plumbing.
 > 
-> However, ARM and maybe other embedded architectures in the future free
-> memmap backing holes to save memory on the assumption the memmap is never
-> used. The page_zone linkages are then broken even though pfn_valid()
-> returns true. A walker of the full memmap must then do this additional
-> check to ensure the memmap they are looking at is sane by making sure the
-> zone and PFN linkages are still valid. This is expensive, but walkers of
-> the full memmap are extremely rare.
+> So, until such time, let's be consistent in net driver land and not 
+> IRQF_SAMPLE_RANDOM.
 > 
-> This was caught before for FLATMEM and hacked around but it hits again for
-> SPARSEMEM because the page_zone linkages can look ok where the PFN linkages
-> are totally screwed. This looks like a hatchet job but the reality is that
-> any clean solution would end up consumning all the memory saved by punching
-> these unexpected holes in the memmap. For example, we tried marking the
-> memmap within the section invalid but the section size exceeds the size of
-> the hole in most cases so pfn_valid() starts returning false where valid
-> memmap exists. Shrinking the size of the section would increase memory
-> consumption offsetting the gains.
-> 
-> This patch identifies when an architecture is punching unexpected holes
-> in the memmap that the memory model cannot automatically detect and sets
-> ARCH_HAS_HOLES_MEMORYMODEL. At the moment, this is restricted to EP93xx
-> which is the model sub-architecture this has been reported on but may expand
-> later. When set, walkers of the full memmap must call memmap_valid_within()
-> for each PFN and passing in what it expects the page and zone to be for
-> that PFN. If it finds the linkages to be broken, it assumes the memmap is
-> invalid for that PFN.
+> 	Jeff
 
-It's unclear to me whether this patch is needed in 2.6.30 or even
-2.6.29 or whatever.
+If you want. I was also looking to avoid the fight that happened when
+I submitted an equivalent patch a couple years back.
 
-It applies OK to 2.6.28, 2.6.29, current mainline and mmotm, so I'll
-just sit tight until I'm told what to do.
-
+-- 
+Mathematics is the supreme nostalgia of our time.
