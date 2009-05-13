@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759458AbZEMIqm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759302AbZEMIqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759458AbZEMIqm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 04:46:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758154AbZEMIoU
+	id S1759302AbZEMIqA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 04:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757293AbZEMIoS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 04:44:20 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45733 "EHLO ogre.sisk.pl"
+	Wed, 13 May 2009 04:44:18 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:45737 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757909AbZEMIoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1757922AbZEMIoP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 13 May 2009 04:44:15 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
 To: pm list <linux-pm@lists.linux-foundation.org>
-Subject: [RFC][PATCH 6/6] PM/Hibernate: Do not try to allocate too much memory too hard
-Date: Wed, 13 May 2009 10:42:17 +0200
+Subject: [PATCH 4/6] PM/Hibernate: Rework shrinking of memory
+Date: Wed, 13 May 2009 10:39:25 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
 Cc: Wu Fengguang <fengguang.wu@intel.com>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -27,123 +27,267 @@ Content-Type: Text/Plain;
   charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905131042.18137.rjw@sisk.pl>
+Message-Id: <200905131039.26778.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Rafael J. Wysocki <rjw@sisk.pl>
 
-We want to avoid attempting to free too much memory too hard during
-hibernation, so estimate the minimum size of the image to use as the
-lower limit for preallocating memory.
+Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
+just once to make some room for the image and then allocates memory
+to apply more pressure to the memory management subsystem, if
+necessary.
 
-The approach here is based on the (experimental) observation that we
-can't free more page frames than the sum of:
-
-* global_page_state(NR_SLAB_RECLAIMABLE)
-* global_page_state(NR_ACTIVE_ANON)
-* global_page_state(NR_INACTIVE_ANON)
-* global_page_state(NR_ACTIVE_FILE)
-* global_page_state(NR_INACTIVE_FILE)
-
-and even that is usually impossible to free in practice, because some
-of the pages reported as global_page_state(NR_SLAB_RECLAIMABLE) can't
-in fact be freed.  It turns out, however, that if the sum of the
-above numbers is subtracted from the number of saveable pages in the
-system and the result is multiplied by 1.25, we get a suitable
-estimate of the minimum size of the image.
+Unfortunately, we don't seem to be able to drop shrink_all_memory()
+entirely just yet, because that would lead to huge performance
+regressions in some test cases.
 
 Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
 ---
- kernel/power/snapshot.c |   56 ++++++++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 52 insertions(+), 4 deletions(-)
+ kernel/power/snapshot.c |  215 +++++++++++++++++++++++++++++++++++++-----------
+ 1 file changed, 168 insertions(+), 47 deletions(-)
 
 Index: linux-2.6/kernel/power/snapshot.c
 ===================================================================
 --- linux-2.6.orig/kernel/power/snapshot.c
 +++ linux-2.6/kernel/power/snapshot.c
-@@ -1213,6 +1213,49 @@ static void free_unnecessary_pages(void)
+@@ -1066,69 +1066,190 @@ void swsusp_free(void)
+ 	buffer = NULL;
  }
  
++/* Helper functions used for the shrinking of memory. */
++
++#define GFP_IMAGE	(GFP_KERNEL | __GFP_NOWARN)
++
  /**
-+ * minimum_image_size - Estimate the minimum acceptable size of an image
-+ * @saveable: The total number of saveable pages in the system.
-+ *
-+ * We want to avoid attempting to free too much memory too hard, so estimate the
-+ * minimum acceptable size of a hibernation image to use as the lower limit for
-+ * preallocating memory.
-+ *
-+ * The minimum size of the image is computed as
-+ *
-+ * ([number of saveable pages] - [number of pages we can free]) * 1.25
-+ *
-+ * where the second term is the sum of reclaimable slab, anonymouns pages and
-+ * active/inactive file pages.
-+ *
-+ * NOTE: It usually turns out that we can't really free all pages reported as
-+ * reclaimable slab, so the number resulting from the subtraction alone is too
-+ * low.  Still, it seems reasonable to assume that this number is proportional
-+ * to the total number of pages that cannot be freed, which leads to the
-+ * formula above.  The coefficient of proportinality in this formula, 1.25, has
-+ * been determined experimentally.
+- *	swsusp_shrink_memory -  Try to free as much memory as needed
++ * preallocate_image_pages - Allocate a number of pages for hibernation image
++ * @nr_pages: Number of page frames to allocate.
++ * @mask: GFP flags to use for the allocation.
+  *
+- *	... but do not OOM-kill anyone
++ * Return value: Number of page frames actually allocated
 + */
-+static unsigned long minimum_image_size(unsigned long saveable)
++static unsigned long preallocate_image_pages(unsigned long nr_pages, gfp_t mask)
 +{
-+	unsigned long size;
++	unsigned long nr_alloc = 0;
 +
-+	/* Compute the number of saveable pages we can free. */
-+	size = global_page_state(NR_SLAB_RECLAIMABLE)
-+		+ global_page_state(NR_ACTIVE_ANON)
-+		+ global_page_state(NR_INACTIVE_ANON)
-+		+ global_page_state(NR_ACTIVE_FILE)
-+		+ global_page_state(NR_INACTIVE_FILE);
++	while (nr_pages > 0) {
++		if (!alloc_image_page(mask))
++			break;
++		nr_pages--;
++		nr_alloc++;
++	}
 +
-+	if (saveable <= size)
-+		return saveable;
-+
-+	size = saveable - size;
-+	size += (size >> 2);
-+
-+	return size;
++	return nr_alloc;
 +}
 +
++static unsigned long preallocate_image_memory(unsigned long nr_pages)
++{
++	return preallocate_image_pages(nr_pages, GFP_IMAGE);
++}
++
++#ifdef CONFIG_HIGHMEM
++static unsigned long preallocate_image_highmem(unsigned long nr_pages)
++{
++	return preallocate_image_pages(nr_pages, GFP_IMAGE | __GFP_HIGHMEM);
++}
++
++#define FRACTION_SHIFT	8
 +
 +/**
-  * hibernate_preallocate_memory - Preallocate memory for hibernation image
++ * compute_fraction - Compute approximate fraction x * (a/b)
++ * @x: Number to multiply.
++ * @numerator: Numerator of the fraction (a).
++ * @denominator: Denominator of the fraction (b).
   *
-  * To create a hibernation image it is necessary to make a copy of every page
-@@ -1229,8 +1272,8 @@ static void free_unnecessary_pages(void)
-  *
-  * If image_size is set below the number following from the above formula,
-  * the preallocation of memory is continued until the total number of saveable
-- * pages in the system is below the requested image size or it is impossible to
-- * allocate more memory, whichever happens first.
-+ * pages in the system is below the requested image size or the minimum
-+ * acceptable image size returned by minimum_image_size(), whichever is greater.
+- *	Notice: all userland should be stopped before it is called, or
+- *	livelock is possible.
++ * Compute an approximate value of the expression x * (a/b), where a is less
++ * than b, all x, a, b are unsigned longs and x * a may be greater than the
++ * maximum unsigned long.
   */
- int hibernate_preallocate_memory(void)
- {
-@@ -1291,6 +1334,11 @@ int hibernate_preallocate_memory(void)
- 		goto out;
- 	}
++static unsigned long compute_fraction(
++	unsigned long x, unsigned long numerator, unsigned long denominator)
++{
++	unsigned long ratio = (numerator << FRACTION_SHIFT) / denominator;
  
-+	/* Estimate the minimum size of the image. */
-+	pages = minimum_image_size(saveable);
-+	if (size < pages)
-+		size = min_t(unsigned long, pages, max_size);
+-#define SHRINK_BITE	10000
+-static inline unsigned long __shrink_memory(long tmp)
++	x *= ratio;
++	return x >> FRACTION_SHIFT;
++}
 +
- 	/*
- 	 * Let the memory management subsystem know that we're going to need a
- 	 * large number of page frames to allocate and make it free some memory.
-@@ -1303,8 +1351,8 @@ int hibernate_preallocate_memory(void)
- 	 * The number of saveable pages in memory was too high, so apply some
- 	 * pressure to decrease it.  First, make room for the largest possible
- 	 * image and fail if that doesn't work.  Next, try to decrease the size
--	 * of the image as much as indicated by image_size using allocations
--	 * from highmem and non-highmem zones separately.
-+	 * of the image as much as indicated by 'size' using allocations from
-+	 * highmem and non-highmem zones separately.
- 	 */
- 	pages_highmem = preallocate_image_highmem(highmem / 2);
- 	max_size += pages_highmem;
++static unsigned long highmem_size(
++	unsigned long size, unsigned long highmem, unsigned long count)
++{
++	return highmem > count / 2 ?
++			compute_fraction(size, highmem, count) :
++			size - compute_fraction(size, count - highmem, count);
++}
++#else
++static inline unsigned long preallocate_image_highmem(unsigned long nr_pages)
++{
++	return 0;
++}
++
++static inline unsigned long highmem_size(
++	unsigned long size, unsigned long highmem, unsigned long count)
+ {
+-	if (tmp > SHRINK_BITE)
+-		tmp = SHRINK_BITE;
+-	return shrink_all_memory(tmp);
++	return 0;
+ }
++#endif /* CONFIG_HIGHMEM */
+ 
++/**
++ * swsusp_shrink_memory -  Make the kernel release as much memory as needed
++ *
++ * To create a hibernation image it is necessary to make a copy of every page
++ * frame in use.  We also need a number of page frames to be free during
++ * hibernation for allocations made while saving the image and for device
++ * drivers, in case they need to allocate memory from their hibernation
++ * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
++ * respectively, both of which are rough estimates).  To make this happen, we
++ * compute the total number of available page frames and allocate at least
++ *
++ * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
++ *
++ * of them, which corresponds to the maximum size of a hibernation image.
++ *
++ * If image_size is set below the number following from the above formula,
++ * the preallocation of memory is continued until the total number of saveable
++ * pages in the system is below the requested image size or it is impossible to
++ * allocate more memory, whichever happens first.
++ */
+ int swsusp_shrink_memory(void)
+ {
+-	long tmp;
+ 	struct zone *zone;
+-	unsigned long pages = 0;
+-	unsigned int i = 0;
+-	char *p = "-\\|/";
++	unsigned long saveable, size, max_size, count, highmem, pages = 0;
++	unsigned long alloc, pages_highmem;
+ 	struct timeval start, stop;
++	int error = 0;
+ 
+-	printk(KERN_INFO "PM: Shrinking memory...  ");
++	printk(KERN_INFO "PM: Shrinking memory... ");
+ 	do_gettimeofday(&start);
+-	do {
+-		long size, highmem_size;
+ 
+-		highmem_size = count_highmem_pages();
+-		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
+-		tmp = size;
+-		size += highmem_size;
+-		for_each_populated_zone(zone) {
+-			tmp += snapshot_additional_pages(zone);
+-			if (is_highmem(zone)) {
+-				highmem_size -=
+-					zone_page_state(zone, NR_FREE_PAGES);
+-			} else {
+-				tmp -= zone_page_state(zone, NR_FREE_PAGES);
+-				tmp += zone->lowmem_reserve[ZONE_NORMAL];
+-			}
+-		}
+-
+-		if (highmem_size < 0)
+-			highmem_size = 0;
+-
+-		tmp += highmem_size;
+-		if (tmp > 0) {
+-			tmp = __shrink_memory(tmp);
+-			if (!tmp)
+-				return -ENOMEM;
+-			pages += tmp;
+-		} else if (size > image_size / PAGE_SIZE) {
+-			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
+-			pages += tmp;
+-		}
+-		printk("\b%c", p[i++%4]);
+-	} while (tmp > 0);
++	/* Count the number of saveable data pages. */
++	highmem = count_highmem_pages();
++	saveable = count_data_pages();
++
++	/*
++	 * Compute the total number of page frames we can use (count) and the
++	 * number of pages needed for image metadata (size).
++	 */
++	count = saveable;
++	saveable += highmem;
++	size = 0;
++	for_each_populated_zone(zone) {
++		size += snapshot_additional_pages(zone);
++		if (is_highmem(zone))
++			highmem += zone_page_state(zone, NR_FREE_PAGES);
++		else
++			count += zone_page_state(zone, NR_FREE_PAGES);
++	}
++	count += highmem;
++	count -= totalreserve_pages;
++
++	/* Compute the maximum number of saveable pages to leave in memory. */
++	max_size = (count - (size + PAGES_FOR_IO)) / 2 - 2 * SPARE_PAGES;
++	size = DIV_ROUND_UP(image_size, PAGE_SIZE);
++	if (size > max_size)
++		size = max_size;
++	/*
++	 * If the maximum is not less than the current number of saveable pages
++	 * in memory, we don't need to do anything more.
++	 */
++	if (size >= saveable)
++		goto out;
++
++	/*
++	 * Let the memory management subsystem know that we're going to need a
++	 * large number of page frames to allocate and make it free some memory.
++	 * NOTE: If this is not done, performance will be hurt badly in some
++	 * test cases.
++	 */
++	shrink_all_memory(saveable - size);
++
++	/*
++	 * The number of saveable pages in memory was too high, so apply some
++	 * pressure to decrease it.  First, make room for the largest possible
++	 * image and fail if that doesn't work.  Next, try to decrease the size
++	 * of the image as much as indicated by image_size using allocations
++	 * from highmem and non-highmem zones separately.
++	 */
++	pages_highmem = preallocate_image_highmem(highmem / 2);
++	max_size += pages_highmem;
++	alloc = count - max_size;
++	pages = preallocate_image_memory(alloc);
++	if (pages < alloc) {
++		error = -ENOMEM;
++		goto free_out;
++	}
++	size = max_size - size;
++	alloc = size;
++	size = preallocate_image_highmem(highmem_size(size, highmem, count));
++	pages_highmem += size;
++	alloc -= size;
++	pages += preallocate_image_memory(alloc);
++	pages += pages_highmem;
++
++ free_out:
++	/* Release all of the preallocated page frames. */
++	swsusp_free();
++
++	if (error) {
++		printk(KERN_CONT "\n");
++		return error;
++	}
++
++ out:
+ 	do_gettimeofday(&stop);
+-	printk("\bdone (%lu pages freed)\n", pages);
++	printk(KERN_CONT "done (preallocated %lu free pages)\n", pages);
+ 	swsusp_show_speed(&start, &stop, pages, "Freed");
+ 
+ 	return 0;
+
