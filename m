@@ -1,45 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759781AbZEMLJp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbZEMLOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759781AbZEMLJp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 07:09:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753656AbZEMLJf
+	id S1759057AbZEMLOK (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 07:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbZEMLNz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 07:09:35 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:46484 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753310AbZEMLJe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 07:09:34 -0400
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Minchan@firstfloor.org
-Subject: Re: [PATCH] Kconfig: CONFIG_UNEVICTABLE_LRU move into EMBEDDED submenu
-From: Andi Kleen <andi@firstfloor.org>
-References: <20090513172904.7234.A69D9226@jp.fujitsu.com>
-Date: Wed, 13 May 2009 13:09:32 +0200
-In-Reply-To: <20090513172904.7234.A69D9226@jp.fujitsu.com> (KOSAKI Motohiro's message of "Wed, 13 May 2009 17:30:45 +0900 (JST)")
-Message-ID: <87r5ytl0nn.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Wed, 13 May 2009 07:13:55 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:36224 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755539AbZEMLNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 07:13:55 -0400
+Message-ID: <4A0AAB6B.3090903@novell.com>
+Date: Wed, 13 May 2009 20:13:47 +0900
+From: Tejun Heo <teheo@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Jan Beulich <JBeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org
+Subject: Re: remap allocator for per-CPU memory
+References: <4A09B23B02000078000007F1@vpn.id2.novell.com>	<4A09991E.9010903@kernel.org> <4A0A9C70.6090803@novell.com> <87vdo5l0u6.fsf@basil.nowhere.org>
+In-Reply-To: <87vdo5l0u6.fsf@basil.nowhere.org>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> writes:
+Andi Kleen wrote:
+> Tejun Heo <teheo@novell.com> writes:
+>> Okay, just glanced over the pageattr code.  I don't think we need any
+>> special provisions for this as long as the TLB is fine with having
+>> overlapping PMD and PTE mappings with different attributes (please
+>> note that these two mappings aren't occupying the same linear
+>> addresses - they're aliases).  This is allowed, right?
+> 
+> Nope.
 
-> Subject: [PATCH] Kconfig: CONFIG_UNEVICTABLE_LRU move into EMBEDDED submenu
->
-> Almost people always turn on CONFIG_UNEVICTABLE_LRU. this configuration is
-> used only embedded people.
-> Thus, moving it into embedded submenu is better.
+Yeah, I'm going through the manual now and can't find anything which
+allows such behavior.  I haven't been able to find anything which
+describes what happens between large page and 4k page aliases.
+Aieee...  I'll dig through the manual a bit more and see whether this
+can be worked around somehow.  :-(
 
-Is there are any reason it cannot be just made unconditional unless 
-CONFIG_MMU is disabled. It was never clear to me why this was a config
-option at all.
-
--Andi
+Thanks.
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+tejun
