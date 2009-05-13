@@ -1,146 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760894AbZEMRuk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760844AbZEMRys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760894AbZEMRuk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 13:50:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758048AbZEMRua
+	id S1760844AbZEMRys (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 13:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755707AbZEMRyi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 13:50:30 -0400
-Received: from ausc60pc101.us.dell.com ([143.166.85.206]:28505 "EHLO
-	ausc60pc101.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755090AbZEMRu3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 13:50:29 -0400
-X-Loopcount0: from 10.9.160.254
-Message-ID: <4A0B0866.2040402@dell.com>
-Date: Wed, 13 May 2009 12:50:30 -0500
-From: Mario Limonciello <mario_limonciello@dell.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
+	Wed, 13 May 2009 13:54:38 -0400
+Received: from bear.ext.ti.com ([192.94.94.41]:33653 "EHLO bear.ext.ti.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755452AbZEMRyh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 13:54:37 -0400
+Message-ID: <4A0B0939.5030008@ti.com>
+Date: Wed, 13 May 2009 12:54:01 -0500
+From: Jon Hunter <jon-hunter@ti.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-To: Matthew Garrett <mjg59@srcf.ucam.org>
-CC: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 1/3] Add support for more dell-wmi hotkeys
-References: <49ECBAE2.2080308@dell.com> <49EE09D9.2060209@dell.com> <20090429171508.GA717@srcf.ucam.org>
-In-Reply-To: <20090429171508.GA717@srcf.ucam.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigF2783BDB7574C6D1AB71DD59"
+To: John Stultz <johnstul@us.ibm.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] Dynamic Tick: Allow 32-bit machines to sleep   
+ formorethan2.15 seconds
+References: <49ECE615.2010800@ti.com>  <20090421063523.GA8020@elte.hu>	 <1240345936.6080.6.camel@localhost>  <49EE54B4.9020700@ti.com>	 <1240358525.6080.40.camel@localhost>  <4A02F5A3.3050004@ti.com>	 <1241744048.7518.132.camel@localhost.localdomain> <4A04584E.4020307@ti.com>	 <1241830281.7297.21.camel@localhost.localdomain>  <4A0A07D6.90408@ti.com>	 <1242172727.3462.55.camel@localhost>  <4A0AE3E3.5090304@ti.com> <1242232872.9110.98.camel@jstultz-laptop>
+In-Reply-To: <1242232872.9110.98.camel@jstultz-laptop>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigF2783BDB7574C6D1AB71DD59
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
 
-Hi Matthew:
+John Stultz wrote:
+>>> Alternatively instead of NSEC_PER_SEC/HZ, we could always drop the
+>>> larger of NSEC_PER_SEC/HZ or max_deferment/10? That way we should scale
+>>> up without a problem. 
+>> Yes, may be this would be a safer option. Thinking about this I was 
+>> wondering if we should always use max_deferement/10, because I did not 
+>> think that there would ever be a case where NSEC_PER_SEC/HZ would be 
+>> greater. If NSEC_PER_SEC/HZ was greater than max_deferement/10 this 
+>> would imply that the clocksource would wrap after only 10 jiffies, if I 
+>> have the math right...
+> 
+> Right, but even with such limitiations, if an arch can skip every 5
+> ticks, they probably will try, right? :)
 
-Matthew Garrett wrote:
-> This is the version I'm planning on applying - look ok? I've skipped th=
-e=20
-> OSD stuff, since right now we're not going to do anything terribly=20
-> useful with them. I'd prefer some consensus on where we're going with=20
-> these notifications.
->
-> commit d0cc3d9de1b8e97a7176ddc7efe48239896100c1
-> Author: Matthew Garrett <mjg@redhat.com>
-> Date:   Wed Apr 29 18:07:30 2009 +0100
->
->     From: Mario Limonciello <mario_limonciello@dell.com>
->    =20
->     dell-wmi: Add additional keyboard events
->    =20
->     Upcoming Dell hardware will send more keyboard events via WMI. Add =
-support
->     for them.
->    =20
->     Signed-off-by: Mario Limonciello <mario_limonciello@dell.com>
->
-> diff --git a/drivers/platform/x86/dell-wmi.c b/drivers/platform/x86/del=
-l-wmi.c
-> index 81d7179..847f486 100644
-> --- a/drivers/platform/x86/dell-wmi.c
-> +++ b/drivers/platform/x86/dell-wmi.c
-> @@ -48,8 +48,49 @@ struct key_entry {
-> =20
->  enum { KE_KEY, KE_SW, KE_END };
-> =20
-> +/*
-> + * There are some additional events sent as scancodes, but these are
-> + * not currently terribly relevant to Linux. They are:
-> + *=20
-> + * 0xe020: Mute
-> + * 0xe02e: Volume down
-> + * 0xe030: Volume up
-> + * 0xe00c: Keyboard illumination toggle
-> + * 0xe033: Keyboard illumination up
-> + * 0xe034: Keyboard illumination down
-> + * 0xe00d: BIOS error detected
-> + * 0xe013: Ambient light sensor toggle
-> + * 0xe03a: Caps lock
-> + * 0xe045: Num lock
-> + * 0xe046: Scroll lock
-> + *
-> + * All of these are either notifications (rather than requests for cha=
-nge) or
-> + * are also sent via the keyboard controller
-> + */
-> +
->  static struct key_entry dell_wmi_keymap[] =3D {
->  	{KE_KEY, 0xe045, KEY_PROG1},
-> +        {KE_KEY, 0xe009, KEY_EJECTCD},
-> +
-> +	/* These also contain the brightness level at offset 6 */
-> +	{KE_KEY, 0xe006, KEY_BRIGHTNESSUP},
-> +	{KE_KEY, 0xe005, KEY_BRIGHTNESSDOWN},
-> +
-> +	/* The next device is at offset 6, the active devices are at
-> +	   offset 8 and the attached devices at offset 10 */
-> +	{KE_KEY, 0xe00b, KEY_DISPLAYTOGGLE},
-> +
-> +	/* This is actually for all radios. Although physically a
-> +	 * switch, the notification does not provide an indication of
-> +	 * state and so it should be reported as a key */
-> +	{KE_KEY, 0xe008, KEY_WLAN},
-> +
-> +	/* Wifi Catcher */
-> +	{KE_KEY, 0xe011, KEY_PROG2},
-> +
-> +	/* Battery health status button */
-> +	{KE_KEY, 0xe007, KEY_BATTERY},
-> +
->  	{KE_END, 0}
->  };
->  =20
-Two additional comments:
+Sure, but I guess I was wondering if there would ever be a clocksource 
+that would overflow in 10-20 ticks? If not then it would be safe to 
+always use -10% or -5% margin and we can forget about NSEC_PER_SEC/HZ.
 
-1) Rather  than KEY_DISPLAYTOGGLE, it would make more sense to use
-KEY_SWITCHVIDEOMODE.
+Unless I am understanding this wrong, but I thought we are just trying 
+to make sure we never sleep for a time longer than the total time a 
+clocksource can count.
 
-2) There is another scancode that should be tied to KEY_SWITCHVIDEOMODE,
-0xe09b.  Machines will support one or the other, but not both.
+> That sounds reasonable to me.
 
-Regards
+Great.
 
---=20
-Mario Limonciello
-*Dell | Linux Engineering*
-mario_limonciello@dell.com
+>> One final question, I noticed in clocksource.h that the definition of 
+>> function cyc2ns returns a type of s64, however, in the function itself a 
+>> variable of type u64 is used and returned. Should this function be 
+>> modified as follows?
+>>
+>>   static inline s64 cyc2ns(struct clocksource *cs, cycle_t cycles)
+>>   {
+>> -       u64 ret = (u64)cycles;
+>> +       s64 ret = (s64)cycles;
+>>          ret = (ret * cs->mult) >> cs->shift;
+>>          return ret;
+>>   }
+> 
+> Damn. So this brings up an issue I had missed prior.
+
+Any comments on whether this should be u64 versus s64?
+
+> I'll have to think about how that would change
+> timekeeping_max_deferment() and how we'd have to calculate a reasonable
+> max efficiently.
+> 
+> Other then this issue (which is my fault for not noticing it earlier),
+> you're patch looks great. I just feel badly for making you rev this
+> thing over and over. 
+
+No problem, its fine. Its more important for us to get this right so I 
+am happy to help where I can.
+
+> One option if you're itching to push it in and be done with it: Make
+> timekeeping_max_deferment() return just 1 second for now. Your patch
+> provides the right infrastructure for the timekeeping code to provide
+> its limits to the clockevents code. So you can use a safe short constant
+> value for now, and we can extend that out correctly in a future patch.
+
+How about going back to your original thought and making it 50% margin 
+for now? In other words, use max_deferment/2? Therefore, for clocksource 
+that can count for 10s of years before overflowing it will not be as 
+severe.
+
+> Sorry again for not catching this until now. :(
+
+No problem at all. Thanks for all the inputs.
+
+Cheers
+Jon
 
 
---------------enigF2783BDB7574C6D1AB71DD59
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkoLCGYACgkQ2CrZjkA73YtihACfak3E0yd8SouytvsnPB/roPyW
-6WUAoJmRsuBQeMLGXKzKMUPA0CQZTsdm
-=4u3i
------END PGP SIGNATURE-----
-
---------------enigF2783BDB7574C6D1AB71DD59--
