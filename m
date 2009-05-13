@@ -1,55 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbZEMQAZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760522AbZEMQBU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760065AbZEMQAZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 12:00:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbZEMQAG
+	id S1760522AbZEMQBU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 12:01:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758316AbZEMQBH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 12:00:06 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43013 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754879AbZEMQAF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 12:00:05 -0400
-Date: Wed, 13 May 2009 08:57:34 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Subject: Re: [PATCH v2 3/7] [PATCH 3/8] can: CAN Network device driver and
- Netlink interface
-Message-Id: <20090513085734.387dddbe.akpm@linux-foundation.org>
-In-Reply-To: <4A0AB0EC.5010902@grandegger.com>
-References: <20090512092757.048938233@denx.de>
-	<20090512092757.574693100@denx.de>
-	<20090512233052.ecd600f1.akpm@linux-foundation.org>
-	<20090512235323.e3de5e5d.akpm@linux-foundation.org>
-	<4A0AB0EC.5010902@grandegger.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 May 2009 12:01:07 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46553 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756572AbZEMQBG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 12:01:06 -0400
+Message-ID: <4A0AEE39.8030704@kernel.org>
+Date: Wed, 13 May 2009 08:58:49 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Andi Kleen <andi@firstfloor.org>
+CC: Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH] x86: fix system without memory on node0
+References: <4A05269D.8000701@kernel.org> <4A0527CB.4020807@kernel.org> <20090511175312.GA27905@sgi.com> <alpine.DEB.2.00.0905111218520.23739@chino.kir.corp.google.com> <4A0894A5.9000209@zytor.com> <alpine.DEB.2.00.0905111509570.2234@chino.kir.corp.google.com> <20090512150622.GA10015@sgi.com> <4A0A23A7.4080901@kernel.org> <20090513080010.GN19296@one.firstfloor.org>
+In-Reply-To: <20090513080010.GN19296@one.firstfloor.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 May 2009 13:37:16 +0200 Wolfgang Grandegger <wg@grandegger.com> wrote:
-
-> > Also, I wonder if it's safe to take netif_tx_lock() from a timer
-> > handler when other parts of the code might be taking it from process
-> > context (I didn't check).
-> > 
-> > lockdep should be able to detect this, and I trust this code has been
-> > fully runtime tested with lockdep enabled?
+Andi Kleen wrote:
+>> +#if defined(CONFIG_X86_64) && defined(CONFIG_NUMA)
+>> +	/*
+>> +	 * make sure boot cpu node_number is right, when boot cpu is on the
+>> +	 * node that doesn't have mem installed
+>> +	 */
+>> +	per_cpu(node_number, boot_cpu_id) = cpu_to_node(boot_cpu_id);
+>> +#endif
 > 
-> Well, CONFIG_PROVE_LOCKING would be cool, but I'm unable to enabled it
-> for my MPC5200 test system. Only 64bit PowerPC's seem to support
-> TRACE_IRQFLAGS_SUPPORT. I'm going to test the code on a PC as well.
+> Seems like a quite crappy hac^wpatch. Why is it ever set to the wrong
+> value? And why is that only the case on NUMA and 64bit? 
 
-I discussed this off-list with Peter Zijlstra and Johannes Berg. 
-Apparently lockdep _will_ detect this deadlockable situation - Johannes
-recently added the capability because he had the same situation in
-wireless code somewhere.
+two places touched that per_cpu(node_number,), 
+1. in cpu/common.c::cpu_init() and it is not for BP
+#ifdef CONFIG_NUMA
+        if (cpu != 0 && percpu_read(node_number) == 0 &&
+            cpu_to_node(cpu) != NUMA_NO_NODE)
+                percpu_write(node_number, cpu_to_node(cpu));
+#endif
+for BP is traps_init ==> cpu_init
+for AP is start_secondary ==> cpu_init
 
-But of course it does require that the timer handler has executed at
-least once.  Many handlers in the kernel never fire in normal operation.
+2. cpu/intel.c or amd.c::srat_detect_node via numa_set_node() and they are called via identify_cpu
+for BP:
+check_bugs ==> identify_boot_cpu ==> identify_cpu() that is rather later before numa_node_id() is used for BP...
+for AP:
+start_secondary=>smp_callin=>smp_store_cpu_info()=>identify_secondary_cpu ==> identify_cpu()
 
+so only try to set that for BP more early in setup_per_cpu_areas, and don't bother set that for APs there.
+(and don't want to mess the 0 before the copying BP per_cpu to APs)
+
+or you check set the per_cpu(node_number) is early enough with setup_per_cpu_areas();
+
+
+setup_percpu.c in arch/x86/kernel/ is used on lot of conf.
+
+and in arch/x86/include/asm/topology.h, we have
+
+#ifdef CONFIG_NUMA
+#include <linux/cpumask.h>
+#include <asm/mpspec.h>
+
+#ifdef CONFIG_X86_32
+
+/* Mappings between logical cpu number and node number */
+extern int cpu_to_node_map[];
+
+/* Returns the number of the node containing CPU 'cpu' */
+static inline int cpu_to_node(int cpu)
+{
+        return cpu_to_node_map[cpu];
+}
+#define early_cpu_to_node(cpu)  cpu_to_node(cpu)
+
+#else /* CONFIG_X86_64 */
+
+/* Mappings between logical cpu number and node number */
+DECLARE_EARLY_PER_CPU(int, x86_cpu_to_node_map);
+
+/* Returns the number of the current Node. */
+DECLARE_PER_CPU(int, node_number);
+#define numa_node_id()          percpu_read(node_number)
+...
+
+so we need to for NUMA and 64 bit.
+
+
+YH
