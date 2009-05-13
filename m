@@ -1,52 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756887AbZEMN2P@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbZEMN3a@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756887AbZEMN2P (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:28:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZEMN15
+	id S1756807AbZEMN3a (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:29:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZEMN3U
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:27:57 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:38864 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750790AbZEMN14 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:27:56 -0400
-Date: Wed, 13 May 2009 23:27:52 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Jarod Wilson <jarod@redhat.com>
-Cc: Neil Horman <nhorman@tuxdriver.com>, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] crypto: tcrypt: add option to not exit on success
-Message-ID: <20090513132752.GA17262@gondor.apana.org.au>
-References: <200905111006.32675.jarod@redhat.com> <20090513110826.GA16406@hmsreliant.think-freely.org> <20090513113819.GA15662@gondor.apana.org.au> <200905130912.46965.jarod@redhat.com>
+	Wed, 13 May 2009 09:29:20 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:39473 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752267AbZEMN3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 09:29:20 -0400
+Message-ID: <4A0ACB29.5030009@novell.com>
+Date: Wed, 13 May 2009 22:29:13 +0900
+From: Tejun Heo <teheo@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905130912.46965.jarod@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jan Beulich <JBeulich@novell.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: remap allocator for per-CPU memory
+References: <4A09B23B02000078000007F1@vpn.id2.novell.com>	<4A09991E.9010903@kernel.org> <4A0A9C70.6090803@novell.com>	<87vdo5l0u6.fsf@basil.nowhere.org> <4A0AAB6B.3090903@novell.com>	<4A0AAF10.3030709@novell.com> <4A0ADE6A0200007800000BA7@novell.com>
+In-Reply-To: <4A0ADE6A0200007800000BA7@novell.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 09:12:46AM -0400, Jarod Wilson wrote:
+Hello,
+
+Jan Beulich wrote:
+> I think the only two alternatives are
 > 
-> Hm... FIPS has the requirement that we test all algs before we use any
-> algs, self-tests on demand before first use for each alg is
-> insufficient. At first blush, I'm not seeing how we ensure this
-> happens. How can we trigger a cbc(des3_ede) self-test from userspace?
-> I see that modprobe'ing des.ko runs the base des and des3_ede
-> self-tests, but modprobe'ing cbc.ko doesn't lead to any self-tests
-> being run.
+> (a) don't use large pages in the first place here, or
 
-Once we have a user-space interface crypto API you will be able
-to instantiate any given algorithm.
+Seems like the first candidate at the moment.
 
-For now I suggest that you create your own module to instantiate
-these FIPS algorithms.  Or just load tcrypt and ignore the exit
-status, or make tcrypt return 0 if we're in FIPS mode.
+> (b) teach the pageattr code to handle the per-CPU virtual area similarly to
+> the kernel space for x86-64 (though it's going to be a little more complicated
+> since there's no pre-determined relation between the virtual and physical
+> addresses - the necessary lookup might become expensive on systems with
+> very many [possible] CPUs).
 
-Cheers,
+Can you elaborate this a bit?  Let's sya there's quick way to match
+whether the page is part of the remapped large page, what can pageattr
+do differently then?  Applying the same attribute to both mappings?
+Failing or filtering set_memory_*()?
+
+Thanks.
+
 -- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+tejun
