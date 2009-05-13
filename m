@@ -1,62 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759060AbZEMOls@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760383AbZEMOmV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759060AbZEMOls (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 10:41:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbZEMOlj
+	id S1760383AbZEMOmV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 10:42:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756767AbZEMOmF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 10:41:39 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:56912 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754718AbZEMOli (ORCPT
+	Wed, 13 May 2009 10:42:05 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:37231 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754602AbZEMOmE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 10:41:38 -0400
-Date: Wed, 13 May 2009 16:46:59 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Dipankar Sarma <dipankar@in.ibm.com>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH v2 0/2] Saving power by cpu evacuation sched_max_capacity_pct=n
-Message-ID: <20090513144659.GV19296@one.firstfloor.org>
-References: <20090513130541.21440.33364.stgit@drishya.in.ibm.com> <20090513143550.GU19296@one.firstfloor.org> <1242225402.26820.23.camel@twins>
-Mime-Version: 1.0
+	Wed, 13 May 2009 10:42:04 -0400
+Date: Wed, 13 May 2009 16:41:59 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: Greg KH <greg@kroah.com>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Alan Stern <stern@rowland.harvard.edu>,
+       USB list <linux-usb@vger.kernel.org>
+Subject: Re: [PATCH] usb-serial: ftdi: don't dereference NULL pointer
+Message-ID: <20090513144159.GI32424@buzzloop.caiaq.de>
+References: <1242213703-3004-1-git-send-email-daniel@caiaq.de> <20090513143536.GA3443@kroah.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1242225402.26820.23.camel@twins>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090513143536.GA3443@kroah.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 04:36:42PM +0200, Peter Zijlstra wrote:
-> On Wed, 2009-05-13 at 16:35 +0200, Andi Kleen wrote:
-> > On Wed, May 13, 2009 at 06:41:00PM +0530, Vaidyanathan Srinivasan wrote:
-> > > * Using sched_mc=3,4,5 to evacuate 1,2,4 cores is completely
-> > >   non-intuitive and broken interface.  Ingo wanted to see if we can
-> > >   model a global percentile tunable that would map to core throttling.
-> > 
-> > I have one request. CPU throttling is already a very well established
-> > term in the x86 world, refering to thermal throttling when the CPU
-> > overheats. This is implemented by ACPI and the CPU. It's always
-> > a very bad thing that should be avoided at all costs.
+On Wed, May 13, 2009 at 07:35:36AM -0700, Greg KH wrote:
+> On Wed, May 13, 2009 at 01:21:43PM +0200, Daniel Mack wrote:
+> > The FTDI USB serial driver dereferences its priv structure in
+> > ftdi_close() without checking for NULL pointer conditions, see the Oops
+> > attached.
 > 
-> Its about avoiding that.
+> Hm, I think this was already resolved with Alan's patch that went in
+> right after 2.6.30-rc5 came out. 
 
-Hmm? Can you explain please? CPU throttling should only happen when your
-cooling system is broken in some way.
+That was a similiar issue, yes. But it occured under different
+circumstances, not under the condition I described.
 
-It's not a power saving feature, just a "don't make CPU melt" feature.
+> Can you check Linus's current tree to
+> see if we still need this patch or not?
 
--Andi
+Is is needed, yes. I'm working on Linus' git as of this morning, so I'm
+cutting edge mainline and can still perfectly reproduce the problem.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Not anymore with my patch, though.
+
+Daniel
+
