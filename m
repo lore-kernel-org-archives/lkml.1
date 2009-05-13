@@ -1,69 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757912AbZEMNpO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760414AbZEMNqU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757912AbZEMNpO (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:45:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbZEMNo6
+	id S1760414AbZEMNqU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:46:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZEMNqI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:44:58 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:59060 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752189AbZEMNo5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:44:57 -0400
-Date: Wed, 13 May 2009 09:44:56 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Ingo Molnar <mingo@elte.hu>
-cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/5] [GIT PULL] ring-buffer: optimize to 17% performance
- increase
-In-Reply-To: <alpine.DEB.2.00.0905121022560.13234@gandalf.stny.rr.com>
-Message-ID: <alpine.DEB.2.00.0905130937060.30591@gandalf.stny.rr.com>
-References: <20090512040832.681953177@goodmis.org> <20090512083301.GA20435@elte.hu> <alpine.DEB.2.00.0905120923250.13234@gandalf.stny.rr.com> <alpine.DEB.2.00.0905121022560.13234@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 13 May 2009 09:46:08 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:51466 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754566AbZEMNqH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 09:46:07 -0400
+Date: Wed, 13 May 2009 19:15:56 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Dipankar Sarma <dipankar@in.ibm.com>, Vatsa <vatsa@linux.vnet.ibm.com>,
+       Gautham R Shenoy <ego@in.ibm.com>, Andi Kleen <andi@firstfloor.org>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 0/2] Saving power by cpu
+	evacuationsched_max_capacity_pct=n
+Message-ID: <20090513134556.GN13394@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090513130541.21440.33364.stgit@drishya.in.ibm.com> <1242220497.26820.21.camel@twins>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <1242220497.26820.21.camel@twins>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+* Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-05-13 15:14:57]:
 
-On Tue, 12 May 2009, Steven Rostedt wrote:
-
+> On Wed, 2009-05-13 at 18:41 +0530, Vaidyanathan Srinivasan wrote:
 > 
-> On Tue, 12 May 2009, Steven Rostedt wrote:
-> > > 
-> > > It's also interesting to see that text size went down when speed 
-> > > went up. I'm wondering how these compiler options:
-> > 
-> > But that was not always the case. The biggest boost in performance of the 
-> > series (the last patch) also increased the size.
-> > 
-> > > 
-> > >   CONFIG_CC_OPTIMIZE_FOR_SIZE=y
-> > >   CONFIG_OPTIMIZE_INLINING=y
-> > 
-> > Note, my test runs had both the above configure options disabled.
-> > I'll run it again and see how they affect the results:
+> > * Peter Zijlstra wanted more justifications for throttling at the core
+> >   level.  Throttling may be a resource management problem rather than
+> >   scheduler/load balancer
 > 
-> Here's the results:
-> 
-> size=n inline=n  270 
-> size=n inline=y  290
-> size=y inline=n  315
-> size=y inline=y  372 (ouch!)
-> 
-> Thus it seems to keep both optimizations off is best for performance.
+> No, I mandate that it be thermal management. Any other reason and you've
+> got a NAK.
 
-Versions do make a difference. I just upgraded my distcc gcc on all my 
-distcc boxes from gcc 4.2.2 to 4.4.0 and here's the new results:
+We've been discussing hard limits from the resource management view
+point. Bharata is working on a RFC that we should be able to share
+soon
 
-size=n inline=n  257
-size=n inline=y  259
-size=y inline=n  295
-size=y inline=y  315
-
-The gcc inlining got a little better, but adding size seems to hurt.
-
--- Steve
-
+-- 
+	Balbir
