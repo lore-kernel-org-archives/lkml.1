@@ -1,86 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756654AbZEMAz1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755836AbZEMA6m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756654AbZEMAz1 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 20:55:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZEMAzO
+	id S1755836AbZEMA6m (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 20:58:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752509AbZEMA6d
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 20:55:14 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50190 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750939AbZEMAzM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 20:55:12 -0400
-Message-ID: <4A0A1AAD.3090606@cn.fujitsu.com>
-Date: Wed, 13 May 2009 08:56:13 +0800
-From: Li Zefan <lizf@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.9 (X11/20071115)
+	Tue, 12 May 2009 20:58:33 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:36258 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752334AbZEMA6c (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 20:58:32 -0400
+Message-ID: <4A0A1941.2010105@ct.jp.nec.com>
+Date: Wed, 13 May 2009 09:50:09 +0900
+From: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-CC: Alan.Brunelle@hp.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, mingo@elte.hu, rostedt@goodmis.org,
-       fweisbec@gmail.com
-Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
-References: <4A08F1B3.4060700@cn.fujitsu.com>	<20090512.151104.71103166.ryov@valinux.co.jp>	<4A092EE7.4070403@cn.fujitsu.com> <20090512.191206.226779551.ryov@valinux.co.jp>
-In-Reply-To: <20090512.191206.226779551.ryov@valinux.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Tejun Heo <tj@kernel.org>, Boaz Harrosh <bharrosh@panasas.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com
+CC: linux-kernel@vger.kernel.org, benh@kernel.crashing.org
+Subject: Re: [PATCH] swim3: use blk_end_request instead of blk_update_request
+References: <1242127787-29842-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1242127787-29842-3-git-send-email-fujita.tomonori@lab.ntt.co.jp> <4A098B8D.10107@panasas.com> <4A099562.7020805@kernel.org>
+In-Reply-To: <4A099562.7020805@kernel.org>
+Content-Type: text/plain; charset=ISO-2022-JP
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>>>>> Thanks for your suggestion. I'll use TRACE_EVENT instead.
->>>>> blk_add_trace_msg() supports both blktrace and tracepoints. I can
->>>>> get messages from dm-ioband through debugfs. Could you expain why
->>>>> should we use TRACE_EVENT instead?
->>>>>
->>>> Actually blk_add_trace_msg() has nothing to do with tracepoints..
->>>>
->>>> If we use blk_add_trace_msg() is dm, we can use it in md, various block
->>>> drivers and even ext4. So the right thing is, if a subsystem wants to add
->>>> trace facility, it should use tracepoints/TRACE_EVENT.
->>>>
->>>> With TRACE_EVENT, you can get output through debugfs too, and it can be used
->>>> together with blktrace:
->>>>
->>>>  # echo 1 > /sys/block/dm/trace/enable
->>>>  # echo blk > /debugfs/tracing/current_tracer
->>>>  # echo dm-ioband-foo > /debugfs/tracing/tracing/set_event
->>>>  # cat /deubgfs/tracing/trace_pipe
->>>>  
->>>> And you can enable dm-ioband-foo while disabling dm-ioband-bar, and you can
->>>> use filter feature too.
->>> Thanks for explaining.
->>> The base kernel of current dm tree (2.6.30-rc4) has not supported
->>> dm-device tracing yet. I'll consider using TRACE_EVENT when the base
->>> kernel supports dm-device tracing.
->>>
->> I think we don't have any plan on dm-device tracing support, do we? And you
->> don't need that.
+Hi,
+
+Thank you for pointing this, Boaz!
+
+On 2009/05/13 0:27 +0900, Tejun Heo wrote:
+> Hello,
+> 
+> Boaz Harrosh wrote:
+>> blk_update_request() was meant for request-based-multi-path, and not for swim3
+>> please see:
+>>     32fab448 block: add request update interface
 >>
->> I downloaded dm-ioband 1.10.4, and applied it to latest tip-tree, and made
->> a patch to convert those blktrace msgs to trace events.
+>> CC: Kiyoshi Ueda<k-ueda@ct.jp.nec.com>
 >>
->>  # ls /debug/tracing/events/dm-ioband
->>  enable  ioband_endio     ioband_issue_list    ioband_urgent_bio
->>  filter  ioband_hold_bio  ioband_make_request
->>  # echo 1 /debug/tracing/events/dm-ioband/enable
->>  # echo blk /debug/tracing/current_tracer
->>  ...
+>> I think Tejun Heo was just using that in some recent block layer,
+>> transformation.
+>> Tejun?
 > 
-> Is the following line unnecessary in the latest tip-tree?
-> 
->    # echo 1 > /sys/block/dm/trace/enable
-> 
+> Yeah, conversion was easy that way.  I think it's sane to have
+> blk_update_request() exported as long as request internal tinkering is
+> kept in block layer proper.
 
-Yes, still needed. I was not giving a complete demonstration. ;)
+blk_update_request() is needed for request-based dm to keep the request
+completion ordering in bottom-up, although request-based dm is not
+in upstream yet.
 
-> How to enable/disable tracing on each device?
+Jens, please keep blk_update_request() exported.
 
-echo 1 > /sys/block/dm-0/trace/enable
-echo 1 > /sys/block/dm-1/trace/enable
-
-Or use filter facility:
-
-echo "dev == $(( (ma0 << 20) | mi0 ))" > /debug/tracing/events/dm-ioband/filter
-
-This will filter out all events generated from dm-1, leaving those from dm-0.
+Thanks,
+Kiyoshi Ueda
 
