@@ -1,55 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761591AbZEMVGz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbZEMVNZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761591AbZEMVGz (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 17:06:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761211AbZEMVGq
+	id S1761541AbZEMVNZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 17:13:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756980AbZEMVNO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 17:06:46 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:37912 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760864AbZEMVGp (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 17:06:45 -0400
-Message-ID: <4A0B3605.8090007@zytor.com>
-Date: Wed, 13 May 2009 14:05:09 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Hitoshi Mitake <h.mitake@gmail.com>, Roland Dreier <rdreier@cisco.com>,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, tglx@linutronix.de,
-       rpjday@crashcourse.ca, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
-References: <49EE37AF.4020507@zytor.com>	 <20090421.173123.191021055.davem@davemloft.net>	 <adak55438gp.fsf_-_@cisco.com>	 <20090428.221228.217954247.davem@davemloft.net>	 <20090429115654.GC11586@elte.hu> <49F843BC.7020902@garzik.org>	 <adahc071ie4.fsf@cisco.com> <49F8B1A1.4010208@garzik.org> <a6b9f31a0905122232s2d23b4e3h6e447c3fa5c29ee6@mail.gmail.com> <4A0B30D0.4060806@garzik.org>
-In-Reply-To: <4A0B30D0.4060806@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Wed, 13 May 2009 17:13:14 -0400
+Received: from gate.crashing.org ([63.228.1.57]:35107 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753234AbZEMVNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 17:13:13 -0400
+From: Kumar Gala <galak@kernel.crashing.org>
+To: jeff@garzik.org
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: [PATCH] sata_fsl: Fix compile warnings
+Date: Wed, 13 May 2009 16:12:11 -0500
+Message-Id: <1242249131-25014-1-git-send-email-galak@kernel.crashing.org>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
-> 
-> Roland's patch was acked, apparently, _in spite of_ the commonly 
-> accepted readq() definition already being in use!
-> 
-> Thusfar, I see two things:
-> 
-> (1) years of history has shown that non-atomic readq/writeq on 32-bit 
-> platforms has been sufficient, based on testing and experience.  In 
-> fact, in niu's case, a common readq/writeq would have PREVENTED a bug.
-> 
-> (2) unspecified fears continue to linger about non-atomicity
-> 
-> We should not base decisions on fear, particularly when the weight of 
-> evidence and experience points in the other direction.
-> 
+We we build with dma_addr_t as a 64-bit quantity we get:
 
-I have personally dealt with at least one device who'd want to opt out
-of a standard readq/writeq (it's not in-tree because it never shipped,
-unfortunately.)  Doing the opt-in headers seems like a reasonable thing
-to do to me, but perhaps I'm just being overly paranoid.
+drivers/ata/sata_fsl.c: In function 'sata_fsl_fill_sg':
+drivers/ata/sata_fsl.c:340: warning: format '%x' expects type 'unsigned int', but argument 4 has type 'dma_addr_t'
 
-	-hpa
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
+ drivers/ata/sata_fsl.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index c2e90e1..c7ee52d 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -332,13 +332,14 @@ static unsigned int sata_fsl_fill_sg(struct ata_queued_cmd *qc, void *cmd_desc,
+ 		dma_addr_t sg_addr = sg_dma_address(sg);
+ 		u32 sg_len = sg_dma_len(sg);
+ 
+-		VPRINTK("SATA FSL : fill_sg, sg_addr = 0x%x, sg_len = %d\n",
+-			sg_addr, sg_len);
++		VPRINTK("SATA FSL : fill_sg, sg_addr = 0x%llx, sg_len = %d\n",
++			(unsigned long long)sg_addr, sg_len);
+ 
+ 		/* warn if each s/g element is not dword aligned */
+ 		if (sg_addr & 0x03)
+ 			ata_port_printk(qc->ap, KERN_ERR,
+-					"s/g addr unaligned : 0x%x\n", sg_addr);
++					"s/g addr unaligned : 0x%llxx\n", 
++					(unsigned long long)sg_addr);
+ 		if (sg_len & 0x03)
+ 			ata_port_printk(qc->ap, KERN_ERR,
+ 					"s/g len unaligned : 0x%x\n", sg_len);
+-- 
+1.6.0.6
 
