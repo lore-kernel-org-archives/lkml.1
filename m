@@ -1,92 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752939AbZEMEQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751436AbZEMEXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752939AbZEMEQS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 00:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbZEMEQE
+	id S1751436AbZEMEXV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 00:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751202AbZEMEXI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 00:16:04 -0400
-Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:50529 "EHLO
-	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750988AbZEMEQC (ORCPT
+	Wed, 13 May 2009 00:23:08 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:53222 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750890AbZEMEXH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 00:16:02 -0400
-Message-id: <isapiwc.d14e3c2a.4d44.4a0a4870.109c6.78@mail.jp.nec.com>
-In-Reply-To: <20090513125558.57be0db6.kamezawa.hiroyu@jp.fujitsu.com>
-References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
- <20090512140648.0974cb10.nishimura@mxp.nes.nec.co.jp>
- <20090512160901.8a6c5f64.kamezawa.hiroyu@jp.fujitsu.com>
- <20090512170007.ad7f5c7b.nishimura@mxp.nes.nec.co.jp>
- <20090512171356.3d3a7554.kamezawa.hiroyu@jp.fujitsu.com>
- <20090512195823.15c5cb80.d-nishimura@mtf.biglobe.ne.jp>
- <20090513085949.3c4b7b97.kamezawa.hiroyu@jp.fujitsu.com>
- <20090513092828.cbaa5a76.nishimura@mxp.nes.nec.co.jp>
- <20090513093250.7803d3d0.kamezawa.hiroyu@jp.fujitsu.com>
- <20090513125558.57be0db6.kamezawa.hiroyu@jp.fujitsu.com>
-Date: Wed, 13 May 2009 13:11:28 +0900
-From: nishimura@mxp.nes.nec.co.jp
-Subject: Re: [PATCH][BUGFIX] memcg: fix for deadlock between
- lock_page_cgroup and mapping tree_lock
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+	Wed, 13 May 2009 00:23:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=hw40H07AuH3okJRowSm1+E4Vmozz0jPN/eYlM49WmJBCuqoW/th9Nh204iFVqOV1wE
+         NS7nVHWkWS+zGUd1vBznmyJE2r3PidzMVNls1kymkHQH5d8MylqAo1/c8nPjv5ailZeu
+         ai32hiy4BDoOTjwqHVV42r1JU0vaNT95lS0uk=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <ea11fea30905122114s212922f4g57162eb4dc4771f5@mail.gmail.com>
+References: <20aa8c370905120847j4b19175akbdcafc0db2004567@mail.gmail.com>
+	 <3e8340490905120856w62c6c5cexa247937bf7e84002@mail.gmail.com>
+	 <20aa8c370905120902o71ab9adflb8619e2a9ae343d0@mail.gmail.com>
+	 <20090512200310.GP3209@webber.adilger.int>
+	 <20aa8c370905122111x6bc80d4ave0c857fafd8d9e0a@mail.gmail.com>
+	 <ea11fea30905122114s212922f4g57162eb4dc4771f5@mail.gmail.com>
+Date: Wed, 13 May 2009 09:53:04 +0530
+Message-ID: <20aa8c370905122123l23c02994q7fc41bd8b529342e@mail.gmail.com>
+Subject: Re: Help to edit inode content
+From: ranjith kannikara <ranjithkannikara@gmail.com>
+To: Manish Katiyar <mkatiyar@gmail.com>
+Cc: Andreas Dilger <adilger@sun.com>, Bryan Donlan <bdonlan@gmail.com>,
+       linux-kernel@vger.kernel.org, linux-ext4@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 13 May 2009 09:32:50 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
->> On Wed, 13 May 2009 09:28:28 +0900
->> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
->> 
->> > On Wed, 13 May 2009 08:59:49 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> > > On Tue, 12 May 2009 19:58:23 +0900
->> > > Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> wrote:
->> > > 
->> > > > On Tue, 12 May 2009 17:13:56 +0900
->> > > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
->> > > > 
->> > > > > On Tue, 12 May 2009 17:00:07 +0900
->> > > > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
->> > > > > > hmm, I see.
->> > > > > > cache_charge is outside of tree_lock, so moving uncharge would make sense.
->> > > > > > IMHO, we should make the period of spinlock as small as possible,
->> > > > > > and charge/uncharge of pagecache/swapcache is protected by page lock, not tree_lock.
->> > > > > > 
->> > > > > How about this ?
->> > > > Looks good conceptually, but it cannot be built :)
->> > > > 
->> > > > It needs a fix like this.
->> > > > Passed build test with enabling/disabling both CONFIG_MEM_RES_CTLR
->> > > > and CONFIG_SWAP.
->> > > > 
->> > > ok, will update. can I add you Signed-off-by on the patch ?
->> > > 
->> > Sure.
->> > 
->> > 	Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
->> > 
->> > The patch(with my fix applied) seems to work fine, I need run it
->> > for more long time though.
->> > 
->> Ok, I'll treat this as an independent issue, not as "4/4".
->> 
-> Could you merge mine and yours and send it to Andrew ?
-> I think this is a fix for dead-lock and priority is very high.
-> I foumd my system broken and installing the whole system again, now.
-> So, I can't post patch today.
-> 
-Okey.
+On Wed, May 13, 2009 at 9:44 AM, Manish Katiyar <mkatiyar@gmail.com> wrote:
+> On Wed, May 13, 2009 at 9:41 AM, ranjith kannikara
+> <ranjithkannikara@gmail.com> wrote:
+>> On Wed, May 13, 2009 at 1:33 AM, Andreas Dilger <adilger@sun.com> wrote:
+>>> On May 12, 2009  21:32 +0530, ranjith kannikara wrote:
+>>>> On Tue, May 12, 2009 at 9:26 PM, Bryan Donlan <bdonlan@gmail.com> wrote:
+>>>> > On Tue, May 12, 2009 at 11:47 AM, ranjith kannikara
+>>>> > <ranjithkannikara@gmail.com> wrote:
+>>>> >> I am a computer science engineering student. We have started a project
+>>>> >> to make an application to recover deleted files from an ext3
+>>>> >> filesystem. For that we have a doubt . Can we edit the inode content?
+>>>> >> ie the recovery will be robust if we could edit the inode contents and
+>>>> >> give the pointer address manually or through a code. The inode is
+>>>> >> being created in the kernel mode and is it possible to edit those
+>>>> >> contents if the code is allowed to have the kernel mode permissions..?
+>>>>
+>>>> But we would like to know whether it is possible to edit the inode
+>>>> because it will make the recovery easy and robust. ie he know the
+>>>> details of the inode of the file which had been deleted is it possible
+>>>> to edit the content of that inode with the pointers of the deleted
+>>>> file.?
+>>>
+>>> Are you asking whether it is possible to modify the on-disk structure
+>>> of the ext3 inode? Generally that is NOT allowed because it will of
+>>> course break all existing filesystems if not done with extreme care.
+>>>
+>>> Cheers, Andreas
+>>> --
+>>> Andreas Dilger
+>>> Sr. Staff Engineer, Lustre Group
+>>> Sun Microsystems of Canada, Inc.
+>>>
+>>>
+>> Hi,
+>> Actually I was asking the same. whether it is possible to edit the
+>> inode content of a disk or the image of a disk. Did you mean that it
+>> is not possible at all. Is there any method to edit the inode content
+>> and use the edited inode for a file, If we can ensure high care.
+>> because such a method will be the most robust one in the recovery of
+>> deleted file.
+>
+> Sorry , but it is still not clear to me whether you are trying to
+> change the on-disk structure of the inode or just change the ondisk
+> *contents* of some deleted inode to recover it.  Can you give an
+> example of what you are trying to do ?
+>
+> Thanks -
+> Manish
+>
+Ok, I will
+I want to edit the contects of some deleted inode to recover the file. ie
+I have a file 'foo' with inode 123. and the inode have the direct and
+indirect data pointers in it.
+Now i deleted the file and is trying to recover it.
+I somehow could get what was the content,which is the pointers in the inode.
+Now I would like to edit the inode 123 so that it will contain the
+above pointers and will be the same deleted file itself.
 
-I'll post it soon.
+I hope now its clear and you can help me.
+Regards
+Ranju.
+>
+>
+>>
+>> Regards
+>> ranju.
+>>
+>> --
+>> http://www.ranjithkannikara.blogspot.com/
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-ext4" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>>
+>
+>
+>
+> --
+> Thanks -
+> Manish
+>
 
-Thanks,
-Daisuke Nishimura.
+
+
+-- 
+http://www.ranjithkannikara.blogspot.com/
