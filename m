@@ -1,96 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbZEMSEb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760956AbZEMSFo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760878AbZEMSEb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 14:04:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756659AbZEMSEV
+	id S1760956AbZEMSFo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 14:05:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbZEMSFb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 14:04:21 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:63194 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755735AbZEMSEU (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 14:04:20 -0400
-Date: Wed, 13 May 2009 14:04:18 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: LKML <linux-kernel@vger.kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org
-Subject: [PATCH][GIT PULL] x86/function-graph: fix constraint for recording
- old return value
-Message-ID: <alpine.DEB.2.00.0905131400200.30591@gandalf.stny.rr.com>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Wed, 13 May 2009 14:05:31 -0400
+Received: from plexity.net ([206.123.115.38]:54101 "EHLO plexity.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755558AbZEMSFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 14:05:30 -0400
+Date: Wed, 13 May 2009 18:04:36 +0000
+From: Deepak Saxena <dsaxena@plexity.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 8250: Don't restore NS16550 mode when console suspend
+	is disabled
+Message-ID: <20090513180436.GA5592@plexity.net>
+Reply-To: dsaxena@plexity.net
+References: <20090512210015.GA25540@plexity.net> <alpine.LFD.2.01.0905121452190.3343@localhost.localdomain> <20090513011842.22d9cd6c@lxorguk.ukuu.org.uk> <20090513002850.GA28422@plexity.net> <20090513094409.50c2409f@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0905130755090.3343@localhost.localdomain> <20090513163507.556c3832@lxorguk.ukuu.org.uk>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: multipart/mixed; boundary="y0ulUmNC+osPPQO6"
+Content-Disposition: inline
+In-Reply-To: <20090513163507.556c3832@lxorguk.ukuu.org.uk>
+Organization: Plexity, LLC
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Ingo,
+--y0ulUmNC+osPPQO6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-After upgrading my distcc boxes from gcc 4.2.2 to 4.4.0, function graph 
-tracer broke. Seems that the variable "old" needs to be denoted as an 
-"early clobber". I've put this against the urgent tree and I'm Cc'ing 
-stable because by the time 30 (and other) kernels get to users, they may 
-be using gcc 4.4.0. I would expect that we will get more complaints about 
-this as more people start using the newer gcc.
+On May 13 2009, at 16:35, Alan Cox was caught saying:
+> Deepak's original patch from 2008 is actually much better. He puts the
+> chip back in the right hardware configuration for the speed. He doesn't
+> randomly regress other platforms and configurations and he does it by
+> calling the standard methods in the driver to do the job.
+> 
+> http://dev.laptop.org/~dsaxena/patches/console_suspend_old.patch
+> 
+> It also has another advantage - it fixes the behaviour for almost
+> everything in drivers/serial not just a specific uart. Technically he
+> should take tty->termios_mutex before state->mutex in that code path as
+> the upstream code has changed but in every other respect its the proper
+> solution.
 
--- Steve
+I thought the fact that we were touching a core driver to fix what
+seemed like an XO issue was too intrusive.
+
+> So can we apply Deepak's original correct 2008 patch instead please ?
+
+I've updated it with proper header and attached.
+
+~Deepak
 
 
-Please pull the latest tip/tracing/urgent tree, which can be found at:
+--y0ulUmNC+osPPQO6
+Content-Type: text/x-diff; charset=us-ascii
+Content-Disposition: attachment; filename="restore_console_settings_on_suspend.patch"
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-tip/tracing/urgent
-
-
-Steven Rostedt (1):
-      x86/function-graph: fix constraint for recording old return value
-
-----
- arch/x86/kernel/ftrace.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
----------------------------
-commit aa512a27e9e8ed32f31b15eec67ab1ceca33839b
-Author: Steven Rostedt <srostedt@redhat.com>
-Date:   Wed May 13 13:52:19 2009 -0400
-
-    x86/function-graph: fix constraint for recording old return value
+Set proper console speed on resume if console suspend is disabled
     
-    After upgrading from gcc 4.2.2 to 4.4.0, the function graph tracer broke.
-    Investigating, I found that in the asm that replaces the return value,
-    gcc was using the same register for the old value as it was for the
-    new value.
+Commit b5b82df6, from May 2007, breaks no_console_suspend on the OLPC
+XO laptop. Basically what happens is that upon returning from resume,
+serial8250_resume_port() will reconfigure the port for high speed
+mode and all console output will be garbled, making debug of the
+resume path painful. This patch modifies uart_resume_port() to
+reset the port to the state it was in before we suspended.
     
-    	mov	(addr), old
-    	mov	new, (addr)
+Original patch by Marcelo Tosatti
     
-    But if old and new are the same register, we clobber new with old!
-    I first thought this was a bug in gcc 4.4.0 and reported it:
-    
-      http://gcc.gnu.org/bugzilla/show_bug.cgi?id=40132
-    
-    Andrew Pinski responded (quickly), saying that it was correct gcc behavior
-    and the code needed to denote old as an "early clobber".
-    
-    Instead of "=r"(old), we need "=&r"(old).
-    
-    [Impact: keep function graph tracer from breaking with gcc 4.4.0 ]
-    
-    Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Deepak Saxena <dsaxena@laptop.org>
 
-diff --git a/arch/x86/kernel/ftrace.c b/arch/x86/kernel/ftrace.c
-index 18dfa30..b79c553 100644
---- a/arch/x86/kernel/ftrace.c
-+++ b/arch/x86/kernel/ftrace.c
-@@ -442,7 +442,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
- 		_ASM_EXTABLE(1b, 4b)
- 		_ASM_EXTABLE(2b, 4b)
+diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
+index b0bb29d..3b71038 100644
+--- a/drivers/serial/serial_core.c
++++ b/drivers/serial/serial_core.c
+@@ -2052,11 +2052,26 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *port)
+ 	struct uart_state *state = drv->state + port->line;
+ 	struct device *tty_dev;
+ 	struct uart_match match = {port, drv};
++	struct ktermios termios;
  
--		: [old] "=r" (old), [faulted] "=r" (faulted)
-+		: [old] "=&r" (old), [faulted] "=r" (faulted)
- 		: [parent] "r" (parent), [return_hooker] "r" (return_hooker)
- 		: "memory"
- 	);
+ 	mutex_lock(&state->mutex);
+ 
++	/*
++	 * First try to use the console cflag setting.
++	 */
++	memset(&termios, 0, sizeof(struct ktermios));
++	termios.c_cflag = port->cons->cflag;
++
++	/*
++	 * If that's unset, use the tty termios setting.
++	 */
++	if (termios.c_cflag == 0)
++		termios = *state->info.port.tty->termios;
++
++
+ 	if (!console_suspend_enabled && uart_console(port)) {
+ 		/* no need to resume serial console, it wasn't suspended */
++		port->ops->set_termios(port, &termios, NULL);
+ 		mutex_unlock(&state->mutex);
+ 		return 0;
+ 	}
+@@ -2073,20 +2088,6 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *port)
+ 	 * Re-enable the console device after suspending.
+ 	 */
+ 	if (uart_console(port)) {
+-		struct ktermios termios;
+-
+-		/*
+-		 * First try to use the console cflag setting.
+-		 */
+-		memset(&termios, 0, sizeof(struct ktermios));
+-		termios.c_cflag = port->cons->cflag;
+-
+-		/*
+-		 * If that's unset, use the tty termios setting.
+-		 */
+-		if (state->info.port.tty && termios.c_cflag == 0)
+-			termios = *state->info.port.tty->termios;
+-
+ 		uart_change_pm(state, 0);
+ 		port->ops->set_termios(port, &termios, NULL);
+ 		console_start(port->cons);
 
+--y0ulUmNC+osPPQO6--
