@@ -1,207 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760352AbZEMDUh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZEMD0U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760352AbZEMDUh (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 23:20:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760004AbZEMDRk
+	id S1756237AbZEMD0U (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 23:26:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753133AbZEMD0I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 23:17:40 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:46777 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1760040AbZEMDRi (ORCPT
+	Tue, 12 May 2009 23:26:08 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:43110 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752739AbZEMD0G (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 23:17:38 -0400
-Date: Wed, 13 May 2009 12:17:39 +0900
-From: Isaku Yamahata <yamahata@valinux.co.jp>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Xen-devel <xen-devel@lists.xensource.com>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Alex Nixon <alex.nixon@citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>,
-       Matthew Wilcox <willy@linux.intel.com>, tony.luck@intel.com
-Subject: Re: [Xen-devel] [PATCH 03/10] Xen: Rename the balloon lock
-Message-ID: <20090513031739.GG22497%yamahata@valinux.co.jp>
-References: <1242164891-3859-1-git-send-email-jeremy@goop.org> <1242164891-3859-4-git-send-email-jeremy@goop.org>
-Mime-Version: 1.0
+	Tue, 12 May 2009 23:26:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=AJ9J+EizcFzNgbPNebguUd1ACvw2vPldTER3L6uhsUq38VXLUOdm5k/3oI5qXpkaes
+         6jtITHmCi0X4JfFzDRMIW9f/Q32+iYkcOQCL8+GHTE4irtavv9+vlwZpSOMfFSC/R6Io
+         BOMPByv4Dadk/UJsM0EJsHYTMcIAqYtLnkZL4=
+Date: Tue, 12 May 2009 20:20:54 -0700
+From: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+To: Sitsofe Wheeler <sitsofe@yahoo.com>
+Cc: linux-kernel@vger.kernel.org,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: EeePC 900 trackpad often not detected at boot in 2.6.29-rc4
+Message-ID: <20090513032053.GA29919@dtor-d630.eng.vmware.com>
+References: <20090511072135.GA4682@sucs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1242164891-3859-4-git-send-email-jeremy@goop.org>
-User-Agent: Mutt/1.5.6i
+In-Reply-To: <20090511072135.GA4682@sucs.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 02:48:04PM -0700, Jeremy Fitzhardinge wrote:
-> From: Alex Nixon <alex.nixon@citrix.com>
+Hi,
+
+On Mon, May 11, 2009 at 08:21:35AM +0100, Sitsofe Wheeler wrote:
+> Hi,
 > 
-> * xen_create_contiguous_region needs access to the balloon lock to
->   ensure memory doesn't change under its feet, so expose the balloon
->   lock
-> * Change the name of the lock to xen_reservation_lock, to imply it's
->   now less-specific usage.
+> With the latest 2.6.29-rc4 I've been finding that my EeePC 900's
+> trackpad is frequently not detected on boot:
 > 
-> [Impact: cleanup ]
-> Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
-> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> ---
->  arch/x86/xen/mmu.c             |    7 +++++++
->  drivers/xen/balloon.c          |   15 ++++-----------
->  include/xen/interface/memory.h |    8 ++++++++
->  3 files changed, 19 insertions(+), 11 deletions(-)
+> USB Mass Storage support registered.
+> eeepc kernel: [    4.343325] PNP: PS/2 Controller [PNP0303:PS2K,PNP0f13:PS2M] at 0x60,0x64 irq 1,12
+> eeepc kernel: [    4.380623] serio: i8042 KBD port at 0x60,0x64 irq 1
+> eeepc kernel: [    4.380790] serio: i8042 AUX port at 0x60,0x64 irq 12
+> eeepc kernel: [    4.382951] mice: PS/2 mouse device common for all mice
+> eeepc kernel: [    4.387850] rtc_cmos 00:03: RTC can wake from S4
+> eeepc kernel: [    4.388828] rtc_cmos 00:03: rtc core: registered rtc_cmos as rtc0
+> eeepc kernel: [    4.388967] rtc0: alarms up to one month, 114 bytes nvram, hpet irqs
+> eeepc kernel: [    4.389622] Linux video capture interface: v2.00
+> eeepc kernel: [    4.390876] usbcore: registered new interface driver uvcvideo
+> eeepc kernel: [    4.390966] USB Video Class driver (v0.1.0)
+> eeepc kernel: [    4.394473] ACPI: Battery Slot [BAT0] (battery present)
+> eeepc kernel: [    4.397288] cpuidle: using governor ladder
+> eeepc kernel: [    4.401033] cpuidle: using governor menu
+> eeepc kernel: [    4.401209] eeepc: Eee PC Hotkey Driver
+> eeepc kernel: [    4.401951] eeepc: Hotkey init flags 0x41
+> eeepc kernel: [    4.404559] eeepc: Get control methods supported: 0x101711
+> eeepc kernel: [    4.405340] input: Asus EeePC extra buttons as /devices/virtual/input/input4
+> eeepc kernel: [    4.419146] Advanced Linux Sound Architecture Driver Version 1.0.19.
+> eeepc kernel: [    4.420902] HDA Intel 0000:00:1b.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
+> eeepc kernel: [    4.421317] HDA Intel 0000:00:1b.0: setting latency timer to 64
+> eeepc kernel: [    4.428154] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio0/input/input5
+> 
+> The workaround has been to do the following as root:
+> 
+> echo i8042 > /sys/bus/platform/drivers/i8042/unbind ; echo i8042 > /sys/bus/platform/drivers/i8042/bind
+> 
+> Which results in:
+> 
+> eeepc kernel: [  100.138095] serio: i8042 KBD port at 0x60,0x64 irq 1
+> eeepc kernel: [  100.138160] serio: i8042 AUX port at 0x60,0x64 irq 12
+> eeepc kernel: [  100.173243] input: AT Translated Set 2 keyboard as /devices/platform/i8042/serio2/input/input6
+> eeepc kernel: [  102.246050] input: ImPS/2 Logitech Wheel Mouse as /devices/platform/i8042/serio3/input/input7
+> 
 
+Does it always discover it after rebind or you need to do that a few
+times? Also, is the touchpad detected reliably if you boot an older
+kernel?
 
-Are you suggesting that ia64/xen should define its own
-xen_reservation_lock?
-Then, can you replace the patch with the following one?
+> Having talked to Matthew a few months ago it sounds like the problem is
+> that the something needs to be reset more aggressively at boot. This
+> problem used to happen very rarely (maybe once every 50 or so boots)
+> with older kernels but now seems to be happening every boot.
+> 
 
-The difference from the original is only the hunk in
-arch/ia64/xen/hypervisor.c.
-Although it is easy to fix it by ia64 specific patch, I prefer
-not to break from the first place.
-
-thanks,
-
---
-
-From: Alex Nixon <alex.nixon@citrix.com>
-
-* xen_create_contiguous_region needs access to the balloon lock to
-  ensure memory doesn't change under its feet, so expose the balloon
-  lock
-* Change the name of the lock to xen_reservation_lock, to imply it's
-  now less-specific usage.
-
-[Impact: cleanup ]
-Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- arch/ia64/xen/hypervisor.c     |    7 +++++++
- arch/x86/xen/mmu.c             |    7 +++++++
- drivers/xen/balloon.c          |   15 ++++-----------
- include/xen/interface/memory.h |    8 ++++++++
- 4 files changed, 26 insertions(+), 11 deletions(-)
-
-diff --git a/arch/ia64/xen/hypervisor.c b/arch/ia64/xen/hypervisor.c
-index cac4d97..481fbae 100644
---- a/arch/ia64/xen/hypervisor.c
-+++ b/arch/ia64/xen/hypervisor.c
-@@ -39,6 +39,13 @@ EXPORT_SYMBOL(xen_domain_type);
- 
- EXPORT_SYMBOL(__hypercall);
- 
-+/*
-+ * Protects atomic reservation decrease/increase against concurrent increases.
-+ * Also protects non-atomic updates of current_pages and driver_pages, and
-+ * balloon lists.
-+ */
-+DEFINE_SPINLOCK(xen_reservation_lock);
-+
- /* Stolen from arch/x86/xen/enlighten.c */
- /*
-  * Flag to determine whether vcpu info placement is available on all
-diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
-index e25a78e..360e546 100644
---- a/arch/x86/xen/mmu.c
-+++ b/arch/x86/xen/mmu.c
-@@ -65,6 +65,13 @@
- 
- #define MMU_UPDATE_HISTO	30
- 
-+/*
-+ * Protects atomic reservation decrease/increase against concurrent increases.
-+ * Also protects non-atomic updates of current_pages and driver_pages, and
-+ * balloon lists.
-+ */
-+DEFINE_SPINLOCK(xen_reservation_lock);
-+
- #ifdef CONFIG_XEN_DEBUG_FS
- 
- static struct {
-diff --git a/drivers/xen/balloon.c b/drivers/xen/balloon.c
-index f5bbd9e..46a8b39 100644
---- a/drivers/xen/balloon.c
-+++ b/drivers/xen/balloon.c
-@@ -84,13 +84,6 @@ static struct sys_device balloon_sysdev;
- 
- static int register_balloon(struct sys_device *sysdev);
- 
--/*
-- * Protects atomic reservation decrease/increase against concurrent increases.
-- * Also protects non-atomic updates of current_pages and driver_pages, and
-- * balloon lists.
-- */
--static DEFINE_SPINLOCK(balloon_lock);
--
- static struct balloon_stats balloon_stats;
- 
- /* We increase/decrease in batches which fit in a page */
-@@ -209,7 +202,7 @@ static int increase_reservation(unsigned long nr_pages)
- 	if (nr_pages > ARRAY_SIZE(frame_list))
- 		nr_pages = ARRAY_SIZE(frame_list);
- 
--	spin_lock_irqsave(&balloon_lock, flags);
-+	spin_lock_irqsave(&xen_reservation_lock, flags);
- 
- 	page = balloon_first_page();
- 	for (i = 0; i < nr_pages; i++) {
-@@ -267,7 +260,7 @@ static int increase_reservation(unsigned long nr_pages)
- 	totalram_pages = balloon_stats.current_pages;
- 
-  out:
--	spin_unlock_irqrestore(&balloon_lock, flags);
-+	spin_unlock_irqrestore(&xen_reservation_lock, flags);
- 
- 	return 0;
- }
-@@ -312,7 +305,7 @@ static int decrease_reservation(unsigned long nr_pages)
- 	kmap_flush_unused();
- 	flush_tlb_all();
- 
--	spin_lock_irqsave(&balloon_lock, flags);
-+	spin_lock_irqsave(&xen_reservation_lock, flags);
- 
- 	/* No more mappings: invalidate P2M and add to balloon. */
- 	for (i = 0; i < nr_pages; i++) {
-@@ -329,7 +322,7 @@ static int decrease_reservation(unsigned long nr_pages)
- 	balloon_stats.current_pages -= nr_pages;
- 	totalram_pages = balloon_stats.current_pages;
- 
--	spin_unlock_irqrestore(&balloon_lock, flags);
-+	spin_unlock_irqrestore(&xen_reservation_lock, flags);
- 
- 	return need_sleep;
- }
-diff --git a/include/xen/interface/memory.h b/include/xen/interface/memory.h
-index af36ead..29c2f58 100644
---- a/include/xen/interface/memory.h
-+++ b/include/xen/interface/memory.h
-@@ -9,6 +9,8 @@
- #ifndef __XEN_PUBLIC_MEMORY_H__
- #define __XEN_PUBLIC_MEMORY_H__
- 
-+#include <linux/spinlock.h>
-+
- /*
-  * Increase or decrease the specified domain's memory reservation. Returns a
-  * -ve errcode on failure, or the # extents successfully allocated or freed.
-@@ -142,4 +144,10 @@ struct xen_translate_gpfn_list {
- };
- DEFINE_GUEST_HANDLE_STRUCT(xen_translate_gpfn_list);
- 
-+/*
-+ * Prevent the balloon driver from changing the memory reservation
-+ * during a driver critical region.
-+ */
-+extern spinlock_t xen_reservation_lock;
-+
- #endif /* __XEN_PUBLIC_MEMORY_H__ */
--- 
-1.6.0.2
-
-
-
+Could you try booting with i8042.debug and send me dmesg of the case
+when touchpad is not detected, please? BTW, why don't you have Elantech
+support enabled?
 
 -- 
-yamahata
+Dmitry
