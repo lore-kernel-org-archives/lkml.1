@@ -1,58 +1,135 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbZEMNwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759956AbZEMNxj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755787AbZEMNwV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZEMNwM
+	id S1759956AbZEMNxj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:53:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZEMNx3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:52:12 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:40277 "EHLO mx2.suse.de"
+	Wed, 13 May 2009 09:53:29 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60294 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751032AbZEMNwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:52:11 -0400
-Message-ID: <4A0AD0D3.6030802@novell.com>
-Date: Wed, 13 May 2009 22:53:23 +0900
-From: Tejun Heo <teheo@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1750945AbZEMNx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 09:53:28 -0400
+Date: Wed, 13 May 2009 13:51:49 GMT
+From: tip-bot for Rusty Russell <rusty@rustcorp.com.au>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       rusty@rustcorp.com.au, jeff@garzik.org, tglx@linutronix.de,
+       viro@zeniv.linux.org.uk, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rusty@rustcorp.com.au, jeff@garzik.org, tglx@linutronix.de,
+       viro@zeniv.linux.org.uk, mingo@elte.hu
+In-Reply-To: <200905131619.12880.rusty@rustcorp.com.au>
+References: <200905131619.12880.rusty@rustcorp.com.au>
+Subject: [tip:sched/urgent] sched: avoid flexible array member inside struct (gcc extension)
+Message-ID: <tip-61a7bca8b5c277ba35e58009e23a1e582f6748eb@git.kernel.org>
+Git-Commit-ID: 61a7bca8b5c277ba35e58009e23a1e582f6748eb
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: remap allocator for per-CPU memory
-References: <4A09B23B02000078000007F1@vpn.id2.novell.com> <4A09991E.9010903@kernel.org> <4A0A9C70.6090803@novell.com> <87vdo5l0u6.fsf@basil.nowhere.org> <4A0AAB6B.3090903@novell.com> <4A0AAF10.3030709@novell.com> <4A0ADE6A0200007800000BA7@novell.com> <4A0ACB29.5030009@novell.com> <4A0AEAC80200007800000BC3@vpn.id2.novell.com>
-In-Reply-To: <4A0AEAC80200007800000BC3@vpn.id2.novell.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 13 May 2009 13:51:51 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Jan.
+Commit-ID:  61a7bca8b5c277ba35e58009e23a1e582f6748eb
+Gitweb:     http://git.kernel.org/tip/61a7bca8b5c277ba35e58009e23a1e582f6748eb
+Author:     Rusty Russell <rusty@rustcorp.com.au>
+AuthorDate: Wed, 13 May 2009 16:19:12 +0930
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Wed, 13 May 2009 15:17:05 +0200
 
-Jan Beulich wrote:
->>>> Tejun Heo <teheo@novell.com> 13.05.09 15:29 >>>
->>> (b) teach the pageattr code to handle the per-CPU virtual area similarly to
->>> the kernel space for x86-64 (though it's going to be a little more complicated
->>> since there's no pre-determined relation between the virtual and physical
->>> addresses - the necessary lookup might become expensive on systems with
->>> very many [possible] CPUs).
->> Can you elaborate this a bit?  Let's sya there's quick way to match
->> whether the page is part of the remapped large page, what can pageattr
->> do differently then?  Applying the same attribute to both mappings?
->> Failing or filtering set_memory_*()?
-> 
-> It would have to split the page. Perhaps there wouldn't be a need to
-> apply the new attribute to the page(s) that is(are) in the process
-> of getting its(their) attribute(s) changed; instead, just don't
-> re-establish a 4k mapping for those pages that aren't part of the
-> per-CPU space.
+sched: avoid flexible array member inside struct (gcc extension)
 
-Ah... right.  Splitting the remapped area should do the trick, so now
-the question is whether it would worth all the trouble or should we
-just forget about remapping and use 4k on NUMA machines.  I don't have
-much clue here.  Andi seems to think there's no reason to bother with
-PMD mappings.  Ingo, what do you think?
+struct sched_group and struct sched_domain end in 'unsigned long
+cpumask[]' which Jeff Garzik notes is not legal C to place inside
+another struct.  It upsets sparse and clang (LLVM's C front end).
 
-Thanks.
+Al Viro pointed out that a union is the Right Way to do this.
 
--- 
-tejun
+[ Impact: use more standard C code ]
+
+Reported-by: Jeff Garzik <jeff@garzik.org>
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Acked-by: Jeff Garzik <jeff@garzik.org>
+Acked-by: Al Viro <viro@zeniv.linux.org.uk>
+LKML-Reference: <200905131619.12880.rusty@rustcorp.com.au>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
+
+
+---
+ kernel/sched.c |   28 +++++++++++++++-------------
+ 1 files changed, 15 insertions(+), 13 deletions(-)
+
+diff --git a/kernel/sched.c b/kernel/sched.c
+index 26efa47..d1ef62c 100644
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7756,22 +7756,24 @@ int sched_smt_power_savings = 0, sched_mc_power_savings = 0;
+  * FIXME: use cpumask_var_t or dynamic percpu alloc to avoid wasting space
+  * for nr_cpu_ids < CONFIG_NR_CPUS.
+  */
+-struct static_sched_group {
++union static_sched_group {
+ 	struct sched_group sg;
+-	DECLARE_BITMAP(cpus, CONFIG_NR_CPUS);
++	char _sg_and_cpus[sizeof(struct sched_group) +
++			  BITS_TO_LONGS(CONFIG_NR_CPUS) * sizeof(long)];
+ };
+ 
+-struct static_sched_domain {
++union static_sched_domain {
+ 	struct sched_domain sd;
+-	DECLARE_BITMAP(span, CONFIG_NR_CPUS);
++	char _sd_and_cpus[sizeof(struct sched_domain) +
++			  BITS_TO_LONGS(CONFIG_NR_CPUS) * sizeof(long)];
+ };
+ 
+ /*
+  * SMT sched-domains:
+  */
+ #ifdef CONFIG_SCHED_SMT
+-static DEFINE_PER_CPU(struct static_sched_domain, cpu_domains);
+-static DEFINE_PER_CPU(struct static_sched_group, sched_group_cpus);
++static DEFINE_PER_CPU(union static_sched_domain, cpu_domains);
++static DEFINE_PER_CPU(union static_sched_group, sched_group_cpus);
+ 
+ static int
+ cpu_to_cpu_group(int cpu, const struct cpumask *cpu_map,
+@@ -7787,8 +7789,8 @@ cpu_to_cpu_group(int cpu, const struct cpumask *cpu_map,
+  * multi-core sched-domains:
+  */
+ #ifdef CONFIG_SCHED_MC
+-static DEFINE_PER_CPU(struct static_sched_domain, core_domains);
+-static DEFINE_PER_CPU(struct static_sched_group, sched_group_core);
++static DEFINE_PER_CPU(union static_sched_domain, core_domains);
++static DEFINE_PER_CPU(union static_sched_group, sched_group_core);
+ #endif /* CONFIG_SCHED_MC */
+ 
+ #if defined(CONFIG_SCHED_MC) && defined(CONFIG_SCHED_SMT)
+@@ -7815,8 +7817,8 @@ cpu_to_core_group(int cpu, const struct cpumask *cpu_map,
+ }
+ #endif
+ 
+-static DEFINE_PER_CPU(struct static_sched_domain, phys_domains);
+-static DEFINE_PER_CPU(struct static_sched_group, sched_group_phys);
++static DEFINE_PER_CPU(union static_sched_domain, phys_domains);
++static DEFINE_PER_CPU(union static_sched_group, sched_group_phys);
+ 
+ static int
+ cpu_to_phys_group(int cpu, const struct cpumask *cpu_map,
+@@ -7843,11 +7845,11 @@ cpu_to_phys_group(int cpu, const struct cpumask *cpu_map,
+  * groups, so roll our own. Now each node has its own list of groups which
+  * gets dynamically allocated.
+  */
+-static DEFINE_PER_CPU(struct static_sched_domain, node_domains);
++static DEFINE_PER_CPU(union static_sched_domain, node_domains);
+ static struct sched_group ***sched_group_nodes_bycpu;
+ 
+-static DEFINE_PER_CPU(struct static_sched_domain, allnodes_domains);
+-static DEFINE_PER_CPU(struct static_sched_group, sched_group_allnodes);
++static DEFINE_PER_CPU(union static_sched_domain, allnodes_domains);
++static DEFINE_PER_CPU(union static_sched_group, sched_group_allnodes);
+ 
+ static int cpu_to_allnodes_group(int cpu, const struct cpumask *cpu_map,
+ 				 struct sched_group **sg,
