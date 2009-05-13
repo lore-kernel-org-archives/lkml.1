@@ -1,179 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757911AbZEMIQm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758136AbZEMIRI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757911AbZEMIQm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 04:16:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754858AbZEMIQW
+	id S1758136AbZEMIRI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 04:17:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757912AbZEMIQo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 04:16:22 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:45309 "EHLO ogre.sisk.pl"
+	Wed, 13 May 2009 04:16:44 -0400
+Received: from mga03.intel.com ([143.182.124.21]:49617 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754425AbZEMIQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 04:16:19 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Lin Ming <ming.m.lin@intel.com>, Bob Copeland <me@bobcopeland.com>
-Subject: Re: [BISECTED] Was Re: acpi/suspend - irq 9: nobody cared
-Date: Wed, 13 May 2009 10:15:44 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>, "yakui_zhao" <yakui.zhao@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "Moore, Robert" <robert.moore@intel.com>
-References: <20090507105821.GA5864@hash.localnet> <d3f22a0905122245h15786220g31ad0dcb8caa3a38@mail.gmail.com> <1242192968.14626.40.camel@minggr.sh.intel.com>
-In-Reply-To: <1242192968.14626.40.camel@minggr.sh.intel.com>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-2"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905131015.45635.rjw@sisk.pl>
+	id S1756735AbZEMIQj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 04:16:39 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,186,1241420400"; 
+   d="scan'208";a="142252582"
+From: Sheng Yang <sheng@linux.intel.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm <linux-mm@kvack.org>, Ingo Molnar <mingo@elte.hu>,
+       "H. Peter Anvin" <hpa@zytor.com>, Sheng Yang <sheng@linux.intel.com>
+Subject: [PATCH] x86: Extend test_and_set_bit() test_and_clean_bit() to 64 bits in X86_64
+Date: Wed, 13 May 2009 16:17:27 +0800
+Message-Id: <1242202647-32446-1-git-send-email-sheng@linux.intel.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 May 2009, Lin Ming wrote:
-> 
-> > From: Bob Copeland <me@bobcopeland.com>
-> > Date: Wed, May 13, 2009 at 12:05 PM
-> > Subject: [BISECTED] Was Re: acpi/suspend - irq 9: nobody cared
-> > To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-> > Cc: yakui_zhao <yakui.zhao@intel.com>, "linux-kernel@vger.kernel.org"
-> > <linux-kernel@vger.kernel.org>, "linux-acpi@vger.kernel.org"
-> > <linux-acpi@vger.kernel.org>, "Rafael J. Wysocki" <rjw@sisk.pl>,
-> > robert.moore@intel.com
-> > 
-> > 
-> > On Tue, May 12, 2009 at 01:01:06PM -0600, Bjorn Helgaas wrote:
-> > > Even if you can't bisect this, can you please open a bugzilla at
-> > > http://bugzilla.kernel.org?
-> > 
-> > Done: http://bugzilla.kernel.org/show_bug.cgi?id=13289
-> > 
-> > I have bisected it.  I don't know if it's related, but I have a
-> > "MacBook 1,1" which in sleep.c has a quirk related to SCI_EN, and I
-> > see that this patch changed ACPI_PM1_CONTROL_PRESERVED_BITS to include
-> > SCI_EN.  I have verified that reverting the patch on top of latest -rc
-> > prevents irq 9 from being disabled.
-> 
-> >From ACPI Spec 3.0a 4.7.3.2.1,
-> 
-> "SCI_EN: Selects the power management event to be either an SCI or SMI
-> interrupt for the following events. When this bit is set, then power
-> management events will generate an SCI interrupt. When this bit is reset
-> power management events will generate an SMI interrupt. It is the
-> responsibility of the hardware to set or reset this bit. OSPM always
-> preserves this bit position."
-> 
-> So we preserve SCI_EN bit per spec.
+This fix 44/45 bit width memory can't boot up issue. The reason is
+free_bootmem_node()->mark_bootmem_node()->__free() use test_and_clean_bit() to
+clean node_bootmem_map, but for 44bits width address, the idx set bit 31 (43 -
+12), which consider as a nagetive value for bts.
 
-In fact we do set SCI_EN directly in drivers/acpi/sleep.c in a couple of
-places exactly because the hardware is _known_ to wrong things here.  So, we
-don't really preserve it, _exactly_ because at least some pieces of hardware
-out there don't follow the spec.  Including Macs, IIRC.
+This patch applied to tip/mm.
 
-Bob, can you please verify if the Lin Ming's patch helps?
+Signed-off-by: Sheng Yang <sheng@linux.intel.com>
+---
+ arch/x86/include/asm/bitops.h |   24 +++++++++++++++---------
+ 1 files changed, 15 insertions(+), 9 deletions(-)
 
-Rafael
-
-
-> Anyway, would you please try below patch to see if the bug is caused by
-> SCI_EN bit preserved?
-> 
-> diff --git a/drivers/acpi/acpica/aclocal.h b/drivers/acpi/acpica/aclocal.h
-> index 772ee5c..3d082bb 100644
-> --- a/drivers/acpi/acpica/aclocal.h
-> +++ b/drivers/acpi/acpica/aclocal.h
-> @@ -787,7 +787,7 @@ struct acpi_bit_register_info {
->  
->  /* For control registers, both ignored and reserved bits must be preserved */
->  
-> -#define ACPI_PM1_CONTROL_IGNORED_BITS           0x0201	/* Bits 9, 0(SCI_EN) */
-> +#define ACPI_PM1_CONTROL_IGNORED_BITS           0x0200	/* Bits 9 */
->  #define ACPI_PM1_CONTROL_RESERVED_BITS          0xC1F8	/* Bits 14-15, 3-8 */
->  #define ACPI_PM1_CONTROL_PRESERVED_BITS \
->  	       (ACPI_PM1_CONTROL_IGNORED_BITS | ACPI_PM1_CONTROL_RESERVED_BITS)
-> 
-> ---
-> Lin Ming
-> 
-> > 
-> > commit 20869dcfde204e1c21b642608d708d82472fee2b
-> > Author: Bob Moore <robert.moore@intel.com>
-> > Date:   Fri Mar 13 09:10:46 2009 +0800
-> > 
-> >    ACPICA: Preserve all PM control reserved and ignored bits
-> > 
-> >    As per the ACPI specification, preserve (read/modify/write) all
-> >    bits that are defined as either reserved or ignored (PM control
-> >    control registers only.)
-> > 
-> >    Signed-off-by: Bob Moore <robert.moore@intel.com>
-> >    Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-> >    Signed-off-by: Len Brown <len.brown@intel.com>
-> > 
-> > diff --git a/drivers/acpi/acpica/aclocal.h b/drivers/acpi/acpica/aclocal.h
-> > index 18a8d96..f01e155 100644
-> > --- a/drivers/acpi/acpica/aclocal.h
-> > +++ b/drivers/acpi/acpica/aclocal.h
-> > @@ -780,7 +780,15 @@ struct acpi_bit_register_info {
-> >  * must be preserved.
-> >  */
-> >  #define ACPI_PM1_STATUS_PRESERVED_BITS          0x0800 /* Bit 11 */
-> > -#define ACPI_PM1_CONTROL_PRESERVED_BITS         0x0200 /* Bit 9 (whatever) */
-> > +
-> > +/* For control registers, both ignored and reserved bits must be preserved */
-> > +
-> > +#define ACPI_PM1_CONTROL_IGNORED_BITS           0x0201 /* Bits 9, 0(SCI_EN) */
-> > +#define ACPI_PM1_CONTROL_RESERVED_BITS          0xC1F8 /* Bits 14-15, 3-8 */
-> > +#define ACPI_PM1_CONTROL_PRESERVED_BITS \
-> > +              (ACPI_PM1_CONTROL_IGNORED_BITS | ACPI_PM1_CONTROL_RESERVED_BITS)
-> > +
-> > +#define ACPI_PM2_CONTROL_PRESERVED_BITS         0xFFFFFFFE     /* All
-> > except bit 0 */
-> > 
-> >  /*
-> >  * Register IDs
-> > diff --git a/drivers/acpi/acpica/hwregs.c b/drivers/acpi/acpica/hwregs.c
-> > index fd7abe2..6117362 100644
-> > --- a/drivers/acpi/acpica/hwregs.c
-> > +++ b/drivers/acpi/acpica/hwregs.c
-> > @@ -328,6 +328,21 @@ acpi_status acpi_hw_register_write(u32
-> > register_id, u32 value)
-> > 
-> >        case ACPI_REGISTER_PM2_CONTROL: /* 8-bit access */
-> > 
-> > +               /*
-> > +                * For control registers, all reserved bits must be preserved,
-> > +                * as per the ACPI spec.
-> > +                */
-> > +               status =
-> > +                   acpi_read(&read_value, &acpi_gbl_FADT.xpm2_control_block);
-> > +               if (ACPI_FAILURE(status)) {
-> > +                       goto exit;
-> > +               }
-> > +
-> > +               /* Insert the bits to be preserved */
-> > +
-> > +               ACPI_INSERT_BITS(value, ACPI_PM2_CONTROL_PRESERVED_BITS,
-> > +                                read_value);
-> > +
-> >                status = acpi_write(value, &acpi_gbl_FADT.xpm2_control_block);
-> >                break;
-> > 
-> > 
-> > 
-> > --
-> > Bob Copeland %% www.bobcopeland.com
-> > 
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-acpi" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
-> 
-> 
-
-
+diff --git a/arch/x86/include/asm/bitops.h b/arch/x86/include/asm/bitops.h
+index 02b47a6..400dd28 100644
+--- a/arch/x86/include/asm/bitops.h
++++ b/arch/x86/include/asm/bitops.h
+@@ -41,6 +41,12 @@
+ #define CONST_MASK_ADDR(nr, addr)	BITOP_ADDR((void *)(addr) + ((nr)>>3))
+ #define CONST_MASK(nr)			(1 << ((nr) & 7))
+ 
++#ifdef CONFIG_X86_64
++#define REX_X86 "rex "
++#else
++#define REX_X86
++#endif
++
+ /**
+  * set_bit - Atomically set a bit in memory
+  * @nr: the bit to set
+@@ -192,11 +198,11 @@ static inline void change_bit(int nr, volatile unsigned long *addr)
+  * This operation is atomic and cannot be reordered.
+  * It also implies a memory barrier.
+  */
+-static inline int test_and_set_bit(int nr, volatile unsigned long *addr)
++static inline int test_and_set_bit(long int nr, volatile unsigned long *addr)
+ {
+ 	int oldbit;
+ 
+-	asm volatile(LOCK_PREFIX "bts %2,%1\n\t"
++	asm volatile(LOCK_PREFIX REX_X86 "bts %2,%1\n\t"
+ 		     "sbb %0,%0" : "=r" (oldbit), ADDR : "Ir" (nr) : "memory");
+ 
+ 	return oldbit;
+@@ -224,11 +230,11 @@ test_and_set_bit_lock(int nr, volatile unsigned long *addr)
+  * If two examples of this operation race, one can appear to succeed
+  * but actually fail.  You must protect multiple accesses with a lock.
+  */
+-static inline int __test_and_set_bit(int nr, volatile unsigned long *addr)
++static inline int __test_and_set_bit(long int nr, volatile unsigned long *addr)
+ {
+ 	int oldbit;
+ 
+-	asm("bts %2,%1\n\t"
++	asm(REX_X86 "bts %2,%1\n\t"
+ 	    "sbb %0,%0"
+ 	    : "=r" (oldbit), ADDR
+ 	    : "Ir" (nr));
+@@ -243,14 +249,13 @@ static inline int __test_and_set_bit(int nr, volatile unsigned long *addr)
+  * This operation is atomic and cannot be reordered.
+  * It also implies a memory barrier.
+  */
+-static inline int test_and_clear_bit(int nr, volatile unsigned long *addr)
++static inline int test_and_clear_bit(long int nr, volatile unsigned long *addr)
+ {
+ 	int oldbit;
+ 
+-	asm volatile(LOCK_PREFIX "btr %2,%1\n\t"
++	asm volatile(LOCK_PREFIX REX_X86 "btr %2,%1\n\t"
+ 		     "sbb %0,%0"
+ 		     : "=r" (oldbit), ADDR : "Ir" (nr) : "memory");
+-
+ 	return oldbit;
+ }
+ 
+@@ -263,11 +268,12 @@ static inline int test_and_clear_bit(int nr, volatile unsigned long *addr)
+  * If two examples of this operation race, one can appear to succeed
+  * but actually fail.  You must protect multiple accesses with a lock.
+  */
+-static inline int __test_and_clear_bit(int nr, volatile unsigned long *addr)
++static inline int __test_and_clear_bit(long int nr,
++				       volatile unsigned long *addr)
+ {
+ 	int oldbit;
+ 
+-	asm volatile("btr %2,%1\n\t"
++	asm volatile(REX_X86 "btr %2,%1\n\t"
+ 		     "sbb %0,%0"
+ 		     : "=r" (oldbit), ADDR
+ 		     : "Ir" (nr));
 -- 
-Everyone knows that debugging is twice as hard as writing a program
-in the first place.  So if you're as clever as you can be when you write it,
-how will you ever debug it? --- Brian Kernighan
+1.5.4.5
+
