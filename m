@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761786AbZEMV4H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761765AbZEMV5W@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761786AbZEMV4H (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 17:56:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758604AbZEMVzy
+	id S1761765AbZEMV5W (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 17:57:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753372AbZEMV5L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 17:55:54 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:51223 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756980AbZEMVzx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 17:55:53 -0400
-Message-ID: <4A0B4179.1000504@zytor.com>
-Date: Wed, 13 May 2009 14:54:01 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 13 May 2009 17:57:11 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:51289 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751331AbZEMV5L (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 17:57:11 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/6] PM/Hibernate: Rework shrinking of memory
+Date: Wed, 13 May 2009 23:56:38 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
+Cc: linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com,
+       linux-kernel@vger.kernel.org, pavel@ucw.cz, nigel@tuxonice.net,
+       rientjes@google.com, linux-mm@kvack.org
+References: <200905070040.08561.rjw@sisk.pl> <200905132255.04681.rjw@sisk.pl> <20090513141647.076b67f0.akpm@linux-foundation.org>
+In-Reply-To: <20090513141647.076b67f0.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-CC: Hitoshi Mitake <h.mitake@gmail.com>, Roland Dreier <rdreier@cisco.com>,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, tglx@linutronix.de,
-       rpjday@crashcourse.ca, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
-References: <49EE37AF.4020507@zytor.com>	 <20090421.173123.191021055.davem@davemloft.net>	 <adak55438gp.fsf_-_@cisco.com>	 <20090428.221228.217954247.davem@davemloft.net>	 <20090429115654.GC11586@elte.hu> <49F843BC.7020902@garzik.org>	 <adahc071ie4.fsf@cisco.com> <49F8B1A1.4010208@garzik.org> <a6b9f31a0905122232s2d23b4e3h6e447c3fa5c29ee6@mail.gmail.com> <4A0B30D0.4060806@garzik.org> <4A0B3605.8090007@zytor.com> <4A0B3BF3.1050804@garzik.org>
-In-Reply-To: <4A0B3BF3.1050804@garzik.org>
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905132356.39481.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jeff Garzik wrote:
->>>
->> I have personally dealt with at least one device who'd want to opt out
->> of a standard readq/writeq (it's not in-tree because it never shipped,
->> unfortunately.)  Doing the opt-in headers seems like a reasonable thing
->> to do to me, but perhaps I'm just being overly paranoid.
+On Wednesday 13 May 2009, Andrew Morton wrote:
+> On Wed, 13 May 2009 22:55:03 +0200
+> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 > 
-> Isn't that a variant of "punish all sane hardware, because bizarre 
-> unshipped hardware exists"?
+> > On Wednesday 13 May 2009, Andrew Morton wrote:
+> > > On Wed, 13 May 2009 10:39:25 +0200
+> > > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > > 
+> > > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > > 
+> > > > Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
+> > > > just once to make some room for the image and then allocates memory
+> > > > to apply more pressure to the memory management subsystem, if
+> > > > necessary.
+> > > > 
+> > > > Unfortunately, we don't seem to be able to drop shrink_all_memory()
+> > > > entirely just yet, because that would lead to huge performance
+> > > > regressions in some test cases.
+> > > > 
+> > > 
+> > > Isn't this a somewhat large problem?
+> > 
+> > Yes, it is.  The thing is 8 times slower (15 s vs 2 s) without the
+> > shrink_all_memory() in at least one test case.  100% reproducible.
 > 
-> IMO the best fix is to document existing readq assumptions, and 
-> standardize that definition on other platforms.
-> 
-> The burden of special casing for bizarre hardware should not fall on 
-> /sane/ drivers and hardware, who should be the ones opting _out_ of the 
-> standard regime.
-> 
+> erk.  Any ideas why?
 
-It sort of is, but it's also a case of "explicitly documenting your
-assumptions".  You have do admit that having to #include a single extra
-header file is hardly a hardship.
+The swapping out things appears to be too slow.  Actually, no wonder, as it is
+done one page at a time, while it looks like shrink_all_memory() appears to
+make them swap out in big chunks.
 
-	-hpa
+> A quick peek at a kernel profile and perhaps the before-and-after delta in
+> the /proc/vmstat numbers would probably guide us there.
 
+I'm planning to do some investigation on that later.
+
+> > > The main point (I thought) was to remove shrink_all_memory().  Instead,
+> > > we're retaining it and adding even more stuff?
+> > 
+> > The idea is that afterwards we can drop shrink_all_memory() once the
+> > performance problem has been resolved.  Also, we now allocate memory for the
+> > image using GFP_KERNEL instead of doing it with GFP_ATOMIC after freezing
+> > devices.  I'd think that's an improvement?
+> 
+> Dunno.  GFP_KERNEL might attempt to do writeback/swapout/etc, which
+> could be embarrassing if the devices are frozen.
+
+They aren't, because the preallocation is done upfront, so once the OOM killer
+has been taken care of, it's totally safe. :-)
