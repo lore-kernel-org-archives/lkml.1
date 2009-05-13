@@ -1,51 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756666AbZEMNha@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759555AbZEMNie@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756666AbZEMNha (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:37:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbZEMNhP
+	id S1759555AbZEMNie (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:38:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755168AbZEMNiZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:37:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38092 "EHLO mx2.redhat.com"
+	Wed, 13 May 2009 09:38:25 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38184 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752095AbZEMNhO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:37:14 -0400
-Message-ID: <4A0ACCAA.4020505@redhat.com>
-Date: Wed, 13 May 2009 09:35:38 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	id S1752137AbZEMNiY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 09:38:24 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH] crypto: tcrypt: add option to not exit on success
+Date: Wed, 13 May 2009 09:37:32 -0400
+User-Agent: KMail/1.11.2 (Linux/2.6.29.1-102.fc11.x86_64; KDE/4.2.2; x86_64; ; )
+Cc: Neil Horman <nhorman@tuxdriver.com>, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200905111006.32675.jarod@redhat.com> <200905130912.46965.jarod@redhat.com> <20090513132752.GA17262@gondor.apana.org.au>
+In-Reply-To: <20090513132752.GA17262@gondor.apana.org.au>
 MIME-Version: 1.0
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-CC: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH 2/4] vmscan: drop PF_SWAPWRITE from zone_reclaim
-References: <20090513120155.5879.A69D9226@jp.fujitsu.com> <20090513120627.587F.A69D9226@jp.fujitsu.com>
-In-Reply-To: <20090513120627.587F.A69D9226@jp.fujitsu.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905130937.33449.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KOSAKI Motohiro wrote:
-> Subject: [PATCH] vmscan: drop PF_SWAPWRITE from zone_reclaim
+On Wednesday 13 May 2009 09:27:52 Herbert Xu wrote:
+> On Wed, May 13, 2009 at 09:12:46AM -0400, Jarod Wilson wrote:
+> > 
+> > Hm... FIPS has the requirement that we test all algs before we use any
+> > algs, self-tests on demand before first use for each alg is
+> > insufficient. At first blush, I'm not seeing how we ensure this
+> > happens. How can we trigger a cbc(des3_ede) self-test from userspace?
+> > I see that modprobe'ing des.ko runs the base des and des3_ede
+> > self-tests, but modprobe'ing cbc.ko doesn't lead to any self-tests
+> > being run.
 > 
-> PF_SWAPWRITE mean ignore write congestion. (see may_write_to_queue())
+> Once we have a user-space interface crypto API you will be able
+> to instantiate any given algorithm.
 > 
-> foreground reclaim shouldn't ignore it because to write congested device cause
-> large IO lantency.
-> it isn't better than remote node allocation.
+> For now I suggest that you create your own module to instantiate
+> these FIPS algorithms.  Or just load tcrypt and ignore the exit
+> status, or make tcrypt return 0 if we're in FIPS mode.
 
-It might be on NUMAQ (which is no longer manufactured), but
-your change looks right for every other vaguely modern NUMA
-architecture that I know of.
-
-> Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Cc: Christoph Lameter <cl@linux-foundation.org>
-> Cc: Rik van Riel <riel@redhat.com>
-
-Acked-by: Rik van Riel <riel@redhat.com>
+The latter option is more or less what the patch at the start of this
+thread did, although via a param to tcrypt, not keying off the fips
+flag. If I were to modify the patch to drop the mod param usage, and
+instead key off the fips flag to not exit, would that be acceptable
+for committing until such time as the userspace interface is ready?
 
 -- 
-All rights reversed.
+Jarod Wilson
+jarod@redhat.com
