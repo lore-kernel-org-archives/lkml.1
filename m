@@ -1,52 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760906AbZEMTuI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761320AbZEMTxg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760906AbZEMTuI (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 15:50:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbZEMTtz
+	id S1761320AbZEMTxg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 15:53:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754700AbZEMTx1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 15:49:55 -0400
-Received: from hera.kernel.org ([140.211.167.34]:53409 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752232AbZEMTtz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 15:49:55 -0400
-Subject: Re: [RFC][PATCH -tip] x86: audit.c remove unnecessary global
- arraysn
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@elte.hu>, Al Viro <viro@zeniv.linux.org.uk>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-In-Reply-To: <alpine.LFD.2.00.0905132136300.3561@localhost.localdomain>
-References: <1242240694.3364.3.camel@localhost.localdomain>
-	 <alpine.LFD.2.00.0905132136300.3561@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 14 May 2009 01:19:18 +0530
-Message-Id: <1242244159.3364.5.camel@localhost.localdomain>
+	Wed, 13 May 2009 15:53:27 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:34156 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752232AbZEMTx0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 15:53:26 -0400
+Date: Wed, 13 May 2009 12:48:05 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: linux@arm.linux.org.uk, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       hartleys@visionengravers.com, mcrapet@gmail.com, fred99@carolina.rr.com,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] Double check memmap is actually valid with a memmap has
+ unexpected holes V2
+Message-Id: <20090513124805.9c70c43c.akpm@linux-foundation.org>
+In-Reply-To: <20090513163448.GA18006@csn.ul.ie>
+References: <20090505082944.GA25904@csn.ul.ie>
+	<20090505083614.GA28688@n2100.arm.linux.org.uk>
+	<20090505084928.GC25904@csn.ul.ie>
+	<20090513163448.GA18006@csn.ul.ie>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-13 at 21:42 +0200, Thomas Gleixner wrote:
-> On Thu, 14 May 2009, Jaswinder Singh Rajput wrote:
->  
-> > ia32_dir_class[], ia32_write_class[], ia32_read_class[], ia32_chattr_class[]
-> > and ia32_signal_class[] are used only by arch/x86/kernel/audit_64.c
-> > which can be replace by local variables:
-> > 
-> > dir_class[], write_class[], read_class[], chattr_class[] and signal_class[]
-> 
-> Groan, it can be replaced by local variables, but it does not result
-> in the same functionality.
-> 
-> These audit classes are arrays of syscall numbers, which are different
-> for 32 and 64 bit. ia32/audit.c includes unistd_32.h not unistd.h for
-> exactly this reason.
-> 
+On Wed, 13 May 2009 17:34:48 +0100
+Mel Gorman <mel@csn.ul.ie> wrote:
 
-Thanks, got it :-)
+> pfn_valid() is meant to be able to tell if a given PFN has valid memmap
+> associated with it or not. In FLATMEM, it is expected that holes always
+> have valid memmap as long as there is valid PFNs either side of the hole.
+> In SPARSEMEM, it is assumed that a valid section has a memmap for the
+> entire section.
+> 
+> However, ARM and maybe other embedded architectures in the future free
+> memmap backing holes to save memory on the assumption the memmap is never
+> used. The page_zone linkages are then broken even though pfn_valid()
+> returns true. A walker of the full memmap must then do this additional
+> check to ensure the memmap they are looking at is sane by making sure the
+> zone and PFN linkages are still valid. This is expensive, but walkers of
+> the full memmap are extremely rare.
+> 
+> This was caught before for FLATMEM and hacked around but it hits again for
+> SPARSEMEM because the page_zone linkages can look ok where the PFN linkages
+> are totally screwed. This looks like a hatchet job but the reality is that
+> any clean solution would end up consumning all the memory saved by punching
+> these unexpected holes in the memmap. For example, we tried marking the
+> memmap within the section invalid but the section size exceeds the size of
+> the hole in most cases so pfn_valid() starts returning false where valid
+> memmap exists. Shrinking the size of the section would increase memory
+> consumption offsetting the gains.
+> 
+> This patch identifies when an architecture is punching unexpected holes
+> in the memmap that the memory model cannot automatically detect and sets
+> ARCH_HAS_HOLES_MEMORYMODEL. At the moment, this is restricted to EP93xx
+> which is the model sub-architecture this has been reported on but may expand
+> later. When set, walkers of the full memmap must call memmap_valid_within()
+> for each PFN and passing in what it expects the page and zone to be for
+> that PFN. If it finds the linkages to be broken, it assumes the memmap is
+> invalid for that PFN.
 
---
-JSR
+It's unclear to me whether this patch is needed in 2.6.30 or even
+2.6.29 or whatever.
+
+It applies OK to 2.6.28, 2.6.29, current mainline and mmotm, so I'll
+just sit tight until I'm told what to do.
 
