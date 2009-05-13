@@ -1,74 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbZEMLcv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759192AbZEMLdP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758166AbZEMLcv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 07:32:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZEMLcm
+	id S1759192AbZEMLdP (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 07:33:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZEMLcz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 07:32:42 -0400
-Received: from mail-pz0-f115.google.com ([209.85.222.115]:46644 "EHLO
-	mail-pz0-f115.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750998AbZEMLcl (ORCPT
+	Wed, 13 May 2009 07:32:55 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:56045 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756366AbZEMLcz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 07:32:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=A23CPzSOGyfJtQmEoStdweDzbyy5rfs/RUqv3J/HCirmtlpMamocuL0wQjbWgw0AFe
-         r4bKQB8GrTGKkbSAhEMsA/TnKxgIbRE2x/OaoSiAVZJzdCUrHsRxYRE96wkXwcVjVKpL
-         r/nRsMMcmKTqloN3Td/m7RyrhW24500T9UpYA=
-Date: Wed, 13 May 2009 19:33:57 +0800
-From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
-To: GeunSik Lim <leemgs1@gmail.com>
-Cc: mtk.manpages@gmail.com, tovalds@linux-foundation.org,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH]man-pages : section 9  for kernel api description.
-Message-ID: <20090513113357.GA11773@hack>
-References: <1242180268.31161.24.camel@centos51>
-MIME-Version: 1.0
+	Wed, 13 May 2009 07:32:55 -0400
+Date: Wed, 13 May 2009 13:38:17 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
+       linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Minchan@firstfloor.org
+Subject: Re: [PATCH] Kconfig: CONFIG_UNEVICTABLE_LRU move into EMBEDDED submenu
+Message-ID: <20090513113817.GO19296@one.firstfloor.org>
+References: <20090513172904.7234.A69D9226@jp.fujitsu.com> <87r5ytl0nn.fsf@basil.nowhere.org> <2f11576a0905130418w1782f85j12cb938e92d256ff@mail.gmail.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1242180268.31161.24.camel@centos51>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <2f11576a0905130418w1782f85j12cb938e92d256ff@mail.gmail.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 11:04:28AM +0900, GeunSik Lim wrote:
->
->
->Dear Michael Kerrisk,
->
->Are you maintainer of man-pages(man-pages-3.XX.tar.gz)?
->I am not sure...
+> In past days, I proposed this. but Minchan found this config bloat kernel 7kb
+> and he claim embedded guys should have selectable chance. I agreed it.
 
-Yes, he is.
+Well there's lots of code in the kernel and 7k doesn't seem worth bothering.
+If you just save two pages of memory somewhere you can save more.
 
->
->I use fedora 9 distribution as Linux based Desktop OS currently. 
->I have one proposal about "#> man <linux-kernel-api>" command.
->Can you tell me your opinion about below patch?
->Thanks reading. 
->
->commit 45e950c98412c002c47254507a199731315c7c2b
->Author: GeunSik,Lim <leemgs1@gmail.com>
->Date:   Wed May 13 10:49:47 2009 +0900
->
->    Append Section 9 info of man command.
->    
->    We view description of the Linux kernel API with man command.
->       For example,
->       Fedoar9#> yum install kernel-doc*
->       Fedora9#> man kobject_rename  or
->       Fedora9#> man kthread_create
+> Is this enough explanation?
 
-Why?
-Why do you want kernel api doc be in man pages?
-Why not just browsing the kernel source code?
+It's not a very good one.
 
-Kernel APIs are not stable at all, this is also a reason why you
-should not include their doc into man pages.
+I would propose to just remove it or at least hide it completely
+and only make it dependent on CONFIG_MMU inside Kconfig.
+
+-Andi
 
 -- 
-Live like a child, think like the god.
- 
+ak@linux.intel.com -- Speaking for myself only.
