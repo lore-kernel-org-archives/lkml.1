@@ -1,54 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760978AbZEMQzv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761014AbZEMQ4Q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760978AbZEMQzv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 12:55:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755991AbZEMQzl
+	id S1761014AbZEMQ4Q (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 12:56:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760943AbZEMQzq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 12:55:41 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:36477 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758178AbZEMQzk (ORCPT
+	Wed, 13 May 2009 12:55:46 -0400
+Received: from outbound-mail-131.bluehost.com ([67.222.39.21]:44565 "HELO
+	outbound-mail-131.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1760926AbZEMQzp (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 12:55:40 -0400
-Message-ID: <4A0AFB7D.2080105@zytor.com>
-Date: Wed, 13 May 2009 09:55:25 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
-MIME-Version: 1.0
-To: Sheng Yang <sheng@linux.intel.com>
-CC: linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Extend test_and_set_bit() test_and_clean_bit() to
- 64 bits in X86_64
-References: <1242202647-32446-1-git-send-email-sheng@linux.intel.com> <4A0AF2DA.2020404@zytor.com>
-In-Reply-To: <4A0AF2DA.2020404@zytor.com>
-Content-Type: text/plain; charset=UTF-8
+	Wed, 13 May 2009 12:55:45 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=KhO8TyFFe8OpnLZhl7UmlLPs3fHQJb9cQBQQA5lQEs0wz0XyaaWHnSxBdxFc4ylsIH/QsB1b1NqZ8I8/06xI4iwx44F6DmISAtW2VFEeaoFBirf8E2riBLOWApZ1sCUi;
+Date: Wed, 13 May 2009 09:55:35 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Alex Nixon <alex.nixon@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 06/10] x86/PCI: Enable scanning of all pci functions
+Message-ID: <20090513095535.140134e1@jbarnes-g45>
+In-Reply-To: <1242164891-3859-7-git-send-email-jeremy@goop.org>
+References: <1242164891-3859-1-git-send-email-jeremy@goop.org>
+	<1242164891-3859-7-git-send-email-jeremy@goop.org>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Sheng Yang wrote:
->> This fix 44/45 bit width memory can't boot up issue. The reason is
->> free_bootmem_node()->mark_bootmem_node()->__free() use test_and_clean_bit() to
->> clean node_bootmem_map, but for 44bits width address, the idx set bit 31 (43 -
->> 12), which consider as a nagetive value for bts.
->>
->> This patch applied to tip/mm.
-> 
-> Hi Sheng,
-> 
-> Could you try the attached patch instead?
-> 
-> 	-hpa
-> 
+On Tue, 12 May 2009 14:48:07 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-Sorry, wrong patch entirely... here is the right one.
+> From: Alex Nixon <alex.nixon@citrix.com>
+> 
+> Xen may want to enable scanning of all pci functions - if for example
+> the device at function 0 is not passed through to the guest, but the
+> device at function 1 is.
+> 
+> [Impact: allow passthrough of just some PCI functions.]
+> Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
+> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
+> Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+> ---
+>  arch/x86/include/asm/pci.h |    8 +++++++-
+>  arch/x86/pci/common.c      |    1 +
+>  2 files changed, 8 insertions(+), 1 deletions(-)
+> 
+> diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+> index b51a1e8..092706e 100644
+> --- a/arch/x86/include/asm/pci.h
+> +++ b/arch/x86/include/asm/pci.h
+> @@ -21,6 +21,7 @@ struct pci_sysdata {
+>  extern int pci_routeirq;
+>  extern int noioapicquirk;
+>  extern int noioapicreroute;
+> +extern int pci_scan_all_fns;
+>  
+>  /* scan a bus after allocating a pci_sysdata for it */
+>  extern struct pci_bus *pci_scan_bus_on_node(int busno, struct
+> pci_ops *ops, @@ -48,7 +49,11 @@ extern unsigned int
+> pcibios_assign_all_busses(void); #else
+>  #define pcibios_assign_all_busses()	0
+>  #endif
+> -#define pcibios_scan_all_fns(a, b)	0
+> +
+> +static inline int pcibios_scan_all_fns(struct pci_bus *bus, int
+> devfn) +{
+> +	return pci_scan_all_fns;
+> +}
+>  
+>  extern unsigned long pci_mem_start;
+>  #define PCIBIOS_MIN_IO		0x1000
+> @@ -130,6 +135,7 @@ extern void pci_iommu_alloc(void);
+>  
+>  /* generic pci stuff */
+>  #include <asm-generic/pci.h>
+> +#undef pcibios_scan_all_fns
 
-	-hpa
+This is a little gross... But then I don't see any places where it's
+actually defined to something true either.  Maybe it should be a weak
+function or a new HAVE_FOO define instead.
 
 -- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
+Jesse Barnes, Intel Open Source Technology Center
