@@ -1,63 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756996AbZEMFtU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbZEMFwT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756996AbZEMFtU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 01:49:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753277AbZEMFtD
+	id S1756762AbZEMFwT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 01:52:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZEMFwH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 01:49:03 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:43015 "EHLO kernel.dk"
+	Wed, 13 May 2009 01:52:07 -0400
+Received: from iona.labri.fr ([147.210.8.143]:35261 "EHLO iona.labri.fr"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755787AbZEMFtA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 01:49:00 -0400
-Date: Wed, 13 May 2009 07:49:01 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>
-Cc: Tejun Heo <tj@kernel.org>, Boaz Harrosh <bharrosh@panasas.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       linux-kernel@vger.kernel.org, benh@kernel.crashing.org
-Subject: Re: [PATCH] swim3: use blk_end_request instead of
-	blk_update_request
-Message-ID: <20090513054901.GW4140@kernel.dk>
-References: <1242127787-29842-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1242127787-29842-3-git-send-email-fujita.tomonori@lab.ntt.co.jp> <4A098B8D.10107@panasas.com> <4A099562.7020805@kernel.org> <4A0A1941.2010105@ct.jp.nec.com>
+	id S1751276AbZEMFwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 01:52:06 -0400
+Message-ID: <4A0A600F.9010801@inria.fr>
+Date: Wed, 13 May 2009 07:52:15 +0200
+From: Brice Goglin <Brice.Goglin@inria.fr>
+User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A0A1941.2010105@ct.jp.nec.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+CC: Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
+       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
+Subject: Re: [PATCH] migration: only migrate_prep() once per move_pages()
+References: <49E58D7A.4010708@ens-lyon.org> <20090415164955.41746866.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090415164955.41746866.kamezawa.hiroyu@jp.fujitsu.com>
+X-Enigmail-Version: 0.95.0
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13 2009, Kiyoshi Ueda wrote:
-> Hi,
-> 
-> Thank you for pointing this, Boaz!
-> 
-> On 2009/05/13 0:27 +0900, Tejun Heo wrote:
-> > Hello,
-> > 
-> > Boaz Harrosh wrote:
-> >> blk_update_request() was meant for request-based-multi-path, and not for swim3
-> >> please see:
-> >>     32fab448 block: add request update interface
-> >>
-> >> CC: Kiyoshi Ueda<k-ueda@ct.jp.nec.com>
-> >>
-> >> I think Tejun Heo was just using that in some recent block layer,
-> >> transformation.
-> >> Tejun?
-> > 
-> > Yeah, conversion was easy that way.  I think it's sane to have
-> > blk_update_request() exported as long as request internal tinkering is
-> > kept in block layer proper.
-> 
-> blk_update_request() is needed for request-based dm to keep the request
-> completion ordering in bottom-up, although request-based dm is not
-> in upstream yet.
-> 
-> Jens, please keep blk_update_request() exported.
+KAMEZAWA Hiroyuki wrote:
+> On Wed, 15 Apr 2009 09:32:10 +0200
+> Brice Goglin <Brice.Goglin@ens-lyon.org> wrote:
+>
+>   
+>> migrate_prep() is fairly expensive (72us on 16-core barcelona 1.9GHz).
+>> Commit 3140a2273009c01c27d316f35ab76a37e105fdd8 improved move_pages()
+>> throughput by breaking it into chunks, but it also made migrate_prep()
+>> be called once per chunk (every 128pages or so) instead of once per
+>> move_pages().
+>>
+>> This patch reverts to calling migrate_prep() only once per chunk
+>> as we did before 2.6.29.
+>> It is also a followup to commit 0aedadf91a70a11c4a3e7c7d99b21e5528af8d5d
+>>     mm: move migrate_prep out from under mmap_sem
+>>
+>> This improves migration throughput on the above machine from 600MB/s
+>> to 750MB/s.
+>>
+>> Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
+>>
+>>     
+> Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>
+> I think this patch is good. page migration is best-effort syscall ;)
+>   
 
-I did, I applied the swim3 patches yesterday as well.
+Since nobody complained about this patch, may I get a Ack and get the
+patch merged for 2.6.31?
 
--- 
-Jens Axboe
+thanks,
+Brice
 
