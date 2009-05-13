@@ -1,88 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760406AbZEMPrl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760438AbZEMPvy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760406AbZEMPrl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 11:47:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756922AbZEMPrc
+	id S1760438AbZEMPvy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 11:51:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbZEMPvp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 11:47:32 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:37965 "EHLO
-	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754587AbZEMPrb (ORCPT
+	Wed, 13 May 2009 11:51:45 -0400
+Received: from wf-out-1314.google.com ([209.85.200.170]:29724 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754879AbZEMPvo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 11:47:31 -0400
-From: Daniel Mack <daniel@caiaq.de>
-To: linux-kernel@vger.kernel.org
-Cc: Daniel Mack <daniel@caiaq.de>, Sascha Hauer <s.hauer@pengutronix.de>,
-       Linux MTD list <linux-mtd@lists.infradead.org>
-Subject: [PATCH] mtd: mxc_nand: fix built breakage
-Date: Wed, 13 May 2009 17:47:24 +0200
-Message-Id: <1242229644-13714-1-git-send-email-daniel@caiaq.de>
-X-Mailer: git-send-email 1.6.2.1
-In-Reply-To: <1242229410-11853-1-git-send-email-daniel@caiaq.de>
-References: <1242229410-11853-1-git-send-email-daniel@caiaq.de>
+	Wed, 13 May 2009 11:51:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=gjYF2Lpnx9bHZA2Gd6NGTpCETyi3ibQ7YB1Zj7kjbT/mcraSqY52vkewt/pkP1MFEC
+         gET7GLJgIciymPBHBIvjtgVTlSXf/x2G4RrFFuiL2tW9v9hlEK1FS0UYLXp8sgsjxWZ3
+         IFxuoqLTAgVbEtUOJxp868bfbNUbFkOuyINW0=
+From: tom.leiming@gmail.com
+To: arjan@infradead.org
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Ming Lei <tom.leiming@gmail.com>,
+       Cornelia Huck <cornelia.huck@de.ibm.com>
+Subject: [PATCH] kernel:async function call:introduce async_run_inatomic(v2)
+Date: Wed, 13 May 2009 23:51:39 +0800
+Message-Id: <1242229899-16761-1-git-send-email-tom.leiming@gmail.com>
+X-Mailer: git-send-email 1.6.0.GIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The MXC NAND driver does not currently build with CONFIG_PM set.
+From: Ming Lei <tom.leiming@gmail.com>
 
-  drivers/mtd/nand/mxc_nand.c: In function 'mxcnd_suspend':
-  drivers/mtd/nand/mxc_nand.c:1021: error: 'nfc_clk' undeclared (first use in this function)
-  drivers/mtd/nand/mxc_nand.c:1021: error: (Each undeclared identifier is reported only once
-  drivers/mtd/nand/mxc_nand.c:1021: error: for each function it appears in.)
-  drivers/mtd/nand/mxc_nand.c: In function 'mxcnd_resume':
-  drivers/mtd/nand/mxc_nand.c:1033: error: 'nfc_clk' undeclared (first use in this function)
-  make[3]: *** [drivers/mtd/nand/mxc_nand.o] Error 1
-  make[2]: *** [drivers/mtd/nand] Error 2
-  make[1]: *** [drivers/mtd] Error 2
-  make: *** [drivers] Error 2
+The purpose of this function is to offer a simple way to schedule an
+asynchronous thread from an atomic context, because there are not any
+functions which can create and start a kernel thread in atomic contexts
+now. We use async_running_no_sync as running list to make callers that
+don't want to synchronize on cookies, so can avoid some side effects for
+async_synchronize_full().
 
-Signed-off-by: Daniel Mack <daniel@caiaq.de>
-Cc: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Linux MTD list <linux-mtd@lists.infradead.org>
+Part of note for async_run_inatomic and some guideline is from Cornelia Huck.
+
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
 ---
- New version with indentation fixes. Sorry.
+ include/linux/async.h |    2 ++
+ kernel/async.c        |   23 +++++++++++++++++++++++
+ 2 files changed, 25 insertions(+), 0 deletions(-)
 
- drivers/mtd/nand/mxc_nand.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/mtd/nand/mxc_nand.c b/drivers/mtd/nand/mxc_nand.c
-index 21fd4f1..9208f8c 100644
---- a/drivers/mtd/nand/mxc_nand.c
-+++ b/drivers/mtd/nand/mxc_nand.c
-@@ -1011,6 +1011,8 @@ static int __devexit mxcnd_remove(struct platform_device *pdev)
- static int mxcnd_suspend(struct platform_device *pdev, pm_message_t state)
- {
- 	struct mtd_info *info = platform_get_drvdata(pdev);
-+	struct nand_chip *nand_chip = info->priv;
-+	struct mxc_nand_host *host = nand_chip->priv;
- 	int ret = 0;
+diff --git a/include/linux/async.h b/include/linux/async.h
+index 18ce92b..9ff62af 100644
+--- a/include/linux/async.h
++++ b/include/linux/async.h
+@@ -16,6 +16,8 @@
+ typedef u64 async_cookie_t;
+ typedef void (async_func_ptr) (void *data, async_cookie_t cookie);
  
- 	DEBUG(MTD_DEBUG_LEVEL0, "MXC_ND : NAND suspend\n");
-@@ -1018,7 +1020,7 @@ static int mxcnd_suspend(struct platform_device *pdev, pm_message_t state)
- 		ret = info->suspend(info);
++extern int async_run_inatomic(async_func_ptr *ptr, void *data);
++
+ extern async_cookie_t async_schedule(async_func_ptr *ptr, void *data);
+ extern async_cookie_t async_schedule_domain(async_func_ptr *ptr, void *data,
+ 					    struct list_head *list);
+diff --git a/kernel/async.c b/kernel/async.c
+index 8663f5b..cb527b3 100644
+--- a/kernel/async.c
++++ b/kernel/async.c
+@@ -65,6 +65,7 @@ static async_cookie_t next_cookie = 1;
  
- 	/* Disable the NFC clock */
--	clk_disable(nfc_clk);	/* FIXME */
-+	clk_disable(host->clk);	/* FIXME */
+ static LIST_HEAD(async_pending);
+ static LIST_HEAD(async_running);
++static LIST_HEAD(async_running_no_sync);
+ static DEFINE_SPINLOCK(async_lock);
  
- 	return ret;
+ static int async_enabled = 0;
+@@ -222,6 +223,28 @@ static async_cookie_t __async_schedule(async_func_ptr *ptr, void *data,
+ 	return newcookie;
  }
-@@ -1026,11 +1028,13 @@ static int mxcnd_suspend(struct platform_device *pdev, pm_message_t state)
- static int mxcnd_resume(struct platform_device *pdev)
- {
- 	struct mtd_info *info = platform_get_drvdata(pdev);
-+	struct nand_chip *nand_chip = info->priv;
-+	struct mxc_nand_host *host = nand_chip->priv;
- 	int ret = 0;
  
- 	DEBUG(MTD_DEBUG_LEVEL0, "MXC_ND : NAND resume\n");
- 	/* Enable the NFC clock */
--	clk_enable(nfc_clk);	/* FIXME */
-+	clk_enable(host->clk);	/* FIXME */
- 
- 	if (info)
- 		info->resume(info);
++ /**
++ * async_run_inatomic - in atomic contexts schedule a function for
++ * 			asynchronous execution
++ *
++ * @ptr: function to execute asynchronously
++ * @data: data pointer to pass to the function
++ *
++ * Return zero if success, or else return others if failured
++ * Note:
++ * The purpose of this function is to offer a simple way to schedule an
++ * asynchronous thread from an atomic context, because there are not any
++ * functions which can create and start a kernel thread in atomic contexts
++ * now. We use async_running_no_sync as running list to make callers that
++ * don't want to synchronize on cookies, so can avoid some side effects for
++ * async_synchronize_full().
++ */
++int async_run_inatomic(async_func_ptr *ptr, void *data)
++{
++	return !__async_schedule(ptr, data, &async_running_no_sync, 1);
++}
++EXPORT_SYMBOL_GPL(async_run_inatomic);
++
+ /**
+  * async_schedule - schedule a function for asynchronous execution
+  * @ptr: function to execute asynchronously
 -- 
-1.6.2.1
+1.6.0.GIT
 
