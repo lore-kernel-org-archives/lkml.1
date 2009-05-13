@@ -1,94 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761618AbZEMVXS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761659AbZEMVYY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761618AbZEMVXS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 17:23:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756780AbZEMVXG
+	id S1761659AbZEMVYY (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 17:24:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756780AbZEMVYO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 17:23:06 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34621 "EHLO hera.kernel.org"
+	Wed, 13 May 2009 17:24:14 -0400
+Received: from gate.crashing.org ([63.228.1.57]:44839 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756645AbZEMVXF (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 17:23:05 -0400
-Subject: [PATCH -tip] x86: ds.c fix invalid assignment
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Markus Metzger <markus.t.metzger@intel.com>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 14 May 2009 02:47:54 +0530
-Message-Id: <1242249474.3364.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	id S1753062AbZEMVYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 17:24:13 -0400
+From: Kumar Gala <galak@kernel.crashing.org>
+To: jeff@garzik.org
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org
+Subject: [PATCH v2] sata_fsl: Fix compile warnings
+Date: Wed, 13 May 2009 16:23:07 -0500
+Message-Id: <1242249787-10116-1-git-send-email-galak@kernel.crashing.org>
+X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+We we build with dma_addr_t as a 64-bit quantity we get:
 
-Fixes following sparse warnings:
-  CHECK   arch/x86/kernel/ds.c
-arch/x86/kernel/ds.c:549:19: warning: incorrect type in argument 2 (invalid types)
-arch/x86/kernel/ds.c:549:19:    expected bad type enum bts_field field
-arch/x86/kernel/ds.c:549:19:    got int
-arch/x86/kernel/ds.c:514:35: error: incompatible types for operation (*)
-arch/x86/kernel/ds.c:514:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
-arch/x86/kernel/ds.c:514:35:    right side has type bad type enum bts_field field
-arch/x86/kernel/ds.c:514:7: error: invalid assignment
-arch/x86/kernel/ds.c:514:35: error: incompatible types for operation (*)
-arch/x86/kernel/ds.c:514:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
-arch/x86/kernel/ds.c:514:35:    right side has type bad type enum bts_field field
-arch/x86/kernel/ds.c:514:7: error: invalid assignment
-arch/x86/kernel/ds.c:514:35: error: incompatible types for operation (*)
-arch/x86/kernel/ds.c:514:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
-arch/x86/kernel/ds.c:514:35:    right side has type bad type enum bts_field field
-arch/x86/kernel/ds.c:514:7: error: invalid assignment
-arch/x86/kernel/ds.c:514:35: error: incompatible types for operation (*)
-arch/x86/kernel/ds.c:514:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
-arch/x86/kernel/ds.c:514:35:    right side has type bad type enum bts_field field
-arch/x86/kernel/ds.c:514:7: error: invalid assignment
-arch/x86/kernel/ds.c:514:35: error: incompatible types for operation (*)
-arch/x86/kernel/ds.c:514:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
-arch/x86/kernel/ds.c:514:35:    right side has type bad type enum bts_field field
-arch/x86/kernel/ds.c:514:7: error: invalid assignment
-arch/x86/kernel/ds.c:514:35: error: incompatible types for operation (*)
-arch/x86/kernel/ds.c:514:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
-arch/x86/kernel/ds.c:514:35:    right side has type bad type enum bts_field field
-arch/x86/kernel/ds.c:514:7: error: invalid assignment
-arch/x86/kernel/ds.c:520:35: error: incompatible types for operation (*)
-arch/x86/kernel/ds.c:520:35:    left side has type unsigned char static [unsigned] [toplevel] sizeof_ptr_field
-arch/x86/kernel/ds.c:520:35:    right side has type bad type enum bts_field field
-arch/x86/kernel/ds.c:520:7: error: invalid assignment
-arch/x86/kernel/ds.c:520:35: error: incompatible types for operation (*)
+drivers/ata/sata_fsl.c: In function 'sata_fsl_fill_sg':
+drivers/ata/sata_fsl.c:340: warning: format '%x' expects type 'unsigned int', but argument 4 has type 'dma_addr_t'
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/x86/kernel/ds.c |    6 +++---
- 1 files changed, 3 insertions(+), 3 deletions(-)
+* had one too many 'x'
+- k
 
-diff --git a/arch/x86/kernel/ds.c b/arch/x86/kernel/ds.c
-index 48bfe13..ef42a03 100644
---- a/arch/x86/kernel/ds.c
-+++ b/arch/x86/kernel/ds.c
-@@ -509,15 +509,15 @@ enum bts_field {
- 	bts_escape		= ((unsigned long)-1 & ~bts_qual_mask)
- };
+ drivers/ata/sata_fsl.c |    7 ++++---
+ 1 files changed, 4 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index c2e90e1..a9c4e0e 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -332,13 +332,14 @@ static unsigned int sata_fsl_fill_sg(struct ata_queued_cmd *qc, void *cmd_desc,
+ 		dma_addr_t sg_addr = sg_dma_address(sg);
+ 		u32 sg_len = sg_dma_len(sg);
  
--static inline unsigned long bts_get(const char *base, enum bts_field field)
-+static inline unsigned long bts_get(const char *base, unsigned long field)
- {
- 	base += (ds_cfg.sizeof_ptr_field * field);
- 	return *(unsigned long *)base;
- }
+-		VPRINTK("SATA FSL : fill_sg, sg_addr = 0x%x, sg_len = %d\n",
+-			sg_addr, sg_len);
++		VPRINTK("SATA FSL : fill_sg, sg_addr = 0x%llx, sg_len = %d\n",
++			(unsigned long long)sg_addr, sg_len);
  
--static inline void bts_set(char *base, enum bts_field field, unsigned long val)
-+static inline void bts_set(char *base, unsigned long field, unsigned long val)
- {
--	base += (ds_cfg.sizeof_ptr_field * field);;
-+	base += (ds_cfg.sizeof_ptr_field * field);
- 	(*(unsigned long *)base) = val;
- }
- 
+ 		/* warn if each s/g element is not dword aligned */
+ 		if (sg_addr & 0x03)
+ 			ata_port_printk(qc->ap, KERN_ERR,
+-					"s/g addr unaligned : 0x%x\n", sg_addr);
++					"s/g addr unaligned : 0x%llx\n", 
++					(unsigned long long)sg_addr);
+ 		if (sg_len & 0x03)
+ 			ata_port_printk(qc->ap, KERN_ERR,
+ 					"s/g len unaligned : 0x%x\n", sg_len);
 -- 
 1.6.0.6
-
-
 
