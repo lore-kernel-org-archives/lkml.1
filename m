@@ -1,74 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbZEMNfY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755489AbZEMNgr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758107AbZEMNfY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:35:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbZEMNfL
+	id S1755489AbZEMNgr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:36:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbZEMNgi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:35:11 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:54264 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752086AbZEMNfJ convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:35:09 -0400
+	Wed, 13 May 2009 09:36:38 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:39244 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752139AbZEMNgh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 09:36:37 -0400
+Date: Wed, 13 May 2009 15:35:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       David Rientjes <rientjes@google.com>, Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
+Subject: Re: [PATCH] x86: fix system without memory on node0
+Message-ID: <20090513133504.GA7384@elte.hu>
+References: <4A05269D.8000701@kernel.org> <4A0527CB.4020807@kernel.org> <20090511175312.GA27905@sgi.com> <alpine.DEB.2.00.0905111218520.23739@chino.kir.corp.google.com> <4A0894A5.9000209@zytor.com> <alpine.DEB.2.00.0905111509570.2234@chino.kir.corp.google.com> <20090512150622.GA10015@sgi.com> <4A0A23A7.4080901@kernel.org>
 MIME-Version: 1.0
-In-Reply-To: <10761.1242220810@redhat.com>
-References: <20090509143742.GA27663@kroah.com> <20090511175626.GA4758@kroah.com> 
-	<1242074517.6624.183.camel@moss-terrapins.epoch.ncsc.mil> 
-	<ac3eb2510905111405y5541117euf84dd38d39012bd0@mail.gmail.com> 
-	<1242132344.31807.48.camel@localhost.localdomain> <ac3eb2510905120810n101dff08yfa945a2ab4b17168@mail.gmail.com> 
-	<1242142528.31807.80.camel@localhost.localdomain> <ac3eb2510905120854y7b44f608odf25af159fd6495c@mail.gmail.com> 
-	<1242168913.6711.9.camel@poy> <10761.1242220810@redhat.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 13 May 2009 15:34:49 +0200
-Message-ID: <ac3eb2510905130634l75ef8f78v604c53fb4bc3167f@mail.gmail.com>
-Subject: Re: [patch 00/13] devtmpfs patches
-To: David Howells <dhowells@redhat.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
-       Jan Blunck <jblunck@suse.de>, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@parisplace.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A0A23A7.4080901@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 15:20, David Howells <dhowells@redhat.com> wrote:
-> Kay Sievers <kay.sievers@vrfy.org> wrote:
->
->> +static struct cred *kern_cred;
->
-> Can I suggest that you call your cred pointer dev_cred rather than kern_cred
-> so that the naming is consistent with the other globals variables?
 
-Sounds good.
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
->> +     kern_cred = prepare_kernel_cred(NULL);
->
-> If you have no intention of altering the credentials you create, you might
-> want to use &init_cred instead of kern_cred.  That said, you might want to
-> allocate it and let the security module alter it before you use it.
+> Jack found that crash with doesn't have memory on node0.
+> 
+> it turns out with per_cpu changeset, node_number for BSP will be 
+> alway 0, and it is consistent to cpu_to_node() that is to near 
+> node already. aka when numa_set_node() for node0 is called early 
+> before per_cpu area is setup
+> 
+> try to set the node_number for boot cpu, after we get per_cpu area 
+> setup.
+> 
+> [ Impact: fix crashing on memoryless node 0]
+> 
+> Reported-by: Jack Steiner <steiner@sgi.com>
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> 
+> ---
+>  arch/x86/kernel/setup_percpu.c |    8 ++++++++
+>  1 file changed, 8 insertions(+)
+> 
+> Index: linux-2.6/arch/x86/kernel/setup_percpu.c
+> ===================================================================
+> --- linux-2.6.orig/arch/x86/kernel/setup_percpu.c
+> +++ linux-2.6/arch/x86/kernel/setup_percpu.c
+> @@ -423,6 +423,14 @@ void __init setup_per_cpu_areas(void)
+>  	early_per_cpu_ptr(x86_cpu_to_node_map) = NULL;
+>  #endif
+>  
+> +#if defined(CONFIG_X86_64) && defined(CONFIG_NUMA)
+> +	/*
+> +	 * make sure boot cpu node_number is right, when boot cpu is on the
+> +	 * node that doesn't have mem installed
+> +	 */
+> +	per_cpu(node_number, boot_cpu_id) = cpu_to_node(boot_cpu_id);
+> +#endif
 
-Ah, didn't know that it was exported. It's the one in
-include/linux/init_task.h, right? I'll give that a try.
+ok, that's a nice fix i guess.
 
-> Also, Stephen is right, you should probably wrap all your accesses to the VFS
-> in your devtmpfs credentials.  For instance, devtmpfs_create_node() calls
-> vfs_mkdir() with the process's credentials via create_path() and directly with
-> the kern_cred.
->
-> What you probably want is:
+Wouldnt it also be necessary/good to unify this code between 32-bit 
+and 64-bit? 32-bit has cpu_to_node_map[], while 64-bit has percpu 
+variables for that.
 
->               nodename = device_get_nodename(dev, &tmp);
->               if (!nodename)
->                      return -ENOMEM;
->                curr_cred = override_creds(kern_cred);
-...
->        out_name:
->                revert_creds(curr_cred);
-
-Yeah, I have exactly that already now.
-
-Thanks,
-Kay
+	Ingo
