@@ -1,69 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760957AbZEMUZW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761414AbZEMUdR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760957AbZEMUZW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 16:25:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761455AbZEMUYs
+	id S1761414AbZEMUdR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 16:33:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752735AbZEMUc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 16:24:48 -0400
-Received: from mail1011.centrum.cz ([90.183.38.141]:39588 "EHLO
-	mail1011.centrum.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761417AbZEMUYr (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 16:24:47 -0400
-X-Greylist: delayed 311 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 May 2009 16:24:47 EDT
-Date: Wed, 13 May 2009 22:19:25 +0200
-From: <trekker.dk@centrum.cz>
-To: <pavel@ucw.cz>
-Cc: <tuxonice-devel@lists.tuxonice.net>, <linux-pm@lists.linux-foundation.org>,
-       <linux-kernel@vger.kernel.org>
-X-Mailer: Centrum Mail 5.0
+	Wed, 13 May 2009 16:32:59 -0400
+Received: from gw.goop.org ([64.81.55.164]:36807 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752055AbZEMUc6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 16:32:58 -0400
+Message-ID: <4A0B2E71.1080807@goop.org>
+Date: Wed, 13 May 2009 13:32:49 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-X-Priority: 3
-Message-ID: <200905132219.19216@centrum.cz>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <20090507120948.GA1531@ucw.cz> <200905080037.19722@centrum.cz> <20090510053840.GG1363@ucw.cz> <200905112319.8749@centrum.cz> <20090511212350.GA3397@elf.ucw.cz>
-In-Reply-To: <20090511212350.GA3397@elf.ucw.cz>
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 8bit
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
+       the arch/x86 maintainers <x86@kernel.org>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Alex Nixon <alex.nixon@citrix.com>
+Subject: Re: [PATCH 06/10] x86/PCI: Enable scanning of all pci functions
+References: <1242164891-3859-1-git-send-email-jeremy@goop.org>	<1242164891-3859-7-git-send-email-jeremy@goop.org>	<20090513095535.140134e1@jbarnes-g45>	<4A0AFE84.2040805@goop.org> <20090513102316.5ef3ce4e@jbarnes-g45>
+In-Reply-To: <20090513102316.5ef3ce4e@jbarnes-g45>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-______________________________________________________________
-> Od: pavel@ucw.cz
-> Komu: trekker.dk@centrum.cz
-> CC: tuxonice-devel@lists.tuxonice.net, linux-pm@lists.linux-foundation.org,linux-kernel@vger.kernel.org
-> Datum: 11.05.2009 23:24
-> Předmět: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Jesse Barnes wrote:
+>> I'd probably go the weak function path if I were to do either of
+>> those, but do you think it would be significantly better?
+>>     
 >
->Hi!
+> Well it would avoid the #undef, which is the gross part.  But since
+> it's just a boolean, you could also do
 >
->> >> >To summarise disadvantages:
->> >> >
->> >> >- only core has 8000 LoC
->> >> >- it does stuff that can be easily done in userspace
->> >> >     (and that todays distros _do_ in userspace).
->> >> >- it duplicates uswsusp functionality.
->> >> >- compared to [u]swsusp, it received little testing
->> >> >
->> >> 
->> >> To summarise advatages - for me tuxonice is the only hibernation method that works.
->> >> (Till now I've had 3 machines - no one of them able to resume with in-kernel swsusp.)
->> >> 
->> >
->> >Which kernels you tried, what hw it is? Can you do s2ram?
->> 
->> Regarding hardware - 
->> 
->> 1. AMD Athlon 1700+, VIA KT333 chipset based MB, nVidia GeForce 2
->> 2. AMD X2 Athlon, AMD690V chipset based MB, nVidia 7600GT
->> 3. (current) AMD X4 Phenom II,  AMD780G chipset and nVidia 9600GT 
->> (binary driver for video card every time)
+> #ifndef PCI_SCAN_ALL_FNS
+> #define PCI_SCAN_ALL_FNS 0
+> #endif
 >
->Ok, binary drivers may be a problem. Will it work without that? Should
->be easy to test with init=/bin/bash.
->									Pavel
+> in the generic code, then just set it to 1 before asm-generic/pci.h
+> gets included.  That would mean updating arch code though.
+>   
 
-Yes, that works - and after complete boot w/o loading binary driver resume works too.
+If its just x86 then that's OK, but I'd prefer not to have to touch all 
+arches.  Hm, doesn't look too bad.
 
+> Anyway it's not a big deal, this code is already ugly (a 0 define for
+> all arches?  why?) so you shouldn't have to spend too much time
+> cleaning it up.
+>   
+
+Yes, it seems to be a vestigial thing which goes into pre-git-history.  
+I think when I dug into it, I found there was one Power user of it, but 
+that use evaporated in their arch unification.  But I might be 
+mis-remembering.
+
+    J
 
