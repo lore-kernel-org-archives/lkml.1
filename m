@@ -1,42 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757791AbZEMOIZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759026AbZEMOIs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757791AbZEMOIZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 10:08:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbZEMOIQ
+	id S1759026AbZEMOIs (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 10:08:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754879AbZEMOIi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 10:08:16 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:45877 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753013AbZEMOIP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 10:08:15 -0400
-Date: Wed, 13 May 2009 16:13:35 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andi Kleen <andi@firstfloor.org>, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Minchan@firstfloor.org
-Subject: Re: [PATCH] Kconfig: CONFIG_UNEVICTABLE_LRU move into EMBEDDED submenu
-Message-ID: <20090513141335.GS19296@one.firstfloor.org>
-References: <20090513172904.7234.A69D9226@jp.fujitsu.com> <87r5ytl0nn.fsf@basil.nowhere.org> <2f11576a0905130418w1782f85j12cb938e92d256ff@mail.gmail.com> <20090513113817.GO19296@one.firstfloor.org> <2f11576a0905130458x2e56e952ga47216da42b30906@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <2f11576a0905130458x2e56e952ga47216da42b30906@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Wed, 13 May 2009 10:08:38 -0400
+Received: from main.gmane.org ([80.91.229.2]:46346 "EHLO ciao.gmane.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753256AbZEMOIh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 10:08:37 -0400
+X-Injected-Via-Gmane: http://gmane.org/
+To: linux-kernel@vger.kernel.org
+From: Alexander Clouter <alex@digriz.org.uk>
+Subject: Re: timer interrupt handled by CPU0 only
+Date: Wed, 13 May 2009 14:25:28 +0100
+Message-ID: <8buqd6-bab.ln1@woodchuck.wormnet.eu>
+References: <200905131927152180665@gmail.com>
+X-Complaints-To: usenet@ger.gmane.org
+X-Gmane-NNTP-Posting-Host: woodchuck.wormnet.eu
+User-Agent: tin/1.9.3-20080506 ("Dalintober") (UNIX) (Linux/2.6.26-1-sparc64 (sparc64))
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> 1. this featuren don't depend CONFIG_MMU. that's bogus.
+qmh524 <qmh524@gmail.com> wrote:
+>
+> I have start irqbalance service. Why the timer interrupt only happend in CPU0
+>
+irqBALANCE...you could also ask why all your eth0 IRQ's are on CPU3 or 
+your ATA action is on CPU2.
 
-Without CONFIG_MMU everything is unevictable, so you don't need
-to special case unevictable pages.  Or are you saying it should
-use this code always?
+It's my understanding you *steer* IRQ's to a CPU, you do not round-robin 
+them across all the CPU's.
 
--Andi
+Cheers
 
+> $ sudo service irqbalance status
+> irqbalance (pid 2390) is running...
+> $ cat /proc/interrupts
+>           CPU0       CPU1       CPU2       CPU3
+>  0:   21487296          0          0          0    IO-APIC-edge  timer
+>  1:          3          0          0          0    IO-APIC-edge  i8042
+>  8:          1          0          0          0    IO-APIC-edge  rtc
+>  9:          0          0          0          0   IO-APIC-level  acpi
+> 12:          4          0          0          0    IO-APIC-edge  i8042
+> 74:         18          0          0          0   IO-APIC-level
+> uhci_hcd:usb1, uhci_hcd:usb3, ehci_hcd:usb4
+> 82:          0          0          0          0   IO-APIC-level  uhci_hcd:usb2
+> 90:       1934          0   45886283          0   IO-APIC-level  libata
+> 98:          0          0          0          0   IO-APIC-level  libata
+> 106:        120          0          0   22824923         PCI-MSI  eth0
+> 169:      16933          0    9370507          0   IO-APIC-level  ioc0
+> NMI:      43241      26776      33934      29946
+> LOC:   21487192   21487118   21487046   21486887
+> ERR:          0
+> MIS:          0
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+Alexander Clouter
+.sigmonster says: A hammer sometimes misses its mark - a bouquet never.
+
