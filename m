@@ -1,97 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761299AbZEMTI6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761342AbZEMTKw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761299AbZEMTI6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 15:08:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759944AbZEMTIs
+	id S1761342AbZEMTKw (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 15:10:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759697AbZEMTKl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 15:08:48 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:36387 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755610AbZEMTIr convert rfc822-to-8bit (ORCPT
+	Wed, 13 May 2009 15:10:41 -0400
+Received: from outbound-mail-19.bluehost.com ([69.89.20.234]:35006 "HELO
+	outbound-mail-19.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1759944AbZEMTKl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 15:08:47 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Olga Kornievskaia <aglo@citi.umich.edu>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "J. Bruce Fields" <bfields@fieldses.org>, Jim Rees <rees@umich.edu>,
-       linux-nfs@vger.kernel.org
-Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone  over NFS
-References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
-	<20090508120119.8c93cfd7.akpm@linux-foundation.org>
-	<20090511081415.GL4694@kernel.dk>
-	<x49skjb21b7.fsf@segfault.boston.devel.redhat.com>
-	<20090511165826.GG4694@kernel.dk>
-	<x494ovp4r51.fsf@segfault.boston.devel.redhat.com>
-	<20090512204433.7eb69075.akpm@linux-foundation.org>
-	<x49y6t1rqw0.fsf@segfault.boston.devel.redhat.com>
-	<b4ff356f0905130920v184ab529mb52a4346d4c77c14@mail.gmail.com>
-	<20090513093229.097b47d2.akpm@linux-foundation.org>
-	<b4ff356f0905131116o48181ccu4786578cc72c8ceb@mail.gmail.com>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Wed, 13 May 2009 15:06:55 -0400
-In-Reply-To: <b4ff356f0905131116o48181ccu4786578cc72c8ceb@mail.gmail.com>
-	(Olga Kornievskaia's message of "Wed, 13 May 2009 14:16:42 -0400")
-Message-ID: <x49vdo4u8j4.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 13 May 2009 15:10:41 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Subject:Message-ID:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=pQcATK2AN8aveyJCuiocdxdK/pANLhXLXdErqnJjVqALKKnHq7joSMo3lCO9fHUKFIrxTAmk4ZR2hr3iwpAV/dLRkZXTHRobCbJcphwh2iK2Gkpt+0I+4vQISxTvIwRa;
+Date: Wed, 13 May 2009 12:10:30 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-kernel@vger.kernel.org, dri-devel@lists.sourceforge.net
+Subject: [git pull] drm fix
+Message-ID: <20090513121030.410f3ed4@jbarnes-g45>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Olga Kornievskaia <aglo@citi.umich.edu> writes:
+The following changes since commit
+8c9ed899b44c19e81859fbb0e9d659fe2f8630fc: David Howells (1):
+        NOMMU: Don't check vm_region::vm_start is page aligned in add_nommu_region()
 
-> On Wed, May 13, 2009 at 12:32 PM, Andrew Morton
-> <akpm@linux-foundation.org> wrote:
->> On Wed, 13 May 2009 12:20:57 -0400 Olga Kornievskaia <aglo@citi.umich.edu> wrote:
->>
->>> I believe what you are seeing is how well TCP autotuning performs.
->>> What old NFS code was doing is disabling autotuning and instead using
->>> #nfsd thread to scale TCP recv window. You are providing an example of
->>> where setting TCP buffer sizes outperforms TCP autotuning. While this
->>> is a valid example, there is also an alternative example of where old
->>> NFS design hurts performance.
->>
->> <scratches head>
->>
->> Jeff's computer got slower.  Can we fix that?
->
-> We realize that decrease performance is a problem and understand that
-> reverting the patch might be the appropriate course of action!
+are available in the git repository at:
 
-I wasn't suggesting that we just revert the patch.  I was just looking
-for some guidance on diagnosing and hopefully fixing the regression.
+  git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/drm-2.6 for-linus
 
-> But we are curious why this is happening. Jeff if it's not too much trouble
-> could you generate tcpdumps for both cases. We are curious what are
-> the max window sizes in both cases? Also could you give us your tcp and
-> network sysctl values for the testing environment (both client and server
-> values) that you can get with "sysctl -a | grep tcp" and also
-> " | grep net.core".
+Jesse Barnes (1):
+      drm/i915: automatically select FRAMEBUFFER_CONSOLE if !EMBEDDED
 
-http://people.redhat.com/jmoyer/iozone-regression.tar
+ drivers/gpu/drm/Kconfig |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-I'm happy to continue to help track this down.  If you want to reproduce
-this in your own environment, though, you can probably do it with a
-ramdisk served up via nfs with the nfs client and server on the same
-gig-e network.
+Just one fix so far for a common complaint.  I think Ben has an
+important fix on the way soon too, but I haven't received it yet and
+didn't want to lose this one.
 
-> Poor performance using TCP autotuning can be demonstrated outside
-> of NFS but using Iperf. It can be shown that iperf will work better if "-w"
-> flag is used. When this flag is set, Iperf calls setsockopt() call which in
-> the kernel turns off autotuning.
->
-> As for fixing this it would be great if we could get some help from the
-> TCP kernel folks?
-
-Then we'll need to add netdev to the CC, but probably from a message
-that has more background on the problem (we've even trimmed the
-offending commit and performance numbers from the email at this point).
-
-Cheers,
-Jeff
+Thanks,
+-- 
+Jesse Barnes, Intel Open Source Technology Center
