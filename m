@@ -1,23 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758613AbZEMPnx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760406AbZEMPrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758613AbZEMPnx (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 11:43:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758105AbZEMPno
+	id S1760406AbZEMPrl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 11:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756922AbZEMPrc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 11:43:44 -0400
-Received: from buzzloop.caiaq.de ([212.112.241.133]:37939 "EHLO
+	Wed, 13 May 2009 11:47:32 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:37965 "EHLO
 	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758048AbZEMPnn (ORCPT
+	with ESMTP id S1754587AbZEMPrb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 11:43:43 -0400
+	Wed, 13 May 2009 11:47:31 -0400
 From: Daniel Mack <daniel@caiaq.de>
 To: linux-kernel@vger.kernel.org
 Cc: Daniel Mack <daniel@caiaq.de>, Sascha Hauer <s.hauer@pengutronix.de>,
        Linux MTD list <linux-mtd@lists.infradead.org>
 Subject: [PATCH] mtd: mxc_nand: fix built breakage
-Date: Wed, 13 May 2009 17:43:30 +0200
-Message-Id: <1242229410-11853-1-git-send-email-daniel@caiaq.de>
+Date: Wed, 13 May 2009 17:47:24 +0200
+Message-Id: <1242229644-13714-1-git-send-email-daniel@caiaq.de>
 X-Mailer: git-send-email 1.6.2.1
+In-Reply-To: <1242229410-11853-1-git-send-email-daniel@caiaq.de>
+References: <1242229410-11853-1-git-send-email-daniel@caiaq.de>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -39,18 +41,20 @@ Signed-off-by: Daniel Mack <daniel@caiaq.de>
 Cc: Sascha Hauer <s.hauer@pengutronix.de>
 Cc: Linux MTD list <linux-mtd@lists.infradead.org>
 ---
+ New version with indentation fixes. Sorry.
+
  drivers/mtd/nand/mxc_nand.c |    8 ++++++--
  1 files changed, 6 insertions(+), 2 deletions(-)
 
 diff --git a/drivers/mtd/nand/mxc_nand.c b/drivers/mtd/nand/mxc_nand.c
-index 21fd4f1..d352d2a 100644
+index 21fd4f1..9208f8c 100644
 --- a/drivers/mtd/nand/mxc_nand.c
 +++ b/drivers/mtd/nand/mxc_nand.c
 @@ -1011,6 +1011,8 @@ static int __devexit mxcnd_remove(struct platform_device *pdev)
  static int mxcnd_suspend(struct platform_device *pdev, pm_message_t state)
  {
  	struct mtd_info *info = platform_get_drvdata(pdev);
-+        struct nand_chip *nand_chip = info->priv;
++	struct nand_chip *nand_chip = info->priv;
 +	struct mxc_nand_host *host = nand_chip->priv;
  	int ret = 0;
  
@@ -68,7 +72,7 @@ index 21fd4f1..d352d2a 100644
  static int mxcnd_resume(struct platform_device *pdev)
  {
  	struct mtd_info *info = platform_get_drvdata(pdev);
-+        struct nand_chip *nand_chip = info->priv;
++	struct nand_chip *nand_chip = info->priv;
 +	struct mxc_nand_host *host = nand_chip->priv;
  	int ret = 0;
  
