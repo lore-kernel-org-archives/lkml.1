@@ -1,166 +1,131 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760674AbZEMQRR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761291AbZEMQRu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760674AbZEMQRR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 12:17:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761212AbZEMQQm
+	id S1761291AbZEMQRu (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 12:17:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761332AbZEMQQw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 12:16:42 -0400
-Received: from e28smtp07.in.ibm.com ([59.145.155.7]:49720 "EHLO
-	e28smtp07.in.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761287AbZEMQQk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 12:16:40 -0400
-Date: Wed, 13 May 2009 21:46:34 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Steven Rostedt <rostedt@goodmis.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
-       Roland McGrath <roland@redhat.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 12/12] Reset bits in dr6 after the corresponding exception
-	is handled
-Message-ID: <20090513161634.GM13911@in.ibm.com>
-References: <20090513160546.592373797@prasadkr_t60p.in.ibm.com>
+	Wed, 13 May 2009 12:16:52 -0400
+Received: from dev.rtsoft.ru ([213.79.90.226]:54066 "HELO mail.dev.rtsoft.ru"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1761324AbZEMQQu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 12:16:50 -0400
+X-Greylist: delayed 400 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 May 2009 12:16:50 EDT
+Message-ID: <4A0AF0E1.2000200@ru.mvista.com>
+Date: Wed, 13 May 2009 20:10:09 +0400
+From: Konstantin Baydarov <kbaidarov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.16 (X11/20080723)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=dr6_changes_12
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: linux-kernel@vger.kernel.org
+CC: mpm@selenic.com
+Subject: [PATCH] Late Re Initialization Of Strong RNG (random.c)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch resets the bit in dr6 after the corresponding exception is
-handled in code.
+   Hello,
+   Recently I've faced following issue:
+     When I'm using "jiffies" clocksource ("clock=jiffies" in kernel 
+boot line) and NFS rootfs I'm getting following errors before bash login 
+prompt appears:
+   NFS: server 10.150.41.21 error: fileid changed
+   fsid 0:e: expected fileid 0x6cc16f, got 0x9255de
+   or
+   NFS: readdir reply truncated!
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- arch/x86/kernel/hw_breakpoint.c |   13 +++++++++++--
- arch/x86/kernel/kgdb.c          |    6 ++++++
- arch/x86/kernel/kprobes.c       |    9 ++++++++-
- arch/x86/kernel/traps.c         |    4 ++--
- arch/x86/mm/kmmio.c             |    8 +++++++-
- 5 files changed, 34 insertions(+), 6 deletions(-)
+   Errors appears when 2-3 reboots.
 
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/traps.c
+   Root Case:
+     Turned out that during every boot, when kernel NFS client 
+initializes XID field of NFS RPC request by calling random32(), 
+random32() returns pseudo random numbers instead of strong random. So 
+every boot Kernel NFS client starts to send RPC requests to NFS 
+server(Linux NFSD) with the same XID value. After couple board reboots, 
+NFS server fills up the requests cache with the pseudorandom XIDs and 
+false NFSD cache hits star to occur, and following errors appear:
+fsid 0:e: expected fileid 0x6cc16f, got 0x9255de
+
+   My board has an RTC, so values retuned by random32() during NFS XID 
+initialization should unique for every boot, because strong 
+RNG(drivers/char/random.c) uses getnstimeofday() (getnstimeofday called 
+from ktime_get_real) for pool initialization,  see init_std_data(). So 
+RNG pools should be initialized with the different "timeofday" values, 
+provided by RTC hw.
+   It turned out that RTC driver, compilled in kernel, starts later then 
+strong rng(drivers/char/random.c) initializes it's pools. So 
+getnstimeofday(), called in init_std_data(), returns the same "uptime" 
+values instead of the monotonous "timeofday" values(the date in seconds 
+or something like that).
+
+   How Solved:
+   To fix this I've added late reinitialization of strong RND (into 
+late_initcall_sync subsection), to make sure that RNG pools 
+initialization occurs after any of board specific RTC driver 
+initialization. Also I've added random32 reseed after strong RND 
+reinitialization.
+
+   I'm using PPC board, and I can't reproduce this issue with "timebase" 
+clocksource, the default clocksource for my board. I believe it's 
+because it has more resolution than "timebase". But I believe that there 
+is a possibility that errors "NFS: readdir reply truncated!" can appear 
+on other board with default clocksource.
+   Anyway it's safer to initialize RNG with "timeofday" values instead 
+of "uptime" value. IIUC, even with the high resolution clocksource, 
+"uptime" value can be the same for 2 sequential boots.
+
+Patch against linux-2.6.29.3 .
+
+Signed-off-by: Konstantin Baydarov <kbaidarov@ru.mvista.com>
+
+Index: linux-2.6.29.3/drivers/char/random.c
 ===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/traps.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/traps.c
-@@ -550,8 +550,8 @@ dotraplinkage void __kprobes do_debug(st
- 	/* Store the virtualized DR6 value */
- 	tsk->thread.debugreg6 = dr6;
- 
--	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
--						SIGTRAP) == NOTIFY_STOP)
-+	if (notify_die(DIE_DEBUG, "debug", regs, PTR_ERR(&dr6), error_code,
-+							SIGTRAP) == NOTIFY_STOP)
- 		return;
- 
- 	/* It's safe to allow irq's after DR6 has been saved */
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/kgdb.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/kgdb.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/kgdb.c
-@@ -43,6 +43,7 @@
- #include <linux/smp.h>
- #include <linux/nmi.h>
- 
-+#include <asm/debugreg.h>
- #include <asm/apicdef.h>
- #include <asm/system.h>
- 
-@@ -433,6 +434,11 @@ single_step_cont(struct pt_regs *regs, s
- 			"resuming...\n");
- 	kgdb_arch_handle_exception(args->trapnr, args->signr,
- 				   args->err, "c", "", regs);
-+	/*
-+	 * Reset the BS bit in dr6 (pointed by args->err) to
-+	 * denote completion of processing
-+	 */
-+	(*(unsigned long *)ERR_PTR(args->err)) &= ~DR_STEP;
- 
- 	return NOTIFY_STOP;
- }
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/kprobes.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/kprobes.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/kprobes.c
-@@ -54,6 +54,7 @@
- #include <asm/pgtable.h>
- #include <asm/uaccess.h>
- #include <asm/alternative.h>
-+#include <asm/debugreg.h>
- 
- void jprobe_return_end(void);
- 
-@@ -967,8 +968,14 @@ int __kprobes kprobe_exceptions_notify(s
- 			ret = NOTIFY_STOP;
- 		break;
- 	case DIE_DEBUG:
--		if (post_kprobe_handler(args->regs))
-+		if (post_kprobe_handler(args->regs)) {
-+			/*
-+			 * Reset the BS bit in dr6 (pointed by args->err) to
-+			 * denote completion of processing
-+			 */
-+			(*(unsigned long *)ERR_PTR(args->err)) &= ~DR_STEP;
- 			ret = NOTIFY_STOP;
-+		}
- 		break;
- 	case DIE_GPF:
- 		/*
-Index: linux-2.6-tip.hbkpt/arch/x86/mm/kmmio.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/mm/kmmio.c
-+++ linux-2.6-tip.hbkpt/arch/x86/mm/kmmio.c
-@@ -540,8 +540,14 @@ kmmio_die_notifier(struct notifier_block
- 	struct die_args *arg = args;
- 
- 	if (val == DIE_DEBUG && (arg->err & DR_STEP))
--		if (post_kmmio_handler(arg->err, arg->regs) == 1)
-+		if (post_kmmio_handler(arg->err, arg->regs) == 1) {
-+			/*
-+			 * Reset the BS bit in dr6 (pointed by args->err) to
-+			 * denote completion of processing
-+			 */
-+			(*(unsigned long *)ERR_PTR(arg->err)) &= ~DR_STEP;
- 			return NOTIFY_STOP;
-+		}
- 
- 	return NOTIFY_DONE;
- }
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-@@ -296,8 +296,12 @@ int __kprobes hw_breakpoint_handler(stru
- {
- 	int i, cpu, rc = NOTIFY_STOP;
- 	struct hw_breakpoint *bp;
--	/* The DR6 value is stored in args->err */
--	unsigned long dr7, dr6 = args->err;
-+	unsigned long dr7, dr6;
-+	unsigned long *dr6_p;
+--- linux-2.6.29.3.orig/drivers/char/random.c
++++ linux-2.6.29.3/drivers/char/random.c
+@@ -947,6 +947,15 @@ static int rand_initialize(void)
+  }
+  module_init(rand_initialize);
+
++static int __init rand_late_initialize(void)
++{
++	rand_initialize();
++	random32_reseed();
 +
-+	/* The DR6 value is pointed by args->err */
-+	dr6_p = (unsigned long *)ERR_PTR(args->err);
-+	dr6 = *dr6_p;
- 
- 	/* Do an early return if no trap bits are set in DR6 */
- 	if ((dr6 & DR_TRAP_BITS) == 0)
-@@ -341,6 +345,11 @@ int __kprobes hw_breakpoint_handler(stru
- 			continue;
- 
- 		(bp->triggered)(bp, args->regs);
-+		/*
-+		 * Reset the 'i'th TRAP bit in dr6 to denote completion of
-+		 * exception handling
-+		 */
-+		(*dr6_p) &= ~(DR_TRAP0 << i);
- 	}
- 	if (dr6 & (~DR_TRAP_BITS))
- 		rc = NOTIFY_DONE;
++	return 0;
++}
++late_initcall_sync(rand_late_initialize);
++
+  void rand_initialize_irq(int irq)
+  {
+  	struct timer_rand_state *state;
+Index: linux-2.6.29.3/include/linux/random.h
+===================================================================
+--- linux-2.6.29.3.orig/include/linux/random.h
++++ linux-2.6.29.3/include/linux/random.h
+@@ -73,6 +73,7 @@ unsigned long randomize_range(unsigned l
 
+  u32 random32(void);
+  void srandom32(u32 seed);
++int random32_reseed(void);
+
+  #endif /* __KERNEL___ */
+
+Index: linux-2.6.29.3/lib/random32.c
+===================================================================
+--- linux-2.6.29.3.orig/lib/random32.c
++++ linux-2.6.29.3/lib/random32.c
+@@ -133,7 +133,7 @@ core_initcall(random32_init);
+   *	Generate better values after random number generator
+   *	is fully initalized.
+   */
+-static int __init random32_reseed(void)
++int random32_reseed(void)
+  {
+  	int i;
+
+@@ -151,4 +151,5 @@ static int __init random32_reseed(void)
+  	}
+  	return 0;
+  }
++EXPORT_SYMBOL(random32_reseed);
+  late_initcall(random32_reseed);
