@@ -1,114 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761622AbZEMVb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761795AbZEMVbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761622AbZEMVb3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 17:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761330AbZEMVbR
+	id S1761795AbZEMVbo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 17:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761495AbZEMVbZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 17:31:17 -0400
-Received: from vena.lwn.net ([206.168.112.25]:33019 "EHLO vena.lwn.net"
+	Wed, 13 May 2009 17:31:25 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:53212 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761188AbZEMVbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 17:31:16 -0400
-Date: Wed, 13 May 2009 15:31:12 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Wolfgang Grandegger <wg@grandegger.com>,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Subject: Re: [PATCH v2 3/7] [PATCH 3/8] can: CAN Network device driver and
- Netlink interface
-Message-ID: <20090513153112.0822809b@bike.lwn.net>
-In-Reply-To: <20090512092757.574693100@denx.de>
-References: <20090512092757.048938233@denx.de>
-	<20090512092757.574693100@denx.de>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+	id S1761613AbZEMVbY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 17:31:24 -0400
+Message-ID: <4A0B3BF3.1050804@garzik.org>
+Date: Wed, 13 May 2009 17:30:27 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Hitoshi Mitake <h.mitake@gmail.com>, Roland Dreier <rdreier@cisco.com>,
+       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>, tglx@linutronix.de,
+       rpjday@crashcourse.ca, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
+References: <49EE37AF.4020507@zytor.com>	 <20090421.173123.191021055.davem@davemloft.net>	 <adak55438gp.fsf_-_@cisco.com>	 <20090428.221228.217954247.davem@davemloft.net>	 <20090429115654.GC11586@elte.hu> <49F843BC.7020902@garzik.org>	 <adahc071ie4.fsf@cisco.com> <49F8B1A1.4010208@garzik.org> <a6b9f31a0905122232s2d23b4e3h6e447c3fa5c29ee6@mail.gmail.com> <4A0B30D0.4060806@garzik.org> <4A0B3605.8090007@zytor.com>
+In-Reply-To: <4A0B3605.8090007@zytor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-[Quick review ...]
+H. Peter Anvin wrote:
+> Jeff Garzik wrote:
+>> Roland's patch was acked, apparently, _in spite of_ the commonly 
+>> accepted readq() definition already being in use!
+>>
+>> Thusfar, I see two things:
+>>
+>> (1) years of history has shown that non-atomic readq/writeq on 32-bit 
+>> platforms has been sufficient, based on testing and experience.  In 
+>> fact, in niu's case, a common readq/writeq would have PREVENTED a bug.
+>>
+>> (2) unspecified fears continue to linger about non-atomicity
+>>
+>> We should not base decisions on fear, particularly when the weight of 
+>> evidence and experience points in the other direction.
+>>
+> 
+> I have personally dealt with at least one device who'd want to opt out
+> of a standard readq/writeq (it's not in-tree because it never shipped,
+> unfortunately.)  Doing the opt-in headers seems like a reasonable thing
+> to do to me, but perhaps I'm just being overly paranoid.
 
-> +/*
-> + * CAN device restart for bus-off recovery
-> + */
-> +int can_restart_now(struct net_device *dev)
-> +{
-> +	struct can_priv *priv = netdev_priv(dev);
-> +	struct net_device_stats *stats = &dev->stats;
-> +	struct sk_buff *skb;
-> +	struct can_frame *cf;
-> +	int err;
-> +
-> +	/* Synchronize with dev->hard_start_xmit() */
-> +	netif_tx_lock(dev);
-> +
-> +	/* Ensure that no more messages can go out */
-> +	if (netif_carrier_ok(dev))
-> +		netif_carrier_off(dev);
-> +
-> +	/* Ensure that no more messages can come in */
-> +	err = priv->do_set_mode(dev, CAN_MODE_STOP);
-> +	if (err)
-> +		return err;
+Isn't that a variant of "punish all sane hardware, because bizarre 
+unshipped hardware exists"?
 
-This leaves _xmit_lock held and carrier off.  Is that really what you want
-to do?
+IMO the best fix is to document existing readq assumptions, and 
+standardize that definition on other platforms.
 
-> +
-> +	/*  Now it's save to clean up */
-> +	del_timer_sync(&priv->restart_timer);
-> +	can_flush_echo_skb(dev);
-> +
-> +	dev_dbg(dev->dev.parent, "restarted\n");
-> +	priv->can_stats.restarts++;
-> +
-> +	/* send restart message upstream */
-> +	skb = dev_alloc_skb(sizeof(struct can_frame));
-> +	if (skb == NULL)
-> +		return -ENOMEM;
+The burden of special casing for bizarre hardware should not fall on 
+/sane/ drivers and hardware, who should be the ones opting _out_ of the 
+standard regime.
 
-...here too...
+	Jeff
 
-> +	skb->dev = dev;
-> +	skb->protocol = htons(ETH_P_CAN);
-> +	cf = (struct can_frame *)skb_put(skb, sizeof(struct can_frame));
-> +	memset(cf, 0, sizeof(struct can_frame));
-> +	cf->can_id = CAN_ERR_FLAG | CAN_ERR_RESTARTED;
-> +	cf->can_dlc = CAN_ERR_DLC;
-> +
-> +	netif_rx(skb);
-> +
-> +	dev->last_rx = jiffies;
-> +	stats->rx_packets++;
-> +	stats->rx_bytes += cf->can_dlc;
-> +
-> +	/* Now restart the device */
-> +	err = priv->do_set_mode(dev, CAN_MODE_START);
-> +	if (err)
-> +		return err;
 
-...and here too.  Do you maybe want to get rid of the middle-of-function
-returns and switch to the "goto out" convention?
 
-> +	netif_carrier_on(dev);
-> +
-> +	netif_tx_unlock(dev);
-> +
-> +	return 0;
-> +}
-> +
-> +static void can_restart_after(unsigned long data)
-> +{
-> +	struct net_device *dev = (struct net_device *)data;
-> +
-> +	can_restart_now(dev);
-> +}
-
-can_restart_after what?  I find myself confused by this function and
-wondering why it exists.
-
-jon
