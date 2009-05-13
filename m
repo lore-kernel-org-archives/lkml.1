@@ -1,58 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760303AbZEMOjm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759060AbZEMOls@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760303AbZEMOjm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 10:39:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758744AbZEMOjb
+	id S1759060AbZEMOls (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 10:41:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbZEMOlj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 10:39:31 -0400
-Received: from gw.goop.org ([64.81.55.164]:45537 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757959AbZEMOja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 10:39:30 -0400
-Message-ID: <4A0ADBA2.2020300@goop.org>
-Date: Wed, 13 May 2009 07:39:30 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [GIT PULL] xen /proc/mtrr implementation
-References: <1242170864-13560-1-git-send-email-jeremy@goop.org> <20090513133021.GA7277@elte.hu>
-In-Reply-To: <20090513133021.GA7277@elte.hu>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Wed, 13 May 2009 10:41:39 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:56912 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754718AbZEMOli (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 10:41:38 -0400
+Date: Wed, 13 May 2009 16:46:59 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Peter Zijlstra <a.p.zijlstra@chello.nl>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 0/2] Saving power by cpu evacuation sched_max_capacity_pct=n
+Message-ID: <20090513144659.GV19296@one.firstfloor.org>
+References: <20090513130541.21440.33364.stgit@drishya.in.ibm.com> <20090513143550.GU19296@one.firstfloor.org> <1242225402.26820.23.camel@twins>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242225402.26820.23.camel@twins>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> i never got a reply to my question for your previous submission:
->
->   http://lkml.indiana.edu/hypermail/linux/kernel/0905.1/00152.html
->   
+On Wed, May 13, 2009 at 04:36:42PM +0200, Peter Zijlstra wrote:
+> On Wed, 2009-05-13 at 16:35 +0200, Andi Kleen wrote:
+> > On Wed, May 13, 2009 at 06:41:00PM +0530, Vaidyanathan Srinivasan wrote:
+> > > * Using sched_mc=3,4,5 to evacuate 1,2,4 cores is completely
+> > >   non-intuitive and broken interface.  Ingo wanted to see if we can
+> > >   model a global percentile tunable that would map to core throttling.
+> > 
+> > I have one request. CPU throttling is already a very well established
+> > term in the x86 world, refering to thermal throttling when the CPU
+> > overheats. This is implemented by ACPI and the CPU. It's always
+> > a very bad thing that should be avoided at all costs.
+> 
+> Its about avoiding that.
 
-That was in response to the mtrr patch in the dom0/core series.
+Hmm? Can you explain please? CPU throttling should only happen when your
+cooling system is broken in some way.
 
-> Please dont post patches with ugly TODO items in them.
-I removed them in the repost.
-> Also, a more general objection is that /proc/mtrr is a legacy
-> interface, we dont really want to extend its use.
-It's not an extended use; its just making the existing interface work 
-under Xen (ie, not breaking the userspace ABI).  The only other 
-alternatives would be to 1) use Kconfig to prevent MTRR and Xen from 
-being set at the same time, or 2) put a runtime hack in to disable MTRR 
-when running under Xen.  Neither seems like a good idea when we can just 
-keep the interface working.
-> The Xen hypervisor
-> should get proper PAT support instead ...
+It's not a power saving feature, just a "don't make CPU melt" feature.
 
-Well, it has PAT support, but there's an issue that the Xen PAT setup 
-isn't quite the same as Linux's (but I thought you were cc:d on the 
-discussion about that).  We need to sort out some details about the 
-precise mechanism, but it looks like we'll be able to support PAT in 
-Linux guests relatively easily (but not immediately).
+-Andi
 
-    J
+-- 
+ak@linux.intel.com -- Speaking for myself only.
