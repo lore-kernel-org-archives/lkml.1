@@ -1,71 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZEMOUe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758726AbZEMOZy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756237AbZEMOUe (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 10:20:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbZEMOUY
+	id S1758726AbZEMOZy (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 10:25:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbZEMOZp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 10:20:24 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:38129 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752957AbZEMOUX convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 10:20:23 -0400
+	Wed, 13 May 2009 10:25:45 -0400
+Received: from waste.org ([66.93.16.53]:44317 "EHLO waste.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753016AbZEMOZo (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 10:25:44 -0400
+Date: Wed, 13 May 2009 09:25:38 -0500
+From: Matt Mackall <mpm@selenic.com>
+To: Chris Peterson <cpeterso@cpeterso.com>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [resend] drivers/net: remove network drivers' last few uses of IRQF_SAMPLE_RANDOM
+Message-ID: <20090513142535.GB31071@waste.org>
+References: <alpine.DEB.2.00.0905130118140.15823@ubuntu-desktop> <20090513060850.GZ31071@waste.org> <a24804730905130017t545b7645x71ab7a1c8ab4af78@mail.gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <ac3eb2510905130634l75ef8f78v604c53fb4bc3167f@mail.gmail.com>
-References: <20090509143742.GA27663@kroah.com> <1242074517.6624.183.camel@moss-terrapins.epoch.ncsc.mil> 
-	<ac3eb2510905111405y5541117euf84dd38d39012bd0@mail.gmail.com> 
-	<1242132344.31807.48.camel@localhost.localdomain> <ac3eb2510905120810n101dff08yfa945a2ab4b17168@mail.gmail.com> 
-	<1242142528.31807.80.camel@localhost.localdomain> <ac3eb2510905120854y7b44f608odf25af159fd6495c@mail.gmail.com> 
-	<1242168913.6711.9.camel@poy> <10761.1242220810@redhat.com> 
-	<ac3eb2510905130634l75ef8f78v604c53fb4bc3167f@mail.gmail.com>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Wed, 13 May 2009 16:20:02 +0200
-Message-ID: <ac3eb2510905130720x38de25adxc83b10aea0b86ce1@mail.gmail.com>
-Subject: Re: [patch 00/13] devtmpfs patches
-To: David Howells <dhowells@redhat.com>
-Cc: Stephen Smalley <sds@tycho.nsa.gov>,
-       "David P. Quigley" <dpquigl@tycho.nsa.gov>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
-       Jan Blunck <jblunck@suse.de>, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@parisplace.org>,
-       Christoph Hellwig <hch@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <a24804730905130017t545b7645x71ab7a1c8ab4af78@mail.gmail.com>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 15:34, Kay Sievers <kay.sievers@vrfy.org> wrote:
+On Wed, May 13, 2009 at 12:17:29AM -0700, Chris Peterson wrote:
+> > The future model will continue to sample network
+> > devices on theory that they -might- be less than 100% observable and
+> > that can only increase our total (unmeasurable) amount of entropy.
+> 
+> That sounds reasonable to me. So should all net drivers now specify
+> IRQF_SAMPLE_RANDOM?
+> 
+> Or even simpler: could request_irq() assume IRQF_SAMPLE_RANDOM for any
+> interrupt that is not (say) IRQF_IRQPOLL or IRQF_PERCPU?
 
->>> +     kern_cred = prepare_kernel_cred(NULL);
->>
->> If you have no intention of altering the credentials you create, you might
->> want to use &init_cred instead of kern_cred.  That said, you might want to
->> allocate it and let the security module alter it before you use it.
->
-> Ah, didn't know that it was exported. It's the one in
-> include/linux/init_task.h, right? I'll give that a try.
+Maybe. We don't want IRQ latency to suffer. So before we turn on
+sampling of -all- sources, we need to make sampling lighter weight and
+we need a way to say 'we have enough' so that we're not consuming CPU
+when our pools are 'full'. We could turn it on now and rely on the
+current trickle logic, but it's nice to have the water main off when
+doing significant plumbing.
 
-That seems to work fine here. Thanks a lot for the help.
-
-Maybe we could do the same credential swap in sysfs, and get rid of:
-/**
- * lookup_one_noperm - bad hack for sysfs
- * @name:       pathname component to lookup
- * @base:       base directory to lookup from
- *
- * This is a variant of lookup_one_len that doesn't perform any permission
- * checks.   It's a horrible hack to work around the braindead sysfs
- * architecture and should not be used anywhere else.
- *
- * DON'T USE THIS FUNCTION EVER, thanks.
- */
-
-in fs/namei.c?
-
-Seems a bit odd to have a vfs function for a single filesystem, called
-from a single location, and annotated as "do not use". Christoph added
-the comment a while ago, so adding him to Cc:.
-
-Thanks,
-Kay
+-- 
+Mathematics is the supreme nostalgia of our time.
