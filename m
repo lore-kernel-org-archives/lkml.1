@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761659AbZEMVYY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761759AbZEMV0e@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761659AbZEMVYY (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 17:24:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756780AbZEMVYO
+	id S1761759AbZEMV0e (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 17:26:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761272AbZEMV0Z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 17:24:14 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44839 "EHLO gate.crashing.org"
+	Wed, 13 May 2009 17:26:25 -0400
+Received: from gate.crashing.org ([63.228.1.57]:44868 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753062AbZEMVYN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 17:24:13 -0400
+	id S1760409AbZEMV0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 17:26:24 -0400
 From: Kumar Gala <galak@kernel.crashing.org>
-To: jeff@garzik.org
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: [PATCH v2] sata_fsl: Fix compile warnings
-Date: Wed, 13 May 2009 16:23:07 -0500
-Message-Id: <1242249787-10116-1-git-send-email-galak@kernel.crashing.org>
+To: dan.j.williams@intel.com
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] fsldma: Fix compile warnings
+Date: Wed, 13 May 2009 16:25:57 -0500
+Message-Id: <1242249957-10352-1-git-send-email-galak@kernel.crashing.org>
 X-Mailer: git-send-email 1.6.0.6
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -23,39 +22,57 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 We we build with dma_addr_t as a 64-bit quantity we get:
 
-drivers/ata/sata_fsl.c: In function 'sata_fsl_fill_sg':
-drivers/ata/sata_fsl.c:340: warning: format '%x' expects type 'unsigned int', but argument 4 has type 'dma_addr_t'
+drivers/dma/fsldma.c: In function 'fsl_chan_xfer_ld_queue':
+drivers/dma/fsldma.c:625: warning: cast to pointer from integer of different size
+drivers/dma/fsldma.c: In function 'fsl_dma_chan_do_interrupt':
+drivers/dma/fsldma.c:737: warning: cast to pointer from integer of different size
+drivers/dma/fsldma.c:737: warning: cast to pointer from integer of different size
+drivers/dma/fsldma.c: In function 'of_fsl_dma_probe':
+drivers/dma/fsldma.c:927: warning: cast to pointer from integer of different
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
-* had one too many 'x'
-- k
+ drivers/dma/fsldma.c |   13 +++++++------
+ 1 files changed, 7 insertions(+), 6 deletions(-)
 
- drivers/ata/sata_fsl.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-index c2e90e1..a9c4e0e 100644
---- a/drivers/ata/sata_fsl.c
-+++ b/drivers/ata/sata_fsl.c
-@@ -332,13 +332,14 @@ static unsigned int sata_fsl_fill_sg(struct ata_queued_cmd *qc, void *cmd_desc,
- 		dma_addr_t sg_addr = sg_dma_address(sg);
- 		u32 sg_len = sg_dma_len(sg);
+diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
+index da8a8ed..66a7687 100644
+--- a/drivers/dma/fsldma.c
++++ b/drivers/dma/fsldma.c
+@@ -622,8 +622,8 @@ static void fsl_chan_xfer_ld_queue(struct fsl_dma_chan *fsl_chan)
+ 	if (ld_node != &fsl_chan->ld_queue) {
+ 		/* Get the ld start address from ld_queue */
+ 		next_dest_addr = to_fsl_desc(ld_node)->async_tx.phys;
+-		dev_dbg(fsl_chan->dev, "xfer LDs staring from %p\n",
+-				(void *)next_dest_addr);
++		dev_dbg(fsl_chan->dev, "xfer LDs staring from 0x%llx\n",
++				(unsigned long long)next_dest_addr);
+ 		set_cdar(fsl_chan, next_dest_addr);
+ 		dma_start(fsl_chan);
+ 	} else {
+@@ -734,8 +734,9 @@ static irqreturn_t fsl_dma_chan_do_interrupt(int irq, void *data)
+ 	 */
+ 	if (stat & FSL_DMA_SR_EOSI) {
+ 		dev_dbg(fsl_chan->dev, "event: End-of-segments INT\n");
+-		dev_dbg(fsl_chan->dev, "event: clndar %p, nlndar %p\n",
+-			(void *)get_cdar(fsl_chan), (void *)get_ndar(fsl_chan));
++		dev_dbg(fsl_chan->dev, "event: clndar 0x%llx, nlndar 0x%llx\n",
++			(unsigned long long)get_cdar(fsl_chan),
++			(unsigned long long)get_ndar(fsl_chan));
+ 		stat &= ~FSL_DMA_SR_EOSI;
+ 		update_cookie = 1;
+ 	}
+@@ -925,8 +926,8 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
+ 	}
  
--		VPRINTK("SATA FSL : fill_sg, sg_addr = 0x%x, sg_len = %d\n",
--			sg_addr, sg_len);
-+		VPRINTK("SATA FSL : fill_sg, sg_addr = 0x%llx, sg_len = %d\n",
-+			(unsigned long long)sg_addr, sg_len);
+ 	dev_info(&dev->dev, "Probe the Freescale DMA driver for %s "
+-			"controller at %p...\n",
+-			match->compatible, (void *)fdev->reg.start);
++			"controller at 0x%llx...\n",
++			match->compatible, (unsigned long long)fdev->reg.start);
+ 	fdev->reg_base = ioremap(fdev->reg.start, fdev->reg.end
+ 						- fdev->reg.start + 1);
  
- 		/* warn if each s/g element is not dword aligned */
- 		if (sg_addr & 0x03)
- 			ata_port_printk(qc->ap, KERN_ERR,
--					"s/g addr unaligned : 0x%x\n", sg_addr);
-+					"s/g addr unaligned : 0x%llx\n", 
-+					(unsigned long long)sg_addr);
- 		if (sg_len & 0x03)
- 			ata_port_printk(qc->ap, KERN_ERR,
- 					"s/g len unaligned : 0x%x\n", sg_len);
 -- 
 1.6.0.6
 
