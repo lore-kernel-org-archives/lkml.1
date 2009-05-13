@@ -1,53 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756807AbZEMN3a@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbZEMNan@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756807AbZEMN3a (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:29:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZEMN3U
+	id S1759915AbZEMNan (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:30:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZEMNae
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:29:20 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39473 "EHLO mx2.suse.de"
+	Wed, 13 May 2009 09:30:34 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43015 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752267AbZEMN3U (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:29:20 -0400
-Message-ID: <4A0ACB29.5030009@novell.com>
-Date: Wed, 13 May 2009 22:29:13 +0900
-From: Tejun Heo <teheo@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1752307AbZEMNad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 09:30:33 -0400
+Date: Wed, 13 May 2009 15:30:21 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [GIT PULL] xen /proc/mtrr implementation
+Message-ID: <20090513133021.GA7277@elte.hu>
+References: <1242170864-13560-1-git-send-email-jeremy@goop.org>
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
-       linux-kernel@vger.kernel.org
-Subject: Re: remap allocator for per-CPU memory
-References: <4A09B23B02000078000007F1@vpn.id2.novell.com>	<4A09991E.9010903@kernel.org> <4A0A9C70.6090803@novell.com>	<87vdo5l0u6.fsf@basil.nowhere.org> <4A0AAB6B.3090903@novell.com>	<4A0AAF10.3030709@novell.com> <4A0ADE6A0200007800000BA7@novell.com>
-In-Reply-To: <4A0ADE6A0200007800000BA7@novell.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242170864-13560-1-git-send-email-jeremy@goop.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
 
-Jan Beulich wrote:
-> I think the only two alternatives are
+* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+
+> Hi Ingo,
 > 
-> (a) don't use large pages in the first place here, or
+> This series of patches makes /proc/mtrr fully functional under Xen.
+> 
+> Thanks,
+> 	J
+> 
+> The following changes since commit ce791368bb4a53d05e78e1588bac0aacde8db84c:
+>   Jeremy Fitzhardinge (1):
+>         xen/i386: make sure initial VGA/ISA mappings are not overridden
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git for-ingo/xen/dom0/mtrr
+> 
+> Jeremy Fitzhardinge (1):
+>       xen: set cpu_callout_mask to make mtrr work
+> 
+> Mark McLoughlin (5):
+>       xen mtrr: Use specific cpu_has_foo macros instead of generic cpu_has()
+>       xen mtrr: Use generic_validate_add_page()
+>       xen mtrr: Implement xen_get_free_region()
+>       xen mtrr: Add xen_{get,set}_mtrr() implementations
+>       xen mtrr: Kill some unnecessary includes
+> 
+>  arch/x86/kernel/cpu/mtrr/mtrr.h |    2 +
+>  arch/x86/kernel/cpu/mtrr/xen.c  |   99 ++++++++++++++++++++++++++++++++-------
+>  arch/x86/xen/smp.c              |    2 +
+>  3 files changed, 86 insertions(+), 17 deletions(-)
 
-Seems like the first candidate at the moment.
+i never got a reply to my question for your previous submission:
 
-> (b) teach the pageattr code to handle the per-CPU virtual area similarly to
-> the kernel space for x86-64 (though it's going to be a little more complicated
-> since there's no pre-determined relation between the virtual and physical
-> addresses - the necessary lookup might become expensive on systems with
-> very many [possible] CPUs).
+  http://lkml.indiana.edu/hypermail/linux/kernel/0905.1/00152.html
 
-Can you elaborate this a bit?  Let's sya there's quick way to match
-whether the page is part of the remapped large page, what can pageattr
-do differently then?  Applying the same attribute to both mappings?
-Failing or filtering set_memory_*()?
-
-Thanks.
-
--- 
-tejun
+	Ingo
