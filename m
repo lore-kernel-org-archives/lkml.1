@@ -1,97 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758595AbZEMNWy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758107AbZEMNYI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758595AbZEMNWy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:22:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbZEMNWn
+	id S1758107AbZEMNYI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:24:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbZEMNXx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:22:43 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:58664 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753127AbZEMNWm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:22:42 -0400
-Date: Wed, 13 May 2009 15:21:51 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Masami Hiramatsu <mhiramat@redhat.com>
-Cc: Steven Rostedt <rostedt@goodmis.org>, lkml <linux-kernel@vger.kernel.org>,
-       Avi Kivity <avi@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Andi Kleen <andi@firstfloor.org>, Jim Keniston <jkenisto@us.ibm.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>
-Subject: Re: [PATCH -tip v5 0/7] tracing: kprobe-based event tracer and x86
-	instruction decoder
-Message-ID: <20090513132151.GC21052@elte.hu>
-References: <20090509004829.5505.38720.stgit@localhost.localdomain> <20090509044302.GH8007@elte.hu> <4A09F216.70203@redhat.com>
+	Wed, 13 May 2009 09:23:53 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:8908 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753765AbZEMNXw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 09:23:52 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=Cwnv7VLHe6xm1va2e7o3HX5c8GSAIFiOwnDSBKvvf5Ao0dw+08Wl025F1dTjmv5QuJ
+         YmJcq5YRZHZw89lWJCpnn11Qtkef+EnXZow76qja6f33yGlcM/u8wK3Dge4y3msufOpz
+         iCAj0Nt5NzvuLmNIbJiwmYFDFLO/q84XzJa4Q=
+Date: Wed, 13 May 2009 17:23:42 +0400
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: gregkh@suse.de
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/2] Staging: comedi: data.c should include delay.h
+Message-ID: <20090513132342.GA16280@orion>
+References: <1242219648-16165-1-git-send-email-a.beregalov@gmail.com> <1242219648-16165-2-git-send-email-a.beregalov@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <4A09F216.70203@redhat.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+In-Reply-To: <1242219648-16165-2-git-send-email-a.beregalov@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Fix this build error:
+.../data.c:86: error: implicit declaration of function 'udelay'
 
-* Masami Hiramatsu <mhiramat@redhat.com> wrote:
+Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
+---
 
-> Ingo Molnar wrote:
-> > * Masami Hiramatsu <mhiramat@redhat.com> wrote:
-> > 
-> >> Hi,
-> >>
-> >> Here are the patches of kprobe-based event tracer for x86, version 
-> >> 5, which allows you to probe various kernel events through ftrace 
-> >> interface.
-> >>
-> >> This version supports only x86(-32/-64) (but porting it on other 
-> >> arch just needs kprobes/kretprobes and register and stack access 
-> >> APIs).
-> >>
-> >> This patchset also includes x86(-64) instruction decoder which 
-> >> supports non-SSE/FP opcodes and includes x86 opcode map. I think 
-> >> it will be possible to share this opcode map with KVM's decoder.
-> >>
-> >> This series can be applied on the latest linux-2.6-tip tree.
-> >>
-> >> This patchset includes following changes:
-> >> - Add x86 instruction decoder [1/7]
-> >> - Check insertion point safety in kprobe [2/7]
-> >> - Cleanup fix_riprel() with insn decoder [3/7]
-> >> - Add kprobe-tracer plugin [4/7]
-> >> - Fix kernel_trap_sp() on x86 according to systemtap runtime. [5/7]
-> >> - Add arch-dep register and stack fetching functions [6/7]
-> >> - Support fetching various status (register/stack/memory/etc.) [7/7]
-> >>
-> >> Future items:
-> >> - .init function tracing support.
-> >> - Support primitive types(long, ulong, int, uint, etc) for args.
-> > 
-> > Ok, this looks pretty complete already.
-> > 
-> > Two high-level comments:
-> > 
-> >  - There's no self-test - would it be possible to add one? See 
-> >    trace_selftest* in kernel/trace/
-> > 
-> >  - No generic integration.
-> 
-> Hmm, Ingo, could you tell me what I can do for the integration? 
-> Would you means that I should use filters?
+This one is better.
 
-yeah, that - and for the tracepoints to show up under 
-/debug/tracing/events/. They'd in essence be 'flexible', dynamic 
-event tracepoints that extend upon existing, built-in tracepoints. 
-To user-space tools the two would show up in a very similar way and 
-with a similar usage (once they are injected).
+ drivers/staging/comedi/kcomedilib/data.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-	Ingo
+diff --git a/drivers/staging/comedi/kcomedilib/data.c b/drivers/staging/comedi/kcomedilib/data.c
+index 3e5fe2c..d808556 100644
+--- a/drivers/staging/comedi/kcomedilib/data.c
++++ b/drivers/staging/comedi/kcomedilib/data.c
+@@ -26,6 +26,7 @@
+ #include "../comedidev.h"
+ 
+ #include <linux/string.h>
++#include <linux/delay.h>
+ 
+ int comedi_data_write(void *dev, unsigned int subdev, unsigned int chan,
+ 	unsigned int range, unsigned int aref, unsigned int data)
