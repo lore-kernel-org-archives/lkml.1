@@ -1,69 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762234AbZEMWrZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762281AbZEMWq6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762234AbZEMWrZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 18:47:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761908AbZEMWpH
+	id S1762281AbZEMWq6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 18:46:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761287AbZEMWow
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 18:45:07 -0400
-Received: from mail.pxnet.com ([195.227.45.7]:38983 "EHLO mail.pxnet.com"
+	Wed, 13 May 2009 18:44:52 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:38986 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760417AbZEMWog (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 18:44:36 -0400
+	id S1760557AbZEMWoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 18:44:37 -0400
 From: Tilman Schmidt <tilman@imap.cc>
 To: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 CC: Hansjoerg Lipp <hjlipp@web.de>
-Message-ID: <20090514-patch-08.tilman@imap.cc>
+Message-ID: <20090514-patch-03.tilman@imap.cc>
 In-Reply-To: <20090514-patch-00.tilman@imap.cc>
 References: <20090514-patch-00.tilman@imap.cc>
-Subject: [PATCH 8/8] gigaset: move up Kconfig inclusion point
-Date: Thu, 14 May 2009 00:44:18 +0200 (CEST)
+Subject: [PATCH 3/8] gigaset: fix error return code
+Date: Thu, 14 May 2009 00:44:17 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In preparation for porting to kernel CAPI subsystem, include the
-Gigaset driver's Kconfig directly from ISDN's instead of I4L's.
+gigaset_register_to_LL() is expected to print a message and return 0
+on failure. Make it do so consistently.
 
-Impact: Kconfig reorganisation, no functional change
+Impact: error handling bugfix
 Signed-off-by: Tilman Schmidt <tilman@imap.cc>
 ---
- drivers/isdn/Kconfig         |    2 ++
- drivers/isdn/gigaset/Kconfig |    1 +
- drivers/isdn/i4l/Kconfig     |    2 --
- 3 files changed, 3 insertions(+), 2 deletions(-)
+ drivers/isdn/gigaset/i4l.c |   12 +++++++-----
+ 1 files changed, 7 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/isdn/Kconfig b/drivers/isdn/Kconfig
-index 3d113c6..02bdca6 100644
---- a/drivers/isdn/Kconfig
-+++ b/drivers/isdn/Kconfig
-@@ -61,4 +61,6 @@ source "drivers/isdn/hardware/Kconfig"
+diff --git a/drivers/isdn/gigaset/i4l.c b/drivers/isdn/gigaset/i4l.c
+index 69a702f..9b22f9c 100644
+--- a/drivers/isdn/gigaset/i4l.c
++++ b/drivers/isdn/gigaset/i4l.c
+@@ -544,11 +544,11 @@ int gigaset_register_to_LL(struct cardstate *cs, const char *isdnid)
  
- endif # ISDN_CAPI
+ 	gig_dbg(DEBUG_ANY, "Register driver capabilities to LL");
  
-+source "drivers/isdn/gigaset/Kconfig"
-+
- endif # ISDN
-diff --git a/drivers/isdn/gigaset/Kconfig b/drivers/isdn/gigaset/Kconfig
-index 65ca305..18ab865 100644
---- a/drivers/isdn/gigaset/Kconfig
-+++ b/drivers/isdn/gigaset/Kconfig
-@@ -1,5 +1,6 @@
- menuconfig ISDN_DRV_GIGASET
- 	tristate "Siemens Gigaset support"
-+	depends on ISDN_I4L
- 	select CRC_CCITT
- 	select BITREVERSE
- 	help
-diff --git a/drivers/isdn/i4l/Kconfig b/drivers/isdn/i4l/Kconfig
-index 36778b2..ed3510f 100644
---- a/drivers/isdn/i4l/Kconfig
-+++ b/drivers/isdn/i4l/Kconfig
-@@ -135,5 +135,3 @@ source "drivers/isdn/act2000/Kconfig"
- source "drivers/isdn/hysdn/Kconfig"
+-	//iif->id[sizeof(iif->id) - 1]=0;
+-	//strncpy(iif->id, isdnid, sizeof(iif->id) - 1);
+ 	if (snprintf(iif->id, sizeof iif->id, "%s_%u", isdnid, cs->minor_index)
+-	    >= sizeof iif->id)
+-		return -ENOMEM; //FIXME EINVAL/...??
++	    >= sizeof iif->id) {
++		pr_err("ID too long: %s\n", isdnid);
++		return 0;
++	}
  
- endmenu
--
--source "drivers/isdn/gigaset/Kconfig"
+ 	iif->owner = THIS_MODULE;
+ 	iif->channels = cs->channels;
+@@ -568,8 +568,10 @@ int gigaset_register_to_LL(struct cardstate *cs, const char *isdnid)
+ 	iif->rcvcallb_skb = NULL;		/* Will be set by LL */
+ 	iif->statcallb = NULL;			/* Will be set by LL */
+ 
+-	if (!register_isdn(iif))
++	if (!register_isdn(iif)) {
++		pr_err("register_isdn failed\n");
+ 		return 0;
++	}
+ 
+ 	cs->myid = iif->channels;		/* Set my device id */
+ 	return 1;
 -- 
 1.6.2.1.214.ge986c
 
