@@ -1,57 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757565AbZEMAF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757718AbZEMAH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757565AbZEMAF7 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 20:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZEMAFt
+	id S1757718AbZEMAH5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 20:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755765AbZEMAHi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 20:05:49 -0400
-Received: from fmailhost06.isp.att.net ([204.127.217.106]:34720 "EHLO
-	fmailhost06.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751980AbZEMAFs (ORCPT
+	Tue, 12 May 2009 20:07:38 -0400
+Received: from utopia.booyaka.com ([72.9.107.138]:56373 "EHLO
+	utopia.booyaka.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751454AbZEMAHh (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 20:05:48 -0400
-X-Originating-IP: [74.251.46.63]
-Date: Tue, 12 May 2009 19:05:46 -0500
-From: Jay Cliburn <jacliburn@bellsouth.net>
-To: Frank Filz <ffilzlnx@us.ibm.com>
-Cc: Grant Coady <gcoady.lk@gmail.com>,
-       linux-kernel <linux-kernel@vger.kernel.org>, neilb@suse.de,
-       bfields@fieldses.org, linux-nfs@vger.kernel.org
-Subject: Re: NFS regression?  Odd delays and lockups accessing an NFS
- export.
-Message-ID: <20090512190546.5e8a7faf@osprey.hogchain.net>
-In-Reply-To: <1242160078.2404.6.camel@dyn9047022153>
-References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
-	<20080818185048.GO20684@miggy.org>
-	<48A9CF89.9090304@bellsouth.net>
-	<1242160078.2404.6.camel@dyn9047022153>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Tue, 12 May 2009 20:07:37 -0400
+MBOX-Line: From nobody Tue May 12 18:05:09 2009
+From: Paul Walmsley <paul@pwsan.com>
+Subject: [PATCH 00/10] OMAP clock/SDRC patches on v2.6.30-rc5
+To: linux-arm-kernel@lists.arm.linux.org.uk
+Cc: linux-kernel@vger.kernel.org, linux-omap@vger.kernel.org
+Date: Tue, 12 May 2009 18:05:09 -0600
+Message-ID: <20090512235713.10349.49339.stgit@localhost.localdomain>
+User-Agent: StGIT/0.14.3.222.gddca
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009 13:27:58 -0700
-Frank Filz <ffilzlnx@us.ibm.com> wrote:
+Hello Russell,
 
-> On Mon, 2008-08-18 at 14:37 -0500, J. K. Cliburn wrote:
-> > Athanasius wrote:
-> > > On Mon, Aug 18, 2008 at 12:02:20PM +1000, Grant Coady wrote:
-> > >> I've been using NFS here for years, lately there's something odd going on 
-> > >> since about a month or so.  Previously reported last month:
-> > >> http://www.gossamer-threads.com/lists/linux/kernel/951419?page=last
-[...]
-> > I see you're running the atl1 driver on your client.  I'm chasing an 
-> > intermittent bug in that driver that seems to be affected by certain 
-> > offload parameters.  Try disabling TSO and see if things improve.
-> 
-> Was this ever resolved? We're seeing a similar hangup in a 2.6.27
-> kernel.
+This series contains OMAP clock and SDRAM controller patches against
+v2.6.30-rc5.  If you are happy with these, Tony will merge them into
+his for-next branch for you to pull.
 
-The TSO problem in the atl1 driver was never resolved, and TSO was turned off by default with commit 82c26a9d117f0178b8c1b33429014b6d99c470f6 in the 2.6.27 cycle.  It was also added to the -stable tree at 2.6.26.4.
+This series includes the clk_init_one() to clk_preinit() rename that
+we've discussed recently.  Most of the patches prepare for CORE DPLL
+M2 rate changing support.
 
-http://lkml.org/lkml/2008/9/3/251
 
-Jay
+regards,
+
+- Paul
+
+---
+
+Artem Bityutskiy (1):
+      OMAP3 clock: lessen amount of noisy messages
+
+Paul Walmsley (9):
+      OMAP2xxx clock: rename clk_init_one() to clk_preinit()
+      OMAP3 clock: use pr_debug() rather than pr_info() in some clock change code
+      OMAP3 clock: only unlock SDRC DLL if SDRC clk < 83MHz
+      OMAP3 SRAM: renumber registers to make space for argument passing
+      OMAP3 SDRC: initialize SDRC_POWER at boot
+      OMAP3 SRAM: clear the SDRC PWRENA bit during SDRC frequency change
+      OMAP3 clock: add interconnect barriers to CORE DPLL M2 change
+      OMAP3 SRAM: add ARM barriers to omap3_sram_configure_core_dpll
+      OMAP3 SRAM: mark OCM RAM as Non-cacheable Normal memory
+
+
+ arch/arm/mach-omap1/clock.c             |    2 
+ arch/arm/mach-omap2/clock.c             |   14 ++-
+ arch/arm/mach-omap2/clock24xx.c         |    2 
+ arch/arm/mach-omap2/clock34xx.c         |   20 +++--
+ arch/arm/mach-omap2/sdrc.c              |   19 ++++-
+ arch/arm/mach-omap2/sram34xx.S          |  129 ++++++++++++++++---------------
+ arch/arm/plat-omap/clock.c              |    4 -
+ arch/arm/plat-omap/include/mach/clock.h |    2 
+ arch/arm/plat-omap/include/mach/sram.h  |    6 +
+ arch/arm/plat-omap/sram.c               |   16 +++-
+ 10 files changed, 128 insertions(+), 86 deletions(-)
+
