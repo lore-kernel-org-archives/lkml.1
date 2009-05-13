@@ -1,235 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761834AbZEMWa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762071AbZEMWao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761834AbZEMWa2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 18:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752097AbZEMWaJ
+	id S1762071AbZEMWao (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 18:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761901AbZEMWa2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 18:30:09 -0400
-Received: from mga09.intel.com ([134.134.136.24]:30627 "EHLO mga09.intel.com"
+	Wed, 13 May 2009 18:30:28 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:46790 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750760AbZEMWaH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 18:30:07 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,191,1241420400"; 
-   d="scan'208";a="515272079"
-Date: Wed, 13 May 2009 15:30:07 -0700 (Pacific Daylight Time)
-From: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-To: linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net
-cc: netdev@vger.kernel.org
-Subject: [BUG 2.6.30-rc1] panic when loading oprofile
-Message-ID: <alpine.WNT.2.00.0905131327430.7052@jbrandeb-desk1.amr.corp.intel.com>
-User-Agent: Alpine 2.00 (WNT 1167 2008-08-23)
-ReplyTo: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
-X-X-Sender: amrjbrandeb@imapmail.glb.intel.com
+	id S1761761AbZEMWa1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 18:30:27 -0400
+Message-ID: <4A0B49C4.4000502@garzik.org>
+Date: Wed, 13 May 2009 18:29:24 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Roland Dreier <rdreier@cisco.com>
+CC: Hitoshi Mitake <h.mitake@gmail.com>, Ingo Molnar <mingo@elte.hu>,
+       David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
+       tglx@linutronix.de, rpjday@crashcourse.ca, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
+References: <49EE37AF.4020507@zytor.com>	<20090421.173123.191021055.davem@davemloft.net>	<adak55438gp.fsf_-_@cisco.com>	<20090428.221228.217954247.davem@davemloft.net>	<20090429115654.GC11586@elte.hu> <49F843BC.7020902@garzik.org>	<adahc071ie4.fsf@cisco.com> <49F8B1A1.4010208@garzik.org>	<a6b9f31a0905122232s2d23b4e3h6e447c3fa5c29ee6@mail.gmail.com>	<4A0B30D0.4060806@garzik.org> <ada8wl0iro4.fsf@cisco.com>
+In-Reply-To: <ada8wl0iro4.fsf@cisco.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Roland Dreier wrote:
+>  > To repeat what has already been stated, each case was re-evaluated:
+>  > http://marc.info/?l=linux-kernel&m=124103527326835&w=2
+>  > 
+>  > Roland's patch was acked, apparently, _in spite of_ the commonly
+>  > accepted readq() definition already being in use!
+>  > 
+>  > Thusfar, I see two things:
+>  > 
+>  > (1) years of history has shown that non-atomic readq/writeq on 32-bit
+>  > platforms has been sufficient, based on testing and experience.  In
+>  > fact, in niu's case, a common readq/writeq would have PREVENTED a bug.
+> 
+> But the fact that the 32-bit x86 define would have worked for niu is
+> pure luck -- if the clear-on-read bits had been in the other half of the
+> register in question, then it would have caused a bug.  And I really
+> don't trust all ASIC designers writing RTL to think about which half of
+> a 64-bit register is going to be read first.
 
-when starting a profile run on the latest net-next kernel, I'm currently 
-trying to reproduce on 2.6.30-rc5 stock.
+AFAICS things have unerringly occurred in PCI ordering, which is what 
+one would expect.
 
-config available upon request, arch=x86_64, recent (F10 or newer) oprofile 
-userspace.
+What you call pure luck, others call 100% track record.
 
 
-BUG: unable to handle kernel NULL pointer dereference at (null)
-IP: [<ffffffff8066080a>] nmi_watchdog_tick+0xa1/0x1d6
-PGD 119895067 PUD 1198aa067 PMD 0
-Oops: 0000 [#1] SMP
-last sysfs file: /sys/devices/pci0000:ff/0000:ff:06.3/irq
-CPU 11
-Modules linked in: netconsole ixgbe igb mdio(P) dca [last unloaded: scsi_wait_scan]
-Pid: 6849, comm: opcontrol Tainted: P           2.6.30-rc1-nn #2
-RIP: 0010:[<ffffffff8066080a>]  [<ffffffff8066080a>] nmi_watchdog_tick+0xa1/0x1d6
-RSP: 0018:ffffc20001607eb8  EFLAGS: 00010046
-RAX: 0000000000000000 RBX: 0000000000160c90 RCX: 00000000000000c1
-RDX: ffffc20001600000 RSI: 0000000000000400 RDI: ffffffffff5fc340
-RBP: ffffc20001607ef8 R08: ffff88012f817798 R09: 0000000000000002
-R10: 000000000000b118 R11: ffff88011992c018 R12: 0000000000000001
-R13: 000000000000000b R14: 0000000000000001 R15: ffffc20001607f58
-FS:  00007f47e32726f0(0000) GS:ffffc20001600000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
-CR2: 0000000000000000 CR3: 000000012d9b5000 CR4: 00000000000006e0
- [<ffffffff8065f87a>] nmi+0x1a/0x20
- [<ffffffff802b0669>] ? copy_page_range+0x2a5/0x774
- <<EOE>> <0> [<ffffffff802b5404>] ? __vm_enough_memory+0x34/0x158
- [<ffffffff80245551>] dup_mm+0x304/0x40c
- [<ffffffff802f608d>] ? copy_fs_struct+0x9c/0xc3
- [<ffffffff8024608a>] copy_process+0x9ca/0x114a
- [<ffffffff8024696c>] do_fork+0x162/0x2e5
- [<ffffffff802da3c9>] ? do_pipe_flags+0x9e/0xf1
- [<ffffffff8020a664>] sys_clone+0x3c/0x57
- [<ffffffff8020c303>] stub_clone+0x13/0x20
- [<ffffffff8020c01b>] ? system_call_fastpath+0x16/0x1b
-Code: 0c 48 c7 c0 f0 b6 00 00 65 48 8b 14 25 40 b6 00 00 83 3c 02 00 74 0d c7 04 02 00 00 00 00 41 bc 01  RSP <ffffc20001607eb8>
-CR2: 0000000000000000
----[ end trace 4e68d1e6847f8a24 ]---
-BUG: unable to handle kernel NULL pointer dereference at (null)
-IP: [<ffffffff8066080a>] nmi_watchdog_tick+0xa1/0x1d6
-PGD 0
-Oops: 0000 [#2] SMP
-last sysfs file: /sys/devices/pci0000:ff/0000:ff:06.3/irq
-CPU 3
-Modules linked in: netconsole ixgbe igb mdio(P) dca [last unloaded: scsi_wait_scan]
-Pid: 0, comm: swapper Tainted: P      D    2.6.30-rc1-nn #2
-RIP: 0010:[<ffffffff8066080a>]  [<ffffffff8066080a>] nmi_watchdog_tick+0xa1/0x1d6
-RSP: 0018:ffffc20000607eb8  EFLAGS: 00010046
-RAX: 0000000000000000 RBX: 00000000001608d9 RCX: 00000000000000c1
-RDX: ffffc20000600000 RSI: 0000000000000400 RDI: ffffffffff5fc340
-RBP: ffffc20000607ef8 R08: ffff88012f817918 R09: 0000000000000002
-R10: 00000000000004d1 R11: ffff88011990c018 R12: 0000000000000001
-R13: 0000000000000003 R14: 0000000000000001 R15: ffffc20000607f58
-FS:  0000000000000000(0000) GS:ffffc20000600000(0000) knlGS:0000000000000000
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
-DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process swapper (pid: 0, threadinfo ffff88012ff5a000, task ffff880117fe0800)
-Stack:
- ffffc20000607ef8 ffffffff802643ef 4ed2b9d5740ffea4 0000000000000000
- 0000000000000000 ffffc20000607f58 0000000000000000 0000000000000003
- ffffc20000607f48 ffffffff8065fe90 0000000000000000 0000000000000000
-Call Trace:
- <NMI> <0> [<ffffffff802643ef>] ? notify_die+0x3d/0x53
- [<ffffffff8065fe90>] do_nmi+0xbd/0x277
- [<ffffffff8065f87a>] nmi+0x1a/0x20
- [<ffffffff80213521>] ? mwait_idle_with_hints+0xd2/0x11d
- <<EOE>> <0> [<ffffffff8021f335>] acpi_processor_ffh_cstate_enter+0x45/0x5b
- [<ffffffff804504d2>] acpi_idle_enter_bm+0x1e7/0x323
- [<ffffffff80577b5d>] ? ladder_select_state+0x4a/0x17d
- [<ffffffff80576c18>] cpuidle_idle_call+0xa4/0xf4
- [<ffffffff8020b141>] cpu_idle+0xa4/0xe0
- [<ffffffff80657c09>] start_secondary+0x1ad/0x1c8
-Code: 0c 48 c7 c0 f0 b6 00 00 65 48 8b 14 25 40 b6 00 00 83 3c 02 00 74 0d c7 04 02 00 00 00 00 41 bc 01 00 00 00 48 8b 05 96 f1 46 00 <44> 0f a3 28 19 c0 85 c0 74 35 48 c7 c7 98 f9 ac 80 e8 d9 e6 ff
-RIP  [<ffffffff8066080a>] nmi_watchdog_tick+0xa1/0x1d6
- RSP <ffffc20000607eb8>
-CR2: 0000000000000000
----[ end trace 4e68d1e6847f8a25 ]---
-BUG: unable to handle kernel <0>Kernel panic - not syncing: Fatal exception in interrupt
-NULL pointer dereferencePid: 0, comm: swapper Tainted: P      D    2.6.30-rc1-nn #2
- at (null)
-Call Trace:
-IP: <NMI>  [<ffffffff8066080a>] nmi_watchdog_tick+0xa1/0x1d6
-PGD 0  [<ffffffff8065bc2f>] panic+0x89/0x139
+> To me, the point is that the current situation of having the defines for
+> 32-bit x86 has zero benefit -- not one driver-specific definition can be
+> removed, because there are other 32-bit architectures to worry about.
 
-Oops: 0000 [#3]  [<ffffffff8066020f>] oops_end+0xba/0xe1
-SMP
- [<ffffffff8022c87e>] no_context+0x201/0x224
-last sysfs file: /sys/devices/pci0000:ff/0000:ff:06.3/irq
-CPU 1  [<ffffffff8022ca47>] __bad_area_nosemaphore+0x1a6/0x1e0
+Um, this is precisely what Mitake-san is trying to address, hence the 
+discussion...
 
-Modules linked in: [<ffffffff80288733>] ? ring_buffer_unlock_commit+0x2e/0x46
- netconsole ixgbe [<ffffffff8058a6f5>] ? log_sample+0x7a/0xaa
- igb mdio(P) [<ffffffff8022caa7>] bad_area_nosemaphore+0x26/0x3c
- dca [last unloaded: scsi_wait_scan] [<ffffffff80661956>] do_page_fault+0x174/0x26d
 
- [<ffffffff8065f67f>] page_fault+0x1f/0x30
-Pid: 0, comm: swapper Tainted: P      D    2.6.30-rc1-nn #2
-RIP: 0010:[<ffffffff8066080a>]  [<ffffffff8066080a>] ? nmi_watchdog_tick+0xa1/0x1d6
- [<ffffffff8066080a>] nmi_watchdog_tick+0xa1/0x1d6
-RSP: 0018:ffffc20000207eb8  EFLAGS: 00010046
- [<ffffffff806607ba>] ? nmi_watchdog_tick+0x51/0x1d6
-RAX: 0000000000000000 RBX: 00000000001608f8 RCX: 00000000000000c1
-RDX: ffffc20000200000 RSI: 0000000000000400 RDI: ffffffffff5fc340
- [<ffffffff802643ef>] ? notify_die+0x3d/0x53
-RBP: ffffc20000207ef8 R08: ffff88012f817718 R09: 0000000000000002
-R10: 00000000000004d1 R11: ffff880119904018 R12: 0000000000000001
- [<ffffffff8065fe90>] do_nmi+0xbd/0x277
-R13: 0000000000000001 R14: 0000000000000001 R15: ffffc20000207f58
-FS:  0000000000000000(0000) GS:ffffc20000200000(0000) knlGS:0000000000000000
- [<ffffffff8065f87a>] nmi+0x1a/0x20
-CS:  0010 DS: 0018 ES: 0018 CR0: 000000008005003b
-CR2: 0000000000000000 CR3: 0000000000201000 CR4: 00000000000006e0
- [<ffffffff80213521>] ? mwait_idle_with_hints+0xd2/0x11d
-DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
- <<EOE>> <6>DR3: 0000000000000000 DR6: 00000000ffff0ff0 DR7: 0000000000000400
-Process swapper (pid: 0, threadinfo ffff880117fce000, task ffff880117f6c800)
- [<ffffffff8021f335>] acpi_processor_ffh_cstate_enter+0x45/0x5b
-Stack:
- ffffc20000207ef8 [<ffffffff804504d2>] acpi_idle_enter_bm+0x1e7/0x323
- ffffffff802643ef 4262d253b291dadd [<ffffffff80577b5d>] ? ladder_select_state+0x4a/0x17d
- 0000000000000000
- [<ffffffff80576c18>] cpuidle_idle_call+0xa4/0xf4
- 0000000000000000 ffffc20000207f58 [<ffffffff8020b141>] cpu_idle+0xa4/0xe0
- 0000000000000000 0000000000000001 [<ffffffff80657c09>] start_secondary+0x1ad/0x1c8
+> And the risk introduced is not zero -- very few devices have 64-bit
+> registers and very few drivers use readq or writeq, but perhaps as
+> end-to-end 64-bit buses become more prevalent with PCIe, we may see
+> more.  And it's certainly the case that emulation 64-bit register
+> operations by doing to 32-bit operations on the register halves carries
+> a non-zero risk of making the hardware do something wacky.
 
- ffffc20000207f48 ffffffff8065fe90 0000000000000000 0000000000000000
-Call Trace:
- <NMI> <0> [<ffffffff802643ef>] ? notify_die+0x3d/0x53
-Rebooting in 10 seconds..<0> [<ffffffff8065fe90>] do_nmi+0xbd/0x277
- [<ffffffff8065f87a>] nmi+0x1a/0x20
- [<ffffffff8042198c>] ? acpi_os_read_port+0x42/0x6f
- <<EOE>> <0> [<ffffffff8043e93b>] acpi_hw_read_port+0x41/0x62
- [<ffffffff8043e75c>] acpi_read+0x72/0xae
- [<ffffffff8043d74a>] acpi_hw_read_multiple+0x3e/0x8b
- [<ffffffff8043da41>] acpi_hw_register_read+0x67/0x10b
- [<ffffffff8043e4d3>] acpi_read_bit_register+0x40/0x74
- [<ffffffff8045035c>] acpi_idle_enter_bm+0x71/0x323
- [<ffffffff80577b5d>] ? ladder_select_state+0x4a/0x17d
- [<ffffffff80576c18>] cpuidle_idle_call+0xa4/0xf4
- [<ffffffff8020b141>] cpu_idle+0xa4/0xe0
- [<ffffffff80657c09>] start_secondary+0x1ad/0x1c8
-Code: 0c 48 c7 c0 f0 b6 00 00 65 48 8b 14 25 40 b6 00 00 83 3c 02 00 74 0d c7 04 02 00 00 00 00 41 bc 01 00 00 00 48 8b 05 96 f1 46 00 <44> 0f a3 28 19 c0 85 c0 74 35 48 c7 c7 98 f9 ac 80 e8 d9 e6 ff
-RIP  [<ffffffff8066080a>] nmi_watchdog_tick+0xa1/0x1d6
- RSP <ffffc20000207eb8>
-CR2: 0000000000000000
----[ end trace 4e68d1e6847f8a26 ]---
-Kernel panic - not syncing: Fatal exception in interrupt
-Pid: 0, comm: swapper Tainted: P      D    2.6.30-rc1-nn #2
-Call Trace:
- <NMI>  [<ffffffff8065bc2f>] panic+0x89/0x139
- [<ffffffff8066020f>] oops_end+0xba/0xe1
- [<ffffffff8022c87e>] no_context+0x201/0x224
- [<ffffffff8022ca47>] __bad_area_nosemaphore+0x1a6/0x1e0
- [<ffffffff80288733>] ? ring_buffer_unlock_commit+0x2e/0x46
- [<ffffffff8058a6f5>] ? log_sample+0x7a/0xaa
- [<ffffffff8022caa7>] bad_area_nosemaphore+0x26/0x3c
- [<ffffffff80661956>] do_page_fault+0x174/0x26d
- [<ffffffff8065f67f>] page_fault+0x1f/0x30
- [<ffffffff8066080a>] ? nmi_watchdog_tick+0xa1/0x1d6
- [<ffffffff806607ba>] ? nmi_watchdog_tick+0x51/0x1d6
- [<ffffffff802643ef>] ? notify_die+0x3d/0x53
- [<ffffffff8065fe90>] do_nmi+0xbd/0x277
- [<ffffffff8065f87a>] nmi+0x1a/0x20
- [<ffffffff8042198c>] ? acpi_os_read_port+0x42/0x6f
- <<EOE>>  [<ffffffff8043e93b>] acpi_hw_read_port+0x41/0x62
- [<ffffffff8043e75c>] acpi_read+0x72/0xae
- [<ffffffff8043d74a>] acpi_hw_read_multiple+0x3e/0x8b
- [<ffffffff8043da41>] acpi_hw_register_read+0x67/0x10b
- [<ffffffff8043e4d3>] acpi_read_bit_register+0x40/0x74
- [<ffffffff8045035c>] acpi_idle_enter_bm+0x71/0x323
- [<ffffffff80577b5d>] ? ladder_select_state+0x4a/0x17d
- [<ffffffff80576c18>] cpuidle_idle_call+0xa4/0xf4
- [<ffffffff8020b141>] cpu_idle+0xa4/0xe0
- [<ffffffff80657c09>] start_secondary+0x1ad/0x1c8
-Rebooting in 10 seconds..<0>Kernel panic - not syncing: Fatal exception in interrupt
-Pid: 6849, comm: opcontrol Tainted: P      D    2.6.30-rc1-nn #2
-Call Trace:
- <NMI>  [<ffffffff8065bc2f>] panic+0x89/0x139
- [<ffffffff8066020f>] oops_end+0xba/0xe1
- [<ffffffff8022c87e>] no_context+0x201/0x224
- [<ffffffff8022ca47>] __bad_area_nosemaphore+0x1a6/0x1e0
- [<ffffffff80288733>] ? ring_buffer_unlock_commit+0x2e/0x46
- [<ffffffff8058a6f5>] ? log_sample+0x7a/0xaa
- [<ffffffff8022caa7>] bad_area_nosemaphore+0x26/0x3c
- [<ffffffff80661956>] do_page_fault+0x174/0x26d
- [<ffffffff8065f67f>] page_fault+0x1f/0x30
- [<ffffffff8066080a>] ? nmi_watchdog_tick+0xa1/0x1d6
- [<ffffffff806607ba>] ? nmi_watchdog_tick+0x51/0x1d6
- [<ffffffff802643ef>] ? notify_die+0x3d/0x53
- [<ffffffff8065fe90>] do_nmi+0xbd/0x277
- [<ffffffff8065f87a>] nmi+0x1a/0x20
- [<ffffffff802b0669>] ? copy_page_range+0x2a5/0x774
- <<EOE>>  [<ffffffff802b5404>] ? __vm_enough_memory+0x34/0x158
- [<ffffffff80245551>] dup_mm+0x304/0x40c
- [<ffffffff802f608d>] ? copy_fs_struct+0x9c/0xc3
- [<ffffffff8024608a>] copy_process+0x9ca/0x114a
- [<ffffffff8024696c>] do_fork+0x162/0x2e5
- [<ffffffff802da3c9>] ? do_pipe_flags+0x9e/0xf1
- [<ffffffff8020a664>] sys_clone+0x3c/0x57
- [<ffffffff8020c303>] stub_clone+0x13/0x20
- [<ffffffff8020c01b>] ? system_call_fastpath+0x16/0x1b
+Again, fear vs. reality, 0% case versus 100% case.
+
+You continue to lack CONCRETE examples of problems, while existing cases 
+CONTINUE to work with the obvious ordering.
+
+	Jeff
+
+
 
