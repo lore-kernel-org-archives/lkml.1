@@ -1,114 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761951AbZEMV6Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761922AbZEMWCc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761951AbZEMV6Z (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 17:58:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752232AbZEMV6Q
+	id S1761922AbZEMWCc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 18:02:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZEMWCX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 17:58:16 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:46621 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750760AbZEMV6P (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 17:58:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=c/g9epQgD7P9AL07OSWobOlSo/MrSYrmOtvqrokGnXc0P0lF5AFi2erbAa1JyoPr9W
-         2s1TVM8Y2Z8gbR37e0r9bHxd310Jhs3fH1M+YQ10t+RP8iLu2vmm4ajFjCkHhuDd8xOM
-         XOdCi8b9nI1RVPnfvh5cPuVaR/FcLarMYSIA0=
-Date: Thu, 14 May 2009 01:58:00 +0400
-From: "Alexander Y. Fomichev" <git.user@gmail.com>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: jsm: two or more 4/8-port boards can not initialize ports
- properly
-Message-Id: <20090514015800.5c14ecd8.git.user@gmail.com>
-In-Reply-To: <20090513012431.72a9eb83@lxorguk.ukuu.org.uk>
-References: <f74141980905121422p140d1649jcfb3d94aacd42f02@mail.gmail.com>
-	<20090513012431.72a9eb83@lxorguk.ukuu.org.uk>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+	Wed, 13 May 2009 18:02:23 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56656 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750760AbZEMWCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 18:02:22 -0400
+Subject: [PATCH 1/2] x86: apic/apic.c declare default_init_apic_ldr()
+ before it get used
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 14 May 2009 03:27:21 +0530
+Message-Id: <1242251841.3364.17.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 May 2009 01:24:31 +0100
-Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
 
-> > +struct jsm_board *jsm_boards[MAXBOARDS];
-> > +
-> 
-> adapter_count increments each time regardless of boards present so that
-> doesn't work after a few hotplugs it seems ?
+default_init_apic_ldr() is also required for 64 bit so moving it out
+from CONFIG_X86_32.
 
-it's true, i missing hotplug at all tnx.
-as of hotplug it seems easier to do this allocating/deallocating
-line numbers one by one storing assigned numbers in bitmap (though
-it could lead to sparse ttyns belonging to a sigle board)
-could you pls take a look on the patch bellow?
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/apic.h |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
-
-> >         brd->boardnum = adapter_count++;
-> > +       jsm_boards[brd->boardnum] = brd;
-> >         brd->pci_dev = pdev;
-
-diff -urNp a/drivers/serial/jsm/jsm.h b/drivers/serial/jsm/jsm.h
---- a/drivers/serial/jsm/jsm.h  2009-05-12 17:29:02.117674090 +0400
-+++ b/drivers/serial/jsm/jsm.h  2009-05-13 15:52:56.152889038 +0400
-@@ -61,6 +61,7 @@ enum {
-        if ((DBG_##nlevel & jsm_debug))                 \
-        dev_printk(KERN_##klevel, pdev->dev, fmt, ## args)
-
-+#define        MAXLINES        256
- #define MAXPORTS       8
- #define MAX_STOPS_SENT 5
-
-diff -urNp a/drivers/serial/jsm/jsm_tty.c b/drivers/serial/jsm/jsm_tty.c
---- a/drivers/serial/jsm/jsm_tty.c      2009-05-12 17:28:51.849172254 +0400
-+++ b/drivers/serial/jsm/jsm_tty.c      2009-05-14 01:15:02.542589990 +0400
-@@ -33,6 +33,8 @@
-
- #include "jsm.h"
-
-+static DECLARE_BITMAP(linemap,MAXLINES);
+diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
+index 229d0be..d1acc60 100644
+--- a/arch/x86/include/asm/apic.h
++++ b/arch/x86/include/asm/apic.h
+@@ -469,10 +469,6 @@ static inline unsigned int read_apic_id(void)
+ 
+ extern void default_setup_apic_routing(void);
+ 
+-#ifdef CONFIG_X86_32
+-
+-extern struct apic apic_default;
+-
+ /*
+  * Set up the logical destination ID.
+  *
+@@ -482,6 +478,10 @@ extern struct apic apic_default;
+  */
+ extern void default_init_apic_ldr(void);
+ 
++#ifdef CONFIG_X86_32
 +
- static void jsm_carrier(struct jsm_channel *ch);
-
- static inline int jsm_get_mstat(struct jsm_channel *ch)
-@@ -433,6 +435,7 @@ int __devinit jsm_tty_init(struct jsm_bo
- int __devinit jsm_uart_port_init(struct jsm_board *brd)
++extern struct apic apic_default;
++
+ static inline int default_apic_id_registered(void)
  {
-        int i;
-+       unsigned int line;
-        struct jsm_channel *ch;
-
-        if (!brd)
-@@ -459,7 +462,13 @@ int __devinit jsm_uart_port_init(struct
-                brd->channels[i]->uart_port.membase = brd->re_map_membase;
-                brd->channels[i]->uart_port.fifosize = 16;
-                brd->channels[i]->uart_port.ops = &jsm_ops;
--               brd->channels[i]->uart_port.line = brd->channels[i]->ch_portnum + brd->boardnum * 2;
-+               line = find_first_zero_bit(linemap,MAXLINES);
-+               if (line >= MAXLINES) {
-+                       printk(KERN_INFO "linemap is full, added device failed\n");
-+                       continue;
-+               } else
-+                       __set_bit((int)line, linemap);
-+               brd->channels[i]->uart_port.line = line;
-                if (uart_add_one_port (&jsm_uart_driver, &brd->channels[i]->uart_port))
-                        printk(KERN_INFO "Added device failed\n");
-                else
-@@ -494,6 +503,7 @@ int jsm_remove_uart_port(struct jsm_boar
-
-                ch = brd->channels[i];
-
-+               __clear_bit((int)(ch->uart_port.line), linemap);
-                uart_remove_one_port(&jsm_uart_driver, &brd->channels[i]->uart_port);
-        }
-
+ 	return physid_isset(read_apic_id(), phys_cpu_present_map);
 -- 
-Best regards
-	Alexander Y. Fomichev <git.user@gmail.com>
+1.6.0.6
+
+
+
