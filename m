@@ -1,109 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751555AbZEMEFu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752479AbZEMEHI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751555AbZEMEFu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 00:05:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750731AbZEMEFj
+	id S1752479AbZEMEHI (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 00:07:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751067AbZEMEG4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 00:05:39 -0400
-Received: from mail.deathmatch.net ([72.66.92.28]:4436 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750703AbZEMEFi (ORCPT
+	Wed, 13 May 2009 00:06:56 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49787 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751004AbZEMEGz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 00:05:38 -0400
-Date: Wed, 13 May 2009 00:05:02 -0400
-From: Bob Copeland <me@bobcopeland.com>
-To: Bjorn Helgaas <bjorn.helgaas@hp.com>
-Cc: yakui_zhao <yakui.zhao@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-acpi@vger.kernel.org" <linux-acpi@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>, robert.moore@intel.com
-Subject: [BISECTED] Was Re: acpi/suspend - irq 9: nobody cared
-Message-ID: <20090513040502.GA26515@hash.localnet>
-References: <20090507105821.GA5864@hash.localnet> <1241747634.3773.129.camel@localhost.localdomain> <200905121301.08524.bjorn.helgaas@hp.com>
+	Wed, 13 May 2009 00:06:55 -0400
+Message-ID: <4A0A472A.8090301@jp.fujitsu.com>
+Date: Wed, 13 May 2009 13:06:02 +0900
+From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905121301.08524.bjorn.helgaas@hp.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: michael@ellerman.id.au
+CC: Matthew Wilcox <matthew@wil.cx>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "David S. Miller" <davem@davemloft.net>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] Fix MSI-X with NIU cards
+References: <20090508131333.GV8112@parisc-linux.org> <1242004911.7767.26.camel@concordia>
+In-Reply-To: <1242004911.7767.26.camel@concordia>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 01:01:06PM -0600, Bjorn Helgaas wrote:
-> Even if you can't bisect this, can you please open a bugzilla at
-> http://bugzilla.kernel.org? 
+Michael Ellerman wrote:
+> On Fri, 2009-05-08 at 07:13 -0600, Matthew Wilcox wrote:
+>> The NIU device refuses to allow accesses to MSI-X registers before MSI-X
+>> is enabled.  This patch fixes the problem by moving the read of the mask
+>> register to after MSI-X is enabled.
+>>
+>> Reported-by: David S. Miller <davem@davemloft.net>
+>> Tested-by: David S. Miller <davem@davemloft.net>
+>> Reviewed-by: David S. Miller <davem@davemloft.net>
+>> Signed-off-by: Matthew Wilcox <willy@linux.intel.com>
+>>
+>> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+>> index 6f2e629..3627732 100644
+>> --- a/drivers/pci/msi.c
+>> +++ b/drivers/pci/msi.c
+>> @@ -455,8 +455,6 @@ static int msix_capability_init(struct pci_dev *dev,
+>>  		entry->msi_attrib.default_irq = dev->irq;
+>>  		entry->msi_attrib.pos = pos;
+>>  		entry->mask_base = base;
+>> -		entry->masked = readl(base + j * PCI_MSIX_ENTRY_SIZE +
+>> -					PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
+>>  		msix_mask_irq(entry, 1);
+> 
+> 158 static void msix_mask_irq(struct msi_desc *desc, u32 flag)                  
+> 159 {
+> 160         u32 mask_bits = desc->masked;
+> ...
+> 165         writel(mask_bits, desc->mask_base + offset);
+> 
+> 
+> So I guess this device is just silently ignoring that write?
 
-Done: http://bugzilla.kernel.org/show_bug.cgi?id=13289
+I guess that write can be ignored while reads are not.
 
-I have bisected it.  I don't know if it's related, but I have a 
-"MacBook 1,1" which in sleep.c has a quirk related to SCI_EN, and I
-see that this patch changed ACPI_PM1_CONTROL_PRESERVED_BITS to include
-SCI_EN.  I have verified that reverting the patch on top of latest -rc
-prevents irq 9 from being disabled.
+It seems that this issue was introduced by Matthew's commit:
+commit f2440d9acbe866b917b16cc0f927366341ce9215
+<quote>
+@@ -435,11 +432,12 @@ static int msix_capability_init(struct pci_dev *dev,
+                entry->msi_attrib.is_msix = 1;
+                entry->msi_attrib.is_64 = 1;
+                entry->msi_attrib.entry_nr = j;
+-               entry->msi_attrib.maskbit = 1;
+-               entry->msi_attrib.masked = 1;
+                entry->msi_attrib.default_irq = dev->irq;
+                entry->msi_attrib.pos = pos;
+                entry->mask_base = base;
++               entry->masked = readl(base + j * PCI_MSIX_ENTRY_SIZE +
++                                       PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
++               msix_mask_irq(entry, 1);
 
-commit 20869dcfde204e1c21b642608d708d82472fee2b
-Author: Bob Moore <robert.moore@intel.com>
-Date:   Fri Mar 13 09:10:46 2009 +0800
+                list_add_tail(&entry->list, &dev->msi_list);
+        }
+</quote>
 
-    ACPICA: Preserve all PM control reserved and ignored bits
-    
-    As per the ACPI specification, preserve (read/modify/write) all
-    bits that are defined as either reserved or ignored (PM control
-    control registers only.)
-    
-    Signed-off-by: Bob Moore <robert.moore@intel.com>
-    Signed-off-by: Lin Ming <ming.m.lin@intel.com>
-    Signed-off-by: Len Brown <len.brown@intel.com>
+I'm not sure why Matthew changed it to read/write...
 
-diff --git a/drivers/acpi/acpica/aclocal.h b/drivers/acpi/acpica/aclocal.h
-index 18a8d96..f01e155 100644
---- a/drivers/acpi/acpica/aclocal.h
-+++ b/drivers/acpi/acpica/aclocal.h
-@@ -780,7 +780,15 @@ struct acpi_bit_register_info {
-  * must be preserved.
-  */
- #define ACPI_PM1_STATUS_PRESERVED_BITS          0x0800	/* Bit 11 */
--#define ACPI_PM1_CONTROL_PRESERVED_BITS         0x0200	/* Bit 9 (whatever) */
-+
-+/* For control registers, both ignored and reserved bits must be preserved */
-+
-+#define ACPI_PM1_CONTROL_IGNORED_BITS           0x0201	/* Bits 9, 0(SCI_EN) */
-+#define ACPI_PM1_CONTROL_RESERVED_BITS          0xC1F8	/* Bits 14-15, 3-8 */
-+#define ACPI_PM1_CONTROL_PRESERVED_BITS \
-+	       (ACPI_PM1_CONTROL_IGNORED_BITS | ACPI_PM1_CONTROL_RESERVED_BITS)
-+
-+#define ACPI_PM2_CONTROL_PRESERVED_BITS         0xFFFFFFFE	/* All except bit 0 */
- 
- /*
-  * Register IDs
-diff --git a/drivers/acpi/acpica/hwregs.c b/drivers/acpi/acpica/hwregs.c
-index fd7abe2..6117362 100644
---- a/drivers/acpi/acpica/hwregs.c
-+++ b/drivers/acpi/acpica/hwregs.c
-@@ -328,6 +328,21 @@ acpi_status acpi_hw_register_write(u32 register_id, u32 value)
- 
- 	case ACPI_REGISTER_PM2_CONTROL:	/* 8-bit access */
- 
-+		/*
-+		 * For control registers, all reserved bits must be preserved,
-+		 * as per the ACPI spec.
-+		 */
-+		status =
-+		    acpi_read(&read_value, &acpi_gbl_FADT.xpm2_control_block);
-+		if (ACPI_FAILURE(status)) {
-+			goto exit;
-+		}
-+
-+		/* Insert the bits to be preserved */
-+
-+		ACPI_INSERT_BITS(value, ACPI_PM2_CONTROL_PRESERVED_BITS,
-+				 read_value);
-+
- 		status = acpi_write(value, &acpi_gbl_FADT.xpm2_control_block);
- 		break;
- 
+> And aren't we violating the spec by writing 0x1 into the device there
+> (assuming desc->masked is 0x0 from the kzalloc), ie. we're supposed to
+> read and write back the reserved bits unchanged. (§ 6.8.2.9?)
+
+Spec says:
+ "This bit's state after reset is 1 (entry is masked).
+  This bit is read/write."
+
+>> @@ -493,6 +491,12 @@ static int msix_capability_init(struct pci_dev *dev,
+>>  	msix_set_enable(dev, 1);
+>>  	dev->msix_enabled = 1;
+> 
+> Are we safe if we take an interrupt here?
+
+If reset was properly done on the device, we will be safe since entries are
+masked.  Otherwise, ... I'm not sure.
+
+>> +	list_for_each_entry(entry, &dev->msi_list, list) {
+>> +		int vector = entry->msi_attrib.entry_nr;
+>> +		entry->masked = readl(base + vector * PCI_MSIX_ENTRY_SIZE +
+>> +					PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
+>> +	}
+>> +
+>>  	return 0;
+>>  }
+
+I think we can remove read/write here because it was same as before the
+Matthew's change above.
+
+If we really need read/write here, then I believe Matthew can provide
+an incremental patch for that.
 
 
--- 
-Bob Copeland %% www.bobcopeland.com
+Thanks,
+H.Seto
 
