@@ -1,448 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760472AbZEMQlV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758316AbZEMQmW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760472AbZEMQlV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 12:41:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbZEMQlG
+	id S1758316AbZEMQmW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 12:42:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbZEMQmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 12:41:06 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:45857 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752003AbZEMQlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 12:41:04 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: [PATCH v2] crypto: tcrypt: do not exit on success in fips mode
-Date: Wed, 13 May 2009 12:40:10 -0400
-User-Agent: KMail/1.11.2 (Linux/2.6.29.1-102.fc11.x86_64; KDE/4.2.2; x86_64; ; )
-Cc: Neil Horman <nhorman@tuxdriver.com>, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200905111006.32675.jarod@redhat.com> <200905130937.33449.jarod@redhat.com> <20090513140329.GA17863@gondor.apana.org.au>
-In-Reply-To: <20090513140329.GA17863@gondor.apana.org.au>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+	Wed, 13 May 2009 12:42:12 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:37447 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752003AbZEMQmK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 12:42:10 -0400
+Date: Wed, 13 May 2009 09:32:29 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Olga Kornievskaia <aglo@citi.umich.edu>
+Cc: Jeff Moyer <jmoyer@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
+       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "J. Bruce Fields" <bfields@fieldses.org>, Jim Rees <rees@umich.edu>,
+       linux-nfs@vger.kernel.org
+Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone
+  over NFS
+Message-Id: <20090513093229.097b47d2.akpm@linux-foundation.org>
+In-Reply-To: <b4ff356f0905130920v184ab529mb52a4346d4c77c14@mail.gmail.com>
+References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
+	<20090508120119.8c93cfd7.akpm@linux-foundation.org>
+	<20090511081415.GL4694@kernel.dk>
+	<x49skjb21b7.fsf@segfault.boston.devel.redhat.com>
+	<20090511165826.GG4694@kernel.dk>
+	<x494ovp4r51.fsf@segfault.boston.devel.redhat.com>
+	<20090512204433.7eb69075.akpm@linux-foundation.org>
+	<x49y6t1rqw0.fsf@segfault.boston.devel.redhat.com>
+	<b4ff356f0905130920v184ab529mb52a4346d4c77c14@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905131240.11615.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 May 2009 10:03:29 Herbert Xu wrote:
-> On Wed, May 13, 2009 at 09:37:32AM -0400, Jarod Wilson wrote:
-> > 
-> > The latter option is more or less what the patch at the start of this
-> > thread did, although via a param to tcrypt, not keying off the fips
-> > flag. If I were to modify the patch to drop the mod param usage, and
-> > instead key off the fips flag to not exit, would that be acceptable
-> > for committing until such time as the userspace interface is ready?
-> 
-> Yes that sounds like the way to go.
+On Wed, 13 May 2009 12:20:57 -0400 Olga Kornievskaia <aglo@citi.umich.edu> wrote:
 
-Okay, here it is.
+> I believe what you are seeing is how well TCP autotuning performs.
+> What old NFS code was doing is disabling autotuning and instead using
+> #nfsd thread to scale TCP recv window. You are providing an example of
+> where setting TCP buffer sizes outperforms TCP autotuning. While this
+> is a valid example, there is also an alternative example of where old
+> NFS design hurts performance.
 
-At present, the tcrypt module always exits with an -EAGAIN upon
-successfully completing all the tests its been asked to run. In fips
-mode, integrity checking is done by running all self-tests from the
-initrd, and its much simpler to check the ret from modprobe for
-success than to scrape dmesg and/or /proc/crypto. Simply stay
-loaded, giving modprobe a retval of 0, if self-tests all pass and
-we're in fips mode.
+<scratches head>
 
-A side-effect of tracking success/failure for fips mode is that in
-non-fips mode, self-test failures will return the actual failure
-return codes, rather than always returning -EAGAIN, which seems more
-correct anyway.
-
-The tcrypt_test() portion of the patch is dependent on my earlier
-pair of patches that skip non-fips algs in fips mode, at least to
-achieve the fully intended behavior.
-
-Nb: testing this patch against the cryptodev tree revealed a test
-failure for sha384, which I have yet to look into...
-
-Signed-off-by: Jarod Wilson <jarod@redhat.com>
-
----
- crypto/tcrypt.c |  164 ++++++++++++++++++++++++++++++-------------------------
- 1 files changed, 90 insertions(+), 74 deletions(-)
-
-diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
-index 9e4974e..d59ba50 100644
---- a/crypto/tcrypt.c
-+++ b/crypto/tcrypt.c
-@@ -27,6 +27,7 @@
- #include <linux/timex.h>
- #include <linux/interrupt.h>
- #include "tcrypt.h"
-+#include "internal.h"
- 
- /*
-  * Need slab memory for testing (size in number of pages).
-@@ -468,248 +469,255 @@ static void test_available(void)
- 
- static inline int tcrypt_test(const char *alg)
- {
--	return alg_test(alg, alg, 0, 0);
-+	int ret;
-+
-+	ret = alg_test(alg, alg, 0, 0);
-+	/* non-fips algs return -EINVAL in fips mode */
-+	if (fips_enabled && ret == -EINVAL)
-+		ret = 0;
-+	return ret;
- }
- 
--static void do_test(int m)
-+static int do_test(int m)
- {
- 	int i;
-+	int ret = 0;
- 
- 	switch (m) {
- 	case 0:
- 		for (i = 1; i < 200; i++)
--			do_test(i);
-+			ret += do_test(i);
- 		break;
- 
- 	case 1:
--		tcrypt_test("md5");
-+		ret += tcrypt_test("md5");
- 		break;
- 
- 	case 2:
--		tcrypt_test("sha1");
-+		ret += tcrypt_test("sha1");
- 		break;
- 
- 	case 3:
--		tcrypt_test("ecb(des)");
--		tcrypt_test("cbc(des)");
-+		ret += tcrypt_test("ecb(des)");
-+		ret += tcrypt_test("cbc(des)");
- 		break;
- 
- 	case 4:
--		tcrypt_test("ecb(des3_ede)");
--		tcrypt_test("cbc(des3_ede)");
-+		ret += tcrypt_test("ecb(des3_ede)");
-+		ret += tcrypt_test("cbc(des3_ede)");
- 		break;
- 
- 	case 5:
--		tcrypt_test("md4");
-+		ret += tcrypt_test("md4");
- 		break;
- 
- 	case 6:
--		tcrypt_test("sha256");
-+		ret += tcrypt_test("sha256");
- 		break;
- 
- 	case 7:
--		tcrypt_test("ecb(blowfish)");
--		tcrypt_test("cbc(blowfish)");
-+		ret += tcrypt_test("ecb(blowfish)");
-+		ret += tcrypt_test("cbc(blowfish)");
- 		break;
- 
- 	case 8:
--		tcrypt_test("ecb(twofish)");
--		tcrypt_test("cbc(twofish)");
-+		ret += tcrypt_test("ecb(twofish)");
-+		ret += tcrypt_test("cbc(twofish)");
- 		break;
- 
- 	case 9:
--		tcrypt_test("ecb(serpent)");
-+		ret += tcrypt_test("ecb(serpent)");
- 		break;
- 
- 	case 10:
--		tcrypt_test("ecb(aes)");
--		tcrypt_test("cbc(aes)");
--		tcrypt_test("lrw(aes)");
--		tcrypt_test("xts(aes)");
--		tcrypt_test("ctr(aes)");
--		tcrypt_test("rfc3686(ctr(aes))");
-+		ret += tcrypt_test("ecb(aes)");
-+		ret += tcrypt_test("cbc(aes)");
-+		ret += tcrypt_test("lrw(aes)");
-+		ret += tcrypt_test("xts(aes)");
-+		ret += tcrypt_test("ctr(aes)");
-+		ret += tcrypt_test("rfc3686(ctr(aes))");
- 		break;
- 
- 	case 11:
--		tcrypt_test("sha384");
-+		ret += tcrypt_test("sha384");
- 		break;
- 
- 	case 12:
--		tcrypt_test("sha512");
-+		ret += tcrypt_test("sha512");
- 		break;
- 
- 	case 13:
--		tcrypt_test("deflate");
-+		ret += tcrypt_test("deflate");
- 		break;
- 
- 	case 14:
--		tcrypt_test("ecb(cast5)");
-+		ret += tcrypt_test("ecb(cast5)");
- 		break;
- 
- 	case 15:
--		tcrypt_test("ecb(cast6)");
-+		ret += tcrypt_test("ecb(cast6)");
- 		break;
- 
- 	case 16:
--		tcrypt_test("ecb(arc4)");
-+		ret += tcrypt_test("ecb(arc4)");
- 		break;
- 
- 	case 17:
--		tcrypt_test("michael_mic");
-+		ret += tcrypt_test("michael_mic");
- 		break;
- 
- 	case 18:
--		tcrypt_test("crc32c");
-+		ret += tcrypt_test("crc32c");
- 		break;
- 
- 	case 19:
--		tcrypt_test("ecb(tea)");
-+		ret += tcrypt_test("ecb(tea)");
- 		break;
- 
- 	case 20:
--		tcrypt_test("ecb(xtea)");
-+		ret += tcrypt_test("ecb(xtea)");
- 		break;
- 
- 	case 21:
--		tcrypt_test("ecb(khazad)");
-+		ret += tcrypt_test("ecb(khazad)");
- 		break;
- 
- 	case 22:
--		tcrypt_test("wp512");
-+		ret += tcrypt_test("wp512");
- 		break;
- 
- 	case 23:
--		tcrypt_test("wp384");
-+		ret += tcrypt_test("wp384");
- 		break;
- 
- 	case 24:
--		tcrypt_test("wp256");
-+		ret += tcrypt_test("wp256");
- 		break;
- 
- 	case 25:
--		tcrypt_test("ecb(tnepres)");
-+		ret += tcrypt_test("ecb(tnepres)");
- 		break;
- 
- 	case 26:
--		tcrypt_test("ecb(anubis)");
--		tcrypt_test("cbc(anubis)");
-+		ret += tcrypt_test("ecb(anubis)");
-+		ret += tcrypt_test("cbc(anubis)");
- 		break;
- 
- 	case 27:
--		tcrypt_test("tgr192");
-+		ret += tcrypt_test("tgr192");
- 		break;
- 
- 	case 28:
- 
--		tcrypt_test("tgr160");
-+		ret += tcrypt_test("tgr160");
- 		break;
- 
- 	case 29:
--		tcrypt_test("tgr128");
-+		ret += tcrypt_test("tgr128");
- 		break;
- 
- 	case 30:
--		tcrypt_test("ecb(xeta)");
-+		ret += tcrypt_test("ecb(xeta)");
- 		break;
- 
- 	case 31:
--		tcrypt_test("pcbc(fcrypt)");
-+		ret += tcrypt_test("pcbc(fcrypt)");
- 		break;
- 
- 	case 32:
--		tcrypt_test("ecb(camellia)");
--		tcrypt_test("cbc(camellia)");
-+		ret += tcrypt_test("ecb(camellia)");
-+		ret += tcrypt_test("cbc(camellia)");
- 		break;
- 	case 33:
--		tcrypt_test("sha224");
-+		ret += tcrypt_test("sha224");
- 		break;
- 
- 	case 34:
--		tcrypt_test("salsa20");
-+		ret += tcrypt_test("salsa20");
- 		break;
- 
- 	case 35:
--		tcrypt_test("gcm(aes)");
-+		ret += tcrypt_test("gcm(aes)");
- 		break;
- 
- 	case 36:
--		tcrypt_test("lzo");
-+		ret += tcrypt_test("lzo");
- 		break;
- 
- 	case 37:
--		tcrypt_test("ccm(aes)");
-+		ret += tcrypt_test("ccm(aes)");
- 		break;
- 
- 	case 38:
--		tcrypt_test("cts(cbc(aes))");
-+		ret += tcrypt_test("cts(cbc(aes))");
- 		break;
- 
-         case 39:
--		tcrypt_test("rmd128");
-+		ret += tcrypt_test("rmd128");
- 		break;
- 
-         case 40:
--		tcrypt_test("rmd160");
-+		ret += tcrypt_test("rmd160");
- 		break;
- 
- 	case 41:
--		tcrypt_test("rmd256");
-+		ret += tcrypt_test("rmd256");
- 		break;
- 
- 	case 42:
--		tcrypt_test("rmd320");
-+		ret += tcrypt_test("rmd320");
- 		break;
- 
- 	case 43:
--		tcrypt_test("ecb(seed)");
-+		ret += tcrypt_test("ecb(seed)");
- 		break;
- 
- 	case 44:
--		tcrypt_test("zlib");
-+		ret += tcrypt_test("zlib");
- 		break;
- 
- 	case 45:
--		tcrypt_test("rfc4309(ccm(aes))");
-+		ret += tcrypt_test("rfc4309(ccm(aes))");
- 		break;
- 
- 	case 100:
--		tcrypt_test("hmac(md5)");
-+		ret += tcrypt_test("hmac(md5)");
- 		break;
- 
- 	case 101:
--		tcrypt_test("hmac(sha1)");
-+		ret += tcrypt_test("hmac(sha1)");
- 		break;
- 
- 	case 102:
--		tcrypt_test("hmac(sha256)");
-+		ret += tcrypt_test("hmac(sha256)");
- 		break;
- 
- 	case 103:
--		tcrypt_test("hmac(sha384)");
-+		ret += tcrypt_test("hmac(sha384)");
- 		break;
- 
- 	case 104:
--		tcrypt_test("hmac(sha512)");
-+		ret += tcrypt_test("hmac(sha512)");
- 		break;
- 
- 	case 105:
--		tcrypt_test("hmac(sha224)");
-+		ret += tcrypt_test("hmac(sha224)");
- 		break;
- 
- 	case 106:
--		tcrypt_test("xcbc(aes)");
-+		ret += tcrypt_test("xcbc(aes)");
- 		break;
- 
- 	case 107:
--		tcrypt_test("hmac(rmd128)");
-+		ret += tcrypt_test("hmac(rmd128)");
- 		break;
- 
- 	case 108:
--		tcrypt_test("hmac(rmd160)");
-+		ret += tcrypt_test("hmac(rmd160)");
- 		break;
- 
- 	case 150:
--		tcrypt_test("ansi_cprng");
-+		ret += tcrypt_test("ansi_cprng");
- 		break;
- 
- 	case 200:
-@@ -873,6 +881,8 @@ static void do_test(int m)
- 		test_available();
- 		break;
- 	}
-+
-+	return ret;
- }
- 
- static int __init tcrypt_mod_init(void)
-@@ -886,15 +896,21 @@ static int __init tcrypt_mod_init(void)
- 			goto err_free_tv;
- 	}
- 
--	do_test(mode);
-+	err = do_test(mode);
-+	if (err) {
-+		printk(KERN_ERR "tcrypt: one or more tests failed!\n");
-+		goto err_free_tv;
-+	}
- 
--	/* We intentionaly return -EAGAIN to prevent keeping
--	 * the module. It does all its work from init()
--	 * and doesn't offer any runtime functionality 
-+	/* We intentionaly return -EAGAIN to prevent keeping the module,
-+	 * unless we're running in fips mode. It does all its work from
-+	 * init() and doesn't offer any runtime functionality, but in
-+	 * the fips case, checking for a successful load is helpful.
- 	 * => we don't need it in the memory, do we?
- 	 *                                        -- mludvig
- 	 */
--	err = -EAGAIN;
-+	if (!fips_enabled)
-+		err = -EAGAIN;
- 
- err_free_tv:
- 	for (i = 0; i < TVMEMSIZE && tvmem[i]; i++)
-
-
--- 
-Jarod Wilson
-jarod@redhat.com
+Jeff's computer got slower.  Can we fix that?
