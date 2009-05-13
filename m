@@ -1,93 +1,107 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbZEMG2h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757420AbZEMGbi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757526AbZEMG2h (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 02:28:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZEMG22
+	id S1757420AbZEMGbi (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 02:31:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751594AbZEMGb2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 02:28:28 -0400
-Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:15019
-	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755836AbZEMG21 convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 02:28:27 -0400
-X-BigFish: VPS-29(zz1432R98dR936eQ1805M936fJ4cd6kzz1202hzz5a6ciz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-FB-SS: 5,
-X-WSS-ID: 0KJKKN7-01-ADP-01
-Date: Wed, 13 May 2009 08:27:48 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
-       Robert Richter <robert.richter@amd.com>, Dave Jones <davej@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 3/10 -tip] x86: Add cpufeatures for Advanced Power
-	Management
-Message-ID: <20090513062748.GE9991@alberich.amd.com>
-References: <1242142530.2547.11.camel@ht.satnam> <1242142623.2547.13.camel@ht.satnam> <1242142692.2547.15.camel@ht.satnam> <1242142753.2547.16.camel@ht.satnam> <1242155190.2492.73.camel@ht.satnam>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <1242155190.2492.73.camel@ht.satnam>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 13 May 2009 06:28:17.0031 (UTC) FILETIME=[004B1170:01C9D394]
-Content-Transfer-Encoding: 8BIT
+	Wed, 13 May 2009 02:31:28 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:41959 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752232AbZEMGb1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 02:31:27 -0400
+Subject: Re: [PATCH] PCI MSI: Yet another fix for MSI-X with NIU cards, v2
+From: Michael Ellerman <michael@ellerman.id.au>
+Reply-To: michael@ellerman.id.au
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Matthew Wilcox <matthew@wil.cx>, Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "David S. Miller" <davem@davemloft.net>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <4A0A5556.9050209@jp.fujitsu.com>
+References: <20090508131333.GV8112@parisc-linux.org>
+	 <4A0A5284.1000705@jp.fujitsu.com>  <4A0A5556.9050209@jp.fujitsu.com>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-f7BwNxaa2xkWSXboEhA7"
+Date: Wed, 13 May 2009 16:31:26 +1000
+Message-Id: <1242196286.18059.88.camel@concordia>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 12:36:30AM +0530, Jaswinder Singh Rajput wrote:
-> On Tue, 2009-05-12 at 21:09 +0530, Jaswinder Singh Rajput wrote:
-> > Add Advanced Power Management (Function 8000_0007h), edx
-> > 
-> > /proc/cpuinfo (before)
-> > flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> > mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt
-> > rdtscp lm 3dnowext 3dnow constant_tsc rep_good nonstop_tsc pni cx16
-> > lahf_lm cmp_legacy svm extapic cr8_legacy 3dnowprefetch osvw skinit pname
-> > 
-> > /proc/cpuinfo (after)
-> > flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> > mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt
-> > rdtscp lm 3dnowext 3dnow rep_good tsc_reliable nonstop_tsc pni cx16
-> > lahf_lm cmp_legacy svm extapic cr8_legacy 3dnowprefetch osvw skinit pname
-> > ts ttp htc stc 100mhzsteps hwpstate constant_tsc
-> > 
-> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> > ---
-> 
-> New patch after adding helper cpufeature for Advanced Power Management
-> availability and fixing typo.
-> 
-> [PATCH -tip] x86: Add cpufeatures for Advanced Power Management
-> 
-> Add Advanced Power Management (Function 8000_0007h), edx
-> 
-> /proc/cpuinfo (before)
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt
-> rdtscp lm 3dnowext 3dnow constant_tsc rep_good nonstop_tsc pni cx16
-> lahf_lm cmp_legacy svm extapic cr8_legacy 3dnowprefetch osvw skinit pname
-> 
-> /proc/cpuinfo (after)
-> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
-> mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt
-> rdtscp lm 3dnowext 3dnow rep_good tsc_reliable nonstop_tsc pni cx16
-> lahf_lm cmp_legacy svm extapic cr8_legacy 3dnowprefetch osvw skinit pname
-> ts ttp htc stc 100mhzsteps hwpstate constant_tsc
 
-What's the point of adding power managment flags twice?
-Most of it is already displayed in /proc/cpuinfo under
-"power management".
+--=-f7BwNxaa2xkWSXboEhA7
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Wed, 2009-05-13 at 14:06 +0900, Hidetoshi Seto wrote:
+> The NIU device refuses to allow accesses to MSI-X registers before MSI-X
+> is enabled.  This patch fixes the problem by moving the read & write the
+> mask register (for preserved bits) to after MSI-X is enabled.
+>=20
+> Reported-by: David S. Miller <davem@davemloft.net>
+> Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+> ---
+>  drivers/pci/msi.c |   21 ++++++++++++++++++---
+>  1 files changed, 18 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+> index 6f2e629..44085e0 100644
+> --- a/drivers/pci/msi.c
+> +++ b/drivers/pci/msi.c
+> @@ -455,9 +455,7 @@ static int msix_capability_init(struct pci_dev *dev,
+>  		entry->msi_attrib.default_irq =3D dev->irq;
+>  		entry->msi_attrib.pos =3D pos;
+>  		entry->mask_base =3D base;
+> -		entry->masked =3D readl(base + j * PCI_MSIX_ENTRY_SIZE +
+> -					PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
+> -		msix_mask_irq(entry, 1);
+> +		entry->masked =3D 1;
+> =20
+>  		list_add_tail(&entry->list, &dev->msi_list);
+>  	}
+> @@ -493,6 +491,23 @@ static int msix_capability_init(struct pci_dev *dev,
+>  	msix_set_enable(dev, 1);
+>  	dev->msix_enabled =3D 1;
+> =20
+> +	/*
+> +	 * The states of Reserved bits[31:01] of Vector Control for MSI-X
+> +	 * Table Entries must be 0.  However, for potential future use,
+> +	 * software must preserve the value of these reserved bits.
+> +	 * Refer PCI spec 3.0, 6.8.2.9.
+> +	 *
+> +	 * Note that there are some device that refuses access to MSI-X
+> +	 * Table Entries before MSI-X is enabled.  Therefore we do it here.=20
+> +	 */
+> +	list_for_each_entry(entry, &dev->msi_list, list) {
+> +		int vector =3D entry->msi_attrib.entry_nr;
+> +		entry->masked =3D readl(base + vector * PCI_MSIX_ENTRY_SIZE +
+> +					PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
+> +		/* Make sure it is masked */
+> +		msix_mask_irq(entry, 1);
+> +	}
+> +
+>  	return 0;
+>  }
+
+That looks better to me, hopefully it fixes DaveM's device too :)
+
+Acked-by: Michael Ellerman <michael@ellerman.id.au>
+
+cheers
+=20
 
 
-Regards,
-Andreas
+--=-f7BwNxaa2xkWSXboEhA7
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
 
--- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
 
+iEYEABECAAYFAkoKaT4ACgkQdSjSd0sB4dKsywCfZiPQWnsrWVqkCyqps5MzPIlg
+n7wAoJL+vDU0b+BdjkBuHdMsQT15HQ7W
+=oR3+
+-----END PGP SIGNATURE-----
+
+--=-f7BwNxaa2xkWSXboEhA7--
 
