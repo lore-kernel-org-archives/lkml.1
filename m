@@ -1,152 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757409AbZEMABk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbZEMAFW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757409AbZEMABk (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 20:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756922AbZEMABY
+	id S1754465AbZEMAFW (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 20:05:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZEMAFI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 20:01:24 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59917 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756422AbZEMABW (ORCPT
+	Tue, 12 May 2009 20:05:08 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1645 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752433AbZEMAFH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 20:01:22 -0400
-Date: Wed, 13 May 2009 08:59:49 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: nishimura@mxp.nes.nec.co.jp
-Cc: Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH][BUGFIX] memcg: fix for deadlock between
- lock_page_cgroup and mapping tree_lock
-Message-Id: <20090513085949.3c4b7b97.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090512195823.15c5cb80.d-nishimura@mtf.biglobe.ne.jp>
-References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090512140648.0974cb10.nishimura@mxp.nes.nec.co.jp>
-	<20090512160901.8a6c5f64.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090512170007.ad7f5c7b.nishimura@mxp.nes.nec.co.jp>
-	<20090512171356.3d3a7554.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090512195823.15c5cb80.d-nishimura@mtf.biglobe.ne.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+	Tue, 12 May 2009 20:05:07 -0400
+Subject: [GIT PULL] MAINTAINERS, scripts/get_maintainer.pl, and
+ Documentation/SubmittingPatches
+From: Joe Perches <joe@perches.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       Sam Ravnborg <sam@ravnborg.org>, randy.dunlap@oracle.com,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1241987200.3877.9.camel@Joe-AcerAspire>
+References: <1239167872-8179-1-git-send-email-joe@perches.com>
+	 <20090417134711.ba0f03e7.randy.dunlap@oracle.com>
+	 <1240003652.31116.44.camel@localhost> <20090407081312.GH1408@ucw.cz>
+	 <1240415689.21848.19.camel@localhost>
+	 <20090422185916.GA3864@uranus.ravnborg.org>
+	 <20090422120510.cc17e470.akpm@linux-foundation.org>
+	 <1240430185.21848.103.camel@localhost>  <20090422203005.GA467@elf.ucw.cz>
+	 <1240557233.6735.240.camel@localhost>
+	 <1241987200.3877.9.camel@Joe-AcerAspire>
+Content-Type: text/plain
+Date: Tue, 12 May 2009 17:03:36 -0700
+Message-Id: <1242173016.9718.55.camel@Joe-AcerAspire>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009 19:58:23 +0900
-Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> wrote:
+This patch merges the P: and M: lines in MAINTAINERS
+into a single M: line for easier manual copy/pasting.
 
-> On Tue, 12 May 2009 17:13:56 +0900
-> KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> 
-> > On Tue, 12 May 2009 17:00:07 +0900
-> > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> > > hmm, I see.
-> > > cache_charge is outside of tree_lock, so moving uncharge would make sense.
-> > > IMHO, we should make the period of spinlock as small as possible,
-> > > and charge/uncharge of pagecache/swapcache is protected by page lock, not tree_lock.
-> > > 
-> > How about this ?
-> Looks good conceptually, but it cannot be built :)
-> 
-> It needs a fix like this.
-> Passed build test with enabling/disabling both CONFIG_MEM_RES_CTLR
-> and CONFIG_SWAP.
-> 
-ok, will update. can I add you Signed-off-by on the patch ?
+scripts/get_maintainer.pl is updated to support this
+integrated format along with a few bug fixes.
 
-Thanks,
--Kame
-> ===
->  include/linux/swap.h |    5 +++++
->  mm/memcontrol.c      |    4 +++-
->  mm/swap_state.c      |    4 +---
->  mm/vmscan.c          |    2 +-
->  4 files changed, 10 insertions(+), 5 deletions(-)
-> 
-> diff --git a/include/linux/swap.h b/include/linux/swap.h
-> index caf0767..6ea541d 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -431,6 +431,11 @@ static inline swp_entry_t get_swap_page(void)
->  #define has_swap_token(x) 0
->  #define disable_swap_token() do { } while(0)
->  
-> +static inline void
-> +mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
-> +{
-> +}
-> +
->  #endif /* CONFIG_SWAP */
->  #endif /* __KERNEL__*/
->  #endif /* _LINUX_SWAP_H */
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 0c9c1ad..89523cf 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -1488,8 +1488,9 @@ void mem_cgroup_uncharge_cache_page(struct page *page)
->  	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
->  }
->  
-> +#ifdef CONFIG_SWAP
->  /*
-> - * called from __delete_from_swap_cache() and drop "page" account.
-> + * called after __delete_from_swap_cache() and drop "page" account.
->   * memcg information is recorded to swap_cgroup of "ent"
->   */
->  void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
-> @@ -1506,6 +1507,7 @@ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
->  	if (memcg)
->  		css_put(&memcg->css);
->  }
-> +#endif
->  
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->  /*
-> diff --git a/mm/swap_state.c b/mm/swap_state.c
-> index 87f10d4..7624c89 100644
-> --- a/mm/swap_state.c
-> +++ b/mm/swap_state.c
-> @@ -109,8 +109,6 @@ int add_to_swap_cache(struct page *page, swp_entry_t entry, gfp_t gfp_mask)
->   */
->  void __delete_from_swap_cache(struct page *page)
->  {
-> -	swp_entry_t ent = {.val = page_private(page)};
-> -
->  	VM_BUG_ON(!PageLocked(page));
->  	VM_BUG_ON(!PageSwapCache(page));
->  	VM_BUG_ON(PageWriteback(page));
-> @@ -190,7 +188,7 @@ void delete_from_swap_cache(struct page *page)
->  	__delete_from_swap_cache(page);
->  	spin_unlock_irq(&swapper_space.tree_lock);
->  
-> -	mem_cgroup_uncharge_swapcache(page, ent);
-> +	mem_cgroup_uncharge_swapcache(page, entry);
->  	swap_free(entry);
->  	page_cache_release(page);
->  }
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 6c5988d..a7d7a06 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -470,7 +470,7 @@ static int __remove_mapping(struct address_space *mapping, struct page *page)
->  		swp_entry_t swap = { .val = page_private(page) };
->  		__delete_from_swap_cache(page);
->  		spin_unlock_irq(&mapping->tree_lock);
-> -		mem_cgroup_uncharge_swapcache(page);
-> +		mem_cgroup_uncharge_swapcache(page, swap);
->  		swap_free(swap);
->  	} else {
->  		__remove_from_page_cache(page);
-> ===
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
-> 
+Documentation/SubmittingPatches is updated to recommend
+using scripts/get_maintainer.pl.
+
+A few patterns are updated in MAINTAINERS to track various
+renames
+
+The following changes since commit 1d80cac0fe44fb87b2a3d35fddd7f534ea81cd90:
+  Linus Torvalds (1):
+        Merge branch 'for-linus' of git://repo.or.cz/cris-mirror
+
+are available in the git repository at:
+
+  git://repo.or.cz/linux-2.6/trivial-mods.git gm_20090512
+
+Joe Perches (19):
+      scripts/get_maintainer.pl - Output first field only in mailing lists and after maintainers.
+      scripts/get_maintainer.pl - Better fix for subscriber-only mailing lists
+      scripts/get_maintainer.pl - improve --git-chief-penquins (Linus Torvalds) filtering
+      scripts/get_maintainer.pl - Warn on missing git or git repository
+      scripts/get_maintainer.pl - support M: lines with names and multiple entries per M: line
+      scripts/get_maintainer.pl - Better email name quoting
+      scripts/get_maintainer.pl - Support both "P:/M:" and integrated "M:" lines
+      scripts/get_maintainer.pl - Don't print maintainers when not requested
+      scripts/get_maintainer.pl - Allow 8 bit characters in email addresses
+      MAINTAINERS - Swap mismarked ECRYPT FS M: and P: entries
+      MAINTAINERS - Pair EDAC-E752X P: and M: entries
+      MAINTAINERS - Add file patterns to "THE REST"
+      MAINTAINERS - Update M32R file patterns after rename
+      MAINTAINERS - Mark ALSA lists as moderated
+      MAINTAINERS - Remove L:	linux-kernel@vger.kernel.org from all but "THE REST"
+      MAINTAINERS - Mention scripts/get_maintainer.pl in the preface
+      SubmittingPatches: Mention scripts/get_maintainer.pl and git request-pull
+      MAINTAINERS - Merge P: name and M: address entries into M: name <address>
+      MAINTAINERS - Deprecate the P: entry and describe M: more thoroughly
+
+ Documentation/SubmittingPatches |    4 +
+ MAINTAINERS                     | 2690 +++++++++++++--------------------------
+ scripts/get_maintainer.pl       |  232 +++-
+ 3 files changed, 1073 insertions(+), 1853 deletions(-)
+
 
