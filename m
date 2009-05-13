@@ -1,80 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760336AbZEMOyL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760485AbZEMOzm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760336AbZEMOyL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 10:54:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbZEMOx4
+	id S1760485AbZEMOzm (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 10:55:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755816AbZEMOzc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 10:53:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:41869 "EHLO mx2.redhat.com"
+	Wed, 13 May 2009 10:55:32 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:41911 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755558AbZEMOx4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 10:53:56 -0400
-Date: Wed, 13 May 2009 10:51:27 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 07/18] io-controller: Export disk time used and nr
-	sectors dipatched through cgroups
-Message-ID: <20090513145127.GB7696@redhat.com>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-8-git-send-email-vgoyal@redhat.com> <4A0A32CB.4020609@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A0A32CB.4020609@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	id S1752246AbZEMOzb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 10:55:31 -0400
+Subject: Re: [PATCH] IMA: do not measure everything opened by root bydefault
+From: Eric Paris <eparis@redhat.com>
+To: Mimi Zohar <zohar@linux.vnet.ibm.com>
+Cc: jmorris@namei.org, linux-kernel@vger.kernel.org,
+       Dave Safford <safford@watson.ibm.com>
+In-Reply-To: <1242165201.8494.36.camel@dyn9002018117.watson.ibm.com>
+References: <20090512191423.6903.37464.stgit@dhcp231-142.rdu.redhat.com>
+	 <1242163111.8494.23.camel@dyn9002018117.watson.ibm.com>
+	 <1242163638.3142.8.camel@dhcp231-142.rdu.redhat.com>
+	 <1242165201.8494.36.camel@dyn9002018117.watson.ibm.com>
+Content-Type: text/plain
+Date: Wed, 13 May 2009 10:54:58 -0400
+Message-Id: <1242226498.2812.102.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 10:39:07AM +0800, Gui Jianfeng wrote:
-> Vivek Goyal wrote:
-> ...
-> >  
-> > +/*
-> > + * traverse through all the io_groups associated with this cgroup and calculate
-> > + * the aggr disk time received by all the groups on respective disks.
-> > + */
-> > +static u64 calculate_aggr_disk_time(struct io_cgroup *iocg)
-> > +{
-> > +	struct io_group *iog;
-> > +	struct hlist_node *n;
-> > +	u64 disk_time = 0;
-> > +
-> > +	rcu_read_lock();
+On Tue, 2009-05-12 at 17:53 -0400, Mimi Zohar wrote:
+> On Tue, 2009-05-12 at 17:27 -0400, Eric Paris wrote:
+> > On Tue, 2009-05-12 at 17:18 -0400, Mimi Zohar wrote:
+> > > On Tue, 2009-05-12 at 15:14 -0400, Eric Paris wrote:
+> > > > The IMA default policy measures every single file opened by root.  This is
+> > > > terrible for most users.  Consider a system (like mine) with virtual machine
+> > > > images.  When those images are touched (which happens at boot for me) those
+> > > > images are measured.  This is just way too much for the default case.
+> > > > 
+> > > > Signed-off-by: Eric Paris <eparis@redhat.com>
+> > > 
+> > > The question of what to measure is a major issue. If you measure too
+> > > much, performance is affected, but if you measure too little, then the
+> > > measurement list will not contain everything that could affect the
+> > > Trusted Computing Base(TCB), such as configuration files and scripts.
+> > > 
+> > > The solution is not to remove the rule that measures everything read
+> > > by root, but to replace the default IMA configuration file with an LSM
+> > > specific one, which should be done early in the etc init scripts or
+> > > initrd.  LTP contains a sample script to replace the default IMA policy
+> > > (testcases/kernel/security/integrity/ima/tests/ima_policy.sh).
+> > > 
+> > > The following SELinux integrity rule, prevents /var/log/messages from
+> > > being measured. (Dependent on "integrity: lsm audit rule matching fix"
+> > > patch in the security-testing tree.)
+> > > 
+> > > dont_measure func=PATH_CHECK mask=MAY_READ obj_type=var_log_t
+> > > 
+> > > By defining an equivalent SELinux integrity rule for each virtual
+> > > machine image type, the virtual machine images will not be measured.
+> > > This is far better than not measuring everything in the TCB.
+> > > 
+> > > Mimi Zohar
+> > 
+> > While the TCB might be interesting to you I'm going to guess that 99% of
+> > users don't care at all.  I don't think the kernel should ship with such
+> > an overhead just to make the options available to the few.
+> > 
+> > Every distro that wants to ship with IMA compiled in the kernel is going
+> > to need to carry their own ima policy and they are going to have to
+> > change userspace so they can load that policy by default.  This is turn
+> > means that every distro is going to, by default, leave ima
+> > uncustomizable since we can only load a single policy.
 > 
->   This function is in slow-path, so no need to call rcu_read_lock(), just need to ensure
->   that the caller already holds the iocg->lock.
-> 
+> I'm not sure I understand the problem here. Although the policy can only
+> be loaded once per boot, it could be based on a configuration file
+> like /etc/measure, which the distro could define. Any system specific
+> changes could be made to this file.
 
-Or can we get rid of requirement of iocg_lock here and just read the io
-group data under rcu read lock? Actually I am wondering why do we require
-an iocg_lock here. We are not modifying the rcu protected list. We are
-just traversing through it and reading the data.
+I'm assuming, although possibly wrongly, that every major distro is
+going to enable the IMA config.  My reason for making that assumption is
+based on the fact tht many distros tend to enable everything they can so
+their users can make their own choices without recompiling.  Kernel
+defaults are supposed to be the default that most people want.  How many
+people on LKML know, or even care, what the TCB is?  By setting the
+kernel default to something that is known to be of interest to very few
+people and which causes a noticeable performance penalty you force the
+work of setting the default out onto the distros.  This is wrong.  If I
+was a distro owner and knew I either had to rewrite the initrd for every
+user or create a new package which runs early in the startup just to
+disable the IMA rules or I could just not enable IMA in the kernel at
+all, which do you think I would choose?  I see that in Fedora 12 kernels
+they chose not to enable IMA.  Why should we take on the maintenance
+burden of another package just to fix the default IMA rules so they are
+reasonable for most of our users?
 
-Thanks
-Vivek
+I think if you want to make IMA available, the default config needs to
+be reasonable to reasonable people.  The people who care about the TCB
+should be the ones adding custom policy.
 
-> > +	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
-> > +		/*
-> > +		 * There might be groups which are not functional and
-> > +		 * waiting to be reclaimed upon cgoup deletion.
-> > +		 */
-> > +		if (rcu_dereference(iog->key))
-> > +			disk_time += iog->entity.total_service;
-> > +	}
-> > +	rcu_read_unlock();
-> > +
-> > +	return disk_time;
-> > +}
-> > +
-> 
-> -- 
-> Regards
-> Gui Jianfeng
+-Eric
+
