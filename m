@@ -1,118 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757899AbZEMGeV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbZEMGge@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757899AbZEMGeV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 02:34:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbZEMGd7
+	id S1757173AbZEMGge (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 02:36:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZEMGgY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 02:33:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55392 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751436AbZEMGd5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 02:33:57 -0400
-Message-ID: <4A0A68F2.1040600@kernel.org>
-Date: Wed, 13 May 2009 15:30:10 +0900
-From: Tejun Heo <tj@kernel.org>
+	Wed, 13 May 2009 02:36:24 -0400
+Received: from rankki.sonarnerd.net ([83.145.240.118]:31816 "EHLO
+	mail.sonarnerd.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752232AbZEMGgY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 02:36:24 -0400
+Message-ID: <4A0A6A67.9010205@sonarnerd.net>
+Date: Wed, 13 May 2009 09:36:23 +0300
+From: Jussi Laako <jussi@sonarnerd.net>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, bharrosh@panasas.com,
-       axboe@kernel.dk, linux-kernel@vger.kernel.org, jeff@garzik.org,
-       linux-ide@vger.kernel.org, linux-scsi@vger.kernel.org,
-       bzolnier@gmail.com, petkovbb@googlemail.com, sshtylyov@ru.mvista.com,
-       mike.miller@hp.com, Eric.Moore@lsi.com, stern@rowland.harvard.edu,
-       zaitcev@redhat.com, Geert.Uytterhoeven@sonycom.com,
-       sfr@canb.auug.org.au, grant.likely@secretlab.ca,
-       paul.clements@steeleye.com, tim@cyberelk.net, jeremy@xensource.com,
-       adrian@mcmen.demon.co.uk, oakad@yahoo.com, dwmw2@infradead.org,
-       schwidefsky@de.ibm.com, ballabio_dario@emc.com, davem@davemloft.net,
-       rusty@rustcorp.com.au, Markus.Lidel@shadowconnect.com,
-       dgilbert@interlog.com, djwong@us.ibm.com
-Subject: Re: [PATCH 03/11] block: add rq->resid_len
-References: <1241423927-11871-4-git-send-email-tj@kernel.org>	 <4A06DFAB.40205@panasas.com> <4A0767E5.5050205@kernel.org>	 <20090511145024B.fujita.tomonori@lab.ntt.co.jp>	 <1242051500.3338.9.camel@mulgrave.int.hansenpartnership.com>	 <4A08C094.2060602@kernel.org>	 <1242099783.19949.8.camel@mulgrave.int.hansenpartnership.com>	 <4A09115D.3080009@kernel.org>	 <1242137329.3308.6.camel@mulgrave.int.hansenpartnership.com>	 <4A0992ED.4090200@kernel.org> <1242143126.3308.20.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1242143126.3308.20.camel@mulgrave.int.hansenpartnership.com>
+To: Chris Friesen <cfriesen@nortel.com>
+CC: Peter Zijlstra <peterz@infradead.org>,
+       James Courtier-Dutton <James@superbug.co.uk>,
+       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
+       d.faggioli@sssup.it
+Subject: Re: [RFC][PATCH] Multimedia scheduling class, take 2
+References: <4959198A.3020209@sonarnerd.net>	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net>	 <1231756114.19771.6.camel@laptop> <496C6294.2040707@sonarnerd.net>	 <4971D3D5.6040801@superbug.co.uk>  <497CF128.2060903@sonarnerd.net>	 <1232954745.4863.4.camel@laptop>  <4A07E044.8040807@sonarnerd.net> <1242107859.11251.301.camel@twins> <4A094707.5040307@sonarnerd.net> <4A099670.5060902@nortel.com> <4A09A525.4080107@sonarnerd.net> <4A09AB2E.8030002@nortel.com> <4A09B7A1.2060706@sonarnerd.net> <4A0A0069.4090502@nortel.com>
+In-Reply-To: <4A0A0069.4090502@nortel.com>
 X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 13 May 2009 06:30:17 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, James.
+Chris Friesen wrote:
+> Really?  You can call pthread_attr_setschedpolicy() with a policy of
+> SCHED_MM?  On my copy of glibc 2.8 it explicitly checks for
+> FIFO/RR/OTHER and anything else is rejected.
 
-James Bottomley wrote:
->> Shouldn't those be request successful w/ sense data?  Please note that
->> the term "error" in this context means failure of block layer request
->> not SCSI layer CHECK SENSE.
-> 
-> Heh, well, this is where we get into interpretations.  For SG_IO
-> requests, we have three separate ways of returning error.  The error
-> return to the block layer, the results return and the sense code.  The
-> error to block is a somewhat later addition to the layer, so not all
-> cases are handled right or agreed (for instance we just altered BLOCK_PC
-> with recovered error from -EIO to no error).  So hopefully we've just
-> decided that deferred and current but recovered all fall into the no
-> error to block, but results and sense to the user.
-> 
-> Note that the error to block is basically discarded from SG_IO before we
-> return to the user, so the user *only* has results and sense to go by,
-> thus the concept of residual not valid on error to block is something
-> the user can't check.  That's why a consistent definition in all cases
-> (i.e. the amount of data the HBA transferred) is the correct one and
-> allows userspace to make the determination of what it should do based on
-> the returns it gets.
+My copy of 2.9 has that fixed (original one is still broken), because
+that's also broken for SCHED_IDLE and SCHED_BATCH which have been in the
+kernel for a while already.
 
-Okay, I was thinking SG_IO will return error for rq failures and I
-remember pretty clearly following the failure path recently while
-debugging eject problem but my memory is pretty unreliable.
-Checking... oops, yeap, you're right.
+I'm not sure, but I think pthread_setschedparam() and
+sched_setscheduler() didn't need fixing.
 
->> I'm still reluctant to do it because...
->>
->> * Its definition still isn't clear (well, at least to me) and if it's
->>   defined as the number of valid bytes on request success and the
->>   number of bytes HBA transferred on request failure, I don't think
->>   it's all that useful.
-> 
-> It's not valid bytes in either case ... it's number transferred.  One
-> can infer from a successful SCSI status code that number transferred ==
-> valid bytes, but I'd rather we didn't say that.
-> 
->> * Seen from userland, residue count on request failure has never been
->>   guaranteed and there doesn't seem to be any valid in kernel user.
-> 
-> But that's the point ... we don't define for userland what request
-> failure is very well.
-> 
->> * It would be extra code explicitly setting the residue count to full
->>   on failure path.  If it's something necessary, full residue count on
->>   failure needs to be made default.  If not, it will only add more
->>   confusion.
-> 
-> OK, so if what you're asking is that we can regard the residue as
-> invalid if SG_IO itself returns an error, then I can agree ... but not
-> if blk_end_request() returns error, because that error gets ignored by
-> SG_IO.
 
-I was confused that rq failure would cause error return from SG_IO.
-Sorry about that.  There still is a problem tho.  Buffer for a bounced
-SG_IO request is copied back on failure but when a bounced kernel PC
-request fails, the data is not copied back in bio_copy_kern_endio().
-This is what would break Boaz's code.
-
-So, it seems what we should do is
-
-1. Always copy back bounced buffer whether the request failed or not.
-   Whether resid_len should be considered while copying back, I'm not
-   sure about given that resid_len isn't properly implemented in some
-   drivers.
-
-2. Revert the original behavior of setting resid_len to full on
-   request issue and audit the affected code paths.
-
-How does it sound?
-
-Thanks.
-
--- 
-tejun
+	- Jussi
