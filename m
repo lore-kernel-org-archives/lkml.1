@@ -1,407 +1,746 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762179AbZEMXAl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762196AbZEMXBZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762179AbZEMXAl (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 19:00:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761618AbZEMW5M
+	id S1762196AbZEMXBZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 19:01:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761713AbZEMW5R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 18:57:12 -0400
-Received: from moutng.kundenserver.de ([212.227.126.171]:63037 "EHLO
+	Wed, 13 May 2009 18:57:17 -0400
+Received: from moutng.kundenserver.de ([212.227.126.177]:53969 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756506AbZEMW4u (ORCPT
+	with ESMTP id S1760528AbZEMW4w (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 18:56:50 -0400
+	Wed, 13 May 2009 18:56:52 -0400
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-arch@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
        Remis Lima Baima <remis.developer@googlemail.com>
-Subject: [PATCH 07/15] asm-generic: rename page.h and uaccess.h
-Date: Wed, 13 May 2009 22:56:30 +0000
-Message-Id: <1242255398-23779-8-git-send-email-arnd@arndb.de>
+Subject: [PATCH 10/15] asm-generic: add generic versions of common headers
+Date: Wed, 13 May 2009 22:56:33 +0000
+Message-Id: <1242255398-23779-11-git-send-email-arnd@arndb.de>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1242255398-23779-1-git-send-email-arnd@arndb.de>
 References: <1242255398-23779-1-git-send-email-arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX19flk6aGdBMvU2eJWiTCKwFxBIiw9Lx74l7yim
- /TWkKwwsYLUTeMqyO0m7Bs8XGm2p/+JcNbYnICRKjJa3AB9Via
- SY12S8wgXXICcCW96Gg+Q==
+X-Provags-ID: V01U2FsdGVkX1+XSF71/9szO3lLnRK7ofkNfvr/mFBQSufmnIW
+ j+d2IbXW6jlwwaO2vl1e6qAAomyXmRZ/UNarbpE85sjutw8n5f
+ epStqJMv0VmFDvFUk1dFw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The current asm-generic/page.h only contains the get_order
-function, and asm-generic/uaccess.h only implements
-unaligned accesses. This renames the file to getorder.h
-and uaccess-unaligned.h to make room for new page.h
-and uaccess.h file that will be usable by all simple
-(e.g. nommu) architectures.
+These are all kernel internal interfaces that get copied
+around a lot. In most cases, architectures can provide
+their own optimized versions, but these generic versions
+can work as well.
+
+I have tried to use the most common contents of each
+header to allow existing architectures to migrate easily.
+
+Thanks to Remis for suggesting a number of cleanups.
 
 Signed-off-by: Remis Lima Baima <remis.developer@googlemail.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/alpha/include/asm/page.h                      |    2 +-
- arch/arm/include/asm/page.h                        |    2 +-
- arch/blackfin/include/asm/page.h                   |    2 +-
- arch/cris/include/asm/page.h                       |    2 +-
- arch/frv/include/asm/page.h                        |    2 +-
- arch/h8300/include/asm/page.h                      |    2 +-
- arch/m32r/include/asm/page.h                       |    2 +-
- arch/m68k/include/asm/page_mm.h                    |    2 +-
- arch/m68k/include/asm/page_no.h                    |    2 +-
- arch/microblaze/include/asm/page.h                 |    2 +-
- arch/mips/include/asm/page.h                       |    2 +-
- arch/parisc/include/asm/page.h                     |    2 +-
- arch/parisc/include/asm/uaccess.h                  |    2 +-
- arch/powerpc/include/asm/page_32.h                 |    2 +-
- arch/powerpc/include/asm/page_64.h                 |    2 +-
- arch/s390/include/asm/page.h                       |    2 +-
- arch/sh/include/asm/page.h                         |    2 +-
- arch/sparc/include/asm/page_32.h                   |    2 +-
- arch/sparc/include/asm/page_64.h                   |    2 +-
- arch/sparc/include/asm/uaccess_64.h                |    2 +-
- arch/um/include/asm/page.h                         |    2 +-
- arch/x86/include/asm/page.h                        |    2 +-
- arch/xtensa/include/asm/page.h                     |    2 +-
- include/asm-generic/{page.h => getorder.h}         |    8 ++++----
- .../asm-generic/{uaccess.h => uaccess-unaligned.h} |    6 +++---
- 25 files changed, 30 insertions(+), 30 deletions(-)
- rename include/asm-generic/{page.h => getorder.h} (59%)
- rename include/asm-generic/{uaccess.h => uaccess-unaligned.h} (82%)
+ include/asm-generic/bugs.h        |   10 +++
+ include/asm-generic/current.h     |    9 ++
+ include/asm-generic/delay.h       |    9 ++
+ include/asm-generic/fb.h          |   12 +++
+ include/asm-generic/hardirq.h     |   34 ++++++++
+ include/asm-generic/irq.h         |   18 ++++
+ include/asm-generic/irqflags.h    |   72 ++++++++++++++++
+ include/asm-generic/kmap_types.h  |   29 +++++++
+ include/asm-generic/linkage.h     |    8 ++
+ include/asm-generic/module.h      |   22 +++++
+ include/asm-generic/mutex.h       |    9 ++
+ include/asm-generic/scatterlist.h |   43 ++++++++++
+ include/asm-generic/spinlock.h    |   11 +++
+ include/asm-generic/string.h      |   10 +++
+ include/asm-generic/syscalls.h    |   60 ++++++++++++++
+ include/asm-generic/system.h      |  161 +++++++++++++++++++++++++++++++++++++
+ include/asm-generic/unaligned.h   |   30 +++++++
+ include/asm-generic/user.h        |    8 ++
+ 18 files changed, 555 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-generic/bugs.h
+ create mode 100644 include/asm-generic/current.h
+ create mode 100644 include/asm-generic/delay.h
+ create mode 100644 include/asm-generic/fb.h
+ create mode 100644 include/asm-generic/hardirq.h
+ create mode 100644 include/asm-generic/irq.h
+ create mode 100644 include/asm-generic/irqflags.h
+ create mode 100644 include/asm-generic/kmap_types.h
+ create mode 100644 include/asm-generic/linkage.h
+ create mode 100644 include/asm-generic/module.h
+ create mode 100644 include/asm-generic/mutex.h
+ create mode 100644 include/asm-generic/scatterlist.h
+ create mode 100644 include/asm-generic/spinlock.h
+ create mode 100644 include/asm-generic/string.h
+ create mode 100644 include/asm-generic/syscalls.h
+ create mode 100644 include/asm-generic/system.h
+ create mode 100644 include/asm-generic/unaligned.h
+ create mode 100644 include/asm-generic/user.h
 
-diff --git a/arch/alpha/include/asm/page.h b/arch/alpha/include/asm/page.h
-index 0995f9d..07af062 100644
---- a/arch/alpha/include/asm/page.h
-+++ b/arch/alpha/include/asm/page.h
-@@ -93,6 +93,6 @@ typedef struct page *pgtable_t;
- 					 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
- 
- #include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif /* _ALPHA_PAGE_H */
-diff --git a/arch/arm/include/asm/page.h b/arch/arm/include/asm/page.h
-index e6eb8a6..dee70a3 100644
---- a/arch/arm/include/asm/page.h
-+++ b/arch/arm/include/asm/page.h
-@@ -209,6 +209,6 @@ typedef struct page *pgtable_t;
- #define ARCH_SLAB_MINALIGN 8
- #endif
- 
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif
-diff --git a/arch/blackfin/include/asm/page.h b/arch/blackfin/include/asm/page.h
-index 344f6a8..3ea2016 100644
---- a/arch/blackfin/include/asm/page.h
-+++ b/arch/blackfin/include/asm/page.h
-@@ -81,7 +81,7 @@ extern unsigned long memory_end;
- #define	virt_addr_valid(kaddr)	(((void *)(kaddr) >= (void *)PAGE_OFFSET) && \
- 				((void *)(kaddr) < (void *)memory_end))
- 
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif				/* __ASSEMBLY__ */
- 
-diff --git a/arch/cris/include/asm/page.h b/arch/cris/include/asm/page.h
-index f3fdbd0..be45ee3 100644
---- a/arch/cris/include/asm/page.h
-+++ b/arch/cris/include/asm/page.h
-@@ -68,7 +68,7 @@ typedef struct page *pgtable_t;
- 				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
- 
- #include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif /* _CRIS_PAGE_H */
- 
-diff --git a/arch/frv/include/asm/page.h b/arch/frv/include/asm/page.h
-index bd9c220..25c6a50 100644
---- a/arch/frv/include/asm/page.h
-+++ b/arch/frv/include/asm/page.h
-@@ -73,6 +73,6 @@ extern unsigned long max_pfn;
- #endif /* __ASSEMBLY__ */
- 
- #include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif /* _ASM_PAGE_H */
-diff --git a/arch/h8300/include/asm/page.h b/arch/h8300/include/asm/page.h
-index 0b6acf0..837381a 100644
---- a/arch/h8300/include/asm/page.h
-+++ b/arch/h8300/include/asm/page.h
-@@ -73,6 +73,6 @@ extern unsigned long memory_end;
- #endif /* __ASSEMBLY__ */
- 
- #include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif /* _H8300_PAGE_H */
-diff --git a/arch/m32r/include/asm/page.h b/arch/m32r/include/asm/page.h
-index c933308..11777f7 100644
---- a/arch/m32r/include/asm/page.h
-+++ b/arch/m32r/include/asm/page.h
-@@ -82,6 +82,6 @@ typedef struct page *pgtable_t;
- #define devmem_is_allowed(x) 1
- 
- #include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif /* _ASM_M32R_PAGE_H */
-diff --git a/arch/m68k/include/asm/page_mm.h b/arch/m68k/include/asm/page_mm.h
-index a34b8ba..d009f3e 100644
---- a/arch/m68k/include/asm/page_mm.h
-+++ b/arch/m68k/include/asm/page_mm.h
-@@ -223,6 +223,6 @@ static inline __attribute_const__ int __virt_to_node_shift(void)
- #define VM_DATA_DEFAULT_FLAGS	(VM_READ | VM_WRITE | VM_EXEC | \
- 				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
- 
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif /* _M68K_PAGE_H */
-diff --git a/arch/m68k/include/asm/page_no.h b/arch/m68k/include/asm/page_no.h
-index 3a1ede4..9aa3f90 100644
---- a/arch/m68k/include/asm/page_no.h
-+++ b/arch/m68k/include/asm/page_no.h
-@@ -72,6 +72,6 @@ extern unsigned long memory_end;
- 
- #endif /* __ASSEMBLY__ */
- 
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif /* _M68KNOMMU_PAGE_H */
-diff --git a/arch/microblaze/include/asm/page.h b/arch/microblaze/include/asm/page.h
-index 7238dcf..962c210 100644
---- a/arch/microblaze/include/asm/page.h
-+++ b/arch/microblaze/include/asm/page.h
-@@ -135,6 +135,6 @@ extern unsigned int memory_size;
- #endif /* __KERNEL__ */
- 
- #include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif /* _ASM_MICROBLAZE_PAGE_H */
-diff --git a/arch/mips/include/asm/page.h b/arch/mips/include/asm/page.h
-index fe7a88e..8a271b6 100644
---- a/arch/mips/include/asm/page.h
-+++ b/arch/mips/include/asm/page.h
-@@ -186,6 +186,6 @@ typedef struct { unsigned long pgprot; } pgprot_t;
- #define CAC_ADDR(addr)		((addr) - UNCAC_BASE + PAGE_OFFSET)
- 
- #include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif /* _ASM_PAGE_H */
-diff --git a/arch/parisc/include/asm/page.h b/arch/parisc/include/asm/page.h
-index 7bc5125..a84cc1f 100644
---- a/arch/parisc/include/asm/page.h
-+++ b/arch/parisc/include/asm/page.h
-@@ -159,6 +159,6 @@ extern int npmem_ranges;
- 				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
- 
- #include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif /* _PARISC_PAGE_H */
-diff --git a/arch/parisc/include/asm/uaccess.h b/arch/parisc/include/asm/uaccess.h
-index cd4c0b2..7cf799d 100644
---- a/arch/parisc/include/asm/uaccess.h
-+++ b/arch/parisc/include/asm/uaccess.h
-@@ -7,7 +7,7 @@
- #include <asm/page.h>
- #include <asm/system.h>
- #include <asm/cache.h>
--#include <asm-generic/uaccess.h>
-+#include <asm-generic/uaccess-unaligned.h>
- 
- #define VERIFY_READ 0
- #define VERIFY_WRITE 1
-diff --git a/arch/powerpc/include/asm/page_32.h b/arch/powerpc/include/asm/page_32.h
-index a0e3f6e..bd0849d 100644
---- a/arch/powerpc/include/asm/page_32.h
-+++ b/arch/powerpc/include/asm/page_32.h
-@@ -41,7 +41,7 @@ extern void clear_pages(void *page, int order);
- static inline void clear_page(void *page) { clear_pages(page, 0); }
- extern void copy_page(void *to, void *from);
- 
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #define PGD_T_LOG2	(__builtin_ffs(sizeof(pgd_t)) - 1)
- #define PTE_T_LOG2	(__builtin_ffs(sizeof(pte_t)) - 1)
-diff --git a/arch/powerpc/include/asm/page_64.h b/arch/powerpc/include/asm/page_64.h
-index 043bfdf..5817a3b 100644
---- a/arch/powerpc/include/asm/page_64.h
-+++ b/arch/powerpc/include/asm/page_64.h
-@@ -180,6 +180,6 @@ do {						\
- 	(test_thread_flag(TIF_32BIT) ? \
- 	 VM_STACK_DEFAULT_FLAGS32 : VM_STACK_DEFAULT_FLAGS64)
- 
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif /* _ASM_POWERPC_PAGE_64_H */
-diff --git a/arch/s390/include/asm/page.h b/arch/s390/include/asm/page.h
-index 32e8f6a..3e3594d 100644
---- a/arch/s390/include/asm/page.h
-+++ b/arch/s390/include/asm/page.h
-@@ -150,7 +150,7 @@ void arch_alloc_page(struct page *page, int order);
- 				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
- 
- #include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #define __HAVE_ARCH_GATE_AREA 1
- 
-diff --git a/arch/sh/include/asm/page.h b/arch/sh/include/asm/page.h
-index 9c6d21e..49592c7 100644
---- a/arch/sh/include/asm/page.h
-+++ b/arch/sh/include/asm/page.h
-@@ -163,7 +163,7 @@ typedef struct page *pgtable_t;
- 				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
- 
- #include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- /* vDSO support */
- #ifdef CONFIG_VSYSCALL
-diff --git a/arch/sparc/include/asm/page_32.h b/arch/sparc/include/asm/page_32.h
-index d1806ed..f72080b 100644
---- a/arch/sparc/include/asm/page_32.h
-+++ b/arch/sparc/include/asm/page_32.h
-@@ -152,6 +152,6 @@ extern unsigned long pfn_base;
- 				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
- 
- #include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif /* _SPARC_PAGE_H */
-diff --git a/arch/sparc/include/asm/page_64.h b/arch/sparc/include/asm/page_64.h
-index 4274ed1..f0d09b4 100644
---- a/arch/sparc/include/asm/page_64.h
-+++ b/arch/sparc/include/asm/page_64.h
-@@ -132,6 +132,6 @@ typedef struct page *pgtable_t;
- #define VM_DATA_DEFAULT_FLAGS	(VM_READ | VM_WRITE | VM_EXEC | \
- 				 VM_MAYREAD | VM_MAYWRITE | VM_MAYEXEC)
- 
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif /* _SPARC64_PAGE_H */
-diff --git a/arch/sparc/include/asm/uaccess_64.h b/arch/sparc/include/asm/uaccess_64.h
-index c64e767..a38c032 100644
---- a/arch/sparc/include/asm/uaccess_64.h
-+++ b/arch/sparc/include/asm/uaccess_64.h
-@@ -12,7 +12,7 @@
- #include <asm/asi.h>
- #include <asm/system.h>
- #include <asm/spitfire.h>
--#include <asm-generic/uaccess.h>
-+#include <asm-generic/uaccess-unaligned.h>
- #endif
- 
- #ifndef __ASSEMBLY__
-diff --git a/arch/um/include/asm/page.h b/arch/um/include/asm/page.h
-index 55f28a0..4cc9b6c 100644
---- a/arch/um/include/asm/page.h
-+++ b/arch/um/include/asm/page.h
-@@ -116,7 +116,7 @@ extern unsigned long uml_physmem;
- #define virt_addr_valid(v) pfn_valid(phys_to_pfn(__pa(v)))
- 
- #include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #endif	/* __ASSEMBLY__ */
- #endif	/* __UM_PAGE_H */
-diff --git a/arch/x86/include/asm/page.h b/arch/x86/include/asm/page.h
-index 89ed9d7..625c3f0 100644
---- a/arch/x86/include/asm/page.h
-+++ b/arch/x86/include/asm/page.h
-@@ -56,7 +56,7 @@ extern bool __virt_addr_valid(unsigned long kaddr);
- #endif	/* __ASSEMBLY__ */
- 
- #include <asm-generic/memory_model.h>
--#include <asm-generic/page.h>
-+#include <asm-generic/getorder.h>
- 
- #define __HAVE_ARCH_GATE_AREA 1
- 
-diff --git a/arch/xtensa/include/asm/page.h b/arch/xtensa/include/asm/page.h
-index 17e0c53..161bb89 100644
---- a/arch/xtensa/include/asm/page.h
-+++ b/arch/xtensa/include/asm/page.h
-@@ -129,7 +129,7 @@ static inline __attribute_const__ int get_order(unsigned long size)
- 
- #else
- 
--# include <asm-generic/page.h>
-+# include <asm-generic/getorder.h>
- 
- #endif
- 
-diff --git a/include/asm-generic/page.h b/include/asm-generic/getorder.h
-similarity index 59%
-rename from include/asm-generic/page.h
-rename to include/asm-generic/getorder.h
-index 14db733..67e7245 100644
---- a/include/asm-generic/page.h
-+++ b/include/asm-generic/getorder.h
-@@ -1,12 +1,12 @@
--#ifndef _ASM_GENERIC_PAGE_H
--#define _ASM_GENERIC_PAGE_H
-+#ifndef __ASM_GENERIC_GETORDER_H
-+#define __ASM_GENERIC_GETORDER_H
- 
- #ifndef __ASSEMBLY__
- 
- #include <linux/compiler.h>
- 
- /* Pure 2^n version of get_order */
--static __inline__ __attribute_const__ int get_order(unsigned long size)
-+static inline __attribute_const__ int get_order(unsigned long size)
- {
- 	int order;
- 
-@@ -21,4 +21,4 @@ static __inline__ __attribute_const__ int get_order(unsigned long size)
- 
- #endif	/* __ASSEMBLY__ */
- 
--#endif	/* _ASM_GENERIC_PAGE_H */
-+#endif	/* __ASM_GENERIC_GETORDER_H */
-diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess-unaligned.h
-similarity index 82%
-rename from include/asm-generic/uaccess.h
-rename to include/asm-generic/uaccess-unaligned.h
-index 549cb3a..67deb89 100644
---- a/include/asm-generic/uaccess.h
-+++ b/include/asm-generic/uaccess-unaligned.h
-@@ -1,5 +1,5 @@
--#ifndef _ASM_GENERIC_UACCESS_H_
--#define _ASM_GENERIC_UACCESS_H_
-+#ifndef __ASM_GENERIC_UACCESS_UNALIGNED_H
-+#define __ASM_GENERIC_UACCESS_UNALIGNED_H
- 
- /*
-  * This macro should be used instead of __get_user() when accessing
-@@ -23,4 +23,4 @@
- 	__copy_to_user((ptr), &__x, sizeof(*(ptr))) ? -EFAULT : 0;	\
- })
- 
--#endif /* _ASM_GENERIC_UACCESS_H */
-+#endif /* __ASM_GENERIC_UACCESS_UNALIGNED_H */
+diff --git a/include/asm-generic/bugs.h b/include/asm-generic/bugs.h
+new file mode 100644
+index 0000000..6c4f62e
+--- /dev/null
++++ b/include/asm-generic/bugs.h
+@@ -0,0 +1,10 @@
++#ifndef __ASM_GENERIC_BUGS_H
++#define __ASM_GENERIC_BUGS_H
++/*
++ * This file is included by 'init/main.c' to check for
++ * architecture-dependent bugs.
++ */
++
++static inline void check_bugs(void) { }
++
++#endif	/* __ASM_GENERIC_BUGS_H */
+diff --git a/include/asm-generic/current.h b/include/asm-generic/current.h
+new file mode 100644
+index 0000000..5e86f6a
+--- /dev/null
++++ b/include/asm-generic/current.h
+@@ -0,0 +1,9 @@
++#ifndef __ASM_GENERIC_CURRENT_H
++#define __ASM_GENERIC_CURRENT_H
++
++#include <linux/thread_info.h>
++
++#define get_current() (current_thread_info()->task)
++#define current get_current()
++
++#endif /* __ASM_GENERIC_CURRENT_H */
+diff --git a/include/asm-generic/delay.h b/include/asm-generic/delay.h
+new file mode 100644
+index 0000000..4586fec
+--- /dev/null
++++ b/include/asm-generic/delay.h
+@@ -0,0 +1,9 @@
++#ifndef __ASM_GENERIC_DELAY_H
++#define __ASM_GENERIC_DELAY_H
++
++extern void __udelay(unsigned long usecs);
++extern void __delay(unsigned long loops);
++
++#define udelay(n) __udelay(n)
++
++#endif /* __ASM_GENERIC_DELAY_H */
+diff --git a/include/asm-generic/fb.h b/include/asm-generic/fb.h
+new file mode 100644
+index 0000000..fe8ca7f
+--- /dev/null
++++ b/include/asm-generic/fb.h
+@@ -0,0 +1,12 @@
++#ifndef __ASM_GENERIC_FB_H_
++#define __ASM_GENERIC_FB_H_
++#include <linux/fb.h>
++
++#define fb_pgprotect(...) do {} while (0)
++
++static inline int fb_is_primary_device(struct fb_info *info)
++{
++	return 0;
++}
++
++#endif /* __ASM_GENERIC_FB_H_ */
+diff --git a/include/asm-generic/hardirq.h b/include/asm-generic/hardirq.h
+new file mode 100644
+index 0000000..3d5d2c9
+--- /dev/null
++++ b/include/asm-generic/hardirq.h
+@@ -0,0 +1,34 @@
++#ifndef __ASM_GENERIC_HARDIRQ_H
++#define __ASM_GENERIC_HARDIRQ_H
++
++#include <linux/cache.h>
++#include <linux/threads.h>
++#include <linux/irq.h>
++
++typedef struct {
++	unsigned long __softirq_pending;
++} ____cacheline_aligned irq_cpustat_t;
++
++#include <linux/irq_cpustat.h>	/* Standard mappings for irq_cpustat_t above */
++
++#ifndef HARDIRQ_BITS
++#define HARDIRQ_BITS	8
++#endif
++
++/*
++ * The hardirq mask has to be large enough to have
++ * space for potentially all IRQ sources in the system
++ * nesting on a single CPU:
++ */
++#if (1 << HARDIRQ_BITS) < NR_IRQS
++# error HARDIRQ_BITS is too low!
++#endif
++
++#ifndef ack_bad_irq
++static inline void ack_bad_irq(unsigned int irq)
++{
++	printk(KERN_CRIT "unexpected IRQ trap at vector %02x\n", irq);
++}
++#endif
++
++#endif /* __ASM_GENERIC_HARDIRQ_H */
+diff --git a/include/asm-generic/irq.h b/include/asm-generic/irq.h
+new file mode 100644
+index 0000000..b90ec0b
+--- /dev/null
++++ b/include/asm-generic/irq.h
+@@ -0,0 +1,18 @@
++#ifndef __ASM_GENERIC_IRQ_H
++#define __ASM_GENERIC_IRQ_H
++
++/*
++ * NR_IRQS is the upper bound of how many interrupts can be handled
++ * in the platform. It is used to size the static irq_map array,
++ * so don't make it too big.
++ */
++#ifndef NR_IRQS
++#define NR_IRQS 64
++#endif
++
++static inline int irq_canonicalize(int irq)
++{
++	return irq;
++}
++
++#endif /* __ASM_GENERIC_IRQ_H */
+diff --git a/include/asm-generic/irqflags.h b/include/asm-generic/irqflags.h
+new file mode 100644
+index 0000000..9aebf61
+--- /dev/null
++++ b/include/asm-generic/irqflags.h
+@@ -0,0 +1,72 @@
++#ifndef __ASM_GENERIC_IRQFLAGS_H
++#define __ASM_GENERIC_IRQFLAGS_H
++
++/*
++ * All architectures should implement at least the first two functions,
++ * usually inline assembly will be the best way.
++ */
++#ifndef RAW_IRQ_DISABLED
++#define RAW_IRQ_DISABLED 0
++#define RAW_IRQ_ENABLED 1
++#endif
++
++/* read interrupt enabled status */
++#ifndef __raw_local_save_flags
++unsigned long __raw_local_save_flags(void);
++#endif
++
++/* set interrupt enabled status */
++#ifndef raw_local_irq_restore
++void raw_local_irq_restore(unsigned long flags);
++#endif
++
++/* get status and disable interrupts */
++#ifndef __raw_local_irq_save
++static inline unsigned long __raw_local_irq_save(void)
++{
++	unsigned long flags;
++	flags = __raw_local_save_flags();
++	raw_local_irq_restore(RAW_IRQ_DISABLED);
++	return flags;
++}
++#endif
++
++/* test flags */
++#ifndef raw_irqs_disabled_flags
++static inline int raw_irqs_disabled_flags(unsigned long flags)
++{
++	return flags == RAW_IRQ_DISABLED;
++}
++#endif
++
++/* unconditionally enable interrupts */
++#ifndef raw_local_irq_enable
++static inline void raw_local_irq_enable(void)
++{
++	raw_local_irq_restore(RAW_IRQ_ENABLED);
++}
++#endif
++
++/* unconditionally disable interrupts */
++#ifndef raw_local_irq_disable
++static inline void raw_local_irq_disable(void)
++{
++	raw_local_irq_restore(RAW_IRQ_DISABLED);
++}
++#endif
++
++/* test hardware interrupt enable bit */
++#ifndef raw_irqs_disabled
++static inline int raw_irqs_disabled(void)
++{
++	return raw_irqs_disabled_flags(__raw_local_save_flags());
++}
++#endif
++
++#define raw_local_save_flags(flags) \
++	do { (flags) = __raw_local_save_flags(); } while (0)
++
++#define raw_local_irq_save(flags) \
++	do { (flags) = __raw_local_irq_save(); } while (0)
++
++#endif /* __ASM_GENERIC_IRQFLAGS_H */
+diff --git a/include/asm-generic/kmap_types.h b/include/asm-generic/kmap_types.h
+new file mode 100644
+index 0000000..36996bc
+--- /dev/null
++++ b/include/asm-generic/kmap_types.h
+@@ -0,0 +1,29 @@
++#ifndef __ASM_GENERIC_KMAP_TYPES_H
++#define __ASM_GENERIC_KMAP_TYPES_H
++
++#ifdef CONFIG_DEBUG_HIGHMEM
++# define D(n) __KM_FENCE_##n ,
++#else
++# define D(n)
++#endif
++
++enum km_type {
++D(0)	KM_BOUNCE_READ,
++D(1)	KM_SKB_SUNRPC_DATA,
++D(2)	KM_SKB_DATA_SOFTIRQ,
++D(3)	KM_USER0,
++D(4)	KM_USER1,
++D(5)	KM_BIO_SRC_IRQ,
++D(6)	KM_BIO_DST_IRQ,
++D(7)	KM_PTE0,
++D(8)	KM_PTE1,
++D(9)	KM_IRQ0,
++D(10)	KM_IRQ1,
++D(11)	KM_SOFTIRQ0,
++D(12)	KM_SOFTIRQ1,
++D(13)	KM_TYPE_NR
++};
++
++#undef D
++
++#endif /* __ASM_GENERIC_KMAP_TYPES_H */
+diff --git a/include/asm-generic/linkage.h b/include/asm-generic/linkage.h
+new file mode 100644
+index 0000000..fef7a01
+--- /dev/null
++++ b/include/asm-generic/linkage.h
+@@ -0,0 +1,8 @@
++#ifndef __ASM_GENERIC_LINKAGE_H
++#define __ASM_GENERIC_LINKAGE_H
++/*
++ * linux/linkage.h provides reasonable defaults.
++ * an architecture can override them by providing its own version.
++ */
++
++#endif /* __ASM_GENERIC_LINKAGE_H */
+diff --git a/include/asm-generic/module.h b/include/asm-generic/module.h
+new file mode 100644
+index 0000000..ed5b44d
+--- /dev/null
++++ b/include/asm-generic/module.h
+@@ -0,0 +1,22 @@
++#ifndef __ASM_GENERIC_MODULE_H
++#define __ASM_GENERIC_MODULE_H
++
++/*
++ * Many architectures just need a simple module
++ * loader without arch specific data.
++ */
++struct mod_arch_specific
++{
++};
++
++#ifdef CONFIG_64BIT
++#define Elf_Shdr Elf64_Shdr
++#define Elf_Sym Elf64_Sym
++#define Elf_Ehdr Elf64_Ehdr
++#else
++#define Elf_Shdr Elf32_Shdr
++#define Elf_Sym Elf32_Sym
++#define Elf_Ehdr Elf32_Ehdr
++#endif
++
++#endif /* __ASM_GENERIC_MODULE_H */
+diff --git a/include/asm-generic/mutex.h b/include/asm-generic/mutex.h
+new file mode 100644
+index 0000000..fe91ab5
+--- /dev/null
++++ b/include/asm-generic/mutex.h
+@@ -0,0 +1,9 @@
++#ifndef __ASM_GENERIC_MUTEX_H
++#define __ASM_GENERIC_MUTEX_H
++/*
++ * Pull in the generic implementation for the mutex fastpath,
++ * which is a reasonable default on many architectures.
++ */
++
++#include <asm-generic/mutex-dec.h>
++#endif /* __ASM_GENERIC_MUTEX_H */
+diff --git a/include/asm-generic/scatterlist.h b/include/asm-generic/scatterlist.h
+new file mode 100644
+index 0000000..8b94544
+--- /dev/null
++++ b/include/asm-generic/scatterlist.h
+@@ -0,0 +1,43 @@
++#ifndef __ASM_GENERIC_SCATTERLIST_H
++#define __ASM_GENERIC_SCATTERLIST_H
++
++#include <linux/types.h>
++
++struct scatterlist {
++#ifdef CONFIG_DEBUG_SG
++	unsigned long	sg_magic;
++#endif
++	unsigned long	page_link;
++	unsigned int	offset;
++	unsigned int	length;
++	dma_addr_t	dma_address;
++	unsigned int	dma_length;
++};
++
++/*
++ * These macros should be used after a dma_map_sg call has been done
++ * to get bus addresses of each of the SG entries and their lengths.
++ * You should only work with the number of sg entries pci_map_sg
++ * returns, or alternatively stop on the first sg_dma_len(sg) which
++ * is 0.
++ */
++#define sg_dma_address(sg)	((sg)->dma_address)
++#ifndef sg_dma_len
++/*
++ * Normally, you have an iommu on 64 bit machines, but not on 32 bit
++ * machines. Architectures that are differnt should override this.
++ */
++#if __BITS_PER_LONG == 64
++#define sg_dma_len(sg)		((sg)->dma_length)
++#else
++#define sg_dma_len(sg)		((sg)->length)
++#endif /* 64 bit */
++#endif /* sg_dma_len */
++
++#ifndef ISA_DMA_THRESHOLD
++#define ISA_DMA_THRESHOLD	(~0UL)
++#endif
++
++#define ARCH_HAS_SG_CHAIN
++
++#endif /* __ASM_GENERIC_SCATTERLIST_H */
+diff --git a/include/asm-generic/spinlock.h b/include/asm-generic/spinlock.h
+new file mode 100644
+index 0000000..1547a03
+--- /dev/null
++++ b/include/asm-generic/spinlock.h
+@@ -0,0 +1,11 @@
++#ifndef __ASM_GENERIC_SPINLOCK_H
++#define __ASM_GENERIC_SPINLOCK_H
++/*
++ * You need to implement asm/spinlock.h for SMP support. The generic
++ * version does not handle SMP.
++ */
++#ifdef CONFIG_SMP
++#error need an architecture specific asm/spinlock.h
++#endif
++
++#endif /* __ASM_GENERIC_SPINLOCK_H */
+diff --git a/include/asm-generic/string.h b/include/asm-generic/string.h
+new file mode 100644
+index 0000000..de5e020
+--- /dev/null
++++ b/include/asm-generic/string.h
+@@ -0,0 +1,10 @@
++#ifndef __ASM_GENERIC_STRING_H
++#define __ASM_GENERIC_STRING_H
++/*
++ * The kernel provides all required functions in lib/string.c
++ *
++ * Architectures probably want to provide at least their own optimized
++ * memcpy and memset functions though.
++ */
++
++#endif /* __ASM_GENERIC_STRING_H */
+diff --git a/include/asm-generic/syscalls.h b/include/asm-generic/syscalls.h
+new file mode 100644
+index 0000000..df84e3b
+--- /dev/null
++++ b/include/asm-generic/syscalls.h
+@@ -0,0 +1,60 @@
++#ifndef __ASM_GENERIC_SYSCALLS_H
++#define __ASM_GENERIC_SYSCALLS_H
++
++#include <linux/compiler.h>
++#include <linux/linkage.h>
++
++/*
++ * Calling conventions for these system calls can differ, so
++ * it's possible to override them.
++ */
++#ifndef sys_clone
++asmlinkage long sys_clone(unsigned long clone_flags, unsigned long newsp,
++			void __user *parent_tid, void __user *child_tid,
++			struct pt_regs *regs);
++#endif
++
++#ifndef sys_fork
++asmlinkage long sys_fork(struct pt_regs *regs);
++#endif
++
++#ifndef sys_vfork
++asmlinkage long sys_vfork(struct pt_regs *regs);
++#endif
++
++#ifndef sys_execve
++asmlinkage long sys_execve(char __user *filename, char __user * __user *argv,
++			char __user * __user *envp, struct pt_regs *regs);
++#endif
++
++#ifndef sys_mmap2
++asmlinkage long sys_mmap2(unsigned long addr, unsigned long len,
++			unsigned long prot, unsigned long flags,
++			unsigned long fd, unsigned long pgoff);
++#endif
++
++#ifndef sys_mmap
++asmlinkage long sys_mmap(unsigned long addr, unsigned long len,
++			unsigned long prot, unsigned long flags,
++			unsigned long fd, off_t pgoff);
++#endif
++
++#ifndef sys_sigaltstack
++asmlinkage long sys_sigaltstack(const stack_t __user *, stack_t __user *,
++			struct pt_regs *);
++#endif
++
++#ifndef sys_rt_sigreturn
++asmlinkage long sys_rt_sigreturn(struct pt_regs *regs);
++#endif
++
++#ifndef sys_rt_sigsuspend
++asmlinkage long sys_rt_sigsuspend(sigset_t __user *unewset, size_t sigsetsize);
++#endif
++
++#ifndef sys_rt_sigaction
++asmlinkage long sys_rt_sigaction(int sig, const struct sigaction __user *act,
++			 struct sigaction __user *oact, size_t sigsetsize);
++#endif
++
++#endif /* __ASM_GENERIC_SYSCALLS_H */
+diff --git a/include/asm-generic/system.h b/include/asm-generic/system.h
+new file mode 100644
+index 0000000..efa403b
+--- /dev/null
++++ b/include/asm-generic/system.h
+@@ -0,0 +1,161 @@
++/* Generic system definitions, based on MN10300 definitions.
++ *
++ * It should be possible to use these on really simple architectures,
++ * but it serves more as a starting point for new ports.
++ *
++ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
++ * Written by David Howells (dhowells@redhat.com)
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public Licence
++ * as published by the Free Software Foundation; either version
++ * 2 of the Licence, or (at your option) any later version.
++ */
++#ifndef __ASM_GENERIC_SYSTEM_H
++#define __ASM_GENERIC_SYSTEM_H
++
++#ifdef __KERNEL__
++#ifndef __ASSEMBLY__
++
++#include <linux/types.h>
++#include <linux/irqflags.h>
++
++#include <asm/cmpxchg-local.h>
++
++struct task_struct;
++
++/* context switching is now performed out-of-line in switch_to.S */
++extern struct task_struct *__switch_to(struct task_struct *,
++		struct task_struct *);
++#define switch_to(prev, next, last)					\
++	do {								\
++		((last) = __switch_to((prev), (next)));			\
++	} while (0)
++
++#define arch_align_stack(x) (x)
++
++#define nop() asm volatile ("nop")
++
++#endif /* !__ASSEMBLY__ */
++
++/*
++ * Force strict CPU ordering.
++ * And yes, this is required on UP too when we're talking
++ * to devices.
++ *
++ * This implementation only contains a compiler barrier.
++ */
++
++#define mb()	asm volatile ("": : :"memory")
++#define rmb()	mb()
++#define wmb()	asm volatile ("": : :"memory")
++
++#ifdef CONFIG_SMP
++#define smp_mb()	mb()
++#define smp_rmb()	rmb()
++#define smp_wmb()	wmb()
++#else
++#define smp_mb()	barrier()
++#define smp_rmb()	barrier()
++#define smp_wmb()	barrier()
++#endif
++
++#define set_mb(var, value)  do { var = value;  mb(); } while (0)
++#define set_wmb(var, value) do { var = value; wmb(); } while (0)
++
++#define read_barrier_depends()		do {} while (0)
++#define smp_read_barrier_depends()	do {} while (0)
++
++/*
++ * we make sure local_irq_enable() doesn't cause priority inversion
++ */
++#ifndef __ASSEMBLY__
++
++/* This function doesn't exist, so you'll get a linker error
++ *    if something tries to do an invalid xchg().  */
++extern void __xchg_called_with_bad_pointer(void);
++
++static inline
++unsigned long __xchg(unsigned long x, volatile void *ptr, int size)
++{
++	unsigned long ret, flags;
++
++	switch (size) {
++	case 1:
++#ifdef __xchg_u8
++		return __xchg_u8(x, ptr);
++#else
++		local_irq_save(flags);
++		ret = *(volatile u8 *)ptr;
++		*(volatile u8 *)ptr = x;
++		local_irq_restore(flags);
++		return ret;
++#endif /* __xchg_u8 */
++
++	case 2:
++#ifdef __xchg_u16
++		return __xchg_u16(x, ptr);
++#else
++		local_irq_save(flags);
++		ret = *(volatile u16 *)ptr;
++		*(volatile u16 *)ptr = x;
++		local_irq_restore(flags);
++		return ret;
++#endif /* __xchg_u16 */
++
++	case 4:
++#ifdef __xchg_u32
++		return __xchg_u32(x, ptr);
++#else
++		local_irq_save(flags);
++		ret = *(volatile u32 *)ptr;
++		*(volatile u32 *)ptr = x;
++		local_irq_restore(flags);
++		return ret;
++#endif /* __xchg_u32 */
++
++#ifdef CONFIG_64BIT
++	case 8:
++#ifdef __xchg_u64
++		return __xchg_u64(x, ptr);
++#else
++		local_irq_save(flags);
++		ret = *(volatile u64 *)ptr;
++		*(volatile u64 *)ptr = x;
++		local_irq_restore(flags);
++		return ret;
++#endif /* __xchg_u64 */
++#endif /* CONFIG_64BIT */
++
++	default:
++		__xchg_called_with_bad_pointer();
++		return x;
++	}
++}
++
++#define xchg(ptr, x) \
++	((__typeof__(*(ptr))) __xchg((unsigned long)(x), (ptr), sizeof(*(ptr))))
++
++static inline unsigned long __cmpxchg(volatile unsigned long *m,
++				      unsigned long old, unsigned long new)
++{
++	unsigned long retval;
++	unsigned long flags;
++
++	local_irq_save(flags);
++	retval = *m;
++	if (retval == old)
++		*m = new;
++	local_irq_restore(flags);
++	return retval;
++}
++
++#define cmpxchg(ptr, o, n)					\
++	((__typeof__(*(ptr))) __cmpxchg((unsigned long *)(ptr), \
++					(unsigned long)(o),	\
++					(unsigned long)(n)))
++
++#endif /* !__ASSEMBLY__ */
++
++#endif /* __KERNEL__ */
++#endif /* __ASM_GENERIC_SYSTEM_H */
+diff --git a/include/asm-generic/unaligned.h b/include/asm-generic/unaligned.h
+new file mode 100644
+index 0000000..03cf593
+--- /dev/null
++++ b/include/asm-generic/unaligned.h
+@@ -0,0 +1,30 @@
++#ifndef __ASM_GENERIC_UNALIGNED_H
++#define __ASM_GENERIC_UNALIGNED_H
++
++/*
++ * This is the most generic implementation of unaligned accesses
++ * and should work almost anywhere.
++ *
++ * If an architecture can handle unaligned accesses in hardware,
++ * it may want to use the linux/unaligned/access_ok.h implementation
++ * instead.
++ */
++#include <asm/byteorder.h>
++
++#if defined(__LITTLE_ENDIAN)
++# include <linux/unaligned/le_struct.h>
++# include <linux/unaligned/be_byteshift.h>
++# include <linux/unaligned/generic.h>
++# define get_unaligned	__get_unaligned_le
++# define put_unaligned	__put_unaligned_le
++#elif defined(__BIG_ENDIAN)
++# include <linux/unaligned/be_struct.h>
++# include <linux/unaligned/le_byteshift.h>
++# include <linux/unaligned/generic.h>
++# define get_unaligned	__get_unaligned_be
++# define put_unaligned	__put_unaligned_be
++#else
++# error need to define endianess
++#endif
++
++#endif /* __ASM_GENERIC_UNALIGNED_H */
+diff --git a/include/asm-generic/user.h b/include/asm-generic/user.h
+new file mode 100644
+index 0000000..8b9c3c9
+--- /dev/null
++++ b/include/asm-generic/user.h
+@@ -0,0 +1,8 @@
++#ifndef __ASM_GENERIC_USER_H
++#define __ASM_GENERIC_USER_H
++/*
++ * This file may define a 'struct user' structure. However, it it only
++ * used for a.out file, which are not supported on new architectures.
++ */
++
++#endif	/* __ASM_GENERIC_USER_H */
 -- 
 1.6.0.4
 
