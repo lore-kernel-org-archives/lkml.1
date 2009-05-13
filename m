@@ -1,32 +1,46 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755406AbZEMDFp (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Tue, 12 May 2009 23:05:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753723AbZEMDFO
+	id S1756184AbZEMHfr (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Wed, 13 May 2009 03:35:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756986AbZEMHfe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 23:05:14 -0400
-Received: from simmts7.bellnexxia.net ([206.47.199.165]:43931 "EHLO
-	simmts7-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752302AbZEMDFL convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 23:05:11 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AnUmAIfNCUrOL8eh/2dsb2JhbACBMCCMACaJcYYRgVuuKoIvgUAF
-X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
-X-Originating-IP: [41.219.150.85]
-From: Online News <giseles@ns.sympatico.ca>
-Reply-To: mrlouis@8u8.hk
-To: <info@winners.net>
-Subject: =?iso-8859-1?B?ozEsMDAwLDAwMC4wMA==?= GBP {+447035947598}
-Date: Tue, 12 May 2009 23:05:10 -0400
+	Wed, 13 May 2009 03:35:34 -0400
+Received: from rs-3.ultra-dns.co.uk ([209.62.109.210]:53616 "EHLO
+	rs-3.ultra-dns.co.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755417AbZEMHfd convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 03:35:33 -0400
+X-Greylist: delayed 399 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 May 2009 03:35:33 EDT
+Message-ID: <20090513082852.pwg8sjvf28gog8oo@webmail.mrvickery.com>
+Date: Wed, 13 May 2009 08:28:52 +0100
+From: British Tobacco Promotion <mrvickery@mrvickery.com>
+Reply-to: agtpauladams01@btinternet.com
+To: undisclosed-recipients:;
+Subject: **Winning Notification**
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain;
+	charset=ISO-8859-1;
+	DelSp="Yes";
+	format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 8BIT
-Message-Id: <20090513030512.FXAZ1679.simmts7-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
+User-Agent: Internet Messaging Program (IMP) H3 (4.1.4)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You were selected for the sum of  £1,000,000.00 GBP . Verify this mail immediately by sending in  your information. This will include your name, 
+You have been awarded the sum of £1,000.000.00 GBP in our tobacco draw, get
+back to us asap
 
-address, age, phone number etc to  mrlouis@8u8.hk
+Contact email: agtpauladams01@btinternet.com
+
+Names:............
+Address:..............
+Country:.................
+Age:..........
+Sex:..............
+Phone/cellphone........
+
+
+
+
 
