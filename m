@@ -1,61 +1,30 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762162AbZEMWpr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762099AbZEMWq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762162AbZEMWpr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 18:45:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761696AbZEMWok
+	id S1762099AbZEMWq2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 18:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761761AbZEMWot
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 18:44:40 -0400
-Received: from mail.pxnet.com ([195.227.45.7]:38976 "EHLO mail.pxnet.com"
+	Wed, 13 May 2009 18:44:49 -0400
+Received: from gimli.pxnet.com ([195.227.45.7]:38988 "EHLO mail.pxnet.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754942AbZEMWod (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 18:44:33 -0400
+	id S1760412AbZEMWoh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 18:44:37 -0400
 From: Tilman Schmidt <tilman@imap.cc>
+Subject: [PATCH 0/8] Gigaset driver bugfixes and cleanups
 To: davem@davemloft.net, linux-kernel@vger.kernel.org, netdev@vger.kernel.org
 CC: Hansjoerg Lipp <hjlipp@web.de>
-Message-ID: <20090514-patch-02.tilman@imap.cc>
-In-Reply-To: <20090514-patch-00.tilman@imap.cc>
-References: <20090514-patch-00.tilman@imap.cc>
-Subject: [PATCH 2/8] gigaset: fix possible oops in error handling
+Message-ID: <20090514-patch-00.tilman@imap.cc>
 Date: Thu, 14 May 2009 00:44:17 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Use pr_warning() / pr_err() instead of dev_warn() / dev_err() in two
-places where the dev pointer isn't guaranteed to be valid.
+Dave,
 
-Impact: error handling bugfix
-Signed-off-by: Tilman Schmidt <tilman@imap.cc>
----
- drivers/isdn/gigaset/interface.c |    3 +--
- drivers/isdn/gigaset/proc.c      |    2 +-
- 2 files changed, 2 insertions(+), 3 deletions(-)
+following are 8 small patches for the Gigaset driver I'd like to get
+out from under my feet. Nothing urgent, so if you feel they are
+inappropriate for merging that late in the 2.6.30 cycle they can as
+well wait for 2.6.31.
 
-diff --git a/drivers/isdn/gigaset/interface.c b/drivers/isdn/gigaset/interface.c
-index 820a309..5a8e259 100644
---- a/drivers/isdn/gigaset/interface.c
-+++ b/drivers/isdn/gigaset/interface.c
-@@ -599,8 +599,7 @@ void gigaset_if_init(struct cardstate *cs)
- 	if (!IS_ERR(cs->tty_dev))
- 		dev_set_drvdata(cs->tty_dev, cs);
- 	else {
--		dev_warn(cs->dev,
--			 "could not register device to the tty subsystem\n");
-+		pr_warning("could not register device to the tty subsystem\n");
- 		cs->tty_dev = NULL;
- 	}
- 	mutex_unlock(&cs->mutex);
-diff --git a/drivers/isdn/gigaset/proc.c b/drivers/isdn/gigaset/proc.c
-index da6f3ac..9715aad 100644
---- a/drivers/isdn/gigaset/proc.c
-+++ b/drivers/isdn/gigaset/proc.c
-@@ -79,5 +79,5 @@ void gigaset_init_dev_sysfs(struct cardstate *cs)
- 
- 	gig_dbg(DEBUG_INIT, "setting up sysfs");
- 	if (device_create_file(cs->tty_dev, &dev_attr_cidmode))
--		dev_err(cs->dev, "could not create sysfs attribute\n");
-+		pr_err("could not create sysfs attribute\n");
- }
--- 
-1.6.2.1.214.ge986c
-
+Thanks,
+Tilman
