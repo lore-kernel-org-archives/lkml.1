@@ -1,80 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761977AbZEMWCv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761613AbZEMWD1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761977AbZEMWCv (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 18:02:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761523AbZEMWCh
+	id S1761613AbZEMWD1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 18:03:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755271AbZEMWDR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 18:02:37 -0400
-Received: from vena.lwn.net ([206.168.112.25]:39908 "EHLO vena.lwn.net"
+	Wed, 13 May 2009 18:03:17 -0400
+Received: from hera.kernel.org ([140.211.167.34]:56685 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761543AbZEMWCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 18:02:36 -0400
-Date: Wed, 13 May 2009 16:02:35 -0600
-From: Jonathan Corbet <corbet@lwn.net>
-To: Wolfgang Grandegger <wg@grandegger.com>
-Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Sascha Hauer <s.hauer@pengutronix.de>,
-       Wolfgang Grandegger <wg@grandegger.com>,
-       Marc Kleine-Budde <mkl@pengutronix.de>,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Subject: Re: [PATCH v2 5/7] [PATCH 5/8] can: SJA1000 generic platform bus
- driver
-Message-ID: <20090513160235.5d2d281c@bike.lwn.net>
-In-Reply-To: <20090512092757.894204198@denx.de>
-References: <20090512092757.048938233@denx.de>
-	<20090512092757.894204198@denx.de>
-Organization: LWN.net
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+	id S1750760AbZEMWDR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 18:03:17 -0400
+Subject: [PATCH 2/2] x86: apic/apic.c native_apic_write_dummy() should be
+ static
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>,
+       Cyrill Gorcunov <gorcunov@gmail.com>
+In-Reply-To: <1242251841.3364.17.camel@localhost.localdomain>
+References: <1242251841.3364.17.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 14 May 2009 03:29:33 +0530
+Message-Id: <1242251973.3364.20.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8bit
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009 11:28:02 +0200
-Wolfgang Grandegger <wg@grandegger.com> wrote:
 
-> This driver adds support for the SJA1000 chips connected to the
-> "platform bus", which can be found on various embedded systems.
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kernel/apic/apic.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-[...]
+diff --git a/arch/x86/kernel/apic/apic.c b/arch/x86/kernel/apic/apic.c
+index d6d4ffd..966783b 100644
+--- a/arch/x86/kernel/apic/apic.c
++++ b/arch/x86/kernel/apic/apic.c
+@@ -243,7 +243,7 @@ static int modern_apic(void)
+  * bare function to substitute write operation
+  * and it's _that_ fast :)
+  */
+-void native_apic_write_dummy(u32 reg, u32 v)
++static void native_apic_write_dummy(u32 reg, u32 v)
+ {
+ 	WARN_ON_ONCE((cpu_has_apic || !disable_apic));
+ }
+-- 
+1.6.0.6
 
-> +
-> +static u8 sp_read_reg(const struct net_device *dev, int reg)
-> +{
-> +	return ioread8((void __iomem *)(dev->base_addr + reg));
-> +}
-> +
-> +static void sp_write_reg(const struct net_device *dev, int reg, u8 val)
-> +{
-> +	iowrite8(val, (void __iomem *)(dev->base_addr + reg));
-> +}
 
-So there's no locking around accesses to the hardware at all.  How do you
-protect against concurrent access?
 
-[...]
-
-> +static int sp_remove(struct platform_device *pdev)
-> +{
-> +	struct net_device *dev = dev_get_drvdata(&pdev->dev);
-> +	struct resource *res;
-> +
-> +	unregister_sja1000dev(dev);
-> +	dev_set_drvdata(&pdev->dev, NULL);
-> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-> +	release_mem_region(res->start, res->end - res->start + 1);
-> +
-> +	if (dev->base_addr)
-> +		iounmap((void __iomem *)dev->base_addr);
-
-Seems like you should unmap it before releasing it back to the kernel.
-Nobody else is ever going to jump in and try to map it, but still...
-
-> +	free_sja1000dev(dev);
-> +
-> +	return 0;
-> +}
-
-jon
