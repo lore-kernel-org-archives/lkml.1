@@ -1,83 +1,264 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761683AbZEMW5Q@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761411AbZEMW5m@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761683AbZEMW5Q (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 18:57:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753514AbZEMW4s
+	id S1761411AbZEMW5m (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 18:57:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758764AbZEMW4u
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 18:56:48 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:51308 "EHLO
+	Wed, 13 May 2009 18:56:50 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:59249 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbZEMW4q (ORCPT
+	with ESMTP id S1751199AbZEMW4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 13 May 2009 18:56:46 -0400
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-arch@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
-       Remis Lima Baima <remis.developer@googlemail.com>
-Subject: [PATCH 02/15] asm-generic: introduce asm/bitsperlong.h
-Date: Wed, 13 May 2009 22:56:25 +0000
-Message-Id: <1242255398-23779-3-git-send-email-arnd@arndb.de>
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Michal Simek <monstr@monstr.eu>, Chen Liqin <liqin.chen@sunplusct.com>
+Subject: [PATCH 00/16] asm-generic headers, v4
+Date: Wed, 13 May 2009 22:56:23 +0000
+Message-Id: <1242255398-23779-1-git-send-email-arnd@arndb.de>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1242255398-23779-1-git-send-email-arnd@arndb.de>
-References: <1242255398-23779-1-git-send-email-arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1+aeDpmLeVPcnKOY1+V1ZeOErT0BpDPabECcCh
- 2ylVnAqxpuTwiiazjWHuWPrUygs5M9oJIMdTOZId8WQ4Lfy/um
- oZbybqxGQLoOnUUBCy3hQ==
+X-Provags-ID: V01U2FsdGVkX18dP1wT4V4WULVBJxilTTZ4pVij2nagUaREA8I
+ UwJSnHmr3V4RdP8JnlvX6OGwMqN9yOkyL6Nm9zy6f1OJehU6OH
+ lljy5SElzE6v2hbX0TPkw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This provides a reliable way for asm-generic/types.h and other
-files to find out if it is running on a 32 or 64 bit platform.
+This is the complete set of new asm-generic header files,
+with all the comments that I have received addressed.
+I'd like to merge this early in the 2.6.31 cycle, so
+that the and score architecture port can use it
+right away and microblaze can convert early.
 
-We cannot use CONFIG_64BIT for this in headers that are included
-from user space because CONFIG symbols are not available there.
-We also cannot do it inside of asm/types.h because some headers
-need the word size but cannot include types.h.
+I have kept the changes to existing architectures
+to the bare minimum here, but have separate changesets
+for microblaze and x86 to remove all arch specific
+header files that become obsolete after adding generic
+versions.
 
-The solution is to introduce a new header <asm/bitsperlong.h>
-that defines both __BITS_PER_LONG for user space and
-BITS_PER_LONG for usage in the kernel. The asm-generic
-version falls back to 32 bit unless the architecture overrides
-it, which I did for all 64 bit platforms.
+Stephen, can you add
+git.kernel.org/pub/scm/linux/kernel/git/arnd/asm-generic next
+to linux-next?
 
-Signed-off-by: Remis Lima Baima <remis.developer@googlemail.com>
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Should this go to Linus directly, or does anyone already
+maintain a tree to collect changes this this area?
+
+Thanks everone for the comments so far, I hope I'm getting
+close to a mergeable state now. I'm starting to use
+git-send-email now as well, hopefully this will be the
+end of screwed-up email headers for me.
+
+	Arnd <><
+
 ---
- arch/alpha/include/asm/bitsperlong.h      |    8 +++++++
- arch/alpha/include/asm/types.h            |    3 --
- arch/arm/include/asm/bitsperlong.h        |    1 +
- arch/avr32/include/asm/bitsperlong.h      |    1 +
- arch/blackfin/include/asm/bitsperlong.h   |    1 +
- arch/cris/include/asm/bitsperlong.h       |    1 +
- arch/frv/include/asm/bitsperlong.h        |    1 +
- arch/h8300/include/asm/bitsperlong.h      |    1 +
- arch/ia64/include/asm/bitsperlong.h       |    8 +++++++
- arch/ia64/include/asm/types.h             |    7 ------
- arch/m32r/include/asm/bitsperlong.h       |    1 +
- arch/m68k/include/asm/bitsperlong.h       |    1 +
- arch/microblaze/include/asm/bitsperlong.h |    1 +
- arch/mips/include/asm/bitsperlong.h       |    8 +++++++
- arch/mips/include/asm/types.h             |    3 --
- arch/mn10300/include/asm/bitsperlong.h    |    1 +
- arch/parisc/include/asm/bitsperlong.h     |   20 ++++++++++++++++++
- arch/parisc/include/asm/types.h           |    8 -------
- arch/powerpc/include/asm/bitsperlong.h    |   12 ++++++++++
- arch/powerpc/include/asm/types.h          |    9 --------
- arch/s390/include/asm/bitsperlong.h       |   13 +++++++++++
- arch/s390/include/asm/types.h             |    6 -----
- arch/sh/include/asm/bitsperlong.h         |    1 +
- arch/sparc/include/asm/bitsperlong.h      |   13 +++++++++++
- arch/sparc/include/asm/types.h            |    4 ---
- arch/x86/include/asm/bitsperlong.h        |   13 +++++++++++
- arch/x86/include/asm/types.h              |    6 -----
- arch/xtensa/include/asm/bitsperlong.h     |    1 +
- include/asm-generic/Kbuild                |    1 +
- include/asm-generic/Kbuild.asm            |    1 +
- include/asm-generic/bitsperlong.h         |   32 +++++++++++++++++++++++++++++
- include/asm-generic/int-l64.h             |    2 +
- include/asm-generic/int-ll64.h            |    2 +
- 33 files changed, 145 insertions(+), 46 deletions(-)
+
+  asm-generic: rename termios.h, signal.h and mman.h
+  asm-generic: introduce asm/bitsperlong.h
+  asm-generic: add generic sysv ipc headers
+  asm-generic: add generic ABI headers
+  asm-generic: add a generic unistd.h
+  asm-generic: rename atomic.h to atomic-long.h
+  asm-generic: rename page.h and uaccess.h
+  asm-generic: make pci.h usable directly
+  asm-generic: make bitops.h usable
+  asm-generic: add generic versions of common headers
+  asm-generic: add legacy I/O header files
+  asm-generic: add generic atomic.h and io.h
+  asm-generic: add generic NOMMU versions of some headers
+  asm-generic: add a generic uaccess.h
+  asm-generic: Add missing generic tlb_flush definition
+  add generic lib/checksum.c
+
+ arch/alpha/include/asm/atomic.h                    |    2 +-
+ arch/alpha/include/asm/bitsperlong.h               |    8 +
+ arch/alpha/include/asm/page.h                      |    2 +-
+ arch/alpha/include/asm/signal.h                    |    2 +-
+ arch/alpha/include/asm/types.h                     |    3 -
+ arch/arm/include/asm/atomic.h                      |    2 +-
+ arch/arm/include/asm/bitsperlong.h                 |    1 +
+ arch/arm/include/asm/mman.h                        |    2 +-
+ arch/arm/include/asm/page.h                        |    2 +-
+ arch/arm/include/asm/signal.h                      |    2 +-
+ arch/avr32/include/asm/atomic.h                    |    2 +-
+ arch/avr32/include/asm/bitsperlong.h               |    1 +
+ arch/avr32/include/asm/mman.h                      |    2 +-
+ arch/avr32/include/asm/signal.h                    |    2 +-
+ arch/avr32/include/asm/termios.h                   |    2 +-
+ arch/blackfin/include/asm/atomic.h                 |    2 +-
+ arch/blackfin/include/asm/bitsperlong.h            |    1 +
+ arch/blackfin/include/asm/page.h                   |    2 +-
+ arch/blackfin/include/asm/signal.h                 |    2 +-
+ arch/cris/include/asm/atomic.h                     |    2 +-
+ arch/cris/include/asm/bitsperlong.h                |    1 +
+ arch/cris/include/asm/mman.h                       |    2 +-
+ arch/cris/include/asm/page.h                       |    2 +-
+ arch/cris/include/asm/signal.h                     |    2 +-
+ arch/frv/include/asm/atomic.h                      |    2 +-
+ arch/frv/include/asm/bitsperlong.h                 |    1 +
+ arch/frv/include/asm/mman.h                        |    2 +-
+ arch/frv/include/asm/page.h                        |    2 +-
+ arch/frv/include/asm/pci.h                         |   13 +-
+ arch/frv/include/asm/termios.h                     |    2 +-
+ arch/h8300/include/asm/atomic.h                    |    2 +-
+ arch/h8300/include/asm/bitsperlong.h               |    1 +
+ arch/h8300/include/asm/mman.h                      |    2 +-
+ arch/h8300/include/asm/page.h                      |    2 +-
+ arch/h8300/include/asm/signal.h                    |    2 +-
+ arch/ia64/include/asm/atomic.h                     |    2 +-
+ arch/ia64/include/asm/bitsperlong.h                |    8 +
+ arch/ia64/include/asm/mman.h                       |    2 +-
+ arch/ia64/include/asm/signal.h                     |    2 +-
+ arch/ia64/include/asm/types.h                      |    7 -
+ arch/m32r/include/asm/atomic.h                     |    2 +-
+ arch/m32r/include/asm/bitsperlong.h                |    1 +
+ arch/m32r/include/asm/mman.h                       |    2 +-
+ arch/m32r/include/asm/page.h                       |    2 +-
+ arch/m32r/include/asm/pci.h                        |    2 -
+ arch/m32r/include/asm/signal.h                     |    2 +-
+ arch/m68k/include/asm/atomic_mm.h                  |    2 +-
+ arch/m68k/include/asm/atomic_no.h                  |    2 +-
+ arch/m68k/include/asm/bitsperlong.h                |    1 +
+ arch/m68k/include/asm/mman.h                       |    2 +-
+ arch/m68k/include/asm/page_mm.h                    |    2 +-
+ arch/m68k/include/asm/page_no.h                    |    2 +-
+ arch/m68k/include/asm/signal.h                     |    2 +-
+ arch/microblaze/include/asm/atomic.h               |    2 +-
+ arch/microblaze/include/asm/bitsperlong.h          |    1 +
+ arch/microblaze/include/asm/page.h                 |    2 +-
+ arch/microblaze/include/asm/signal.h               |    2 +-
+ arch/microblaze/include/asm/termios.h              |    2 +-
+ arch/mips/include/asm/atomic.h                     |    2 +-
+ arch/mips/include/asm/bitsperlong.h                |    8 +
+ arch/mips/include/asm/page.h                       |    2 +-
+ arch/mips/include/asm/signal.h                     |    2 +-
+ arch/mips/include/asm/types.h                      |    3 -
+ arch/mn10300/include/asm/atomic.h                  |    2 +-
+ arch/mn10300/include/asm/bitsperlong.h             |    1 +
+ arch/mn10300/include/asm/mman.h                    |    2 +-
+ arch/mn10300/include/asm/signal.h                  |    2 +-
+ arch/parisc/include/asm/atomic.h                   |    2 +-
+ arch/parisc/include/asm/bitsperlong.h              |   20 +
+ arch/parisc/include/asm/page.h                     |    2 +-
+ arch/parisc/include/asm/types.h                    |    8 -
+ arch/parisc/include/asm/uaccess.h                  |    2 +-
+ arch/powerpc/include/asm/atomic.h                  |    2 +-
+ arch/powerpc/include/asm/bitsperlong.h             |   12 +
+ arch/powerpc/include/asm/mman.h                    |    2 +-
+ arch/powerpc/include/asm/page_32.h                 |    2 +-
+ arch/powerpc/include/asm/page_64.h                 |    2 +-
+ arch/powerpc/include/asm/signal.h                  |    2 +-
+ arch/powerpc/include/asm/termios.h                 |    2 +-
+ arch/powerpc/include/asm/types.h                   |    9 -
+ arch/s390/include/asm/atomic.h                     |    2 +-
+ arch/s390/include/asm/bitsperlong.h                |   13 +
+ arch/s390/include/asm/mman.h                       |    2 +-
+ arch/s390/include/asm/page.h                       |    2 +-
+ arch/s390/include/asm/signal.h                     |    2 +-
+ arch/s390/include/asm/termios.h                    |    2 +-
+ arch/s390/include/asm/types.h                      |    6 -
+ arch/sh/include/asm/atomic.h                       |    2 +-
+ arch/sh/include/asm/bitsperlong.h                  |    1 +
+ arch/sh/include/asm/mman.h                         |    2 +-
+ arch/sh/include/asm/page.h                         |    2 +-
+ arch/sh/include/asm/signal.h                       |    2 +-
+ arch/sparc/include/asm/atomic_32.h                 |    2 +-
+ arch/sparc/include/asm/atomic_64.h                 |    2 +-
+ arch/sparc/include/asm/bitsperlong.h               |   13 +
+ arch/sparc/include/asm/mman.h                      |    2 +-
+ arch/sparc/include/asm/page_32.h                   |    2 +-
+ arch/sparc/include/asm/page_64.h                   |    2 +-
+ arch/sparc/include/asm/signal.h                    |    2 +-
+ arch/sparc/include/asm/types.h                     |    4 -
+ arch/sparc/include/asm/uaccess_64.h                |    2 +-
+ arch/um/include/asm/page.h                         |    2 +-
+ arch/x86/include/asm/atomic_32.h                   |    2 +-
+ arch/x86/include/asm/atomic_64.h                   |    2 +-
+ arch/x86/include/asm/bitsperlong.h                 |   13 +
+ arch/x86/include/asm/mman.h                        |    2 +-
+ arch/x86/include/asm/page.h                        |    2 +-
+ arch/x86/include/asm/signal.h                      |    2 +-
+ arch/x86/include/asm/types.h                       |    6 -
+ arch/xtensa/include/asm/atomic.h                   |    2 +-
+ arch/xtensa/include/asm/bitsperlong.h              |    1 +
+ arch/xtensa/include/asm/page.h                     |    2 +-
+ include/asm-generic/Kbuild                         |   22 +
+ include/asm-generic/Kbuild.asm                     |    1 +
+ include/asm-generic/{atomic.h => atomic-long.h}    |    6 +-
+ include/asm-generic/atomic.h                       |  423 ++++------
+ include/asm-generic/auxvec.h                       |    8 +
+ include/asm-generic/bitops.h                       |   24 +-
+ include/asm-generic/bitops/atomic.h                |    1 +
+ include/asm-generic/bitsperlong.h                  |   32 +
+ include/asm-generic/bugs.h                         |   10 +
+ include/asm-generic/cache.h                        |   12 +
+ include/asm-generic/cacheflush.h                   |   30 +
+ include/asm-generic/checksum.h                     |   79 ++
+ include/asm-generic/current.h                      |    9 +
+ include/asm-generic/delay.h                        |    9 +
+ include/asm-generic/dma.h                          |   15 +
+ include/asm-generic/fb.h                           |   12 +
+ include/asm-generic/{page.h => getorder.h}         |    8 +-
+ include/asm-generic/hardirq.h                      |   34 +
+ include/asm-generic/hw_irq.h                       |    9 +
+ include/asm-generic/int-l64.h                      |    2 +
+ include/asm-generic/int-ll64.h                     |    2 +
+ include/asm-generic/io.h                           |  300 +++++++
+ include/asm-generic/ioctls.h                       |  110 +++
+ include/asm-generic/ipcbuf.h                       |   33 +
+ include/asm-generic/irq.h                          |   18 +
+ include/asm-generic/irqflags.h                     |   72 ++
+ include/asm-generic/kmap_types.h                   |   29 +
+ include/asm-generic/linkage.h                      |    8 +
+ include/asm-generic/{mman.h => mman-common.h}      |    6 +-
+ include/asm-generic/mman.h                         |   59 +-
+ include/asm-generic/mmu.h                          |   15 +
+ include/asm-generic/mmu_context.h                  |   45 +
+ include/asm-generic/module.h                       |   22 +
+ include/asm-generic/msgbuf.h                       |   47 ++
+ include/asm-generic/mutex.h                        |    9 +
+ include/asm-generic/page.h                         |  123 +++-
+ include/asm-generic/param.h                        |   24 +
+ include/asm-generic/parport.h                      |   23 +
+ include/asm-generic/pci.h                          |    8 +
+ include/asm-generic/pgalloc.h                      |   12 +
+ include/asm-generic/posix_types.h                  |  165 ++++
+ include/asm-generic/scatterlist.h                  |   43 +
+ include/asm-generic/segment.h                      |    9 +
+ include/asm-generic/sembuf.h                       |   38 +
+ include/asm-generic/serial.h                       |   13 +
+ include/asm-generic/setup.h                        |    6 +
+ include/asm-generic/shmbuf.h                       |   59 ++
+ include/asm-generic/shmparam.h                     |    6 +
+ include/asm-generic/{signal.h => signal-defs.h}    |    6 +-
+ include/asm-generic/signal.h                       |  159 +++-
+ include/asm-generic/socket.h                       |   60 ++
+ include/asm-generic/sockios.h                      |   13 +
+ include/asm-generic/spinlock.h                     |   11 +
+ include/asm-generic/stat.h                         |   72 ++
+ include/asm-generic/string.h                       |   10 +
+ include/asm-generic/swab.h                         |   18 +
+ include/asm-generic/syscalls.h                     |   60 ++
+ include/asm-generic/system.h                       |  161 ++++
+ include/asm-generic/termbits.h                     |  198 +++++
+ include/asm-generic/termios-base.h                 |   77 ++
+ include/asm-generic/termios.h                      |  105 +++-
+ include/asm-generic/timex.h                        |   22 +
+ include/asm-generic/tlb.h                          |    4 +
+ include/asm-generic/tlbflush.h                     |   18 +
+ include/asm-generic/types.h                        |   42 +
+ .../asm-generic/{uaccess.h => uaccess-unaligned.h} |    6 +-
+ include/asm-generic/uaccess.h                      |  351 ++++++++-
+ include/asm-generic/ucontext.h                     |   12 +
+ include/asm-generic/unaligned.h                    |   30 +
+ include/asm-generic/unistd.h                       |  854 ++++++++++++++++++++
+ include/asm-generic/user.h                         |    8 +
+ include/asm-generic/vga.h                          |   24 +
+ lib/Makefile                                       |    2 +
+ lib/checksum.c                                     |  193 +++++
+ scripts/checksyscalls.sh                           |   92 ++-
+ 187 files changed, 4434 insertions(+), 556 deletions(-)
  create mode 100644 arch/alpha/include/asm/bitsperlong.h
  create mode 100644 arch/arm/include/asm/bitsperlong.h
  create mode 100644 arch/avr32/include/asm/bitsperlong.h
@@ -98,469 +279,68 @@ Signed-off-by: Arnd Bergmann <arnd@arndb.de>
  create mode 100644 arch/sparc/include/asm/bitsperlong.h
  create mode 100644 arch/x86/include/asm/bitsperlong.h
  create mode 100644 arch/xtensa/include/asm/bitsperlong.h
+ rename include/asm-generic/{atomic.h => atomic-long.h} (97%)
+ rewrite include/asm-generic/atomic.h (98%)
+ create mode 100644 include/asm-generic/auxvec.h
  create mode 100644 include/asm-generic/bitsperlong.h
-
-diff --git a/arch/alpha/include/asm/bitsperlong.h b/arch/alpha/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..ad57f78
---- /dev/null
-+++ b/arch/alpha/include/asm/bitsperlong.h
-@@ -0,0 +1,8 @@
-+#ifndef __ASM_ALPHA_BITSPERLONG_H
-+#define __ASM_ALPHA_BITSPERLONG_H
-+
-+#define __BITS_PER_LONG 64
-+
-+#include <asm-generic/bitsperlong.h>
-+
-+#endif /* __ASM_ALPHA_BITSPERLONG_H */
-diff --git a/arch/alpha/include/asm/types.h b/arch/alpha/include/asm/types.h
-index f072f34..bd621ec 100644
---- a/arch/alpha/include/asm/types.h
-+++ b/arch/alpha/include/asm/types.h
-@@ -25,9 +25,6 @@ typedef unsigned int umode_t;
-  * These aren't exported outside the kernel to avoid name space clashes
-  */
- #ifdef __KERNEL__
--
--#define BITS_PER_LONG 64
--
- #ifndef __ASSEMBLY__
- 
- typedef u64 dma_addr_t;
-diff --git a/arch/arm/include/asm/bitsperlong.h b/arch/arm/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..6dc0bb0
---- /dev/null
-+++ b/arch/arm/include/asm/bitsperlong.h
-@@ -0,0 +1 @@
-+#include <asm-generic/bitsperlong.h>
-diff --git a/arch/avr32/include/asm/bitsperlong.h b/arch/avr32/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..6dc0bb0
---- /dev/null
-+++ b/arch/avr32/include/asm/bitsperlong.h
-@@ -0,0 +1 @@
-+#include <asm-generic/bitsperlong.h>
-diff --git a/arch/blackfin/include/asm/bitsperlong.h b/arch/blackfin/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..6dc0bb0
---- /dev/null
-+++ b/arch/blackfin/include/asm/bitsperlong.h
-@@ -0,0 +1 @@
-+#include <asm-generic/bitsperlong.h>
-diff --git a/arch/cris/include/asm/bitsperlong.h b/arch/cris/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..6dc0bb0
---- /dev/null
-+++ b/arch/cris/include/asm/bitsperlong.h
-@@ -0,0 +1 @@
-+#include <asm-generic/bitsperlong.h>
-diff --git a/arch/frv/include/asm/bitsperlong.h b/arch/frv/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..6dc0bb0
---- /dev/null
-+++ b/arch/frv/include/asm/bitsperlong.h
-@@ -0,0 +1 @@
-+#include <asm-generic/bitsperlong.h>
-diff --git a/arch/h8300/include/asm/bitsperlong.h b/arch/h8300/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..6dc0bb0
---- /dev/null
-+++ b/arch/h8300/include/asm/bitsperlong.h
-@@ -0,0 +1 @@
-+#include <asm-generic/bitsperlong.h>
-diff --git a/arch/ia64/include/asm/bitsperlong.h b/arch/ia64/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..ec4db3c
---- /dev/null
-+++ b/arch/ia64/include/asm/bitsperlong.h
-@@ -0,0 +1,8 @@
-+#ifndef __ASM_IA64_BITSPERLONG_H
-+#define __ASM_IA64_BITSPERLONG_H
-+
-+#define __BITS_PER_LONG 64
-+
-+#include <asm-generic/bitsperlong.h>
-+
-+#endif /* __ASM_IA64_BITSPERLONG_H */
-diff --git a/arch/ia64/include/asm/types.h b/arch/ia64/include/asm/types.h
-index e36b371..fbf1ed3 100644
---- a/arch/ia64/include/asm/types.h
-+++ b/arch/ia64/include/asm/types.h
-@@ -19,10 +19,6 @@
- # define __IA64_UL(x)		(x)
- # define __IA64_UL_CONST(x)	x
- 
--# ifdef __KERNEL__
--#  define BITS_PER_LONG 64
--# endif
--
- #else
- # define __IA64_UL(x)		((unsigned long)(x))
- # define __IA64_UL_CONST(x)	x##UL
-@@ -34,10 +30,7 @@ typedef unsigned int umode_t;
-  */
- # ifdef __KERNEL__
- 
--#define BITS_PER_LONG 64
--
- /* DMA addresses are 64-bits wide, in general.  */
--
- typedef u64 dma_addr_t;
- 
- # endif /* __KERNEL__ */
-diff --git a/arch/m32r/include/asm/bitsperlong.h b/arch/m32r/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..6dc0bb0
---- /dev/null
-+++ b/arch/m32r/include/asm/bitsperlong.h
-@@ -0,0 +1 @@
-+#include <asm-generic/bitsperlong.h>
-diff --git a/arch/m68k/include/asm/bitsperlong.h b/arch/m68k/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..6dc0bb0
---- /dev/null
-+++ b/arch/m68k/include/asm/bitsperlong.h
-@@ -0,0 +1 @@
-+#include <asm-generic/bitsperlong.h>
-diff --git a/arch/microblaze/include/asm/bitsperlong.h b/arch/microblaze/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..6dc0bb0
---- /dev/null
-+++ b/arch/microblaze/include/asm/bitsperlong.h
-@@ -0,0 +1 @@
-+#include <asm-generic/bitsperlong.h>
-diff --git a/arch/mips/include/asm/bitsperlong.h b/arch/mips/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..3e4c10a
---- /dev/null
-+++ b/arch/mips/include/asm/bitsperlong.h
-@@ -0,0 +1,8 @@
-+#ifndef __ASM_MIPS_BITSPERLONG_H
-+#define __ASM_MIPS_BITSPERLONG_H
-+
-+#define __BITS_PER_LONG _MIPS_SZLONG
-+
-+#include <asm-generic/bitsperlong.h>
-+
-+#endif /* __ASM_MIPS_BITSPERLONG_H */
-diff --git a/arch/mips/include/asm/types.h b/arch/mips/include/asm/types.h
-index 7956e69..544a285 100644
---- a/arch/mips/include/asm/types.h
-+++ b/arch/mips/include/asm/types.h
-@@ -31,9 +31,6 @@ typedef unsigned short umode_t;
-  * These aren't exported outside the kernel to avoid name space clashes
-  */
- #ifdef __KERNEL__
--
--#define BITS_PER_LONG _MIPS_SZLONG
--
- #ifndef __ASSEMBLY__
- 
- #if (defined(CONFIG_HIGHMEM) && defined(CONFIG_64BIT_PHYS_ADDR)) \
-diff --git a/arch/mn10300/include/asm/bitsperlong.h b/arch/mn10300/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..6dc0bb0
---- /dev/null
-+++ b/arch/mn10300/include/asm/bitsperlong.h
-@@ -0,0 +1 @@
-+#include <asm-generic/bitsperlong.h>
-diff --git a/arch/parisc/include/asm/bitsperlong.h b/arch/parisc/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..75196b4
---- /dev/null
-+++ b/arch/parisc/include/asm/bitsperlong.h
-@@ -0,0 +1,20 @@
-+#ifndef __ASM_PARISC_BITSPERLONG_H
-+#define __ASM_PARISC_BITSPERLONG_H
-+
-+/*
-+ * using CONFIG_* outside of __KERNEL__ is wrong,
-+ * __LP64__ was also removed from headers, so what
-+ * is the right approach on parisc?
-+ *	-arnd
-+ */
-+#if (defined(__KERNEL__) && defined(CONFIG_64BIT)) || defined (__LP64__)
-+#define __BITS_PER_LONG 64
-+#define SHIFT_PER_LONG 6
-+#else
-+#define __BITS_PER_LONG 32
-+#define SHIFT_PER_LONG 5
-+#endif
-+
-+#include <asm-generic/bitsperlong.h>
-+
-+#endif /* __ASM_PARISC_BITSPERLONG_H */
-diff --git a/arch/parisc/include/asm/types.h b/arch/parisc/include/asm/types.h
-index 7f5a39b..20135cc 100644
---- a/arch/parisc/include/asm/types.h
-+++ b/arch/parisc/include/asm/types.h
-@@ -14,14 +14,6 @@ typedef unsigned short umode_t;
-  */
- #ifdef __KERNEL__
- 
--#ifdef CONFIG_64BIT
--#define BITS_PER_LONG 64
--#define SHIFT_PER_LONG 6
--#else
--#define BITS_PER_LONG 32
--#define SHIFT_PER_LONG 5
--#endif
--
- #ifndef __ASSEMBLY__
- 
- /* Dma addresses are 32-bits wide.  */
-diff --git a/arch/powerpc/include/asm/bitsperlong.h b/arch/powerpc/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..5f16590
---- /dev/null
-+++ b/arch/powerpc/include/asm/bitsperlong.h
-@@ -0,0 +1,12 @@
-+#ifndef __ASM_POWERPC_BITSPERLONG_H
-+#define __ASM_POWERPC_BITSPERLONG_H
-+
-+#if defined(__powerpc64__)
-+# define __BITS_PER_LONG 64
-+#else
-+# define __BITS_PER_LONG 32
-+#endif
-+
-+#include <asm-generic/bitsperlong.h>
-+
-+#endif /* __ASM_POWERPC_BITSPERLONG_H */
-diff --git a/arch/powerpc/include/asm/types.h b/arch/powerpc/include/asm/types.h
-index 7ce27a5..a5aea0c 100644
---- a/arch/powerpc/include/asm/types.h
-+++ b/arch/powerpc/include/asm/types.h
-@@ -40,15 +40,6 @@ typedef struct {
- #endif /* __ASSEMBLY__ */
- 
- #ifdef __KERNEL__
--/*
-- * These aren't exported outside the kernel to avoid name space clashes
-- */
--#ifdef __powerpc64__
--#define BITS_PER_LONG 64
--#else
--#define BITS_PER_LONG 32
--#endif
--
- #ifndef __ASSEMBLY__
- 
- typedef __vector128 vector128;
-diff --git a/arch/s390/include/asm/bitsperlong.h b/arch/s390/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..6b235ae
---- /dev/null
-+++ b/arch/s390/include/asm/bitsperlong.h
-@@ -0,0 +1,13 @@
-+#ifndef __ASM_S390_BITSPERLONG_H
-+#define __ASM_S390_BITSPERLONG_H
-+
-+#ifndef __s390x__
-+#define __BITS_PER_LONG 32
-+#else
-+#define __BITS_PER_LONG 64
-+#endif
-+
-+#include <asm-generic/bitsperlong.h>
-+
-+#endif /* __ASM_S390_BITSPERLONG_H */
-+
-diff --git a/arch/s390/include/asm/types.h b/arch/s390/include/asm/types.h
-index 3dc3fc2..04d6b95 100644
---- a/arch/s390/include/asm/types.h
-+++ b/arch/s390/include/asm/types.h
-@@ -28,12 +28,6 @@ typedef __signed__ long saddr_t;
-  */
- #ifdef __KERNEL__
- 
--#ifndef __s390x__
--#define BITS_PER_LONG 32
--#else
--#define BITS_PER_LONG 64
--#endif
--
- #ifndef __ASSEMBLY__
- 
- typedef u64 dma64_addr_t;
-diff --git a/arch/sh/include/asm/bitsperlong.h b/arch/sh/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..6dc0bb0
---- /dev/null
-+++ b/arch/sh/include/asm/bitsperlong.h
-@@ -0,0 +1 @@
-+#include <asm-generic/bitsperlong.h>
-diff --git a/arch/sparc/include/asm/bitsperlong.h b/arch/sparc/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..40dcaa3
---- /dev/null
-+++ b/arch/sparc/include/asm/bitsperlong.h
-@@ -0,0 +1,13 @@
-+#ifndef __ASM_ALPHA_BITSPERLONG_H
-+#define __ASM_ALPHA_BITSPERLONG_H
-+
-+#if defined(__sparc__) && defined(__arch64__)
-+#define __BITS_PER_LONG 64
-+#else
-+#define __BITS_PER_LONG 32
-+#endif
-+
-+#include <asm-generic/bitsperlong.h>
-+
-+#endif /* __ASM_ALPHA_BITSPERLONG_H */
-+
-diff --git a/arch/sparc/include/asm/types.h b/arch/sparc/include/asm/types.h
-index 2237118..de671d7 100644
---- a/arch/sparc/include/asm/types.h
-+++ b/arch/sparc/include/asm/types.h
-@@ -21,8 +21,6 @@ typedef unsigned short umode_t;
- 
- #ifdef __KERNEL__
- 
--#define BITS_PER_LONG 64
--
- #ifndef __ASSEMBLY__
- 
- /* Dma addresses come in generic and 64-bit flavours.  */
-@@ -46,8 +44,6 @@ typedef unsigned short umode_t;
- 
- #ifdef __KERNEL__
- 
--#define BITS_PER_LONG 32
--
- #ifndef __ASSEMBLY__
- 
- typedef u32 dma_addr_t;
-diff --git a/arch/x86/include/asm/bitsperlong.h b/arch/x86/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..b0ae1c4
---- /dev/null
-+++ b/arch/x86/include/asm/bitsperlong.h
-@@ -0,0 +1,13 @@
-+#ifndef __ASM_X86_BITSPERLONG_H
-+#define __ASM_X86_BITSPERLONG_H
-+
-+#ifdef __x86_64__
-+# define __BITS_PER_LONG 64
-+#else
-+# define __BITS_PER_LONG 32
-+#endif
-+
-+#include <asm-generic/bitsperlong.h>
-+
-+#endif /* __ASM_X86_BITSPERLONG_H */
-+
-diff --git a/arch/x86/include/asm/types.h b/arch/x86/include/asm/types.h
-index e6f7363..09b9774 100644
---- a/arch/x86/include/asm/types.h
-+++ b/arch/x86/include/asm/types.h
-@@ -14,12 +14,6 @@ typedef unsigned short umode_t;
-  */
- #ifdef __KERNEL__
- 
--#ifdef CONFIG_X86_32
--# define BITS_PER_LONG 32
--#else
--# define BITS_PER_LONG 64
--#endif
--
- #ifndef __ASSEMBLY__
- 
- typedef u64 dma64_addr_t;
-diff --git a/arch/xtensa/include/asm/bitsperlong.h b/arch/xtensa/include/asm/bitsperlong.h
-new file mode 100644
-index 0000000..6dc0bb0
---- /dev/null
-+++ b/arch/xtensa/include/asm/bitsperlong.h
-@@ -0,0 +1 @@
-+#include <asm-generic/bitsperlong.h>
-diff --git a/include/asm-generic/Kbuild b/include/asm-generic/Kbuild
-index 460b08d..cbb4378 100644
---- a/include/asm-generic/Kbuild
-+++ b/include/asm-generic/Kbuild
-@@ -1,3 +1,4 @@
-+header-y += bitsperlong.h
- header-y += errno-base.h
- header-y += errno.h
- header-y += fcntl.h
-diff --git a/include/asm-generic/Kbuild.asm b/include/asm-generic/Kbuild.asm
-index 70d1855..290910e 100644
---- a/include/asm-generic/Kbuild.asm
-+++ b/include/asm-generic/Kbuild.asm
-@@ -9,6 +9,7 @@ unifdef-y += a.out.h
- endif
- unifdef-y += auxvec.h
- unifdef-y += byteorder.h
-+unifdef-y += bitsperlong.h
- unifdef-y += errno.h
- unifdef-y += fcntl.h
- unifdef-y += ioctl.h
-diff --git a/include/asm-generic/bitsperlong.h b/include/asm-generic/bitsperlong.h
-new file mode 100644
-index 0000000..4ae54e0
---- /dev/null
-+++ b/include/asm-generic/bitsperlong.h
-@@ -0,0 +1,32 @@
-+#ifndef __ASM_GENERIC_BITS_PER_LONG
-+#define __ASM_GENERIC_BITS_PER_LONG
-+
-+/*
-+ * There seems to be no way of detecting this automatically from user
-+ * space, so 64 bit architectures should override this in their
-+ * bitsperlong.h. In particular, an architecture that supports
-+ * both 32 and 64 bit user space must not rely on CONFIG_64BIT
-+ * to decide it, but rather check a compiler provided macro.
-+ */
-+#ifndef __BITS_PER_LONG
-+#define __BITS_PER_LONG 32
-+#endif
-+
-+#ifdef __KERNEL__
-+
-+#ifdef CONFIG_64BIT
-+#define BITS_PER_LONG 64
-+#else
-+#define BITS_PER_LONG 32
-+#endif /* CONFIG_64BIT */
-+
-+/*
-+ * FIXME: The check currently breaks x86-64 build, so it's
-+ * temporarily disabled. Please fix x86-64 and reenable
-+ */
-+#if 0 && BITS_PER_LONG != __BITS_PER_LONG
-+#error Inconsistent word size. Check asm/bitsperlong.h
-+#endif
-+
-+#endif /* __KERNEL__ */
-+#endif /* __ASM_GENERIC_BITS_PER_LONG */
-diff --git a/include/asm-generic/int-l64.h b/include/asm-generic/int-l64.h
-index 2af9b75..1ca3efc 100644
---- a/include/asm-generic/int-l64.h
-+++ b/include/asm-generic/int-l64.h
-@@ -8,6 +8,8 @@
- #ifndef _ASM_GENERIC_INT_L64_H
- #define _ASM_GENERIC_INT_L64_H
- 
-+#include <asm/bitsperlong.h>
-+
- #ifndef __ASSEMBLY__
- /*
-  * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
-diff --git a/include/asm-generic/int-ll64.h b/include/asm-generic/int-ll64.h
-index f9bc9ac..f394147 100644
---- a/include/asm-generic/int-ll64.h
-+++ b/include/asm-generic/int-ll64.h
-@@ -8,6 +8,8 @@
- #ifndef _ASM_GENERIC_INT_LL64_H
- #define _ASM_GENERIC_INT_LL64_H
- 
-+#include <asm/bitsperlong.h>
-+
- #ifndef __ASSEMBLY__
- /*
-  * __xx is ok: it doesn't pollute the POSIX namespace. Use these in the
--- 
-1.6.0.4
+ create mode 100644 include/asm-generic/bugs.h
+ create mode 100644 include/asm-generic/cache.h
+ create mode 100644 include/asm-generic/cacheflush.h
+ create mode 100644 include/asm-generic/checksum.h
+ create mode 100644 include/asm-generic/current.h
+ create mode 100644 include/asm-generic/delay.h
+ create mode 100644 include/asm-generic/dma.h
+ create mode 100644 include/asm-generic/fb.h
+ rename include/asm-generic/{page.h => getorder.h} (59%)
+ create mode 100644 include/asm-generic/hardirq.h
+ create mode 100644 include/asm-generic/hw_irq.h
+ create mode 100644 include/asm-generic/io.h
+ create mode 100644 include/asm-generic/ioctls.h
+ create mode 100644 include/asm-generic/ipcbuf.h
+ create mode 100644 include/asm-generic/irq.h
+ create mode 100644 include/asm-generic/irqflags.h
+ create mode 100644 include/asm-generic/kmap_types.h
+ create mode 100644 include/asm-generic/linkage.h
+ rename include/asm-generic/{mman.h => mman-common.h} (93%)
+ rewrite include/asm-generic/mman.h (99%)
+ create mode 100644 include/asm-generic/mmu.h
+ create mode 100644 include/asm-generic/mmu_context.h
+ create mode 100644 include/asm-generic/module.h
+ create mode 100644 include/asm-generic/msgbuf.h
+ create mode 100644 include/asm-generic/mutex.h
+ rewrite include/asm-generic/page.h (93%)
+ create mode 100644 include/asm-generic/param.h
+ create mode 100644 include/asm-generic/parport.h
+ create mode 100644 include/asm-generic/pgalloc.h
+ create mode 100644 include/asm-generic/posix_types.h
+ create mode 100644 include/asm-generic/scatterlist.h
+ create mode 100644 include/asm-generic/segment.h
+ create mode 100644 include/asm-generic/sembuf.h
+ create mode 100644 include/asm-generic/serial.h
+ create mode 100644 include/asm-generic/setup.h
+ create mode 100644 include/asm-generic/shmbuf.h
+ create mode 100644 include/asm-generic/shmparam.h
+ rename include/asm-generic/{signal.h => signal-defs.h} (85%)
+ rewrite include/asm-generic/signal.h (86%)
+ create mode 100644 include/asm-generic/socket.h
+ create mode 100644 include/asm-generic/sockios.h
+ create mode 100644 include/asm-generic/spinlock.h
+ create mode 100644 include/asm-generic/stat.h
+ create mode 100644 include/asm-generic/string.h
+ create mode 100644 include/asm-generic/swab.h
+ create mode 100644 include/asm-generic/syscalls.h
+ create mode 100644 include/asm-generic/system.h
+ create mode 100644 include/asm-generic/termbits.h
+ create mode 100644 include/asm-generic/termios-base.h
+ create mode 100644 include/asm-generic/timex.h
+ create mode 100644 include/asm-generic/tlbflush.h
+ create mode 100644 include/asm-generic/types.h
+ rename include/asm-generic/{uaccess.h => uaccess-unaligned.h} (82%)
+ rewrite include/asm-generic/uaccess.h (96%)
+ create mode 100644 include/asm-generic/ucontext.h
+ create mode 100644 include/asm-generic/unaligned.h
+ create mode 100644 include/asm-generic/unistd.h
+ create mode 100644 include/asm-generic/user.h
+ create mode 100644 include/asm-generic/vga.h
+ create mode 100644 lib/checksum.c
 
