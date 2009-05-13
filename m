@@ -1,17 +1,17 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753276AbZEMEzc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbZEMFHd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753276AbZEMEzc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 00:55:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751110AbZEMEzX
+	id S1753507AbZEMFHd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 01:07:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZEMFHY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 00:55:23 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:52112 "EHLO
-	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbZEMEzW (ORCPT
+	Wed, 13 May 2009 01:07:24 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53998 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750893AbZEMFHW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 00:55:22 -0400
-Message-ID: <4A0A5284.1000705@jp.fujitsu.com>
-Date: Wed, 13 May 2009 13:54:28 +0900
+	Wed, 13 May 2009 01:07:22 -0400
+Message-ID: <4A0A5556.9050209@jp.fujitsu.com>
+Date: Wed, 13 May 2009 14:06:30 +0900
 From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
@@ -19,19 +19,20 @@ To: Matthew Wilcox <matthew@wil.cx>
 CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
        "David S. Miller" <davem@davemloft.net>, linux-pci@vger.kernel.org,
        linux-kernel@vger.kernel.org
-Subject: [PATCH] PCI MSI: Yet another fix for MSI-X with NIU cards, v2
-References: <20090508131333.GV8112@parisc-linux.org>
-In-Reply-To: <20090508131333.GV8112@parisc-linux.org>
+Subject: Re: [PATCH] PCI MSI: Yet another fix for MSI-X with NIU cards, v2
+References: <20090508131333.GV8112@parisc-linux.org> <4A0A5284.1000705@jp.fujitsu.com>
+In-Reply-To: <4A0A5284.1000705@jp.fujitsu.com>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David,
+Hi David and all,
 
-Please ignore previous version, and could you review & test following
-v2 instead?
+Sorry, if you have problem with wrong diffstat in patch header
+(it was because I hand-fixed the comment in patch), please use
+following instead.  Contents are not changed, still v2.
 
 Thanks,
 H.Seto
@@ -44,11 +45,11 @@ mask register (for preserved bits) to after MSI-X is enabled.
 Reported-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
 ---
- drivers/pci/msi.c |   18 +++++++++++++++---
- 1 files changed, 15 insertions(+), 3 deletions(-)
+ drivers/pci/msi.c |   21 ++++++++++++++++++---
+ 1 files changed, 18 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 6f2e629..7b3cf4a 100644
+index 6f2e629..44085e0 100644
 --- a/drivers/pci/msi.c
 +++ b/drivers/pci/msi.c
 @@ -455,9 +455,7 @@ static int msix_capability_init(struct pci_dev *dev,
@@ -67,13 +68,13 @@ index 6f2e629..7b3cf4a 100644
  	dev->msix_enabled = 1;
  
 +	/*
-+	 * The states of Reserved bits[31::01] of Vector Control for MSI-X
++	 * The states of Reserved bits[31:01] of Vector Control for MSI-X
 +	 * Table Entries must be 0.  However, for potential future use,
 +	 * software must preserve the value of these reserved bits.
 +	 * Refer PCI spec 3.0, 6.8.2.9.
 +	 *
 +	 * Note that there are some device that refuses access to MSI-X
-+	 * Table Entries before MSI-X is enabled.  Therefore we do it here.
++	 * Table Entries before MSI-X is enabled.  Therefore we do it here. 
 +	 */
 +	list_for_each_entry(entry, &dev->msi_list, list) {
 +		int vector = entry->msi_attrib.entry_nr;
@@ -88,5 +89,4 @@ index 6f2e629..7b3cf4a 100644
  
 -- 
 1.6.3
-
 
