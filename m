@@ -1,52 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754700AbZEMBbV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757006AbZEMBgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754700AbZEMBbV (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 21:31:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752302AbZEMBbG
+	id S1757006AbZEMBgX (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 21:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753335AbZEMBgN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 21:31:06 -0400
-Received: from rhun.apana.org.au ([64.62.148.172]:44879 "EHLO
-	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751291AbZEMBbF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 21:31:05 -0400
-Date: Wed, 13 May 2009 11:30:50 +1000
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Neil Horman <nhorman@tuxdriver.com>
-Cc: Jarod Wilson <jarod@redhat.com>, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] crypto: tcrypt: add option to not exit on success
-Message-ID: <20090513013050.GA6545@gondor.apana.org.au>
-References: <200905111006.32675.jarod@redhat.com> <200905121602.45960.jarod@redhat.com> <20090513003727.GA12788@localhost.localdomain>
+	Tue, 12 May 2009 21:36:13 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35329 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753296AbZEMBgM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 21:36:12 -0400
+Message-ID: <4A0A23A7.4080901@kernel.org>
+Date: Tue, 12 May 2009 18:34:31 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090513003727.GA12788@localhost.localdomain>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jack Steiner <steiner@sgi.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+CC: David Rientjes <rientjes@google.com>, Andi Kleen <andi@firstfloor.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Rusty Russell <rusty@rustcorp.com.au>, Mike Travis <travis@sgi.com>
+Subject: [PATCH] x86: fix system without memory on node0
+References: <4A05269D.8000701@kernel.org> <4A0527CB.4020807@kernel.org> <20090511175312.GA27905@sgi.com> <alpine.DEB.2.00.0905111218520.23739@chino.kir.corp.google.com> <4A0894A5.9000209@zytor.com> <alpine.DEB.2.00.0905111509570.2234@chino.kir.corp.google.com> <20090512150622.GA10015@sgi.com>
+In-Reply-To: <20090512150622.GA10015@sgi.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 08:37:27PM -0400, Neil Horman wrote:
->
-> > Would there be any objections to dropping the noexit parameter
-> > entirely and just making its behavior the default? It would make
-> > all users regardless of fips mode notice failures more readily.
-> > 
-> I think thats a fine idea.  Theres no reason that a user of the tcrypt module
-> can't manually rmmod it when the testing is done.  Doing it that way just seems
-> more sane to me to begin with anyway.
 
-No, tcrypt is only a relic for correctness testing.  Its main
-purpose these days is for speed testing.  Having to rmmod it
-is silly.
+Jack found that crash with doesn't have memory on node0.
 
-There's really no need to load tcrypt for correctness testing
-anymore.
+it turns out with per_cpu changeset, node_number for BSP will be alway 0,
+and it is consistent to cpu_to_node() that is to near node already.
+aka when numa_set_node() for node0 is called early before per_cpu area is
+setup
 
-Cheers,
--- 
-Visit Openswan at http://www.openswan.org/
-Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+try to set the node_number for boot cpu, after we get per_cpu area setup.
+
+[ Impact: fix crashing on memoryless node 0]
+
+Reported-by: Jack Steiner <steiner@sgi.com>
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+
+---
+ arch/x86/kernel/setup_percpu.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
+
+Index: linux-2.6/arch/x86/kernel/setup_percpu.c
+===================================================================
+--- linux-2.6.orig/arch/x86/kernel/setup_percpu.c
++++ linux-2.6/arch/x86/kernel/setup_percpu.c
+@@ -423,6 +423,14 @@ void __init setup_per_cpu_areas(void)
+ 	early_per_cpu_ptr(x86_cpu_to_node_map) = NULL;
+ #endif
+ 
++#if defined(CONFIG_X86_64) && defined(CONFIG_NUMA)
++	/*
++	 * make sure boot cpu node_number is right, when boot cpu is on the
++	 * node that doesn't have mem installed
++	 */
++	per_cpu(node_number, boot_cpu_id) = cpu_to_node(boot_cpu_id);
++#endif
++
+ 	/* Setup node to cpumask map */
+ 	setup_node_to_cpumask_map();
+ 
