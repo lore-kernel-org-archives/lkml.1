@@ -1,46 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761420AbZEMToT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761029AbZEMTqO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761420AbZEMToT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 15:44:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZEMToF
+	id S1761029AbZEMTqO (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 15:46:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751889AbZEMTp5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 15:44:05 -0400
-Received: from www.tglx.de ([62.245.132.106]:52791 "EHLO www.tglx.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752251AbZEMToE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 15:44:04 -0400
-Date: Wed, 13 May 2009 21:42:51 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-cc: Ingo Molnar <mingo@elte.hu>, Al Viro <viro@zeniv.linux.org.uk>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH -tip] x86: audit.c remove unnecessary global
- arraysn
-In-Reply-To: <1242240694.3364.3.camel@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0905132136300.3561@localhost.localdomain>
-References: <1242240694.3364.3.camel@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 13 May 2009 15:45:57 -0400
+Received: from 82-117-125-11.tcdsl.calypso.net ([82.117.125.11]:56239 "EHLO
+	smtp.ossman.eu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751600AbZEMTp4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 15:45:56 -0400
+Date: Wed, 13 May 2009 21:45:51 +0200
+From: Pierre Ossman <pierre@ossman.eu>
+To: Wolfgang =?UTF-8?B?TcO8ZXM=?= <wolfgang.mues@auerswald.de>
+Cc: "Andrew Morton" <akpm@linux-foundation.org>,
+       "Matt Fleming" <matt@console-pimps.org>,
+       "David Brownell" <dbrownell@users.sourceforge.net>,
+       "Mike Frysinger" <vapier.adi@gmail.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] mmc_spi: do propper retry managment in the block layer
+Message-ID: <20090513214551.739757fd@mjolnir.ossman.eu>
+In-Reply-To: <200905061145.30698.wolfgang.mues@auerswald.de>
+References: <200904081155.53173.wolfgang.mues@auerswald.de>
+	<200904141627.26276.wolfgang.mues@auerswald.de>
+	<20090428215730.24fa60c5@mjolnir.ossman.eu>
+	<200905061145.30698.wolfgang.mues@auerswald.de>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: multipart/signed; micalg=PGP-SHA1; protocol="application/pgp-signature"; boundary="=_freyr.ossman.eu-9094-1242243954-0001-2"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 May 2009, Jaswinder Singh Rajput wrote:
- 
-> ia32_dir_class[], ia32_write_class[], ia32_read_class[], ia32_chattr_class[]
-> and ia32_signal_class[] are used only by arch/x86/kernel/audit_64.c
-> which can be replace by local variables:
-> 
-> dir_class[], write_class[], read_class[], chattr_class[] and signal_class[]
+This is a MIME-formatted message.  If you see this text it means that your
+E-mail software does not support MIME-formatted messages.
 
-Groan, it can be replaced by local variables, but it does not result
-in the same functionality.
+--=_freyr.ossman.eu-9094-1242243954-0001-2
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-These audit classes are arrays of syscall numbers, which are different
-for 32 and 64 bit. ia32/audit.c includes unistd_32.h not unistd.h for
-exactly this reason.
+On Wed, 6 May 2009 11:45:30 +0200
+Wolfgang M=C3=BCes <wolfgang.mues@auerswald.de> wrote:
 
-Thanks,
+>=20
+> I checked the drivers sourcecode and found that most drivers are using EI=
+NVAL=20
+> for non-recoverable parameter errors.
+>=20
+> The only driver which uses EINVAL for errors which might result from=20
+> transmission failures is mmc_spi.
+>=20
+> So I think it would be OK to use another error code in mmc_spi for these=
+=20
+> cases:
+>=20
+>  * EILSEQ       Basic format problem with the received or sent data
+>  *              (e.g. CRC check failed, incorrect opcode in response
+>  *              or bad end bit)
+>=20
+> Would you accept a patch to report another error code in mmc_spi?
+>=20
 
-	tglx
+EILSEQ seems correct for SPI bit errors, so I'd gladly accept such a
+patch, yes. :)
+
+Rgds
+--=20
+     -- Pierre Ossman
+
+  WARNING: This correspondence is being monitored by the
+  Swedish government. Make sure your server uses encryption
+  for SMTP traffic and consider using PGP for end-to-end
+  encryption.
+
+--=_freyr.ossman.eu-9094-1242243954-0001-2
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.11 (GNU/Linux)
+
+iEYEARECAAYFAkoLI3MACgkQ7b8eESbyJLgjYwCeIFPBtSrVfXNmQb9+8bASpYJg
+44AAoMhTgGr3mQePt4EUinHISRi/7lC8
+=L1/q
+-----END PGP SIGNATURE-----
+
+--=_freyr.ossman.eu-9094-1242243954-0001-2--
