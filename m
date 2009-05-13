@@ -1,58 +1,92 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761541AbZEMVNZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761554AbZEMVRk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761541AbZEMVNZ (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 17:13:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756980AbZEMVNO
+	id S1761554AbZEMVRk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 17:17:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757188AbZEMVRb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 17:13:14 -0400
-Received: from gate.crashing.org ([63.228.1.57]:35107 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753234AbZEMVNN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 17:13:13 -0400
-From: Kumar Gala <galak@kernel.crashing.org>
-To: jeff@garzik.org
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       linuxppc-dev@ozlabs.org
-Subject: [PATCH] sata_fsl: Fix compile warnings
-Date: Wed, 13 May 2009 16:12:11 -0500
-Message-Id: <1242249131-25014-1-git-send-email-galak@kernel.crashing.org>
-X-Mailer: git-send-email 1.6.0.6
+	Wed, 13 May 2009 17:17:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44933 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1756295AbZEMVRa (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 17:17:30 -0400
+Date: Wed, 13 May 2009 14:16:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com,
+       linux-kernel@vger.kernel.org, pavel@ucw.cz, nigel@tuxonice.net,
+       rientjes@google.com, linux-mm@kvack.org
+Subject: Re: [PATCH 4/6] PM/Hibernate: Rework shrinking of memory
+Message-Id: <20090513141647.076b67f0.akpm@linux-foundation.org>
+In-Reply-To: <200905132255.04681.rjw@sisk.pl>
+References: <200905070040.08561.rjw@sisk.pl>
+	<200905131039.26778.rjw@sisk.pl>
+	<20090513123409.302f4307.akpm@linux-foundation.org>
+	<200905132255.04681.rjw@sisk.pl>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We we build with dma_addr_t as a 64-bit quantity we get:
+On Wed, 13 May 2009 22:55:03 +0200
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-drivers/ata/sata_fsl.c: In function 'sata_fsl_fill_sg':
-drivers/ata/sata_fsl.c:340: warning: format '%x' expects type 'unsigned int', but argument 4 has type 'dma_addr_t'
+> On Wednesday 13 May 2009, Andrew Morton wrote:
+> > On Wed, 13 May 2009 10:39:25 +0200
+> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+> > 
+> > > From: Rafael J. Wysocki <rjw@sisk.pl>
+> > > 
+> > > Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
+> > > just once to make some room for the image and then allocates memory
+> > > to apply more pressure to the memory management subsystem, if
+> > > necessary.
+> > > 
+> > > Unfortunately, we don't seem to be able to drop shrink_all_memory()
+> > > entirely just yet, because that would lead to huge performance
+> > > regressions in some test cases.
+> > > 
+> > 
+> > Isn't this a somewhat large problem?
+> 
+> Yes, it is.  The thing is 8 times slower (15 s vs 2 s) without the
+> shrink_all_memory() in at least one test case.  100% reproducible.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- drivers/ata/sata_fsl.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+erk.  Any ideas why?  A quick peek at a kernel profile and perhaps
+the before-and-after delta in the /proc/vmstat numbers would probably
+guide us there.
 
-diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
-index c2e90e1..c7ee52d 100644
---- a/drivers/ata/sata_fsl.c
-+++ b/drivers/ata/sata_fsl.c
-@@ -332,13 +332,14 @@ static unsigned int sata_fsl_fill_sg(struct ata_queued_cmd *qc, void *cmd_desc,
- 		dma_addr_t sg_addr = sg_dma_address(sg);
- 		u32 sg_len = sg_dma_len(sg);
- 
--		VPRINTK("SATA FSL : fill_sg, sg_addr = 0x%x, sg_len = %d\n",
--			sg_addr, sg_len);
-+		VPRINTK("SATA FSL : fill_sg, sg_addr = 0x%llx, sg_len = %d\n",
-+			(unsigned long long)sg_addr, sg_len);
- 
- 		/* warn if each s/g element is not dword aligned */
- 		if (sg_addr & 0x03)
- 			ata_port_printk(qc->ap, KERN_ERR,
--					"s/g addr unaligned : 0x%x\n", sg_addr);
-+					"s/g addr unaligned : 0x%llxx\n", 
-+					(unsigned long long)sg_addr);
- 		if (sg_len & 0x03)
- 			ata_port_printk(qc->ap, KERN_ERR,
- 					"s/g len unaligned : 0x%x\n", sg_len);
--- 
-1.6.0.6
+> > The main point (I thought) was to remove shrink_all_memory().  Instead,
+> > we're retaining it and adding even more stuff?
+> 
+> The idea is that afterwards we can drop shrink_all_memory() once the
+> performance problem has been resolved.  Also, we now allocate memory for the
+> image using GFP_KERNEL instead of doing it with GFP_ATOMIC after freezing
+> devices.  I'd think that's an improvement?
+
+Dunno.  GFP_KERNEL might attempt to do writeback/swapout/etc, which
+could be embarrassing if the devices are frozen.  GFP_NOIO sounds
+appropriate.  
+
+> > > +{
+> > > +	unsigned long ratio = (numerator << FRACTION_SHIFT) / denominator;
+> > >  
+> > > -#define SHRINK_BITE	10000
+> > > -static inline unsigned long __shrink_memory(long tmp)
+> > > +	x *= ratio;
+> > > +	return x >> FRACTION_SHIFT;
+> > > +}
+> > 
+> > Strange function.  Would it not be simpler/clearer to do it with 64-bit
+> > scalars, multiplication and do_div()?
+> 
+> Sure, I can do it this way too.  Is it fine to use u64 for this purpose?
+
+I suppose so.  All/most of the implementations of do_div() are done as
+macros so it's pretty hard to work out what the types are.  But
+do_div() does expect a u64 rather than `unsigned long long'.
+
 
