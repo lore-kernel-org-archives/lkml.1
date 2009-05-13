@@ -1,65 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759569AbZEMOKj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZEMOUe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759569AbZEMOKj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 10:10:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752644AbZEMOKa
+	id S1756237AbZEMOUe (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 10:20:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753781AbZEMOUY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 10:10:30 -0400
-Received: from an-out-0708.google.com ([209.85.132.244]:46325 "EHLO
-	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751714AbZEMOK3 (ORCPT
+	Wed, 13 May 2009 10:20:24 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:38129 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752957AbZEMOUX convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 10:10:29 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:sender:reply-to:date:x-google-sender-auth:message-id
-         :subject:from:to:cc:content-type:content-transfer-encoding;
-        b=nKaEK3maohKxJpEYmtET4Vht4ILw/rWXLRMdBaVvMgIGna2yFeWvqHcdoKKp8F5yxf
-         aLOVOBIiN7/KIhwfDZsmE9/5YQ2hXkKGpC2DBQKpKapOreHqaz3J+rgjB1GnR7xXev+p
-         5Kt5o4lH5lztSWETdwh3cxcddv8IXqpnJsCoA=
+	Wed, 13 May 2009 10:20:23 -0400
 MIME-Version: 1.0
-Reply-To: Tobias_Mueller@twam.info
-Date: Wed, 13 May 2009 16:10:27 +0200
-X-Google-Sender-Auth: d2f6e9f2af8e12e2
-Message-ID: <17be05570905130710s1192729cqafa09127f6c34bf9@mail.gmail.com>
-Subject: [PATCH 001/001] leds: alix-leds2 fixed for Award BIOS
-From: =?UTF-8?Q?Tobias_M=C3=BCller?= <Tobias_Mueller@twam.info>
-To: linux-kernel@vger.kernel.org
-Cc: =?UTF-8?Q?Tobias_M=C3=BCller?= <Tobias_Mueller@twam.info>
+In-Reply-To: <ac3eb2510905130634l75ef8f78v604c53fb4bc3167f@mail.gmail.com>
+References: <20090509143742.GA27663@kroah.com> <1242074517.6624.183.camel@moss-terrapins.epoch.ncsc.mil> 
+	<ac3eb2510905111405y5541117euf84dd38d39012bd0@mail.gmail.com> 
+	<1242132344.31807.48.camel@localhost.localdomain> <ac3eb2510905120810n101dff08yfa945a2ab4b17168@mail.gmail.com> 
+	<1242142528.31807.80.camel@localhost.localdomain> <ac3eb2510905120854y7b44f608odf25af159fd6495c@mail.gmail.com> 
+	<1242168913.6711.9.camel@poy> <10761.1242220810@redhat.com> 
+	<ac3eb2510905130634l75ef8f78v604c53fb4bc3167f@mail.gmail.com>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Wed, 13 May 2009 16:20:02 +0200
+Message-ID: <ac3eb2510905130720x38de25adxc83b10aea0b86ce1@mail.gmail.com>
+Subject: Re: [patch 00/13] devtmpfs patches
+To: David Howells <dhowells@redhat.com>
+Cc: Stephen Smalley <sds@tycho.nsa.gov>,
+       "David P. Quigley" <dpquigl@tycho.nsa.gov>, Greg KH <greg@kroah.com>,
+       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
+       Jan Blunck <jblunck@suse.de>, James Morris <jmorris@namei.org>,
+       Eric Paris <eparis@parisplace.org>,
+       Christoph Hellwig <hch@infradead.org>
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tobias Mueller <Tobias_Mueller@twam.info>
+On Wed, May 13, 2009 at 15:34, Kay Sievers <kay.sievers@vrfy.org> wrote:
 
-Added initialisation of GPIO ports for compatibility with boards with Award
-BIOS (e.g. ALIX.3D3).
-Signed-off-by: Tobias Mueller <Tobias_Mueller@twam.info>
----
-diff --git a/drivers/leds/leds-alix2.c b/drivers/leds/leds-alix2.c
-index ddbd773..bda9403 100644
---- a/drivers/leds/leds-alix2.c
-+++ b/drivers/leds/leds-alix2.c
-@@ -14,7 +14,7 @@
+>>> +     kern_cred = prepare_kernel_cred(NULL);
+>>
+>> If you have no intention of altering the credentials you create, you might
+>> want to use &init_cred instead of kern_cred.  That said, you might want to
+>> allocate it and let the security module alter it before you use it.
+>
+> Ah, didn't know that it was exported. It's the one in
+> include/linux/init_task.h, right? I'll give that a try.
 
- static int force = 0;
- module_param(force, bool, 0444);
--MODULE_PARM_DESC(force, "Assume system has ALIX.2 style LEDs");
-+MODULE_PARM_DESC(force, "Assume system has ALIX.2/ALIX.3 style LEDs");
+That seems to work fine here. Thanks a lot for the help.
 
- struct alix_led {
- 	struct led_classdev cdev;
-@@ -155,6 +155,11 @@ static int __init alix_led_init(void)
- 		goto out;
- 	}
+Maybe we could do the same credential swap in sysfs, and get rid of:
+/**
+ * lookup_one_noperm - bad hack for sysfs
+ * @name:       pathname component to lookup
+ * @base:       base directory to lookup from
+ *
+ * This is a variant of lookup_one_len that doesn't perform any permission
+ * checks.   It's a horrible hack to work around the braindead sysfs
+ * architecture and should not be used anywhere else.
+ *
+ * DON'T USE THIS FUNCTION EVER, thanks.
+ */
 
-+	/* enable output on GPIO for LED 1,2,3 */
-+	outl(1 << 6, 0x6104);
-+	outl(1 << 9, 0x6184);
-+	outl(1 << 11, 0x6184);
-+
- 	pdev = platform_device_register_simple(KBUILD_MODNAME, -1, NULL, 0);
- 	if (!IS_ERR(pdev)) {
- 		ret = platform_driver_probe(&alix_led_driver, alix_led_probe);
+in fs/namei.c?
+
+Seems a bit odd to have a vfs function for a single filesystem, called
+from a single location, and annotated as "do not use". Christoph added
+the comment a while ago, so adding him to Cc:.
+
+Thanks,
+Kay
