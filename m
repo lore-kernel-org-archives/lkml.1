@@ -1,238 +1,448 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759887AbZEMQfB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760472AbZEMQlV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759887AbZEMQfB (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 12:35:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbZEMQew
+	id S1760472AbZEMQlV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 12:41:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbZEMQlG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 12:34:52 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:59752 "EHLO gir.skynet.ie"
+	Wed, 13 May 2009 12:41:06 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:45857 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752139AbZEMQev (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 12:34:51 -0400
-Date: Wed, 13 May 2009 17:34:48 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org, hartleys@visionengravers.com,
-       mcrapet@gmail.com, fred99@carolina.rr.com,
-       linux-arm-kernel@lists.arm.linux.org.uk
-Subject: [PATCH] Double check memmap is actually valid with a memmap has
-	unexpected holes V2
-Message-ID: <20090513163448.GA18006@csn.ul.ie>
-References: <20090505082944.GA25904@csn.ul.ie> <20090505083614.GA28688@n2100.arm.linux.org.uk> <20090505084928.GC25904@csn.ul.ie>
+	id S1752003AbZEMQlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 12:41:04 -0400
+From: Jarod Wilson <jarod@redhat.com>
+Organization: Red Hat, Inc.
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: [PATCH v2] crypto: tcrypt: do not exit on success in fips mode
+Date: Wed, 13 May 2009 12:40:10 -0400
+User-Agent: KMail/1.11.2 (Linux/2.6.29.1-102.fc11.x86_64; KDE/4.2.2; x86_64; ; )
+Cc: Neil Horman <nhorman@tuxdriver.com>, linux-crypto@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+References: <200905111006.32675.jarod@redhat.com> <200905130937.33449.jarod@redhat.com> <20090513140329.GA17863@gondor.apana.org.au>
+In-Reply-To: <20090513140329.GA17863@gondor.apana.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090505084928.GC25904@csn.ul.ie>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Message-Id: <200905131240.11615.jarod@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 05, 2009 at 09:49:28AM +0100, Mel Gorman wrote:
-> On Tue, May 05, 2009 at 09:36:14AM +0100, Russell King - ARM Linux wrote:
-> > On Tue, May 05, 2009 at 09:29:44AM +0100, Mel Gorman wrote:
-> > > diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> > > index e02b893..6d79051 100644
-> > > --- a/arch/arm/Kconfig
-> > > +++ b/arch/arm/Kconfig
-> > > @@ -925,10 +925,9 @@ config OABI_COMPAT
-> > >  	  UNPREDICTABLE (in fact it can be predicted that it won't work
-> > >  	  at all). If in doubt say Y.
-> > >  
-> > > -config ARCH_FLATMEM_HAS_HOLES
-> > > +config ARCH_HAS_HOLES_MEMORYMODEL
+On Wednesday 13 May 2009 10:03:29 Herbert Xu wrote:
+> On Wed, May 13, 2009 at 09:37:32AM -0400, Jarod Wilson wrote:
 > > 
-> > Can we arrange for EP93xx to select this so we don't have it enabled for
-> > everyone.
-> > 
-> > The other user of this was RPC when it was flatmem only, but since it has
-> > been converted to sparsemem it's no longer an issue there.
-> > 
+> > The latter option is more or less what the patch at the start of this
+> > thread did, although via a param to tcrypt, not keying off the fips
+> > flag. If I were to modify the patch to drop the mod param usage, and
+> > instead key off the fips flag to not exit, would that be acceptable
+> > for committing until such time as the userspace interface is ready?
 > 
-> This problem is hitting SPARSEMEM, at least according to reports I have
-> been cc'd on so it's not a SPARSEMEM vs FLATMEM thing. From the leader --
-> "This was caught before for FLATMEM and hacked around but it hits again for
-> SPARSEMEM because the page_zone linkages can look ok where the PFN linkages
-> are totally screwed."
-> 
-> If you feel that this problem is only encountered on the EP93xx, then the
-> option could be made more conservative with the following (untested) patch
-> and then wait to see who complains.
-> 
+> Yes that sounds like the way to go.
 
-This problem is still there. Russell, would you be ok with picking up
-this version of the fix? There were suggestions for modifying the
-generic code further but they are not critical to the problem on ARM and
-could be done as a follow-up patch.
+Okay, here it is.
 
-==== CUT HERE ====
-Double check memmap is actually valid with a memmap has unexpected holes V2
+At present, the tcrypt module always exits with an -EAGAIN upon
+successfully completing all the tests its been asked to run. In fips
+mode, integrity checking is done by running all self-tests from the
+initrd, and its much simpler to check the ret from modprobe for
+success than to scrape dmesg and/or /proc/crypto. Simply stay
+loaded, giving modprobe a retval of 0, if self-tests all pass and
+we're in fips mode.
 
-Changelog since V1
-  o Restrict to EP93xx
+A side-effect of tracking success/failure for fips mode is that in
+non-fips mode, self-test failures will return the actual failure
+return codes, rather than always returning -EAGAIN, which seems more
+correct anyway.
 
-pfn_valid() is meant to be able to tell if a given PFN has valid memmap
-associated with it or not. In FLATMEM, it is expected that holes always
-have valid memmap as long as there is valid PFNs either side of the hole.
-In SPARSEMEM, it is assumed that a valid section has a memmap for the
-entire section.
+The tcrypt_test() portion of the patch is dependent on my earlier
+pair of patches that skip non-fips algs in fips mode, at least to
+achieve the fully intended behavior.
 
-However, ARM and maybe other embedded architectures in the future free
-memmap backing holes to save memory on the assumption the memmap is never
-used. The page_zone linkages are then broken even though pfn_valid()
-returns true. A walker of the full memmap must then do this additional
-check to ensure the memmap they are looking at is sane by making sure the
-zone and PFN linkages are still valid. This is expensive, but walkers of
-the full memmap are extremely rare.
+Nb: testing this patch against the cryptodev tree revealed a test
+failure for sha384, which I have yet to look into...
 
-This was caught before for FLATMEM and hacked around but it hits again for
-SPARSEMEM because the page_zone linkages can look ok where the PFN linkages
-are totally screwed. This looks like a hatchet job but the reality is that
-any clean solution would end up consumning all the memory saved by punching
-these unexpected holes in the memmap. For example, we tried marking the
-memmap within the section invalid but the section size exceeds the size of
-the hole in most cases so pfn_valid() starts returning false where valid
-memmap exists. Shrinking the size of the section would increase memory
-consumption offsetting the gains.
+Signed-off-by: Jarod Wilson <jarod@redhat.com>
 
-This patch identifies when an architecture is punching unexpected holes
-in the memmap that the memory model cannot automatically detect and sets
-ARCH_HAS_HOLES_MEMORYMODEL. At the moment, this is restricted to EP93xx
-which is the model sub-architecture this has been reported on but may expand
-later. When set, walkers of the full memmap must call memmap_valid_within()
-for each PFN and passing in what it expects the page and zone to be for
-that PFN. If it finds the linkages to be broken, it assumes the memmap is
-invalid for that PFN.
+---
+ crypto/tcrypt.c |  164 ++++++++++++++++++++++++++++++-------------------------
+ 1 files changed, 90 insertions(+), 74 deletions(-)
 
-Signed-off-by: Mel Gorman <mel@csn.ul.ie>
---- 
- arch/arm/Kconfig       |    6 +++---
- include/linux/mmzone.h |   26 ++++++++++++++++++++++++++
- mm/mmzone.c            |   15 +++++++++++++++
- mm/vmstat.c            |   19 ++++---------------
- 4 files changed, 48 insertions(+), 18 deletions(-)
-
-diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index e02b893..a4c195c 100644
---- a/arch/arm/Kconfig
-+++ b/arch/arm/Kconfig
-@@ -273,6 +273,7 @@ config ARCH_EP93XX
- 	select HAVE_CLK
- 	select COMMON_CLKDEV
- 	select ARCH_REQUIRE_GPIOLIB
-+	select ARCH_HAS_HOLES_MEMORYMODEL
- 	help
- 	  This enables support for the Cirrus EP93xx series of CPUs.
+diff --git a/crypto/tcrypt.c b/crypto/tcrypt.c
+index 9e4974e..d59ba50 100644
+--- a/crypto/tcrypt.c
++++ b/crypto/tcrypt.c
+@@ -27,6 +27,7 @@
+ #include <linux/timex.h>
+ #include <linux/interrupt.h>
+ #include "tcrypt.h"
++#include "internal.h"
  
-@@ -925,10 +926,9 @@ config OABI_COMPAT
- 	  UNPREDICTABLE (in fact it can be predicted that it won't work
- 	  at all). If in doubt say Y.
+ /*
+  * Need slab memory for testing (size in number of pages).
+@@ -468,248 +469,255 @@ static void test_available(void)
  
--config ARCH_FLATMEM_HAS_HOLES
-+config ARCH_HAS_HOLES_MEMORYMODEL
- 	bool
--	default y
--	depends on FLATMEM
-+	default n
- 
- # Discontigmem is deprecated
- config ARCH_DISCONTIGMEM_ENABLE
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 1ff59fd..d20513a 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -1104,6 +1104,32 @@ unsigned long __init node_memmap_size_bytes(int, unsigned long, unsigned long);
- #define pfn_valid_within(pfn) (1)
- #endif
- 
-+#ifdef CONFIG_ARCH_HAS_HOLES_MEMORYMODEL
-+/*
-+ * pfn_valid() is meant to be able to tell if a given PFN has valid memmap
-+ * associated with it or not. In FLATMEM, it is expected that holes always
-+ * have valid memmap as long as there is valid PFNs either side of the hole.
-+ * In SPARSEMEM, it is assumed that a valid section has a memmap for the
-+ * entire section.
-+ *
-+ * However, an ARM, and maybe other embedded architectures in the future
-+ * free memmap backing holes to save memory on the assumption the memmap is
-+ * never used. The page_zone linkages are then broken even though pfn_valid()
-+ * returns true. A walker of the full memmap must then do this additional
-+ * check to ensure the memmap they are looking at is sane by making sure
-+ * the zone and PFN linkages are still valid. This is expensive, but walkers
-+ * of the full memmap are extremely rare.
-+ */
-+int memmap_valid_within(unsigned long pfn,
-+					struct page *page, struct zone *zone);
-+#else
-+static inline int memmap_valid_within(unsigned long pfn,
-+					struct page *page, struct zone *zone)
-+{
-+	return 1;
-+}
-+#endif /* CONFIG_ARCH_HAS_HOLES_MEMORYMODEL */
+ static inline int tcrypt_test(const char *alg)
+ {
+-	return alg_test(alg, alg, 0, 0);
++	int ret;
 +
- #endif /* !__GENERATING_BOUNDS.H */
- #endif /* !__ASSEMBLY__ */
- #endif /* _LINUX_MMZONE_H */
-diff --git a/mm/mmzone.c b/mm/mmzone.c
-index 16ce8b9..f5b7d17 100644
---- a/mm/mmzone.c
-+++ b/mm/mmzone.c
-@@ -6,6 +6,7 @@
- 
- 
- #include <linux/stddef.h>
-+#include <linux/mm.h>
- #include <linux/mmzone.h>
- #include <linux/module.h>
- 
-@@ -72,3 +73,17 @@ struct zoneref *next_zones_zonelist(struct zoneref *z,
- 	*zone = zonelist_zone(z);
- 	return z;
++	ret = alg_test(alg, alg, 0, 0);
++	/* non-fips algs return -EINVAL in fips mode */
++	if (fips_enabled && ret == -EINVAL)
++		ret = 0;
++	return ret;
  }
-+
-+#ifdef CONFIG_ARCH_HAS_HOLES_MEMORYMODEL
-+int memmap_valid_within(unsigned long pfn,
-+					struct page *page, struct zone *zone)
-+{
-+	if (page_to_pfn(page) != pfn)
-+		return 0;
-+
-+	if (page_zone(page) != zone)
-+		return 0;
-+
-+	return 1;
-+}
-+#endif /* CONFIG_ARCH_HAS_HOLES_MEMORYMODEL */
-diff --git a/mm/vmstat.c b/mm/vmstat.c
-index 17f2abb..03ee651 100644
---- a/mm/vmstat.c
-+++ b/mm/vmstat.c
-@@ -509,22 +509,11 @@ static void pagetypeinfo_showblockcount_print(struct seq_file *m,
- 			continue;
  
- 		page = pfn_to_page(pfn);
--#ifdef CONFIG_ARCH_FLATMEM_HAS_HOLES
--		/*
--		 * Ordinarily, memory holes in flatmem still have a valid
--		 * memmap for the PFN range. However, an architecture for
--		 * embedded systems (e.g. ARM) can free up the memmap backing
--		 * holes to save memory on the assumption the memmap is
--		 * never used. The page_zone linkages are then broken even
--		 * though pfn_valid() returns true. Skip the page if the
--		 * linkages are broken. Even if this test passed, the impact
--		 * is that the counters for the movable type are off but
--		 * fragmentation monitoring is likely meaningless on small
--		 * systems.
--		 */
--		if (page_zone(page) != zone)
-+
-+		/* Watch for unexpected holes punched in the memmap */
-+		if (!memmap_valid_within(pfn, page, zone))
- 			continue;
--#endif
-+
- 		mtype = get_pageblock_migratetype(page);
+-static void do_test(int m)
++static int do_test(int m)
+ {
+ 	int i;
++	int ret = 0;
  
- 		if (mtype < MIGRATE_TYPES)
+ 	switch (m) {
+ 	case 0:
+ 		for (i = 1; i < 200; i++)
+-			do_test(i);
++			ret += do_test(i);
+ 		break;
+ 
+ 	case 1:
+-		tcrypt_test("md5");
++		ret += tcrypt_test("md5");
+ 		break;
+ 
+ 	case 2:
+-		tcrypt_test("sha1");
++		ret += tcrypt_test("sha1");
+ 		break;
+ 
+ 	case 3:
+-		tcrypt_test("ecb(des)");
+-		tcrypt_test("cbc(des)");
++		ret += tcrypt_test("ecb(des)");
++		ret += tcrypt_test("cbc(des)");
+ 		break;
+ 
+ 	case 4:
+-		tcrypt_test("ecb(des3_ede)");
+-		tcrypt_test("cbc(des3_ede)");
++		ret += tcrypt_test("ecb(des3_ede)");
++		ret += tcrypt_test("cbc(des3_ede)");
+ 		break;
+ 
+ 	case 5:
+-		tcrypt_test("md4");
++		ret += tcrypt_test("md4");
+ 		break;
+ 
+ 	case 6:
+-		tcrypt_test("sha256");
++		ret += tcrypt_test("sha256");
+ 		break;
+ 
+ 	case 7:
+-		tcrypt_test("ecb(blowfish)");
+-		tcrypt_test("cbc(blowfish)");
++		ret += tcrypt_test("ecb(blowfish)");
++		ret += tcrypt_test("cbc(blowfish)");
+ 		break;
+ 
+ 	case 8:
+-		tcrypt_test("ecb(twofish)");
+-		tcrypt_test("cbc(twofish)");
++		ret += tcrypt_test("ecb(twofish)");
++		ret += tcrypt_test("cbc(twofish)");
+ 		break;
+ 
+ 	case 9:
+-		tcrypt_test("ecb(serpent)");
++		ret += tcrypt_test("ecb(serpent)");
+ 		break;
+ 
+ 	case 10:
+-		tcrypt_test("ecb(aes)");
+-		tcrypt_test("cbc(aes)");
+-		tcrypt_test("lrw(aes)");
+-		tcrypt_test("xts(aes)");
+-		tcrypt_test("ctr(aes)");
+-		tcrypt_test("rfc3686(ctr(aes))");
++		ret += tcrypt_test("ecb(aes)");
++		ret += tcrypt_test("cbc(aes)");
++		ret += tcrypt_test("lrw(aes)");
++		ret += tcrypt_test("xts(aes)");
++		ret += tcrypt_test("ctr(aes)");
++		ret += tcrypt_test("rfc3686(ctr(aes))");
+ 		break;
+ 
+ 	case 11:
+-		tcrypt_test("sha384");
++		ret += tcrypt_test("sha384");
+ 		break;
+ 
+ 	case 12:
+-		tcrypt_test("sha512");
++		ret += tcrypt_test("sha512");
+ 		break;
+ 
+ 	case 13:
+-		tcrypt_test("deflate");
++		ret += tcrypt_test("deflate");
+ 		break;
+ 
+ 	case 14:
+-		tcrypt_test("ecb(cast5)");
++		ret += tcrypt_test("ecb(cast5)");
+ 		break;
+ 
+ 	case 15:
+-		tcrypt_test("ecb(cast6)");
++		ret += tcrypt_test("ecb(cast6)");
+ 		break;
+ 
+ 	case 16:
+-		tcrypt_test("ecb(arc4)");
++		ret += tcrypt_test("ecb(arc4)");
+ 		break;
+ 
+ 	case 17:
+-		tcrypt_test("michael_mic");
++		ret += tcrypt_test("michael_mic");
+ 		break;
+ 
+ 	case 18:
+-		tcrypt_test("crc32c");
++		ret += tcrypt_test("crc32c");
+ 		break;
+ 
+ 	case 19:
+-		tcrypt_test("ecb(tea)");
++		ret += tcrypt_test("ecb(tea)");
+ 		break;
+ 
+ 	case 20:
+-		tcrypt_test("ecb(xtea)");
++		ret += tcrypt_test("ecb(xtea)");
+ 		break;
+ 
+ 	case 21:
+-		tcrypt_test("ecb(khazad)");
++		ret += tcrypt_test("ecb(khazad)");
+ 		break;
+ 
+ 	case 22:
+-		tcrypt_test("wp512");
++		ret += tcrypt_test("wp512");
+ 		break;
+ 
+ 	case 23:
+-		tcrypt_test("wp384");
++		ret += tcrypt_test("wp384");
+ 		break;
+ 
+ 	case 24:
+-		tcrypt_test("wp256");
++		ret += tcrypt_test("wp256");
+ 		break;
+ 
+ 	case 25:
+-		tcrypt_test("ecb(tnepres)");
++		ret += tcrypt_test("ecb(tnepres)");
+ 		break;
+ 
+ 	case 26:
+-		tcrypt_test("ecb(anubis)");
+-		tcrypt_test("cbc(anubis)");
++		ret += tcrypt_test("ecb(anubis)");
++		ret += tcrypt_test("cbc(anubis)");
+ 		break;
+ 
+ 	case 27:
+-		tcrypt_test("tgr192");
++		ret += tcrypt_test("tgr192");
+ 		break;
+ 
+ 	case 28:
+ 
+-		tcrypt_test("tgr160");
++		ret += tcrypt_test("tgr160");
+ 		break;
+ 
+ 	case 29:
+-		tcrypt_test("tgr128");
++		ret += tcrypt_test("tgr128");
+ 		break;
+ 
+ 	case 30:
+-		tcrypt_test("ecb(xeta)");
++		ret += tcrypt_test("ecb(xeta)");
+ 		break;
+ 
+ 	case 31:
+-		tcrypt_test("pcbc(fcrypt)");
++		ret += tcrypt_test("pcbc(fcrypt)");
+ 		break;
+ 
+ 	case 32:
+-		tcrypt_test("ecb(camellia)");
+-		tcrypt_test("cbc(camellia)");
++		ret += tcrypt_test("ecb(camellia)");
++		ret += tcrypt_test("cbc(camellia)");
+ 		break;
+ 	case 33:
+-		tcrypt_test("sha224");
++		ret += tcrypt_test("sha224");
+ 		break;
+ 
+ 	case 34:
+-		tcrypt_test("salsa20");
++		ret += tcrypt_test("salsa20");
+ 		break;
+ 
+ 	case 35:
+-		tcrypt_test("gcm(aes)");
++		ret += tcrypt_test("gcm(aes)");
+ 		break;
+ 
+ 	case 36:
+-		tcrypt_test("lzo");
++		ret += tcrypt_test("lzo");
+ 		break;
+ 
+ 	case 37:
+-		tcrypt_test("ccm(aes)");
++		ret += tcrypt_test("ccm(aes)");
+ 		break;
+ 
+ 	case 38:
+-		tcrypt_test("cts(cbc(aes))");
++		ret += tcrypt_test("cts(cbc(aes))");
+ 		break;
+ 
+         case 39:
+-		tcrypt_test("rmd128");
++		ret += tcrypt_test("rmd128");
+ 		break;
+ 
+         case 40:
+-		tcrypt_test("rmd160");
++		ret += tcrypt_test("rmd160");
+ 		break;
+ 
+ 	case 41:
+-		tcrypt_test("rmd256");
++		ret += tcrypt_test("rmd256");
+ 		break;
+ 
+ 	case 42:
+-		tcrypt_test("rmd320");
++		ret += tcrypt_test("rmd320");
+ 		break;
+ 
+ 	case 43:
+-		tcrypt_test("ecb(seed)");
++		ret += tcrypt_test("ecb(seed)");
+ 		break;
+ 
+ 	case 44:
+-		tcrypt_test("zlib");
++		ret += tcrypt_test("zlib");
+ 		break;
+ 
+ 	case 45:
+-		tcrypt_test("rfc4309(ccm(aes))");
++		ret += tcrypt_test("rfc4309(ccm(aes))");
+ 		break;
+ 
+ 	case 100:
+-		tcrypt_test("hmac(md5)");
++		ret += tcrypt_test("hmac(md5)");
+ 		break;
+ 
+ 	case 101:
+-		tcrypt_test("hmac(sha1)");
++		ret += tcrypt_test("hmac(sha1)");
+ 		break;
+ 
+ 	case 102:
+-		tcrypt_test("hmac(sha256)");
++		ret += tcrypt_test("hmac(sha256)");
+ 		break;
+ 
+ 	case 103:
+-		tcrypt_test("hmac(sha384)");
++		ret += tcrypt_test("hmac(sha384)");
+ 		break;
+ 
+ 	case 104:
+-		tcrypt_test("hmac(sha512)");
++		ret += tcrypt_test("hmac(sha512)");
+ 		break;
+ 
+ 	case 105:
+-		tcrypt_test("hmac(sha224)");
++		ret += tcrypt_test("hmac(sha224)");
+ 		break;
+ 
+ 	case 106:
+-		tcrypt_test("xcbc(aes)");
++		ret += tcrypt_test("xcbc(aes)");
+ 		break;
+ 
+ 	case 107:
+-		tcrypt_test("hmac(rmd128)");
++		ret += tcrypt_test("hmac(rmd128)");
+ 		break;
+ 
+ 	case 108:
+-		tcrypt_test("hmac(rmd160)");
++		ret += tcrypt_test("hmac(rmd160)");
+ 		break;
+ 
+ 	case 150:
+-		tcrypt_test("ansi_cprng");
++		ret += tcrypt_test("ansi_cprng");
+ 		break;
+ 
+ 	case 200:
+@@ -873,6 +881,8 @@ static void do_test(int m)
+ 		test_available();
+ 		break;
+ 	}
++
++	return ret;
+ }
+ 
+ static int __init tcrypt_mod_init(void)
+@@ -886,15 +896,21 @@ static int __init tcrypt_mod_init(void)
+ 			goto err_free_tv;
+ 	}
+ 
+-	do_test(mode);
++	err = do_test(mode);
++	if (err) {
++		printk(KERN_ERR "tcrypt: one or more tests failed!\n");
++		goto err_free_tv;
++	}
+ 
+-	/* We intentionaly return -EAGAIN to prevent keeping
+-	 * the module. It does all its work from init()
+-	 * and doesn't offer any runtime functionality 
++	/* We intentionaly return -EAGAIN to prevent keeping the module,
++	 * unless we're running in fips mode. It does all its work from
++	 * init() and doesn't offer any runtime functionality, but in
++	 * the fips case, checking for a successful load is helpful.
+ 	 * => we don't need it in the memory, do we?
+ 	 *                                        -- mludvig
+ 	 */
+-	err = -EAGAIN;
++	if (!fips_enabled)
++		err = -EAGAIN;
+ 
+ err_free_tv:
+ 	for (i = 0; i < TVMEMSIZE && tvmem[i]; i++)
+
+
+-- 
+Jarod Wilson
+jarod@redhat.com
