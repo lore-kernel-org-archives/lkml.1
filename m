@@ -1,144 +1,192 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753302AbZEMFc2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754205AbZEMFco@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753302AbZEMFc2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 01:32:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbZEMFcT
+	id S1754205AbZEMFco (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 01:32:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752786AbZEMFcc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 01:32:19 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:47010 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751787AbZEMFcS convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 01:32:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=bUwRtqRfhrmBWGbTklJBDDA33xl6N5O5zb5K4oOTmPnrmeYjclEJ/dEzj5lq8Mij4B
-         fSYFb9VUo76rhJ2Fc+DPobVX/jjLZ2G3iQngZ07jB/tVhAM7q4H0gjPs2uQJzYTyYrCf
-         VzArRrR6Hwe4K2V3aS3P4Jy+Zf0IAVF/2rapg=
+	Wed, 13 May 2009 01:32:32 -0400
+Received: from hera.kernel.org ([140.211.167.34]:54382 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752186AbZEMFca (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 01:32:30 -0400
+Message-ID: <4A0A5AA9.707@kernel.org>
+Date: Tue, 12 May 2009 22:29:13 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <49F8B1A1.4010208@garzik.org>
-References: <49EE37AF.4020507@zytor.com>
-	 <20090421.173123.191021055.davem@davemloft.net>
-	 <adak55438gp.fsf_-_@cisco.com>
-	 <20090428.221228.217954247.davem@davemloft.net>
-	 <20090429115654.GC11586@elte.hu> <49F843BC.7020902@garzik.org>
-	 <adahc071ie4.fsf@cisco.com> <49F8B1A1.4010208@garzik.org>
-Date: Wed, 13 May 2009 14:32:19 +0900
-Message-ID: <a6b9f31a0905122232s2d23b4e3h6e447c3fa5c29ee6@mail.gmail.com>
-Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
-From: Hitoshi Mitake <h.mitake@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: Roland Dreier <rdreier@cisco.com>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
-       tglx@linutronix.de, rpjday@crashcourse.ca, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Mel Gorman <mel@csn.ul.ie>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 1/3] x86: remove MEMORY_HOTPLUG_RESERVE related code
+References: <4A05269D.8000701@kernel.org> <20090512111623.GG25923@csn.ul.ie>
+In-Reply-To: <20090512111623.GG25923@csn.ul.ie>
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, Apr 30, 2009 at 04:59, Jeff Garzik <jeff@garzik.org> wrote:
-> Roland Dreier wrote:
+Mel Gorman wrote:
+> On Fri, May 08, 2009 at 11:45:49PM -0700, Yinghai Lu wrote:
+>> after
+>> | commit b263295dbffd33b0fbff670720fa178c30e3392a
+>> | Author: Christoph Lameter <clameter@sgi.com>
+>> | Date:   Wed Jan 30 13:30:47 2008 +0100
+>> |
+>> |    x86: 64-bit, make sparsemem vmemmap the only memory model
 >>
->>  > This removal patch is completely pointless, because it moves us
->>  > backwards to the point where we had a bunch of drivers defining it.
+>> we don't have MEMORY_HOTPLUG_RESERVE anymore.
 >>
->> No, the current kernel still requires drivers to define it anyway,
->> because there are tons of 32-bit architectures that are not x86.
->
-> Then let's fix that issue...  by propagating the common definition to other
-> platforms that properly implement {read,write}[bwl] in terms of the PCI bus.
->
->
->> And more than that, centralizing the definition makes the API much more
->> dangerous for driver authors.
->
-> I think that's really cranking the hyperbole level to 11.
->
-> The common definition is... the one found most commonly in the wild. For
-> weird drivers, they will do their own thing.
->
-> That's pretty much how other drivers handle things.
->
-> Apply your logic here to _any_ API in the kernel, for the same result.
->
->
->>  > At least the networking drivers I messed with (until 11/2008) were
->>  > always fine with a non-atomic readq.
+>> remove related dead code.
 >>
->> The commit to niu I keep citing (e23a59e1, "niu: Fix readq
->> implementation when architecture does not provide one.") shows that
->> drivers need to take care.  Now, the x86 implementation would happen to
->
-> That commit also shows that, had the driver been using a common definition,
-> problems would not have arisen.
->
->
->> work for that hardware, but eg drivers/infiniband/hw/amso1100 defines
->> readq with the opposite order -- whether that's required or just an
->
-> 'required' seems unlikely, given that
->
-> a) their readq only exists when #ifndef readq, thus implying the
-> driver-local readq is far less tested, on their most-tested, highest-volume
-> platform.
->
-> b) their readq still operates in LE order -- as it should: read,write[bwl]
-> were defined in terms of PCI originally, and thus defined to be LE.
->
-> c) their __raw_writeq writes in lower-32-bits-first, as one would expect
->
->
->> arbitrary choice, I don't know.  And drivers/infiniband/hw/mthca has
->> some uses of __raw_writeq() that only work if no other CPU accesses to
->> the same page can happen between the two halves, so it adds a per-page
->> spinlock for 32-bit architectures.  etc.
->
-> Any use of __raw_xxx implies that You Know What You're Doing And Accept The
-> Consequences.  __raw_xxx means _you_ handle endian conversions, barriers,
-> and other arch-specific details.  I don't think that a driver intentionally
-> using the "raw" APIs is a good source of ideas and generalizations.
->
-> So, for your three examples,
->
->        1) niu - common definition is OK
->
->        2) amso1100 - common definition is OK; driver-local definition
->           never used on common PCI platforms
->
->        3) mthca - intentionally uses raw API, an API which ditches
->           arch-specific barriers, endian conversions, and other
->           guarantees.
->
-> Given that, I see zero justification for API removal.  I see justification
-> for propagating this code to other PCI-capable platforms.
->
-> Finally, I think given all this time we've had driver-define writeq and
-> readq, and "driver authors were forced to think about this API" -- the
-> result was the obvious definition now in place!
->
->        Jeff
->
->
->
->
->
+> 
+> Good spot, this removes a nice amount of code. The changelog could say
+> more though, how about?
+> 
+> =====
+> Historically, x86-64 had an architecture-specific method for memory hotplug
+> whereby it scanned the SRAT for physical memory ranges that could be
+> potentially used for memory hot-add later. By reserving those ranges
+> without physical memory, the memmap would be allocated and left dormant
+> until needed. This depended on the DISCONTIG memory model which has been
+> removed so the code implementing HOTPLUG_RESERVE is now dead.
+> 
+> This patch removes the dead code used by MEMORY_HOTPLUG_RESERVE
+thanks will use that.
+> =====
+> 
+>> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+>>
+>> ---
+>>  arch/x86/include/asm/numa_64.h |    3 -
+>>  arch/x86/mm/numa_64.c          |    5 --
+>>  arch/x86/mm/srat_64.c          |   63 +++++++------------------------------
+>>  include/linux/mm.h             |    2 -
+>>  mm/page_alloc.c                |   69 -----------------------------------------
+>>  5 files changed, 12 insertions(+), 130 deletions(-)
+>>
+>> Index: linux-2.6/arch/x86/include/asm/numa_64.h
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/include/asm/numa_64.h
+>> +++ linux-2.6/arch/x86/include/asm/numa_64.h
+>> @@ -17,9 +17,6 @@ extern int compute_hash_shift(struct boo
+>>  extern void numa_init_array(void);
+>>  extern int numa_off;
+>>  
+>> -extern void srat_reserve_add_area(int nodeid);
+>> -extern int hotadd_percent;
+>> -
+>>  extern s16 apicid_to_node[MAX_LOCAL_APIC];
+>>  
+>>  extern unsigned long numa_free_all_bootmem(void);
+>> Index: linux-2.6/arch/x86/mm/numa_64.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/mm/numa_64.c
+>> +++ linux-2.6/arch/x86/mm/numa_64.c
+>> @@ -272,9 +272,6 @@ void __init setup_node_bootmem(int nodei
+>>  		reserve_bootmem_node(NODE_DATA(nodeid), bootmap_start,
+>>  				 bootmap_pages<<PAGE_SHIFT, BOOTMEM_DEFAULT);
+>>  
+>> -#ifdef CONFIG_ACPI_NUMA
+>> -	srat_reserve_add_area(nodeid);
+>> -#endif
+>>  	node_set_online(nodeid);
+>>  }
+>>  
+>> @@ -608,8 +605,6 @@ static __init int numa_setup(char *opt)
+>>  #ifdef CONFIG_ACPI_NUMA
+>>  	if (!strncmp(opt, "noacpi", 6))
+>>  		acpi_numa = -1;
+>> -	if (!strncmp(opt, "hotadd=", 7))
+>> -		hotadd_percent = simple_strtoul(opt+7, NULL, 10);
+> 
+> Documentation/x86/x86_64/boot-options.txt now needs to be updated to
+> remove the documentation on hotadd=.
+> 
+> Instead of ignoring the option, should a warning now be printed saying the
+> option is deprecated?
 
-I think it's good time to decide making all architectures
-which have readq/writeq provide HAVE_READQ/HAVE_WRITEQ or not.
+that is dead for 2.6.27 (?), 2.6.28, 2.6.29, ...
+guess we could remove that directly...
 
-Adding HAVE_READQ/HAVE_WRITEQ to Kconfig of architectures needs
-agreement of all maintainers of these.
+> 
+>>  #endif
+>>  	return 0;
+>>  }
+>> Index: linux-2.6/arch/x86/mm/srat_64.c
+>> ===================================================================
+>> --- linux-2.6.orig/arch/x86/mm/srat_64.c
+>> +++ linux-2.6/arch/x86/mm/srat_64.c
+>> @@ -31,8 +31,6 @@ static nodemask_t nodes_parsed __initdat
+>>  static nodemask_t cpu_nodes_parsed __initdata;
+>>  static struct bootnode nodes[MAX_NUMNODES] __initdata;
+>>  static struct bootnode nodes_add[MAX_NUMNODES];
+>> -static int found_add_area __initdata;
+>> -int hotadd_percent __initdata = 0;
+>>  
+>>  static int num_node_memblks __initdata;
+>>  static struct bootnode node_memblk_range[NR_NODE_MEMBLKS] __initdata;
+>> @@ -66,9 +64,6 @@ static __init void cutoff_node(int i, un
+>>  {
+>>  	struct bootnode *nd = &nodes[i];
+>>  
+>> -	if (found_add_area)
+>> -		return;
+>> -
+>>  	if (nd->start < start) {
+>>  		nd->start = start;
+>>  		if (nd->end < nd->start)
+>> @@ -86,7 +81,6 @@ static __init void bad_srat(void)
+>>  	int i;
+>>  	printk(KERN_ERR "SRAT: SRAT not used.\n");
+>>  	acpi_numa = -1;
+>> -	found_add_area = 0;
+>>  	for (i = 0; i < MAX_LOCAL_APIC; i++)
+>>  		apicid_to_node[i] = NUMA_NO_NODE;
+>>  	for (i = 0; i < MAX_NUMNODES; i++)
+>> @@ -182,24 +176,21 @@ acpi_numa_processor_affinity_init(struct
+>>  	       pxm, apic_id, node);
+>>  }
+>>  
+>> -static int update_end_of_memory(unsigned long end) {return -1;}
+>> -static int hotadd_enough_memory(struct bootnode *nd) {return 1;}
+>>  #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+>>  static inline int save_add_info(void) {return 1;}
+>>  #else
+>>  static inline int save_add_info(void) {return 0;}
+>>  #endif
+>>  /*
+>> - * Update nodes_add and decide if to include add are in the zone.
+>> - * Both SPARSE and RESERVE need nodes_add information.
+>> - * This code supports one contiguous hot add area per node.
+>> + * Update nodes_add[]
+>> + * This code supports one contiguous hot add area per node
+>>   */
+>> -static int __init
+>> -reserve_hotadd(int node, unsigned long start, unsigned long end)
+>> +static void __init
+>> +update_nodes_add(int node, unsigned long start, unsigned long end)
+>>  {
+> 
+> It's now very unclear what the purpose of this function is. I'm guessing it
+> should be something like
+> 
+> validate_hotadd_region()
+> This validates that the region of memory described by SRAT as suitable
+> for use with memory hot-add is sane
+> 
+> What it was for was to validate that the SRAT looked sane and then push out the
+> end of the node boundaries so that the memmap would get allocated. However,
+> because we are no longer pushing out the node boundaries, is this doing
+> anything useful at all any more? For sparsemem, memory-hotadd allocates
+> the memmap as it required.
 
-But, David Miller, maintainer of SPARC architecture, acked Roland's patch
-because of the possibility of bugs non-atomicity of readq/writeq of
-x86-32 will cause.
+but it does update nodes_add range.
 
-And, Jeff Garzik said that he saw zero justification for API removal.
-
-Which way should we choose?
-Remove readq/writeq from x86-32?
-Or add HAVE... to all architectures with readq/writeq?
+YH
