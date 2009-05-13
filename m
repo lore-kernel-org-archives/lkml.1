@@ -1,51 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758446AbZEMKKM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759370AbZEMKKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758446AbZEMKKM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 06:10:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757922AbZEMKJ6
+	id S1759370AbZEMKKg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 06:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759266AbZEMKKV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 06:09:58 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:35079 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752384AbZEMKJ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 06:09:58 -0400
-Message-ID: <4A0A9C70.6090803@novell.com>
-Date: Wed, 13 May 2009 19:09:52 +0900
-From: Tejun Heo <teheo@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 13 May 2009 06:10:21 -0400
+Received: from mxout1.volkswagen.de ([194.114.62.41]:17057 "EHLO
+	mxout1.volkswagen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757922AbZEMKKU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 06:10:20 -0400
+X-Greylist: delayed 390 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 May 2009 06:10:19 EDT
+Message-ID: <4A0A9AC1.2090603@volkswagen.de>
+Date: Wed, 13 May 2009 12:02:41 +0200
+From: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: remap allocator for per-CPU memory
-References: <4A09B23B02000078000007F1@vpn.id2.novell.com> <4A09991E.9010903@kernel.org>
-In-Reply-To: <4A09991E.9010903@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+To: Andrew Morton <akpm@linux-foundation.org>,
+       Wolfgang Grandegger <wg@grandegger.com>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 3/7] [PATCH 3/8] can: CAN Network device driver and
+ Netlink interface
+References: <20090512092757.048938233@denx.de><20090512092757.574693100@denx.de> <20090512233052.ecd600f1.akpm@linux-foundation.org>
+In-Reply-To: <20090512233052.ecd600f1.akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 May 2009 10:02:28.0098 (UTC) FILETIME=[EC204620:01C9D3B1]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Tejun Heo wrote:
-> Jan Beulich wrote:
->> Didn't the addition of this allocator introduce another case that
->> needs special treatment in pageattr.c? Since large pages are used
->> for mapping the allocated memory, but only part of the initially
->> allocated large pages are actually retained, there's now the
->> potential for TLB aliases with different cache attributes for those
->> parts of these pages that get passed back through free_bootmem().
-> 
-> Hmmm.... yes, the large page mapping and the returned part of it would
-> alias each other.  What changes should be made for it?  Dunno much
-> about how pageattr works.
+Andrew Morton wrote:
+> On Tue, 12 May 2009 11:28:00 +0200 Wolfgang Grandegger <wg@grandegger.com> wrote:
+>
+>   
+>> +int can_restart_now(struct net_device *dev)
+>> +{
+>> +	struct can_priv *priv = netdev_priv(dev);
+>> +	struct net_device_stats *stats = &dev->stats;
+>> +	struct sk_buff *skb;
+>> +	struct can_frame *cf;
+>> +	int err;
+>> +
+>> +	/* Synchronize with dev->hard_start_xmit() */
+>> +	netif_tx_lock(dev);
+>> +
+>> +	/* Ensure that no more messages can go out */
+>> +	if (netif_carrier_ok(dev))
+>> +		netif_carrier_off(dev);
+>> +
+>> +	/* Ensure that no more messages can come in */
+>> +	err = priv->do_set_mode(dev, CAN_MODE_STOP);
+>> +	if (err)
+>> +		return err;
+>> +
+>> +	/*  Now it's save to clean up */
+>> +	del_timer_sync(&priv->restart_timer);
+>>     
+>
+> This is deadlockable.
+>
+> It calls del_timer_sync() while holding netif_tx_lock().  But the timer
+> handler (can_restart_now()) also takes netif_tx_lock().  So if the
+> timer handler is presently running, it's sitting there spinning in
+> netif_tx_lock().  And del_timer_sync() is sitting there waiting for the
+> timer handler to complete.
+>
+>
+>   
 
-Okay, just glanced over the pageattr code.  I don't think we need any
-special provisions for this as long as the TLB is fine with having
-overlapping PMD and PTE mappings with different attributes (please
-note that these two mappings aren't occupying the same linear
-addresses - they're aliases).  This is allowed, right?
+Hi Wolfgang,
 
-Thanks.
+would it be an appropriate solution, just to invoke
 
--- 
-tejun
+netif_stop_queue() in can_bus_off()
+
+and invoke
+
+netif_wake_queue() in can_restart_now()
+
+???
+
+In a BUSOFF condition we're not able to send CAN frames anyway, so  we 
+can disable the device queue and the we won't  need any netif_tx_lock() 
+right?
+
+AFAIK this was the original implementation before some of the latest 
+improvement with the netif_carrier stuff.
+
+What do you think?
+
+Best regards,
+Oliver
+
