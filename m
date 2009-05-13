@@ -1,80 +1,111 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760089AbZEMMIq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760254AbZEMMJo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760089AbZEMMIq (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 08:08:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757952AbZEMMIS
+	id S1760254AbZEMMJo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 08:09:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760225AbZEMMJY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 08:08:18 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:32619 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757087AbZEMMIQ (ORCPT
+	Wed, 13 May 2009 08:09:24 -0400
+Received: from mxout1.volkswagen.de ([194.114.62.41]:17147 "EHLO
+	mxout1.volkswagen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760208AbZEMMJX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 08:08:16 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=O42c0QzFM8naCQ0AA44HbyfCK7v2r/WjLYOoEpcpVjXb01OL1dIPJbA6KIeTkL4zVp
-         +y0qRTzV4tA+953mDxDjRp6d62W2i9ByILaZUiGXEtT5xwMH1SYVdiF+5kV/mE6nRplI
-         GjPqU/sBEPoUdNSdcmr85BoIlrzhq+arn3TZE=
-From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Oleg Nesterov <oleg@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       Roland McGrath <roland@redhat.com>, linux-kernel@vger.kernel.org
-Subject: [PATCH 2/3] Replace wait_noreap_copyout() by copy_wait_opts_to_user()
-Date: Wed, 13 May 2009 14:08:12 +0200
-Message-Id: <1242216490-8226-3-git-send-email-v.mayatskih@gmail.com>
-X-Mailer: git-send-email 1.6.2.2
-In-Reply-To: <1242216490-8226-1-git-send-email-v.mayatskih@gmail.com>
-References: <1242216490-8226-1-git-send-email-v.mayatskih@gmail.com>
+	Wed, 13 May 2009 08:09:23 -0400
+Message-ID: <4A0AB824.40702@volkswagen.de>
+Date: Wed, 13 May 2009 14:08:04 +0200
+From: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Wolfgang Grandegger <wg@grandegger.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 3/7] [PATCH 3/8] can: CAN Network device driver and
+ Netlink interface
+References: <20090512092757.048938233@denx.de><20090512092757.574693100@denx.de> <20090512233052.ecd600f1.akpm@linux-foundation.org> <4A0A9AC1.2090603@volkswagen.de> <4A0AB17B.3080308@grandegger.com>
+In-Reply-To: <4A0AB17B.3080308@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 13 May 2009 12:08:02.0973 (UTC) FILETIME=[7742F4D0:01C9D3C3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-wait_noreap_copyout() currently is a short wrapper for
-copy_wait_opts_to_user(), and wait_task_zombie() is the only one caller
-of it.
+Wolfgang Grandegger wrote:
+> Oliver Hartkopp wrote:
+>   
+>> Andrew Morton wrote:
+>>     
+>>> On Tue, 12 May 2009 11:28:00 +0200 Wolfgang Grandegger
+>>> <wg@grandegger.com> wrote:
+>>>
+>>>  
+>>>       
+>>>> +int can_restart_now(struct net_device *dev)
+>>>> +{
+>>>> +    struct can_priv *priv = netdev_priv(dev);
+>>>> +    struct net_device_stats *stats = &dev->stats;
+>>>> +    struct sk_buff *skb;
+>>>> +    struct can_frame *cf;
+>>>> +    int err;
+>>>> +
+>>>> +    /* Synchronize with dev->hard_start_xmit() */
+>>>> +    netif_tx_lock(dev);
+>>>> +
+>>>> +    /* Ensure that no more messages can go out */
+>>>> +    if (netif_carrier_ok(dev))
+>>>> +        netif_carrier_off(dev);
+>>>> +
+>>>> +    /* Ensure that no more messages can come in */
+>>>> +    err = priv->do_set_mode(dev, CAN_MODE_STOP);
+>>>> +    if (err)
+>>>> +        return err;
+>>>> +
+>>>> +    /*  Now it's save to clean up */
+>>>> +    del_timer_sync(&priv->restart_timer);
+>>>>     
+>>>>         
+>>> This is deadlockable.
+>>>
+>>> It calls del_timer_sync() while holding netif_tx_lock().  But the timer
+>>> handler (can_restart_now()) also takes netif_tx_lock().  So if the
+>>> timer handler is presently running, it's sitting there spinning in
+>>> netif_tx_lock().  And del_timer_sync() is sitting there waiting for the
+>>> timer handler to complete.
+>>>
+>>>
+>>>   
+>>>       
+>> Hi Wolfgang,
+>>
+>> would it be an appropriate solution, just to invoke
+>>
+>> netif_stop_queue() in can_bus_off()
+>>
+>> and invoke
+>>
+>> netif_wake_queue() in can_restart_now()
+>>
+>> ???
+>>
+>> In a BUSOFF condition we're not able to send CAN frames anyway, so  we
+>> can disable the device queue and the we won't  need any netif_tx_lock()
+>> right?
+>>
+>> AFAIK this was the original implementation before some of the latest
+>> improvement with the netif_carrier stuff.
+>>
+>> What do you think?
+>>     
+>
+> The problem is the "manual" restart triggered via the netlink interface,
+> which can occur in the middle of ndo_start_xmit().
+>
+>   
 
-Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
----
- kernel/exit.c |   17 +++++------------
- 1 files changed, 5 insertions(+), 12 deletions(-)
+Ah, i see.
 
-diff --git a/kernel/exit.c b/kernel/exit.c
-index f069bc1..cea85c9 100644
---- a/kernel/exit.c
-+++ b/kernel/exit.c
-@@ -1154,17 +1154,6 @@ static int copy_wait_opts_to_user(struct wait_opts *wo, struct wait_info *wi)
- 	return retval;
- }
- 
--static int wait_noreap_copyout(struct wait_opts *wo, struct wait_info *wi)
--{
--	int retval;
--	wi->signal = SIGCHLD;
--	retval = copy_wait_opts_to_user(wo, wi);
--	put_task_struct(wi->p);
--	if (!retval)
--		retval = wi->pid;
--	return retval;
--}
--
- /*
-  * Handle sys_wait4 work for one task in state EXIT_ZOMBIE.  We hold
-  * read_lock(&tasklist_lock) on entry.  If we return zero, we still hold
-@@ -1194,7 +1183,11 @@ static int wait_task_zombie(struct wait_opts *wo, struct task_struct *p)
- 			wi.why = (wi.status & 0x80) ? CLD_DUMPED : CLD_KILLED;
- 			wi.status &= 0x7f;
- 		}
--		return wait_noreap_copyout(wo, &wi);
-+		retval = copy_wait_opts_to_user(wo, &wi);
-+		put_task_struct(p);
-+		if (!retval)
-+			retval = wi.pid;
-+		return retval;
- 	}
- 
- 	/*
--- 
-1.6.2.2
+What if the manual restart via netlink would also stop the queue and 
+start the timer?
 
+Regards,
+Oliver
 
