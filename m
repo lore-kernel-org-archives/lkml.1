@@ -1,66 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761492AbZEMTnL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761420AbZEMToT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761492AbZEMTnL (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 15:43:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759259AbZEMTmx
+	id S1761420AbZEMToT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 15:44:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752599AbZEMToF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 15:42:53 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:46160 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757795AbZEMTmw (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 15:42:52 -0400
-X-Auth-Info: MSj/VTPFxunhsPKY18oCSyjGPcVEnLe8Er6SjvoQNNw=
-To: Li Yang <leoli@freescale.com>
-cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-       Scott Wood <scottwood@freescale.com>,
-       Kumar Gala <galak@kernel.crashing.org>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash size
-Mime-version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7BIT
-In-reply-to: <2a27d3730905130328m27743852w2d68a62ebc32ce31@mail.gmail.com>
-References: <1242155174-2513-1-git-send-email-wd@denx.de> <2a27d3730905130328m27743852w2d68a62ebc32ce31@mail.gmail.com>
-Comments: In-reply-to Li Yang <leoli@freescale.com>
-   message dated "Wed, 13 May 2009 18:28:09 +0800."
-Date: Wed, 13 May 2009 21:42:49 +0200
-Message-Id: <20090513194249.BA7D9832E416@gemini.denx.de>
+	Wed, 13 May 2009 15:44:05 -0400
+Received: from www.tglx.de ([62.245.132.106]:52791 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752251AbZEMToE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 15:44:04 -0400
+Date: Wed, 13 May 2009 21:42:51 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, Al Viro <viro@zeniv.linux.org.uk>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH -tip] x86: audit.c remove unnecessary global
+ arraysn
+In-Reply-To: <1242240694.3364.3.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0905132136300.3561@localhost.localdomain>
+References: <1242240694.3364.3.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Dear Li Yang,
+On Thu, 14 May 2009, Jaswinder Singh Rajput wrote:
+ 
+> ia32_dir_class[], ia32_write_class[], ia32_read_class[], ia32_chattr_class[]
+> and ia32_signal_class[] are used only by arch/x86/kernel/audit_64.c
+> which can be replace by local variables:
+> 
+> dir_class[], write_class[], read_class[], chattr_class[] and signal_class[]
 
-In message <2a27d3730905130328m27743852w2d68a62ebc32ce31@mail.gmail.com> you wrote:
->
-> Although 8MB seems to be the common size used.  It can be very easy
-> changed as a pluggable module.  It might be better to make the code
-> working for any reasonable flash sizes.
+Groan, it can be replaced by local variables, but it does not result
+in the same functionality.
 
-You either have to provide a correct device tree for your board, or
-use a boot loader / boot wrapper that fixes the flash base address and
-size.
+These audit classes are arrays of syscall numbers, which are different
+for 32 and 64 bit. ia32/audit.c includes unistd_32.h not unistd.h for
+exactly this reason.
 
-At the moment, U-Boot does not  contain  any  code  yet  to  do  that
-(patches  welcome :-), and as far as I understand the cuImage wrapper
-works just the other way  round:  it  adjusts  the  mappings  to  the
-settings  in  the  device tree, which may or may not match the actual
-hardware. This may work, but at least gives  you  a  different  flash
-memory  map  in Linux than what you had before in U-Boot, so it's not
-really nice either.
+Thanks,
 
-
-Hm... it seems the majority of MPC8272ADS boards seems to come indeed
-with 8 MB NOR flash, so I wonder if the patch should actually go in?
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-In accord with UNIX philosophy, Perl gives you enough  rope  to  hang
-yourself.              - L. Wall & R. L. Schwartz, _Programming Perl_
+	tglx
