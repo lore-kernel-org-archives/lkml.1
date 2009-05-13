@@ -1,104 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761209AbZEMSwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761223AbZEMSyL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761209AbZEMSwV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 14:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760507AbZEMSwL
+	id S1761223AbZEMSyL (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 14:54:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbZEMSx5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 14:52:11 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54708 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760449AbZEMSwK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 14:52:10 -0400
-Subject: [RFC][PATCH -tip] x86: audit.c remove unnecessary global arrays
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, Al Viro <viro@zeniv.linux.org.uk>,
-       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 14 May 2009 00:21:34 +0530
-Message-Id: <1242240694.3364.3.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Wed, 13 May 2009 14:53:57 -0400
+Received: from silver.sucs.swan.ac.uk ([137.44.10.1]:58954 "EHLO
+	silver.sucs.swan.ac.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754662AbZEMSx4 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 14:53:56 -0400
+Date: Wed, 13 May 2009 19:53:56 +0100
+From: Sitsofe Wheeler <sitsofe@yahoo.com>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Alan Jenkins <sourcejedi.lkml@googlemail.com>,
+       Matthew Garrett <mjg59@srcf.ucam.org>
+Subject: Re: EeePC 900 trackpad often not detected at boot in 2.6.30-rc4
+Message-ID: <20090513185356.GA20140@sucs.org>
+References: <20090511072135.GA4682@sucs.org> <20090513032053.GA29919@dtor-d630.eng.vmware.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090513032053.GA29919@dtor-d630.eng.vmware.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Sorry for the slow reply...
 
-ia32_dir_class[], ia32_write_class[], ia32_read_class[], ia32_chattr_class[]
-and ia32_signal_class[] are used only by arch/x86/kernel/audit_64.c
-which can be replace by local variables:
+On Tue, May 12, 2009 at 08:20:54PM -0700, Dmitry Torokhov wrote:
+> 
+> On Mon, May 11, 2009 at 08:21:35AM +0100, Sitsofe Wheeler wrote:
+> > 
+> > With the latest 2.6.29-rc4 I've been finding that my EeePC 900's
+> > trackpad is frequently not detected on boot:
 
-dir_class[], write_class[], read_class[], chattr_class[] and signal_class[]
+That should have been 2.6.30-rc4...
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/ia32/audit.c      |   25 -------------------------
- arch/x86/kernel/audit_64.c |   15 +++++----------
- 2 files changed, 5 insertions(+), 35 deletions(-)
+> > The workaround has been to do the following as root:
+> > 
+> > echo i8042 > /sys/bus/platform/drivers/i8042/unbind ; echo i8042 > /sys/bus/platform/drivers/i8042/bind
+> 
+> Does it always discover it after rebind or you need to do that a few
 
-diff --git a/arch/x86/ia32/audit.c b/arch/x86/ia32/audit.c
-index 5d7b381..ee8ce50 100644
---- a/arch/x86/ia32/audit.c
-+++ b/arch/x86/ia32/audit.c
-@@ -1,30 +1,5 @@
- #include <asm/unistd_32.h>
- 
--unsigned ia32_dir_class[] = {
--#include <asm-generic/audit_dir_write.h>
--~0U
--};
--
--unsigned ia32_chattr_class[] = {
--#include <asm-generic/audit_change_attr.h>
--~0U
--};
--
--unsigned ia32_write_class[] = {
--#include <asm-generic/audit_write.h>
--~0U
--};
--
--unsigned ia32_read_class[] = {
--#include <asm-generic/audit_read.h>
--~0U
--};
--
--unsigned ia32_signal_class[] = {
--#include <asm-generic/audit_signal.h>
--~0U
--};
--
- int ia32_classify_syscall(unsigned syscall)
- {
- 	switch (syscall) {
-diff --git a/arch/x86/kernel/audit_64.c b/arch/x86/kernel/audit_64.c
-index 06d3e5a..aede8d2 100644
---- a/arch/x86/kernel/audit_64.c
-+++ b/arch/x86/kernel/audit_64.c
-@@ -59,16 +59,11 @@ int audit_classify_syscall(int abi, unsigned syscall)
- static int __init audit_classes_init(void)
- {
- #ifdef CONFIG_IA32_EMULATION
--	extern __u32 ia32_dir_class[];
--	extern __u32 ia32_write_class[];
--	extern __u32 ia32_read_class[];
--	extern __u32 ia32_chattr_class[];
--	extern __u32 ia32_signal_class[];
--	audit_register_class(AUDIT_CLASS_WRITE_32, ia32_write_class);
--	audit_register_class(AUDIT_CLASS_READ_32, ia32_read_class);
--	audit_register_class(AUDIT_CLASS_DIR_WRITE_32, ia32_dir_class);
--	audit_register_class(AUDIT_CLASS_CHATTR_32, ia32_chattr_class);
--	audit_register_class(AUDIT_CLASS_SIGNAL_32, ia32_signal_class);
-+	audit_register_class(AUDIT_CLASS_WRITE_32, write_class);
-+	audit_register_class(AUDIT_CLASS_READ_32, read_class);
-+	audit_register_class(AUDIT_CLASS_DIR_WRITE_32, dir_class);
-+	audit_register_class(AUDIT_CLASS_CHATTR_32, chattr_class);
-+	audit_register_class(AUDIT_CLASS_SIGNAL_32, signal_class);
- #endif
- 	audit_register_class(AUDIT_CLASS_WRITE, write_class);
- 	audit_register_class(AUDIT_CLASS_READ, read_class);
+Yes it always discovers it after a rebind (it just happened again now
+actually). I never have to do the rebind more than once.
+
+> times? Also, is the touchpad detected reliably if you boot an older
+> kernel?
+
+The problem seems to be happening more frequently with the latest 2.6.30
+kernel but the problem did happen with older kernels (even with the
+kernel that Xandros ship with the EeePC which is 2.6.21 based) but it
+was very infrequent (once every fifty boots or so).
+
+> > Having talked to Matthew a few months ago it sounds like the problem is
+> > that the something needs to be reset more aggressively at boot. This
+> > problem used to happen very rarely (maybe once every 50 or so boots)
+> > with older kernels but now seems to be happening every boot.
+> > 
+> 
+> Could you try booting with i8042.debug and send me dmesg of the case
+
+OK I'll add the line and wait for the issue to arise again.
+
+> when touchpad is not detected, please? BTW, why don't you have Elantech
+> support enabled?
+
+I am running a distribution (Ubuntu 8.04) with an old Xorg that doesn't
+support the Elantech driver of new kernels.
+
 -- 
-1.6.0.6
-
-
-
+Sitsofe | http://sucs.org/~sits/
