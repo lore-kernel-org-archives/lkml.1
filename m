@@ -1,99 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761377AbZEMQRd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760675AbZEMQS6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761377AbZEMQRd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 12:17:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761307AbZEMQQp
+	id S1760675AbZEMQS6 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 12:18:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbZEMQSr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 12:16:45 -0400
-Received: from easi.embeddedalley.com ([71.6.201.124]:48524 "HELO
-	easi.embeddedalley.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with SMTP id S1761076AbZEMQQo (ORCPT
+	Wed, 13 May 2009 12:18:47 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:34157 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755610AbZEMQSq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 12:16:44 -0400
-X-Greylist: delayed 401 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 May 2009 12:16:44 EDT
-Message-ID: <4A0AF0C7.5090104@embeddedalley.com>
-Date: Wed, 13 May 2009 20:09:43 +0400
-From: Vladimir Barinov <vbarinov@embeddedalley.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 13 May 2009 12:18:46 -0400
+Message-ID: <4A0AF2DA.2020404@zytor.com>
+Date: Wed, 13 May 2009 09:18:34 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Daniel Mack <daniel@caiaq.de>
-CC: linux-kernel@vger.kernel.org, Sascha Hauer <s.hauer@pengutronix.de>,
-       Linux MTD list <linux-mtd@lists.infradead.org>
-Subject: Re: [PATCH] mtd: mxc_nand: fix built breakage
-References: <1242229410-11853-1-git-send-email-daniel@caiaq.de>
-In-Reply-To: <1242229410-11853-1-git-send-email-daniel@caiaq.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+To: Sheng Yang <sheng@linux.intel.com>
+CC: linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86: Extend test_and_set_bit() test_and_clean_bit() to
+ 64 bits in X86_64
+References: <1242202647-32446-1-git-send-email-sheng@linux.intel.com>
+In-Reply-To: <1242202647-32446-1-git-send-email-sheng@linux.intel.com>
+Content-Type: multipart/mixed;
+ boundary="------------060805040508090909070102"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Daniel,
+This is a multi-part message in MIME format.
+--------------060805040508090909070102
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Please find the patch that I've sent some time ago. This patch should 
-fix the issue you described.
-http://lists.infradead.org/pipermail/linux-mtd/2009-April/025363.html
+Sheng Yang wrote:
+> This fix 44/45 bit width memory can't boot up issue. The reason is
+> free_bootmem_node()->mark_bootmem_node()->__free() use test_and_clean_bit() to
+> clean node_bootmem_map, but for 44bits width address, the idx set bit 31 (43 -
+> 12), which consider as a nagetive value for bts.
+> 
+> This patch applied to tip/mm.
 
-Vladimir
+Hi Sheng,
 
-Daniel Mack wrote:
-> The MXC NAND driver does not currently build with CONFIG_PM set.
->
->   drivers/mtd/nand/mxc_nand.c: In function 'mxcnd_suspend':
->   drivers/mtd/nand/mxc_nand.c:1021: error: 'nfc_clk' undeclared (first use in this function)
->   drivers/mtd/nand/mxc_nand.c:1021: error: (Each undeclared identifier is reported only once
->   drivers/mtd/nand/mxc_nand.c:1021: error: for each function it appears in.)
->   drivers/mtd/nand/mxc_nand.c: In function 'mxcnd_resume':
->   drivers/mtd/nand/mxc_nand.c:1033: error: 'nfc_clk' undeclared (first use in this function)
->   make[3]: *** [drivers/mtd/nand/mxc_nand.o] Error 1
->   make[2]: *** [drivers/mtd/nand] Error 2
->   make[1]: *** [drivers/mtd] Error 2
->   make: *** [drivers] Error 2
->
-> Signed-off-by: Daniel Mack <daniel@caiaq.de>
-> Cc: Sascha Hauer <s.hauer@pengutronix.de>
-> Cc: Linux MTD list <linux-mtd@lists.infradead.org>
-> ---
->  drivers/mtd/nand/mxc_nand.c |    8 ++++++--
->  1 files changed, 6 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/mtd/nand/mxc_nand.c b/drivers/mtd/nand/mxc_nand.c
-> index 21fd4f1..d352d2a 100644
-> --- a/drivers/mtd/nand/mxc_nand.c
-> +++ b/drivers/mtd/nand/mxc_nand.c
-> @@ -1011,6 +1011,8 @@ static int __devexit mxcnd_remove(struct platform_device *pdev)
->  static int mxcnd_suspend(struct platform_device *pdev, pm_message_t state)
->  {
->  	struct mtd_info *info = platform_get_drvdata(pdev);
-> +        struct nand_chip *nand_chip = info->priv;
->   
-> +	struct mxc_nand_host *host = nand_chip->priv;
->  	int ret = 0;
->  
->  	DEBUG(MTD_DEBUG_LEVEL0, "MXC_ND : NAND suspend\n");
-> @@ -1018,7 +1020,7 @@ static int mxcnd_suspend(struct platform_device *pdev, pm_message_t state)
->  		ret = info->suspend(info);
->  
->  	/* Disable the NFC clock */
-> -	clk_disable(nfc_clk);	/* FIXME */
-> +	clk_disable(host->clk);	/* FIXME */
->  
->  	return ret;
->  }
-> @@ -1026,11 +1028,13 @@ static int mxcnd_suspend(struct platform_device *pdev, pm_message_t state)
->  static int mxcnd_resume(struct platform_device *pdev)
->  {
->  	struct mtd_info *info = platform_get_drvdata(pdev);
-> +        struct nand_chip *nand_chip = info->priv;
-> +	struct mxc_nand_host *host = nand_chip->priv;
->  	int ret = 0;
->  
->  	DEBUG(MTD_DEBUG_LEVEL0, "MXC_ND : NAND resume\n");
->  	/* Enable the NFC clock */
-> -	clk_enable(nfc_clk);	/* FIXME */
-> +	clk_enable(host->clk);	/* FIXME */
->  
->  	if (info)
->  		info->resume(info);
->   
+Could you try the attached patch instead?
 
+	-hpa
+
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
+
+--------------060805040508090909070102
+Content-Type: text/plain;
+ name="diff"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline;
+ filename="diff"
+
+ZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24veDg2L2Jvb3QudHh0IGIvRG9jdW1lbnRhdGlv
+bi94ODYvYm9vdC50eHQKaW5kZXggZTAyMDM2Ni4uY2NjMWJkNCAxMDA2NDQKLS0tIGEvRG9j
+dW1lbnRhdGlvbi94ODYvYm9vdC50eHQKKysrIGIvRG9jdW1lbnRhdGlvbi94ODYvYm9vdC50
+eHQKQEAgLTUwLDYgKzUwLDExIEBAIFByb3RvY29sIDIuMDg6CShLZXJuZWwgMi42LjI2KSBB
+ZGRlZCBjcmMzMiBjaGVja3N1bSBhbmQgRUxGIGZvcm1hdAogUHJvdG9jb2wgMi4wOToJKEtl
+cm5lbCAyLjYuMjYpIEFkZGVkIGEgZmllbGQgb2YgNjQtYml0IHBoeXNpY2FsCiAJCXBvaW50
+ZXIgdG8gc2luZ2xlIGxpbmtlZCBsaXN0IG9mIHN0cnVjdAlzZXR1cF9kYXRhLgogCitQcm90
+b2NvbCAyLjEwOgkoS2VybmVsIDIuNi4zMT8pIEEgcHJvdG9jb2wgZm9yIHJlbGF4ZWQgYWxp
+Z25tZW50CisJIAliZXlvbmQgdGhlIGtlcm5lbF9hbGlnbm1lbnQgYWRkZWQsIG5ldyBpbml0
+X3NpemUgYW5kCisJIAlwcmVmX2FkZHJlc3MgZmllbGRzLgorCSAJCisKICoqKiogTUVNT1JZ
+IExBWU9VVAogCiBUaGUgdHJhZGl0aW9uYWwgbWVtb3J5IG1hcCBmb3IgdGhlIGtlcm5lbCBs
+b2FkZXIsIHVzZWQgZm9yIEltYWdlIG9yCkBAIC0xNzMsNyArMTc4LDcgQEAgT2Zmc2V0CVBy
+b3RvCU5hbWUJCU1lYW5pbmcKIDAyMkMvNAkyLjAzKwlyYW1kaXNrX21heAlIaWdoZXN0IGxl
+Z2FsIGluaXRyZCBhZGRyZXNzCiAwMjMwLzQJMi4wNSsJa2VybmVsX2FsaWdubWVudCBQaHlz
+aWNhbCBhZGRyIGFsaWdubWVudCByZXF1aXJlZCBmb3Iga2VybmVsCiAwMjM0LzEJMi4wNSsJ
+cmVsb2NhdGFibGVfa2VybmVsIFdoZXRoZXIga2VybmVsIGlzIHJlbG9jYXRhYmxlIG9yIG5v
+dAotMDIzNS8xCU4vQQlwYWQyCQlVbnVzZWQKKzAyMzUvMQkyLjEwKwltaW5fYWxpZ25tZW50
+CU1pbmltdW0gYWxpZ25tZW50LCBhcyBhIHBvd2VyIG9mIDIKIDAyMzYvMglOL0EJcGFkMwkJ
+VW51c2VkCiAwMjM4LzQJMi4wNisJY21kbGluZV9zaXplCU1heGltdW0gc2l6ZSBvZiB0aGUg
+a2VybmVsIGNvbW1hbmQgbGluZQogMDIzQy80CTIuMDcrCWhhcmR3YXJlX3N1YmFyY2ggSGFy
+ZHdhcmUgc3ViYXJjaGl0ZWN0dXJlCkBAIC0xODIsNiArMTg3LDggQEAgT2Zmc2V0CVByb3Rv
+CU5hbWUJCU1lYW5pbmcKIDAyNEMvNAkyLjA4KwlwYXlsb2FkX2xlbmd0aAlMZW5ndGggb2Yg
+a2VybmVsIHBheWxvYWQKIDAyNTAvOAkyLjA5KwlzZXR1cF9kYXRhCTY0LWJpdCBwaHlzaWNh
+bCBwb2ludGVyIHRvIGxpbmtlZCBsaXN0CiAJCQkJb2Ygc3RydWN0IHNldHVwX2RhdGEKKzAy
+NTgvOAkyLjEwKwlwcmVmX2FkZHJlc3MJUHJlZmVycmVkIGxvYWRpbmcgYWRkcmVzcworMDI2
+MC80CTIuMTArCWluaXRfc2l6ZQlMaW5lYXIgbWVtb3J5IHJlcXVpcmVkIGR1cmluZyBpbml0
+aWFsaXphdGlvbgogCiAoMSkgRm9yIGJhY2t3YXJkcyBjb21wYXRpYmlsaXR5LCBpZiB0aGUg
+c2V0dXBfc2VjdHMgZmllbGQgY29udGFpbnMgMCwgdGhlCiAgICAgcmVhbCB2YWx1ZSBpcyA0
+LgpAQCAtNDgyLDExICs0ODksMTUgQEAgUHJvdG9jb2w6CTIuMDMrCiAgIDB4MzdGRkZGRkYs
+IHlvdSBjYW4gc3RhcnQgeW91ciByYW1kaXNrIGF0IDB4MzdGRTAwMDAuKQogCiBGaWVsZCBu
+YW1lOglrZXJuZWxfYWxpZ25tZW50Ci1UeXBlOgkJcmVhZCAocmVsb2MpCitUeXBlOgkJcmVh
+ZC9tb2RpZnkgKHJlbG9jKQogT2Zmc2V0L3NpemU6CTB4MjMwLzQKLVByb3RvY29sOgkyLjA1
+KworUHJvdG9jb2w6CTIuMDUrIChyZWFkKSwgMi4xMCsgKG1vZGlmeSkKIAotICBBbGlnbm1l
+bnQgdW5pdCByZXF1aXJlZCBieSB0aGUga2VybmVsIChpZiByZWxvY2F0YWJsZV9rZXJuZWwg
+aXMgdHJ1ZS4pCisgIEFsaWdubWVudCB1bml0IHJlcXVpcmVkIGJ5IHRoZSBrZXJuZWwgKGlm
+IHJlbG9jYXRhYmxlX2tlcm5lbCBpcworICB0cnVlLikgIFN0YXJ0aW5nIHdpdGggcHJvdG9j
+b2wgdmVyc2lvbiAyLjEwLCB0aGlzIHJlZmxlY3RzIHRoZQorICBrZXJuZWwgYWxpZ25tZW50
+IHByZWZlcnJlZCBmb3Igb3B0aW1hbCBwZXJmb3JtYW5jZSBhbmQgY2FuIGJlCisgIG1vZGlm
+aWVkIGJ5IHRoZSBsb2FkZXI7IHNlZSB0aGUgbWluX2FsaWdubWVudCBhbmQgcHJlZl9hZGRy
+ZXNzIGZpZWxkCisgIGJlbG93LgogCiBGaWVsZCBuYW1lOglyZWxvY2F0YWJsZV9rZXJuZWwK
+IFR5cGU6CQlyZWFkIChyZWxvYykKQEAgLTQ5OCw2ICs1MDksMjIgQEAgUHJvdG9jb2w6CTIu
+MDUrCiAgIEFmdGVyIGxvYWRpbmcsIHRoZSBib290IGxvYWRlciBtdXN0IHNldCB0aGUgY29k
+ZTMyX3N0YXJ0IGZpZWxkIHRvCiAgIHBvaW50IHRvIHRoZSBsb2FkZWQgY29kZSwgb3IgdG8g
+YSBib290IGxvYWRlciBob29rLgogCitGaWVsZCBuYW1lOgltaW5fYWxpZ25tZW50CitUeXBl
+OgkJcmVhZCAocmVsb2MpCitPZmZzZXQvc2l6ZToJMHgyMzUvMQorUHJvdG9jb2w6CTIuMTAr
+CisKKyAgVGhpcyBmaWVsZCwgaWYgbm9uemVybywgaW5kaWNhdGVzIGFzIGEgcG93ZXIgb2Yg
+MiB0aGUgbWluaW11bQorICBhbGlnbm1lbnQgcmVxdWlyZWQsIGFzIG9wcG9zZWQgdG8gcHJl
+ZmVycmVkLCBieSB0aGUga2VybmVsIHRvIGJvb3QuCisgIElmIGEgYm9vdCBsb2FkZXIgbWFr
+ZXMgdXNlIG9mIHRoaXMgZmllbGQsIGl0IHNob3VsZCB1cGRhdGUgdGhlCisgIGtlcm5lbF9h
+bGlnbm1lbnQgZmllbGQgd2l0aCB0aGUgYWxpZ25tZW50IHVuaXQgZGVzaXJlZDsgdHlwaWNh
+bGx5OgorCisJa2VybmVsX2FsaWdubWVudCA9IDEgPDwgbWluX2FsaWdubWVudAorCisgIFRo
+ZXJlIG1heSBiZSBhIGNvbnNpZGVyYWJsZSBwZXJmb3JtYW5jZSBjb3N0IHdpdGggYW4gZXhj
+ZXNzaXZlbHkKKyAgbWlzYWxpZ25lZCBrZXJuZWwuICBUaGVyZWZvcmUsIGEgbG9hZGVyIHNo
+b3VsZCB0eXBpY2FsbHkgdHJ5IGVhY2gKKyAgcG93ZXItb2YtdHdvIGFsaWdubWVudCBmcm9t
+IGtlcm5lbF9hbGlnbm1lbnQgZG93biB0byB0aGlzIGFsaWdubWVudC4KKwogRmllbGQgbmFt
+ZToJY21kbGluZV9zaXplCiBUeXBlOgkJcmVhZAogT2Zmc2V0L3NpemU6CTB4MjM4LzQKQEAg
+LTU4Miw2ICs2MDksMjcgQEAgUHJvdG9jb2w6CTIuMDkrCiAgIHN1cmUgdG8gY29uc2lkZXIg
+dGhlIGNhc2Ugd2hlcmUgdGhlIGxpbmtlZCBsaXN0IGFscmVhZHkgY29udGFpbnMKICAgZW50
+cmllcy4KIAorRmllbGQgbmFtZToJcHJlZl9hZGRyZXNzCitUeXBlOgkJcmVhZCAocmVsb2Mp
+CitPZmZzZXQvc2l6ZToJMHgyNTgvOAorUHJvdG9jb2w6CTIuMTArCisKKyAgVGhpcyBmaWVs
+ZCwgaWYgbm9uemVybywgcmVwcmVzZW50cyBhIHByZWZlcnJlZCBsb2FkIGFkZHJlc3MgZm9y
+IHRoZQorICBrZXJuZWwuICBBIHJlbG9jYXRpbmcgYm9vdGxvYWRlciBzaG91bGQgYXR0ZW1w
+dCB0byBsb2FkIGF0IHRoaXMKKyAgYWRkcmVzcyBpZiBwb3NzaWJsZS4KKworCitGaWVsZCBu
+YW1lOglpbml0X3NpemUKK1R5cGU6CQlyZWFkCitPZmZzZXQvc2l6ZToJMHgyNWMvNAorCisg
+IFRoaXMgZmllbGQgaW5kaWNhdGVzIHRoZSBhbW91bnQgb2YgbGluZWFyIGNvbnRpZ3VvdXMg
+bWVtb3J5IHN0YXJ0aW5nCisgIGF0IHRoZSBrZXJuZWwgbG9hZCBhZGRyZXNzIChyb3VuZGVk
+IHVwIHRvIGtlcm5lbF9hbGlnbm1lbnQpIHRoYXQgdGhlCisgIGtlcm5lbCBuZWVkcyBiZWZv
+cmUgaXQgaXMgY2FwYWJsZSBvZiBleGFtaW5pbmcgaXRzIG1lbW9yeSBtYXAuICBUaGlzCisg
+IGlzIG5vdCB0aGUgc2FtZSB0aGluZyBhcyB0aGUgdG90YWwgYW1vdW50IG9mIG1lbW9yeSB0
+aGUga2VybmVsIG5lZWRzCisgIHRvIGJvb3QsIGJ1dCBpdCBjYW4gYmUgdXNlZCBieSBhIHJl
+bG9jYXRpbmcgYm9vdCBsb2FkZXIgdG8gaGVscAorICBzZWxlY3QgYSBzYWZlIGxvYWQgYWRk
+cmVzcyBmb3IgdGhlIGtlcm5lbC4KKwogCiAqKioqIFRIRSBJTUFHRSBDSEVDS1NVTQogCg==
+--------------060805040508090909070102--
