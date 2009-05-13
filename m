@@ -1,135 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759956AbZEMNxj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760353AbZEMNx5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759956AbZEMNxj (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:53:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752307AbZEMNx3
+	id S1760353AbZEMNx5 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:53:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756045AbZEMNxq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:53:29 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60294 "EHLO hera.kernel.org"
+	Wed, 13 May 2009 09:53:46 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60300 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750945AbZEMNx2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:53:28 -0400
-Date: Wed, 13 May 2009 13:51:49 GMT
-From: tip-bot for Rusty Russell <rusty@rustcorp.com.au>
+	id S1752307AbZEMNxp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 09:53:45 -0400
+Date: Wed, 13 May 2009 13:52:00 GMT
+From: tip-bot for Randy Dunlap <randy.dunlap@oracle.com>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
-       rusty@rustcorp.com.au, jeff@garzik.org, tglx@linutronix.de,
-       viro@zeniv.linux.org.uk, mingo@elte.hu
+       randy.dunlap@oracle.com, jeremy.fitzhardinge@citrix.com,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
 Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
-       rusty@rustcorp.com.au, jeff@garzik.org, tglx@linutronix.de,
-       viro@zeniv.linux.org.uk, mingo@elte.hu
-In-Reply-To: <200905131619.12880.rusty@rustcorp.com.au>
-References: <200905131619.12880.rusty@rustcorp.com.au>
-Subject: [tip:sched/urgent] sched: avoid flexible array member inside struct (gcc extension)
-Message-ID: <tip-61a7bca8b5c277ba35e58009e23a1e582f6748eb@git.kernel.org>
-Git-Commit-ID: 61a7bca8b5c277ba35e58009e23a1e582f6748eb
+       randy.dunlap@oracle.com, jeremy.fitzhardinge@citrix.com,
+       akpm@linux-foundation.org, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <new-submission>
+References: <new-submission>
+Subject: [tip:x86/urgent] xen: use header for EXPORT_SYMBOL_GPL
+Message-ID: <tip-44408ad7368906c84000e87a99c14a16dbb867fd@git.kernel.org>
+Git-Commit-ID: 44408ad7368906c84000e87a99c14a16dbb867fd
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 13 May 2009 13:51:51 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 13 May 2009 13:52:02 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  61a7bca8b5c277ba35e58009e23a1e582f6748eb
-Gitweb:     http://git.kernel.org/tip/61a7bca8b5c277ba35e58009e23a1e582f6748eb
-Author:     Rusty Russell <rusty@rustcorp.com.au>
-AuthorDate: Wed, 13 May 2009 16:19:12 +0930
+Commit-ID:  44408ad7368906c84000e87a99c14a16dbb867fd
+Gitweb:     http://git.kernel.org/tip/44408ad7368906c84000e87a99c14a16dbb867fd
+Author:     Randy Dunlap <randy.dunlap@oracle.com>
+AuthorDate: Tue, 12 May 2009 13:31:40 -0700
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Wed, 13 May 2009 15:17:05 +0200
+CommitDate: Wed, 13 May 2009 15:43:55 +0200
 
-sched: avoid flexible array member inside struct (gcc extension)
+xen: use header for EXPORT_SYMBOL_GPL
 
-struct sched_group and struct sched_domain end in 'unsigned long
-cpumask[]' which Jeff Garzik notes is not legal C to place inside
-another struct.  It upsets sparse and clang (LLVM's C front end).
+mmu.c needs to #include module.h to prevent these warnings:
 
-Al Viro pointed out that a union is the Right Way to do this.
+ arch/x86/xen/mmu.c:239: warning: data definition has no type or storage class
+ arch/x86/xen/mmu.c:239: warning: type defaults to 'int' in declaration of 'EXPORT_SYMBOL_GPL'
+ arch/x86/xen/mmu.c:239: warning: parameter names (without types) in function declaration
 
-[ Impact: use more standard C code ]
+[ Impact: cleanup ]
 
-Reported-by: Jeff Garzik <jeff@garzik.org>
-Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
-Acked-by: Jeff Garzik <jeff@garzik.org>
-Acked-by: Al Viro <viro@zeniv.linux.org.uk>
-LKML-Reference: <200905131619.12880.rusty@rustcorp.com.au>
+Signed-off-by: Randy Dunlap <randy.dunlap@oracle.com>
+Acked-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+LKML-Reference: <new-submission>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- kernel/sched.c |   28 +++++++++++++++-------------
- 1 files changed, 15 insertions(+), 13 deletions(-)
+ arch/x86/xen/mmu.c |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-diff --git a/kernel/sched.c b/kernel/sched.c
-index 26efa47..d1ef62c 100644
---- a/kernel/sched.c
-+++ b/kernel/sched.c
-@@ -7756,22 +7756,24 @@ int sched_smt_power_savings = 0, sched_mc_power_savings = 0;
-  * FIXME: use cpumask_var_t or dynamic percpu alloc to avoid wasting space
-  * for nr_cpu_ids < CONFIG_NR_CPUS.
-  */
--struct static_sched_group {
-+union static_sched_group {
- 	struct sched_group sg;
--	DECLARE_BITMAP(cpus, CONFIG_NR_CPUS);
-+	char _sg_and_cpus[sizeof(struct sched_group) +
-+			  BITS_TO_LONGS(CONFIG_NR_CPUS) * sizeof(long)];
- };
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index e25a78e..fba55b1 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -42,6 +42,7 @@
+ #include <linux/highmem.h>
+ #include <linux/debugfs.h>
+ #include <linux/bug.h>
++#include <linux/module.h>
  
--struct static_sched_domain {
-+union static_sched_domain {
- 	struct sched_domain sd;
--	DECLARE_BITMAP(span, CONFIG_NR_CPUS);
-+	char _sd_and_cpus[sizeof(struct sched_domain) +
-+			  BITS_TO_LONGS(CONFIG_NR_CPUS) * sizeof(long)];
- };
- 
- /*
-  * SMT sched-domains:
-  */
- #ifdef CONFIG_SCHED_SMT
--static DEFINE_PER_CPU(struct static_sched_domain, cpu_domains);
--static DEFINE_PER_CPU(struct static_sched_group, sched_group_cpus);
-+static DEFINE_PER_CPU(union static_sched_domain, cpu_domains);
-+static DEFINE_PER_CPU(union static_sched_group, sched_group_cpus);
- 
- static int
- cpu_to_cpu_group(int cpu, const struct cpumask *cpu_map,
-@@ -7787,8 +7789,8 @@ cpu_to_cpu_group(int cpu, const struct cpumask *cpu_map,
-  * multi-core sched-domains:
-  */
- #ifdef CONFIG_SCHED_MC
--static DEFINE_PER_CPU(struct static_sched_domain, core_domains);
--static DEFINE_PER_CPU(struct static_sched_group, sched_group_core);
-+static DEFINE_PER_CPU(union static_sched_domain, core_domains);
-+static DEFINE_PER_CPU(union static_sched_group, sched_group_core);
- #endif /* CONFIG_SCHED_MC */
- 
- #if defined(CONFIG_SCHED_MC) && defined(CONFIG_SCHED_SMT)
-@@ -7815,8 +7817,8 @@ cpu_to_core_group(int cpu, const struct cpumask *cpu_map,
- }
- #endif
- 
--static DEFINE_PER_CPU(struct static_sched_domain, phys_domains);
--static DEFINE_PER_CPU(struct static_sched_group, sched_group_phys);
-+static DEFINE_PER_CPU(union static_sched_domain, phys_domains);
-+static DEFINE_PER_CPU(union static_sched_group, sched_group_phys);
- 
- static int
- cpu_to_phys_group(int cpu, const struct cpumask *cpu_map,
-@@ -7843,11 +7845,11 @@ cpu_to_phys_group(int cpu, const struct cpumask *cpu_map,
-  * groups, so roll our own. Now each node has its own list of groups which
-  * gets dynamically allocated.
-  */
--static DEFINE_PER_CPU(struct static_sched_domain, node_domains);
-+static DEFINE_PER_CPU(union static_sched_domain, node_domains);
- static struct sched_group ***sched_group_nodes_bycpu;
- 
--static DEFINE_PER_CPU(struct static_sched_domain, allnodes_domains);
--static DEFINE_PER_CPU(struct static_sched_group, sched_group_allnodes);
-+static DEFINE_PER_CPU(union static_sched_domain, allnodes_domains);
-+static DEFINE_PER_CPU(union static_sched_group, sched_group_allnodes);
- 
- static int cpu_to_allnodes_group(int cpu, const struct cpumask *cpu_map,
- 				 struct sched_group **sg,
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
