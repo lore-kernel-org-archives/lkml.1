@@ -1,86 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754465AbZEMAFW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757565AbZEMAF7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754465AbZEMAFW (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 20:05:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZEMAFI
+	id S1757565AbZEMAF7 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 20:05:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752439AbZEMAFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 20:05:08 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1645 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752433AbZEMAFH (ORCPT
+	Tue, 12 May 2009 20:05:49 -0400
+Received: from fmailhost06.isp.att.net ([204.127.217.106]:34720 "EHLO
+	fmailhost06.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751980AbZEMAFs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 20:05:07 -0400
-Subject: [GIT PULL] MAINTAINERS, scripts/get_maintainer.pl, and
- Documentation/SubmittingPatches
-From: Joe Perches <joe@perches.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
-       Sam Ravnborg <sam@ravnborg.org>, randy.dunlap@oracle.com,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <1241987200.3877.9.camel@Joe-AcerAspire>
-References: <1239167872-8179-1-git-send-email-joe@perches.com>
-	 <20090417134711.ba0f03e7.randy.dunlap@oracle.com>
-	 <1240003652.31116.44.camel@localhost> <20090407081312.GH1408@ucw.cz>
-	 <1240415689.21848.19.camel@localhost>
-	 <20090422185916.GA3864@uranus.ravnborg.org>
-	 <20090422120510.cc17e470.akpm@linux-foundation.org>
-	 <1240430185.21848.103.camel@localhost>  <20090422203005.GA467@elf.ucw.cz>
-	 <1240557233.6735.240.camel@localhost>
-	 <1241987200.3877.9.camel@Joe-AcerAspire>
-Content-Type: text/plain
-Date: Tue, 12 May 2009 17:03:36 -0700
-Message-Id: <1242173016.9718.55.camel@Joe-AcerAspire>
+	Tue, 12 May 2009 20:05:48 -0400
+X-Originating-IP: [74.251.46.63]
+Date: Tue, 12 May 2009 19:05:46 -0500
+From: Jay Cliburn <jacliburn@bellsouth.net>
+To: Frank Filz <ffilzlnx@us.ibm.com>
+Cc: Grant Coady <gcoady.lk@gmail.com>,
+       linux-kernel <linux-kernel@vger.kernel.org>, neilb@suse.de,
+       bfields@fieldses.org, linux-nfs@vger.kernel.org
+Subject: Re: NFS regression?  Odd delays and lockups accessing an NFS
+ export.
+Message-ID: <20090512190546.5e8a7faf@osprey.hogchain.net>
+In-Reply-To: <1242160078.2404.6.camel@dyn9047022153>
+References: <p6lha4te54h04qdbnos1mcemdmn1cfca6s@4ax.com>
+	<20080818185048.GO20684@miggy.org>
+	<48A9CF89.9090304@bellsouth.net>
+	<1242160078.2404.6.camel@dyn9047022153>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.12.12; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch merges the P: and M: lines in MAINTAINERS
-into a single M: line for easier manual copy/pasting.
+On Tue, 12 May 2009 13:27:58 -0700
+Frank Filz <ffilzlnx@us.ibm.com> wrote:
 
-scripts/get_maintainer.pl is updated to support this
-integrated format along with a few bug fixes.
+> On Mon, 2008-08-18 at 14:37 -0500, J. K. Cliburn wrote:
+> > Athanasius wrote:
+> > > On Mon, Aug 18, 2008 at 12:02:20PM +1000, Grant Coady wrote:
+> > >> I've been using NFS here for years, lately there's something odd going on 
+> > >> since about a month or so.  Previously reported last month:
+> > >> http://www.gossamer-threads.com/lists/linux/kernel/951419?page=last
+[...]
+> > I see you're running the atl1 driver on your client.  I'm chasing an 
+> > intermittent bug in that driver that seems to be affected by certain 
+> > offload parameters.  Try disabling TSO and see if things improve.
+> 
+> Was this ever resolved? We're seeing a similar hangup in a 2.6.27
+> kernel.
 
-Documentation/SubmittingPatches is updated to recommend
-using scripts/get_maintainer.pl.
+The TSO problem in the atl1 driver was never resolved, and TSO was turned off by default with commit 82c26a9d117f0178b8c1b33429014b6d99c470f6 in the 2.6.27 cycle.  It was also added to the -stable tree at 2.6.26.4.
 
-A few patterns are updated in MAINTAINERS to track various
-renames
+http://lkml.org/lkml/2008/9/3/251
 
-The following changes since commit 1d80cac0fe44fb87b2a3d35fddd7f534ea81cd90:
-  Linus Torvalds (1):
-        Merge branch 'for-linus' of git://repo.or.cz/cris-mirror
-
-are available in the git repository at:
-
-  git://repo.or.cz/linux-2.6/trivial-mods.git gm_20090512
-
-Joe Perches (19):
-      scripts/get_maintainer.pl - Output first field only in mailing lists and after maintainers.
-      scripts/get_maintainer.pl - Better fix for subscriber-only mailing lists
-      scripts/get_maintainer.pl - improve --git-chief-penquins (Linus Torvalds) filtering
-      scripts/get_maintainer.pl - Warn on missing git or git repository
-      scripts/get_maintainer.pl - support M: lines with names and multiple entries per M: line
-      scripts/get_maintainer.pl - Better email name quoting
-      scripts/get_maintainer.pl - Support both "P:/M:" and integrated "M:" lines
-      scripts/get_maintainer.pl - Don't print maintainers when not requested
-      scripts/get_maintainer.pl - Allow 8 bit characters in email addresses
-      MAINTAINERS - Swap mismarked ECRYPT FS M: and P: entries
-      MAINTAINERS - Pair EDAC-E752X P: and M: entries
-      MAINTAINERS - Add file patterns to "THE REST"
-      MAINTAINERS - Update M32R file patterns after rename
-      MAINTAINERS - Mark ALSA lists as moderated
-      MAINTAINERS - Remove L:	linux-kernel@vger.kernel.org from all but "THE REST"
-      MAINTAINERS - Mention scripts/get_maintainer.pl in the preface
-      SubmittingPatches: Mention scripts/get_maintainer.pl and git request-pull
-      MAINTAINERS - Merge P: name and M: address entries into M: name <address>
-      MAINTAINERS - Deprecate the P: entry and describe M: more thoroughly
-
- Documentation/SubmittingPatches |    4 +
- MAINTAINERS                     | 2690 +++++++++++++--------------------------
- scripts/get_maintainer.pl       |  232 +++-
- 3 files changed, 1073 insertions(+), 1853 deletions(-)
-
-
+Jay
