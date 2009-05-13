@@ -1,112 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758413AbZEMMYG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760109AbZEMMZo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758413AbZEMMYG (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 08:24:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753507AbZEMMXu
+	id S1760109AbZEMMZo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 08:25:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757087AbZEMMZf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 08:23:50 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:60984 "EHLO
+	Wed, 13 May 2009 08:25:35 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:41636 "EHLO
 	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753256AbZEMMXu (ORCPT
+	with ESMTP id S1755070AbZEMMZe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 08:23:50 -0400
-X-Auth-Info: 8AJ2znIzx7H3WRZxS5rBn/nViX18ZD/e1995ntPkOS0=
-Message-ID: <4A0ABBD3.2030605@grandegger.com>
-Date: Wed, 13 May 2009 14:23:47 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 13 May 2009 08:25:34 -0400
+X-Auth-Info: 5HBWc7JMY2YYeJKcS4e4IbXYiIHQfnNYd1s6/3m4Gn4=
+Message-ID: <4A0ABC37.70104@denx.de>
+Date: Wed, 13 May 2009 14:25:27 +0200
+From: Anatolij Gustschin <agust@denx.de>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 3/7] [PATCH 3/8] can: CAN Network device driver and
- Netlink interface
-References: <20090512092757.048938233@denx.de><20090512092757.574693100@denx.de> <20090512233052.ecd600f1.akpm@linux-foundation.org> <4A0A9AC1.2090603@volkswagen.de> <4A0AB17B.3080308@grandegger.com> <4A0AB824.40702@volkswagen.de>
-In-Reply-To: <4A0AB824.40702@volkswagen.de>
-X-Enigmail-Version: 0.95.7
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH] mb862xxfb: use CONFIG_OF instead of CONFIG_PPC_OF
+References: <20090511222702.352192505@arndb.de>> <200905112237.12648.arnd@arndb.de>
+In-Reply-To: <200905112237.12648.arnd@arndb.de>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Hartkopp wrote:
-> Wolfgang Grandegger wrote:
->> Oliver Hartkopp wrote:
->>  
->>> Andrew Morton wrote:
->>>    
->>>> On Tue, 12 May 2009 11:28:00 +0200 Wolfgang Grandegger
->>>> <wg@grandegger.com> wrote:
->>>>
->>>>  
->>>>      
->>>>> +int can_restart_now(struct net_device *dev)
->>>>> +{
->>>>> +    struct can_priv *priv = netdev_priv(dev);
->>>>> +    struct net_device_stats *stats = &dev->stats;
->>>>> +    struct sk_buff *skb;
->>>>> +    struct can_frame *cf;
->>>>> +    int err;
->>>>> +
->>>>> +    /* Synchronize with dev->hard_start_xmit() */
->>>>> +    netif_tx_lock(dev);
->>>>> +
->>>>> +    /* Ensure that no more messages can go out */
->>>>> +    if (netif_carrier_ok(dev))
->>>>> +        netif_carrier_off(dev);
->>>>> +
->>>>> +    /* Ensure that no more messages can come in */
->>>>> +    err = priv->do_set_mode(dev, CAN_MODE_STOP);
->>>>> +    if (err)
->>>>> +        return err;
->>>>> +
->>>>> +    /*  Now it's save to clean up */
->>>>> +    del_timer_sync(&priv->restart_timer);
->>>>>             
->>>> This is deadlockable.
->>>>
->>>> It calls del_timer_sync() while holding netif_tx_lock().  But the timer
->>>> handler (can_restart_now()) also takes netif_tx_lock().  So if the
->>>> timer handler is presently running, it's sitting there spinning in
->>>> netif_tx_lock().  And del_timer_sync() is sitting there waiting for the
->>>> timer handler to complete.
->>>>
->>>>
->>>>         
->>> Hi Wolfgang,
->>>
->>> would it be an appropriate solution, just to invoke
->>>
->>> netif_stop_queue() in can_bus_off()
->>>
->>> and invoke
->>>
->>> netif_wake_queue() in can_restart_now()
->>>
->>> ???
->>>
->>> In a BUSOFF condition we're not able to send CAN frames anyway, so  we
->>> can disable the device queue and the we won't  need any netif_tx_lock()
->>> right?
->>>
->>> AFAIK this was the original implementation before some of the latest
->>> improvement with the netif_carrier stuff.
->>>
->>> What do you think?
->>>     
->>
->> The problem is the "manual" restart triggered via the netlink interface,
->> which can occur in the middle of ndo_start_xmit().
->>
->>   
-> 
-> Ah, i see.
-> 
-> What if the manual restart via netlink would also stop the queue and
-> start the timer?
+Arnd Bergmann wrote:
 
-It will not help if the restart is triggered in the middle of
-ndo_start_xmit().
+> With this change, the driver builds fine on Microblaze, which
+> helps allyesconfig compile tests.
 
-Wolfgang.
+This patch is okay, just tested it. So
+Acked-by: Anatolij Gustschin <agust@denx.de>
+
+> I did not test sparc, but the change should have the same effect there.
+
+unfortunately, OF platform part of this driver doesn't build on sparc
+as there is no of_address_to_resource() and no NO_IRQ in sparc code.
+There was an attempt to fix it by restricting the build of this part
+to PPC, see http://lkml.org/lkml/2009/1/11/376
+
+I will rebase the above mentioned patch by Julian Calaby and resubmit
+soon. Thanks.
+
+> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+> ---
+>  drivers/video/mb862xx/mb862xxfb.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/video/mb862xx/mb862xxfb.c 
+> b/drivers/video/mb862xx/mb862xxfb.c
+> index fb64234..a28e3cf 100644
+> --- a/drivers/video/mb862xx/mb862xxfb.c
+> +++ b/drivers/video/mb862xx/mb862xxfb.c
+> @@ -19,7 +19,7 @@
+>  #include <linux/init.h>
+>  #include <linux/interrupt.h>
+>  #include <linux/pci.h>
+> -#if defined(CONFIG_PPC_OF)
+> +#if defined(CONFIG_OF)
+>  #include <linux/of_platform.h>
+>  #endif
+>  #include "mb862xxfb.h"
