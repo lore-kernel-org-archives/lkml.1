@@ -1,75 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757711AbZEMGz7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756893AbZEMHRl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757711AbZEMGz7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 02:55:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752150AbZEMGzq
+	id S1756893AbZEMHRl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 03:17:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbZEMHRc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 02:55:46 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51627 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750860AbZEMGzp (ORCPT
+	Wed, 13 May 2009 03:17:32 -0400
+Received: from an-out-0708.google.com ([209.85.132.249]:5020 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751636AbZEMHRc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 02:55:45 -0400
-Date: Tue, 12 May 2009 23:53:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Wolfgang Grandegger <wg@grandegger.com>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Subject: Re: [PATCH v2 3/7] [PATCH 3/8] can: CAN Network device driver and
- Netlink interface
-Message-Id: <20090512235323.e3de5e5d.akpm@linux-foundation.org>
-In-Reply-To: <20090512233052.ecd600f1.akpm@linux-foundation.org>
-References: <20090512092757.048938233@denx.de>
-	<20090512092757.574693100@denx.de>
-	<20090512233052.ecd600f1.akpm@linux-foundation.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 May 2009 03:17:32 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090513060850.GZ31071@waste.org>
+References: <alpine.DEB.2.00.0905130118140.15823@ubuntu-desktop>
+	 <20090513060850.GZ31071@waste.org>
+Date: Wed, 13 May 2009 00:17:29 -0700
+Message-ID: <a24804730905130017t545b7645x71ab7a1c8ab4af78@mail.gmail.com>
+Subject: Re: [PATCH] [resend] drivers/net: remove network drivers' last few 
+	uses of IRQF_SAMPLE_RANDOM
+From: Chris Peterson <cpeterso@cpeterso.com>
+To: Matt Mackall <mpm@selenic.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 12 May 2009 23:30:52 -0700 Andrew Morton <akpm@linux-foundation.org> wrote:
+> The future model will continue to sample network
+> devices on theory that they -might- be less than 100% observable and
+> that can only increase our total (unmeasurable) amount of entropy.
 
-> On Tue, 12 May 2009 11:28:00 +0200 Wolfgang Grandegger <wg@grandegger.com> wrote:
-> 
-> > +int can_restart_now(struct net_device *dev)
-> > +{
-> > +	struct can_priv *priv = netdev_priv(dev);
-> > +	struct net_device_stats *stats = &dev->stats;
-> > +	struct sk_buff *skb;
-> > +	struct can_frame *cf;
-> > +	int err;
-> > +
-> > +	/* Synchronize with dev->hard_start_xmit() */
-> > +	netif_tx_lock(dev);
-> > +
-> > +	/* Ensure that no more messages can go out */
-> > +	if (netif_carrier_ok(dev))
-> > +		netif_carrier_off(dev);
-> > +
-> > +	/* Ensure that no more messages can come in */
-> > +	err = priv->do_set_mode(dev, CAN_MODE_STOP);
-> > +	if (err)
-> > +		return err;
-> > +
-> > +	/*  Now it's save to clean up */
-> > +	del_timer_sync(&priv->restart_timer);
-> 
-> This is deadlockable.
-> 
-> It calls del_timer_sync() while holding netif_tx_lock().  But the timer
-> handler (can_restart_now()) also takes netif_tx_lock().  So if the
-> timer handler is presently running, it's sitting there spinning in
-> netif_tx_lock().  And del_timer_sync() is sitting there waiting for the
-> timer handler to complete.
+That sounds reasonable to me. So should all net drivers now specify
+IRQF_SAMPLE_RANDOM?
 
-Also, I wonder if it's safe to take netif_tx_lock() from a timer
-handler when other parts of the code might be taking it from process
-context (I didn't check).
+Or even simpler: could request_irq() assume IRQF_SAMPLE_RANDOM for any
+interrupt that is not (say) IRQF_IRQPOLL or IRQF_PERCPU?
 
-lockdep should be able to detect this, and I trust this code has been
-fully runtime tested with lockdep enabled?
-
-<boggles at the size of the inlined netif_tx_lock()>
+chris
