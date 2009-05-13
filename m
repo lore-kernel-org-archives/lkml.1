@@ -1,131 +1,179 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760956AbZEMSFo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761053AbZEMSGA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760956AbZEMSFo (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 14:05:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756299AbZEMSFb
+	id S1761053AbZEMSGA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 14:06:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760574AbZEMSFt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 14:05:31 -0400
-Received: from plexity.net ([206.123.115.38]:54101 "EHLO plexity.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755558AbZEMSFa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 14:05:30 -0400
-Date: Wed, 13 May 2009 18:04:36 +0000
-From: Deepak Saxena <dsaxena@plexity.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 8250: Don't restore NS16550 mode when console suspend
-	is disabled
-Message-ID: <20090513180436.GA5592@plexity.net>
-Reply-To: dsaxena@plexity.net
-References: <20090512210015.GA25540@plexity.net> <alpine.LFD.2.01.0905121452190.3343@localhost.localdomain> <20090513011842.22d9cd6c@lxorguk.ukuu.org.uk> <20090513002850.GA28422@plexity.net> <20090513094409.50c2409f@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0905130755090.3343@localhost.localdomain> <20090513163507.556c3832@lxorguk.ukuu.org.uk>
+	Wed, 13 May 2009 14:05:49 -0400
+Received: from extu-mxob-1.symantec.com ([216.10.194.28]:55310 "EHLO
+	extu-mxob-1.symantec.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760964AbZEMSFq (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 14:05:46 -0400
+Date: Wed, 13 May 2009 19:03:47 +0100 (BST)
+From: Hugh Dickins <hugh@veritas.com>
+X-X-Sender: hugh@blonde.anvils
+To: Johannes Weiner <hannes@cmpxchg.org>
+cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/3] fix swap cache account leak at swapin-readahead
+In-Reply-To: <20090513111800.GA2254@cmpxchg.org>
+Message-ID: <Pine.LNX.4.64.0905131707330.27813@blonde.anvils>
+References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090512104603.ac4ca1f4.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090512112359.GA20771@cmpxchg.org> <20090513085816.13dc7709.kamezawa.hiroyu@jp.fujitsu.com>
+ <20090513111800.GA2254@cmpxchg.org>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="y0ulUmNC+osPPQO6"
-Content-Disposition: inline
-In-Reply-To: <20090513163507.556c3832@lxorguk.ukuu.org.uk>
-Organization: Plexity, LLC
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
---y0ulUmNC+osPPQO6
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-
-On May 13 2009, at 16:35, Alan Cox was caught saying:
-> Deepak's original patch from 2008 is actually much better. He puts the
-> chip back in the right hardware configuration for the speed. He doesn't
-> randomly regress other platforms and configurations and he does it by
-> calling the standard methods in the driver to do the job.
+On Wed, 13 May 2009, Johannes Weiner wrote:
+> On Wed, May 13, 2009 at 08:58:16AM +0900, KAMEZAWA Hiroyuki wrote:
+> > On Tue, 12 May 2009 13:24:00 +0200
+> > Johannes Weiner <hannes@cmpxchg.org> wrote:
+> > > On Tue, May 12, 2009 at 10:46:03AM +0900, KAMEZAWA Hiroyuki wrote:
+> > > > From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+> > > >
+> > > > Index: mmotm-2.6.30-May07/mm/swap_state.c
+> > > > ===================================================================
+> > > > --- mmotm-2.6.30-May07.orig/mm/swap_state.c
+> > > > +++ mmotm-2.6.30-May07/mm/swap_state.c
+> > > > @@ -349,9 +349,9 @@ struct page *read_swap_cache_async(swp_e
+> > > >  struct page *swapin_readahead(swp_entry_t entry, gfp_t gfp_mask,
+> > > >  			struct vm_area_struct *vma, unsigned long addr)
+> > > >  {
+> > > > -	int nr_pages;
+> > > > +	int nr_pages = 1;
+> > > >  	struct page *page;
+> > > > -	unsigned long offset;
+> > > > +	unsigned long offset = 0;
+> > > >  	unsigned long end_offset;
+> > > >  
+> > > >  	/*
+> > > > @@ -360,8 +360,22 @@ struct page *swapin_readahead(swp_entry_
+> > > >  	 * No, it's very unlikely that swap layout would follow vma layout,
+> > > >  	 * more likely that neighbouring swap pages came from the same node:
+> > > >  	 * so use the same "addr" to choose the same node for each swap read.
+> > > > +	 *
+> > > > +	 * But, when memcg is used, swapin readahead give us some bad
+> > > > +	 * effects. There are 2 big problems in general.
+> > > > +	 * 1. Swapin readahead tend to use/read _not required_ memory.
+> > > > +	 *    And _not required_ memory is only freed by global LRU.
+> > > > +	 * 2. We can't charge pages for swap-cache readahead because
+> > > > +	 *    we should avoid account memory in a cgroup which a
+> > > > +	 *    thread call this function is not related to.
+> > > > +	 * And swapin-readahead have racy condition with
+> > > > +	 * free_swap_and_cache(). This also annoys memcg.
+> > > > +	 * Then, if memcg is really used, we avoid readahead.
+> > > >  	 */
+> > > > -	nr_pages = valid_swaphandles(entry, &offset);
+> > > > +
+> > > > +	if (!mem_cgroup_activated())
+> > > > +		nr_pages = valid_swaphandles(entry, &offset);
+> > > > +
+> > > >  	for (end_offset = offset + nr_pages; offset < end_offset; offset++) {
+> > > >  		/* Ok, do the async read-ahead now */
+> > > >  		page = read_swap_cache_async(swp_entry(swp_type(entry), offset),
+> > > 
+> > > Having nr_pages set to 1 and offset to zero will actually enter hat
+> > > loop and try to read a swap slot at offset zero, including a
+> > > superfluous page allocation, just to fail at the swap_duplicate()
+> > > (swap slot 0 is swap header -> SWAP_MAP_BAD).
+> > > 
+> > Hmm ?
+> >  swp_entry(swp_type(entry), offset),
+> > can be zero ?
 > 
-> http://dev.laptop.org/~dsaxena/patches/console_suspend_old.patch
+> I'm not sure I understand your question.
+
+Nor I, but I think KAMEZAWA-san is suggesting that we never come here
+with offset 0 anyway.  Which I believe is correct.
+
+(And in passing, off topic, note that we have a problem if we ever
+do need to read page 0 in this way, in the swap-to-regular-file case: 
+because the swap_extents reading of page 0 can differ from sys_swapon's
+reading of the header page without swap_extents - possibly hibernate
+to swapfile can suffer from that, but not regular swapping paths.)
+
+> Whether this whole
+> expression can or can not be zero is irrelevant.  My point is that you
+> enter the readahead loop with a bogus offset, while your original
+> intention is to completey disable readahead.
+
+I don't really buy your point on offset 0 in particular: if offset 0
+is asked for, it goes through the intended motions, though you and I
+know that offset 0 will subsequently be found unsuitable; but it does
+what is asked of it.
+
+However, I do agree with you that it's silly to be entering this loop
+at all when avoiding readahead.  When doing readahead, we have to cope
+with the fact that any of the calls in the loop might have failed, so
+we do the extra, targetted read_swap_cache_async at the end, to satisfy
+the actual request.  When avoiding readahead, better just to go to that
+final read_swap_cache_async, instead of duplicating it and compensating
+with a page_cache_release too.
+
+Which is what initializing nr_pages = 0 should achieve: see how
+valid_swaphandles() returns 0 rather than 1 when avoiding readahead,
+precisely to avoid the unnecessary duplication.  So I'd recommend
+nr_pages = 0 rather than nr_pages = 1 at the top.
+
 > 
-> It also has another advantage - it fixes the behaviour for almost
-> everything in drivers/serial not just a specific uart. Technically he
-> should take tty->termios_mutex before state->mutex in that code path as
-> the upstream code has changed but in every other respect its the proper
-> solution.
+> > > How about:
+> > > 
+> > > 	if (mem_cgroup_activated())
+> > > 		goto pivot;
+> > > 	nr_pages = valid_swaphandles(...);
+> > > 	for (readahead loop)
+> > > 		...
+> > > pivot:
+> > > 	return read_swap_cache_async();
+> > > 
+> > > That will also save you the runtime initialization of nr_pages and
+> > > offset completely when the cgroup is active.  And you'll have only one
+> > > branch and no second one for offset < end_offset in the loop.  And the
+> > > lru draining, but I'm not sure about that.  I think it's not needed.
+> > > 
+> > Hmm. I'm not sure why lru_add_drain()->read_swap_cache_async() is inserted before returing
+> > to caller. Is the page to be returned isn't necessary to be on LRU ?
+> 
+> I'm not sure either.  Neither the fault handler nor concurrent
+> swap-ins seem to care.  I added Hugh on CC.
 
-I thought the fact that we were touching a core driver to fix what
-seemed like an XO issue was too intrusive.
+Thanks, though you've probably got me from git-blame identifying when
+I moved that code around: the person you really want is akpm, then
+@digeo.com, in ChangeLog-2.5.46:
 
-> So can we apply Deepak's original correct 2008 patch instead please ?
+	[PATCH] empty the deferred lru-addition buffers in swapin_readahead
+	
+	If we're about to return to userspace after performing some swap
+	readahead, the pages in the deferred-addition LRU queues could stay
+	there for some time.  So drain them after performing readahead.
 
-I've updated it with proper header and attached.
+I suspect that's a "seems like a good idea, especially if we've many cpus"
+(which I do agree with), rather than a practical finding in some workload.
+If we've read in a number of pages which quite possibly will prove of no
+use to anyone, better have them visible to reclaim on the LRU as soon as
+possible, rather than stuck indefinitely in per-cpu vectors.
 
-~Deepak
+The non-readahead case is a little different, in that you know the one
+page is really of use to someone; so it's less important to drain in
+that case, but whether worth avoiding the drain I don't know.
 
+(On the general matter of these patches: mostly these days I find no
+time to do better than let the memcg people go their own way.  I do
+like these minimal patches much better than those putting blocks of
+#ifdef'ed code into mm/page_io.c and mm/vmscan.c etc.  But we'll need
+to see what how badly suppressing readahead works out - as I've said
+before, I'm no devout believer in readahead here, but have observed
+in the past that it really does help.  I always thought that to handle
+swapin readahead correctly, the memcg people would need to record the
+cgs of what's on swap.)
 
---y0ulUmNC+osPPQO6
-Content-Type: text/x-diff; charset=us-ascii
-Content-Disposition: attachment; filename="restore_console_settings_on_suspend.patch"
-
-Set proper console speed on resume if console suspend is disabled
-    
-Commit b5b82df6, from May 2007, breaks no_console_suspend on the OLPC
-XO laptop. Basically what happens is that upon returning from resume,
-serial8250_resume_port() will reconfigure the port for high speed
-mode and all console output will be garbled, making debug of the
-resume path painful. This patch modifies uart_resume_port() to
-reset the port to the state it was in before we suspended.
-    
-Original patch by Marcelo Tosatti
-    
-Signed-off-by: Deepak Saxena <dsaxena@laptop.org>
-
-diff --git a/drivers/serial/serial_core.c b/drivers/serial/serial_core.c
-index b0bb29d..3b71038 100644
---- a/drivers/serial/serial_core.c
-+++ b/drivers/serial/serial_core.c
-@@ -2052,11 +2052,26 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *port)
- 	struct uart_state *state = drv->state + port->line;
- 	struct device *tty_dev;
- 	struct uart_match match = {port, drv};
-+	struct ktermios termios;
- 
- 	mutex_lock(&state->mutex);
- 
-+	/*
-+	 * First try to use the console cflag setting.
-+	 */
-+	memset(&termios, 0, sizeof(struct ktermios));
-+	termios.c_cflag = port->cons->cflag;
-+
-+	/*
-+	 * If that's unset, use the tty termios setting.
-+	 */
-+	if (termios.c_cflag == 0)
-+		termios = *state->info.port.tty->termios;
-+
-+
- 	if (!console_suspend_enabled && uart_console(port)) {
- 		/* no need to resume serial console, it wasn't suspended */
-+		port->ops->set_termios(port, &termios, NULL);
- 		mutex_unlock(&state->mutex);
- 		return 0;
- 	}
-@@ -2073,20 +2088,6 @@ int uart_resume_port(struct uart_driver *drv, struct uart_port *port)
- 	 * Re-enable the console device after suspending.
- 	 */
- 	if (uart_console(port)) {
--		struct ktermios termios;
--
--		/*
--		 * First try to use the console cflag setting.
--		 */
--		memset(&termios, 0, sizeof(struct ktermios));
--		termios.c_cflag = port->cons->cflag;
--
--		/*
--		 * If that's unset, use the tty termios setting.
--		 */
--		if (state->info.port.tty && termios.c_cflag == 0)
--			termios = *state->info.port.tty->termios;
--
- 		uart_change_pm(state, 0);
- 		port->ops->set_termios(port, &termios, NULL);
- 		console_start(port->cons);
-
---y0ulUmNC+osPPQO6--
+Hugh
