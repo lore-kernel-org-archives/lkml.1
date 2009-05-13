@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756717AbZEMDTn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760337AbZEMDUB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756717AbZEMDTn (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 23:19:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757419AbZEMDHd
+	id S1760337AbZEMDUB (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 23:20:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757815AbZEMDIP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 23:07:33 -0400
-Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47733 "EHLO
+	Tue, 12 May 2009 23:08:15 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:47777 "EHLO
 	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757415AbZEMDHb (ORCPT
+	with ESMTP id S1757683AbZEMDIN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 23:07:31 -0400
+	Tue, 12 May 2009 23:08:13 -0400
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Subject: [PATCH 3/4] vmscan: zone_reclaim use may_swap
+Subject: [PATCH 4/4] zone_reclaim_mode is always 0 by default
 Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
        linux-mm <linux-mm@kvack.org>,
        Andrew Morton <akpm@linux-foundation.org>,
@@ -20,61 +20,55 @@ Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
        Christoph Lameter <cl@linux-foundation.org>
 In-Reply-To: <20090513120155.5879.A69D9226@jp.fujitsu.com>
 References: <20090513120155.5879.A69D9226@jp.fujitsu.com>
-Message-Id: <20090513120651.5882.A69D9226@jp.fujitsu.com>
+Message-Id: <20090513120729.5885.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 13 May 2009 12:07:30 +0900 (JST)
+Date: Wed, 13 May 2009 12:08:12 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subject: [PATCH] vmscan: zone_reclaim use may_swap
+Subject: [PATCH] zone_reclaim_mode is always 0 by default
 
-Documentation/sysctl/vm.txt says
+Current linux policy is, if the machine has large remote node distance,
+ zone_reclaim_mode is enabled by default because we've be able to assume to 
+large distance mean large server until recently.
 
-	zone_reclaim_mode:
+Unfrotunately, recent modern x86 CPU (e.g. Core i7, Opeteron) have P2P transport
+memory controller. IOW it's NUMA from software view.
 
-	Zone_reclaim_mode allows someone to set more or less aggressive approaches to
-	reclaim memory when a zone runs out of memory. If it is set to zero then no
-	zone reclaim occurs. Allocations will be satisfied from other zones / nodes
-	in the system.
+Some Core i7 machine has large remote node distance and zone_reclaim don't
+fit desktop and small file server. it cause performance degression.
 
-	This is value ORed together of
-
-	1	= Zone reclaim on
-	2	= Zone reclaim writes dirty pages out
-	4	= Zone reclaim swaps pages
-
-
-So, "(zone_reclaim_mode & RECLAIM_SWAP) == 0" mean we don't want to reclaim
-swap-backed pages. not mapped file.
-
-Thus, may_swap is better than may_unmap.
-
+Thus, zone_reclaim == 0 is better by default. sorry, HPC gusy. 
+you need to turn zone_reclaim_mode on manually now.
 
 Signed-off-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
 Cc: Christoph Lameter <cl@linux-foundation.org>
 Cc: Rik van Riel <riel@redhat.com>
 ---
- mm/vmscan.c |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ mm/page_alloc.c |    7 -------
+ 1 file changed, 7 deletions(-)
 
-Index: b/mm/vmscan.c
+Index: b/mm/page_alloc.c
 ===================================================================
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -2387,8 +2387,8 @@ static int __zone_reclaim(struct zone *z
- 	int priority;
- 	struct scan_control sc = {
- 		.may_writepage = !!(zone_reclaim_mode & RECLAIM_WRITE),
--		.may_unmap = !!(zone_reclaim_mode & RECLAIM_SWAP),
--		.may_swap = 1,
-+		.may_unmap = 1,
-+		.may_swap = !!(zone_reclaim_mode & RECLAIM_SWAP),
- 		.swap_cluster_max = max_t(unsigned long, nr_pages,
- 					SWAP_CLUSTER_MAX),
- 		.gfp_mask = gfp_mask,
+--- a/mm/page_alloc.c
++++ b/mm/page_alloc.c
+@@ -2494,13 +2494,6 @@ static void build_zonelists(pg_data_t *p
+ 		int distance = node_distance(local_node, node);
+ 
+ 		/*
+-		 * If another node is sufficiently far away then it is better
+-		 * to reclaim pages in a zone before going off node.
+-		 */
+-		if (distance > RECLAIM_DISTANCE)
+-			zone_reclaim_mode = 1;
+-
+-		/*
+ 		 * We don't want to pressure a particular node.
+ 		 * So adding penalty to the first node in same
+ 		 * distance group to make it round-robin.
 
 
