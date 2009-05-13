@@ -1,196 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760641AbZEMRWP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760956AbZEMRXj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760641AbZEMRWP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 13:22:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757985AbZEMRV4
+	id S1760956AbZEMRXj (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 13:23:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757541AbZEMRX3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 13:21:56 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56046 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756717AbZEMRVy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 13:21:54 -0400
-Date: Wed, 13 May 2009 13:17:34 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] IO Controller: Add per-device weight and ioprio_class
-	handling
-Message-ID: <20090513171734.GA18371@redhat.com>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A0A29B5.7030109@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A0A29B5.7030109@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 13 May 2009 13:23:29 -0400
+Received: from outbound-mail-36.bluehost.com ([69.89.20.190]:58489 "HELO
+	outbound-mail-36.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754906AbZEMRX2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 13:23:28 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=JsP3uL56Qb/N22RWDfAimHFNegHbFGfuzOKXJ+48Pgo3P4Djr2T0w5LdRe1safmLkeJRm5SiLUd66gndZr5KyROWCJTc/AJR/beCQuuJ7Ek6v5Rh3yUkCggWSLLSj0zk;
+Date: Wed, 13 May 2009 10:23:16 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Alex Nixon <alex.nixon@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 06/10] x86/PCI: Enable scanning of all pci functions
+Message-ID: <20090513102316.5ef3ce4e@jbarnes-g45>
+In-Reply-To: <4A0AFE84.2040805@goop.org>
+References: <1242164891-3859-1-git-send-email-jeremy@goop.org>
+	<1242164891-3859-7-git-send-email-jeremy@goop.org>
+	<20090513095535.140134e1@jbarnes-g45>
+	<4A0AFE84.2040805@goop.org>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 10:00:21AM +0800, Gui Jianfeng wrote:
-> Hi Vivek,
-> 
-> This patch enables per-cgroup per-device weight and ioprio_class handling.
-> A new cgroup interface "policy" is introduced. You can make use of this 
-> file to configure weight and ioprio_class for each device in a given cgroup.
-> The original "weight" and "ioprio_class" files are still available. If you
-> don't do special configuration for a particular device, "weight" and 
-> "ioprio_class" are used as default values in this device.
-> 
-> You can use the following format to play with the new interface.
-> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
-> weight=0 means removing the policy for DEV.
-> 
-> Examples:
-> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
-> # echo /dev/hdb:300:2 > io.policy
-> # cat io.policy
-> dev weight class
-> /dev/hdb 300 2
-> 
-> Configure weight=500 ioprio_class=1 on /dev/hda in this cgroup
-> # echo /dev/hda:500:1 > io.policy
-> # cat io.policy
-> dev weight class
-> /dev/hda 500 1
-> /dev/hdb 300 2
-> 
-> Remove the policy for /dev/hda in this cgroup
-> # echo /dev/hda:0:1 > io.policy
-> # cat io.policy
-> dev weight class
-> /dev/hdb 300 2
-> 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> ---
->  block/elevator-fq.c |  239 +++++++++++++++++++++++++++++++++++++++++++++++++-
->  block/elevator-fq.h |   11 +++
->  2 files changed, 245 insertions(+), 5 deletions(-)
-> 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index 69435ab..7c95d55 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -12,6 +12,9 @@
->  #include "elevator-fq.h"
->  #include <linux/blktrace_api.h>
->  #include <linux/biotrack.h>
-> +#include <linux/seq_file.h>
-> +#include <linux/genhd.h>
-> +
->  
->  /* Values taken from cfq */
->  const int elv_slice_sync = HZ / 10;
-> @@ -1045,12 +1048,30 @@ struct io_group *io_lookup_io_group_current(struct request_queue *q)
->  }
->  EXPORT_SYMBOL(io_lookup_io_group_current);
->  
-> -void io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog)
-> +static struct policy_node *policy_search_node(const struct io_cgroup *iocg,
-> +					      void *key);
-> +
-> +void io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog,
-> +			  void *key)
->  {
->  	struct io_entity *entity = &iog->entity;
-> +	struct policy_node *pn;
-> +
-> +	spin_lock_irq(&iocg->lock);
-> +	pn = policy_search_node(iocg, key);
-> +	if (pn) {
-> +		entity->weight = pn->weight;
-> +		entity->new_weight = pn->weight;
-> +		entity->ioprio_class = pn->ioprio_class;
-> +		entity->new_ioprio_class = pn->ioprio_class;
-> +	} else {
-> +		entity->weight = iocg->weight;
-> +		entity->new_weight = iocg->weight;
-> +		entity->ioprio_class = iocg->ioprio_class;
-> +		entity->new_ioprio_class = iocg->ioprio_class;
-> +	}
-> +	spin_unlock_irq(&iocg->lock);
->  
+On Wed, 13 May 2009 10:08:20 -0700
+Jeremy Fitzhardinge <jeremy@goop.org> wrote:
 
-I think we need to use spin_lock_irqsave() and spin_lock_irqrestore()
-version above because it can be called with request queue lock held and we
-don't want to enable the interrupts unconditionally here.
+> Jesse Barnes wrote:
+> > On Tue, 12 May 2009 14:48:07 -0700
+> > Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> >
+> >   
+> >> From: Alex Nixon <alex.nixon@citrix.com>
+> >>
+> >> Xen may want to enable scanning of all pci functions - if for
+> >> example the device at function 0 is not passed through to the
+> >> guest, but the device at function 1 is.
+> >>
+> >> [Impact: allow passthrough of just some PCI functions.]
+> >> Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
+> >> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+> >> Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
+> >> Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
+> >> ---
+> >>  arch/x86/include/asm/pci.h |    8 +++++++-
+> >>  arch/x86/pci/common.c      |    1 +
+> >>  2 files changed, 8 insertions(+), 1 deletions(-)
+> >>
+> >> diff --git a/arch/x86/include/asm/pci.h
+> >> b/arch/x86/include/asm/pci.h index b51a1e8..092706e 100644
+> >> --- a/arch/x86/include/asm/pci.h
+> >> +++ b/arch/x86/include/asm/pci.h
+> >> @@ -21,6 +21,7 @@ struct pci_sysdata {
+> >>  extern int pci_routeirq;
+> >>  extern int noioapicquirk;
+> >>  extern int noioapicreroute;
+> >> +extern int pci_scan_all_fns;
+> >>  
+> >>  /* scan a bus after allocating a pci_sysdata for it */
+> >>  extern struct pci_bus *pci_scan_bus_on_node(int busno, struct
+> >> pci_ops *ops, @@ -48,7 +49,11 @@ extern unsigned int
+> >> pcibios_assign_all_busses(void); #else
+> >>  #define pcibios_assign_all_busses()	0
+> >>  #endif
+> >> -#define pcibios_scan_all_fns(a, b)	0
+> >> +
+> >> +static inline int pcibios_scan_all_fns(struct pci_bus *bus, int
+> >> devfn) +{
+> >> +	return pci_scan_all_fns;
+> >> +}
+> >>  
+> >>  extern unsigned long pci_mem_start;
+> >>  #define PCIBIOS_MIN_IO		0x1000
+> >> @@ -130,6 +135,7 @@ extern void pci_iommu_alloc(void);
+> >>  
+> >>  /* generic pci stuff */
+> >>  #include <asm-generic/pci.h>
+> >> +#undef pcibios_scan_all_fns
+> >>     
+> >
+> > This is a little gross... But then I don't see any places where it's
+> > actually defined to something true either.
+> 
+> I've got some code to set it in a series I haven't posted yet.
+> 
+> >   Maybe it should be a weak
+> > function or a new HAVE_FOO define instead.
+> >   
+> 
+> I'd probably go the weak function path if I were to do either of
+> those, but do you think it would be significantly better?
 
-I hit following lock validator warning.
+Well it would avoid the #undef, which is the gross part.  But since
+it's just a boolean, you could also do
 
- 
-[   81.521242] =================================
-[   81.522127] [ INFO: inconsistent lock state ]
-[   81.522127] 2.6.30-rc4-ioc #47
-[   81.522127] ---------------------------------
-[   81.522127] inconsistent {IN-SOFTIRQ-W} -> {SOFTIRQ-ON-W} usage.
-[   81.522127] io-group-bw-tes/4138 [HC0[0]:SC0[0]:HE1:SE1] takes:
-[   81.522127]  (&q->__queue_lock){+.?...}, at: [<ffffffff811d7b2e>] __make_request+0x35/0x396
-[   81.522127] {IN-SOFTIRQ-W} state was registered at:
-[   81.522127]   [<ffffffffffffffff>] 0xffffffffffffffff
-[   81.522127] irq event stamp: 1006
-[   81.522127] hardirqs last  enabled at (1005): [<ffffffff810c1198>] kmem_cache_alloc+0x9d/0x105
-[   81.522127] hardirqs last disabled at (1006): [<ffffffff8150343f>] _spin_lock_irq+0x12/0x3e
-[   81.522127] softirqs last  enabled at (286): [<ffffffff81042039>] __do_softirq+0x17a/0x187
-[   81.522127] softirqs last disabled at (271): [<ffffffff8100ccfc>] call_softirq+0x1c/0x34
-[   81.522127] 
-[   81.522127] other info that might help us debug this:
-[   81.522127] 3 locks held by io-group-bw-tes/4138:
-[   81.522127]  #0:  (&type->i_mutex_dir_key#4){+.+.+.}, at: [<ffffffff810cfd2c>] do_lookup+0x82/0x15f
-[   81.522127]  #1:  (&q->__queue_lock){+.?...}, at: [<ffffffff811d7b2e>] __make_request+0x35/0x396
-[   81.522127]  #2:  (rcu_read_lock){.+.+..}, at: [<ffffffff811e55bb>] __rcu_read_lock+0x0/0x30
-[   81.522127] 
-[   81.522127] stack backtrace:
-[   81.522127] Pid: 4138, comm: io-group-bw-tes Not tainted 2.6.30-rc4-ioc #47
-[   81.522127] Call Trace:
-[   81.522127]  [<ffffffff8105edad>] valid_state+0x17c/0x18f
-[   81.522127]  [<ffffffff8105eb8a>] ? check_usage_backwards+0x0/0x52
-[   81.522127]  [<ffffffff8105ee9b>] mark_lock+0xdb/0x1ff
-[   81.522127]  [<ffffffff8105f00c>] mark_held_locks+0x4d/0x6b
-[   81.522127]  [<ffffffff8150331a>] ? _spin_unlock_irq+0x2b/0x31
-[   81.522127]  [<ffffffff8105f13e>] trace_hardirqs_on_caller+0x114/0x138
-[   81.522127]  [<ffffffff8105f16f>] trace_hardirqs_on+0xd/0xf
-[   81.522127]  [<ffffffff8150331a>] _spin_unlock_irq+0x2b/0x31
-[   81.522127]  [<ffffffff811e5534>] ? io_group_init_entity+0x2a/0xb1
-[   81.522127]  [<ffffffff811e5597>] io_group_init_entity+0x8d/0xb1
-[   81.522127]  [<ffffffff811e688e>] ? io_group_chain_alloc+0x49/0x167
-[   81.522127]  [<ffffffff811e68fe>] io_group_chain_alloc+0xb9/0x167
-[   81.522127]  [<ffffffff811e6a04>] io_find_alloc_group+0x58/0x85
-[   81.522127]  [<ffffffff811e6aec>] io_get_io_group+0x6e/0x94
-[   81.522127]  [<ffffffff811e6d8c>] io_group_get_request_list+0x10/0x21
-[   81.522127]  [<ffffffff811d7021>] blk_get_request_list+0x9/0xb
-[   81.522127]  [<ffffffff811d7ab0>] get_request_wait+0x132/0x17b
-[   81.522127]  [<ffffffff811d7dc1>] __make_request+0x2c8/0x396
-[   81.522127]  [<ffffffff811d6806>] generic_make_request+0x1f2/0x28c
-[   81.522127]  [<ffffffff810e9ee7>] ? bio_init+0x18/0x32
-[   81.522127]  [<ffffffff811d8019>] submit_bio+0xb1/0xbc
-[   81.522127]  [<ffffffff810e61c1>] submit_bh+0xfb/0x11e
-[   81.522127]  [<ffffffff8111f554>] __ext3_get_inode_loc+0x263/0x2c2
-[   81.522127]  [<ffffffff81122286>] ext3_iget+0x69/0x399
-[   81.522127]  [<ffffffff81125b92>] ext3_lookup+0x81/0xd0
-[   81.522127]  [<ffffffff810cfd81>] do_lookup+0xd7/0x15f
-[   81.522127]  [<ffffffff810d15c2>] __link_path_walk+0x319/0x67f
-[   81.522127]  [<ffffffff810d1976>] path_walk+0x4e/0x97
-[   81.522127]  [<ffffffff810d1b48>] do_path_lookup+0x115/0x15a
-[   81.522127]  [<ffffffff810d0fec>] ? getname+0x19d/0x1bf
-[   81.522127]  [<ffffffff810d252a>] user_path_at+0x52/0x8c
-[   81.522127]  [<ffffffff811ee668>] ? __up_read+0x1c/0x8c
-[   81.522127]  [<ffffffff8150379b>] ? _spin_unlock_irqrestore+0x3f/0x47
-[   81.522127]  [<ffffffff8105f13e>] ? trace_hardirqs_on_caller+0x114/0x138
-[   81.522127]  [<ffffffff810cb6c1>] vfs_fstatat+0x35/0x62
-[   81.522127]  [<ffffffff811ee6d0>] ? __up_read+0x84/0x8c
-[   81.522127]  [<ffffffff810cb7bb>] vfs_stat+0x16/0x18
-[   81.522127]  [<ffffffff810cb7d7>] sys_newstat+0x1a/0x34
-[   81.522127]  [<ffffffff8100c5e9>] ? retint_swapgs+0xe/0x13
-[   81.522127]  [<ffffffff8105f13e>] ? trace_hardirqs_on_caller+0x114/0x138
-[   81.522127]  [<ffffffff8107f771>] ? audit_syscall_entry+0xfe/0x12a
-[   81.522127]  [<ffffffff8100bb2b>] system_call_fastpath+0x16/0x1b
+#ifndef PCI_SCAN_ALL_FNS
+#define PCI_SCAN_ALL_FNS 0
+#endif
 
-Thanks
-Vivek
+in the generic code, then just set it to 1 before asm-generic/pci.h
+gets included.  That would mean updating arch code though.
 
+Anyway it's not a big deal, this code is already ugly (a 0 define for
+all arches?  why?) so you shouldn't have to spend too much time
+cleaning it up.
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
