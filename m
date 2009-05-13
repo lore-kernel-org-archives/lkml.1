@@ -1,173 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761547AbZEMU4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761591AbZEMVGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761547AbZEMU4T (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 16:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757188AbZEMU4G
+	id S1761591AbZEMVGz (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 17:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761211AbZEMVGq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 16:56:06 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:51041 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761224AbZEMU4E (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 16:56:04 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/6] PM/Hibernate: Rework shrinking of memory
-Date: Wed, 13 May 2009 22:55:03 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
-Cc: linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com,
-       linux-kernel@vger.kernel.org, pavel@ucw.cz, nigel@tuxonice.net,
-       rientjes@google.com, linux-mm@kvack.org
-References: <200905070040.08561.rjw@sisk.pl> <200905131039.26778.rjw@sisk.pl> <20090513123409.302f4307.akpm@linux-foundation.org>
-In-Reply-To: <20090513123409.302f4307.akpm@linux-foundation.org>
+	Wed, 13 May 2009 17:06:46 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:37912 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760864AbZEMVGp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 17:06:45 -0400
+Message-ID: <4A0B3605.8090007@zytor.com>
+Date: Wed, 13 May 2009 14:05:09 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: Jeff Garzik <jeff@garzik.org>
+CC: Hitoshi Mitake <h.mitake@gmail.com>, Roland Dreier <rdreier@cisco.com>,
+       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>, tglx@linutronix.de,
+       rpjday@crashcourse.ca, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
+References: <49EE37AF.4020507@zytor.com>	 <20090421.173123.191021055.davem@davemloft.net>	 <adak55438gp.fsf_-_@cisco.com>	 <20090428.221228.217954247.davem@davemloft.net>	 <20090429115654.GC11586@elte.hu> <49F843BC.7020902@garzik.org>	 <adahc071ie4.fsf@cisco.com> <49F8B1A1.4010208@garzik.org> <a6b9f31a0905122232s2d23b4e3h6e447c3fa5c29ee6@mail.gmail.com> <4A0B30D0.4060806@garzik.org>
+In-Reply-To: <4A0B30D0.4060806@garzik.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905132255.04681.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 May 2009, Andrew Morton wrote:
-> On Wed, 13 May 2009 10:39:25 +0200
-> "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
+Jeff Garzik wrote:
 > 
-> > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > 
-> > Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
-> > just once to make some room for the image and then allocates memory
-> > to apply more pressure to the memory management subsystem, if
-> > necessary.
-> > 
-> > Unfortunately, we don't seem to be able to drop shrink_all_memory()
-> > entirely just yet, because that would lead to huge performance
-> > regressions in some test cases.
-> > 
+> Roland's patch was acked, apparently, _in spite of_ the commonly 
+> accepted readq() definition already being in use!
 > 
-> Isn't this a somewhat large problem?
+> Thusfar, I see two things:
+> 
+> (1) years of history has shown that non-atomic readq/writeq on 32-bit 
+> platforms has been sufficient, based on testing and experience.  In 
+> fact, in niu's case, a common readq/writeq would have PREVENTED a bug.
+> 
+> (2) unspecified fears continue to linger about non-atomicity
+> 
+> We should not base decisions on fear, particularly when the weight of 
+> evidence and experience points in the other direction.
+> 
 
-Yes, it is.  The thing is 8 times slower (15 s vs 2 s) without the
-shrink_all_memory() in at least one test case.  100% reproducible.
+I have personally dealt with at least one device who'd want to opt out
+of a standard readq/writeq (it's not in-tree because it never shipped,
+unfortunately.)  Doing the opt-in headers seems like a reasonable thing
+to do to me, but perhaps I'm just being overly paranoid.
 
-> The main point (I thought) was to remove shrink_all_memory().  Instead,
-> we're retaining it and adding even more stuff?
+	-hpa
 
-The idea is that afterwards we can drop shrink_all_memory() once the
-performance problem has been resolved.  Also, we now allocate memory for the
-image using GFP_KERNEL instead of doing it with GFP_ATOMIC after freezing
-devices.  I'd think that's an improvement?
-
-> > +/**
-> > + * compute_fraction - Compute approximate fraction x * (a/b)
-> > + * @x: Number to multiply.
-> > + * @numerator: Numerator of the fraction (a).
-> > + * @denominator: Denominator of the fraction (b).
-> >   *
-> > - *	Notice: all userland should be stopped before it is called, or
-> > - *	livelock is possible.
-> > + * Compute an approximate value of the expression x * (a/b), where a is less
-> > + * than b, all x, a, b are unsigned longs and x * a may be greater than the
-> > + * maximum unsigned long.
-> >   */
-> > +static unsigned long compute_fraction(
-> > +	unsigned long x, unsigned long numerator, unsigned long denominator)
-> 
-> I can't say I'm a great fan of the code layout here.
-> 
-> static unsigned long compute_fraction(unsigned long x, unsigned long numerator, unsigned long denominator)
-> 
-> or
-> 
-> static unsigned long compute_fraction(unsigned long x, unsigned long numerator,
-> 					unsigned long denominator)
-> 
-> would be more typical.
-
-OK
- 
-> > +{
-> > +	unsigned long ratio = (numerator << FRACTION_SHIFT) / denominator;
-> >  
-> > -#define SHRINK_BITE	10000
-> > -static inline unsigned long __shrink_memory(long tmp)
-> > +	x *= ratio;
-> > +	return x >> FRACTION_SHIFT;
-> > +}
-> 
-> Strange function.  Would it not be simpler/clearer to do it with 64-bit
-> scalars, multiplication and do_div()?
-
-Sure, I can do it this way too.  Is it fine to use u64 for this purpose?
-
-> > +static unsigned long highmem_size(
-> > +	unsigned long size, unsigned long highmem, unsigned long count)
-> > +{
-> > +	return highmem > count / 2 ?
-> > +			compute_fraction(size, highmem, count) :
-> > +			size - compute_fraction(size, count - highmem, count);
-> > +}
-> 
-> This would be considerably easier to follow if we know what the three
-> arguments represent.  Amount of memory?  In what units?  `count' of
-> what?
-> 
-> The `count/2' thing there is quite mysterious.
-> 
-> <does some reverse-engineering>
-> 
-> OK, `count' is "the number of pageframes we can use".  (I don't think I
-> helped myself a lot there).  But what's up with that divde-by-two?
-> 
-> <considers poking at callers to work out what `size' is>
-> 
-> <gives up>
-> 
-> Is this code as clear as we can possibly make it??
-
-Heh
-
-OK, I'll do my best to clean it up.
-
-> > +#else
-> > +static inline unsigned long preallocate_image_highmem(unsigned long nr_pages)
-> > +{
-> > +	return 0;
-> > +}
-> > +
-> > +static inline unsigned long highmem_size(
-> > +	unsigned long size, unsigned long highmem, unsigned long count)
-> >  {
-> > -	if (tmp > SHRINK_BITE)
-> > -		tmp = SHRINK_BITE;
-> > -	return shrink_all_memory(tmp);
-> > +	return 0;
-> >  }
-> > +#endif /* CONFIG_HIGHMEM */
-> >  
-> > +/**
-> > + * swsusp_shrink_memory -  Make the kernel release as much memory as needed
-> > + *
-> > + * To create a hibernation image it is necessary to make a copy of every page
-> > + * frame in use.  We also need a number of page frames to be free during
-> > + * hibernation for allocations made while saving the image and for device
-> > + * drivers, in case they need to allocate memory from their hibernation
-> > + * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
-> > + * respectively, both of which are rough estimates).  To make this happen, we
-> > + * compute the total number of available page frames and allocate at least
-> > + *
-> > + * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
-> > + *
-> > + * of them, which corresponds to the maximum size of a hibernation image.
-> > + *
-> > + * If image_size is set below the number following from the above formula,
-> > + * the preallocation of memory is continued until the total number of saveable
-> > + * pages in the system is below the requested image size or it is impossible to
-> > + * allocate more memory, whichever happens first.
-> > + */
-> 
-> OK, that helps.
-
-Great!
-
-Thanks for the comments. :-)
