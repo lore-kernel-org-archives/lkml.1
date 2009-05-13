@@ -1,78 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759060AbZEMMaM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbZEMMvd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759060AbZEMMaM (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 08:30:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755248AbZEMM34
+	id S1757418AbZEMMvd (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 08:51:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756018AbZEMMvW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 08:29:56 -0400
-Received: from msux-gh1-uea02.nsa.gov ([63.239.67.2]:44812 "EHLO
-	msux-gh1-uea02.nsa.gov" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753507AbZEMM34 (ORCPT
+	Wed, 13 May 2009 08:51:22 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:47659 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755489AbZEMMvW convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 08:29:56 -0400
-Subject: Re: [patch 00/13] devtmpfs patches
-From: Stephen Smalley <sds@tycho.nsa.gov>
-To: Kay Sievers <kay.sievers@vrfy.org>
-Cc: "David P. Quigley" <dpquigl@tycho.nsa.gov>, Greg KH <greg@kroah.com>,
-       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>,
-       Jan Blunck <jblunck@suse.de>, James Morris <jmorris@namei.org>,
-       Eric Paris <eparis@parisplace.org>, David Howells <dhowells@redhat.com>
-In-Reply-To: <1242168913.6711.9.camel@poy>
-References: <20090509143742.GA27663@kroah.com>
-	 <1242063630.6624.22.camel@moss-terrapins.epoch.ncsc.mil>
-	 <20090511175626.GA4758@kroah.com>
-	 <1242074517.6624.183.camel@moss-terrapins.epoch.ncsc.mil>
-	 <ac3eb2510905111405y5541117euf84dd38d39012bd0@mail.gmail.com>
-	 <1242132344.31807.48.camel@localhost.localdomain>
-	 <ac3eb2510905120810n101dff08yfa945a2ab4b17168@mail.gmail.com>
-	 <1242142528.31807.80.camel@localhost.localdomain>
-	 <ac3eb2510905120854y7b44f608odf25af159fd6495c@mail.gmail.com>
-	 <1242168913.6711.9.camel@poy>
-Content-Type: text/plain
-Organization: National Security Agency
-Date: Wed, 13 May 2009 08:22:22 -0400
-Message-Id: <1242217342.9974.10.camel@localhost.localdomain>
+	Wed, 13 May 2009 08:51:22 -0400
+Message-Id: <4A0ADE6A0200007800000BA7@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Wed, 13 May 2009 13:51:22 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Tejun Heo" <TeHeo@novell.com>
+Cc: "Ingo Molnar" <mingo@elte.hu>, "Andi Kleen" <andi@firstfloor.org>,
+       <linux-kernel@vger.kernel.org>
+Subject: Re: remap allocator for per-CPU memory
+References: <4A09B23B02000078000007F1@vpn.id2.novell.com>
+ <4A09991E.9010903@kernel.org> <4A0A9C70.6090803@novell.com>
+ <87vdo5l0u6.fsf@basil.nowhere.org> <4A0AAB6B.3090903@novell.com>
+ <4A0AAF10.3030709@novell.com>
+In-Reply-To: <4A0AAF10.3030709@novell.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-13 at 00:55 +0200, Kay Sievers wrote:
-> On Tue, 2009-05-12 at 17:54 +0200, Kay Sievers wrote:
-> > On Tue, May 12, 2009 at 17:35, Stephen Smalley <sds@tycho.nsa.gov> wrote:
-> > 
-> > > I think the issue is that the devtmpfs functions are calling vfs helpers
-> > > to create and unlink the device nodes, and those helpers apply
-> > > permission checks based on the current process' credentials.  I think a
-> > > similar issue arose in sysfs a while ago.  Options are to either bypass
-> > > the vfs helpers to avoid that permission checking for what I think are
-> > > intended to be kernel-internal operations, or to override credentials
-> > > temporarily around the calls to the vfs helpers, ala:
-> > > new_cred = prepare_kernel_cred(NULL);
-> > > old_cred  = override_creds(new_cred);
-> > > rc = vfs_mknod(...);
-> > > revert_creds(old_cred);
-> > 
-> > Ah, I see.
-> 
-> Here is the current state of the patch. It would be great, if you can
-> have a quick look, if that matches what you meant. It runs fine here,
-> but I didn't try any security enforcing software so far, which might run
-> into trouble without the credential stuff.
+>>> Tejun Heo <teheo@novell.com> 13.05.09 13:29 >>>
+>Tejun Heo wrote:
+>> Andi Kleen wrote:
+>>> Tejun Heo <teheo@novell.com> writes:
+>>>> Okay, just glanced over the pageattr code.  I don't think we need any
+>>>> special provisions for this as long as the TLB is fine with having
+>>>> overlapping PMD and PTE mappings with different attributes (please
+>>>> note that these two mappings aren't occupying the same linear
+>>>> addresses - they're aliases).  This is allowed, right?
+>>> Nope.
+>> 
+>> Yeah, I'm going through the manual now and can't find anything which
+>> allows such behavior.  I haven't been able to find anything which
+>>> describes what happens between large page and 4k page aliases.
+>> Aieee...  I'll dig through the manual a bit more and see whether this
+>> can be worked around somehow.  :-(
+>
+>Looks like we're screwed.
+>
+>I couldn't find anything explicitly prohibiting PMD/PTE aliases w/
+>different attributes although there are plenty of warnings and don'ts
+>against giving different attributes to the same linear addresses.  At
+>any rate, it definitely looks way too dangerous to depend on.
+>
+>And, set_memory_*() is basically allowed on any memory allocated via
+>get_free_page(), so... we're between rock and hard place.  Looks like
+>remapping partially using large pages is no go.
+>
+>Any ideas?
 
-I think you'll actually need to switch credentials around the entire
-sequence starting from vfs_path_lookup() and going through the
-vfs_mknod() call in order to avoid any denials from vfs_path_lookup,
-vfs_mkdir (via create_path), and vfs_mknod.
+I think the only two alternatives are
 
-Then the same issue applies to devtmpfs_delete_node() to prevent unlink
-denials against the current process when a node is removed, similarly
-wrapping everything from the vfs_path_lookup() through the final
-delete_path() call.
+(a) don't use large pages in the first place here, or
 
--- 
-Stephen Smalley
-National Security Agency
+(b) teach the pageattr code to handle the per-CPU virtual area similarly to
+the kernel space for x86-64 (though it's going to be a little more complicated
+since there's no pre-determined relation between the virtual and physical
+addresses - the necessary lookup might become expensive on systems with
+very many [possible] CPUs).
+
+Jan
 
