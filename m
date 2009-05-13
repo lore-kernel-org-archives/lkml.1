@@ -1,84 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759889AbZEMLld@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758923AbZEMLlt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759889AbZEMLld (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 07:41:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbZEMLlW
+	id S1758923AbZEMLlt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 07:41:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758532AbZEMLlZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 07:41:22 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:39273 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753016AbZEMLlV convert rfc822-to-8bit (ORCPT
+	Wed, 13 May 2009 07:41:25 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:58842 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759026AbZEMLlY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 07:41:21 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=GwcCzVgmqpZRZGEz5KKDdEP7P5pGCwTtFEUa5hQRT0fOZfY6H9Fw7T5dwJBnRtJ7t7
-         kgnGJjb4/iIbpCTrJJFuBibyJwKlsUQJ7XlvOkH1ITNft5tMCaXlQ+v4BCoRc/1r1LZf
-         eeJB+u4ZTT39xIrm5yFxQwwUyRlqrb2CJFZZs=
-MIME-Version: 1.0
-In-Reply-To: <20090513113817.GO19296@one.firstfloor.org>
-References: <20090513172904.7234.A69D9226@jp.fujitsu.com>
-	 <87r5ytl0nn.fsf@basil.nowhere.org>
-	 <2f11576a0905130418w1782f85j12cb938e92d256ff@mail.gmail.com>
-	 <20090513113817.GO19296@one.firstfloor.org>
-Date: Wed, 13 May 2009 20:41:21 +0900
-Message-ID: <28c262360905130441q8c904faq1d3e5152fada7a85@mail.gmail.com>
-Subject: Re: [PATCH] Kconfig: CONFIG_UNEVICTABLE_LRU move into EMBEDDED 
-	submenu
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>, Minchan@firstfloor.org
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Wed, 13 May 2009 07:41:24 -0400
+Date: Wed, 13 May 2009 13:46:47 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Tejun Heo <teheo@novell.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Jan Beulich <JBeulich@novell.com>,
+       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+Subject: Re: remap allocator for per-CPU memory
+Message-ID: <20090513114647.GQ19296@one.firstfloor.org>
+References: <4A09B23B02000078000007F1@vpn.id2.novell.com> <4A09991E.9010903@kernel.org> <4A0A9C70.6090803@novell.com> <87vdo5l0u6.fsf@basil.nowhere.org> <4A0AAB6B.3090903@novell.com> <4A0AAF10.3030709@novell.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A0AAF10.3030709@novell.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Andi.
+> I couldn't find anything explicitly prohibiting PMD/PTE aliases w/
+> different attributes although there are plenty of warnings and don'ts
+> against giving different attributes to the same linear addresses.  At
+> any rate, it definitely looks way too dangerous to depend on.
 
-On Wed, May 13, 2009 at 8:38 PM, Andi Kleen <andi@firstfloor.org> wrote:
->> In past days, I proposed this. but Minchan found this config bloat kernel 7kb
->> and he claim embedded guys should have selectable chance. I agreed it.
->
-> Well there's lots of code in the kernel and 7k doesn't seem worth bothering.
-> If you just save two pages of memory somewhere you can save more.
->
->> Is this enough explanation?
->
-> It's not a very good one.
->
-> I would propose to just remove it or at least hide it completely
-> and only make it dependent on CONFIG_MMU inside Kconfig.
+It is. We've had data corruption because of this in the past.
+Worse it's very subtle data corruption, taking a long time
+to track down. So yes it's definitely dangerous.
+> 
+> And, set_memory_*() is basically allowed on any memory allocated via
+> get_free_page(), so... we're between rock and hard place.  Looks like
 
-I thought this feature don't have a big impact on embedded.
-At First, 7K is not important but as time goes by, it could be huge
-with very small size feature for server or desktop.
+The x86-64 kernel has the text mapping alias which had similar problems.
+That was avoided by special casing this.
 
-So I wanted to add it with optionally. :)
+> remapping partially using large pages is no go.
 
-In future, embedded also have a big ram then we can remove optional
-config completely, I think.
+I'm not sure it was ever a good idea because most CPUs have much less
+large TLB entries than small entries. 
+(in some cases the difference is dramatic, a few older cores
+only had something like 4 2/4MB entries) 
+Unless it's really a lot of memory you're talking about here
+it's probably better to use small pages for such specific
+purposes.
 
+The other issue is that with 1GB pages used in the direct mapping
+the problem generally gets much worse. Although luckily it only
+hits because there is some dumb kernel code which always forces
+smaller pages for GB 0 and 4.
 
-> -Andi
->
-> --
-> ak@linux.intel.com -- Speaking for myself only.
->
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
->
-
-
-
+-Andi
 -- 
-Kinds regards,
-Minchan Kim
+ak@linux.intel.com -- Speaking for myself only.
