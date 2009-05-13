@@ -1,55 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758105AbZEMNBb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbZEMNDU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758105AbZEMNBb (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:01:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757309AbZEMNBG
+	id S1758049AbZEMNDU (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:03:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbZEMNDH
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:01:06 -0400
-Received: from rv-out-0506.google.com ([209.85.198.226]:4781 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754850AbZEMNBE (ORCPT
+	Wed, 13 May 2009 09:03:07 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:58573 "EHLO
+	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1751884AbZEMNDG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:01:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=bJSl4P9imRObMpeZJ+P4pyyIFaaR6/jGqp+usZNLmpwKWGTJT1w9H69DtW+mLxaiDR
-         lV6iBD05wfr0/4NVv0YKCgkdlbxh+Qxsaoo07iQxlWqlWpaZoyWCNS94ezoSSFVJNY75
-         kIEaAcqQeY3f139+oc8dpvUxk5egO3vg9R1As=
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: gregkh@suse.de
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Alexander Beregalov <a.beregalov@gmail.com>
-Subject: [PATCH 2/2] Staging: comedi: data.c should include delay.h
-Date: Wed, 13 May 2009 17:00:48 +0400
-Message-Id: <1242219648-16165-2-git-send-email-a.beregalov@gmail.com>
-X-Mailer: git-send-email 1.6.3
-In-Reply-To: <1242219648-16165-1-git-send-email-a.beregalov@gmail.com>
-References: <1242219648-16165-1-git-send-email-a.beregalov@gmail.com>
+	Wed, 13 May 2009 09:03:06 -0400
+Date: Wed, 13 May 2009 15:03:02 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Marc Dionne <marc.c.dionne@gmail.com>
+cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       sukadev@linux.vnet.ibm.com, "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression in 2.6.30 - /dev/pts - mount options - bisected
+In-Reply-To: <6041d2000905081454x4c9d8818oaccbcd14d1f4a506@mail.gmail.com>
+Message-ID: <alpine.LRH.2.00.0905131440010.28386@vixen.sonytel.be>
+References: <6041d2000905081454x4c9d8818oaccbcd14d1f4a506@mail.gmail.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Fix this build error:
-.../data.c:86: error: implicit declaration of function 'udelay'
+On Fri, 8 May 2009, Marc Dionne wrote:
+> I ran into a regression from 2.6.29 to 2.6.30 on a newly installed
+> fedora 11 machine.  The symptom is that things that require /dev/pts
+> (gnome-terminal, konsole, xterm, etc.) don't work for a regular user,
+> but run fine as root.  Everything is fine with the fedora 2.6.29
+> kernel or with a self-compiled 2.6.29, but fail with a recent
+> 2.6.30-rc.
 
-Signed-off-by: Alexander Beregalov <a.beregalov@gmail.com>
----
- drivers/staging/comedi/kcomedilib/data.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+When investigating a different issue on Fedora 11 on PS3, I ran into the same
+problem with a 2.6.30-rc4 Fedora kernel, and with plain 2.6.30-rc4 kernels
+built using a config based on the Fedora config.
 
-diff --git a/drivers/staging/comedi/kcomedilib/data.c b/drivers/staging/comedi/kcomedilib/data.c
-index 3e5fe2c..c26df4e 100644
---- a/drivers/staging/comedi/kcomedilib/data.c
-+++ b/drivers/staging/comedi/kcomedilib/data.c
-@@ -26,6 +26,7 @@
- #include "../comedidev.h"
- 
- #include <linux/string.h>
-+#include <asm/delay.h>
- 
- int comedi_data_write(void *dev, unsigned int subdev, unsigned int chan,
- 	unsigned int range, unsigned int aref, unsigned int data)
--- 
-1.6.3
+> Bisection pinpoints this commit:
+> http://git.kernel.org/linus/1bd7903560f1f713e85188a5aaf4d2428b6c8b50
+> as the culprit, although I think that's a bit misleading.
 
+I didn't go a far as bisecting, but strace did show it failed on opening
+/dev/pts/something.
+
+> Note that I have CONFIG_DEVPTS_MULTIPLE_INSTANCES=y.  It may be that
+> user space is doing something unusual, but it passes the test of
+> "works with 2.6.29, fails with 2.6.30".
+
+Yes, it works fine with 2.6.29, so it's a regression.
+
+> I wasn't able to reproduce on an other system with a similar configuration.
+
+Originally, I couldn't reproduce the problem with kernels built using my
+default config, which has CONFIG_DEVPTS_MULTIPLE_INSTANCES=n.
+
+And indeed, disabling CONFIG_DEVPTS_MULTIPLE_INSTANCES in the Fedora-based
+config makes the problem go away, and brings back my terminal-emulators.
+
+With kind regards,
+
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
+
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
+
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
