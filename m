@@ -1,55 +1,204 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758935AbZEMJv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbZEMJ4B@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758935AbZEMJv3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 05:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755248AbZEMJvT
+	id S1758950AbZEMJ4B (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 05:56:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756689AbZEMJzw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 05:51:19 -0400
-Received: from av-gw1.cc.tut.fi ([130.230.130.110]:57184 "EHLO
-	av-gw1.cc.tut.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753256AbZEMJvS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 05:51:18 -0400
-X-AuditID: 82e6826e-a44c3bb0000009be-7c-4a0a91972bce 
-Date: Wed, 13 May 2009 12:23:35 +0300
-From: Petri Kaukasoina <kaukasoina704m93hd7@sci.fi>
-To: Ulrich Windl <ulrich.windl@rz.uni-regensburg.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-       Clark Williams <williams@redhat.com>, zippel@linux-m68k.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] tsc_khz= boot option to avoid TSC calibration variance
-Message-ID: <20090513092335.GA22832@elektroni.phys.tut.fi>
-Mail-Followup-To: Ulrich Windl <ulrich.windl@rz.uni-regensburg.de>,
-	Thomas Gleixner <tglx@linutronix.de>, linux-kernel@vger.kernel.org,
-	Clark Williams <williams@redhat.com>, zippel@linux-m68k.org,
-	Ingo Molnar <mingo@elte.hu>
-References: <alpine.LFD.2.00.0905130027530.3561@localhost.localdomain> <4A0A9A23.24720.54D53C4@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 13 May 2009 05:55:52 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:33233 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757583AbZEMJzu (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 05:55:50 -0400
+Date: Wed, 13 May 2009 10:55:47 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>
+Subject: Re: [PATCH 1/3] x86: remove MEMORY_HOTPLUG_RESERVE related code
+Message-ID: <20090513095547.GB12905@csn.ul.ie>
+References: <4A05269D.8000701@kernel.org> <20090512111623.GG25923@csn.ul.ie> <4A0A5AA9.707@kernel.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
 Content-Disposition: inline
-In-Reply-To: <4A0A9A23.24720.54D53C4@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
-User-Agent: Mutt/1.4.2.3i
-X-Brightmail-Tracker: AAAAAA==
+In-Reply-To: <4A0A5AA9.707@kernel.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 09:59:59AM +0200, Ulrich Windl wrote:
-> On 13 May 2009 at 0:42, Thomas Gleixner wrote:
+On Tue, May 12, 2009 at 10:29:13PM -0700, Yinghai Lu wrote:
+> Mel Gorman wrote:
+> > On Fri, May 08, 2009 at 11:45:49PM -0700, Yinghai Lu wrote:
+> >> after
+> >> | commit b263295dbffd33b0fbff670720fa178c30e3392a
+> >> | Author: Christoph Lameter <clameter@sgi.com>
+> >> | Date:   Wed Jan 30 13:30:47 2008 +0100
+> >> |
+> >> |    x86: 64-bit, make sparsemem vmemmap the only memory model
+> >>
+> >> we don't have MEMORY_HOTPLUG_RESERVE anymore.
+> >>
+> >> remove related dead code.
+> >>
+> > 
+> > Good spot, this removes a nice amount of code. The changelog could say
+> > more though, how about?
+> > 
+> > =====
+> > Historically, x86-64 had an architecture-specific method for memory hotplug
+> > whereby it scanned the SRAT for physical memory ranges that could be
+> > potentially used for memory hot-add later. By reserving those ranges
+> > without physical memory, the memmap would be allocated and left dormant
+> > until needed. This depended on the DISCONTIG memory model which has been
+> > removed so the code implementing HOTPLUG_RESERVE is now dead.
+> > 
+> > This patch removes the dead code used by MEMORY_HOTPLUG_RESERVE
+> thanks will use that.
+> > =====
+> > 
+> >> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> >>
+> >> ---
+> >>  arch/x86/include/asm/numa_64.h |    3 -
+> >>  arch/x86/mm/numa_64.c          |    5 --
+> >>  arch/x86/mm/srat_64.c          |   63 +++++++------------------------------
+> >>  include/linux/mm.h             |    2 -
+> >>  mm/page_alloc.c                |   69 -----------------------------------------
+> >>  5 files changed, 12 insertions(+), 130 deletions(-)
+> >>
+> >> Index: linux-2.6/arch/x86/include/asm/numa_64.h
+> >> ===================================================================
+> >> --- linux-2.6.orig/arch/x86/include/asm/numa_64.h
+> >> +++ linux-2.6/arch/x86/include/asm/numa_64.h
+> >> @@ -17,9 +17,6 @@ extern int compute_hash_shift(struct boo
+> >>  extern void numa_init_array(void);
+> >>  extern int numa_off;
+> >>  
+> >> -extern void srat_reserve_add_area(int nodeid);
+> >> -extern int hotadd_percent;
+> >> -
+> >>  extern s16 apicid_to_node[MAX_LOCAL_APIC];
+> >>  
+> >>  extern unsigned long numa_free_all_bootmem(void);
+> >> Index: linux-2.6/arch/x86/mm/numa_64.c
+> >> ===================================================================
+> >> --- linux-2.6.orig/arch/x86/mm/numa_64.c
+> >> +++ linux-2.6/arch/x86/mm/numa_64.c
+> >> @@ -272,9 +272,6 @@ void __init setup_node_bootmem(int nodei
+> >>  		reserve_bootmem_node(NODE_DATA(nodeid), bootmap_start,
+> >>  				 bootmap_pages<<PAGE_SHIFT, BOOTMEM_DEFAULT);
+> >>  
+> >> -#ifdef CONFIG_ACPI_NUMA
+> >> -	srat_reserve_add_area(nodeid);
+> >> -#endif
+> >>  	node_set_online(nodeid);
+> >>  }
+> >>  
+> >> @@ -608,8 +605,6 @@ static __init int numa_setup(char *opt)
+> >>  #ifdef CONFIG_ACPI_NUMA
+> >>  	if (!strncmp(opt, "noacpi", 6))
+> >>  		acpi_numa = -1;
+> >> -	if (!strncmp(opt, "hotadd=", 7))
+> >> -		hotadd_percent = simple_strtoul(opt+7, NULL, 10);
+> > 
+> > Documentation/x86/x86_64/boot-options.txt now needs to be updated to
+> > remove the documentation on hotadd=.
+> > 
+> > Instead of ignoring the option, should a warning now be printed saying the
+> > option is deprecated?
 > 
-> > Honestly all this is just the futile attempt to fix the flaws of NTP
-> > via (super)user interaction.
+> that is dead for 2.6.27 (?), 2.6.28, 2.6.29, ...
+> guess we could remove that directly...
 > 
-> This has nothing to do with flaws in NTP (AFAIK).
 
-Correct. When ntp is NOT RUNNING at all, if the TSC calibration gives a MHz
-value differing e.g. 100 ppm from the previous value, the clock will run at
-a different speed, 100 ppm making a difference of 17 seconds a day. On the
-other hand, if ntp is running, it will eventually compensate the offset. But
-it takes quite a long time to settle, IMO too long for a quality time
-server.
+If someone did a distro upgrade, the kernel version would jump from before
+2.6.27 to 2.6.29 or 2.6.30. If someone is depending on the behaviour, they
+might like to hear about it rather than having it myseriously "fail".
 
-The real changes in the clock frequency between bootups are in the order of
-1 ppm, but the TSC calibration can be even 100 ppm off randomly.
+> > 
+> >>  #endif
+> >>  	return 0;
+> >>  }
+> >> Index: linux-2.6/arch/x86/mm/srat_64.c
+> >> ===================================================================
+> >> --- linux-2.6.orig/arch/x86/mm/srat_64.c
+> >> +++ linux-2.6/arch/x86/mm/srat_64.c
+> >> @@ -31,8 +31,6 @@ static nodemask_t nodes_parsed __initdat
+> >>  static nodemask_t cpu_nodes_parsed __initdata;
+> >>  static struct bootnode nodes[MAX_NUMNODES] __initdata;
+> >>  static struct bootnode nodes_add[MAX_NUMNODES];
+> >> -static int found_add_area __initdata;
+> >> -int hotadd_percent __initdata = 0;
+> >>  
+> >>  static int num_node_memblks __initdata;
+> >>  static struct bootnode node_memblk_range[NR_NODE_MEMBLKS] __initdata;
+> >> @@ -66,9 +64,6 @@ static __init void cutoff_node(int i, un
+> >>  {
+> >>  	struct bootnode *nd = &nodes[i];
+> >>  
+> >> -	if (found_add_area)
+> >> -		return;
+> >> -
+> >>  	if (nd->start < start) {
+> >>  		nd->start = start;
+> >>  		if (nd->end < nd->start)
+> >> @@ -86,7 +81,6 @@ static __init void bad_srat(void)
+> >>  	int i;
+> >>  	printk(KERN_ERR "SRAT: SRAT not used.\n");
+> >>  	acpi_numa = -1;
+> >> -	found_add_area = 0;
+> >>  	for (i = 0; i < MAX_LOCAL_APIC; i++)
+> >>  		apicid_to_node[i] = NUMA_NO_NODE;
+> >>  	for (i = 0; i < MAX_NUMNODES; i++)
+> >> @@ -182,24 +176,21 @@ acpi_numa_processor_affinity_init(struct
+> >>  	       pxm, apic_id, node);
+> >>  }
+> >>  
+> >> -static int update_end_of_memory(unsigned long end) {return -1;}
+> >> -static int hotadd_enough_memory(struct bootnode *nd) {return 1;}
+> >>  #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
+> >>  static inline int save_add_info(void) {return 1;}
+> >>  #else
+> >>  static inline int save_add_info(void) {return 0;}
+> >>  #endif
+> >>  /*
+> >> - * Update nodes_add and decide if to include add are in the zone.
+> >> - * Both SPARSE and RESERVE need nodes_add information.
+> >> - * This code supports one contiguous hot add area per node.
+> >> + * Update nodes_add[]
+> >> + * This code supports one contiguous hot add area per node
+> >>   */
+> >> -static int __init
+> >> -reserve_hotadd(int node, unsigned long start, unsigned long end)
+> >> +static void __init
+> >> +update_nodes_add(int node, unsigned long start, unsigned long end)
+> >>  {
+> > 
+> > It's now very unclear what the purpose of this function is. I'm guessing it
+> > should be something like
+> > 
+> > validate_hotadd_region()
+> > This validates that the region of memory described by SRAT as suitable
+> > for use with memory hot-add is sane
+> > 
+> > What it was for was to validate that the SRAT looked sane and then push out the
+> > end of the node boundaries so that the memmap would get allocated. However,
+> > because we are no longer pushing out the node boundaries, is this doing
+> > anything useful at all any more? For sparsemem, memory-hotadd allocates
+> > the memmap as it required.
+> 
+> but it does update nodes_add range.
+> 
 
--Petri
+D'oh, of course. Thanks for correcting me.
+
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
