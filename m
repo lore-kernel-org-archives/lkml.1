@@ -1,84 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758971AbZEMPxT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760065AbZEMQAZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758971AbZEMPxT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 11:53:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757774AbZEMPxF
+	id S1760065AbZEMQAZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 12:00:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbZEMQAG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 11:53:05 -0400
-Received: from fg-out-1718.google.com ([72.14.220.152]:47361 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754879AbZEMPxC convert rfc822-to-8bit (ORCPT
+	Wed, 13 May 2009 12:00:06 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:43013 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754879AbZEMQAF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 11:53:02 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=luvCi5e8iKHp9mNiUG0JtrXUg3VTCcSlIoOrTExIU070IExXhVn+VgWseKxtayHMU3
-         DzDSWLqnCah22Jn7dzbOORojRzkA/rQj/CQMtdvWPUJj4Ahu55ZgRyUM3Da35hJgGFtU
-         8EXrP1thxZAg79xDA/1o3xdevXaOhTkgkZxbk=
-MIME-Version: 1.0
-In-Reply-To: <4A09CF53.2010400@housetosell.net>
-References: <4A09CF53.2010400@housetosell.net>
-Date: Wed, 13 May 2009 17:53:02 +0200
-Message-ID: <9ea470500905130853o65463da0md6dc4380c17a8ec1@mail.gmail.com>
-Subject: Re: 2.6.30-rc4 kernel
-From: Borislav Petkov <petkovbb@googlemail.com>
-To: linux@housetosell.net
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 13 May 2009 12:00:05 -0400
+Date: Wed, 13 May 2009 08:57:34 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+Subject: Re: [PATCH v2 3/7] [PATCH 3/8] can: CAN Network device driver and
+ Netlink interface
+Message-Id: <20090513085734.387dddbe.akpm@linux-foundation.org>
+In-Reply-To: <4A0AB0EC.5010902@grandegger.com>
+References: <20090512092757.048938233@denx.de>
+	<20090512092757.574693100@denx.de>
+	<20090512233052.ecd600f1.akpm@linux-foundation.org>
+	<20090512235323.e3de5e5d.akpm@linux-foundation.org>
+	<4A0AB0EC.5010902@grandegger.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Wed, 13 May 2009 13:37:16 +0200 Wolfgang Grandegger <wg@grandegger.com> wrote:
 
-On Tue, May 12, 2009 at 9:34 PM, rob <rob1@housetosell.net> wrote:
-> Hi
->
-> I think there may be a problem with the 2.6.30 kernel that is
-> linux-2.6.29.tar.bz2 patched with patch-2.6.30-rc4.bz2 this is the message
-> when it was booting:-
->
-> kernel panic -  not syncing : fatel exception in interupt
->
-> pid:0 com: swapper tainted: G   D     2.6.30-rc4 #10
->
-> [<c0116e64>] Panic+0x3e/0xd8
-> [<c0104921>] oops_end+0x78/0x83
-> [<c010fee8>] no_context+0x104/0x10d
-> [<c0110155>] do_page_fault+0x0/0x1e0
-> [<c01100d2>] bad_area_semaphore+0xa/0xc
-> [<c0371865>] error_code+0x65/0x6c
-> [<c0110155>] do_page_fault+0x0/0x1e0
-> [<c027dafc>] ide_complete_rq+0xf/0x3b
-> [<c02870a0>] cdrom_newpc_intr+0x64d/0x6cd
-> [<c0286a53>] cdrom_newpc_intr+0x0/0x6cd
-> [<c027dcc2>] ide_intr+0x109/0x161
-> [<c0132298>] handle_IRQ_event+0x54/0xc7
-> [<c013354a>] handle_level_irq+0x4f/0x85
-> [<c0103df7>] handle_irq+0x17/0x20
-> [<c0103da5>] do_IRQ+0x2b/0x66
-> [<c0102be9>] common_interupt+0x29/0x30
-> [<c0480000>] cmd40x_init+0x2ac/0x38d
-> [<c0106db3>] default_idle+0x25/0x38
-> [<c01019be>] cpu_idle+0x19/0x2d
-> [<c0468907>] start_kernel+0x23f/0x242
+> > Also, I wonder if it's safe to take netif_tx_lock() from a timer
+> > handler when other parts of the code might be taking it from process
+> > context (I didn't check).
+> > 
+> > lockdep should be able to detect this, and I trust this code has been
+> > fully runtime tested with lockdep enabled?
+> 
+> Well, CONFIG_PROVE_LOCKING would be cool, but I'm unable to enabled it
+> for my MPC5200 test system. Only 64bit PowerPC's seem to support
+> TRACE_IRQFLAGS_SUPPORT. I'm going to test the code on a PC as well.
 
+I discussed this off-list with Peter Zijlstra and Johannes Berg. 
+Apparently lockdep _will_ detect this deadlockable situation - Johannes
+recently added the capability because he had the same situation in
+wireless code somewhere.
 
-can you do
+But of course it does require that the timer handler has executed at
+least once.  Many handlers in the kernel never fire in normal operation.
 
-objdump -d drivers/ide/ide-cd.o > ide-cd.dsm
-
-and
-
-make drivers/ide/ide-cd.s
-
-and send me the .dsm and .s files.
-
-Thanks.
-
--- 
-Regards/Gruss,
-Boris
