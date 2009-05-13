@@ -1,91 +1,40 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbZEMNDg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759469AbZEMNDv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753997AbZEMNDg (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:03:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756503AbZEMNDN
+	id S1759469AbZEMNDv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:03:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757834AbZEMNDY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:03:13 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:42565 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757790AbZEMNDM convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:03:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=uJV7xW3kCPgq7eCdsdYL0+efHyGs4etggIzNehtFzvZbS5hzCqbh+DgfBXu4cAf7gW
-         zPgtXzWgqlmqrrBLFOOlVovVAM8v+HcNXaHgdZ2xsoUJFqAzid83WF2I7NMpiqgkD9cS
-         QUhFZjywWEvBPXDfBsPdqjvsD2twZlg4Lh67o=
-MIME-Version: 1.0
-In-Reply-To: <1242205213-27452-1-git-send-email-u.kleine-koenig@pengutronix.de>
-References: <1242205213-27452-1-git-send-email-u.kleine-koenig@pengutronix.de>
-Date: Wed, 13 May 2009 18:33:12 +0530
-Message-ID: <921ca19c0905130603g3823b213vdb2b62b75934104d@mail.gmail.com>
-Subject: Re: [PATCH] ARM: __builtin_return_address works with argument 0
-From: Sujit Karataparambil <sjt.kar@gmail.com>
-To: =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
-       Thomas Gleixner <tglx@linutronix.de>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Wed, 13 May 2009 09:03:24 -0400
+Received: from verein.lst.de ([213.95.11.210]:39463 "EHLO verein.lst.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758876AbZEMNDX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 09:03:23 -0400
+Date: Wed, 13 May 2009 15:01:28 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Peter W Morreale <pmorreale@novell.com>, torvalds@osdl.org,
+       jens.axboe@oracle.com, akpm@osdl.org
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: do we really want to export more pdflush details in sysctls
+Message-ID: <20090513130128.GA10382@lst.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.3.28i
+X-Spam-Score: -0.001 () BAYES_44
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-These seem to be required too. Mostly for optimizations the compiler can
-provide. Seem to be supported in gnu.
+Hi all,
 
-__builtin_clz
-__builtin_constant_p
-__builtin_expect
-__builtin_frame_address
+commit fafd688e4c0c34da0f3de909881117d374e4c7af titled
+"mm: add /proc controls for pdflush threads" adds two more sysctl
+variables exposing details about pdflush threads.  At the same time
+Jens Axboe is working on the per-bdi writeback patchset which will
+hopefull soon get rid of the pdflush threads in their current form.
 
-http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0376a/Caceiddh.html
+Is it really a good idea to expose more details now or should we revert
+this patch before 2.6.30 is out?
 
-
-
-2009/5/13 Uwe Kleine-König <u.kleine-koenig@pengutronix.de>:
-> This saves the function overhead for CALLER_ADDRESS0.
->
-> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> ---
-> Hi Thomas,
->
-> this applies to .29.3-rt12.  Feel free to squash this into
-> arm-tracing-updates.patch.
->
-> Best regards
-> Uwe
->
->  arch/arm/include/asm/ftrace.h |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
->
-> diff --git a/arch/arm/include/asm/ftrace.h b/arch/arm/include/asm/ftrace.h
-> index 900fc19..f7e8bac 100644
-> --- a/arch/arm/include/asm/ftrace.h
-> +++ b/arch/arm/include/asm/ftrace.h
-> @@ -15,7 +15,7 @@ extern void mcount(void);
->  void *return_address(unsigned int);
->
->  #define HAVE_ARCH_CALLER_ADDR
-> -#define CALLER_ADDR0 ((unsigned long)return_address(0))
-> +#define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
->  #define CALLER_ADDR1 ((unsigned long)return_address(1))
->  #define CALLER_ADDR2 ((unsigned long)return_address(2))
->  #define CALLER_ADDR3 ((unsigned long)return_address(3))
-> --
-> 1.6.2.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
-
-
-
--- 
--- Sujit K M
+Cheers,
+	Christoph
