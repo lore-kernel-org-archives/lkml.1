@@ -1,86 +1,190 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753751AbZEMD1Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756404AbZEMDbU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753751AbZEMD1Y (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 23:27:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbZEMD1K
+	id S1756404AbZEMDbU (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 23:31:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753296AbZEMDbI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 23:27:10 -0400
-Received: from rv-out-0506.google.com ([209.85.198.238]:40786 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753133AbZEMD1J convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 23:27:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Ajf/ZWlceaCOuyLeKw90GmpSYvBYNILtlGrvz8vwouZu7Q9/zpOyRu/iCKqjnPycGp
-         /Sj/GzizslcXFShS/ufPfhwZGZwoOF5/XELUrLi7n+Hp2tg8klRsDbvN7hFYa7uRHAFQ
-         lqvI8kr21ys5fFdEmGMvy0hMUyYl4zVvvOj4k=
+	Tue, 12 May 2009 23:31:08 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42824 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752739AbZEMDbG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 23:31:06 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Jens Axboe <jens.axboe@oracle.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Olga Kornievskaia <aglo@citi.umich.edu>
+Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone over NFS
+References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
+	<20090508120119.8c93cfd7.akpm@linux-foundation.org>
+	<20090511081415.GL4694@kernel.dk>
+	<x49skjb21b7.fsf@segfault.boston.devel.redhat.com>
+	<20090511165826.GG4694@kernel.dk>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Tue, 12 May 2009 23:29:30 -0400
+In-Reply-To: <20090511165826.GG4694@kernel.dk> (Jens Axboe's message of "Mon,
+	11 May 2009 18:58:26 +0200")
+Message-ID: <x494ovp4r51.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <20090512191848.25764af6@gondolin>
-References: <1242141222-8454-1-git-send-email-tom.leiming@gmail.com>
-	 <20090512154456.GC6255@nowhere> <20090512160434.GD6255@nowhere>
-	 <20090512183105.09e628f0@gondolin> <20090512165227.GE6255@nowhere>
-	 <20090512191848.25764af6@gondolin>
-Date: Wed, 13 May 2009 11:27:10 +0800
-Message-ID: <d82e647a0905122027k61461dc5k8362c963fbca7894@mail.gmail.com>
-Subject: Re: [PATCH] kernel/async.c:introduce async_schedule*_atomic
-From: Ming Lei <tom.leiming@gmail.com>
-To: Cornelia Huck <cornelia.huck@de.ibm.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, arjan@infradead.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/13 Cornelia Huck <cornelia.huck@de.ibm.com>:
-> On Tue, 12 May 2009 18:52:29 +0200,
-> Frederic Weisbecker <fweisbec@gmail.com> wrote:
->
->> This division would make more sense indeed.
->>
->> - async_schedule_inatomic() would be nosync() and would use
->>   GFP_ATOMIC. I guess the case where we want to run
->>   a job synchronously from atomic in case of async failure is too rare
->>   (non-existent?).
->
-> It would add complexity for those callers providing a function that is
-> safe to be called in both contexts.
+Jens Axboe <jens.axboe@oracle.com> writes:
 
-So we introduce  async_schedule*_inatomic(), the patch  aims at  making caller
-clear that async_schedule*_inatomic() should be used in atomic
-contexts instead of
-async_schedule*().
-
+> On Mon, May 11 2009, Jeff Moyer wrote:
+>> Jens Axboe <jens.axboe@oracle.com> writes:
+>> 
+>> > On Fri, May 08 2009, Andrew Morton wrote:
+>> >> On Thu, 23 Apr 2009 10:01:58 -0400
+>> >> Jeff Moyer <jmoyer@redhat.com> wrote:
+>> >> 
+>> >> > Hi,
+>> >> > 
+>> >> > I've been working on CFQ improvements for interleaved I/Os between
+>> >> > processes, and noticed a regression in performance when using the
+>> >> > deadline I/O scheduler.  The test uses a server configured with a cciss
+>> >> > array and 1Gb/s ethernet.
+>> >> > 
+>> >> > The iozone command line was:
+>> >> >   iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
+>> >> > 
+>> >> > The numbers in the nfsd's row represent the number of nfsd "threads".
+>> >> > These numbers (in MB/s) represent the average of 5 runs.
+>> >> > 
+>> >> >                v2.6.29
+>> >> > 
+>> >> > nfsd's  |   1    |  2   |   4   |   8
+>> >> > --------+---------------+-------+------
+>> >> > deadline| 43207 | 67436 | 96289 | 107590
+>> >> > 
+>> >> >               2.6.30-rc1
+>> >> > 
+>> >> > nfsd's  |   1   |   2   |   4   |   8
+>> >> > --------+---------------+-------+------
+>> >> > deadline| 43732 | 68059 | 76659 | 83231
+>> >> > 
+>> >> >     2.6.30-rc3.block-for-linus
+>> >> > 
+>> >> > nfsd's  |   1   |   2   |   4   |   8
+>> >> > --------+---------------+-------+------
+>> >> > deadline| 46102 | 71151 | 83120 | 82330
+>> >> > 
+>> >> > 
+>> >> > Notice the drop for 4 and 8 threads.  It may be worth noting that the
+>> >> > default number of NFSD threads is 8.
+>> >> > 
+>> >> 
+>> >> I guess we should ask Rafael to add this to the post-2.6.29 regression
+>> >> list.
+>> >
+>> > I agree. It'd be nice to bisect this one down, I'm guessing some mm
+>> > change has caused this writeout regression.
+>> 
+>> It's not writeout, it's a read test.
 >
->> - async_schedule_nosync() would be only nosync() and would use
->>   GFP_KERNEL
+> Doh sorry, I even ran these tests as well a few weeks back. So perhaps
+> some read-ahead change, I didn't look into it. FWIW, on a single SATA
+> drive here, it didn't show any difference.
 
-I wonder if there is such kind of requirement, can we not introduce it
-in the patch?
-If someone does need it, we can introduce it later.
+OK, I bisected this to the following commit.  The mount is done using
+NFSv3, by the way.
 
->>
->> I'm not sure the second case will ever be used though.
->
-> It might make sense for the "just fail if we cannot get memory" case.
->
->>
->> Another alternative would be to define a single async_schedule_nosync()
->> which also takes a gfp flag.
->
-> Wouldn't async_schedule() then need a gfp flag as well?
->
+commit 47a14ef1af48c696b214ac168f056ddc79793d0e
+Author: Olga Kornievskaia <aglo@citi.umich.edu>
+Date:   Tue Oct 21 14:13:47 2008 -0400
 
-IMHO, it is better that async_schedule()  is always called in
-non-atomic contexts and
-async_schedule*_inatomic() is always called in atomic contexts, so we
-can't need a gfp
-flag, right?
+    svcrpc: take advantage of tcp autotuning
+    
+    Allow the NFSv4 server to make use of TCP autotuning behaviour, which
+    was previously disabled by setting the sk_userlocks variable.
+    
+    Set the receive buffers to be big enough to receive the whole RPC
+    request, and set this for the listening socket, not the accept socket.
+    
+    Remove the code that readjusts the receive/send buffer sizes for the
+    accepted socket. Previously this code was used to influence the TCP
+    window management behaviour, which is no longer needed when autotuning
+    is enabled.
+    
+    This can improve IO bandwidth on networks with high bandwidth-delay
+    products, where a large tcp window is required.  It also simplifies
+    performance tuning, since getting adequate tcp buffers previously
+    required increasing the number of nfsd threads.
+    
+    Signed-off-by: Olga Kornievskaia <aglo@citi.umich.edu>
+    Cc: Jim Rees <rees@umich.edu>
+    Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
 
-
--- 
-Lei Ming
+diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+index 5763e64..7a2a90f 100644
+--- a/net/sunrpc/svcsock.c
++++ b/net/sunrpc/svcsock.c
+@@ -345,7 +345,6 @@ static void svc_sock_setbufsize(struct socket *sock, unsigned int snd,
+ 	lock_sock(sock->sk);
+ 	sock->sk->sk_sndbuf = snd * 2;
+ 	sock->sk->sk_rcvbuf = rcv * 2;
+-	sock->sk->sk_userlocks |= SOCK_SNDBUF_LOCK|SOCK_RCVBUF_LOCK;
+ 	release_sock(sock->sk);
+ #endif
+ }
+@@ -797,23 +796,6 @@ static int svc_tcp_recvfrom(struct svc_rqst *rqstp)
+ 		test_bit(XPT_CONN, &svsk->sk_xprt.xpt_flags),
+ 		test_bit(XPT_CLOSE, &svsk->sk_xprt.xpt_flags));
+ 
+-	if (test_and_clear_bit(XPT_CHNGBUF, &svsk->sk_xprt.xpt_flags))
+-		/* sndbuf needs to have room for one request
+-		 * per thread, otherwise we can stall even when the
+-		 * network isn't a bottleneck.
+-		 *
+-		 * We count all threads rather than threads in a
+-		 * particular pool, which provides an upper bound
+-		 * on the number of threads which will access the socket.
+-		 *
+-		 * rcvbuf just needs to be able to hold a few requests.
+-		 * Normally they will be removed from the queue
+-		 * as soon a a complete request arrives.
+-		 */
+-		svc_sock_setbufsize(svsk->sk_sock,
+-				    (serv->sv_nrthreads+3) * serv->sv_max_mesg,
+-				    3 * serv->sv_max_mesg);
+-
+ 	clear_bit(XPT_DATA, &svsk->sk_xprt.xpt_flags);
+ 
+ 	/* Receive data. If we haven't got the record length yet, get
+@@ -1061,15 +1043,6 @@ static void svc_tcp_init(struct svc_sock *svsk, struct svc_serv *serv)
+ 
+ 		tcp_sk(sk)->nonagle |= TCP_NAGLE_OFF;
+ 
+-		/* initialise setting must have enough space to
+-		 * receive and respond to one request.
+-		 * svc_tcp_recvfrom will re-adjust if necessary
+-		 */
+-		svc_sock_setbufsize(svsk->sk_sock,
+-				    3 * svsk->sk_xprt.xpt_server->sv_max_mesg,
+-				    3 * svsk->sk_xprt.xpt_server->sv_max_mesg);
+-
+-		set_bit(XPT_CHNGBUF, &svsk->sk_xprt.xpt_flags);
+ 		set_bit(XPT_DATA, &svsk->sk_xprt.xpt_flags);
+ 		if (sk->sk_state != TCP_ESTABLISHED)
+ 			set_bit(XPT_CLOSE, &svsk->sk_xprt.xpt_flags);
+@@ -1140,8 +1113,14 @@ static struct svc_sock *svc_setup_socket(struct svc_serv *serv,
+ 	/* Initialize the socket */
+ 	if (sock->type == SOCK_DGRAM)
+ 		svc_udp_init(svsk, serv);
+-	else
++	else {
++		/* initialise setting must have enough space to
++		 * receive and respond to one request.
++		 */
++		svc_sock_setbufsize(svsk->sk_sock, 4 * serv->sv_max_mesg,
++					4 * serv->sv_max_mesg);
+ 		svc_tcp_init(svsk, serv);
++	}
+ 
+ 	/*
+ 	 * We start one listener per sv_serv.  We want AF_INET
