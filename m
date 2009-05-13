@@ -1,419 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760636AbZEMOtt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760681AbZEMOui@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760636AbZEMOtt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 10:49:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758674AbZEMOtg
+	id S1760681AbZEMOui (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 10:50:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758358AbZEMOuZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 10:49:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60109 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756572AbZEMOte (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 10:49:34 -0400
-Date: Wed, 13 May 2009 10:44:32 -0400
-From: Vivek Goyal <vgoyal@redhat.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] IO Controller: Add per-device weight and ioprio_class
-	handling
-Message-ID: <20090513144432.GA7696@redhat.com>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A0A29B5.7030109@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A0A29B5.7030109@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Wed, 13 May 2009 10:50:25 -0400
+Received: from viefep11-int.chello.at ([62.179.121.31]:46487 "EHLO
+	viefep11-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756645AbZEMOuY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 10:50:24 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [RFC PATCH v2 0/2] Saving power by cpu evacuation
+ sched_max_capacity_pct=n
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+In-Reply-To: <20090513144659.GV19296@one.firstfloor.org>
+References: <20090513130541.21440.33364.stgit@drishya.in.ibm.com>
+	 <20090513143550.GU19296@one.firstfloor.org>
+	 <1242225402.26820.23.camel@twins>
+	 <20090513144659.GV19296@one.firstfloor.org>
+Content-Type: text/plain
+Date: Wed, 13 May 2009 16:50:19 +0200
+Message-Id: <1242226219.26820.26.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 10:00:21AM +0800, Gui Jianfeng wrote:
-> Hi Vivek,
+On Wed, 2009-05-13 at 16:46 +0200, Andi Kleen wrote:
+> On Wed, May 13, 2009 at 04:36:42PM +0200, Peter Zijlstra wrote:
+> > On Wed, 2009-05-13 at 16:35 +0200, Andi Kleen wrote:
+> > > On Wed, May 13, 2009 at 06:41:00PM +0530, Vaidyanathan Srinivasan wrote:
+> > > > * Using sched_mc=3,4,5 to evacuate 1,2,4 cores is completely
+> > > >   non-intuitive and broken interface.  Ingo wanted to see if we can
+> > > >   model a global percentile tunable that would map to core throttling.
+> > > 
+> > > I have one request. CPU throttling is already a very well established
+> > > term in the x86 world, refering to thermal throttling when the CPU
+> > > overheats. This is implemented by ACPI and the CPU. It's always
+> > > a very bad thing that should be avoided at all costs.
+> > 
+> > Its about avoiding that.
 > 
-> This patch enables per-cgroup per-device weight and ioprio_class handling.
-> A new cgroup interface "policy" is introduced. You can make use of this 
-> file to configure weight and ioprio_class for each device in a given cgroup.
-> The original "weight" and "ioprio_class" files are still available. If you
-> don't do special configuration for a particular device, "weight" and 
-> "ioprio_class" are used as default values in this device.
+> Hmm? Can you explain please? CPU throttling should only happen when your
+> cooling system is broken in some way.
 > 
-> You can use the following format to play with the new interface.
-> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
-> weight=0 means removing the policy for DEV.
-> 
+> It's not a power saving feature, just a "don't make CPU melt" feature.
 
-Thanks for the patch Gui. I will test it out and let you know how does
-it go.
+>From what I've been told its popular to over-commit the cooling capacity
+in a rack, so that a number of servers can run at full thermal capacity
+but not all.
 
-Thanks
-Vivek
+I've also been told that hardware sucks at throttling, therefore people
+want to fix the OS so as to limit the thermal capacity and avoid the
+hardware throttle from kicking in, whilst still not exceeding the rack
+capacity or similar nonsense.
 
-> Examples:
-> Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
-> # echo /dev/hdb:300:2 > io.policy
-> # cat io.policy
-> dev weight class
-> /dev/hdb 300 2
-> 
-> Configure weight=500 ioprio_class=1 on /dev/hda in this cgroup
-> # echo /dev/hda:500:1 > io.policy
-> # cat io.policy
-> dev weight class
-> /dev/hda 500 1
-> /dev/hdb 300 2
-> 
-> Remove the policy for /dev/hda in this cgroup
-> # echo /dev/hda:0:1 > io.policy
-> # cat io.policy
-> dev weight class
-> /dev/hdb 300 2
-> 
-> Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-> ---
->  block/elevator-fq.c |  239 +++++++++++++++++++++++++++++++++++++++++++++++++-
->  block/elevator-fq.h |   11 +++
->  2 files changed, 245 insertions(+), 5 deletions(-)
-> 
-> diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-> index 69435ab..7c95d55 100644
-> --- a/block/elevator-fq.c
-> +++ b/block/elevator-fq.c
-> @@ -12,6 +12,9 @@
->  #include "elevator-fq.h"
->  #include <linux/blktrace_api.h>
->  #include <linux/biotrack.h>
-> +#include <linux/seq_file.h>
-> +#include <linux/genhd.h>
-> +
->  
->  /* Values taken from cfq */
->  const int elv_slice_sync = HZ / 10;
-> @@ -1045,12 +1048,30 @@ struct io_group *io_lookup_io_group_current(struct request_queue *q)
->  }
->  EXPORT_SYMBOL(io_lookup_io_group_current);
->  
-> -void io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog)
-> +static struct policy_node *policy_search_node(const struct io_cgroup *iocg,
-> +					      void *key);
-> +
-> +void io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog,
-> +			  void *key)
->  {
->  	struct io_entity *entity = &iog->entity;
-> +	struct policy_node *pn;
-> +
-> +	spin_lock_irq(&iocg->lock);
-> +	pn = policy_search_node(iocg, key);
-> +	if (pn) {
-> +		entity->weight = pn->weight;
-> +		entity->new_weight = pn->weight;
-> +		entity->ioprio_class = pn->ioprio_class;
-> +		entity->new_ioprio_class = pn->ioprio_class;
-> +	} else {
-> +		entity->weight = iocg->weight;
-> +		entity->new_weight = iocg->weight;
-> +		entity->ioprio_class = iocg->ioprio_class;
-> +		entity->new_ioprio_class = iocg->ioprio_class;
-> +	}
-> +	spin_unlock_irq(&iocg->lock);
->  
-> -	entity->weight = entity->new_weight = iocg->weight;
-> -	entity->ioprio_class = entity->new_ioprio_class = iocg->ioprio_class;
->  	entity->ioprio_changed = 1;
->  	entity->my_sched_data = &iog->sched_data;
->  }
-> @@ -1263,7 +1284,7 @@ struct io_group *io_group_chain_alloc(struct request_queue *q, void *key,
->  		atomic_set(&iog->ref, 0);
->  		iog->deleting = 0;
->  
-> -		io_group_init_entity(iocg, iog);
-> +		io_group_init_entity(iocg, iog, key);
->  		iog->my_entity = &iog->entity;
->  #ifdef CONFIG_DEBUG_GROUP_IOSCHED
->  		iog->iocg_id = css_id(&iocg->css);
-> @@ -1549,8 +1570,208 @@ struct io_group *io_alloc_root_group(struct request_queue *q,
->  	return iog;
->  }
->  
-> +static int io_cgroup_policy_read(struct cgroup *cgrp, struct cftype *cft,
-> +				  struct seq_file *m)
-> +{
-> +	struct io_cgroup *iocg;
-> +	struct policy_node *pn;
-> +
-> +	iocg = cgroup_to_io_cgroup(cgrp);
-> +
-> +	if (list_empty(&iocg->list))
-> +		goto out;
-> +
-> +	seq_printf(m, "dev weight class\n");
-> +
-> +	spin_lock_irq(&iocg->lock);
-> +	list_for_each_entry(pn, &iocg->list, node) {
-> +		seq_printf(m, "%s %lu %lu\n", pn->dev_name,
-> +			   pn->weight, pn->ioprio_class);
-> +	}
-> +	spin_unlock_irq(&iocg->lock);
-> +out:
-> +	return 0;
-> +}
-> +
-> +static inline void policy_insert_node(struct io_cgroup *iocg,
-> +					  struct policy_node *pn)
-> +{
-> +	list_add(&pn->node, &iocg->list);
-> +}
-> +
-> +/* Must be called with iocg->lock held */
-> +static inline void policy_delete_node(struct policy_node *pn)
-> +{
-> +	list_del(&pn->node);
-> +}
-> +
-> +/* Must be called with iocg->lock held */
-> +static struct policy_node *policy_search_node(const struct io_cgroup *iocg,
-> +					      void *key)
-> +{
-> +	struct policy_node *pn;
-> +
-> +	if (list_empty(&iocg->list))
-> +		return NULL;
-> +
-> +	list_for_each_entry(pn, &iocg->list, node) {
-> +		if (pn->key == key)
-> +			return pn;
-> +	}
-> +
-> +	return NULL;
-> +}
-> +
-> +static void *devname_to_efqd(const char *buf)
-> +{
-> +	struct block_device *bdev;
-> +	void *key = NULL;
-> +	struct gendisk *disk;
-> +	int part;
-> +
-> +	bdev = lookup_bdev(buf);
-> +	if (IS_ERR(bdev))
-> +		return NULL;
-> +
-> +	disk = get_gendisk(bdev->bd_dev, &part);
-> +	key = (void *)&disk->queue->elevator->efqd;
-> +	bdput(bdev);
-> +
-> +	return key;
-> +}
-> +
-> +static int policy_parse_and_set(char *buf, struct policy_node *newpn)
-> +{
-> +	char *s[3];
-> +	char *p;
-> +	int ret;
-> +	int i = 0;
-> +
-> +	memset(s, 0, sizeof(s));
-> +	while (i < ARRAY_SIZE(s)) {
-> +		p = strsep(&buf, ":");
-> +		if (!p)
-> +			break;
-> +		if (!*p)
-> +			continue;
-> +		s[i++] = p;
-> +	}
-> +
-> +	newpn->key = devname_to_efqd(s[0]);
-> +	if (!newpn->key)
-> +		return -EINVAL;
-> +
-> +	strcpy(newpn->dev_name, s[0]);
-> +
-> +	ret = strict_strtoul(s[1], 10, &newpn->weight);
-> +	if (ret || newpn->weight > WEIGHT_MAX)
-> +		return -EINVAL;
-> +
-> +	ret = strict_strtoul(s[2], 10, &newpn->ioprio_class);
-> +	if (ret || newpn->ioprio_class < IOPRIO_CLASS_RT ||
-> +	    newpn->ioprio_class > IOPRIO_CLASS_IDLE)
-> +		return -EINVAL;
-> +
-> +	return 0;
-> +}
-> +
-> +static int io_cgroup_policy_write(struct cgroup *cgrp, struct cftype *cft,
-> +			    const char *buffer)
-> +{
-> +	struct io_cgroup *iocg;
-> +	struct policy_node *newpn, *pn;
-> +	char *buf;
-> +	int ret = 0;
-> +	int keep_newpn = 0;
-> +	struct hlist_node *n;
-> +	struct io_group *iog;
-> +
-> +	buf = kstrdup(buffer, GFP_KERNEL);
-> +	if (!buf)
-> +		return -ENOMEM;
-> +
-> +	newpn = kzalloc(sizeof(*newpn), GFP_KERNEL);
-> +	if (!newpn) {
-> +		ret = -ENOMEM;
-> +		goto free_buf;
-> +	}
-> +
-> +	ret = policy_parse_and_set(buf, newpn);
-> +	if (ret)
-> +		goto free_newpn;
-> +
-> +	if (!cgroup_lock_live_group(cgrp)) {
-> +		ret = -ENODEV;
-> +		goto free_newpn;
-> +	}
-> +
-> +	iocg = cgroup_to_io_cgroup(cgrp);
-> +	spin_lock_irq(&iocg->lock);
-> +
-> +	pn = policy_search_node(iocg, newpn->key);
-> +	if (!pn) {
-> +		if (newpn->weight != 0) {
-> +			policy_insert_node(iocg, newpn);
-> +			keep_newpn = 1;
-> +		}
-> +		goto update_io_group;
-> +	}
-> +
-> +	if (newpn->weight == 0) {
-> +		/* weight == 0 means deleteing a policy */
-> +		policy_delete_node(pn);
-> +		goto update_io_group;
-> +	}
-> +
-> +	pn->weight = newpn->weight;
-> +	pn->ioprio_class = newpn->ioprio_class;
-> +
-> +update_io_group:
-> +	hlist_for_each_entry(iog, n, &iocg->group_data, group_node) {
-> +		if (iog->key == newpn->key) {
-> +			if (newpn->weight) {
-> +				iog->entity.new_weight = newpn->weight;
-> +				iog->entity.new_ioprio_class =
-> +					newpn->ioprio_class;
-> +				/*
-> +				 * iog weight and ioprio_class updating
-> +				 * actually happens if ioprio_changed is set.
-> +				 * So ensure ioprio_changed is not set until
-> +				 * new weight and new ioprio_class are updated.
-> +				 */
-> +				smp_wmb();
-> +				iog->entity.ioprio_changed = 1;
-> +			} else {
-> +				iog->entity.new_weight = iocg->weight;
-> +				iog->entity.new_ioprio_class =
-> +					iocg->ioprio_class;
-> +
-> +				/* The same as above */
-> +				smp_wmb();
-> +				iog->entity.ioprio_changed = 1;
-> +			}
-> +		}
-> +	}
-> +	spin_unlock_irq(&iocg->lock);
-> +
-> +	cgroup_unlock();
-> +
-> +free_newpn:
-> +	if (!keep_newpn)
-> +		kfree(newpn);
-> +free_buf:
-> +	kfree(buf);
-> +	return ret;
-> +}
-> +
->  struct cftype bfqio_files[] = {
->  	{
-> +		.name = "policy",
-> +		.read_seq_string = io_cgroup_policy_read,
-> +		.write_string = io_cgroup_policy_write,
-> +		.max_write_len = 256,
-> +	},
-> +	{
->  		.name = "weight",
->  		.read_u64 = io_cgroup_weight_read,
->  		.write_u64 = io_cgroup_weight_write,
-> @@ -1592,6 +1813,7 @@ struct cgroup_subsys_state *iocg_create(struct cgroup_subsys *subsys,
->  	INIT_HLIST_HEAD(&iocg->group_data);
->  	iocg->weight = IO_DEFAULT_GRP_WEIGHT;
->  	iocg->ioprio_class = IO_DEFAULT_GRP_CLASS;
-> +	INIT_LIST_HEAD(&iocg->list);
->  
->  	return &iocg->css;
->  }
-> @@ -1750,6 +1972,7 @@ void iocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
->  	unsigned long flags, flags1;
->  	int queue_lock_held = 0;
->  	struct elv_fq_data *efqd;
-> +	struct policy_node *pn, *pntmp;
->  
->  	/*
->  	 * io groups are linked in two lists. One list is maintained
-> @@ -1823,6 +2046,12 @@ locked:
->  	BUG_ON(!hlist_empty(&iocg->group_data));
->  
->  	free_css_id(&io_subsys, &iocg->css);
-> +
-> +	list_for_each_entry_safe(pn, pntmp, &iocg->list, node) {
-> +		policy_delete_node(pn);
-> +		kfree(pn);
-> +	}
-> +
->  	kfree(iocg);
->  }
->  
-> @@ -2137,7 +2366,7 @@ void elv_fq_unset_request_ioq(struct request_queue *q, struct request *rq)
->  void bfq_init_entity(struct io_entity *entity, struct io_group *iog)
->  {
->  	entity->ioprio = entity->new_ioprio;
-> -	entity->weight = entity->new_weight;
-> +	entity->weight = entity->new_weigh;
->  	entity->ioprio_class = entity->new_ioprio_class;
->  	entity->sched_data = &iog->sched_data;
->  }
-> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-> index db3a347..0407633 100644
-> --- a/block/elevator-fq.h
-> +++ b/block/elevator-fq.h
-> @@ -253,6 +253,14 @@ struct io_group {
->  #endif
->  };
->  
-> +struct policy_node {
-> +	struct list_head node;
-> +	char dev_name[32];
-> +	void *key;
-> +	unsigned long weight;
-> +	unsigned long ioprio_class;
-> +};
-> +
->  /**
->   * struct bfqio_cgroup - bfq cgroup data structure.
->   * @css: subsystem state for bfq in the containing cgroup.
-> @@ -269,6 +277,9 @@ struct io_cgroup {
->  
->  	unsigned long weight, ioprio_class;
->  
-> +	/* list of policy_node */
-> +	struct list_head list;
-> +
->  	spinlock_t lock;
->  	struct hlist_head group_data;
->  };
-> -- 
-> 1.5.4.rc3
-> 
-> 
+
+
