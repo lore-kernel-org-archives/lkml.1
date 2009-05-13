@@ -1,63 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760257AbZEMNNu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760038AbZEMNOt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760257AbZEMNNu (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:13:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbZEMNNj
+	id S1760038AbZEMNOt (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:14:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751946AbZEMNOg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:13:39 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33300 "EHLO mx2.redhat.com"
+	Wed, 13 May 2009 09:14:36 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:51499 "EHLO mx2.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751146AbZEMNNi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:13:38 -0400
-From: Jarod Wilson <jarod@redhat.com>
-Organization: Red Hat, Inc.
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Subject: Re: [PATCH] crypto: tcrypt: add option to not exit on success
-Date: Wed, 13 May 2009 09:12:46 -0400
-User-Agent: KMail/1.11.2 (Linux/2.6.29.1-102.fc11.x86_64; KDE/4.2.2; x86_64; ; )
-Cc: Neil Horman <nhorman@tuxdriver.com>, linux-crypto@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-References: <200905111006.32675.jarod@redhat.com> <20090513110826.GA16406@hmsreliant.think-freely.org> <20090513113819.GA15662@gondor.apana.org.au>
-In-Reply-To: <20090513113819.GA15662@gondor.apana.org.au>
+	id S1753392AbZEMNOf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 09:14:35 -0400
+Date: Wed, 13 May 2009 15:14:05 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Cyrill Gorcunov <gorcunov@gmail.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       eswierk@aristanetworks.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:irq/numa] x86: read apic ID in the !acpi_lapic case
+Message-ID: <20090513131405.GB21052@elte.hu>
+References: <20090512145128.GA10220@lenovo> <20090512145808.GA20587@elte.hu> <4A099013.6040708@kernel.org> <20090512150631.GA32067@elte.hu> <20090512164617.GA21673@elte.hu> <4A09C068.3010308@kernel.org> <20090512183302.GA4000@elte.hu> <4A09C157.7010407@kernel.org> <20090512190538.GA9769@elte.hu> <4A09CCBB.2000306@kernel.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905130912.46965.jarod@redhat.com>
+In-Reply-To: <4A09CCBB.2000306@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 May 2009 07:38:19 Herbert Xu wrote:
-> On Wed, May 13, 2009 at 07:08:26AM -0400, Neil Horman wrote:
-> >
-> > Not really sure I agree with the logic here.  I agree that its pretty clear that
-> > its major value is for quickly testing all the algorithms in a system, but
-> > universally failing the loading of the module simply to save a few milliseconds
-> > seems like a poor choice.  In so doing you create an alias effect, as jarod
-> > noted between a non-existent module and a module that failed to load.  The
-> > aliasing can be resolved, if you want to parse dmesg, but if speed is the issue
-> > at hand, that parsing is a significant impact.  If you allow the module to load
-> > properly, then for the cost of an rmmod, you can tell simply from the exit code
-> > of modprobe:
-> > 1) If the module was found 
-> > 2) If the tests passed
-> 
-> As I said, tcrypt should no longer be used to test algorithms.
-> Algorithms are tested as they load, with the result available
-> in /proc/crypto.  tcrypt is just a relic that will be going away.
-> 
-> Do not rely on it.
 
-Hm... FIPS has the requirement that we test all algs before we use any
-algs, self-tests on demand before first use for each alg is
-insufficient. At first blush, I'm not seeing how we ensure this
-happens. How can we trigger a cbc(des3_ede) self-test from userspace?
-I see that modprobe'ing des.ko runs the base des and des3_ede
-self-tests, but modprobe'ing cbc.ko doesn't lead to any self-tests
-being run.
+* Yinghai Lu <yinghai@kernel.org> wrote:
 
--- 
-Jarod Wilson
-jarod@redhat.com
+> -	return hard_smp_processor_id() >> index_msb;
+> +	return initial_apic_id >> index_msb;
+
+> -	unsigned apicid = hard_smp_processor_id();
+> +	unsigned apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
+
+> -	int apicid = hard_smp_processor_id();
+> +	int apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
+
+Doesnt such a pattern call for the pushing of that distinction into 
+hard_smp_processor_id() instead? (after a careful review of all 
+hard_smp_processor_id() call-sites)
+
+	Ingo
