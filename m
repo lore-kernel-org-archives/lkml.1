@@ -1,521 +1,379 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762152AbZEMXBk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762362AbZEMXC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762152AbZEMXBk (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 19:01:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761844AbZEMW5U
+	id S1762362AbZEMXC0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 19:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760335AbZEMW5Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 18:57:20 -0400
-Received: from moutng.kundenserver.de ([212.227.126.186]:63280 "EHLO
+	Wed, 13 May 2009 18:57:24 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:62752 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760762AbZEMW4x (ORCPT
+	with ESMTP id S1761284AbZEMW4y (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 18:56:53 -0400
+	Wed, 13 May 2009 18:56:54 -0400
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-arch@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 12/15] asm-generic: add generic atomic.h and io.h
-Date: Wed, 13 May 2009 22:56:35 +0000
-Message-Id: <1242255398-23779-13-git-send-email-arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+       Michal Simek <monstr@monstr.eu>
+Subject: [PATCH 14/15] asm-generic: add a generic uaccess.h
+Date: Wed, 13 May 2009 22:56:37 +0000
+Message-Id: <1242255398-23779-15-git-send-email-arnd@arndb.de>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1242255398-23779-1-git-send-email-arnd@arndb.de>
 References: <1242255398-23779-1-git-send-email-arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/KF/EIXqVwtE3VX3bkfo4Ns+CSHRfX6xHL74M
- bhGU32Usy3UOfJDrkBMAjz9IMPC4FjcUAsT+c05G60OmRhg6C9
- cQtR+rfd3c6PhRc+kdZFw==
+X-Provags-ID: V01U2FsdGVkX197dplG/XzWFB3Mq0tYc2aVdEqxzKPCB+IJnck
+ Z9uc/lvL2uNbF3AKkpNoWRd5VTlVJ7nGrmkfH8CJi/uMb1I7BO
+ VA7BbtOSjfwtJcZK16Dwg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-atomic.h and io.h are based on the mn10300 architecture,
-which is already pretty generic and can be used by
-other architectures that do not have hardware support
-for atomic operations or out-of-order I/O access.
+Based on discussions with Michal Simek and code
+from m68knommu and h8300, this version of uaccess.h
+should be usable by most architectures, by overriding
+some parts of it.
 
+Simple NOMMU architectures can use it out of
+the box, but a minimal __access_ok() should be
+added there as well.
+
+Cc: Michal Simek <monstr@monstr.eu>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- include/asm-generic/atomic.h |  165 +++++++++++++++++++++++
- include/asm-generic/io.h     |  300 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 465 insertions(+), 0 deletions(-)
- create mode 100644 include/asm-generic/atomic.h
- create mode 100644 include/asm-generic/io.h
+ include/asm-generic/uaccess.h |  325 +++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 325 insertions(+), 0 deletions(-)
+ create mode 100644 include/asm-generic/uaccess.h
 
-diff --git a/include/asm-generic/atomic.h b/include/asm-generic/atomic.h
+diff --git a/include/asm-generic/uaccess.h b/include/asm-generic/uaccess.h
 new file mode 100644
-index 0000000..c99c64d
+index 0000000..6d8cab2
 --- /dev/null
-+++ b/include/asm-generic/atomic.h
-@@ -0,0 +1,165 @@
-+/*
-+ * Generic C implementation of atomic counter operations
-+ * Originally implemented for MN10300.
-+ *
-+ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public Licence
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the Licence, or (at your option) any later version.
-+ */
-+#ifndef __ASM_GENERIC_ATOMIC_H
-+#define __ASM_GENERIC_ATOMIC_H
++++ b/include/asm-generic/uaccess.h
+@@ -0,0 +1,325 @@
++#ifndef __ASM_GENERIC_UACCESS_H
++#define __ASM_GENERIC_UACCESS_H
 +
-+#ifdef CONFIG_SMP
-+#error not SMP safe
++/*
++ * User space memory access functions, these should work
++ * on a ny machine that has kernel and user data in the same
++ * address space, e.g. all NOMMU machines.
++ */
++#include <linux/sched.h>
++#include <linux/mm.h>
++#include <linux/string.h>
++
++#include <asm/segment.h>
++
++#define MAKE_MM_SEG(s)	((mm_segment_t) { (s) })
++
++#ifndef KERNEL_DS
++#define KERNEL_DS	MAKE_MM_SEG(~0UL)
++#endif
++
++#ifndef USER_DS
++#define USER_DS		MAKE_MM_SEG(TASK_SIZE - 1)
++#endif
++
++#ifndef get_fs
++#define get_ds()	(KERNEL_DS)
++#define get_fs()	(current_thread_info()->addr_limit)
++
++static inline void set_fs(mm_segment_t fs)
++{
++	current_thread_info()->addr_limit = fs;
++}
++#endif
++
++#define segment_eq(a, b) ((a).seg == (b).seg)
++
++#define VERIFY_READ	0
++#define VERIFY_WRITE	1
++
++#define access_ok(type, addr, size) __access_ok((unsigned long)(addr),(size))
++
++/*
++ * The architecture should really override this if possible, at least
++ * doing a check on the get_fs()
++ */
++#ifndef __access_ok
++static inline int __access_ok(unsigned long addr, unsigned long size)
++{
++	return 1;
++}
 +#endif
 +
 +/*
-+ * Atomic operations that C can't guarantee us.  Useful for
-+ * resource counting etc..
-+ */
-+
-+#define ATOMIC_INIT(i)	{ (i) }
-+
-+#ifdef __KERNEL__
-+
-+/**
-+ * atomic_read - read atomic variable
-+ * @v: pointer of type atomic_t
++ * The exception table consists of pairs of addresses: the first is the
++ * address of an instruction that is allowed to fault, and the second is
++ * the address at which the program should continue.  No registers are
++ * modified, so it is entirely up to the continuation code to figure out
++ * what to do.
 + *
-+ * Atomically reads the value of @v.  Note that the guaranteed
-+ * useful range of an atomic_t is only 24 bits.
++ * All the routines below use bits of fixup code that are out of line
++ * with the main instruction path.  This means when everything is well,
++ * we don't even have to jump over them.  Further, they do not intrude
++ * on our cache or tlb entries.
 + */
-+#define atomic_read(v)	((v)->counter)
 +
-+/**
-+ * atomic_set - set atomic variable
-+ * @v: pointer of type atomic_t
-+ * @i: required value
-+ *
-+ * Atomically sets the value of @v to @i.  Note that the guaranteed
-+ * useful range of an atomic_t is only 24 bits.
++struct exception_table_entry
++{
++	unsigned long insn, fixup;
++};
++
++/* Returns 0 if exception not found and fixup otherwise.  */
++extern unsigned long search_exception_table(unsigned long);
++
++/*
++ * architectures with an MMU should override these two
 + */
-+#define atomic_set(v, i) (((v)->counter) = (i))
++#ifndef __copy_from_user
++static inline __must_check long __copy_from_user(void *to,
++		const void __user * from, unsigned long n)
++{
++	if (__builtin_constant_p(n)) {
++		switch(n) {
++		case 1:
++			*(u8 *)to = *(u8 __force *)from;
++			return 0;
++		case 2:
++			*(u16 *)to = *(u16 __force *)from;
++			return 0;
++		case 4:
++			*(u32 *)to = *(u32 __force *)from;
++			return 0;
++#ifdef CONFIG_64BIT
++		case 8:
++			*(u64 *)to = *(u64 __force *)from;
++			return 0;
++#endif
++		default:
++			break;
++		}
++	}
 +
-+#include <asm/system.h>
++	memcpy(to, (const void __force *)from, n);
++	return 0;
++}
++#endif
 +
-+/**
-+ * atomic_add_return - add integer to atomic variable
-+ * @i: integer value to add
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically adds @i to @v and returns the result
-+ * Note that the guaranteed useful range of an atomic_t is only 24 bits.
++#ifndef __copy_to_user
++static inline __must_check long __copy_to_user(void __user *to,
++		const void *from, unsigned long n)
++{
++	if (__builtin_constant_p(n)) {
++		switch(n) {
++		case 1:
++			*(u8 __force *)to = *(u8 *)from;
++			return 0;
++		case 2:
++			*(u16 __force *)to = *(u16 *)from;
++			return 0;
++		case 4:
++			*(u32 __force *)to = *(u32 *)from;
++			return 0;
++#ifdef CONFIG_64BIT
++		case 8:
++			*(u64 __force *)to = *(u64 *)from;
++			return 0;
++#endif
++		default:
++			break;
++		}
++	}
++
++	memcpy((void __force *)to, from, n);
++	return 0;
++}
++#endif
++
++/*
++ * These are the main single-value transfer routines.  They automatically
++ * use the right size if we just have the right pointer type.
++ * This version just falls back to copy_{from,to}_user, which should
++ * provide a fast-path for small values.
 + */
-+static inline int atomic_add_return(int i, atomic_t *v)
-+{
-+	unsigned long flags;
-+	int temp;
-+
-+	local_irq_save(flags);
-+	temp = v->counter;
-+	temp += i;
-+	v->counter = temp;
-+	local_irq_restore(flags);
-+
-+	return temp;
-+}
-+
-+/**
-+ * atomic_sub_return - subtract integer from atomic variable
-+ * @i: integer value to subtract
-+ * @v: pointer of type atomic_t
-+ *
-+ * Atomically subtracts @i from @v and returns the result
-+ * Note that the guaranteed useful range of an atomic_t is only 24 bits.
-+ */
-+static inline int atomic_sub_return(int i, atomic_t *v)
-+{
-+	unsigned long flags;
-+	int temp;
-+
-+	local_irq_save(flags);
-+	temp = v->counter;
-+	temp -= i;
-+	v->counter = temp;
-+	local_irq_restore(flags);
-+
-+	return temp;
-+}
-+
-+static inline int atomic_add_negative(int i, atomic_t *v)
-+{
-+	return atomic_add_return(i, v) < 0;
-+}
-+
-+static inline void atomic_add(int i, atomic_t *v)
-+{
-+	atomic_add_return(i, v);
-+}
-+
-+static inline void atomic_sub(int i, atomic_t *v)
-+{
-+	atomic_sub_return(i, v);
-+}
-+
-+static inline void atomic_inc(atomic_t *v)
-+{
-+	atomic_add_return(1, v);
-+}
-+
-+static inline void atomic_dec(atomic_t *v)
-+{
-+	atomic_sub_return(1, v);
-+}
-+
-+#define atomic_dec_return(v)		atomic_sub_return(1, (v))
-+#define atomic_inc_return(v)		atomic_add_return(1, (v))
-+
-+#define atomic_sub_and_test(i, v)	(atomic_sub_return((i), (v)) == 0)
-+#define atomic_dec_and_test(v)		(atomic_sub_return(1, (v)) == 0)
-+#define atomic_inc_and_test(v)		(atomic_add_return(1, (v)) == 0)
-+
-+#define atomic_add_unless(v, a, u)				\
++#define __put_user(x, ptr) \
 +({								\
-+	int c, old;						\
-+	c = atomic_read(v);					\
-+	while (c != (u) && (old = atomic_cmpxchg((v), c, c + (a))) != c) \
-+		c = old;					\
-+	c != (u);						\
++	__typeof__(*(ptr)) __x = (x);				\
++	int __pu_err = -EFAULT;					\
++        __chk_user_ptr(ptr);                                    \
++	switch (sizeof (*(ptr))) {				\
++	case 1:							\
++	case 2:							\
++	case 4:							\
++	case 8:							\
++		__pu_err = __put_user_fn(sizeof (*(ptr)),	\
++					 ptr, &__x);		\
++		break;						\
++	default:						\
++		__put_user_bad();				\
++		break;						\
++	 }							\
++	__pu_err;						\
 +})
 +
-+#define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
++#define put_user(x, ptr)					\
++({								\
++	might_sleep();						\
++	__access_ok(ptr, sizeof (*ptr)) ?			\
++		__put_user(x, ptr) :				\
++		-EFAULT;					\
++})
 +
-+static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
++static inline int __put_user_fn(size_t size, void __user *ptr, void *x)
 +{
-+	unsigned long flags;
-+
-+	mask = ~mask;
-+	local_irq_save(flags);
-+	*addr &= mask;
-+	local_irq_restore(flags);
++	size = __copy_to_user(ptr, x, size);
++	return size ? -EFAULT : size;
 +}
 +
-+#define atomic_xchg(ptr, v)		(xchg(&(ptr)->counter, (v)))
-+#define atomic_cmpxchg(v, old, new)	(cmpxchg(&((v)->counter), (old), (new)))
++extern int __put_user_bad(void) __attribute__((noreturn));
 +
-+#define cmpxchg_local(ptr, o, n)				  	       \
-+	((__typeof__(*(ptr)))__cmpxchg_local_generic((ptr), (unsigned long)(o),\
-+			(unsigned long)(n), sizeof(*(ptr))))
++#define __get_user(x, ptr)					\
++({								\
++	int __gu_err = -EFAULT;					\
++	__chk_user_ptr(ptr);					\
++	switch (sizeof(*(ptr))) {				\
++	case 1: {						\
++		unsigned char __x;				\
++		__gu_err = __get_user_fn(sizeof (*(ptr)),	\
++					 ptr, &__x);		\
++		(x) = *(__force __typeof__(*(ptr)) *) &__x;	\
++		break;						\
++	};							\
++	case 2: {						\
++		unsigned short __x;				\
++		__gu_err = __get_user_fn(sizeof (*(ptr)),	\
++					 ptr, &__x);		\
++		(x) = *(__force __typeof__(*(ptr)) *) &__x;	\
++		break;						\
++	};							\
++	case 4: {						\
++		unsigned int __x;				\
++		__gu_err = __get_user_fn(sizeof (*(ptr)),	\
++					 ptr, &__x);		\
++		(x) = *(__force __typeof__(*(ptr)) *) &__x;	\
++		break;						\
++	};							\
++	case 8: {						\
++		unsigned long long __x;				\
++		__gu_err = __get_user_fn(sizeof (*(ptr)),	\
++					 ptr, &__x);		\
++		(x) = *(__force __typeof__(*(ptr)) *) &__x;	\
++		break;						\
++	};							\
++	default:						\
++		__get_user_bad();				\
++		break;						\
++	}							\
++	__gu_err;						\
++})
 +
-+#define cmpxchg64_local(ptr, o, n) __cmpxchg64_local_generic((ptr), (o), (n))
++#define get_user(x, ptr)					\
++({								\
++	might_sleep();						\
++	__access_ok(ptr, sizeof (*ptr)) ?			\
++		__get_user(x, ptr) :				\
++		-EFAULT;					\
++})
 +
-+/* Assume that atomic operations are already serializing */
-+#define smp_mb__before_atomic_dec()	barrier()
-+#define smp_mb__after_atomic_dec()	barrier()
-+#define smp_mb__before_atomic_inc()	barrier()
-+#define smp_mb__after_atomic_inc()	barrier()
++static inline int __get_user_fn(size_t size, const void __user *ptr, void *x)
++{
++	size = __copy_from_user(x, ptr, size);
++	return size ? -EFAULT : size;
++}
 +
-+#include <asm-generic/atomic-long.h>
++extern int __get_user_bad(void) __attribute__((noreturn));
 +
-+#endif /* __KERNEL__ */
-+#endif /* __ASM_GENERIC_ATOMIC_H */
-diff --git a/include/asm-generic/io.h b/include/asm-generic/io.h
-new file mode 100644
-index 0000000..bcee636
---- /dev/null
-+++ b/include/asm-generic/io.h
-@@ -0,0 +1,300 @@
-+/* Generic I/O port emulation, based on MN10300 code
++#ifndef __copy_from_user_inatomic
++#define __copy_from_user_inatomic __copy_from_user
++#endif
++
++#ifndef __copy_to_user_inatomic
++#define __copy_to_user_inatomic __copy_to_user
++#endif
++
++static inline long copy_from_user(void *to,
++		const void __user * from, unsigned long n)
++{
++	might_sleep();
++	if (__access_ok(from, n))
++		return __copy_from_user(to, from, n);
++	else
++		return n;
++}
++
++static inline long copy_to_user(void __user *to,
++		const void *from, unsigned long n)
++{
++	might_sleep();
++	if (__access_ok(to, n))
++		return __copy_to_user(to, from, n);
++	else
++		return n;
++}
++
++/*
++ * Copy a null terminated string from userspace.
++ */
++#ifndef __strncpy_from_user
++static inline long
++__strncpy_from_user(char *dst, const char __user *src, long count)
++{
++	char *tmp;
++	strncpy(dst, (const char __force *)src, count);
++	for (tmp = dst; *tmp && count > 0; tmp++, count--)
++		;
++	return (tmp - dst);
++}
++#endif
++
++static inline long
++strncpy_from_user(char *dst, const char __user *src, long count)
++{
++	if (!__access_ok(src, 1))
++		return -EFAULT;
++	return __strncpy_from_user(dst, src, count);
++}
++
++/*
++ * Return the size of a string (including the ending 0)
 + *
-+ * Copyright (C) 2007 Red Hat, Inc. All Rights Reserved.
-+ * Written by David Howells (dhowells@redhat.com)
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public Licence
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the Licence, or (at your option) any later version.
++ * Return 0 on exception, a value greater than N if too long
 + */
-+#ifndef __ASM_GENERIC_IO_H
-+#define __ASM_GENERIC_IO_H
-+
-+#include <asm/page.h> /* I/O is all done through memory accesses */
-+#include <asm/cacheflush.h>
-+#include <linux/types.h>
-+
-+#ifdef CONFIG_GENERIC_IOMAP
-+#include <asm-generic/iomap.h>
++#ifndef strnlen_user
++static inline long strnlen_user(const char __user *src, long n)
++{
++	return strlen((void * __force)src) + 1;
++}
 +#endif
 +
-+#define mmiowb() do {} while (0)
-+
-+/*****************************************************************************/
-+/*
-+ * readX/writeX() are used to access memory mapped devices. On some
-+ * architectures the memory mapped IO stuff needs to be accessed
-+ * differently. On the simple architectures, we just read/write the
-+ * memory location directly.
-+ */
-+static inline u8 __raw_readb(const volatile void __iomem *addr)
++static inline long strlen_user(const char __user *src)
 +{
-+	return *(const volatile u8 __force *) addr;
-+}
-+
-+static inline u16 __raw_readw(const volatile void __iomem *addr)
-+{
-+	return *(const volatile u16 __force *) addr;
-+}
-+
-+static inline u32 __raw_readl(const volatile void __iomem *addr)
-+{
-+	return *(const volatile u32 __force *) addr;
-+}
-+
-+#define readb __raw_readb
-+#define readw(addr) __le16_to_cpu(__raw_readw(addr))
-+#define readl(addr) __le32_to_cpu(__raw_readl(addr))
-+
-+static inline void __raw_writeb(u8 b, volatile void __iomem *addr)
-+{
-+	*(volatile u8 __force *) addr = b;
-+}
-+
-+static inline void __raw_writew(u16 b, volatile void __iomem *addr)
-+{
-+	*(volatile u16 __force *) addr = b;
-+}
-+
-+static inline void __raw_writel(u32 b, volatile void __iomem *addr)
-+{
-+	*(volatile u32 __force *) addr = b;
-+}
-+
-+#define writeb __raw_writeb
-+#define writew(b,addr) __raw_writew(__cpu_to_le16(b),addr)
-+#define writel(b,addr) __raw_writel(__cpu_to_le32(b),addr)
-+
-+#ifdef CONFIG_64BIT
-+static inline u64 __raw_readq(const volatile void __iomem *addr)
-+{
-+	return *(const volatile u64 __force *) addr;
-+}
-+#define readq(addr) __le64_to_cpu(__raw_readq(addr))
-+
-+static inline void __raw_writeq(u64 b, volatile void __iomem *addr)
-+{
-+	*(volatile u64 __force *) addr = b;
-+}
-+#define writeq(b,addr) __raw_writeq(__cpu_to_le64(b),addr)
-+#endif
-+
-+/*****************************************************************************/
-+/*
-+ * traditional input/output functions
-+ */
-+
-+static inline u8 inb(unsigned long addr)
-+{
-+	return readb((volatile void __iomem *) addr);
-+}
-+
-+static inline u16 inw(unsigned long addr)
-+{
-+	return readw((volatile void __iomem *) addr);
-+}
-+
-+static inline u32 inl(unsigned long addr)
-+{
-+	return readl((volatile void __iomem *) addr);
-+}
-+
-+static inline void outb(u8 b, unsigned long addr)
-+{
-+	writeb(b, (volatile void __iomem *) addr);
-+}
-+
-+static inline void outw(u16 b, unsigned long addr)
-+{
-+	writew(b, (volatile void __iomem *) addr);
-+}
-+
-+static inline void outl(u32 b, unsigned long addr)
-+{
-+	writel(b, (volatile void __iomem *) addr);
-+}
-+
-+#define inb_p(addr)	inb(addr)
-+#define inw_p(addr)	inw(addr)
-+#define inl_p(addr)	inl(addr)
-+#define outb_p(x, addr)	outb((x), (addr))
-+#define outw_p(x, addr)	outw((x), (addr))
-+#define outl_p(x, addr)	outl((x), (addr))
-+
-+static inline void insb(unsigned long addr, void *buffer, int count)
-+{
-+	if (count) {
-+		u8 *buf = buffer;
-+		do {
-+			u8 x = inb(addr);
-+			*buf++ = x;
-+		} while (--count);
-+	}
-+}
-+
-+static inline void insw(unsigned long addr, void *buffer, int count)
-+{
-+	if (count) {
-+		u16 *buf = buffer;
-+		do {
-+			u16 x = inw(addr);
-+			*buf++ = x;
-+		} while (--count);
-+	}
-+}
-+
-+static inline void insl(unsigned long addr, void *buffer, int count)
-+{
-+	if (count) {
-+		u32 *buf = buffer;
-+		do {
-+			u32 x = inl(addr);
-+			*buf++ = x;
-+		} while (--count);
-+	}
-+}
-+
-+static inline void outsb(unsigned long addr, const void *buffer, int count)
-+{
-+	if (count) {
-+		const u8 *buf = buffer;
-+		do {
-+			outb(*buf++, addr);
-+		} while (--count);
-+	}
-+}
-+
-+static inline void outsw(unsigned long addr, const void *buffer, int count)
-+{
-+	if (count) {
-+		const u16 *buf = buffer;
-+		do {
-+			outw(*buf++, addr);
-+		} while (--count);
-+	}
-+}
-+
-+static inline void outsl(unsigned long addr, const void *buffer, int count)
-+{
-+	if (count) {
-+		const u32 *buf = buffer;
-+		do {
-+			outl(*buf++, addr);
-+		} while (--count);
-+	}
-+}
-+
-+#ifndef CONFIG_GENERIC_IOMAP
-+#define ioread8(addr)		readb(addr)
-+#define ioread16(addr)		readw(addr)
-+#define ioread32(addr)		readl(addr)
-+
-+#define iowrite8(v, addr)	writeb((v), (addr))
-+#define iowrite16(v, addr)	writew((v), (addr))
-+#define iowrite32(v, addr)	writel((v), (addr))
-+
-+#define ioread8_rep(p, dst, count) \
-+	insb((unsigned long) (p), (dst), (count))
-+#define ioread16_rep(p, dst, count) \
-+	insw((unsigned long) (p), (dst), (count))
-+#define ioread32_rep(p, dst, count) \
-+	insl((unsigned long) (p), (dst), (count))
-+
-+#define iowrite8_rep(p, src, count) \
-+	outsb((unsigned long) (p), (src), (count))
-+#define iowrite16_rep(p, src, count) \
-+	outsw((unsigned long) (p), (src), (count))
-+#define iowrite32_rep(p, src, count) \
-+	outsl((unsigned long) (p), (src), (count))
-+#endif /* CONFIG_GENERIC_IOMAP */
-+
-+
-+#define IO_SPACE_LIMIT 0xffffffff
-+
-+#ifdef __KERNEL__
-+
-+#include <linux/vmalloc.h>
-+#define __io_virt(x) ((void __force *) (x))
-+
-+#ifndef CONFIG_GENERIC_IOMAP
-+/* Create a virtual mapping cookie for a PCI BAR (memory or IO) */
-+struct pci_dev;
-+extern void __iomem *pci_iomap(struct pci_dev *dev, int bar, unsigned long max);
-+static inline void pci_iounmap(struct pci_dev *dev, void __iomem *p)
-+{
-+}
-+#endif /* CONFIG_GENERIC_IOMAP */
-+
-+/*
-+ * Change virtual addresses to physical addresses and vv.
-+ * These are pretty trivial
-+ */
-+static inline unsigned long virt_to_phys(volatile void *address)
-+{
-+	return __pa((unsigned long)address);
-+}
-+
-+static inline void *phys_to_virt(unsigned long address)
-+{
-+	return __va(address);
++	return strnlen_user(src, 32767);
 +}
 +
 +/*
-+ * Change "struct page" to physical address.
++ * Zero Userspace
 + */
-+static inline void __iomem *ioremap(phys_addr_t offset, unsigned long size)
++#ifndef __clear_user
++static inline __must_check unsigned long
++__clear_user(void __user *to, unsigned long n)
 +{
-+	return (void __iomem*) (unsigned long)offset;
-+}
-+
-+#define __ioremap(offset, size, flags)	ioremap(offset, size)
-+
-+#ifndef ioremap_nocache
-+#define ioremap_nocache ioremap
-+#endif
-+
-+#ifndef ioremap_wc
-+#define ioremap_wc ioremap_nocache
-+#endif
-+
-+static inline void iounmap(void *addr)
-+{
-+}
-+
-+#ifndef CONFIG_GENERIC_IOMAP
-+static inline void __iomem *ioport_map(unsigned long port, unsigned int nr)
-+{
-+	return (void __iomem *) port;
-+}
-+
-+static inline void ioport_unmap(void __iomem *p)
-+{
-+}
-+#else /* CONFIG_GENERIC_IOMAP */
-+extern void __iomem *ioport_map(unsigned long port, unsigned int nr);
-+extern void ioport_unmap(void __iomem *p);
-+#endif /* CONFIG_GENERIC_IOMAP */
-+
-+#define xlate_dev_kmem_ptr(p)	p
-+#define xlate_dev_mem_ptr(p)	((void *) (p))
-+
-+#ifndef virt_to_bus
-+static inline unsigned long virt_to_bus(volatile void *address)
-+{
-+	return ((unsigned long) address);
-+}
-+
-+static inline void *bus_to_virt(unsigned long address)
-+{
-+	return (void *) address;
++	memset((void __force *)to, 0, n);
++	return 0;
 +}
 +#endif
 +
-+#define memset_io(a, b, c)	memset(__io_virt(a), (b), (c))
-+#define memcpy_fromio(a, b, c)	memcpy((a), __io_virt(b), (c))
-+#define memcpy_toio(a, b, c)	memcpy(__io_virt(a), (b), (c))
++static inline __must_check unsigned long
++clear_user(void __user *to, unsigned long n)
++{
++	might_sleep();
++	if (!__access_ok(to, n))
++		return n;
 +
-+#endif /* __KERNEL__ */
++	return __clear_user(to, n);
++}
 +
-+#endif /* __ASM_GENERIC_IO_H */
++#endif /* __ASM_GENERIC_UACCESS_H */
 -- 
 1.6.0.4
 
