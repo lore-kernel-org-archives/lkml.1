@@ -1,74 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759915AbZEMNan@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758726AbZEMNbT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759915AbZEMNan (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:30:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZEMNae
+	id S1758726AbZEMNbT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:31:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbZEMNbE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:30:34 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:43015 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752307AbZEMNad (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:30:33 -0400
-Date: Wed, 13 May 2009 15:30:21 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>
-Subject: Re: [GIT PULL] xen /proc/mtrr implementation
-Message-ID: <20090513133021.GA7277@elte.hu>
-References: <1242170864-13560-1-git-send-email-jeremy@goop.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242170864-13560-1-git-send-email-jeremy@goop.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Wed, 13 May 2009 09:31:04 -0400
+Received: from mtagate3.uk.ibm.com ([195.212.29.136]:63321 "EHLO
+	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752544AbZEMNbC convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 09:31:02 -0400
+Date: Wed, 13 May 2009 15:31:01 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: arjan@infradead.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH] kernel:async function call:introduce async_run
+Message-ID: <20090513153101.3bceb04c@gondolin>
+In-Reply-To: <d82e647a0905130556y50620617i8c5ac597b6207406@mail.gmail.com>
+References: <1242174829-4694-1-git-send-email-tom.leiming@gmail.com>
+	<20090513130233.082eeee5@gondolin>
+	<d82e647a0905130556y50620617i8c5ac597b6207406@mail.gmail.com>
+Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
+ Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
+ Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
+ Amtsgericht Stuttgart, HRB 243294
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, 13 May 2009 20:56:40 +0800,
+Ming Lei <tom.leiming@gmail.com> wrote:
 
-* Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+> 2009/5/13 Cornelia Huck <cornelia.huck@de.ibm.com>:
+> > On Wed, 13 May 2009 08:33:49 +0800,
+> > tom.leiming@gmail.com wrote:
 
-> Hi Ingo,
+> >>  /**
+> >> + * async_run - schedule a function for asynchronous execution
+> >> + * @ptr: function to execute asynchronously
+> >> + * @data: data pointer to pass to the function
+> >> + *
+> >> + * Note:we do not allocate a cookie for this kind of aysnchronous
+> >> + * function to decrease the wait time of async_synchronize_full().
+> >
+> > But async_synchronize_full() still waits for list_empty(&async_running)
+> > - so what does this buy us?
 > 
-> This series of patches makes /proc/mtrr fully functional under Xen.
-> 
-> Thanks,
-> 	J
-> 
-> The following changes since commit ce791368bb4a53d05e78e1588bac0aacde8db84c:
->   Jeremy Fitzhardinge (1):
->         xen/i386: make sure initial VGA/ISA mappings are not overridden
-> 
-> are available in the git repository at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/jeremy/xen.git for-ingo/xen/dom0/mtrr
-> 
-> Jeremy Fitzhardinge (1):
->       xen: set cpu_callout_mask to make mtrr work
-> 
-> Mark McLoughlin (5):
->       xen mtrr: Use specific cpu_has_foo macros instead of generic cpu_has()
->       xen mtrr: Use generic_validate_add_page()
->       xen mtrr: Implement xen_get_free_region()
->       xen mtrr: Add xen_{get,set}_mtrr() implementations
->       xen mtrr: Kill some unnecessary includes
-> 
->  arch/x86/kernel/cpu/mtrr/mtrr.h |    2 +
->  arch/x86/kernel/cpu/mtrr/xen.c  |   99 ++++++++++++++++++++++++++++++++-------
->  arch/x86/xen/smp.c              |    2 +
->  3 files changed, 86 insertions(+), 17 deletions(-)
+> I mean it can decrease the wait time for other async function.
+> async_schedule() still can be used to do such thing, but may lead to a
+> slower boot.  It is the main
+> purpose of the patch.
 
-i never got a reply to my question for your previous submission:
+I see how this can affect places calling async_synchronize_cookie(),
+but the function will still end up on async_running. If you don't want
+async_synchronize_full() waiting for these functions, couldn't you use
+your own running list?
 
-  http://lkml.indiana.edu/hypermail/linux/kernel/0905.1/00152.html
-
-	Ingo
+(Oh, and I just thought about it a bit further:
+- somebody calls async_run() -> function with cookie = MAX_COOKIE will be
+  lowest_in_progress at some point in time
+- somebody else calls async_schedule() -> cookie = n
+- we wait with async_synchronize_cookie(n) - which returns since
+  MAX_COOKIE >= n, which is probably not what we want)
