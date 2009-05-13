@@ -1,47 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760949AbZEMSeU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760851AbZEMSiR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760949AbZEMSeU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 14:34:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758764AbZEMSeF
+	id S1760851AbZEMSiR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 14:38:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758764AbZEMSh6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 14:34:05 -0400
-Received: from magus.merit.edu ([198.108.1.13]:36018 "EHLO magus.merit.edu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755816AbZEMSeE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 14:34:04 -0400
-X-Greylist: delayed 517 seconds by postgrey-1.27 at vger.kernel.org; Wed, 13 May 2009 14:34:04 EDT
-Date: Wed, 13 May 2009 14:25:24 -0400
-From: Jim Rees <rees@umich.edu>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Olga Kornievskaia <aglo@citi.umich.edu>, Jeff Moyer <jmoyer@redhat.com>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "J. Bruce Fields" <bfields@fieldses.org>, linux-nfs@vger.kernel.org
-Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone
-	over NFS
-Message-ID: <20090513182524.GA20778@merit.edu>
-References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com> <20090508120119.8c93cfd7.akpm@linux-foundation.org> <20090511081415.GL4694@kernel.dk> <x49skjb21b7.fsf@segfault.boston.devel.redhat.com> <20090511165826.GG4694@kernel.dk> <x494ovp4r51.fsf@segfault.boston.devel.redhat.com> <20090512204433.7eb69075.akpm@linux-foundation.org> <x49y6t1rqw0.fsf@segfault.boston.devel.redhat.com> <b4ff356f0905130920v184ab529mb52a4346d4c77c14@mail.gmail.com> <20090513093229.097b47d2.akpm@linux-foundation.org>
+	Wed, 13 May 2009 14:37:58 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:64981 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759278AbZEMSh5 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 14:37:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :content-type:content-transfer-encoding;
+        b=uFTq+ESSymur3Nd52KkEJ4mwWeYz9WiKIkcFXRQcfwy/T+teNOzirQTjUSC+NHkUI3
+         wVdv7e73eumu0oG9OIubSk8JPDtlIK6G54nqvDQ5S2haC3RtnF7SVFIuJc5C9Njk5XPV
+         JNoMYw2pV+xLV4SCwToNqPzjuftFfQvXZlNjw=
+Message-ID: <4A0B1382.6040501@gmail.com>
+Date: Wed, 13 May 2009 20:37:54 +0200
+From: Roel Kluin <roel.kluin@gmail.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090513093229.097b47d2.akpm@linux-foundation.org>
+To: Greg KH <gregkh@suse.de>
+CC: lkml <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] staging: off by one in AsicSendCommandToMcu() and NDIS_STATUS
+ NICLoadFirmware()
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
+With a postfix increment i/Index is incremented beyond 100/1000 so the
+message will be displayed too soon.
 
-  Jeff's computer got slower.  Can we fix that?
+Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
+---
+This could occur almost never.
 
-TCP autotuning can reduce performance by up to about 10% in some cases.
-Jeff found one of these cases.  While the autotuning penalty never exceeds
-10% as far as I know, I can provide examples of other cases where autotuning
-improves nfsd performance by more than a factor of 100.
+ drivers/staging/rt2860/common/mlme.c      |    2 +-
+ drivers/staging/rt2860/common/rtmp_init.c |    2 +-
+ drivers/staging/rt2870/common/mlme.c      |    2 +-
+ drivers/staging/rt2870/common/rtmp_init.c |    2 +-
+ drivers/staging/rt3070/common/mlme.c      |    2 +-
+ drivers/staging/rt3070/common/rtmp_init.c |    2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
-The right thing is to fix autotuning.  If autotuning is considered too
-broken to use, it should be turned off everywhere, not just in nfsd, as it
-hurts/benefits all TCP clients, not just nfs.
-
-This topic has been discussed before on netdev:
-http://www.spinics.net/lists/netdev/msg68650.html
-http://www.spinics.net/lists/netdev/msg68155.html
+diff --git a/drivers/staging/rt2860/common/mlme.c b/drivers/staging/rt2860/common/mlme.c
+index c00f9ab..b76eecc 100644
+--- a/drivers/staging/rt2860/common/mlme.c
++++ b/drivers/staging/rt2860/common/mlme.c
+@@ -7611,7 +7611,7 @@ BOOLEAN AsicSendCommandToMcu(
+ 		RTMPusecDelay(2);
+ 	} while(i++ < 100);
+ 
+-	if (i >= 100)
++	if (i > 100)
+ 	{
+ #ifdef RALINK_ATE
+ 		if (pAd->ate.bFWLoading == TRUE)
+diff --git a/drivers/staging/rt2860/common/rtmp_init.c b/drivers/staging/rt2860/common/rtmp_init.c
+index 8a00cee..6321352 100644
+--- a/drivers/staging/rt2860/common/rtmp_init.c
++++ b/drivers/staging/rt2860/common/rtmp_init.c
+@@ -2867,7 +2867,7 @@ NDIS_STATUS NICLoadFirmware(
+ 		RTMPusecDelay(1000);
+ 	} while (Index++ < 1000);
+ 
+-    if (Index >= 1000)
++    if (Index > 1000)
+ 	{
+ 		Status = NDIS_STATUS_FAILURE;
+ 		DBGPRINT(RT_DEBUG_ERROR, ("NICLoadFirmware: MCU is not ready\n\n\n"));
+diff --git a/drivers/staging/rt2870/common/mlme.c b/drivers/staging/rt2870/common/mlme.c
+index 8a82cee..8598c6e 100644
+--- a/drivers/staging/rt2870/common/mlme.c
++++ b/drivers/staging/rt2870/common/mlme.c
+@@ -7575,7 +7575,7 @@ BOOLEAN AsicSendCommandToMcu(
+ 		RTMPusecDelay(2);
+ 	} while(i++ < 100);
+ 
+-	if (i >= 100)
++	if (i > 100)
+ 	{
+ 		{
+ 		DBGPRINT_ERR(("H2M_MAILBOX still hold by MCU. command fail\n"));
+diff --git a/drivers/staging/rt2870/common/rtmp_init.c b/drivers/staging/rt2870/common/rtmp_init.c
+index 099b6a8..2940ca3 100644
+--- a/drivers/staging/rt2870/common/rtmp_init.c
++++ b/drivers/staging/rt2870/common/rtmp_init.c
+@@ -3016,7 +3016,7 @@ NDIS_STATUS NICLoadFirmware(
+ 		RTMPusecDelay(1000);
+ 	} while (Index++ < 1000);
+ 
+-    if (Index >= 1000)
++    if (Index > 1000)
+ 	{
+ 		Status = NDIS_STATUS_FAILURE;
+ 		DBGPRINT(RT_DEBUG_ERROR, ("NICLoadFirmware: MCU is not ready\n\n\n"));
+diff --git a/drivers/staging/rt3070/common/mlme.c b/drivers/staging/rt3070/common/mlme.c
+index 0ffbfa3..3e697cd 100644
+--- a/drivers/staging/rt3070/common/mlme.c
++++ b/drivers/staging/rt3070/common/mlme.c
+@@ -7959,7 +7959,7 @@ BOOLEAN AsicSendCommandToMcu(
+ 		RTMPusecDelay(2);
+ 	} while(i++ < 100);
+ 
+-	if (i >= 100)
++	if (i > 100)
+ 	{
+ 		{
+ 		DBGPRINT_ERR(("H2M_MAILBOX still hold by MCU. command fail\n"));
+diff --git a/drivers/staging/rt3070/common/rtmp_init.c b/drivers/staging/rt3070/common/rtmp_init.c
+index 4503f6c..8791b7b 100644
+--- a/drivers/staging/rt3070/common/rtmp_init.c
++++ b/drivers/staging/rt3070/common/rtmp_init.c
+@@ -3181,7 +3181,7 @@ NDIS_STATUS NICLoadFirmware(
+ 		RTMPusecDelay(1000);
+ 	} while (Index++ < 1000);
+ 
+-    if (Index >= 1000)
++    if (Index > 1000)
+ 	{
+ 		Status = NDIS_STATUS_FAILURE;
+ 		DBGPRINT(RT_DEBUG_ERROR, ("NICLoadFirmware: MCU is not ready\n\n\n"));
