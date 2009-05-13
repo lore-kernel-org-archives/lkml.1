@@ -1,63 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758388AbZEMDKg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757043AbZEMDKz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758388AbZEMDKg (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 23:10:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755991AbZEMDGM
+	id S1757043AbZEMDKz (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 23:10:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756051AbZEMDGN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 23:06:12 -0400
-Received: from adsl-99-35-133-201.dsl.pltn13.sbcglobal.net ([99.35.133.201]:36224
-	"EHLO abulafia.goop.org" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1755914AbZEMDGD (ORCPT
+	Tue, 12 May 2009 23:06:13 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:49485 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756081AbZEMDGG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 23:06:03 -0400
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: the arch/x86 maintainers <x86@kernel.org>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: [PATCH 08/10] xen/swiotlb: add sync functions
-Date: Tue, 12 May 2009 14:50:49 -0700
-Message-Id: <1242165051-6636-9-git-send-email-jeremy@goop.org>
-X-Mailer: git-send-email 1.6.0.6
-In-Reply-To: <1242165051-6636-1-git-send-email-jeremy@goop.org>
-References: <1242165051-6636-1-git-send-email-jeremy@goop.org>
+	Tue, 12 May 2009 23:06:06 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>
+Subject: [PATCH 0/4] various zone_reclaim cleanup
+Cc: kosaki.motohiro@jp.fujitsu.com
+Message-Id: <20090513120155.5879.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 13 May 2009 12:06:00 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+here is zone_reclaim related various cleanups.
 
-Add all the missing sync functions.  This fixes iwlagn.
-(Need to think about what to do with non-swiotlb mode.)
+[1/4] vmscan: change the number of the unmapped files in zone reclaim
+[2/4] vmscan: drop PF_SWAPWRITE from zone_reclaim
+[3/4] vmscan: zone_reclaim use may_swap
+[4/4] zone_reclaim_mode is always 0 by default
 
-[ Impact: bugfix; makes iwlagn driver work under Xen ]
-Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
----
- drivers/pci/xen-iommu.c |    7 +++++++
- 1 files changed, 7 insertions(+), 0 deletions(-)
 
-diff --git a/drivers/pci/xen-iommu.c b/drivers/pci/xen-iommu.c
-index d09ff91..b1a7d93 100644
---- a/drivers/pci/xen-iommu.c
-+++ b/drivers/pci/xen-iommu.c
-@@ -304,6 +304,13 @@ static struct dma_map_ops xen_swiotlb_dma_ops = {
- 
- 	.mapping_error = swiotlb_dma_mapping_error,
- 
-+	.sync_single_for_cpu = swiotlb_sync_single_for_cpu,
-+	.sync_single_for_device = swiotlb_sync_single_for_device,
-+	.sync_single_range_for_cpu = swiotlb_sync_single_range_for_cpu,
-+	.sync_single_range_for_device = swiotlb_sync_single_range_for_device,
-+	.sync_sg_for_cpu = swiotlb_sync_sg_for_cpu,
-+	.sync_sg_for_device = swiotlb_sync_sg_for_device,
-+
- 	.is_phys = 0,
- };
- 
--- 
-1.6.0.6
+Please comment.
+
+
 
