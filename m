@@ -1,50 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbZEMGhr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757525AbZEMGlQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758061AbZEMGhr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 02:37:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbZEMGhc
+	id S1757525AbZEMGlQ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 02:41:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752128AbZEMGlA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 02:37:32 -0400
-Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:55607 "EHLO
-	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1756066AbZEMGha convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 02:37:30 -0400
-X-BigFish: VPS3(z34a4jzzz1202hzzz32i6bh)
-X-FB-SS: 13,
-X-WSS-ID: 0KJKL2A-02-RZJ-01
-Date: Wed, 13 May 2009 08:36:49 +0200
-From: Andreas Herrmann <andreas.herrmann3@amd.com>
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
-       Robert Richter <robert.richter@amd.com>, Dave Jones <davej@redhat.com>,
-       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>
-Subject: Re: [PATCH 5/10 -tip] x86: check_powernow() for K8 and later user
-	of Advanced Power Management features
-Message-ID: <20090513063649.GF9991@alberich.amd.com>
-References: <1242142530.2547.11.camel@ht.satnam> <1242142623.2547.13.camel@ht.satnam> <1242142692.2547.15.camel@ht.satnam> <1242142753.2547.16.camel@ht.satnam> <1242142807.2547.18.camel@ht.satnam> <1242142849.2547.19.camel@ht.satnam> <20090512174848.GA3313@elte.hu> <1242153926.2492.49.camel@ht.satnam>
+	Wed, 13 May 2009 02:41:00 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:32971 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751714AbZEMGk7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 02:40:59 -0400
+X-Auth-Info: OrhV+NM/hLF1F8/3QqbsPMh40OnjbpwWvuDjtwacvm4=
+Message-ID: <4A0A683B.5010209@denx.de>
+Date: Wed, 13 May 2009 08:27:07 +0200
+From: Heiko Schocher <hs@denx.de>
+Reply-To: hs@denx.de
+Organization: DENX GmbH
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <1242153926.2492.49.camel@ht.satnam>
-User-Agent: Mutt/1.5.16 (2007-06-09)
-X-OriginalArrivalTime: 13 May 2009 06:37:18.0241 (UTC) FILETIME=[42E12910:01C9D395]
-Content-Transfer-Encoding: 8BIT
+To: Wolfgang Denk <wd@denx.de>
+CC: linuxppc-dev@ozlabs.org, Scott Wood <scottwood@freescale.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash,
+ size
+References: <mailman.7754.1242158509.26545.linuxppc-dev@ozlabs.org>
+In-Reply-To: <mailman.7754.1242158509.26545.linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-You should involve the maintainer of powernow-k8 when submitting patches for this driver.
-It's Mark Langsdorf (mark.langsdorf@amd.com).
+Hello Wolfgang,
 
-Regards,
-Andreas
+> The current device tree for the MPC8272ADS assumes a mapping of 32 MB
+> of NOR flash at 0xFE00.0000, while there are actually only 8 MB on
+> the boards, mapped at 0xFF80.0000. When booting an uImage with such a
+> device tree, the kernel crashes because 0xFE00.0000 is not mapped.
 
+Wouldn;t it be better, if u-boot fixes the device tree entries?
+I think, u-boot should know, where the flash begins and ends, and
+because this is maybe a dynamic variable for this board, it should
+be better, if u-boot fixes this, so no need for adding a device tree
+for every board variant.
+
+bye
+Heiko
 -- 
-Operating | Advanced Micro Devices GmbH
-  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
- Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
-  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-  (OSRC)  | Registergericht München, HRB Nr. 43632
-
-
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
