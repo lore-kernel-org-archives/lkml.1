@@ -1,77 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756704AbZEMIAt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757896AbZEMIDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756704AbZEMIAt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 04:00:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbZEMIAj
+	id S1757896AbZEMIDk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 04:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753310AbZEMIDV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 04:00:39 -0400
-Received: from rrzmta2.rz.uni-regensburg.de ([194.94.155.53]:8310 "EHLO
-	rrzmta2.rz.uni-regensburg.de" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752578AbZEMIAj (ORCPT
+	Wed, 13 May 2009 04:03:21 -0400
+Received: from smtp.wellnetcz.com ([212.24.148.102]:42676 "EHLO
+	smtp.wellnetcz.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752161AbZEMIDS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 04:00:39 -0400
-From: "Ulrich Windl" <ulrich.windl@rz.uni-regensburg.de>
-Organization: Universitaetsklinikum Regensburg
-To: Thomas Gleixner <tglx@linutronix.de>
-Date: Wed, 13 May 2009 09:59:59 +0200
-MIME-Version: 1.0
-Subject: Re: [PATCH] tsc_khz= boot option to avoid TSC calibration variance
-CC: Ulrich Windl <ulrich.windl@rz.uni-regensburg.de>,
-       linux-kernel@vger.kernel.org, Clark Williams <williams@redhat.com>,
-       zippel@linux-m68k.org, Ingo Molnar <mingo@elte.hu>
-Message-ID: <4A0A9A23.24720.54D53C4@Ulrich.Windl.rkdvmks1.ngate.uni-regensburg.de>
-In-reply-to: <alpine.LFD.2.00.0905130027530.3561@localhost.localdomain>
-References: <1242094321.7214.156.camel@localhost.localdomain>, <1242167171.3462.13.camel@localhost>, <alpine.LFD.2.00.0905130027530.3561@localhost.localdomain>
-X-mailer: Pegasus Mail for Windows (4.41)
-Content-type: text/plain; charset=US-ASCII
-Content-transfer-encoding: 7BIT
-Content-description: Mail message body
-X-Content-Conformance: HerringScan-0.29/Sophos-P=4.41.0+V=4.41+U=2.07.230+R=04 May 2009+T=728364@20090513.080027Z
+	Wed, 13 May 2009 04:03:18 -0400
+From: Jiri Slaby <jirislaby@gmail.com>
+To: greg@kroah.com
+Cc: stable@kernel.org, linux-kernel@vger.kernel.org,
+       Jiri Slaby <jirislaby@gmail.com>,
+       "John W. Linville" <linville@tuxdriver.com>
+Subject: [PATCH stable-27 1/1] mac80211: pid, fix memory corruption
+Date: Wed, 13 May 2009 09:55:26 +0200
+Message-Id: <1242201326-10935-1-git-send-email-jirislaby@gmail.com>
+X-Mailer: git-send-email 1.6.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 13 May 2009 at 0:42, Thomas Gleixner wrote:
+pid doesn't count with some band having more bitrates than the one
+associated the first time.
+Fix that by counting the maximal available bitrate count and allocate
+big enough space.
 
-[...]
-> I'm fine with the command line option, but I refuse to add some sys/
-> thingy which makes us add extra calibration stuff.
-> 
-> Honestly all this is just the futile attempt to fix the flaws of NTP
-> via (super)user interaction.
+Secondly, fix touching uninitialized memory which causes panics.
+Index sucked from this random memory points to the hell.
+The fix is to sort the rates on each band change.
 
-This has nothing to do with flaws in NTP (AFAIK).
+Also remove a comment which is wrong now.
 
-> 
-> Darn, it can not be that hard to adjust the math to do what you think
-> it should do. I'm not an expert on that NTP stuff, but blindly
-> stuffing the last known value into the kernel and expect that the
-> calibration value did not change is nonsense.
+This version also contains half of
+mac80211: avoid NULL ptr deref when finding max_rates in PID and minstrel
+patch by John W. Linville, which is namely:
+-               if (sband->n_bitrates > max_rates)
++               if (sband && sband->n_bitrates > max_rates)
+to fix oopses on one band devices.
 
-Well, the assumption most likely is that if the hardware didn't change, kernel's 
-calibration results also shouldn't change.
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Cc: John W. Linville <linville@tuxdriver.com>
+---
+ net/mac80211/rc80211_pid_algo.c |   71 +++++++++++++++++++++-----------------
+ 1 files changed, 39 insertions(+), 32 deletions(-)
 
-> 
-> You know the calibration value which created the last known parameters
-> and you want an extra interface to inject this last known calibration
-> value into the kernel instead of doing the math of adjusting the NTP
-> parameters according to the change of calibration values ?
-
-I think, the wole issue is somewhat "cosmetics of statistics": People don't want 
-to see a "clock frequency hops" after rebooting the machine (and restarting NTP). 
-Usually there are thermal effects anyway, so what... Maybe it's just about "making 
-everything perfect". For most people it's "good enough" already probably.
-
-Regards,
-Ulrich
-
-
-
-> 
-> Thanks,
-> 
-> 	tglx
-> 
-> 
-
+diff --git a/net/mac80211/rc80211_pid_algo.c b/net/mac80211/rc80211_pid_algo.c
+index a914ba7..4077676 100644
+--- a/net/mac80211/rc80211_pid_algo.c
++++ b/net/mac80211/rc80211_pid_algo.c
+@@ -367,8 +367,40 @@ static void rate_control_pid_rate_init(void *priv, void *priv_sta,
+ 	 * Until that method is implemented, we will use the lowest supported
+ 	 * rate as a workaround. */
+ 	struct ieee80211_supported_band *sband;
++	struct rc_pid_info *pinfo = priv;
++	struct rc_pid_rateinfo *rinfo = pinfo->rinfo;
++	int i, j, tmp;
++	bool s;
+ 
+ 	sband = local->hw.wiphy->bands[local->hw.conf.channel->band];
++
++	/* Sort the rates. This is optimized for the most common case (i.e.
++	 * almost-sorted CCK+OFDM rates). Kind of bubble-sort with reversed
++	 * mapping too. */
++	for (i = 0; i < sband->n_bitrates; i++) {
++		rinfo[i].index = i;
++		rinfo[i].rev_index = i;
++		if (RC_PID_FAST_START)
++			rinfo[i].diff = 0;
++		else
++			rinfo[i].diff = i * pinfo->norm_offset;
++	}
++	for (i = 1; i < sband->n_bitrates; i++) {
++		s = 0;
++		for (j = 0; j < sband->n_bitrates - i; j++)
++			if (unlikely(sband->bitrates[rinfo[j].index].bitrate >
++				     sband->bitrates[rinfo[j + 1].index].bitrate)) {
++				tmp = rinfo[j].index;
++				rinfo[j].index = rinfo[j + 1].index;
++				rinfo[j + 1].index = tmp;
++				rinfo[rinfo[j].index].rev_index = j;
++				rinfo[rinfo[j + 1].index].rev_index = j + 1;
++				s = 1;
++			}
++		if (!s)
++			break;
++	}
++
+ 	sta->txrate_idx = rate_lowest_index(local, sband, sta);
+ 	sta->fail_avg = 0;
+ }
+@@ -378,21 +410,23 @@ static void *rate_control_pid_alloc(struct ieee80211_local *local)
+ 	struct rc_pid_info *pinfo;
+ 	struct rc_pid_rateinfo *rinfo;
+ 	struct ieee80211_supported_band *sband;
+-	int i, j, tmp;
+-	bool s;
++	int i, max_rates = 0;
+ #ifdef CONFIG_MAC80211_DEBUGFS
+ 	struct rc_pid_debugfs_entries *de;
+ #endif
+ 
+-	sband = local->hw.wiphy->bands[local->hw.conf.channel->band];
+-
+ 	pinfo = kmalloc(sizeof(*pinfo), GFP_ATOMIC);
+ 	if (!pinfo)
+ 		return NULL;
+ 
++	for (i = 0; i < IEEE80211_NUM_BANDS; i++) {
++		sband = local->hw.wiphy->bands[i];
++		if (sband && sband->n_bitrates > max_rates)
++			max_rates = sband->n_bitrates;
++	}
+ 	/* We can safely assume that sband won't change unless we get
+ 	 * reinitialized. */
+-	rinfo = kmalloc(sizeof(*rinfo) * sband->n_bitrates, GFP_ATOMIC);
++	rinfo = kmalloc(sizeof(*rinfo) * max_rates, GFP_ATOMIC);
+ 	if (!rinfo) {
+ 		kfree(pinfo);
+ 		return NULL;
+@@ -410,33 +444,6 @@ static void *rate_control_pid_alloc(struct ieee80211_local *local)
+ 	pinfo->rinfo = rinfo;
+ 	pinfo->oldrate = 0;
+ 
+-	/* Sort the rates. This is optimized for the most common case (i.e.
+-	 * almost-sorted CCK+OFDM rates). Kind of bubble-sort with reversed
+-	 * mapping too. */
+-	for (i = 0; i < sband->n_bitrates; i++) {
+-		rinfo[i].index = i;
+-		rinfo[i].rev_index = i;
+-		if (RC_PID_FAST_START)
+-			rinfo[i].diff = 0;
+-		else
+-			rinfo[i].diff = i * pinfo->norm_offset;
+-	}
+-	for (i = 1; i < sband->n_bitrates; i++) {
+-		s = 0;
+-		for (j = 0; j < sband->n_bitrates - i; j++)
+-			if (unlikely(sband->bitrates[rinfo[j].index].bitrate >
+-				     sband->bitrates[rinfo[j + 1].index].bitrate)) {
+-				tmp = rinfo[j].index;
+-				rinfo[j].index = rinfo[j + 1].index;
+-				rinfo[j + 1].index = tmp;
+-				rinfo[rinfo[j].index].rev_index = j;
+-				rinfo[rinfo[j + 1].index].rev_index = j + 1;
+-				s = 1;
+-			}
+-		if (!s)
+-			break;
+-	}
+-
+ #ifdef CONFIG_MAC80211_DEBUGFS
+ 	de = &pinfo->dentries;
+ 	de->dir = debugfs_create_dir("rc80211_pid",
+-- 
+1.6.3
 
