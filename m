@@ -1,61 +1,137 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754566AbZEMC1g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753850AbZEMCb0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754566AbZEMC1g (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 22:27:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752519AbZEMC1Y
+	id S1753850AbZEMCb0 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 22:31:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbZEMCbQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 22:27:24 -0400
-Received: from straum.hexapodia.org ([64.81.70.185]:38560 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752382AbZEMC1X (ORCPT
+	Tue, 12 May 2009 22:31:16 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:61551 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752302AbZEMCbQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 22:27:23 -0400
-Date: Tue, 12 May 2009 19:27:23 -0700
-From: Andy Isaacson <adi@hexapodia.org>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [2.6.30-rc2] CD-R: wodim intermittent failures: [sr0] Add. Sense: Logical block address out of range, sector 0
-Message-ID: <20090513022723.GU21505@hexapodia.org>
-References: <20090421015234.GA7014@hexapodia.org> <20090422144904.407df635.akpm@linux-foundation.org> <49F00EBB.7040504@gmail.com> <20090423070713.GF19113@hexapodia.org> <20090512215256.GA22095@hexapodia.org> <4A0A050D.4000804@gmail.com> <20090513010056.GT21505@hexapodia.org> <51f3faa70905121808x29c12a35n6905104f45883f17@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <51f3faa70905121808x29c12a35n6905104f45883f17@mail.gmail.com>
-User-Agent: Mutt/1.4.2.3i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+	Tue, 12 May 2009 22:31:16 -0400
+Message-ID: <4A0A2E57.7080709@ct.jp.nec.com>
+Date: Wed, 13 May 2009 11:20:07 +0900
+From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Subrata Modak <subrata@linux.vnet.ibm.com>
+CC: x86@kernel.org, Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, Andi Kleen <ak@linux.intel.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: [PATCH] Fix Warnining in arch/x86/kernel/signal.c
+References: <20090512155637.19380.9114.sendpatchset@subratamodak.linux.ibm.com>
+In-Reply-To: <20090512155637.19380.9114.sendpatchset@subratamodak.linux.ibm.com>
+Content-Type: text/plain; charset=ISO-2022-JP
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 07:08:54PM -0600, Robert Hancock wrote:
-> On Tue, May 12, 2009 at 7:00 PM, Andy Isaacson <adi@hexapodia.org> wrote:
-> > Perhaps, I haven't tracked down exactly what the difference in behavior
-> > between working 2.6.29 and broken 2.6.30-rc2 is. ?It seems like the disk
-> > spins up more often (in response to hal background probes presumably)
-> > with 30-rc2 than it did before, and running "udevadm monitor" I do see
-> > the following repeated "change" events happening, even on an idle
-> > system:
-> >
-> > KERNEL[1242175547.793029] change ? /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0 (scsi)
-> > KERNEL[1242175547.794669] change ? /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
-[snip]
-> Those events seem rather suspicious. Hmm:
+Subrata Modak wrote:
+> Hi,
 > 
-> [    2.770959] ata2.00: ATAPI: TSSTcorp DVD+/-RW TS-U633A, D200, max
-> UDMA/100, ATAPI AN
+>> On Tue, 2009-05-12 at 17:16 +0200, Andi Kleen wrote:
+>> On Tue, May 12, 2009 at 05:16:14PM +0530, Subrata Modak wrote:
+>>
+>> Hi Subrata,
+>>
+>>> With gcc (GCC) 4.4.1 20090429 (prerelease), i get the following build warning:
+>> Patch looks good (you can add a 
+>> Reviewed-by: Andi Kleen <ak@linux.intel.com>)
+>> But I don't maintain this code anymore. Please resend to x86@kernel.org
+>> cc linux-kernel@vger.kernel.org for merge.
+>>
+>> Thanks,
+>>
+>> -Andi
 > 
-> Did libata report it was using ATAPI AN in 2.6.29?
+> 
+> With gcc (GCC) 4.4.1 20090429 (prerelease), i get the following build warning:
+> 
+> CC      arch/x86/kernel/signal.o
+> arch/x86/kernel/signal.c: In function ‘sys_sigreturn’:
+> arch/x86/kernel/signal.c:573: warning: ‘set.sig[1]’ may be used uninitialized in this function
+> 
+> On investigation i found that this is because of the evaluation
+> precedence of the expression below:
+> 
+> 569 unsigned long sys_sigreturn(struct pt_regs *regs)
+> 570 {
+> 571         struct sigframe __user *frame;
+> 572         unsigned long ax;
+> 573         sigset_t set;
+> 574 
+> 575         frame = (struct sigframe __user *)(regs->sp - 8);
+> 576 
+> 577         if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
+> 578                 goto badframe;
+> 579         if (__get_user(set.sig[0], &frame->sc.oldmask) || (_NSIG_WORDS > 1
+> 580                 && __copy_from_user(&set.sig[1], &frame->extramask,
+> 581                                     sizeof(frame->extramask))))
+> 
+> The initialization for set.sig[1] may not occur if
+> 	__get_user(set.sig[0], &frame->sc.oldmask)
+> evalutes to true. So, the compiler is complaining.
+> 
+> I have devised a small patch for this which wanes away this warning
+> without changing the conditional evaluation criteria. Let me know if
+> you like this patch.
+> 
+> 582                 goto badframe;
+> 583 
+> 584         sigdelsetmask(&set, ~_BLOCKABLE);
+> 585         spin_lock_irq(&current->sighand->siglock);
+> 586         current->blocked = set;
+> 587         recalc_sigpending();
+> 588         spin_unlock_irq(&current->sighand->siglock);
+> 589 
+> 590         if (restore_sigcontext(regs, &frame->sc, &ax))
+> 591                 goto badframe;
+> 592         return ax;
+> 593 
+> 594 badframe:
+> 595         signal_fault(regs, frame, "sigreturn");
+> 596 
+> 597         return 0;
+> 598 }
+> 
+> Signed-Off-By: Subrata Modak <subrata@linux.vnet.ibm.com>
+> Reviewed-by: Andi Kleen <ak@linux.intel.com>
+> To: <x86@kernel.org>
+> Cc: Linux Kernel <linux-kernel@vger.kernel.org>
+> Cc: Andi Kleen <andi@firstfloor.org>
+> Cc: Andi Kleen <ak@linux.intel.com>
+> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>
+> Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>
+> Subject: [PATCH] Fix Warnining in arch/x86/kernel/signal.c
+> ---
+> 
+> --- a/arch/x86/kernel/signal.c	2009-05-12 10:59:24.000000000 +0530
+> +++ b/arch/x86/kernel/signal.c	2009-05-12 16:57:32.000000000 +0530
+> @@ -576,9 +576,10 @@ unsigned long sys_sigreturn(struct pt_re
+>  
+>  	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
+>  		goto badframe;
+> -	if (__get_user(set.sig[0], &frame->sc.oldmask) || (_NSIG_WORDS > 1
+> -		&& __copy_from_user(&set.sig[1], &frame->extramask,
+> -				    sizeof(frame->extramask))))
+> +
+> +        if ( (__copy_from_user(&set.sig[1], &frame->extramask,
+> +                sizeof(frame->extramask)) && _NSIG_WORDS > 1) || 
+> +                __get_user(set.sig[0], &frame->sc.oldmask))
+>  		goto badframe;
 
-Yes, AN is present in every log I have for that device (back to
-2.6.28.1).
+I'm not sure why this eliminates that warning.
+set.sig[0] may not be initialized too, if __copy_from_user() failed.
+I don't have enough time to look at this right now, sorry.
 
-> You could try bisecting to see if you can find which patch started
-> triggering those spurious events..
+Another question, __copy_from_user() will be called even if
+_NSIG_WORDS is less than 2, perhaps it never occurs.
+I think, to check _NSIG_WORDS > 1 before calling __copy_from_user()
+is better.
 
-Heh, I was dreading a bisect where each step burned a coaster, but just
-looking for events is easy.  I'll try that tomorrow.
+Thanks,
+Hiroshi
 
--andy
