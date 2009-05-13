@@ -1,87 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753961AbZEMHrm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757594AbZEMHtW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753961AbZEMHrm (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 03:47:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751948AbZEMHrd
+	id S1757594AbZEMHtW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 03:49:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbZEMHtJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 03:47:33 -0400
-Received: from mtagate3.uk.ibm.com ([195.212.29.136]:55272 "EHLO
-	mtagate3.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750945AbZEMHrc (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 03:47:32 -0400
-Date: Wed, 13 May 2009 09:47:28 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Frederic Weisbecker <fweisbec@gmail.com>
-Cc: Ming Lei <tom.leiming@gmail.com>, arjan@infradead.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] kernel/async.c:introduce async_schedule*_atomic
-Message-ID: <20090513094728.59d10898@gondolin>
-In-Reply-To: <20090513012011.GA32518@nowhere>
-References: <1242141222-8454-1-git-send-email-tom.leiming@gmail.com>
-	<20090512154456.GC6255@nowhere>
-	<20090512160434.GD6255@nowhere>
-	<20090512183105.09e628f0@gondolin>
-	<20090512165227.GE6255@nowhere>
-	<20090512191848.25764af6@gondolin>
-	<d82e647a0905121728m278b604bn9a0f5122b964978a@mail.gmail.com>
-	<20090513012011.GA32518@nowhere>
-Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
- Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	Wed, 13 May 2009 03:49:09 -0400
+Received: from sh.osrg.net ([192.16.179.4]:52884 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753310AbZEMHtI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 03:49:08 -0400
+Date: Wed, 13 May 2009 16:48:28 +0900 (JST)
+Message-Id: <20090513.164828.56055985.ryusuke@osrg.net>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org,
+       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
+Subject: [GIT PULL] nilfs2 fixes for 2.6.30-rc6
+From: Ryusuke Konishi <ryusuke@osrg.net>
+X-Mailer: Mew version 4.2 on Emacs 21.4 / Mule 5.0 (SAKAKI)
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Wed, 13 May 2009 16:48:29 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 May 2009 03:20:13 +0200,
-Frederic Weisbecker <fweisbec@gmail.com> wrote:
+Hi Linus,
 
-> On Wed, May 13, 2009 at 08:28:15AM +0800, Ming Lei wrote:
+please pull nilfs2 bug-fixes from
 
-> > Also we still allow async_schedule*()  to run a job synchronously if
-> > out of memory
-> > or other failure. This can keep consistency with before.
-> 
-> 
-> Yes, but also most of the current users of async_schedule() could call
-> it with GFP_KERNEL. For now it's not an issue because it is not widely
-> used, but who knows how that will evolve...
+ git://git.kernel.org/pub/scm/linux/kernel/git/ryusuke/nilfs2.git for-linus
 
-Well, if we want to change the interface, now would be a good time
-since there are still few callers.
+The following changes since commit 091bf7624d1c90cec9e578a18529f615213ff847
+ Linus Torvalds (1):
+      Linux 2.6.30-rc5
 
-> 
-> 
-> > Any sugesstions or objections?
-> 
-> 
-> I have shared feelings. I don't know if the dual sense of
-> this new helper deserves enough disambiguation and granularity
-> to be split up in two parts:
-> 
-> - adding an async_schedule_nosync() helper
-> - add a new gfpflag_t parameter
-> 
-> 
-> Or should we just do:
-> 
-> - adding async_schedule_inatomic() which is a merge of nosync + GFP_ATOMIC
-> - use GFP_KERNEL in async_schedule()
-> 
-> 
-> It depends on the future users. Will someone ever accept to schedule a job
-> that could end up running synchronously in the worst case?
+Ryusuke Konishi (6):
+      nilfs2: fix possible recovery failure due to block creation without writer
+      nilfs2: fix circular locking dependency of writer mutex
+      nilfs2: ensure to clear dirty state when deleting metadata file block
+      nilfs2: fix possible circular locking for get information ioctls
+      nilfs2: fix lock order reversal in nilfs_clean_segments ioctl
+      nilfs2: check size of array structured data exchanged via ioctls
 
-The current callers all look simple enough, it may be that all other
-cases besides inatomic+nosync would be overkill (and a too complex api
-may lead to confusion).
+ fs/nilfs2/ioctl.c    |  281 ++++++++++++++++++++++++++------------------------
+ fs/nilfs2/mdt.c      |   15 ++--
+ fs/nilfs2/nilfs.h    |    3 +-
+ fs/nilfs2/page.c     |    3 +-
+ fs/nilfs2/recovery.c |    6 +-
+ fs/nilfs2/segment.c  |    5 +-
+ fs/nilfs2/segment.h  |    3 +-
+ 7 files changed, 167 insertions(+), 149 deletions(-)
+-
 
-Do people have candidates for conversion to the async api in mind that
-would need one of the complex atomic/sync or non-atomic/non-sync
-versions? If no, maybe we should just use the second approach and make
-sure that the semantics are well documented.
+The "nilfs2: check size of array structured data exchanged via ioctls"
+adds missing sanity checks to ioctls.  These checks are needed to
+prevent memory access overrun in kernel code due to incorrect
+argument data.
+
+The "nilfs2: ensure to clear dirty state when deleting metadata file
+block" fixes user-reported GC failures.
+
+The "nilfs2: fix possible recovery failure due to block creation
+without writer" fixes recovery failure on mount which can happen in a
+boundary condition.
+
+The "nilfs2: fix circular locking dependency of writer mutex",
+    "nilfs2: fix possible circular locking for get information ioctls", and
+    "nilfs2: fix lock order reversal in nilfs_clean_segments ioctl"
+fix circular locking problems and lock order reversal the lockdep
+check has detected.
+
+Thanks,
+Ryusuke Konishi
