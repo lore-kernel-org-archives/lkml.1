@@ -1,152 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757106AbZEMAn4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZEMAqL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757106AbZEMAn4 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 20:43:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753013AbZEMAnr
+	id S1756237AbZEMAqL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 20:46:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755439AbZEMAp4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 20:43:47 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:49144 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752595AbZEMAnq convert rfc822-to-8bit (ORCPT
+	Tue, 12 May 2009 20:45:56 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:40829 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755450AbZEMApz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 20:43:46 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090512090912.GA25923@csn.ul.ie>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
-	 <20090512090912.GA25923@csn.ul.ie>
-Date: Tue, 12 May 2009 17:43:46 -0700
-Message-ID: <d6200be20905121743n4d4f61c2r110d61b5f849e1da@mail.gmail.com>
-Subject: Re: [patch 01/11 -mmotm] lowmemorykiller: Only iterate over process 
-	list when needed.
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: David Rientjes <rientjes@google.com>,
+	Tue, 12 May 2009 20:45:55 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH -mm] vmscan: protect a fraction of file backed mapped pages from reclaim
+Cc: kosaki.motohiro@jp.fujitsu.com, Wu Fengguang <fengguang.wu@intel.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Ziljstra <a.p.ziljstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, San Mehat <san@android.com>,
-       linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+In-Reply-To: <alpine.DEB.1.10.0905121650090.14226@qirst.com>
+References: <20090512120002.D616.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0905121650090.14226@qirst.com>
+Message-Id: <20090513084306.5874.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Wed, 13 May 2009 09:45:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 2:09 AM, Mel Gorman <mel@csn.ul.ie> wrote:
-> On Sun, May 10, 2009 at 03:07:05PM -0700, David Rientjes wrote:
->> From: Arve Hjønnevåg <arve@android.com>
->>
->> Use NR_ACTIVE plus NR_INACTIVE as a size estimate for our fake cache
->> instead the sum of rss. Neither method is accurate.
->>
->
-> If neither estimate is accurate (and I agree), then explain why this is
-> better and why better decisions are made as a result.
->
-It should make similar decisions without iterating over the process
-list as often.
+> All these expiration modifications do not take into account that a desktop
+> may sit idle for hours while some other things run in the background (like
+> backups at night or updatedb and other maintenance things). This still
+> means that the desktop will be usuable in the morning.
 
-> I would assume it's because pages can be double accounted when using RSS
-> due to shared pages and you might over-estimate the amount of memory
-> really in use. If that reasoning is correct, say that.
->
->> Also skip the process scan, if the amount of memory available is above
->> the largest threshold set.
->>
->
-> Patches should do one thing, please split if possible. This patch aspect
-> seems to be the if check early on so the splitting should not be
-> difficult.
->
+Have you seen this phenomenom?
+I always use linux desktop for development. but I haven't seen it.
+perhaps I have no luck. I really want to know reproduce way.
 
-This is the whole point of the patch.
+Please let me know reproduce way.
 
-> In that statement, you check nr_to_scan <= 0, how can you scan a
-> negative number of things? Say in the description that the process scan
-> is set if min_adj is such a high value that it cannot be used to
-> discriminate between processes for suitability to kill.
->
->> Signed-off-by: Arve Hjønnevåg <arve@android.com>
->> ---
->>  drivers/staging/android/lowmemorykiller.c |   35 +++++++++++++++++-----------
->>  1 files changed, 21 insertions(+), 14 deletions(-)
->>
->> diff --git a/drivers/staging/android/lowmemorykiller.c b/drivers/staging/android/lowmemorykiller.c
->> --- a/drivers/staging/android/lowmemorykiller.c
->> +++ b/drivers/staging/android/lowmemorykiller.c
->> @@ -71,23 +71,30 @@ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
->>       }
->>       if(nr_to_scan > 0)
->>               lowmem_print(3, "lowmem_shrink %d, %x, ofree %d, ma %d\n", nr_to_scan, gfp_mask, other_free, min_adj);
->> +     rem = global_page_state(NR_ACTIVE) + global_page_state(NR_INACTIVE);
->> +     if (nr_to_scan <= 0 || min_adj == OOM_ADJUST_MAX + 1) {
->> +             lowmem_print(5, "lowmem_shrink %d, %x, return %d\n", nr_to_scan, gfp_mask, rem);
->> +             return rem;
->> +     }
->> +
->>       read_lock(&tasklist_lock);
->>       for_each_process(p) {
->> -             if(p->oomkilladj >= 0 && p->mm) {
->> -                     tasksize = get_mm_rss(p->mm);
->> -                     if(nr_to_scan > 0 && tasksize > 0 && p->oomkilladj >= min_adj) {
->> -                             if(selected == NULL ||
->> -                                p->oomkilladj > selected->oomkilladj ||
->> -                                (p->oomkilladj == selected->oomkilladj &&
->> -                                 tasksize > selected_tasksize)) {
->> -                                     selected = p;
->> -                                     selected_tasksize = tasksize;
->> -                                     lowmem_print(2, "select %d (%s), adj %d, size %d, to kill\n",
->> -                                                  p->pid, p->comm, p->oomkilladj, tasksize);
->> -                             }
->> -                     }
->> -                     rem += tasksize;
->> +             if (p->oomkilladj < min_adj || !p->mm)
->> +                     continue;
->> +             tasksize = get_mm_rss(p->mm);
->> +             if (tasksize <= 0)
->> +                     continue;
->
-> It's also odd to consider the possibility of a negative tasksize.
 
-Yes, using an unsigned tasksize would be better, but this patch did
-not change any of this.
+> I have had some success with a patch that protects a pages in the file
+> cache from being unmapped if the mapped pages are below a certain
+> percentage of the file cache. Its another VM knob to define the percentage
+> though.
+> 
+> 
+> Subject: Do not evict mapped pages
+> 
+> It is quite annoying when important executable pages of the user interface
+> are evicted from memory because backup or some other function runs and no one
+> is clicking any buttons for awhile. Once you get back to the desktop and
+> try to click a link one is in for a surprise. It can take quite a long time
+> for the desktop to recover from the swap outs.
+> 
+> This patch ensures that mapped pages in the file cache are not evicted if there
+> are a sufficient number of unmapped pages present. A similar technique is
+> already in use under NUMA for zone reclaim. The same method can be used to
+> protect mapped pages from reclaim.
 
->
-> That aside, RSS is the sum of two longs (or atomic_long_t depending) and
-> tasksize here is a signed integer. Are you not at the risk of
-> overflowing and this check being unable to do anything useful if all the
-> processes of interest are using large amounts of memory?
+note: (a bit offtopic)
 
-Yes (The systems we use this on do not have enough memory for this to
-be possible though).
+some Nehalem machine has long node distance and enabled zone reclaim mode.
+but it cause terrible result.
 
->
->> +             if (selected) {
->> +                     if (p->oomkilladj < selected->oomkilladj)
->> +                             continue;
->> +                     if (p->oomkilladj == selected->oomkilladj &&
->> +                         tasksize <= selected_tasksize)
->> +                             continue;
->>               }
->> +             selected = p;
->> +             selected_tasksize = tasksize;
->> +             lowmem_print(2, "select %d (%s), adj %d, size %d, to kill\n",
->> +                          p->pid, p->comm, p->oomkilladj, tasksize);
->>       }
->>       if(selected != NULL) {
->>               lowmem_print(1, "send sigkill to %d (%s), adj %d, size %d\n",
->
-> I'm hoping it has been discussed elsewhere why the normal OOM killer is not
-> being used instead of this driver thing.
->
-> --
-> Mel Gorman
-> Part-time Phd Student                          Linux Technology Center
-> University of Limerick                         IBM Dublin Software Lab
->
+it only works on large numa.
+
+> 
+> The percentage of file backed pages protected is set via
+> /proc/sys/vm/file_mapped_ratio. This defaults to 20%.
+
+Why do you think typical mapped ratio is less than 20% on desktop machine?
+
+Some desktop component (e.g. V4L, GEM, some game) use tons mapped page.
+but in the other hand, another some desktop user only use browser.
+So we can't assume typical mapped ratio on desktop, IMHO.
+
+Plus, typical desktop user don't set any sysctl value.
+
+key point is access-once vs access-many.
+I don't think mapped ratio is good approximation value.
 
 
 
--- 
-Arve Hjønnevåg
+
