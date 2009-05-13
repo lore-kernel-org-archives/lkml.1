@@ -1,45 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761140AbZEMSnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761155AbZEMSoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761140AbZEMSnV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 14:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760150AbZEMSnK
+	id S1761155AbZEMSoA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 14:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760373AbZEMSnu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 14:43:10 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:38329 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759421AbZEMSnJ (ORCPT
+	Wed, 13 May 2009 14:43:50 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:58201 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755735AbZEMSnt (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 14:43:09 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A0B14B9.6050101@s5r6.in-berlin.de>
-Date: Wed, 13 May 2009 20:43:05 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
+	Wed, 13 May 2009 14:43:49 -0400
+Date: Wed, 13 May 2009 12:43:49 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "David S. Miller" <davem@davemloft.net>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] PCI MSI: Yet another fix for MSI-X with NIU cards, v2
+Message-ID: <20090513184349.GJ15360@parisc-linux.org>
+References: <20090508131333.GV8112@parisc-linux.org> <4A0A5284.1000705@jp.fujitsu.com> <4A0A5556.9050209@jp.fujitsu.com>
 MIME-Version: 1.0
-To: "Mikko C." <mikko.cal@gmail.com>
-CC: Kernel development list <linux-kernel@vger.kernel.org>
-Subject: Re: [Fwd: reiserfs regression since rc3?]
-References: <4A083302.2080401@gmail.com>
-In-Reply-To: <4A083302.2080401@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A0A5556.9050209@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mikko C. wrote:
-> This is still valid with 2.6.30-rc5
-...
-(when mounting a reiserfs volume)
-> WARNING: at fs/namei.c:1251 lookup_one_len+0xda/0xf0()
-...
+On Wed, May 13, 2009 at 02:06:30PM +0900, Hidetoshi Seto wrote:
+>  		entry->mask_base = base;
+> -		entry->masked = readl(base + j * PCI_MSIX_ENTRY_SIZE +
+> -					PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
+> -		msix_mask_irq(entry, 1);
+> +		entry->masked = 1;
+>  
 
-Al Viro wrote that he has fixes queued up:
-http://lkml.org/lkml/2009/5/9/97
+Why do you add the setting of entry->masked here?
 
-It looks to me as if Linus merged these already but I haven't updated 
-yet for testing.
+>  
+> +	/*
+> +	 * The states of Reserved bits[31:01] of Vector Control for MSI-X
+> +	 * Table Entries must be 0.  However, for potential future use,
+> +	 * software must preserve the value of these reserved bits.
+> +	 * Refer PCI spec 3.0, 6.8.2.9.
+> +	 *
+> +	 * Note that there are some device that refuses access to MSI-X
+> +	 * Table Entries before MSI-X is enabled.  Therefore we do it here. 
+> +	 */
+
+I think you need to refer to PCIe 2.1 (or an ECN incorporated into it).
+Some of these bits are now used.
+
+> +	list_for_each_entry(entry, &dev->msi_list, list) {
+> +		int vector = entry->msi_attrib.entry_nr;
+> +		entry->masked = readl(base + vector * PCI_MSIX_ENTRY_SIZE +
+> +					PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
+> +		/* Make sure it is masked */
+> +		msix_mask_irq(entry, 1);
+> +	}
+> +
+>  	return 0;
+
+This looks to be the same as the replacement patch I sent earlier.
+
 -- 
-Stefan Richter
--=====-=-=== -=-= -==-=
-http://arcgraph.de/sr/
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
