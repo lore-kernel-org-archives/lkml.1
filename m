@@ -1,71 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761155AbZEMSoA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761187AbZEMSo1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761155AbZEMSoA (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 14:44:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760373AbZEMSnu
+	id S1761187AbZEMSo1 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 14:44:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760574AbZEMSoR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 14:43:50 -0400
-Received: from palinux.external.hp.com ([192.25.206.14]:58201 "EHLO
-	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755735AbZEMSnt (ORCPT
+	Wed, 13 May 2009 14:44:17 -0400
+Received: from fed1rmmtao102.cox.net ([68.230.241.44]:46411 "EHLO
+	fed1rmmtao102.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760373AbZEMSoQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 14:43:49 -0400
-Date: Wed, 13 May 2009 12:43:49 -0600
-From: Matthew Wilcox <matthew@wil.cx>
-To: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-Cc: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI MSI: Yet another fix for MSI-X with NIU cards, v2
-Message-ID: <20090513184349.GJ15360@parisc-linux.org>
-References: <20090508131333.GV8112@parisc-linux.org> <4A0A5284.1000705@jp.fujitsu.com> <4A0A5556.9050209@jp.fujitsu.com>
+	Wed, 13 May 2009 14:44:16 -0400
+X-Authority-Analysis: v=1.0 c=1 a=VwQbUJbxAAAA:8 a=rJ2SNjQboeCICQIKKwAA:9
+ a=cg30MBeRlxRWnfW0QQbfP5u0ZtAA:4
+X-CM-Score: 0.00
+To: git@vger.kernel.org
+Subject: [ANNOUNCE] GIT 1.6.3.1
+From: Junio C Hamano <gitster@pobox.com>
+Date: Wed, 13 May 2009 11:31:51 -0700
+Message-ID: <7vy6t04zxk.fsf@alter.siamese.dyndns.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A0A5556.9050209@jp.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 02:06:30PM +0900, Hidetoshi Seto wrote:
->  		entry->mask_base = base;
-> -		entry->masked = readl(base + j * PCI_MSIX_ENTRY_SIZE +
-> -					PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
-> -		msix_mask_irq(entry, 1);
-> +		entry->masked = 1;
->  
+The latest maintenance release GIT 1.6.3.1 is available at the
+usual places:
 
-Why do you add the setting of entry->masked here?
+  http://www.kernel.org/pub/software/scm/git/
 
->  
-> +	/*
-> +	 * The states of Reserved bits[31:01] of Vector Control for MSI-X
-> +	 * Table Entries must be 0.  However, for potential future use,
-> +	 * software must preserve the value of these reserved bits.
-> +	 * Refer PCI spec 3.0, 6.8.2.9.
-> +	 *
-> +	 * Note that there are some device that refuses access to MSI-X
-> +	 * Table Entries before MSI-X is enabled.  Therefore we do it here. 
-> +	 */
+  git-1.6.3.1.tar.{gz,bz2}			(source tarball)
+  git-htmldocs-1.6.3.1.tar.{gz,bz2}		(preformatted docs)
+  git-manpages-1.6.3.1.tar.{gz,bz2}		(preformatted docs)
 
-I think you need to refer to PCIe 2.1 (or an ECN incorporated into it).
-Some of these bits are now used.
+The RPM binary packages for a few architectures are found in:
 
-> +	list_for_each_entry(entry, &dev->msi_list, list) {
-> +		int vector = entry->msi_attrib.entry_nr;
-> +		entry->masked = readl(base + vector * PCI_MSIX_ENTRY_SIZE +
-> +					PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
-> +		/* Make sure it is masked */
-> +		msix_mask_irq(entry, 1);
-> +	}
-> +
->  	return 0;
+  RPMS/$arch/git-*-1.6.3.1-1.fc9.$arch.rpm	(RPM)
 
-This looks to be the same as the replacement patch I sent earlier.
+Embarrasingly 1.6.3 has a rather grave regression when you switch to a new
+branch while you have some changes added to the index.  A commit you make
+from that index will record a wrong tree.  Please consider this a hotfix
+and do not use vanilla 1.6.3.
 
--- 
-Matthew Wilcox				Intel Open Source Technology Centre
-"Bill, look, we understand that you're interested in selling us this
-operating system, but compare it to ours.  We can't possibly take such
-a retrograde step."
+----------------------------------------------------------------
+
+Changes since v1.6.3 are as follows:
+
+Alex Riesen (1):
+      Clarify kind of conflict in merge-one-file helper
+
+Alexander Potashev (1):
+      Documentation: cloning to empty directory is allowed
+
+Felipe Contreras (1):
+      git config: clarify --add and --get-color
+
+Junio C Hamano (4):
+      Start 1.6.3.1 maintenance series.
+      archive-tar.c: squelch a type mismatch warning
+      Revert "checkout branch: prime cache-tree fully"
+      GIT 1.6.3.1
