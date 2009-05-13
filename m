@@ -1,49 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759057AbZEMLOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759852AbZEMLO0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759057AbZEMLOK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 07:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758164AbZEMLNz
+	id S1759852AbZEMLO0 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 07:14:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759735AbZEMLOM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 07:13:55 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:36224 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755539AbZEMLNz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 07:13:55 -0400
-Message-ID: <4A0AAB6B.3090903@novell.com>
-Date: Wed, 13 May 2009 20:13:47 +0900
-From: Tejun Heo <teheo@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Jan Beulich <JBeulich@novell.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: remap allocator for per-CPU memory
-References: <4A09B23B02000078000007F1@vpn.id2.novell.com>	<4A09991E.9010903@kernel.org> <4A0A9C70.6090803@novell.com> <87vdo5l0u6.fsf@basil.nowhere.org>
-In-Reply-To: <87vdo5l0u6.fsf@basil.nowhere.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 13 May 2009 07:14:12 -0400
+Received: from rv-out-0506.google.com ([209.85.198.230]:13548 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759555AbZEMLOK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 07:14:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=ptvd7tIg/7aYVT0wa/MVD3Yyb4M4/+a4ONDjU7ckLo5NGRrSXt4KzOw1hHnDRNlvoN
+         Q3LzAiCI8IuH6TAWjFrguzU7oRiDS2o0QxVDykNgTlPLSD66rYG137/dR9Gc6HgdPH+T
+         3M2byz/tnt/AH34QzPmoKnfCV3w0mgOwnn6vA=
+Date: Wed, 13 May 2009 20:13:49 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Minchan Kim <minchan.kim@gmail.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Lee Schermerhorn <Lee.Schermerhorn@hp.com>,
+       Matt Mackall <mpm@selenic.com>
+Subject: Re: [PATCH] Kconfig: CONFIG_UNEVICTABLE_LRU move into EMBEDDED
+ submenu
+Message-Id: <20090513201349.a90a9d46.minchan.kim@barrios-desktop>
+In-Reply-To: <1242211037.24436.552.camel@macbook.infradead.org>
+References: <20090513172904.7234.A69D9226@jp.fujitsu.com>
+	<20090513175152.1590c117.minchan.kim@barrios-desktop>
+	<20090513175539.723A.A69D9226@jp.fujitsu.com>
+	<20090513191221.674bc543.minchan.kim@barrios-desktop>
+	<1242211037.24436.552.camel@macbook.infradead.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> Tejun Heo <teheo@novell.com> writes:
->> Okay, just glanced over the pageattr code.  I don't think we need any
->> special provisions for this as long as the TLB is fine with having
->> overlapping PMD and PTE mappings with different attributes (please
->> note that these two mappings aren't occupying the same linear
->> addresses - they're aliases).  This is allowed, right?
+On Wed, 13 May 2009 11:37:17 +0100
+David Woodhouse <dwmw2@infradead.org> wrote:
+
+> On Wed, 2009-05-13 at 19:12 +0900, Minchan Kim wrote:
+> > > No.
+> > > As far as I know, many embedded guys use this configuration.
+> > > they hate unexpected latency by reclaim. !UNEVICTABLE_LRU increase
+> > > unexpectability largely.
+> > 
+> > As I said previous(http://lkml.org/lkml/2009/3/16/209), Many embedded
+> > environment have a small ram. It doesn't have a big impact in such
+> > case. 
+> > 
+> > Let CCed embedded matainers. 
+> > I won't have a objection if embedded maintainers ack this. 
 > 
-> Nope.
+> I probably wouldn't be cheerleading for it if you wanted to make it
+> optional when it wasn't before -- but I suppose we might as well
+> preserve the option under CONFIG_EMBEDDED if the alternative is to lose
+> it completely.
 
-Yeah, I'm going through the manual now and can't find anything which
-allows such behavior.  I haven't been able to find anything which
-describes what happens between large page and 4k page aliases.
-Aieee...  I'll dig through the manual a bit more and see whether this
-can be worked around somehow.  :-(
+Thanks for good commeting.
+If embedded maintainer don't have an obejction, me, too. :)
 
-Thanks.
+But Let's add following comment like CONFIG_AIO. 
+
+"Disabling this option saves about 7k"
+
+> 
+> Acked-by: David Woodhouse <David.Woodhouse@intel.com>
+> 
+> -- 
+> David Woodhouse                            Open Source Technology Centre
+> David.Woodhouse@intel.com                              Intel Corporation
+> 
+
 
 -- 
-tejun
+Kinds Regards
+Minchan Kim
