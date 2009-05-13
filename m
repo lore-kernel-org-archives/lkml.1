@@ -1,51 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760696AbZEMPB0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758782AbZEMPCW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760696AbZEMPB0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 11:01:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbZEMPBP
+	id S1758782AbZEMPCW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 11:02:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753256AbZEMPCM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 11:01:15 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38010 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754942AbZEMPBO (ORCPT
+	Wed, 13 May 2009 11:02:12 -0400
+Received: from viefep18-int.chello.at ([62.179.121.38]:39972 "EHLO
+	viefep18-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756717AbZEMPCL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 11:01:14 -0400
-Date: Wed, 13 May 2009 07:58:20 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-cc: dsaxena@plexity.net, linux-serial@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 8250: Don't restore NS16550 mode when console suspend
- is disabled
-In-Reply-To: <20090513094409.50c2409f@lxorguk.ukuu.org.uk>
-Message-ID: <alpine.LFD.2.01.0905130755090.3343@localhost.localdomain>
-References: <20090512210015.GA25540@plexity.net> <alpine.LFD.2.01.0905121452190.3343@localhost.localdomain> <20090513011842.22d9cd6c@lxorguk.ukuu.org.uk> <20090513002850.GA28422@plexity.net> <20090513094409.50c2409f@lxorguk.ukuu.org.uk>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Wed, 13 May 2009 11:02:11 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [RFC PATCH v2 0/2] Saving power by cpu evacuation
+ sched_max_capacity_pct=n
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+In-Reply-To: <20090513150100.GW19296@one.firstfloor.org>
+References: <20090513130541.21440.33364.stgit@drishya.in.ibm.com>
+	 <20090513143550.GU19296@one.firstfloor.org>
+	 <1242225402.26820.23.camel@twins>
+	 <20090513144659.GV19296@one.firstfloor.org>
+	 <1242226219.26820.26.camel@twins>
+	 <20090513150100.GW19296@one.firstfloor.org>
+Content-Type: text/plain
+Date: Wed, 13 May 2009 17:02:06 +0200
+Message-Id: <1242226927.26820.30.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-On Wed, 13 May 2009, Alan Cox wrote:
+On Wed, 2009-05-13 at 17:01 +0200, Andi Kleen wrote:
+> > >From what I've been told its popular to over-commit the cooling capacity
+> > in a rack, so that a number of servers can run at full thermal capacity
+> > but not all.
 > 
-> Then hard coding is no improvement either. It needs to restore the mode
-> that was present at suspend.
+> Yes. But in this case you don't want to use throttling, you want
+> to use p-states which actually safe power unlike throttling.
+> 
+> > I've also been told that hardware sucks at throttling, 
+> 
+> Throttling is not really something you should use in normal 
+> operation, it's just a emergency measure. For that it works
+> quite well, but you really don't want it in normal operation.
+> 
+> > therefore people
+> > want to fix the OS so as to limit the thermal capacity and avoid the
+> > hardware throttle from kicking in, whilst still not exceeding the rack
+> > capacity or similar nonsense.
+> 
+> Yes that's fine and common, but you actually need to save power for this,
+> which throttling doesn't do.
+> 
+> My understanding this work is a extension of the existing
+> sched_mc_power_savings features that tries to be optionally more 
+> aggressive to keep complete package idle so that package level
+> power saving kicks in.
+> 
+> I'm just requesting that they don't call that throttling.
 
-Alan, you're missing the fact that this is a special-case for "this is the 
-console, and we're not suspending consoles AT ALL".
+Ah no, this work differs in that regard in that it actually 'generates'
+idle time, instead of optimizing idle time.
 
-IOW, it was never suspended either, and it's a case that is known to be 
-fundamentally buggy (we're suspending all the PCI bridges, but not a 
-serial device that may be behind them!), but often work in _practice_ 
-(because people don't use this thing for random serial devices, but for 
-things like integrated serial lines that don't lose power).
+Therefore it takes actual cpu time away from real work, which is
+throttling. Granted, one could call it limiting or similar, but
+throttling is a correct name.
 
-So we _could_ just save the mode, but that isn't really what this patch is 
-all about. The patch in question is about a total hack to avoid touching a 
-piece of hardware that we simply don't consider normal.
-
-			Linus
