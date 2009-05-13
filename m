@@ -1,124 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757451AbZEMA12@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757631AbZEMA2Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757451AbZEMA12 (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 20:27:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752916AbZEMA1S
+	id S1757631AbZEMA2Y (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 20:28:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753343AbZEMA2P
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 20:27:18 -0400
-Received: from qw-out-2122.google.com ([74.125.92.24]:65344 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752273AbZEMA1R convert rfc822-to-8bit (ORCPT
+	Tue, 12 May 2009 20:28:15 -0400
+Received: from rv-out-0506.google.com ([209.85.198.227]:32075 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752382AbZEMA2O convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 20:27:17 -0400
+	Tue, 12 May 2009 20:28:14 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=eFjIDI+Mdl7o73QxUkeyOW/hxMuO0vL0/SdsqxjSAUzEG7V3AhpqgGLanHcw3azppN
+         kZ2pe+IBCRIGUbrVlvlvCBGEOKEj7E5Lt1/XfJvoQtSbzrIJEFXirAkwB8kNPK7PDur8
+         qIHy/W7hio4smqjSy5Blbtbfujr7qk0rtFHVA=
 MIME-Version: 1.0
-In-Reply-To: <20090512092347.GB25923@csn.ul.ie>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
-	 <alpine.DEB.2.00.0905101459370.18804@chino.kir.corp.google.com>
-	 <20090512092347.GB25923@csn.ul.ie>
-Date: Tue, 12 May 2009 17:27:18 -0700
-Message-ID: <d6200be20905121727t22e59458ha5d7ec3617173b1a@mail.gmail.com>
-Subject: Re: [patch 02/11 -mmotm] lowmemorykiller: Don't count free space 
-	unless it meets the specified limit by itself
-From: =?ISO-8859-1?Q?Arve_Hj=F8nnev=E5g?= <arve@android.com>
-To: Mel Gorman <mel@csn.ul.ie>
-Cc: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Ziljstra <a.p.ziljstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, San Mehat <san@android.com>,
-       linux-kernel@vger.kernel.org
+In-Reply-To: <20090512191848.25764af6@gondolin>
+References: <1242141222-8454-1-git-send-email-tom.leiming@gmail.com>
+	 <20090512154456.GC6255@nowhere> <20090512160434.GD6255@nowhere>
+	 <20090512183105.09e628f0@gondolin> <20090512165227.GE6255@nowhere>
+	 <20090512191848.25764af6@gondolin>
+Date: Wed, 13 May 2009 08:28:15 +0800
+Message-ID: <d82e647a0905121728m278b604bn9a0f5122b964978a@mail.gmail.com>
+Subject: Re: [PATCH] kernel/async.c:introduce async_schedule*_atomic
+From: Ming Lei <tom.leiming@gmail.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: Frederic Weisbecker <fweisbec@gmail.com>, arjan@infradead.org,
+       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 2:23 AM, Mel Gorman <mel@csn.ul.ie> wrote:
-> On Sun, May 10, 2009 at 03:07:10PM -0700, David Rientjes wrote:
->> From: Arve Hjønnevåg <arve@android.com>
+2009/5/13 Cornelia Huck <cornelia.huck@de.ibm.com>:
+> On Tue, 12 May 2009 18:52:29 +0200,
+> Frederic Weisbecker <fweisbec@gmail.com> wrote:
+>
+>> This division would make more sense indeed.
 >>
->> This allows processes to be killed when the kernel evict cache pages in
->> an attempt to get more contiguous free memory.
+>> - async_schedule_inatomic() would be nosync() and would use
+>>   GFP_ATOMIC. I guess the case where we want to run
+>>   a job synchronously from atomic in case of async failure is too rare
+>>   (non-existent?).
+>
+> It would add complexity for those callers providing a function that is
+> safe to be called in both contexts.
+>
+>> - async_schedule_nosync() would be only nosync() and would use
+>>   GFP_KERNEL
 >>
+>> I'm not sure the second case will ever be used though.
 >
-> I'm not seeing what this patch has to do with contiguous free memory. I
-> see what the patch is doing - lowering the threshold allowing a
-> particular min_adj value to be used, but not why.
+> It might make sense for the "just fail if we cannot get memory" case.
 >
-
-If the memory is fragmented, contiguous allocations can cause all
-caches to be freed. The low memory killer would not trigger in this
-case.
-
->
->> Signed-off-by: Arve Hjønnevåg <arve@android.com>
->> ---
->>  drivers/staging/android/lowmemorykiller.c |   13 +++++++++----
->>  1 files changed, 9 insertions(+), 4 deletions(-)
 >>
->> diff --git a/drivers/staging/android/lowmemorykiller.c b/drivers/staging/android/lowmemorykiller.c
->> --- a/drivers/staging/android/lowmemorykiller.c
->> +++ b/drivers/staging/android/lowmemorykiller.c
->> @@ -58,20 +58,25 @@ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
->>       int min_adj = OOM_ADJUST_MAX + 1;
->>       int selected_tasksize = 0;
->>       int array_size = ARRAY_SIZE(lowmem_adj);
->> -     int other_free = global_page_state(NR_FREE_PAGES) + global_page_state(NR_FILE_PAGES);
->> +     int other_free = global_page_state(NR_FREE_PAGES);
->> +     int other_file = global_page_state(NR_FILE_PAGES);
->>       if(lowmem_adj_size < array_size)
->>               array_size = lowmem_adj_size;
->>       if(lowmem_minfree_size < array_size)
->>               array_size = lowmem_minfree_size;
->>       for(i = 0; i < array_size; i++) {
+>> Another alternative would be to define a single async_schedule_nosync()
+>> which also takes a gfp flag.
 >
-> It would appear that lowmem_adj_size is making assumptions on
-> the number of zones that exist in the system. It's not clear why
-> sysctl_lowmem_reserve_ratio[] is not being used or how they differ.
-
-lowmem_adj_size is the number of elements in the array. Why would the
-number of zones in the system affect it? The goal of the
-lowmemorykiller is to make more memory available for caches. I would
-expect increasing sysctl_lowmem_reserve_ratio to have the opposite
-effect, but on our system with only one zone it has no effect.
-
->
->> -             if(other_free < lowmem_minfree[i]) {
->> +             if (other_free < lowmem_minfree[i] &&
->> +                 other_file < lowmem_minfree[i]) {
->>                       min_adj = lowmem_adj[i];
->>                       break;
->>               }
->>       }
->>       if(nr_to_scan > 0)
->> -             lowmem_print(3, "lowmem_shrink %d, %x, ofree %d, ma %d\n", nr_to_scan, gfp_mask, other_free, min_adj);
->> -     rem = global_page_state(NR_ACTIVE) + global_page_state(NR_INACTIVE);
->> +             lowmem_print(3, "lowmem_shrink %d, %x, ofree %d %d, ma %d\n", nr_to_scan, gfp_mask, other_free, other_file, min_adj);
->> +     rem = global_page_state(NR_ACTIVE_ANON) +
->> +             global_page_state(NR_ACTIVE_FILE) +
->> +             global_page_state(NR_INACTIVE_ANON) +
->> +             global_page_state(NR_INACTIVE_FILE);
->
-> This looks like it's a compile fix since changes made to 4f98a2fe. This
-> should have been in a separate patch and prioritised.
-
-You are right. These patches were originally on 2.6.27 and I did not
-notice that the first patch was also broken when I fixed this patch
-for 2.6.29.
-
->
->>       if (nr_to_scan <= 0 || min_adj == OOM_ADJUST_MAX + 1) {
->>               lowmem_print(5, "lowmem_shrink %d, %x, return %d\n", nr_to_scan, gfp_mask, rem);
->>               return rem;
->
-> --
-> Mel Gorman
-> Part-time Phd Student                          Linux Technology Center
-> University of Limerick                         IBM Dublin Software Lab
+> Wouldn't async_schedule() then need a gfp flag as well?
 >
 
+IMHO, we should call async_schedule*() from non-atomic contexts and
+async_schedule_inatomic*() from atomic contexts explicitly, so
+async_schedule*()
+use GFP_KERNEL and async_schedule_inatomic*() use GFP_ATOMIC
+always. This can simplify the problem much more.
 
+Also we still allow async_schedule*()  to run a job synchronously if
+out of memory
+or other failure. This can keep consistency with before.
+
+Any sugesstions or objections?
 
 -- 
-Arve Hjønnevåg
+Lei Ming
