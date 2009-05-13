@@ -1,66 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756503AbZEMG2F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757526AbZEMG2h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756503AbZEMG2F (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 02:28:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZEMG1t
+	id S1757526AbZEMG2h (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 02:28:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZEMG22
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 02:27:49 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:37603 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752232AbZEMG1s (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 02:27:48 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
-         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=Ec27V2h9akLLTWY5S1llrcGzY9f2iGEEIVkp+gQLv9BpY4jbL2oaXCyTv1z4u/UpIs
-         HNVGG/eRVVRkge8bOjDLv2sRQ3mr5WuNeYdpgJlYWc0Ft+/fNaVux8fDfo4mAbcgKVhb
-         5Cqr4fEZa+Y5xIoTqiSVczwhvm/D6AVm+mBh4=
-Message-ID: <4A0A6862.3020809@googlemail.com>
-Date: Wed, 13 May 2009 08:27:46 +0200
-From: Michael Riepe <michael.riepe@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: de-de, de, en-us, en
+	Wed, 13 May 2009 02:28:28 -0400
+Received: from va3ehsobe003.messaging.microsoft.com ([216.32.180.13]:15019
+	"EHLO VA3EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1755836AbZEMG21 convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 02:28:27 -0400
+X-BigFish: VPS-29(zz1432R98dR936eQ1805M936fJ4cd6kzz1202hzz5a6ciz32i6bh43j61h)
+X-Spam-TCS-SCL: 0:0
+X-FB-SS: 5,
+X-WSS-ID: 0KJKKN7-01-ADP-01
+Date: Wed, 13 May 2009 08:27:48 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
+       Robert Richter <robert.richter@amd.com>, Dave Jones <davej@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 3/10 -tip] x86: Add cpufeatures for Advanced Power
+	Management
+Message-ID: <20090513062748.GE9991@alberich.amd.com>
+References: <1242142530.2547.11.camel@ht.satnam> <1242142623.2547.13.camel@ht.satnam> <1242142692.2547.15.camel@ht.satnam> <1242142753.2547.16.camel@ht.satnam> <1242155190.2492.73.camel@ht.satnam>
 MIME-Version: 1.0
-To: Francois Romieu <romieu@fr.zoreil.com>
-CC: Krzysztof Halasa <khc@pm.waw.pl>, Michael Buesch <mb@bu3sch.de>,
-       David Dillow <dave@thedillows.org>, Rui Santos <rsantos@grupopie.com>,
-       =?ISO-8859-15?Q?Michael_B=FCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
-References: <200903041828.49972.m.bueker@berlin.de> <4A06D8D2.4010505@googlemail.com> <1242001754.4093.12.camel@obelisk.thedillows.org> <200905112248.44868.mb@bu3sch.de> <m3eiuufufj.fsf@intrepid.localdomain> <4A09EE13.3020102@googlemail.com> <20090513061138.GA11106@electric-eye.fr.zoreil.com>
-In-Reply-To: <20090513061138.GA11106@electric-eye.fr.zoreil.com>
-X-Enigmail-Version: 0.91.0.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Disposition: inline
+In-Reply-To: <1242155190.2492.73.camel@ht.satnam>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 13 May 2009 06:28:17.0031 (UTC) FILETIME=[004B1170:01C9D394]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
-
-Francois Romieu wrote:
-> Michael Riepe <michael.riepe@googlemail.com> :
-> [...]
+On Wed, May 13, 2009 at 12:36:30AM +0530, Jaswinder Singh Rajput wrote:
+> On Tue, 2009-05-12 at 21:09 +0530, Jaswinder Singh Rajput wrote:
+> > Add Advanced Power Management (Function 8000_0007h), edx
+> > 
+> > /proc/cpuinfo (before)
+> > flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+> > mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt
+> > rdtscp lm 3dnowext 3dnow constant_tsc rep_good nonstop_tsc pni cx16
+> > lahf_lm cmp_legacy svm extapic cr8_legacy 3dnowprefetch osvw skinit pname
+> > 
+> > /proc/cpuinfo (after)
+> > flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+> > mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt
+> > rdtscp lm 3dnowext 3dnow rep_good tsc_reliable nonstop_tsc pni cx16
+> > lahf_lm cmp_legacy svm extapic cr8_legacy 3dnowprefetch osvw skinit pname
+> > ts ttp htc stc 100mhzsteps hwpstate constant_tsc
+> > 
+> > Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> > ---
 > 
->>How do lspci and dmesg report the chip? For mine, lspci says it's a
->>"RTL8111/8168B PCI Express Gigabit Ethernet controller (rev 02)" while
->>the kernel reports "RTL8168c/8111c at 0xffffc200000f6000,
->>00:1c:c0:b6:1a:4a, XID 3c4000c0".
+> New patch after adding helper cpufeature for Advanced Power Management
+> availability and fixing typo.
 > 
+> [PATCH -tip] x86: Add cpufeatures for Advanced Power Management
 > 
-> The XID is more specific than the first kernel report. lspci is less
-> accurate.
+> Add Advanced Power Management (Function 8000_0007h), edx
+> 
+> /proc/cpuinfo (before)
+> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+> mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt
+> rdtscp lm 3dnowext 3dnow constant_tsc rep_good nonstop_tsc pni cx16
+> lahf_lm cmp_legacy svm extapic cr8_legacy 3dnowprefetch osvw skinit pname
+> 
+> /proc/cpuinfo (after)
+> flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge
+> mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt
+> rdtscp lm 3dnowext 3dnow rep_good tsc_reliable nonstop_tsc pni cx16
+> lahf_lm cmp_legacy svm extapic cr8_legacy 3dnowprefetch osvw skinit pname
+> ts ttp htc stc 100mhzsteps hwpstate constant_tsc
 
-Then the question is: Are there two different revisions with the same
-XID, or is it always the same chip that sometimes works and sometimes
-doesn't?
+What's the point of adding power managment flags twice?
+Most of it is already displayed in /proc/cpuinfo under
+"power management".
 
-I can't remember anybody reporting that the Intel D945GCLF2 works for
-them, so it might also be an interoperability issue.
+
+Regards,
+Andreas
 
 -- 
-Michael "Tired" Riepe <michael.riepe@googlemail.com>
-X-Tired: Each morning I get up I die a little
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
+
