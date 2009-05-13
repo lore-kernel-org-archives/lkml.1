@@ -1,394 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760170AbZEMPAK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760358AbZEMPAf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760170AbZEMPAK (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 11:00:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754906AbZEMO7y
+	id S1760358AbZEMPAf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 11:00:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759381AbZEMO76
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 10:59:54 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:53282 "EHLO gir.skynet.ie"
+	Wed, 13 May 2009 10:59:58 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:40039 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753016AbZEMO7x (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 10:59:53 -0400
-Date: Wed, 13 May 2009 15:59:50 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>
-Subject: Re: [PATCH] x86: remove MEMORY_HOTPLUG_RESERVE related code -v2
-Message-ID: <20090513145950.GB28097@csn.ul.ie>
-References: <4A05269D.8000701@kernel.org> <20090512111623.GG25923@csn.ul.ie> <4A0A64FB.4080504@kernel.org>
+	id S1758752AbZEMO74 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 10:59:56 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Olga Kornievskaia <aglo@citi.umich.edu>,
+       "J. Bruce Fields" <bfields@fieldses.org>, Jim Rees <rees@umich.edu>,
+       linux-nfs@vger.kernel.org
+Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone over NFS
+References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
+	<20090508120119.8c93cfd7.akpm@linux-foundation.org>
+	<20090511081415.GL4694@kernel.dk>
+	<x49skjb21b7.fsf@segfault.boston.devel.redhat.com>
+	<20090511165826.GG4694@kernel.dk>
+	<x494ovp4r51.fsf@segfault.boston.devel.redhat.com>
+	<20090512204433.7eb69075.akpm@linux-foundation.org>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Wed, 13 May 2009 10:58:39 -0400
+In-Reply-To: <20090512204433.7eb69075.akpm@linux-foundation.org> (Andrew
+	Morton's message of "Tue, 12 May 2009 20:44:33 -0700")
+Message-ID: <x49y6t1rqw0.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-Content-Disposition: inline
-In-Reply-To: <4A0A64FB.4080504@kernel.org>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 11:13:15PM -0700, Yinghai Lu wrote:
-> 
-> after
-> | commit b263295dbffd33b0fbff670720fa178c30e3392a
-> | Author: Christoph Lameter <clameter@sgi.com>
-> | Date:   Wed Jan 30 13:30:47 2008 +0100
-> |
-> |    x86: 64-bit, make sparsemem vmemmap the only memory model
-> 
-> we don't have MEMORY_HOTPLUG_RESERVE anymore.
-> 
-> Historically, x86-64 had an architecture-specific method for memory hotplug
-> whereby it scanned the SRAT for physical memory ranges that could be
-> potentially used for memory hot-add later. By reserving those ranges
-> without physical memory, the memmap would be allocated and left dormant
-> until needed. This depended on the DISCONTIG memory model which has been
-> removed so the code implementing HOTPLUG_RESERVE is now dead.
-> 
-> This patch removes the dead code used by MEMORY_HOTPLUG_RESERVE
-> 
-> Changelog updated by Mel.
-> 
-> v2: updated changelog, and remove hotadd= in doc
-> 
-> [ Impact: remove dead code ]
-> 
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> Reviewed-by: Christoph Lameter <cl@linux-foundation.org>
-> Cc: Mel Gorman <mel@csn.ul.ie>
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Patch looks good and successfully boot-tested on a small number of
-machines. Nice work.
+> (obvious cc's added...)
+>
+> It's an iozone performance regression.
+>
+> On Tue, 12 May 2009 23:29:30 -0400 Jeff Moyer <jmoyer@redhat.com> wrote:
+>
+>> Jens Axboe <jens.axboe@oracle.com> writes:
+>> 
+>> > On Mon, May 11 2009, Jeff Moyer wrote:
+>> >> Jens Axboe <jens.axboe@oracle.com> writes:
+>> >> 
+>> >> > On Fri, May 08 2009, Andrew Morton wrote:
+>> >> >> On Thu, 23 Apr 2009 10:01:58 -0400
+>> >> >> Jeff Moyer <jmoyer@redhat.com> wrote:
+>> >> >> 
+>> >> >> > Hi,
+>> >> >> > 
+>> >> >> > I've been working on CFQ improvements for interleaved I/Os between
+>> >> >> > processes, and noticed a regression in performance when using the
+>> >> >> > deadline I/O scheduler.  The test uses a server configured with a cciss
+>> >> >> > array and 1Gb/s ethernet.
+>> >> >> > 
+>> >> >> > The iozone command line was:
+>> >> >> >   iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
+>> >> >> > 
+>> >> >> > The numbers in the nfsd's row represent the number of nfsd "threads".
+>> >> >> > These numbers (in MB/s) represent the average of 5 runs.
+>> >> >> > 
+>> >> >> >                v2.6.29
+>> >> >> > 
+>> >> >> > nfsd's  |   1    |  2   |   4   |   8
+>> >> >> > --------+---------------+-------+------
+>> >> >> > deadline| 43207 | 67436 | 96289 | 107590
+>> >> >> > 
+>> >> >> >               2.6.30-rc1
+>> >> >> > 
+>> >> >> > nfsd's  |   1   |   2   |   4   |   8
+>> >> >> > --------+---------------+-------+------
+>> >> >> > deadline| 43732 | 68059 | 76659 | 83231
+>> >> >> > 
+>> >> >> >     2.6.30-rc3.block-for-linus
+>> >> >> > 
+>> >> >> > nfsd's  |   1   |   2   |   4   |   8
+>> >> >> > --------+---------------+-------+------
+>> >> >> > deadline| 46102 | 71151 | 83120 | 82330
+>> >> >> > 
+>> >> >> > 
+>> >> >> > Notice the drop for 4 and 8 threads.  It may be worth noting that the
+>> >> >> > default number of NFSD threads is 8.
 
-Reviewed-by: Mel Gorman <mel@csn.ul.ie>
+Just following up with numbers:
 
-> 
-> ---
->  Documentation/x86/x86_64/boot-options.txt |    5 --
->  arch/x86/include/asm/numa_64.h            |    3 -
->  arch/x86/mm/numa_64.c                     |    5 --
->  arch/x86/mm/srat_64.c                     |   63 +++++----------------------
->  include/linux/mm.h                        |    2 
->  mm/page_alloc.c                           |   69 ------------------------------
->  6 files changed, 12 insertions(+), 135 deletions(-)
-> 
-> Index: linux-2.6/arch/x86/include/asm/numa_64.h
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/include/asm/numa_64.h
-> +++ linux-2.6/arch/x86/include/asm/numa_64.h
-> @@ -17,9 +17,6 @@ extern int compute_hash_shift(struct boo
->  extern void numa_init_array(void);
->  extern int numa_off;
->  
-> -extern void srat_reserve_add_area(int nodeid);
-> -extern int hotadd_percent;
-> -
->  extern s16 apicid_to_node[MAX_LOCAL_APIC];
->  
->  extern unsigned long numa_free_all_bootmem(void);
-> Index: linux-2.6/arch/x86/mm/numa_64.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/mm/numa_64.c
-> +++ linux-2.6/arch/x86/mm/numa_64.c
-> @@ -272,9 +272,6 @@ void __init setup_node_bootmem(int nodei
->  		reserve_bootmem_node(NODE_DATA(nodeid), bootmap_start,
->  				 bootmap_pages<<PAGE_SHIFT, BOOTMEM_DEFAULT);
->  
-> -#ifdef CONFIG_ACPI_NUMA
-> -	srat_reserve_add_area(nodeid);
-> -#endif
->  	node_set_online(nodeid);
->  }
->  
-> @@ -593,8 +590,6 @@ static __init int numa_setup(char *opt)
->  #ifdef CONFIG_ACPI_NUMA
->  	if (!strncmp(opt, "noacpi", 6))
->  		acpi_numa = -1;
-> -	if (!strncmp(opt, "hotadd=", 7))
-> -		hotadd_percent = simple_strtoul(opt+7, NULL, 10);
->  #endif
->  	return 0;
->  }
-> Index: linux-2.6/arch/x86/mm/srat_64.c
-> ===================================================================
-> --- linux-2.6.orig/arch/x86/mm/srat_64.c
-> +++ linux-2.6/arch/x86/mm/srat_64.c
-> @@ -31,8 +31,6 @@ static nodemask_t nodes_parsed __initdat
->  static nodemask_t cpu_nodes_parsed __initdata;
->  static struct bootnode nodes[MAX_NUMNODES] __initdata;
->  static struct bootnode nodes_add[MAX_NUMNODES];
-> -static int found_add_area __initdata;
-> -int hotadd_percent __initdata = 0;
->  
->  static int num_node_memblks __initdata;
->  static struct bootnode node_memblk_range[NR_NODE_MEMBLKS] __initdata;
-> @@ -66,9 +64,6 @@ static __init void cutoff_node(int i, un
->  {
->  	struct bootnode *nd = &nodes[i];
->  
-> -	if (found_add_area)
-> -		return;
-> -
->  	if (nd->start < start) {
->  		nd->start = start;
->  		if (nd->end < nd->start)
-> @@ -86,7 +81,6 @@ static __init void bad_srat(void)
->  	int i;
->  	printk(KERN_ERR "SRAT: SRAT not used.\n");
->  	acpi_numa = -1;
-> -	found_add_area = 0;
->  	for (i = 0; i < MAX_LOCAL_APIC; i++)
->  		apicid_to_node[i] = NUMA_NO_NODE;
->  	for (i = 0; i < MAX_NUMNODES; i++)
-> @@ -182,24 +176,21 @@ acpi_numa_processor_affinity_init(struct
->  	       pxm, apic_id, node);
->  }
->  
-> -static int update_end_of_memory(unsigned long end) {return -1;}
-> -static int hotadd_enough_memory(struct bootnode *nd) {return 1;}
->  #ifdef CONFIG_MEMORY_HOTPLUG_SPARSE
->  static inline int save_add_info(void) {return 1;}
->  #else
->  static inline int save_add_info(void) {return 0;}
->  #endif
->  /*
-> - * Update nodes_add and decide if to include add are in the zone.
-> - * Both SPARSE and RESERVE need nodes_add information.
-> - * This code supports one contiguous hot add area per node.
-> + * Update nodes_add[]
-> + * This code supports one contiguous hot add area per node
->   */
-> -static int __init
-> -reserve_hotadd(int node, unsigned long start, unsigned long end)
-> +static void __init
-> +update_nodes_add(int node, unsigned long start, unsigned long end)
->  {
->  	unsigned long s_pfn = start >> PAGE_SHIFT;
->  	unsigned long e_pfn = end >> PAGE_SHIFT;
-> -	int ret = 0, changed = 0;
-> +	int changed = 0;
->  	struct bootnode *nd = &nodes_add[node];
->  
->  	/* I had some trouble with strange memory hotadd regions breaking
-> @@ -210,7 +201,7 @@ reserve_hotadd(int node, unsigned long s
->  	   mistakes */
->  	if ((signed long)(end - start) < NODE_MIN_SIZE) {
->  		printk(KERN_ERR "SRAT: Hotplug area too small\n");
-> -		return -1;
-> +		return;
->  	}
->  
->  	/* This check might be a bit too strict, but I'm keeping it for now. */
-> @@ -218,12 +209,7 @@ reserve_hotadd(int node, unsigned long s
->  		printk(KERN_ERR
->  			"SRAT: Hotplug area %lu -> %lu has existing memory\n",
->  			s_pfn, e_pfn);
-> -		return -1;
-> -	}
-> -
-> -	if (!hotadd_enough_memory(&nodes_add[node]))  {
-> -		printk(KERN_ERR "SRAT: Hotplug area too large\n");
-> -		return -1;
-> +		return;
->  	}
->  
->  	/* Looks good */
-> @@ -245,11 +231,9 @@ reserve_hotadd(int node, unsigned long s
->  			printk(KERN_ERR "SRAT: Hotplug zone not continuous. Partly ignored\n");
->  	}
->  
-> -	ret = update_end_of_memory(nd->end);
-> -
->  	if (changed)
-> -	 	printk(KERN_INFO "SRAT: hot plug zone found %Lx - %Lx\n", nd->start, nd->end);
-> -	return ret;
-> +		printk(KERN_INFO "SRAT: hot plug zone found %Lx - %Lx\n",
-> +				 nd->start, nd->end);
->  }
->  
->  /* Callback for parsing of the Proximity Domain <-> Memory Area mappings */
-> @@ -310,13 +294,10 @@ acpi_numa_memory_affinity_init(struct ac
->  	       start, end);
->  	e820_register_active_regions(node, start >> PAGE_SHIFT,
->  				     end >> PAGE_SHIFT);
-> -	push_node_boundaries(node, nd->start >> PAGE_SHIFT,
-> -						nd->end >> PAGE_SHIFT);
->  
-> -	if ((ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) &&
-> -	    (reserve_hotadd(node, start, end) < 0)) {
-> -		/* Ignore hotadd region. Undo damage */
-> -		printk(KERN_NOTICE "SRAT: Hotplug region ignored\n");
-> +	if (ma->flags & ACPI_SRAT_MEM_HOT_PLUGGABLE) {
-> +		update_nodes_add(node, start, end);
-> +		/* restore nodes[node] */
->  		*nd = oldnode;
->  		if ((nd->start | nd->end) == 0)
->  			node_clear(node, nodes_parsed);
-> @@ -510,26 +491,6 @@ static int null_slit_node_compare(int a,
->  }
->  #endif /* CONFIG_NUMA_EMU */
->  
-> -void __init srat_reserve_add_area(int nodeid)
-> -{
-> -	if (found_add_area && nodes_add[nodeid].end) {
-> -		u64 total_mb;
-> -
-> -		printk(KERN_INFO "SRAT: Reserving hot-add memory space "
-> -				"for node %d at %Lx-%Lx\n",
-> -			nodeid, nodes_add[nodeid].start, nodes_add[nodeid].end);
-> -		total_mb = (nodes_add[nodeid].end - nodes_add[nodeid].start)
-> -					>> PAGE_SHIFT;
-> -		total_mb *= sizeof(struct page);
-> -		total_mb >>= 20;
-> -		printk(KERN_INFO "SRAT: This will cost you %Lu MB of "
-> -				"pre-allocated memory.\n", (unsigned long long)total_mb);
-> -		reserve_bootmem_node(NODE_DATA(nodeid), nodes_add[nodeid].start,
-> -			       nodes_add[nodeid].end - nodes_add[nodeid].start,
-> -			       BOOTMEM_DEFAULT);
-> -	}
-> -}
-> -
->  int __node_distance(int a, int b)
->  {
->  	int index;
-> Index: linux-2.6/include/linux/mm.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/mm.h
-> +++ linux-2.6/include/linux/mm.h
-> @@ -1032,8 +1032,6 @@ extern void add_active_range(unsigned in
->  					unsigned long end_pfn);
->  extern void remove_active_range(unsigned int nid, unsigned long start_pfn,
->  					unsigned long end_pfn);
-> -extern void push_node_boundaries(unsigned int nid, unsigned long start_pfn,
-> -					unsigned long end_pfn);
->  extern void remove_all_active_ranges(void);
->  extern unsigned long absent_pages_in_range(unsigned long start_pfn,
->  						unsigned long end_pfn);
-> Index: linux-2.6/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.orig/mm/page_alloc.c
-> +++ linux-2.6/mm/page_alloc.c
-> @@ -150,10 +150,6 @@ static unsigned long __meminitdata dma_r
->    static int __meminitdata nr_nodemap_entries;
->    static unsigned long __meminitdata arch_zone_lowest_possible_pfn[MAX_NR_ZONES];
->    static unsigned long __meminitdata arch_zone_highest_possible_pfn[MAX_NR_ZONES];
-> -#ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
-> -  static unsigned long __meminitdata node_boundary_start_pfn[MAX_NUMNODES];
-> -  static unsigned long __meminitdata node_boundary_end_pfn[MAX_NUMNODES];
-> -#endif /* CONFIG_MEMORY_HOTPLUG_RESERVE */
->    static unsigned long __initdata required_kernelcore;
->    static unsigned long __initdata required_movablecore;
->    static unsigned long __meminitdata zone_movable_pfn[MAX_NUMNODES];
-> @@ -3121,64 +3117,6 @@ void __init sparse_memory_present_with_a
->  }
->  
->  /**
-> - * push_node_boundaries - Push node boundaries to at least the requested boundary
-> - * @nid: The nid of the node to push the boundary for
-> - * @start_pfn: The start pfn of the node
-> - * @end_pfn: The end pfn of the node
-> - *
-> - * In reserve-based hot-add, mem_map is allocated that is unused until hotadd
-> - * time. Specifically, on x86_64, SRAT will report ranges that can potentially
-> - * be hotplugged even though no physical memory exists. This function allows
-> - * an arch to push out the node boundaries so mem_map is allocated that can
-> - * be used later.
-> - */
-> -#ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
-> -void __init push_node_boundaries(unsigned int nid,
-> -		unsigned long start_pfn, unsigned long end_pfn)
-> -{
-> -	mminit_dprintk(MMINIT_TRACE, "zoneboundary",
-> -			"Entering push_node_boundaries(%u, %lu, %lu)\n",
-> -			nid, start_pfn, end_pfn);
-> -
-> -	/* Initialise the boundary for this node if necessary */
-> -	if (node_boundary_end_pfn[nid] == 0)
-> -		node_boundary_start_pfn[nid] = -1UL;
-> -
-> -	/* Update the boundaries */
-> -	if (node_boundary_start_pfn[nid] > start_pfn)
-> -		node_boundary_start_pfn[nid] = start_pfn;
-> -	if (node_boundary_end_pfn[nid] < end_pfn)
-> -		node_boundary_end_pfn[nid] = end_pfn;
-> -}
-> -
-> -/* If necessary, push the node boundary out for reserve hotadd */
-> -static void __meminit account_node_boundary(unsigned int nid,
-> -		unsigned long *start_pfn, unsigned long *end_pfn)
-> -{
-> -	mminit_dprintk(MMINIT_TRACE, "zoneboundary",
-> -			"Entering account_node_boundary(%u, %lu, %lu)\n",
-> -			nid, *start_pfn, *end_pfn);
-> -
-> -	/* Return if boundary information has not been provided */
-> -	if (node_boundary_end_pfn[nid] == 0)
-> -		return;
-> -
-> -	/* Check the boundaries and update if necessary */
-> -	if (node_boundary_start_pfn[nid] < *start_pfn)
-> -		*start_pfn = node_boundary_start_pfn[nid];
-> -	if (node_boundary_end_pfn[nid] > *end_pfn)
-> -		*end_pfn = node_boundary_end_pfn[nid];
-> -}
-> -#else
-> -void __init push_node_boundaries(unsigned int nid,
-> -		unsigned long start_pfn, unsigned long end_pfn) {}
-> -
-> -static void __meminit account_node_boundary(unsigned int nid,
-> -		unsigned long *start_pfn, unsigned long *end_pfn) {}
-> -#endif
-> -
-> -
-> -/**
->   * get_pfn_range_for_nid - Return the start and end page frames for a node
->   * @nid: The nid to return the range for. If MAX_NUMNODES, the min and max PFN are returned.
->   * @start_pfn: Passed by reference. On return, it will have the node start_pfn.
-> @@ -3203,9 +3141,6 @@ void __meminit get_pfn_range_for_nid(uns
->  
->  	if (*start_pfn == -1UL)
->  		*start_pfn = 0;
-> -
-> -	/* Push the node boundaries out if requested */
-> -	account_node_boundary(nid, start_pfn, end_pfn);
->  }
->  
->  /*
-> @@ -3810,10 +3745,6 @@ void __init remove_all_active_ranges(voi
->  {
->  	memset(early_node_map, 0, sizeof(early_node_map));
->  	nr_nodemap_entries = 0;
-> -#ifdef CONFIG_MEMORY_HOTPLUG_RESERVE
-> -	memset(node_boundary_start_pfn, 0, sizeof(node_boundary_start_pfn));
-> -	memset(node_boundary_end_pfn, 0, sizeof(node_boundary_end_pfn));
-> -#endif /* CONFIG_MEMORY_HOTPLUG_RESERVE */
->  }
->  
->  /* Compare two active node_active_regions */
-> Index: linux-2.6/Documentation/x86/x86_64/boot-options.txt
-> ===================================================================
-> --- linux-2.6.orig/Documentation/x86/x86_64/boot-options.txt
-> +++ linux-2.6/Documentation/x86/x86_64/boot-options.txt
-> @@ -150,11 +150,6 @@ NUMA
->  		Otherwise, the remaining system RAM is allocated to an
->  		additional node.
->  
-> -  numa=hotadd=percent
-> -		Only allow hotadd memory to preallocate page structures upto
-> -		percent of already available memory.
-> -		numa=hotadd=0 will disable hotadd memory.
-> -
->  ACPI
->  
->    acpi=off	Don't enable ACPI
-> 
+  2.6.30-rc4
 
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+nfsd's  |   8
+--------+------
+cfq     | 51632   (49791 52436 52308 51488 52141)
+deadline| 65558   (41675 42559 74820 87518 81221)
+
+   2.6.30-rc4 reverting the sunrpc "fix"
+
+nfsd's  |   8
+--------+------
+cfq     |  82513  (81650 82762 83147 82935 82073)
+deadline| 107827  (109730 106077 107175 108524 107632)
+
+The numbers in parenthesis are the individual runs.  Notice how
+2.6.30-rc4 has some pretty wide variations for deadline.
+
+Cheers,
+Jeff
+
+>> >> >> I guess we should ask Rafael to add this to the post-2.6.29 regression
+>> >> >> list.
+>> >> >
+>> >> > I agree. It'd be nice to bisect this one down, I'm guessing some mm
+>> >> > change has caused this writeout regression.
+>> >> 
+>> >> It's not writeout, it's a read test.
+>> >
+>> > Doh sorry, I even ran these tests as well a few weeks back. So perhaps
+>> > some read-ahead change, I didn't look into it. FWIW, on a single SATA
+>> > drive here, it didn't show any difference.
+>> 
+>> OK, I bisected this to the following commit.  The mount is done using
+>> NFSv3, by the way.
+>> 
+>> commit 47a14ef1af48c696b214ac168f056ddc79793d0e
+>> Author: Olga Kornievskaia <aglo@citi.umich.edu>
+>> Date:   Tue Oct 21 14:13:47 2008 -0400
+>> 
+>>     svcrpc: take advantage of tcp autotuning
+>>     
+>>     Allow the NFSv4 server to make use of TCP autotuning behaviour, which
+>>     was previously disabled by setting the sk_userlocks variable.
+>>     
+>>     Set the receive buffers to be big enough to receive the whole RPC
+>>     request, and set this for the listening socket, not the accept socket.
+>>     
+>>     Remove the code that readjusts the receive/send buffer sizes for the
+>>     accepted socket. Previously this code was used to influence the TCP
+>>     window management behaviour, which is no longer needed when autotuning
+>>     is enabled.
+>>     
+>>     This can improve IO bandwidth on networks with high bandwidth-delay
+>>     products, where a large tcp window is required.  It also simplifies
+>>     performance tuning, since getting adequate tcp buffers previously
+>>     required increasing the number of nfsd threads.
+>>     
+>>     Signed-off-by: Olga Kornievskaia <aglo@citi.umich.edu>
+>>     Cc: Jim Rees <rees@umich.edu>
+>>     Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+>> 
+>> diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+>> index 5763e64..7a2a90f 100644
+>> --- a/net/sunrpc/svcsock.c
+>> +++ b/net/sunrpc/svcsock.c
+>> @@ -345,7 +345,6 @@ static void svc_sock_setbufsize(struct socket *sock, unsigned int snd,
+>>  	lock_sock(sock->sk);
+>>  	sock->sk->sk_sndbuf = snd * 2;
+>>  	sock->sk->sk_rcvbuf = rcv * 2;
+>> -	sock->sk->sk_userlocks |= SOCK_SNDBUF_LOCK|SOCK_RCVBUF_LOCK;
+>>  	release_sock(sock->sk);
+>>  #endif
+>>  }
+>> @@ -797,23 +796,6 @@ static int svc_tcp_recvfrom(struct svc_rqst *rqstp)
+>>  		test_bit(XPT_CONN, &svsk->sk_xprt.xpt_flags),
+>>  		test_bit(XPT_CLOSE, &svsk->sk_xprt.xpt_flags));
+>>  
+>> -	if (test_and_clear_bit(XPT_CHNGBUF, &svsk->sk_xprt.xpt_flags))
+>> -		/* sndbuf needs to have room for one request
+>> -		 * per thread, otherwise we can stall even when the
+>> -		 * network isn't a bottleneck.
+>> -		 *
+>> -		 * We count all threads rather than threads in a
+>> -		 * particular pool, which provides an upper bound
+>> -		 * on the number of threads which will access the socket.
+>> -		 *
+>> -		 * rcvbuf just needs to be able to hold a few requests.
+>> -		 * Normally they will be removed from the queue
+>> -		 * as soon a a complete request arrives.
+>> -		 */
+>> -		svc_sock_setbufsize(svsk->sk_sock,
+>> -				    (serv->sv_nrthreads+3) * serv->sv_max_mesg,
+>> -				    3 * serv->sv_max_mesg);
+>> -
+>>  	clear_bit(XPT_DATA, &svsk->sk_xprt.xpt_flags);
+>>  
+>>  	/* Receive data. If we haven't got the record length yet, get
+>> @@ -1061,15 +1043,6 @@ static void svc_tcp_init(struct svc_sock *svsk, struct svc_serv *serv)
+>>  
+>>  		tcp_sk(sk)->nonagle |= TCP_NAGLE_OFF;
+>>  
+>> -		/* initialise setting must have enough space to
+>> -		 * receive and respond to one request.
+>> -		 * svc_tcp_recvfrom will re-adjust if necessary
+>> -		 */
+>> -		svc_sock_setbufsize(svsk->sk_sock,
+>> -				    3 * svsk->sk_xprt.xpt_server->sv_max_mesg,
+>> -				    3 * svsk->sk_xprt.xpt_server->sv_max_mesg);
+>> -
+>> -		set_bit(XPT_CHNGBUF, &svsk->sk_xprt.xpt_flags);
+>>  		set_bit(XPT_DATA, &svsk->sk_xprt.xpt_flags);
+>>  		if (sk->sk_state != TCP_ESTABLISHED)
+>>  			set_bit(XPT_CLOSE, &svsk->sk_xprt.xpt_flags);
+>> @@ -1140,8 +1113,14 @@ static struct svc_sock *svc_setup_socket(struct svc_serv *serv,
+>>  	/* Initialize the socket */
+>>  	if (sock->type == SOCK_DGRAM)
+>>  		svc_udp_init(svsk, serv);
+>> -	else
+>> +	else {
+>> +		/* initialise setting must have enough space to
+>> +		 * receive and respond to one request.
+>> +		 */
+>> +		svc_sock_setbufsize(svsk->sk_sock, 4 * serv->sv_max_mesg,
+>> +					4 * serv->sv_max_mesg);
+>>  		svc_tcp_init(svsk, serv);
+>> +	}
+>>  
+>>  	/*
+>>  	 * We start one listener per sv_serv.  We want AF_INET
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
