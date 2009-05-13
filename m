@@ -1,63 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbZEMJAa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759289AbZEMJCT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759451AbZEMJAa (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 05:00:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758135AbZEMJAT
+	id S1759289AbZEMJCT (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 05:02:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZEMJCA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 05:00:19 -0400
-Received: from metis.ext.pengutronix.de ([92.198.50.35]:44493 "EHLO
-	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753823AbZEMJAR (ORCPT
+	Wed, 13 May 2009 05:02:00 -0400
+Received: from fxip-0047f.externet.hu ([88.209.222.127]:52885 "EHLO
+	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751148AbZEMJB7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 05:00:17 -0400
-From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
-	<u.kleine-koenig@pengutronix.de>
-To: linux-kernel@vger.kernel.org
-Cc: linux-rt-users@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
-Subject: [PATCH] ARM: __builtin_return_address works with argument 0
-Date: Wed, 13 May 2009 11:00:13 +0200
-Message-Id: <1242205213-27452-1-git-send-email-u.kleine-koenig@pengutronix.de>
-X-Mailer: git-send-email 1.6.2.1
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
-X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
-X-SA-Exim-Mail-From: ukl@pengutronix.de
-X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
-X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
+	Wed, 13 May 2009 05:01:59 -0400
+To: jens.axboe@oracle.com
+CC: akpm@linux-foundation.org, miklos@szeredi.hu, max@duempel.org,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-reply-to: <20090513063707.GC4140@kernel.dk> (message from Jens Axboe on
+	Wed, 13 May 2009 08:37:07 +0200)
+Subject: Re: [patch 2/3] splice: implement default splice_read method
+References: <20090507133734.450612199@szeredi.hu> <20090507133748.161689790@szeredi.hu> <20090512223500.d7ef4648.akpm@linux-foundation.org> <20090513063707.GC4140@kernel.dk>
+Message-Id: <E1M4ALP-0005za-1i@pomaz-ex.szeredi.hu>
+From: Miklos Szeredi <miklos@szeredi.hu>
+Date: Wed, 13 May 2009 11:01:43 +0200
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This saves the function overhead for CALLER_ADDRESS0.
+On Wed, 13 May 2009, Jens Axboe wrote:
+> On Tue, May 12 2009, Andrew Morton wrote:
+> > On Thu, 07 May 2009 15:37:36 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > 
+> > > +	for (i = 0; i < spd.nr_pages; i++) {
+> > > +		kunmap(pages[i]);
+> > 
+> > It is deadlockable if any thread of control holds more than a single
+> > kmap at a time.
+> > 
+> > Because there are a finite number of kmaps available, and if one is
+> > unavailable, kmap() waits for one to become free.  If the number of
+> > waiting threads equals the number of available slots, nobody makes any
+> > progress.
 
-Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
-Cc: Thomas Gleixner <tglx@linutronix.de>
----
-Hi Thomas,
+Ouch.
 
-this applies to .29.3-rt12.  Feel free to squash this into
-arm-tracing-updates.patch.
+> 
+> Good catch, that will not work reliably. I've applied the below.
 
-Best regards
-Uwe
+Thanks.
 
- arch/arm/include/asm/ftrace.h |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+The bigger problem is that the default_file_splice_write()
+implementation in the other patch does the same (it calls
+buf->ops->map() on all buffers).
 
-diff --git a/arch/arm/include/asm/ftrace.h b/arch/arm/include/asm/ftrace.h
-index 900fc19..f7e8bac 100644
---- a/arch/arm/include/asm/ftrace.h
-+++ b/arch/arm/include/asm/ftrace.h
-@@ -15,7 +15,7 @@ extern void mcount(void);
- void *return_address(unsigned int);
- 
- #define HAVE_ARCH_CALLER_ADDR
--#define CALLER_ADDR0 ((unsigned long)return_address(0))
-+#define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
- #define CALLER_ADDR1 ((unsigned long)return_address(1))
- #define CALLER_ADDR2 ((unsigned long)return_address(2))
- #define CALLER_ADDR3 ((unsigned long)return_address(3))
--- 
-1.6.2.1
+Hmm.  Simple solution would be to do a write() for each buffer.  But
+this only affects HIGHMEM kernels, so it's a bit pointless to do that
+on all archs.  Sigh...
 
+Miklos
