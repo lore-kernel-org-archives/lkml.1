@@ -1,49 +1,194 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751910AbZEMEf0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbZEMEgV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751910AbZEMEf0 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 00:35:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751458AbZEMEfK
+	id S1753507AbZEMEgV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 00:36:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751578AbZEMEgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 00:35:10 -0400
-Received: from [76.245.85.235] ([76.245.85.235]:41152 "EHLO cynthia.pants.nu"
-	rhost-flags-FAIL-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1750998AbZEMEfJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 00:35:09 -0400
-Date: Tue, 12 May 2009 21:34:09 -0700
-From: Brad Boyer <flar@allandria.com>
-To: Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>
-Cc: Arnd Bergmann <arnd@arndb.de>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       linux-kernel@vger.kernel.org, Jeff Garzik <jgarzik@pobox.com>,
-       linux-ide@vger.kernel.org, takata@linux-m32r.org, geert@linux-m68k.org,
-       linux-m68k@vger.kernel.org, ysato@users.sourceforge.jp
-Subject: Re: [PATCH] ata: libata depends on HAS_DMA
-Message-ID: <20090513043409.GA13577@cynthia.pants.nu>
-References: <20090511222702.352192505@arndb.de> <200905112238.55404.arnd@arndb.de> <20090512090602.65722342@lxorguk.ukuu.org.uk> <200905121123.21436.arnd@arndb.de> <20090513033027.GA13193@cynthia.pants.nu> <alpine.DEB.1.00.0905130610240.18305@zirkon.biophys.uni-duesseldorf.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.00.0905130610240.18305@zirkon.biophys.uni-duesseldorf.de>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 13 May 2009 00:36:10 -0400
+Received: from TYO201.gate.nec.co.jp ([202.32.8.193]:55481 "EHLO
+	tyo201.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751391AbZEMEgJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 00:36:09 -0400
+Date: Wed, 13 May 2009 13:30:31 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@in.ibm.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [BUGFIX][PATCH] memcg: fix deadlock between lock_page_cgroup and
+ mapping tree_lock
+Message-Id: <20090513133031.f4be15a8.nishimura@mxp.nes.nec.co.jp>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 06:12:31AM +0200, Michael Schmitz wrote:
-> The Atari IDE interface does not use DMA. I don't see what addition of DMA 
-> mapping for IDE would achieve. 
+mapping->tree_lock can be aquired from interrupt context.
+Then, following dead lock can occur.
 
-The macide driver doesn't support anything with DMA hardware either. In
-fact, no m68k Macintosh has both DMA capability and an IDE controller.
-However, we do support the basic DMA routines on the main m68k platforms.
-It's just not used for IDE. I think the proposed change was to require
-that the DMA routines be present, not that the IDE ports actually have
-to have a DMA capability.
+Assume "A" as a page.
 
-> If it doesn't interfere with plain PIO mode, fine. 
+ CPU0:
+       lock_page_cgroup(A)
+		interrupted
+			-> take mapping->tree_lock.
+ CPU1:
+       take mapping->tree_lock
+		-> lock_page_cgroup(A)
 
-I agree. There definitely needs to still be support for IDE ports that
-don't have DMA capability.
+This patch tries to fix above deadlock by moving memcg's hook to out of
+mapping->tree_lock.
+charge/uncharge of pagecache/swapcache is protected by page lock, not tree_lock.
 
-	Brad Boyer
-	flar@allandria.com
+After this patch, lock_page_cgroup() is not called under mapping->tree_lock.
 
+Signed-off-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+---
+ include/linux/swap.h |    5 +++++
+ mm/filemap.c         |    6 +++---
+ mm/memcontrol.c      |    4 +++-
+ mm/swap_state.c      |    4 +---
+ mm/truncate.c        |    1 +
+ mm/vmscan.c          |    2 ++
+ 6 files changed, 15 insertions(+), 7 deletions(-)
+
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index caf0767..6ea541d 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -431,6 +431,11 @@ static inline swp_entry_t get_swap_page(void)
+ #define has_swap_token(x) 0
+ #define disable_swap_token() do { } while(0)
+ 
++static inline void
++mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
++{
++}
++
+ #endif /* CONFIG_SWAP */
+ #endif /* __KERNEL__*/
+ #endif /* _LINUX_SWAP_H */
+diff --git a/mm/filemap.c b/mm/filemap.c
+index 379ff0b..1b60f30 100644
+--- a/mm/filemap.c
++++ b/mm/filemap.c
+@@ -121,7 +121,6 @@ void __remove_from_page_cache(struct page *page)
+ 	mapping->nrpages--;
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
+ 	BUG_ON(page_mapped(page));
+-	mem_cgroup_uncharge_cache_page(page);
+ 
+ 	/*
+ 	 * Some filesystems seem to re-dirty the page even after
+@@ -145,6 +144,7 @@ void remove_from_page_cache(struct page *page)
+ 	spin_lock_irq(&mapping->tree_lock);
+ 	__remove_from_page_cache(page);
+ 	spin_unlock_irq(&mapping->tree_lock);
++	mem_cgroup_uncharge_cache_page(page);
+ }
+ 
+ static int sync_page(void *word)
+@@ -476,13 +476,13 @@ int add_to_page_cache_locked(struct page *page, struct address_space *mapping,
+ 		if (likely(!error)) {
+ 			mapping->nrpages++;
+ 			__inc_zone_page_state(page, NR_FILE_PAGES);
++			spin_unlock_irq(&mapping->tree_lock);
+ 		} else {
+ 			page->mapping = NULL;
++			spin_unlock_irq(&mapping->tree_lock);
+ 			mem_cgroup_uncharge_cache_page(page);
+ 			page_cache_release(page);
+ 		}
+-
+-		spin_unlock_irq(&mapping->tree_lock);
+ 		radix_tree_preload_end();
+ 	} else
+ 		mem_cgroup_uncharge_cache_page(page);
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 0c9c1ad..89523cf 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1488,8 +1488,9 @@ void mem_cgroup_uncharge_cache_page(struct page *page)
+ 	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
+ }
+ 
++#ifdef CONFIG_SWAP
+ /*
+- * called from __delete_from_swap_cache() and drop "page" account.
++ * called after __delete_from_swap_cache() and drop "page" account.
+  * memcg information is recorded to swap_cgroup of "ent"
+  */
+ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+@@ -1506,6 +1507,7 @@ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+ 	if (memcg)
+ 		css_put(&memcg->css);
+ }
++#endif
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ /*
+diff --git a/mm/swap_state.c b/mm/swap_state.c
+index e389ef2..7624c89 100644
+--- a/mm/swap_state.c
++++ b/mm/swap_state.c
+@@ -109,8 +109,6 @@ int add_to_swap_cache(struct page *page, swp_entry_t entry, gfp_t gfp_mask)
+  */
+ void __delete_from_swap_cache(struct page *page)
+ {
+-	swp_entry_t ent = {.val = page_private(page)};
+-
+ 	VM_BUG_ON(!PageLocked(page));
+ 	VM_BUG_ON(!PageSwapCache(page));
+ 	VM_BUG_ON(PageWriteback(page));
+@@ -121,7 +119,6 @@ void __delete_from_swap_cache(struct page *page)
+ 	total_swapcache_pages--;
+ 	__dec_zone_page_state(page, NR_FILE_PAGES);
+ 	INC_CACHE_INFO(del_total);
+-	mem_cgroup_uncharge_swapcache(page, ent);
+ }
+ 
+ /**
+@@ -191,6 +188,7 @@ void delete_from_swap_cache(struct page *page)
+ 	__delete_from_swap_cache(page);
+ 	spin_unlock_irq(&swapper_space.tree_lock);
+ 
++	mem_cgroup_uncharge_swapcache(page, entry);
+ 	swap_free(entry);
+ 	page_cache_release(page);
+ }
+diff --git a/mm/truncate.c b/mm/truncate.c
+index 55206fa..12e1579 100644
+--- a/mm/truncate.c
++++ b/mm/truncate.c
+@@ -359,6 +359,7 @@ invalidate_complete_page2(struct address_space *mapping, struct page *page)
+ 	BUG_ON(page_has_private(page));
+ 	__remove_from_page_cache(page);
+ 	spin_unlock_irq(&mapping->tree_lock);
++	mem_cgroup_uncharge_cache_page(page);
+ 	page_cache_release(page);	/* pagecache ref */
+ 	return 1;
+ failed:
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 337be66..a7d7a06 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -470,10 +470,12 @@ static int __remove_mapping(struct address_space *mapping, struct page *page)
+ 		swp_entry_t swap = { .val = page_private(page) };
+ 		__delete_from_swap_cache(page);
+ 		spin_unlock_irq(&mapping->tree_lock);
++		mem_cgroup_uncharge_swapcache(page, swap);
+ 		swap_free(swap);
+ 	} else {
+ 		__remove_from_page_cache(page);
+ 		spin_unlock_irq(&mapping->tree_lock);
++		mem_cgroup_uncharge_cache_page(page);
+ 	}
+ 
+ 	return 1;
