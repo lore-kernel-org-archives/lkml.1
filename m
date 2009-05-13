@@ -1,411 +1,142 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753788AbZEMCBc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752739AbZEMCMu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753788AbZEMCBc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 22:01:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752053AbZEMCBV
+	id S1752739AbZEMCMu (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 22:12:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751980AbZEMCMk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 22:01:21 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:50621 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751636AbZEMCBU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 22:01:20 -0400
-Message-ID: <4A0A29B5.7030109@cn.fujitsu.com>
-Date: Wed, 13 May 2009 10:00:21 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Tue, 12 May 2009 22:12:40 -0400
+Received: from ozlabs.org ([203.10.76.45]:45045 "EHLO ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751567AbZEMCMk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 22:12:40 -0400
+From: Rusty Russell <rusty@rustcorp.com.au>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Subject: Re: [RFC PATCH 2/2] kernel/sched.c: VLA in middle of struct
+Date: Wed, 13 May 2009 11:42:26 +0930
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; i686; ; )
+Cc: Jeff Garzik <jeff@garzik.org>, Ingo Molnar <mingo@elte.hu>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, Mike Travis <travis@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>, roland@redhat.com
+References: <20090508184838.GA11157@havoc.gtf.org> <200905122304.52395.rusty@rustcorp.com.au> <20090512140344.GO8633@ZenIV.linux.org.uk>
+In-Reply-To: <20090512140344.GO8633@ZenIV.linux.org.uk>
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: [PATCH] IO Controller: Add per-device weight and ioprio_class handling
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com>
-In-Reply-To: <1241553525-28095-1-git-send-email-vgoyal@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905131142.27484.rusty@rustcorp.com.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Vivek,
+On Tue, 12 May 2009 11:33:44 pm Al Viro wrote:
+> On Tue, May 12, 2009 at 11:04:51PM +0930, Rusty Russell wrote:
+> > ... you're not normally allowed to embed structs with them in another
+> > struct (according to the  gcc docs; I can't actually find this clearly
+> > stated in the standard).
+>
+> 6.7.2.1p2.
 
-This patch enables per-cgroup per-device weight and ioprio_class handling.
-A new cgroup interface "policy" is introduced. You can make use of this 
-file to configure weight and ioprio_class for each device in a given cgroup.
-The original "weight" and "ioprio_class" files are still available. If you
-don't do special configuration for a particular device, "weight" and 
-"ioprio_class" are used as default values in this device.
+Ah, thanks.
 
-You can use the following format to play with the new interface.
-#echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
-weight=0 means removing the policy for DEV.
+> > Anyway, since [] is C99, I thought it preferable to [0] which is a gcc
+> > extension.  However, if C99 is really so braindead as to disallow this
+> > fairly standard trick, so I'm happy to go with the gcc extension.[1]
+>
+> No.  There's a standard way to do that in C99; you can put a struct with
+> that thing into a union.
 
-Examples:
-Configure weight=300 ioprio_class=2 on /dev/hdb in this cgroup
-# echo /dev/hdb:300:2 > io.policy
-# cat io.policy
-dev weight class
-/dev/hdb 300 2
+Ah, thanks for the clue.
 
-Configure weight=500 ioprio_class=1 on /dev/hda in this cgroup
-# echo /dev/hda:500:1 > io.policy
-# cat io.policy
-dev weight class
-/dev/hda 500 1
-/dev/hdb 300 2
+How's this:
 
-Remove the policy for /dev/hda in this cgroup
-# echo /dev/hda:0:1 > io.policy
-# cat io.policy
-dev weight class
-/dev/hdb 300 2
+sched: avoid flexible array member inside struct (gcc extension)
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+struct sched_group and struct sched_domain end in 'unsigned long
+cpumask[]' which Jeff Garzik notes is not legal to place inside
+another struct.  It upsets sparse and clang (LLVM's C front end).
+
+Al Viro pointed out that a union is the Right Way to do this.
+
+Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+Reported-by: Jeff Garzik <jeff@garzik.org>
+Cc: Al Viro <viro@zeniv.linux.org.uk>
 ---
- block/elevator-fq.c |  239 +++++++++++++++++++++++++++++++++++++++++++++++++-
- block/elevator-fq.h |   11 +++
- 2 files changed, 245 insertions(+), 5 deletions(-)
+ kernel/sched.c |   32 +++++++++++++++++---------------
+ 1 file changed, 17 insertions(+), 15 deletions(-)
 
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 69435ab..7c95d55 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -12,6 +12,9 @@
- #include "elevator-fq.h"
- #include <linux/blktrace_api.h>
- #include <linux/biotrack.h>
-+#include <linux/seq_file.h>
-+#include <linux/genhd.h>
-+
- 
- /* Values taken from cfq */
- const int elv_slice_sync = HZ / 10;
-@@ -1045,12 +1048,30 @@ struct io_group *io_lookup_io_group_current(struct request_queue *q)
- }
- EXPORT_SYMBOL(io_lookup_io_group_current);
- 
--void io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog)
-+static struct policy_node *policy_search_node(const struct io_cgroup *iocg,
-+					      void *key);
-+
-+void io_group_init_entity(struct io_cgroup *iocg, struct io_group *iog,
-+			  void *key)
- {
- 	struct io_entity *entity = &iog->entity;
-+	struct policy_node *pn;
-+
-+	spin_lock_irq(&iocg->lock);
-+	pn = policy_search_node(iocg, key);
-+	if (pn) {
-+		entity->weight = pn->weight;
-+		entity->new_weight = pn->weight;
-+		entity->ioprio_class = pn->ioprio_class;
-+		entity->new_ioprio_class = pn->ioprio_class;
-+	} else {
-+		entity->weight = iocg->weight;
-+		entity->new_weight = iocg->weight;
-+		entity->ioprio_class = iocg->ioprio_class;
-+		entity->new_ioprio_class = iocg->ioprio_class;
-+	}
-+	spin_unlock_irq(&iocg->lock);
- 
--	entity->weight = entity->new_weight = iocg->weight;
--	entity->ioprio_class = entity->new_ioprio_class = iocg->ioprio_class;
- 	entity->ioprio_changed = 1;
- 	entity->my_sched_data = &iog->sched_data;
- }
-@@ -1263,7 +1284,7 @@ struct io_group *io_group_chain_alloc(struct request_queue *q, void *key,
- 		atomic_set(&iog->ref, 0);
- 		iog->deleting = 0;
- 
--		io_group_init_entity(iocg, iog);
-+		io_group_init_entity(iocg, iog, key);
- 		iog->my_entity = &iog->entity;
- #ifdef CONFIG_DEBUG_GROUP_IOSCHED
- 		iog->iocg_id = css_id(&iocg->css);
-@@ -1549,8 +1570,208 @@ struct io_group *io_alloc_root_group(struct request_queue *q,
- 	return iog;
- }
- 
-+static int io_cgroup_policy_read(struct cgroup *cgrp, struct cftype *cft,
-+				  struct seq_file *m)
-+{
-+	struct io_cgroup *iocg;
-+	struct policy_node *pn;
-+
-+	iocg = cgroup_to_io_cgroup(cgrp);
-+
-+	if (list_empty(&iocg->list))
-+		goto out;
-+
-+	seq_printf(m, "dev weight class\n");
-+
-+	spin_lock_irq(&iocg->lock);
-+	list_for_each_entry(pn, &iocg->list, node) {
-+		seq_printf(m, "%s %lu %lu\n", pn->dev_name,
-+			   pn->weight, pn->ioprio_class);
-+	}
-+	spin_unlock_irq(&iocg->lock);
-+out:
-+	return 0;
-+}
-+
-+static inline void policy_insert_node(struct io_cgroup *iocg,
-+					  struct policy_node *pn)
-+{
-+	list_add(&pn->node, &iocg->list);
-+}
-+
-+/* Must be called with iocg->lock held */
-+static inline void policy_delete_node(struct policy_node *pn)
-+{
-+	list_del(&pn->node);
-+}
-+
-+/* Must be called with iocg->lock held */
-+static struct policy_node *policy_search_node(const struct io_cgroup *iocg,
-+					      void *key)
-+{
-+	struct policy_node *pn;
-+
-+	if (list_empty(&iocg->list))
-+		return NULL;
-+
-+	list_for_each_entry(pn, &iocg->list, node) {
-+		if (pn->key == key)
-+			return pn;
-+	}
-+
-+	return NULL;
-+}
-+
-+static void *devname_to_efqd(const char *buf)
-+{
-+	struct block_device *bdev;
-+	void *key = NULL;
-+	struct gendisk *disk;
-+	int part;
-+
-+	bdev = lookup_bdev(buf);
-+	if (IS_ERR(bdev))
-+		return NULL;
-+
-+	disk = get_gendisk(bdev->bd_dev, &part);
-+	key = (void *)&disk->queue->elevator->efqd;
-+	bdput(bdev);
-+
-+	return key;
-+}
-+
-+static int policy_parse_and_set(char *buf, struct policy_node *newpn)
-+{
-+	char *s[3];
-+	char *p;
-+	int ret;
-+	int i = 0;
-+
-+	memset(s, 0, sizeof(s));
-+	while (i < ARRAY_SIZE(s)) {
-+		p = strsep(&buf, ":");
-+		if (!p)
-+			break;
-+		if (!*p)
-+			continue;
-+		s[i++] = p;
-+	}
-+
-+	newpn->key = devname_to_efqd(s[0]);
-+	if (!newpn->key)
-+		return -EINVAL;
-+
-+	strcpy(newpn->dev_name, s[0]);
-+
-+	ret = strict_strtoul(s[1], 10, &newpn->weight);
-+	if (ret || newpn->weight > WEIGHT_MAX)
-+		return -EINVAL;
-+
-+	ret = strict_strtoul(s[2], 10, &newpn->ioprio_class);
-+	if (ret || newpn->ioprio_class < IOPRIO_CLASS_RT ||
-+	    newpn->ioprio_class > IOPRIO_CLASS_IDLE)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static int io_cgroup_policy_write(struct cgroup *cgrp, struct cftype *cft,
-+			    const char *buffer)
-+{
-+	struct io_cgroup *iocg;
-+	struct policy_node *newpn, *pn;
-+	char *buf;
-+	int ret = 0;
-+	int keep_newpn = 0;
-+	struct hlist_node *n;
-+	struct io_group *iog;
-+
-+	buf = kstrdup(buffer, GFP_KERNEL);
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	newpn = kzalloc(sizeof(*newpn), GFP_KERNEL);
-+	if (!newpn) {
-+		ret = -ENOMEM;
-+		goto free_buf;
-+	}
-+
-+	ret = policy_parse_and_set(buf, newpn);
-+	if (ret)
-+		goto free_newpn;
-+
-+	if (!cgroup_lock_live_group(cgrp)) {
-+		ret = -ENODEV;
-+		goto free_newpn;
-+	}
-+
-+	iocg = cgroup_to_io_cgroup(cgrp);
-+	spin_lock_irq(&iocg->lock);
-+
-+	pn = policy_search_node(iocg, newpn->key);
-+	if (!pn) {
-+		if (newpn->weight != 0) {
-+			policy_insert_node(iocg, newpn);
-+			keep_newpn = 1;
-+		}
-+		goto update_io_group;
-+	}
-+
-+	if (newpn->weight == 0) {
-+		/* weight == 0 means deleteing a policy */
-+		policy_delete_node(pn);
-+		goto update_io_group;
-+	}
-+
-+	pn->weight = newpn->weight;
-+	pn->ioprio_class = newpn->ioprio_class;
-+
-+update_io_group:
-+	hlist_for_each_entry(iog, n, &iocg->group_data, group_node) {
-+		if (iog->key == newpn->key) {
-+			if (newpn->weight) {
-+				iog->entity.new_weight = newpn->weight;
-+				iog->entity.new_ioprio_class =
-+					newpn->ioprio_class;
-+				/*
-+				 * iog weight and ioprio_class updating
-+				 * actually happens if ioprio_changed is set.
-+				 * So ensure ioprio_changed is not set until
-+				 * new weight and new ioprio_class are updated.
-+				 */
-+				smp_wmb();
-+				iog->entity.ioprio_changed = 1;
-+			} else {
-+				iog->entity.new_weight = iocg->weight;
-+				iog->entity.new_ioprio_class =
-+					iocg->ioprio_class;
-+
-+				/* The same as above */
-+				smp_wmb();
-+				iog->entity.ioprio_changed = 1;
-+			}
-+		}
-+	}
-+	spin_unlock_irq(&iocg->lock);
-+
-+	cgroup_unlock();
-+
-+free_newpn:
-+	if (!keep_newpn)
-+		kfree(newpn);
-+free_buf:
-+	kfree(buf);
-+	return ret;
-+}
-+
- struct cftype bfqio_files[] = {
- 	{
-+		.name = "policy",
-+		.read_seq_string = io_cgroup_policy_read,
-+		.write_string = io_cgroup_policy_write,
-+		.max_write_len = 256,
-+	},
-+	{
- 		.name = "weight",
- 		.read_u64 = io_cgroup_weight_read,
- 		.write_u64 = io_cgroup_weight_write,
-@@ -1592,6 +1813,7 @@ struct cgroup_subsys_state *iocg_create(struct cgroup_subsys *subsys,
- 	INIT_HLIST_HEAD(&iocg->group_data);
- 	iocg->weight = IO_DEFAULT_GRP_WEIGHT;
- 	iocg->ioprio_class = IO_DEFAULT_GRP_CLASS;
-+	INIT_LIST_HEAD(&iocg->list);
- 
- 	return &iocg->css;
- }
-@@ -1750,6 +1972,7 @@ void iocg_destroy(struct cgroup_subsys *subsys, struct cgroup *cgroup)
- 	unsigned long flags, flags1;
- 	int queue_lock_held = 0;
- 	struct elv_fq_data *efqd;
-+	struct policy_node *pn, *pntmp;
- 
- 	/*
- 	 * io groups are linked in two lists. One list is maintained
-@@ -1823,6 +2046,12 @@ locked:
- 	BUG_ON(!hlist_empty(&iocg->group_data));
- 
- 	free_css_id(&io_subsys, &iocg->css);
-+
-+	list_for_each_entry_safe(pn, pntmp, &iocg->list, node) {
-+		policy_delete_node(pn);
-+		kfree(pn);
-+	}
-+
- 	kfree(iocg);
- }
- 
-@@ -2137,7 +2366,7 @@ void elv_fq_unset_request_ioq(struct request_queue *q, struct request *rq)
- void bfq_init_entity(struct io_entity *entity, struct io_group *iog)
- {
- 	entity->ioprio = entity->new_ioprio;
--	entity->weight = entity->new_weight;
-+	entity->weight = entity->new_weigh;
- 	entity->ioprio_class = entity->new_ioprio_class;
- 	entity->sched_data = &iog->sched_data;
- }
-diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index db3a347..0407633 100644
---- a/block/elevator-fq.h
-+++ b/block/elevator-fq.h
-@@ -253,6 +253,14 @@ struct io_group {
- #endif
- };
- 
-+struct policy_node {
-+	struct list_head node;
-+	char dev_name[32];
-+	void *key;
-+	unsigned long weight;
-+	unsigned long ioprio_class;
+diff --git a/kernel/sched.c b/kernel/sched.c
+--- a/kernel/sched.c
++++ b/kernel/sched.c
+@@ -7756,22 +7756,24 @@ int sched_smt_power_savings = 0, sched_m
+  * FIXME: use cpumask_var_t or dynamic percpu alloc to avoid wasting space
+  * for nr_cpu_ids < CONFIG_NR_CPUS.
+  */
+-struct static_sched_group {
++union static_sched_group {
+ 	struct sched_group sg;
+-	DECLARE_BITMAP(cpus, CONFIG_NR_CPUS);
+-};
+-
+-struct static_sched_domain {
++	char _sg_and_cpus[sizeof(struct sched_group) +
++			  BITS_TO_LONGS(CONFIG_NR_CPUS) * sizeof(long)];
 +};
 +
- /**
-  * struct bfqio_cgroup - bfq cgroup data structure.
-  * @css: subsystem state for bfq in the containing cgroup.
-@@ -269,6 +277,9 @@ struct io_cgroup {
- 
- 	unsigned long weight, ioprio_class;
- 
-+	/* list of policy_node */
-+	struct list_head list;
-+
- 	spinlock_t lock;
- 	struct hlist_head group_data;
++union static_sched_domain {
+ 	struct sched_domain sd;
+-	DECLARE_BITMAP(span, CONFIG_NR_CPUS);
++	char _sd_and_cpus[sizeof(struct sched_domain) +
++			  BITS_TO_LONGS(CONFIG_NR_CPUS) * sizeof(long)];
  };
--- 
-1.5.4.rc3
-
-
+ 
+ /*
+  * SMT sched-domains:
+  */
+ #ifdef CONFIG_SCHED_SMT
+-static DEFINE_PER_CPU(struct static_sched_domain, cpu_domains);
+-static DEFINE_PER_CPU(struct static_sched_group, sched_group_cpus);
++static DEFINE_PER_CPU(union static_sched_domain, cpu_domains);
++static DEFINE_PER_CPU(union static_sched_group, sched_group_cpus);
+ 
+ static int
+ cpu_to_cpu_group(int cpu, const struct cpumask *cpu_map,
+@@ -7787,8 +7789,8 @@ cpu_to_cpu_group(int cpu, const struct c
+  * multi-core sched-domains:
+  */
+ #ifdef CONFIG_SCHED_MC
+-static DEFINE_PER_CPU(struct static_sched_domain, core_domains);
+-static DEFINE_PER_CPU(struct static_sched_group, sched_group_core);
++static DEFINE_PER_CPU(union static_sched_domain, core_domains);
++static DEFINE_PER_CPU(union static_sched_group, sched_group_core);
+ #endif /* CONFIG_SCHED_MC */
+ 
+ #if defined(CONFIG_SCHED_MC) && defined(CONFIG_SCHED_SMT)
+@@ -7815,8 +7817,8 @@ cpu_to_core_group(int cpu, const struct 
+ }
+ #endif
+ 
+-static DEFINE_PER_CPU(struct static_sched_domain, phys_domains);
+-static DEFINE_PER_CPU(struct static_sched_group, sched_group_phys);
++static DEFINE_PER_CPU(union static_sched_domain, phys_domains);
++static DEFINE_PER_CPU(union static_sched_group, sched_group_phys);
+ 
+ static int
+ cpu_to_phys_group(int cpu, const struct cpumask *cpu_map,
+@@ -7843,11 +7845,11 @@ cpu_to_phys_group(int cpu, const struct 
+  * groups, so roll our own. Now each node has its own list of groups which
+  * gets dynamically allocated.
+  */
+-static DEFINE_PER_CPU(struct static_sched_domain, node_domains);
++static DEFINE_PER_CPU(union static_sched_domain, node_domains);
+ static struct sched_group ***sched_group_nodes_bycpu;
+ 
+-static DEFINE_PER_CPU(struct static_sched_domain, allnodes_domains);
+-static DEFINE_PER_CPU(struct static_sched_group, sched_group_allnodes);
++static DEFINE_PER_CPU(union static_sched_domain, allnodes_domains);
++static DEFINE_PER_CPU(union static_sched_group, sched_group_allnodes);
+ 
+ static int cpu_to_allnodes_group(int cpu, const struct cpumask *cpu_map,
+ 				 struct sched_group **sg,
 
