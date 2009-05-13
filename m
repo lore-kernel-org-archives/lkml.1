@@ -1,75 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbZEMUrW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761436AbZEMUrl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761370AbZEMUrW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 16:47:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbZEMUrK
+	id S1761436AbZEMUrl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 16:47:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761458AbZEMUrQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 16:47:10 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:57965 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbZEMUrJ (ORCPT
+	Wed, 13 May 2009 16:47:16 -0400
+Received: from mu-out-0910.google.com ([209.85.134.186]:40173 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761290AbZEMUrO (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 16:47:09 -0400
+	Wed, 13 May 2009 16:47:14 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=from:to:cc:date:message-id:subject;
-        b=oH5Hes1riPtJ8/DEwC42CvxiTtIn33ZKHV5mCdg3ELTlVsug1md10i+zsyyOAdxG96
-         Fwlw8E75mOrLNAKPEcOjbvnOZsJQuaNAE/DuGHUhnevUvqL5MgIFQ1bwZISDJY7ZLQpj
-         BLb6xaE58jqMbztS7ypt4v/PN/hkik7eZq8R0=
+        h=from:to:cc:date:message-id:in-reply-to:references:subject;
+        b=fpR6GWUGWcRHMBqeQXTG5u7aS9//oKFj5VJQspYPBI9hI0EQr/2Hxc7Zq4ectI+mAo
+         N5BRkSuojDuToOxQNZcAbAWRgYOkfaV+bauLRwaJWWyRTpP1wnC3DW4Gk0naFMq9aJqA
+         3MY4Zb0F9mow6YaU/Fauhnzj5lmbLoCnQduug=
 From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 To: linux-ide@vger.kernel.org
 Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
        linux-kernel@vger.kernel.org
-Date: Wed, 13 May 2009 22:51:39 +0200
-Message-Id: <20090513205139.28638.87226.sendpatchset@localhost.localdomain>
-Subject: [PATCH 0/7] ide: minor improvements/cleanups
+Date: Wed, 13 May 2009 22:51:46 +0200
+Message-Id: <20090513205146.28638.37593.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090513205139.28638.87226.sendpatchset@localhost.localdomain>
+References: <20090513205139.28638.87226.sendpatchset@localhost.localdomain>
+Subject: [PATCH 1/7] ide: BUG() on unknown requests
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Unsupported requests should be never handed down to device drivers
+and the best thing we can do upon discovering such request inside
+driver's ->do_request method is to just BUG().
 
-On top of for-next branch of ide-2.6.git tree.
+Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+---
+ drivers/ide/ide-cd.c     |    8 ++------
+ drivers/ide/ide-disk.c   |    9 +--------
+ drivers/ide/ide-floppy.c |    6 ++----
+ drivers/ide/ide-tape.c   |   10 +---------
+ 4 files changed, 6 insertions(+), 27 deletions(-)
 
-* BUG() on impossible conditions
-* make ide_host_{alloc,add}() API less magic
-* remove 'chipset' field from hw_regs_t
-* remove few typedefs
-
-diffstat:
- drivers/ide/at91_ide.c     |    7 +---
- drivers/ide/au1xxx-ide.c   |    8 ++---
- drivers/ide/buddha.c       |    9 ++---
- drivers/ide/cmd640.c       |    7 +---
- drivers/ide/cs5520.c       |    4 +-
- drivers/ide/delkin_cb.c    |    6 +--
- drivers/ide/falconide.c    |    9 ++---
- drivers/ide/gayle.c        |    9 ++---
- drivers/ide/icside.c       |   13 ++++----
- drivers/ide/ide-4drives.c  |    6 +--
- drivers/ide/ide-cd.c       |    8 +----
- drivers/ide/ide-cs.c       |    6 +--
- drivers/ide/ide-disk.c     |   13 +-------
- drivers/ide/ide-eh.c       |    9 ++---
- drivers/ide/ide-floppy.c   |    6 +--
- drivers/ide/ide-generic.c  |    7 +---
- drivers/ide/ide-h8300.c    |   10 +++---
- drivers/ide/ide-io.c       |   69 ++++++++++++++++++---------------------------
- drivers/ide/ide-legacy.c   |    7 +---
- drivers/ide/ide-pnp.c      |    6 +--
- drivers/ide/ide-probe.c    |   25 +++++++---------
- drivers/ide/ide-tape.c     |   10 ------
- drivers/ide/ide-taskfile.c |    2 -
- drivers/ide/ide_platform.c |    9 ++---
- drivers/ide/macide.c       |    9 ++---
- drivers/ide/palm_bk3710.c  |    6 +--
- drivers/ide/pmac.c         |   13 ++++----
- drivers/ide/q40ide.c       |   11 +++----
- drivers/ide/rapide.c       |    8 ++---
- drivers/ide/scc_pata.c     |    6 +--
- drivers/ide/setup-pci.c    |   21 ++++++-------
- drivers/ide/sgiioc4.c      |    7 +---
- drivers/ide/siimage.c      |    4 +-
- drivers/ide/tx4938ide.c    |    5 +--
- drivers/ide/tx4939ide.c    |    5 +--
- include/linux/ide.h        |   37 +++++++++---------------
- 36 files changed, 171 insertions(+), 226 deletions(-)
+Index: b/drivers/ide/ide-cd.c
+===================================================================
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -831,12 +831,8 @@ static ide_startstop_t ide_cd_do_request
+ 		/* right now this can only be a reset... */
+ 		uptodate = 1;
+ 		goto out_end;
+-	} else {
+-		blk_dump_rq_flags(rq, DRV_NAME " bad flags");
+-		if (rq->errors == 0)
+-			rq->errors = -EIO;
+-		goto out_end;
+-	}
++	} else
++		BUG();
+ 
+ 	/* prepare sense request for this command */
+ 	ide_prep_sense(drive, rq);
+Index: b/drivers/ide/ide-disk.c
+===================================================================
+--- a/drivers/ide/ide-disk.c
++++ b/drivers/ide/ide-disk.c
+@@ -184,14 +184,7 @@ static ide_startstop_t ide_do_rw_disk(id
+ 	ide_hwif_t *hwif = drive->hwif;
+ 
+ 	BUG_ON(drive->dev_flags & IDE_DFLAG_BLOCKED);
+-
+-	if (!blk_fs_request(rq)) {
+-		blk_dump_rq_flags(rq, "ide_do_rw_disk - bad command");
+-		if (rq->errors == 0)
+-			rq->errors = -EIO;
+-		ide_complete_rq(drive, -EIO, ide_rq_bytes(rq));
+-		return ide_stopped;
+-	}
++	BUG_ON(!blk_fs_request(rq));
+ 
+ 	ledtrig_ide_activity();
+ 
+Index: b/drivers/ide/ide-floppy.c
+===================================================================
+--- a/drivers/ide/ide-floppy.c
++++ b/drivers/ide/ide-floppy.c
+@@ -272,10 +272,8 @@ static ide_startstop_t ide_floppy_do_req
+ 	} else if (blk_pc_request(rq)) {
+ 		pc = &floppy->queued_pc;
+ 		idefloppy_blockpc_cmd(floppy, pc, rq);
+-	} else {
+-		blk_dump_rq_flags(rq, PFX "unsupported command in queue");
+-		goto out_end;
+-	}
++	} else
++		BUG();
+ 
+ 	ide_prep_sense(drive, rq);
+ 
+Index: b/drivers/ide/ide-tape.c
+===================================================================
+--- a/drivers/ide/ide-tape.c
++++ b/drivers/ide/ide-tape.c
+@@ -620,15 +620,7 @@ static ide_startstop_t idetape_do_reques
+ 	debug_log(DBG_SENSE, "sector: %llu, nr_sectors: %u\n"
+ 		  (unsigned long long)blk_rq_pos(rq), blk_rq_sectors(rq));
+ 
+-	if (!(blk_special_request(rq) || blk_sense_request(rq))) {
+-		/* We do not support buffer cache originated requests. */
+-		printk(KERN_NOTICE "ide-tape: %s: Unsupported request in "
+-			"request queue (%d)\n", drive->name, rq->cmd_type);
+-		if (blk_fs_request(rq) == 0 && rq->errors == 0)
+-			rq->errors = -EIO;
+-		ide_complete_rq(drive, -EIO, ide_rq_bytes(rq));
+-		return ide_stopped;
+-	}
++	BUG_ON(!(blk_special_request(rq) || blk_sense_request(rq)));
+ 
+ 	/* Retry a failed packet command */
+ 	if (drive->failed_pc && drive->pc->c[0] == REQUEST_SENSE) {
