@@ -1,62 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756762AbZEMFwT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756967AbZEMFwf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756762AbZEMFwT (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 01:52:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752040AbZEMFwH
+	id S1756967AbZEMFwf (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 01:52:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755891AbZEMFwS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 01:52:07 -0400
-Received: from iona.labri.fr ([147.210.8.143]:35261 "EHLO iona.labri.fr"
+	Wed, 13 May 2009 01:52:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49954 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751276AbZEMFwG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 01:52:06 -0400
-Message-ID: <4A0A600F.9010801@inria.fr>
-Date: Wed, 13 May 2009 07:52:15 +0200
-From: Brice Goglin <Brice.Goglin@inria.fr>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	id S1756139AbZEMFwR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 01:52:17 -0400
+Message-ID: <4A0A6003.8060800@kernel.org>
+Date: Wed, 13 May 2009 14:52:03 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-CC: Christoph Lameter <cl@linux-foundation.org>, linux-mm@kvack.org,
-       LKML <linux-kernel@vger.kernel.org>, Andrew Morton <akpm@osdl.org>
-Subject: Re: [PATCH] migration: only migrate_prep() once per move_pages()
-References: <49E58D7A.4010708@ens-lyon.org> <20090415164955.41746866.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090415164955.41746866.kamezawa.hiroyu@jp.fujitsu.com>
-X-Enigmail-Version: 0.95.0
+To: Jens Axboe <jens.axboe@oracle.com>
+CC: Kiyoshi Ueda <k-ueda@ct.jp.nec.com>, Boaz Harrosh <bharrosh@panasas.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       linux-kernel@vger.kernel.org, benh@kernel.crashing.org
+Subject: Re: [PATCH] swim3: use blk_end_request instead of	blk_update_request
+References: <1242127787-29842-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <1242127787-29842-3-git-send-email-fujita.tomonori@lab.ntt.co.jp> <4A098B8D.10107@panasas.com> <4A099562.7020805@kernel.org> <4A0A1941.2010105@ct.jp.nec.com> <20090513054901.GW4140@kernel.dk>
+In-Reply-To: <20090513054901.GW4140@kernel.dk>
+X-Enigmail-Version: 0.95.7
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Wed, 13 May 2009 05:52:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-KAMEZAWA Hiroyuki wrote:
-> On Wed, 15 Apr 2009 09:32:10 +0200
-> Brice Goglin <Brice.Goglin@ens-lyon.org> wrote:
->
->   
->> migrate_prep() is fairly expensive (72us on 16-core barcelona 1.9GHz).
->> Commit 3140a2273009c01c27d316f35ab76a37e105fdd8 improved move_pages()
->> throughput by breaking it into chunks, but it also made migrate_prep()
->> be called once per chunk (every 128pages or so) instead of once per
->> move_pages().
+Jens Axboe wrote:
+>>> Yeah, conversion was easy that way.  I think it's sane to have
+>>> blk_update_request() exported as long as request internal tinkering is
+>>> kept in block layer proper.
+>> blk_update_request() is needed for request-based dm to keep the request
+>> completion ordering in bottom-up, although request-based dm is not
+>> in upstream yet.
 >>
->> This patch reverts to calling migrate_prep() only once per chunk
->> as we did before 2.6.29.
->> It is also a followup to commit 0aedadf91a70a11c4a3e7c7d99b21e5528af8d5d
->>     mm: move migrate_prep out from under mmap_sem
->>
->> This improves migration throughput on the above machine from 600MB/s
->> to 750MB/s.
->>
->> Signed-off-by: Brice Goglin <Brice.Goglin@inria.fr>
->>
->>     
-> Reviewed-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
->
-> I think this patch is good. page migration is best-effort syscall ;)
->   
+>> Jens, please keep blk_update_request() exported.
+> 
+> I did, I applied the swim3 patches yesterday as well.
 
-Since nobody complained about this patch, may I get a Ack and get the
-patch merged for 2.6.31?
+I don't think the patch is correct.  If it calls
+blk_end_request_all(), it should also clear the current request which
+the patch doesn't.  Also, given that the driver doesn't support
+partially failing the request, I think it's correct to fail
+segment-by-segment to avoid merged request failure affects unrelated
+bios.
 
-thanks,
-Brice
+Thanks.
 
+-- 
+tejun
