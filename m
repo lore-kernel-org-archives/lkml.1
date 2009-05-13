@@ -1,1071 +1,367 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762451AbZEMW7V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbZEMW7x@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762451AbZEMW7V (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 18:59:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761417AbZEMW5E
+	id S1762213AbZEMW7x (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 18:59:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757853AbZEMW5I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 18:57:04 -0400
-Received: from moutng.kundenserver.de ([212.227.126.177]:51039 "EHLO
+	Wed, 13 May 2009 18:57:08 -0400
+Received: from moutng.kundenserver.de ([212.227.126.186]:49631 "EHLO
 	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751051AbZEMW4t (ORCPT
+	with ESMTP id S1755385AbZEMW4t (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Wed, 13 May 2009 18:56:49 -0400
 From: Arnd Bergmann <arnd@arndb.de>
 To: linux-arch@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>
-Subject: [PATCH 05/15] asm-generic: add a generic unistd.h
-Date: Wed, 13 May 2009 22:56:28 +0000
-Message-Id: <1242255398-23779-6-git-send-email-arnd@arndb.de>
+Cc: linux-kernel@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
+       Remis Lima Baima <remis.developer@googlemail.com>
+Subject: [PATCH 06/15] asm-generic: rename atomic.h to atomic-long.h
+Date: Wed, 13 May 2009 22:56:29 +0000
+Message-Id: <1242255398-23779-7-git-send-email-arnd@arndb.de>
 X-Mailer: git-send-email 1.6.0.4
 In-Reply-To: <1242255398-23779-1-git-send-email-arnd@arndb.de>
 References: <1242255398-23779-1-git-send-email-arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX18OV7jxXaP+fUhxmeqVT5NINaCv3IIjoIPQaM5
- XpBAmlFqBe5rBXTR5Ewa0Om5P1RC4SO5/wV5SIPmrHouUxEgod
- sQcYRSxwIFy+FO1MLW9ag==
+X-Provags-ID: V01U2FsdGVkX19g9H52s3USLPicaAZVntOetlTDNff2uKIAT9H
+ gTzSSzZ8w5TZJlHfncoss4KT0KIftSvCRGNVanBMgP9dzkOJtg
+ dOxB4mUvOVmI3bUL08OJQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-A new architecture should only define a minimal set of system
-calls while still providing the full functionality. This version
-of unistd.h has gone through intensive review to make sure that
-by default it only enables syscalls that do not already have
-a more featureful replacement.
+The existing asm-generic/atomic.h only defines the
+atomic_long type. This renames it to atomic-long.h
+so we have a place to add a truly generic atomic.h
+that can be used on all non-SMP systems.
 
-It is modeled after the x86-64 version of unistd.h, which unifies
-the syscall number definition and the actual system call table
-in a single file, in order to keep them synchronized much more
-easily.
-
-This first version still keeps legacy system call definitions
-around, guarded by various #ifdefs, and with numbers larger
-than 1024. The idea behind this is to make it easier for
-new architectures to transition from a full list to the reduced
-set. In particular, the new microblaze architecture that should
-migrate to using the generic ABI headers can at least use an
-existing uClibc source tree without major rewrites during the
-conversion.
-
+Signed-off-by: Remis Lima Baima <remis.developer@googlemail.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Acked-by: Ingo Molnar <mingo@elte.hu>
 ---
- include/asm-generic/Kbuild   |    1 +
- include/asm-generic/unistd.h |  854 ++++++++++++++++++++++++++++++++++++++++++
- scripts/checksyscalls.sh     |   92 +++++-
- 3 files changed, 944 insertions(+), 3 deletions(-)
- create mode 100644 include/asm-generic/unistd.h
+ arch/alpha/include/asm/atomic.h                 |    2 +-
+ arch/arm/include/asm/atomic.h                   |    2 +-
+ arch/avr32/include/asm/atomic.h                 |    2 +-
+ arch/blackfin/include/asm/atomic.h              |    2 +-
+ arch/cris/include/asm/atomic.h                  |    2 +-
+ arch/frv/include/asm/atomic.h                   |    2 +-
+ arch/h8300/include/asm/atomic.h                 |    2 +-
+ arch/ia64/include/asm/atomic.h                  |    2 +-
+ arch/m32r/include/asm/atomic.h                  |    2 +-
+ arch/m68k/include/asm/atomic_mm.h               |    2 +-
+ arch/m68k/include/asm/atomic_no.h               |    2 +-
+ arch/microblaze/include/asm/atomic.h            |    2 +-
+ arch/mips/include/asm/atomic.h                  |    2 +-
+ arch/mn10300/include/asm/atomic.h               |    2 +-
+ arch/parisc/include/asm/atomic.h                |    2 +-
+ arch/powerpc/include/asm/atomic.h               |    2 +-
+ arch/s390/include/asm/atomic.h                  |    2 +-
+ arch/sh/include/asm/atomic.h                    |    2 +-
+ arch/sparc/include/asm/atomic_32.h              |    2 +-
+ arch/sparc/include/asm/atomic_64.h              |    2 +-
+ arch/x86/include/asm/atomic_32.h                |    2 +-
+ arch/x86/include/asm/atomic_64.h                |    2 +-
+ arch/xtensa/include/asm/atomic.h                |    2 +-
+ include/asm-generic/{atomic.h => atomic-long.h} |    6 +++---
+ include/asm-generic/bitops/atomic.h             |    1 +
+ 25 files changed, 27 insertions(+), 26 deletions(-)
+ rename include/asm-generic/{atomic.h => atomic-long.h} (97%)
 
-diff --git a/include/asm-generic/Kbuild b/include/asm-generic/Kbuild
-index 11a78b8..eb62334 100644
---- a/include/asm-generic/Kbuild
-+++ b/include/asm-generic/Kbuild
-@@ -27,6 +27,7 @@ header-y += termbits.h
- header-y += termios.h
- header-y += types.h
- header-y += ucontext.h
-+header-y += unistd.h
+diff --git a/arch/alpha/include/asm/atomic.h b/arch/alpha/include/asm/atomic.h
+index 62b3635..610dff4 100644
+--- a/arch/alpha/include/asm/atomic.h
++++ b/arch/alpha/include/asm/atomic.h
+@@ -256,5 +256,5 @@ static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
+ #define smp_mb__before_atomic_inc()	smp_mb()
+ #define smp_mb__after_atomic_inc()	smp_mb()
  
- unifdef-y += int-l64.h
- unifdef-y += int-ll64.h
-diff --git a/include/asm-generic/unistd.h b/include/asm-generic/unistd.h
-new file mode 100644
-index 0000000..5b34b62
---- /dev/null
-+++ b/include/asm-generic/unistd.h
-@@ -0,0 +1,854 @@
-+#if !defined(_ASM_GENERIC_UNISTD_H) || defined(__SYSCALL)
-+#define _ASM_GENERIC_UNISTD_H
-+
-+#include <asm/bitsperlong.h>
-+
-+/*
-+ * This file contains the system call numbers, based on the
-+ * layout of the x86-64 architecture, which embeds the
-+ * pointer to the syscall in the table.
-+ *
-+ * As a basic principle, no duplication of functionality
-+ * should be added, e.g. we don't use lseek when llseek
-+ * is present. New architectures should use this file
-+ * and implement the less feature-full calls in user space.
-+ */
-+
-+#ifndef __SYSCALL
-+#define __SYSCALL(x, y)
-+#endif
-+
-+#if __BITS_PER_LONG == 32
-+#define __SC_3264(_nr, _32, _64) __SYSCALL(_nr, _32)
-+#else
-+#define __SC_3264(_nr, _32, _64) __SYSCALL(_nr, _64)
-+#endif
-+
-+#define __NR_io_setup 0
-+__SYSCALL(__NR_io_setup, sys_io_setup)
-+#define __NR_io_destroy 1
-+__SYSCALL(__NR_io_destroy, sys_io_destroy)
-+#define __NR_io_submit 2
-+__SYSCALL(__NR_io_submit, sys_io_submit)
-+#define __NR_io_cancel 3
-+__SYSCALL(__NR_io_cancel, sys_io_cancel)
-+#define __NR_io_getevents 4
-+__SYSCALL(__NR_io_getevents, sys_io_getevents)
-+
-+/* fs/xattr.c */
-+#define __NR_setxattr 5
-+__SYSCALL(__NR_setxattr, sys_setxattr)
-+#define __NR_lsetxattr 6
-+__SYSCALL(__NR_lsetxattr, sys_lsetxattr)
-+#define __NR_fsetxattr 7
-+__SYSCALL(__NR_fsetxattr, sys_fsetxattr)
-+#define __NR_getxattr 8
-+__SYSCALL(__NR_getxattr, sys_getxattr)
-+#define __NR_lgetxattr 9
-+__SYSCALL(__NR_lgetxattr, sys_lgetxattr)
-+#define __NR_fgetxattr 10
-+__SYSCALL(__NR_fgetxattr, sys_fgetxattr)
-+#define __NR_listxattr 11
-+__SYSCALL(__NR_listxattr, sys_listxattr)
-+#define __NR_llistxattr 12
-+__SYSCALL(__NR_llistxattr, sys_llistxattr)
-+#define __NR_flistxattr 13
-+__SYSCALL(__NR_flistxattr, sys_flistxattr)
-+#define __NR_removexattr 14
-+__SYSCALL(__NR_removexattr, sys_removexattr)
-+#define __NR_lremovexattr 15
-+__SYSCALL(__NR_lremovexattr, sys_lremovexattr)
-+#define __NR_fremovexattr 16
-+__SYSCALL(__NR_fremovexattr, sys_fremovexattr)
-+
-+/* fs/dcache.c */
-+#define __NR_getcwd 17
-+__SYSCALL(__NR_getcwd, sys_getcwd)
-+
-+/* fs/cookies.c */
-+#define __NR_lookup_dcookie 18
-+__SYSCALL(__NR_lookup_dcookie, sys_lookup_dcookie)
-+
-+/* fs/eventfd.c */
-+#define __NR_eventfd2 19
-+__SYSCALL(__NR_eventfd2, sys_eventfd2)
-+
-+/* fs/eventpoll.c */
-+#define __NR_epoll_create1 20
-+__SYSCALL(__NR_epoll_create1, sys_epoll_create1)
-+#define __NR_epoll_ctl 21
-+__SYSCALL(__NR_epoll_ctl, sys_epoll_ctl)
-+#define __NR_epoll_pwait 22
-+__SYSCALL(__NR_epoll_pwait, sys_epoll_pwait)
-+
-+/* fs/fcntl.c */
-+#define __NR_dup 23
-+__SYSCALL(__NR_dup, sys_dup)
-+#define __NR_dup3 24
-+__SYSCALL(__NR_dup3, sys_dup3)
-+#define __NR3264_fcntl 25
-+__SC_3264(__NR3264_fcntl, sys_fcntl64, sys_fcntl)
-+
-+/* fs/inotify_user.c */
-+#define __NR_inotify_init1 26
-+__SYSCALL(__NR_inotify_init1, sys_inotify_init1)
-+#define __NR_inotify_add_watch 27
-+__SYSCALL(__NR_inotify_add_watch, sys_inotify_add_watch)
-+#define __NR_inotify_rm_watch 28
-+__SYSCALL(__NR_inotify_rm_watch, sys_inotify_rm_watch)
-+
-+/* fs/ioctl.c */
-+#define __NR_ioctl 29
-+__SYSCALL(__NR_ioctl, sys_ioctl)
-+
-+/* fs/ioprio.c */
-+#define __NR_ioprio_set 30
-+__SYSCALL(__NR_ioprio_set, sys_ioprio_set)
-+#define __NR_ioprio_get 31
-+__SYSCALL(__NR_ioprio_get, sys_ioprio_get)
-+
-+/* fs/locks.c */
-+#define __NR_flock 32
-+__SYSCALL(__NR_flock, sys_flock)
-+
-+/* fs/namei.c */
-+#define __NR_mknodat 33
-+__SYSCALL(__NR_mknodat, sys_mknodat)
-+#define __NR_mkdirat 34
-+__SYSCALL(__NR_mkdirat, sys_mkdirat)
-+#define __NR_unlinkat 35
-+__SYSCALL(__NR_unlinkat, sys_unlinkat)
-+#define __NR_symlinkat 36
-+__SYSCALL(__NR_symlinkat, sys_symlinkat)
-+#define __NR_linkat 37
-+__SYSCALL(__NR_linkat, sys_linkat)
-+#define __NR_renameat 38
-+__SYSCALL(__NR_renameat, sys_renameat)
-+
-+/* fs/namespace.c */
-+#define __NR_umount2 39
-+__SYSCALL(__NR_umount2, sys_umount)
-+#define __NR_mount 40
-+__SYSCALL(__NR_mount, sys_mount)
-+#define __NR_pivot_root 41
-+__SYSCALL(__NR_pivot_root, sys_pivot_root)
-+
-+/* fs/nfsctl.c */
-+#define __NR_nfsservctl 42
-+__SYSCALL(__NR_nfsservctl, sys_nfsservctl)
-+
-+/* fs/open.c */
-+#define __NR3264_statfs 43
-+__SC_3264(__NR3264_statfs, sys_statfs64, sys_statfs)
-+#define __NR3264_fstatfs 44
-+__SC_3264(__NR3264_fstatfs, sys_fstatfs64, sys_fstatfs)
-+#define __NR3264_truncate 45
-+__SC_3264(__NR3264_truncate, sys_truncate64, sys_truncate)
-+#define __NR3264_ftruncate 46
-+__SC_3264(__NR3264_ftruncate, sys_ftruncate64, sys_ftruncate)
-+
-+#define __NR_fallocate 47
-+__SYSCALL(__NR_fallocate, sys_fallocate)
-+#define __NR_faccessat 48
-+__SYSCALL(__NR_faccessat, sys_faccessat)
-+#define __NR_chdir 49
-+__SYSCALL(__NR_chdir, sys_chdir)
-+#define __NR_fchdir 50
-+__SYSCALL(__NR_fchdir, sys_fchdir)
-+#define __NR_chroot 51
-+__SYSCALL(__NR_chroot, sys_chroot)
-+#define __NR_fchmod 52
-+__SYSCALL(__NR_fchmod, sys_fchmod)
-+#define __NR_fchmodat 53
-+__SYSCALL(__NR_fchmodat, sys_fchmodat)
-+#define __NR_fchownat 54
-+__SYSCALL(__NR_fchownat, sys_fchownat)
-+#define __NR_fchown 55
-+__SYSCALL(__NR_fchown, sys_fchown)
-+#define __NR_openat 56
-+__SYSCALL(__NR_openat, sys_openat)
-+#define __NR_close 57
-+__SYSCALL(__NR_close, sys_close)
-+#define __NR_vhangup 58
-+__SYSCALL(__NR_vhangup, sys_vhangup)
-+
-+/* fs/pipe.c */
-+#define __NR_pipe2 59
-+__SYSCALL(__NR_pipe2, sys_pipe2)
-+
-+/* fs/quota.c */
-+#define __NR_quotactl 60
-+__SYSCALL(__NR_quotactl, sys_quotactl)
-+
-+/* fs/readdir.c */
-+#define __NR_getdents64 61
-+__SYSCALL(__NR_getdents64, sys_getdents64)
-+
-+/* fs/read_write.c */
-+#define __NR3264_lseek 62
-+__SC_3264(__NR3264_lseek, sys_llseek, sys_lseek)
-+#define __NR_read 63
-+__SYSCALL(__NR_read, sys_read)
-+#define __NR_write 64
-+__SYSCALL(__NR_write, sys_write)
-+#define __NR_readv 65
-+__SYSCALL(__NR_readv, sys_readv)
-+#define __NR_writev 66
-+__SYSCALL(__NR_writev, sys_writev)
-+#define __NR_pread64 67
-+__SYSCALL(__NR_pread64, sys_pread64)
-+#define __NR_pwrite64 68
-+__SYSCALL(__NR_pwrite64, sys_pwrite64)
-+#define __NR_preadv 69
-+__SYSCALL(__NR_preadv, sys_preadv)
-+#define __NR_pwritev 70
-+__SYSCALL(__NR_pwritev, sys_pwritev)
-+
-+/* fs/sendfile.c */
-+#define __NR3264_sendfile 71
-+__SC_3264(__NR3264_sendfile, sys_sendfile64, sys_sendfile)
-+
-+/* fs/select.c */
-+#define __NR_pselect6 72
-+__SYSCALL(__NR_pselect6, sys_pselect6)
-+#define __NR_ppoll 73
-+__SYSCALL(__NR_ppoll, sys_ppoll)
-+
-+/* fs/signalfd.c */
-+#define __NR_signalfd4 74
-+__SYSCALL(__NR_signalfd4, sys_signalfd4)
-+
-+/* fs/splice.c */
-+#define __NR_vmsplice 75
-+__SYSCALL(__NR_vmsplice, sys_vmsplice)
-+#define __NR_splice 76
-+__SYSCALL(__NR_splice, sys_splice)
-+#define __NR_tee 77
-+__SYSCALL(__NR_tee, sys_tee)
-+
-+/* fs/stat.c */
-+#define __NR_readlinkat 78
-+__SYSCALL(__NR_readlinkat, sys_readlinkat)
-+#define __NR3264_fstatat 79
-+__SC_3264(__NR3264_fstatat, sys_fstatat64, sys_newfstatat)
-+#define __NR3264_fstat 80
-+__SC_3264(__NR3264_fstat, sys_fstat64, sys_newfstat)
-+
-+/* fs/sync.c */
-+#define __NR_sync 81
-+__SYSCALL(__NR_sync, sys_sync)
-+#define __NR_fsync 82
-+__SYSCALL(__NR_fsync, sys_fsync)
-+#define __NR_fdatasync 83
-+__SYSCALL(__NR_fdatasync, sys_fdatasync)
-+#define __NR_sync_file_range 84
-+__SYSCALL(__NR_sync_file_range, sys_sync_file_range) /* .long sys_sync_file_range2, */
-+
-+/* fs/timerfd.c */
-+#define __NR_timerfd_create 85
-+__SYSCALL(__NR_timerfd_create, sys_timerfd_create)
-+#define __NR_timerfd_settime 86
-+__SYSCALL(__NR_timerfd_settime, sys_timerfd_settime)
-+#define __NR_timerfd_gettime 87
-+__SYSCALL(__NR_timerfd_gettime, sys_timerfd_gettime)
-+
-+/* fs/utimes.c */
-+#define __NR_utimensat 88
-+__SYSCALL(__NR_utimensat, sys_utimensat)
-+
-+/* kernel/acct.c */
-+#define __NR_acct 89
-+__SYSCALL(__NR_acct, sys_acct)
-+
-+/* kernel/capability.c */
-+#define __NR_capget 90
-+__SYSCALL(__NR_capget, sys_capget)
-+#define __NR_capset 91
-+__SYSCALL(__NR_capset, sys_capset)
-+
-+/* kernel/exec_domain.c */
-+#define __NR_personality 92
-+__SYSCALL(__NR_personality, sys_personality)
-+
-+/* kernel/exit.c */
-+#define __NR_exit 93
-+__SYSCALL(__NR_exit, sys_exit)
-+#define __NR_exit_group 94
-+__SYSCALL(__NR_exit_group, sys_exit_group)
-+#define __NR_waitid 95
-+__SYSCALL(__NR_waitid, sys_waitid)
-+
-+/* kernel/fork.c */
-+#define __NR_set_tid_address 96
-+__SYSCALL(__NR_set_tid_address, sys_set_tid_address)
-+#define __NR_unshare 97
-+__SYSCALL(__NR_unshare, sys_unshare)
-+
-+/* kernel/futex.c */
-+#define __NR_futex 98
-+__SYSCALL(__NR_futex, sys_futex)
-+#define __NR_set_robust_list 99
-+__SYSCALL(__NR_set_robust_list, sys_set_robust_list)
-+#define __NR_get_robust_list 100
-+__SYSCALL(__NR_get_robust_list, sys_get_robust_list)
-+
-+/* kernel/hrtimer.c */
-+#define __NR_nanosleep 101
-+__SYSCALL(__NR_nanosleep, sys_nanosleep)
-+
-+/* kernel/itimer.c */
-+#define __NR_getitimer 102
-+__SYSCALL(__NR_getitimer, sys_getitimer)
-+#define __NR_setitimer 103
-+__SYSCALL(__NR_setitimer, sys_setitimer)
-+
-+/* kernel/kexec.c */
-+#define __NR_kexec_load 104
-+__SYSCALL(__NR_kexec_load, sys_kexec_load)
-+
-+/* kernel/module.c */
-+#define __NR_init_module 105
-+__SYSCALL(__NR_init_module, sys_init_module)
-+#define __NR_delete_module 106
-+__SYSCALL(__NR_delete_module, sys_delete_module)
-+
-+/* kernel/posix-timers.c */
-+#define __NR_timer_create 107
-+__SYSCALL(__NR_timer_create, sys_timer_create)
-+#define __NR_timer_gettime 108
-+__SYSCALL(__NR_timer_gettime, sys_timer_gettime)
-+#define __NR_timer_getoverrun 109
-+__SYSCALL(__NR_timer_getoverrun, sys_timer_getoverrun)
-+#define __NR_timer_settime 110
-+__SYSCALL(__NR_timer_settime, sys_timer_settime)
-+#define __NR_timer_delete 111
-+__SYSCALL(__NR_timer_delete, sys_timer_delete)
-+#define __NR_clock_settime 112
-+__SYSCALL(__NR_clock_settime, sys_clock_settime)
-+#define __NR_clock_gettime 113
-+__SYSCALL(__NR_clock_gettime, sys_clock_gettime)
-+#define __NR_clock_getres 114
-+__SYSCALL(__NR_clock_getres, sys_clock_getres)
-+#define __NR_clock_nanosleep 115
-+__SYSCALL(__NR_clock_nanosleep, sys_clock_nanosleep)
-+
-+/* kernel/printk.c */
-+#define __NR_syslog 116
-+__SYSCALL(__NR_syslog, sys_syslog)
-+
-+/* kernel/ptrace.c */
-+#define __NR_ptrace 117
-+__SYSCALL(__NR_ptrace, sys_ptrace)
-+
-+/* kernel/sched.c */
-+#define __NR_sched_setparam 118
-+__SYSCALL(__NR_sched_setparam, sys_sched_setparam)
-+#define __NR_sched_setscheduler 119
-+__SYSCALL(__NR_sched_setscheduler, sys_sched_setscheduler)
-+#define __NR_sched_getscheduler 120
-+__SYSCALL(__NR_sched_getscheduler, sys_sched_getscheduler)
-+#define __NR_sched_getparam 121
-+__SYSCALL(__NR_sched_getparam, sys_sched_getparam)
-+#define __NR_sched_setaffinity 122
-+__SYSCALL(__NR_sched_setaffinity, sys_sched_setaffinity)
-+#define __NR_sched_getaffinity 123
-+__SYSCALL(__NR_sched_getaffinity, sys_sched_getaffinity)
-+#define __NR_sched_yield 124
-+__SYSCALL(__NR_sched_yield, sys_sched_yield)
-+#define __NR_sched_get_priority_max 125
-+__SYSCALL(__NR_sched_get_priority_max, sys_sched_get_priority_max)
-+#define __NR_sched_get_priority_min 126
-+__SYSCALL(__NR_sched_get_priority_min, sys_sched_get_priority_min)
-+#define __NR_sched_rr_get_interval 127
-+__SYSCALL(__NR_sched_rr_get_interval, sys_sched_rr_get_interval)
-+
-+/* kernel/signal.c */
-+#define __NR_restart_syscall 128
-+__SYSCALL(__NR_restart_syscall, sys_restart_syscall)
-+#define __NR_kill 129
-+__SYSCALL(__NR_kill, sys_kill)
-+#define __NR_tkill 130
-+__SYSCALL(__NR_tkill, sys_tkill)
-+#define __NR_tgkill 131
-+__SYSCALL(__NR_tgkill, sys_tgkill)
-+#define __NR_sigaltstack 132
-+__SYSCALL(__NR_sigaltstack, sys_sigaltstack)
-+#define __NR_rt_sigsuspend 133
-+__SYSCALL(__NR_rt_sigsuspend, sys_rt_sigsuspend) /* __ARCH_WANT_SYS_RT_SIGSUSPEND */
-+#define __NR_rt_sigaction 134
-+__SYSCALL(__NR_rt_sigaction, sys_rt_sigaction) /* __ARCH_WANT_SYS_RT_SIGACTION */
-+#define __NR_rt_sigprocmask 135
-+__SYSCALL(__NR_rt_sigprocmask, sys_rt_sigprocmask)
-+#define __NR_rt_sigpending 136
-+__SYSCALL(__NR_rt_sigpending, sys_rt_sigpending)
-+#define __NR_rt_sigtimedwait 137
-+__SYSCALL(__NR_rt_sigtimedwait, sys_rt_sigtimedwait)
-+#define __NR_rt_sigqueueinfo 138
-+__SYSCALL(__NR_rt_sigqueueinfo, sys_rt_sigqueueinfo)
-+#define __NR_rt_sigreturn 139
-+__SYSCALL(__NR_rt_sigreturn, sys_rt_sigreturn) /* sys_rt_sigreturn_wrapper, */
-+
-+/* kernel/sys.c */
-+#define __NR_setpriority 140
-+__SYSCALL(__NR_setpriority, sys_setpriority)
-+#define __NR_getpriority 141
-+__SYSCALL(__NR_getpriority, sys_getpriority)
-+#define __NR_reboot 142
-+__SYSCALL(__NR_reboot, sys_reboot)
-+#define __NR_setregid 143
-+__SYSCALL(__NR_setregid, sys_setregid)
-+#define __NR_setgid 144
-+__SYSCALL(__NR_setgid, sys_setgid)
-+#define __NR_setreuid 145
-+__SYSCALL(__NR_setreuid, sys_setreuid)
-+#define __NR_setuid 146
-+__SYSCALL(__NR_setuid, sys_setuid)
-+#define __NR_setresuid 147
-+__SYSCALL(__NR_setresuid, sys_setresuid)
-+#define __NR_getresuid 148
-+__SYSCALL(__NR_getresuid, sys_getresuid)
-+#define __NR_setresgid 149
-+__SYSCALL(__NR_setresgid, sys_setresgid)
-+#define __NR_getresgid 150
-+__SYSCALL(__NR_getresgid, sys_getresgid)
-+#define __NR_setfsuid 151
-+__SYSCALL(__NR_setfsuid, sys_setfsuid)
-+#define __NR_setfsgid 152
-+__SYSCALL(__NR_setfsgid, sys_setfsgid)
-+#define __NR_times 153
-+__SYSCALL(__NR_times, sys_times)
-+#define __NR_setpgid 154
-+__SYSCALL(__NR_setpgid, sys_setpgid)
-+#define __NR_getpgid 155
-+__SYSCALL(__NR_getpgid, sys_getpgid)
-+#define __NR_getsid 156
-+__SYSCALL(__NR_getsid, sys_getsid)
-+#define __NR_setsid 157
-+__SYSCALL(__NR_setsid, sys_setsid)
-+#define __NR_getgroups 158
-+__SYSCALL(__NR_getgroups, sys_getgroups)
-+#define __NR_setgroups 159
-+__SYSCALL(__NR_setgroups, sys_setgroups)
-+#define __NR_uname 160
-+__SYSCALL(__NR_uname, sys_newuname)
-+#define __NR_sethostname 161
-+__SYSCALL(__NR_sethostname, sys_sethostname)
-+#define __NR_setdomainname 162
-+__SYSCALL(__NR_setdomainname, sys_setdomainname)
-+#define __NR_getrlimit 163
-+__SYSCALL(__NR_getrlimit, sys_getrlimit)
-+#define __NR_setrlimit 164
-+__SYSCALL(__NR_setrlimit, sys_setrlimit)
-+#define __NR_getrusage 165
-+__SYSCALL(__NR_getrusage, sys_getrusage)
-+#define __NR_umask 166
-+__SYSCALL(__NR_umask, sys_umask)
-+#define __NR_prctl 167
-+__SYSCALL(__NR_prctl, sys_prctl)
-+#define __NR_getcpu 168
-+__SYSCALL(__NR_getcpu, sys_getcpu)
-+
-+/* kernel/time.c */
-+#define __NR_gettimeofday 169
-+__SYSCALL(__NR_gettimeofday, sys_gettimeofday)
-+#define __NR_settimeofday 170
-+__SYSCALL(__NR_settimeofday, sys_settimeofday)
-+#define __NR_adjtimex 171
-+__SYSCALL(__NR_adjtimex, sys_adjtimex)
-+
-+/* kernel/timer.c */
-+#define __NR_getpid 172
-+__SYSCALL(__NR_getpid, sys_getpid)
-+#define __NR_getppid 173
-+__SYSCALL(__NR_getppid, sys_getppid)
-+#define __NR_getuid 174
-+__SYSCALL(__NR_getuid, sys_getuid)
-+#define __NR_geteuid 175
-+__SYSCALL(__NR_geteuid, sys_geteuid)
-+#define __NR_getgid 176
-+__SYSCALL(__NR_getgid, sys_getgid)
-+#define __NR_getegid 177
-+__SYSCALL(__NR_getegid, sys_getegid)
-+#define __NR_gettid 178
-+__SYSCALL(__NR_gettid, sys_gettid)
-+#define __NR_sysinfo 179
-+__SYSCALL(__NR_sysinfo, sys_sysinfo)
-+
-+/* ipc/mqueue.c */
-+#define __NR_mq_open 180
-+__SYSCALL(__NR_mq_open, sys_mq_open)
-+#define __NR_mq_unlink 181
-+__SYSCALL(__NR_mq_unlink, sys_mq_unlink)
-+#define __NR_mq_timedsend 182
-+__SYSCALL(__NR_mq_timedsend, sys_mq_timedsend)
-+#define __NR_mq_timedreceive 183
-+__SYSCALL(__NR_mq_timedreceive, sys_mq_timedreceive)
-+#define __NR_mq_notify 184
-+__SYSCALL(__NR_mq_notify, sys_mq_notify)
-+#define __NR_mq_getsetattr 185
-+__SYSCALL(__NR_mq_getsetattr, sys_mq_getsetattr)
-+
-+/* ipc/msg.c */
-+#define __NR_msgget 186
-+__SYSCALL(__NR_msgget, sys_msgget)
-+#define __NR_msgctl 187
-+__SYSCALL(__NR_msgctl, sys_msgctl)
-+#define __NR_msgrcv 188
-+__SYSCALL(__NR_msgrcv, sys_msgrcv)
-+#define __NR_msgsnd 189
-+__SYSCALL(__NR_msgsnd, sys_msgsnd)
-+
-+/* ipc/sem.c */
-+#define __NR_semget 190
-+__SYSCALL(__NR_semget, sys_semget)
-+#define __NR_semctl 191
-+__SYSCALL(__NR_semctl, sys_semctl)
-+#define __NR_semtimedop 192
-+__SYSCALL(__NR_semtimedop, sys_semtimedop)
-+#define __NR_semop 193
-+__SYSCALL(__NR_semop, sys_semop)
-+
-+/* ipc/shm.c */
-+#define __NR_shmget 194
-+__SYSCALL(__NR_shmget, sys_shmget)
-+#define __NR_shmctl 195
-+__SYSCALL(__NR_shmctl, sys_shmctl)
-+#define __NR_shmat 196
-+__SYSCALL(__NR_shmat, sys_shmat)
-+#define __NR_shmdt 197
-+__SYSCALL(__NR_shmdt, sys_shmdt)
-+
-+/* net/socket.c */
-+#define __NR_socket 198
-+__SYSCALL(__NR_socket, sys_socket)
-+#define __NR_socketpair 199
-+__SYSCALL(__NR_socketpair, sys_socketpair)
-+#define __NR_bind 200
-+__SYSCALL(__NR_bind, sys_bind)
-+#define __NR_listen 201
-+__SYSCALL(__NR_listen, sys_listen)
-+#define __NR_accept 202
-+__SYSCALL(__NR_accept, sys_accept)
-+#define __NR_connect 203
-+__SYSCALL(__NR_connect, sys_connect)
-+#define __NR_getsockname 204
-+__SYSCALL(__NR_getsockname, sys_getsockname)
-+#define __NR_getpeername 205
-+__SYSCALL(__NR_getpeername, sys_getpeername)
-+#define __NR_sendto 206
-+__SYSCALL(__NR_sendto, sys_sendto)
-+#define __NR_recvfrom 207
-+__SYSCALL(__NR_recvfrom, sys_recvfrom)
-+#define __NR_setsockopt 208
-+__SYSCALL(__NR_setsockopt, sys_setsockopt)
-+#define __NR_getsockopt 209
-+__SYSCALL(__NR_getsockopt, sys_getsockopt)
-+#define __NR_shutdown 210
-+__SYSCALL(__NR_shutdown, sys_shutdown)
-+#define __NR_sendmsg 211
-+__SYSCALL(__NR_sendmsg, sys_sendmsg)
-+#define __NR_recvmsg 212
-+__SYSCALL(__NR_recvmsg, sys_recvmsg)
-+
-+/* mm/filemap.c */
-+#define __NR_readahead 213
-+__SYSCALL(__NR_readahead, sys_readahead)
-+
-+/* mm/nommu.c, also with MMU */
-+#define __NR_brk 214
-+__SYSCALL(__NR_brk, sys_brk)
-+#define __NR_munmap 215
-+__SYSCALL(__NR_munmap, sys_munmap)
-+#define __NR_mremap 216
-+__SYSCALL(__NR_mremap, sys_mremap)
-+
-+/* security/keys/keyctl.c */
-+#define __NR_add_key 217
-+__SYSCALL(__NR_add_key, sys_add_key)
-+#define __NR_request_key 218
-+__SYSCALL(__NR_request_key, sys_request_key)
-+#define __NR_keyctl 219
-+__SYSCALL(__NR_keyctl, sys_keyctl)
-+
-+/* arch/example/kernel/sys_example.c */
-+#define __NR_clone 220
-+__SYSCALL(__NR_clone, sys_clone)	/* .long sys_clone_wrapper */
-+#define __NR_execve 221
-+__SYSCALL(__NR_execve, sys_execve)	/* .long sys_execve_wrapper */
-+
-+#define __NR3264_mmap 222
-+__SC_3264(__NR3264_mmap, sys_mmap2, sys_mmap)
-+/* mm/fadvise.c */
-+#define __NR3264_fadvise64 223
-+__SC_3264(__NR3264_fadvise64, sys_fadvise64_64, sys_fadvise64)
-+
-+/* mm/, CONFIG_MMU only */
-+#ifndef __ARCH_NOMMU
-+#define __NR_swapon 224
-+__SYSCALL(__NR_swapon, sys_swapon)
-+#define __NR_swapoff 225
-+__SYSCALL(__NR_swapoff, sys_swapoff)
-+#define __NR_mprotect 226
-+__SYSCALL(__NR_mprotect, sys_mprotect)
-+#define __NR_msync 227
-+__SYSCALL(__NR_msync, sys_msync)
-+#define __NR_mlock 228
-+__SYSCALL(__NR_mlock, sys_mlock)
-+#define __NR_munlock 229
-+__SYSCALL(__NR_munlock, sys_munlock)
-+#define __NR_mlockall 230
-+__SYSCALL(__NR_mlockall, sys_mlockall)
-+#define __NR_munlockall 231
-+__SYSCALL(__NR_munlockall, sys_munlockall)
-+#define __NR_mincore 232
-+__SYSCALL(__NR_mincore, sys_mincore)
-+#define __NR_madvise 233
-+__SYSCALL(__NR_madvise, sys_madvise)
-+#define __NR_remap_file_pages 234
-+__SYSCALL(__NR_remap_file_pages, sys_remap_file_pages)
-+#define __NR_mbind 235
-+__SYSCALL(__NR_mbind, sys_mbind)
-+#define __NR_get_mempolicy 236
-+__SYSCALL(__NR_get_mempolicy, sys_get_mempolicy)
-+#define __NR_set_mempolicy 237
-+__SYSCALL(__NR_set_mempolicy, sys_set_mempolicy)
-+#define __NR_migrate_pages 238
-+__SYSCALL(__NR_migrate_pages, sys_migrate_pages)
-+#define __NR_move_pages 239
-+__SYSCALL(__NR_move_pages, sys_move_pages)
-+#endif
-+
-+#undef __NR_syscalls
-+#define __NR_syscalls 240
-+
-+/*
-+ * All syscalls below here should go away really,
-+ * these are provided for both review and as a porting
-+ * help for the C library version.
-+*
-+ * Last chance: are any of these important enought to
-+ * enable by default?
-+ */
-+#ifdef __ARCH_WANT_SYSCALL_NO_AT
-+#define __NR_open 1024
-+__SYSCALL(__NR_open, sys_open)
-+#define __NR_link 1025
-+__SYSCALL(__NR_link, sys_link)
-+#define __NR_unlink 1026
-+__SYSCALL(__NR_unlink, sys_unlink)
-+#define __NR_mknod 1027
-+__SYSCALL(__NR_mknod, sys_mknod)
-+#define __NR_chmod 1028
-+__SYSCALL(__NR_chmod, sys_chmod)
-+#define __NR_chown 1029
-+__SYSCALL(__NR_chown, sys_chown)
-+#define __NR_mkdir 1030
-+__SYSCALL(__NR_mkdir, sys_mkdir)
-+#define __NR_rmdir 1031
-+__SYSCALL(__NR_rmdir, sys_rmdir)
-+#define __NR_lchown 1032
-+__SYSCALL(__NR_lchown, sys_lchown)
-+#define __NR_access 1033
-+__SYSCALL(__NR_access, sys_access)
-+#define __NR_rename 1034
-+__SYSCALL(__NR_rename, sys_rename)
-+#define __NR_readlink 1035
-+__SYSCALL(__NR_readlink, sys_readlink)
-+#define __NR_symlink 1036
-+__SYSCALL(__NR_symlink, sys_symlink)
-+#define __NR_utimes 1037
-+__SYSCALL(__NR_utimes, sys_utimes)
-+#define __NR3264_stat 1038
-+__SC_3264(__NR3264_stat, sys_stat64, sys_newstat)
-+#define __NR3264_lstat 1039
-+__SC_3264(__NR3264_lstat, sys_lstat64, sys_newlstat)
-+
-+#undef __NR_syscalls
-+#define __NR_syscalls (__NR3264_lstat+1)
-+#endif /* __ARCH_WANT_SYSCALL_NO_AT */
-+
-+#ifdef __ARCH_WANT_SYSCALL_NO_FLAGS
-+#define __NR_pipe 1040
-+__SYSCALL(__NR_pipe, sys_pipe)
-+#define __NR_dup2 1041
-+__SYSCALL(__NR_dup2, sys_dup2)
-+#define __NR_epoll_create 1042
-+__SYSCALL(__NR_epoll_create, sys_epoll_create)
-+#define __NR_inotify_init 1043
-+__SYSCALL(__NR_inotify_init, sys_inotify_init)
-+#define __NR_eventfd 1044
-+__SYSCALL(__NR_eventfd, sys_eventfd)
-+#define __NR_signalfd 1045
-+__SYSCALL(__NR_signalfd, sys_signalfd)
-+
-+#undef __NR_syscalls
-+#define __NR_syscalls (__NR_signalfd+1)
-+#endif /* __ARCH_WANT_SYSCALL_NO_FLAGS */
-+
-+#if __BITS_PER_LONG == 32 && defined(__ARCH_WANT_SYSCALL_OFF_T)
-+#define __NR_sendfile 1046
-+__SYSCALL(__NR_sendfile, sys_sendfile)
-+#define __NR_ftruncate 1047
-+__SYSCALL(__NR_ftruncate, sys_ftruncate)
-+#define __NR_truncate 1048
-+__SYSCALL(__NR_truncate, sys_truncate)
-+#define __NR_stat 1049
-+__SYSCALL(__NR_stat, sys_newstat)
-+#define __NR_lstat 1050
-+__SYSCALL(__NR_lstat, sys_newlstat)
-+#define __NR_fstat 1051
-+__SYSCALL(__NR_fstat, sys_newfstat)
-+#define __NR_fcntl 1052
-+__SYSCALL(__NR_fcntl, sys_fcntl)
-+#define __NR_fadvise64 1053
-+#define __ARCH_WANT_SYS_FADVISE64
-+__SYSCALL(__NR_fadvise64, sys_fadvise64)
-+#define __NR_newfstatat 1054
-+#define __ARCH_WANT_SYS_NEWFSTATAT
-+__SYSCALL(__NR_newfstatat, sys_newfstatat)
-+#define __NR_fstatfs 1055
-+__SYSCALL(__NR_fstatfs, sys_fstatfs)
-+#define __NR_statfs 1056
-+__SYSCALL(__NR_statfs, sys_statfs)
-+#define __NR_lseek 1057
-+__SYSCALL(__NR_lseek, sys_lseek)
-+#define __NR_mmap 1058
-+__SYSCALL(__NR_mmap, sys_mmap)
-+
-+#undef __NR_syscalls
-+#define __NR_syscalls (__NR_mmap+1)
-+#endif /* 32 bit off_t syscalls */
-+
-+#ifdef __ARCH_WANT_SYSCALL_DEPRECATED
-+#define __NR_alarm 1059
-+#define __ARCH_WANT_SYS_ALARM
-+__SYSCALL(__NR_alarm, sys_alarm)
-+#define __NR_getpgrp 1060
-+#define __ARCH_WANT_SYS_GETPGRP
-+__SYSCALL(__NR_getpgrp, sys_getpgrp)
-+#define __NR_pause 1061
-+#define __ARCH_WANT_SYS_PAUSE
-+__SYSCALL(__NR_pause, sys_pause)
-+#define __NR_time 1062
-+#define __ARCH_WANT_SYS_TIME
-+__SYSCALL(__NR_time, sys_time)
-+#define __NR_utime 1063
-+#define __ARCH_WANT_SYS_UTIME
-+__SYSCALL(__NR_utime, sys_utime)
-+
-+#define __NR_creat 1064
-+__SYSCALL(__NR_creat, sys_creat)
-+#define __NR_getdents 1065
-+#define __ARCH_WANT_SYS_GETDENTS
-+__SYSCALL(__NR_getdents, sys_getdents)
-+#define __NR_futimesat 1066
-+__SYSCALL(__NR_futimesat, sys_futimesat)
-+#define __NR_select 1067
-+#define __ARCH_WANT_SYS_SELECT
-+__SYSCALL(__NR_select, sys_select)
-+#define __NR_poll 1068
-+__SYSCALL(__NR_poll, sys_poll)
-+#define __NR_epoll_wait 1069
-+__SYSCALL(__NR_epoll_wait, sys_epoll_wait)
-+#define __NR_ustat 1070
-+__SYSCALL(__NR_ustat, sys_ustat)
-+#define __NR_vfork 1071
-+__SYSCALL(__NR_vfork, sys_vfork)
-+#define __NR_wait4 1072
-+__SYSCALL(__NR_wait4, sys_wait4)
-+#define __NR_recv 1073
-+__SYSCALL(__NR_recv, sys_recv)
-+#define __NR_send 1074
-+__SYSCALL(__NR_send, sys_send)
-+#define __NR_bdflush 1075
-+__SYSCALL(__NR_bdflush, sys_bdflush)
-+#define __NR_umount 1076
-+__SYSCALL(__NR_umount, sys_oldumount)
-+#define __ARCH_WANT_SYS_OLDUMOUNT
-+#define __NR_uselib 1077
-+__SYSCALL(__NR_uselib, sys_uselib)
-+#define __NR__sysctl 1078
-+__SYSCALL(__NR__sysctl, sys_sysctl)
-+
-+#define __NR_fork 1079
-+#ifdef CONFIG_MMU
-+__SYSCALL(__NR_fork, sys_fork)
-+#else
-+__SYSCALL(__NR_fork, sys_ni_syscall)
-+#endif /* CONFIG_MMU */
-+
-+#undef __NR_syscalls
-+#define __NR_syscalls (__NR_fork+1)
-+
-+#endif /* __ARCH_WANT_SYSCALL_DEPRECATED */
-+
-+/*
-+ * 32 bit systems traditionally used different
-+ * syscalls for off_t and loff_t arguments, while
-+ * 64 bit systems only need the off_t version.
-+ * For new 32 bit platforms, there is no need to
-+ * implement the old 32 bit off_t syscalls, so
-+ * they take different names.
-+ * Here we map the numbers so that both versions
-+ * use the same syscall table layout.
-+ */
-+#if __BITS_PER_LONG == 64
-+#define __NR_fcntl __NR3264_fcntl
-+#define __NR_statfs __NR3264_statfs
-+#define __NR_fstatfs __NR3264_fstatfs
-+#define __NR_truncate __NR3264_truncate
-+#define __NR_ftruncate __NR3264_truncate
-+#define __NR_lseek __NR3264_lseek
-+#define __NR_sendfile __NR3264_sendfile
-+#define __NR_newfstatat __NR3264_fstatat
-+#define __NR_fstat __NR3264_fstat
-+#define __NR_mmap __NR3264_mmap
-+#define __NR_fadvise64 __NR3264_fadvise64
-+#ifdef __NR3264_stat
-+#define __NR_stat __NR3264_stat
-+#define __NR_lstat __NR3264_lstat
-+#endif
-+#else
-+#define __NR_fcntl64 __NR3264_fcntl
-+#define __NR_statfs64 __NR3264_statfs
-+#define __NR_fstatfs64 __NR3264_fstatfs
-+#define __NR_truncate64 __NR3264_truncate
-+#define __NR_ftruncate64 __NR3264_truncate
-+#define __NR_llseek __NR3264_lseek
-+#define __NR_sendfile64 __NR3264_sendfile
-+#define __NR_fstatat64 __NR3264_fstatat
-+#define __NR_fstat64 __NR3264_fstat
-+#define __NR_mmap2 __NR3264_mmap
-+#define __NR_fadvise64_64 __NR3264_fadvise64
-+#ifdef __NR3264_stat
-+#define __NR_stat64 __NR3264_stat
-+#define __NR_lstat64 __NR3264_lstat
-+#endif
-+#endif
-+
-+#ifdef __KERNEL__
-+
-+/*
-+ * These are required system calls, we should
-+ * invert the logic eventually and let them
-+ * be selected by default.
-+ */
-+#if __BITS_PER_LONG == 32
-+#define __ARCH_WANT_STAT64
-+#define __ARCH_WANT_SYS_LLSEEK
-+#endif
-+#define __ARCH_WANT_SYS_RT_SIGACTION
-+#define __ARCH_WANT_SYS_RT_SIGSUSPEND
-+
-+/*
-+ * "Conditional" syscalls
-+ *
-+ * What we want is __attribute__((weak,alias("sys_ni_syscall"))),
-+ * but it doesn't work on all toolchains, so we just do it by hand
-+ */
-+#ifndef cond_syscall
-+#define cond_syscall(x) asm(".weak\t" #x "\n\t.set\t" #x ",sys_ni_syscall")
-+#endif
-+
-+#endif /* __KERNEL__ */
-+#endif /* _ASM_GENERIC_UNISTD_H */
-diff --git a/scripts/checksyscalls.sh b/scripts/checksyscalls.sh
-index 60d00d1..66ad375 100755
---- a/scripts/checksyscalls.sh
-+++ b/scripts/checksyscalls.sh
-@@ -14,6 +14,57 @@ cat << EOF
- #include <asm/types.h>
- #include <asm/unistd.h>
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* _ALPHA_ATOMIC_H */
+diff --git a/arch/arm/include/asm/atomic.h b/arch/arm/include/asm/atomic.h
+index ee99723..828e1e7 100644
+--- a/arch/arm/include/asm/atomic.h
++++ b/arch/arm/include/asm/atomic.h
+@@ -206,6 +206,6 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
+ #define smp_mb__before_atomic_inc()	barrier()
+ #define smp_mb__after_atomic_inc()	barrier()
  
-+/* *at */
-+#define __IGNORE_open		/* openat */
-+#define __IGNORE_link		/* linkat */
-+#define __IGNORE_unlink		/* unlinkat */
-+#define __IGNORE_mknod		/* mknodat */
-+#define __IGNORE_chmod		/* fchmodat */
-+#define __IGNORE_chown		/* fchownat */
-+#define __IGNORE_mkdir		/* mkdirat */
-+#define __IGNORE_rmdir		/* unlinkat */
-+#define __IGNORE_lchown		/* fchownat */
-+#define __IGNORE_access		/* faccessat */
-+#define __IGNORE_rename		/* renameat */
-+#define __IGNORE_readlink	/* readlinkat */
-+#define __IGNORE_symlink	/* symlinkat */
-+#define __IGNORE_utimes		/* futimesat */
-+#if BITS_PER_LONG == 64
-+#define __IGNORE_stat		/* fstatat */
-+#define __IGNORE_lstat		/* fstatat */
-+#else
-+#define __IGNORE_stat64		/* fstatat64 */
-+#define __IGNORE_lstat64	/* fstatat64 */
-+#endif
-+
-+/* CLOEXEC flag */
-+#define __IGNORE_pipe		/* pipe2 */
-+#define __IGNORE_dup2		/* dup3 */
-+#define __IGNORE_epoll_create	/* epoll_create1 */
-+#define __IGNORE_inotify_init	/* inotify_init1 */
-+#define __IGNORE_eventfd	/* eventfd2 */
-+#define __IGNORE_signalfd	/* signalfd4 */
-+
-+/* MMU */
-+#ifndef CONFIG_MMU
-+#define __IGNORE_madvise
-+#define __IGNORE_mbind
-+#define __IGNORE_mincore
-+#define __IGNORE_mlock
-+#define __IGNORE_mlockall
-+#define __IGNORE_munlock
-+#define __IGNORE_munlockall
-+#define __IGNORE_mprotect
-+#define __IGNORE_msync
-+#define __IGNORE_migrate_pages
-+#define __IGNORE_move_pages
-+#define __IGNORE_remap_file_pages
-+#define __IGNORE_get_mempolicy
-+#define __IGNORE_set_mempolicy
-+#define __IGNORE_swapoff
-+#define __IGNORE_swapon
-+#endif
-+
- /* System calls for 32-bit kernels only */
- #if BITS_PER_LONG == 64
- #define __IGNORE_sendfile64
-@@ -27,6 +78,22 @@ cat << EOF
- #define __IGNORE_fstatat64
- #define __IGNORE_fstatfs64
- #define __IGNORE_statfs64
-+#define __IGNORE_llseek
-+#define __IGNORE_mmap2
-+#else
-+#define __IGNORE_sendfile
-+#define __IGNORE_ftruncate
-+#define __IGNORE_truncate
-+#define __IGNORE_stat
-+#define __IGNORE_lstat
-+#define __IGNORE_fstat
-+#define __IGNORE_fcntl
-+#define __IGNORE_fadvise64
-+#define __IGNORE_newfstatat
-+#define __IGNORE_fstatfs
-+#define __IGNORE_statfs
-+#define __IGNORE_lseek
-+#define __IGNORE_mmap
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
  #endif
+ #endif
+diff --git a/arch/avr32/include/asm/atomic.h b/arch/avr32/include/asm/atomic.h
+index 3188151..b131c27 100644
+--- a/arch/avr32/include/asm/atomic.h
++++ b/arch/avr32/include/asm/atomic.h
+@@ -196,6 +196,6 @@ static inline int atomic_sub_if_positive(int i, atomic_t *v)
+ #define smp_mb__before_atomic_inc()	barrier()
+ #define smp_mb__after_atomic_inc()	barrier()
  
- /* i386-specific or historical system calls */
-@@ -44,7 +111,6 @@ cat << EOF
- #define __IGNORE_idle
- #define __IGNORE_modify_ldt
- #define __IGNORE_ugetrlimit
--#define __IGNORE_mmap2
- #define __IGNORE_vm86
- #define __IGNORE_vm86old
- #define __IGNORE_set_thread_area
-@@ -55,7 +121,6 @@ cat << EOF
- #define __IGNORE_oldlstat
- #define __IGNORE_oldolduname
- #define __IGNORE_olduname
--#define __IGNORE_umount2
- #define __IGNORE_umount
- #define __IGNORE_waitpid
- #define __IGNORE_stime
-@@ -75,9 +140,12 @@ cat << EOF
- #define __IGNORE__llseek
- #define __IGNORE__newselect
- #define __IGNORE_create_module
--#define __IGNORE_delete_module
- #define __IGNORE_query_module
- #define __IGNORE_get_kernel_syms
-+#define __IGNORE_sysfs
-+#define __IGNORE_uselib
-+#define __IGNORE__sysctl
-+
- /* ... including the "new" 32-bit uid syscalls */
- #define __IGNORE_lchown32
- #define __IGNORE_getuid32
-@@ -99,6 +167,24 @@ cat << EOF
- #define __IGNORE_setfsuid32
- #define __IGNORE_setfsgid32
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
  
-+/* these can be expressed using other calls */
-+#define __IGNORE_alarm		/* setitimer */
-+#define __IGNORE_creat		/* open */
-+#define __IGNORE_fork		/* clone */
-+#define __IGNORE_futimesat	/* utimensat */
-+#define __IGNORE_getpgrp	/* getpgid */
-+#define __IGNORE_getdents	/* getdents64 */
-+#define __IGNORE_pause		/* sigsuspend */
-+#define __IGNORE_poll		/* ppoll */
-+#define __IGNORE_select		/* pselect6 */
-+#define __IGNORE_epoll_wait	/* epoll_pwait */
-+#define __IGNORE_time		/* gettimeofday */
-+#define __IGNORE_uname		/* newuname */
-+#define __IGNORE_ustat		/* statfs */
-+#define __IGNORE_utime		/* utimes */
-+#define __IGNORE_vfork		/* clone */
-+#define __IGNORE_wait4		/* waitid */
-+
- /* sync_file_range had a stupid ABI. Allow sync_file_range2 instead */
- #ifdef __NR_sync_file_range2
- #define __IGNORE_sync_file_range
+ #endif /*  __ASM_AVR32_ATOMIC_H */
+diff --git a/arch/blackfin/include/asm/atomic.h b/arch/blackfin/include/asm/atomic.h
+index 94b2a9b..7bbf44e 100644
+--- a/arch/blackfin/include/asm/atomic.h
++++ b/arch/blackfin/include/asm/atomic.h
+@@ -208,6 +208,6 @@ static inline void atomic_set_mask(unsigned int mask, atomic_t *v)
+ #define atomic_sub_and_test(i,v) (atomic_sub_return((i), (v)) == 0)
+ #define atomic_dec_and_test(v) (atomic_sub_return(1, (v)) == 0)
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ 
+ #endif				/* __ARCH_BLACKFIN_ATOMIC __ */
+diff --git a/arch/cris/include/asm/atomic.h b/arch/cris/include/asm/atomic.h
+index 5718dd8..a6aca81 100644
+--- a/arch/cris/include/asm/atomic.h
++++ b/arch/cris/include/asm/atomic.h
+@@ -158,5 +158,5 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
+ #define smp_mb__before_atomic_inc()    barrier()
+ #define smp_mb__after_atomic_inc()     barrier()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif
+diff --git a/arch/frv/include/asm/atomic.h b/arch/frv/include/asm/atomic.h
+index 296c35c..0409d98 100644
+--- a/arch/frv/include/asm/atomic.h
++++ b/arch/frv/include/asm/atomic.h
+@@ -194,5 +194,5 @@ static __inline__ int atomic_add_unless(atomic_t *v, int a, int u)
+ 
+ #define atomic_inc_not_zero(v) atomic_add_unless((v), 1, 0)
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* _ASM_ATOMIC_H */
+diff --git a/arch/h8300/include/asm/atomic.h b/arch/h8300/include/asm/atomic.h
+index 833186c..33c8c0f 100644
+--- a/arch/h8300/include/asm/atomic.h
++++ b/arch/h8300/include/asm/atomic.h
+@@ -141,5 +141,5 @@ static __inline__ void atomic_set_mask(unsigned long mask, unsigned long *v)
+ #define smp_mb__before_atomic_inc()    barrier()
+ #define smp_mb__after_atomic_inc() barrier()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* __ARCH_H8300_ATOMIC __ */
+diff --git a/arch/ia64/include/asm/atomic.h b/arch/ia64/include/asm/atomic.h
+index d37292b..88405cb 100644
+--- a/arch/ia64/include/asm/atomic.h
++++ b/arch/ia64/include/asm/atomic.h
+@@ -216,5 +216,5 @@ atomic64_add_negative (__s64 i, atomic64_t *v)
+ #define smp_mb__before_atomic_inc()	barrier()
+ #define smp_mb__after_atomic_inc()	barrier()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* _ASM_IA64_ATOMIC_H */
+diff --git a/arch/m32r/include/asm/atomic.h b/arch/m32r/include/asm/atomic.h
+index 2eed30f..63f0cf0 100644
+--- a/arch/m32r/include/asm/atomic.h
++++ b/arch/m32r/include/asm/atomic.h
+@@ -314,5 +314,5 @@ static __inline__ void atomic_set_mask(unsigned long  mask, atomic_t *addr)
+ #define smp_mb__before_atomic_inc()	barrier()
+ #define smp_mb__after_atomic_inc()	barrier()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif	/* _ASM_M32R_ATOMIC_H */
+diff --git a/arch/m68k/include/asm/atomic_mm.h b/arch/m68k/include/asm/atomic_mm.h
+index eb0ab9d..88b7af2 100644
+--- a/arch/m68k/include/asm/atomic_mm.h
++++ b/arch/m68k/include/asm/atomic_mm.h
+@@ -192,5 +192,5 @@ static __inline__ int atomic_add_unless(atomic_t *v, int a, int u)
+ #define smp_mb__before_atomic_inc()	barrier()
+ #define smp_mb__after_atomic_inc()	barrier()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* __ARCH_M68K_ATOMIC __ */
+diff --git a/arch/m68k/include/asm/atomic_no.h b/arch/m68k/include/asm/atomic_no.h
+index 6bb6748..5674cb9 100644
+--- a/arch/m68k/include/asm/atomic_no.h
++++ b/arch/m68k/include/asm/atomic_no.h
+@@ -151,5 +151,5 @@ static __inline__ int atomic_add_unless(atomic_t *v, int a, int u)
+ #define atomic_dec_return(v) atomic_sub_return(1,(v))
+ #define atomic_inc_return(v) atomic_add_return(1,(v))
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* __ARCH_M68KNOMMU_ATOMIC __ */
+diff --git a/arch/microblaze/include/asm/atomic.h b/arch/microblaze/include/asm/atomic.h
+index a448d94..0de612a 100644
+--- a/arch/microblaze/include/asm/atomic.h
++++ b/arch/microblaze/include/asm/atomic.h
+@@ -118,6 +118,6 @@ static inline int atomic_dec_if_positive(atomic_t *v)
+ #define smp_mb__before_atomic_inc()	barrier()
+ #define smp_mb__after_atomic_inc()	barrier()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ 
+ #endif /* _ASM_MICROBLAZE_ATOMIC_H */
+diff --git a/arch/mips/include/asm/atomic.h b/arch/mips/include/asm/atomic.h
+index 1b332e1..eb7f01c 100644
+--- a/arch/mips/include/asm/atomic.h
++++ b/arch/mips/include/asm/atomic.h
+@@ -793,6 +793,6 @@ static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
+ #define smp_mb__before_atomic_inc()	smp_llsc_mb()
+ #define smp_mb__after_atomic_inc()	smp_llsc_mb()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ 
+ #endif /* _ASM_ATOMIC_H */
+diff --git a/arch/mn10300/include/asm/atomic.h b/arch/mn10300/include/asm/atomic.h
+index bc06482..5bf5be9 100644
+--- a/arch/mn10300/include/asm/atomic.h
++++ b/arch/mn10300/include/asm/atomic.h
+@@ -151,7 +151,7 @@ static inline void atomic_clear_mask(unsigned long mask, unsigned long *addr)
+ #define smp_mb__before_atomic_inc()	barrier()
+ #define smp_mb__after_atomic_inc()	barrier()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_ATOMIC_H */
+diff --git a/arch/parisc/include/asm/atomic.h b/arch/parisc/include/asm/atomic.h
+index ada3e53..7eeaff9 100644
+--- a/arch/parisc/include/asm/atomic.h
++++ b/arch/parisc/include/asm/atomic.h
+@@ -338,6 +338,6 @@ static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
+ 
+ #endif /* CONFIG_64BIT */
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ 
+ #endif /* _ASM_PARISC_ATOMIC_H_ */
+diff --git a/arch/powerpc/include/asm/atomic.h b/arch/powerpc/include/asm/atomic.h
+index b401950..b7d2d07 100644
+--- a/arch/powerpc/include/asm/atomic.h
++++ b/arch/powerpc/include/asm/atomic.h
+@@ -472,6 +472,6 @@ static __inline__ int atomic64_add_unless(atomic64_t *v, long a, long u)
+ 
+ #endif /* __powerpc64__ */
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_ATOMIC_H_ */
+diff --git a/arch/s390/include/asm/atomic.h b/arch/s390/include/asm/atomic.h
+index de432f2..fca9dff 100644
+--- a/arch/s390/include/asm/atomic.h
++++ b/arch/s390/include/asm/atomic.h
+@@ -275,6 +275,6 @@ static __inline__ int atomic64_add_unless(atomic64_t *v,
+ #define smp_mb__before_atomic_inc()	smp_mb()
+ #define smp_mb__after_atomic_inc()	smp_mb()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* __KERNEL__ */
+ #endif /* __ARCH_S390_ATOMIC__  */
+diff --git a/arch/sh/include/asm/atomic.h b/arch/sh/include/asm/atomic.h
+index 6327ffb..a5647d0 100644
+--- a/arch/sh/include/asm/atomic.h
++++ b/arch/sh/include/asm/atomic.h
+@@ -84,5 +84,5 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
+ #define smp_mb__before_atomic_inc()	barrier()
+ #define smp_mb__after_atomic_inc()	barrier()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* __ASM_SH_ATOMIC_H */
+diff --git a/arch/sparc/include/asm/atomic_32.h b/arch/sparc/include/asm/atomic_32.h
+index bb91b12..f0d343c 100644
+--- a/arch/sparc/include/asm/atomic_32.h
++++ b/arch/sparc/include/asm/atomic_32.h
+@@ -161,5 +161,5 @@ static inline int __atomic24_sub(int i, atomic24_t *v)
+ 
+ #endif /* !(__KERNEL__) */
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* !(__ARCH_SPARC_ATOMIC__) */
+diff --git a/arch/sparc/include/asm/atomic_64.h b/arch/sparc/include/asm/atomic_64.h
+index a0a7064..f2e4800 100644
+--- a/arch/sparc/include/asm/atomic_64.h
++++ b/arch/sparc/include/asm/atomic_64.h
+@@ -114,5 +114,5 @@ static inline int atomic64_add_unless(atomic64_t *v, long a, long u)
+ #define smp_mb__before_atomic_inc()	barrier()
+ #define smp_mb__after_atomic_inc()	barrier()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* !(__ARCH_SPARC64_ATOMIC__) */
+diff --git a/arch/x86/include/asm/atomic_32.h b/arch/x86/include/asm/atomic_32.h
+index 85b46fb..c83d314 100644
+--- a/arch/x86/include/asm/atomic_32.h
++++ b/arch/x86/include/asm/atomic_32.h
+@@ -247,5 +247,5 @@ static inline int atomic_add_unless(atomic_t *v, int a, int u)
+ #define smp_mb__before_atomic_inc()	barrier()
+ #define smp_mb__after_atomic_inc()	barrier()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* _ASM_X86_ATOMIC_32_H */
+diff --git a/arch/x86/include/asm/atomic_64.h b/arch/x86/include/asm/atomic_64.h
+index 8c21731..0d63602 100644
+--- a/arch/x86/include/asm/atomic_64.h
++++ b/arch/x86/include/asm/atomic_64.h
+@@ -455,5 +455,5 @@ static inline void atomic_or_long(unsigned long *v1, unsigned long v2)
+ #define smp_mb__before_atomic_inc()	barrier()
+ #define smp_mb__after_atomic_inc()	barrier()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* _ASM_X86_ATOMIC_64_H */
+diff --git a/arch/xtensa/include/asm/atomic.h b/arch/xtensa/include/asm/atomic.h
+index 67ad67b..22d6dde 100644
+--- a/arch/xtensa/include/asm/atomic.h
++++ b/arch/xtensa/include/asm/atomic.h
+@@ -292,7 +292,7 @@ static inline void atomic_set_mask(unsigned int mask, atomic_t *v)
+ #define smp_mb__before_atomic_inc()	barrier()
+ #define smp_mb__after_atomic_inc()	barrier()
+ 
+-#include <asm-generic/atomic.h>
++#include <asm-generic/atomic-long.h>
+ #endif /* __KERNEL__ */
+ 
+ #endif /* _XTENSA_ATOMIC_H */
+diff --git a/include/asm-generic/atomic.h b/include/asm-generic/atomic-long.h
+similarity index 97%
+rename from include/asm-generic/atomic.h
+rename to include/asm-generic/atomic-long.h
+index 3673a13..76e27d6 100644
+--- a/include/asm-generic/atomic.h
++++ b/include/asm-generic/atomic-long.h
+@@ -1,5 +1,5 @@
+-#ifndef _ASM_GENERIC_ATOMIC_H
+-#define _ASM_GENERIC_ATOMIC_H
++#ifndef _ASM_GENERIC_ATOMIC_LONG_H
++#define _ASM_GENERIC_ATOMIC_LONG_H
+ /*
+  * Copyright (C) 2005 Silicon Graphics, Inc.
+  *	Christoph Lameter
+@@ -255,4 +255,4 @@ static inline long atomic_long_add_unless(atomic_long_t *l, long a, long u)
+ 
+ #endif  /*  BITS_PER_LONG == 64  */
+ 
+-#endif  /*  _ASM_GENERIC_ATOMIC_H  */
++#endif  /*  _ASM_GENERIC_ATOMIC_LONG_H  */
+diff --git a/include/asm-generic/bitops/atomic.h b/include/asm-generic/bitops/atomic.h
+index 4657f3e..c894646 100644
+--- a/include/asm-generic/bitops/atomic.h
++++ b/include/asm-generic/bitops/atomic.h
+@@ -2,6 +2,7 @@
+ #define _ASM_GENERIC_BITOPS_ATOMIC_H_
+ 
+ #include <asm/types.h>
++#include <asm/system.h>
+ 
+ #ifdef CONFIG_SMP
+ #include <asm/spinlock.h>
 -- 
 1.6.0.4
 
