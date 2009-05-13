@@ -1,42 +1,45 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762006AbZEMWD7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762054AbZEMWEn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762006AbZEMWD7 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 18:03:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761606AbZEMWDk
+	id S1762054AbZEMWEn (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 18:04:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761795AbZEMWEd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 18:03:40 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:52322 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755271AbZEMWDj (ORCPT
+	Wed, 13 May 2009 18:04:33 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:58794 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1761488AbZEMWEc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 18:03:39 -0400
-Date: Thu, 14 May 2009 00:04:36 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+	Wed, 13 May 2009 18:04:32 -0400
+Date: Wed, 13 May 2009 15:04:25 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "B. N. Poornima" <poornima@in.ibm.com>
 Cc: linux-kernel@vger.kernel.org
-Subject: Re: Realtek 8168D: no active link (2.6.29.2)
-Message-ID: <20090513220436.GD729@electric-eye.fr.zoreil.com>
-References: <200905091403.n49E3fb5025843@mercury.physics.adelaide.edu.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905091403.n49E3fb5025843@mercury.physics.adelaide.edu.au>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Subject: Re: [PATCH]Fix potential Divide by Zero error in ext2_get_inode()
+Message-Id: <20090513150425.89ac9b1c.akpm@linux-foundation.org>
+In-Reply-To: <4A0A82ED.2040906@in.ibm.com>
+References: <4A0A82ED.2040906@in.ibm.com>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Woithe <jwoithe@physics.adelaide.edu.au> :
-[...]
-> I am currently testing a Gigabyte EX58-UD4P mainboard which is equipped with
-> an onboard Realtek RTL-8168D network controller.  The kernel version is
-> 2.6.29.2.  The r8169 module is loaded correctly, identifies the chip as an
-> 8168D and seemingly is happy.  However, after loading the module the link
-> remains dead.  The green and orange status LEDs remain off at all times.
+On Wed, 13 May 2009 13:51:01 +0530
+"B. N. Poornima" <poornima@in.ibm.com> wrote:
 
-Which XID does it display in dmesg when the module is inserted and which
-behavior do you experience with version 8.011.00 of Realtek's r8168 driver ?
+> Found a line of code in ext2_get_inode function of inode.c in the ext2 
+> filesystem that has the potential of hitting the divide by 0 error.
+> *************************************************
+>  block_group = (ino - 1) / EXT2_INODES_PER_GROUP(sb);
+> *************************************************
+> There is no checking done here to verify if EXT2_INODES_PER_GROUP() 
+> returns 0. This could result in divide by zero error and panic the system.
+> Below is the patch, built against 2.6.30-rc5,  to correct the same:
 
--- 
-Ueimor
+EXT2_INODES_PER_GROUP() cannot return zero.  See ext2_fill_super():
+
+	if (sbi->s_inodes_per_block == 0 || sbi->s_inodes_per_group == 0)
+		goto cantfind_ext2;
+
