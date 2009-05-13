@@ -1,128 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760851AbZEMSiR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760745AbZEMSmp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760851AbZEMSiR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 14:38:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758764AbZEMSh6
+	id S1760745AbZEMSmp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 14:42:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755558AbZEMSme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 14:37:58 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:64981 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759278AbZEMSh5 (ORCPT
+	Wed, 13 May 2009 14:42:34 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:51672 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1754662AbZEMSmd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 14:37:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=uFTq+ESSymur3Nd52KkEJ4mwWeYz9WiKIkcFXRQcfwy/T+teNOzirQTjUSC+NHkUI3
-         wVdv7e73eumu0oG9OIubSk8JPDtlIK6G54nqvDQ5S2haC3RtnF7SVFIuJc5C9Njk5XPV
-         JNoMYw2pV+xLV4SCwToNqPzjuftFfQvXZlNjw=
-Message-ID: <4A0B1382.6040501@gmail.com>
-Date: Wed, 13 May 2009 20:37:54 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
-MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] staging: off by one in AsicSendCommandToMcu() and NDIS_STATUS
- NICLoadFirmware()
-Content-Type: text/plain; charset=ISO-8859-1
+	Wed, 13 May 2009 14:42:33 -0400
+Date: Wed, 13 May 2009 11:40:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Rapoport <mike@compulab.co.il>
+Cc: cbou@mail.ru, linux-kernel@vger.kernel.org, mike@compulab.co.il
+Subject: Re: [PATCH] da9030_battery: fix race between event handler and
+ monitor
+Message-Id: <20090513114046.6557fc0e.akpm@linux-foundation.org>
+In-Reply-To: <1242112809-10021-1-git-send-email-mike@compulab.co.il>
+References: <1242112809-10021-1-git-send-email-mike@compulab.co.il>
+X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-With a postfix increment i/Index is incremented beyond 100/1000 so the
-message will be displayed too soon.
+On Tue, 12 May 2009 10:20:09 +0300
+Mike Rapoport <mike@compulab.co.il> wrote:
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-This could occur almost never.
+> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
 
- drivers/staging/rt2860/common/mlme.c      |    2 +-
- drivers/staging/rt2860/common/rtmp_init.c |    2 +-
- drivers/staging/rt2870/common/mlme.c      |    2 +-
- drivers/staging/rt2870/common/rtmp_init.c |    2 +-
- drivers/staging/rt3070/common/mlme.c      |    2 +-
- drivers/staging/rt3070/common/rtmp_init.c |    2 +-
- 6 files changed, 6 insertions(+), 6 deletions(-)
+We seem to be missing a changelog.
 
-diff --git a/drivers/staging/rt2860/common/mlme.c b/drivers/staging/rt2860/common/mlme.c
-index c00f9ab..b76eecc 100644
---- a/drivers/staging/rt2860/common/mlme.c
-+++ b/drivers/staging/rt2860/common/mlme.c
-@@ -7611,7 +7611,7 @@ BOOLEAN AsicSendCommandToMcu(
- 		RTMPusecDelay(2);
- 	} while(i++ < 100);
- 
--	if (i >= 100)
-+	if (i > 100)
- 	{
- #ifdef RALINK_ATE
- 		if (pAd->ate.bFWLoading == TRUE)
-diff --git a/drivers/staging/rt2860/common/rtmp_init.c b/drivers/staging/rt2860/common/rtmp_init.c
-index 8a00cee..6321352 100644
---- a/drivers/staging/rt2860/common/rtmp_init.c
-+++ b/drivers/staging/rt2860/common/rtmp_init.c
-@@ -2867,7 +2867,7 @@ NDIS_STATUS NICLoadFirmware(
- 		RTMPusecDelay(1000);
- 	} while (Index++ < 1000);
- 
--    if (Index >= 1000)
-+    if (Index > 1000)
- 	{
- 		Status = NDIS_STATUS_FAILURE;
- 		DBGPRINT(RT_DEBUG_ERROR, ("NICLoadFirmware: MCU is not ready\n\n\n"));
-diff --git a/drivers/staging/rt2870/common/mlme.c b/drivers/staging/rt2870/common/mlme.c
-index 8a82cee..8598c6e 100644
---- a/drivers/staging/rt2870/common/mlme.c
-+++ b/drivers/staging/rt2870/common/mlme.c
-@@ -7575,7 +7575,7 @@ BOOLEAN AsicSendCommandToMcu(
- 		RTMPusecDelay(2);
- 	} while(i++ < 100);
- 
--	if (i >= 100)
-+	if (i > 100)
- 	{
- 		{
- 		DBGPRINT_ERR(("H2M_MAILBOX still hold by MCU. command fail\n"));
-diff --git a/drivers/staging/rt2870/common/rtmp_init.c b/drivers/staging/rt2870/common/rtmp_init.c
-index 099b6a8..2940ca3 100644
---- a/drivers/staging/rt2870/common/rtmp_init.c
-+++ b/drivers/staging/rt2870/common/rtmp_init.c
-@@ -3016,7 +3016,7 @@ NDIS_STATUS NICLoadFirmware(
- 		RTMPusecDelay(1000);
- 	} while (Index++ < 1000);
- 
--    if (Index >= 1000)
-+    if (Index > 1000)
- 	{
- 		Status = NDIS_STATUS_FAILURE;
- 		DBGPRINT(RT_DEBUG_ERROR, ("NICLoadFirmware: MCU is not ready\n\n\n"));
-diff --git a/drivers/staging/rt3070/common/mlme.c b/drivers/staging/rt3070/common/mlme.c
-index 0ffbfa3..3e697cd 100644
---- a/drivers/staging/rt3070/common/mlme.c
-+++ b/drivers/staging/rt3070/common/mlme.c
-@@ -7959,7 +7959,7 @@ BOOLEAN AsicSendCommandToMcu(
- 		RTMPusecDelay(2);
- 	} while(i++ < 100);
- 
--	if (i >= 100)
-+	if (i > 100)
- 	{
- 		{
- 		DBGPRINT_ERR(("H2M_MAILBOX still hold by MCU. command fail\n"));
-diff --git a/drivers/staging/rt3070/common/rtmp_init.c b/drivers/staging/rt3070/common/rtmp_init.c
-index 4503f6c..8791b7b 100644
---- a/drivers/staging/rt3070/common/rtmp_init.c
-+++ b/drivers/staging/rt3070/common/rtmp_init.c
-@@ -3181,7 +3181,7 @@ NDIS_STATUS NICLoadFirmware(
- 		RTMPusecDelay(1000);
- 	} while (Index++ < 1000);
- 
--    if (Index >= 1000)
-+    if (Index > 1000)
- 	{
- 		Status = NDIS_STATUS_FAILURE;
- 		DBGPRINT(RT_DEBUG_ERROR, ("NICLoadFirmware: MCU is not ready\n\n\n"));
+> 
+> diff --git a/drivers/power/da9030_battery.c b/drivers/power/da9030_battery.c
+> index 1662bb0..3364198 100644
+> --- a/drivers/power/da9030_battery.c
+> +++ b/drivers/power/da9030_battery.c
+> @@ -22,8 +22,6 @@
+>  #include <linux/debugfs.h>
+>  #include <linux/seq_file.h>
+>  
+> -#define DA9030_STATUS_CHDET	(1 << 3)
+> -
+>  #define DA9030_FAULT_LOG		0x0a
+>  #define DA9030_FAULT_LOG_OVER_TEMP	(1 << 7)
+>  #define DA9030_FAULT_LOG_VBAT_OVER	(1 << 4)
+> @@ -244,6 +242,8 @@ static void da9030_set_charge(struct da9030_charger *charger, int on)
+>  	}
+>  
+>  	da903x_write(charger->master, DA9030_CHARGE_CONTROL, val);
+> +
+> +	power_supply_changed(&charger->psy);
+>  }
+>  
+>  static void da9030_charger_check_state(struct da9030_charger *charger)
+> @@ -258,6 +258,12 @@ static void da9030_charger_check_state(struct da9030_charger *charger)
+>  			da9030_set_charge(charger, 1);
+>  		}
+>  	} else {
+> +		/* Charger has been pulled out */
+> +		if (!charger->chdet) {
+> +			da9030_set_charge(charger, 0);
+> +			return;
+> +		}
+> +
+>  		if (charger->adc.vbat_res >=
+>  		    charger->thresholds.vbat_charge_stop) {
+>  			da9030_set_charge(charger, 0);
+> @@ -395,13 +401,11 @@ static int da9030_battery_event(struct notifier_block *nb, unsigned long event,
+>  {
+>  	struct da9030_charger *charger =
+>  		container_of(nb, struct da9030_charger, nb);
+> -	int status;
+>  
+>  	switch (event) {
+>  	case DA9030_EVENT_CHDET:
+> -		status = da903x_query_status(charger->master,
+> -					     DA9030_STATUS_CHDET);
+> -		da9030_set_charge(charger, status);
+> +		cancel_delayed_work_sync(&charger->work);
+> +		schedule_work(&charger->work.work);
+>  		break;
+>  	case DA9030_EVENT_VBATMON:
+>  		da9030_battery_vbat_event(charger);
+> @@ -565,7 +569,8 @@ static int da9030_battery_remove(struct platform_device *dev)
+>  	da903x_unregister_notifier(charger->master, &charger->nb,
+>  				   DA9030_EVENT_CHDET | DA9030_EVENT_VBATMON |
+>  				   DA9030_EVENT_CHIOVER | DA9030_EVENT_TBAT);
+> -	cancel_delayed_work(&charger->work);
+> +	cancel_delayed_work_sync(&charger->work);
+> +	da9030_set_charge(charger, 0);
+>  	power_supply_unregister(&charger->psy);
+>  
+>  	kfree(charger);
+
+What is this race?  What are the user-visible effects when it occurs? 
+How does the patch fix the race?
+
