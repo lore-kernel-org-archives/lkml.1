@@ -1,78 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbZEMOej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757253AbZEMOfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758089AbZEMOej (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 10:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754301AbZEMOe2
+	id S1757253AbZEMOfZ (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 10:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbZEMOfL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 10:34:28 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:54348 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753411AbZEMOe1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 10:34:27 -0400
-Message-ID: <4A0ADACB.8030205@redhat.com>
-Date: Wed, 13 May 2009 10:35:55 -0400
-From: Masami Hiramatsu <mhiramat@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 13 May 2009 10:35:11 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:15397 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753765AbZEMOfJ convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 10:35:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=unkTBC0NE1qlO1QzulXprK6kNdVw52TFoN4Y/1DhslsmmvRqBT7/zURvqSOpBhp3TJ
+         lsiOnpRgt54fLZDtdRaNLXsojqABykQPpAPQJnO5T/3rgSTpOeiJWYIPJZUYzsVWHmLN
+         oSEEuvNMT94ucm1g8szIhyfLmVWUKj/dJhiaU=
 MIME-Version: 1.0
-To: Gleb Natapov <gleb@redhat.com>
-CC: Przemysssaw Paweeeczyk <przemyslaw@pawelczyk.it>,
-       Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
-       lkml <linux-kernel@vger.kernel.org>,
-       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
-       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
-       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Andi Kleen <ak@linux.intel.com>,
-       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>
-Subject: Re: [PATCH -tip v5 1/7] x86: instruction decorder API
-References: <20090509004829.5505.38720.stgit@localhost.localdomain> <20090509004841.5505.48140.stgit@localhost.localdomain> <20090513082310.GQ18554@redhat.com> <40e92d5b0905130235p2c60bd56y4f001247e11d6302@mail.gmail.com> <20090513094326.GA22281@redhat.com>
-In-Reply-To: <20090513094326.GA22281@redhat.com>
-X-Enigmail-Version: 0.95.7
+In-Reply-To: <20090513153101.3bceb04c@gondolin>
+References: <1242174829-4694-1-git-send-email-tom.leiming@gmail.com>
+	 <20090513130233.082eeee5@gondolin>
+	 <d82e647a0905130556y50620617i8c5ac597b6207406@mail.gmail.com>
+	 <20090513153101.3bceb04c@gondolin>
+Date: Wed, 13 May 2009 22:27:07 +0800
+Message-ID: <d82e647a0905130727o1cdd9d5bg76101d10d579d7d4@mail.gmail.com>
+Subject: Re: [PATCH] kernel:async function call:introduce async_run
+From: Ming Lei <tom.leiming@gmail.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: arjan@infradead.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Gleb Natapov wrote:
-> On Wed, May 13, 2009 at 11:35:16AM +0200, Przemysssaw Paweeeczyk wrote:
->> On Wed, May 13, 2009 at 10:23, Gleb Natapov <gleb@redhat.com> wrote:
->>> On Fri, May 08, 2009 at 08:48:42PM -0400, Masami Hiramatsu wrote:
->>>> +++ b/arch/x86/scripts/gen-insn-attr-x86.awk
->>>> @@ -0,0 +1,314 @@
->>>> +#!/bin/awk -f
->>> On some distributions (debian) it is /usr/bin/awk.
->> True, but on most of them (all?) there is also an appropriate link in /bin.
-> Nope, not on debian testing. Although I assume if kernel compilation
-> will start to fail it will appear :)
-> 
->> If shebang could have more that one argument, then '/usr/bin/env awk
->> -f' would be the best solution I think.
+2009/5/13 Cornelia Huck <cornelia.huck@de.ibm.com>:
+> On Wed, 13 May 2009 20:56:40 +0800,
+> Ming Lei <tom.leiming@gmail.com> wrote:
+>
+>> 2009/5/13 Cornelia Huck <cornelia.huck@de.ibm.com>:
+>> > On Wed, 13 May 2009 08:33:49 +0800,
+>> > tom.leiming@gmail.com wrote:
+>
+>> >>  /**
+>> >> + * async_run - schedule a function for asynchronous execution
+>> >> + * @ptr: function to execute asynchronously
+>> >> + * @data: data pointer to pass to the function
+>> >> + *
+>> >> + * Note:we do not allocate a cookie for this kind of aysnchronous
+>> >> + * function to decrease the wait time of async_synchronize_full().
+>> >
+>> > But async_synchronize_full() still waits for list_empty(&async_running)
+>> > - so what does this buy us?
+>>
+>> I mean it can decrease the wait time for other async function.
+>> async_schedule() still can be used to do such thing, but may lead to a
+>> slower boot.  It is the main
+>> purpose of the patch.
+>
+> I see how this can affect places calling async_synchronize_cookie(),
+> but the function will still end up on async_running. If you don't want
+> async_synchronize_full() waiting for these functions, couldn't you use
+> your own running list?
+>
+> (Oh, and I just thought about it a bit further:
+> - somebody calls async_run() -> function with cookie = MAX_COOKIE will be
+>  lowest_in_progress at some point in time
+> - somebody else calls async_schedule() -> cookie = n
+> - we wait with async_synchronize_cookie(n) - which returns since
+>  MAX_COOKIE >= n, which is probably not what we want)
+>
+yes , you are right, I'll think about it.
 
-Ah, I see.
-Actually, it will be executed from Makefile with 'awk -f'.
 
-> --- a/arch/x86/lib/Makefile
-> +++ b/arch/x86/lib/Makefile
-> @@ -2,12 +2,21 @@
->  # Makefile for x86 specific library files.
->  #
->  
-> +quiet_cmd_inat_tables = GEN     $@
-> +      cmd_inat_tables = awk -f $(srctree)/arch/x86/scripts/gen-insn-attr-x86.awk $(srctree)/arch/x86/lib/x86-opcode-map.txt > $@
-> +
-
-So, if awk is on the PATH, it will pass.
-Maybe, I need to add 'HOSTAWK = awk' line in Makefile.
-
-Thank you,
 
 -- 
-Masami Hiramatsu
-
-Software Engineer
-Hitachi Computer Products (America) Inc.
-Software Solutions Division
-
-e-mail: mhiramat@redhat.com
-
+Lei Ming
