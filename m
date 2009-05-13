@@ -1,131 +1,306 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762088AbZEMWSV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761667AbZEMWUc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762088AbZEMWSV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 18:18:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbZEMWSN
+	id S1761667AbZEMWUc (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 18:20:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753156AbZEMWUQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 18:18:13 -0400
-Received: from sj-iport-6.cisco.com ([171.71.176.117]:32522 "EHLO
-	sj-iport-6.cisco.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751071AbZEMWSM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 18:18:12 -0400
-X-IronPort-AV: E=Sophos;i="4.41,191,1241395200"; 
-   d="scan'208";a="304007844"
-From: Roland Dreier <rdreier@cisco.com>
-To: torvalds@linux-foundation.org, akpm@linux-foundation.org
-Cc: general@lists.openfabrics.org, linux-kernel@vger.kernel.org
-Subject: [GIT PULL] please pull infiniband.git
-X-Message-Flag: Warning: May contain useful information
-Date: Wed, 13 May 2009 15:18:13 -0700
-Message-ID: <ada4ovoir4q.fsf@cisco.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.91 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-X-OriginalArrivalTime: 13 May 2009 22:18:13.0328 (UTC) FILETIME=[B4BBCD00:01C9D418]
-Authentication-Results: sj-dkim-4; header.From=rdreier@cisco.com; dkim=pass (
-	sig from cisco.com/sjdkim4002 verified; ); 
+	Wed, 13 May 2009 18:20:16 -0400
+Received: from vena.lwn.net ([206.168.112.25]:56733 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751071AbZEMWUP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 18:20:15 -0400
+Date: Wed, 13 May 2009 16:20:14 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Per Dalen <per.dalen@cnw.se>, Wolfgang Grandegger <wg@grandegger.com>
+Subject: Re: [PATCH v2 7/7] [PATCH 7/8] can: SJA1000 driver for Kvaser PCI
+ cards
+Message-ID: <20090513162014.1f5c1bb1@bike.lwn.net>
+In-Reply-To: <20090512092758.213114373@denx.de>
+References: <20090512092757.048938233@denx.de>
+	<20090512092758.213114373@denx.de>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Linus, please pull from
+On Tue, 12 May 2009 11:28:04 +0200
+Wolfgang Grandegger <wg@grandegger.com> wrote:
 
-    master.kernel.org:/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+> The patch adds support for the PCI cards: PCIcan and PCIcanx
+> (1, 2 or 4 channel) from Kvaser (http://www.kvaser.com).
 
-This tree is also available from kernel.org mirrors at:
+> +static void kvaser_pci_disable_irq(struct net_device *dev)
+> +{
+> +	struct sja1000_priv *priv = netdev_priv(dev);
+> +	struct kvaser_pci *board = priv->priv;
+> +	u32 tmp;
 
-    git://git.kernel.org/pub/scm/linux/kernel/git/roland/infiniband.git for-linus
+I've seen certain reviewers getting grumpy about variables called "tmp"
+recently.  
 
-This will get a couple of fixes to low-level drivers that fix crashes
-seen when running NFS/RDMA:
+> +	/* Disable interrupts from card */
+> +	tmp = ioread32(board->conf_addr + S5920_INTCSR);
+> +	tmp &= ~INTCSR_ADDON_INTENABLE_M;
+> +	iowrite32(tmp, board->conf_addr + S5920_INTCSR);
+> +}
 
-Jack Morgenstein (1):
-      IB/mlx4: Don't overwrite fast registration page list when posting work request
+[...]
 
-Roland Dreier (1):
-      Merge branches 'cxgb3' and 'mlx4' into for-linus
+> +static int number_of_sja1000_chip(void __iomem *base_addr)
+> +{
+> +	u8 status;
+> +	int i;
+> +
+> +	for (i = 0; i < MAX_NO_OF_CHANNELS; i++) {
+> +		/* reset chip */
+> +		iowrite8(MOD_RM, base_addr +
+> +			 (i * KVASER_PCI_PORT_BYTES) + REG_MOD);
+> +		status = ioread8(base_addr +
+> +				 (i * KVASER_PCI_PORT_BYTES) + REG_MOD);
+> +		udelay(10);
+> +		/* check reset bit */
+> +		if (!(status & MOD_RM))
+> +			break;
 
-Steve Wise (1):
-      RDMA/cxgb3: Don't complete flushed send work requests twice
+Why would you delay before checking status?  It ain't gonna change.
 
- drivers/infiniband/hw/cxgb3/cxio_hal.c |    1 +
- drivers/infiniband/hw/mlx4/mlx4_ib.h   |    1 +
- drivers/infiniband/hw/mlx4/mr.c        |   10 ++++++++--
- drivers/infiniband/hw/mlx4/qp.c        |    2 +-
- 4 files changed, 11 insertions(+), 3 deletions(-)
+> +	}
+> +
+> +	return i;
+> +}
+> +
+> +static void kvaser_pci_del_chan(struct net_device *dev)
+> +{
+> +	struct sja1000_priv *priv;
+> +	struct kvaser_pci *board;
+> +	int i;
+> +
+> +	if (!dev)
+> +		return;
+> +	priv = netdev_priv(dev);
+> +	if (!priv)
+> +		return;
 
+Can this happen?
 
-diff --git a/drivers/infiniband/hw/cxgb3/cxio_hal.c b/drivers/infiniband/hw/cxgb3/cxio_hal.c
-index 8d71086..62f9cf2 100644
---- a/drivers/infiniband/hw/cxgb3/cxio_hal.c
-+++ b/drivers/infiniband/hw/cxgb3/cxio_hal.c
-@@ -410,6 +410,7 @@ int cxio_flush_sq(struct t3_wq *wq, struct t3_cq *cq, int count)
- 	ptr = wq->sq_rptr + count;
- 	sqp = wq->sq + Q_PTR2IDX(ptr, wq->sq_size_log2);
- 	while (ptr != wq->sq_wptr) {
-+		sqp->signaled = 0;
- 		insert_sq_cqe(wq, cq, sqp);
- 		ptr++;
- 		sqp = wq->sq + Q_PTR2IDX(ptr, wq->sq_size_log2);
-diff --git a/drivers/infiniband/hw/mlx4/mlx4_ib.h b/drivers/infiniband/hw/mlx4/mlx4_ib.h
-index 9974e88..8a7dd67 100644
---- a/drivers/infiniband/hw/mlx4/mlx4_ib.h
-+++ b/drivers/infiniband/hw/mlx4/mlx4_ib.h
-@@ -86,6 +86,7 @@ struct mlx4_ib_mr {
- 
- struct mlx4_ib_fast_reg_page_list {
- 	struct ib_fast_reg_page_list	ibfrpl;
-+	__be64			       *mapped_page_list;
- 	dma_addr_t			map;
- };
- 
-diff --git a/drivers/infiniband/hw/mlx4/mr.c b/drivers/infiniband/hw/mlx4/mr.c
-index 8e4d26d..8f3666b 100644
---- a/drivers/infiniband/hw/mlx4/mr.c
-+++ b/drivers/infiniband/hw/mlx4/mr.c
-@@ -231,7 +231,11 @@ struct ib_fast_reg_page_list *mlx4_ib_alloc_fast_reg_page_list(struct ib_device
- 	if (!mfrpl)
- 		return ERR_PTR(-ENOMEM);
- 
--	mfrpl->ibfrpl.page_list = dma_alloc_coherent(&dev->dev->pdev->dev,
-+	mfrpl->ibfrpl.page_list = kmalloc(size, GFP_KERNEL);
-+	if (!mfrpl->ibfrpl.page_list)
-+		goto err_free;
-+
-+	mfrpl->mapped_page_list = dma_alloc_coherent(&dev->dev->pdev->dev,
- 						     size, &mfrpl->map,
- 						     GFP_KERNEL);
- 	if (!mfrpl->ibfrpl.page_list)
-@@ -242,6 +246,7 @@ struct ib_fast_reg_page_list *mlx4_ib_alloc_fast_reg_page_list(struct ib_device
- 	return &mfrpl->ibfrpl;
- 
- err_free:
-+	kfree(mfrpl->ibfrpl.page_list);
- 	kfree(mfrpl);
- 	return ERR_PTR(-ENOMEM);
- }
-@@ -252,8 +257,9 @@ void mlx4_ib_free_fast_reg_page_list(struct ib_fast_reg_page_list *page_list)
- 	struct mlx4_ib_fast_reg_page_list *mfrpl = to_mfrpl(page_list);
- 	int size = page_list->max_page_list_len * sizeof (u64);
- 
--	dma_free_coherent(&dev->dev->pdev->dev, size, page_list->page_list,
-+	dma_free_coherent(&dev->dev->pdev->dev, size, mfrpl->mapped_page_list,
- 			  mfrpl->map);
-+	kfree(mfrpl->ibfrpl.page_list);
- 	kfree(mfrpl);
- }
- 
-diff --git a/drivers/infiniband/hw/mlx4/qp.c b/drivers/infiniband/hw/mlx4/qp.c
-index f385a24..20724ae 100644
---- a/drivers/infiniband/hw/mlx4/qp.c
-+++ b/drivers/infiniband/hw/mlx4/qp.c
-@@ -1365,7 +1365,7 @@ static void set_fmr_seg(struct mlx4_wqe_fmr_seg *fseg, struct ib_send_wr *wr)
- 	int i;
- 
- 	for (i = 0; i < wr->wr.fast_reg.page_list_len; ++i)
--		wr->wr.fast_reg.page_list->page_list[i] =
-+		mfrpl->mapped_page_list[i] =
- 			cpu_to_be64(wr->wr.fast_reg.page_list->page_list[i] |
- 				    MLX4_MTT_FLAG_PRESENT);
- 
+> +	board = priv->priv;
+> +	if (!board)
+> +		return;
+> +
+> +	dev_info(&board->pci_dev->dev, "Removing device %s\n",
+> +		 dev->name);
+> +
+> +	for (i = 0; i < board->no_channels - 1; i++) {
+> +		if (board->slave_dev[i]) {
+> +			dev_info(&board->pci_dev->dev, "Removing device %s\n",
+> +				 board->slave_dev[i]->name);
+> +			unregister_sja1000dev(board->slave_dev[i]);
+> +			free_sja1000dev(board->slave_dev[i]);
+> +		}
+> +	}
+> +	unregister_sja1000dev(dev);
+> +
+> +	/* Disable PCI interrupts */
+> +	kvaser_pci_disable_irq(dev);
+
+It seems to me like you might want to disable interrupts *before* tearing
+down all that structure?  What happens if it interrupts after the sja1000
+layer has forgotten about it?
+
+> +	pci_iounmap(board->pci_dev, (void __iomem *)dev->base_addr);
+> +	pci_iounmap(board->pci_dev, board->conf_addr);
+> +	pci_iounmap(board->pci_dev, board->res_addr);
+> +
+> +	free_sja1000dev(dev);
+> +}
+> +
+> +static int kvaser_pci_add_chan(struct pci_dev *pdev, int channel,
+> +			       struct net_device **master_dev,
+> +			       void __iomem *conf_addr,
+> +			       void __iomem *res_addr,
+> +			       unsigned long base_addr)
+> +{
+> +	struct net_device *dev;
+> +	struct sja1000_priv *priv;
+> +	struct kvaser_pci *board;
+> +	int err, init_step;
+> +
+> +	dev = alloc_sja1000dev(sizeof(struct kvaser_pci));
+> +	if (dev == NULL)
+> +		return -ENOMEM;
+> +
+> +	priv = netdev_priv(dev);
+
+Here you don't have the !priv check.
+
+> +	board = priv->priv;
+> +
+> +	board->pci_dev = pdev;
+> +	board->channel = channel;
+> +
+> +	/*S5920*/
+> +	board->conf_addr = conf_addr;
+> +
+> +	/*XILINX board wide address*/
+> +	board->res_addr = res_addr;
+> +
+> +	if (channel == 0) {
+> +		board->xilinx_ver =
+> +			ioread8(board->res_addr + XILINX_VERINT) >> 4;
+> +		init_step = 2;
+> +
+> +		/* Assert PTADR# - we're in passive mode so the other bits are
+> +		   not important */
+> +		iowrite32(0x80808080UL, board->conf_addr + S5920_PTCR);
+> +
+> +		/* Disable interrupts from card */
+> +		kvaser_pci_disable_irq(dev);
+> +		/* Enable interrupts from card */
+> +		kvaser_pci_enable_irq(dev);
+
+I'm sure there's a perfectly good reason for the disable/enable dance.
+Presumably the hardware needs it or it misbehaves?  Worth commenting.
+
+> +	} else {
+> +		struct sja1000_priv *master_priv = netdev_priv(*master_dev);
+> +		struct kvaser_pci *master_board = master_priv->priv;
+> +		master_board->slave_dev[channel - 1] = dev;
+> +		master_board->no_channels = channel + 1;
+> +		board->xilinx_ver = master_board->xilinx_ver;
+> +	}
+> +
+> +	dev->base_addr = base_addr + channel * KVASER_PCI_PORT_BYTES;
+> +
+> +	priv->read_reg = kvaser_pci_read_reg;
+> +	priv->write_reg = kvaser_pci_write_reg;
+> +
+> +	priv->can.clock.freq = KVASER_PCI_CAN_CLOCK;
+> +
+> +	priv->ocr = KVASER_PCI_OCR;
+> +	priv->cdr = KVASER_PCI_CDR;
+> +
+> +	/* Register and setup interrupt handling */
+> +	dev->irq = pdev->irq;
+> +	init_step = 4;
+> +
+> +	dev_info(&pdev->dev, "base_addr=%#lx conf_addr=%p irq=%d\n",
+> +		 dev->base_addr, board->conf_addr, dev->irq);
+> +
+> +	SET_NETDEV_DEV(dev, &pdev->dev);
+> +
+> +	/* Register SJA1000 device */
+> +	err = register_sja1000dev(dev);
+> +	if (err) {
+> +		dev_err(&pdev->dev, "Registering device failed (err=%d)\n",
+> +			err);
+> +		goto failure;
+> +	}
+> +
+> +	if (channel == 0)
+> +		*master_dev = dev;
+> +
+> +	return 0;
+> +
+> +failure:
+> +	kvaser_pci_del_chan(dev);
+> +	return err;
+> +}
+> +
+> +static int __devinit kvaser_pci_init_one(struct pci_dev *pdev,
+> +					 const struct pci_device_id *ent)
+> +{
+> +	int err;
+> +	struct net_device *master_dev = NULL;
+> +	struct sja1000_priv *priv;
+> +	struct kvaser_pci *board;
+> +	int no_channels;
+> +	void __iomem *base_addr = NULL;
+> +	void __iomem *conf_addr = NULL;
+> +	void __iomem *res_addr = NULL;
+> +	int i;
+> +
+> +	dev_info(&pdev->dev, "initializing device %04x:%04x\n",
+> +		 pdev->vendor, pdev->device);
+> +
+> +	err = pci_enable_device(pdev);
+> +	if (err)
+> +		goto failure;
+> +
+> +	err = pci_request_regions(pdev, DRV_NAME);
+> +	if (err)
+> +		goto failure_release_pci;
+> +
+> +	/*S5920*/
+> +	conf_addr = pci_iomap(pdev, 0, PCI_CONFIG_PORT_SIZE);
+> +	if (conf_addr == NULL) {
+> +		err = -ENODEV;
+> +		goto failure_iounmap;
+
+Why go there?  You know there's nothing to unmap.
+
+> +	}
+> +
+> +	/*XILINX board wide address*/
+> +	res_addr = pci_iomap(pdev, 2, PCI_PORT_XILINX_SIZE);
+> +	if (res_addr == NULL) {
+> +		err = -ENOMEM;
+> +		goto failure_iounmap;
+> +	}
+> +
+> +	base_addr = pci_iomap(pdev, 1, PCI_PORT_SIZE);
+> +	if (base_addr == NULL) {
+> +		err = -ENOMEM;
+> +		goto failure_iounmap;
+> +	}
+> +
+> +	no_channels = number_of_sja1000_chip(base_addr);
+> +	if (no_channels == 0) {
+> +		err = -ENOMEM;
+> +		goto failure_iounmap;
+> +	}
+> +
+> +	for (i = 0; i < no_channels; i++) {
+> +		err = kvaser_pci_add_chan(pdev, i, &master_dev,
+> +					  conf_addr, res_addr,
+> +					  (unsigned long)base_addr);
+> +		if (err)
+> +			goto failure_cleanup;
+> +	}
+> +
+> +	priv = netdev_priv(master_dev);
+> +	board = priv->priv;
+> +
+> +	dev_info(&pdev->dev, "xilinx version=%d number of channels=%d\n",
+> +		 board->xilinx_ver, board->no_channels);
+> +
+> +	pci_set_drvdata(pdev, master_dev);
+> +	return 0;
+> +
+> +failure_cleanup:
+> +	kvaser_pci_del_chan(master_dev);
+> +
+> +failure_iounmap:
+> +	if (conf_addr == NULL)
+> +		pci_iounmap(pdev, conf_addr);
+> +	if (res_addr == NULL)
+> +		pci_iounmap(pdev, res_addr);
+> +	if (base_addr == NULL)
+> +		pci_iounmap(pdev, base_addr);
+> +
+> +	pci_release_regions(pdev);
+> +
+> +failure_release_pci:
+> +	pci_disable_device(pdev);
+> +
+> +failure:
+> +	return err;
+> +
+> +}
+
+jon
