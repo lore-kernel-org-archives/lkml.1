@@ -1,46 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757173AbZEMGge@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbZEMGhX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757173AbZEMGge (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 02:36:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752694AbZEMGgY
+	id S1757950AbZEMGhX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 02:37:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbZEMGhI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 02:36:24 -0400
-Received: from rankki.sonarnerd.net ([83.145.240.118]:31816 "EHLO
-	mail.sonarnerd.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752232AbZEMGgY (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 02:36:24 -0400
-Message-ID: <4A0A6A67.9010205@sonarnerd.net>
-Date: Wed, 13 May 2009 09:36:23 +0300
-From: Jussi Laako <jussi@sonarnerd.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Wed, 13 May 2009 02:37:08 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:48599 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753762AbZEMGhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 02:37:07 -0400
+Date: Wed, 13 May 2009 08:37:07 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Miklos Szeredi <miklos@szeredi.hu>, Max Kellermann <max@duempel.org>,
+       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/3] splice: implement default splice_read method
+Message-ID: <20090513063707.GC4140@kernel.dk>
+References: <20090507133734.450612199@szeredi.hu> <20090507133748.161689790@szeredi.hu> <20090512223500.d7ef4648.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Chris Friesen <cfriesen@nortel.com>
-CC: Peter Zijlstra <peterz@infradead.org>,
-       James Courtier-Dutton <James@superbug.co.uk>,
-       linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       d.faggioli@sssup.it
-Subject: Re: [RFC][PATCH] Multimedia scheduling class, take 2
-References: <4959198A.3020209@sonarnerd.net>	 <1230622925.16718.26.camel@twins>  <4959DE51.2020605@sonarnerd.net>	 <1231756114.19771.6.camel@laptop> <496C6294.2040707@sonarnerd.net>	 <4971D3D5.6040801@superbug.co.uk>  <497CF128.2060903@sonarnerd.net>	 <1232954745.4863.4.camel@laptop>  <4A07E044.8040807@sonarnerd.net> <1242107859.11251.301.camel@twins> <4A094707.5040307@sonarnerd.net> <4A099670.5060902@nortel.com> <4A09A525.4080107@sonarnerd.net> <4A09AB2E.8030002@nortel.com> <4A09B7A1.2060706@sonarnerd.net> <4A0A0069.4090502@nortel.com>
-In-Reply-To: <4A0A0069.4090502@nortel.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090512223500.d7ef4648.akpm@linux-foundation.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Chris Friesen wrote:
-> Really?  You can call pthread_attr_setschedpolicy() with a policy of
-> SCHED_MM?  On my copy of glibc 2.8 it explicitly checks for
-> FIFO/RR/OTHER and anything else is rejected.
+On Tue, May 12 2009, Andrew Morton wrote:
+> On Thu, 07 May 2009 15:37:36 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+> 
+> > +	for (i = 0; i < spd.nr_pages; i++) {
+> > +		kunmap(pages[i]);
+> 
+> It is deadlockable if any thread of control holds more than a single
+> kmap at a time.
+> 
+> Because there are a finite number of kmaps available, and if one is
+> unavailable, kmap() waits for one to become free.  If the number of
+> waiting threads equals the number of available slots, nobody makes any
+> progress.
 
-My copy of 2.9 has that fixed (original one is still broken), because
-that's also broken for SCHED_IDLE and SCHED_BATCH which have been in the
-kernel for a while already.
+Good catch, that will not work reliably. I've applied the below.
 
-I'm not sure, but I think pthread_setschedparam() and
-sched_setscheduler() didn't need fixing.
+commit 4f23122858a27ba97444b9b37a066d83edebd4c8
+Author: Jens Axboe <jens.axboe@oracle.com>
+Date:   Wed May 13 08:35:35 2009 +0200
 
+    splice: fix repeated kmap()'s in default_file_splice_read()
+    
+    We cannot reliably map more than one page at the time, or we risk
+    deadlocking. Just allocate the pages from low mem instead.
+    
+    Reported-by: Andrew Morton <akpm@linux-foundation.org>
+    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 
-	- Jussi
+diff --git a/fs/splice.c b/fs/splice.c
+index eefd96b..c5e3c79 100644
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -580,13 +580,13 @@ ssize_t default_file_splice_read(struct file *in, loff_t *ppos,
+ 	for (i = 0; i < nr_pages && i < PIPE_BUFFERS && len; i++) {
+ 		struct page *page;
+ 
+-		page = alloc_page(GFP_HIGHUSER);
++		page = alloc_page(GFP_USER);
+ 		error = -ENOMEM;
+ 		if (!page)
+ 			goto err;
+ 
+ 		this_len = min_t(size_t, len, PAGE_CACHE_SIZE - offset);
+-		vec[i].iov_base = (void __user *) kmap(page);
++		vec[i].iov_base = (void __user *) page_address(page);
+ 		vec[i].iov_len = this_len;
+ 		pages[i] = page;
+ 		spd.nr_pages++;
+@@ -604,7 +604,6 @@ ssize_t default_file_splice_read(struct file *in, loff_t *ppos,
+ 
+ 	nr_freed = 0;
+ 	for (i = 0; i < spd.nr_pages; i++) {
+-		kunmap(pages[i]);
+ 		this_len = min_t(size_t, vec[i].iov_len, res);
+ 		partial[i].offset = 0;
+ 		partial[i].len = this_len;
+@@ -624,10 +623,9 @@ ssize_t default_file_splice_read(struct file *in, loff_t *ppos,
+ 	return res;
+ 
+ err:
+-	for (i = 0; i < spd.nr_pages; i++) {
+-		kunmap(pages[i]);
++	for (i = 0; i < spd.nr_pages; i++)
+ 		__free_page(pages[i]);
+-	}
++
+ 	return error;
+ }
+ EXPORT_SYMBOL(default_file_splice_read);
+
+-- 
+Jens Axboe
+
