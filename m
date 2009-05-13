@@ -1,34 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754373AbZEMDuc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754144AbZEMD5k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754373AbZEMDuc (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 23:50:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752739AbZEMDuW
+	id S1754144AbZEMD5k (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 23:57:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753110AbZEMD5a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 23:50:22 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42448 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751914AbZEMDuV (ORCPT
+	Tue, 12 May 2009 23:57:30 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:49371 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753136AbZEMD53 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 23:50:21 -0400
-Date: Tue, 12 May 2009 20:44:33 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Jeff Moyer <jmoyer@redhat.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Olga Kornievskaia <aglo@citi.umich.edu>,
-       "J. Bruce Fields" <bfields@fieldses.org>, Jim Rees <rees@umich.edu>,
-       linux-nfs@vger.kernel.org
-Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone
- over NFS
-Message-Id: <20090512204433.7eb69075.akpm@linux-foundation.org>
-In-Reply-To: <x494ovp4r51.fsf@segfault.boston.devel.redhat.com>
-References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
-	<20090508120119.8c93cfd7.akpm@linux-foundation.org>
-	<20090511081415.GL4694@kernel.dk>
-	<x49skjb21b7.fsf@segfault.boston.devel.redhat.com>
-	<20090511165826.GG4694@kernel.dk>
-	<x494ovp4r51.fsf@segfault.boston.devel.redhat.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+	Tue, 12 May 2009 23:57:29 -0400
+Date: Wed, 13 May 2009 12:55:58 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "balbir@linux.vnet.ibm.com" <balbir@linux.vnet.ibm.com>,
+       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH][BUGFIX] memcg: fix for deadlock between
+ lock_page_cgroup and mapping tree_lock
+Message-Id: <20090513125558.57be0db6.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090513093250.7803d3d0.kamezawa.hiroyu@jp.fujitsu.com>
+References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090512140648.0974cb10.nishimura@mxp.nes.nec.co.jp>
+	<20090512160901.8a6c5f64.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090512170007.ad7f5c7b.nishimura@mxp.nes.nec.co.jp>
+	<20090512171356.3d3a7554.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090512195823.15c5cb80.d-nishimura@mtf.biglobe.ne.jp>
+	<20090513085949.3c4b7b97.kamezawa.hiroyu@jp.fujitsu.com>
+	<20090513092828.cbaa5a76.nishimura@mxp.nes.nec.co.jp>
+	<20090513093250.7803d3d0.kamezawa.hiroyu@jp.fujitsu.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
@@ -36,163 +41,151 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(obvious cc's added...)
+On Wed, 13 May 2009 09:32:50 +0900
+KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
 
-It's an iozone performance regression.
+> On Wed, 13 May 2009 09:28:28 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> 
+> > On Wed, 13 May 2009 08:59:49 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > On Tue, 12 May 2009 19:58:23 +0900
+> > > Daisuke Nishimura <d-nishimura@mtf.biglobe.ne.jp> wrote:
+> > > 
+> > > > On Tue, 12 May 2009 17:13:56 +0900
+> > > > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
+> > > > 
+> > > > > On Tue, 12 May 2009 17:00:07 +0900
+> > > > > Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+> > > > > > hmm, I see.
+> > > > > > cache_charge is outside of tree_lock, so moving uncharge would make sense.
+> > > > > > IMHO, we should make the period of spinlock as small as possible,
+> > > > > > and charge/uncharge of pagecache/swapcache is protected by page lock, not tree_lock.
+> > > > > > 
+> > > > > How about this ?
+> > > > Looks good conceptually, but it cannot be built :)
+> > > > 
+> > > > It needs a fix like this.
+> > > > Passed build test with enabling/disabling both CONFIG_MEM_RES_CTLR
+> > > > and CONFIG_SWAP.
+> > > > 
+> > > ok, will update. can I add you Signed-off-by on the patch ?
+> > > 
+> > Sure.
+> > 
+> > 	Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> > 
+> > The patch(with my fix applied) seems to work fine, I need run it
+> > for more long time though.
+> > 
+> Ok, I'll treat this as an independent issue, not as "4/4".
+> 
+Could you merge mine and yours and send it to Andrew ?
+I think this is a fix for dead-lock and priority is very high.
+I foumd my system broken and installing the whole system again, now.
+So, I can't post patch today.
 
-On Tue, 12 May 2009 23:29:30 -0400 Jeff Moyer <jmoyer@redhat.com> wrote:
 
-> Jens Axboe <jens.axboe@oracle.com> writes:
+> Thanks,
+> -Kame
 > 
-> > On Mon, May 11 2009, Jeff Moyer wrote:
-> >> Jens Axboe <jens.axboe@oracle.com> writes:
-> >> 
-> >> > On Fri, May 08 2009, Andrew Morton wrote:
-> >> >> On Thu, 23 Apr 2009 10:01:58 -0400
-> >> >> Jeff Moyer <jmoyer@redhat.com> wrote:
-> >> >> 
-> >> >> > Hi,
-> >> >> > 
-> >> >> > I've been working on CFQ improvements for interleaved I/Os between
-> >> >> > processes, and noticed a regression in performance when using the
-> >> >> > deadline I/O scheduler.  The test uses a server configured with a cciss
-> >> >> > array and 1Gb/s ethernet.
-> >> >> > 
-> >> >> > The iozone command line was:
-> >> >> >   iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
-> >> >> > 
-> >> >> > The numbers in the nfsd's row represent the number of nfsd "threads".
-> >> >> > These numbers (in MB/s) represent the average of 5 runs.
-> >> >> > 
-> >> >> >                v2.6.29
-> >> >> > 
-> >> >> > nfsd's  |   1    |  2   |   4   |   8
-> >> >> > --------+---------------+-------+------
-> >> >> > deadline| 43207 | 67436 | 96289 | 107590
-> >> >> > 
-> >> >> >               2.6.30-rc1
-> >> >> > 
-> >> >> > nfsd's  |   1   |   2   |   4   |   8
-> >> >> > --------+---------------+-------+------
-> >> >> > deadline| 43732 | 68059 | 76659 | 83231
-> >> >> > 
-> >> >> >     2.6.30-rc3.block-for-linus
-> >> >> > 
-> >> >> > nfsd's  |   1   |   2   |   4   |   8
-> >> >> > --------+---------------+-------+------
-> >> >> > deadline| 46102 | 71151 | 83120 | 82330
-> >> >> > 
-> >> >> > 
-> >> >> > Notice the drop for 4 and 8 threads.  It may be worth noting that the
-> >> >> > default number of NFSD threads is 8.
-> >> >> > 
-> >> >> 
-> >> >> I guess we should ask Rafael to add this to the post-2.6.29 regression
-> >> >> list.
-> >> >
-> >> > I agree. It'd be nice to bisect this one down, I'm guessing some mm
-> >> > change has caused this writeout regression.
-> >> 
-> >> It's not writeout, it's a read test.
-> >
-> > Doh sorry, I even ran these tests as well a few weeks back. So perhaps
-> > some read-ahead change, I didn't look into it. FWIW, on a single SATA
-> > drive here, it didn't show any difference.
 > 
-> OK, I bisected this to the following commit.  The mount is done using
-> NFSv3, by the way.
+> > > Thanks,
+> > > -Kame
+> > > > ===
+> > > >  include/linux/swap.h |    5 +++++
+> > > >  mm/memcontrol.c      |    4 +++-
+> > > >  mm/swap_state.c      |    4 +---
+> > > >  mm/vmscan.c          |    2 +-
+> > > >  4 files changed, 10 insertions(+), 5 deletions(-)
+> > > > 
+> > > > diff --git a/include/linux/swap.h b/include/linux/swap.h
+> > > > index caf0767..6ea541d 100644
+> > > > --- a/include/linux/swap.h
+> > > > +++ b/include/linux/swap.h
+> > > > @@ -431,6 +431,11 @@ static inline swp_entry_t get_swap_page(void)
+> > > >  #define has_swap_token(x) 0
+> > > >  #define disable_swap_token() do { } while(0)
+> > > >  
+> > > > +static inline void
+> > > > +mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+> > > > +{
+> > > > +}
+> > > > +
+> > > >  #endif /* CONFIG_SWAP */
+> > > >  #endif /* __KERNEL__*/
+> > > >  #endif /* _LINUX_SWAP_H */
+> > > > diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> > > > index 0c9c1ad..89523cf 100644
+> > > > --- a/mm/memcontrol.c
+> > > > +++ b/mm/memcontrol.c
+> > > > @@ -1488,8 +1488,9 @@ void mem_cgroup_uncharge_cache_page(struct page *page)
+> > > >  	__mem_cgroup_uncharge_common(page, MEM_CGROUP_CHARGE_TYPE_CACHE);
+> > > >  }
+> > > >  
+> > > > +#ifdef CONFIG_SWAP
+> > > >  /*
+> > > > - * called from __delete_from_swap_cache() and drop "page" account.
+> > > > + * called after __delete_from_swap_cache() and drop "page" account.
+> > > >   * memcg information is recorded to swap_cgroup of "ent"
+> > > >   */
+> > > >  void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+> > > > @@ -1506,6 +1507,7 @@ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+> > > >  	if (memcg)
+> > > >  		css_put(&memcg->css);
+> > > >  }
+> > > > +#endif
+> > > >  
+> > > >  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+> > > >  /*
+> > > > diff --git a/mm/swap_state.c b/mm/swap_state.c
+> > > > index 87f10d4..7624c89 100644
+> > > > --- a/mm/swap_state.c
+> > > > +++ b/mm/swap_state.c
+> > > > @@ -109,8 +109,6 @@ int add_to_swap_cache(struct page *page, swp_entry_t entry, gfp_t gfp_mask)
+> > > >   */
+> > > >  void __delete_from_swap_cache(struct page *page)
+> > > >  {
+> > > > -	swp_entry_t ent = {.val = page_private(page)};
+> > > > -
+> > > >  	VM_BUG_ON(!PageLocked(page));
+> > > >  	VM_BUG_ON(!PageSwapCache(page));
+> > > >  	VM_BUG_ON(PageWriteback(page));
+> > > > @@ -190,7 +188,7 @@ void delete_from_swap_cache(struct page *page)
+> > > >  	__delete_from_swap_cache(page);
+> > > >  	spin_unlock_irq(&swapper_space.tree_lock);
+> > > >  
+> > > > -	mem_cgroup_uncharge_swapcache(page, ent);
+> > > > +	mem_cgroup_uncharge_swapcache(page, entry);
+> > > >  	swap_free(entry);
+> > > >  	page_cache_release(page);
+> > > >  }
+> > > > diff --git a/mm/vmscan.c b/mm/vmscan.c
+> > > > index 6c5988d..a7d7a06 100644
+> > > > --- a/mm/vmscan.c
+> > > > +++ b/mm/vmscan.c
+> > > > @@ -470,7 +470,7 @@ static int __remove_mapping(struct address_space *mapping, struct page *page)
+> > > >  		swp_entry_t swap = { .val = page_private(page) };
+> > > >  		__delete_from_swap_cache(page);
+> > > >  		spin_unlock_irq(&mapping->tree_lock);
+> > > > -		mem_cgroup_uncharge_swapcache(page);
+> > > > +		mem_cgroup_uncharge_swapcache(page, swap);
+> > > >  		swap_free(swap);
+> > > >  	} else {
+> > > >  		__remove_from_page_cache(page);
+> > > > ===
+> > > > --
+> > > > To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> > > > the body of a message to majordomo@vger.kernel.org
+> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> > > > Please read the FAQ at  http://www.tux.org/lkml/
+> > > > 
+> > > 
+> > 
 > 
-> commit 47a14ef1af48c696b214ac168f056ddc79793d0e
-> Author: Olga Kornievskaia <aglo@citi.umich.edu>
-> Date:   Tue Oct 21 14:13:47 2008 -0400
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 > 
->     svcrpc: take advantage of tcp autotuning
->     
->     Allow the NFSv4 server to make use of TCP autotuning behaviour, which
->     was previously disabled by setting the sk_userlocks variable.
->     
->     Set the receive buffers to be big enough to receive the whole RPC
->     request, and set this for the listening socket, not the accept socket.
->     
->     Remove the code that readjusts the receive/send buffer sizes for the
->     accepted socket. Previously this code was used to influence the TCP
->     window management behaviour, which is no longer needed when autotuning
->     is enabled.
->     
->     This can improve IO bandwidth on networks with high bandwidth-delay
->     products, where a large tcp window is required.  It also simplifies
->     performance tuning, since getting adequate tcp buffers previously
->     required increasing the number of nfsd threads.
->     
->     Signed-off-by: Olga Kornievskaia <aglo@citi.umich.edu>
->     Cc: Jim Rees <rees@umich.edu>
->     Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
-> 
-> diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
-> index 5763e64..7a2a90f 100644
-> --- a/net/sunrpc/svcsock.c
-> +++ b/net/sunrpc/svcsock.c
-> @@ -345,7 +345,6 @@ static void svc_sock_setbufsize(struct socket *sock, unsigned int snd,
->  	lock_sock(sock->sk);
->  	sock->sk->sk_sndbuf = snd * 2;
->  	sock->sk->sk_rcvbuf = rcv * 2;
-> -	sock->sk->sk_userlocks |= SOCK_SNDBUF_LOCK|SOCK_RCVBUF_LOCK;
->  	release_sock(sock->sk);
->  #endif
->  }
-> @@ -797,23 +796,6 @@ static int svc_tcp_recvfrom(struct svc_rqst *rqstp)
->  		test_bit(XPT_CONN, &svsk->sk_xprt.xpt_flags),
->  		test_bit(XPT_CLOSE, &svsk->sk_xprt.xpt_flags));
->  
-> -	if (test_and_clear_bit(XPT_CHNGBUF, &svsk->sk_xprt.xpt_flags))
-> -		/* sndbuf needs to have room for one request
-> -		 * per thread, otherwise we can stall even when the
-> -		 * network isn't a bottleneck.
-> -		 *
-> -		 * We count all threads rather than threads in a
-> -		 * particular pool, which provides an upper bound
-> -		 * on the number of threads which will access the socket.
-> -		 *
-> -		 * rcvbuf just needs to be able to hold a few requests.
-> -		 * Normally they will be removed from the queue
-> -		 * as soon a a complete request arrives.
-> -		 */
-> -		svc_sock_setbufsize(svsk->sk_sock,
-> -				    (serv->sv_nrthreads+3) * serv->sv_max_mesg,
-> -				    3 * serv->sv_max_mesg);
-> -
->  	clear_bit(XPT_DATA, &svsk->sk_xprt.xpt_flags);
->  
->  	/* Receive data. If we haven't got the record length yet, get
-> @@ -1061,15 +1043,6 @@ static void svc_tcp_init(struct svc_sock *svsk, struct svc_serv *serv)
->  
->  		tcp_sk(sk)->nonagle |= TCP_NAGLE_OFF;
->  
-> -		/* initialise setting must have enough space to
-> -		 * receive and respond to one request.
-> -		 * svc_tcp_recvfrom will re-adjust if necessary
-> -		 */
-> -		svc_sock_setbufsize(svsk->sk_sock,
-> -				    3 * svsk->sk_xprt.xpt_server->sv_max_mesg,
-> -				    3 * svsk->sk_xprt.xpt_server->sv_max_mesg);
-> -
-> -		set_bit(XPT_CHNGBUF, &svsk->sk_xprt.xpt_flags);
->  		set_bit(XPT_DATA, &svsk->sk_xprt.xpt_flags);
->  		if (sk->sk_state != TCP_ESTABLISHED)
->  			set_bit(XPT_CLOSE, &svsk->sk_xprt.xpt_flags);
-> @@ -1140,8 +1113,14 @@ static struct svc_sock *svc_setup_socket(struct svc_serv *serv,
->  	/* Initialize the socket */
->  	if (sock->type == SOCK_DGRAM)
->  		svc_udp_init(svsk, serv);
-> -	else
-> +	else {
-> +		/* initialise setting must have enough space to
-> +		 * receive and respond to one request.
-> +		 */
-> +		svc_sock_setbufsize(svsk->sk_sock, 4 * serv->sv_max_mesg,
-> +					4 * serv->sv_max_mesg);
->  		svc_tcp_init(svsk, serv);
-> +	}
->  
->  	/*
->  	 * We start one listener per sv_serv.  We want AF_INET
+
