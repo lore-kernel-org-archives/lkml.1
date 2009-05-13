@@ -1,44 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757014AbZEMIin@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758259AbZEMIoX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757014AbZEMIin (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 04:38:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754887AbZEMIib
+	id S1758259AbZEMIoX (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 04:44:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754373AbZEMIoJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 04:38:31 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:36976 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755708AbZEMIia (ORCPT
+	Wed, 13 May 2009 04:44:09 -0400
+Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:43873 "EHLO
+	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753868AbZEMIoH (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 04:38:30 -0400
-To: Sheng Yang <sheng@linux.intel.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
-       Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: Extend test_and_set_bit() test_and_clean_bit() to 64 bits in X86_64
-From: Andi Kleen <andi@firstfloor.org>
-References: <1242202647-32446-1-git-send-email-sheng@linux.intel.com>
-Date: Wed, 13 May 2009 10:38:29 +0200
-In-Reply-To: <1242202647-32446-1-git-send-email-sheng@linux.intel.com> (Sheng Yang's message of "Wed, 13 May 2009 16:17:27 +0800")
-Message-ID: <87zldhl7ne.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 13 May 2009 04:44:07 -0400
+Date: Wed, 13 May 2009 09:44:09 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: dsaxena@plexity.net
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] 8250: Don't restore NS16550 mode when console suspend
+ is disabled
+Message-ID: <20090513094409.50c2409f@lxorguk.ukuu.org.uk>
+In-Reply-To: <20090513002850.GA28422@plexity.net>
+References: <20090512210015.GA25540@plexity.net>
+	<alpine.LFD.2.01.0905121452190.3343@localhost.localdomain>
+	<20090513011842.22d9cd6c@lxorguk.ukuu.org.uk>
+	<20090513002850.GA28422@plexity.net>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sheng Yang <sheng@linux.intel.com> writes:
+> > Surely if my console is at 230Kbits/sec then resuming it at a totally
+> > different speed is going to break things for people even if it happens to
+> > help XO debug ?
+> 
+> The console is not in high speed mode when we suspend. The original 
+> commit (b5b82df6) just assumes that if it is a NATSEMI device, we 
+> should set it to high speed mode at resume w/o checking if that 
+> was the mode we were in when we suspended.
 
-> -static inline int test_and_set_bit(int nr, volatile unsigned long *addr)
-> +static inline int test_and_set_bit(long int nr, volatile unsigned long *addr)
->  {
->  	int oldbit;
->  
-> -	asm volatile(LOCK_PREFIX "bts %2,%1\n\t"
-> +	asm volatile(LOCK_PREFIX REX_X86 "bts %2,%1\n\t"
+Then hard coding is no improvement either. It needs to restore the mode
+that was present at suspend.
 
-Use btsq on 64bit, then you don't need the explicit rex prefix.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+I'll update the 8250 Maintainers entry I suppose, I seem to have been
+landed it as part of tty 8)
