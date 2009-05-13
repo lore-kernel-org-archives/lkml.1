@@ -1,101 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755734AbZEMLaf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758166AbZEMLcv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755734AbZEMLaf (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 07:30:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750988AbZEMLaZ
+	id S1758166AbZEMLcv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 07:32:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZEMLcm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 07:30:25 -0400
-Received: from fms-01.valinux.co.jp ([210.128.90.1]:52522 "EHLO
-	mail.valinux.co.jp" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750998AbZEMLaY (ORCPT
+	Wed, 13 May 2009 07:32:42 -0400
+Received: from mail-pz0-f115.google.com ([209.85.222.115]:46644 "EHLO
+	mail-pz0-f115.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750998AbZEMLcl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 07:30:24 -0400
-Date: Wed, 13 May 2009 20:30:24 +0900 (JST)
-Message-Id: <20090513.203024.193692998.ryov@valinux.co.jp>
-To: lizf@cn.fujitsu.com
-Cc: Alan.Brunelle@hp.com, dm-devel@redhat.com, linux-kernel@vger.kernel.org,
-       jens.axboe@oracle.com, mingo@elte.hu, rostedt@goodmis.org,
-       fweisbec@gmail.com
-Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
-From: Ryo Tsuruta <ryov@valinux.co.jp>
-In-Reply-To: <4A0A1AAD.3090606@cn.fujitsu.com>
-References: <4A092EE7.4070403@cn.fujitsu.com>
-	<20090512.191206.226779551.ryov@valinux.co.jp>
-	<4A0A1AAD.3090606@cn.fujitsu.com>
-X-Mailer: Mew version 5.2.52 on Emacs 22.1 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+	Wed, 13 May 2009 07:32:41 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=A23CPzSOGyfJtQmEoStdweDzbyy5rfs/RUqv3J/HCirmtlpMamocuL0wQjbWgw0AFe
+         r4bKQB8GrTGKkbSAhEMsA/TnKxgIbRE2x/OaoSiAVZJzdCUrHsRxYRE96wkXwcVjVKpL
+         r/nRsMMcmKTqloN3Td/m7RyrhW24500T9UpYA=
+Date: Wed, 13 May 2009 19:33:57 +0800
+From: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+To: GeunSik Lim <leemgs1@gmail.com>
+Cc: mtk.manpages@gmail.com, tovalds@linux-foundation.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH]man-pages : section 9  for kernel api description.
+Message-ID: <20090513113357.GA11773@hack>
+References: <1242180268.31161.24.camel@centos51>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242180268.31161.24.camel@centos51>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Li,
+On Wed, May 13, 2009 at 11:04:28AM +0900, GeunSik Lim wrote:
+>
+>
+>Dear Michael Kerrisk,
+>
+>Are you maintainer of man-pages(man-pages-3.XX.tar.gz)?
+>I am not sure...
 
-From: Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [RFC PATCH dm-ioband] Added in blktrace msgs for dm-ioband
-Date: Wed, 13 May 2009 08:56:13 +0800
+Yes, he is.
 
-> >>>>>> Thanks for your suggestion. I'll use TRACE_EVENT instead.
-> >>>>> blk_add_trace_msg() supports both blktrace and tracepoints. I can
-> >>>>> get messages from dm-ioband through debugfs. Could you expain why
-> >>>>> should we use TRACE_EVENT instead?
-> >>>>>
-> >>>> Actually blk_add_trace_msg() has nothing to do with tracepoints..
-> >>>>
-> >>>> If we use blk_add_trace_msg() is dm, we can use it in md, various block
-> >>>> drivers and even ext4. So the right thing is, if a subsystem wants to add
-> >>>> trace facility, it should use tracepoints/TRACE_EVENT.
-> >>>>
-> >>>> With TRACE_EVENT, you can get output through debugfs too, and it can be used
-> >>>> together with blktrace:
-> >>>>
-> >>>>  # echo 1 > /sys/block/dm/trace/enable
-> >>>>  # echo blk > /debugfs/tracing/current_tracer
-> >>>>  # echo dm-ioband-foo > /debugfs/tracing/tracing/set_event
-> >>>>  # cat /deubgfs/tracing/trace_pipe
-> >>>>  
-> >>>> And you can enable dm-ioband-foo while disabling dm-ioband-bar, and you can
-> >>>> use filter feature too.
-> >>> Thanks for explaining.
-> >>> The base kernel of current dm tree (2.6.30-rc4) has not supported
-> >>> dm-device tracing yet. I'll consider using TRACE_EVENT when the base
-> >>> kernel supports dm-device tracing.
-> >>>
-> >> I think we don't have any plan on dm-device tracing support, do we? And you
-> >> don't need that.
-> >>
-> >> I downloaded dm-ioband 1.10.4, and applied it to latest tip-tree, and made
-> >> a patch to convert those blktrace msgs to trace events.
-> >>
-> >>  # ls /debug/tracing/events/dm-ioband
-> >>  enable  ioband_endio     ioband_issue_list    ioband_urgent_bio
-> >>  filter  ioband_hold_bio  ioband_make_request
-> >>  # echo 1 /debug/tracing/events/dm-ioband/enable
-> >>  # echo blk /debug/tracing/current_tracer
-> >>  ...
-> > 
-> > Is the following line unnecessary in the latest tip-tree?
-> > 
-> >    # echo 1 > /sys/block/dm/trace/enable
-> > 
-> 
-> Yes, still needed. I was not giving a complete demonstration. ;)
-> 
-> > How to enable/disable tracing on each device?
-> 
-> echo 1 > /sys/block/dm-0/trace/enable
-> echo 1 > /sys/block/dm-1/trace/enable
-> 
-> Or use filter facility:
-> 
-> echo "dev == $(( (ma0 << 20) | mi0 ))" > /debug/tracing/events/dm-ioband/filter
-> 
-> This will filter out all events generated from dm-1, leaving those from dm-0.
-> 
+>
+>I use fedora 9 distribution as Linux based Desktop OS currently. 
+>I have one proposal about "#> man <linux-kernel-api>" command.
+>Can you tell me your opinion about below patch?
+>Thanks reading. 
+>
+>commit 45e950c98412c002c47254507a199731315c7c2b
+>Author: GeunSik,Lim <leemgs1@gmail.com>
+>Date:   Wed May 13 10:49:47 2009 +0900
+>
+>    Append Section 9 info of man command.
+>    
+>    We view description of the Linux kernel API with man command.
+>       For example,
+>       Fedoar9#> yum install kernel-doc*
+>       Fedora9#> man kobject_rename  or
+>       Fedora9#> man kthread_create
 
-Thanks for further explaining. I'll include your patche into the next
-release.
+Why?
+Why do you want kernel api doc be in man pages?
+Why not just browsing the kernel source code?
 
-Thanks,
-Ryo Tsuruta
+Kernel APIs are not stable at all, this is also a reason why you
+should not include their doc into man pages.
+
+-- 
+Live like a child, think like the god.
+ 
