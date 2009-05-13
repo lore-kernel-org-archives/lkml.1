@@ -1,40 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761603AbZEMVxp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761863AbZEMVyp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761603AbZEMVxp (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 17:53:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZEMVxg
+	id S1761863AbZEMVyp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 17:54:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752811AbZEMVyf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 17:53:36 -0400
-Received: from web32405.mail.mud.yahoo.com ([68.142.207.198]:40695 "HELO
-	web32405.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1753159AbZEMVxg (ORCPT
+	Wed, 13 May 2009 17:54:35 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:63859 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751088AbZEMVyf convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 17:53:36 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type;
-  b=cNwK0oeoqKM+6SdQSj3AgOeAgPNNAdEVhJpHCT1W0MzGXrYrngi/qAL3OjdZcwGBvFzyyYgFAk9gx4nN+h3ZoXuQgjeL1JsBQHdDzVI7QV3AXeaMHODuPGk4pvr//LrUw1exPhJf3Q3Z/RLTOjXUFQQdwo/Guuu6QJUJGgCyOQM=;
-Message-ID: <548601.3000.qm@web32405.mail.mud.yahoo.com>
-X-YMail-OSG: CPxLYaQVM1lq43OqDlYxE7ncI9FXd9PqhI6SNaZbCvekIBhKDUkQf8pQnIhsKSzzIMazI0iaUkJxaee.ebC4yOZMZygCFItLrZYBi0oiKmC1iOTzTaXT2bS7Gqj7Zy0lvR8AQ5T4seFDafqWW.DStOQoYXTWggXkrdQ_hf62tV4WgK46n5Z.n1OQBedULgmtafj3UwWJ5DLDMapLXM2rN5pQpTeXmLU9WJ123MW_AdXsNOMSMJ8OvsKVT3SDlyusAhHcFhUJWnlGiXcTwyy1Y7ioEmi63AiEUr2d8Mq5AEmWMedqww0-
-X-Mailer: YahooMailClassic/5.2.20 YahooMailWebService/0.7.289.10
-Date: Wed, 13 May 2009 14:53:36 -0700 (PDT)
-From: Anil kumar <anils_r@yahoo.com>
-Subject: send signal with data from driver
-To: linux-kernel@vger.kernel.org
+	Wed, 13 May 2009 17:54:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=S68knBpUiKaIz2KtkK36O96jyuUASHyYBM3Qv90Iazuqr3AyIF1PK+L7Y4rqKidh3r
+         r9TcDtJOC7v9jvbvHiB1LBVOzDPc9b9uaDoo5bLpkLlqX3kReED9OnyMhksttQVKrPOp
+         j55kv289GFjpz+NS83A1+hNyyHk4Q0RHyStTs=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <a4423d670905121449p3f1112d3rf2e4a1e57cd076e@mail.gmail.com>
+References: <f74141980905121422p140d1649jcfb3d94aacd42f02@mail.gmail.com>
+	 <a4423d670905121449p3f1112d3rf2e4a1e57cd076e@mail.gmail.com>
+Date: Thu, 14 May 2009 01:54:34 +0400
+Message-ID: <f74141980905131454r725b2daft49074194087efe1f@mail.gmail.com>
+Subject: Re: jsm: two or more 4/8-port boards can not initialize ports 
+	properly
+From: "Alexander Y. Fomichev" <git.user@gmail.com>
+To: Alexander Beregalov <a.beregalov@gmail.com>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Wed, May 13, 2009 at 1:49 AM, Alexander Beregalov
+<a.beregalov@gmail.com> wrote:
+> 2009/5/13 Alexander Y. Fomichev <git.user@gmail.com>:
+>> G' day
+>>
+>> The patch bellow fix for me problem with jsm_uart_port_init
+>> which still thinking it works for 2-ports borads only.
+>> drivers/serial/jsm/jsm_tty.c +462
+>> brd->channels[i]->uart_port.line = brd->channels[i]->ch_portnum +
+>> brd->boardnum * 2;
+>>
+>>                         ^^^^^^^^^^^^^^^^^^^^^^
+>> so for line numbers of the second and further boards
+>> may/will be assigned values with the same range.
+>> in my case of two digi neo-8 -- 6 ports of 8 failed to be
+>> added for the second board.
+>
+> Hi Alexander,
+>
+> Your patch is broken, your mail client wraps long lines.
+> Please read Documentation/email-clients.txt.
+> Please add linux-serial@vger.kernel.org,
+> alan@lxorguk.ukuu.org.uk and Scott.Kilau@digi.com to CC list.
+> Please add Signed-off-by line as described in Documentation/SubmittingPatches
 
-Hi,
-
-I want to send a event notification from the driver to registered applications. I am using kill_async( ) with SIGIO. But with this I cannot send any data along with the signal. 
-Is there a way to send data (buffer or a int number) along with the signal from the driver.
-
-With regards,
-  Anil
+tnx for advise
 
 
-      
+
+-- 
+Best regards.
+       Alexander Y. Fomichev <git.user@gmail.com>
