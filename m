@@ -1,66 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761922AbZEMWCc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761977AbZEMWCv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761922AbZEMWCc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 18:02:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751088AbZEMWCX
+	id S1761977AbZEMWCv (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 18:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761523AbZEMWCh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 18:02:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:56656 "EHLO hera.kernel.org"
+	Wed, 13 May 2009 18:02:37 -0400
+Received: from vena.lwn.net ([206.168.112.25]:39908 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750760AbZEMWCW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 18:02:22 -0400
-Subject: [PATCH 1/2] x86: apic/apic.c declare default_init_apic_ldr()
- before it get used
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Content-Type: text/plain
-Date: Thu, 14 May 2009 03:27:21 +0530
-Message-Id: <1242251841.3364.17.camel@localhost.localdomain>
+	id S1761543AbZEMWCg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 18:02:36 -0400
+Date: Wed, 13 May 2009 16:02:35 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Sascha Hauer <s.hauer@pengutronix.de>,
+       Wolfgang Grandegger <wg@grandegger.com>,
+       Marc Kleine-Budde <mkl@pengutronix.de>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+Subject: Re: [PATCH v2 5/7] [PATCH 5/8] can: SJA1000 generic platform bus
+ driver
+Message-ID: <20090513160235.5d2d281c@bike.lwn.net>
+In-Reply-To: <20090512092757.894204198@denx.de>
+References: <20090512092757.048938233@denx.de>
+	<20090512092757.894204198@denx.de>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Tue, 12 May 2009 11:28:02 +0200
+Wolfgang Grandegger <wg@grandegger.com> wrote:
 
-default_init_apic_ldr() is also required for 64 bit so moving it out
-from CONFIG_X86_32.
+> This driver adds support for the SJA1000 chips connected to the
+> "platform bus", which can be found on various embedded systems.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/include/asm/apic.h |    8 ++++----
- 1 files changed, 4 insertions(+), 4 deletions(-)
+[...]
 
-diff --git a/arch/x86/include/asm/apic.h b/arch/x86/include/asm/apic.h
-index 229d0be..d1acc60 100644
---- a/arch/x86/include/asm/apic.h
-+++ b/arch/x86/include/asm/apic.h
-@@ -469,10 +469,6 @@ static inline unsigned int read_apic_id(void)
- 
- extern void default_setup_apic_routing(void);
- 
--#ifdef CONFIG_X86_32
--
--extern struct apic apic_default;
--
- /*
-  * Set up the logical destination ID.
-  *
-@@ -482,6 +478,10 @@ extern struct apic apic_default;
-  */
- extern void default_init_apic_ldr(void);
- 
-+#ifdef CONFIG_X86_32
-+
-+extern struct apic apic_default;
-+
- static inline int default_apic_id_registered(void)
- {
- 	return physid_isset(read_apic_id(), phys_cpu_present_map);
--- 
-1.6.0.6
+> +
+> +static u8 sp_read_reg(const struct net_device *dev, int reg)
+> +{
+> +	return ioread8((void __iomem *)(dev->base_addr + reg));
+> +}
+> +
+> +static void sp_write_reg(const struct net_device *dev, int reg, u8 val)
+> +{
+> +	iowrite8(val, (void __iomem *)(dev->base_addr + reg));
+> +}
 
+So there's no locking around accesses to the hardware at all.  How do you
+protect against concurrent access?
 
+[...]
 
+> +static int sp_remove(struct platform_device *pdev)
+> +{
+> +	struct net_device *dev = dev_get_drvdata(&pdev->dev);
+> +	struct resource *res;
+> +
+> +	unregister_sja1000dev(dev);
+> +	dev_set_drvdata(&pdev->dev, NULL);
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	release_mem_region(res->start, res->end - res->start + 1);
+> +
+> +	if (dev->base_addr)
+> +		iounmap((void __iomem *)dev->base_addr);
+
+Seems like you should unmap it before releasing it back to the kernel.
+Nobody else is ever going to jump in and try to map it, but still...
+
+> +	free_sja1000dev(dev);
+> +
+> +	return 0;
+> +}
+
+jon
