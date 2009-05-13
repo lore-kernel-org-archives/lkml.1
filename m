@@ -1,89 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759498AbZEMKxy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759421AbZEMK5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759498AbZEMKxy (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 06:53:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757216AbZEMKxn
+	id S1759421AbZEMK5i (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 06:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756564AbZEMK53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 06:53:43 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:59930 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754571AbZEMKxm (ORCPT
+	Wed, 13 May 2009 06:57:29 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:26012 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754628AbZEMK52 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 06:53:42 -0400
-Message-ID: <4A0AA6AE.5080709@novell.com>
-Date: Wed, 13 May 2009 06:53:34 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
+	Wed, 13 May 2009 06:57:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=JMNoGuYezovUXliAmnld4Ap7xscD/YyOOKT9Q1nECmDXk1h0/QzFJNeYV7+YmVBEnr
+         jOgyUuq8RJE65R9qy2T5P4fSMBxRi2cYNrC5XIzvK+wZgAyrAe2j9P7S9S2Zj3pmam6X
+         8nIRNdlA/47oHAHtghclJXi5CxSciroYktwTA=
 MIME-Version: 1.0
-To: Anthony Liguori <anthony@codemonkey.ws>
-CC: Gregory Haskins <gregory.haskins@gmail.com>, Avi Kivity <avi@redhat.com>,
-       Chris Wright <chrisw@sous-sol.org>, linux-kernel@vger.kernel.org,
-       kvm@vger.kernel.org, Hollis Blanchard <hollisb@us.ibm.com>
-Subject: Re: [RFC PATCH 0/3] generic hypercall support
-References: <20090505132005.19891.78436.stgit@dev.haskins.net> <4A0040C0.1080102@redhat.com> <4A0041BA.6060106@novell.com> <4A004676.4050604@redhat.com> <4A0049CD.3080003@gmail.com> <20090505231718.GT3036@sequoia.sous-sol.org> <4A010927.6020207@novell.com> <20090506072212.GV3036@sequoia.sous-sol.org> <4A018DF2.6010301@novell.com> <4A02D40D.7060307@redhat.com> <4A0448DF.90705@codemonkey.ws> <4A0570B1.30401@novell.com> <4A071F1A.1090702@codemonkey.ws> <4A0824C2.4000109@gmail.com> <4A0860D7.6010708@codemonkey.ws>
-In-Reply-To: <4A0860D7.6010708@codemonkey.ws>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigED07AB3D9D40DBD89633B77B"
+In-Reply-To: <1242119872.16400.113.camel@demuxf9c>
+References: <1242119872.16400.113.camel@demuxf9c>
+Date: Wed, 13 May 2009 18:57:28 +0800
+X-Google-Sender-Auth: 0fc930bc29b935a4
+Message-ID: <2a27d3730905130357re0adf41l19f5603a70dac57b@mail.gmail.com>
+Subject: Re: RapidIO - general questions
+From: Li Yang <leoli@freescale.com>
+To: Jan Neskudla <jan.neskudla.ext@nsn.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigED07AB3D9D40DBD89633B77B
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+cc'ed LKML
 
-Anthony Liguori wrote:
-> Gregory Haskins wrote:
->>
->> So, yes, the delta from PIO to HC is 350ns.  Yes, this is a ~1.4%
->> improvement.  So what?  Its still an improvement.  If that improvement=
-
->> were for free, would you object?  And we all know that this change isn=
-'t
->> "free" because we have to change some code (+128/-0, to be exact).  Bu=
-t
->> what is it specifically you are objecting to in the first place?  Addi=
-ng
->> hypercall support as an pv_ops primitive isn't exactly hard or complex=
-,
->> or even very much code.
->>  =20
+On Tue, May 12, 2009 at 5:17 PM, Jan Neskudla <jan.neskudla.ext@nsn.com> wrote:
+> Hallo
 >
-> Where does 25us come from?  The number you post below are 33us and 66us=
-=2E
+> we'd likes to use a RapidIO as a general communication bus on our new
+> product, and so I have some questions about general design of Linux RIO
+> subsystem. I did not find any better mailing list for RapidIO
+> discussion.
+>
+> [1] - we'd like to implement following features
+>    * Hot-plug (hot-insert/hot-remove) of devices
+>    * Error handling (port-write packets - configuration, handling of
+> them)
+>    * Static ID configuration based on port numbers
+>    * Aux driver - basic driver, for sending messages over different
+> mboxes, handling ranges of doorbells
+>
+>    Is it here anyone who is working on any improvement, or anyone who
+> knows the development plans for RapidIO subsystem?
+>
 
-<snip>
+AFAIK, there is no one currently working on these features for Linux.
+It will be good if you can add these useful features.
 
-The 25us is approximately the max from an in-kernel harness strapped
-directly to the driver gathered informally during testing.  The 33us is
-from formally averaging multiple runs of a userspace socket app in
-preparation for publishing.  I consider the 25us the "target goal" since
-there is obviously overhead that a socket application deals with that
-theoretically a guest bypasses with the tap-device.  Note that the
-socket application itself often sees < 30us itself...this was just a
-particularly "slow" set of runs that day.
+> [2] - I have a following problem with a current implementation of
+> loading drivers. The driver probe-function call is based on comparison
+> of VendorID (VID) and DeviceID (DID) only. Thus if I have 3 devices with
+> same DID and VID connected to the same network (bus), the driver is
+> loaded 3times, instead only once for the actual device Master port.
 
-Note that this is why I express the impact as "approximately" (e.g.
-"~4%").  Sorry for the confusion.
+This should be the correct way as you actually have 3 instances of the device.
 
--Greg
+>
+> Rionet driver solved this by enabling to call initialization function
+> just once, and it expect that this is the Master port.
 
+Rionet is kind of special.  It's not working like a simple device
+driver, but more like a customized protocol stack to support multiple
+ethernet over rio links.
 
---------------enigED07AB3D9D40DBD89633B77B
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+>
+> Is it this correct behavior  ? It looks to me that RapidIO is handled
+> like a local bus (like PCI)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+This is correct behavior.  All of them are using Linux device/driver
+infrastructure, but rionet is a special device.
 
-iEYEARECAAYFAkoKpq4ACgkQlOSOBdgZUxnFqQCdFZy7CVK5gdTf/QzTh9t+XRBC
-HFkAn1GkRKNfvoeC3WKnPeXtRb5bkOkR
-=80kT
------END PGP SIGNATURE-----
-
---------------enigED07AB3D9D40DBD89633B77B--
+- Leo
