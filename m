@@ -1,102 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760825AbZEMRIc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760877AbZEMRLl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760825AbZEMRIc (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 13:08:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758798AbZEMRIX
+	id S1760877AbZEMRLl (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 13:11:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757919AbZEMRLc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 13:08:23 -0400
-Received: from gw.goop.org ([64.81.55.164]:52164 "EHLO mail.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758358AbZEMRIX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 13:08:23 -0400
-Message-ID: <4A0AFE84.2040805@goop.org>
-Date: Wed, 13 May 2009 10:08:20 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 13 May 2009 13:11:32 -0400
+Received: from moutng.kundenserver.de ([212.227.126.171]:52963 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753296AbZEMRLb (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 13:11:31 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Russell King <rmk+kernel@arm.linux.org.uk>
+Subject: Re: [PATCH] arm: rename CLOCK_TICK_RATE to ARM_TICK_RATE
+Date: Wed, 13 May 2009 19:11:22 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+       Alan Cox <alan@lxorguk.ukuu.org.uk>
+References: <20090511222702.352192505@arndb.de> <20090511222702.352192505@arndb.de>> <200905112243.10011.arnd@arndb.de>
+In-Reply-To: <200905112243.10011.arnd@arndb.de>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-CC: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Alex Nixon <alex.nixon@citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 06/10] x86/PCI: Enable scanning of all pci functions
-References: <1242164891-3859-1-git-send-email-jeremy@goop.org>	<1242164891-3859-7-git-send-email-jeremy@goop.org> <20090513095535.140134e1@jbarnes-g45>
-In-Reply-To: <20090513095535.140134e1@jbarnes-g45>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905131911.23473.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1+cHPymSI+aPbertyNdulG6NIdKkKm6d3XGFPz
+ ZvhgrtDwcp4HztbCzV6bvcfOH9VyCFr0qjxYM+yY8bxQe3POH0
+ lgni3BCIUByyiJthTiLCQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jesse Barnes wrote:
-> On Tue, 12 May 2009 14:48:07 -0700
-> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
->
->   
->> From: Alex Nixon <alex.nixon@citrix.com>
->>
->> Xen may want to enable scanning of all pci functions - if for example
->> the device at function 0 is not passed through to the guest, but the
->> device at function 1 is.
->>
->> [Impact: allow passthrough of just some PCI functions.]
->> Signed-off-by: Alex Nixon <alex.nixon@citrix.com>
->> Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
->> Reviewed-by: "H. Peter Anvin" <hpa@zytor.com>
->> Reviewed-by: Matthew Wilcox <willy@linux.intel.com>
->> ---
->>  arch/x86/include/asm/pci.h |    8 +++++++-
->>  arch/x86/pci/common.c      |    1 +
->>  2 files changed, 8 insertions(+), 1 deletions(-)
->>
->> diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
->> index b51a1e8..092706e 100644
->> --- a/arch/x86/include/asm/pci.h
->> +++ b/arch/x86/include/asm/pci.h
->> @@ -21,6 +21,7 @@ struct pci_sysdata {
->>  extern int pci_routeirq;
->>  extern int noioapicquirk;
->>  extern int noioapicreroute;
->> +extern int pci_scan_all_fns;
->>  
->>  /* scan a bus after allocating a pci_sysdata for it */
->>  extern struct pci_bus *pci_scan_bus_on_node(int busno, struct
->> pci_ops *ops, @@ -48,7 +49,11 @@ extern unsigned int
->> pcibios_assign_all_busses(void); #else
->>  #define pcibios_assign_all_busses()	0
->>  #endif
->> -#define pcibios_scan_all_fns(a, b)	0
->> +
->> +static inline int pcibios_scan_all_fns(struct pci_bus *bus, int
->> devfn) +{
->> +	return pci_scan_all_fns;
->> +}
->>  
->>  extern unsigned long pci_mem_start;
->>  #define PCIBIOS_MIN_IO		0x1000
->> @@ -130,6 +135,7 @@ extern void pci_iommu_alloc(void);
->>  
->>  /* generic pci stuff */
->>  #include <asm-generic/pci.h>
->> +#undef pcibios_scan_all_fns
->>     
->
-> This is a little gross... But then I don't see any places where it's
-> actually defined to something true either.
+On Tuesday 12 May 2009, Arnd Bergmann wrote:
+> Most of the users of CLOCK_TICK_RATE in the kernel outside
+> of ARM assume that it refers to the i8253 base frequency
+> of 1.193182 Mhz, while in ARM it actually is the clock
+> frequency of the timer.
+> 
+> By renaming it to ARM_TICK_RATE for all arm specific
+> device drivers, we can hopefully reduce the amount
+> of confusion slightly.
 
-I've got some code to set it in a series I haven't posted yet.
+My patch was missing one important change to make this
+a nonintrusive change:
 
->   Maybe it should be a weak
-> function or a new HAVE_FOO define instead.
->   
+--- a/arch/arm/include/asm/timex.h
++++ b/arch/arm/include/asm/timex.h
+@@ -14,6 +14,8 @@
+ 
+ #include <mach/timex.h>
+ 
++#define CLOCK_TICK_RATE ARM_TICK_RATE
++
+ typedef unsigned long cycles_t;
+ 
+ static inline cycles_t get_cycles (void)
 
-I'd probably go the weak function path if I were to do either of those, 
-but do you think it would be significantly better?
-
-    J
-
+	Arnd <><
