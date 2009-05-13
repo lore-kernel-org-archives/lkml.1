@@ -1,85 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758469AbZEMAOP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758469AbZEMAQY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758469AbZEMAOP (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 20:14:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754387AbZEMAN6
+	id S1758469AbZEMAQY (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 20:16:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756840AbZEMAQM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 20:13:58 -0400
-Received: from blaine.gmane.org ([80.91.229.8]:57879 "EHLO hugh.gmane.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754377AbZEMAN5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 20:13:57 -0400
+	Tue, 12 May 2009 20:16:12 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:61055 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753041AbZEMAQK convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Tue, 12 May 2009 20:16:10 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=subject:from:to:cc:in-reply-to:references:content-type:date
-         :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=Y4TQLlzcrqeTVOrOftZ70IGA2/eV05NeaI8nRgZP/UbnoZ65cwd/7Cv7LpHY0doftV
-         4sGj6B7Ba1MSy23E/5pozr9L49uSoe0zWN0Qdeg73J+1t2xqI3BgQ7Zyotd0IJ/Dafvl
-         GWV6Tx40O8v8OvSdf3wZs1h66go7a5Pyr83k0=
-Subject: Re: ath9k seems to be broken on 2.6.30-rc4 with a macbook pro
-From: "Justin P. Mattock" <justinmattock@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: "Luis R. Rodriguez" <mcgrof@gmail.com>,
-       Evgeni Golov <sargentd@die-welt.net>,
-       Jiri Slaby 
-	<public-jirislaby-Re5JQEeQqe8AvxtiuMwx3w@hugh.gmane.org>,
-       Justin Mattock 
-	<public-justinmattock-Re5JQEeQqe8AvxtiuMwx3w@hugh.gmane.org>,
-       Linux Kernel Mailing List 
-	<public-linux-kernel-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org>,
-       public-ath9k-devel-xDcbHBWguxHbcTqmT+pZeQ@hugh.gmane.org,
-       public-linux-wireless-u79uwXL29TY76Z2rM5mHXA@hugh.gmane.org
-In-Reply-To: <1242169748.14227.15.camel@johannes.local>
-References: <dd18b0c30905111002y4aeb2033ma2fbb2730f5acdaf@mail.gmail.com>
-	 <4A089E49.7080403@gmail.com> <20090512103905.0D68E1FD10@chi.die-welt.net>
-	 <dd18b0c30905120728v156d4e1g808a853d23ba0ae6@mail.gmail.com>
-	 <20090512174636.8EBDA1FD10@chi.die-welt.net>
-	 <dd18b0c30905121304k6df44362v76e8e7ae6da3b76f@mail.gmail.com>
-	 <43e72e890905121601y59de3d3fh9eca4637883c37fa@mail.gmail.com>
-	 <1242169748.14227.15.camel@johannes.local>
-Content-Type: text/plain
-Date: Tue, 12 May 2009 16:36:36 -0700
-Message-Id: <1242171396.2159.7.camel@unix>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.0 
-Content-Transfer-Encoding: 7bit
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=TM32jj8pV1An0gxAophJoJmIQAjCGKis49Uqi3LLo4Nrib3otZmeofh+z9XQOQ6S7u
+         vJSxu3mq3PagXqmMAO/wNX9Qg0cSCkDbX7yF/SqG42Rh4Db6LKbFDSddTFoBX+5WrGtr
+         MvhRD3ge0gBjS0YdZXOzm67Ipd1brPG7mEzqE=
+MIME-Version: 1.0
+In-Reply-To: <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
+References: <alpine.LFD.2.00.0902112332370.415@localhost.localdomain>
+	 <alpine.LFD.2.00.0904031918090.12916@localhost.localdomain>
+	 <alpine.LFD.2.00.0904081937191.21577@localhost.localdomain>
+	 <alpine.LFD.2.00.0904092046440.21577@localhost.localdomain>
+	 <alpine.LFD.2.00.0904110003370.21577@localhost.localdomain>
+	 <alpine.LFD.2.00.0904181204420.21577@localhost.localdomain>
+	 <alpine.LFD.2.00.0904251500150.4529@localhost.localdomain>
+	 <alpine.LFD.2.00.0904290036500.4529@localhost.localdomain>
+	 <alpine.LFD.2.00.0905012348200.3375@localhost.localdomain>
+	 <alpine.LFD.2.00.0905130122250.3561@localhost.localdomain>
+Date: Wed, 13 May 2009 12:16:09 +1200
+Message-ID: <5a7b8b7b0905121716y646a2f68qad9181362caa22f6@mail.gmail.com>
+Subject: Re: [Announce] 2.6.29.3-rt12
+From: Hugo Vincent <hugo.vincent@gmail.com>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       rt-users <linux-rt-users@vger.kernel.org>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       Peter Zijlstra <peterz@infradead.org>, Carsten Emde <ce@ceag.ch>,
+       Clark Williams <williams@redhat.com>,
+       Frank Rowand <frank.rowand@am.sony.com>,
+       Robin Gareus <robin@gareus.org>, Gregory Haskins <ghaskins@novell.com>,
+       Philippe Reynes <philippe.reynes@isismpp.fr>,
+       Fernando Lopez-Lezcano <nando@ccrma.stanford.edu>,
+       Will Schmidt <will_schmidt@vnet.ibm.com>,
+       Darren Hart <dvhltc@us.ibm.com>, Jan Blunck <jblunck@suse.de>,
+       Sven-Thorsten Dietrich <sdietrich@novell.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This patch resulted in a broken build for me, until I did this:
 
+--- a/patch-2.6.29.3-rt12
++++ b/patch-2.6.29.3-rt12
+@@ -121754,7 +121754,7 @@ Index: linux-2.6-tip/kernel/sched.c
+  }
 
-On Wed, 2009-05-13 at 01:09 +0200, Johannes Berg wrote:
-> On Tue, 2009-05-12 at 16:01 -0700, Luis R. Rodriguez wrote:
-> 
-> > > O.K. after trial and error reverting this:
-> > > http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=47afbaf5af9454a7a1a64591e20cbfcc27ca67a8;hp=853da11b94e674445e93660f47a5f0aeeea09623
-> > >
-> > > brings life back to the macbook with 2.6.30-rc4
-> > > (not sure about the iphone anomaly though, I'll keep
-> > > an eye on that)
-> > 
-> > Odd.. are you changing TX power through wext? Because that 47afbaf5
-> > should only make a difference when using manual tx power setting.
-> 
-> Except it introduced a bug which got fixed in -rc5.
-> 
-> johannes
+  /*
+-@@ -2801,6 +3177,15 @@ static void update_cpu_load(struct rq *t
++@@ -2801,6 +3177,17 @@ static void update_cpu_load(struct rq *t
+  			new_load += scale-1;
+  		this_rq->cpu_load[i] = (old_load*(scale-1) + new_load) >> i;
+  	}
+@@ -121765,8 +121765,10 @@ Index: linux-2.6-tip/kernel/sched.c
+ +	this_rq->calc_load_update += LOAD_FREQ;
+ +	calc_load_account_active(this_rq);
+ +
+++#ifdef CONFIG_SMP
+ +	if (this_rq->cpu == calc_load_cpu)
+ +		calc_global_load();
+++#endif
+  }
 
-No,
-I try to leave the setting as is.(TX power)
+  #ifdef CONFIG_SMP
 
-If this is fixed with the latest, then I'll just
-go ahead and pull when I get a chance(rather than have
-the reverted stuff).
+I have no idea if that is a valid thing to do, but it seems to work for me.
 
-aside from that it interesting, my other machine
-(imac) runs fine with ndiswrapper, and wl.
+Regards,
 
-In any case I'll send a post if there's any issues.
-(right now watching some hulu recommend session 9 good
-flick)
+Hugo Vincent
 
-Justin P. Mattock
-
-
+On Wed, May 13, 2009 at 11:27 AM, Thomas Gleixner <tglx@linutronix.de> wrote:
+> We are pleased to announce the next update to our new preempt-rt
+> series.
+>
+>    - rebase to 2.6.29.3 (NOP)
+>    - loadavg optimization
+>    - futex updates (tglx, peterz)
+>
+> Download locations:
+>
+>    http://rt.et.redhat.com/download/
+>    http://www.kernel.org/pub/linux/kernel/projects/rt/
+>
+> Information on the RT patch can be found at:
+>
+>    http://rt.wiki.kernel.org/index.php/Main_Page
+>
+> to build the 2.6.29.3-rt12 tree, the following patches should be
+> applied:
+>
+>    http://www.kernel.org/pub/linux/kernel/v2.6/linux-2.6.29.3.tar.bz2
+>    http://www.kernel.org/pub/linux/kernel/projects/rt/patch-2.6.29.3-rt12.bz2
+>
+> The broken out patches are also available at the same download
+> locations.
+>
+> Enjoy !
+>
+>       tglx
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
