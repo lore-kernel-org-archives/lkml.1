@@ -1,63 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758976AbZEMIxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbZEMIz2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758976AbZEMIxP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 04:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753990AbZEMIw5
+	id S1759065AbZEMIz2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 04:55:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757171AbZEMIzM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 04:52:57 -0400
-Received: from smtp.citrix.com ([66.165.176.89]:59470 "EHLO SMTP.CITRIX.COM"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751301AbZEMIw4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 04:52:56 -0400
-X-IronPort-AV: E=Sophos;i="4.41,186,1241409600"; 
-   d="scan'208";a="4232546"
-Subject: Re: [PATCH FIXED] x86: use flush_tlb_others to implement
-	flush_tlb_all
-From: Ian Campbell <Ian.Campbell@eu.citrix.com>
-To: Jeremy Fitzhardinge <jeremy@goop.org>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A0A154C.9080000@goop.org>
-References: <4A09E5FE.2080507@goop.org> <4A0A0D7C.8050206@zytor.com>
-	 <4A0A154C.9080000@goop.org>
-Content-Type: text/plain
-Organization: Citrix Systems, Inc.
-Date: Wed, 13 May 2009 09:52:55 +0100
-Message-ID: <1242204775.24976.7.camel@zakaz.uk.xensource.com>
+	Wed, 13 May 2009 04:55:12 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:35104 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755859AbZEMIzJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 04:55:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=c51H3pw+qVd8FWhvBVZFRBLlcWVM8upgPdKRCRw/Kp9LcI54E/zn2ExQZxldBLEac6
+         bTAjbJCxllLTyQNdcrR8eTAw0JFquHWjaG3FLkPn1pN9D17KQld3XE2QI+Ms0MkI2yRi
+         cCYNpr5K4mNQh4000QNTvlS/DaQ735RMvT1FE=
 MIME-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
+In-Reply-To: <20090513095127.308b00e7@lxorguk.ukuu.org.uk>
+References: <20090511222702.352192505@arndb.de>
+	 <200905112238.55404.arnd@arndb.de>
+	 <20090512090602.65722342@lxorguk.ukuu.org.uk>
+	 <200905121123.21436.arnd@arndb.de>
+	 <20090513033027.GA13193@cynthia.pants.nu>
+	 <alpine.DEB.1.00.0905130610240.18305@zirkon.biophys.uni-duesseldorf.de>
+	 <20090513043409.GA13577@cynthia.pants.nu>
+	 <20090513095127.308b00e7@lxorguk.ukuu.org.uk>
+Date: Wed, 13 May 2009 10:55:09 +0200
+X-Google-Sender-Auth: d59f689e76a99a53
+Message-ID: <10f740e80905130155pd24c4e3n538be3110ac34b54@mail.gmail.com>
+Subject: Re: [PATCH] ata: libata depends on HAS_DMA
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Brad Boyer <flar@allandria.com>,
+       Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>,
+       Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
+       takata@linux-m32r.org, linux-m68k@vger.kernel.org,
+       ysato@users.sourceforge.jp
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-12 at 20:33 -0400, Jeremy Fitzhardinge wrote:
+On Wed, May 13, 2009 at 10:51, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
+>> > If it doesn't interfere with plain PIO mode, fine.
+>>
+>> I agree. There definitely needs to still be support for IDE ports that
+>> don't have DMA capability.
+>
+> There is - it's just if the platform doesn't implement the dma_* APIs you
+> get a problem.
 
-> -static void do_flush_tlb_all(void *info)
-> +void flush_tlb_all(void)
->  {
-> -	unsigned long cpu = smp_processor_id();
-> +	/* flush_tlb_others expects preempt to be disabled */
-> +	get_cpu();
-> +
-> +	flush_tlb_others(cpu_online_mask, NULL, TLB_FLUSH_ALL);
->  
->  	__flush_tlb_all();
->  	if (percpu_read(cpu_tlbstate.state) == TLBSTATE_LAZY)
-> -		leave_mm(cpu);
-> -}
-> +		leave_mm(smp_processor_id());
+Note that there are other things missing on m68k and m32r, that's why
+Al added the
 
-get_cpu() returns smp_processor_id() so wouldn't this be more normally
-written as:
-	/* flush_tlb_others expects preempt to be disabled */
-	unsigned long cpu = get_cpu();
-	[....]
-	if ([....] == TLBSTATE_LAZY)
-		leave_mm(cpu)
-	put_cpu();
+| depends on !(M32R || M68K) || BROKEN
 
-Ian.
+commit 9317fd4c60962d3a9423b5f9bb5d1b10cf8a0699
+Author: Al Viro <viro@ftp.linux.org.uk>
+Date:   Sun Sep 24 23:40:00 2006 +0100
 
+    [PATCH] libata won't build on m68k and m32r
+
+    no ioread*(), for one thing
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
