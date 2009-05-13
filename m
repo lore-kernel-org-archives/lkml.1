@@ -1,63 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761187AbZEMSo1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761333AbZEMSpp@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761187AbZEMSo1 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 14:44:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760574AbZEMSoR
+	id S1761333AbZEMSpp (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 14:45:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760855AbZEMSpg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 14:44:17 -0400
-Received: from fed1rmmtao102.cox.net ([68.230.241.44]:46411 "EHLO
-	fed1rmmtao102.cox.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760373AbZEMSoQ (ORCPT
+	Wed, 13 May 2009 14:45:36 -0400
+Received: from science.horizon.com ([192.35.100.1]:56101 "HELO
+	science.horizon.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1759851AbZEMSpf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 14:44:16 -0400
-X-Authority-Analysis: v=1.0 c=1 a=VwQbUJbxAAAA:8 a=rJ2SNjQboeCICQIKKwAA:9
- a=cg30MBeRlxRWnfW0QQbfP5u0ZtAA:4
-X-CM-Score: 0.00
-To: git@vger.kernel.org
-Subject: [ANNOUNCE] GIT 1.6.3.1
-From: Junio C Hamano <gitster@pobox.com>
-Date: Wed, 13 May 2009 11:31:51 -0700
-Message-ID: <7vy6t04zxk.fsf@alter.siamese.dyndns.org>
-User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 13 May 2009 14:45:35 -0400
+Date: 13 May 2009 14:45:16 -0400
+Message-ID: <20090513184516.19020.qmail@science.horizon.com>
+From: "George Spelvin" <linux@horizon.com>
+To: belyshev@depni.sinp.msu.ru, johnstul@us.ibm.com
+Subject: Re: [PATCH] tsc_khz= boot option to avoid TSC calibration variance
+Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org, linux@horizon.com,
+       mingo@elte.hu, tglx@linutronix.de, ulrich.windl@rz.uni-regensburg.de,
+       williams@redhat.com, zippel@linux-m68k.org
+In-Reply-To: <87d4aejw5b.fsf@depni.sinp.msu.ru>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The latest maintenance release GIT 1.6.3.1 is available at the
-usual places:
+> No, it won't, because...  
+> <cde snippet>
+> ... of this "if".
+> 
+> Please *please* don't set arbitrary limits.  Just use user supplied value.
+> 
+> Or at the very least print big red warning if you are going to ignore a user
+> supplied option (and have another tsc_khz_really= option to override faulty
+> calibration routine).
 
-  http://www.kernel.org/pub/software/scm/git/
+I'd like to disagree.  The calibration is accurate and reliable.
+It has worked without any override for millions of users for many
+years.  What is the plausible reason to need to set it to a wildly
+divergent value?
 
-  git-1.6.3.1.tar.{gz,bz2}			(source tarball)
-  git-htmldocs-1.6.3.1.tar.{gz,bz2}		(preformatted docs)
-  git-manpages-1.6.3.1.tar.{gz,bz2}		(preformatted docs)
+On the other hand, what if my CPU gets fried and I replace it with one
+with a different clock multiplier?  Or the motherboard fries and I move
+the boot hard drive to a different machine?  That's a situation that I
+have found myself in.  And I don't want to figure out how to edit the
+LILO options before booting the machine, even if I remember to do it
+at all; this is an emergency replacement.
 
-The RPM binary packages for a few architectures are found in:
+In such a case, having the kernel believe the command line could result
+in it not booting, or the system not working properly.
 
-  RPMS/$arch/git-*-1.6.3.1-1.fc9.$arch.rpm	(RPM)
+Much better that it basically work, even if some fine-tuning remains
+to be done.
 
-Embarrasingly 1.6.3 has a rather grave regression when you switch to a new
-branch while you have some changes added to the index.  A commit you make
-from that index will record a wrong tree.  Please consider this a hotfix
-and do not use vanilla 1.6.3.
+And that's the idea: this is a fine-tuning option.  If the calibration
+says the option value is grossly wrong, then something strange has
+happened, and the kernel calibration value is safer.
 
-----------------------------------------------------------------
+If you think a coarse-tuning option is required, I can extend the patch
+so that a trailing ! (e.g. "tsc_khz=3000000!") disables the sanity check.
+Bit I'd still like to see an argument for why it is required.  Remember,
+it would be far better to make the kernel self-calibration more accurate,
+so people don't even have to use this option.  It's only there because
+it's the simplest way (simplest for the lazy programmer, not the user!)
+to guarantee getting exactly the same value each boot.
 
-Changes since v1.6.3 are as follows:
-
-Alex Riesen (1):
-      Clarify kind of conflict in merge-one-file helper
-
-Alexander Potashev (1):
-      Documentation: cloning to empty directory is allowed
-
-Felipe Contreras (1):
-      git config: clarify --add and --get-color
-
-Junio C Hamano (4):
-      Start 1.6.3.1 maintenance series.
-      archive-tar.c: squelch a type mismatch warning
-      Revert "checkout branch: prime cache-tree fully"
-      GIT 1.6.3.1
+>From a *user* point of view, I'd rather the kernel did it automagically
+and I didn't need to futz with the kernel command line at all.
