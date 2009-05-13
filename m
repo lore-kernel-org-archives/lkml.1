@@ -1,57 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759895AbZEMOfr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760157AbZEMOg4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759895AbZEMOfr (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 10:35:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754602AbZEMOfh
+	id S1760157AbZEMOg4 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 10:36:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757791AbZEMOgq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 10:35:37 -0400
-Received: from waste.org ([66.93.16.53]:56838 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753507AbZEMOfg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 10:35:36 -0400
-Date: Wed, 13 May 2009 09:34:00 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Minchan Kim <minchan.kim@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [PATCH] Kconfig: CONFIG_UNEVICTABLE_LRU move into EMBEDDED submenu
-Message-ID: <20090513143400.GC31071@waste.org>
-References: <20090513172904.7234.A69D9226@jp.fujitsu.com> <20090513175152.1590c117.minchan.kim@barrios-desktop> <20090513175539.723A.A69D9226@jp.fujitsu.com> <20090513191221.674bc543.minchan.kim@barrios-desktop> <1242211037.24436.552.camel@macbook.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242211037.24436.552.camel@macbook.infradead.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+	Wed, 13 May 2009 10:36:46 -0400
+Received: from viefep12-int.chello.at ([62.179.121.32]:46834 "EHLO
+	viefep12-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757703AbZEMOgp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 10:36:45 -0400
+X-SourceIP: 213.93.53.227
+Subject: Re: [RFC PATCH v2 0/2] Saving power by cpu evacuation
+ sched_max_capacity_pct=n
+From: Peter Zijlstra <a.p.zijlstra@chello.nl>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+In-Reply-To: <20090513143550.GU19296@one.firstfloor.org>
+References: <20090513130541.21440.33364.stgit@drishya.in.ibm.com>
+	 <20090513143550.GU19296@one.firstfloor.org>
+Content-Type: text/plain
+Date: Wed, 13 May 2009 16:36:42 +0200
+Message-Id: <1242225402.26820.23.camel@twins>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 11:37:17AM +0100, David Woodhouse wrote:
-> On Wed, 2009-05-13 at 19:12 +0900, Minchan Kim wrote:
-> > > No.
-> > > As far as I know, many embedded guys use this configuration.
-> > > they hate unexpected latency by reclaim. !UNEVICTABLE_LRU increase
-> > > unexpectability largely.
-> > 
-> > As I said previous(http://lkml.org/lkml/2009/3/16/209), Many embedded
-> > environment have a small ram. It doesn't have a big impact in such
-> > case. 
-> > 
-> > Let CCed embedded matainers. 
-> > I won't have a objection if embedded maintainers ack this. 
+On Wed, 2009-05-13 at 16:35 +0200, Andi Kleen wrote:
+> On Wed, May 13, 2009 at 06:41:00PM +0530, Vaidyanathan Srinivasan wrote:
+> > * Using sched_mc=3,4,5 to evacuate 1,2,4 cores is completely
+> >   non-intuitive and broken interface.  Ingo wanted to see if we can
+> >   model a global percentile tunable that would map to core throttling.
 > 
-> I probably wouldn't be cheerleading for it if you wanted to make it
-> optional when it wasn't before -- but I suppose we might as well
-> preserve the option under CONFIG_EMBEDDED if the alternative is to lose
-> it completely.
+> I have one request. CPU throttling is already a very well established
+> term in the x86 world, refering to thermal throttling when the CPU
+> overheats. This is implemented by ACPI and the CPU. It's always
+> a very bad thing that should be avoided at all costs.
 
-As the person who introduced CONFIG_EMBEDDED, I've occasionally
-thought we should rename it to CONFIG_NONSTANDARD to make the
-semantics clearer. It's less about cell phones and more about going
-way off the beaten path.
+Its about avoiding that.
 
--- 
-Mathematics is the supreme nostalgia of our time.
