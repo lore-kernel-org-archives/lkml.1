@@ -1,80 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758049AbZEMNDU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753997AbZEMNDg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758049AbZEMNDU (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:03:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751146AbZEMNDH
+	id S1753997AbZEMNDg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:03:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756503AbZEMNDN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:03:07 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:58573 "EHLO
-	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1751884AbZEMNDG (ORCPT
+	Wed, 13 May 2009 09:03:13 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:42565 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757790AbZEMNDM convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:03:06 -0400
-Date: Wed, 13 May 2009 15:03:02 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Marc Dionne <marc.c.dionne@gmail.com>
-cc: Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       sukadev@linux.vnet.ibm.com, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Regression in 2.6.30 - /dev/pts - mount options - bisected
-In-Reply-To: <6041d2000905081454x4c9d8818oaccbcd14d1f4a506@mail.gmail.com>
-Message-ID: <alpine.LRH.2.00.0905131440010.28386@vixen.sonytel.be>
-References: <6041d2000905081454x4c9d8818oaccbcd14d1f4a506@mail.gmail.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Wed, 13 May 2009 09:03:12 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=uJV7xW3kCPgq7eCdsdYL0+efHyGs4etggIzNehtFzvZbS5hzCqbh+DgfBXu4cAf7gW
+         zPgtXzWgqlmqrrBLFOOlVovVAM8v+HcNXaHgdZ2xsoUJFqAzid83WF2I7NMpiqgkD9cS
+         QUhFZjywWEvBPXDfBsPdqjvsD2twZlg4Lh67o=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+In-Reply-To: <1242205213-27452-1-git-send-email-u.kleine-koenig@pengutronix.de>
+References: <1242205213-27452-1-git-send-email-u.kleine-koenig@pengutronix.de>
+Date: Wed, 13 May 2009 18:33:12 +0530
+Message-ID: <921ca19c0905130603g3823b213vdb2b62b75934104d@mail.gmail.com>
+Subject: Re: [PATCH] ARM: __builtin_return_address works with argument 0
+From: Sujit Karataparambil <sjt.kar@gmail.com>
+To: =?ISO-8859-1?Q?Uwe_Kleine=2DK=F6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+Cc: linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org,
+       Thomas Gleixner <tglx@linutronix.de>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 8 May 2009, Marc Dionne wrote:
-> I ran into a regression from 2.6.29 to 2.6.30 on a newly installed
-> fedora 11 machine.  The symptom is that things that require /dev/pts
-> (gnome-terminal, konsole, xterm, etc.) don't work for a regular user,
-> but run fine as root.  Everything is fine with the fedora 2.6.29
-> kernel or with a self-compiled 2.6.29, but fail with a recent
-> 2.6.30-rc.
+These seem to be required too. Mostly for optimizations the compiler can
+provide. Seem to be supported in gnu.
 
-When investigating a different issue on Fedora 11 on PS3, I ran into the same
-problem with a 2.6.30-rc4 Fedora kernel, and with plain 2.6.30-rc4 kernels
-built using a config based on the Fedora config.
+__builtin_clz
+__builtin_constant_p
+__builtin_expect
+__builtin_frame_address
 
-> Bisection pinpoints this commit:
-> http://git.kernel.org/linus/1bd7903560f1f713e85188a5aaf4d2428b6c8b50
-> as the culprit, although I think that's a bit misleading.
+http://infocenter.arm.com/help/index.jsp?topic=/com.arm.doc.dui0376a/Caceiddh.html
 
-I didn't go a far as bisecting, but strace did show it failed on opening
-/dev/pts/something.
 
-> Note that I have CONFIG_DEVPTS_MULTIPLE_INSTANCES=y.  It may be that
-> user space is doing something unusual, but it passes the test of
-> "works with 2.6.29, fails with 2.6.30".
 
-Yes, it works fine with 2.6.29, so it's a regression.
+2009/5/13 Uwe Kleine-König <u.kleine-koenig@pengutronix.de>:
+> This saves the function overhead for CALLER_ADDRESS0.
+>
+> Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+> Cc: Thomas Gleixner <tglx@linutronix.de>
+> ---
+> Hi Thomas,
+>
+> this applies to .29.3-rt12.  Feel free to squash this into
+> arm-tracing-updates.patch.
+>
+> Best regards
+> Uwe
+>
+>  arch/arm/include/asm/ftrace.h |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/arm/include/asm/ftrace.h b/arch/arm/include/asm/ftrace.h
+> index 900fc19..f7e8bac 100644
+> --- a/arch/arm/include/asm/ftrace.h
+> +++ b/arch/arm/include/asm/ftrace.h
+> @@ -15,7 +15,7 @@ extern void mcount(void);
+>  void *return_address(unsigned int);
+>
+>  #define HAVE_ARCH_CALLER_ADDR
+> -#define CALLER_ADDR0 ((unsigned long)return_address(0))
+> +#define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
+>  #define CALLER_ADDR1 ((unsigned long)return_address(1))
+>  #define CALLER_ADDR2 ((unsigned long)return_address(2))
+>  #define CALLER_ADDR3 ((unsigned long)return_address(3))
+> --
+> 1.6.2.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-rt-users" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-> I wasn't able to reproduce on an other system with a similar configuration.
 
-Originally, I couldn't reproduce the problem with kernels built using my
-default config, which has CONFIG_DEVPTS_MULTIPLE_INSTANCES=n.
 
-And indeed, disabling CONFIG_DEVPTS_MULTIPLE_INSTANCES in the Fedora-based
-config makes the problem go away, and brings back my terminal-emulators.
-
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
-
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+-- 
+-- Sujit K M
