@@ -1,134 +1,246 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760675AbZEMQS6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760574AbZEMQVW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760675AbZEMQS6 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 12:18:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754929AbZEMQSr
+	id S1760574AbZEMQVW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 12:21:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759037AbZEMQVK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 12:18:47 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:34157 "EHLO
-	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755610AbZEMQSq (ORCPT
+	Wed, 13 May 2009 12:21:10 -0400
+Received: from yw-out-2324.google.com ([74.125.46.30]:54863 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755415AbZEMQVJ convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 12:18:46 -0400
-Message-ID: <4A0AF2DA.2020404@zytor.com>
-Date: Wed, 13 May 2009 09:18:34 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+	Wed, 13 May 2009 12:21:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=q8yrjvGvTPSekmSVvd35VQ68vNS7ZI0JUR0TnoYR5pfadacBN55ZoCWIWD7szdAtBB
+         PASmpNZwPVdqdAARs/aaZO/Gx3eNe6l6gGdTr/gaBB5rM5RbV6emcYiZu8eyerhKhPkL
+         KZyJhi71pj0Hz9A4l85qDDhUzTpZNUZpLdj5k=
 MIME-Version: 1.0
-To: Sheng Yang <sheng@linux.intel.com>
-CC: linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] x86: Extend test_and_set_bit() test_and_clean_bit() to
- 64 bits in X86_64
-References: <1242202647-32446-1-git-send-email-sheng@linux.intel.com>
-In-Reply-To: <1242202647-32446-1-git-send-email-sheng@linux.intel.com>
-Content-Type: multipart/mixed;
- boundary="------------060805040508090909070102"
+In-Reply-To: <x49y6t1rqw0.fsf@segfault.boston.devel.redhat.com>
+References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
+	 <20090508120119.8c93cfd7.akpm@linux-foundation.org>
+	 <20090511081415.GL4694@kernel.dk>
+	 <x49skjb21b7.fsf@segfault.boston.devel.redhat.com>
+	 <20090511165826.GG4694@kernel.dk>
+	 <x494ovp4r51.fsf@segfault.boston.devel.redhat.com>
+	 <20090512204433.7eb69075.akpm@linux-foundation.org>
+	 <x49y6t1rqw0.fsf@segfault.boston.devel.redhat.com>
+Date: Wed, 13 May 2009 12:20:57 -0400
+X-Google-Sender-Auth: ab1b398267bf12c2
+Message-ID: <b4ff356f0905130920v184ab529mb52a4346d4c77c14@mail.gmail.com>
+Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone 
+	over NFS
+From: Olga Kornievskaia <aglo@citi.umich.edu>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       "J. Bruce Fields" <bfields@fieldses.org>, Jim Rees <rees@umich.edu>,
+       linux-nfs@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------060805040508090909070102
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+I believe what you are seeing is how well TCP autotuning performs.
+What old NFS code was doing is disabling autotuning and instead using
+#nfsd thread to scale TCP recv window. You are providing an example of
+where setting TCP buffer sizes outperforms TCP autotuning. While this
+is a valid example, there is also an alternative example of where old
+NFS design hurts performance.
 
-Sheng Yang wrote:
-> This fix 44/45 bit width memory can't boot up issue. The reason is
-> free_bootmem_node()->mark_bootmem_node()->__free() use test_and_clean_bit() to
-> clean node_bootmem_map, but for 44bits width address, the idx set bit 31 (43 -
-> 12), which consider as a nagetive value for bts.
-> 
-> This patch applied to tip/mm.
-
-Hi Sheng,
-
-Could you try the attached patch instead?
-
-	-hpa
-
--- 
-H. Peter Anvin, Intel Open Source Technology Center
-I work for Intel.  I don't speak on their behalf.
-
-
---------------060805040508090909070102
-Content-Type: text/plain;
- name="diff"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline;
- filename="diff"
-
-ZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24veDg2L2Jvb3QudHh0IGIvRG9jdW1lbnRhdGlv
-bi94ODYvYm9vdC50eHQKaW5kZXggZTAyMDM2Ni4uY2NjMWJkNCAxMDA2NDQKLS0tIGEvRG9j
-dW1lbnRhdGlvbi94ODYvYm9vdC50eHQKKysrIGIvRG9jdW1lbnRhdGlvbi94ODYvYm9vdC50
-eHQKQEAgLTUwLDYgKzUwLDExIEBAIFByb3RvY29sIDIuMDg6CShLZXJuZWwgMi42LjI2KSBB
-ZGRlZCBjcmMzMiBjaGVja3N1bSBhbmQgRUxGIGZvcm1hdAogUHJvdG9jb2wgMi4wOToJKEtl
-cm5lbCAyLjYuMjYpIEFkZGVkIGEgZmllbGQgb2YgNjQtYml0IHBoeXNpY2FsCiAJCXBvaW50
-ZXIgdG8gc2luZ2xlIGxpbmtlZCBsaXN0IG9mIHN0cnVjdAlzZXR1cF9kYXRhLgogCitQcm90
-b2NvbCAyLjEwOgkoS2VybmVsIDIuNi4zMT8pIEEgcHJvdG9jb2wgZm9yIHJlbGF4ZWQgYWxp
-Z25tZW50CisJIAliZXlvbmQgdGhlIGtlcm5lbF9hbGlnbm1lbnQgYWRkZWQsIG5ldyBpbml0
-X3NpemUgYW5kCisJIAlwcmVmX2FkZHJlc3MgZmllbGRzLgorCSAJCisKICoqKiogTUVNT1JZ
-IExBWU9VVAogCiBUaGUgdHJhZGl0aW9uYWwgbWVtb3J5IG1hcCBmb3IgdGhlIGtlcm5lbCBs
-b2FkZXIsIHVzZWQgZm9yIEltYWdlIG9yCkBAIC0xNzMsNyArMTc4LDcgQEAgT2Zmc2V0CVBy
-b3RvCU5hbWUJCU1lYW5pbmcKIDAyMkMvNAkyLjAzKwlyYW1kaXNrX21heAlIaWdoZXN0IGxl
-Z2FsIGluaXRyZCBhZGRyZXNzCiAwMjMwLzQJMi4wNSsJa2VybmVsX2FsaWdubWVudCBQaHlz
-aWNhbCBhZGRyIGFsaWdubWVudCByZXF1aXJlZCBmb3Iga2VybmVsCiAwMjM0LzEJMi4wNSsJ
-cmVsb2NhdGFibGVfa2VybmVsIFdoZXRoZXIga2VybmVsIGlzIHJlbG9jYXRhYmxlIG9yIG5v
-dAotMDIzNS8xCU4vQQlwYWQyCQlVbnVzZWQKKzAyMzUvMQkyLjEwKwltaW5fYWxpZ25tZW50
-CU1pbmltdW0gYWxpZ25tZW50LCBhcyBhIHBvd2VyIG9mIDIKIDAyMzYvMglOL0EJcGFkMwkJ
-VW51c2VkCiAwMjM4LzQJMi4wNisJY21kbGluZV9zaXplCU1heGltdW0gc2l6ZSBvZiB0aGUg
-a2VybmVsIGNvbW1hbmQgbGluZQogMDIzQy80CTIuMDcrCWhhcmR3YXJlX3N1YmFyY2ggSGFy
-ZHdhcmUgc3ViYXJjaGl0ZWN0dXJlCkBAIC0xODIsNiArMTg3LDggQEAgT2Zmc2V0CVByb3Rv
-CU5hbWUJCU1lYW5pbmcKIDAyNEMvNAkyLjA4KwlwYXlsb2FkX2xlbmd0aAlMZW5ndGggb2Yg
-a2VybmVsIHBheWxvYWQKIDAyNTAvOAkyLjA5KwlzZXR1cF9kYXRhCTY0LWJpdCBwaHlzaWNh
-bCBwb2ludGVyIHRvIGxpbmtlZCBsaXN0CiAJCQkJb2Ygc3RydWN0IHNldHVwX2RhdGEKKzAy
-NTgvOAkyLjEwKwlwcmVmX2FkZHJlc3MJUHJlZmVycmVkIGxvYWRpbmcgYWRkcmVzcworMDI2
-MC80CTIuMTArCWluaXRfc2l6ZQlMaW5lYXIgbWVtb3J5IHJlcXVpcmVkIGR1cmluZyBpbml0
-aWFsaXphdGlvbgogCiAoMSkgRm9yIGJhY2t3YXJkcyBjb21wYXRpYmlsaXR5LCBpZiB0aGUg
-c2V0dXBfc2VjdHMgZmllbGQgY29udGFpbnMgMCwgdGhlCiAgICAgcmVhbCB2YWx1ZSBpcyA0
-LgpAQCAtNDgyLDExICs0ODksMTUgQEAgUHJvdG9jb2w6CTIuMDMrCiAgIDB4MzdGRkZGRkYs
-IHlvdSBjYW4gc3RhcnQgeW91ciByYW1kaXNrIGF0IDB4MzdGRTAwMDAuKQogCiBGaWVsZCBu
-YW1lOglrZXJuZWxfYWxpZ25tZW50Ci1UeXBlOgkJcmVhZCAocmVsb2MpCitUeXBlOgkJcmVh
-ZC9tb2RpZnkgKHJlbG9jKQogT2Zmc2V0L3NpemU6CTB4MjMwLzQKLVByb3RvY29sOgkyLjA1
-KworUHJvdG9jb2w6CTIuMDUrIChyZWFkKSwgMi4xMCsgKG1vZGlmeSkKIAotICBBbGlnbm1l
-bnQgdW5pdCByZXF1aXJlZCBieSB0aGUga2VybmVsIChpZiByZWxvY2F0YWJsZV9rZXJuZWwg
-aXMgdHJ1ZS4pCisgIEFsaWdubWVudCB1bml0IHJlcXVpcmVkIGJ5IHRoZSBrZXJuZWwgKGlm
-IHJlbG9jYXRhYmxlX2tlcm5lbCBpcworICB0cnVlLikgIFN0YXJ0aW5nIHdpdGggcHJvdG9j
-b2wgdmVyc2lvbiAyLjEwLCB0aGlzIHJlZmxlY3RzIHRoZQorICBrZXJuZWwgYWxpZ25tZW50
-IHByZWZlcnJlZCBmb3Igb3B0aW1hbCBwZXJmb3JtYW5jZSBhbmQgY2FuIGJlCisgIG1vZGlm
-aWVkIGJ5IHRoZSBsb2FkZXI7IHNlZSB0aGUgbWluX2FsaWdubWVudCBhbmQgcHJlZl9hZGRy
-ZXNzIGZpZWxkCisgIGJlbG93LgogCiBGaWVsZCBuYW1lOglyZWxvY2F0YWJsZV9rZXJuZWwK
-IFR5cGU6CQlyZWFkIChyZWxvYykKQEAgLTQ5OCw2ICs1MDksMjIgQEAgUHJvdG9jb2w6CTIu
-MDUrCiAgIEFmdGVyIGxvYWRpbmcsIHRoZSBib290IGxvYWRlciBtdXN0IHNldCB0aGUgY29k
-ZTMyX3N0YXJ0IGZpZWxkIHRvCiAgIHBvaW50IHRvIHRoZSBsb2FkZWQgY29kZSwgb3IgdG8g
-YSBib290IGxvYWRlciBob29rLgogCitGaWVsZCBuYW1lOgltaW5fYWxpZ25tZW50CitUeXBl
-OgkJcmVhZCAocmVsb2MpCitPZmZzZXQvc2l6ZToJMHgyMzUvMQorUHJvdG9jb2w6CTIuMTAr
-CisKKyAgVGhpcyBmaWVsZCwgaWYgbm9uemVybywgaW5kaWNhdGVzIGFzIGEgcG93ZXIgb2Yg
-MiB0aGUgbWluaW11bQorICBhbGlnbm1lbnQgcmVxdWlyZWQsIGFzIG9wcG9zZWQgdG8gcHJl
-ZmVycmVkLCBieSB0aGUga2VybmVsIHRvIGJvb3QuCisgIElmIGEgYm9vdCBsb2FkZXIgbWFr
-ZXMgdXNlIG9mIHRoaXMgZmllbGQsIGl0IHNob3VsZCB1cGRhdGUgdGhlCisgIGtlcm5lbF9h
-bGlnbm1lbnQgZmllbGQgd2l0aCB0aGUgYWxpZ25tZW50IHVuaXQgZGVzaXJlZDsgdHlwaWNh
-bGx5OgorCisJa2VybmVsX2FsaWdubWVudCA9IDEgPDwgbWluX2FsaWdubWVudAorCisgIFRo
-ZXJlIG1heSBiZSBhIGNvbnNpZGVyYWJsZSBwZXJmb3JtYW5jZSBjb3N0IHdpdGggYW4gZXhj
-ZXNzaXZlbHkKKyAgbWlzYWxpZ25lZCBrZXJuZWwuICBUaGVyZWZvcmUsIGEgbG9hZGVyIHNo
-b3VsZCB0eXBpY2FsbHkgdHJ5IGVhY2gKKyAgcG93ZXItb2YtdHdvIGFsaWdubWVudCBmcm9t
-IGtlcm5lbF9hbGlnbm1lbnQgZG93biB0byB0aGlzIGFsaWdubWVudC4KKwogRmllbGQgbmFt
-ZToJY21kbGluZV9zaXplCiBUeXBlOgkJcmVhZAogT2Zmc2V0L3NpemU6CTB4MjM4LzQKQEAg
-LTU4Miw2ICs2MDksMjcgQEAgUHJvdG9jb2w6CTIuMDkrCiAgIHN1cmUgdG8gY29uc2lkZXIg
-dGhlIGNhc2Ugd2hlcmUgdGhlIGxpbmtlZCBsaXN0IGFscmVhZHkgY29udGFpbnMKICAgZW50
-cmllcy4KIAorRmllbGQgbmFtZToJcHJlZl9hZGRyZXNzCitUeXBlOgkJcmVhZCAocmVsb2Mp
-CitPZmZzZXQvc2l6ZToJMHgyNTgvOAorUHJvdG9jb2w6CTIuMTArCisKKyAgVGhpcyBmaWVs
-ZCwgaWYgbm9uemVybywgcmVwcmVzZW50cyBhIHByZWZlcnJlZCBsb2FkIGFkZHJlc3MgZm9y
-IHRoZQorICBrZXJuZWwuICBBIHJlbG9jYXRpbmcgYm9vdGxvYWRlciBzaG91bGQgYXR0ZW1w
-dCB0byBsb2FkIGF0IHRoaXMKKyAgYWRkcmVzcyBpZiBwb3NzaWJsZS4KKworCitGaWVsZCBu
-YW1lOglpbml0X3NpemUKK1R5cGU6CQlyZWFkCitPZmZzZXQvc2l6ZToJMHgyNWMvNAorCisg
-IFRoaXMgZmllbGQgaW5kaWNhdGVzIHRoZSBhbW91bnQgb2YgbGluZWFyIGNvbnRpZ3VvdXMg
-bWVtb3J5IHN0YXJ0aW5nCisgIGF0IHRoZSBrZXJuZWwgbG9hZCBhZGRyZXNzIChyb3VuZGVk
-IHVwIHRvIGtlcm5lbF9hbGlnbm1lbnQpIHRoYXQgdGhlCisgIGtlcm5lbCBuZWVkcyBiZWZv
-cmUgaXQgaXMgY2FwYWJsZSBvZiBleGFtaW5pbmcgaXRzIG1lbW9yeSBtYXAuICBUaGlzCisg
-IGlzIG5vdCB0aGUgc2FtZSB0aGluZyBhcyB0aGUgdG90YWwgYW1vdW50IG9mIG1lbW9yeSB0
-aGUga2VybmVsIG5lZWRzCisgIHRvIGJvb3QsIGJ1dCBpdCBjYW4gYmUgdXNlZCBieSBhIHJl
-bG9jYXRpbmcgYm9vdCBsb2FkZXIgdG8gaGVscAorICBzZWxlY3QgYSBzYWZlIGxvYWQgYWRk
-cmVzcyBmb3IgdGhlIGtlcm5lbC4KKwogCiAqKioqIFRIRSBJTUFHRSBDSEVDS1NVTQogCg==
---------------060805040508090909070102--
+On Wed, May 13, 2009 at 10:58 AM, Jeff Moyer <jmoyer@redhat.com> wrote:
+> Andrew Morton <akpm@linux-foundation.org> writes:
+>
+>> (obvious cc's added...)
+>>
+>> It's an iozone performance regression.
+>>
+>> On Tue, 12 May 2009 23:29:30 -0400 Jeff Moyer <jmoyer@redhat.com> wrote:
+>>
+>>> Jens Axboe <jens.axboe@oracle.com> writes:
+>>>
+>>> > On Mon, May 11 2009, Jeff Moyer wrote:
+>>> >> Jens Axboe <jens.axboe@oracle.com> writes:
+>>> >>
+>>> >> > On Fri, May 08 2009, Andrew Morton wrote:
+>>> >> >> On Thu, 23 Apr 2009 10:01:58 -0400
+>>> >> >> Jeff Moyer <jmoyer@redhat.com> wrote:
+>>> >> >>
+>>> >> >> > Hi,
+>>> >> >> >
+>>> >> >> > I've been working on CFQ improvements for interleaved I/Os between
+>>> >> >> > processes, and noticed a regression in performance when using the
+>>> >> >> > deadline I/O scheduler.  The test uses a server configured with a cciss
+>>> >> >> > array and 1Gb/s ethernet.
+>>> >> >> >
+>>> >> >> > The iozone command line was:
+>>> >> >> >   iozone -s 2000000 -r 64 -f /mnt/test/testfile -i 1 -w
+>>> >> >> >
+>>> >> >> > The numbers in the nfsd's row represent the number of nfsd "threads".
+>>> >> >> > These numbers (in MB/s) represent the average of 5 runs.
+>>> >> >> >
+>>> >> >> >                v2.6.29
+>>> >> >> >
+>>> >> >> > nfsd's  |   1    |  2   |   4   |   8
+>>> >> >> > --------+---------------+-------+------
+>>> >> >> > deadline| 43207 | 67436 | 96289 | 107590
+>>> >> >> >
+>>> >> >> >               2.6.30-rc1
+>>> >> >> >
+>>> >> >> > nfsd's  |   1   |   2   |   4   |   8
+>>> >> >> > --------+---------------+-------+------
+>>> >> >> > deadline| 43732 | 68059 | 76659 | 83231
+>>> >> >> >
+>>> >> >> >     2.6.30-rc3.block-for-linus
+>>> >> >> >
+>>> >> >> > nfsd's  |   1   |   2   |   4   |   8
+>>> >> >> > --------+---------------+-------+------
+>>> >> >> > deadline| 46102 | 71151 | 83120 | 82330
+>>> >> >> >
+>>> >> >> >
+>>> >> >> > Notice the drop for 4 and 8 threads.  It may be worth noting that the
+>>> >> >> > default number of NFSD threads is 8.
+>
+> Just following up with numbers:
+>
+>  2.6.30-rc4
+>
+> nfsd's  |   8
+> --------+------
+> cfq     | 51632   (49791 52436 52308 51488 52141)
+> deadline| 65558   (41675 42559 74820 87518 81221)
+>
+>   2.6.30-rc4 reverting the sunrpc "fix"
+>
+> nfsd's  |   8
+> --------+------
+> cfq     |  82513  (81650 82762 83147 82935 82073)
+> deadline| 107827  (109730 106077 107175 108524 107632)
+>
+> The numbers in parenthesis are the individual runs.  Notice how
+> 2.6.30-rc4 has some pretty wide variations for deadline.
+>
+> Cheers,
+> Jeff
+>
+>>> >> >> I guess we should ask Rafael to add this to the post-2.6.29 regression
+>>> >> >> list.
+>>> >> >
+>>> >> > I agree. It'd be nice to bisect this one down, I'm guessing some mm
+>>> >> > change has caused this writeout regression.
+>>> >>
+>>> >> It's not writeout, it's a read test.
+>>> >
+>>> > Doh sorry, I even ran these tests as well a few weeks back. So perhaps
+>>> > some read-ahead change, I didn't look into it. FWIW, on a single SATA
+>>> > drive here, it didn't show any difference.
+>>>
+>>> OK, I bisected this to the following commit.  The mount is done using
+>>> NFSv3, by the way.
+>>>
+>>> commit 47a14ef1af48c696b214ac168f056ddc79793d0e
+>>> Author: Olga Kornievskaia <aglo@citi.umich.edu>
+>>> Date:   Tue Oct 21 14:13:47 2008 -0400
+>>>
+>>>     svcrpc: take advantage of tcp autotuning
+>>>
+>>>     Allow the NFSv4 server to make use of TCP autotuning behaviour, which
+>>>     was previously disabled by setting the sk_userlocks variable.
+>>>
+>>>     Set the receive buffers to be big enough to receive the whole RPC
+>>>     request, and set this for the listening socket, not the accept socket.
+>>>
+>>>     Remove the code that readjusts the receive/send buffer sizes for the
+>>>     accepted socket. Previously this code was used to influence the TCP
+>>>     window management behaviour, which is no longer needed when autotuning
+>>>     is enabled.
+>>>
+>>>     This can improve IO bandwidth on networks with high bandwidth-delay
+>>>     products, where a large tcp window is required.  It also simplifies
+>>>     performance tuning, since getting adequate tcp buffers previously
+>>>     required increasing the number of nfsd threads.
+>>>
+>>>     Signed-off-by: Olga Kornievskaia <aglo@citi.umich.edu>
+>>>     Cc: Jim Rees <rees@umich.edu>
+>>>     Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+>>>
+>>> diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+>>> index 5763e64..7a2a90f 100644
+>>> --- a/net/sunrpc/svcsock.c
+>>> +++ b/net/sunrpc/svcsock.c
+>>> @@ -345,7 +345,6 @@ static void svc_sock_setbufsize(struct socket *sock, unsigned int snd,
+>>>      lock_sock(sock->sk);
+>>>      sock->sk->sk_sndbuf = snd * 2;
+>>>      sock->sk->sk_rcvbuf = rcv * 2;
+>>> -    sock->sk->sk_userlocks |= SOCK_SNDBUF_LOCK|SOCK_RCVBUF_LOCK;
+>>>      release_sock(sock->sk);
+>>>  #endif
+>>>  }
+>>> @@ -797,23 +796,6 @@ static int svc_tcp_recvfrom(struct svc_rqst *rqstp)
+>>>              test_bit(XPT_CONN, &svsk->sk_xprt.xpt_flags),
+>>>              test_bit(XPT_CLOSE, &svsk->sk_xprt.xpt_flags));
+>>>
+>>> -    if (test_and_clear_bit(XPT_CHNGBUF, &svsk->sk_xprt.xpt_flags))
+>>> -            /* sndbuf needs to have room for one request
+>>> -             * per thread, otherwise we can stall even when the
+>>> -             * network isn't a bottleneck.
+>>> -             *
+>>> -             * We count all threads rather than threads in a
+>>> -             * particular pool, which provides an upper bound
+>>> -             * on the number of threads which will access the socket.
+>>> -             *
+>>> -             * rcvbuf just needs to be able to hold a few requests.
+>>> -             * Normally they will be removed from the queue
+>>> -             * as soon a a complete request arrives.
+>>> -             */
+>>> -            svc_sock_setbufsize(svsk->sk_sock,
+>>> -                                (serv->sv_nrthreads+3) * serv->sv_max_mesg,
+>>> -                                3 * serv->sv_max_mesg);
+>>> -
+>>>      clear_bit(XPT_DATA, &svsk->sk_xprt.xpt_flags);
+>>>
+>>>      /* Receive data. If we haven't got the record length yet, get
+>>> @@ -1061,15 +1043,6 @@ static void svc_tcp_init(struct svc_sock *svsk, struct svc_serv *serv)
+>>>
+>>>              tcp_sk(sk)->nonagle |= TCP_NAGLE_OFF;
+>>>
+>>> -            /* initialise setting must have enough space to
+>>> -             * receive and respond to one request.
+>>> -             * svc_tcp_recvfrom will re-adjust if necessary
+>>> -             */
+>>> -            svc_sock_setbufsize(svsk->sk_sock,
+>>> -                                3 * svsk->sk_xprt.xpt_server->sv_max_mesg,
+>>> -                                3 * svsk->sk_xprt.xpt_server->sv_max_mesg);
+>>> -
+>>> -            set_bit(XPT_CHNGBUF, &svsk->sk_xprt.xpt_flags);
+>>>              set_bit(XPT_DATA, &svsk->sk_xprt.xpt_flags);
+>>>              if (sk->sk_state != TCP_ESTABLISHED)
+>>>                      set_bit(XPT_CLOSE, &svsk->sk_xprt.xpt_flags);
+>>> @@ -1140,8 +1113,14 @@ static struct svc_sock *svc_setup_socket(struct svc_serv *serv,
+>>>      /* Initialize the socket */
+>>>      if (sock->type == SOCK_DGRAM)
+>>>              svc_udp_init(svsk, serv);
+>>> -    else
+>>> +    else {
+>>> +            /* initialise setting must have enough space to
+>>> +             * receive and respond to one request.
+>>> +             */
+>>> +            svc_sock_setbufsize(svsk->sk_sock, 4 * serv->sv_max_mesg,
+>>> +                                    4 * serv->sv_max_mesg);
+>>>              svc_tcp_init(svsk, serv);
+>>> +    }
+>>>
+>>>      /*
+>>>       * We start one listener per sv_serv.  We want AF_INET
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>
+>
