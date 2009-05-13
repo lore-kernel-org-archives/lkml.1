@@ -1,59 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758782AbZEMNsR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755787AbZEMNwV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758782AbZEMNsR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 09:48:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752139AbZEMNr6
+	id S1755787AbZEMNwV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 09:52:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZEMNwM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 09:47:58 -0400
-Received: from viefep19-int.chello.at ([62.179.121.39]:64374 "EHLO
-	viefep19-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751032AbZEMNr5 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 09:47:57 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [RFC PATCH v2 0/2] Saving power by cpu
- evacuationsched_max_capacity_pct=n
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: balbir@linux.vnet.ibm.com
-Cc: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       Suresh B Siddha <suresh.b.siddha@intel.com>,
-       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
-       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
-       Dipankar Sarma <dipankar@in.ibm.com>, Vatsa <vatsa@linux.vnet.ibm.com>,
-       Gautham R Shenoy <ego@in.ibm.com>, Andi Kleen <andi@firstfloor.org>,
-       Gregory Haskins <gregory.haskins@gmail.com>,
-       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
-       Arun Bharadwaj <arun@linux.vnet.ibm.com>
-In-Reply-To: <20090513134556.GN13394@balbir.in.ibm.com>
-References: <20090513130541.21440.33364.stgit@drishya.in.ibm.com>
-	 <1242220497.26820.21.camel@twins>
-	 <20090513134556.GN13394@balbir.in.ibm.com>
-Content-Type: text/plain
-Date: Wed, 13 May 2009 15:47:55 +0200
-Message-Id: <1242222475.26820.22.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Wed, 13 May 2009 09:52:12 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40277 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751032AbZEMNwL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 09:52:11 -0400
+Message-ID: <4A0AD0D3.6030802@novell.com>
+Date: Wed, 13 May 2009 22:53:23 +0900
+From: Tejun Heo <teheo@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Jan Beulich <JBeulich@novell.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Andi Kleen <andi@firstfloor.org>,
+       linux-kernel@vger.kernel.org
+Subject: Re: remap allocator for per-CPU memory
+References: <4A09B23B02000078000007F1@vpn.id2.novell.com> <4A09991E.9010903@kernel.org> <4A0A9C70.6090803@novell.com> <87vdo5l0u6.fsf@basil.nowhere.org> <4A0AAB6B.3090903@novell.com> <4A0AAF10.3030709@novell.com> <4A0ADE6A0200007800000BA7@novell.com> <4A0ACB29.5030009@novell.com> <4A0AEAC80200007800000BC3@vpn.id2.novell.com>
+In-Reply-To: <4A0AEAC80200007800000BC3@vpn.id2.novell.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-13 at 19:15 +0530, Balbir Singh wrote:
-> * Peter Zijlstra <a.p.zijlstra@chello.nl> [2009-05-13 15:14:57]:
-> 
-> > On Wed, 2009-05-13 at 18:41 +0530, Vaidyanathan Srinivasan wrote:
-> > 
-> > > * Peter Zijlstra wanted more justifications for throttling at the core
-> > >   level.  Throttling may be a resource management problem rather than
-> > >   scheduler/load balancer
-> > 
-> > No, I mandate that it be thermal management. Any other reason and you've
-> > got a NAK.
-> 
-> We've been discussing hard limits from the resource management view
-> point. Bharata is working on a RFC that we should be able to share
-> soon
+Hello, Jan.
 
-Right, and you well know I dislike them.
+Jan Beulich wrote:
+>>>> Tejun Heo <teheo@novell.com> 13.05.09 15:29 >>>
+>>> (b) teach the pageattr code to handle the per-CPU virtual area similarly to
+>>> the kernel space for x86-64 (though it's going to be a little more complicated
+>>> since there's no pre-determined relation between the virtual and physical
+>>> addresses - the necessary lookup might become expensive on systems with
+>>> very many [possible] CPUs).
+>> Can you elaborate this a bit?  Let's sya there's quick way to match
+>> whether the page is part of the remapped large page, what can pageattr
+>> do differently then?  Applying the same attribute to both mappings?
+>> Failing or filtering set_memory_*()?
+> 
+> It would have to split the page. Perhaps there wouldn't be a need to
+> apply the new attribute to the page(s) that is(are) in the process
+> of getting its(their) attribute(s) changed; instead, just don't
+> re-establish a 4k mapping for those pages that aren't part of the
+> per-CPU space.
 
+Ah... right.  Splitting the remapped area should do the trick, so now
+the question is whether it would worth all the trouble or should we
+just forget about remapping and use 4k on NUMA machines.  I don't have
+much clue here.  Andi seems to think there's no reason to bother with
+PMD mappings.  Ingo, what do you think?
+
+Thanks.
+
+-- 
+tejun
