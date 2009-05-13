@@ -1,66 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758483AbZEMI7x@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759451AbZEMJAa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758483AbZEMI7x (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 04:59:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753823AbZEMI7m
+	id S1759451AbZEMJAa (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 05:00:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758135AbZEMJAT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 04:59:42 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:54931 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751148AbZEMI7l (ORCPT
+	Wed, 13 May 2009 05:00:19 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:44493 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753823AbZEMJAR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 04:59:41 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH] Kconfig: CONFIG_UNEVICTABLE_LRU move into EMBEDDED submenu
-Cc: kosaki.motohiro@jp.fujitsu.com, LKML <linux-kernel@vger.kernel.org>,
-       linux-mm <linux-mm@kvack.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-In-Reply-To: <20090513175152.1590c117.minchan.kim@barrios-desktop>
-References: <20090513172904.7234.A69D9226@jp.fujitsu.com> <20090513175152.1590c117.minchan.kim@barrios-desktop>
-Message-Id: <20090513175539.723A.A69D9226@jp.fujitsu.com>
+	Wed, 13 May 2009 05:00:17 -0400
+From: =?utf-8?q?Uwe=20Kleine-K=C3=B6nig?= 
+	<u.kleine-koenig@pengutronix.de>
+To: linux-kernel@vger.kernel.org
+Cc: linux-rt-users@vger.kernel.org, Thomas Gleixner <tglx@linutronix.de>
+Subject: [PATCH] ARM: __builtin_return_address works with argument 0
+Date: Wed, 13 May 2009 11:00:13 +0200
+Message-Id: <1242205213-27452-1-git-send-email-u.kleine-koenig@pengutronix.de>
+X-Mailer: git-send-email 1.6.2.1
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Wed, 13 May 2009 17:59:34 +0900 (JST)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: ukl@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hi, Kosaki. 
-> 
-> On Wed, 13 May 2009 17:30:45 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
-> 
-> > Subject: [PATCH] Kconfig: CONFIG_UNEVICTABLE_LRU move into EMBEDDED submenu
-> > 
-> > Almost people always turn on CONFIG_UNEVICTABLE_LRU. this configuration is
-> > used only embedded people.
-> 
-> I think at least embedded guys don't need it. 
-> But I am not sure other guys. 
+This saves the function overhead for CALLER_ADDRESS0.
 
-perhaps, I and you live in another embedded world.
+Signed-off-by: Uwe Kleine-König <u.kleine-koenig@pengutronix.de>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+---
+Hi Thomas,
 
+this applies to .29.3-rt12.  Feel free to squash this into
+arm-tracing-updates.patch.
 
-> > +config UNEVICTABLE_LRU
-> > +	bool "Add LRU list to track non-evictable pages" if EMBEDDED
-> > +	default y
-> 
-> If you want to move, it would be better as following.
-> 
-> config UNEVICTABLE_LRU
->        bool "Add LRU list to track non-evictable pages" if EMBEDDED
->        default !EMBEDDED
+Best regards
+Uwe
 
-No.
-As far as I know, many embedded guys use this configuration.
+ arch/arm/include/asm/ftrace.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-they hate unexpected latency by reclaim. !UNEVICTABLE_LRU increase
-unexpectability largely.
-
-
-
+diff --git a/arch/arm/include/asm/ftrace.h b/arch/arm/include/asm/ftrace.h
+index 900fc19..f7e8bac 100644
+--- a/arch/arm/include/asm/ftrace.h
++++ b/arch/arm/include/asm/ftrace.h
+@@ -15,7 +15,7 @@ extern void mcount(void);
+ void *return_address(unsigned int);
+ 
+ #define HAVE_ARCH_CALLER_ADDR
+-#define CALLER_ADDR0 ((unsigned long)return_address(0))
++#define CALLER_ADDR0 ((unsigned long)__builtin_return_address(0))
+ #define CALLER_ADDR1 ((unsigned long)return_address(1))
+ #define CALLER_ADDR2 ((unsigned long)return_address(2))
+ #define CALLER_ADDR3 ((unsigned long)return_address(3))
+-- 
+1.6.2.1
 
