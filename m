@@ -1,82 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755078AbZEMBBO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756110AbZEMBDL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755078AbZEMBBO (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 21:01:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752913AbZEMBA4
+	id S1756110AbZEMBDL (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 21:03:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752535AbZEMBCz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 21:00:56 -0400
-Received: from straum.hexapodia.org ([64.81.70.185]:21539 "EHLO
-	straum.hexapodia.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752509AbZEMBAz (ORCPT
+	Tue, 12 May 2009 21:02:55 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1716 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751980AbZEMBCz (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 21:00:55 -0400
-Date: Tue, 12 May 2009 18:00:56 -0700
-From: Andy Isaacson <adi@hexapodia.org>
-To: Robert Hancock <hancockrwd@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-ide@vger.kernel.org, linux-scsi <linux-scsi@vger.kernel.org>
-Subject: Re: [2.6.30-rc2] CD-R: wodim intermittent failures: [sr0] Add. Sense: Logical block address out of range, sector 0
-Message-ID: <20090513010056.GT21505@hexapodia.org>
-References: <20090421015234.GA7014@hexapodia.org> <20090422144904.407df635.akpm@linux-foundation.org> <49F00EBB.7040504@gmail.com> <20090423070713.GF19113@hexapodia.org> <20090512215256.GA22095@hexapodia.org> <4A0A050D.4000804@gmail.com>
+	Tue, 12 May 2009 21:02:55 -0400
+Subject: Re: [PATCH] 8250: Don't restore NS16550 mode when console suspend
+ is disabled
+From: Joe Perches <joe@perches.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Deepak Saxena <dsaxena@plexity.net>, linux-serial@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <20090513011842.22d9cd6c@lxorguk.ukuu.org.uk>
+References: <20090512210015.GA25540@plexity.net>
+	 <alpine.LFD.2.01.0905121452190.3343@localhost.localdomain>
+	 <20090513011842.22d9cd6c@lxorguk.ukuu.org.uk>
+Content-Type: text/plain
+Date: Tue, 12 May 2009 18:01:33 -0700
+Message-Id: <1242176493.9718.76.camel@Joe-AcerAspire>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A0A050D.4000804@gmail.com>
-User-Agent: Mutt/1.4.2.3i
-X-GPG-Fingerprint: 1914 0645 FD53 C18E EEEF C402 4A69 B1F3 68D2 A63F
-X-GPG-Key-URL: http://web.hexapodia.org/~adi/gpg.txt
-X-Domestic-Surveillance: money launder bomb tax evasion
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 05:23:57PM -0600, Robert Hancock wrote:
-> >Looking at hald/linux/addons/addon-storage.c it does appear to
-> >open(O_EXCL) as well, so perhaps the O_EXCL multiple-open logic broke
-> >recently?
-> >
-> >Complete dmesg, kconfig, and so on at
-> >
-> >http://web.hexapodia.org/~adi/sysinfo/1242164411_cvpe4300_2.6.30-rc5-dmar-00096-ga4d7749/
+On Wed, 2009-05-13 at 01:18 +0100, Alan Cox wrote:
+> > Hmm. I already applied this, but then after looking closer, I undid that. 
+> > Why? It looks buggy:
 > 
-> I'm not sure how this is supposed to work. The only place I can see any 
-> O_EXCL handling is in the sg driver. But if you access the sr device 
-> directly, it doesn't seem like that would have any effect.
-> 
-> CCing linux-scsi. Could be there's a bad user-space assumption here, or 
-> something.
+> I'm a bit suprised that as tty and serial maintainer this is the first
+> time I see the patch.
 
-Perhaps, I haven't tracked down exactly what the difference in behavior
-between working 2.6.29 and broken 2.6.30-rc2 is.  It seems like the disk
-spins up more often (in response to hal background probes presumably)
-with 30-rc2 than it did before, and running "udevadm monitor" I do see
-the following repeated "change" events happening, even on an idle
-system:
+Perhaps the MAINTAINERS entry for TTY should include
+file patterns?
 
-KERNEL[1242175547.793029] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0 (scsi)
-KERNEL[1242175547.794669] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
-UDEV  [1242175547.794912] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0 (scsi)
-UDEV  [1242175547.888539] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
-KERNEL[1242175673.309129] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0 (scsi)
-KERNEL[1242175673.310775] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
-UDEV  [1242175673.311013] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0 (scsi)
-UDEV  [1242175674.658718] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
-KERNEL[1242175690.227604] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0 (scsi)
-KERNEL[1242175690.229730] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
-UDEV  [1242175690.229960] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0 (scsi)
-UDEV  [1242175714.060440] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
-KERNEL[1242175727.909819] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0 (scsi)
-KERNEL[1242175727.911356] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
-UDEV  [1242175727.911690] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0 (scsi)
-UDEV  [1242175727.987747] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
-KERNEL[1242175731.591853] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0 (scsi)
-KERNEL[1242175731.593541] change   /devices/pci0000:00/0000:00:1f.2/host1/target1:0:0/1:0:0:0/block/sr0 (block)
+Would this be reasonable?
 
-I've verified that O_EXCL works at least with a trivial test program, so
-it's not simply that EXCL broke.
+TTY LAYER
+P:      Alan Cox
+M:      alan@lxorguk.ukuu.org.uk
+L:      linux-kernel@vger.kernel.org
+L:      linux-serial@vger.kernel.org
+S:      Maintained
+F:      drivers/char/tty_*
+F:      drivers/serial/serial_core.c
+F:      linux/serial_core.h
+F:      linux/serial.h
+F:      linux/tty.h
 
-Also I've verified with strace that hald-addon-storage and wodim are
-both using O_EXCL, and that hald-addon-storage gets EBUSY while wodim is
-writing the disk.  (The straced run didn't fail, unfortunately.)
 
--andy
