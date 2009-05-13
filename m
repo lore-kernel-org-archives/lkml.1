@@ -1,101 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757950AbZEMGhX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758061AbZEMGhr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757950AbZEMGhX (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 02:37:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753826AbZEMGhI
+	id S1758061AbZEMGhr (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 02:37:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756241AbZEMGhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 02:37:08 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:48599 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753762AbZEMGhH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 02:37:07 -0400
-Date: Wed, 13 May 2009 08:37:07 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, Max Kellermann <max@duempel.org>,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 2/3] splice: implement default splice_read method
-Message-ID: <20090513063707.GC4140@kernel.dk>
-References: <20090507133734.450612199@szeredi.hu> <20090507133748.161689790@szeredi.hu> <20090512223500.d7ef4648.akpm@linux-foundation.org>
+	Wed, 13 May 2009 02:37:32 -0400
+Received: from tx2ehsobe004.messaging.microsoft.com ([65.55.88.14]:55607 "EHLO
+	TX2EHSOBE008.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756066AbZEMGha convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 02:37:30 -0400
+X-BigFish: VPS3(z34a4jzzz1202hzzz32i6bh)
+X-FB-SS: 13,
+X-WSS-ID: 0KJKL2A-02-RZJ-01
+Date: Wed, 13 May 2009 08:36:49 +0200
+From: Andreas Herrmann <andreas.herrmann3@amd.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+CC: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
+       Robert Richter <robert.richter@amd.com>, Dave Jones <davej@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>
+Subject: Re: [PATCH 5/10 -tip] x86: check_powernow() for K8 and later user
+	of Advanced Power Management features
+Message-ID: <20090513063649.GF9991@alberich.amd.com>
+References: <1242142530.2547.11.camel@ht.satnam> <1242142623.2547.13.camel@ht.satnam> <1242142692.2547.15.camel@ht.satnam> <1242142753.2547.16.camel@ht.satnam> <1242142807.2547.18.camel@ht.satnam> <1242142849.2547.19.camel@ht.satnam> <20090512174848.GA3313@elte.hu> <1242153926.2492.49.camel@ht.satnam>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset="iso-8859-1"
 Content-Disposition: inline
-In-Reply-To: <20090512223500.d7ef4648.akpm@linux-foundation.org>
+In-Reply-To: <1242153926.2492.49.camel@ht.satnam>
+User-Agent: Mutt/1.5.16 (2007-06-09)
+X-OriginalArrivalTime: 13 May 2009 06:37:18.0241 (UTC) FILETIME=[42E12910:01C9D395]
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12 2009, Andrew Morton wrote:
-> On Thu, 07 May 2009 15:37:36 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
-> 
-> > +	for (i = 0; i < spd.nr_pages; i++) {
-> > +		kunmap(pages[i]);
-> 
-> It is deadlockable if any thread of control holds more than a single
-> kmap at a time.
-> 
-> Because there are a finite number of kmaps available, and if one is
-> unavailable, kmap() waits for one to become free.  If the number of
-> waiting threads equals the number of available slots, nobody makes any
-> progress.
+You should involve the maintainer of powernow-k8 when submitting patches for this driver.
+It's Mark Langsdorf (mark.langsdorf@amd.com).
 
-Good catch, that will not work reliably. I've applied the below.
-
-commit 4f23122858a27ba97444b9b37a066d83edebd4c8
-Author: Jens Axboe <jens.axboe@oracle.com>
-Date:   Wed May 13 08:35:35 2009 +0200
-
-    splice: fix repeated kmap()'s in default_file_splice_read()
-    
-    We cannot reliably map more than one page at the time, or we risk
-    deadlocking. Just allocate the pages from low mem instead.
-    
-    Reported-by: Andrew Morton <akpm@linux-foundation.org>
-    Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-
-diff --git a/fs/splice.c b/fs/splice.c
-index eefd96b..c5e3c79 100644
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -580,13 +580,13 @@ ssize_t default_file_splice_read(struct file *in, loff_t *ppos,
- 	for (i = 0; i < nr_pages && i < PIPE_BUFFERS && len; i++) {
- 		struct page *page;
- 
--		page = alloc_page(GFP_HIGHUSER);
-+		page = alloc_page(GFP_USER);
- 		error = -ENOMEM;
- 		if (!page)
- 			goto err;
- 
- 		this_len = min_t(size_t, len, PAGE_CACHE_SIZE - offset);
--		vec[i].iov_base = (void __user *) kmap(page);
-+		vec[i].iov_base = (void __user *) page_address(page);
- 		vec[i].iov_len = this_len;
- 		pages[i] = page;
- 		spd.nr_pages++;
-@@ -604,7 +604,6 @@ ssize_t default_file_splice_read(struct file *in, loff_t *ppos,
- 
- 	nr_freed = 0;
- 	for (i = 0; i < spd.nr_pages; i++) {
--		kunmap(pages[i]);
- 		this_len = min_t(size_t, vec[i].iov_len, res);
- 		partial[i].offset = 0;
- 		partial[i].len = this_len;
-@@ -624,10 +623,9 @@ ssize_t default_file_splice_read(struct file *in, loff_t *ppos,
- 	return res;
- 
- err:
--	for (i = 0; i < spd.nr_pages; i++) {
--		kunmap(pages[i]);
-+	for (i = 0; i < spd.nr_pages; i++)
- 		__free_page(pages[i]);
--	}
-+
- 	return error;
- }
- EXPORT_SYMBOL(default_file_splice_read);
+Regards,
+Andreas
 
 -- 
-Jens Axboe
+Operating | Advanced Micro Devices GmbH
+  System  | Karl-Hammerschmidt-Str. 34, 85609 Dornach b. München, Germany
+ Research | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
+  Center  | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
+  (OSRC)  | Registergericht München, HRB Nr. 43632
+
 
