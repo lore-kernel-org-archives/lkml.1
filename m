@@ -1,52 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758316AbZEMQmW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760808AbZEMQmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758316AbZEMQmW (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 12:42:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbZEMQmM
+	id S1760808AbZEMQmk (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 12:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754587AbZEMQm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 12:42:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37447 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752003AbZEMQmK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 12:42:10 -0400
-Date: Wed, 13 May 2009 09:32:29 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Olga Kornievskaia <aglo@citi.umich.edu>
-Cc: Jeff Moyer <jmoyer@redhat.com>, Jens Axboe <jens.axboe@oracle.com>,
-       linux-kernel@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>,
-       "J. Bruce Fields" <bfields@fieldses.org>, Jim Rees <rees@umich.edu>,
-       linux-nfs@vger.kernel.org
-Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone
-  over NFS
-Message-Id: <20090513093229.097b47d2.akpm@linux-foundation.org>
-In-Reply-To: <b4ff356f0905130920v184ab529mb52a4346d4c77c14@mail.gmail.com>
-References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
-	<20090508120119.8c93cfd7.akpm@linux-foundation.org>
-	<20090511081415.GL4694@kernel.dk>
-	<x49skjb21b7.fsf@segfault.boston.devel.redhat.com>
-	<20090511165826.GG4694@kernel.dk>
-	<x494ovp4r51.fsf@segfault.boston.devel.redhat.com>
-	<20090512204433.7eb69075.akpm@linux-foundation.org>
-	<x49y6t1rqw0.fsf@segfault.boston.devel.redhat.com>
-	<b4ff356f0905130920v184ab529mb52a4346d4c77c14@mail.gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Wed, 13 May 2009 12:42:28 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35011 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1759677AbZEMQm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 12:42:28 -0400
+Message-ID: <4A0AF84F.6060809@kernel.org>
+Date: Wed, 13 May 2009 09:41:51 -0700
+From: Yinghai Lu <yinghai@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Ingo Molnar <mingo@elte.hu>
+CC: Cyrill Gorcunov <gorcunov@gmail.com>, mingo@redhat.com, hpa@zytor.com,
+       linux-kernel@vger.kernel.org, tglx@linutronix.de,
+       eswierk@aristanetworks.com, linux-tip-commits@vger.kernel.org
+Subject: Re: [tip:irq/numa] x86: read apic ID in the !acpi_lapic case
+References: <20090512145128.GA10220@lenovo> <20090512145808.GA20587@elte.hu> <4A099013.6040708@kernel.org> <20090512150631.GA32067@elte.hu> <20090512164617.GA21673@elte.hu> <4A09C068.3010308@kernel.org> <20090512183302.GA4000@elte.hu> <4A09C157.7010407@kernel.org> <20090512190538.GA9769@elte.hu> <4A09CCBB.2000306@kernel.org> <20090513131405.GB21052@elte.hu>
+In-Reply-To: <20090513131405.GB21052@elte.hu>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 May 2009 12:20:57 -0400 Olga Kornievskaia <aglo@citi.umich.edu> wrote:
+Ingo Molnar wrote:
+> * Yinghai Lu <yinghai@kernel.org> wrote:
+> 
+>> -	return hard_smp_processor_id() >> index_msb;
+>> +	return initial_apic_id >> index_msb;
+> 
+>> -	unsigned apicid = hard_smp_processor_id();
+>> +	unsigned apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
+> 
+>> -	int apicid = hard_smp_processor_id();
+>> +	int apicid = cpu_has_apic ? hard_smp_processor_id() : c->apicid;
+> 
+> Doesnt such a pattern call for the pushing of that distinction into 
+> hard_smp_processor_id() instead? (after a careful review of all 
+> hard_smp_processor_id() call-sites)
 
-> I believe what you are seeing is how well TCP autotuning performs.
-> What old NFS code was doing is disabling autotuning and instead using
-> #nfsd thread to scale TCP recv window. You are providing an example of
-> where setting TCP buffer sizes outperforms TCP autotuning. While this
-> is a valid example, there is also an alternative example of where old
-> NFS design hurts performance.
+don't want to burden system that have APIC to check that bit.
 
-<scratches head>
-
-Jeff's computer got slower.  Can we fix that?
+YH
