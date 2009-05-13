@@ -1,80 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759065AbZEMIz2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759205AbZEMI6T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759065AbZEMIz2 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 04:55:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757171AbZEMIzM
+	id S1759205AbZEMI6T (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 04:58:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754472AbZEMI6J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 04:55:12 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:35104 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755859AbZEMIzJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 04:55:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=c51H3pw+qVd8FWhvBVZFRBLlcWVM8upgPdKRCRw/Kp9LcI54E/zn2ExQZxldBLEac6
-         bTAjbJCxllLTyQNdcrR8eTAw0JFquHWjaG3FLkPn1pN9D17KQld3XE2QI+Ms0MkI2yRi
-         cCYNpr5K4mNQh4000QNTvlS/DaQ735RMvT1FE=
-MIME-Version: 1.0
-In-Reply-To: <20090513095127.308b00e7@lxorguk.ukuu.org.uk>
-References: <20090511222702.352192505@arndb.de>
-	 <200905112238.55404.arnd@arndb.de>
-	 <20090512090602.65722342@lxorguk.ukuu.org.uk>
-	 <200905121123.21436.arnd@arndb.de>
-	 <20090513033027.GA13193@cynthia.pants.nu>
-	 <alpine.DEB.1.00.0905130610240.18305@zirkon.biophys.uni-duesseldorf.de>
-	 <20090513043409.GA13577@cynthia.pants.nu>
-	 <20090513095127.308b00e7@lxorguk.ukuu.org.uk>
-Date: Wed, 13 May 2009 10:55:09 +0200
-X-Google-Sender-Auth: d59f689e76a99a53
-Message-ID: <10f740e80905130155pd24c4e3n538be3110ac34b54@mail.gmail.com>
-Subject: Re: [PATCH] ata: libata depends on HAS_DMA
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: Brad Boyer <flar@allandria.com>,
-       Michael Schmitz <schmitz@biophys.uni-duesseldorf.de>,
-       Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-       Jeff Garzik <jgarzik@pobox.com>, linux-ide@vger.kernel.org,
-       takata@linux-m32r.org, linux-m68k@vger.kernel.org,
-       ysato@users.sourceforge.jp
-Content-Type: text/plain; charset=UTF-8
+	Wed, 13 May 2009 04:58:09 -0400
+Received: from hera.kernel.org ([140.211.167.34]:35711 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751148AbZEMI6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 04:58:08 -0400
+Subject: Re: [PATCH 3/10 -tip] x86: Add cpufeatures for Advanced Power
+ Management
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@kernel.org>,
+       Robert Richter <robert.richter@amd.com>, Dave Jones <davej@redhat.com>,
+       LKML <linux-kernel@vger.kernel.org>, x86 maintainers <x86@kernel.org>
+In-Reply-To: <alpine.LFD.2.00.0905122219420.3561@localhost.localdomain>
+References: <1242142530.2547.11.camel@ht.satnam>
+	 <1242142623.2547.13.camel@ht.satnam>  <1242142692.2547.15.camel@ht.satnam>
+	 <1242142753.2547.16.camel@ht.satnam> <1242155190.2492.73.camel@ht.satnam>
+	 <alpine.LFD.2.00.0905122219420.3561@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 13 May 2009 14:27:18 +0530
+Message-Id: <1242205038.3346.2.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 10:51, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
->> > If it doesn't interfere with plain PIO mode, fine.
->>
->> I agree. There definitely needs to still be support for IDE ports that
->> don't have DMA capability.
->
-> There is - it's just if the platform doesn't implement the dma_* APIs you
-> get a problem.
+On Tue, 2009-05-12 at 23:04 +0200, Thomas Gleixner wrote:
+> Jaswinder,
+> 
+> On Wed, 13 May 2009, Jaswinder Singh Rajput wrote:
+> > +	/* Advanced Power Management (Function 8000_0007h), edx */
+> > +	if (c->extended_cpuid_level >= 0x80000007) {
+> > +		c->x86_capability[9] = cpuid_edx(0x80000007);
+> 
+> In the reply to [Patch 5/10] Ingo wrote:
+> >> Also, open-coding x86_capability[9] like that is quite unclean. Were 
+> >> we ever to reorder those bits internally, this could would break.
+> 
+> Do you really believe that open-coding x86_capability[9] in .../common.c
+> is better than the open-coding in ../powernow-k8.c ?
+> 
+> Again, open-coding is wrong and error prone. Ingo explicitely asked for a
+> helper function. All you did is moving the open-coded hard wired array
+> reference to a different place.
+> 
+> Please start to listen to the review comments as long as people are
+> willing to look at your patches. Seriously, the noise/useful ratio of
+> your patches is annoying and adds an unjustified burden to the
+> maintainers of that code.
+> 
 
-Note that there are other things missing on m68k and m32r, that's why
-Al added the
+Ok, trashed complete cpu_debug and cpufeature patches, I hope it will
+makes maintainers happy and save their precious time.
 
-| depends on !(M32R || M68K) || BROKEN
-
-commit 9317fd4c60962d3a9423b5f9bb5d1b10cf8a0699
-Author: Al Viro <viro@ftp.linux.org.uk>
-Date:   Sun Sep 24 23:40:00 2006 +0100
-
-    [PATCH] libata won't build on m68k and m32r
-
-    no ioread*(), for one thing
-
-Gr{oetje,eeting}s,
-
-						Geert
+Anyway thanks for being so helpful and making my task easier :-)
 
 --
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+JSR
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
