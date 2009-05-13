@@ -1,64 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759418AbZEMAhl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759343AbZEMAh5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759418AbZEMAhl (ORCPT <rfc822;w@1wt.eu>);
-	Tue, 12 May 2009 20:37:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758832AbZEMAgG
+	id S1759343AbZEMAh5 (ORCPT <rfc822;w@1wt.eu>);
+	Tue, 12 May 2009 20:37:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759378AbZEMAhc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Tue, 12 May 2009 20:36:06 -0400
-Received: from rv-out-0506.google.com ([209.85.198.237]:31657 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758814AbZEMAgE convert rfc822-to-8bit (ORCPT
+	Tue, 12 May 2009 20:37:32 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:42530 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759350AbZEMAha (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Tue, 12 May 2009 20:36:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=qYy7f3oeknOiTGg0plELFS6uUmbMVfQPkQcyc4zXWCG0xmaMQlhsIMyBFe23FeAIty
-         zWAPr8wqMaEvLb/Xox68A02EL9tueL0iYP+nIa5TiDZBtiyHTro5RvSqaR+dqO8FbDj3
-         jVWm3BldlHE/LRaS806Y88RSnDV1IMRUReDx4=
+	Tue, 12 May 2009 20:37:30 -0400
+Date: Tue, 12 May 2009 20:37:27 -0400
+From: Neil Horman <nhorman@tuxdriver.com>
+To: Jarod Wilson <jarod@redhat.com>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH] crypto: tcrypt: add option to not exit on success
+Message-ID: <20090513003727.GA12788@localhost.localdomain>
+References: <200905111006.32675.jarod@redhat.com> <200905121602.45960.jarod@redhat.com>
 MIME-Version: 1.0
-In-Reply-To: <20090512155842.GE30014@hack>
-References: <1242141222-8454-1-git-send-email-tom.leiming@gmail.com>
-	 <20090512154456.GC6255@nowhere> <20090512155842.GE30014@hack>
-Date: Wed, 13 May 2009 08:36:05 +0800
-Message-ID: <d82e647a0905121736n7a73e166h61a899d8e4a63d0a@mail.gmail.com>
-Subject: Re: [PATCH] kernel/async.c:introduce async_schedule*_atomic
-From: Ming Lei <tom.leiming@gmail.com>
-To: =?ISO-8859-1?Q?Am=E9rico_Wang?= <xiyou.wangcong@gmail.com>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, arjan@infradead.org,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905121602.45960.jarod@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-Spam-Score: -1.4 (-)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/12 Américo Wang <xiyou.wangcong@gmail.com>:
-> On Tue, May 12, 2009 at 05:44:58PM +0200, Frederic Weisbecker wrote:
->>On Tue, May 12, 2009 at 11:13:42PM +0800, tom.leiming@gmail.com wrote:
->>> From: Ming Lei <tom.leiming@gmail.com>
->>>
->>> -    if (!async_enabled || !entry || atomic_read(&entry_count) > MAX_WORK) {
->>> +    sync_run = !async_enabled || !entry || \
->>> +                    atomic_read(&entry_count) > MAX_WORK;
->
->
-> And also this one...
->
-> Hey, Ming, none of these are macros... You don't need to add backslash to
-> join two lines, C compilers can recognize.
+On Tue, May 12, 2009 at 04:02:45PM -0400, Jarod Wilson wrote:
+> On Monday 11 May 2009 10:06:32 Jarod Wilson wrote:
+> > At present, the tcrypt module always exits with an -EAGAIN upon
+> > successfully completing all the tests its been asked to run. There
+> > are cases where it would be much simpler to verify all tests passed
+> > if tcrypt simply stayed loaded (i.e. returned 0). Specifically, in
+> > fips mode, all self-tests need to be run from the initrd, and its
+> > much simpler to check the ret from modprobe for success than to
+> > scrape dmesg. To make this doable, I've simply added a module param
+> > to allow this behavior, leaving the default behavior more or less
+> > the same as before, although now we're tracking all success/failure
+> > rets as well.
+> 
+> I've been reminded that a self-test failure in fips mode means an
+> immediate panic, so modprobe never sees the ret in that case, but if
+> the module load failed for other reasons, a non-zero return value
+> from modprobe is possible w/o traversing the code paths that trigger
+> a self-test failure panic. For one, if the tcrypt module were to go
+> missing for some reason, modprobe would have a non-zero ret, and the
+> initrd would need to handle panicking the system.
+> 
+> Would there be any objections to dropping the noexit parameter
+> entirely and just making its behavior the default? It would make
+> all users regardless of fips mode notice failures more readily.
+> 
+I think thats a fine idea.  Theres no reason that a user of the tcrypt module
+can't manually rmmod it when the testing is done.  Doing it that way just seems
+more sane to me to begin with anyway.
 
-OK, I'll fix it in next version.
-Thanks!
+Neil
 
->
-> --
-> Live like a child, think like the god.
->
->
-
-
-
--- 
-Lei Ming
+> -- 
+> Jarod Wilson
+> jarod@redhat.com
+> 
