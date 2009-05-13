@@ -1,172 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758719AbZEMJnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758178AbZEMJoA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758719AbZEMJnR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 05:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755539AbZEMJnA
+	id S1758178AbZEMJoA (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 05:44:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754566AbZEMJnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 05:43:00 -0400
-Received: from gir.skynet.ie ([193.1.99.77]:41154 "EHLO gir.skynet.ie"
+	Wed, 13 May 2009 05:43:49 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:53109 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755248AbZEMJm7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 05:42:59 -0400
-Date: Wed, 13 May 2009 10:42:57 +0100
-From: Mel Gorman <mel@csn.ul.ie>
-To: Arve Hj?nnev?g <arve@android.com>
-Cc: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Peter Ziljstra <a.p.ziljstra@chello.nl>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, San Mehat <san@android.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [patch 02/11 -mmotm] lowmemorykiller: Don't count free space
-	unless it meets the specified limit by itself
-Message-ID: <20090513094256.GA12905@csn.ul.ie>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101459370.18804@chino.kir.corp.google.com> <20090512092347.GB25923@csn.ul.ie> <d6200be20905121727t22e59458ha5d7ec3617173b1a@mail.gmail.com>
+	id S1751301AbZEMJns (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 05:43:48 -0400
+Date: Wed, 13 May 2009 12:43:26 +0300
+From: Gleb Natapov <gleb@redhat.com>
+To: Przemysssaw Paweeeczyk <przemyslaw@pawelczyk.it>
+Cc: Masami Hiramatsu <mhiramat@redhat.com>, Ingo Molnar <mingo@elte.hu>,
+       Steven Rostedt <rostedt@goodmis.org>,
+       lkml <linux-kernel@vger.kernel.org>,
+       systemtap <systemtap@sources.redhat.com>, kvm <kvm@vger.kernel.org>,
+       Jim Keniston <jkenisto@us.ibm.com>, "H. Peter Anvin" <hpa@zytor.com>,
+       Ananth N Mavinakayanahalli <ananth@in.ibm.com>,
+       Frederic Weisbecker <fweisbec@gmail.com>,
+       Andi Kleen <ak@linux.intel.com>,
+       Vegard Nossum <vegard.nossum@gmail.com>, Avi Kivity <avi@redhat.com>
+Subject: Re: [PATCH -tip v5 1/7] x86: instruction decorder API
+Message-ID: <20090513094326.GA22281@redhat.com>
+References: <20090509004829.5505.38720.stgit@localhost.localdomain> <20090509004841.5505.48140.stgit@localhost.localdomain> <20090513082310.GQ18554@redhat.com> <40e92d5b0905130235p2c60bd56y4f001247e11d6302@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <d6200be20905121727t22e59458ha5d7ec3617173b1a@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <40e92d5b0905130235p2c60bd56y4f001247e11d6302@mail.gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, May 12, 2009 at 05:27:18PM -0700, Arve Hj?nnev?g wrote:
-> On Tue, May 12, 2009 at 2:23 AM, Mel Gorman <mel@csn.ul.ie> wrote:
-> > On Sun, May 10, 2009 at 03:07:10PM -0700, David Rientjes wrote:
-> >> From: Arve Hjønnevåg <arve@android.com>
-> >>
-> >> This allows processes to be killed when the kernel evict cache pages in
-> >> an attempt to get more contiguous free memory.
-> >>
-> >
-> > I'm not seeing what this patch has to do with contiguous free memory. I
-> > see what the patch is doing - lowering the threshold allowing a
-> > particular min_adj value to be used, but not why.
-> >
+On Wed, May 13, 2009 at 11:35:16AM +0200, Przemysssaw Paweeeczyk wrote:
+> On Wed, May 13, 2009 at 10:23, Gleb Natapov <gleb@redhat.com> wrote:
+> > On Fri, May 08, 2009 at 08:48:42PM -0400, Masami Hiramatsu wrote:
+> >> +++ b/arch/x86/scripts/gen-insn-attr-x86.awk
+> >> @@ -0,0 +1,314 @@
+> >> +#!/bin/awk -f
+> > On some distributions (debian) it is /usr/bin/awk.
 > 
-> If the memory is fragmented, contiguous allocations can cause all
-> caches to be freed. The low memory killer would not trigger in this
-> case.
+> True, but on most of them (all?) there is also an appropriate link in /bin.
+Nope, not on debian testing. Although I assume if kernel compilation
+will start to fail it will appear :)
+
+> If shebang could have more that one argument, then '/usr/bin/env awk
+> -f' would be the best solution I think.
 > 
 
-That still doesn't explain why this patch allows processes to be killed
-in an effort to get contiguous free memory other than freeing pages in
-general may free up contiguous pages. It seems this patch makes the
-killer more agressive but I think I know why.
-
-How about the following as a changelog? It might help me understand the
-use case better and how this patch changes it if the changelog was better.
-Of course, as this is this driver is isolated to the Android platform and
-I'm not developing or own one, you're also welcome to tell me to "shut up,
-you don't know what you're talking about" :)
-
-=====
-The Android low memory killer is responsible for ensuring there is enough
-free memory at configured watermarks stored in a lowmem_minfree[] array. At
-each watermark, there is an associated oom_adj score. When the watermark is
-not met, processes with a higher oom_adj are considered for OOM killing
-so that lower-priority processes are killed before the situation becomes
-unmanageable.
-
-The problem is that the driver currently sums NR_FREE_PAGES+NR_FILE_PAGES
-as an estimate of how much memory is potentially free. This can lead to
-a situation where no memory is really free because it's all in the page
-cache and corrective action is taken too late with too many processes being
-considered. This patch changes the semantics such that both NR_FREE_PAGES
-and NR_FILE_PAGES must be above the lowmem_minfree threshold.
-====
-
-?
-
-If this is accurate, it also wouldn't hurt to put the first paragraph into a
-comment earlier in the driver so the next poor fool like me isn't scratching
-his head wondering what this is for.
-
-> >
-> >> Signed-off-by: Arve Hjønnevåg <arve@android.com>
-> >> ---
-> >>  drivers/staging/android/lowmemorykiller.c |   13 +++++++++----
-> >>  1 files changed, 9 insertions(+), 4 deletions(-)
-> >>
-> >> diff --git a/drivers/staging/android/lowmemorykiller.c b/drivers/staging/android/lowmemorykiller.c
-> >> --- a/drivers/staging/android/lowmemorykiller.c
-> >> +++ b/drivers/staging/android/lowmemorykiller.c
-> >> @@ -58,20 +58,25 @@ static int lowmem_shrink(int nr_to_scan, gfp_t gfp_mask)
-> >>       int min_adj = OOM_ADJUST_MAX + 1;
-> >>       int selected_tasksize = 0;
-> >>       int array_size = ARRAY_SIZE(lowmem_adj);
-> >> -     int other_free = global_page_state(NR_FREE_PAGES) + global_page_state(NR_FILE_PAGES);
-> >> +     int other_free = global_page_state(NR_FREE_PAGES);
-> >> +     int other_file = global_page_state(NR_FILE_PAGES);
-> >>       if(lowmem_adj_size < array_size)
-> >>               array_size = lowmem_adj_size;
-> >>       if(lowmem_minfree_size < array_size)
-> >>               array_size = lowmem_minfree_size;
-> >>       for(i = 0; i < array_size; i++) {
-> >
-> > It would appear that lowmem_adj_size is making assumptions on
-> > the number of zones that exist in the system. It's not clear why
-> > sysctl_lowmem_reserve_ratio[] is not being used or how they differ.
-> 
-> lowmem_adj_size is the number of elements in the array. Why would the
-> number of zones in the system affect it?
-
-I misread what the purpose of lowmem_adj[] was. I thought it was
-thresholds on a per-zone basis because it looks similar to
-lowmem_reserve_ratio[] but that's not what it is at all.
-
-Looking at it closer, this is more about introducing more watermarks to
-a zone for the control of the size of the cache - maybe because the OOM
-killer takes action too late for you.
-
-Lack of familiarity with the driver and how it's expected to be used is
-catching me.
-
-> The goal of the
-> lowmemorykiller is to make more memory available for caches. I would
-> expect increasing sysctl_lowmem_reserve_ratio to have the opposite
-> effect, but on our system with only one zone it has no effect.
-> 
-
-Ok.
-
-> >
-> >> -             if(other_free < lowmem_minfree[i]) {
-> >> +             if (other_free < lowmem_minfree[i] &&
-> >> +                 other_file < lowmem_minfree[i]) {
-> >>                       min_adj = lowmem_adj[i];
-> >>                       break;
-> >>               }
-> >>       }
-> >>       if(nr_to_scan > 0)
-> >> -             lowmem_print(3, "lowmem_shrink %d, %x, ofree %d, ma %d\n", nr_to_scan, gfp_mask, other_free, min_adj);
-> >> -     rem = global_page_state(NR_ACTIVE) + global_page_state(NR_INACTIVE);
-> >> +             lowmem_print(3, "lowmem_shrink %d, %x, ofree %d %d, ma %d\n", nr_to_scan, gfp_mask, other_free, other_file, min_adj);
-> >> +     rem = global_page_state(NR_ACTIVE_ANON) +
-> >> +             global_page_state(NR_ACTIVE_FILE) +
-> >> +             global_page_state(NR_INACTIVE_ANON) +
-> >> +             global_page_state(NR_INACTIVE_FILE);
-> >
-> > This looks like it's a compile fix since changes made to 4f98a2fe. This
-> > should have been in a separate patch and prioritised.
-> 
-> You are right. These patches were originally on 2.6.27 and I did not
-> notice that the first patch was also broken when I fixed this patch
-> for 2.6.29.
-> 
-
-Ok
-
-> >
-> >>       if (nr_to_scan <= 0 || min_adj == OOM_ADJUST_MAX + 1) {
-> >>               lowmem_print(5, "lowmem_shrink %d, %x, return %d\n", nr_to_scan, gfp_mask, rem);
-> >>               return rem;
-> >
-
--- 
-Mel Gorman
-Part-time Phd Student                          Linux Technology Center
-University of Limerick                         IBM Dublin Software Lab
+--
+			Gleb.
