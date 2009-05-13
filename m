@@ -1,78 +1,114 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761759AbZEMV0e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761622AbZEMVb3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761759AbZEMV0e (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 17:26:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761272AbZEMV0Z
+	id S1761622AbZEMVb3 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 17:31:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761330AbZEMVbR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 17:26:25 -0400
-Received: from gate.crashing.org ([63.228.1.57]:44868 "EHLO gate.crashing.org"
+	Wed, 13 May 2009 17:31:17 -0400
+Received: from vena.lwn.net ([206.168.112.25]:33019 "EHLO vena.lwn.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760409AbZEMV0Y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 17:26:24 -0400
-From: Kumar Gala <galak@kernel.crashing.org>
-To: dan.j.williams@intel.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] fsldma: Fix compile warnings
-Date: Wed, 13 May 2009 16:25:57 -0500
-Message-Id: <1242249957-10352-1-git-send-email-galak@kernel.crashing.org>
-X-Mailer: git-send-email 1.6.0.6
+	id S1761188AbZEMVbQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 17:31:16 -0400
+Date: Wed, 13 May 2009 15:31:12 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Wolfgang Grandegger <wg@grandegger.com>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+Subject: Re: [PATCH v2 3/7] [PATCH 3/8] can: CAN Network device driver and
+ Netlink interface
+Message-ID: <20090513153112.0822809b@bike.lwn.net>
+In-Reply-To: <20090512092757.574693100@denx.de>
+References: <20090512092757.048938233@denx.de>
+	<20090512092757.574693100@denx.de>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-We we build with dma_addr_t as a 64-bit quantity we get:
+[Quick review ...]
 
-drivers/dma/fsldma.c: In function 'fsl_chan_xfer_ld_queue':
-drivers/dma/fsldma.c:625: warning: cast to pointer from integer of different size
-drivers/dma/fsldma.c: In function 'fsl_dma_chan_do_interrupt':
-drivers/dma/fsldma.c:737: warning: cast to pointer from integer of different size
-drivers/dma/fsldma.c:737: warning: cast to pointer from integer of different size
-drivers/dma/fsldma.c: In function 'of_fsl_dma_probe':
-drivers/dma/fsldma.c:927: warning: cast to pointer from integer of different
+> +/*
+> + * CAN device restart for bus-off recovery
+> + */
+> +int can_restart_now(struct net_device *dev)
+> +{
+> +	struct can_priv *priv = netdev_priv(dev);
+> +	struct net_device_stats *stats = &dev->stats;
+> +	struct sk_buff *skb;
+> +	struct can_frame *cf;
+> +	int err;
+> +
+> +	/* Synchronize with dev->hard_start_xmit() */
+> +	netif_tx_lock(dev);
+> +
+> +	/* Ensure that no more messages can go out */
+> +	if (netif_carrier_ok(dev))
+> +		netif_carrier_off(dev);
+> +
+> +	/* Ensure that no more messages can come in */
+> +	err = priv->do_set_mode(dev, CAN_MODE_STOP);
+> +	if (err)
+> +		return err;
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
----
- drivers/dma/fsldma.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+This leaves _xmit_lock held and carrier off.  Is that really what you want
+to do?
 
-diff --git a/drivers/dma/fsldma.c b/drivers/dma/fsldma.c
-index da8a8ed..66a7687 100644
---- a/drivers/dma/fsldma.c
-+++ b/drivers/dma/fsldma.c
-@@ -622,8 +622,8 @@ static void fsl_chan_xfer_ld_queue(struct fsl_dma_chan *fsl_chan)
- 	if (ld_node != &fsl_chan->ld_queue) {
- 		/* Get the ld start address from ld_queue */
- 		next_dest_addr = to_fsl_desc(ld_node)->async_tx.phys;
--		dev_dbg(fsl_chan->dev, "xfer LDs staring from %p\n",
--				(void *)next_dest_addr);
-+		dev_dbg(fsl_chan->dev, "xfer LDs staring from 0x%llx\n",
-+				(unsigned long long)next_dest_addr);
- 		set_cdar(fsl_chan, next_dest_addr);
- 		dma_start(fsl_chan);
- 	} else {
-@@ -734,8 +734,9 @@ static irqreturn_t fsl_dma_chan_do_interrupt(int irq, void *data)
- 	 */
- 	if (stat & FSL_DMA_SR_EOSI) {
- 		dev_dbg(fsl_chan->dev, "event: End-of-segments INT\n");
--		dev_dbg(fsl_chan->dev, "event: clndar %p, nlndar %p\n",
--			(void *)get_cdar(fsl_chan), (void *)get_ndar(fsl_chan));
-+		dev_dbg(fsl_chan->dev, "event: clndar 0x%llx, nlndar 0x%llx\n",
-+			(unsigned long long)get_cdar(fsl_chan),
-+			(unsigned long long)get_ndar(fsl_chan));
- 		stat &= ~FSL_DMA_SR_EOSI;
- 		update_cookie = 1;
- 	}
-@@ -925,8 +926,8 @@ static int __devinit of_fsl_dma_probe(struct of_device *dev,
- 	}
- 
- 	dev_info(&dev->dev, "Probe the Freescale DMA driver for %s "
--			"controller at %p...\n",
--			match->compatible, (void *)fdev->reg.start);
-+			"controller at 0x%llx...\n",
-+			match->compatible, (unsigned long long)fdev->reg.start);
- 	fdev->reg_base = ioremap(fdev->reg.start, fdev->reg.end
- 						- fdev->reg.start + 1);
- 
--- 
-1.6.0.6
+> +
+> +	/*  Now it's save to clean up */
+> +	del_timer_sync(&priv->restart_timer);
+> +	can_flush_echo_skb(dev);
+> +
+> +	dev_dbg(dev->dev.parent, "restarted\n");
+> +	priv->can_stats.restarts++;
+> +
+> +	/* send restart message upstream */
+> +	skb = dev_alloc_skb(sizeof(struct can_frame));
+> +	if (skb == NULL)
+> +		return -ENOMEM;
 
+...here too...
+
+> +	skb->dev = dev;
+> +	skb->protocol = htons(ETH_P_CAN);
+> +	cf = (struct can_frame *)skb_put(skb, sizeof(struct can_frame));
+> +	memset(cf, 0, sizeof(struct can_frame));
+> +	cf->can_id = CAN_ERR_FLAG | CAN_ERR_RESTARTED;
+> +	cf->can_dlc = CAN_ERR_DLC;
+> +
+> +	netif_rx(skb);
+> +
+> +	dev->last_rx = jiffies;
+> +	stats->rx_packets++;
+> +	stats->rx_bytes += cf->can_dlc;
+> +
+> +	/* Now restart the device */
+> +	err = priv->do_set_mode(dev, CAN_MODE_START);
+> +	if (err)
+> +		return err;
+
+...and here too.  Do you maybe want to get rid of the middle-of-function
+returns and switch to the "goto out" convention?
+
+> +	netif_carrier_on(dev);
+> +
+> +	netif_tx_unlock(dev);
+> +
+> +	return 0;
+> +}
+> +
+> +static void can_restart_after(unsigned long data)
+> +{
+> +	struct net_device *dev = (struct net_device *)data;
+> +
+> +	can_restart_now(dev);
+> +}
+
+can_restart_after what?  I find myself confused by this function and
+wondering why it exists.
+
+jon
