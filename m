@@ -1,72 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760775AbZEMUoD@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761370AbZEMUrW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760775AbZEMUoD (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 16:44:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754338AbZEMUnw
+	id S1761370AbZEMUrW (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 16:47:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753034AbZEMUrK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 16:43:52 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:34908 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752811AbZEMUnv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 16:43:51 -0400
-Message-ID: <4A0B30D0.4060806@garzik.org>
-Date: Wed, 13 May 2009 16:42:56 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Hitoshi Mitake <h.mitake@gmail.com>
-CC: Roland Dreier <rdreier@cisco.com>, Ingo Molnar <mingo@elte.hu>,
-       David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, hpa@zytor.com,
-       tglx@linutronix.de, rpjday@crashcourse.ca, linux-kernel@vger.kernel.org,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
-References: <49EE37AF.4020507@zytor.com>	 <20090421.173123.191021055.davem@davemloft.net>	 <adak55438gp.fsf_-_@cisco.com>	 <20090428.221228.217954247.davem@davemloft.net>	 <20090429115654.GC11586@elte.hu> <49F843BC.7020902@garzik.org>	 <adahc071ie4.fsf@cisco.com> <49F8B1A1.4010208@garzik.org> <a6b9f31a0905122232s2d23b4e3h6e447c3fa5c29ee6@mail.gmail.com>
-In-Reply-To: <a6b9f31a0905122232s2d23b4e3h6e447c3fa5c29ee6@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Wed, 13 May 2009 16:47:10 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:57965 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751051AbZEMUrJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 16:47:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:date:message-id:subject;
+        b=oH5Hes1riPtJ8/DEwC42CvxiTtIn33ZKHV5mCdg3ELTlVsug1md10i+zsyyOAdxG96
+         Fwlw8E75mOrLNAKPEcOjbvnOZsJQuaNAE/DuGHUhnevUvqL5MgIFQ1bwZISDJY7ZLQpj
+         BLb6xaE58jqMbztS7ypt4v/PN/hkik7eZq8R0=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: linux-ide@vger.kernel.org
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       linux-kernel@vger.kernel.org
+Date: Wed, 13 May 2009 22:51:39 +0200
+Message-Id: <20090513205139.28638.87226.sendpatchset@localhost.localdomain>
+Subject: [PATCH 0/7] ide: minor improvements/cleanups
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hitoshi Mitake wrote:
-> I think it's good time to decide making all architectures
-> which have readq/writeq provide HAVE_READQ/HAVE_WRITEQ or not.
-> 
-> Adding HAVE_READQ/HAVE_WRITEQ to Kconfig of architectures needs
-> agreement of all maintainers of these.
-> 
-> But, David Miller, maintainer of SPARC architecture, acked Roland's patch
-> because of the possibility of bugs non-atomicity of readq/writeq of
-> x86-32 will cause.
-> 
-> And, Jeff Garzik said that he saw zero justification for API removal.
-> 
-> Which way should we choose?
-> Remove readq/writeq from x86-32?
-> Or add HAVE... to all architectures with readq/writeq?
 
-To repeat what has already been stated, each case was re-evaluated: 
-http://marc.info/?l=linux-kernel&m=124103527326835&w=2
+On top of for-next branch of ide-2.6.git tree.
 
-Roland's patch was acked, apparently, _in spite of_ the commonly 
-accepted readq() definition already being in use!
+* BUG() on impossible conditions
+* make ide_host_{alloc,add}() API less magic
+* remove 'chipset' field from hw_regs_t
+* remove few typedefs
 
-Thusfar, I see two things:
-
-(1) years of history has shown that non-atomic readq/writeq on 32-bit 
-platforms has been sufficient, based on testing and experience.  In 
-fact, in niu's case, a common readq/writeq would have PREVENTED a bug.
-
-(2) unspecified fears continue to linger about non-atomicity
-
-We should not base decisions on fear, particularly when the weight of 
-evidence and experience points in the other direction.
-
-	Jeff
-
-
-
+diffstat:
+ drivers/ide/at91_ide.c     |    7 +---
+ drivers/ide/au1xxx-ide.c   |    8 ++---
+ drivers/ide/buddha.c       |    9 ++---
+ drivers/ide/cmd640.c       |    7 +---
+ drivers/ide/cs5520.c       |    4 +-
+ drivers/ide/delkin_cb.c    |    6 +--
+ drivers/ide/falconide.c    |    9 ++---
+ drivers/ide/gayle.c        |    9 ++---
+ drivers/ide/icside.c       |   13 ++++----
+ drivers/ide/ide-4drives.c  |    6 +--
+ drivers/ide/ide-cd.c       |    8 +----
+ drivers/ide/ide-cs.c       |    6 +--
+ drivers/ide/ide-disk.c     |   13 +-------
+ drivers/ide/ide-eh.c       |    9 ++---
+ drivers/ide/ide-floppy.c   |    6 +--
+ drivers/ide/ide-generic.c  |    7 +---
+ drivers/ide/ide-h8300.c    |   10 +++---
+ drivers/ide/ide-io.c       |   69 ++++++++++++++++++---------------------------
+ drivers/ide/ide-legacy.c   |    7 +---
+ drivers/ide/ide-pnp.c      |    6 +--
+ drivers/ide/ide-probe.c    |   25 +++++++---------
+ drivers/ide/ide-tape.c     |   10 ------
+ drivers/ide/ide-taskfile.c |    2 -
+ drivers/ide/ide_platform.c |    9 ++---
+ drivers/ide/macide.c       |    9 ++---
+ drivers/ide/palm_bk3710.c  |    6 +--
+ drivers/ide/pmac.c         |   13 ++++----
+ drivers/ide/q40ide.c       |   11 +++----
+ drivers/ide/rapide.c       |    8 ++---
+ drivers/ide/scc_pata.c     |    6 +--
+ drivers/ide/setup-pci.c    |   21 ++++++-------
+ drivers/ide/sgiioc4.c      |    7 +---
+ drivers/ide/siimage.c      |    4 +-
+ drivers/ide/tx4938ide.c    |    5 +--
+ drivers/ide/tx4939ide.c    |    5 +--
+ include/linux/ide.h        |   37 +++++++++---------------
+ 36 files changed, 171 insertions(+), 226 deletions(-)
