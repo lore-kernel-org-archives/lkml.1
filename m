@@ -1,92 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753507AbZEMFHd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754642AbZEMFIo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753507AbZEMFHd (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 01:07:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751501AbZEMFHY
+	id S1754642AbZEMFIo (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 01:08:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750998AbZEMFIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 01:07:24 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:53998 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750893AbZEMFHW (ORCPT
+	Wed, 13 May 2009 01:08:35 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:44345 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750843AbZEMFIe convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 01:07:22 -0400
-Message-ID: <4A0A5556.9050209@jp.fujitsu.com>
-Date: Wed, 13 May 2009 14:06:30 +0900
-From: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Wed, 13 May 2009 01:08:34 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=UA+f4LOq9vAROEvPCX2axhZyhEgn4kNDvVexszuqwoD9ld/IhnVBTScBNQA3XDhtIT
+         zo0J48ZnQCe8db/X/sMDElVfbBj+L8akanx9oQfZHL6jq33+1flUl9qk657Chyo8v1y9
+         wPi0/WuQlZ1vsK/gaQWWl1EzZ1pa4ix995iCk=
 MIME-Version: 1.0
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "David S. Miller" <davem@davemloft.net>, linux-pci@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] PCI MSI: Yet another fix for MSI-X with NIU cards, v2
-References: <20090508131333.GV8112@parisc-linux.org> <4A0A5284.1000705@jp.fujitsu.com>
-In-Reply-To: <4A0A5284.1000705@jp.fujitsu.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090512185415.GA22500@Krystal>
+References: <1233911220-27912-1-git-send-email-bert.wesarg@googlemail.com>
+	 <20090512185415.GA22500@Krystal>
+Date: Wed, 13 May 2009 07:08:34 +0200
+Message-ID: <36ca99e90905122208s69b8f594wa9c8ca78781f778e@mail.gmail.com>
+Subject: Re: [PATCH urcu] Use pthread_equal() for pthread_t's equality test
+From: Bert Wesarg <bert.wesarg@googlemail.com>
+To: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi David and all,
+On Tue, May 12, 2009 at 20:54, Mathieu Desnoyers
+<compudj@krystal.dyndns.org> wrote:
+> * Bert Wesarg (bert.wesarg@googlemail.com) wrote:
+>> Signed-off-by: Bert Wesarg <bert.wesarg@googlemail.com>
+>> ---
+>>  urcu.c |    2 +-
+>>  1 files changed, 1 insertions(+), 1 deletions(-)
+>>
+>
+> Hi Bert,
+Hi Mathieu,
+>
+> I have to ask all userspace RCU committers for permission to move the
+> code to LGPL. IBM already gave their approval. Is it OK with you wrt to
+> the patch you posted here ?
+Yes, it's ok.
 
-Sorry, if you have problem with wrong diffstat in patch header
-(it was because I hand-fixed the comment in patch), please use
-following instead.  Contents are not changed, still v2.
-
-Thanks,
-H.Seto
-
-
-The NIU device refuses to allow accesses to MSI-X registers before MSI-X
-is enabled.  This patch fixes the problem by moving the read & write the
-mask register (for preserved bits) to after MSI-X is enabled.
-
-Reported-by: David S. Miller <davem@davemloft.net>
-Signed-off-by: Hidetoshi Seto <seto.hidetoshi@jp.fujitsu.com>
----
- drivers/pci/msi.c |   21 ++++++++++++++++++---
- 1 files changed, 18 insertions(+), 3 deletions(-)
-
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 6f2e629..44085e0 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -455,9 +455,7 @@ static int msix_capability_init(struct pci_dev *dev,
- 		entry->msi_attrib.default_irq = dev->irq;
- 		entry->msi_attrib.pos = pos;
- 		entry->mask_base = base;
--		entry->masked = readl(base + j * PCI_MSIX_ENTRY_SIZE +
--					PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
--		msix_mask_irq(entry, 1);
-+		entry->masked = 1;
- 
- 		list_add_tail(&entry->list, &dev->msi_list);
- 	}
-@@ -493,6 +491,23 @@ static int msix_capability_init(struct pci_dev *dev,
- 	msix_set_enable(dev, 1);
- 	dev->msix_enabled = 1;
- 
-+	/*
-+	 * The states of Reserved bits[31:01] of Vector Control for MSI-X
-+	 * Table Entries must be 0.  However, for potential future use,
-+	 * software must preserve the value of these reserved bits.
-+	 * Refer PCI spec 3.0, 6.8.2.9.
-+	 *
-+	 * Note that there are some device that refuses access to MSI-X
-+	 * Table Entries before MSI-X is enabled.  Therefore we do it here. 
-+	 */
-+	list_for_each_entry(entry, &dev->msi_list, list) {
-+		int vector = entry->msi_attrib.entry_nr;
-+		entry->masked = readl(base + vector * PCI_MSIX_ENTRY_SIZE +
-+					PCI_MSIX_ENTRY_VECTOR_CTRL_OFFSET);
-+		/* Make sure it is masked */
-+		msix_mask_irq(entry, 1);
-+	}
-+
- 	return 0;
- }
- 
--- 
-1.6.3
-
+Bert
+>
+> Mathieu
