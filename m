@@ -1,269 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZENJEP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752278AbZENJIz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753411AbZENJEP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 05:04:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbZENJDz
+	id S1752278AbZENJIz (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 05:08:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751185AbZENJIp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 05:03:55 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:44423 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751067AbZENJDx (ORCPT
+	Thu, 14 May 2009 05:08:45 -0400
+Received: from mail-pz0-f115.google.com ([209.85.222.115]:61645 "EHLO
+	mail-pz0-f115.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751101AbZENJIo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 05:03:53 -0400
-X-Auth-Info: VkN4MWvK45X3LjQgiVirFGbKNcEmL7g0aUqgW7TQLqg=
-Message-ID: <4A0BDE79.4060606@grandegger.com>
-Date: Thu, 14 May 2009 11:03:53 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 14 May 2009 05:08:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:sender:reply-to:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=qipaKZhi0jKflj7yun+Z8UgsbklrVhcgC+Kg7hWXjYpJlfH0ov8aAUD9m6hjfC9ugW
+         ga5o6AKfRObLFZcly7rQ7oayRV/iiJb5ZjM8yBGq6L5nTVULj4RbOlarvxu175xmLNN7
+         I8RomT21cibEuVeBohggyOQiH1xAg5uA04wgI=
 MIME-Version: 1.0
-To: Jonathan Corbet <corbet@lwn.net>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Subject: Re: [PATCH v2 4/7] [PATCH 4/8] can: Driver for the SJA1000 CAN controller
-References: <20090512092757.048938233@denx.de>	<20090512092757.756749047@denx.de> <20090513155205.4bf06c25@bike.lwn.net>
-In-Reply-To: <20090513155205.4bf06c25@bike.lwn.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Reply-To: Tobias_Mueller@twam.info
+In-Reply-To: <20090513151415.6e84fd82.akpm@linux-foundation.org>
+References: <17be05570905130710s1192729cqafa09127f6c34bf9@mail.gmail.com>
+	 <20090513151415.6e84fd82.akpm@linux-foundation.org>
+Date: Thu, 14 May 2009 11:08:45 +0200
+X-Google-Sender-Auth: 7dc70d7bbf513df9
+Message-ID: <17be05570905140208n5fd695aayfad221808f70ac21@mail.gmail.com>
+Subject: Re: [PATCH 001/001] leds: alix-leds2 fixed for Award BIOS
+From: =?UTF-8?Q?Tobias_M=C3=BCller?= <Tobias_Mueller@twam.info>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Richard Purdie <rpurdie@rpsys.net>,
+       Constantin Baranov <const@mimas.ru>,
+       =?UTF-8?Q?Tobias_M=C3=BCller?= <Tobias_Mueller@twam.info>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Corbet wrote:
-> [Quick drive-by review continues...]
-> 
->> +
->> +static int sja1000_probe_chip(struct net_device *dev)
->> +{
->> +	struct sja1000_priv *priv = netdev_priv(dev);
-> 
-> Looking down toward the bottom, I see:
-> 
->> +struct sja1000_priv {
->> +	struct can_priv can;
-> 
-> So you're still using the "put the higher-level structure at the top so we
-> can treat it like either kind of pointer" trick.  I'd still recommend
-> against that.  Far better to do something like:
-> 
-> 	struct can_priv *canpriv = netdev_priv(dev);
-> 	struct sja_1000_priv *priv = container_of(canpriv, struct sja_1000_priv, can);
-> 
-> Of course, you can put that dance into a helper function.
+2009/5/14 Andrew Morton <akpm@linux-foundation.org>:
+> Will this cause problems on boards which are _not_ running that BIOS?
+No. These initialisations is already done there by BIOS, but setting
+the registers twice doesn't matter. It's just configurating these pins
+as an output.
 
-There is no way to initialize the value returned by netdev_priv() as it
-does not point to a member of struct net_device. I already commented here:
-
-  http://marc.info/?l=linux-netdev&m=124120212106891&w=2
-
-Have I missed something?
-
->> +	if (dev->base_addr && (priv->read_reg(dev, 0) == 0xFF)) {
->> +		printk(KERN_INFO "%s: probing @0x%lX failed\n",
->> +		       DRV_NAME, dev->base_addr);
->> +		return 0;
->> +	}
->> +	return 1;
->> +}
-> 
-> So zero is an error return?  That's contrary to usual practice.
-
-OK, will fix.
-
->> +static int set_reset_mode(struct net_device *dev)
->> +{
->> +	struct sja1000_priv *priv = netdev_priv(dev);
->> +	unsigned char status = priv->read_reg(dev, REG_MOD);
->> +	int i;
->> +
->> +	/* disable interrupts */
->> +	priv->write_reg(dev, REG_IER, IRQ_OFF);
->> +
->> +	for (i = 0; i < 100; i++) {
->> +		/* check reset bit */
->> +		if (status & MOD_RM) {
->> +			priv->can.state = CAN_STATE_STOPPED;
->> +			return 0;
->> +		}
->> +
->> +		priv->write_reg(dev, REG_MOD, MOD_RM);	/* reset chip */
->> +		status = priv->read_reg(dev, REG_MOD);
->> +		udelay(10);
-> 
-> Wouldn't you want to read the new state *after* the delay?
-
-Yes, that makes more sense.
-
->> +	}
->> +
->> +	dev_err(dev->dev.parent, "setting SJA1000 into reset mode failed!\n");
->> +	return 1;
-
-Will fix this return value as well.
-
->> +
->> +}
->> +
->> +static int set_normal_mode(struct net_device *dev)
->> +{
->> +	struct sja1000_priv *priv = netdev_priv(dev);
->> +	unsigned char status = priv->read_reg(dev, REG_MOD);
->> +	int i;
->> +
->> +	for (i = 0; i < 100; i++) {
->> +		/* check reset bit */
->> +		if ((status & MOD_RM) == 0) {
->> +			priv->can.state = CAN_STATE_ERROR_ACTIVE;
->> +			/* enable all interrupts */
->> +			priv->write_reg(dev, REG_IER, IRQ_ALL);
->> +
->> +			return 0;
->> +		}
->> +
->> +		/* set chip to normal mode */
->> +		priv->write_reg(dev, REG_MOD, 0x00);
->> +		status = priv->read_reg(dev, REG_MOD);
->> +		udelay(10);
-> 
-> Here too?
-> 
->> +	}
->> +
->> +	dev_err(dev->dev.parent, "setting SJA1000 into normal mode failed!\n");
->> +	return 1;
->> +
->> +}
->> +
-> 
-> [...]
-> 
->> +irqreturn_t sja1000_interrupt(int irq, void *dev_id)
->> +{
->> +	struct net_device *dev = (struct net_device *)dev_id;
->> +	struct sja1000_priv *priv = netdev_priv(dev);
->> +	struct net_device_stats *stats = &dev->stats;
->> +	uint8_t isrc, status;
->> +	int n = 0;
->> +
->> +	/* Shared interrupts and IRQ off? */
->> +	if (priv->read_reg(dev, REG_IER) == IRQ_OFF)
->> +		return IRQ_NONE;
->> +
->> +	if (priv->pre_irq)
->> +		priv->pre_irq(dev);
->> +
->> +	while ((isrc = priv->read_reg(dev, REG_IR)) && (n < SJA1000_MAX_IRQ)) {
->> +		n++;
->> +		status = priv->read_reg(dev, REG_SR);
->> +
->> +		if (isrc & IRQ_WUI)
->> +			dev_warn(dev->dev.parent, "wakeup interrupt\n");
-> 
-> How many of these might you get?  Should this be rate limited?
-
-None, because the driver does not (yet) support the sleep mode. For that
-reason it's a warning.
-
->> +		if (isrc & IRQ_TI) {
->> +			/* transmission complete interrupt */
->> +			stats->tx_packets++;
->> +			can_get_echo_skb(dev, 0);
->> +			netif_wake_queue(dev);
->> +		}
->> +		if (isrc & IRQ_RI) {
->> +			/* receive interrupt */
->> +			while (status & SR_RBS) {
->> +				sja1000_rx(dev);
->> +				status = priv->read_reg(dev, REG_SR);
->> +			}
->> +		}
->> +		if (isrc & (IRQ_DOI | IRQ_EI | IRQ_BEI | IRQ_EPI | IRQ_ALI)) {
->> +			/* error interrupt */
->> +			if (sja1000_err(dev, isrc, status))
->> +				break;
->> +		}
->> +	}
->> +
->> +	if (priv->post_irq)
->> +		priv->post_irq(dev);
->> +
->> +	if (n >= SJA1000_MAX_IRQ)
->> +		dev_dbg(dev->dev.parent, "%d messages handled in ISR", n);
->> +
->> +	return (n) ? IRQ_HANDLED : IRQ_NONE;
->> +}
->> +EXPORT_SYMBOL_GPL(sja1000_interrupt);
->> +
->> +static int sja1000_open(struct net_device *dev)
->> +{
->> +	struct sja1000_priv *priv = netdev_priv(dev);
->> +	int err;
->> +
->> +	/* set chip into reset mode */
->> +	set_reset_mode(dev);
->> +
->> +	/* common open */
->> +	err = open_candev(dev);
->> +	if (err)
->> +		return err;
->> +
->> +	/* register interrupt handler, if not done by the device driver */
->> +	if (!(priv->flags & SJA1000_CUSTOM_IRQ_HANDLER)) {
->> +		err = request_irq(dev->irq, &sja1000_interrupt, IRQF_SHARED,
->> +				  dev->name, (void *)dev);
->> +		if (err)
->> +			return -EAGAIN;
-> 
-> If you return here you fail, but you've not undone open_candev().  Looking
-> there, it seems no harm will be done - until somebody changes open_candev()
-> someday. 
-
-Right, the missing close_candev() does currently not harm but that might
-change in the future. Will change.
-
->> +	}
->> +
->> +	/* init and start chi */
->> +	sja1000_start(dev);
->> +	priv->open_time = jiffies;
->> +
->> +	netif_start_queue(dev);
->> +
->> +	return 0;
->> +}
->> +
-> 
-> [...]
-> 
->> +/*
->> + * SJA1000 private data structure
->> + */
->> +struct sja1000_priv {
->> +	struct can_priv can;
->> +	long open_time;
->> +	struct sk_buff *echo_skb;
->> +
->> +	u8 (*read_reg) (const struct net_device *dev, int reg);
->> +	void (*write_reg) (const struct net_device *dev, int reg, u8 val);
->> +	void (*pre_irq) (const struct net_device *dev);
->> +	void (*post_irq) (const struct net_device *dev);
-> 
-> What are the locking rules for functions like ->read_reg() now?  Entirely
-> up to the lower level?  Would be good to document that near the structure
-> definition. 
-
-Yes, it's up to the lower level.
-
->> +
->> +	void *priv;		/* for board-specific data */
->> +	struct net_device *dev;
->> +
->> +	u8 ocr;
->> +	u8 cdr;
->> +	u32 flags;
-> 
-> The meaning of these fields is not exactly clear.
-
-I will add a description.
-
-Wolfgang.
+> IOW, is this change backward-compatible?
+Yes.
