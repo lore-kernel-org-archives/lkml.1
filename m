@@ -1,103 +1,122 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761188AbZENNJU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761728AbZENNKT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761188AbZENNJU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 09:09:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbZENNJE
+	id S1761728AbZENNKT (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 09:10:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758428AbZENNKB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 09:09:04 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:52561 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751423AbZENNJD convert rfc822-to-8bit (ORCPT
+	Thu, 14 May 2009 09:10:01 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:57856 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756056AbZENNKA (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 09:09:03 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=rtYsaERRGteVFM1Dk1lQAPSfuzO6saUK8D9rLLw4Wlf182FniYYEovHcVoYQqHlp3P
-         t6sgxr4aece6UwEcCY+kv3YFIrooBZo/FGfOlF1F5CifrE/XOMykVjBLkz+B2n9zpmSy
-         D7cftbqPiUXHI67DdIJxjo5hkttE9OlT5gyBY=
-MIME-Version: 1.0
-In-Reply-To: <4A0C1571.2020106@redhat.com>
-References: <20090514201150.8536f86e.minchan.kim@barrios-desktop>
-	 <4A0C1571.2020106@redhat.com>
-Date: Thu, 14 May 2009 22:09:03 +0900
-Message-ID: <28c262360905140609y580b6835m759dee08f08a26ab@mail.gmail.com>
-Subject: Re: [PATCH] mmtom: Prevent shrinking of active anon lru list in case 
-	of no swap space V2
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 14 May 2009 09:10:00 -0400
+Subject: Re: [PATCH] IMA: do not measure everything opened by root bydefault
+From: Mimi Zohar <zohar@linux.vnet.ibm.com>
+To: Eric Paris <eparis@redhat.com>
+Cc: jmorris@namei.org, linux-kernel@vger.kernel.org,
+       Dave Safford <safford@watson.ibm.com>
+In-Reply-To: <1242226498.2812.102.camel@localhost.localdomain>
+References: <20090512191423.6903.37464.stgit@dhcp231-142.rdu.redhat.com>
+	 <1242163111.8494.23.camel@dyn9002018117.watson.ibm.com>
+	 <1242163638.3142.8.camel@dhcp231-142.rdu.redhat.com>
+	 <1242165201.8494.36.camel@dyn9002018117.watson.ibm.com>
+	 <1242226498.2812.102.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 14 May 2009 09:09:38 -0400
+Message-Id: <1242306578.4647.3.camel@dyn9002018117.watson.ibm.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-HI, Rik
+On Wed, 2009-05-13 at 10:54 -0400, Eric Paris wrote:
+> On Tue, 2009-05-12 at 17:53 -0400, Mimi Zohar wrote:
+> > On Tue, 2009-05-12 at 17:27 -0400, Eric Paris wrote:
+> > > On Tue, 2009-05-12 at 17:18 -0400, Mimi Zohar wrote:
+> > > > On Tue, 2009-05-12 at 15:14 -0400, Eric Paris wrote:
+> > > > > The IMA default policy measures every single file opened by root.  This is
+> > > > > terrible for most users.  Consider a system (like mine) with virtual machine
+> > > > > images.  When those images are touched (which happens at boot for me) those
+> > > > > images are measured.  This is just way too much for the default case.
+> > > > > 
+> > > > > Signed-off-by: Eric Paris <eparis@redhat.com>
+> > > > 
+> > > > The question of what to measure is a major issue. If you measure too
+> > > > much, performance is affected, but if you measure too little, then the
+> > > > measurement list will not contain everything that could affect the
+> > > > Trusted Computing Base(TCB), such as configuration files and scripts.
+> > > > 
+> > > > The solution is not to remove the rule that measures everything read
+> > > > by root, but to replace the default IMA configuration file with an LSM
+> > > > specific one, which should be done early in the etc init scripts or
+> > > > initrd.  LTP contains a sample script to replace the default IMA policy
+> > > > (testcases/kernel/security/integrity/ima/tests/ima_policy.sh).
+> > > > 
+> > > > The following SELinux integrity rule, prevents /var/log/messages from
+> > > > being measured. (Dependent on "integrity: lsm audit rule matching fix"
+> > > > patch in the security-testing tree.)
+> > > > 
+> > > > dont_measure func=PATH_CHECK mask=MAY_READ obj_type=var_log_t
+> > > > 
+> > > > By defining an equivalent SELinux integrity rule for each virtual
+> > > > machine image type, the virtual machine images will not be measured.
+> > > > This is far better than not measuring everything in the TCB.
+> > > > 
+> > > > Mimi Zohar
+> > > 
+> > > While the TCB might be interesting to you I'm going to guess that 99% of
+> > > users don't care at all.  I don't think the kernel should ship with such
+> > > an overhead just to make the options available to the few.
+> > > 
+> > > Every distro that wants to ship with IMA compiled in the kernel is going
+> > > to need to carry their own ima policy and they are going to have to
+> > > change userspace so they can load that policy by default.  This is turn
+> > > means that every distro is going to, by default, leave ima
+> > > uncustomizable since we can only load a single policy.
+> > 
+> > I'm not sure I understand the problem here. Although the policy can only
+> > be loaded once per boot, it could be based on a configuration file
+> > like /etc/measure, which the distro could define. Any system specific
+> > changes could be made to this file.
+> 
+> I'm assuming, although possibly wrongly, that every major distro is
+> going to enable the IMA config.  My reason for making that assumption is
+> based on the fact tht many distros tend to enable everything they can so
+> their users can make their own choices without recompiling.  Kernel
+> defaults are supposed to be the default that most people want.  How many
+> people on LKML know, or even care, what the TCB is?  By setting the
+> kernel default to something that is known to be of interest to very few
+> people and which causes a noticeable performance penalty you force the
+> work of setting the default out onto the distros.  This is wrong.  If I
+> was a distro owner and knew I either had to rewrite the initrd for every
+> user or create a new package which runs early in the startup just to
+> disable the IMA rules or I could just not enable IMA in the kernel at
+> all, which do you think I would choose?  I see that in Fedora 12 kernels
+> they chose not to enable IMA.  Why should we take on the maintenance
+> burden of another package just to fix the default IMA rules so they are
+> reasonable for most of our users?
+> 
+> I think if you want to make IMA available, the default config needs to
+> be reasonable to reasonable people.  The people who care about the TCB
+> should be the ones adding custom policy.
+> 
+> -Eric
 
-Thanks for careful review. :)
+If you would like the default to be for the normal user, as grub will
+measure the OS and the initrd, perhaps it would make sense for the
+default policy not to measure any files.  Then, if the user wants, the
+initrd can load a policy to measure any or all of the TCB.
 
-On Thu, May 14, 2009 at 9:58 PM, Rik van Riel <riel@redhat.com> wrote:
-> Minchan Kim wrote:
->
->> Now shrink_active_list is called several places.
->> But if we don't have a swap space, we can't reclaim anon pages.
->
-> If swap space has run out, get_scan_ratio() will return
-> 0 for the anon scan ratio, meaning we do not scan the
-> anon lists.
+In this scenario, where the default policy doesn't measure files open
+for read by root, the policy needs to be loaded in the initrd, as
+opposed to in the etc init scripts, so there isn't a gap in the
+measurements.
 
-I think get_scan_ration can't prevent scanning of anon pages in no
-swap system(like embedded system).
-That's because in shrink_zone, you add following as
+This would certainly make including IMA more viable for the distros,
+while still allowing users to choose.
 
-        /*
-         * Even if we did not try to evict anon pages at all, we want to
-         * rebalance the anon lru active/inactive ratio.
-         */
-        if (inactive_anon_is_low(zone, sc))
-                shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
-
->> So, we don't need deactivating anon pages in anon lru list.
->
-> If we are close to running out of swap space, with
-> swapins freeing up swap space on a regular basis,
-> I believe we do want to do aging on the active
-> pages, just so we can pick a decent page to swap
-> out next time swap space becomes available.
-
-I agree your opinion.
-
->> +static int can_reclaim_anon(struct zone *zone, struct scan_control *sc)
->> +{
->> +       return (inactive_anon_is_low(zone, sc) && nr_swap_pages <= 0);
->> +}
->> +
->
-> This function name is misleading, because when we do have
-> swap space available but inactive_anon_is_low is false,
-> we still want to reclaim inactive anon pages!
-
-Indeed. I will rename it.
-
-> What problem did you encounter that you think this patch
-> solves?
-
-I thought In embedded system most products don't have swap space.
-In such environment, We don't need anon lru list.
-I think even scanning of anon list is much bad
+Mimi Zohar
 
 
-> --
-> All rights reversed.
->
-
-
-
--- 
-Kinds regards,
-Minchan Kim
