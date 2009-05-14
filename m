@@ -1,70 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756102AbZENNyT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754393AbZENNys@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756102AbZENNyT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 09:54:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752966AbZENNyJ
+	id S1754393AbZENNys (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 09:54:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753160AbZENNyg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 09:54:09 -0400
-Received: from outbound-dub.frontbridge.com ([213.199.154.16]:45229 "EHLO
-	IE1EHSOBE003.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752924AbZENNyI convert rfc822-to-8bit (ORCPT
+	Thu, 14 May 2009 09:54:36 -0400
+Received: from gw-ca.panasas.com ([209.116.51.66]:6045 "EHLO
+	laguna.int.panasas.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1753392AbZENNyf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 09:54:08 -0400
-X-BigFish: VPS-24(zz1432R98dR1805M936fJzz1202hzzz32i6bh43j61h)
-X-Spam-TCS-SCL: 0:0
-X-WSS-ID: 0KJMZMS-04-J9L-01
-Date: Thu, 14 May 2009 15:47:17 +0200
-From: "Roedel, Joerg" <Joerg.Roedel@amd.com>
-To: Neil Turton <nturton@solarflare.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH] Fixed an off-by-one error in the AMD IOMMU driver.
-Message-ID: <20090514134717.GL9835@amd.com>
-References: <4A0C15F3.1090601@solarflare.com>
+	Thu, 14 May 2009 09:54:35 -0400
+Message-ID: <4A0C2297.5040001@panasas.com>
+Date: Thu, 14 May 2009 16:54:31 +0300
+From: Boaz Harrosh <bharrosh@panasas.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.9.1b3pre) Gecko/20090315 Remi/3.0-0.b2.fc10.remi Thunderbird/3.0b2
 MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Disposition: inline
-In-Reply-To: <4A0C15F3.1090601@solarflare.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 14 May 2009 13:47:17.0647 (UTC) FILETIME=[7EEFD9F0:01C9D49A]
+To: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
+       Tejun Heo <tj@kernel.org>
+CC: James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] block: completion related functions cleanup
+References: <1242032169-22422-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <1242032169-22422-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 May 2009 13:54:34.0547 (UTC) FILETIME=[83598030:01C9D49B]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 14, 2009 at 02:00:35PM +0100, Neil Turton wrote:
-> The variable amd_iommu_last_bdf holds the maximum bdf of any device
-> controlled by an IOMMU, so the number of device entries needed is
-> amd_iommu_last_bdf+1.  The function tbl_size used amd_iommu_last_bdf
-> instead.  This would be a problem if the last device were a large
-> enough power of 2.
+On 05/11/2009 11:56 AM, FUJITA Tomonori wrote:
+> This is a minor cleanup on the completion releated functions. It is on
+> the top of Tejun's unify request processing model patchset.
 > 
-> Signed-off-by: Neil Turton <nturton@solarflare.com>
-> ---
->  arch/x86/kernel/amd_iommu_init.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-> index 42c33ce..61479ba 100644
-> --- a/arch/x86/kernel/amd_iommu_init.c
-> +++ b/arch/x86/kernel/amd_iommu_init.c
-> @@ -175,7 +175,7 @@ static inline void update_last_devid(u16 devid)
->  static inline unsigned long tbl_size(int entry_size)
->  {
->  	unsigned shift = PAGE_SHIFT +
-> -			 get_order(amd_iommu_last_bdf * entry_size);
-> +			 get_order(((int)amd_iommu_last_bdf+1) * entry_size);
-> 
->  	return 1UL << shift;
->  }
 
-Applied, thanks Neil.
+Hi Tomo, Jens, Tejun.
 
+A small left-over from this grate cleanup work. I think it was Tejun's
+patch that left this unused.
+
+(Should go through block tree)
+
+Here:
+---
+From: Boaz Harrosh <bharrosh@panasas.com>
+Date: Thu, 14 May 2009 16:46:03 +0300
+Subject: [PATCH] scsi_lib: remove unused variable assignment
+
+The last request completion cleanup in scsi_lib left an unused
+this_count assignment in scsi_io_completion().
+(It was used before in a code segment that now uses blk_end_request_all())
+
+Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+---
+ drivers/scsi/scsi_lib.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+index e410d66..f8600d6 100644
+--- a/drivers/scsi/scsi_lib.c
++++ b/drivers/scsi/scsi_lib.c
+@@ -789,7 +789,6 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
+ 	 */
+ 	if (scsi_end_request(cmd, error, good_bytes, result == 0) == NULL)
+ 		return;
+-	this_count = blk_rq_bytes(req);
+ 
+ 	error = -EIO;
+ 
 -- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
-
+1.6.2.1
