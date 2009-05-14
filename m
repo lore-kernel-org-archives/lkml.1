@@ -1,82 +1,115 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760700AbZENMLw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757028AbZENMTO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760700AbZENMLw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 08:11:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755346AbZENMLm
+	id S1757028AbZENMTO (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 08:19:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754440AbZENMS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 08:11:42 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:43439 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755234AbZENMLm (ORCPT
+	Thu, 14 May 2009 08:18:56 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:49657 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750906AbZENMSz convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 08:11:42 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH] mmtom: Prevent shrinking of active anon lru list in case  of no swap space V2
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Rik van Riel <riel@redhat.com>
-In-Reply-To: <28c262360905140505h2db7ac3bp5ca10fcf2b4301bb@mail.gmail.com>
-References: <20090514204033.9B87.A69D9226@jp.fujitsu.com> <28c262360905140505h2db7ac3bp5ca10fcf2b4301bb@mail.gmail.com>
-Message-Id: <20090514210839.9B90.A69D9226@jp.fujitsu.com>
+	Thu, 14 May 2009 08:18:55 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=E9RVzkmnD6M5eLb/DYQQhP60pDughNpGRTjbgla5oVoi/cenH3cvNaSRh4DRR5Fcu0
+         C4FhSgAaHLza9cRgXIg/ACKXcrux91HTQbrpQuQW+NAaQacYwqKV+hZ2ZNf7zOlYnqXF
+         eZguNRzxXYCuzJtYpT2KaIJf20kfr9bCkqzI4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 14 May 2009 21:11:40 +0900 (JST)
+In-Reply-To: <28c262360905140128q3458e39fu62def873f2d95ae0@mail.gmail.com>
+References: <1242289418.31161.45.camel@centos51>
+	 <28c262360905140128q3458e39fu62def873f2d95ae0@mail.gmail.com>
+Date: Thu, 14 May 2009 21:18:55 +0900
+Message-ID: <49b7c2350905140518k29d540a7o32265ba753d729d1@mail.gmail.com>
+Subject: Re: [PATCH]append prompt in /debug/tracing/README file.
+From: GeunSik Lim <leemgs1@gmail.com>
+To: Minchan Kim <minchan.kim@gmail.com>
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       williams <williams@redhat.com>, tglx <tglx@linutronix.de>,
+       Jiri Kosina <trivial@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, May 14, 2009 at 8:44 PM, KOSAKI Motohiro
-> <kosaki.motohiro@jp.fujitsu.com> wrote:
-> >> >
-> >> > Changelog since V2
-> >> > ?o Add new function - can_reclaim_anon : it tests anon_list can be reclaim
-> >> >
-> >> > Changelog since V1
-> >> > ?o Use nr_swap_pages <= 0 in shrink_active_list to prevent scanning ?of active anon list.
-> >> >
-> >> > Now shrink_active_list is called several places.
-> >> > But if we don't have a swap space, we can't reclaim anon pages.
-> >> > So, we don't need deactivating anon pages in anon lru list.
-> >> >
-> >> > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> >> > Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> >> > Cc: Johannes Weiner <hannes@cmpxchg.org>
-> >> > Cc: Rik van Riel <riel@redhat.com>
-> >>
-> >> looks good to me. thanks :)
-> >
-> > Grr, my fault.
-> >
-> >
-> >
-> >> ?static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
-> >> ? ? ? struct zone *zone, struct scan_control *sc, int priority)
-> >> ?{
-> >> @@ -1399,7 +1412,7 @@ static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
-> >> ? ? ? ? ? ? ? return 0;
-> >> ? ? ? }
-> >>
-> >> - ? ? if (lru == LRU_ACTIVE_ANON && inactive_anon_is_low(zone, sc)) {
-> >> + ? ? if (lru == LRU_ACTIVE_ANON && can_reclaim_anon(zone, sc)) {
-> >> ? ? ? ? ? ? ? shrink_active_list(nr_to_scan, zone, sc, priority, file);
-> >> ? ? ? ? ? ? ? return 0;
-> >
-> > you shouldn't do that. if nr_swap_pages==0, get_scan_ratio return anon=0%.
-> > then, this branch is unnecessary.
-> >
-> 
-> But, I think at last it can be happen following as.
-> 
-> 1515         * Even if we did not try to evict anon pages at all, we want to
-> 1516         * rebalance the anon lru active/inactive ratio.
-> 1517         */
-> 1518        if (inactive_anon_is_low(zone, sc))
-> 1519                shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
+hi minchan,
 
-I pointed to shrink_list(), but you replayed shrink_zone().
-I only talked about shrink_list().
+thank you for explanation about a trivial patch.
+
+regards,
+geunsik lim ( invain )
+
+2009/5/14 Minchan Kim <minchan.kim@gmail.com>:
+> Hi, GeunkSik.
+>
+> For fixing trivial typo, Let Cced trivial patch maintainer.
+>
+> TRIVIAL PATCHES
+> P:  Jiri Kosina
+> M:  trivial@kernel.org
+> L:  linux-kernel@vger.kernel.org
+> T:  git kernel.org:/pub/scm/linux/kernel/git/jikos/trivial.git
+> S:  Maintained
+>
+>
+> 2009/5/14 GeunSik Lim <leemgs1@gmail.com>:
+>>
+>> Dear Steven Rostedt,
+>>
+>>    Please, Append prompt in /debug/tracing/README file.
+>>
+>>    This is trivial issue. Fix typo Mini Howto file(README) for ftrace.
+>>
+>>    Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+>>
+>> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+>> index 1ce5dc6..a4726f5 100644
+>> --- a/kernel/trace/trace.c
+>> +++ b/kernel/trace/trace.c
+>> @@ -2380,7 +2380,7 @@ static const char readme_msg[] =
+>>        "# echo print-parent > /debug/tracing/trace_options\n"
+>>        "# echo 1 > /debug/tracing/tracing_enabled\n"
+>>        "# cat /debug/tracing/trace > /tmp/trace.txt\n"
+>> -       "echo 0 > /debug/tracing/tracing_enabled\n"
+>> +       "# echo 0 > /debug/tracing/tracing_enabled\n"
+>>  ;
+>>
+>>  static ssize_t
+>>
+>>
+>>
+>> -----------------------------------------------
+>> To unsubscribe from this list: send the line "unsubscribe linux-***"
+>> in the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>> GeunSik Lim (ELS - OS Group - S/W Lab - SAIT - SAMSUNG)
+>> e-Mail  :1) geunsik.lim@samsung.com
+>>         2) leemgs@gmail.com , leemgs1@gmail.com
+>> HomePage: http://intomail.dnip.net/invain/me/
+>> -----------------------------------------------
+>>
+>
+>
+>
+> --
+> Kinds regards,
+> Minchan Kim
+>
 
 
+
+-- 
+Regards,
+GeunSik Lim
+--
+To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+the body of a message to majordomo@vger.kernel.org
+More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Please read the FAQ at  http://www.tux.org/lkml/
