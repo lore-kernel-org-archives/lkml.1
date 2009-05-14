@@ -1,101 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754790AbZENQ6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761301AbZENRC1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754790AbZENQ6y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 12:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753115AbZENQ6p
+	id S1761301AbZENRC1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 13:02:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752138AbZENRCP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 12:58:45 -0400
-Received: from verein.lst.de ([213.95.11.210]:34238 "EHLO verein.lst.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752756AbZENQ6o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 12:58:44 -0400
-Date: Thu, 14 May 2009 18:57:50 +0200
-From: Christoph Hellwig <hch@lst.de>
-To: akpm@osdl.org, Pavel Emelyanov <xemul@openvz.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: cleanup find_task_by_pid variants
-Message-ID: <20090514165750.GA15934@lst.de>
-Mime-Version: 1.0
+	Thu, 14 May 2009 13:02:15 -0400
+Received: from 124x34x33x190.ap124.ftth.ucom.ne.jp ([124.34.33.190]:35760 "EHLO
+	master.linux-sh.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752278AbZENRCN (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 13:02:13 -0400
+Date: Fri, 15 May 2009 02:02:11 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Mel Gorman <mel@csn.ul.ie>, akpm@linux-foundation.org, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org, hartleys@visionengravers.com,
+       mcrapet@gmail.com, linux@arm.linux.org.uk, fred99@carolina.rr.com,
+       linux-arm-kernel@lists.arm.linux.org.uk,
+       Badari Pulavarty <pbadari@us.ibm.com>,
+       Yasunori Goto <y-goto@jp.fujitsu.com>
+Subject: Re: [PATCH] Double check memmap is actually valid with a memmap has unexpected holes
+Message-ID: <20090514170211.GA5129@linux-sh.org>
+Mail-Followup-To: Paul Mundt <lethal@linux-sh.org>,
+	Johannes Weiner <hannes@cmpxchg.org>, Mel Gorman <mel@csn.ul.ie>,
+	akpm@linux-foundation.org, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org, hartleys@visionengravers.com,
+	mcrapet@gmail.com, linux@arm.linux.org.uk, fred99@carolina.rr.com,
+	linux-arm-kernel@lists.arm.linux.org.uk,
+	Badari Pulavarty <pbadari@us.ibm.com>,
+	Yasunori Goto <y-goto@jp.fujitsu.com>
+References: <20090505082944.GA25904@csn.ul.ie> <20090505110653.GA16649@cmpxchg.org> <20090506143059.GB20709@csn.ul.ie> <20090506155043.GA3084@cmpxchg.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-User-Agent: Mutt/1.3.28i
-X-Spam-Score: -0.001 () BAYES_44
+In-Reply-To: <20090506155043.GA3084@cmpxchg.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-find_task_by_pid_type_ns is only used to implement find_task_by_vpid and
-find_task_by_pid_ns, but both of them pass PIDTYPE_PID as first argument.
-So just fold find_task_by_pid_type_ns into find_task_by_pid_ns and use
-find_task_by_pid_ns to implement find_task_by_vpid.
-
-While we're at it also remove the exports for find_task_by_pid_ns and
-find_task_by_vpid - we don't have any modular callers left as the only
-modular caller of he old pre pid namespace find_task_by_pid (gfs2)
-was switched to pid_task which operates on a struct pid pointer instead
-of a pid_t.  Given the confusion about pid_t values vs namespace that's
-generally the better option anyway and I think we're better of restricting
-modules to do it that way.
-
-
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Index: linux-2.6/include/linux/sched.h
-===================================================================
---- linux-2.6.orig/include/linux/sched.h	2009-05-13 20:16:59.469784235 +0200
-+++ linux-2.6/include/linux/sched.h	2009-05-13 20:17:11.410661577 +0200
-@@ -1837,9 +1837,6 @@ extern struct pid_namespace init_pid_ns;
- /*
-  * find a task by one of its numerical ids
-  *
-- * find_task_by_pid_type_ns():
-- *      it is the most generic call - it finds a task by all id,
-- *      type and namespace specified
-  * find_task_by_pid_ns():
-  *      finds a task by its pid in the specified namespace
-  * find_task_by_vpid():
-@@ -1848,9 +1845,6 @@ extern struct pid_namespace init_pid_ns;
-  * see also find_vpid() etc in include/linux/pid.h
-  */
- 
--extern struct task_struct *find_task_by_pid_type_ns(int type, int pid,
--		struct pid_namespace *ns);
--
- extern struct task_struct *find_task_by_vpid(pid_t nr);
- extern struct task_struct *find_task_by_pid_ns(pid_t nr,
- 		struct pid_namespace *ns);
-Index: linux-2.6/kernel/pid.c
-===================================================================
---- linux-2.6.orig/kernel/pid.c	2009-05-13 20:16:59.487810414 +0200
-+++ linux-2.6/kernel/pid.c	2009-05-13 20:21:47.987661606 +0200
-@@ -378,26 +378,15 @@ EXPORT_SYMBOL(pid_task);
- /*
-  * Must be called under rcu_read_lock() or with tasklist_lock read-held.
-  */
--struct task_struct *find_task_by_pid_type_ns(int type, int nr,
--		struct pid_namespace *ns)
-+struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
- {
--	return pid_task(find_pid_ns(nr, ns), type);
-+	return pid_task(find_pid_ns(nr, ns), PIDTYPE_PID);
- }
- 
--EXPORT_SYMBOL(find_task_by_pid_type_ns);
--
- struct task_struct *find_task_by_vpid(pid_t vnr)
- {
--	return find_task_by_pid_type_ns(PIDTYPE_PID, vnr,
--			current->nsproxy->pid_ns);
--}
--EXPORT_SYMBOL(find_task_by_vpid);
--
--struct task_struct *find_task_by_pid_ns(pid_t nr, struct pid_namespace *ns)
--{
--	return find_task_by_pid_type_ns(PIDTYPE_PID, nr, ns);
-+	return find_task_by_pid_ns(vnr, current->nsproxy->pid_ns);
- }
--EXPORT_SYMBOL(find_task_by_pid_ns);
- 
- struct pid *get_task_pid(struct task_struct *task, enum pid_type type)
- {
+On Wed, May 06, 2009 at 05:50:43PM +0200, Johannes Weiner wrote:
+> On Wed, May 06, 2009 at 03:31:00PM +0100, Mel Gorman wrote:
+> > As it turns out, ARM has its own show_mem(). I don't see how, but ARM
+> > must not be using lib/show_mem.c even though it compiles it.
+> 
+> It's some linker magic for lib/.  It compiles both but treats the
+> library version as weak symbol (or something).
+> 
+This is true for lib-y handling in general, which lib/show_mem.o falls
+under. Much of lib/ is obj-y though due to the fact that EXPORT_SYMBOL's
+from lib-y are ineffective (people seem to get bitten by this at least
+once a week), as a result, many things that start out as lib-y are
+gradually moved over to obj-y, meaning that __weak annotations in obj-y
+objects start to take precedent over lib-y magic anyways.. :-)
