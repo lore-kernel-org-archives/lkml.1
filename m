@@ -1,63 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbZENU7A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756206AbZENVFi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756055AbZENU7A (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 16:59:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZENU6v
+	id S1756206AbZENVFi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 17:05:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZENVF2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 16:58:51 -0400
-Received: from yx-out-2324.google.com ([74.125.44.29]:58393 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753006AbZENU6u (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 16:58:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Fhh4olZcRDEMDNIcoCgKeN/PKQ3a/kBxpn4v9xAQfR0DD6K+Up7v7WRLSdwpBt2pIm
-         iTDR8b6zWbQQlAh4Or3LMpQM7wD+jVR8m1syXYNtxNF8MwAxtG9d9z3jPoD53trXNFTQ
-         1dW0NnuyNLqiONW1GvtLZ1umwBF22bi1j4yiU=
-MIME-Version: 1.0
-In-Reply-To: <alpine.DEB.1.10.0905141533550.1381@qirst.com>
-References: <4A05269D.8000701@kernel.org> <4A052721.4010201@kernel.org>
-	 <alpine.DEB.1.10.0905112126410.28512@qirst.com>
-	 <4A089E53.8010106@kernel.org>
-	 <alpine.DEB.1.10.0905121658140.14226@qirst.com>
-	 <4A09AEFB.4070808@kernel.org>
-	 <alpine.DEB.1.10.0905121720430.24066@qirst.com>
-	 <86802c440905122239h7a187627i6158b79045ba1024@mail.gmail.com>
-	 <alpine.DEB.1.10.0905141533550.1381@qirst.com>
-Date: Thu, 14 May 2009 13:58:51 -0700
-Message-ID: <86802c440905141358p1274e389q135e0d766f02cb21@mail.gmail.com>
-Subject: Re: [PATCH 2/3] x86: add numa_move_cpus_to_node
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
+	Thu, 14 May 2009 17:05:28 -0400
+Received: from e8.ny.us.ibm.com ([32.97.182.138]:45709 "EHLO e8.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751388AbZENVF1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 17:05:27 -0400
+Subject: Re: Misleading OOM messages
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: David Rientjes <rientjes@google.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Al Viro <viro@zeniv.linux.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Content-Type: text/plain; charset=ISO-8859-1
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
+       San Mehat <san@android.com>, Arve Hj?nnev?g <arve@android.com>,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0905141346030.28074@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.0905101503070.18804@chino.kir.corp.google.com>
+	 <alpine.DEB.1.10.0905121708470.14226@qirst.com>
+	 <20090514092909.GG1365@ucw.cz>
+	 <alpine.DEB.1.10.0905141546040.1381@qirst.com>
+	 <1242333519.15391.210.camel@nimitz>
+	 <alpine.DEB.2.00.0905141346030.28074@chino.kir.corp.google.com>
+Content-Type: text/plain
+Date: Thu, 14 May 2009 14:05:20 -0700
+Message-Id: <1242335120.15391.242.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 14, 2009 at 12:34 PM, Christoph Lameter
-<cl@linux-foundation.org> wrote:
-> On Tue, 12 May 2009, Yinghai Lu wrote:
->
->> so i recored this OK as one Reviewed-by or Acked-by ?
->
-> Well why do we need this functionality in the kernel if offlining and
-> onlining the cpu again will properly allocate the kernel metadata?
+On Thu, 2009-05-14 at 13:49 -0700, David Rientjes wrote:
+> I think switching all the oom killer messages to be "no available memory" 
+> as it is in the MPOL_BIND case would be the best alternative.  We 
+> currently use "out of memory" even for cpusets, for example, when it 
+> happens because it cannot accommodate any more hardwall allocations while 
+> there may be an abundance of memory elsewhere that it cannot access.  I 
+> also think "no available memory" makes more sense than "out of memory" 
+> when describing situations where we're at or below the minimum watermarks 
+> for all allowable zones.  Either that or "no allowable memory".
 
-ok, you are right, for x86 64 bit, srat_detect_node will call
-numa_set_node when online the cpu again.
+How about something like this to start?  We can "mv mm/oom_kill.c
+mm/nam_kill.c" later. ;)
 
-we don't this patch.
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index 92bcf1d..0ce0d59 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -409,7 +409,8 @@ static int oom_kill_process(struct task_struct *p, gfp_t gfp_mask, int order,
+ 		return 0;
+ 	}
+ 
+-	printk(KERN_ERR "%s: kill process %d (%s) score %li or a child\n",
++	printk(KERN_ERR "No available memory %s: "
++			"kill process %d (%s) score %li or a child\n",
+ 					message, task_pid_nr(p), p->comm, points);
+ 
+ 	/* Try to kill a child first */
+@@ -438,7 +439,7 @@ retry:
+ 		p = current;
+ 
+ 	if (oom_kill_process(p, gfp_mask, 0, points, mem,
+-				"Memory cgroup out of memory"))
++				"(memory cgroup)"))
+ 		goto retry;
+ out:
+ 	read_unlock(&tasklist_lock);
+@@ -519,7 +520,7 @@ static void __out_of_memory(gfp_t gfp_mask, int order)
+ 
+ 	if (sysctl_oom_kill_allocating_task)
+ 		if (!oom_kill_process(current, gfp_mask, order, 0, NULL,
+-				"Out of memory (oom_kill_allocating_task)"))
++				"(oom_kill_allocating_task)"))
+ 			return;
+ retry:
+ 	/*
+@@ -537,8 +538,7 @@ retry:
+ 		panic("Out of memory and no killable processes...\n");
+ 	}
+ 
+-	if (oom_kill_process(p, gfp_mask, order, points, NULL,
+-			     "Out of memory"))
++	if (oom_kill_process(p, gfp_mask, order, points, NULL, ""))
+ 		goto retry;
+ }
+ 
+@@ -612,7 +612,7 @@ void out_of_memory(struct zonelist *zonelist, gfp_t gfp_mask, int order)
+ 	switch (constraint) {
+ 	case CONSTRAINT_MEMORY_POLICY:
+ 		oom_kill_process(current, gfp_mask, order, 0, NULL,
+-				"No available memory (MPOL_BIND)");
++				"(MPOL_BIND)");
+ 		break;
+ 
+ 	case CONSTRAINT_NONE:
 
-YH
+
+-- Dave
+
