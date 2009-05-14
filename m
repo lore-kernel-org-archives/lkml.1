@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760587AbZENWto@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760041AbZENW5v@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760587AbZENWto (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:49:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756841AbZENWmc
+	id S1760041AbZENW5v (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:57:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756789AbZENWm6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:32 -0400
-Received: from kroah.org ([198.145.64.141]:52402 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:58 -0400
+Received: from kroah.org ([198.145.64.141]:52693 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756355AbZENWmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:15 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:24 2009
-Message-Id: <20090514223524.056116818@mini.kroah.org>
+	id S1755279AbZENWmg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:36 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:27 2009
+Message-Id: <20090514223527.746455880@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:32:58 -0700
+Date: Thu, 14 May 2009 15:33:20 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       linux-security-module@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -26,10 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Paul Moore <paul.moore@hp.com>
-Subject: [patch 23/51] smack: Set the proper NetLabel security attributes for connection requests
+       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>
+Subject: [patch 45/51] fuse: destroy bdi on error
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=smack-set-the-proper-netlabel-security-attributes-for-connection-requests.patch
+Content-Disposition: inline; filename=fuse-destroy-bdi-on-error.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,254 +38,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Paul Moore <paul.moore@hp.com>
+From: Miklos Szeredi <mszeredi@suse.cz>
 
-[NOTE: based on 07feee8f812f7327a46186f7604df312c8c81962]
+commit fd9db7297749c05fcf5721ce5393a5a8b8772f2a upstream.
 
-This patch ensures the correct labeling of new network connection requests
-using Smack and NetLabel.
+Destroy bdi on error in fuse_fill_super().
 
-Signed-off-by: Paul Moore <paul.moore@hp.com>
+This was an omission from commit 26c3679101dbccc054dcf370143941844ba70531
+"fuse: destroy bdi on umount", which moved the bdi_destroy() call from
+fuse_conn_put() to fuse_put_super().
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
+ fs/fuse/inode.c |    1 +
+ 1 file changed, 1 insertion(+)
 
- security/smack/smack.h     |    1 
- security/smack/smack_lsm.c |  130 +++++++++++++++++++++++++--------------------
- 2 files changed, 75 insertions(+), 56 deletions(-)
-
---- a/security/smack/smack.h
-+++ b/security/smack/smack.h
-@@ -40,7 +40,6 @@ struct superblock_smack {
- struct socket_smack {
- 	char		*smk_out;			/* outbound label */
- 	char		*smk_in;			/* inbound label */
--	int		smk_labeled;			/* label scheme */
- 	char		smk_packet[SMK_LABELLEN];	/* TCP peer label */
- };
- 
---- a/security/smack/smack_lsm.c
-+++ b/security/smack/smack_lsm.c
-@@ -7,6 +7,8 @@
-  *	Casey Schaufler <casey@schaufler-ca.com>
-  *
-  *  Copyright (C) 2007 Casey Schaufler <casey@schaufler-ca.com>
-+ *  Copyright (C) 2009 Hewlett-Packard Development Company, L.P.
-+ *                Paul Moore <paul.moore@hp.com>
-  *
-  *	This program is free software; you can redistribute it and/or modify
-  *	it under the terms of the GNU General Public License version 2,
-@@ -20,6 +22,7 @@
- #include <linux/ext2_fs.h>
- #include <linux/kd.h>
- #include <asm/ioctls.h>
-+#include <linux/ip.h>
- #include <linux/tcp.h>
- #include <linux/udp.h>
- #include <linux/mutex.h>
-@@ -1279,7 +1282,6 @@ static int smack_sk_alloc_security(struc
- 
- 	ssp->smk_in = csp;
- 	ssp->smk_out = csp;
--	ssp->smk_labeled = SMACK_CIPSO_SOCKET;
- 	ssp->smk_packet[0] = '\0';
- 
- 	sk->sk_security = ssp;
-@@ -1397,16 +1399,6 @@ static int smack_netlabel(struct sock *s
- 
- 	bh_unlock_sock(sk);
- 	local_bh_enable();
--	/*
--	 * Remember the label scheme used so that it is not
--	 * necessary to do the netlabel setting if it has not
--	 * changed the next time through.
--	 *
--	 * The -EDESTADDRREQ case is an indication that there's
--	 * a single level host involved.
--	 */
--	if (rc == 0)
--		ssp->smk_labeled = labeled;
- 
- 	return rc;
- }
-@@ -1551,19 +1543,14 @@ static int smack_socket_connect(struct s
- 		return -EINVAL;
- 
- 	hostsp = smack_host_label((struct sockaddr_in *)sap);
--	if (hostsp == NULL) {
--		if (ssp->smk_labeled != SMACK_CIPSO_SOCKET)
--			return smack_netlabel(sock->sk, SMACK_CIPSO_SOCKET);
--		return 0;
--	}
-+	if (hostsp == NULL)
-+		return smack_netlabel(sock->sk, SMACK_CIPSO_SOCKET);
- 
- 	rc = smk_access(ssp->smk_out, hostsp, MAY_WRITE);
- 	if (rc != 0)
- 		return rc;
- 
--	if (ssp->smk_labeled != SMACK_UNLABELED_SOCKET)
--		return smack_netlabel(sock->sk, SMACK_UNLABELED_SOCKET);
--	return 0;
-+	return smack_netlabel(sock->sk, SMACK_UNLABELED_SOCKET);
- }
- 
- /**
-@@ -2275,21 +2262,14 @@ static int smack_socket_sendmsg(struct s
- 		return 0;
- 
- 	hostsp = smack_host_label(sip);
--	if (hostsp == NULL) {
--		if (ssp->smk_labeled != SMACK_CIPSO_SOCKET)
--			return smack_netlabel(sock->sk, SMACK_CIPSO_SOCKET);
--		return 0;
--	}
-+	if (hostsp == NULL)
-+		return smack_netlabel(sock->sk, SMACK_CIPSO_SOCKET);
- 
- 	rc = smk_access(ssp->smk_out, hostsp, MAY_WRITE);
- 	if (rc != 0)
- 		return rc;
- 
--	if (ssp->smk_labeled != SMACK_UNLABELED_SOCKET)
--		return smack_netlabel(sock->sk, SMACK_UNLABELED_SOCKET);
--
--	return 0;
--
-+	return smack_netlabel(sock->sk, SMACK_UNLABELED_SOCKET);
- }
- 
- 
-@@ -2504,22 +2484,14 @@ static int smack_socket_getpeersec_dgram
- static void smack_sock_graft(struct sock *sk, struct socket *parent)
- {
- 	struct socket_smack *ssp;
--	int rc;
- 
--	if (sk == NULL)
--		return;
--
--	if (sk->sk_family != PF_INET && sk->sk_family != PF_INET6)
-+	if (sk == NULL ||
-+	    (sk->sk_family != PF_INET && sk->sk_family != PF_INET6))
- 		return;
- 
- 	ssp = sk->sk_security;
- 	ssp->smk_in = ssp->smk_out = current_security();
--	ssp->smk_packet[0] = '\0';
--
--	rc = smack_netlabel(sk, SMACK_CIPSO_SOCKET);
--	if (rc != 0)
--		printk(KERN_WARNING "Smack: \"%s\" netlbl error %d.\n",
--		       __func__, -rc);
-+	/* cssp->smk_packet is already set in smack_inet_csk_clone() */
- }
- 
- /**
-@@ -2534,35 +2506,82 @@ static void smack_sock_graft(struct sock
- static int smack_inet_conn_request(struct sock *sk, struct sk_buff *skb,
- 				   struct request_sock *req)
- {
--	struct netlbl_lsm_secattr skb_secattr;
-+	u16 family = sk->sk_family;
- 	struct socket_smack *ssp = sk->sk_security;
-+	struct netlbl_lsm_secattr secattr;
-+	struct sockaddr_in addr;
-+	struct iphdr *hdr;
- 	char smack[SMK_LABELLEN];
- 	int rc;
- 
--	if (skb == NULL)
--		return -EACCES;
-+	/* handle mapped IPv4 packets arriving via IPv6 sockets */
-+	if (family == PF_INET6 && skb->protocol == htons(ETH_P_IP))
-+		family = PF_INET;
- 
--	netlbl_secattr_init(&skb_secattr);
--	rc = netlbl_skbuff_getattr(skb, sk->sk_family, &skb_secattr);
-+	netlbl_secattr_init(&secattr);
-+	rc = netlbl_skbuff_getattr(skb, family, &secattr);
- 	if (rc == 0)
--		smack_from_secattr(&skb_secattr, smack);
-+		smack_from_secattr(&secattr, smack);
- 	else
- 		strncpy(smack, smack_known_huh.smk_known, SMK_MAXLEN);
--	netlbl_secattr_destroy(&skb_secattr);
-+	netlbl_secattr_destroy(&secattr);
-+
- 	/*
--	 * Receiving a packet requires that the other end
--	 * be able to write here. Read access is not required.
--	 *
--	 * If the request is successful save the peer's label
--	 * so that SO_PEERCRED can report it.
--	 */
-+	* Receiving a packet requires that the other end be able to write
-+	* here. Read access is not required.
-+	*/
- 	rc = smk_access(smack, ssp->smk_in, MAY_WRITE);
--	if (rc == 0)
--		strncpy(ssp->smk_packet, smack, SMK_MAXLEN);
-+	if (rc != 0)
-+		return rc;
-+
-+	/*
-+	* Save the peer's label in the request_sock so we can later setup
-+	* smk_packet in the child socket so that SO_PEERCRED can report it.
-+	*/
-+	req->peer_secid = smack_to_secid(smack);
-+
-+	/*
-+	* We need to decide if we want to label the incoming connection here
-+	* if we do we only need to label the request_sock and the stack will
-+	* propogate the wire-label to the sock when it is created.
-+	*/
-+	hdr = ip_hdr(skb);
-+	addr.sin_addr.s_addr = hdr->saddr;
-+	rcu_read_lock();
-+	if (smack_host_label(&addr) == NULL) {
-+		rcu_read_unlock();
-+		netlbl_secattr_init(&secattr);
-+		smack_to_secattr(smack, &secattr);
-+		rc = netlbl_req_setattr(req, &secattr);
-+		netlbl_secattr_destroy(&secattr);
-+	} else {
-+		rcu_read_unlock();
-+		netlbl_req_delattr(req);
-+	}
- 
- 	return rc;
- }
- 
-+/**
-+* smack_inet_csk_clone - Copy the connection information to the new socket
-+* @sk: the new socket
-+* @req: the connection's request_sock
-+*
-+* Transfer the connection's peer label to the newly created socket.
-+*/
-+static void smack_inet_csk_clone(struct sock *sk,
-+			         const struct request_sock *req)
-+{
-+	struct socket_smack *ssp = sk->sk_security;
-+	char *smack;
-+
-+	if (req->peer_secid != 0) {
-+		smack = smack_from_secid(req->peer_secid);
-+		strncpy(ssp->smk_packet, smack, SMK_MAXLEN);
-+	} else
-+		ssp->smk_packet[0] = '\0';
-+}
-+
- /*
-  * Key management security hooks
-  *
-@@ -2915,6 +2934,7 @@ struct security_operations smack_ops = {
- 	.sk_free_security = 		smack_sk_free_security,
- 	.sock_graft = 			smack_sock_graft,
- 	.inet_conn_request = 		smack_inet_conn_request,
-+	.inet_csk_clone =		smack_inet_csk_clone,
- 
-  /* key management security hooks */
- #ifdef CONFIG_KEYS
+--- a/fs/fuse/inode.c
++++ b/fs/fuse/inode.c
+@@ -908,6 +908,7 @@ static int fuse_fill_super(struct super_
+  err_put_root:
+ 	dput(root_dentry);
+  err_put_conn:
++	bdi_destroy(&fc->bdi);
+ 	fuse_conn_put(fc);
+  err_fput:
+ 	fput(file);
 
 
