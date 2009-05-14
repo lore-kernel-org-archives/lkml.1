@@ -1,146 +1,269 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755022AbZENJAb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753411AbZENJEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755022AbZENJAb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 05:00:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbZENJAV
+	id S1753411AbZENJEP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 05:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751663AbZENJDz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 05:00:21 -0400
-Received: from mailout1.w1.samsung.com ([210.118.77.11]:11513 "EHLO
-	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751859AbZENJAU (ORCPT
+	Thu, 14 May 2009 05:03:55 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:44423 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751067AbZENJDx (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 05:00:20 -0400
-Date: Thu, 14 May 2009 11:00:15 +0200
-From: =?utf-8?B?TWljaGHFgiBOYXphcmV3aWN6?= <m.nazarewicz@samsung.com>
-Subject: Re: [PATCH] Physical Memory Management [0/1]
-In-reply-to: <20090513151142.5d166b92.akpm@linux-foundation.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: linux-kernel@vger.kernel.org, m.szyprowski@samsung.com,
-       kyungmin.park@samsung.com, linux-mm@kvack.org
-Message-id: <op.utwwmpsf7p4s8u@amdc030>
-Organization: Samsung Electronics
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 8BIT
-User-Agent: Opera Mail/10.00 (Win32)
-References: <op.utu26hq77p4s8u@amdc030>
- <20090513151142.5d166b92.akpm@linux-foundation.org>
+	Thu, 14 May 2009 05:03:53 -0400
+X-Auth-Info: VkN4MWvK45X3LjQgiVirFGbKNcEmL7g0aUqgW7TQLqg=
+Message-ID: <4A0BDE79.4060606@grandegger.com>
+Date: Thu, 14 May 2009 11:03:53 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Jonathan Corbet <corbet@lwn.net>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+Subject: Re: [PATCH v2 4/7] [PATCH 4/8] can: Driver for the SJA1000 CAN controller
+References: <20090512092757.048938233@denx.de>	<20090512092757.756749047@denx.de> <20090513155205.4bf06c25@bike.lwn.net>
+In-Reply-To: <20090513155205.4bf06c25@bike.lwn.net>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 May 2009 00:11:42 +0200, Andrew Morton wrote:
-> (please keep the emails to under 80 columns)
+Jonathan Corbet wrote:
+> [Quick drive-by review continues...]
+> 
+>> +
+>> +static int sja1000_probe_chip(struct net_device *dev)
+>> +{
+>> +	struct sja1000_priv *priv = netdev_priv(dev);
+> 
+> Looking down toward the bottom, I see:
+> 
+>> +struct sja1000_priv {
+>> +	struct can_priv can;
+> 
+> So you're still using the "put the higher-level structure at the top so we
+> can treat it like either kind of pointer" trick.  I'd still recommend
+> against that.  Far better to do something like:
+> 
+> 	struct can_priv *canpriv = netdev_priv(dev);
+> 	struct sja_1000_priv *priv = container_of(canpriv, struct sja_1000_priv, can);
+> 
+> Of course, you can put that dance into a helper function.
 
-Yes, sorry about that. Apparently "Automatically wrap outgoing messages"
-doesn't mean what I thought it does.
+There is no way to initialize the value returned by netdev_priv() as it
+does not point to a member of struct net_device. I already commented here:
 
-> Michal Nazarewicz <m.nazarewicz@samsung.com> wrote:
->> 1. Each allocated block of memory has a reference counter so different  
->> kernel modules may share the same buffer with a well known get/put  
->> semantics.
->>
->> 2. It aggregates physical memory allocating and management API in one  
->> place. This is good because there is a single place to debug and test  
->> for all devices. Moreover, because each device does not need to reserve  
->> it's own area of physical memory a total size of reserved memory is  
->> smaller. Say, we have 3 accelerators. Each of them can operate on 1MiB  
->> blocks, so each of them would have to reserve 1MiB for itself (this  
->> means total of 3MiB of reserved memory). However, if at most two of  
->> those devices can be used at once, we could reserve 2MiB saving 1MiB.
->>
->> 3. PMM has it's own allocator which runs in O(log n) bound time where n  
->> is total number of areas and free spaces between them -- the upper time  
->> limit may be important when working on data sent in real time (for  
->> instance an output of a camera).  Currently a best-fit algorithm is  
->> used but you can easily replace it if it does not meet your needs.
->>
->> 4. Via a misc char device, the module allows allocation of continuous  
->> blocks from user space. Such solution has several advantages. In  
->> particular, other option would be to add a allocation calls for each  
->> individual devices (think hardware accelerators) -- this would double  
->> the same code in several drivers plus it would lead to inconsistent API  
->> for doing the very same think. Moreover, when creating pipelines (ie.  
->> encoded image --[decoder]--> decoded image --[scaler]--> scaled image)  
->> devices would have to develop a method of sharing buffers. With PMM  
->> user space program allocates a block and passes it as an output buffer  
->> for the first device and input buffer for the other.
->>
->> 5. PMM is integrated with System V IPC, so that user space programs may  
->> "convert" allocated block into a segment of System V shared memory.  
->> This makes it possible to pass PMM buffers to PMM-unaware but  
->> SysV-aware applications. Notable example are X11. This makes it  
->> possible to deploy a zero-copy scheme when communicating with X11. For  
->> instance, image scaled in previous example could be passed directly to  
->> X server without the need to copy it to a newly created System V shared  
->> memory.
->>
->> 6. PMM has a notion of memory types. In attached patch only a general  
->> memory type is defined but you can easily add more types for a given  
->> platform. To understand what in PMM terms is memory type we can use an  
->> example: a general memory may be a main RAM memory which we have a lot  
->> but it is quite slow and another type may be a portion of L2 cache  
->> configured to act as fast memory. Because PMM may be aware of those,  
->> again, allocation of different kinds of memory has a common, consistent  
->> API.
+  http://marc.info/?l=linux-netdev&m=124120212106891&w=2
 
-> OK, let's pretend we didn't see an implementation.
+Have I missed something?
 
-:]
+>> +	if (dev->base_addr && (priv->read_reg(dev, 0) == 0xFF)) {
+>> +		printk(KERN_INFO "%s: probing @0x%lX failed\n",
+>> +		       DRV_NAME, dev->base_addr);
+>> +		return 0;
+>> +	}
+>> +	return 1;
+>> +}
+> 
+> So zero is an error return?  That's contrary to usual practice.
 
-I've never said it's perfect.  I'll welcome any constructive comments.
+OK, will fix.
 
-> What are you trying to do here?  What problem(s) are being solved?
-> What are the requirements and the use cases?
+>> +static int set_reset_mode(struct net_device *dev)
+>> +{
+>> +	struct sja1000_priv *priv = netdev_priv(dev);
+>> +	unsigned char status = priv->read_reg(dev, REG_MOD);
+>> +	int i;
+>> +
+>> +	/* disable interrupts */
+>> +	priv->write_reg(dev, REG_IER, IRQ_OFF);
+>> +
+>> +	for (i = 0; i < 100; i++) {
+>> +		/* check reset bit */
+>> +		if (status & MOD_RM) {
+>> +			priv->can.state = CAN_STATE_STOPPED;
+>> +			return 0;
+>> +		}
+>> +
+>> +		priv->write_reg(dev, REG_MOD, MOD_RM);	/* reset chip */
+>> +		status = priv->read_reg(dev, REG_MOD);
+>> +		udelay(10);
+> 
+> Wouldn't you want to read the new state *after* the delay?
 
-Overall situation: UMA embedded system and many hardware
-accelerators (DMA capable, no scatter-gather).  Three use cases:
+Yes, that makes more sense.
 
-1. We have a hardware JPEG decoder, we want to decode an image.
+>> +	}
+>> +
+>> +	dev_err(dev->dev.parent, "setting SJA1000 into reset mode failed!\n");
+>> +	return 1;
 
-2. As above plus we have an image scaler, we want to scale decoded
-   image.
+Will fix this return value as well.
 
-3. As above plus we want to pass scaled image to X server.
+>> +
+>> +}
+>> +
+>> +static int set_normal_mode(struct net_device *dev)
+>> +{
+>> +	struct sja1000_priv *priv = netdev_priv(dev);
+>> +	unsigned char status = priv->read_reg(dev, REG_MOD);
+>> +	int i;
+>> +
+>> +	for (i = 0; i < 100; i++) {
+>> +		/* check reset bit */
+>> +		if ((status & MOD_RM) == 0) {
+>> +			priv->can.state = CAN_STATE_ERROR_ACTIVE;
+>> +			/* enable all interrupts */
+>> +			priv->write_reg(dev, REG_IER, IRQ_ALL);
+>> +
+>> +			return 0;
+>> +		}
+>> +
+>> +		/* set chip to normal mode */
+>> +		priv->write_reg(dev, REG_MOD, 0x00);
+>> +		status = priv->read_reg(dev, REG_MOD);
+>> +		udelay(10);
+> 
+> Here too?
+> 
+>> +	}
+>> +
+>> +	dev_err(dev->dev.parent, "setting SJA1000 into normal mode failed!\n");
+>> +	return 1;
+>> +
+>> +}
+>> +
+> 
+> [...]
+> 
+>> +irqreturn_t sja1000_interrupt(int irq, void *dev_id)
+>> +{
+>> +	struct net_device *dev = (struct net_device *)dev_id;
+>> +	struct sja1000_priv *priv = netdev_priv(dev);
+>> +	struct net_device_stats *stats = &dev->stats;
+>> +	uint8_t isrc, status;
+>> +	int n = 0;
+>> +
+>> +	/* Shared interrupts and IRQ off? */
+>> +	if (priv->read_reg(dev, REG_IER) == IRQ_OFF)
+>> +		return IRQ_NONE;
+>> +
+>> +	if (priv->pre_irq)
+>> +		priv->pre_irq(dev);
+>> +
+>> +	while ((isrc = priv->read_reg(dev, REG_IR)) && (n < SJA1000_MAX_IRQ)) {
+>> +		n++;
+>> +		status = priv->read_reg(dev, REG_SR);
+>> +
+>> +		if (isrc & IRQ_WUI)
+>> +			dev_warn(dev->dev.parent, "wakeup interrupt\n");
+> 
+> How many of these might you get?  Should this be rate limited?
 
+None, because the driver does not (yet) support the sleep mode. For that
+reason it's a warning.
 
-Neither decoder nor scaler may operate on malloc(3)ed areas as
-they aren't continuous in physical memory.  A copying of a
-scattered buffer would have to be used.  This is a performance
-cost.  It also doubles memory usage.
+>> +		if (isrc & IRQ_TI) {
+>> +			/* transmission complete interrupt */
+>> +			stats->tx_packets++;
+>> +			can_get_echo_skb(dev, 0);
+>> +			netif_wake_queue(dev);
+>> +		}
+>> +		if (isrc & IRQ_RI) {
+>> +			/* receive interrupt */
+>> +			while (status & SR_RBS) {
+>> +				sja1000_rx(dev);
+>> +				status = priv->read_reg(dev, REG_SR);
+>> +			}
+>> +		}
+>> +		if (isrc & (IRQ_DOI | IRQ_EI | IRQ_BEI | IRQ_EPI | IRQ_ALI)) {
+>> +			/* error interrupt */
+>> +			if (sja1000_err(dev, isrc, status))
+>> +				break;
+>> +		}
+>> +	}
+>> +
+>> +	if (priv->post_irq)
+>> +		priv->post_irq(dev);
+>> +
+>> +	if (n >= SJA1000_MAX_IRQ)
+>> +		dev_dbg(dev->dev.parent, "%d messages handled in ISR", n);
+>> +
+>> +	return (n) ? IRQ_HANDLED : IRQ_NONE;
+>> +}
+>> +EXPORT_SYMBOL_GPL(sja1000_interrupt);
+>> +
+>> +static int sja1000_open(struct net_device *dev)
+>> +{
+>> +	struct sja1000_priv *priv = netdev_priv(dev);
+>> +	int err;
+>> +
+>> +	/* set chip into reset mode */
+>> +	set_reset_mode(dev);
+>> +
+>> +	/* common open */
+>> +	err = open_candev(dev);
+>> +	if (err)
+>> +		return err;
+>> +
+>> +	/* register interrupt handler, if not done by the device driver */
+>> +	if (!(priv->flags & SJA1000_CUSTOM_IRQ_HANDLER)) {
+>> +		err = request_irq(dev->irq, &sja1000_interrupt, IRQF_SHARED,
+>> +				  dev->name, (void *)dev);
+>> +		if (err)
+>> +			return -EAGAIN;
+> 
+> If you return here you fail, but you've not undone open_candev().  Looking
+> there, it seems no harm will be done - until somebody changes open_candev()
+> someday. 
 
-  PMM solves this as it lets user space allocate a continuous
-  buffers which the devices may use directly.
+Right, the missing close_candev() does currently not harm but that might
+change in the future. Will change.
 
-It could be solved by letting each driver allocate its own buffers
-during boot time and then let user space mmap(2) them.  However, with
-10 hardware accelerators each needing 1MiB buffer we need to reserve
-10MiB of memory.  If we know that at most 5 devices will be used at
-the same time we could've reserve 5MiB instead of 10MiB.
+>> +	}
+>> +
+>> +	/* init and start chi */
+>> +	sja1000_start(dev);
+>> +	priv->open_time = jiffies;
+>> +
+>> +	netif_start_queue(dev);
+>> +
+>> +	return 0;
+>> +}
+>> +
+> 
+> [...]
+> 
+>> +/*
+>> + * SJA1000 private data structure
+>> + */
+>> +struct sja1000_priv {
+>> +	struct can_priv can;
+>> +	long open_time;
+>> +	struct sk_buff *echo_skb;
+>> +
+>> +	u8 (*read_reg) (const struct net_device *dev, int reg);
+>> +	void (*write_reg) (const struct net_device *dev, int reg, u8 val);
+>> +	void (*pre_irq) (const struct net_device *dev);
+>> +	void (*post_irq) (const struct net_device *dev);
+> 
+> What are the locking rules for functions like ->read_reg() now?  Entirely
+> up to the lower level?  Would be good to document that near the structure
+> definition. 
 
-  PMM solves this problem since the buffers are allocated when they
-  are needed.
+Yes, it's up to the lower level.
 
-This could be solved by letting each driver allocate buffers when
-requested (using bigphysarea for instance).  It has some minor issues
-like implementing mmap file operation in all drivers and inconsistent
-user space API but the most significant is it's not clear how to
-implement 2nd use case.  If drivers expect to work on their own
-buffers, decoder's output must be copied into scaler's input buffer.
+>> +
+>> +	void *priv;		/* for board-specific data */
+>> +	struct net_device *dev;
+>> +
+>> +	u8 ocr;
+>> +	u8 cdr;
+>> +	u32 flags;
+> 
+> The meaning of these fields is not exactly clear.
 
-  With PMM, drivers simply expect a continuous buffers and do not
-  care where they came from or if other drivers use them as well.
+I will add a description.
 
-Now, as of 3rd use case.  X may work with System V shared memory,
-however, since shared memory segments (created via shmget(2)) are
-not continuous, we cannot pass it to a scaler as an output buffer.
-
-  PMM solves it, since it allows converting an area allocated via
-  PMM into a System V shared memory segment.
-
--- 
-Best regards,                                            _     _
- .o. | Liege of Serenly Enlightened Majesty of         o' \,=./ `o
- ..o | Computer Science,  Michał "mina86" Nazarewicz      (o o)
- ooo +-<m.nazarewicz@samsung.com>-<mina86@jabber.org>-ooO--(_)--Ooo--
-
+Wolfgang.
