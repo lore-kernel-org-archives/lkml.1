@@ -1,55 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756341AbZENXQW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758950AbZENXSg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756341AbZENXQW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:16:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbZENXQK
+	id S1758950AbZENXSg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:18:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbZENXSZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 19:16:10 -0400
-Received: from acsinet11.oracle.com ([141.146.126.233]:50574 "EHLO
-	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753127AbZENXQJ (ORCPT
+	Thu, 14 May 2009 19:18:25 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:35046 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753601AbZENXSY (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 19:16:09 -0400
-Message-ID: <4A0CA67C.30507@oracle.com>
-Date: Thu, 14 May 2009 16:17:16 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 14 May 2009 19:18:24 -0400
+Date: Thu, 14 May 2009 19:18:23 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: Frederic Weisbecker <fweisbec@gmail.com>
+cc: LKML <linux-kernel@vger.kernel.org>, Christoph Hellwig <hch@infradead.org>,
+       Ingo Molnar <mingo@elte.hu>,
+       Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RFC] tracing: adding flags to events
+In-Reply-To: <20090514203351.GA5969@nowhere>
+Message-ID: <alpine.DEB.2.00.0905141916000.30591@gandalf.stny.rr.com>
+References: <alpine.DEB.2.00.0905141535360.30591@gandalf.stny.rr.com> <20090514203351.GA5969@nowhere>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-To: Jason Wessel <jason.wessel@windriver.com>
-CC: jbarnes@virtuousgeek.org, Andrew Morton <akpm@linux-foundation.org>,
-       eric@anholt.net, airlied@redhat.com,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] sysrq, intel_fb: fix sysrq g collision
-References: <4A0CA203.7050907@windriver.com>
-In-Reply-To: <4A0CA203.7050907@windriver.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt005.oracle.com [141.146.116.14]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010205.4A0CA5FB.03B8:SCFSTAT5015188,ss=1,fgs=0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jason Wessel wrote:
-> This is patch is both a clean up and a regression fix because two things
-> in the mainline kernel can register for sysrq-g, which is certainly a
-> problem when you want to use both.
+
+On Thu, 14 May 2009, Frederic Weisbecker wrote:
+
+> On Thu, May 14, 2009 at 03:45:48PM -0400, Steven Rostedt wrote:
+> > 
+> > Christoph has been asking about processing flags in the output. He rather 
+> > not see c2, and rather see what those three bits are. This patch is 
+> > an RFC to do just that. To test it out, I added the previous task state to 
+> > sched switch and used the flag processing to the printk of the 
+> > sched_switch event.
+> > 
+> > 
+> > To add a flag, just add __print_flags to the TP_printk arguments.
+> > 
+> > 	TP_STRUCT__entry(
+> > 		__field(	unsigned int,	flags		)
+> > 	),
+> > 
+> > 	TP_printk("flags are %s", __print_flags(__entry->flags,
+> > 			0, "BIT0", 1, "BIT1", 2, "BIT2", -1))
+> > 
 > 
-> I talked to Randy and Jesse briefly about changing the intel fb video
-> driver to use 'v' instead of 'g' and they agreed it would be ok to see a
-> patch.  Hopefully each will ack this patch, or discuss it further.   If
-> they ack the patch, I can send it on to Linus for consideration.
 > 
-> The long term intent here is to get mode switching with a generic kernel
-> debug front end, with the short term intent to fix the sysrq collision.
+> Nice idea!
+> 
+> Also, I wonder if that would be possible to get compounded
+> bits such as GFP_KERNEL instead of __GFP_WAIT | __GFP_IO | __GFP_FS.
+> 
+> To perform that, we could just add two fields:
+> 
+> //__b for byte, __m for mask
+> 
+> #define __b(b)	(1 << b)
+> #define __m(m)  m
+> 
+> And then you can compare using a mask.
+> It also requires to clear the mask from the flags to avoid
+> duplicate matches such as GFP_KERNEL | __GFP_WAIT | __GFP_IO | __GFP_FS
+> and only have GFP_KERNEL, eg:
+> 
+> const char *
+> ftrace_print_flags_seq(struct trace_seq *p, unsigned long flags, ...)
+> {
+> 	const char *str;
+> 	va_list args;
+> 	long mask;
+> 
+> 	trace_seq_init(p);
+> 	va_start(args, flags);
+> 	for (mask = va_arg(args, long) ; mask >= 0; mask = va_arg(args, long)) {
+> 		str = va_arg(args, const char *);
+> 
+> 		if (flags & mask != mask)
+> 			continue;
+> 
+> 		flags &= ~mask;
+> 		if (p->len)
+> 			trace_seq_putc(p, '|');
+> 		trace_seq_puts(p, str);
+> 	}
+> 	va_end(args);
+> 	trace_seq_putc(p, 0);
+> 
+> 	return p->buffer;
+> }
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+Nice, I'll try that. I thought about doing something similar, but I 
+figured to post the simplest algorithm first.
 
-Thanks.
 
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+> > +#define __print_flags(flag, x...) ftrace_print_flags_seq(p, flag, x)
+
+
+> > +
+> >  #undef TRACE_EVENT
+> >  #define TRACE_EVENT(call, proto, args, tstruct, assign, print)		\
+> >  enum print_line_t							\
+> > @@ -127,6 +132,7 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+> >  	struct trace_seq *s = &iter->seq;				\
+> >  	struct ftrace_raw_##call *field;				\
+> >  	struct trace_entry *entry;					\
+> > +	struct trace_seq *p;						\
+> >  	int ret;							\
+> >  									\
+> >  	entry = iter->ent;						\
+> > @@ -138,7 +144,9 @@ ftrace_raw_output_##call(struct trace_iterator *iter, int flags)	\
+> >  									\
+> >  	field = (typeof(field))entry;					\
+> >  									\
+> > +	p = &get_cpu_var(ftrace_event_seq);				\
+> >  	ret = trace_seq_printf(s, #call ": " print);			\
+> > +	put_cpu();							\
+> 
+> 
+> 
+> I don't understand the role of this per-cpu trace_seq variable.
+> It doesn't seem to be used.
+
+See it now? ;-)
+
+-- Steve
