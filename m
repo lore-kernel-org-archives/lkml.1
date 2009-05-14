@@ -1,44 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZENUKE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZENUTi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754192AbZENUKE (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 16:10:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbZENUJw
+	id S1754010AbZENUTi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 16:19:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZENUT2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 16:09:52 -0400
-Received: from fg-out-1718.google.com ([72.14.220.154]:62918 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754105AbZENUJv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 16:09:51 -0400
-Date: Fri, 15 May 2009 01:09:47 +0500
-From: Constantin Baranov <const@mimas.ru>
-To: Tobias_Mueller@twam.info
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Richard Purdie <rpurdie@rpsys.net>
-Subject: Re: [PATCH 001/001] leds: alix-leds2 fixed for Award BIOS
-Message-Id: <20090515010947.4016ba66.const@mimas.ru>
-In-Reply-To: <17be05570905140208n5fd695aayfad221808f70ac21@mail.gmail.com>
-References: <17be05570905130710s1192729cqafa09127f6c34bf9@mail.gmail.com>
-	<20090513151415.6e84fd82.akpm@linux-foundation.org>
-	<17be05570905140208n5fd695aayfad221808f70ac21@mail.gmail.com>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+	Thu, 14 May 2009 16:19:28 -0400
+Received: from h155.mvista.com ([63.81.120.155]:12556 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1750957AbZENUT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 16:19:28 -0400
+Message-ID: <4A0C7CCB.1040805@ru.mvista.com>
+Date: Fri, 15 May 2009 00:19:23 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 6/7] ide: pass number of ports to ide_host_{alloc,add}()
+References: <20090513205139.28638.87226.sendpatchset@localhost.localdomain> <20090513205222.28638.19386.sendpatchset@localhost.localdomain> <4A0C6A27.7010703@ru.mvista.com> <200905142151.15854.bzolnier@gmail.com>
+In-Reply-To: <200905142151.15854.bzolnier@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Do these boards support DMI? In that case, I suggest to write another
-function, say alix_award_present(). It shall first check DMI and then
-initialize GPIOs.
+Hello.
 
-On Thu, 14 May 2009 11:08:45 +0200 Tobias Müller <Tobias_Mueller@twam.info> wrote:
-> 2009/5/14 Andrew Morton <akpm@linux-foundation.org>:
-> > Will this cause problems on boards which are _not_ running that BIOS?
-> No. These initialisations is already done there by BIOS, but setting
-> the registers twice doesn't matter. It's just configurating these pins
-> as an output.
-> 
-> > IOW, is this change backward-compatible?
-> Yes.
+Bartlomiej Zolnierkiewicz wrote:
+
+>>> @@ -467,7 +467,7 @@ icside_register_v6(struct icside_state *
+>>>  	struct ide_host *host;
+>>>  	unsigned int sel = 0;
+>>>  	int ret;
+>>> -	hw_regs_t hw[2], *hws[] = { &hw[0], NULL, NULL, NULL };
+>>> +	hw_regs_t hw[2], *hws[] = { &hw[0], NULL };
+>>>       
+>>     I wonder if there's an old bug here since I'm not seeing when hws[1] is 
+>> set to non-NULL -- despite there are apparently two ports?
+>>
+>>     Indeed, this bug seems to date back to the 'struct ide_host' 
+>> introduction, see this:
+>>  
+>> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=48c3c1072651922ed153bcf0a33ea82cf20df390#patch1...
+>>     
+>
+> Care to send a fix?
+>   
+
+   I will...
+
+MBR, Sergei
+
+
