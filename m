@@ -1,106 +1,333 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762728AbZENGp4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762770AbZENGqu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762728AbZENGp4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 02:45:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762737AbZENGpi
+	id S1762770AbZENGqu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 02:46:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761776AbZENGqg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 02:45:38 -0400
-Received: from viefep16-int.chello.at ([62.179.121.36]:44488 "EHLO
-	viefep16-int.chello.at" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762775AbZENGph (ORCPT
+	Thu, 14 May 2009 02:46:36 -0400
+Received: from metis.ext.pengutronix.de ([92.198.50.35]:33660 "EHLO
+	metis.ext.pengutronix.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761651AbZENGqf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 02:45:37 -0400
-X-SourceIP: 213.93.53.227
-Subject: Re: [PATCH 2/3] perf_counter: allow arch to supply event misc
- flags and instruction pointer
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Paul Mackerras <paulus@samba.org>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-In-Reply-To: <18955.36913.304477.712583@drongo.ozlabs.ibm.com>
-References: <18955.36913.304477.712583@drongo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Thu, 14 May 2009 08:45:34 +0200
-Message-Id: <1242283534.26820.42.camel@twins>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 May 2009 02:46:35 -0400
+Date: Thu, 14 May 2009 08:46:33 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Marc Kleine-Budde <mkl@pengutronix.de>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+Subject: Re: [PATCH v2 5/7] [PATCH 5/8] can: SJA1000 generic platform bus
+	driver
+Message-ID: <20090514064633.GT29278@pengutronix.de>
+References: <20090512092757.048938233@denx.de> <20090512092757.894204198@denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090512092757.894204198@denx.de>
+X-Sent-From: Pengutronix Entwicklungszentrum Nord - Hildesheim
+X-URL: http://www.pengutronix.de/
+X-IRC: #ptxdist @freenode
+X-Accept-Language: de,en
+X-Accept-Content-Type: text/plain
+X-Impressum: Pengutronix - Linux Solutions for Science and Industry
+	Handelsregister:  Amtsgericht Hildesheim, HRA 2686 Peiner Strasse
+	6-8, 31137 Hildesheim, Germany Phone: +49-5121-206917-0 |  Fax:
+	+49-5121-206917-5555 Inhaber: Dipl.-Ing. Robert Schwebel
+X-Message-Flag: See Message Headers for Impressum
+X-Uptime: 08:32:54 up 2 days, 20:56, 13 users,  load average: 0.00, 0.00,
+	0.00
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: 2001:6f8:1178:2:215:17ff:fe12:23b0
+X-SA-Exim-Mail-From: sha@pengutronix.de
+X-SA-Exim-Scanned: No (on metis.ext.pengutronix.de); SAEximRunCond expanded to false
+X-PTX-Original-Recipient: linux-kernel@vger.kernel.org
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-14 at 13:29 +1000, Paul Mackerras wrote:
-> At present the values we put in overflow events for the misc flags
-> indicating processor mode and the instruction pointer are obtained
-> using the standard user_mode() and instruction_pointer() functions.
-> Those functions tell you where the performance monitor interrupt
-> was taken, which might not be exactly where the counter overflow
-> occurred, for example because interrupts were disabled at the point
-> where the overflow occurred, or because the processor had many
-> instructions in flight and chose to complete some more instructions
-> beyond the one that caused the counter overflow.
+Hi Wolfgang,
+
+some comments inline.
+
+Sascha
+
+On Tue, May 12, 2009 at 11:28:02AM +0200, Wolfgang Grandegger wrote:
+> This driver adds support for the SJA1000 chips connected to the
+> "platform bus", which can be found on various embedded systems.
 > 
-> Some architectures (e.g. powerpc) can supply more precise information
-> about where the counter overflow occurred and the processor mode at
-> that point.  This introduces new functions, perf_misc_flags() and
-> perf_instruction_pointer(), which arch code can override to provide
-> more precise information if available.  They have default implementations
-> which are identical to the existing code.
-> 
-> This also adds a new misc flag value, PERF_EVENT_MISC_HYPERVISOR, for
-> the case where a counter overflow occurred in the hypervisor.
-> 
-> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+> Signed-off-by: Marc Kleine-Budde <mkl@pengutronix.de>
+> Signed-off-by: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
 > ---
->  include/linux/perf_counter.h |    7 +++++++
->  kernel/perf_counter.c        |    5 ++---
->  2 files changed, 9 insertions(+), 3 deletions(-)
+>  drivers/net/can/Kconfig                    |   10 +
+>  drivers/net/can/sja1000/Makefile           |    1 
+>  drivers/net/can/sja1000/sja1000_platform.c |  169 +++++++++++++++++++++++++++++
+>  include/linux/can/platform/sja1000.h       |   32 +++++
+>  4 files changed, 212 insertions(+)
+>  create mode 100644 drivers/net/can/sja1000/sja1000_platform.c
+>  create mode 100644 include/linux/can/platform/sja1000.h
 > 
-> diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
-> index 614f921..2b12d98 100644
-> --- a/include/linux/perf_counter.h
-> +++ b/include/linux/perf_counter.h
-> @@ -213,6 +213,7 @@ struct perf_counter_mmap_page {
->  #define PERF_EVENT_MISC_KERNEL		(1 << 0)
->  #define PERF_EVENT_MISC_USER		(1 << 1)
->  #define PERF_EVENT_MISC_OVERFLOW	(1 << 2)
-> +#define PERF_EVENT_MISC_HYPERVISOR	(1 << 3)
-
-Ah, I think I've taught userspace that either !USER && !KERNEL or USER
-&& KERNEL is HV information, since neither really makes sense :-)
-
->  struct perf_event_header {
->  	__u32	type;
-> @@ -588,6 +589,12 @@ extern int sysctl_perf_counter_mlock;
+> Index: net-next-2.6/drivers/net/can/Kconfig
+> ===================================================================
+> --- net-next-2.6.orig/drivers/net/can/Kconfig	2009-05-12 10:47:25.747720647 +0200
+> +++ net-next-2.6/drivers/net/can/Kconfig	2009-05-12 10:47:26.411720627 +0200
+> @@ -41,6 +41,16 @@
+>  	---help---
+>  	  Driver for the SJA1000 CAN controllers from Philips or NXP
 >  
->  extern void perf_counter_init(void);
->  
-> +#ifndef perf_misc_flags
-> +#define perf_misc_flags(regs)	(user_mode(regs) ? PERF_EVENT_MISC_USER : \
-> +				 PERF_EVENT_MISC_KERNEL)
-> +#define perf_instruction_pointer(regs)	instruction_pointer(regs)
-> +#endif
+> +config CAN_SJA1000_PLATFORM
+> +	depends on CAN_SJA1000
+> +	tristate "Generic Platform Bus based SJA1000 driver"
+> +	---help---
+> +	  This driver adds support for the SJA1000 chips connected to
+> +	  the "platform bus" (Linux abstraction for directly to the
+> +	  processor attached devices).  Which can be found on various
+> +	  boards from Phytec (http://www.phytec.de) like the PCM027,
+> +	  PCM038.
 > +
->  #else
->  static inline void
->  perf_counter_task_sched_in(struct task_struct *task, int cpu)		{ }
-> diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
-> index ff166c1..89568de 100644
-> --- a/kernel/perf_counter.c
-> +++ b/kernel/perf_counter.c
-> @@ -1978,11 +1978,10 @@ static void perf_counter_output(struct perf_counter *counter,
->  	header.size = sizeof(header);
+>  config CAN_DEBUG_DEVICES
+>  	bool "CAN devices debugging messages"
+>  	depends on CAN
+> Index: net-next-2.6/drivers/net/can/sja1000/Makefile
+> ===================================================================
+> --- net-next-2.6.orig/drivers/net/can/sja1000/Makefile	2009-05-12 10:47:25.753720385 +0200
+> +++ net-next-2.6/drivers/net/can/sja1000/Makefile	2009-05-12 10:47:26.412720490 +0200
+> @@ -3,5 +3,6 @@
+>  #
 >  
->  	header.misc = PERF_EVENT_MISC_OVERFLOW;
-> -	header.misc |= user_mode(regs) ?
-> -		PERF_EVENT_MISC_USER : PERF_EVENT_MISC_KERNEL;
-> +	header.misc |= perf_misc_flags(regs);
+>  obj-$(CONFIG_CAN_SJA1000) += sja1000.o
+> +obj-$(CONFIG_CAN_SJA1000_PLATFORM) += sja1000_platform.o
 >  
->  	if (record_type & PERF_RECORD_IP) {
-> -		ip = instruction_pointer(regs);
-> +		ip = perf_instruction_pointer(regs);
->  		header.type |= PERF_RECORD_IP;
->  		header.size += sizeof(ip);
->  	}
+>  ccflags-$(CONFIG_CAN_DEBUG_DEVICES) := -DDEBUG
+> Index: net-next-2.6/drivers/net/can/sja1000/sja1000_platform.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ net-next-2.6/drivers/net/can/sja1000/sja1000_platform.c	2009-05-12 10:47:26.416720502 +0200
+> @@ -0,0 +1,169 @@
+> +/*
+> + * Copyright (C) 2005 Sascha Hauer, Pengutronix
+> + * Copyright (C) 2007 Wolfgang Grandegger <wg@grandegger.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the version 2 of the GNU General Public License
+> + * as published by the Free Software Foundation
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/netdevice.h>
+> +#include <linux/delay.h>
+> +#include <linux/pci.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/irq.h>
+> +#include <linux/can.h>
+> +#include <linux/can/dev.h>
+> +#include <linux/can/platform/sja1000.h>
+> +#include <linux/io.h>
+> +
+> +#include "sja1000.h"
+> +
+> +#define DRV_NAME "sja1000_platform"
+> +
+> +MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de>");
+> +MODULE_DESCRIPTION("Socket-CAN driver for SJA1000 on the platform bus");
+> +MODULE_LICENSE("GPL v2");
+> +
+> +static u8 sp_read_reg(const struct net_device *dev, int reg)
+> +{
+> +	return ioread8((void __iomem *)(dev->base_addr + reg));
+> +}
+> +
+> +static void sp_write_reg(const struct net_device *dev, int reg, u8 val)
+> +{
+> +	iowrite8(val, (void __iomem *)(dev->base_addr + reg));
+> +}
+> +
+> +static int sp_probe(struct platform_device *pdev)
+> +{
+> +	int err, irq;
+> +	void __iomem *addr;
+> +	struct net_device *dev;
+> +	struct sja1000_priv *priv;
+> +	struct resource *res_mem, *res_irq;
+> +	struct sja1000_platform_data *pdata;
+> +
+> +	pdata = pdev->dev.platform_data;
+> +	if (!pdata) {
+> +		dev_err(&pdev->dev, "No platform data provided!\n");
+> +		err = -ENODEV;
+> +		goto exit;
+> +	}
+> +
+> +	res_mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	res_irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+> +	if (!res_mem || !res_irq) {
+> +		err = -ENODEV;
+> +		goto exit;
+> +	}
+> +
+> +	if (!request_mem_region(res_mem->start,
+> +				res_mem->end - res_mem->start + 1,
+> +				DRV_NAME)) {
 
+resource_size(res_mem) please, also for the other occurrences in this
+file
+
+> +		err = -EBUSY;
+> +		goto exit;
+> +	}
+> +
+> +	addr = ioremap_nocache(res_mem->start,
+> +			       res_mem->end - res_mem->start + 1);
+> +	if (!addr) {
+> +		err = -ENOMEM;
+> +		goto exit_release;
+> +	}
+> +
+> +	irq = res_irq->start;
+> +	if (res_irq->flags & IRQF_TRIGGER_MASK)
+> +		set_irq_type(irq, res_irq->flags & IRQF_TRIGGER_MASK);
+
+You shouldn't use set_irq_type on not yet requested irqs but instead
+pass the flags to the real driver and pass them in request_irq.
+
+> +
+> +	dev = alloc_sja1000dev(0);
+> +	if (!dev) {
+> +		err = -ENOMEM;
+> +		goto exit_iounmap;
+> +	}
+> +	priv = netdev_priv(dev);
+> +
+> +	priv->read_reg = sp_read_reg;
+> +	priv->write_reg = sp_write_reg;
+> +	priv->can.clock.freq = pdata->clock;
+> +	priv->ocr = pdata->ocr;
+> +	priv->cdr = pdata->cdr;
+> +
+> +	dev->irq = irq;
+> +	dev->base_addr = (unsigned long)addr;
+> +
+> +	dev_set_drvdata(&pdev->dev, dev);
+> +	SET_NETDEV_DEV(dev, &pdev->dev);
+> +
+> +	err = register_sja1000dev(dev);
+> +	if (err) {
+> +		dev_err(&pdev->dev, "registering %s failed (err=%d)\n",
+> +			DRV_NAME, err);
+> +		goto exit_free;
+> +	}
+> +
+> +	dev_info(&pdev->dev, "%s device registered (base_addr=%#lx, irq=%d)\n",
+> +		 DRV_NAME, dev->base_addr, dev->irq);
+
+dev_info will already print the driver name twice, printing DRV_NAME
+again seems unnecessary.
+
+> +	return 0;
+> +
+> + exit_free:
+> +	free_sja1000dev(dev);
+> + exit_iounmap:
+> +	iounmap(addr);
+> + exit_release:
+> +	release_mem_region(res_mem->start, res_mem->end - res_mem->start + 1);
+> + exit:
+> +	return err;
+> +}
+> +
+> +static int sp_remove(struct platform_device *pdev)
+> +{
+> +	struct net_device *dev = dev_get_drvdata(&pdev->dev);
+> +	struct resource *res;
+> +
+> +	unregister_sja1000dev(dev);
+> +	dev_set_drvdata(&pdev->dev, NULL);
+> +	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+> +	release_mem_region(res->start, res->end - res->start + 1);
+> +
+> +	if (dev->base_addr)
+> +		iounmap((void __iomem *)dev->base_addr);
+> +
+> +	free_sja1000dev(dev);
+> +
+> +	return 0;
+> +}
+> +
+> +static struct platform_driver sp_driver = {
+> +	.probe = sp_probe,
+> +	.remove = sp_remove,
+> +	.driver = {
+> +		.name = DRV_NAME,
+> +		.owner = THIS_MODULE,
+> +	},
+> +};
+> +
+> +static int __init sp_init(void)
+> +{
+> +	return platform_driver_register(&sp_driver);
+> +}
+> +
+> +static void __exit sp_exit(void)
+> +{
+> +	platform_driver_unregister(&sp_driver);
+> +}
+> +
+> +module_init(sp_init);
+> +module_exit(sp_exit);
+> Index: net-next-2.6/include/linux/can/platform/sja1000.h
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ net-next-2.6/include/linux/can/platform/sja1000.h	2009-05-12 10:47:26.419720650 +0200
+> @@ -0,0 +1,32 @@
+> +#ifndef _CAN_PLATFORM_SJA1000_H_
+> +#define _CAN_PLATFORM_SJA1000_H_
+> +
+> +/* clock divider register */
+> +#define CDR_CLKOUT_MASK 0x07
+> +#define CDR_CLK_OFF	0x08 /* Clock off (CLKOUT pin) */
+> +#define CDR_RXINPEN	0x20 /* TX1 output is RX irq output */
+> +#define CDR_CBP		0x40 /* CAN input comparator bypass */
+> +#define CDR_PELICAN	0x80 /* PeliCAN mode */
+> +
+> +/* output control register */
+> +#define OCR_MODE_BIPHASE  0x00
+> +#define OCR_MODE_TEST     0x01
+> +#define OCR_MODE_NORMAL   0x02
+> +#define OCR_MODE_CLOCK    0x03
+> +#define OCR_TX0_INVERT    0x04
+> +#define OCR_TX0_PULLDOWN  0x08
+> +#define OCR_TX0_PULLUP    0x10
+> +#define OCR_TX0_PUSHPULL  0x18
+> +#define OCR_TX1_INVERT    0x20
+> +#define OCR_TX1_PULLDOWN  0x40
+> +#define OCR_TX1_PULLUP    0x80
+> +#define OCR_TX1_PUSHPULL  0xc0
+> +
+> +struct sja1000_platform_data {
+> +	u32 clock;	/* CAN bus oscillator frequency in Hz */
+> +
+> +	u8 ocr;		/* output control register */
+> +	u8 cdr;		/* clock divider register */
+> +};
+> +
+> +#endif	/* !_CAN_PLATFORM_SJA1000_H_ */
+> 
+> 
+
+-- 
+Pengutronix e.K.                           |                             |
+Industrial Linux Solutions                 | http://www.pengutronix.de/  |
+Peiner Str. 6-8, 31137 Hildesheim, Germany | Phone: +49-5121-206917-0    |
+Amtsgericht Hildesheim, HRA 2686           | Fax:   +49-5121-206917-5555 |
