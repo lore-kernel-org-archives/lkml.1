@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbZENWuf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757641AbZENW40@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758978AbZENWuf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:50:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756850AbZENWmd
+	id S1757641AbZENW40 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:56:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756048AbZENWmv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:33 -0400
-Received: from kroah.org ([198.145.64.141]:52414 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:51 -0400
+Received: from kroah.org ([198.145.64.141]:52585 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756250AbZENWmQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:16 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:24 2009
-Message-Id: <20090514223524.208387428@mini.kroah.org>
+	id S1756760AbZENWmc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:32 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:27 2009
+Message-Id: <20090514223527.119426054@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:32:59 -0700
+Date: Thu, 14 May 2009 15:33:16 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,65 +25,48 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Steve French <smfrench@gmail.com>,
-       Jeff Layton <jlayton@redhat.com>, Steve French <sfrench@us.ibm.com>,
-       Suresh Jayaraman <sjayaraman@suse.de>
-Subject: [patch 24/51] cifs: Fix buffer size for tcon->nativeFileSystem field
+       alan@lxorguk.ukuu.org.uk, Dan Williams <dan.j.williams@intel.com>
+Subject: [patch 41/51] dmatest: fix max channels handling
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=cifs-fix-buffer-size-for-tcon-nativefilesystem-field.patch
+Content-Disposition: inline; filename=dmatest-fix-max-channels-handling.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Jeff Layton <jlayton@redhat.com>
+From: Dan Williams <dan.j.williams@intel.com>
 
-Commit f083def68f84b04fe3f97312498911afce79609e refreshed.
+commit c56c81abe7e684bc6203632d807303eb765690dc upstream.
 
-cifs: fix buffer size for tcon->nativeFileSystem field
+The check for reaching max_channels is short circuited by 'continuing'
+after successfully adding a channel.
 
-The buffer for this was resized recently to fix a bug. It's still
-possible however that a malicious server could overflow this field
-by sending characters in it that are >2 bytes in the local charset.
-Double the size of the buffer to account for this possibility.
+[ Impact: make the 'max_channels' module parameter actually have an effect ]
 
-Also get rid of some really strange and seemingly pointless NULL
-termination. It's NULL terminating the string in the source buffer,
-but by the time that happens, we've already copied the string.
-
-Signed-off-by: Jeff Layton <jlayton@redhat.com>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
-Cc: Suresh Jayaraman <sjayaraman@suse.de>
+Reported-by: Dan Carpenter <error27@gmail.com>
+Signed-off-by: Dan Williams <dan.j.williams@intel.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/cifs/connect.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ drivers/dma/dmatest.c |    4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -3667,16 +3667,12 @@ CIFSTCon(unsigned int xid, struct cifsSe
- 			    BCC(smb_buffer_response)) {
- 				kfree(tcon->nativeFileSystem);
- 				tcon->nativeFileSystem =
--				    kzalloc(2*(length + 1), GFP_KERNEL);
-+				    kzalloc((4 * length) + 2, GFP_KERNEL);
- 				if (tcon->nativeFileSystem)
- 					cifs_strfromUCS_le(
- 						tcon->nativeFileSystem,
- 						(__le16 *) bcc_ptr,
- 						length, nls_codepage);
--				bcc_ptr += 2 * length;
--				bcc_ptr[0] = 0;	/* null terminate the string */
--				bcc_ptr[1] = 0;
--				bcc_ptr += 2;
+--- a/drivers/dma/dmatest.c
++++ b/drivers/dma/dmatest.c
+@@ -410,9 +410,7 @@ static int __init dmatest_init(void)
+ 		chan = dma_request_channel(mask, filter, NULL);
+ 		if (chan) {
+ 			err = dmatest_add_channel(chan);
+-			if (err == 0)
+-				continue;
+-			else {
++			if (err) {
+ 				dma_release_channel(chan);
+ 				break; /* add_channel failed, punt */
  			}
- 			/* else do not bother copying these information fields*/
- 		} else {
 
 
