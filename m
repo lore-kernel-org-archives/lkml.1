@@ -1,132 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760111AbZENHxX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbZENHyY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760111AbZENHxX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 03:53:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbZENHxO
+	id S1760829AbZENHyY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 03:54:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755881AbZENHyO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 03:53:14 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:41392 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756810AbZENHxN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 03:53:13 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Subject: Re: [PATCH] Prevent shrinking of active anon lru list in case of no swap space
-Cc: kosaki.motohiro@jp.fujitsu.com, Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Rik van Riel <riel@redhat.com>
-In-Reply-To: <20090514164010.25335493.minchan.kim@barrios-desktop>
-References: <20090514155504.9B66.A69D9226@jp.fujitsu.com> <20090514164010.25335493.minchan.kim@barrios-desktop>
-Message-Id: <20090514164951.9B72.A69D9226@jp.fujitsu.com>
+	Thu, 14 May 2009 03:54:14 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:63776 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754665AbZENHyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 03:54:13 -0400
+Message-ID: <4A0BCDEE.5020708@cn.fujitsu.com>
+Date: Thu, 14 May 2009 15:53:18 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
+Subject: Re: [PATCH 07/18] io-controller: Export disk time used and nr	sectors
+ dipatched through cgroups
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-8-git-send-email-vgoyal@redhat.com> <4A0A32CB.4020609@cn.fujitsu.com> <20090513145127.GB7696@redhat.com>
+In-Reply-To: <20090513145127.GB7696@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 14 May 2009 16:53:12 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Thu, 14 May 2009 16:19:52 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+Vivek Goyal wrote:
+> On Wed, May 13, 2009 at 10:39:07AM +0800, Gui Jianfeng wrote:
+>> Vivek Goyal wrote:
+>> ...
+>>>  
+>>> +/*
+>>> + * traverse through all the io_groups associated with this cgroup and calculate
+>>> + * the aggr disk time received by all the groups on respective disks.
+>>> + */
+>>> +static u64 calculate_aggr_disk_time(struct io_cgroup *iocg)
+>>> +{
+>>> +	struct io_group *iog;
+>>> +	struct hlist_node *n;
+>>> +	u64 disk_time = 0;
+>>> +
+>>> +	rcu_read_lock();
+>>   This function is in slow-path, so no need to call rcu_read_lock(), just need to ensure
+>>   that the caller already holds the iocg->lock.
+>>
 > 
-> > > 
-> > > Now shrink_active_list is called several places.
-> > > But if we don't have a swap space, we can't reclaim anon pages.
-> > > So, we don't need deactivating anon pages in anon lru list.
-> > > 
-> > > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-> > > Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> > > Cc: Johannes Weiner <hannes@cmpxchg.org>
-> > > Cc: Rik van Riel <riel@redhat.com>
-> > 
-> > hm, The analysis seems right. but
-> > 
-> > In general branch should put into non frequency path.
-> > why caller modification as following patch is wrong?
-> 
-> Yes. You're right. Firstly I though that. 
-> But there are a few place where inactve_anon_is_low is called.
-> In addition to it, we always have to call with (nr_swap_pages <= 0) with it. 
-> So alone inactive_anon_is_low is lost function's meaning.
-> 
-> I think it's meaningless. 
-> But We can improve one function wrapper.
-> 
-> /* I can't be remind proper function name. Can you suggest me ? */
-> if (do_we_have_to_shrink_list(zone, &sc))
-> 
-> 
-> int do_we_have_to_shrink_list(...)
-> {
->    if (inactive_anon_is_low(zone, &sc) && (nr_swap_pages <= 0))
->    
-> }
-> 
-> What do you think ?
+> Or can we get rid of requirement of iocg_lock here and just read the io
+> group data under rcu read lock? Actually I am wondering why do we require
+> an iocg_lock here. We are not modifying the rcu protected list. We are
+> just traversing through it and reading the data.
 
-The idea except function-name is good.
-hmm.. sorry. I have no alternative idea.
-
+  Yes, i think removing the iocg->lock from caller(io_cgroup_disk_time_read()) 
+  is a better choice.
 
 > 
-> > 
-> >                         /*
-> >                          * Do some background aging of the anon list, to give
-> >                          * pages a chance to be referenced before reclaiming.
-> >                          */
-> > -                        if (inactive_anon_is_low(zone, &sc))
-> > +                        if (inactive_anon_is_low(zone, &sc) && (nr_swap_pages <= 0))
-> >                                 shrink_active_list(SWAP_CLUSTER_MAX, zone,
-> >                                                         &sc, priority, 0);
-> > 
-> > 
-> > 
-> > 
-> > > ---
-> > >  mm/vmscan.c |    6 ++++++
-> > >  1 files changed, 6 insertions(+), 0 deletions(-)
-> > > 
-> > > diff --git a/mm/vmscan.c b/mm/vmscan.c
-> > > index 2f9d555..e4d71f4 100644
-> > > --- a/mm/vmscan.c
-> > > +++ b/mm/vmscan.c
-> > > @@ -1238,6 +1238,12 @@ static void shrink_active_list(unsigned long nr_pages, struct zone *zone,
-> > >  	enum lru_list lru;
-> > >  	struct zone_reclaim_stat *reclaim_stat = get_reclaim_stat(zone, sc);
-> > >  
-> > > +	/* 
-> > > +	 * we can't shrink anon list in case of no swap space.
-> > > +	 */
-> > > +	if (file == 0 && nr_swap_pages <= 0)
-> > > +		return;
-> > > +
-> > >
-> > >  	lru_add_drain();
-> > >  	spin_lock_irq(&zone->lru_lock);
-> > >  	pgmoved = sc->isolate_pages(nr_pages, &l_hold, &pgscanned, sc->order,
-> > > -- 
-> > > 1.5.4.3
-> > > 
-> > > 
-> > > -- 
-> > > Kinds Regards
-> > > Minchan Kim
-> > 
-> > 
-> > 
+> Thanks
+> Vivek
+> 
+>>> +	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
+>>> +		/*
+>>> +		 * There might be groups which are not functional and
+>>> +		 * waiting to be reclaimed upon cgoup deletion.
+>>> +		 */
+>>> +		if (rcu_dereference(iog->key))
+>>> +			disk_time += iog->entity.total_service;
+>>> +	}
+>>> +	rcu_read_unlock();
+>>> +
+>>> +	return disk_time;
+>>> +}
+>>> +
+>> -- 
+>> Regards
+>> Gui Jianfeng
 > 
 > 
-> -- 
-> Kinds Regards
-> Minchan Kim
 > 
-> --
-> To unsubscribe, send a message with 'unsubscribe linux-mm' in
-> the body to majordomo@kvack.org.  For more info on Linux MM,
-> see: http://www.linux-mm.org/ .
-> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
 
-
+-- 
+Regards
+Gui Jianfeng
 
