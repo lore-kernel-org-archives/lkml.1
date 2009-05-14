@@ -1,96 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756548AbZENUqA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755177AbZENUuF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756548AbZENUqA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 16:46:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbZENUpu
+	id S1755177AbZENUuF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 16:50:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751220AbZENUtx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 16:45:50 -0400
-Received: from e23smtp06.au.ibm.com ([202.81.31.148]:56714 "EHLO
-	e23smtp06.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753603AbZENUpu (ORCPT
+	Thu, 14 May 2009 16:49:53 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:4463 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751203AbZENUtw (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 16:45:50 -0400
-Date: Fri, 15 May 2009 02:15:17 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Alan Stern <stern@rowland.harvard.edu>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Thu, 14 May 2009 16:49:52 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=qQ9gRXBmg8bhWQC160jgGoKFww7T2CSMEdqkEXgMAFynddlYPDRUJlXCLRpYv8jG6
+	A3spCupPkFtx765EOc8aw==
+Date: Thu, 14 May 2009 13:49:46 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+cc: Christoph Lameter <cl@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
-       Roland McGrath <roland@redhat.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>
-Subject: Re: [Patch 00/12] Hardware Breakpoint interfaces
-Message-ID: <20090514204517.GA8079@in.ibm.com>
-Reply-To: prasad@linux.vnet.ibm.com
-References: <20090513161201.GA13911@in.ibm.com> <Pine.LNX.4.44L0.0905141555310.4344-100000@iolanthe.rowland.org> <20090514200829.GE30963@in.ibm.com>
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
+       San Mehat <san@android.com>, Arve Hj?nnev?g <arve@android.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Misleading OOM messages
+In-Reply-To: <1242333519.15391.210.camel@nimitz>
+Message-ID: <alpine.DEB.2.00.0905141346030.28074@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101503070.18804@chino.kir.corp.google.com> <alpine.DEB.1.10.0905121708470.14226@qirst.com> <20090514092909.GG1365@ucw.cz> <alpine.DEB.1.10.0905141546040.1381@qirst.com>
+ <1242333519.15391.210.camel@nimitz>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090514200829.GE30963@in.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 01:38:29AM +0530, K.Prasad wrote:
-> On Thu, May 14, 2009 at 04:02:16PM -0400, Alan Stern wrote:
-> > On Wed, 13 May 2009, K.Prasad wrote:
-> > 
-> > > Hi Alan,
-> > > 	Please find a new set of patches with the following changes.
-> > > I am eager to know if you think that they are ready for submission towards
-> > > upstream acceptance.
-> > 
-> > This is looking pretty good.  Only one thing caught my eye: 
-> > switch_to_thread_hw_breakpoint and switch_to_none_hw_breakpoint do 
-> > nothing but call the corresponding arch-specific routines.  You might 
-> > as well eliminate them and have the callers invoke the arch-specific 
-> > routines instead.
-> > 
-> > Alan Stern
-> >
+On Thu, 14 May 2009, Dave Hansen wrote:
+
+> The problem I have with that is that it also doesn't tell the whole.
+> story.  It's the end symptom when *just* before we OOM, but it doesn't
+> characterize the whole thing very well.  It's like saying the Titanic
+> sunk because "too much water onboard." :)  It's true, but it
+> concentrates a bit too much on the end state.
 > 
-> Sure. I will eliminate the above two functions and also remove the msleep()
-> call in ftrace startup selftest code path.
+> To me, it's a question of how much information we can get out in a line
+> or two on the console.  Is something like this better?
+>         
+>         "Unable to satisfy memory allocation request and not making
+>         progress reclaiming from other sources."
 > 
-> With these two changes I plan to submit the code for -tip acceptance
-> directly.
->
+> We can't exactly go spitting out an entire tutorial in dmesg, but could
+> we stick a short URL in there?  Like http://linux-mm.org/OOM perhaps?
+> 
 
-There is another change that I wanted to make in arch_store_info()
-[which I realised while responding to comments on another list]. I think
-it will be much safer to add a check to see if symbol_name is passed
-when user-space breakpoints are requested and return -EINVAL if done so.
-
-This will help avoid any confusion at the user, who can assume that
-symbol names can be resolved, and specifying address is not required.
-
-Here's how the modified arch_store_info() would look like:
-
-/*
- * Store a breakpoint's encoded address, length, and type.
- */
-static int arch_store_info(struct hw_breakpoint *bp, struct task_struct *tsk)
-{
-	/*
-	 * User-space requests will always have the address field populated.
-	 * Symbol names from user-space are rejected
-	 */
-	if (tsk && bp->info.name)
-		return -EINVAL;
-	/*
-	 * For kernel-addresses, either the address or symbol name can be
-	 * specified.
-	 */
-	if (bp->info.name)
-		bp->info.address = (unsigned long)
-					kallsyms_lookup_name(bp->info.name);
-	if (bp->info.address)
-		return 0;
-	return -EINVAL;
-}
-
-Thanks,
-K.Prasad
- 
+I think switching all the oom killer messages to be "no available memory" 
+as it is in the MPOL_BIND case would be the best alternative.  We 
+currently use "out of memory" even for cpusets, for example, when it 
+happens because it cannot accommodate any more hardwall allocations while 
+there may be an abundance of memory elsewhere that it cannot access.  I 
+also think "no available memory" makes more sense than "out of memory" 
+when describing situations where we're at or below the minimum watermarks 
+for all allowable zones.  Either that or "no allowable memory".
