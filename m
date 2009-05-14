@@ -1,77 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762276AbZENFL0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754505AbZENFbc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762276AbZENFL0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 01:11:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbZENFLP
+	id S1754505AbZENFbc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 01:31:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751610AbZENFbU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 01:11:15 -0400
-Received: from chilli.pcug.org.au ([203.10.76.44]:53054 "EHLO smtps.tip.net.au"
+	Thu, 14 May 2009 01:31:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:43879 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752879AbZENFLP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 01:11:15 -0400
-Date: Thu, 14 May 2009 15:11:07 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Remis Lima Baima <remis.developer@googlemail.com>,
-       Sam Ravnborg <sam@ravnborg.org>
-Subject: Re: [PATCH 01/15] asm-generic: rename termios.h, signal.h and
- mman.h
-Message-Id: <20090514151107.5eae120e.sfr@canb.auug.org.au>
-In-Reply-To: <1242255398-23779-2-git-send-email-arnd@arndb.de>
-References: <1242255398-23779-1-git-send-email-arnd@arndb.de>
-	<1242255398-23779-2-git-send-email-arnd@arndb.de>
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; i486-pc-linux-gnu)
+	id S1751058AbZENFbU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 01:31:20 -0400
+Subject: [PATCH -tip] x86: kvm/x86.c use MSR names in place of address
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Huang Ying <ying.huang@intel.com>, Ingo Molnar <mingo@elte.hu>,
+       x86 maintainers <x86@kernel.org>
+Cc: Avi Kivity <avi@redhat.com>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <1242032889.8213.32.camel@yhuang-dev.sh.intel.com>
+References: <1242031695.8213.17.camel@yhuang-dev.sh.intel.com>
+	 <1242032701.3114.4.camel@localhost.localdomain>
+	 <1242032889.8213.32.camel@yhuang-dev.sh.intel.com>
+Content-Type: text/plain
+Date: Thu, 14 May 2009 11:00:10 +0530
+Message-Id: <1242279010.4574.6.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
- micalg="PGP-SHA1";
- boundary="Signature=_Thu__14_May_2009_15_11_07_+1000_q4TDPuzzw9cHuhuM"
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Signature=_Thu__14_May_2009_15_11_07_+1000_q4TDPuzzw9cHuhuM
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Mon, 2009-05-11 at 17:08 +0800, Huang Ying wrote:
+> On Mon, 2009-05-11 at 17:05 +0800, Jaswinder Singh Rajput wrote:
+> > On Mon, 2009-05-11 at 16:48 +0800, Huang Ying wrote:
+> > > +int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
+> > > +{
+> > > +	u64 data;
+> > > +
+> > > +	switch (msr) {
+> > > +	case 0xc0010010: /* SYSCFG */
+> > > +	case 0xc0010015: /* HWCR */
+> > 
+> > You can replace this with :
+> > 
+> > +	case MSR_K8_SYSCFG:
+> > +	case MSR_K8_HWCR:
+> > 
+> 
+> I do not change this actually. So I think it should be changed in
+> another patch.
+> 
 
-Hi Arnd,
+Here is the patch:
 
-On Wed, 13 May 2009 22:56:24 +0000 Arnd Bergmann <arnd@arndb.de> wrote:
->
-> --- a/include/asm-generic/Kbuild
-> +++ b/include/asm-generic/Kbuild
-> @@ -2,9 +2,9 @@ header-y +=3D errno-base.h
->  header-y +=3D errno.h
->  header-y +=3D fcntl.h
->  header-y +=3D ioctl.h
-> -header-y +=3D mman.h
-> +header-y +=3D mman-common.h
->  header-y +=3D poll.h
-> -header-y +=3D signal.h
-> +header-y +=3D signal-defs.h
->  header-y +=3D statfs.h
+[PATCH -tip] x86: kvm/x86.c use MSR names in place of address
 
-I think that this change will prevent asm/mman.h and asm/signal.h from
-being exported from the arch include/asm directories.
-include/asm-generic/Kbuild is included by the arch/*/include/asm/Kbuild
-files.
+Replace 0xc0010010 with MSR_K8_SYSCFG and 0xc0010015 with MSR_K7_HWCR.
 
-Maybe Sam (cc'd) could comment.
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/kvm/x86.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
 
---Signature=_Thu__14_May_2009_15_11_07_+1000_q4TDPuzzw9cHuhuM
-Content-Type: application/pgp-signature
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 7c1ce5a..8e4a0ef 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -866,8 +866,6 @@ int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
+ 	u64 data;
+ 
+ 	switch (msr) {
+-	case 0xc0010010: /* SYSCFG */
+-	case 0xc0010015: /* HWCR */
+ 	case MSR_IA32_PLATFORM_ID:
+ 	case MSR_IA32_P5_MC_ADDR:
+ 	case MSR_IA32_P5_MC_TYPE:
+@@ -888,6 +886,8 @@ int kvm_get_msr_common(struct kvm_vcpu *vcpu, u32 msr, u64 *pdata)
+ 	case MSR_IA32_LASTBRANCHTOIP:
+ 	case MSR_IA32_LASTINTFROMIP:
+ 	case MSR_IA32_LASTINTTOIP:
++	case MSR_K8_SYSCFG:
++	case MSR_K7_HWCR:
+ 	case MSR_VM_HSAVE_PA:
+ 		data = 0;
+ 		break;
+-- 
+1.6.0.6
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
 
-iEYEARECAAYFAkoLp+sACgkQjjKRsyhoI8ybsQCeOdg6pAXxNKHa3s3MFsuPKHgQ
-ScwAoKFwP0MPdVV+4vw6IDd4Dw/dGr1c
-=PYX6
------END PGP SIGNATURE-----
 
---Signature=_Thu__14_May_2009_15_11_07_+1000_q4TDPuzzw9cHuhuM--
