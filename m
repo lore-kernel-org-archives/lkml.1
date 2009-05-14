@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761210AbZENW5e@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760549AbZENWsl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761210AbZENW5e (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:57:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757166AbZENWm4
+	id S1760549AbZENWsl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:48:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756687AbZENWm0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:56 -0400
-Received: from kroah.org ([198.145.64.141]:52594 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:26 -0400
+Received: from kroah.org ([198.145.64.141]:51610 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756783AbZENWm3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:29 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:26 2009
-Message-Id: <20090514223526.591104158@mini.kroah.org>
+	id S1756326AbZENWmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:10 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:23 2009
+Message-Id: <20090514223523.199696101@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:33:13 -0700
+Date: Thu, 14 May 2009 15:32:53 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       linux-security-module@vger.kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,10 +26,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: [patch 38/51] nfsd4: check for negative dentry before use in nfsv4 readdir
+       alan@lxorguk.ukuu.org.uk, Paul Moore <paul.moore@hp.com>
+Subject: [patch 18/51] netlabel: Add CIPSO {set, del}attr request_sock functions
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=nfsd4-check-for-negative-dentry-before-use-in-nfsv4-readdir.patch
+Content-Disposition: inline; filename=netlabel-add-cipso-set-del-attr-request_sock-functions.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,76 +39,207 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: J. Bruce Fields <bfields@citi.umich.edu>
+From: Paul Moore <paul.moore@hp.com>
 
-commit b2c0cea6b1cb210e962f07047df602875564069e upstream.
+[NOTE: based on 389fb800ac8be2832efedd19978a2b8ced37eb61]
 
-After 2f9092e1020246168b1309b35e085ecd7ff9ff72 "Fix i_mutex vs.  readdir
-handling in nfsd" (and 14f7dd63 "Copy XFS readdir hack into nfsd code"),
-an entry may be removed between the first mutex_unlock and the second
-mutex_lock. In this case, lookup_one_len() will return a negative
-dentry.  Check for this case to avoid a NULL dereference.
+Add the cipso_v4_req_setattr() and cipso_v4_req_delattr() functions to set and
+delete the CIPSO security attributes on a request_sock used during a incoming
+connection request.
 
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
-Reviewed-by: J. R. Okajima <hooanon05@yahoo.co.jp>
+Signed-off-by: Paul Moore <paul.moore@hp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- fs/nfsd/nfs4xdr.c |   16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
 
---- a/fs/nfsd/nfs4xdr.c
-+++ b/fs/nfsd/nfs4xdr.c
-@@ -1843,6 +1843,15 @@ nfsd4_encode_dirent_fattr(struct nfsd4_r
- 	dentry = lookup_one_len(name, cd->rd_fhp->fh_dentry, namlen);
- 	if (IS_ERR(dentry))
- 		return nfserrno(PTR_ERR(dentry));
-+	if (!dentry->d_inode) {
-+		/*
-+		 * nfsd_buffered_readdir drops the i_mutex between
-+		 * readdir and calling this callback, leaving a window
-+		 * where this directory entry could have gone away.
-+		 */
-+		dput(dentry);
-+		return nfserr_noent;
+ include/net/cipso_ipv4.h |   17 ++++++
+ net/ipv4/cipso_ipv4.c    |  130 +++++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 147 insertions(+)
+
+--- a/include/net/cipso_ipv4.h
++++ b/include/net/cipso_ipv4.h
+@@ -40,6 +40,7 @@
+ #include <linux/net.h>
+ #include <linux/skbuff.h>
+ #include <net/netlabel.h>
++#include <net/request_sock.h>
+ #include <asm/atomic.h>
+ 
+ /* known doi values */
+@@ -215,6 +216,10 @@ int cipso_v4_sock_setattr(struct sock *s
+ 			  const struct netlbl_lsm_secattr *secattr);
+ void cipso_v4_sock_delattr(struct sock *sk);
+ int cipso_v4_sock_getattr(struct sock *sk, struct netlbl_lsm_secattr *secattr);
++int cipso_v4_req_setattr(struct request_sock *req,
++			 const struct cipso_v4_doi *doi_def,
++			 const struct netlbl_lsm_secattr *secattr);
++void cipso_v4_req_delattr(struct request_sock *req);
+ int cipso_v4_skbuff_setattr(struct sk_buff *skb,
+ 			    const struct cipso_v4_doi *doi_def,
+ 			    const struct netlbl_lsm_secattr *secattr);
+@@ -247,6 +252,18 @@ static inline int cipso_v4_sock_getattr(
+ 	return -ENOSYS;
+ }
+ 
++static inline int cipso_v4_req_setattr(struct request_sock *req,
++				       const struct cipso_v4_doi *doi_def,
++				       const struct netlbl_lsm_secattr *secattr)
++{
++	return -ENOSYS;
++}
++
++static inline void cipso_v4_req_delattr(struct request_sock *req)
++{
++	return;
++}
++
+ static inline int cipso_v4_skbuff_setattr(struct sk_buff *skb,
+ 				      const struct cipso_v4_doi *doi_def,
+ 				      const struct netlbl_lsm_secattr *secattr)
+--- a/net/ipv4/cipso_ipv4.c
++++ b/net/ipv4/cipso_ipv4.c
+@@ -1942,6 +1942,72 @@ socket_setattr_failure:
+ }
+ 
+ /**
++ * cipso_v4_req_setattr - Add a CIPSO option to a connection request socket
++ * @req: the connection request socket
++ * @doi_def: the CIPSO DOI to use
++ * @secattr: the specific security attributes of the socket
++ *
++ * Description:
++ * Set the CIPSO option on the given socket using the DOI definition and
++ * security attributes passed to the function.  Returns zero on success and
++ * negative values on failure.
++ *
++ */
++int cipso_v4_req_setattr(struct request_sock *req,
++			 const struct cipso_v4_doi *doi_def,
++			 const struct netlbl_lsm_secattr *secattr)
++{
++	int ret_val = -EPERM;
++	unsigned char *buf = NULL;
++	u32 buf_len;
++	u32 opt_len;
++	struct ip_options *opt = NULL;
++	struct inet_request_sock *req_inet;
++
++	/* We allocate the maximum CIPSO option size here so we are probably
++	 * being a little wasteful, but it makes our life _much_ easier later
++	 * on and after all we are only talking about 40 bytes. */
++	buf_len = CIPSO_V4_OPT_LEN_MAX;
++	buf = kmalloc(buf_len, GFP_ATOMIC);
++	if (buf == NULL) {
++		ret_val = -ENOMEM;
++		goto req_setattr_failure;
 +	}
++
++	ret_val = cipso_v4_genopt(buf, buf_len, doi_def, secattr);
++	if (ret_val < 0)
++		goto req_setattr_failure;
++	buf_len = ret_val;
++
++	/* We can't use ip_options_get() directly because it makes a call to
++	 * ip_options_get_alloc() which allocates memory with GFP_KERNEL and
++	 * we won't always have CAP_NET_RAW even though we _always_ want to
++	 * set the IPOPT_CIPSO option. */
++	opt_len = (buf_len + 3) & ~3;
++	opt = kzalloc(sizeof(*opt) + opt_len, GFP_ATOMIC);
++	if (opt == NULL) {
++		ret_val = -ENOMEM;
++		goto req_setattr_failure;
++	}
++	memcpy(opt->__data, buf, buf_len);
++	opt->optlen = opt_len;
++	opt->cipso = sizeof(struct iphdr);
++	kfree(buf);
++	buf = NULL;
++
++	req_inet = inet_rsk(req);
++	opt = xchg(&req_inet->opt, opt);
++	kfree(opt);
++
++	return 0;
++
++req_setattr_failure:
++	kfree(buf);
++	kfree(opt);
++	return ret_val;
++}
++
++/**
+  * cipso_v4_sock_delattr - Delete the CIPSO option from a socket
+  * @sk: the socket
+  *
+@@ -2016,6 +2082,70 @@ void cipso_v4_sock_delattr(struct sock *
+ }
  
- 	exp_get(exp);
- 	/*
-@@ -1905,6 +1914,7 @@ nfsd4_encode_dirent(void *ccdv, const ch
- 	struct nfsd4_readdir *cd = container_of(ccd, struct nfsd4_readdir, common);
- 	int buflen;
- 	__be32 *p = cd->buffer;
-+	__be32 *cookiep;
- 	__be32 nfserr = nfserr_toosmall;
- 
- 	/* In nfsv4, "." and ".." never make it onto the wire.. */
-@@ -1921,7 +1931,7 @@ nfsd4_encode_dirent(void *ccdv, const ch
- 		goto fail;
- 
- 	*p++ = xdr_one;                             /* mark entry present */
--	cd->offset = p;                             /* remember pointer */
-+	cookiep = p;
- 	p = xdr_encode_hyper(p, NFS_OFFSET_MAX);    /* offset of next entry */
- 	p = xdr_encode_array(p, name, namlen);      /* name length & name */
- 
-@@ -1935,6 +1945,8 @@ nfsd4_encode_dirent(void *ccdv, const ch
- 		goto fail;
- 	case nfserr_dropit:
- 		goto fail;
-+	case nfserr_noent:
-+		goto skip_entry;
- 	default:
- 		/*
- 		 * If the client requested the RDATTR_ERROR attribute,
-@@ -1953,6 +1965,8 @@ nfsd4_encode_dirent(void *ccdv, const ch
- 	}
- 	cd->buflen -= (p - cd->buffer);
- 	cd->buffer = p;
-+	cd->offset = cookiep;
-+skip_entry:
- 	cd->common.err = nfs_ok;
- 	return 0;
- fail:
+ /**
++ * cipso_v4_req_delattr - Delete the CIPSO option from a request socket
++ * @reg: the request socket
++ *
++ * Description:
++ * Removes the CIPSO option from a request socket, if present.
++ *
++ */
++void cipso_v4_req_delattr(struct request_sock *req)
++{
++	struct ip_options *opt;
++	struct inet_request_sock *req_inet;
++
++	req_inet = inet_rsk(req);
++	opt = req_inet->opt;
++	if (opt == NULL || opt->cipso == 0)
++		return;
++
++	if (opt->srr || opt->rr || opt->ts || opt->router_alert) {
++		u8 cipso_len;
++		u8 cipso_off;
++		unsigned char *cipso_ptr;
++		int iter;
++		int optlen_new;
++
++		cipso_off = opt->cipso - sizeof(struct iphdr);
++		cipso_ptr = &opt->__data[cipso_off];
++		cipso_len = cipso_ptr[1];
++
++		if (opt->srr > opt->cipso)
++			opt->srr -= cipso_len;
++		if (opt->rr > opt->cipso)
++			opt->rr -= cipso_len;
++		if (opt->ts > opt->cipso)
++			opt->ts -= cipso_len;
++		if (opt->router_alert > opt->cipso)
++			opt->router_alert -= cipso_len;
++		opt->cipso = 0;
++
++		memmove(cipso_ptr, cipso_ptr + cipso_len,
++			opt->optlen - cipso_off - cipso_len);
++
++		/* determining the new total option length is tricky because of
++		 * the padding necessary, the only thing i can think to do at
++		 * this point is walk the options one-by-one, skipping the
++		 * padding at the end to determine the actual option size and
++		 * from there we can determine the new total option length */
++		iter = 0;
++		optlen_new = 0;
++		while (iter < opt->optlen)
++			if (opt->__data[iter] != IPOPT_NOP) {
++				iter += opt->__data[iter + 1];
++				optlen_new = iter;
++			} else
++				iter++;
++		opt->optlen = (optlen_new + 3) & ~3;
++	} else {
++		/* only the cipso option was present on the socket so we can
++		 * remove the entire option struct */
++		req_inet->opt = NULL;
++		kfree(opt);
++	}
++}
++
++/**
+  * cipso_v4_getattr - Helper function for the cipso_v4_*_getattr functions
+  * @cipso: the CIPSO v4 option
+  * @secattr: the security attributes
 
 
