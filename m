@@ -1,39 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755757AbZENQbx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbZENQfK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755757AbZENQbx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 12:31:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752137AbZENQbo
+	id S1757418AbZENQfK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 12:35:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751101AbZENQe5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 12:31:44 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:51183 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751909AbZENQbn (ORCPT
+	Thu, 14 May 2009 12:34:57 -0400
+Received: from ocean.emcraft.com ([213.221.7.182]:51115 "EHLO
+	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751486AbZENQe5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 12:31:43 -0400
-Date: Thu, 14 May 2009 09:30:50 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: MinChan Kim <minchan.kim@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       kosaki.motohiro@jp.fujitsu.com, hannes@cmpxchg.org, riel@redhat.com
-Subject: Re: [PATCH] mmtom: Prevent shrinking of active anon lru list in
- case of no swap space V3
-Message-Id: <20090514093050.43472421.akpm@linux-foundation.org>
-In-Reply-To: <20090514231555.f52c81eb.minchan.kim@gmail.com>
-References: <20090514231555.f52c81eb.minchan.kim@gmail.com>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 14 May 2009 12:34:57 -0400
+X-Greylist: delayed 3126 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 May 2009 12:34:57 EDT
+Message-ID: <4A0C3BFB.1010305@emcraft.com>
+Date: Thu, 14 May 2009 19:42:51 +0400
+From: Sergei Poselenov <sposelenov@emcraft.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+Subject: 'make headers_check' failed to install headers to arbitrary location
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 May 2009 23:15:55 +0900
-MinChan Kim <minchan.kim@gmail.com> wrote:
+Hello,
 
-> Now shrink_zone can deactivate active anon pages even if we don't have a swap device. 
-> Many embedded products don't have a swap device. So the deactivation of anon pages is unnecessary. 
+I'm trying to install kernel headers to build a cross-toolchain, but got
+the following:
 
-Does shrink_list() need to scan the anon LRUs at all if there's no swap
-online?
+make ARCH=arm 
+INSTALL_HDR_PATH=/work/psl/eldk-builds/arm-2009-04-21/work/var/tmp/crosstool-0.43-3-root/usr/crosstool/gcc-4.2.2-glibc-20070515T2025-eldk/arm-linux-gnueabi/arm-linux-gnueabi/ 
+headers_check
+...
+   CHECK   include/linux/raid (2 files)
+   CHECK   include/linux/spi (1 files)
+   CHECK   include/linux/sunrpc (1 files)
+   CHECK   include/linux/tc_act (6 files)
+   CHECK   include/linux/tc_ematch (4 files)
+   CHECK   include/linux/usb (8 files)
+make[2]: execvp: /bin/sh: Argument list too long
+make[2]: *** 
+[/work/psl/eldk-builds/arm-2009-04-21/work/var/tmp/crosstool-0.43-3-root/usr/crosstool/gcc-4.2.2-glibc-20070515T2025-eldk/arm-linux-gnueabi/arm-linux-gnueabi//include/linux/.check] 
+Error 127
+make[1]: *** [linux] Error 2
+make: *** [headers_check] Error 2
+->
 
+
+The kernel version is 2.6.28
+
+However, this works fine for 2.6.24.2
+
+Running make with '-n', I've found the problem is that the filelist 
+passed as argument to scripts/headers_check.pl apparently is too big.
+
+The error depends also on a bash version, it failed on 2.05a, but passed
+on 3.2.39.  Unfortunately, bash (or the hole host system) upgrade is not
+an option. Also, I'm sure I could find a path length big enough to 
+reproduce the error on a modern bash.
+
+What would you suggest to resolve the problem?
+
+Thanks for any help.
+
+Regards,
+Sergei
