@@ -1,20 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762303AbZENW6w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760587AbZENWto@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762303AbZENW6w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:58:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757087AbZENWnA
+	id S1760587AbZENWto (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:49:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756841AbZENWmc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:43:00 -0400
-Received: from kroah.org ([198.145.64.141]:52752 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:32 -0400
+Received: from kroah.org ([198.145.64.141]:52402 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756892AbZENWmk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:40 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:28 2009
-Message-Id: <20090514223528.358729501@mini.kroah.org>
+	id S1756355AbZENWmP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:15 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:24 2009
+Message-Id: <20090514223524.056116818@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:33:24 -0700
+Date: Thu, 14 May 2009 15:32:58 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org,
+       linux-security-module@vger.kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -25,11 +26,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 49/51] ocfs2: fix i_mutex locking in ocfs2_splice_to_file()
+       alan@lxorguk.ukuu.org.uk, Paul Moore <paul.moore@hp.com>
+Subject: [patch 23/51] smack: Set the proper NetLabel security attributes for connection requests
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=ocfs2-fix-i_mutex-locking-in-ocfs2_splice_to_file.patch
+Content-Disposition: inline; filename=smack-set-the-proper-netlabel-security-attributes-for-connection-requests.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,179 +39,254 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Miklos Szeredi <miklos@szeredi.hu>
+From: Paul Moore <paul.moore@hp.com>
 
-commit 328eaaba4e41a04c1dc4679d65bea3fee4349d86 upstream.
+[NOTE: based on 07feee8f812f7327a46186f7604df312c8c81962]
 
-Rearrange locking of i_mutex on destination and call to
-ocfs2_rw_lock() so locks are only held while buffers are copied with
-the pipe_to_file() actor, and not while waiting for more data on the
-pipe.
+This patch ensures the correct labeling of new network connection requests
+using Smack and NetLabel.
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Paul Moore <paul.moore@hp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
 ---
- fs/ocfs2/file.c        |   96 ++++++++++++++++++++++++++++++++++++++-----------
- fs/splice.c            |    5 +-
- include/linux/splice.h |    2 +
- 3 files changed, 80 insertions(+), 23 deletions(-)
 
---- a/fs/ocfs2/file.c
-+++ b/fs/ocfs2/file.c
-@@ -1912,6 +1912,22 @@ out_sems:
- 	return written ? written : ret;
+ security/smack/smack.h     |    1 
+ security/smack/smack_lsm.c |  130 +++++++++++++++++++++++++--------------------
+ 2 files changed, 75 insertions(+), 56 deletions(-)
+
+--- a/security/smack/smack.h
++++ b/security/smack/smack.h
+@@ -40,7 +40,6 @@ struct superblock_smack {
+ struct socket_smack {
+ 	char		*smk_out;			/* outbound label */
+ 	char		*smk_in;			/* inbound label */
+-	int		smk_labeled;			/* label scheme */
+ 	char		smk_packet[SMK_LABELLEN];	/* TCP peer label */
+ };
+ 
+--- a/security/smack/smack_lsm.c
++++ b/security/smack/smack_lsm.c
+@@ -7,6 +7,8 @@
+  *	Casey Schaufler <casey@schaufler-ca.com>
+  *
+  *  Copyright (C) 2007 Casey Schaufler <casey@schaufler-ca.com>
++ *  Copyright (C) 2009 Hewlett-Packard Development Company, L.P.
++ *                Paul Moore <paul.moore@hp.com>
+  *
+  *	This program is free software; you can redistribute it and/or modify
+  *	it under the terms of the GNU General Public License version 2,
+@@ -20,6 +22,7 @@
+ #include <linux/ext2_fs.h>
+ #include <linux/kd.h>
+ #include <asm/ioctls.h>
++#include <linux/ip.h>
+ #include <linux/tcp.h>
+ #include <linux/udp.h>
+ #include <linux/mutex.h>
+@@ -1279,7 +1282,6 @@ static int smack_sk_alloc_security(struc
+ 
+ 	ssp->smk_in = csp;
+ 	ssp->smk_out = csp;
+-	ssp->smk_labeled = SMACK_CIPSO_SOCKET;
+ 	ssp->smk_packet[0] = '\0';
+ 
+ 	sk->sk_security = ssp;
+@@ -1397,16 +1399,6 @@ static int smack_netlabel(struct sock *s
+ 
+ 	bh_unlock_sock(sk);
+ 	local_bh_enable();
+-	/*
+-	 * Remember the label scheme used so that it is not
+-	 * necessary to do the netlabel setting if it has not
+-	 * changed the next time through.
+-	 *
+-	 * The -EDESTADDRREQ case is an indication that there's
+-	 * a single level host involved.
+-	 */
+-	if (rc == 0)
+-		ssp->smk_labeled = labeled;
+ 
+ 	return rc;
+ }
+@@ -1551,19 +1543,14 @@ static int smack_socket_connect(struct s
+ 		return -EINVAL;
+ 
+ 	hostsp = smack_host_label((struct sockaddr_in *)sap);
+-	if (hostsp == NULL) {
+-		if (ssp->smk_labeled != SMACK_CIPSO_SOCKET)
+-			return smack_netlabel(sock->sk, SMACK_CIPSO_SOCKET);
+-		return 0;
+-	}
++	if (hostsp == NULL)
++		return smack_netlabel(sock->sk, SMACK_CIPSO_SOCKET);
+ 
+ 	rc = smk_access(ssp->smk_out, hostsp, MAY_WRITE);
+ 	if (rc != 0)
+ 		return rc;
+ 
+-	if (ssp->smk_labeled != SMACK_UNLABELED_SOCKET)
+-		return smack_netlabel(sock->sk, SMACK_UNLABELED_SOCKET);
+-	return 0;
++	return smack_netlabel(sock->sk, SMACK_UNLABELED_SOCKET);
  }
  
-+static int ocfs2_splice_to_file(struct pipe_inode_info *pipe,
-+				struct file *out,
-+				struct splice_desc *sd)
-+{
-+	int ret;
+ /**
+@@ -2275,21 +2262,14 @@ static int smack_socket_sendmsg(struct s
+ 		return 0;
+ 
+ 	hostsp = smack_host_label(sip);
+-	if (hostsp == NULL) {
+-		if (ssp->smk_labeled != SMACK_CIPSO_SOCKET)
+-			return smack_netlabel(sock->sk, SMACK_CIPSO_SOCKET);
+-		return 0;
+-	}
++	if (hostsp == NULL)
++		return smack_netlabel(sock->sk, SMACK_CIPSO_SOCKET);
+ 
+ 	rc = smk_access(ssp->smk_out, hostsp, MAY_WRITE);
+ 	if (rc != 0)
+ 		return rc;
+ 
+-	if (ssp->smk_labeled != SMACK_UNLABELED_SOCKET)
+-		return smack_netlabel(sock->sk, SMACK_UNLABELED_SOCKET);
+-
+-	return 0;
+-
++	return smack_netlabel(sock->sk, SMACK_UNLABELED_SOCKET);
+ }
+ 
+ 
+@@ -2504,22 +2484,14 @@ static int smack_socket_getpeersec_dgram
+ static void smack_sock_graft(struct sock *sk, struct socket *parent)
+ {
+ 	struct socket_smack *ssp;
+-	int rc;
+ 
+-	if (sk == NULL)
+-		return;
+-
+-	if (sk->sk_family != PF_INET && sk->sk_family != PF_INET6)
++	if (sk == NULL ||
++	    (sk->sk_family != PF_INET && sk->sk_family != PF_INET6))
+ 		return;
+ 
+ 	ssp = sk->sk_security;
+ 	ssp->smk_in = ssp->smk_out = current_security();
+-	ssp->smk_packet[0] = '\0';
+-
+-	rc = smack_netlabel(sk, SMACK_CIPSO_SOCKET);
+-	if (rc != 0)
+-		printk(KERN_WARNING "Smack: \"%s\" netlbl error %d.\n",
+-		       __func__, -rc);
++	/* cssp->smk_packet is already set in smack_inet_csk_clone() */
+ }
+ 
+ /**
+@@ -2534,35 +2506,82 @@ static void smack_sock_graft(struct sock
+ static int smack_inet_conn_request(struct sock *sk, struct sk_buff *skb,
+ 				   struct request_sock *req)
+ {
+-	struct netlbl_lsm_secattr skb_secattr;
++	u16 family = sk->sk_family;
+ 	struct socket_smack *ssp = sk->sk_security;
++	struct netlbl_lsm_secattr secattr;
++	struct sockaddr_in addr;
++	struct iphdr *hdr;
+ 	char smack[SMK_LABELLEN];
+ 	int rc;
+ 
+-	if (skb == NULL)
+-		return -EACCES;
++	/* handle mapped IPv4 packets arriving via IPv6 sockets */
++	if (family == PF_INET6 && skb->protocol == htons(ETH_P_IP))
++		family = PF_INET;
+ 
+-	netlbl_secattr_init(&skb_secattr);
+-	rc = netlbl_skbuff_getattr(skb, sk->sk_family, &skb_secattr);
++	netlbl_secattr_init(&secattr);
++	rc = netlbl_skbuff_getattr(skb, family, &secattr);
+ 	if (rc == 0)
+-		smack_from_secattr(&skb_secattr, smack);
++		smack_from_secattr(&secattr, smack);
+ 	else
+ 		strncpy(smack, smack_known_huh.smk_known, SMK_MAXLEN);
+-	netlbl_secattr_destroy(&skb_secattr);
++	netlbl_secattr_destroy(&secattr);
 +
-+	ret = ocfs2_prepare_inode_for_write(out->f_path.dentry,	&sd->pos,
-+					    sd->total_len, 0, NULL);
-+	if (ret < 0) {
-+		mlog_errno(ret);
-+		return ret;
+ 	/*
+-	 * Receiving a packet requires that the other end
+-	 * be able to write here. Read access is not required.
+-	 *
+-	 * If the request is successful save the peer's label
+-	 * so that SO_PEERCRED can report it.
+-	 */
++	* Receiving a packet requires that the other end be able to write
++	* here. Read access is not required.
++	*/
+ 	rc = smk_access(smack, ssp->smk_in, MAY_WRITE);
+-	if (rc == 0)
+-		strncpy(ssp->smk_packet, smack, SMK_MAXLEN);
++	if (rc != 0)
++		return rc;
++
++	/*
++	* Save the peer's label in the request_sock so we can later setup
++	* smk_packet in the child socket so that SO_PEERCRED can report it.
++	*/
++	req->peer_secid = smack_to_secid(smack);
++
++	/*
++	* We need to decide if we want to label the incoming connection here
++	* if we do we only need to label the request_sock and the stack will
++	* propogate the wire-label to the sock when it is created.
++	*/
++	hdr = ip_hdr(skb);
++	addr.sin_addr.s_addr = hdr->saddr;
++	rcu_read_lock();
++	if (smack_host_label(&addr) == NULL) {
++		rcu_read_unlock();
++		netlbl_secattr_init(&secattr);
++		smack_to_secattr(smack, &secattr);
++		rc = netlbl_req_setattr(req, &secattr);
++		netlbl_secattr_destroy(&secattr);
++	} else {
++		rcu_read_unlock();
++		netlbl_req_delattr(req);
 +	}
+ 
+ 	return rc;
+ }
+ 
++/**
++* smack_inet_csk_clone - Copy the connection information to the new socket
++* @sk: the new socket
++* @req: the connection's request_sock
++*
++* Transfer the connection's peer label to the newly created socket.
++*/
++static void smack_inet_csk_clone(struct sock *sk,
++			         const struct request_sock *req)
++{
++	struct socket_smack *ssp = sk->sk_security;
++	char *smack;
 +
-+	return splice_from_pipe_feed(pipe, sd, pipe_to_file);
++	if (req->peer_secid != 0) {
++		smack = smack_from_secid(req->peer_secid);
++		strncpy(ssp->smk_packet, smack, SMK_MAXLEN);
++	} else
++		ssp->smk_packet[0] = '\0';
 +}
 +
- static ssize_t ocfs2_file_splice_write(struct pipe_inode_info *pipe,
- 				       struct file *out,
- 				       loff_t *ppos,
-@@ -1919,38 +1935,76 @@ static ssize_t ocfs2_file_splice_write(s
- 				       unsigned int flags)
- {
- 	int ret;
--	struct inode *inode = out->f_path.dentry->d_inode;
-+	struct address_space *mapping = out->f_mapping;
-+	struct inode *inode = mapping->host;
-+	struct splice_desc sd = {
-+		.total_len = len,
-+		.flags = flags,
-+		.pos = *ppos,
-+		.u.file = out,
-+	};
+ /*
+  * Key management security hooks
+  *
+@@ -2915,6 +2934,7 @@ struct security_operations smack_ops = {
+ 	.sk_free_security = 		smack_sk_free_security,
+ 	.sock_graft = 			smack_sock_graft,
+ 	.inet_conn_request = 		smack_inet_conn_request,
++	.inet_csk_clone =		smack_inet_csk_clone,
  
- 	mlog_entry("(0x%p, 0x%p, %u, '%.*s')\n", out, pipe,
- 		   (unsigned int)len,
- 		   out->f_path.dentry->d_name.len,
- 		   out->f_path.dentry->d_name.name);
- 
--	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
--
--	ret = ocfs2_rw_lock(inode, 1);
--	if (ret < 0) {
--		mlog_errno(ret);
--		goto out;
--	}
-+	if (pipe->inode)
-+		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_PARENT);
- 
--	ret = ocfs2_prepare_inode_for_write(out->f_path.dentry, ppos, len, 0,
--					    NULL);
--	if (ret < 0) {
--		mlog_errno(ret);
--		goto out_unlock;
--	}
-+	splice_from_pipe_begin(&sd);
-+	do {
-+		ret = splice_from_pipe_next(pipe, &sd);
-+		if (ret <= 0)
-+			break;
-+
-+		mutex_lock_nested(&inode->i_mutex, I_MUTEX_CHILD);
-+		ret = ocfs2_rw_lock(inode, 1);
-+		if (ret < 0)
-+			mlog_errno(ret);
-+		else {
-+			ret = ocfs2_splice_to_file(pipe, out, &sd);
-+			ocfs2_rw_unlock(inode, 1);
-+		}
-+		mutex_unlock(&inode->i_mutex);
-+	} while (ret > 0);
-+	splice_from_pipe_end(pipe, &sd);
- 
- 	if (pipe->inode)
--		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
--	ret = generic_file_splice_write_nolock(pipe, out, ppos, len, flags);
--	if (pipe->inode)
- 		mutex_unlock(&pipe->inode->i_mutex);
- 
--out_unlock:
--	ocfs2_rw_unlock(inode, 1);
--out:
--	mutex_unlock(&inode->i_mutex);
-+	if (sd.num_spliced)
-+		ret = sd.num_spliced;
-+
-+	if (ret > 0) {
-+		unsigned long nr_pages;
-+
-+		*ppos += ret;
-+		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
-+
-+		/*
-+		 * If file or inode is SYNC and we actually wrote some data,
-+		 * sync it.
-+		 */
-+		if (unlikely((out->f_flags & O_SYNC) || IS_SYNC(inode))) {
-+			int err;
-+
-+			mutex_lock(&inode->i_mutex);
-+			err = ocfs2_rw_lock(inode, 1);
-+			if (err < 0) {
-+				mlog_errno(err);
-+			} else {
-+				err = generic_osync_inode(inode, mapping,
-+						  OSYNC_METADATA|OSYNC_DATA);
-+				ocfs2_rw_unlock(inode, 1);
-+			}
-+			mutex_unlock(&inode->i_mutex);
-+
-+			if (err)
-+				ret = err;
-+		}
-+		balance_dirty_pages_ratelimited_nr(mapping, nr_pages);
-+	}
- 
- 	mlog_exit(ret);
- 	return ret;
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -554,8 +554,8 @@ static int pipe_to_sendpage(struct pipe_
-  * SPLICE_F_MOVE isn't set, or we cannot move the page, we simply create
-  * a new page in the output file page cache and fill/dirty that.
-  */
--static int pipe_to_file(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
--			struct splice_desc *sd)
-+int pipe_to_file(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
-+		 struct splice_desc *sd)
- {
- 	struct file *file = sd->u.file;
- 	struct address_space *mapping = file->f_mapping;
-@@ -599,6 +599,7 @@ static int pipe_to_file(struct pipe_inod
- out:
- 	return ret;
- }
-+EXPORT_SYMBOL(pipe_to_file);
- 
- static void wakeup_pipe_writers(struct pipe_inode_info *pipe)
- {
---- a/include/linux/splice.h
-+++ b/include/linux/splice.h
-@@ -75,6 +75,8 @@ extern int splice_from_pipe_next(struct 
- extern void splice_from_pipe_begin(struct splice_desc *);
- extern void splice_from_pipe_end(struct pipe_inode_info *,
- 				 struct splice_desc *);
-+extern int pipe_to_file(struct pipe_inode_info *, struct pipe_buffer *,
-+			struct splice_desc *);
- 
- extern ssize_t splice_to_pipe(struct pipe_inode_info *,
- 			      struct splice_pipe_desc *);
+  /* key management security hooks */
+ #ifdef CONFIG_KEYS
 
 
