@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760208AbZENWry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757706AbZENWoP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760208AbZENWry (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756568AbZENWmW
+	id S1757706AbZENWoP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:44:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756023AbZENWmB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:22 -0400
-Received: from kroah.org ([198.145.64.141]:51596 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:01 -0400
+Received: from kroah.org ([198.145.64.141]:51470 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756215AbZENWmJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:09 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:23 2009
-Message-Id: <20090514223523.032025485@mini.kroah.org>
+	id S1756103AbZENWl6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:41:58 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:21 2009
+Message-Id: <20090514223521.148009855@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:32:52 -0700
+Date: Thu, 14 May 2009 15:32:41 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       linux-security-module@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -26,10 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Paul Moore <paul.moore@hp.com>
-Subject: [patch 17/51] lsm: Relocate the IPv4 security_inet_conn_request() hooks
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>
+Subject: [patch 06/51] usb-serial: ftdi_sio: fix reference counting of ftdi_private
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=lsm-relocate-the-ipv4-security_inet_conn_request-hooks.patch
+Content-Disposition: inline; filename=usb-serial-ftdi_sio-fix-reference-counting-of-ftdi_private.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,77 +38,92 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Paul Moore <paul.moore@hp.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-[NOTE: present in Linus' tree as 284904aa79466a4736f4c775fdbe5c7407fa136c]
+commit c45d63202fbaccef7ef7946c03f27f72c809b1cc upstream.
 
-The current placement of the security_inet_conn_request() hooks do not allow
-individual LSMs to override the IP options of the connection's request_sock.
-This is a problem as both SELinux and Smack have the ability to use labeled
-networking protocols which make use of IP options to carry security attributes
-and the inability to set the IP options at the start of the TCP handshake is
-problematic.
+This patch (as1238) adds proper reference counting for ftdi_sio's
+private data structure.  Without it, the driver will free the
+structure while it is still in use if the user unplugs the serial
+device before closing the device file.
 
-This patch moves the IPv4 security_inet_conn_request() hooks past the code
-where the request_sock's IP options are set/reset so that the LSM can safely
-manipulate the IP options as needed.  This patch intentionally does not change
-the related IPv6 hooks as IPv6 based labeling protocols which use IPv6 options
-are not currently implemented, once they are we will have a better idea of
-the correct placement for the IPv6 hooks.
+The patch also replaces a slightly dangerous
+cancel_delayed_work/flush_scheduled_work pair with
+cancel_delayed_work_sync, which is always safer.
 
-Signed-off-by: Paul Moore <paul.moore@hp.com>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Reported-by: Daniel Mack <daniel@caiaq.de>
+Tested-by: Daniel Mack <daniel@caiaq.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- net/ipv4/syncookies.c |    9 +++++----
- net/ipv4/tcp_ipv4.c   |    7 ++++---
- 2 files changed, 9 insertions(+), 7 deletions(-)
+ drivers/usb/serial/ftdi_sio.c |   18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
---- a/net/ipv4/syncookies.c
-+++ b/net/ipv4/syncookies.c
-@@ -288,10 +288,6 @@ struct sock *cookie_v4_check(struct sock
- 	if (!req)
- 		goto out;
+--- a/drivers/usb/serial/ftdi_sio.c
++++ b/drivers/usb/serial/ftdi_sio.c
+@@ -56,6 +56,7 @@ static __u16 vendor = FTDI_VID;
+ static __u16 product;
  
--	if (security_inet_conn_request(sk, skb, req)) {
--		reqsk_free(req);
--		goto out;
--	}
- 	ireq = inet_rsk(req);
- 	treq = tcp_rsk(req);
- 	treq->rcv_isn		= ntohl(th->seq) - 1;
-@@ -322,6 +318,11 @@ struct sock *cookie_v4_check(struct sock
- 		}
+ struct ftdi_private {
++	struct kref kref;
+ 	ftdi_chip_type_t chip_type;
+ 				/* type of device, either SIO or FT8U232AM */
+ 	int baud_base;		/* baud base clock for divisor setting */
+@@ -1352,6 +1353,7 @@ static int ftdi_sio_port_probe(struct us
+ 		return -ENOMEM;
  	}
  
-+	if (security_inet_conn_request(sk, skb, req)) {
-+		reqsk_free(req);
-+		goto out;
-+	}
++	kref_init(&priv->kref);
+ 	spin_lock_init(&priv->rx_lock);
+ 	spin_lock_init(&priv->tx_lock);
+ 	init_waitqueue_head(&priv->delta_msr_wait);
+@@ -1468,6 +1470,13 @@ static void ftdi_shutdown(struct usb_ser
+ 	dbg("%s", __func__);
+ }
+ 
++static void ftdi_sio_priv_release(struct kref *k)
++{
++	struct ftdi_private *priv = container_of(k, struct ftdi_private, kref);
 +
- 	req->expires	= 0UL;
- 	req->retrans	= 0;
++	kfree(priv);
++}
++
+ static int ftdi_sio_port_remove(struct usb_serial_port *port)
+ {
+ 	struct ftdi_private *priv = usb_get_serial_port_data(port);
+@@ -1482,7 +1491,7 @@ static int ftdi_sio_port_remove(struct u
  
---- a/net/ipv4/tcp_ipv4.c
-+++ b/net/ipv4/tcp_ipv4.c
-@@ -1239,14 +1239,15 @@ int tcp_v4_conn_request(struct sock *sk,
+ 	if (priv) {
+ 		usb_set_serial_port_data(port, NULL);
+-		kfree(priv);
++		kref_put(&priv->kref, ftdi_sio_priv_release);
+ 	}
  
- 	tcp_openreq_init(req, &tmp_opt, skb);
- 
--	if (security_inet_conn_request(sk, skb, req))
--		goto drop_and_free;
+ 	return 0;
+@@ -1547,7 +1556,8 @@ static int ftdi_open(struct tty_struct *
+ 		dev_err(&port->dev,
+ 			"%s - failed submitting read urb, error %d\n",
+ 			__func__, result);
 -
- 	ireq = inet_rsk(req);
- 	ireq->loc_addr = daddr;
- 	ireq->rmt_addr = saddr;
- 	ireq->no_srccheck = inet_sk(sk)->transparent;
- 	ireq->opt = tcp_v4_save_options(sk, skb);
-+
-+	if (security_inet_conn_request(sk, skb, req))
-+		goto drop_and_free;
-+
- 	if (!want_cookie)
- 		TCP_ECN_create_request(req, tcp_hdr(skb));
++	else
++		kref_get(&priv->kref);
+ 
+ 	return result;
+ } /* ftdi_open */
+@@ -1589,11 +1599,11 @@ static void ftdi_close(struct tty_struct
+ 	mutex_unlock(&port->serial->disc_mutex);
+ 
+ 	/* cancel any scheduled reading */
+-	cancel_delayed_work(&priv->rx_work);
+-	flush_scheduled_work();
++	cancel_delayed_work_sync(&priv->rx_work);
+ 
+ 	/* shutdown our bulk read */
+ 	usb_kill_urb(port->read_urb);
++	kref_put(&priv->kref, ftdi_sio_priv_release);
+ } /* ftdi_close */
+ 
  
 
 
