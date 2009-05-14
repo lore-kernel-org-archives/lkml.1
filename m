@@ -1,70 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755691AbZENUAu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755862AbZENUC0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755691AbZENUAu (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 16:00:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZENUAi
+	id S1755862AbZENUC0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 16:02:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZENUCR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 16:00:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:33457 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753006AbZENUAi (ORCPT
+	Thu, 14 May 2009 16:02:17 -0400
+Received: from iolanthe.rowland.org ([192.131.102.54]:39423 "HELO
+	iolanthe.rowland.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with SMTP id S1753463AbZENUCQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 16:00:38 -0400
-Subject: Re: [patch 1/2] sched, timers: move calc_load() to scheduler
-From: Peter Zijlstra <peterz@infradead.org>
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>,
+	Thu, 14 May 2009 16:02:16 -0400
+Date: Thu, 14 May 2009 16:02:16 -0400 (EDT)
+From: Alan Stern <stern@rowland.harvard.edu>
+X-X-Sender: stern@iolanthe.rowland.org
+To: "K.Prasad" <prasad@linux.vnet.ibm.com>
+cc: Frederic Weisbecker <fweisbec@gmail.com>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
-       Dimitri Sivanich <sivanich@sgi.com>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <20090514110712.521114248@linutronix.de>
-References: <20090514105915.973318588@linutronix.de>
-	 <20090514110712.521114248@linutronix.de>
-Content-Type: text/plain
-Date: Thu, 14 May 2009 22:00:27 +0200
-Message-Id: <1242331227.6642.1637.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+       Benjamin Herrenschmidt <benh@au1.ibm.com>, <maneesh@linux.vnet.ibm.com>,
+       Roland McGrath <roland@redhat.com>,
+       Masami Hiramatsu <mhiramat@redhat.com>
+Subject: Re: [Patch 00/12] Hardware Breakpoint interfaces
+In-Reply-To: <20090513161201.GA13911@in.ibm.com>
+Message-ID: <Pine.LNX.4.44L0.0905141555310.4344-100000@iolanthe.rowland.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-14 at 11:21 +0000, Thomas Gleixner wrote:
-> plain text document attachment (move-calc-load-to-scheduler-v1.patch)
+On Wed, 13 May 2009, K.Prasad wrote:
 
-> +/*
-> + * calc_load - update the avenrun load estimates 10 ticks after the
-> + * CPUs have updated calc_load_tasks.
-> + */
-> +void calc_global_load(void)
-> +{
-> +	unsigned long upd = calc_load_update + 10;
-> +	long active;
-> +
-> +	if (time_before(jiffies, upd))
-> +		return;
->  
-> +	active = atomic_long_read(&calc_load_tasks);
-> +	active = active > 0 ? active * FIXED_1 : 0;
->  
-> +	avenrun[0] = calc_load(avenrun[0], EXP_1, active);
-> +	avenrun[1] = calc_load(avenrun[1], EXP_5, active);
-> +	avenrun[2] = calc_load(avenrun[2], EXP_15, active);
-> +
-> +	calc_load_update += LOAD_FREQ;
-> +}
+> Hi Alan,
+> 	Please find a new set of patches with the following changes.
+> I am eager to know if you think that they are ready for submission towards
+> upstream acceptance.
 
-> @@ -1211,7 +1160,8 @@ static inline void update_times(unsigned
->  void do_timer(unsigned long ticks)
->  {
->  	jiffies_64 += ticks;
-> -	update_times(ticks);
-> +	update_wall_time();
-> +	calc_global_load();
->  }
+This is looking pretty good.  Only one thing caught my eye: 
+switch_to_thread_hw_breakpoint and switch_to_none_hw_breakpoint do 
+nothing but call the corresponding arch-specific routines.  You might 
+as well eliminate them and have the callers invoke the arch-specific 
+routines instead.
 
-I can see multiple cpus fall into calc_global_load() concurrently, which
-would 'age' the load faster than expected.
-
-Should we plug that hole?
+Alan Stern
 
