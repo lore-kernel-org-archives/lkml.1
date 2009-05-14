@@ -1,65 +1,133 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760649AbZENHCV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758089AbZENHTV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760649AbZENHCV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 03:02:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751721AbZENHCL
+	id S1758089AbZENHTV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 03:19:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751199AbZENHTJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 03:02:11 -0400
-Received: from smtp.nokia.com ([192.100.122.233]:37183 "EHLO
-	mgw-mx06.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751230AbZENHCK (ORCPT
+	Thu, 14 May 2009 03:19:09 -0400
+Received: from wf-out-1314.google.com ([209.85.200.174]:3850 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751088AbZENHTI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 03:02:10 -0400
-Subject: Re: [PATCH] mtd: mxc_nand: fix built breakage
-From: Artem Bityutskiy <dedekind@infradead.org>
-Reply-To: dedekind@infradead.org
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: Daniel Mack <daniel@caiaq.de>,
-       Vladimir Barinov <vbarinov@embeddedalley.com>,
-       Linux MTD list <linux-mtd@lists.infradead.org>,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090514065611.GU29278@pengutronix.de>
-References: <1242229410-11853-1-git-send-email-daniel@caiaq.de>
-	 <4A0AF0C7.5090104@embeddedalley.com>
-	 <20090513161154.GK32424@buzzloop.caiaq.de>
-	 <20090514065611.GU29278@pengutronix.de>
-Content-Type: text/plain; charset="UTF-8"
-Date: Thu, 14 May 2009 10:01:19 +0300
-Message-Id: <1242284479.27996.196.camel@localhost.localdomain>
+	Thu, 14 May 2009 03:19:08 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=GX5rJXo/9nEmQDXeW8er8Pl5gJM3NEyOxhJhkZowHxD7LNycMBxWC4c9Qm5AKaOs7W
+         eNQUDvGwDy3SAjubXASE3FEVZfBHhpkye9Xc2cLss3bqYMItWn8PXiGCD9acQ1/iVByI
+         XpHu5GEinV9JeEDpBsdJyNXVuIp3f1ue/F3os=
+Date: Thu, 14 May 2009 16:19:03 +0900
+From: Hitoshi Mitake <h.mitake@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Roland Dreier <rdreier@cisco.com>,
+       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
+       Linus Torvalds <torvalds@linux-foundation.org>, tglx@linutronix.de,
+       rpjday@crashcourse.ca, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
+Message-Id: <20090514161903.4ba00c09.h.mitake@gmail.com>
+In-Reply-To: <4A0B6A96.2030008@garzik.org>
+References: <49EE37AF.4020507@zytor.com>
+	<20090421.173123.191021055.davem@davemloft.net>
+	<adak55438gp.fsf_-_@cisco.com>
+	<20090428.221228.217954247.davem@davemloft.net>
+	<20090429115654.GC11586@elte.hu>
+	<49F843BC.7020902@garzik.org>
+	<adahc071ie4.fsf@cisco.com>
+	<49F8B1A1.4010208@garzik.org>
+	<a6b9f31a0905122232s2d23b4e3h6e447c3fa5c29ee6@mail.gmail.com>
+	<4A0B2B54.5090803@zytor.com>
+	<4A0B4C1C.9000706@garzik.org>
+	<4A0B5A34.1080301@zytor.com>
+	<4A0B6A96.2030008@garzik.org>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 8bit
-X-OriginalArrivalTime: 14 May 2009 07:01:21.0099 (UTC) FILETIME=[C94D91B0:01C9D461]
-X-Nokia-AV: Clean
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-14 at 08:56 +0200, Sascha Hauer wrote:
-> On Wed, May 13, 2009 at 06:11:54PM +0200, Daniel Mack wrote:
-> > On Wed, May 13, 2009 at 08:09:43PM +0400, Vladimir Barinov wrote:
-> > > Please find the patch that I've sent some time ago. This patch should  
-> > > fix the issue you described.
-> > > http://lists.infradead.org/pipermail/linux-mtd/2009-April/025363.html
+On Wed, 13 May 2009 20:49:26 -0400
+Jeff Garzik <jeff@garzik.org> wrote:
+
+> H. Peter Anvin wrote:
+> > Jeff Garzik wrote:
+> >> Judging from this thread and past, I think people will continue to 
+> >> complain and get confused, even with the above.
+> >>
 > > 
-> > 
-> > Ah, ok, thanks.
-> > 
-> > Did anyone pick it up for mainline already?
-> > Sascha, I didn't see that one in your tree either.
+> > Do you really think so?  Seems unfortunate, since an API rename would be
+> > way more invasive.  This is the entirety of the header patch
+> > (compile-tested using 32-bit allyesconfig).
 > 
-> It seems to be pure luck when the patches on the mtd list get picked up.
-> Most of the time I do not even a reaction from the list or David. I
-> wonder if someone will beat me up when I take the i.MX nand patches via
-> my arm tree.
+> The header patch does not lessen the confusion, because you cannot look 
+> at the code and immediately tell what is going on...
+> 
+> Having a single function's behavior change based on #include selection 
+> is /not/ intuitive at all, particularly for driver writers.  That is 
+> unlike almost every other Linux API, where functions' behavior stays 
+> constant across platforms, regardless of magic "under the hood."
+> 
+> That sort of trick is reserved for arch maintainers who know what they 
+> are doing :)
+> 
+> 	Jeff
+> 
+> 
+> 
 
-I've put Vladimir's patch to my l2-mtd-2.6.git tree:
-http://git.infradead.org/users/dedekind/l2-mtd-2.6.git
+I found another way:
+Making architecture with atomic readq/writeq provide HAVE_READQ_ATOMIC/HAVE_WRITEQ_ATOMIC
+and making architecture with non-atomic readq/writeq provide HAVE_READQ/HAVE_WRITEQ.
+(HAVE_READQ_ATOMIC/HAVE_WRITEQ_ATOMIC should double as HAVE_READQ/HAVE_WRITEQ.)
 
-which means I'll be pinging David about pulling it. This is all
-I can do for you, unfortunately.
+So driver programmers who need atomic readq/writeq can judge existence of API they really need.
+If platform doesn't provide atomic readq/writeq, drivers need these can be disabled by Kconfig.
+And bugs Roland and David talking about will be banished.
+How about this? > Roland and David
+I wrote a test patch. Request for comments.
 
+Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
+
+---
+ arch/x86/Kconfig |   16 ++++++++++++++--
+ 1 files changed, 14 insertions(+), 2 deletions(-)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index df9e885..c94fc48 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -19,8 +19,6 @@ config X86_64
+ config X86
+ 	def_bool y
+ 	select HAVE_AOUT if X86_32
+-	select HAVE_READQ
+-	select HAVE_WRITEQ
+ 	select HAVE_UNSTABLE_SCHED_CLOCK
+ 	select HAVE_IDE
+ 	select HAVE_OPROFILE
+@@ -2022,6 +2020,20 @@ config HAVE_ATOMIC_IOMAP
+ 	def_bool y
+ 	depends on X86_32
+ 
++config HAVE_READQ
++	def_bool y
++
++config HAVE_WRITEQ
++	def_bool y
++
++config HAVE_READQ_ATOMIC
++	def_bool y
++	depends on X86_64
++
++config HAVE_WRITEQ_ATOMIC
++	def_bool y
++	depends on X86_64
++
+ source "net/Kconfig"
+ 
+ source "drivers/Kconfig"
 -- 
-Best regards,
-Artem Bityutskiy (Битюцкий Артём)
+1.5.6.5
 
