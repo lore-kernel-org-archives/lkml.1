@@ -1,45 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754030AbZENRpn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754029AbZENRqE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754030AbZENRpn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 13:45:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752590AbZENRpd
+	id S1754029AbZENRqE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 13:46:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZENRpe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 13:45:33 -0400
-Received: from gw.goop.org ([64.81.55.164]:49101 "EHLO mail.goop.org"
+	Thu, 14 May 2009 13:45:34 -0400
+Received: from emroute2.ornl.gov ([160.91.86.17]:41725 "EHLO emroute2.ornl.gov"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752270AbZENRpc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 13:45:32 -0400
-Message-ID: <4A0C58BB.3090303@goop.org>
-Date: Thu, 14 May 2009 10:45:31 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: Ingo Molnar <mingo@elte.hu>, Jun Nakajima <jun.nakajima@intel.com>,
-       Xiaohui Xin <xiaohui.xin@intel.com>, Xin Li <xin.li@intel.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [Xen-devel] Performance overhead of paravirt_ops on	 nativeidentified
-References: <4A0B62F7.5030802@goop.org> <4A0BED040200007800000DB0@vpn.id2.novell.com>
-In-Reply-To: <4A0BED040200007800000DB0@vpn.id2.novell.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	id S1752399AbZENRpd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 13:45:33 -0400
+Date: Thu, 14 May 2009 13:45:33 -0400
+From: David Dillow <dave@thedillows.org>
+Subject: Re: Realtek 8168D: no active link (2.6.29.2)
+In-reply-to: <200905141208.n4EC8xh3017350@mercury.physics.adelaide.edu.au>
+To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Cc: Francois Romieu <romieu@fr.zoreil.com>, linux-kernel@vger.kernel.org
+Message-id: <1242323133.32579.4.camel@lap75545.ornl.gov>
+MIME-version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10)
+Content-type: text/plain
+Content-transfer-encoding: 7bit
+References: <200905141208.n4EC8xh3017350@mercury.physics.adelaide.edu.au>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> Wouldn't a third solution be to use ticket spinlocks everywhere, i.e. eliminate
-> the current indirection, and replace it by an indirection for just the contention
-> case? As I view it, the problem for Xen aren't really the ticket locks by
-> themselves, but rather the extra spinning involved, which is of concern only
-> if a lock is contended. We're using ticket locks quite happily in our kernels,
-> with directed instead of global wakeup from the unlock path.
-Do you have a patch to illustrate what you mean?  How do you keep track 
-of the target vcpu for the directed wakeup?  Are you using the 
-event-poll mechanism to block?
+On Thu, 2009-05-14 at 21:38 +0930, Jonathan Woithe wrote:
+> Hi again
+>
+> Following up on my previous email, it seems that the stock kernel r8169
+> driver is now working with the card in this machine ever since I tried the
+> Realtek driver version 8.012.00.  It's almost as if the Realtek driver
+> "unlocked" something on the chip (eg: activated the PHY), the status of
+> which is remembered across reboots and hard powercycles.
 
-    J
+It's worth noting that a power cycle may not clear everything out, as
+there is likely standby power being supplied even with you have the
+machine off. You can be sure by disconnecting the mains power to the
+power supply for 30 seconds or so -- I've seen some motherboards with
+large caps that take a while to drain.
+
+It would be interesting to see if your problems come back after doing
+this. Also, if you have another machine on the gigabit network, it would
+be interesting to do 'nc -l 9000 > /dev/null' and 'nc target 9000
+< /dev/zero' on the other and see if a ping between the machine
+eventually stops working. This reliably hangs my 8168d card at home, but
+it comes back with an ifdown/ifup sequence.
+
+Dave
