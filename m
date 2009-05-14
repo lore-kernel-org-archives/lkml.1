@@ -1,355 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762129AbZENW7n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756341AbZENXQW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762129AbZENW7n (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:59:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757001AbZENWnE
+	id S1756341AbZENXQW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:16:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753900AbZENXQK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:43:04 -0400
-Received: from kroah.org ([198.145.64.141]:52706 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756172AbZENWmh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:37 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:28 2009
-Message-Id: <20090514223527.900631057@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:33:21 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 46/51] splice: split up __splice_from_pipe()
-References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=splice-split-up-__splice_from_pipe.patch
-In-Reply-To: <20090514223755.GA27019@kroah.com>
+	Thu, 14 May 2009 19:16:10 -0400
+Received: from acsinet11.oracle.com ([141.146.126.233]:50574 "EHLO
+	acsinet11.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753127AbZENXQJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 19:16:09 -0400
+Message-ID: <4A0CA67C.30507@oracle.com>
+Date: Thu, 14 May 2009 16:17:16 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+MIME-Version: 1.0
+To: Jason Wessel <jason.wessel@windriver.com>
+CC: jbarnes@virtuousgeek.org, Andrew Morton <akpm@linux-foundation.org>,
+       eric@anholt.net, airlied@redhat.com,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] sysrq, intel_fb: fix sysrq g collision
+References: <4A0CA203.7050907@windriver.com>
+In-Reply-To: <4A0CA203.7050907@windriver.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt005.oracle.com [141.146.116.14]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010205.4A0CA5FB.03B8:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.29-stable review patch.  If anyone has any objections, please let us know.
+Jason Wessel wrote:
+> This is patch is both a clean up and a regression fix because two things
+> in the mainline kernel can register for sysrq-g, which is certainly a
+> problem when you want to use both.
+> 
+> I talked to Randy and Jesse briefly about changing the intel fb video
+> driver to use 'v' instead of 'g' and they agreed it would be ok to see a
+> patch.  Hopefully each will ack this patch, or discuss it further.   If
+> they ack the patch, I can send it on to Linus for consideration.
+> 
+> The long term intent here is to get mode switching with a generic kernel
+> debug front end, with the short term intent to fix the sysrq collision.
 
-------------------
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-From: Miklos Szeredi <miklos@szeredi.hu>
+Thanks.
 
-commit b3c2d2ddd63944ef2a1e4a43077b602288107e01 upstream.
-
-Split up __splice_from_pipe() into four helper functions:
-
-  splice_from_pipe_begin()
-  splice_from_pipe_next()
-  splice_from_pipe_feed()
-  splice_from_pipe_end()
-
-splice_from_pipe_next() will wait (if necessary) for more buffers to
-be added to the pipe.  splice_from_pipe_feed() will feed the buffers
-to the supplied actor and return when there's no more data available
-(or if all of the requested data has been copied).
-
-This is necessary so that implementations can do locking around the
-non-waiting splice_from_pipe_feed().
-
-This patch should not cause any change in behavior.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
-
----
- fs/splice.c            |  223 ++++++++++++++++++++++++++++++++-----------------
- include/linux/splice.h |   10 ++
- 2 files changed, 156 insertions(+), 77 deletions(-)
-
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -600,107 +600,176 @@ out:
- 	return ret;
- }
- 
-+static void wakeup_pipe_writers(struct pipe_inode_info *pipe)
-+{
-+	smp_mb();
-+	if (waitqueue_active(&pipe->wait))
-+		wake_up_interruptible(&pipe->wait);
-+	kill_fasync(&pipe->fasync_writers, SIGIO, POLL_OUT);
-+}
-+
- /**
-- * __splice_from_pipe - splice data from a pipe to given actor
-+ * splice_from_pipe_feed - feed available data from a pipe to a file
-  * @pipe:	pipe to splice from
-  * @sd:		information to @actor
-  * @actor:	handler that splices the data
-  *
-  * Description:
-- *    This function does little more than loop over the pipe and call
-- *    @actor to do the actual moving of a single struct pipe_buffer to
-- *    the desired destination. See pipe_to_file, pipe_to_sendpage, or
-- *    pipe_to_user.
-+
-+ *    This function loops over the pipe and calls @actor to do the
-+ *    actual moving of a single struct pipe_buffer to the desired
-+ *    destination.  It returns when there's no more buffers left in
-+ *    the pipe or if the requested number of bytes (@sd->total_len)
-+ *    have been copied.  It returns a positive number (one) if the
-+ *    pipe needs to be filled with more data, zero if the required
-+ *    number of bytes have been copied and -errno on error.
-  *
-+ *    This, together with splice_from_pipe_{begin,end,next}, may be
-+ *    used to implement the functionality of __splice_from_pipe() when
-+ *    locking is required around copying the pipe buffers to the
-+ *    destination.
-  */
--ssize_t __splice_from_pipe(struct pipe_inode_info *pipe, struct splice_desc *sd,
--			   splice_actor *actor)
-+int splice_from_pipe_feed(struct pipe_inode_info *pipe, struct splice_desc *sd,
-+			  splice_actor *actor)
- {
--	int ret, do_wakeup, err;
--
--	ret = 0;
--	do_wakeup = 0;
-+	int ret;
- 
--	for (;;) {
--		if (pipe->nrbufs) {
--			struct pipe_buffer *buf = pipe->bufs + pipe->curbuf;
--			const struct pipe_buf_operations *ops = buf->ops;
--
--			sd->len = buf->len;
--			if (sd->len > sd->total_len)
--				sd->len = sd->total_len;
--
--			err = actor(pipe, buf, sd);
--			if (err <= 0) {
--				if (!ret && err != -ENODATA)
--					ret = err;
-+	while (pipe->nrbufs) {
-+		struct pipe_buffer *buf = pipe->bufs + pipe->curbuf;
-+		const struct pipe_buf_operations *ops = buf->ops;
-+
-+		sd->len = buf->len;
-+		if (sd->len > sd->total_len)
-+			sd->len = sd->total_len;
-+
-+		ret = actor(pipe, buf, sd);
-+		if (ret <= 0) {
-+			if (ret == -ENODATA)
-+				ret = 0;
-+			return ret;
-+		}
-+		buf->offset += ret;
-+		buf->len -= ret;
-+
-+		sd->num_spliced += ret;
-+		sd->len -= ret;
-+		sd->pos += ret;
-+		sd->total_len -= ret;
- 
--				break;
--			}
-+		if (!buf->len) {
-+			buf->ops = NULL;
-+			ops->release(pipe, buf);
-+			pipe->curbuf = (pipe->curbuf + 1) & (PIPE_BUFFERS - 1);
-+			pipe->nrbufs--;
-+			if (pipe->inode)
-+				sd->need_wakeup = true;
-+		}
- 
--			ret += err;
--			buf->offset += err;
--			buf->len -= err;
--
--			sd->len -= err;
--			sd->pos += err;
--			sd->total_len -= err;
--			if (sd->len)
--				continue;
--
--			if (!buf->len) {
--				buf->ops = NULL;
--				ops->release(pipe, buf);
--				pipe->curbuf = (pipe->curbuf + 1) & (PIPE_BUFFERS - 1);
--				pipe->nrbufs--;
--				if (pipe->inode)
--					do_wakeup = 1;
--			}
-+		if (!sd->total_len)
-+			return 0;
-+	}
- 
--			if (!sd->total_len)
--				break;
--		}
-+	return 1;
-+}
-+EXPORT_SYMBOL(splice_from_pipe_feed);
- 
--		if (pipe->nrbufs)
--			continue;
-+/**
-+ * splice_from_pipe_next - wait for some data to splice from
-+ * @pipe:	pipe to splice from
-+ * @sd:		information about the splice operation
-+ *
-+ * Description:
-+ *    This function will wait for some data and return a positive
-+ *    value (one) if pipe buffers are available.  It will return zero
-+ *    or -errno if no more data needs to be spliced.
-+ */
-+int splice_from_pipe_next(struct pipe_inode_info *pipe, struct splice_desc *sd)
-+{
-+	while (!pipe->nrbufs) {
- 		if (!pipe->writers)
--			break;
--		if (!pipe->waiting_writers) {
--			if (ret)
--				break;
--		}
-+			return 0;
- 
--		if (sd->flags & SPLICE_F_NONBLOCK) {
--			if (!ret)
--				ret = -EAGAIN;
--			break;
--		}
-+		if (!pipe->waiting_writers && sd->num_spliced)
-+			return 0;
- 
--		if (signal_pending(current)) {
--			if (!ret)
--				ret = -ERESTARTSYS;
--			break;
--		}
-+		if (sd->flags & SPLICE_F_NONBLOCK)
-+			return -EAGAIN;
- 
--		if (do_wakeup) {
--			smp_mb();
--			if (waitqueue_active(&pipe->wait))
--				wake_up_interruptible_sync(&pipe->wait);
--			kill_fasync(&pipe->fasync_writers, SIGIO, POLL_OUT);
--			do_wakeup = 0;
-+		if (signal_pending(current))
-+			return -ERESTARTSYS;
-+
-+		if (sd->need_wakeup) {
-+			wakeup_pipe_writers(pipe);
-+			sd->need_wakeup = false;
- 		}
- 
- 		pipe_wait(pipe);
- 	}
- 
--	if (do_wakeup) {
--		smp_mb();
--		if (waitqueue_active(&pipe->wait))
--			wake_up_interruptible(&pipe->wait);
--		kill_fasync(&pipe->fasync_writers, SIGIO, POLL_OUT);
--	}
-+	return 1;
-+}
-+EXPORT_SYMBOL(splice_from_pipe_next);
- 
--	return ret;
-+/**
-+ * splice_from_pipe_begin - start splicing from pipe
-+ * @pipe:	pipe to splice from
-+ *
-+ * Description:
-+ *    This function should be called before a loop containing
-+ *    splice_from_pipe_next() and splice_from_pipe_feed() to
-+ *    initialize the necessary fields of @sd.
-+ */
-+void splice_from_pipe_begin(struct splice_desc *sd)
-+{
-+	sd->num_spliced = 0;
-+	sd->need_wakeup = false;
-+}
-+EXPORT_SYMBOL(splice_from_pipe_begin);
-+
-+/**
-+ * splice_from_pipe_end - finish splicing from pipe
-+ * @pipe:	pipe to splice from
-+ * @sd:		information about the splice operation
-+ *
-+ * Description:
-+ *    This function will wake up pipe writers if necessary.  It should
-+ *    be called after a loop containing splice_from_pipe_next() and
-+ *    splice_from_pipe_feed().
-+ */
-+void splice_from_pipe_end(struct pipe_inode_info *pipe, struct splice_desc *sd)
-+{
-+	if (sd->need_wakeup)
-+		wakeup_pipe_writers(pipe);
-+}
-+EXPORT_SYMBOL(splice_from_pipe_end);
-+
-+/**
-+ * __splice_from_pipe - splice data from a pipe to given actor
-+ * @pipe:	pipe to splice from
-+ * @sd:		information to @actor
-+ * @actor:	handler that splices the data
-+ *
-+ * Description:
-+ *    This function does little more than loop over the pipe and call
-+ *    @actor to do the actual moving of a single struct pipe_buffer to
-+ *    the desired destination. See pipe_to_file, pipe_to_sendpage, or
-+ *    pipe_to_user.
-+ *
-+ */
-+ssize_t __splice_from_pipe(struct pipe_inode_info *pipe, struct splice_desc *sd,
-+			   splice_actor *actor)
-+{
-+	int ret;
-+
-+	splice_from_pipe_begin(sd);
-+	do {
-+		ret = splice_from_pipe_next(pipe, sd);
-+		if (ret > 0)
-+			ret = splice_from_pipe_feed(pipe, sd, actor);
-+	} while (ret > 0);
-+	splice_from_pipe_end(pipe, sd);
-+
-+	return sd->num_spliced ? sd->num_spliced : ret;
- }
- EXPORT_SYMBOL(__splice_from_pipe);
- 
---- a/include/linux/splice.h
-+++ b/include/linux/splice.h
-@@ -36,6 +36,8 @@ struct splice_desc {
- 		void *data;		/* cookie */
- 	} u;
- 	loff_t pos;			/* file position */
-+	size_t num_spliced;		/* number of bytes already spliced */
-+	bool need_wakeup;		/* need to wake up writer */
- };
- 
- struct partial_page {
-@@ -66,6 +68,14 @@ extern ssize_t splice_from_pipe(struct p
- 				splice_actor *);
- extern ssize_t __splice_from_pipe(struct pipe_inode_info *,
- 				  struct splice_desc *, splice_actor *);
-+extern int splice_from_pipe_feed(struct pipe_inode_info *, struct splice_desc *,
-+				 splice_actor *);
-+extern int splice_from_pipe_next(struct pipe_inode_info *,
-+				 struct splice_desc *);
-+extern void splice_from_pipe_begin(struct splice_desc *);
-+extern void splice_from_pipe_end(struct pipe_inode_info *,
-+				 struct splice_desc *);
-+
- extern ssize_t splice_to_pipe(struct pipe_inode_info *,
- 			      struct splice_pipe_desc *);
- extern ssize_t splice_direct_to_actor(struct file *, struct splice_desc *,
-
-
+-- 
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
