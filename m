@@ -1,80 +1,85 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbZENSnV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753500AbZENSp6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752881AbZENSnV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 14:43:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbZENSnL
+	id S1753500AbZENSp6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 14:45:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752412AbZENSpu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 14:43:11 -0400
-Received: from web50103.mail.re2.yahoo.com ([206.190.38.31]:47310 "HELO
-	web50103.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1750957AbZENSnL (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 14:43:11 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=yahoo.com;
-  h=Message-ID:X-YMail-OSG:Received:X-Mailer:References:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
-  b=KCShlQNwIjwGvJ2KHFyHe89xVcZvL7r2ouQcqbaEO3jB8ncQYmEq5ENJ2QJ9CGfkTsPsFT/XoclgSsDY1HSo/DtUASCA0QstxVma6xOvNMFTw6LvLVSD0FNAkYb4AP63TYrQ/fxXmEr9Vg95LML25kXStLX0mI07l0YA3woMCyM=;
-Message-ID: <391836.21526.qm@web50103.mail.re2.yahoo.com>
-X-YMail-OSG: JvbDKW8VM1nLEpjsvPxBGA.DmTCkrx0I57pDGd1DmNCioNbJPLB5ZB3iSTaJ4WypcG77GRFSSvw3XZVXpizENNmmhvfHb4HiD6xdd2V0HKDZ5512.pc6tEsHOkaVQSQ5uMH6tJTnPfR9OCUiAukxDERWtypFS90utTcDVXa8oDrWQU.BN6m5gDgDobIzuJin1Qj8lwWNpW_oYYyRjJwXJPceFR8.UQQ7teDKh0Fn.D6JNu0RVGyMlT_Zex9fBipUu6_nZu2Q.GMzTpYITqPxe06ffFz9MCH4_Iu8YrZ.kFVK.PeG3b7PIQ--
-X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.10
-References: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com> <1241704183-29223-22-git-send-email-borislav.petkov@amd.com> <20090507215815.GB28770@elte.hu> <20090514175205.GB8575@aftab>
-Date: Thu, 14 May 2009 11:43:11 -0700 (PDT)
-From: Doug Thompson <norsk5@yahoo.com>
-Subject: Re: [PATCH 21/21] amd64_edac: add module registration routines
-To: Borislav Petkov <borislav.petkov@amd.com>, Ingo Molnar <mingo@elte.hu>
-Cc: akpm@linux-foundation.org, greg@kroah.com, tglx@linutronix.de,
-       hpa@zytor.com, mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
-       linux-kernel@vger.kernel.org, Doug Thompson <dougthompson@xmission.com>
-In-Reply-To: <20090514175205.GB8575@aftab>
+	Thu, 14 May 2009 14:45:50 -0400
+Received: from gw.goop.org ([64.81.55.164]:52270 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750906AbZENSpt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 14:45:49 -0400
+Message-ID: <4A0C66DB.9020707@goop.org>
+Date: Thu, 14 May 2009 11:45:47 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Jesse Barnes <jbarnes@virtuousgeek.org>
+CC: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       Matthew Wilcox <willy@linux.intel.com>,
+       Joerg Roedel <joerg.roedel@amd.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Alex Nixon <alex.nixon@citrix.com>,
+       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Subject: Re: [PATCH 06/10] x86/PCI: Enable scanning of all pci functions
+References: <1242164891-3859-1-git-send-email-jeremy@goop.org>	<1242164891-3859-7-git-send-email-jeremy@goop.org>	<20090513095535.140134e1@jbarnes-g45>	<4A0AFE84.2040805@goop.org> <20090513102316.5ef3ce4e@jbarnes-g45>
+In-Reply-To: <20090513102316.5ef3ce4e@jbarnes-g45>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jesse Barnes wrote:
+> Anyway it's not a big deal, this code is already ugly (a 0 define for
+> all arches?  why?) so you shouldn't have to spend too much time
+> cleaning it up.
+>   
 
----- Original Message ----
+OK, how's this as a delta (I can fold it into the previous patch if 
+you're OK with it):
 
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: akpm@linux-foundation.org; greg@kroah.com; norsk5@yahoo.com; tglx@linutronix.de; hpa@zytor.com; mchehab@redhat.com; aris@redhat.com; edt@aei.ca; linux-kernel@vger.kernel.org; Doug Thompson <dougthompson@xmission.com>
-Sent: Thursday, May 14, 2009 10:52:05 AM
-Subject: Re: [PATCH 21/21] amd64_edac: add module registration routines
+Subject: [PATCH] pci: add HAVE_ARCH_PCIBIOS_SCAN_ALL_FNS
+
+Jesse objected to the "#undef pcibios_scan_all_fns"'s ugliness,
+so replace it with the more common HAVE_ARCH_ idiom.
+
+Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
+Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+
+diff --git a/arch/x86/include/asm/pci.h b/arch/x86/include/asm/pci.h
+index 092706e..cabea93 100644
+--- a/arch/x86/include/asm/pci.h
++++ b/arch/x86/include/asm/pci.h
+@@ -134,8 +134,8 @@ extern void pci_iommu_alloc(void);
+ #include <asm-generic/pci-dma-compat.h>
+ 
+ /* generic pci stuff */
++#define HAVE_ARCH_PCIBIOS_SCAN_ALL_FNS
+ #include <asm-generic/pci.h>
+-#undef pcibios_scan_all_fns
+ 
+ #ifdef CONFIG_NUMA
+ /* Returns the node based on pci bus */
+diff --git a/include/asm-generic/pci.h b/include/asm-generic/pci.h
+index c36a77d..9ad9cb7 100644
+--- a/include/asm-generic/pci.h
++++ b/include/asm-generic/pci.h
+@@ -43,7 +43,9 @@ pcibios_select_root(struct pci_dev *pdev, struct resource *res)
+ 	return root;
+ }
+ 
++#ifndef HAVE_ARCH_PCIBIOS_SCAN_ALL_FNS
+ #define pcibios_scan_all_fns(a, b)	0
++#endif
+ 
+ #ifndef HAVE_ARCH_PCI_GET_LEGACY_IDE_IRQ
+ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
 
 
-> > +      Recent Opterons (Family 10h and later) provide for Memory Error
-> > +      Injection into the ECC detection circuits. The amd64_edac module
-> > +      allows the operator/user to inject Uncorrectable and Correctable
-> > +      errors into DRAM.
-> > +
-> > +      When enabled, in each of the respective memory controller directories
-> > +      (/sys/devices/system/edac/mc/mcX), there are 3 input files:
-> > +
-> > +      - z_inject_section (0..3, 16-byte section of 64-byte cacheline),
-> > +      - z_inject_word (0..8, 16-bit word of 16-byte section),
-> > +      - z_inject_bit_map (hex bitmap vector: mask bits of 16 bit word to
-> > +        error-out)
-> > +
-> > +      In addition, there are two control files, z_inject_read and
-> > +      z_inject_write, which trigger the Read and Write errors respectively.
-> 
-> I think the file names should follow existing EDAC driver practices, 
-> and be named according to the existing inject_data_* pattern?
-> 
-> There's nothing more annoying to users (and tools) than inconsistent 
-> driver namespaces.
 
-Agreed. Done.
-
-@Doug: edac-utils doesn't use those yet, right?
-
-[..]
-
-
-No, and probably won't.  Those injection semantics are specific to the AMD64 only
-
-I have only done one other inject implementation with Sicortex's MIPS processors
-and these two do not provide enough to generate an abstract interface quite yet.
-Hence, it is driver SPECIFIC methods at this time
-
-doug t
+Thanks,
+    J
