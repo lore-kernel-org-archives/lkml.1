@@ -1,64 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756215AbZENWbs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756130AbZENWcS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756215AbZENWbs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:31:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbZENWbj
+	id S1756130AbZENWcS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:32:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755279AbZENWb7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:31:39 -0400
-Received: from fmmailgate05.web.de ([217.72.192.243]:34469 "EHLO
-	fmmailgate05.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753948AbZENWbi convert rfc822-to-8bit (ORCPT
+	Thu, 14 May 2009 18:31:59 -0400
+Received: from Cpsmtpm-eml106.kpnxchange.com ([195.121.3.10]:60266 "EHLO
+	CPSMTPM-EML106.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755435AbZENWb6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:31:38 -0400
-Date: Fri, 15 May 2009 00:31:38 +0200
-Message-Id: <716147033@web.de>
+	Thu, 14 May 2009 18:31:58 -0400
+From: Frans Pop <elendil@planet.nl>
+To: Len Brown <lenb@kernel.org>
+Subject: Re: [PATCH] ACPI: idle: fix init-time TSC check regression
+Date: Fri, 15 May 2009 00:31:54 +0200
+User-Agent: KMail/1.9.9
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Janne Kulmala <janne.t.kulmala@tut.fi>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       johnstul@us.ibm.com
+References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com> <alpine.LFD.2.00.0905142217340.3561@localhost.localdomain> <alpine.LFD.2.00.0905141750100.24833@localhost.localdomain>
+In-Reply-To: <alpine.LFD.2.00.0905141750100.24833@localhost.localdomain>
 MIME-Version: 1.0
-From: devzero@web.de
-To: bart.vanassche@gmail.com
-Cc: akpm@linux-foundation.org, linux-kernel@vger.kernel.org,
-       philipp.reisner@linbit.com
-Subject: Re: [PATCH 00/16] DRBD: a block device for HA clusters
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX19p9WKaR2eEqoFmwS8BEpu2GzhrFydvNNkm0smpGVkpfXXgv
- hK1g3LwTlpizpBDTOKWpTZZwUq4DrtiqcXigxI6Sts+9s44WYo=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905150031.57731.elendil@planet.nl>
+X-OriginalArrivalTime: 14 May 2009 22:31:58.0695 (UTC) FILETIME=[CB1A8F70:01C9D4E3]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->On Fri, May 1, 2009 at 10:59 AM, Andrew Morton
-><akpm@linux-foundation.org> wrote:
->> On Thu, 30 Apr 2009 13:26:36 +0200 Philipp Reisner <philipp.reisner@linbit.com> wrote:
->>
->>> This is a repost of DRBD
->>
->> Is it being used anywhere for anything?  If so, where and what?
+On Thursday 14 May 2009, Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
 >
->One popular application is to run iSCSI and HA software on top of DRBD
->in order to build a highly available iSCSI storage target.
+> A previous 2.6.30 patch, a71e4917dc0ebbcb5a0ecb7ca3486643c1c9a6e2,
+> (ACPI: idle: mark_tsc_unstable() at init-time, not run-time)
+> erroneously disabled the TSC on systems that did not actually
+> have valid deep C-states.
 >
->Bart.
+> Move the check after the deep-C-states are validated,
+> via new helper, tsc_check_state(), hich replaces tsc_halts_in_c().
 
-Iirc, Xtravirt`s XVS Virtual SAN appliance is built around DRBD.
+[...]
 
-For those interested:
+> @@ -603,6 +602,8 @@ static int acpi_processor_power_verify(struct
+> acpi_processor *pr) 
+>                                acpi_timer_check_state(i, pr, cx);
+>                        break;
+>                }
+>+               if (cx->valid)
+>+                       tsc_check_state(cx->type);
+> 
+>                if (cx->valid)
+>                        working++;
 
-Some Blog entry:
-http://vmetc.com/2008/05/23/xtravirt-xvs-creates-a-free-san-out-of-local-esx-vmfs/
+Shouldn't those last two ifs not simply be combined?
+Hmm. I guess not if tsc_check_state can change cx->valid, but that might 
+be worth a comment.
 
-Design sheet:
-http://communities.vmware.com/servlet/JiveServlet/download/950436-9486/xvsrefdiag.jpg
+But even with that I'll give the patch a try tomorrow.
 
-Discussion:
-http://communities.vmware.com/message/1114092#1114092
-
-Seems to be sold to PHD Virtual Technologies now....
-
-regards
-roland
-
-______________________________________________________
-GRATIS für alle WEB.DE-Nutzer: Die maxdome Movie-FLAT!
-Jetzt freischalten unter http://movieflat.web.de
-
+Cheers,
+FJP
