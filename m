@@ -1,84 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbZENOCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbZENOFd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbZENOCP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 10:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754080AbZENOB5
+	id S1760878AbZENOFd (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 10:05:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbZENOFW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 10:01:57 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.124]:62774 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752931AbZENOB4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 10:01:56 -0400
-Date: Thu, 14 May 2009 10:01:56 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Jiri Kosina <jkosina@suse.cz>
-cc: Minchan Kim <minchan.kim@gmail.com>, leemgs1@gmail.com,
-       Ingo Molnar <mingo@elte.hu>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       williams <williams@redhat.com>, tglx <tglx@linutronix.de>,
-       Jiri Kosina <trivial@kernel.org>
-Subject: Re: [PATCH]append prompt in /debug/tracing/README file.
-In-Reply-To: <alpine.LNX.2.00.0905141540470.22712@wotan.suse.de>
-Message-ID: <alpine.DEB.2.00.0905141001120.30591@gandalf.stny.rr.com>
-References: <1242289418.31161.45.camel@centos51> <28c262360905140128q3458e39fu62def873f2d95ae0@mail.gmail.com> <alpine.LNX.2.00.0905141540470.22712@wotan.suse.de>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Thu, 14 May 2009 10:05:22 -0400
+Received: from hera.kernel.org ([140.211.167.34]:60063 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753006AbZENOFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 10:05:21 -0400
+Message-ID: <4A0C2515.9060602@kernel.org>
+Date: Thu, 14 May 2009 23:05:09 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="8323328-846517749-1242309716=:30591"
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] block: completion related functions cleanup
+References: <1242032169-22422-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <4A0C2297.5040001@panasas.com>
+In-Reply-To: <4A0C2297.5040001@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 14 May 2009 14:05:13 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+Boaz Harrosh wrote:
+> ---
+>  drivers/scsi/scsi_lib.c |    1 -
+>  1 files changed, 0 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
+> index e410d66..f8600d6 100644
+> --- a/drivers/scsi/scsi_lib.c
+> +++ b/drivers/scsi/scsi_lib.c
+> @@ -789,7 +789,6 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
+>  	 */
+>  	if (scsi_end_request(cmd, error, good_bytes, result == 0) == NULL)
+>  		return;
+> -	this_count = blk_rq_bytes(req);
+>  
+>  	error = -EIO;
+>  
 
---8323328-846517749-1242309716=:30591
-Content-Type: TEXT/PLAIN; charset=UTF-8
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Nice spotting.  Looks like the variable can be killed completely?
 
+Thanks.
 
-On Thu, 14 May 2009, Jiri Kosina wrote:
-
-> On Thu, 14 May 2009, Minchan Kim wrote:
->=20
-> > > =C2=A0 =C2=A0Please, Append prompt in /debug/tracing/README file.
-> > >
-> > > =C2=A0 =C2=A0This is trivial issue. Fix typo Mini Howto file(README) =
-for ftrace.
-> > >
-> > > =C2=A0 =C2=A0Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
-> > >
-> > > diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> > > index 1ce5dc6..a4726f5 100644
-> > > --- a/kernel/trace/trace.c
-> > > +++ b/kernel/trace/trace.c
-> > > @@ -2380,7 +2380,7 @@ static const char readme_msg[] =3D
-> > > =C2=A0 =C2=A0 =C2=A0 =C2=A0"# echo print-parent > /debug/tracing/trac=
-e_options\n"
-> > > =C2=A0 =C2=A0 =C2=A0 =C2=A0"# echo 1 > /debug/tracing/tracing_enabled=
-\n"
-> > > =C2=A0 =C2=A0 =C2=A0 =C2=A0"# cat /debug/tracing/trace > /tmp/trace.t=
-xt\n"
-> > > - =C2=A0 =C2=A0 =C2=A0 "echo 0 > /debug/tracing/tracing_enabled\n"
-> > > + =C2=A0 =C2=A0 =C2=A0 "# echo 0 > /debug/tracing/tracing_enabled\n"
-> > > =C2=A0;
-> > >
-> > > =C2=A0static ssize_t
->=20
-> I have applied this to trivial tree. If anyone else has already applied i=
-t=20
-> to his tree, please let me know so that I can drop it.
-
-It's fine with me that this goes via the trivial tree.
-
-If you want, you can also add:
-
-Acked-by: Steven Rostedt <rostedt@goodmis.org>
-
-Thanks!
-
--- Steve
-
---8323328-846517749-1242309716=:30591--
+-- 
+tejun
