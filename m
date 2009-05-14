@@ -1,48 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbZENPp2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754791AbZENPrv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760224AbZENPp2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 11:45:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751909AbZENPpM
+	id S1754791AbZENPrv (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 11:47:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751113AbZENPrm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 11:45:12 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55082 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751486AbZENPpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 11:45:11 -0400
-Message-ID: <4A0C3CC9.8090706@kernel.org>
-Date: Fri, 15 May 2009 00:46:17 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 14 May 2009 11:47:42 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:63318 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751112AbZENPrl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 11:47:41 -0400
+Date: Thu, 14 May 2009 17:52:04 +0200
+From: Heinz Diehl <htd@fancy-poultry.org>
+To: linux-kernel@vger.kernel.org
+Cc: Theodore Tso <tytso@mit.edu>, Joseph Cihula <joseph.cihula@intel.com>,
+       mingo@elte.hu, arjan@linux.intel.com, hpa@zytor.com,
+       andi@firstfloor.org, chrisw@sous-sol.org, jmorris@namei.org,
+       jbeulich@novell.com, peterm@redhat.com, gang.wei@intel.com,
+       shane.wang@intel.com, John Gilmore <gnu@toad.com>
+Subject: Re: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
+	support
+Message-ID: <20090514155204.GA6273@fancy-poultry.org>
+Reply-To: linux-kernel@vger.kernel.org
+References: <4A03B9C3.9090607@intel.com>
+ <20090512210154.GC23773@mit.edu>
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
-       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] block: completion related functions cleanup
-References: <1242032169-22422-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <4A0C2297.5040001@panasas.com> <4A0C2515.9060602@kernel.org> <4A0C2769.4090508@panasas.com>
-In-Reply-To: <4A0C2769.4090508@panasas.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 14 May 2009 15:45:02 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090512210154.GC23773@mit.edu>
+Organization: private site
+User-Agent: Mutt/1.5.19+20090508 (GNU/Linux)
+X-Provags-ID: V01U2FsdGVkX18swTzXAxKdju8xxsmThhxpw9kGfHbjE+t0OZ0
+ ZjXYrFnjRQmSNjKS+IHtuQ2D9RsGRiMV0eZc6o60ACoiE224Gl
+ LtWMZwbOLEQ7RM5UOJd3aaV0Bw2PH5r
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
-> From: Boaz Harrosh <bharrosh@panasas.com>
-> Date: Thu, 14 May 2009 16:46:03 +0300
-> Subject: [PATCH] scsi_lib: remove unused variable
+On 13.05.2009, Theodore Tso wrote: 
+
+> Ross Anderson was one of the first to write about these concerns, over
+> five years ago:
 > 
-> The last request completion cleanup in scsi_lib left an unused
-> this_count variable in scsi_io_completion().
-> (It was used before in a code segment that now uses blk_end_request_all())
+>      http://www.cl.cam.ac.uk/~rja14/tcpa-faq.html
 > 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> It's interesting that his 2003 document was able to predict the
+> emergence of the LaGrande Technology (see question 15 in the above
+> FAQ).
 
-Acked-by: Tejun Heo <tj@kernel.org>
+Many thanks for pointing this out!
 
-Thanks.
+Strange enough, nobody seems to care. I have carefully read Ross Andersons
+report, and I'm more than concerned now. Because I'm not a kernel
+programmer, I can not see by myself what these patches will do to the Linux
+kernel at all, so I can only hope that Linus will not let them in if they 
+can be misused to what Ross Anderson describes in his paper.
 
--- 
-tejun
+Regards,
+Heinz.
