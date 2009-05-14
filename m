@@ -1,43 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760224AbZENOKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761385AbZENOKk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760224AbZENOKW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 10:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbZENOKF
+	id S1761385AbZENOKk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 10:10:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760130AbZENOKK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 10:10:05 -0400
-Received: from terminus.zytor.com ([198.137.202.10]:55670 "EHLO
+	Thu, 14 May 2009 10:10:10 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55673 "EHLO
 	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754027AbZENOKE (ORCPT
+	with ESMTP id S1759680AbZENOKI (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 10:10:04 -0400
-Message-ID: <4A0C251B.9030101@zytor.com>
-Date: Thu, 14 May 2009 07:05:15 -0700
+	Thu, 14 May 2009 10:10:08 -0400
+Message-ID: <4A0C262B.3060303@zytor.com>
+Date: Thu, 14 May 2009 07:09:47 -0700
 From: "H. Peter Anvin" <hpa@zytor.com>
 User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Peter Zijlstra <peterz@infradead.org>
-CC: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       "Xin, Xiaohui" <xiaohui.xin@intel.com>, "Li, Xin" <xin.li@intel.com>,
-       "Nakajima, Jun" <jun.nakajima@intel.com>, Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       rostedt <rostedt@rostedt.homelinux.com>
-Subject: Re: Performance overhead of paravirt_ops on native identified
-References: <4A0B62F7.5030802@goop.org>  <4A0B6F9C.4060405@zytor.com> <1242289506.6642.901.camel@laptop>
-In-Reply-To: <1242289506.6642.901.camel@laptop>
+To: Andi Kleen <andi@firstfloor.org>
+CC: Sheng Yang <sheng@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86: Extend test_and_set_bit() test_and_clean_bit() to
+ 64 bits in X86_64
+References: <1242202647-32446-1-git-send-email-sheng@linux.intel.com> <87zldhl7ne.fsf@basil.nowhere.org> <200905141145.05591.sheng@linux.intel.com> <20090514083250.GD19296@one.firstfloor.org>
+In-Reply-To: <20090514083250.GD19296@one.firstfloor.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Peter Zijlstra wrote:
+Andi Kleen wrote:
+>> Well, I just think lots of "#ifdef/#else" is a little annoying here, then use 
+>> REX...
 > 
-> This sounds remarkably like what the dynamic function call tracer does.
+> Better add a 'q' string concatination then. The problem with rex is that most 
+> people can't read it even if they know assembler --  they don't know
+> all the details of instruction encoding.
 > 
 
-I'm sure this has been invented before... probably more than once.  Far
-too many things we invent don't get generalized.
+The right way to do it is to pass the proper type of register.
 
 	-hpa
 
