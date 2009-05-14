@@ -1,54 +1,94 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760005AbZENIeX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761355AbZENI2l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760005AbZENIeX (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 04:34:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755255AbZENIeN
+	id S1761355AbZENI2l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 04:28:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbZENI2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 04:34:13 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:42428 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754667AbZENIeM (ORCPT
+	Thu, 14 May 2009 04:28:30 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:3725 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753859AbZENI22 convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 04:34:12 -0400
-Subject: Re: [Xen-devel] Performance overhead of paravirt_ops on
- nativeidentified
-From: Peter Zijlstra <peterz@infradead.org>
-To: Jan Beulich <JBeulich@novell.com>
-Cc: Ingo Molnar <mingo@elte.hu>, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Jun Nakajima <jun.nakajima@intel.com>,
-       Xiaohui Xin <xiaohui.xin@intel.com>, Xin Li <xin.li@intel.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-In-Reply-To: <4A0BED040200007800000DB0@vpn.id2.novell.com>
-References: <4A0B62F7.5030802@goop.org>
-	 <4A0BED040200007800000DB0@vpn.id2.novell.com>
-Content-Type: text/plain
-Date: Thu, 14 May 2009 10:33:59 +0200
-Message-Id: <1242290039.6642.919.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 May 2009 04:28:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=D4yNwih8ekoyLg5nolqm/7dAPYNa//aEPooiZJPmxwB+SydcdDPUnGQdzDMj5oaTXM
+         eHwSGmfy45PSyw5TmhRUNHj3sOXghT++bMf2guGIPnzgecGfUzTKKYNY8R5nW8CyFRer
+         unuz5OmDh5hiQiF9x7BfXkJxEBHqyNxQJWcRo=
+MIME-Version: 1.0
+In-Reply-To: <1242289418.31161.45.camel@centos51>
+References: <1242289418.31161.45.camel@centos51>
+Date: Thu, 14 May 2009 17:28:29 +0900
+Message-ID: <28c262360905140128q3458e39fu62def873f2d95ae0@mail.gmail.com>
+Subject: Re: [PATCH]append prompt in /debug/tracing/README file.
+From: Minchan Kim <minchan.kim@gmail.com>
+To: leemgs1@gmail.com
+Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       linux-rt-users <linux-rt-users@vger.kernel.org>,
+       linux-kernel <linux-kernel@vger.kernel.org>,
+       williams <williams@redhat.com>, tglx <tglx@linutronix.de>,
+       Jiri Kosina <trivial@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-14 at 09:05 +0100, Jan Beulich wrote:
-> Wouldn't a third solution be to use ticket spinlocks everywhere, i.e. eliminate
-> the current indirection, and replace it by an indirection for just the contention
-> case? As I view it, the problem for Xen aren't really the ticket locks by
-> themselves, but rather the extra spinning involved, which is of concern only
-> if a lock is contended. We're using ticket locks quite happily in our kernels,
-> with directed instead of global wakeup from the unlock path. The only open
-> issue we currently have is that while for native keeping interrupts disabled
-> while spinning may be acceptable (though I'm not sure how -rt folks are
-> viewing this), in a pv environment one should really re-enable interrupts
-> here due to the potentially much higher latency.
+Hi, GeunkSik.
 
-the -rt folks don't nearly have as many spinlocks, and for those we do
-like ticket locks, because they are much fairer and give better worst
-case contention behaviour.
+For fixing trivial typo, Let Cced trivial patch maintainer.
 
-Also, for the -rt folks, preempt disable is about as bad as irq disable.
+TRIVIAL PATCHES
+P:  Jiri Kosina
+M:  trivial@kernel.org
+L:  linux-kernel@vger.kernel.org
+T:  git kernel.org:/pub/scm/linux/kernel/git/jikos/trivial.git
+S:  Maintained
 
+
+2009/5/14 GeunSik Lim <leemgs1@gmail.com>:
+>
+> Dear Steven Rostedt,
+>
+>    Please, Append prompt in /debug/tracing/README file.
+>
+>    This is trivial issue. Fix typo Mini Howto file(README) for ftrace.
+>
+>    Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+>
+> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+> index 1ce5dc6..a4726f5 100644
+> --- a/kernel/trace/trace.c
+> +++ b/kernel/trace/trace.c
+> @@ -2380,7 +2380,7 @@ static const char readme_msg[] =
+>        "# echo print-parent > /debug/tracing/trace_options\n"
+>        "# echo 1 > /debug/tracing/tracing_enabled\n"
+>        "# cat /debug/tracing/trace > /tmp/trace.txt\n"
+> -       "echo 0 > /debug/tracing/tracing_enabled\n"
+> +       "# echo 0 > /debug/tracing/tracing_enabled\n"
+>  ;
+>
+>  static ssize_t
+>
+>
+>
+> -----------------------------------------------
+> To unsubscribe from this list: send the line "unsubscribe linux-***"
+> in the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
+> GeunSik Lim (ELS - OS Group - S/W Lab - SAIT - SAMSUNG)
+> e-Mail  :1) geunsik.lim@samsung.com
+>         2) leemgs@gmail.com , leemgs1@gmail.com
+> HomePage: http://intomail.dnip.net/invain/me/
+> -----------------------------------------------
+>
+
+
+
+-- 
+Kinds regards,
+Minchan Kim
