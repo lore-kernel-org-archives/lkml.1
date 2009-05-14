@@ -1,161 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760449AbZENLXZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760760AbZENLXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760449AbZENLXZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 07:23:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757976AbZENLWs
+	id S1760760AbZENLXm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 07:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759755AbZENLXD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 07:22:48 -0400
-Received: from www.tglx.de ([62.245.132.106]:36734 "EHLO www.tglx.de"
+	Thu, 14 May 2009 07:23:03 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:37572 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754963AbZENLWq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 07:22:46 -0400
-Message-Id: <20090514110712.587942988@linutronix.de>
-User-Agent: quilt/0.47-1
-Date: Thu, 14 May 2009 11:21:22 -0000
-From: Thomas Gleixner <tglx@linutronix.de>
-To: LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Dimitri Sivanich <sivanich@sgi.com>,
-       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 2/2] sched, timers: cleanup avenrun users
-References: <20090514105915.973318588@linutronix.de>
-Content-Disposition: inline; filename=calc-load-cleanup-users.patch
+	id S1760089AbZENLXA (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 07:23:00 -0400
+Message-ID: <4A0BFF13.9090802@redhat.com>
+Date: Thu, 14 May 2009 14:22:59 +0300
+From: Avi Kivity <avi@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Gregory Haskins <ghaskins@novell.com>
+CC: kvm@vger.kernel.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
+       davidel@xmailserver.org
+Subject: Re: [KVM PATCH v7 2/3] kvm: add support for irqfd via	eventfd-notification
+ interface
+References: <20090512181134.26131.10023.stgit@dev.haskins.net> <20090512182655.26131.53824.stgit@dev.haskins.net>
+In-Reply-To: <20090512182655.26131.53824.stgit@dev.haskins.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-avenrun is a rough estimate so we don't have to worry about
-consistency of the three avenrun values. Remove the xtime lock
-dependency and provide a function to scale the values. Cleanup the
-users.
+Gregory Haskins wrote:
+> KVM provides a complete virtual system environment for guests, including
+> support for injecting interrupts modeled after the real exception/interrupt
+> facilities present on the native platform (such as the IDT on x86).
+> Virtual interrupts can come from a variety of sources (emulated devices,
+> pass-through devices, etc) but all must be injected to the guest via
+> the KVM infrastructure.  This patch adds a new mechanism to inject a specific
+> interrupt to a guest using a decoupled eventfd mechnanism:  Any legal signal
+> on the irqfd (using eventfd semantics from either userspace or kernel) will
+> translate into an injected interrupt in the guest at the next available
+> interrupt window.
+>
+> +
+> +static void
+> +irqfd_inject(struct work_struct *work)
+> +{
+> +	struct _irqfd *irqfd = container_of(work, struct _irqfd, work);
+> +	struct kvm *kvm = irqfd->kvm;
+> +
+>   
 
-[ Impact: cleanup ]
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
----
- fs/proc/loadavg.c     |   20 +++++++-------------
- include/linux/sched.h |    1 +
- kernel/sched.c        |   15 +++++++++++++++
- kernel/timer.c        |   32 ++++++--------------------------
- 4 files changed, 29 insertions(+), 39 deletions(-)
+I think you need to ->read() from the irqfd, otherwise the count will 
+never clear.
 
-Index: linux-2.6-tip/fs/proc/loadavg.c
-===================================================================
---- linux-2.6-tip.orig/fs/proc/loadavg.c
-+++ linux-2.6-tip/fs/proc/loadavg.c
-@@ -12,20 +12,14 @@
- 
- static int loadavg_proc_show(struct seq_file *m, void *v)
- {
--	int a, b, c;
--	unsigned long seq;
-+	unsigned long avnrun[3];
- 
--	do {
--		seq = read_seqbegin(&xtime_lock);
--		a = avenrun[0] + (FIXED_1/200);
--		b = avenrun[1] + (FIXED_1/200);
--		c = avenrun[2] + (FIXED_1/200);
--	} while (read_seqretry(&xtime_lock, seq));
--
--	seq_printf(m, "%d.%02d %d.%02d %d.%02d %ld/%d %d\n",
--		LOAD_INT(a), LOAD_FRAC(a),
--		LOAD_INT(b), LOAD_FRAC(b),
--		LOAD_INT(c), LOAD_FRAC(c),
-+	get_avenrun(avnrun, FIXED_1/200, 0);
-+
-+	seq_printf(m, "%lu.%02lu %lu.%02lu %lu.%02lu %ld/%d %d\n",
-+		LOAD_INT(avnrun[0]), LOAD_FRAC(avnrun[0]),
-+		LOAD_INT(avnrun[1]), LOAD_FRAC(avnrun[1]),
-+		LOAD_INT(avnrun[2]), LOAD_FRAC(avnrun[2]),
- 		nr_running(), nr_threads,
- 		task_active_pid_ns(current)->last_pid);
- 	return 0;
-Index: linux-2.6-tip/include/linux/sched.h
-===================================================================
---- linux-2.6-tip.orig/include/linux/sched.h
-+++ linux-2.6-tip/include/linux/sched.h
-@@ -118,6 +118,7 @@ struct bts_context;
-  *    11 bit fractions.
-  */
- extern unsigned long avenrun[];		/* Load averages */
-+extern void get_avenrun(unsigned long *loads, unsigned long offset, int shift);
- 
- #define FSHIFT		11		/* nr of bits of precision */
- #define FIXED_1		(1<<FSHIFT)	/* 1.0 as fixed-point */
-Index: linux-2.6-tip/kernel/sched.c
-===================================================================
---- linux-2.6-tip.orig/kernel/sched.c
-+++ linux-2.6-tip/kernel/sched.c
-@@ -2946,6 +2946,21 @@ static unsigned long calc_load_update;
- unsigned long avenrun[3];
- EXPORT_SYMBOL(avenrun);
- 
-+/**
-+ * get_avenrun - get the load average array
-+ * @loads:	pointer to dest load array
-+ * @offset:	offset to add
-+ * @shift:	shift count to shift the result left
-+ *
-+ * These values are estimates at best, so no need for locking.
-+ */
-+void get_avenrun(unsigned long *loads, unsigned long offset, int shift)
-+{
-+	loads[0] = (avenrun[0] + offset) << shift;
-+	loads[1] = (avenrun[1] + offset) << shift;
-+	loads[2] = (avenrun[2] + offset) << shift;
-+}
-+
- static unsigned long
- calc_load(unsigned long load, unsigned long exp, unsigned long active)
- {
-Index: linux-2.6-tip/kernel/timer.c
-===================================================================
---- linux-2.6-tip.orig/kernel/timer.c
-+++ linux-2.6-tip/kernel/timer.c
-@@ -1362,37 +1362,17 @@ int do_sysinfo(struct sysinfo *info)
- {
- 	unsigned long mem_total, sav_total;
- 	unsigned int mem_unit, bitcount;
--	unsigned long seq;
-+	struct timespec tp;
- 
- 	memset(info, 0, sizeof(struct sysinfo));
- 
--	do {
--		struct timespec tp;
--		seq = read_seqbegin(&xtime_lock);
--
--		/*
--		 * This is annoying.  The below is the same thing
--		 * posix_get_clock_monotonic() does, but it wants to
--		 * take the lock which we want to cover the loads stuff
--		 * too.
--		 */
--
--		getnstimeofday(&tp);
--		tp.tv_sec += wall_to_monotonic.tv_sec;
--		tp.tv_nsec += wall_to_monotonic.tv_nsec;
--		monotonic_to_bootbased(&tp);
--		if (tp.tv_nsec - NSEC_PER_SEC >= 0) {
--			tp.tv_nsec = tp.tv_nsec - NSEC_PER_SEC;
--			tp.tv_sec++;
--		}
--		info->uptime = tp.tv_sec + (tp.tv_nsec ? 1 : 0);
-+	ktime_get_ts(&tp);
-+	monotonic_to_bootbased(&tp);
-+	info->uptime = tp.tv_sec + (tp.tv_nsec ? 1 : 0);
- 
--		info->loads[0] = avenrun[0] << (SI_LOAD_SHIFT - FSHIFT);
--		info->loads[1] = avenrun[1] << (SI_LOAD_SHIFT - FSHIFT);
--		info->loads[2] = avenrun[2] << (SI_LOAD_SHIFT - FSHIFT);
-+	get_avenrun(info->loads, 0, SI_LOAD_SHIFT - FSHIFT);
- 
--		info->procs = nr_threads;
--	} while (read_seqretry(&xtime_lock, seq));
-+	info->procs = nr_threads;
- 
- 	si_meminfo(info);
- 	si_swapinfo(info);
+> +	mutex_lock(&kvm->lock);
+> +	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
+> +	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
+> +	mutex_unlock(&kvm->lock);
+> +}
+>   
 
+-- 
+error compiling committee.c: too many arguments to function
 
