@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762627AbZENC6R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762782AbZENDA2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762627AbZENC6R (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 22:58:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761774AbZENC6A
+	id S1762782AbZENDA2 (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 23:00:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761774AbZENDAR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 22:58:00 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:50577 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753744AbZENC6A (ORCPT
+	Wed, 13 May 2009 23:00:17 -0400
+Received: from mail-bw0-f222.google.com ([209.85.218.222]:43547 "EHLO
+	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761319AbZENDAQ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 22:58:00 -0400
-Date: Thu, 14 May 2009 07:18:01 +0530
-From: Balbir Singh <balbir@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [BUGFIX][PATCH] memcg: fix deadlock between
-	lock_page_cgroupand mapping tree_lock
-Message-ID: <20090514014801.GS13394@balbir.in.ibm.com>
-Reply-To: balbir@linux.vnet.ibm.com
-References: <20090513133031.f4be15a8.nishimura@mxp.nes.nec.co.jp> <20090513115626.57844f28.akpm@linux-foundation.org>
+	Wed, 13 May 2009 23:00:16 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CR+WbNofGZqRC07dIOMC7kqX6vwz2G6AZWZzhPyYmBjfldfTOOFVj6hFOZxB32AOKQ
+         svO5qSChfRVmqbirO0LZS0jVYkZSAEL1aTI0SCZA92noZXFzlyBwVkClnR5SALyo26ms
+         DdqNq/8i00K3ikfqScF4Yfuk4cCerrQYG/ao4=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-In-Reply-To: <20090513115626.57844f28.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1242253628.3364.26.camel@localhost.localdomain>
+References: <1242253628.3364.26.camel@localhost.localdomain>
+Date: Thu, 14 May 2009 07:00:16 +0400
+Message-ID: <aa79d98a0905132000g18629ebx7f260eca03a810fc@mail.gmail.com>
+Subject: Re: [PATCH -tip] x86: amd_iommu_init.c use NULL pointer
+From: Cyrill Gorcunov <gorcunov@gmail.com>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Joerg Roedel <joerg.roedel@amd.com>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Andrew Morton <akpm@linux-foundation.org> [2009-05-13 11:56:26]:
-
-> On Wed, 13 May 2009 13:30:31 +0900
-> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
-> 
-> > mapping->tree_lock can be aquired from interrupt context.
-> > Then, following dead lock can occur.
-> > 
-> > Assume "A" as a page.
-> > 
-> >  CPU0:
-> >        lock_page_cgroup(A)
-> > 		interrupted
-> > 			-> take mapping->tree_lock.
-> >  CPU1:
-> >        take mapping->tree_lock
-> > 		-> lock_page_cgroup(A)
-> 
-> And we didn't find out about this because lock_page_cgroup() uses
-> bit_spin_lock(), and lockdep doesn't handle bit_spin_lock().
-> 
-> It would perhaps be useful if one of you guys were to add a spinlock to
-> struct page, convert lock_page_cgroup() to use that spinlock then run a
-> full set of tests under lockdep, see if it can shake out any other bugs.
+On 5/14/09, Jaswinder Singh Rajput <jaswinder@kernel.org> wrote:
 >
-
-May be under DEBUG_VM we could do that. Good suggestion! 
-
--- 
-	Balbir
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
+>  arch/x86/kernel/amd_iommu_init.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/x86/kernel/amd_iommu_init.c
+> b/arch/x86/kernel/amd_iommu_init.c
+> index 8c0be09..f728b12 100644
+> --- a/arch/x86/kernel/amd_iommu_init.c
+> +++ b/arch/x86/kernel/amd_iommu_init.c
+> @@ -898,7 +898,7 @@ static int __init init_exclusion_range(struct
+> ivmd_header *m)
+>  /* called for unity map ACPI definition */
+>  static int __init init_unity_map_range(struct ivmd_header *m)
+>  {
+> -	struct unity_map_entry *e = 0;
+> +	struct unity_map_entry *e = NULL;
+>
+>  	e = kzalloc(sizeof(*e), GFP_KERNEL);
+>  	if (e == NULL)
+> --
+> 1.6.0.6
+>
+Hi Jaswinder,
+I believe you could get rid of such init completely. We do check 'e'
+after kzalloc anyway.
