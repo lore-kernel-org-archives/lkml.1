@@ -1,70 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756081AbZENOyW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753362AbZENO7o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756081AbZENOyW (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 10:54:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZENOyJ
+	id S1753362AbZENO7o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 10:59:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751600AbZENO7e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 10:54:09 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:54568 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752460AbZENOyI convert rfc822-to-8bit (ORCPT
+	Thu, 14 May 2009 10:59:34 -0400
+Received: from e23smtp04.au.ibm.com ([202.81.31.146]:36805 "EHLO
+	e23smtp04.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751010AbZENO7e (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 10:54:08 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=DRRTmZCbJ7leML2EWbpEjlYky32sViRdhyeMw1Dcw0JrAp4F4UoeIyw9KAw0NIGL/F
-         5aLpXkMj0d4Lsp6quuMSVEZlyQTjhS2/Qk0S1ZzH5vW5hvqjWi21hLQV1Jg+FCQWuZZ7
-         PBn/oMFhs+55crXo7s6bwRTMsw0/H5XwHWzQY=
+	Thu, 14 May 2009 10:59:34 -0400
+Date: Thu, 14 May 2009 20:28:29 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       Suresh B Siddha <suresh.b.siddha@intel.com>,
+       Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>,
+       Arjan van de Ven <arjan@infradead.org>, Ingo Molnar <mingo@elte.hu>,
+       Dipankar Sarma <dipankar@in.ibm.com>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Vatsa <vatsa@linux.vnet.ibm.com>, Gautham R Shenoy <ego@in.ibm.com>,
+       Gregory Haskins <gregory.haskins@gmail.com>,
+       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Arun Bharadwaj <arun@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH v2 0/2] Saving power by cpu evacuation
+	sched_max_capacity_pct=n
+Message-ID: <20090514145045.GH4853@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <20090513130541.21440.33364.stgit@drishya.in.ibm.com> <20090513143550.GU19296@one.firstfloor.org> <1242225402.26820.23.camel@twins> <20090513144659.GV19296@one.firstfloor.org> <1242226219.26820.26.camel@twins> <20090513150100.GW19296@one.firstfloor.org> <1242226927.26820.30.camel@twins> <20090513151054.GY19296@one.firstfloor.org>
 MIME-Version: 1.0
-In-Reply-To: <44c63dc40905140739n271d3d2w2e0cc364c0012d71@mail.gmail.com>
-References: <20090514231555.f52c81eb.minchan.kim@gmail.com>
-	 <2f11576a0905140727j5ba02b07t94826f57dd99839c@mail.gmail.com>
-	 <44c63dc40905140739n271d3d2w2e0cc364c0012d71@mail.gmail.com>
-Date: Thu, 14 May 2009 23:54:07 +0900
-X-Google-Sender-Auth: 82cab7ce6885c10e
-Message-ID: <2f11576a0905140754v39bbe5efv16b01fe4939c6814@mail.gmail.com>
-Subject: Re: [PATCH] mmtom: Prevent shrinking of active anon lru list in case 
-	of no swap space V3
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Minchan Kim <barrioskmc@gmail.com>
-Cc: MinChan Kim <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Rik van Riel <riel@redhat.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090513151054.GY19296@one.firstfloor.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/14 Minchan Kim <barrioskmc@gmail.com>:
-> On Thu, May 14, 2009 at 11:27 PM, KOSAKI Motohiro
-> <kosaki.motohiro@jp.fujitsu.com> wrote:
->>>  mm/vmscan.c |    2 +-
->>>  1 files changed, 1 insertions(+), 1 deletions(-)
->>>
->>> diff --git a/mm/vmscan.c b/mm/vmscan.c
->>> index 2f9d555..621708f 100644
->>> --- a/mm/vmscan.c
->>> +++ b/mm/vmscan.c
->>> @@ -1577,7 +1577,7 @@ static void shrink_zone(int priority, struct zone *zone,
->>>         * Even if we did not try to evict anon pages at all, we want to
->>>         * rebalance the anon lru active/inactive ratio.
->>>         */
->>> -       if (inactive_anon_is_low(zone, sc))
->>> +       if (inactive_anon_is_low(zone, sc) && nr_swap_pages > 0)
->>>                shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
->>
->>
->>       if (nr_swap_pages > 0 && inactive_anon_is_low(zone, sc))
->>
->> is better?
->> compiler can't swap evaluate order around &&.
->
-> If GCC optimizes away that branch with CONFIG_SWAP=n as Rik mentioned,
-> we don't have a concern.
+* Andi Kleen <andi@firstfloor.org> [2009-05-13 17:10:54]:
 
-ok. I ack this.
+> > > Yes that's fine and common, but you actually need to save power for this,
+> > > which throttling doesn't do.
+> > > 
+> > > My understanding this work is a extension of the existing
+> > > sched_mc_power_savings features that tries to be optionally more 
+> > > aggressive to keep complete package idle so that package level
+> > > power saving kicks in.
+> > > 
+> > > I'm just requesting that they don't call that throttling.
+> > 
+> > Ah no, this work differs in that regard in that it actually 'generates'
+> > idle time, instead of optimizing idle time.
+> 
+> That is what i meant with "more aggressive to keep complete packages idle"
+> above.
+
+Hi Andi,
+
+There is a difference in the framework as Peter has mentioned, we are
+trying to create idle times by forcefully reducing work.  From an
+end-user point of view, this can be seen as a logical extension of
+sched_mc_power_savings... v1 of the RFC extends the framework.
+
+However Ingo suggested that the knob is not intuitive and hence I have
+tried to switch to a percentage knob sched_max_capacity_pct.
+
+I am interested in an easy, simple and intuitive framework to evacuate
+cores which may imply forcefully reducing (throttling) work.
+ 
+> > Therefore it takes actual cpu time away from real work, which is
+> > throttling. Granted, one could call it limiting or similar, but
+> > throttling is a correct name.
+> 
+> That will be always ongoing confusion with the existing established
+> term. 
+> 
+> If you really need to call it throttling use "scheduler throttling"
+> or something like that, but a different word would be better.
+
+I think 'scheduler throttling' is good so that we avoid the term 'CPU
+throttling' or core throttling.  I had named this cpu evacuation or
+core evacuation just to avoid confusion with hardware throttling.
+
+--Vaidy
