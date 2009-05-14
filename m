@@ -1,128 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761828AbZENGKl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761543AbZENGOX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761828AbZENGKl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 02:10:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753324AbZENGKb
+	id S1761543AbZENGOX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 02:14:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753689AbZENGON
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 02:10:31 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:49552 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1751058AbZENGKb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 02:10:31 -0400
-Message-ID: <4A0BB4EA.60203@cn.fujitsu.com>
-Date: Thu, 14 May 2009 14:06:34 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       rostedt@goodmis.org, zhaolei@cn.fujitsu.com,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH v3] ftrace: add a tracepoint for	__raise_softirq_irqoff()
-References: <49FFDF9C.7040505@cn.fujitsu.com> <20090505161604.GA15524@Krystal> <4A07D3B3.10605@cn.fujitsu.com> <20090511134019.GB10932@Krystal> <4A0B859B.8070801@cn.fujitsu.com> <20090514035037.GA8159@Krystal>
-In-Reply-To: <20090514035037.GA8159@Krystal>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Thu, 14 May 2009 02:14:13 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:48175 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750900AbZENGOM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 02:14:12 -0400
+Date: Thu, 14 May 2009 08:16:23 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+       linux-kernel@vger.kernel.org,
+       Remis Lima Baima <remis.developer@googlemail.com>
+Subject: Re: [PATCH 01/15] asm-generic: rename termios.h, signal.h and mman.h
+Message-ID: <20090514061623.GA27755@uranus.ravnborg.org>
+References: <1242255398-23779-1-git-send-email-arnd@arndb.de> <1242255398-23779-2-git-send-email-arnd@arndb.de> <20090514151107.5eae120e.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090514151107.5eae120e.sfr@canb.auug.org.au>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
-> * Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
->> Mathieu Desnoyers wrote:
->>> I partially agree with you :
->>>
->>> Yes, we should try to fix TRACE_EVENT, but we should fix it _before_ we
->>> start using it widely. Circular header dependencies is a real problem
->>> with TRACE_EVENT right now.
->>>
->>> Until we fix this, I will be tempted to stay with a known-good solution,
->>> which is DECLARE/DEFINE_TRACE.
->>>
->>>
->> I partially agree with you:
->>
->> Yes, Circular header dependencies is a real problem with TRACE_EVENT
->> right now. It is also a problem with DECLARE_TRACE. It's a stubborn
->> disease with C-Language (for complex headers). Can we fix C-Language?
->>
->> o Macros in header (!CREATE_TRACE_POINTS)
->>
->> When CREATE_TRACE_POINTS is not defined, TRACE_EVENT is definitely
->> the same as DECLARE_TRACE. Actually, TRACE_EVENT is:
->>
->> #define TRACE_EVENT(name, proto, args, struct, assign, print)	\
->> 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
->>
->> So TRACE_EVENT and DECLARE_TRACE are the same in header files.
->> And so TRACE_EVENT and DECLARE_TRACE have the same advantages and
->> disadvantages. More TRACE_EVENT equals to a known-good solution.
->>
->> o Macros in c-file
->>
->> tracepoint uses DEFINE_TRACE only.
->>
->> ftrace uses CREATE_TRACE_POINTS + TRACE_EVENT:
->> 	#define CREATE_TRACE_POINTS
->> 	#include <trace/events/sched.h> (which uses TRACE_EVENT)
->>
->> ftrace generates more code which uses the tracepoints.
->>
->>> Then add a forward declaration of
->>>
->>> struct softirqaction;
->>>
->>> At the top of trace/irq.h. I did it in quite a few places in the LTTng
->>> tree. TP_PROTO just needs a forward declaration, not the full structure
->>> declaration.
->>>
->> Thank you for your valuable suggestions.
->>
->> You are the father of tracepoint and LTTng, your experience in
->> LTTng is very useful for ftrace.
->>
->> I'm glad for your suggestions.
->>
->>
->> Xiao Guangrong, could you add forward declarations of
->>
->> struct irqaction;
->> struct softirq_action;
->>
->> at the top of trace/irq.h as Mathieu's suggestions.
->> (and remove "#include <linux/interrupt.h>")
->>
+On Thu, May 14, 2009 at 03:11:07PM +1000, Stephen Rothwell wrote:
+> Hi Arnd,
 > 
-> You will probably still need something like :
+> On Wed, 13 May 2009 22:56:24 +0000 Arnd Bergmann <arnd@arndb.de> wrote:
+> >
+> > --- a/include/asm-generic/Kbuild
+> > +++ b/include/asm-generic/Kbuild
+> > @@ -2,9 +2,9 @@ header-y += errno-base.h
+> >  header-y += errno.h
+> >  header-y += fcntl.h
+> >  header-y += ioctl.h
+> > -header-y += mman.h
+> > +header-y += mman-common.h
+> >  header-y += poll.h
+> > -header-y += signal.h
+> > +header-y += signal-defs.h
+> >  header-y += statfs.h
 > 
-> #ifdef CREATE_TRACE_POINTS
-> #include <linux/interrupt.h>
-> #else
-> struct irqaction;
-> struct softirq_action;
-> #endif
-> 
+> I think that this change will prevent asm/mman.h and asm/signal.h from
+> being exported from the arch include/asm directories.
+> include/asm-generic/Kbuild is included by the arch/*/include/asm/Kbuild
+> files.
 
-It's not needed for trace/events/irq.h
+We have two Kbuild files in asm-generic.
 
-Yes, it's a solution.
+Kbuild (the one patched above) which specifies the files to be exported from asm-generic.
+Kbuild.asm which specify the commen set of files all architctures hall export.
 
-But I don't think we have to do this, CREATE_TRACE_POINTS is
-needed only _once_ for every <trace/events/xxxx.h>
+The latter is the file included from the arch's Kbuild file.
 
-The .c file which defines CREATE_TRACE_POINTS can provide
-(had provided likely) things like "#include <linux/interrupt.h>"
+I'm not sure this answer/address your comment above...
 
-See kernel/softirq.c:
-#include <linux/interrupt.h>
-......
-......
-#define CREATE_TRACE_POINTS
-#include <trace/events/irq.h>
-
-I don't think it's a problem, CREATE_TRACE_POINTS is defined only
-once for a <trace/events/xxxx.h>.
-
-Lai.
-
+	Sam
