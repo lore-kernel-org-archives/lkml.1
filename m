@@ -1,61 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754987AbZENU5M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756448AbZENU5i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754987AbZENU5M (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 16:57:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZENU45
+	id S1756448AbZENU5i (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 16:57:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbZENU53
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 16:56:57 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:48511 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753499AbZENU44 (ORCPT
+	Thu, 14 May 2009 16:57:29 -0400
+Received: from acsinet12.oracle.com ([141.146.126.234]:50688 "EHLO
+	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753499AbZENU52 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 16:56:56 -0400
-Date: Thu, 14 May 2009 22:56:00 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, San Mehat <san@android.com>,
-       Arve Hj?nnev?g <arve@android.com>, linux-kernel@vger.kernel.org
-Subject: Re: Misleading OOM messages
-Message-ID: <20090514205600.GA14741@elf.ucw.cz>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101503070.18804@chino.kir.corp.google.com> <alpine.DEB.1.10.0905121708470.14226@qirst.com> <20090514092909.GG1365@ucw.cz> <alpine.DEB.1.10.0905141546040.1381@qirst.com>
+	Thu, 14 May 2009 16:57:28 -0400
+Message-ID: <4A0C8631.7090106@oracle.com>
+Date: Thu, 14 May 2009 13:59:29 -0700
+From: Randy Dunlap <randy.dunlap@oracle.com>
+Organization: Oracle Linux Engineering
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0905141546040.1381@qirst.com>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Alex Chiang <achiang@hp.com>
+CC: jkosina@suse.cz, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] TRIVIAL: fix grammo in bus_for_each_dev() kerneldoc
+References: <20090514144339.18912.65431.stgit@bob.kio>
+In-Reply-To: <20090514144339.18912.65431.stgit@bob.kio>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Source-IP: abhmt008.oracle.com [141.146.116.17]
+X-Auth-Type: Internal IP
+X-CT-RefId: str=0001.0A010203.4A0C85B0.021B:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-05-14 15:46:50, Christoph Lameter wrote:
-> On Thu, 14 May 2009, Pavel Machek wrote:
-> 
-> > It can be 'low on memory' if you play with mlock() a bit.
-> 
-> But that is a reclaim failure becuase of mlocking pages.
-> 
-> > It is out of memory if you run out of swap (or have no swap to begin with).
-> 
-> That is a swap config issue.
+Alex Chiang wrote:
+> Cc: Randy Dunlap <randy.dunlap@oracle.com>
 
-Well, many machines are _designed_ to run without swap. Swapping on
-flash is considered bad.
+Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
 
-> > I believe message is often correct. What message would you suggest?
+Thanks.
+
+> Signed-off-by: Alex Chiang <achiang@hp.com>
+> ---
 > 
-> "Failure to reclaim memory"
+>  drivers/base/bus.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/drivers/base/bus.c b/drivers/base/bus.c
+> index dc030f1..4476a4e 100644
+> --- a/drivers/base/bus.c
+> +++ b/drivers/base/bus.c
+> @@ -279,7 +279,7 @@ static struct device *next_device(struct klist_iter *i)
+>   *
+>   * NOTE: The device that returns a non-zero value is not retained
+>   * in any way, nor is its refcount incremented. If the caller needs
+> - * to retain this data, it should do, and increment the reference
+> + * to retain this data, it should do so, and increment the reference
+>   * count in the supplied callback.
+>   */
+>  int bus_for_each_dev(struct bus_type *bus, struct device *start,
+> 
 
-That is not a helpful message, I'm afraid. What about
 
- "Memory allocation failure" ?
- "Out of memory, or failed to allocate memory due to temporary spike"?
-
-									Pavel
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+~Randy
+LPC 2009, Sept. 23-25, Portland, Oregon
+http://linuxplumbersconf.org/2009/
