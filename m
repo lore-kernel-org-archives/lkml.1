@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759595AbZENWzI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758903AbZENXB2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759595AbZENWzI (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:55:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756901AbZENWms
+	id S1758903AbZENXB2 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:01:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757109AbZENWmy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:48 -0400
-Received: from kroah.org ([198.145.64.141]:52559 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:54 -0400
+Received: from kroah.org ([198.145.64.141]:52652 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756700AbZENWm0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:26 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:26 2009
-Message-Id: <20090514223526.055032602@mini.kroah.org>
+	id S1756250AbZENWme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:34 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:27 2009
+Message-Id: <20090514223527.281187734@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:33:10 -0700
+Date: Thu, 14 May 2009 15:33:17 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [patch 35/51] NFS: Close page_mkwrite() races
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
+       Jiri Kosina <jkosina@suse.cz>
+Subject: [patch 42/51] HID: add NOGET quirk for devices from CH Products
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=nfs-close-page_mkwrite-races.patch
+Content-Disposition: inline; filename=hid-add-noget-quirk-for-devices-from-ch-products.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,38 +39,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 7fdf523067666b0eaff330f362401ee50ce187c4 upstream.
+commit b820aabf6cb987fd03d85b0b5f599685051e0426 upstream.
 
-Follow up to Nick Piggin's patches to ensure that nfs_vm_page_mkwrite
-returns with the page lock held, and sets the VM_FAULT_LOCKED flag.
+This patch (as1240) adds the NOGET quirk for three devices from CH
+Products: the Pro pedals, the Combatstick joystick, and the Flight-Sim
+yoke.  Without these quirks, the devices haven't worked for many
+kernel releases.  Sometimes replugging them after boot-up would get
+them to work and sometimes they wouldn't work at all.
 
-See http://bugzilla.kernel.org/show_bug.cgi?id=12913
-
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Reported-by: Sean Hildebrand <silverwraithii@gmail.com>
+Reported-by: Sid Boyce <sboyce@blueyonder.co.uk>
+Tested-by: Sean Hildebrand <silverwraithii@gmail.com>
+Tested-by: Sid Boyce <sboyce@blueyonder.co.uk>
+Signed-off-by: Jiri Kosina <jkosina@suse.cz>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfs/file.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/hid/hid-ids.h           |    5 +++++
+ drivers/hid/usbhid/hid-quirks.c |    3 +++
+ 2 files changed, 8 insertions(+)
 
---- a/fs/nfs/file.c
-+++ b/fs/nfs/file.c
-@@ -481,10 +481,10 @@ static int nfs_vm_page_mkwrite(struct vm
+--- a/drivers/hid/hid-ids.h
++++ b/drivers/hid/hid-ids.h
+@@ -110,6 +110,11 @@
+ #define USB_VENDOR_ID_BERKSHIRE		0x0c98
+ #define USB_DEVICE_ID_BERKSHIRE_PCWD	0x1140
  
- 	ret = nfs_updatepage(filp, page, 0, pagelen);
- out_unlock:
-+	if (!ret)
-+		return VM_FAULT_LOCKED;
- 	unlock_page(page);
--	if (ret)
--		ret = VM_FAULT_SIGBUS;
--	return ret;
-+	return VM_FAULT_SIGBUS;
- }
++#define USB_VENDOR_ID_CH		0x068e
++#define USB_DEVICE_ID_CH_PRO_PEDALS	0x00f2
++#define USB_DEVICE_ID_CH_COMBATSTICK	0x00f4
++#define USB_DEVICE_ID_CH_FLIGHT_SIM_YOKE	0x00ff
++
+ #define USB_VENDOR_ID_CHERRY		0x046a
+ #define USB_DEVICE_ID_CHERRY_CYMOTION	0x0023
  
- static struct vm_operations_struct nfs_file_vm_ops = {
+--- a/drivers/hid/usbhid/hid-quirks.c
++++ b/drivers/hid/usbhid/hid-quirks.c
+@@ -50,6 +50,9 @@ static const struct hid_blacklist {
+ 	{ USB_VENDOR_ID_ATEN, USB_DEVICE_ID_ATEN_2PORTKVM, HID_QUIRK_NOGET },
+ 	{ USB_VENDOR_ID_ATEN, USB_DEVICE_ID_ATEN_4PORTKVM, HID_QUIRK_NOGET },
+ 	{ USB_VENDOR_ID_ATEN, USB_DEVICE_ID_ATEN_4PORTKVMC, HID_QUIRK_NOGET },
++	{ USB_VENDOR_ID_CH, USB_DEVICE_ID_CH_COMBATSTICK, HID_QUIRK_NOGET },
++	{ USB_VENDOR_ID_CH, USB_DEVICE_ID_CH_FLIGHT_SIM_YOKE, HID_QUIRK_NOGET },
++	{ USB_VENDOR_ID_CH, USB_DEVICE_ID_CH_PRO_PEDALS, HID_QUIRK_NOGET },
+ 	{ USB_VENDOR_ID_DMI, USB_DEVICE_ID_DMI_ENC, HID_QUIRK_NOGET },
+ 	{ USB_VENDOR_ID_ELO, USB_DEVICE_ID_ELO_TS2700, HID_QUIRK_NOGET },
+ 	{ USB_VENDOR_ID_SUN, USB_DEVICE_ID_RARITAN_KVM_DONGLE, HID_QUIRK_NOGET },
 
 
