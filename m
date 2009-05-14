@@ -1,90 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZENNfb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756237AbZENNi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754232AbZENNfb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 09:35:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbZENNfM
+	id S1756237AbZENNi6 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 09:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752114AbZENNit
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 09:35:12 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58155 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751317AbZENNfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 09:35:10 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Olga Kornievskaia <aglo@citi.umich.edu>,
-       "J. Bruce Fields" <bfields@fieldses.org>, Jim Rees <rees@umich.edu>,
-       linux-nfs@vger.kernel.org
-Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone over NFS
-References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
-	<20090508120119.8c93cfd7.akpm@linux-foundation.org>
-	<20090511081415.GL4694@kernel.dk>
-	<x49skjb21b7.fsf@segfault.boston.devel.redhat.com>
-	<20090511165826.GG4694@kernel.dk>
-	<x494ovp4r51.fsf@segfault.boston.devel.redhat.com>
-	<20090512204433.7eb69075.akpm@linux-foundation.org>
-	<x49y6t1rqw0.fsf@segfault.boston.devel.redhat.com>
-	<x49k54ku7i2.fsf@segfault.boston.devel.redhat.com>
-	<1242258338.5407.244.camel@heimdal.trondhjem.org>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Thu, 14 May 2009 09:34:03 -0400
-In-Reply-To: <1242258338.5407.244.camel@heimdal.trondhjem.org> (Trond
-	Myklebust's message of "Wed, 13 May 2009 19:45:38 -0400")
-Message-ID: <x49octv7qr8.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	Thu, 14 May 2009 09:38:49 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:57298 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751615AbZENNis (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 09:38:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LRt5CWNFZKfQ9cREMqr0NVAGh2sl/hymVepiZ99raXD/02YTlb76fCyqPwq0Hr/BKS
+         i35jZHYVN+knvYU7UmQJprvHLauUSAM7dSMEPbUvb+bXOgooKNd8MC5ACL1I2oTblbuS
+         7IjY3VMEXVyT8p/uwUrwdzI5AMGKKwn523gNA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1242277453.23058.35.camel@brick>
+References: <200904301408.09370.tobias.doerffel@gmail.com>
+	 <877i0xib7d.fsf@basil.nowhere.org>
+	 <a36005b50905120720p14e0ea0av79f99551262a920a@mail.gmail.com>
+	 <20090512150408.GH19296@one.firstfloor.org>
+	 <a36005b50905121045s62c16760p3aba003647a572c7@mail.gmail.com>
+	 <1242277453.23058.35.camel@brick>
+Date: Thu, 14 May 2009 06:38:48 -0700
+Message-ID: <a36005b50905140638r56f73095kfc669bae1333e2bd@mail.gmail.com>
+Subject: Re: Specific support for Intel Atom architecture
+From: Ulrich Drepper <drepper@gmail.com>
+To: Harvey Harrison <harvey.harrison@gmail.com>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Tobias Doerffel <tobias.doerffel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust <trond.myklebust@fys.uio.no> writes:
+On Wed, May 13, 2009 at 10:04 PM, Harvey Harrison
+<harvey.harrison@gmail.com> wrote:
+> It's called be16_to_cpup, or on x86, swab16p()
 
-> On Wed, 2009-05-13 at 15:29 -0400, Jeff Moyer wrote:
->> Hi, netdev folks.  The summary here is:
->> 
->> A patch added in the 2.6.30 development cycle caused a performance
->> regression in my NFS iozone testing.  The patch in question is the
->> following:
->> 
->> commit 47a14ef1af48c696b214ac168f056ddc79793d0e
->> Author: Olga Kornievskaia <aglo@citi.umich.edu>
->> Date:   Tue Oct 21 14:13:47 2008 -0400
->> 
->>     svcrpc: take advantage of tcp autotuning
->>  
->> which is also quoted below.  Using 8 nfsd threads, a single client doing
->> 2GB of streaming read I/O goes from 107590 KB/s under 2.6.29 to 65558
->> KB/s under 2.6.30-rc4.  I also see more run to run variation under
->> 2.6.30-rc4 using the deadline I/O scheduler on the server.  That
->> variation disappears (as does the performance regression) when reverting
->> the above commit.
->
-> It looks to me as if we've got a bug in the svc_tcp_has_wspace() helper
-> function. I can see no reason why we should stop processing new incoming
-> RPC requests just because the send buffer happens to be 2/3 full. If we
-> see that we have space for another reply, then we should just go for it.
-> OTOH, we do want to ensure that the SOCK_NOSPACE flag remains set, so
-> that the TCP layer knows that we're congested, and that we'd like it to
-> increase the send window size, please.
->
-> Could you therefore please see if the following (untested) patch helps?
-
-I'm seeing slightly better results with the patch:
-
-71548
-75987
-71557
-87432
-83538
-
-But that's still not up to the speeds we saw under 2.6.29.  The packet
-capture for one run can be found here:
-  http://people.redhat.com/jmoyer/trond.pcap.bz2
-
-Cheers,
-Jeff
+Indeed.  If now somebody with an Atom could test whether using movbe
+has an advantage (my guess is that there is a slight advantage) then
+one could define a special version of the __beXX_to_cpup and
+__cpu_to_beXXp functions for Atom and start using these functions more
+rigorously in the tree.
