@@ -1,74 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760356AbZENIal@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756615AbZENIkB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760356AbZENIal (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 04:30:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755659AbZENIab
+	id S1756615AbZENIkB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 04:40:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbZENIjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 04:30:31 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:53117 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751734AbZENIab (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 04:30:31 -0400
-Subject: Re: kernel BUG at mm/slqb.c:1411!
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>,
-       Nick Piggin <npiggin@suse.de>
-In-Reply-To: <20090513173758.2f3d2a50.minchan.kim@barrios-desktop>
-References: <20090513163826.7232.A69D9226@jp.fujitsu.com>
-	 <20090513173758.2f3d2a50.minchan.kim@barrios-desktop>
-Date: Thu, 14 May 2009 11:30:30 +0300
-Message-Id: <1242289830.21646.5.camel@penberg-laptop>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 7bit
-X-Mailer: Evolution 2.24.3 
+	Thu, 14 May 2009 04:39:51 -0400
+Received: from gir.skynet.ie ([193.1.99.77]:34963 "EHLO gir.skynet.ie"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751734AbZENIju (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 04:39:50 -0400
+Date: Thu, 14 May 2009 09:39:47 +0100
+From: Mel Gorman <mel@csn.ul.ie>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux@arm.linux.org.uk, linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+       hartleys@visionengravers.com, mcrapet@gmail.com, fred99@carolina.rr.com,
+       linux-arm-kernel@lists.arm.linux.org.uk
+Subject: Re: [PATCH] Double check memmap is actually valid with a memmap
+	has unexpected holes V2
+Message-ID: <20090514083947.GB16639@csn.ul.ie>
+References: <20090505082944.GA25904@csn.ul.ie> <20090505083614.GA28688@n2100.arm.linux.org.uk> <20090505084928.GC25904@csn.ul.ie> <20090513163448.GA18006@csn.ul.ie> <20090513124805.9c70c43c.akpm@linux-foundation.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+In-Reply-To: <20090513124805.9c70c43c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 2009-05-13 at 17:37 +0900, Minchan Kim wrote:
-> On Wed, 13 May 2009 16:42:37 +0900 (JST)
-> KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+On Wed, May 13, 2009 at 12:48:05PM -0700, Andrew Morton wrote:
+> On Wed, 13 May 2009 17:34:48 +0100
+> Mel Gorman <mel@csn.ul.ie> wrote:
 > 
-> Hmm. I don't know slqb well.
-> So, It's just my guess. 
+> > pfn_valid() is meant to be able to tell if a given PFN has valid memmap
+> > associated with it or not. In FLATMEM, it is expected that holes always
+> > have valid memmap as long as there is valid PFNs either side of the hole.
+> > In SPARSEMEM, it is assumed that a valid section has a memmap for the
+> > entire section.
+> > 
+> > However, ARM and maybe other embedded architectures in the future free
+> > memmap backing holes to save memory on the assumption the memmap is never
+> > used. The page_zone linkages are then broken even though pfn_valid()
+> > returns true. A walker of the full memmap must then do this additional
+> > check to ensure the memmap they are looking at is sane by making sure the
+> > zone and PFN linkages are still valid. This is expensive, but walkers of
+> > the full memmap are extremely rare.
+> > 
+> > This was caught before for FLATMEM and hacked around but it hits again for
+> > SPARSEMEM because the page_zone linkages can look ok where the PFN linkages
+> > are totally screwed. This looks like a hatchet job but the reality is that
+> > any clean solution would end up consumning all the memory saved by punching
+> > these unexpected holes in the memmap. For example, we tried marking the
+> > memmap within the section invalid but the section size exceeds the size of
+> > the hole in most cases so pfn_valid() starts returning false where valid
+> > memmap exists. Shrinking the size of the section would increase memory
+> > consumption offsetting the gains.
+> > 
+> > This patch identifies when an architecture is punching unexpected holes
+> > in the memmap that the memory model cannot automatically detect and sets
+> > ARCH_HAS_HOLES_MEMORYMODEL. At the moment, this is restricted to EP93xx
+> > which is the model sub-architecture this has been reported on but may expand
+> > later. When set, walkers of the full memmap must call memmap_valid_within()
+> > for each PFN and passing in what it expects the page and zone to be for
+> > that PFN. If it finds the linkages to be broken, it assumes the memmap is
+> > invalid for that PFN.
 > 
-> We surely increase l->nr_partial in  __slab_alloc_page.
-> In between l->nr_partial++ and call __cache_list_get_page, Who is decrease l->nr_partial again.
-> After all, __cache_list_get_page return NULL and hit the VM_BUG_ON.
+> It's unclear to me whether this patch is needed in 2.6.30 or even
+> 2.6.29 or whatever.
 > 
-> Comment said :
+
+It affected at least 2.6.28.4 so minimally, I'd like to see it in for 2.6.30. I
+think it's a -stable candidate but I'd like to hear from the ARM maintainer
+on whether he wants to push it or not to that tree.
+
+> It applies OK to 2.6.28, 2.6.29, current mainline and mmotm, so I'll
+> just sit tight until I'm told what to do.
 > 
->         /* Protects nr_partial, nr_slabs, and partial */
->   spinlock_t    page_lock;
-> 
-> As comment is right, We have to hold the l->page_lock ?
 
-Makes sense. Nick? Motohiro-san, can you try this patch please?
+Please merge for 2.6.30 at least. Russell, are you ok with that? Are you ok
+with this being pushed to -stable?
 
-			Pekka
+Thanks
 
-diff --git a/mm/slqb.c b/mm/slqb.c
-index 5d0642f..29bb005 100644
---- a/mm/slqb.c
-+++ b/mm/slqb.c
-@@ -1399,12 +1399,14 @@ static noinline void *__slab_alloc_page(struct kmem_cache *s,
- 		page->list = l;
- 
- 		spin_lock(&n->list_lock);
-+		spin_lock(&l->page_lock);
- 		l->nr_slabs++;
- 		l->nr_partial++;
- 		list_add(&page->lru, &l->partial);
- 		slqb_stat_inc(l, ALLOC);
- 		slqb_stat_inc(l, ALLOC_SLAB_NEW);
- 		object = __cache_list_get_page(s, l);
-+		spin_unlock(&l->page_lock);
- 		spin_unlock(&n->list_lock);
- #endif
- 	}
-
-
+-- 
+Mel Gorman
+Part-time Phd Student                          Linux Technology Center
+University of Limerick                         IBM Dublin Software Lab
