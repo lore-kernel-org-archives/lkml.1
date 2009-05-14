@@ -1,668 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758858AbZENHfT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755157AbZENHka@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758858AbZENHfT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 03:35:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZENHfB
+	id S1755157AbZENHka (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 03:40:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753129AbZENHkS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 03:35:01 -0400
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:17678 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751714AbZENHfA (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 03:35:00 -0400
-Date: Thu, 14 May 2009 09:33:40 +0200
-From: Marek Szyprowski <m.szyprowski@samsung.com>
-Subject: [PATCH] LP3971 PMIC regulator driver
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>
-Cc: "'Liam Girdwood'" <lrg@slimlogic.co.uk>,
-       "'Mark Brown'" <broonie@opensource.wolfsonmicro.com>,
-       "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>,
-       Marek Szyprowski <m.szyprowski@samsung.com>
-Message-id: <E4D3F24EA6C9E54F817833EAE0D912AC02245E982A@bssrvexch01.BS.local>
-MIME-version: 1.0
-Content-type: text/plain; charset=us-ascii
-Content-language: en-US
-Content-transfer-encoding: 7BIT
-Accept-Language: en-US
-Thread-topic: [PATCH] LP3971 PMIC regulator driver
-Thread-index: AcnUZkz67e+WAXrUTVCYiL+yZEnIMw==
-acceptlanguage: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
+	Thu, 14 May 2009 03:40:18 -0400
+Received: from hera.kernel.org ([140.211.167.34]:49373 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752458AbZENHkR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 03:40:17 -0400
+Subject: [git-pull -tip][PATCH 0/6] x86: fix mtrr's MSR double declaration
+ patches
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, Yinghai Lu <yinghai@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       x86 maintainers <x86@kernel.org>, LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 14 May 2009 13:01:44 +0530
+Message-Id: <1242286304.4574.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch adds regulator drivers for National Semiconductors LP3971 PMIC.
-This LP3971 PMIC controller has 3 DC/DC voltage converters and 5 low drop-out
-(LDO) regulators. LP3971 PMIC controller uses I2C interface.
+The following changes since commit 4791445ef20cfee28e36e6c3338846618bffa937:
+  Ingo Molnar (1):
+        Merge branch 'x86/urgent'
 
-Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
-Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+are available in the git repository at:
 
-diff --git a/drivers/regulator/Kconfig b/drivers/regulator/Kconfig
-index e58c0ce..a2c899a 100644
---- a/drivers/regulator/Kconfig
-+++ b/drivers/regulator/Kconfig
-@@ -91,4 +91,11 @@ config REGULATOR_PCF50633
-         Say Y here to support the voltage regulators and convertors
-         on PCF50633
+  git://git.kernel.org/pub/scm/linux/kernel/git/jaswinder/linux-2.6-tip.git master
 
-+config REGULATOR_LP3971
-+       tristate "National Semiconductors LP3971 PMIC regulator driver"
-+       depends on I2C
-+       help
-+        Say Y here to support the voltage regulators and convertors
-+        on National Semiconductors LP3971 PMIC
-+
- endif
-diff --git a/drivers/regulator/Makefile b/drivers/regulator/Makefile
-index bac133a..f77a15a 100644
---- a/drivers/regulator/Makefile
-+++ b/drivers/regulator/Makefile
-@@ -8,6 +8,7 @@ obj-$(CONFIG_REGULATOR_FIXED_VOLTAGE) += fixed.o
- obj-$(CONFIG_REGULATOR_VIRTUAL_CONSUMER) += virtual.o
+Jaswinder Singh Rajput (6):
+      x86: mtrr replace MTRRcap_MSR with msr-index's MSR_MTRRcap
+      x86: mtrr replace MTRRfix64K_00000_MSR with msr-index's MSR_MTRRfix64K_00000
+      x86: mtrr replace MTRRfix16K_80000_MSR with msr-index's MSR_MTRRfix16K_80000
+      x86: mtrr remove mtrr MSRs double declaration
+      x86: mtrr replace MTRRfix4K_C0000_MSR with msr-index's MSR_MTRRfix4K_C0000
+      x86: mtrr replace MTRRdefType_MSR with msr-index's MSR_MTRRdefType
 
- obj-$(CONFIG_REGULATOR_BQ24022) += bq24022.o
-+obj-$(CONFIG_REGULATOR_LP3971) += lp3971.o
- obj-$(CONFIG_REGULATOR_TWL4030) += twl4030-regulator.o
- obj-$(CONFIG_REGULATOR_WM8350) += wm8350-regulator.o
- obj-$(CONFIG_REGULATOR_WM8400) += wm8400-regulator.o
-diff --git a/drivers/regulator/lp3971.c b/drivers/regulator/lp3971.c
-new file mode 100644
-index 0000000..95c18bd
---- /dev/null
-+++ b/drivers/regulator/lp3971.c
-@@ -0,0 +1,532 @@
-+/*
-+ * Regulator driver for National Semiconductors LP3971 PMIC chip
-+ *
-+ *  Copyright (C) 2009 Samsung Electronics
-+ *  Author: Marek Szyprowski <m.szyprowski@samsung.com>
-+ *
-+ * Based on wm8350.c
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ */
-+
-+#include <linux/bug.h>
-+#include <linux/err.h>
-+#include <linux/i2c.h>
-+#include <linux/kernel.h>
-+#include <linux/regulator/driver.h>
-+#include <linux/regulator/lp3971.h>
-+
-+struct lp3971 {
-+       struct device *dev;
-+       struct mutex io_lock;
-+       struct i2c_client *i2c;
-+       int num_regulators;
-+       struct regulator_dev **rdev;
-+};
-+
-+static u8 lp3971_reg_read(struct lp3971 *lp3971, u8 reg);
-+static int lp3971_set_bits(struct lp3971 *lp3971, u8 reg, u16 mask, u16 val);
-+
-+#define LP3971_SYS_CONTROL1_REG 0x07
-+
-+#define LP3971_BUCK_VOL_ENABLE_REG 0x10
-+#define LP3971_BUCK_VOL_CHANGE_REG 0x20
-+
-+/*     Voltage control registers shift:
-+       LP3971_BUCK1 -> 0
-+       LP3971_BUCK2 -> 4
-+       LP3971_BUCK3 -> 6
-+*/
-+#define BUCK_VOL_CHANGE_SHIFT(x) (((1 << x) & ~0x01) << 1)
-+#define BUCK_VOL_CHANGE_FLAG_GO 0x01
-+#define BUCK_VOL_CHANGE_FLAG_TARGET 0x02
-+#define BUCK_VOL_CHANGE_FLAG_MASK 0x03
-+
-+#define LP3971_BUCK1_BASE 0x23
-+#define LP3971_BUCK2_BASE 0x29
-+#define LP3971_BUCK3_BASE 0x32
-+
-+const static int buck_base_addr[] = {
-+       LP3971_BUCK1_BASE,
-+       LP3971_BUCK2_BASE,
-+       LP3971_BUCK3_BASE,
-+};
-+
-+#define LP3971_BUCK_TARGET_VOL1_REG(x) (buck_base_addr[x])
-+#define LP3971_BUCK_TARGET_VOL2_REG(x) (buck_base_addr[x]+1)
-+
-+const static int buck_voltage_map[] = {
-+          0,  800,  850,  900,  950, 1000, 1050, 1100,
-+       1150, 1200, 1250, 1300, 1350, 1400, 1450, 1500,
-+       1550, 1600, 1650, 1700, 1800, 1900, 2500, 2800,
-+       3000, 3300,
-+};
-+
-+#define BUCK_TARGET_VOL_MASK 0x3f
-+#define BUCK_TARGET_VOL_MIN_IDX 0x01
-+#define BUCK_TARGET_VOL_MAX_IDX 0x19
-+
-+#define LP3971_BUCK_RAMP_REG(x)        (buck_base_addr[x]+2)
-+
-+#define LP3971_LDO_ENABLE_REG 0x12
-+#define LP3971_LDO_VOL_CONTR_BASE 0x39
-+
-+/*     Voltage control registers:
-+       LP3971_LDO1 -> LP3971_LDO_VOL_CONTR_BASE + 0
-+       LP3971_LDO2 -> LP3971_LDO_VOL_CONTR_BASE + 0
-+       LP3971_LDO3 -> LP3971_LDO_VOL_CONTR_BASE + 1
-+       LP3971_LDO4 -> LP3971_LDO_VOL_CONTR_BASE + 1
-+       LP3971_LDO5 -> LP3971_LDO_VOL_CONTR_BASE + 2
-+*/
-+#define LP3971_LDO_VOL_CONTR_REG(x)    (LP3971_LDO_VOL_CONTR_BASE + (x >> 1))
-+
-+/*     Voltage control registers shift:
-+       LP3971_LDO1 -> 0, LP3971_LDO2 -> 4
-+       LP3971_LDO3 -> 0, LP3971_LDO4 -> 4
-+       LP3971_LDO5 -> 0
-+*/
-+#define LDO_VOL_CONTR_SHIFT(x) ((x & 1) << 2)
-+#define LDO_VOL_CONTR_MASK 0x0f
-+
-+const static int ldo45_voltage_map1[] = {
-+       1000, 1050, 1100, 1150, 1200, 1250, 1300, 1350,
-+       1400, 1500, 1800, 1900, 2500, 2800, 3000, 3300,
-+};
-+
-+const static int ldo123_voltage_map[] = {
-+       1800, 1900, 2000, 2100, 2200, 2300, 2400, 2500,
-+       2600, 2700, 2800, 2900, 3000, 3100, 3200, 3300,
-+};
-+
-+const static int *ldo_voltage_map[] = {
-+       ldo123_voltage_map, /* LDO1 */
-+       ldo123_voltage_map, /* LDO2 */
-+       ldo123_voltage_map, /* LDO3 */
-+       ldo45_voltage_map1, /* LDO4 */
-+       ldo45_voltage_map1, /* LDO5 */
-+};
-+
-+#define LDO_VOL_VALUE_MAP(x) (ldo_voltage_map[(x - LP3971_LDO1)])
-+
-+#define LDO_VOL_MIN_IDX 0x00
-+#define LDO_VOL_MAX_IDX 0x0f
-+
-+static int lp3971_ldo_is_enabled(struct regulator_dev *dev)
-+{
-+       struct lp3971 *lp3971 = rdev_get_drvdata(dev);
-+       int ldo = rdev_get_id(dev) - LP3971_LDO1;
-+       u16 mask = 1 << (1 + ldo);
-+       u16 val;
-+
-+       val = lp3971_reg_read(lp3971, LP3971_LDO_ENABLE_REG);
-+       return (val & mask) != 0;
-+}
-+
-+static int lp3971_ldo_enable(struct regulator_dev *dev)
-+{
-+       struct lp3971 *lp3971 = rdev_get_drvdata(dev);
-+       int ldo = rdev_get_id(dev) - LP3971_LDO1;
-+       u16 mask = 1 << (1 + ldo);
-+
-+       return lp3971_set_bits(lp3971, LP3971_LDO_ENABLE_REG, mask, mask);
-+}
-+
-+static int lp3971_ldo_disable(struct regulator_dev *dev)
-+{
-+       struct lp3971 *lp3971 = rdev_get_drvdata(dev);
-+       int ldo = rdev_get_id(dev) - LP3971_LDO1;
-+       u16 mask = 1 << (1 + ldo);
-+
-+       return lp3971_set_bits(lp3971, LP3971_LDO_ENABLE_REG, mask, 0);
-+}
-+
-+static int lp3971_ldo_get_voltage(struct regulator_dev *dev)
-+{
-+       struct lp3971 *lp3971 = rdev_get_drvdata(dev);
-+       int ldo = rdev_get_id(dev) - LP3971_LDO1;
-+       u16 val, reg;
-+
-+       reg = lp3971_reg_read(lp3971, LP3971_LDO_VOL_CONTR_REG(ldo));
-+       val = (reg >> LDO_VOL_CONTR_SHIFT(ldo)) & LDO_VOL_CONTR_MASK;
-+
-+       return 1000 * LDO_VOL_VALUE_MAP(ldo)[val];
-+}
-+
-+static int lp3971_ldo_set_voltage(struct regulator_dev *dev,
-+                                 int min_uV, int max_uV)
-+{
-+       struct lp3971 *lp3971 = rdev_get_drvdata(dev);
-+       int ldo = rdev_get_id(dev) - LP3971_LDO1;
-+       int min_vol = min_uV / 1000, max_vol = max_uV / 1000;
-+       const int *vol_map = LDO_VOL_VALUE_MAP(ldo);
-+       u16 val;
-+
-+       if (min_vol < vol_map[LDO_VOL_MIN_IDX] ||
-+           min_vol > vol_map[LDO_VOL_MAX_IDX])
-+               return -EINVAL;
-+
-+       for (val = LDO_VOL_MIN_IDX; val <= LDO_VOL_MAX_IDX; val++)
-+               if (vol_map[val] >= min_vol)
-+                       break;
-+
-+       if (vol_map[val] > max_vol)
-+               return -EINVAL;
-+
-+       return lp3971_set_bits(lp3971, LP3971_LDO_VOL_CONTR_REG(ldo),
-+               LDO_VOL_CONTR_MASK << LDO_VOL_CONTR_SHIFT(ldo), val);
-+}
-+
-+static struct regulator_ops lp3971_ldo_ops = {
-+       .is_enabled = lp3971_ldo_is_enabled,
-+       .enable = lp3971_ldo_enable,
-+       .disable = lp3971_ldo_disable,
-+       .get_voltage = lp3971_ldo_get_voltage,
-+       .set_voltage = lp3971_ldo_set_voltage,
-+};
-+
-+static int lp3971_dcdc_is_enabled(struct regulator_dev *dev)
-+{
-+       struct lp3971 *lp3971 = rdev_get_drvdata(dev);
-+       int buck = rdev_get_id(dev) - LP3971_DCDC1;
-+       u16 mask = 1 << (buck * 2);
-+       u16 val;
-+
-+       val = lp3971_reg_read(lp3971, LP3971_BUCK_VOL_ENABLE_REG);
-+       return (val & mask) != 0;
-+}
-+
-+static int lp3971_dcdc_enable(struct regulator_dev *dev)
-+{
-+       struct lp3971 *lp3971 = rdev_get_drvdata(dev);
-+       int buck = rdev_get_id(dev) - LP3971_DCDC1;
-+       u16 mask = 1 << (buck * 2);
-+
-+       return lp3971_set_bits(lp3971, LP3971_BUCK_VOL_ENABLE_REG, mask, mask);
-+}
-+
-+static int lp3971_dcdc_disable(struct regulator_dev *dev)
-+{
-+       struct lp3971 *lp3971 = rdev_get_drvdata(dev);
-+       int buck = rdev_get_id(dev) - LP3971_DCDC1;
-+       u16 mask = 1 << (buck * 2);
-+
-+       return lp3971_set_bits(lp3971, LP3971_BUCK_VOL_ENABLE_REG, mask, 0);
-+}
-+
-+static int lp3971_dcdc_get_voltage(struct regulator_dev *dev)
-+{
-+       struct lp3971 *lp3971 = rdev_get_drvdata(dev);
-+       int buck = rdev_get_id(dev) - LP3971_DCDC1;
-+       u16 reg;
-+       int val;
-+
-+       reg = lp3971_reg_read(lp3971, LP3971_BUCK_TARGET_VOL1_REG(buck));
-+       reg &= BUCK_TARGET_VOL_MASK;
-+
-+       if (reg <= BUCK_TARGET_VOL_MAX_IDX)
-+               val = 1000 * buck_voltage_map[reg];
-+       else
-+               val = 0;
-+
-+       return val;
-+}
-+
-+static int lp3971_dcdc_set_voltage(struct regulator_dev *dev,
-+                                 int min_uV, int max_uV)
-+{
-+       struct lp3971 *lp3971 = rdev_get_drvdata(dev);
-+       int buck = rdev_get_id(dev) - LP3971_DCDC1;
-+       int min_vol = min_uV / 1000, max_vol = max_uV / 1000;
-+       const int *vol_map = buck_voltage_map;
-+       u16 val;
-+       int ret;
-+
-+       if (min_vol < vol_map[BUCK_TARGET_VOL_MIN_IDX] ||
-+           min_vol > vol_map[BUCK_TARGET_VOL_MAX_IDX])
-+               return -EINVAL;
-+
-+       for (val = BUCK_TARGET_VOL_MIN_IDX; val <= BUCK_TARGET_VOL_MAX_IDX;
-+            val++)
-+               if (vol_map[val] >= min_vol)
-+                       break;
-+
-+       if (vol_map[val] > max_vol)
-+               return -EINVAL;
-+
-+       ret = lp3971_set_bits(lp3971, LP3971_BUCK_TARGET_VOL1_REG(buck),
-+              BUCK_TARGET_VOL_MASK, val);
-+       if (ret)
-+               return ret;
-+
-+       ret = lp3971_set_bits(lp3971, LP3971_BUCK_VOL_CHANGE_REG,
-+              BUCK_VOL_CHANGE_FLAG_MASK << BUCK_VOL_CHANGE_SHIFT(buck),
-+              BUCK_VOL_CHANGE_FLAG_GO << BUCK_VOL_CHANGE_SHIFT(buck));
-+       if (ret)
-+               return ret;
-+
-+       return lp3971_set_bits(lp3971, LP3971_BUCK_VOL_CHANGE_REG,
-+              BUCK_VOL_CHANGE_FLAG_MASK << BUCK_VOL_CHANGE_SHIFT(buck),
-+              0 << BUCK_VOL_CHANGE_SHIFT(buck));
-+}
-+
-+static struct regulator_ops lp3971_dcdc_ops = {
-+       .is_enabled = lp3971_dcdc_is_enabled,
-+       .enable = lp3971_dcdc_enable,
-+       .disable = lp3971_dcdc_disable,
-+       .get_voltage = lp3971_dcdc_get_voltage,
-+       .set_voltage = lp3971_dcdc_set_voltage,
-+};
-+
-+static struct regulator_desc regulators[] = {
-+       {
-+               .name = "LDO1",
-+               .id = LP3971_LDO1,
-+               .ops = &lp3971_ldo_ops,
-+               .type = REGULATOR_VOLTAGE,
-+               .owner = THIS_MODULE,
-+       },
-+       {
-+               .name = "LDO2",
-+               .id = LP3971_LDO2,
-+               .ops = &lp3971_ldo_ops,
-+               .type = REGULATOR_VOLTAGE,
-+               .owner = THIS_MODULE,
-+       },
-+       {
-+               .name = "LDO3",
-+               .id = LP3971_LDO3,
-+               .ops = &lp3971_ldo_ops,
-+               .type = REGULATOR_VOLTAGE,
-+               .owner = THIS_MODULE,
-+       },
-+       {
-+               .name = "LDO4",
-+               .id = LP3971_LDO4,
-+               .ops = &lp3971_ldo_ops,
-+               .type = REGULATOR_VOLTAGE,
-+               .owner = THIS_MODULE,
-+       },
-+       {
-+               .name = "LDO5",
-+               .id = LP3971_LDO5,
-+               .ops = &lp3971_ldo_ops,
-+               .type = REGULATOR_VOLTAGE,
-+               .owner = THIS_MODULE,
-+       },
-+       {
-+               .name = "DCDC1",
-+               .id = LP3971_DCDC1,
-+               .ops = &lp3971_dcdc_ops,
-+               .type = REGULATOR_VOLTAGE,
-+               .owner = THIS_MODULE,
-+       },
-+       {
-+               .name = "DCDC2",
-+               .id = LP3971_DCDC2,
-+               .ops = &lp3971_dcdc_ops,
-+               .type = REGULATOR_VOLTAGE,
-+               .owner = THIS_MODULE,
-+       },
-+       {
-+               .name = "DCDC3",
-+               .id = LP3971_DCDC3,
-+               .ops = &lp3971_dcdc_ops,
-+               .type = REGULATOR_VOLTAGE,
-+               .owner = THIS_MODULE,
-+       },
-+};
-+
-+static int lp3971_i2c_read(struct i2c_client *i2c, char reg, int count,
-+       u16 *dest)
-+{
-+       int ret;
-+
-+       if (count != 1)
-+               return -EIO;
-+       ret = i2c_smbus_read_byte_data(i2c, reg);
-+       if (ret < 0 || count != 1)
-+               return -EIO;
-+
-+       *dest = ret;
-+       return 0;
-+}
-+
-+static int lp3971_i2c_write(struct i2c_client *i2c, char reg, int count,
-+       const u16 *src)
-+{
-+       int ret;
-+
-+       if (count != 1)
-+               return -EIO;
-+       ret = i2c_smbus_write_byte_data(i2c, reg, *src);
-+       if (ret >= 0)
-+               return 0;
-+
-+       return ret;
-+}
-+
-+static u8 lp3971_reg_read(struct lp3971 *lp3971, u8 reg)
-+{
-+       u16 val = 0;
-+
-+       mutex_lock(&lp3971->io_lock);
-+
-+       lp3971_i2c_read(lp3971->i2c, reg, 1, &val);
-+
-+       dev_dbg(lp3971->dev, "reg read 0x%02x -> 0x%02x\n", (int)reg,
-+               (unsigned)val&0xff);
-+
-+       mutex_unlock(&lp3971->io_lock);
-+
-+       return val & 0xff;
-+}
-+
-+static int lp3971_set_bits(struct lp3971 *lp3971, u8 reg, u16 mask, u16 val)
-+{
-+       u16 tmp;
-+       int ret;
-+
-+       mutex_lock(&lp3971->io_lock);
-+
-+       ret = lp3971_i2c_read(lp3971->i2c, reg, 1, &tmp);
-+       tmp = (tmp & ~mask) | val;
-+       if (ret == 0) {
-+               ret = lp3971_i2c_write(lp3971->i2c, reg, 1, &tmp);
-+               dev_dbg(lp3971->dev, "reg write 0x%02x -> 0x%02x\n", (int)reg,
-+                       (unsigned)val&0xff);
-+       }
-+       mutex_unlock(&lp3971->io_lock);
-+
-+       return ret;
-+}
-+
-+static int setup_regulators(struct lp3971 *lp3971,
-+       struct lp3971_platform_data *pdata)
-+{
-+       int i, err;
-+       int num_regulators = pdata->num_regulators;
-+       lp3971->num_regulators = num_regulators;
-+       lp3971->rdev = kzalloc(sizeof(struct regulator_dev *) * num_regulators,
-+               GFP_KERNEL);
-+
-+       /* Instantiate the regulators */
-+       for (i = 0; i < num_regulators; i++) {
-+               int id = pdata->regulators[i].id;
-+               lp3971->rdev[i] = regulator_register(&regulators[id],
-+                       lp3971->dev, pdata->regulators[i].initdata, lp3971);
-+
-+               err = IS_ERR(lp3971->rdev[i]);
-+               if (err) {
-+                       dev_err(lp3971->dev, "regulator init failed: %d\n",
-+                               err);
-+                       goto error;
-+               }
-+       }
-+
-+       return 0;
-+error:
-+       for (i = 0; i < num_regulators; i++)
-+               if (lp3971->rdev[i])
-+                       regulator_unregister(lp3971->rdev[i]);
-+       kfree(lp3971->rdev);
-+       lp3971->rdev = NULL;
-+       return err;
-+}
-+
-+static int __devinit lp3971_i2c_probe(struct i2c_client *i2c,
-+                           const struct i2c_device_id *id)
-+{
-+       struct lp3971 *lp3971;
-+       struct lp3971_platform_data *pdata = i2c->dev.platform_data;
-+       int ret;
-+       u16 val;
-+
-+       lp3971 = kzalloc(sizeof(struct lp3971), GFP_KERNEL);
-+       if (lp3971 == NULL) {
-+               ret = -ENOMEM;
-+               goto err;
-+       }
-+
-+       lp3971->i2c = i2c;
-+       lp3971->dev = &i2c->dev;
-+       i2c_set_clientdata(i2c, lp3971);
-+
-+       mutex_init(&lp3971->io_lock);
-+
-+       /* Detect LP3971 (initial system control 1 reg is '0x60') */
-+       ret = lp3971_i2c_read(i2c, LP3971_SYS_CONTROL1_REG, 1, &val);
-+       if (ret < 0) {
-+               dev_err(&i2c->dev, "failed to detect device\n");
-+               goto err_detect;
-+       }
-+
-+       if (pdata) {
-+               ret = setup_regulators(lp3971, pdata);
-+               if (ret < 0)
-+                       goto err_detect;
-+       } else
-+               dev_warn(lp3971->dev, "No platform init data supplied\n");
-+
-+       return 0;
-+
-+err_detect:
-+       i2c_set_clientdata(i2c, NULL);
-+       kfree(lp3971);
-+err:
-+       return ret;
-+}
-+
-+static int __devexit lp3971_i2c_remove(struct i2c_client *i2c)
-+{
-+       struct lp3971 *lp3971 = i2c_get_clientdata(i2c);
-+       int i;
-+       for (i = 0; i < lp3971->num_regulators; i++)
-+               if (lp3971->rdev[i])
-+                       regulator_unregister(lp3971->rdev[i]);
-+       kfree(lp3971->rdev);
-+       i2c_set_clientdata(i2c, NULL);
-+       kfree(lp3971);
-+
-+       return 0;
-+}
-+
-+static const struct i2c_device_id lp3971_i2c_id[] = {
-+       { "lp3971", 0 },
-+       { }
-+};
-+MODULE_DEVICE_TABLE(i2c, lp3971_i2c_id);
-+
-+static struct i2c_driver lp3971_i2c_driver = {
-+       .driver = {
-+               .name = "LP3971",
-+               .owner = THIS_MODULE,
-+       },
-+       .probe    = lp3971_i2c_probe,
-+       .remove   = lp3971_i2c_remove,
-+       .id_table = lp3971_i2c_id,
-+};
-+
-+static int __init lp3971_module_init(void)
-+{
-+       int ret = -ENODEV;
-+
-+       ret = i2c_add_driver(&lp3971_i2c_driver);
-+       if (ret != 0)
-+               pr_err("Failed to register I2C driver: %d\n", ret);
-+
-+       return ret;
-+}
-+module_init(lp3971_module_init);
-+
-+static void __exit lp3971_module_exit(void)
-+{
-+       i2c_del_driver(&lp3971_i2c_driver);
-+}
-+module_exit(lp3971_module_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Marek Szyprowski <m.szyprowski@samsung.com>");
-+MODULE_DESCRIPTION("LP3971 PMIC driver");
-diff --git a/include/linux/regulator/lp3971.h b/include/linux/regulator/lp3971.h
-new file mode 100644
-index 0000000..6140164
---- /dev/null
-+++ b/include/linux/regulator/lp3971.h
-@@ -0,0 +1,51 @@
-+/*
-+ * National Semiconductors LP3971 PMIC chip client interface
-+ *
-+ *  Copyright (C) 2009 Samsung Electronics
-+ *  Author: Marek Szyprowski <m.szyprowski@samsung.com>
-+ *
-+ * Based on wm8400.h
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#ifndef __LINUX_REGULATOR_LP3971_H
-+#define __LINUX_REGULATOR_LP3971_H
-+
-+#include <linux/regulator/machine.h>
-+
-+#define LP3971_LDO1  0
-+#define LP3971_LDO2  1
-+#define LP3971_LDO3  2
-+#define LP3971_LDO4  3
-+#define LP3971_LDO5  4
-+
-+#define LP3971_DCDC1 5
-+#define LP3971_DCDC2 6
-+#define LP3971_DCDC3 7
-+
-+#define LP3971_NUM_REGULATORS 8
-+
-+struct lp3971_regulator_subdev {
-+       int id;
-+       struct regulator_init_data *initdata;
-+};
-+
-+struct lp3971_platform_data {
-+       int num_regulators;
-+       struct lp3971_regulator_subdev *regulators;
-+};
-+
-+#endif
+ arch/x86/kernel/cpu/mtrr/cleanup.c |    4 ++--
+ arch/x86/kernel/cpu/mtrr/generic.c |   24 ++++++++++++------------
+ arch/x86/kernel/cpu/mtrr/main.c    |    2 +-
+ arch/x86/kernel/cpu/mtrr/mtrr.h    |   15 ---------------
+ arch/x86/kernel/cpu/mtrr/state.c   |    6 +++---
+ 5 files changed, 18 insertions(+), 33 deletions(-)
+
+Complete diff:
+diff --git a/arch/x86/kernel/cpu/mtrr/cleanup.c b/arch/x86/kernel/cpu/mtrr/cleanup.c
+index ce0fe4b..1d584a1 100644
+--- a/arch/x86/kernel/cpu/mtrr/cleanup.c
++++ b/arch/x86/kernel/cpu/mtrr/cleanup.c
+@@ -808,7 +808,7 @@ int __init mtrr_cleanup(unsigned address_bits)
+ 
+ 	if (!is_cpu(INTEL) || enable_mtrr_cleanup < 1)
+ 		return 0;
+-	rdmsr(MTRRdefType_MSR, def, dummy);
++	rdmsr(MSR_MTRRdefType, def, dummy);
+ 	def &= 0xff;
+ 	if (def != MTRR_TYPE_UNCACHABLE)
+ 		return 0;
+@@ -1003,7 +1003,7 @@ int __init mtrr_trim_uncached_memory(unsigned long end_pfn)
+ 	 */
+ 	if (!is_cpu(INTEL) || disable_mtrr_trim)
+ 		return 0;
+-	rdmsr(MTRRdefType_MSR, def, dummy);
++	rdmsr(MSR_MTRRdefType, def, dummy);
+ 	def &= 0xff;
+ 	if (def != MTRR_TYPE_UNCACHABLE)
+ 		return 0;
+diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
+index d21d4fb..0543f69 100644
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -20,9 +20,9 @@ struct fixed_range_block {
+ };
+ 
+ static struct fixed_range_block fixed_range_blocks[] = {
+-	{ MTRRfix64K_00000_MSR, 1 }, /* one  64k MTRR  */
+-	{ MTRRfix16K_80000_MSR, 2 }, /* two  16k MTRRs */
+-	{ MTRRfix4K_C0000_MSR,  8 }, /* eight 4k MTRRs */
++	{ MSR_MTRRfix64K_00000, 1 }, /* one  64k MTRR  */
++	{ MSR_MTRRfix16K_80000, 2 }, /* two  16k MTRRs */
++	{ MSR_MTRRfix4K_C0000,  8 }, /* eight 4k MTRRs */
+ 	{}
+ };
+ 
+@@ -194,12 +194,12 @@ get_fixed_ranges(mtrr_type * frs)
+ 
+ 	k8_check_syscfg_dram_mod_en();
+ 
+-	rdmsr(MTRRfix64K_00000_MSR, p[0], p[1]);
++	rdmsr(MSR_MTRRfix64K_00000, p[0], p[1]);
+ 
+ 	for (i = 0; i < 2; i++)
+-		rdmsr(MTRRfix16K_80000_MSR + i, p[2 + i * 2], p[3 + i * 2]);
++		rdmsr(MSR_MTRRfix16K_80000 + i, p[2 + i * 2], p[3 + i * 2]);
+ 	for (i = 0; i < 8; i++)
+-		rdmsr(MTRRfix4K_C0000_MSR + i, p[6 + i * 2], p[7 + i * 2]);
++		rdmsr(MSR_MTRRfix4K_C0000 + i, p[6 + i * 2], p[7 + i * 2]);
+ }
+ 
+ void mtrr_save_fixed_ranges(void *info)
+@@ -310,7 +310,7 @@ void __init get_mtrr_state(void)
+ 
+ 	vrs = mtrr_state.var_ranges;
+ 
+-	rdmsr(MTRRcap_MSR, lo, dummy);
++	rdmsr(MSR_MTRRcap, lo, dummy);
+ 	mtrr_state.have_fixed = (lo >> 8) & 1;
+ 
+ 	for (i = 0; i < num_var_ranges; i++)
+@@ -318,7 +318,7 @@ void __init get_mtrr_state(void)
+ 	if (mtrr_state.have_fixed)
+ 		get_fixed_ranges(mtrr_state.fixed_ranges);
+ 
+-	rdmsr(MTRRdefType_MSR, lo, dummy);
++	rdmsr(MSR_MTRRdefType, lo, dummy);
+ 	mtrr_state.def_type = (lo & 0xff);
+ 	mtrr_state.enabled = (lo & 0xc00) >> 10;
+ 
+@@ -583,10 +583,10 @@ static void prepare_set(void) __acquires(set_atomicity_lock)
+ 	__flush_tlb();
+ 
+ 	/*  Save MTRR state */
+-	rdmsr(MTRRdefType_MSR, deftype_lo, deftype_hi);
++	rdmsr(MSR_MTRRdefType, deftype_lo, deftype_hi);
+ 
+ 	/*  Disable MTRRs, and set the default type to uncached  */
+-	mtrr_wrmsr(MTRRdefType_MSR, deftype_lo & ~0xcff, deftype_hi);
++	mtrr_wrmsr(MSR_MTRRdefType, deftype_lo & ~0xcff, deftype_hi);
+ }
+ 
+ static void post_set(void) __releases(set_atomicity_lock)
+@@ -595,7 +595,7 @@ static void post_set(void) __releases(set_atomicity_lock)
+ 	__flush_tlb();
+ 
+ 	/* Intel (P6) standard MTRRs */
+-	mtrr_wrmsr(MTRRdefType_MSR, deftype_lo, deftype_hi);
++	mtrr_wrmsr(MSR_MTRRdefType, deftype_lo, deftype_hi);
+ 		
+ 	/*  Enable caches  */
+ 	write_cr0(read_cr0() & 0xbfffffff);
+@@ -707,7 +707,7 @@ int generic_validate_add_page(unsigned long base, unsigned long size, unsigned i
+ static int generic_have_wrcomb(void)
+ {
+ 	unsigned long config, dummy;
+-	rdmsr(MTRRcap_MSR, config, dummy);
++	rdmsr(MSR_MTRRcap, config, dummy);
+ 	return (config & (1 << 10));
+ }
+ 
+diff --git a/arch/x86/kernel/cpu/mtrr/main.c b/arch/x86/kernel/cpu/mtrr/main.c
+index 03cda01..8fc248b 100644
+--- a/arch/x86/kernel/cpu/mtrr/main.c
++++ b/arch/x86/kernel/cpu/mtrr/main.c
+@@ -104,7 +104,7 @@ static void __init set_num_var_ranges(void)
+ 	unsigned long config = 0, dummy;
+ 
+ 	if (use_intel()) {
+-		rdmsr(MTRRcap_MSR, config, dummy);
++		rdmsr(MSR_MTRRcap, config, dummy);
+ 	} else if (is_cpu(AMD))
+ 		config = 2;
+ 	else if (is_cpu(CYRIX) || is_cpu(CENTAUR))
+diff --git a/arch/x86/kernel/cpu/mtrr/mtrr.h b/arch/x86/kernel/cpu/mtrr/mtrr.h
+index 77f67f7..7538b76 100644
+--- a/arch/x86/kernel/cpu/mtrr/mtrr.h
++++ b/arch/x86/kernel/cpu/mtrr/mtrr.h
+@@ -5,21 +5,6 @@
+ #include <linux/types.h>
+ #include <linux/stddef.h>
+ 
+-#define MTRRcap_MSR     0x0fe
+-#define MTRRdefType_MSR 0x2ff
+-
+-#define MTRRfix64K_00000_MSR 0x250
+-#define MTRRfix16K_80000_MSR 0x258
+-#define MTRRfix16K_A0000_MSR 0x259
+-#define MTRRfix4K_C0000_MSR 0x268
+-#define MTRRfix4K_C8000_MSR 0x269
+-#define MTRRfix4K_D0000_MSR 0x26a
+-#define MTRRfix4K_D8000_MSR 0x26b
+-#define MTRRfix4K_E0000_MSR 0x26c
+-#define MTRRfix4K_E8000_MSR 0x26d
+-#define MTRRfix4K_F0000_MSR 0x26e
+-#define MTRRfix4K_F8000_MSR 0x26f
+-
+ #define MTRR_CHANGE_MASK_FIXED     0x01
+ #define MTRR_CHANGE_MASK_VARIABLE  0x02
+ #define MTRR_CHANGE_MASK_DEFTYPE   0x04
+diff --git a/arch/x86/kernel/cpu/mtrr/state.c b/arch/x86/kernel/cpu/mtrr/state.c
+index 7f7e275..1f5fb15 100644
+--- a/arch/x86/kernel/cpu/mtrr/state.c
++++ b/arch/x86/kernel/cpu/mtrr/state.c
+@@ -35,7 +35,7 @@ void set_mtrr_prepare_save(struct set_mtrr_context *ctxt)
+ 
+ 		if (use_intel())
+ 			/*  Save MTRR state */
+-			rdmsr(MTRRdefType_MSR, ctxt->deftype_lo, ctxt->deftype_hi);
++			rdmsr(MSR_MTRRdefType, ctxt->deftype_lo, ctxt->deftype_hi);
+ 		else
+ 			/* Cyrix ARRs - everything else were excluded at the top */
+ 			ctxt->ccr3 = getCx86(CX86_CCR3);
+@@ -46,7 +46,7 @@ void set_mtrr_cache_disable(struct set_mtrr_context *ctxt)
+ {
+ 	if (use_intel())
+ 		/*  Disable MTRRs, and set the default type to uncached  */
+-		mtrr_wrmsr(MTRRdefType_MSR, ctxt->deftype_lo & 0xf300UL,
++		mtrr_wrmsr(MSR_MTRRdefType, ctxt->deftype_lo & 0xf300UL,
+ 		      ctxt->deftype_hi);
+ 	else if (is_cpu(CYRIX))
+ 		/* Cyrix ARRs - everything else were excluded at the top */
+@@ -64,7 +64,7 @@ void set_mtrr_done(struct set_mtrr_context *ctxt)
+ 		/*  Restore MTRRdefType  */
+ 		if (use_intel())
+ 			/* Intel (P6) standard MTRRs */
+-			mtrr_wrmsr(MTRRdefType_MSR, ctxt->deftype_lo, ctxt->deftype_hi);
++			mtrr_wrmsr(MSR_MTRRdefType, ctxt->deftype_lo, ctxt->deftype_hi);
+ 		else
+ 			/* Cyrix ARRs - everything else was excluded at the top */
+ 			setCx86(CX86_CCR3, ctxt->ccr3);
+
 
