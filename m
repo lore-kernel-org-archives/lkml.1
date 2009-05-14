@@ -1,121 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbZENQU3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761418AbZENQVR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755036AbZENQU3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 12:20:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbZENQTY
+	id S1761418AbZENQVR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 12:21:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761222AbZENQU2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 12:19:24 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:42463 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755422AbZENQTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 12:19:23 -0400
-Message-ID: <4A0C44D4.8030108@novell.com>
-Date: Fri, 15 May 2009 01:20:36 +0900
-From: Tejun Heo <teheo@novell.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-Cc: mingo@elte.hu, andi@firstfloor.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, linux-kernel-owner@vger.kernel.org,
-       hpa@zytor.com
-Subject: [PATCH UPDATED 2/4] x86: reorganize cpa_process_alias()
-References: <1242305390-21958-1-git-send-email-tj@kernel.org> <1242305390-21958-3-git-send-email-tj@kernel.org> <4A0C43C50200007800000ECA@vpn.id2.novell.com> <4A0C3AAA.2080908@kernel.org>
-In-Reply-To: <4A0C3AAA.2080908@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Thu, 14 May 2009 12:20:28 -0400
+Received: from vms173017pub.verizon.net ([206.46.173.17]:44396 "EHLO
+	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760833AbZENQUZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 12:20:25 -0400
+Date: Thu, 14 May 2009 12:20:22 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Yinghai Lu <yinghai@kernel.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: Re: [PATCH 2/7] x86/acpi: calling mp_config_acpi_gsi in
+ mp_register_gsi -v2
+In-reply-to: <4A01C387.7090103@kernel.org>
+Message-id: <alpine.LFD.2.00.0905141154390.19537@localhost.localdomain>
+References: <4A01C35C.7060207@kernel.org> <4A01C387.7090103@kernel.org>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reorganize cpa_process_alias() so that new alias condition can be
-added easily.
+mp_config_acpi_gsi() has been dead code since the day it went into 2.6.27.
+Rather than repairing that, I'd rather see it removed.
 
-Jan Beulich spotted problem in the original cleanup thread which
-incorrectly assumed the two existing conditions were mutially
-exclusive.
+The justification for 2944e16b25e7fb8b5ee0dd9dc7197a0f9e523cfd
+"x86: update mptable" was:
 
-[ Impact: code reorganization ]
+    1. kexec kernel with acpi=off
+    2. work around BIOSes where acpi routing is working, but mptable is
+       not right, so can use kernel/kexec to start other OSes that don't have
+       good acpi support.
+    
+    command line: update_mptable
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Jan Beulich <JBeulich@novell.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/pageattr.c |   44 ++++++++++++++++++++------------------------
- 1 files changed, 20 insertions(+), 24 deletions(-)
+So this is a command line option to allow
+MPS code to call into ACPI code to support kexec from an ACPI
+mode into non-ACPI mode -- all without a single comment in the code.
 
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 797f9f1..8bc64b0 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -686,8 +686,8 @@ static int __change_page_attr_set_clr(struct cpa_data *cpa, int checkalias);
- static int cpa_process_alias(struct cpa_data *cpa)
- {
- 	struct cpa_data alias_cpa;
--	int ret = 0;
- 	unsigned long temp_cpa_vaddr, vaddr;
-+	int ret;
- 
- 	if (cpa->pfn >= max_pfn_mapped)
- 		return 0;
-@@ -715,38 +715,34 @@ static int cpa_process_alias(struct cpa_data *cpa)
- 		alias_cpa.vaddr = &temp_cpa_vaddr;
- 		alias_cpa.flags &= ~(CPA_PAGES_ARRAY | CPA_ARRAY);
- 
--
- 		ret = __change_page_attr_set_clr(&alias_cpa, 0);
-+		if (ret)
-+			return ret;
- 	}
- 
- #ifdef CONFIG_X86_64
--	if (ret)
--		return ret;
- 	/*
--	 * No need to redo, when the primary call touched the high
--	 * mapping already:
--	 */
--	if (within(vaddr, (unsigned long) _text, _brk_end))
--		return 0;
--
--	/*
--	 * If the physical address is inside the kernel map, we need
-+	 * If the primary call didn't touch the high mapping already
-+	 * and the physical address is inside the kernel map, we need
- 	 * to touch the high mapped kernel as well:
- 	 */
--	if (!within(cpa->pfn, highmap_start_pfn(), highmap_end_pfn()))
--		return 0;
--
--	alias_cpa = *cpa;
--	temp_cpa_vaddr = (cpa->pfn << PAGE_SHIFT) + __START_KERNEL_map - phys_base;
--	alias_cpa.vaddr = &temp_cpa_vaddr;
--	alias_cpa.flags &= ~(CPA_PAGES_ARRAY | CPA_ARRAY);
-+	if (!within(vaddr, (unsigned long)_text, _brk_end) &&
-+	    within(cpa->pfn, highmap_start_pfn(), highmap_end_pfn())) {
-+		alias_cpa = *cpa;
-+		temp_cpa_vaddr = (cpa->pfn << PAGE_SHIFT) +
-+				 __START_KERNEL_map - phys_base;
-+		alias_cpa.vaddr = &temp_cpa_vaddr;
-+		alias_cpa.flags &= ~(CPA_PAGES_ARRAY | CPA_ARRAY);
- 
--	/*
--	 * The high mapping range is imprecise, so ignore the return value.
--	 */
--	__change_page_attr_set_clr(&alias_cpa, 0);
-+		/*
-+		 * The high mapping range is imprecise, so ignore the
-+		 * return value.
-+		 */
-+		__change_page_attr_set_clr(&alias_cpa, 0);
-+	}
- #endif
--	return ret;
-+
-+	return 0;
- }
- 
- static int __change_page_attr_set_clr(struct cpa_data *cpa, int checkalias)
--- 
-1.6.0.2
+I'm not convinced that the scenario that this code was
+intended to address justifies adding unreadable code to
+an area of the kernel which is notoriously over-complicated
+and fragile.  Doing so is the opposite of optimizing for maintenance.
 
+No, I don't want to see any MPS code ever call into ACPI code.
+
+thanks,
+Len Brown, Intel Open Source Technology Center
