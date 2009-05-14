@@ -1,100 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762559AbZENCrS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762627AbZENC6R@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762559AbZENCrS (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 22:47:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761187AbZENCrB
+	id S1762627AbZENC6R (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 22:58:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761774AbZENC6A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 22:47:01 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:52458 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754790AbZENCrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 22:47:01 -0400
-Message-ID: <4A0B859B.8070801@cn.fujitsu.com>
-Date: Thu, 14 May 2009 10:44:43 +0800
-From: Lai Jiangshan <laijs@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+	Wed, 13 May 2009 22:58:00 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:50577 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753744AbZENC6A (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 22:58:00 -0400
+Date: Thu, 14 May 2009 07:18:01 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       kamezawa.hiroyu@jp.fujitsu.com, linux-mm@kvack.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [BUGFIX][PATCH] memcg: fix deadlock between
+	lock_page_cgroupand mapping tree_lock
+Message-ID: <20090514014801.GS13394@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <20090513133031.f4be15a8.nishimura@mxp.nes.nec.co.jp> <20090513115626.57844f28.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       rostedt@goodmis.org, zhaolei@cn.fujitsu.com,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH v3] ftrace: add a tracepoint for	__raise_softirq_irqoff()
-References: <49FFDF9C.7040505@cn.fujitsu.com> <20090505161604.GA15524@Krystal> <4A07D3B3.10605@cn.fujitsu.com> <20090511134019.GB10932@Krystal>
-In-Reply-To: <20090511134019.GB10932@Krystal>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20090513115626.57844f28.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mathieu Desnoyers wrote:
+* Andrew Morton <akpm@linux-foundation.org> [2009-05-13 11:56:26]:
+
+> On Wed, 13 May 2009 13:30:31 +0900
+> Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 > 
-> I partially agree with you :
+> > mapping->tree_lock can be aquired from interrupt context.
+> > Then, following dead lock can occur.
+> > 
+> > Assume "A" as a page.
+> > 
+> >  CPU0:
+> >        lock_page_cgroup(A)
+> > 		interrupted
+> > 			-> take mapping->tree_lock.
+> >  CPU1:
+> >        take mapping->tree_lock
+> > 		-> lock_page_cgroup(A)
 > 
-> Yes, we should try to fix TRACE_EVENT, but we should fix it _before_ we
-> start using it widely. Circular header dependencies is a real problem
-> with TRACE_EVENT right now.
+> And we didn't find out about this because lock_page_cgroup() uses
+> bit_spin_lock(), and lockdep doesn't handle bit_spin_lock().
 > 
-> Until we fix this, I will be tempted to stay with a known-good solution,
-> which is DECLARE/DEFINE_TRACE.
-> 
-> 
+> It would perhaps be useful if one of you guys were to add a spinlock to
+> struct page, convert lock_page_cgroup() to use that spinlock then run a
+> full set of tests under lockdep, see if it can shake out any other bugs.
+>
 
-I partially agree with you:
+May be under DEBUG_VM we could do that. Good suggestion! 
 
-Yes, Circular header dependencies is a real problem with TRACE_EVENT
-right now. It is also a problem with DECLARE_TRACE. It's a stubborn
-disease with C-Language (for complex headers). Can we fix C-Language?
-
-o Macros in header (!CREATE_TRACE_POINTS)
-
-When CREATE_TRACE_POINTS is not defined, TRACE_EVENT is definitely
-the same as DECLARE_TRACE. Actually, TRACE_EVENT is:
-
-#define TRACE_EVENT(name, proto, args, struct, assign, print)	\
-	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
-
-So TRACE_EVENT and DECLARE_TRACE are the same in header files.
-And so TRACE_EVENT and DECLARE_TRACE have the same advantages and
-disadvantages. More TRACE_EVENT equals to a known-good solution.
-
-o Macros in c-file
-
-tracepoint uses DEFINE_TRACE only.
-
-ftrace uses CREATE_TRACE_POINTS + TRACE_EVENT:
-	#define CREATE_TRACE_POINTS
-	#include <trace/events/sched.h> (which uses TRACE_EVENT)
-
-ftrace generates more code which uses the tracepoints.
-
-> 
-> Then add a forward declaration of
-> 
-> struct softirqaction;
-> 
-> At the top of trace/irq.h. I did it in quite a few places in the LTTng
-> tree. TP_PROTO just needs a forward declaration, not the full structure
-> declaration.
-> 
-
-Thank you for your valuable suggestions.
-
-You are the father of tracepoint and LTTng, your experience in
-LTTng is very useful for ftrace.
-
-I'm glad for your suggestions.
-
-
-Xiao Guangrong, could you add forward declarations of
-
-struct irqaction;
-struct softirq_action;
-
-at the top of trace/irq.h as Mathieu's suggestions.
-(and remove "#include <linux/interrupt.h>")
-
-Lai
-
-
+-- 
+	Balbir
