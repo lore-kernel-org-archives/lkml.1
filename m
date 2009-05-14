@@ -1,105 +1,168 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759807AbZENMfZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760187AbZENMgX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759807AbZENMfZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 08:35:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbZENMfJ
+	id S1760187AbZENMgX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 08:36:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755980AbZENMgK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 08:35:09 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:22012 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755250AbZENMfG convert rfc822-to-8bit (ORCPT
+	Thu, 14 May 2009 08:36:10 -0400
+Received: from tomts22.bellnexxia.net ([209.226.175.184]:45794 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755481AbZENMgJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 08:35:06 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=RUTReB5uNBULKghbTch9z2qtObkUUb5JxYdNZTPctXW9tUUXXMUBYbbwCSog6eo6Bw
-         VdDdBB8NQeBQ6Zsd31WxMH7J9tyXNgtIAFVOIzj+shNWiBOo2PQzQ8yGrH3fmE+em7QL
-         rb8BTqnQ/C1XkNsVLjvASZhN4poauh0jeqLTo=
-MIME-Version: 1.0
-In-Reply-To: <20090514210839.9B90.A69D9226@jp.fujitsu.com>
-References: <20090514204033.9B87.A69D9226@jp.fujitsu.com>
-	 <28c262360905140505h2db7ac3bp5ca10fcf2b4301bb@mail.gmail.com>
-	 <20090514210839.9B90.A69D9226@jp.fujitsu.com>
-Date: Thu, 14 May 2009 21:35:07 +0900
-Message-ID: <28c262360905140535w4bfdbbccp55f395daa18fbf0e@mail.gmail.com>
-Subject: Re: [PATCH] mmtom: Prevent shrinking of active anon lru list in case 
-	of no swap space V2
-From: Minchan Kim <minchan.kim@gmail.com>
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Johannes Weiner <hannes@cmpxchg.org>, Rik van Riel <riel@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 14 May 2009 08:36:09 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AjoFADWrC0pMQW1W/2dsb2JhbACBUM5LhAIF
+Date: Thu, 14 May 2009 08:36:06 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       rostedt@goodmis.org, zhaolei@cn.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH v3] ftrace: add a tracepoint for
+	__raise_softirq_irqoff()
+Message-ID: <20090514123606.GB21241@Krystal>
+References: <49FFDF9C.7040505@cn.fujitsu.com> <20090505161604.GA15524@Krystal> <4A07D3B3.10605@cn.fujitsu.com> <20090511134019.GB10932@Krystal> <4A0B859B.8070801@cn.fujitsu.com> <20090514035037.GA8159@Krystal> <4A0BB4EA.60203@cn.fujitsu.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+In-Reply-To: <4A0BB4EA.60203@cn.fujitsu.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 08:32:01 up 75 days,  8:58,  3 users,  load average: 0.36, 0.38,
+	0.37
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 14, 2009 at 9:11 PM, KOSAKI Motohiro
-<kosaki.motohiro@jp.fujitsu.com> wrote:
->> On Thu, May 14, 2009 at 8:44 PM, KOSAKI Motohiro
->> <kosaki.motohiro@jp.fujitsu.com> wrote:
->> >> >
->> >> > Changelog since V2
->> >> > ?o Add new function - can_reclaim_anon : it tests anon_list can be reclaim
->> >> >
->> >> > Changelog since V1
->> >> > ?o Use nr_swap_pages <= 0 in shrink_active_list to prevent scanning ?of active anon list.
->> >> >
->> >> > Now shrink_active_list is called several places.
->> >> > But if we don't have a swap space, we can't reclaim anon pages.
->> >> > So, we don't need deactivating anon pages in anon lru list.
->> >> >
->> >> > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
->> >> > Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
->> >> > Cc: Johannes Weiner <hannes@cmpxchg.org>
->> >> > Cc: Rik van Riel <riel@redhat.com>
->> >>
->> >> looks good to me. thanks :)
->> >
->> > Grr, my fault.
->> >
->> >
->> >
->> >> ?static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
->> >> ? ? ? struct zone *zone, struct scan_control *sc, int priority)
->> >> ?{
->> >> @@ -1399,7 +1412,7 @@ static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
->> >> ? ? ? ? ? ? ? return 0;
->> >> ? ? ? }
->> >>
->> >> - ? ? if (lru == LRU_ACTIVE_ANON && inactive_anon_is_low(zone, sc)) {
->> >> + ? ? if (lru == LRU_ACTIVE_ANON && can_reclaim_anon(zone, sc)) {
->> >> ? ? ? ? ? ? ? shrink_active_list(nr_to_scan, zone, sc, priority, file);
->> >> ? ? ? ? ? ? ? return 0;
->> >
->> > you shouldn't do that. if nr_swap_pages==0, get_scan_ratio return anon=0%.
->> > then, this branch is unnecessary.
->> >
->>
->> But, I think at last it can be happen following as.
->>
->> 1515         * Even if we did not try to evict anon pages at all, we want to
->> 1516         * rebalance the anon lru active/inactive ratio.
->> 1517         */
->> 1518        if (inactive_anon_is_low(zone, sc))
->> 1519                shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
->
-> I pointed to shrink_list(), but you replayed shrink_zone().
-> I only talked about shrink_list().
->
+* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+> Mathieu Desnoyers wrote:
+> > * Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
+> >> Mathieu Desnoyers wrote:
+> >>> I partially agree with you :
+> >>>
+> >>> Yes, we should try to fix TRACE_EVENT, but we should fix it _before_ we
+> >>> start using it widely. Circular header dependencies is a real problem
+> >>> with TRACE_EVENT right now.
+> >>>
+> >>> Until we fix this, I will be tempted to stay with a known-good solution,
+> >>> which is DECLARE/DEFINE_TRACE.
+> >>>
+> >>>
+> >> I partially agree with you:
+> >>
+> >> Yes, Circular header dependencies is a real problem with TRACE_EVENT
+> >> right now. It is also a problem with DECLARE_TRACE. It's a stubborn
+> >> disease with C-Language (for complex headers). Can we fix C-Language?
+> >>
+> >> o Macros in header (!CREATE_TRACE_POINTS)
+> >>
+> >> When CREATE_TRACE_POINTS is not defined, TRACE_EVENT is definitely
+> >> the same as DECLARE_TRACE. Actually, TRACE_EVENT is:
+> >>
+> >> #define TRACE_EVENT(name, proto, args, struct, assign, print)	\
+> >> 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
+> >>
+> >> So TRACE_EVENT and DECLARE_TRACE are the same in header files.
+> >> And so TRACE_EVENT and DECLARE_TRACE have the same advantages and
+> >> disadvantages. More TRACE_EVENT equals to a known-good solution.
+> >>
+> >> o Macros in c-file
+> >>
+> >> tracepoint uses DEFINE_TRACE only.
+> >>
+> >> ftrace uses CREATE_TRACE_POINTS + TRACE_EVENT:
+> >> 	#define CREATE_TRACE_POINTS
+> >> 	#include <trace/events/sched.h> (which uses TRACE_EVENT)
+> >>
+> >> ftrace generates more code which uses the tracepoints.
+> >>
+> >>> Then add a forward declaration of
+> >>>
+> >>> struct softirqaction;
+> >>>
+> >>> At the top of trace/irq.h. I did it in quite a few places in the LTTng
+> >>> tree. TP_PROTO just needs a forward declaration, not the full structure
+> >>> declaration.
+> >>>
+> >> Thank you for your valuable suggestions.
+> >>
+> >> You are the father of tracepoint and LTTng, your experience in
+> >> LTTng is very useful for ftrace.
+> >>
+> >> I'm glad for your suggestions.
+> >>
+> >>
+> >> Xiao Guangrong, could you add forward declarations of
+> >>
+> >> struct irqaction;
+> >> struct softirq_action;
+> >>
+> >> at the top of trace/irq.h as Mathieu's suggestions.
+> >> (and remove "#include <linux/interrupt.h>")
+> >>
+> > 
+> > You will probably still need something like :
+> > 
+> > #ifdef CREATE_TRACE_POINTS
+> > #include <linux/interrupt.h>
+> > #else
+> > struct irqaction;
+> > struct softirq_action;
+> > #endif
+> > 
+> 
+> It's not needed for trace/events/irq.h
+> 
+> Yes, it's a solution.
+> 
+> But I don't think we have to do this, CREATE_TRACE_POINTS is
+> needed only _once_ for every <trace/events/xxxx.h>
+> 
+> The .c file which defines CREATE_TRACE_POINTS can provide
+> (had provided likely) things like "#include <linux/interrupt.h>"
+> 
+> See kernel/softirq.c:
+> #include <linux/interrupt.h>
+> ......
+> ......
+> #define CREATE_TRACE_POINTS
+> #include <trace/events/irq.h>
+> 
 
-In shrink_zone, we call get_scan_ratio. it prevent scanning anon list.
-but, in shrink_all_zones can't prevent it.
+Isn't it all included under kernel/trace/events.c ? e.g. :
 
-Also,  I think shrink_list is not hot patch.
-So check of one condition adding is trivial
+#include <trace/trace_events.h>
 
-If I don't understand your point, please explain detaily
+#include "trace_output.h"
 
+#include "trace_events_stage_1.h"
+#include "trace_events_stage_2.h"
+#include "trace_events_stage_3.h"
+
+Therefore, adding a #include <linux/interrupt.h> would be just weird
+here. We would have to do that for every tracepoint headers, and we
+would just lose the ability to keep track of which tracepoint header has
+which include dependency.
+
+I thought the goal of TRACE_EVENT() was exactly the opposite : to
+declare everything in one location....
+
+Therefore, if you agree that it's good to have TRACE_EVENT() declaring
+everything in one location, then I don't see why you would argue to move
+the include dependencies in the very remote kernel/trace/events.c file ?
+
+Mathieu
+
+> I don't think it's a problem, CREATE_TRACE_POINTS is defined only
+> once for a <trace/events/xxxx.h>.
+> 
+> Lai.
+> 
 
 -- 
-Kinds regards,
-Minchan Kim
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
