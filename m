@@ -1,48 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752946AbZENO1v@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbZENO2K@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752946AbZENO1v (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 10:27:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751113AbZENO1k
+	id S1754905AbZENO2K (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 10:28:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759914AbZENO1p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 10:27:40 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:39750 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750987AbZENO1k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 10:27:40 -0400
-Subject: Re: [PATCH 0/4] x86-64: fix vclock_gettime()
-From: Petr Tesarik <ptesarik@suse.cz>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: linux-kernel@vger.kernel.org, linux-x86_64@vger.kernel.org, mingo@elte.hu,
-       zwane@arm.linux.org.uk
-In-Reply-To: <20090514140247.GC10933@one.firstfloor.org>
-References: <cover.1242299014.git.ptesarik@suse.cz>
-	 <20090514125825.GA10933@one.firstfloor.org>
-	 <1242306085.19219.2.camel@nathan.suse.cz>
-	 <20090514140247.GC10933@one.firstfloor.org>
-Content-Type: text/plain; charset="UTF-8"
-Organization: SUSE LINUX
-Date: Thu, 14 May 2009 16:27:40 +0200
-Message-Id: <1242311260.19219.22.camel@nathan.suse.cz>
+	Thu, 14 May 2009 10:27:45 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:44247 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751615AbZENO1o (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 10:27:44 -0400
+Date: Thu, 14 May 2009 16:33:12 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: "H. Peter Anvin" <hpa@zytor.com>
+Cc: Andi Kleen <andi@firstfloor.org>, Sheng Yang <sheng@linux.intel.com>,
+       linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86: Extend test_and_set_bit() test_and_clean_bit() to 64 bits in X86_64
+Message-ID: <20090514143312.GF10933@one.firstfloor.org>
+References: <1242202647-32446-1-git-send-email-sheng@linux.intel.com> <87zldhl7ne.fsf@basil.nowhere.org> <200905141145.05591.sheng@linux.intel.com> <20090514083250.GD19296@one.firstfloor.org> <4A0C262B.3060303@zytor.com> <20090514141649.GD10933@one.firstfloor.org> <4A0C27AA.4010006@zytor.com> <20090514142749.GE10933@one.firstfloor.org> <4A0C29D2.9050101@zytor.com>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1.1 
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A0C29D2.9050101@zytor.com>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen píše v Čt 14. 05. 2009 v 16:02 +0200:
-> > Sorry, this doesn't work, because the function is inlined. And even if
-> > it wasn't, the vDSO must be self-contained by definition. User-space
-> > cannot simply call into kernel-space.
+On Thu, May 14, 2009 at 07:25:22AM -0700, H. Peter Anvin wrote:
+> Andi Kleen wrote:
+> > 
+> > Pretty much all the bit ops and a few other operations currently have
+> > 2/4GB limits on x86-64. I don't think that's going to change.
+> > 
+> > In the kernel nothing is ever that big continuously anyways.
+> > 
 > 
-> Wrong, it can call into vsyscall space.
+> Uhm, that *is* the problem at hand... specifically the bootmem map on
+> multi-terabyte systems.
 
-Ah, yes, you're right. The vsyscall is always mapped and it is a special
-case for the instruction replacement code already.
+Well they have to fix a lot of more stuff then, when I did 
+all the inline assembler >2GB objects were a explicit non goal. 
+It also wouldn't surprise me if that wasn't true on other architectures too.
 
-So, is there any reason not to put the rdtsc_barrier() around
-vget_cycles() in vread_tsc() ?
+It would be better to just use open coded C for that case and avoid inline 
+assembler.
 
-Petr Tesarik
-
-
+-Andi
+-- 
+ak@linux.intel.com -- Speaking for myself only.
