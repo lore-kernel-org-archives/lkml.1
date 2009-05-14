@@ -1,171 +1,157 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbZENEQ3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752117AbZENEgh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753425AbZENEQ3 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 00:16:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbZENEQS
+	id S1752117AbZENEgh (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 00:36:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751426AbZENEg1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 00:16:18 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:47459 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750900AbZENEQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 00:16:17 -0400
-Message-ID: <4A0B9B0D.6080006@garzik.org>
-Date: Thu, 14 May 2009 00:16:13 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Thu, 14 May 2009 00:36:27 -0400
+Received: from mail-pz0-f115.google.com ([209.85.222.115]:55014 "EHLO
+	mail-pz0-f115.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751220AbZENEg0 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 00:36:26 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=tjNbfwF2BkCVuwaCkqM6iEtLNZlC36AlPUDlorAuRIADSjbFeZzuvBn8duyw1jTh4p
+         6NL3Yufi7vlV63wX2OW7qG1BKHHs/v6Nnic0ziFaDhPIPs5StcvoAwDNg9Kep8VZbbbe
+         zfIpuCBSDIAEjAF5YOzDIcnSh76q5LYy/+2TM=
 MIME-Version: 1.0
-To: "Mukker, Atul" <Atul.Mukker@lsi.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Austria, Winston" <Winston.Austria@lsi.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Subject: Re: [RFQ] New driver architecture questions
-References: <6C678488C5CEE74F813A4D1948FD2DC7A95E6D37@cosmail02.lsi.com>,<4A0B858F.3080405@garzik.org> <6C678488C5CEE74F813A4D1948FD2DC7A95E6D38@cosmail02.lsi.com>
-In-Reply-To: <6C678488C5CEE74F813A4D1948FD2DC7A95E6D38@cosmail02.lsi.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+In-Reply-To: <20090513191144.6aae00d7@gondolin>
+References: <1242229899-16761-1-git-send-email-tom.leiming@gmail.com>
+	 <20090513191144.6aae00d7@gondolin>
+Date: Thu, 14 May 2009 12:36:27 +0800
+Message-ID: <d82e647a0905132136g355d6ad4y697e58af0a360c45@mail.gmail.com>
+Subject: Re: [PATCH] kernel:async function call:introduce async_run_inatomic(v2)
+From: Ming Lei <tom.leiming@gmail.com>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: arjan@infradead.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Mukker, Atul wrote:
-> Interesting answer :-)
-> 
-> But it definitely makes few things clear:
-> 
-> 1. The possibility definitely exists, if done right. We will review Intel's code and try to use as a reference.
-> 2. Earlier the code is made public, more likely that it would stay on the "right" track.
+2009/5/14 Cornelia Huck <cornelia.huck@de.ibm.com>:
+> On Wed, 13 May 2009 23:51:39 +0800,
+> tom.leiming@gmail.com wrote:
+>
+>> From: Ming Lei <tom.leiming@gmail.com>
+>>
+>> The purpose of this function is to offer a simple way to schedule an
+>> asynchronous thread from an atomic context, because there are not any
+>> functions which can create and start a kernel thread in atomic contexts
+>> now. We use async_running_no_sync as running list to make callers that
+>> don't want to synchronize on cookies, so can avoid some side effects for
+>> async_synchronize_full().
+>>
+>> Part of note for async_run_inatomic and some guideline is from Cornelia Huck.
+>>
+>> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+>> Signed-off-by: Cornelia Huck <cornelia.huck@de.ibm.com>
+>> ---
+>>  include/linux/async.h |    2 ++
+>>  kernel/async.c        |   23 +++++++++++++++++++++++
+>>  2 files changed, 25 insertions(+), 0 deletions(-)
+>>
+>> diff --git a/include/linux/async.h b/include/linux/async.h
+>> index 18ce92b..9ff62af 100644
+>> --- a/include/linux/async.h
+>> +++ b/include/linux/async.h
+>> @@ -16,6 +16,8 @@
+>>  typedef u64 async_cookie_t;
+>>  typedef void (async_func_ptr) (void *data, async_cookie_t cookie);
+>>
+>> +extern int async_run_inatomic(async_func_ptr *ptr, void *data);
+>> +
+>>  extern async_cookie_t async_schedule(async_func_ptr *ptr, void *data);
+>>  extern async_cookie_t async_schedule_domain(async_func_ptr *ptr, void *data,
+>>                                           struct list_head *list);
+>> diff --git a/kernel/async.c b/kernel/async.c
+>> index 8663f5b..cb527b3 100644
+>> --- a/kernel/async.c
+>> +++ b/kernel/async.c
+>> @@ -65,6 +65,7 @@ static async_cookie_t next_cookie = 1;
+>>
+>>  static LIST_HEAD(async_pending);
+>>  static LIST_HEAD(async_running);
+>> +static LIST_HEAD(async_running_no_sync);
+>>  static DEFINE_SPINLOCK(async_lock);
+>>
+>>  static int async_enabled = 0;
+>> @@ -222,6 +223,28 @@ static async_cookie_t __async_schedule(async_func_ptr *ptr, void *data,
+>>       return newcookie;
+>>  }
+>>
+>> + /**
+>> + * async_run_inatomic - in atomic contexts schedule a function for
+>> + *                   asynchronous execution
+>
+> I'm not 100% sure whether kerneldoc likes split lines for the
+> description.
+>
+> "async_run_inatomic - schedule a function for asynchronous execution from atomic context without checkpointing"
+> - but that's really a bit long...
+>
+>> + *
+>> + * @ptr: function to execute asynchronously
+>> + * @data: data pointer to pass to the function
+>> + *
+>> + * Return zero if success, or else return others if failured
+>
+> Returns zero on success, !zero on failure
+>
+>> + * Note:
+>
+> I'd move the description of the function's purpose before Note:.
+>
+>> + * The purpose of this function is to offer a simple way to schedule an
+>> + * asynchronous thread from an atomic context, because there are not any
+>> + * functions which can create and start a kernel thread in atomic contexts
+>> + * now.
+>
+> I don't think the second part of the sentence is needed, this should
+> only be mentioned in the patch description. I'd rather add
+>
+> "Since it does not return a cookie for checkpointing, it is for callers
+> that don't need later synchronization."
+>
+>> We use async_running_no_sync as running list to make callers that
+>> + * don't want to synchronize on cookies, so can avoid some side effects for
+>> + * async_synchronize_full().
+>
+> "async_run_inatomic() uses a distinct running list in order to avoid
+> slowing down synchronization within the general domain."
+>
+> (The cookie will still be checked when __lowest_in_progress() returns
+> the cookie for the async_pending list, but I think that is negligible -
+> and it would be a general issue for special domains.)
 
-Agreed!
+Yes, it still needs some synchronization before the non-sync function
+entry is moved
+into async_running_no_sync, but it is negligible really.
 
+>
+>> + */
+>> +int async_run_inatomic(async_func_ptr *ptr, void *data)
+>> +{
+>> +     return !__async_schedule(ptr, data, &async_running_no_sync, 1);
+>> +}
+>> +EXPORT_SYMBOL_GPL(async_run_inatomic);
+>> +
+>>  /**
+>>   * async_schedule - schedule a function for asynchronous execution
+>>   * @ptr: function to execute asynchronously
+>
+> Btw: Do you have any specific use cases for this function in mind?
+>
 
-> Are there known pitfalls we should guard against? Why's your focus on Linux "drivers"? Do you expect more than one?
+For example request_firmware_nowait(), this function declares it can be
+called in contexts where it is not possible to sleep, but really can
+not be called
+in irq contexts, because the function calls kthread_run to do firmware loading.
 
-Good questions :)  I use "drivers", plural, to illustrate how Linux 
-maintainers attempt to take a whole-system approach to driver evaluation.
-
-We have to consider the user experience, support and maintenance of 
-multiple Linux drivers from multiple hardware vendors.
-
-To pick an easy example in my area of expertise, every major vendor of 
-[typically non-firmware-based] SATA controllers that I deal with, such 
-as Intel, NVIDIA, Silicon Image, Promise and Marvell, ship a Windows 
-driver that includes software code in the OS driver for
-	* supporting their hardware controller
-	* implementing software RAID levels 0, 1, and 5
-
-This is fine because the hardware vendor is only concerned with their 
-own hardware.
-
-However, in Linux, we aim to maintain a consistent level of support 
-_across_ multiple hardware vendors.  This is the same why the same 
-driver, drivers/ata/ahci.c, is used for AHCI controllers from
-	- Intel
-	- NVIDIA
-	- ULi
-	- SiS
-	- VIA
-	- JMicron
-	- Marvell
-	- ACard/Artop
-
-When a bug is fixed in the ahci.c driver, _all_ customers benefit from 
-this bug fix.  When a new feature is added, _all_ customers benefit from 
-a new feature.
-
-Of course, if there is an NVIDIA-specific hardware feature, that does 
-not apply to other hardware vendors, that is welcomed!  It is placed in 
-an NVIDIA-specific driver module.
-
-To pick another example, cross-OS layers from hardware vendor A, created 
-in the past, have included workarounds for errata in system platforms 
-from hardware vendor B.  In Linux, we typically put system workarounds 
-in drivers/pci/quirks.c or arch/* so that the workaround is applied to 
-all _systems_ that need it.  (of course, if the errata is truly specific 
-only to A+B, then yes, the workaround should be in A's driver generally)
-
-Additionally, minimizing duplicate code across hardware vendors 
-MAXIMIZES TESTING across all Linux drivers.
-
-In Linux, when there is a change to software RAID-5, it is instantly 
-tested and verified across multiple hardware vendors, on multiple system 
-architectures and technologies.
-
-
-So, what does this mean for LSI?  In my humble opinion :)
-
-1) A driver should be modular, in order to properly separate out 
-hardware-specific and OS-specific pieces.  Taking drivers/net/e1000e as 
-an example,
-
-	hw.h		hardware-specific defines, ~cross-OS
-	82571.c		code specific to 8257x chip family, ~cross-OS
-	ich8lan.c	code specific to ICH8+ chip family, ~cross-OS
-	netdev.c	core driver code, Linux-specific
-
-A key engineering task is decomposing the driver into fine-grained, 
-OS-specific OR hardware-specific operations.
-
-Avoid large amounts of C pre-processor wrappers, and maximize use of 
-native C types and enums.
-
-
-2) Highly standardized, not-specific-to-LSI-hardware routines such as 
-SAS discovery or software RAID5 XOR'ing should be separate from the 
-driver itself.
-
-This is very different from Windows!!
-
-As an example, the Adaptec 94xx and Marvell 6440 drivers share the same 
-SAS discovery code -- drivers/scsi/libsas, because discovery is 99% in 
-the OS driver.
-
-However, LSI's mpt2sas is more firmware-based, so more of the discovery 
-process is found in hardware-specific drivers/scsi/mpt2sas.
-
-Another example:  RAID5 and RAID6 algorithms in Linux have been 
-hand-optimized for specific CPU architectures (drivers/md/raid6*). 
-Implementing your own software RAID would decrease performance and 
-eliminate the years of field testing performed on the existing code base.
-
-For implementations of RAID that are largely firmware-based, most of the 
-RAID implementation is found in microcontroller firmware.  This relieves 
-you of the burden of driver code duplication.
-
-
-3) Ensure that the userland Application Binary Interface (ABI) for your 
-driver is consistent with other Linux drivers, for the same features.
-
-If there is a feature NOT unique to LSI, attempt to maintain consistency 
-with existing Linux driver APIs.
-
-If the feature is LSI-specific, use your best design judgement.
-
-This ensures that existing Linux tools work.
-
-
-4) For reasons stated above, we are FORCED to consider your driver in 
-the context of other Linux drivers from other hardware vendors.
-
-The main reason, as I said, is to avoid code duplication.
-
-Two implementations of software RAID 5 mean twice the bugs, and twice 
-the support/maintenance costs for Linux maintainers and distributors.
-
-It is unfortunate but true that Linux maintainers must consider when a 
-chip reaches end-of-life support, or a hardware vendor goes out of 
-business, and users still want to keep using their hardware.
-
-
-Whew, that was long.  I hope this makes sense...
-
-Regards,
-
-	Jeff
-
-
-
-
-
+-- 
+Lei Ming
