@@ -1,89 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762289AbZENBDP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762272AbZENBLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762289AbZENBDP (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 21:03:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbZENBC6
+	id S1762272AbZENBLV (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 21:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753228AbZENBLL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 21:02:58 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57378 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753228AbZENBC6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 21:02:58 -0400
-Message-ID: <4A0B6D8D.6060202@cn.fujitsu.com>
-Date: Thu, 14 May 2009 09:02:05 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Wed, 13 May 2009 21:11:11 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:58992 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752840AbZENBLK (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 21:11:10 -0400
+Message-ID: <4A0B6F9C.4060405@zytor.com>
+Date: Wed, 13 May 2009 18:10:52 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] IO Controller: Add per-device weight and ioprio_class
- handling
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A0A29B5.7030109@cn.fujitsu.com> <20090513152909.GD7696@redhat.com>
-In-Reply-To: <20090513152909.GD7696@redhat.com>
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+CC: Ingo Molnar <mingo@elte.hu>, "Xin, Xiaohui" <xiaohui.xin@intel.com>,
+       "Li, Xin" <xin.li@intel.com>, "Nakajima, Jun" <jun.nakajima@intel.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: Performance overhead of paravirt_ops on native identified
+References: <4A0B62F7.5030802@goop.org>
+In-Reply-To: <4A0B62F7.5030802@goop.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Wed, May 13, 2009 at 10:00:21AM +0800, Gui Jianfeng wrote:
+Jeremy Fitzhardinge wrote:
 > 
-> [..]
->> @@ -2137,7 +2366,7 @@ void elv_fq_unset_request_ioq(struct request_queue *q, struct request *rq)
->>  void bfq_init_entity(struct io_entity *entity, struct io_group *iog)
->>  {
->>  	entity->ioprio = entity->new_ioprio;
->> -	entity->weight = entity->new_weight;
->> +	entity->weight = entity->new_weigh;
->>  	entity->ioprio_class = entity->new_ioprio_class;
->>  	entity->sched_data = &iog->sched_data;
->>  }
->> diff --git a/block/elevator-fq.h b/block/elevator-fq.h
->> index db3a347..0407633 100644
->> --- a/block/elevator-fq.h
->> +++ b/block/elevator-fq.h
->> @@ -253,6 +253,14 @@ struct io_group {
->>  #endif
->>  };
->>  
->> +struct policy_node {
+> So, what's the fix?
 > 
-> Would "io_policy_node" be better?
-
-  Sure
-
+> Paravirt patching turns all the pvops calls into direct calls, so
+> _spin_lock etc do end up having direct calls.  For example, the compiler
+> generated code for paravirtualized _spin_lock is:
 > 
->> +	struct list_head node;
->> +	char dev_name[32];
->> +	void *key;
->> +	unsigned long weight;
->> +	unsigned long ioprio_class;
->> +};
->> +
->>  /**
->>   * struct bfqio_cgroup - bfq cgroup data structure.
->>   * @css: subsystem state for bfq in the containing cgroup.
->> @@ -269,6 +277,9 @@ struct io_cgroup {
->>  
->>  	unsigned long weight, ioprio_class;
->>  
->> +	/* list of policy_node */
->> +	struct list_head list;
->> +
+> <_spin_lock+0>:		mov    %gs:0xb4c8,%rax
+> <_spin_lock+9>:		incl   0xffffffffffffe044(%rax)
+> <_spin_lock+15>:	callq  *0xffffffff805a5b30
+> <_spin_lock+22>:	retq
 > 
-> How about "struct list_head policy_list" or "struct list_head io_policy"?
+> The indirect call will get patched to:
+> <_spin_lock+0>:		mov    %gs:0xb4c8,%rax
+> <_spin_lock+9>:		incl   0xffffffffffffe044(%rax)
+> <_spin_lock+15>:	callq <__ticket_spin_lock>
+> <_spin_lock+20>:	nop; nop		/* or whatever 2-byte nop */
+> <_spin_lock+22>:	retq
+> 
+> One possibility is to inline _spin_lock, etc, when building an
+> optimised kernel (ie, when there's no spinlock/preempt
+> instrumentation/debugging enabled).  That will remove the outer
+> call/return pair, returning the instruction stream to a single
+> call/return, which will presumably execute the same as the non-pvops
+> case.  The downsides arel 1) it will replicate the
+> preempt_disable/enable code at eack lock/unlock callsite; this code is
+> fairly small, but not nothing; and 2) the spinlock definitions are
+> already a very heavily tangled mass of #ifdefs and other preprocessor
+> magic, and making any changes will be non-trivial.
+> 
 
-  OK
+The other obvious option, it would seem to me, would be to eliminate the
+*inner* call/return pair, i.e. merging the _spin_lock setup code in with
+the internals of each available implementation (in the case above,
+__ticket_spin_lock).  This is effectively what happens on native.  The
+one problem with that is that every callsite now becomes a patching target.
 
--- 
-Regards
-Gui Jianfeng
+That brings me to a somewhat half-arsed thought I have been walking
+around with for a while.
+
+Consider a paravirt -- or for that matter any other call which is
+runtime-static; this isn't just limited to paravirt -- function which
+looks to the C compiler just like any other external function -- no
+indirection.  We can point it by default to a function which is really
+just an indirect jump to the appropriate handler, that handles the
+prepatching case.  However, a linktime pass over vmlinux.o can find all
+the points where this function is called, and turn it into a list of
+patch sites(*).  The advantages are:
+
+1. [minor] no additional nop padding due to indirect function calls.
+2. [major] no need for a ton of wrapper macros manifest in the code.
+
+paravirt_ops that turn into pure inline code in the native case is
+obviously another ball of wax entirely; there inline assembly wrappers
+are simply unavoidable.
+
+	-hpa
+
+(*) if patching code on SMP was cheaper, we could actually do this
+lazily, and wouldn't have to store a list of patch sites.  I don't feel
+brave enough to go down that route.
 
