@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756692AbZENXKL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762623AbZENXJ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756692AbZENXKL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:10:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762264AbZENW6z
+	id S1762623AbZENXJ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:09:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762301AbZENW6w
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:58:55 -0400
-Received: from kroah.org ([198.145.64.141]:46085 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:58:52 -0400
+Received: from kroah.org ([198.145.64.141]:46161 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754895AbZENW6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:58:46 -0400
+	id S1761706AbZENW6s (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:58:48 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:40 2009
-Message-Id: <20090514225239.866163756@mini.kroah.org>
+Message-Id: <20090514225240.378799790@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:51:47 -0700
+Date: Thu, 14 May 2009 15:51:50 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, "J. Bruce Fields" <bfields@citi.umich.edu>
-Subject: [patch 21/28] nfsd4: check for negative dentry before use in nfsv4 readdir
+       alan@lxorguk.ukuu.org.uk, Grant Likely <grant.likely@secretlab.ca>
+Subject: [patch 24/28] powerpc/5200: Dont specify IRQF_SHARED in PSC UART driver
 References: <20090514225126.907908936@mini.kroah.org>
-Content-Disposition: inline; filename=nfsd4-check-for-negative-dentry-before-use-in-nfsv4-readdir.patch
+Content-Disposition: inline; filename=powerpc-5200-don-t-specify-irqf_shared-in-psc-uart-driver.patch
 In-Reply-To: <20090514225413.GA705@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,76 +38,34 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: J. Bruce Fields <bfields@citi.umich.edu>
+From: Grant Likely <grant.likely@secretlab.ca>
 
-commit b2c0cea6b1cb210e962f07047df602875564069e upstream.
+commit d9f0c5f9bc74f16d0ea0f6c518b209e48783a796 upstream.
 
-After 2f9092e1020246168b1309b35e085ecd7ff9ff72 "Fix i_mutex vs.  readdir
-handling in nfsd" (and 14f7dd63 "Copy XFS readdir hack into nfsd code"),
-an entry may be removed between the first mutex_unlock and the second
-mutex_lock. In this case, lookup_one_len() will return a negative
-dentry.  Check for this case to avoid a NULL dereference.
+The MPC5200 PSC device is wired up to a dedicated interrupt line
+which is never shared.  This patch removes the IRQF_SHARED flag
+from the request_irq() call which eliminates the "IRQF_DISABLED
+is not guaranteed on shared IRQs" warning message from the console
+output.
 
-Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
-Reviewed-by: J. R. Okajima <hooanon05@yahoo.co.jp>
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfsd/nfs4xdr.c |   16 +++++++++++++++-
- 1 file changed, 15 insertions(+), 1 deletion(-)
+ drivers/serial/mpc52xx_uart.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/nfsd/nfs4xdr.c
-+++ b/fs/nfsd/nfs4xdr.c
-@@ -1833,6 +1833,15 @@ nfsd4_encode_dirent_fattr(struct nfsd4_r
- 	dentry = lookup_one_len(name, cd->rd_fhp->fh_dentry, namlen);
- 	if (IS_ERR(dentry))
- 		return nfserrno(PTR_ERR(dentry));
-+	if (!dentry->d_inode) {
-+		/*
-+		 * nfsd_buffered_readdir drops the i_mutex between
-+		 * readdir and calling this callback, leaving a window
-+		 * where this directory entry could have gone away.
-+		 */
-+		dput(dentry);
-+		return nfserr_noent;
-+	}
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -515,7 +515,7 @@ mpc52xx_uart_startup(struct uart_port *p
  
- 	exp_get(exp);
- 	/*
-@@ -1895,6 +1904,7 @@ nfsd4_encode_dirent(void *ccdv, const ch
- 	struct nfsd4_readdir *cd = container_of(ccd, struct nfsd4_readdir, common);
- 	int buflen;
- 	__be32 *p = cd->buffer;
-+	__be32 *cookiep;
- 	__be32 nfserr = nfserr_toosmall;
- 
- 	/* In nfsv4, "." and ".." never make it onto the wire.. */
-@@ -1911,7 +1921,7 @@ nfsd4_encode_dirent(void *ccdv, const ch
- 		goto fail;
- 
- 	*p++ = xdr_one;                             /* mark entry present */
--	cd->offset = p;                             /* remember pointer */
-+	cookiep = p;
- 	p = xdr_encode_hyper(p, NFS_OFFSET_MAX);    /* offset of next entry */
- 	p = xdr_encode_array(p, name, namlen);      /* name length & name */
- 
-@@ -1925,6 +1935,8 @@ nfsd4_encode_dirent(void *ccdv, const ch
- 		goto fail;
- 	case nfserr_dropit:
- 		goto fail;
-+	case nfserr_noent:
-+		goto skip_entry;
- 	default:
- 		/*
- 		 * If the client requested the RDATTR_ERROR attribute,
-@@ -1943,6 +1955,8 @@ nfsd4_encode_dirent(void *ccdv, const ch
- 	}
- 	cd->buflen -= (p - cd->buffer);
- 	cd->buffer = p;
-+	cd->offset = cookiep;
-+skip_entry:
- 	cd->common.err = nfs_ok;
- 	return 0;
- fail:
+ 	/* Request IRQ */
+ 	ret = request_irq(port->irq, mpc52xx_uart_int,
+-		IRQF_DISABLED | IRQF_SAMPLE_RANDOM | IRQF_SHARED,
++		IRQF_DISABLED | IRQF_SAMPLE_RANDOM,
+ 		"mpc52xx_psc_uart", port);
+ 	if (ret)
+ 		return ret;
 
 
