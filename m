@@ -1,103 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754040AbZENNd0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZENNfb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754040AbZENNd0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 09:33:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751317AbZENNdQ
+	id S1754232AbZENNfb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 09:35:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751859AbZENNfM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 09:33:16 -0400
-Received: from yx-out-2324.google.com ([74.125.44.28]:53635 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751246AbZENNdP convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 09:33:15 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=Vhaji9XSDy1A28+yjoDuwoW3Iphw7WmaDMvSzZz0xUtFIbSpFlN751YenNIoqjpQ8C
-         ndzhQPMzWAnR3/8ywbGLqpupk7ezP3wwrZgLWRMiq4tjfP9dsc56E47kAZCBFJWQSCZ9
-         j3VySiiWy1EOoyuSjj9WmL4upoWbQoJ/aWRHE=
+	Thu, 14 May 2009 09:35:12 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:58155 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751317AbZENNfK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 09:35:10 -0400
+From: Jeff Moyer <jmoyer@redhat.com>
+To: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Olga Kornievskaia <aglo@citi.umich.edu>,
+       "J. Bruce Fields" <bfields@fieldses.org>, Jim Rees <rees@umich.edu>,
+       linux-nfs@vger.kernel.org
+Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone over NFS
+References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
+	<20090508120119.8c93cfd7.akpm@linux-foundation.org>
+	<20090511081415.GL4694@kernel.dk>
+	<x49skjb21b7.fsf@segfault.boston.devel.redhat.com>
+	<20090511165826.GG4694@kernel.dk>
+	<x494ovp4r51.fsf@segfault.boston.devel.redhat.com>
+	<20090512204433.7eb69075.akpm@linux-foundation.org>
+	<x49y6t1rqw0.fsf@segfault.boston.devel.redhat.com>
+	<x49k54ku7i2.fsf@segfault.boston.devel.redhat.com>
+	<1242258338.5407.244.camel@heimdal.trondhjem.org>
+X-PGP-KeyID: 1F78E1B4
+X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
+X-PCLoadLetter: What the f**k does that mean?
+Date: Thu, 14 May 2009 09:34:03 -0400
+In-Reply-To: <1242258338.5407.244.camel@heimdal.trondhjem.org> (Trond
+	Myklebust's message of "Wed, 13 May 2009 19:45:38 -0400")
+Message-ID: <x49octv7qr8.fsf@segfault.boston.devel.redhat.com>
+User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
 MIME-Version: 1.0
-In-Reply-To: <4A0C1A41.7040202@redhat.com>
-References: <20090514201150.8536f86e.minchan.kim@barrios-desktop>
-	 <4A0C1571.2020106@redhat.com>
-	 <28c262360905140609y580b6835m759dee08f08a26ab@mail.gmail.com>
-	 <4A0C1A41.7040202@redhat.com>
-Date: Thu, 14 May 2009 22:33:16 +0900
-Message-ID: <28c262360905140633q3a7ace7byec2f47b0f0d2e78d@mail.gmail.com>
-Subject: Re: [PATCH] mmtom: Prevent shrinking of active anon lru list in case 
-	of no swap space V2
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Rik van Riel <riel@redhat.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 14, 2009 at 10:18 PM, Rik van Riel <riel@redhat.com> wrote:
-> Minchan Kim wrote:
->>
->> HI, Rik
->>
->> Thanks for careful review. :)
->>
->> On Thu, May 14, 2009 at 9:58 PM, Rik van Riel <riel@redhat.com> wrote:
->>>
->>> Minchan Kim wrote:
->>>
->>>> Now shrink_active_list is called several places.
->>>> But if we don't have a swap space, we can't reclaim anon pages.
->>>
->>> If swap space has run out, get_scan_ratio() will return
->>> 0 for the anon scan ratio, meaning we do not scan the
->>> anon lists.
->>
->> I think get_scan_ration can't prevent scanning of anon pages in no
->> swap system(like embedded system).
->> That's because in shrink_zone, you add following as
->>
->>        /*
->>         * Even if we did not try to evict anon pages at all, we want to
->>         * rebalance the anon lru active/inactive ratio.
->>         */
->>        if (inactive_anon_is_low(zone, sc))
->>                shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority,
->> 0);
+Trond Myklebust <trond.myklebust@fys.uio.no> writes:
+
+> On Wed, 2009-05-13 at 15:29 -0400, Jeff Moyer wrote:
+>> Hi, netdev folks.  The summary here is:
+>> 
+>> A patch added in the 2.6.30 development cycle caused a performance
+>> regression in my NFS iozone testing.  The patch in question is the
+>> following:
+>> 
+>> commit 47a14ef1af48c696b214ac168f056ddc79793d0e
+>> Author: Olga Kornievskaia <aglo@citi.umich.edu>
+>> Date:   Tue Oct 21 14:13:47 2008 -0400
+>> 
+>>     svcrpc: take advantage of tcp autotuning
+>>  
+>> which is also quoted below.  Using 8 nfsd threads, a single client doing
+>> 2GB of streaming read I/O goes from 107590 KB/s under 2.6.29 to 65558
+>> KB/s under 2.6.30-rc4.  I also see more run to run variation under
+>> 2.6.30-rc4 using the deadline I/O scheduler on the server.  That
+>> variation disappears (as does the performance regression) when reverting
+>> the above commit.
 >
-> That's a fair point.
+> It looks to me as if we've got a bug in the svc_tcp_has_wspace() helper
+> function. I can see no reason why we should stop processing new incoming
+> RPC requests just because the send buffer happens to be 2/3 full. If we
+> see that we have space for another reply, then we should just go for it.
+> OTOH, we do want to ensure that the SOCK_NOSPACE flag remains set, so
+> that the TCP layer knows that we're congested, and that we'd like it to
+> increase the send window size, please.
 >
-> How about we change this to:
->
->        if (inactive_anon_is_low(zone, sc) && nr_swap_pages >= 0)
-> That way GCC will statically optimize away this branch on
-> systems with CONFIG_SWAP=n.
->
-> Does that look reasonable?
+> Could you therefore please see if the following (untested) patch helps?
 
-Now inactive_anon_is_low called following as.
+I'm seeing slightly better results with the patch:
 
-1. shrink_zone => Looks good since your idea.
-2. balance_pgdat => Looks good since aging.
-3. shrink_list
-shrink_list is called at two places.
-1. shrink_zone => It's OK since get_scan_ratio can't prevent it.
-2. shrink_all_zones. => It's OK since we can't suspend without swap space.
+71548
+75987
+71557
+87432
+83538
 
-So, Okay I will do that in next version.
-Thanks for good review. Rik :)
-Could I add your ack in next version ?
+But that's still not up to the speeds we saw under 2.6.29.  The packet
+capture for one run can be found here:
+  http://people.redhat.com/jmoyer/trond.pcap.bz2
 
-> --
-> All rights reversed.
->
-
-
-
--- 
-Kinds regards,
-Minchan Kim
+Cheers,
+Jeff
