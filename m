@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762278AbZENXH4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761570AbZENXI1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762278AbZENXH4 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:07:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762290AbZENW6r
+	id S1761570AbZENXI1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:08:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762269AbZENW6t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:58:47 -0400
-Received: from kroah.org ([198.145.64.141]:46067 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:58:49 -0400
+Received: from kroah.org ([198.145.64.141]:46107 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762240AbZENW6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:58:40 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:38 2009
-Message-Id: <20090514225238.810281932@mini.kroah.org>
+	id S1762275AbZENW6o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:58:44 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:39 2009
+Message-Id: <20090514225239.495123865@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:51:41 -0700
+Date: Thu, 14 May 2009 15:51:45 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -28,9 +28,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk, Steve French <smfrench@gmail.com>,
        Jeff Layton <jlayton@redhat.com>, Steve French <sfrench@us.ibm.com>,
        Suresh Jayaraman <sjayaraman@suse.de>
-Subject: [patch 15/28] cifs: Fix buffer size for tcon->nativeFileSystem field
+Subject: [patch 19/28] cifs: Fix unicode string area word alignment in session setup
 References: <20090514225126.907908936@mini.kroah.org>
-Content-Disposition: inline; filename=cifs-fix-buffer-size-for-tcon-nativefilesystem-field.patch
+Content-Disposition: inline; filename=cifs-fix-unicode-string-area-word-alignment-in-session-setup.patch
 In-Reply-To: <20090514225413.GA705@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -43,18 +43,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Jeff Layton <jlayton@redhat.com>
 
-Commit f083def68f84b04fe3f97312498911afce79609e refreshed.
+commit 27b87fe52baba0a55e9723030e76fce94fabcea4 refreshed.
 
-cifs: fix buffer size for tcon->nativeFileSystem field
+cifs: fix unicode string area word alignment in session setup
 
-The buffer for this was resized recently to fix a bug. It's still
-possible however that a malicious server could overflow this field
-by sending characters in it that are >2 bytes in the local charset.
-Double the size of the buffer to account for this possibility.
+The handling of unicode string area alignment is wrong.
+decode_unicode_ssetup improperly assumes that it will always be preceded
+by a pad byte. This isn't the case if the string area is already
+word-aligned.
 
-Also get rid of some really strange and seemingly pointless NULL
-termination. It's NULL terminating the string in the source buffer,
-but by the time that happens, we've already copied the string.
+This problem, combined with the bad buffer sizing for the serverDomain
+string can cause memory corruption. The bad alignment can make it so
+that the alignment of the characters is off. This can make them
+translate to characters that are greater than 2 bytes each. If this
+happens we can overflow the allocation.
+
+Fix this by fixing the alignment in CIFS_SessSetup instead so we can
+verify it against the head of the response. Also, clean up the
+workaround for improperly terminated strings by checking for a
+odd-length unicode buffers and then forcibly terminating them.
+
+Finally, resize the buffer for serverDomain. Now that we've fixed
+the alignment, it's probably fine, but a malicious server could
+overflow it.
+
+A better solution for handling these strings is still needed, but
+this should be a suitable bandaid.
 
 Signed-off-by: Jeff Layton <jlayton@redhat.com>
 Signed-off-by: Steve French <sfrench@us.ibm.com>
@@ -62,28 +76,88 @@ Cc: Suresh Jayaraman <sjayaraman@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/cifs/connect.c |    6 +-----
- 1 file changed, 1 insertion(+), 5 deletions(-)
+ fs/cifs/sess.c |   44 +++++++++++++++++++++++---------------------
+ 1 file changed, 23 insertions(+), 21 deletions(-)
 
---- a/fs/cifs/connect.c
-+++ b/fs/cifs/connect.c
-@@ -3549,16 +3549,12 @@ CIFSTCon(unsigned int xid, struct cifsSe
- 			    BCC(smb_buffer_response)) {
- 				kfree(tcon->nativeFileSystem);
- 				tcon->nativeFileSystem =
--				    kzalloc(2*(length + 1), GFP_KERNEL);
-+				    kzalloc((4 * length) + 2, GFP_KERNEL);
- 				if (tcon->nativeFileSystem)
- 					cifs_strfromUCS_le(
- 						tcon->nativeFileSystem,
- 						(__le16 *) bcc_ptr,
- 						length, nls_codepage);
--				bcc_ptr += 2 * length;
--				bcc_ptr[0] = 0;	/* null terminate the string */
--				bcc_ptr[1] = 0;
--				bcc_ptr += 2;
- 			}
- 			/* else do not bother copying these information fields*/
- 		} else {
+--- a/fs/cifs/sess.c
++++ b/fs/cifs/sess.c
+@@ -202,27 +202,26 @@ static int decode_unicode_ssetup(char **
+ 	int words_left, len;
+ 	char *data = *pbcc_area;
+ 
+-
+-
+ 	cFYI(1, ("bleft %d", bleft));
+ 
+-
+-	/* SMB header is unaligned, so cifs servers word align start of
+-	   Unicode strings */
+-	data++;
+-	bleft--; /* Windows servers do not always double null terminate
+-		    their final Unicode string - in which case we
+-		    now will not attempt to decode the byte of junk
+-		    which follows it */
++	/*
++	 * Windows servers do not always double null terminate their final
++	 * Unicode string. Check to see if there are an uneven number of bytes
++	 * left. If so, then add an extra NULL pad byte to the end of the
++	 * response.
++	 *
++	 * See section 2.7.2 in "Implementing CIFS" for details
++	 */
++	if (bleft % 2) {
++		data[bleft] = 0;
++		++bleft;
++	}
+ 
+ 	words_left = bleft / 2;
+ 
+ 	/* save off server operating system */
+ 	len = UniStrnlen((wchar_t *) data, words_left);
+ 
+-/* We look for obvious messed up bcc or strings in response so we do not go off
+-   the end since (at least) WIN2K and Windows XP have a major bug in not null
+-   terminating last Unicode string in response  */
+ 	if (len >= words_left)
+ 		return rc;
+ 
+@@ -260,13 +259,10 @@ static int decode_unicode_ssetup(char **
+ 		return rc;
+ 
+ 	kfree(ses->serverDomain);
+-	ses->serverDomain = kzalloc(2 * (len + 1), GFP_KERNEL); /* BB FIXME wrong length */
+-	if (ses->serverDomain != NULL) {
++	ses->serverDomain = kzalloc((4 * len) + 2, GFP_KERNEL);
++	if (ses->serverDomain != NULL)
+ 		cifs_strfromUCS_le(ses->serverDomain, (__le16 *)data, len,
+ 				   nls_cp);
+-		ses->serverDomain[2*len] = 0;
+-		ses->serverDomain[(2*len) + 1] = 0;
+-	}
+ 	data += 2 * (len + 1);
+ 	words_left -= len + 1;
+ 
+@@ -616,12 +612,18 @@ CIFS_SessSetup(unsigned int xid, struct 
+ 	}
+ 
+ 	/* BB check if Unicode and decode strings */
+-	if (smb_buf->Flags2 & SMBFLG2_UNICODE)
++	if (smb_buf->Flags2 & SMBFLG2_UNICODE) {
++		/* unicode string area must be word-aligned */
++		if (((unsigned long) bcc_ptr - (unsigned long) smb_buf) % 2) {
++			++bcc_ptr;
++			--bytes_remaining;
++		}
+ 		rc = decode_unicode_ssetup(&bcc_ptr, bytes_remaining,
+-						   ses, nls_cp);
+-	else
++					   ses, nls_cp);
++	} else {
+ 		rc = decode_ascii_ssetup(&bcc_ptr, bytes_remaining,
+ 					 ses, nls_cp);
++	}
+ 
+ ssetup_exit:
+ 	if (spnego_key)
 
 
