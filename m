@@ -1,59 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762223AbZENNNb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761977AbZENNP5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762223AbZENNNb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 09:13:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761319AbZENNM7
+	id S1761977AbZENNP5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 09:15:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757289AbZENNPs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 09:12:59 -0400
-Received: from e31.co.us.ibm.com ([32.97.110.149]:59430 "EHLO
-	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1759400AbZENNM5 (ORCPT
+	Thu, 14 May 2009 09:15:48 -0400
+Received: from 216-237-3-220.orange.nextweb.net ([216.237.3.220]:19147 "EHLO
+	exchange.solarflare.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756064AbZENNPs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 09:12:57 -0400
-Subject: Re: [PATCH] IMA: do not measure everything opened by root by
- default
-From: Mimi Zohar <zohar@linux.vnet.ibm.com>
-To: Eric Paris <eparis@redhat.com>
-Cc: jmorris@namei.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20090512191423.6903.37464.stgit@dhcp231-142.rdu.redhat.com>
-References: <20090512191423.6903.37464.stgit@dhcp231-142.rdu.redhat.com>
-Content-Type: text/plain
-Date: Thu, 14 May 2009 09:12:44 -0400
-Message-Id: <1242306764.4647.6.camel@dyn9002018117.watson.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+	Thu, 14 May 2009 09:15:48 -0400
+X-Greylist: delayed 909 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 May 2009 09:15:47 EDT
+Message-ID: <4A0C17BB.4010300@solarflare.com>
+Date: Thu, 14 May 2009 14:08:11 +0100
+From: Neil Turton <nturton@solarflare.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: "Roedel, Joerg" <Joerg.Roedel@amd.com>
+CC: Linux Kernel <linux-kernel@vger.kernel.org>,
+       iommu@lists.linux-foundation.org
+Subject: [PATCH] Fixed the handling of device aliases in the AMD IOMMU driver.
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 14 May 2009 13:08:13.0989 (UTC) FILETIME=[0A020550:01C9D495]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Tue, 2009-05-12 at 15:14 -0400, Eric Paris wrote:
-> The IMA default policy measures every single file opened by root.  This is
-> terrible for most users.  Consider a system (like mine) with virtual machine
-> images.  When those images are touched (which happens at boot for me) those
-> images are measured.  This is just way too much for the default case.
-> 
-> Signed-off-by: Eric Paris <eparis@redhat.com>
+The devid parameter to set_dev_entry_from_acpi is the requester ID
+rather than the device ID since it is used to index the IOMMU device
+table.  The handling of IVHD_DEV_ALIAS used to pass the device ID.
+This patch fixes it to pass the requester ID.
 
-Acked-by: Mimi Zohar <zohar@us.ibm.com>
+Signed-off-by: Neil Turton <nturton@solarflare.com>
+---
+ arch/x86/kernel/amd_iommu_init.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> ---
-> 
->  security/integrity/ima/ima_policy.c |    2 --
->  1 files changed, 0 insertions(+), 2 deletions(-)
-> 
-> diff --git a/security/integrity/ima/ima_policy.c b/security/integrity/ima/ima_policy.c
-> index b168c1d..dec6dcb 100644
-> --- a/security/integrity/ima/ima_policy.c
-> +++ b/security/integrity/ima/ima_policy.c
-> @@ -61,8 +61,6 @@ static struct ima_measure_rule_entry default_rules[] = {
->  	 .flags = IMA_FUNC | IMA_MASK},
->  	{.action = MEASURE,.func = BPRM_CHECK,.mask = MAY_EXEC,
->  	 .flags = IMA_FUNC | IMA_MASK},
-> -	{.action = MEASURE,.func = PATH_CHECK,.mask = MAY_READ,.uid = 0,
-> -	 .flags = IMA_FUNC | IMA_MASK | IMA_UID}
->  };
-> 
->  static LIST_HEAD(measure_default_rules);
-> 
-
+diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
+index 61479ba..c013906 100644
+--- a/arch/x86/kernel/amd_iommu_init.c
++++ b/arch/x86/kernel/amd_iommu_init.c
+@@ -618,7 +618,7 @@ static void __init init_iommu_from_acpi(struct amd_iommu *iommu,
+ 		case IVHD_DEV_ALIAS:
+ 			devid = e->devid;
+ 			devid_to = e->ext >> 8;
+-			set_dev_entry_from_acpi(iommu, devid, e->flags, 0);
++			set_dev_entry_from_acpi(iommu, devid_to, e->flags, 0);
+ 			amd_iommu_alias_table[devid] = devid_to;
+ 			break;
+ 		case IVHD_DEV_ALIAS_RANGE:
+-- 
+1.5.5
