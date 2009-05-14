@@ -1,42 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756371AbZENUJk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754192AbZENUKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756371AbZENUJk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 16:09:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753266AbZENUJb
+	id S1754192AbZENUKE (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 16:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754334AbZENUJw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 16:09:31 -0400
-Received: from vms173005pub.verizon.net ([206.46.173.5]:53037 "EHLO
-	vms173005pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753221AbZENUJb (ORCPT
+	Thu, 14 May 2009 16:09:52 -0400
+Received: from fg-out-1718.google.com ([72.14.220.154]:62918 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754105AbZENUJv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 16:09:31 -0400
-Date: Thu, 14 May 2009 16:09:12 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Janne Kulmala <janne.t.kulmala@tut.fi>
-Cc: Thomas Gleixner <tglx@linutronix.de>, Frans Pop <elendil@planet.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       johnstul@us.ibm.com
-Subject: Re: [PATCH] ACPI: do not mark TSC unstable for invalid C-states
-In-reply-to: <alpine.LFD.2.00.0905141545280.24833@localhost.localdomain>
-Message-id: <alpine.LFD.2.00.0905141608070.24833@localhost.localdomain>
-References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com>
- <200905110226.50115.elendil@planet.nl>
- <alpine.LFD.2.00.0905111614570.3561@localhost.localdomain>
- <4A0855A5.8040109@tut.fi>
- <alpine.LFD.2.00.0905141545280.24833@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 14 May 2009 16:09:51 -0400
+Date: Fri, 15 May 2009 01:09:47 +0500
+From: Constantin Baranov <const@mimas.ru>
+To: Tobias_Mueller@twam.info
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH 001/001] leds: alix-leds2 fixed for Award BIOS
+Message-Id: <20090515010947.4016ba66.const@mimas.ru>
+In-Reply-To: <17be05570905140208n5fd695aayfad221808f70ac21@mail.gmail.com>
+References: <17be05570905130710s1192729cqafa09127f6c34bf9@mail.gmail.com>
+	<20090513151415.6e84fd82.akpm@linux-foundation.org>
+	<17be05570905140208n5fd695aayfad221808f70ac21@mail.gmail.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-hang on, that patch will fail for the case where valid
-is (about to be) set to 1 and we'll fail to disable the TSC
-for systems which _do_ have c3.  I'll send an updated patch shortly.
+Do these boards support DMI? In that case, I suggest to write another
+function, say alix_award_present(). It shall first check DMI and then
+initialize GPIOs.
 
-thanks,
-Len Brown, Intel Open Source Technology Center
-
+On Thu, 14 May 2009 11:08:45 +0200 Tobias Müller <Tobias_Mueller@twam.info> wrote:
+> 2009/5/14 Andrew Morton <akpm@linux-foundation.org>:
+> > Will this cause problems on boards which are _not_ running that BIOS?
+> No. These initialisations is already done there by BIOS, but setting
+> the registers twice doesn't matter. It's just configurating these pins
+> as an output.
+> 
+> > IOW, is this change backward-compatible?
+> Yes.
