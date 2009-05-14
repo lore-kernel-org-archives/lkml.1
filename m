@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762835AbZENXKi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763366AbZENXLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762835AbZENXKi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:10:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762287AbZENW64
+	id S1763366AbZENXLU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762336AbZENW7A
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:58:56 -0400
-Received: from kroah.org ([198.145.64.141]:46189 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:59:00 -0400
+Received: from kroah.org ([198.145.64.141]:46198 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762295AbZENW6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:58:51 -0400
+	id S1762302AbZENW6w (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:58:52 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:41 2009
-Message-Id: <20090514225240.923018470@mini.kroah.org>
+Message-Id: <20090514225241.085842594@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:51:53 -0700
+Date: Thu, 14 May 2009 15:51:54 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,9 +27,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 27/28] splice: fix i_mutex locking in generic_splice_write()
+Subject: [patch 28/28] ocfs2: fix i_mutex locking in ocfs2_splice_to_file()
 References: <20090514225126.907908936@mini.kroah.org>
-Content-Disposition: inline; filename=splice-fix-i_mutex-locking-in-generic_splice_write.patch
+Content-Disposition: inline; filename=ocfs2-fix-i_mutex-locking-in-ocfs2_splice_to_file.patch
 In-Reply-To: <20090514225413.GA705@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,40 +41,83 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <miklos@szeredi.hu>
 
-commit eb443e5a25d43996deb62b9bcee1a4ce5dea2ead upstream.
+commit 328eaaba4e41a04c1dc4679d65bea3fee4349d86 upstream.
 
-Rearrange locking of i_mutex on destination so it's only held while
-buffers are copied with the pipe_to_file() actor, and not while
-waiting for more data on the pipe.
+Rearrange locking of i_mutex on destination and call to
+ocfs2_rw_lock() so locks are only held while buffers are copied with
+the pipe_to_file() actor, and not while waiting for more data on the
+pipe.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/splice.c |   34 +++++++++++++++++++++++-----------
- 1 file changed, 23 insertions(+), 11 deletions(-)
+ fs/ocfs2/file.c        |   96 ++++++++++++++++++++++++++++++++++++++-----------
+ fs/splice.c            |    5 +-
+ include/linux/splice.h |    2 +
+ 3 files changed, 80 insertions(+), 23 deletions(-)
 
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -893,17 +893,29 @@ generic_file_splice_write(struct pipe_in
- 	};
- 	ssize_t ret;
+--- a/fs/ocfs2/file.c
++++ b/fs/ocfs2/file.c
+@@ -2075,6 +2075,22 @@ out_sems:
+ 	return written ? written : ret;
+ }
  
--	WARN_ON(S_ISFIFO(inode->i_mode));
++static int ocfs2_splice_to_file(struct pipe_inode_info *pipe,
++				struct file *out,
++				struct splice_desc *sd)
++{
++	int ret;
++
++	ret = ocfs2_prepare_inode_for_write(out->f_path.dentry,	&sd->pos,
++					    sd->total_len, 0, NULL);
++	if (ret < 0) {
++		mlog_errno(ret);
++		return ret;
++	}
++
++	return splice_from_pipe_feed(pipe, sd, pipe_to_file);
++}
++
+ static ssize_t ocfs2_file_splice_write(struct pipe_inode_info *pipe,
+ 				       struct file *out,
+ 				       loff_t *ppos,
+@@ -2082,38 +2098,76 @@ static ssize_t ocfs2_file_splice_write(s
+ 				       unsigned int flags)
+ {
+ 	int ret;
+-	struct inode *inode = out->f_path.dentry->d_inode;
++	struct address_space *mapping = out->f_mapping;
++	struct inode *inode = mapping->host;
++	struct splice_desc sd = {
++		.total_len = len,
++		.flags = flags,
++		.pos = *ppos,
++		.u.file = out,
++	};
+ 
+ 	mlog_entry("(0x%p, 0x%p, %u, '%.*s')\n", out, pipe,
+ 		   (unsigned int)len,
+ 		   out->f_path.dentry->d_name.len,
+ 		   out->f_path.dentry->d_name.name);
+ 
 -	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
--	ret = file_remove_suid(out);
--	if (likely(!ret)) {
--		if (pipe->inode)
--			mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
--		ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
--		if (pipe->inode)
--			mutex_unlock(&pipe->inode->i_mutex);
+-
+-	ret = ocfs2_rw_lock(inode, 1);
+-	if (ret < 0) {
+-		mlog_errno(ret);
+-		goto out;
 -	}
--	mutex_unlock(&inode->i_mutex);
 +	if (pipe->inode)
 +		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_PARENT);
-+
+ 
+-	ret = ocfs2_prepare_inode_for_write(out->f_path.dentry, ppos, len, 0,
+-					    NULL);
+-	if (ret < 0) {
+-		mlog_errno(ret);
+-		goto out_unlock;
+-	}
 +	splice_from_pipe_begin(&sd);
 +	do {
 +		ret = splice_from_pipe_next(pipe, &sd);
@@ -82,21 +125,93 @@ Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 +			break;
 +
 +		mutex_lock_nested(&inode->i_mutex, I_MUTEX_CHILD);
-+		ret = file_remove_suid(out);
-+		if (!ret)
-+			ret = splice_from_pipe_feed(pipe, &sd, pipe_to_file);
++		ret = ocfs2_rw_lock(inode, 1);
++		if (ret < 0)
++			mlog_errno(ret);
++		else {
++			ret = ocfs2_splice_to_file(pipe, out, &sd);
++			ocfs2_rw_unlock(inode, 1);
++		}
 +		mutex_unlock(&inode->i_mutex);
 +	} while (ret > 0);
 +	splice_from_pipe_end(pipe, &sd);
-+
-+	if (pipe->inode)
-+		mutex_unlock(&pipe->inode->i_mutex);
-+
+ 
+ 	if (pipe->inode)
+-		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
+-	ret = generic_file_splice_write_nolock(pipe, out, ppos, len, flags);
+-	if (pipe->inode)
+ 		mutex_unlock(&pipe->inode->i_mutex);
+ 
+-out_unlock:
+-	ocfs2_rw_unlock(inode, 1);
+-out:
+-	mutex_unlock(&inode->i_mutex);
 +	if (sd.num_spliced)
 +		ret = sd.num_spliced;
 +
- 	if (ret > 0) {
- 		unsigned long nr_pages;
++	if (ret > 0) {
++		unsigned long nr_pages;
++
++		*ppos += ret;
++		nr_pages = (ret + PAGE_CACHE_SIZE - 1) >> PAGE_CACHE_SHIFT;
++
++		/*
++		 * If file or inode is SYNC and we actually wrote some data,
++		 * sync it.
++		 */
++		if (unlikely((out->f_flags & O_SYNC) || IS_SYNC(inode))) {
++			int err;
++
++			mutex_lock(&inode->i_mutex);
++			err = ocfs2_rw_lock(inode, 1);
++			if (err < 0) {
++				mlog_errno(err);
++			} else {
++				err = generic_osync_inode(inode, mapping,
++						  OSYNC_METADATA|OSYNC_DATA);
++				ocfs2_rw_unlock(inode, 1);
++			}
++			mutex_unlock(&inode->i_mutex);
++
++			if (err)
++				ret = err;
++		}
++		balance_dirty_pages_ratelimited_nr(mapping, nr_pages);
++	}
  
+ 	mlog_exit(ret);
+ 	return ret;
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -553,8 +553,8 @@ static int pipe_to_sendpage(struct pipe_
+  * SPLICE_F_MOVE isn't set, or we cannot move the page, we simply create
+  * a new page in the output file page cache and fill/dirty that.
+  */
+-static int pipe_to_file(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
+-			struct splice_desc *sd)
++int pipe_to_file(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
++		 struct splice_desc *sd)
+ {
+ 	struct file *file = sd->u.file;
+ 	struct address_space *mapping = file->f_mapping;
+@@ -598,6 +598,7 @@ static int pipe_to_file(struct pipe_inod
+ out:
+ 	return ret;
+ }
++EXPORT_SYMBOL(pipe_to_file);
+ 
+ static void wakeup_pipe_writers(struct pipe_inode_info *pipe)
+ {
+--- a/include/linux/splice.h
++++ b/include/linux/splice.h
+@@ -75,6 +75,8 @@ extern int splice_from_pipe_next(struct 
+ extern void splice_from_pipe_begin(struct splice_desc *);
+ extern void splice_from_pipe_end(struct pipe_inode_info *,
+ 				 struct splice_desc *);
++extern int pipe_to_file(struct pipe_inode_info *, struct pipe_buffer *,
++			struct splice_desc *);
+ 
+ extern ssize_t splice_to_pipe(struct pipe_inode_info *,
+ 			      struct splice_pipe_desc *);
 
 
