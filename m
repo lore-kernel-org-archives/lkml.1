@@ -1,60 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759554AbZENRKU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756863AbZENRWt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759554AbZENRKU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 13:10:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752689AbZENRKG
+	id S1756863AbZENRWt (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 13:22:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751592AbZENRWh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 13:10:06 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:39728 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752590AbZENRKF (ORCPT
+	Thu, 14 May 2009 13:22:37 -0400
+Received: from mho-01-ewr.mailhop.org ([204.13.248.71]:52372 "EHLO
+	mho-01-ewr.mailhop.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752510AbZENRWg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 13:10:05 -0400
-Subject: Re: [PATCH] Physical Memory Management [0/1]
-From: Peter Zijlstra <peterz@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Micha__ Nazarewicz <m.nazarewicz@samsung.com>,
-       linux-kernel@vger.kernel.org, m.szyprowski@samsung.com,
-       kyungmin.park@samsung.com, linux-mm@kvack.org
-In-Reply-To: <20090514100718.d8c20b64.akpm@linux-foundation.org>
-References: <op.utu26hq77p4s8u@amdc030>
-	 <20090513151142.5d166b92.akpm@linux-foundation.org>
-	 <op.utwwmpsf7p4s8u@amdc030> <1242300002.6642.1091.camel@laptop>
-	 <op.utw4fdhz7p4s8u@amdc030> <1242302702.6642.1140.camel@laptop>
-	 <op.utw7yhv67p4s8u@amdc030>
-	 <20090514100718.d8c20b64.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Thu, 14 May 2009 19:10:00 +0200
-Message-Id: <1242321000.6642.1456.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 May 2009 13:22:36 -0400
+X-Mail-Handler: MailHop Outbound by DynDNS
+X-Originating-IP: 67.160.239.110
+X-Report-Abuse-To: abuse@dyndns.com (see http://www.dyndns.com/services/mailhop/outbound_abuse.html for abuse reporting information)
+X-MHO-User: U2FsdGVkX1+SkilL0CXv3yx56YAcfrxO
+Date: Thu, 14 May 2009 10:22:26 -0700
+From: Tony Lindgren <tony@atomide.com>
+To: Pierre Ossman <pierre@ossman.eu>
+Cc: Carlos Aguiar <carlos.aguiar@indt.org.br>,
+       Anderson Briglia <briglia.anderson@gmail.com>,
+       "Syed Mohammed, Khasim" <x0khasim@ti.com>,
+       Ben Nizette <bn@niasdigital.com>, linux-omap@vger.kernel.org,
+       linux-kernel <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 9/9] omap mmc host: Use disable_irq_nosync() from
+	within irq handlers.
+Message-ID: <20090514172226.GK5593@atomide.com>
+References: <1239861321.29831.130.camel@linux-51e8.site> <20090426212118.19526712@mjolnir.ossman.eu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090426212118.19526712@mjolnir.ossman.eu>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-14 at 10:07 -0700, Andrew Morton wrote:
-> On Thu, 14 May 2009 15:04:55 +0200
-> Micha__ Nazarewicz <m.nazarewicz@samsung.com> wrote:
-> 
-> > On Thu, 14 May 2009 14:05:02 +0200, Peter Zijlstra wrote:
-> > > And who says your pre-allocated pool won't fragment with repeated PMM
-> > > use?
-> > 
-> > Yes, this is a good question.  What's more, there's no good answer. ;)
-> > 
-> 
-> We do have capability in page reclaim to deliberately free up
-> physically contiguous pages (known as "lumpy reclaim").
-> 
-> It would be interesting were someone to have a go at making that
-> available to userspace: ask the kernel to give you 1MB of physically
-> contiguous memory.  There are reasons why this can fail, but migrating
-> pages can be used to improve the success rate, and userspace can be
-> careful to not go nuts using mlock(), etc.
-> 
-> The returned memory would of course need to be protected from other
-> reclaim/migration/etc activity.
+* Pierre Ossman <pierre@ossman.eu> [090426 12:22]:
+> Should I queue this up or do you want to do something differently for
+> this?
 
-I thought we already exposed this, its called hugetlbfs ;-)
+Looks like a valid fix to me.
+
+Acked-by: Tony Lindgren <tony@atomide.com>
+ 
+> On Thu, 16 Apr 2009 15:55:21 +1000
+> Ben Nizette <bn@niasdigital.com> wrote:
+> 
+> > 
+> > disable_irq() should wait for all running handlers to complete
+> > before returning.  As such, if it's used to disable an interrupt
+> > from that interrupt's handler it will deadlock.  This replaces
+> > the dangerous instances with the _nosync() variant which doesn't
+> > have this problem.
+> > 
+> > Signed-off-by: Ben Nizette <bn@niasdigital.com>
+> > ---
+> > diff --git a/drivers/mmc/host/omap.c b/drivers/mmc/host/omap.c
+> > index 5570849..d5ea652 100644
+> > --- a/drivers/mmc/host/omap.c
+> > +++ b/drivers/mmc/host/omap.c
+> > @@ -824,7 +824,7 @@ static irqreturn_t mmc_omap_irq(int irq, void *dev_id)
+> >  		del_timer(&host->cmd_abort_timer);
+> >  		host->abort = 1;
+> >  		OMAP_MMC_WRITE(host, IE, 0);
+> > -		disable_irq(host->irq);
+> > +		disable_irq_nosync(host->irq);
+> >  		schedule_work(&host->cmd_abort_work);
+> >  		return IRQ_HANDLED;
+> >  	}
+> 
+> 
+> -- 
+>      -- Pierre Ossman
+> 
+>   WARNING: This correspondence is being monitored by the
+>   Swedish government. Make sure your server uses encryption
+>   for SMTP traffic and consider using PGP for end-to-end
+>   encryption.
+
 
