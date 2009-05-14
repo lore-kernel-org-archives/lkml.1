@@ -1,92 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758903AbZENXB2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762639AbZENXCL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758903AbZENXB2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:01:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757109AbZENWmy
+	id S1762639AbZENXCL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:02:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757467AbZENWnt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:54 -0400
-Received: from kroah.org ([198.145.64.141]:52652 "EHLO coco.kroah.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756250AbZENWme (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:34 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:27 2009
-Message-Id: <20090514223527.281187734@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:33:17 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
-       Jiri Kosina <jkosina@suse.cz>
-Subject: [patch 42/51] HID: add NOGET quirk for devices from CH Products
-References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=hid-add-noget-quirk-for-devices-from-ch-products.patch
-In-Reply-To: <20090514223755.GA27019@kroah.com>
+	Thu, 14 May 2009 18:43:49 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:50182 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757795AbZENWns (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:43:48 -0400
+Date: Thu, 14 May 2009 15:43:46 -0700
+From: Gary Hade <garyhade@us.ibm.com>
+To: mingo@elte.hu, mingo@redhat.com, tglx@linutronix.de, hpa@zytor.com,
+       x86@kernel.org
+Cc: linux-kernel@vger.kernel.org, garyhade@us.ibm.com, lcm@us.ibm.com,
+       yhlu.kernel@gmail.com
+Subject: [PATCH v2] [BUGFIX] x86/x86_64: fix CPU offlining triggered active
+	device IRQ interrruption
+Message-ID: <20090514224346.GE7762@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
-------------------
+Impact: Eliminates an issue that can leave the system in an
+        unusable state.
 
-From: Alan Stern <stern@rowland.harvard.edu>
+This patch addresses an issue where device generated IRQs
+are no longer seen by the kernel following IRQ affinity
+migration while the device is generating IRQs at a high rate.
 
-commit b820aabf6cb987fd03d85b0b5f599685051e0426 upstream.
+I have been able to consistently reproduce the problem on
+some of our systems by running the following script (VICTIM_IRQ
+specifies the IRQ for the aic94xx device) while a single instance
+of the command
+  # while true; do find / -exec file {} \;; done
+is keeping the filesystem activity and IRQ rate reasonably high.
 
-This patch (as1240) adds the NOGET quirk for three devices from CH
-Products: the Pro pedals, the Combatstick joystick, and the Flight-Sim
-yoke.  Without these quirks, the devices haven't worked for many
-kernel releases.  Sometimes replugging them after boot-up would get
-them to work and sometimes they wouldn't work at all.
+#!/bin/sh
 
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
-Reported-by: Sean Hildebrand <silverwraithii@gmail.com>
-Reported-by: Sid Boyce <sboyce@blueyonder.co.uk>
-Tested-by: Sean Hildebrand <silverwraithii@gmail.com>
-Tested-by: Sid Boyce <sboyce@blueyonder.co.uk>
-Signed-off-by: Jiri Kosina <jkosina@suse.cz>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+SYS_CPU_DIR=/sys/devices/system/cpu
+VICTIM_IRQ=25
+IRQ_MASK=f0
+
+iteration=0
+while true; do
+  echo $iteration
+  echo $IRQ_MASK > /proc/irq/$VICTIM_IRQ/smp_affinity
+  for cpudir in $SYS_CPU_DIR/cpu[1-9] $SYS_CPU_DIR/cpu??; do
+    echo 0 > $cpudir/online
+  done
+  for cpudir in $SYS_CPU_DIR/cpu[1-9] $SYS_CPU_DIR/cpu??; do
+    echo 1 > $cpudir/online
+  done
+  iteration=`expr $iteration + 1`
+done
+
+The root cause is a known issue already addressed for some
+code paths [e.g. ack_apic_level() and the now obsolete
+migrate_irq_remapped_level_desc()] where the ioapic can
+misbehave when the I/O redirection table register is written
+while the Remote IRR bit is set.
+
+The proposed fix uses the same avoidance method and much
+of same code that the Interrupt Remapping code previously
+used to avoid the same problem.
+
+Successfully tested with Ingo's linux-2.6-tip (32 and 64-bit
+builds) on the IBM x460, x3550 M2, x3850, and x3950 M2.
+
+v2: modified to integrate with Yinghai Lu's
+    "irq: change ->set_affinity() to return status" changes
+    to intersecting/related code.
+
+Signed-off-by: Gary Hade <garyhade@us.ibm.com>
 
 ---
- drivers/hid/hid-ids.h           |    5 +++++
- drivers/hid/usbhid/hid-quirks.c |    3 +++
- 2 files changed, 8 insertions(+)
+ arch/x86/kernel/apic/io_apic.c |   68 ++++++++++++++++++++++++++++++-
+ 1 file changed, 67 insertions(+), 1 deletion(-)
 
---- a/drivers/hid/hid-ids.h
-+++ b/drivers/hid/hid-ids.h
-@@ -110,6 +110,11 @@
- #define USB_VENDOR_ID_BERKSHIRE		0x0c98
- #define USB_DEVICE_ID_BERKSHIRE_PCWD	0x1140
+Index: linux-2.6-tip/arch/x86/kernel/apic/io_apic.c
+===================================================================
+--- linux-2.6-tip.orig/arch/x86/kernel/apic/io_apic.c	2009-05-14 14:11:00.000000000 -0700
++++ linux-2.6-tip/arch/x86/kernel/apic/io_apic.c	2009-05-14 14:11:32.000000000 -0700
+@@ -2296,7 +2296,8 @@ set_desc_affinity(struct irq_desc *desc,
+ }
  
-+#define USB_VENDOR_ID_CH		0x068e
-+#define USB_DEVICE_ID_CH_PRO_PEDALS	0x00f2
-+#define USB_DEVICE_ID_CH_COMBATSTICK	0x00f4
-+#define USB_DEVICE_ID_CH_FLIGHT_SIM_YOKE	0x00ff
+ static int
+-set_ioapic_affinity_irq_desc(struct irq_desc *desc, const struct cpumask *mask)
++set_ioapic_irq_affinity_desc(struct irq_desc *desc,
++			     const struct cpumask *mask)
+ {
+ 	struct irq_cfg *cfg;
+ 	unsigned long flags;
+@@ -2320,6 +2321,71 @@ set_ioapic_affinity_irq_desc(struct irq_
+ 	return ret;
+ }
+ 
++static void
++delayed_irq_move(struct work_struct *work)
++{
++	unsigned int irq;
++	struct irq_desc *desc;
 +
- #define USB_VENDOR_ID_CHERRY		0x046a
- #define USB_DEVICE_ID_CHERRY_CYMOTION	0x0023
- 
---- a/drivers/hid/usbhid/hid-quirks.c
-+++ b/drivers/hid/usbhid/hid-quirks.c
-@@ -50,6 +50,9 @@ static const struct hid_blacklist {
- 	{ USB_VENDOR_ID_ATEN, USB_DEVICE_ID_ATEN_2PORTKVM, HID_QUIRK_NOGET },
- 	{ USB_VENDOR_ID_ATEN, USB_DEVICE_ID_ATEN_4PORTKVM, HID_QUIRK_NOGET },
- 	{ USB_VENDOR_ID_ATEN, USB_DEVICE_ID_ATEN_4PORTKVMC, HID_QUIRK_NOGET },
-+	{ USB_VENDOR_ID_CH, USB_DEVICE_ID_CH_COMBATSTICK, HID_QUIRK_NOGET },
-+	{ USB_VENDOR_ID_CH, USB_DEVICE_ID_CH_FLIGHT_SIM_YOKE, HID_QUIRK_NOGET },
-+	{ USB_VENDOR_ID_CH, USB_DEVICE_ID_CH_PRO_PEDALS, HID_QUIRK_NOGET },
- 	{ USB_VENDOR_ID_DMI, USB_DEVICE_ID_DMI_ENC, HID_QUIRK_NOGET },
- 	{ USB_VENDOR_ID_ELO, USB_DEVICE_ID_ELO_TS2700, HID_QUIRK_NOGET },
- 	{ USB_VENDOR_ID_SUN, USB_DEVICE_ID_RARITAN_KVM_DONGLE, HID_QUIRK_NOGET },
-
-
++	for_each_irq_desc(irq, desc) {
++		if (desc->status & IRQ_MOVE_PENDING) {
++			unsigned long flags;
++
++			spin_lock_irqsave(&desc->lock, flags);
++			if (!desc->chip->set_affinity ||
++			    !(desc->status & IRQ_MOVE_PENDING)) {
++				desc->status &= ~IRQ_MOVE_PENDING;
++				spin_unlock_irqrestore(&desc->lock, flags);
++				continue;
++			}
++			desc->chip->set_affinity(irq, desc->pending_mask);
++			spin_unlock_irqrestore(&desc->lock, flags);
++		}
++	}
++}
++
++static DECLARE_DELAYED_WORK(delayed_irq_move_work, delayed_irq_move);
++
++static int
++set_ioapic_irq_affinity_level_desc(struct irq_desc *desc)
++{
++	struct irq_cfg *cfg = desc->chip_data;
++	int ret = -1;
++
++	mask_IO_APIC_irq_desc(desc);
++	if (io_apic_level_ack_pending(cfg)) {
++		/*
++		 * Interrupt in progress. Migrating irq now will change
++		 * the vector information in the IO-APIC RTE which will
++		 * confuse the EOI broadcast performed by cpu.
++		 * So, we delay the IRQ migration.
++		 */
++		schedule_delayed_work(&delayed_irq_move_work, 1);
++		ret = 0;
++		goto unmask;
++	}
++
++	/* Interrupt not in progress.  We can change the vector
++	 * information in the IO-APIC RTE. */
++	ret = set_ioapic_irq_affinity_desc(desc, desc->pending_mask);
++	desc->status &= ~IRQ_MOVE_PENDING;
++unmask:
++	unmask_IO_APIC_irq_desc(desc);
++	return ret;
++}
++
++static int
++set_ioapic_affinity_irq_desc(struct irq_desc *desc,
++			     const struct cpumask *mask)
++{
++	if (desc->status & IRQ_LEVEL) {
++		desc->status |= IRQ_MOVE_PENDING;
++		cpumask_copy(desc->pending_mask, mask);
++		return set_ioapic_irq_affinity_level_desc(desc);
++	}
++	return set_ioapic_irq_affinity_desc(desc, mask);
++}
++
+ static int
+ set_ioapic_affinity_irq(unsigned int irq, const struct cpumask *mask)
+ {
