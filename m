@@ -1,59 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755089AbZENSDx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753129AbZENSW1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755089AbZENSDx (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 14:03:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752190AbZENSDn
+	id S1753129AbZENSW1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 14:22:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751198AbZENSWS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 14:03:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:48886 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751271AbZENSDm (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 14:03:42 -0400
-Date: Thu, 14 May 2009 14:02:34 -0400
-From: Josef Bacik <josef@redhat.com>
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Cc: Josef Bacik <josef@redhat.com>, sandeen@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] sys_write() should write all valid data
-Message-ID: <20090514180234.GB10059@dhcp231-156.rdu.redhat.com>
-References: <1242317939-15392-1-git-send-email-v.mayatskih@gmail.com>
+	Thu, 14 May 2009 14:22:18 -0400
+Received: from www17.your-server.de ([213.133.104.17]:56020 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751177AbZENSWR (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 14:22:17 -0400
+Message-ID: <20090514202214.14243n1debrzobx2@mail.your-server.de>
+Date: Thu, 14 May 2009 20:22:14 +0200
+From: Thomas Meyer <thomas@m3y3r.de>
+To: linux-kernel@vger.kernel.org
+Subject: oprofile: WQ on CPU0, prefer CPU1
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+ charset=ISO-8859-1;
+ DelSp="Yes";
+ format="flowed"
 Content-Disposition: inline
-In-Reply-To: <1242317939-15392-1-git-send-email-v.mayatskih@gmail.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+Content-Transfer-Encoding: 7bit
+User-Agent: Dynamic Internet Messaging Program (DIMP) H3 (1.1.2)
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 14, 2009 at 06:18:59PM +0200, Vitaly Mayatskikh wrote:
-> There's user-visible misbehavour in sys_write(): when user tries to put
-> down to disk some data, which crosses boundary of existing memory, sys_write()
-> either immediately returns with EFAULT or writes first page(s).
-> 
-> Next 2 patches make sys_write()'s behaviour more consistent: it tries now
-> to write down all what it can.
-> 
-> Vitaly Mayatskikh (2):
->   Introduce check_readable_bytes()
->   Perform checks in iov_iter_fault_in_readable() with
->     check_readable_bytes()
-> 
->  fs/fuse/file.c          |    6 ++++--
->  include/linux/pagemap.h |   35 +++++++++++++++++++++++++++++++++++
->  mm/filemap.c            |   13 +++++++++----
->  3 files changed, 48 insertions(+), 6 deletions(-)
->
 
-Ok all in all I don't think this is a good way to handle this problem.
-Hopefully somebody smarter than I will speak up, but what you are trying to do
-here is have your cake and eat it too.  You want to get the size of what we were
-able to fault in and return that, which should be a size_t, but you also want to
-throw back an error if something happened, which needs a signed value.  I think
-the best way to handle this would be to make check_readable_bytes return size_t,
-and then if you get an EFAULT back, have it return 0.  Then the caller can say
-"hey I couldn't fault anything in, let me make what I want to fault in smaller",
-and then if that fault returns 0 we can exit.  I hope thats helpful/correct :).
-Thanks,
+After suspend and resume to/from S3 I see a lot of these messages in  
+the kernel log:
 
-Josef
+[11750.054031] WQ on CPU0, prefer CPU1
+[11750.154023] WQ on CPU0, prefer CPU1
+[11750.254022] WQ on CPU0, prefer CPU1
+[11750.354022] WQ on CPU0, prefer CPU1
+[11750.454018] WQ on CPU0, prefer CPU1
+[11750.554022] WQ on CPU0, prefer CPU1
+[11750.654022] WQ on CPU0, prefer CPU1
+[11750.754039] WQ on CPU0, prefer CPU1
+[11750.854020] WQ on CPU0, prefer CPU1
+[11750.954024] WQ on CPU0, prefer CPU1
+[11751.054029] WQ on CPU0, prefer CPU1
+[11751.154028] WQ on CPU0, prefer CPU1
+[11751.254026] WQ on CPU0, prefer CPU1
+[11751.354019] WQ on CPU0, prefer CPU1
+[11751.454022] WQ on CPU0, prefer CPU1
+[11751.554032] WQ on CPU0, prefer CPU1
+[11751.654028] WQ on CPU0, prefer CPU1
+[11751.754028] WQ on CPU0, prefer CPU1
+[11751.854033] WQ on CPU0, prefer CPU1
+[11751.954029] WQ on CPU0, prefer CPU1
+[and so on; seems not to stop]
+
+This comes from drivers/oprofile/cpu_buffer.c
+
+Bug or feature?
+
+greets
+thomas
+
+PS: 2.6.30-rc5
+
+
