@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbZENWpq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754829AbZENWqb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758890AbZENWpq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:45:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756149AbZENWmI
+	id S1754829AbZENWqb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:46:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756461AbZENWmM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:08 -0400
-Received: from kroah.org ([198.145.64.141]:51523 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:12 -0400
+Received: from kroah.org ([198.145.64.141]:51508 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755993AbZENWmC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:02 -0400
+	id S1755963AbZENWmB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:01 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:21 2009
-Message-Id: <20090514223521.833331091@mini.kroah.org>
+Message-Id: <20090514223521.644585467@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:32:45 -0700
+Date: Thu, 14 May 2009 15:32:44 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org, chrisw@sous-sol.org,
-       greg@kroah.com
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -26,60 +25,129 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, netdev@vger.kernel.org,
-       Jesse Brandeburg <jesse.brandeburg@intel.com>,
-       Jeff Kirsher <jeffrey.t.kirsher@intel.com>,
-       "David S. Miller" <davem@davemloft.net>
-Subject: [patch 10/51] e1000: fix virtualization bug
+       alan@lxorguk.ukuu.org.uk, Jinyoung Park <parkjy@mtekvision.com>,
+       Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: [patch 09/51] ASoC: Fix errors in WM8990
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=e1000-fix-virtualization-bug.patch
+Content-Disposition: inline; filename=asoc-fix-errors-in-wm8990.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Jesse Brandeburg <jesse.brandeburg@intel.com>
+From: Jinyoung Park <parkjy@mtekvision.com>
 
-[STABLE] backport upstream commit e151a60ad1faffb6241cf7eb6846353df1f33a32
+commit 97a775c49c7e1b47b016a492463486a5b86da479 upstream.
 
-a recent fix to e1000 (commit 15b2bee2) caused KVM/QEMU/VMware based
-virtualized e1000 interfaces to begin failing when resetting.
+The mis-typing exist in dapm controller definitions and dapm route definitions,
+so happen mis-matched error when snd_soc_dapm_add_routes().
 
-This is because the driver in a virtual environment doesn't
-get to run instructions *AT ALL* when an interrupt is asserted.
-The interrupt code runs immediately and this recent bug fix
-allows an interrupt to be possible when the interrupt handler
-will reject it (due to the new code), when being called from
-any path in the driver that holds the E1000_RESETTING flag.
-
-the driver should use the __E1000_DOWN flag instead of the
-__E1000_RESETTING flag to prevent interrupt execution
-while reconfiguring the hardware.
-
-Signed-off-by: Jesse Brandeburg <jesse.brandeburg@intel.com>
-Signed-off-by: Jeff Kirsher <jeffrey.t.kirsher@intel.com>
-Signed-off-by: David S. Miller <davem@davemloft.net>
+Signed-off-by: Jinyoung Park <parkjy@mtekvision.com>
+Signed-off-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/net/e1000/e1000_main.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ sound/soc/codecs/wm8990.c |   40 ++++++++++++++++++++--------------------
+ 1 file changed, 20 insertions(+), 20 deletions(-)
 
---- a/drivers/net/e1000/e1000_main.c
-+++ b/drivers/net/e1000/e1000_main.c
-@@ -3712,7 +3712,7 @@ static irqreturn_t e1000_intr(int irq, v
- 	struct e1000_hw *hw = &adapter->hw;
- 	u32 rctl, icr = er32(ICR);
+--- a/sound/soc/codecs/wm8990.c
++++ b/sound/soc/codecs/wm8990.c
+@@ -744,7 +744,7 @@ SND_SOC_DAPM_MIXER_E("INMIXL", WM8990_IN
+ 	inmixer_event, SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_POST_PMD),
  
--	if (unlikely((!icr) || test_bit(__E1000_RESETTING, &adapter->flags)))
-+	if (unlikely((!icr) || test_bit(__E1000_DOWN, &adapter->flags)))
- 		return IRQ_NONE;  /* Not our interrupt */
+ /* AINLMUX */
+-SND_SOC_DAPM_MUX_E("AILNMUX", WM8990_INTDRIVBITS, WM8990_AINLMUX_PWR_BIT, 0,
++SND_SOC_DAPM_MUX_E("AINLMUX", WM8990_INTDRIVBITS, WM8990_AINLMUX_PWR_BIT, 0,
+ 	&wm8990_dapm_ainlmux_controls, inmixer_event,
+ 	SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_POST_PMD),
  
- 	/* IMS will not auto-mask if INT_ASSERTED is not set, and if it is
+@@ -755,7 +755,7 @@ SND_SOC_DAPM_MIXER_E("INMIXR", WM8990_IN
+ 	inmixer_event, SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_POST_PMD),
+ 
+ /* AINRMUX */
+-SND_SOC_DAPM_MUX_E("AIRNMUX", WM8990_INTDRIVBITS, WM8990_AINRMUX_PWR_BIT, 0,
++SND_SOC_DAPM_MUX_E("AINRMUX", WM8990_INTDRIVBITS, WM8990_AINRMUX_PWR_BIT, 0,
+ 	&wm8990_dapm_ainrmux_controls, inmixer_event,
+ 	SND_SOC_DAPM_POST_PMU | SND_SOC_DAPM_POST_PMD),
+ 
+@@ -863,40 +863,40 @@ static const struct snd_soc_dapm_route a
+ 	{"LIN12 PGA", "LIN2 Switch", "LIN2"},
+ 	/* LIN34 PGA */
+ 	{"LIN34 PGA", "LIN3 Switch", "LIN3"},
+-	{"LIN34 PGA", "LIN4 Switch", "LIN4"},
++	{"LIN34 PGA", "LIN4 Switch", "LIN4/RXN"},
+ 	/* INMIXL */
+ 	{"INMIXL", "Record Left Volume", "LOMIX"},
+ 	{"INMIXL", "LIN2 Volume", "LIN2"},
+ 	{"INMIXL", "LINPGA12 Switch", "LIN12 PGA"},
+ 	{"INMIXL", "LINPGA34 Switch", "LIN34 PGA"},
+-	/* AILNMUX */
+-	{"AILNMUX", "INMIXL Mix", "INMIXL"},
+-	{"AILNMUX", "DIFFINL Mix", "LIN12PGA"},
+-	{"AILNMUX", "DIFFINL Mix", "LIN34PGA"},
+-	{"AILNMUX", "RXVOICE Mix", "LIN4/RXN"},
+-	{"AILNMUX", "RXVOICE Mix", "RIN4/RXP"},
++	/* AINLMUX */
++	{"AINLMUX", "INMIXL Mix", "INMIXL"},
++	{"AINLMUX", "DIFFINL Mix", "LIN12 PGA"},
++	{"AINLMUX", "DIFFINL Mix", "LIN34 PGA"},
++	{"AINLMUX", "RXVOICE Mix", "LIN4/RXN"},
++	{"AINLMUX", "RXVOICE Mix", "RIN4/RXP"},
+ 	/* ADC */
+-	{"Left ADC", NULL, "AILNMUX"},
++	{"Left ADC", NULL, "AINLMUX"},
+ 
+ 	/* RIN12 PGA */
+ 	{"RIN12 PGA", "RIN1 Switch", "RIN1"},
+ 	{"RIN12 PGA", "RIN2 Switch", "RIN2"},
+ 	/* RIN34 PGA */
+ 	{"RIN34 PGA", "RIN3 Switch", "RIN3"},
+-	{"RIN34 PGA", "RIN4 Switch", "RIN4"},
++	{"RIN34 PGA", "RIN4 Switch", "RIN4/RXP"},
+ 	/* INMIXL */
+ 	{"INMIXR", "Record Right Volume", "ROMIX"},
+ 	{"INMIXR", "RIN2 Volume", "RIN2"},
+ 	{"INMIXR", "RINPGA12 Switch", "RIN12 PGA"},
+ 	{"INMIXR", "RINPGA34 Switch", "RIN34 PGA"},
+-	/* AIRNMUX */
+-	{"AIRNMUX", "INMIXR Mix", "INMIXR"},
+-	{"AIRNMUX", "DIFFINR Mix", "RIN12PGA"},
+-	{"AIRNMUX", "DIFFINR Mix", "RIN34PGA"},
+-	{"AIRNMUX", "RXVOICE Mix", "RIN4/RXN"},
+-	{"AIRNMUX", "RXVOICE Mix", "RIN4/RXP"},
++	/* AINRMUX */
++	{"AINRMUX", "INMIXR Mix", "INMIXR"},
++	{"AINRMUX", "DIFFINR Mix", "RIN12 PGA"},
++	{"AINRMUX", "DIFFINR Mix", "RIN34 PGA"},
++	{"AINRMUX", "RXVOICE Mix", "LIN4/RXN"},
++	{"AINRMUX", "RXVOICE Mix", "RIN4/RXP"},
+ 	/* ADC */
+-	{"Right ADC", NULL, "AIRNMUX"},
++	{"Right ADC", NULL, "AINRMUX"},
+ 
+ 	/* LOMIX */
+ 	{"LOMIX", "LOMIX RIN3 Bypass Switch", "RIN3"},
+@@ -937,7 +937,7 @@ static const struct snd_soc_dapm_route a
+ 	{"LOPMIX", "LOPMIX Left Mixer PGA Switch", "LOPGA"},
+ 
+ 	/* OUT3MIX */
+-	{"OUT3MIX", "OUT3MIX LIN4/RXP Bypass Switch", "LIN4/RXP"},
++	{"OUT3MIX", "OUT3MIX LIN4/RXP Bypass Switch", "LIN4/RXN"},
+ 	{"OUT3MIX", "OUT3MIX Left Out PGA Switch", "LOPGA"},
+ 
+ 	/* OUT4MIX */
+@@ -964,7 +964,7 @@ static const struct snd_soc_dapm_route a
+ 	/* Output Pins */
+ 	{"LON", NULL, "LONMIX"},
+ 	{"LOP", NULL, "LOPMIX"},
+-	{"OUT", NULL, "OUT3MIX"},
++	{"OUT3", NULL, "OUT3MIX"},
+ 	{"LOUT", NULL, "LOUT PGA"},
+ 	{"SPKN", NULL, "SPKMIX"},
+ 	{"ROUT", NULL, "ROUT PGA"},
 
 
