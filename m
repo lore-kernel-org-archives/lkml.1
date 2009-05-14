@@ -1,84 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760929AbZENOQQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761791AbZENOQb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760929AbZENOQQ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 10:16:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754813AbZENOQA
+	id S1761791AbZENOQb (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 10:16:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760503AbZENOQF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 10:16:00 -0400
-Received: from mail-px0-f123.google.com ([209.85.216.123]:65397 "EHLO
-	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754376AbZENOP7 (ORCPT
+	Thu, 14 May 2009 10:16:05 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:44942 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759962AbZENOQE convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 10:15:59 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
-         :content-type:content-transfer-encoding;
-        b=BoJDG7+Re2aclExOQKLoUBt4PFDN/+UALYX50x6rKFVq6RxxWMR//wnw0VLPTTu3MZ
-         RNrYwT3Kqa4g17zPH+XohcPLRzU4K3WgNRZLwkr44ll0yiv7D9XDGJE3kBAP0rTsMv/C
-         57Sre1NHRp3DSH5Lfz5JqMJxeKqe0WGc0K7sw=
-Date: Thu, 14 May 2009 23:15:55 +0900
-From: MinChan Kim <minchan.kim@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Rik van Riel <riel@redhat.com>
-Subject: [PATCH] mmtom: Prevent shrinking of active anon lru list in case of
- no swap space V3
-Message-Id: <20090514231555.f52c81eb.minchan.kim@gmail.com>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
+	Thu, 14 May 2009 10:16:04 -0400
+Message-Id: <4A0C43C50200007800000ECA@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Thu, 14 May 2009 15:16:05 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Tejun Heo" <tj@kernel.org>
+Cc: <mingo@elte.hu>, <andi@firstfloor.org>, <tglx@linutronix.de>,
+       <linux-kernel@vger.kernel.org>, <linux-kernel-owner@vger.kernel.org>,
+       <hpa@zytor.com>
+Subject: Re: [PATCH 2/4] x86: simplify cpa_process_alias()
+References: <1242305390-21958-1-git-send-email-tj@kernel.org>
+ <1242305390-21958-3-git-send-email-tj@kernel.org>
+In-Reply-To: <1242305390-21958-3-git-send-email-tj@kernel.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Changelog since V3
- o Remove can_reclaim_anon. 
- o Add nr_swap_page > 0 in only shrink_zone - By Rik's advise.
- o Change patch description.
+>>> Tejun Heo <tj@kernel.org> 14.05.09 14:49 >>>
+>The two existing alias conditions in cpa_process_alias() are mutually
+>exclusive and future ones are likely to be exclusive too.  Simplify
+>control flow to ease adding other alias cases.
+>
+>The within(vaddr, (unsigned long)_text, _brk_end) test is removed as
+>it's guaranteed to be false if vaddr is in the page mapped area.
 
-Changelog since V2
- o Add new function - can_reclaim_anon : it tests anon_list can be reclaim.
+I don't think that's correct - just consider the case where the originally passed
+in virtual address is from the vmalloc area: In that case, both the 1:1 mapping
+*and* the kernel mapping need to be checked.
 
-Changelog since V1
- o Use nr_swap_pages <= 0 in shrink_active_list to prevent scanning  of active anon list.
+Jan
 
-Now shrink_zone can deactivate active anon pages even if we don't have a swap device. 
-Many embedded products don't have a swap device. So the deactivation of anon pages is unnecessary. 
-
-This patch prevents unnecessary deactivation of anon lru pages.
-But, it don't prevent aging of anon pages to swap out.
-
-Thanks for good review. Rik and Kosaki.  
-
-Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
-Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-Cc: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Rik van Riel <riel@redhat.com>
-
----
- mm/vmscan.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 2f9d555..621708f 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -1577,7 +1577,7 @@ static void shrink_zone(int priority, struct zone *zone,
- 	 * Even if we did not try to evict anon pages at all, we want to
- 	 * rebalance the anon lru active/inactive ratio.
- 	 */
--	if (inactive_anon_is_low(zone, sc))
-+	if (inactive_anon_is_low(zone, sc) && nr_swap_pages > 0)
- 		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
- 
- 	throttle_vm_writeout(sc->gfp_mask);
--- 
-1.5.4.3
-
-
--- 
-Kinds Regards,
-Minchan Kim 
