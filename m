@@ -1,38 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758890AbZENX11@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759604AbZENX2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758890AbZENX11 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:27:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755934AbZENX1S
+	id S1759604AbZENX2T (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbZENX2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 19:27:18 -0400
-Received: from mail.gmx.net ([213.165.64.20]:52739 "HELO mail.gmx.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
-	id S1755930AbZENX1R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 19:27:17 -0400
-Content-Type: text/plain; charset="iso-8859-1"
-Date: Fri, 15 May 2009 01:27:16 +0200
-From: "Andrew Flach" <Andrew.Flach23@gmx.at>
-Message-ID: <20090514232716.310530@gmx.net>
+	Thu, 14 May 2009 19:28:06 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56031 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754902AbZENX2E (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 19:28:04 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Subject: Re: [PATCH -mm] vmscan: protect a fraction of file backed mapped pages from reclaim
+Cc: kosaki.motohiro@jp.fujitsu.com, Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "riel@redhat.com" <riel@redhat.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+In-Reply-To: <alpine.DEB.1.10.0905141612100.15881@qirst.com>
+References: <20090513084306.5874.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0905141612100.15881@qirst.com>
+Message-Id: <20090515082312.F5B6.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-Subject: Uncacheable memory
-To: linux-kernel@vger.kernel.org
-X-Authenticated: #55945763
-X-Flags: 0001
-X-Mailer: WWW-Mail 6100 (Global Message Exchange)
-X-Priority: 3
-X-Provags-ID: V01U2FsdGVkX193EcsswzV3vcpeMqUpkArFKFGQpSlVOJR/I5j/4z
- NYFYv8ifS7LVrmLbQ/QGgM94snh6RDBGSB3Q== 
-Content-Transfer-Encoding: 8bit
-X-GMX-UID: 45A5fgYzRkkNS1fQJmdqCHZudWkvKNPR
-X-FuHaFi: 0.71
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Fri, 15 May 2009 08:28:02 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+> On Wed, 13 May 2009, KOSAKI Motohiro wrote:
+> 
+> > > All these expiration modifications do not take into account that a desktop
+> > > may sit idle for hours while some other things run in the background (like
+> > > backups at night or updatedb and other maintenance things). This still
+> > > means that the desktop will be usuable in the morning.
+> >
+> > Have you seen this phenomenom?
+> > I always use linux desktop for development. but I haven't seen it.
+> > perhaps I have no luck. I really want to know reproduce way.
+> >
+> > Please let me know reproduce way.
+> 
+> Run a backup (or rsync) over a few hundred GB.
 
-For some simple tests I would like to specify some regions of an application program as uncacheable. For example, the application contains a function that maps to the memory address space 0x08002000 to 0x0800A000 in the executable. When this program is run, code within this address space should be marked as uncacheable and the Kernel should not store any data between 0x08002000 and 0x0800A000 in the cache. Is there an straightforward way to do that? Could this be realised with the PAT or do I need to have a look at the MTTR?
+-ENOTREPRODUCED
 
-Thanks
--- 
-Neu: GMX FreeDSL Komplettanschluss mit DSL 6.000 Flatrate + Telefonanschluss für nur 17,95 Euro/mtl.!* http://dslspecial.gmx.de/freedsl-surfflat/?ac=OM.AD.PD003K11308T4569a
+umm.
+May I ask detail operation?
+
+
+> > > The percentage of file backed pages protected is set via
+> > > /proc/sys/vm/file_mapped_ratio. This defaults to 20%.
+> >
+> > Why do you think typical mapped ratio is less than 20% on desktop machine?
+> 
+> Observation of the typical mapped size of Firefox under KDE.
+
+My point is, desktop people have very various mapped ratio.
+Do you oppose this?
+
+
+> > key point is access-once vs access-many.
+> 
+> Nothing against it if it works.
+> 
+
+
+
