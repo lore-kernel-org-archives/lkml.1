@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762157AbZENXGr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762442AbZENXHP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762157AbZENXGr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:06:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762267AbZENW6n
+	id S1762442AbZENXHP (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:07:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762277AbZENW6o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:58:43 -0400
-Received: from kroah.org ([198.145.64.141]:46040 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:58:44 -0400
+Received: from kroah.org ([198.145.64.141]:46052 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762264AbZENW6h (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:58:37 -0400
+	id S1762249AbZENW6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:58:38 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:38 2009
-Message-Id: <20090514225238.374798374@mini.kroah.org>
+Message-Id: <20090514225238.505627993@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:51:38 -0700
+Date: Thu, 14 May 2009 15:51:39 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,50 +26,47 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-mm@vger.kernel.org, Steven Whitehouse <swhiteho@redhat.com>,
+       linux-mm@vger.kernel.org, Trond Myklebust <Trond.Myklebust@netapp.com>,
        Nick Piggin <npiggin@suse.de>
-Subject: [patch 12/28] GFS2: Fix page_mkwrite() return code
+Subject: [patch 13/28] NFS: Fix the return value in nfs_page_mkwrite()
 References: <20090514225126.907908936@mini.kroah.org>
-Content-Disposition: inline; filename=gfs2-fix-page_mkwrite-return-code.patch
+Content-Disposition: inline; filename=nfs-fix-the-return-value-in-nfs_page_mkwrite.patch
 In-Reply-To: <20090514225413.GA705@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Steven Whitehouse <swhiteho@redhat.com>
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-commit e56985da455b9dc0591b8cb2006cc94b6f4fb0f4 upstream
+commit 2b2ec7554cf7ec5e4412f89a5af6abe8ce950700 upstream
 
-This allows for the possibility of returning VM_FAULT_OOM as
-well as VM_FAULT_SIGBUS. This ensures that the correct action
-is taken.
+Commit c2ec175c39f62949438354f603f4aa170846aabb ("mm: page_mkwrite
+change prototype to match fault") exposed a bug in the NFS
+implementation of page_mkwrite.  We should be returning 0 on success...
 
-Signed-off-by: Steven Whitehouse <swhiteho@redhat.com>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- fs/gfs2/ops_file.c |    4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ fs/nfs/file.c |    2 --
+ 1 file changed, 2 deletions(-)
 
---- a/fs/gfs2/ops_file.c
-+++ b/fs/gfs2/ops_file.c
-@@ -412,7 +412,9 @@ out_unlock:
- 	gfs2_glock_dq(&gh);
- out:
- 	gfs2_holder_uninit(&gh);
--	if (ret)
-+	if (ret == -ENOMEM)
-+		ret = VM_FAULT_OOM;
-+	else if (ret)
- 		ret = VM_FAULT_SIGBUS;
- 	return ret;
- }
+--- a/fs/nfs/file.c
++++ b/fs/nfs/file.c
+@@ -477,8 +477,6 @@ static int nfs_vm_page_mkwrite(struct vm
+ 		goto out_unlock;
+ 
+ 	ret = nfs_updatepage(filp, page, 0, pagelen);
+-	if (ret == 0)
+-		ret = pagelen;
+ out_unlock:
+ 	unlock_page(page);
+ 	if (ret)
 
 
