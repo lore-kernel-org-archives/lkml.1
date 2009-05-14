@@ -1,99 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752537AbZENR7w@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754425AbZENSAQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752537AbZENR7w (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 13:59:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751506AbZENR7n
+	id S1754425AbZENSAQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 14:00:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752329AbZENR7q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 13:59:43 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59490 "EHLO ogre.sisk.pl"
+	Thu, 14 May 2009 13:59:46 -0400
+Received: from mga14.intel.com ([143.182.124.37]:55803 "EHLO mga14.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750952AbZENR7m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 13:59:42 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to allocate too much memory too hard
-Date: Thu, 14 May 2009 19:59:53 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@tuxonice.net>,
-       David Rientjes <rientjes@google.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-References: <200905070040.08561.rjw@sisk.pl> <200905131042.18137.rjw@sisk.pl> <20090514111413.GB8871@elf.ucw.cz>
-In-Reply-To: <20090514111413.GB8871@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+	id S1752559AbZENR7o (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 13:59:44 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,195,1241420400"; 
+   d="scan'208";a="142922927"
+Date: Thu, 14 May 2009 10:59:44 -0700
+From: Fenghua Yu <fenghua.yu@intel.com>
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: "Yu, Fenghua" <fenghua.yu@intel.com>, "Luck, Tony" <tony.luck@intel.com>,
+       "'lkml'" <linux-kernel@vger.kernel.org>,
+       "'iommu'" <iommu@lists.linux-foundation.org>,
+       "'ia64'" <linux-ia64@vger.kernel.org>
+Subject: Re: [PATCH] Fix Intel IOMMU Compilation Warnings on IA64
+Message-ID: <20090514175944.GA5168@linux-os.sc.intel.com>
+References: <20090327212241.234500000@intel.com> <20090327212321.070229000@intel.com> <20090416001957.GA1527@linux-os.sc.intel.com> <1240135508.3589.75.camel@macbook.infradead.org> <A6AD88C3F2289247BE726C37303E1EB8A4DF7DB1@orsmsx505.amr.corp.intel.com> <20090513231351.GA22386@linux-os.sc.intel.com> <1242314271.3393.11.camel@macbook.infradead.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200905141959.53810.rjw@sisk.pl>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1242314271.3393.11.camel@macbook.infradead.org>
+User-Agent: Mutt/1.4.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 May 2009, Pavel Machek wrote:
-> Hi!
-> 
-> > We want to avoid attempting to free too much memory too hard during
-> > hibernation, so estimate the minimum size of the image to use as the
-> > lower limit for preallocating memory.
-> 
-> Why? Is freeing memory too slow?
-> 
-> It used to be that user controlled image size, so he was able to
-> balance "time to save image" vs. "responsiveness of system after
-> resume".
-> 
-> Does this just override user's preference when he chooses too small
-> image size?
-> 
-> > The approach here is based on the (experimental) observation that we
-> > can't free more page frames than the sum of:
+On Thu, May 14, 2009 at 08:17:51AM -0700, David Woodhouse wrote:
+> On Wed, 2009-05-13 at 16:13 -0700, Fenghua Yu wrote:
+> > Compiling kernel on IA64 reports two warnings in intel-iommu.c:
 > > 
-> > * global_page_state(NR_SLAB_RECLAIMABLE)
-> > * global_page_state(NR_ACTIVE_ANON)
-> > * global_page_state(NR_INACTIVE_ANON)
-> > * global_page_state(NR_ACTIVE_FILE)
-> > * global_page_state(NR_INACTIVE_FILE)
-> > 
-> > and even that is usually impossible to free in practice, because some
-> > of the pages reported as global_page_state(NR_SLAB_RECLAIMABLE) can't
-> > in fact be freed.  It turns out, however, that if the sum of the
-> > above numbers is subtracted from the number of saveable pages in the
-> > system and the result is multiplied by 1.25, we get a suitable
-> > estimate of the minimum size of the image.
+> > drivers/pci/intel-iommu.c:3150: warning: format ?%llx? expects
+> > type ?long long unsigned int?, but argument 4 has type ?u64?
+> > drivers/pci/intel-iommu.c: In function ?intel_iommu_map_range?:
+> > drivers/pci/intel-iommu.c:3201: warning: format ?%llx? expects
+> > type ?long long unsigned int?, but argument 4 has type ?u64?
 > 
-> 
-> 
-> > Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> > ---
-> >  kernel/power/snapshot.c |   56 ++++++++++++++++++++++++++++++++++++++++++++----
-> >  1 file changed, 52 insertions(+), 4 deletions(-)
-> 
-> 
-> >  /**
-> > + * minimum_image_size - Estimate the minimum acceptable size of an image
-> > + * @saveable: The total number of saveable pages in the system.
-> > + *
-> > + * We want to avoid attempting to free too much memory too hard, so estimate the
-> > + * minimum acceptable size of a hibernation image to use as the lower limit for
-> > + * preallocating memory.
-> 
-> I don't get it. If user sets image size as 0, we should free as much
-> memory as we can. I just don't see why "we want to avoid... it".
+> Charset corruption there? I'm sure GCC didn't actually use question
+> marks...
 
-The "as much memory as we can" is not well defined.
+Yes, somehow the charset is corrupted during procedure. Below is correct one:
 
-Patches [4/6] and [5/6] make hibernation use memory allocations to force some
-memory to be freed.  However, it is not really reasonable to try to allocate
-until the allocation fails, because that stresses the memory management
-subsystem too much.  It is better to predict when it fails and stop allocating
-at that point, which is what the patch does.
+drivers/pci/intel-iommu.c: In function ‘intel_iommu_attach_device’:
+drivers/pci/intel-iommu.c:3150: warning: format ‘%llx’ expects type ‘long long unsigned int’, but argument 4 has type ‘u64’
+drivers/pci/intel-iommu.c: In function ‘intel_iommu_map_range’:
+drivers/pci/intel-iommu.c:3201: warning: format ‘%llx’ expects type ‘long long unsigned int’, but argument 4 has type ‘u64’
 
-The prediction is not very precise, but I think it need not be.  Even if it
-leaves a few pages more in memory, that won't be a disaster.
+> 
+> Perhaps this would be better, modelled after commit fe333321:
+> 
+> diff --git a/arch/ia64/include/asm/types.h b/arch/ia64/include/asm/types.h
+> index e36b371..b0ecc20 100644
+> --- a/arch/ia64/include/asm/types.h
+> +++ b/arch/ia64/include/asm/types.h
+> @@ -13,7 +13,11 @@
+>   *	David Mosberger-Tang <davidm@hpl.hp.com>, Hewlett-Packard Co
+>   */
+>  
+> +#ifdef __KERNEL__
+> +#include <asm-generic/int-ll64.h>
+> +#else
+>  #include <asm-generic/int-l64.h>
+> +#endif
+>  
+>  #ifdef __ASSEMBLY__
+>  # define __IA64_UL(x)		(x)
+> 
 
-Thanks,
-Rafael
+A lot of places in IA64 kernel assume l64. So it would be a big patch and
+testing to change to ll64. I assume Matthew's patch will do that?
+
+Thanks.
+
+-Fenghua
