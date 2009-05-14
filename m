@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759031AbZENWqL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760848AbZENWuH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759031AbZENWqL (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:46:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756267AbZENWmK
+	id S1760848AbZENWuH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:50:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756781AbZENWme
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:10 -0400
-Received: from kroah.org ([198.145.64.141]:51543 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:34 -0400
+Received: from kroah.org ([198.145.64.141]:52435 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756127AbZENWmE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:04 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:22 2009
-Message-Id: <20090514223522.162177437@mini.kroah.org>
+	id S1756522AbZENWmR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:17 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:24 2009
+Message-Id: <20090514223524.373095782@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:32:47 -0700
+Date: Thu, 14 May 2009 15:33:00 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,67 +25,70 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Bart Van Assche <bart.vanassche@gmail.com>,
-       Steven Rostedt <srostedt@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Subject: [patch 12/51] Fix for enabling branch profiling makes sparse unusable
+       alan@lxorguk.ukuu.org.uk, Steve French <smfrench@gmail.com>,
+       Jeff Layton <jlayton@redhat.com>, Suresh Jayaraman <sjayaraman@suse.de>,
+       Steve French <sfrench@us.ibm.com>
+Subject: [patch 25/51] cifs: Increase size of tmp_buf in cifs_readdir to avoid potential overflows
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=fix-for-enabling-branch-profiling-makes-sparse-unusable.patch
+Content-Disposition: inline; filename=cifs-increase-size-of-tmp_buf-in-cifs_readdir-to-avoid-potential-overflows.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Bart Van Assche <bart.vanassche@gmail.com>
+From: Suresh Jayaraman <sjayaraman@suse.de>
 
-commit d9ad8bc0ca823705413f75b50c442a88cc518b35 upstream.
+Commit 7b0c8fcff47a885743125dd843db64af41af5a61 refreshed and use
+a #define from commit f58841666bc22e827ca0dcef7b71c7bc2758ce82.
 
-One of the changes between kernels 2.6.28 and 2.6.29 is that a branch profiler
-has been added for if() statements. Unfortunately this patch makes the sparse
-output unusable with CONFIG_TRACE_BRANCH_PROFILING=y: when branch profiling is
-enabled, sparse prints so much false positives that the real issues are no
-longer visible. This behavior can be reproduced as follows:
-* enable CONFIG_TRACE_BRANCH_PROFILING, e.g. by running make allyesconfig or
-  make allmodconfig.
-* run make C=2
+cifs: Increase size of tmp_buf in cifs_readdir to avoid potential overflows
 
-Result: a huge number of the following sparse warnings.
-...
-include/linux/cpumask.h:547:2: warning: symbol '______r' shadows an earlier one
-include/linux/cpumask.h:547:2: originally declared here
-...
+Increase size of tmp_buf to possible maximum to avoid potential
+overflows. Also moved UNICODE_NAME_MAX definition so that it can be used
+elsewhere.
 
-The patch below fixes this by disabling branch profiling while analyzing the
-kernel code with sparse.
-
-This patch is already included in 2.6.30-rc1 -- see also
-http://lkml.org/lkml/2009/4/5/120.
-
-Signed-off-by: Bart Van Assche <bart.vanassche@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Steven Rostedt <srostedt@redhat.com>
-LKML-Reference: <200904051620.02311.bart.vanassche@gmail.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Pointed-out-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
+Acked-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- include/linux/compiler.h |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ fs/cifs/cifs_unicode.h |    7 +++++++
+ fs/cifs/readdir.c      |    2 +-
+ 2 files changed, 8 insertions(+), 1 deletion(-)
 
---- a/include/linux/compiler.h
-+++ b/include/linux/compiler.h
-@@ -75,7 +75,8 @@ struct ftrace_branch_data {
-  * Note: DISABLE_BRANCH_PROFILING can be used by special lowlevel code
-  * to disable branch tracing on a per file basis.
-  */
--#if defined(CONFIG_TRACE_BRANCH_PROFILING) && !defined(DISABLE_BRANCH_PROFILING)
-+#if defined(CONFIG_TRACE_BRANCH_PROFILING) \
-+    && !defined(DISABLE_BRANCH_PROFILING) && !defined(__CHECKER__)
- void ftrace_likely_update(struct ftrace_branch_data *f, int val, int expect);
+--- a/fs/cifs/cifs_unicode.h
++++ b/fs/cifs/cifs_unicode.h
+@@ -64,6 +64,13 @@ int cifs_strtoUCS(__le16 *, const char *
+ #endif
  
- #define likely_notrace(x)	__builtin_expect(!!(x), 1)
+ /*
++ * To be safe - for UCS to UTF-8 with strings loaded with the rare long
++ * characters alloc more to account for such multibyte target UTF-8
++ * characters.
++ */
++#define UNICODE_NAME_MAX ((4 * NAME_MAX) + 2)
++
++/*
+  * UniStrcat:  Concatenate the second string to the first
+  *
+  * Returns:
+--- a/fs/cifs/readdir.c
++++ b/fs/cifs/readdir.c
+@@ -1072,7 +1072,7 @@ int cifs_readdir(struct file *file, void
+ 		with the rare long characters alloc more to account for
+ 		such multibyte target UTF-8 characters. cifs_unicode.c,
+ 		which actually does the conversion, has the same limit */
+-		tmp_buf = kmalloc((2 * NAME_MAX) + 4, GFP_KERNEL);
++		tmp_buf = kmalloc(UNICODE_NAME_MAX, GFP_KERNEL);
+ 		for (i = 0; (i < num_to_fill) && (rc == 0); i++) {
+ 			if (current_entry == NULL) {
+ 				/* evaluate whether this case is an error */
 
 
