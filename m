@@ -1,15 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755850AbZENWlg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756042AbZENWmS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755850AbZENWlg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:41:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754595AbZENWlY
+	id S1756042AbZENWmS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:42:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755342AbZENWlz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:41:24 -0400
-Received: from kroah.org ([198.145.64.141]:51371 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:41:55 -0400
+Received: from kroah.org ([198.145.64.141]:51390 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754552AbZENWlX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:41:23 -0400
-Date: Thu, 14 May 2009 15:37:55 -0700
+	id S1754595AbZENWly (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:41:54 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:20 2009
+Message-Id: <20090514223520.343106419@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 14 May 2009 15:32:36 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -22,104 +25,166 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk
-Subject: [patch 00/51] 2.6.29-stable review
-Message-ID: <20090514223755.GA27019@kroah.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.19 (2009-01-05)
+       alan@lxorguk.ukuu.org.uk, Josef Bacik <jbacik@redhat.com>,
+       <linux-ext4@vger.kernel.org>, <xfs-masters@oss.sgi.com>,
+       <linux-btrfs@vger.kernel.org>, Steven Whitehouse <swhiteho@redhat.com>,
+       Mark Fasheh <mfasheh@suse.com>, Joel Becker <Joel.Becker@oracle.com>
+Subject: [patch 01/51] fiemap: fix problem with setting FIEMAP_EXTENT_LAST
+References: <20090514223235.348540705@mini.kroah.org>
+Content-Disposition: inline; filename=fiemap-fix-problem-with-setting-fiemap_extent_last.patch
+In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is the start of the stable review cycle for the 2.6.29.4 release.
-There are 51 patches in this series, all will be posted as a response to
-this one.  If anyone has any issues with these being applied, please let
-us know.  If anyone is a maintainer of the proper subsystem, and wants
-to add a Signed-off-by: line to the patch, please respond with it.
+2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
-These patches are sent out with a number of different people on the Cc:
-line.  If you wish to be a reviewer, please email stable@kernel.org to
-add your name to the list.  If you want to be off the reviewer list,
-also email us.
+------------------
 
-Responses should be made by Saturday, May 16, 20:00:00 UTC.  Anything
-received after that time might be too late.
+From: Josef Bacik <jbacik@redhat.com>
 
-The whole patch series can be found in one patch at:
-	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.29.4-rc1.gz
-and the diffstat can be found below.
+commit df3935ffd6166fdd00702cf548fb5bb55737758b upstream.
+
+Fix a problem where the generic block based fiemap stuff would not
+properly set FIEMAP_EXTENT_LAST on the last extent.  I've reworked things
+to keep track if we go past the EOF, and mark the last extent properly.
+The problem was reported by and tested by Eric Sandeen.
+
+Tested-by: Eric Sandeen <sandeen@redhat.com>
+Signed-off-by: Josef Bacik <jbacik@redhat.com>
+Cc: <linux-ext4@vger.kernel.org>
+Cc: <xfs-masters@oss.sgi.com>
+Cc: <linux-btrfs@vger.kernel.org>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Mark Fasheh <mfasheh@suse.com>
+Cc: Joel Becker <Joel.Becker@oracle.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ fs/ioctl.c |   75 ++++++++++++++++++++++++++++++++++++++++++++-----------------
+ 1 file changed, 55 insertions(+), 20 deletions(-)
+
+--- a/fs/ioctl.c
++++ b/fs/ioctl.c
+@@ -258,7 +258,7 @@ int __generic_block_fiemap(struct inode 
+ 	long long length = 0, map_len = 0;
+ 	u64 logical = 0, phys = 0, size = 0;
+ 	u32 flags = FIEMAP_EXTENT_MERGED;
+-	int ret = 0;
++	int ret = 0, past_eof = 0, whole_file = 0;
+ 
+ 	if ((ret = fiemap_check_flags(fieinfo, FIEMAP_FLAG_SYNC)))
+ 		return ret;
+@@ -266,6 +266,9 @@ int __generic_block_fiemap(struct inode 
+ 	start_blk = logical_to_blk(inode, start);
+ 
+ 	length = (long long)min_t(u64, len, i_size_read(inode));
++	if (length < len)
++		whole_file = 1;
++
+ 	map_len = length;
+ 
+ 	do {
+@@ -282,11 +285,26 @@ int __generic_block_fiemap(struct inode 
+ 
+ 		/* HOLE */
+ 		if (!buffer_mapped(&tmp)) {
++			length -= blk_to_logical(inode, 1);
++			start_blk++;
++
++			/*
++			 * we want to handle the case where there is an
++			 * allocated block at the front of the file, and then
++			 * nothing but holes up to the end of the file properly,
++			 * to make sure that extent at the front gets properly
++			 * marked with FIEMAP_EXTENT_LAST
++			 */
++			if (!past_eof &&
++			    blk_to_logical(inode, start_blk) >=
++			    blk_to_logical(inode, 0)+i_size_read(inode))
++				past_eof = 1;
++
+ 			/*
+ 			 * first hole after going past the EOF, this is our
+ 			 * last extent
+ 			 */
+-			if (length <= 0) {
++			if (past_eof && size) {
+ 				flags = FIEMAP_EXTENT_MERGED|FIEMAP_EXTENT_LAST;
+ 				ret = fiemap_fill_next_extent(fieinfo, logical,
+ 							      phys, size,
+@@ -294,15 +312,37 @@ int __generic_block_fiemap(struct inode 
+ 				break;
+ 			}
+ 
+-			length -= blk_to_logical(inode, 1);
+-
+ 			/* if we have holes up to/past EOF then we're done */
+-			if (length <= 0)
++			if (length <= 0 || past_eof)
+ 				break;
+-
+-			start_blk++;
+ 		} else {
+-			if (length <= 0 && size) {
++			/*
++			 * we have gone over the length of what we wanted to
++			 * map, and it wasn't the entire file, so add the extent
++			 * we got last time and exit.
++			 *
++			 * This is for the case where say we want to map all the
++			 * way up to the second to the last block in a file, but
++			 * the last block is a hole, making the second to last
++			 * block FIEMAP_EXTENT_LAST.  In this case we want to
++			 * see if there is a hole after the second to last block
++			 * so we can mark it properly.  If we found data after
++			 * we exceeded the length we were requesting, then we
++			 * are good to go, just add the extent to the fieinfo
++			 * and break
++			 */
++			if (length <= 0 && !whole_file) {
++				ret = fiemap_fill_next_extent(fieinfo, logical,
++							      phys, size,
++							      flags);
++				break;
++			}
++
++			/*
++			 * if size != 0 then we know we already have an extent
++			 * to add, so add it.
++			 */
++			if (size) {
+ 				ret = fiemap_fill_next_extent(fieinfo, logical,
+ 							      phys, size,
+ 							      flags);
+@@ -319,19 +359,14 @@ int __generic_block_fiemap(struct inode 
+ 			start_blk += logical_to_blk(inode, size);
+ 
+ 			/*
+-			 * if we are past the EOF we need to loop again to see
+-			 * if there is a hole so we can mark this extent as the
+-			 * last one, and if not keep mapping things until we
+-			 * find a hole, or we run out of slots in the extent
+-			 * array
++			 * If we are past the EOF, then we need to make sure as
++			 * soon as we find a hole that the last extent we found
++			 * is marked with FIEMAP_EXTENT_LAST
+ 			 */
+-			if (length <= 0)
+-				continue;
+-
+-			ret = fiemap_fill_next_extent(fieinfo, logical, phys,
+-						      size, flags);
+-			if (ret)
+-				break;
++			if (!past_eof &&
++			    logical+size >=
++			    blk_to_logical(inode, 0)+i_size_read(inode))
++				past_eof = 1;
+ 		}
+ 		cond_resched();
+ 	} while (1);
 
 
-thanks,
-
-greg k-h
-
-
- Documentation/filesystems/Locking   |   26 ++-
- Makefile                            |    2 +-
- arch/x86/kvm/svm.c                  |    1 -
- arch/x86/kvm/x86.c                  |    4 +-
- drivers/dma/dmatest.c               |    4 +-
- drivers/hid/hid-ids.h               |    5 +
- drivers/hid/usbhid/hid-quirks.c     |    3 +
- drivers/hwmon/w83781d.c             |    3 +-
- drivers/i2c/algos/i2c-algo-bit.c    |    2 +-
- drivers/i2c/algos/i2c-algo-pca.c    |   11 ++
- drivers/md/bitmap.c                 |   29 ++--
- drivers/md/md.c                     |    7 +-
- drivers/md/raid10.c                 |   12 +-
- drivers/net/e1000/e1000_main.c      |    2 +-
- drivers/net/ehea/ehea_main.c        |   31 +++--
- drivers/net/ne2k-pci.c              |    7 +-
- drivers/serial/mpc52xx_uart.c       |    2 +-
- drivers/usb/gadget/usbstring.c      |    6 +-
- drivers/usb/serial/ftdi_sio.c       |   18 ++-
- drivers/video/fb_defio.c            |    3 +-
- fs/btrfs/ctree.h                    |    2 +-
- fs/btrfs/inode.c                    |   12 +-
- fs/buffer.c                         |   20 ++-
- fs/cifs/cifs_unicode.h              |    7 +
- fs/cifs/cifssmb.c                   |   17 +-
- fs/cifs/connect.c                   |    6 +-
- fs/cifs/misc.c                      |    5 +-
- fs/cifs/readdir.c                   |    2 +-
- fs/cifs/sess.c                      |   46 +++---
- fs/eventpoll.c                      |    2 +-
- fs/ext4/ext4.h                      |    2 +-
- fs/ext4/inode.c                     |    5 +-
- fs/fcntl.c                          |    6 +-
- fs/fuse/file.c                      |    3 +-
- fs/fuse/inode.c                     |    1 +
- fs/gfs2/ops_file.c                  |    7 +-
- fs/ioctl.c                          |   75 +++++++---
- fs/lockd/svc.c                      |   15 ++-
- fs/nfs/dir.c                        |    9 +-
- fs/nfs/file.c                       |    9 +-
- fs/nfsd/nfs4xdr.c                   |   16 ++-
- fs/ocfs2/file.c                     |   94 ++++++++++---
- fs/ocfs2/mmap.c                     |    6 +-
- fs/splice.c                         |  276 ++++++++++++++++++++++-------------
- fs/ubifs/file.c                     |    9 +-
- fs/xfs/linux-2.6/xfs_file.c         |    4 +-
- include/linux/buffer_head.h         |    2 +-
- include/linux/compiler.h            |    3 +-
- include/linux/mm.h                  |    3 +-
- include/linux/splice.h              |   12 ++
- include/net/cipso_ipv4.h            |   17 ++
- include/net/netlabel.h              |   15 ++-
- mm/memory.c                         |  132 ++++++++++++-----
- net/ipv4/cipso_ipv4.c               |  130 ++++++++++++++++
- net/ipv4/syncookies.c               |    9 +-
- net/ipv4/tcp_ipv4.c                 |    7 +-
- net/mac80211/rc80211_pid_algo.c     |   73 +++++-----
- net/netlabel/netlabel_kapi.c        |   84 +++++++++++
- security/selinux/hooks.c            |   49 ++-----
- security/selinux/include/netlabel.h |   23 ++-
- security/selinux/netlabel.c         |  185 +++++++-----------------
- security/smack/smack.h              |    1 -
- security/smack/smack_lsm.c          |  130 ++++++++++-------
- sound/pci/hda/patch_sigmatel.c      |    7 +-
- sound/soc/codecs/wm8990.c           |   40 +++---
- 65 files changed, 1131 insertions(+), 625 deletions(-)
