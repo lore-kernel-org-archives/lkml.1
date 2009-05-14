@@ -1,109 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761359AbZENR2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761563AbZENR3q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761359AbZENR2T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 13:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZENR2A
+	id S1761563AbZENR3q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 13:29:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753715AbZENR3f
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 13:28:00 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:49233 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752278AbZENR2A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 13:28:00 -0400
-Date: Thu, 14 May 2009 10:25:54 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: mel@csn.ul.ie, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       cl@linux-foundation.org, suresh.b.siddha@intel.com,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       rusty@rustcorp.com.au, steiner@sgi.com, rientjes@google.com
-Subject: Re: [PATCH 5/5] mm: clear N_HIGH_MEMORY map before se set it again
- -v2
-Message-Id: <20090514102554.b3a36f19.akpm@linux-foundation.org>
-In-Reply-To: <4A0C4F67.5080802@kernel.org>
-References: <4A05269D.8000701@kernel.org>
-	<20090512111623.GG25923@csn.ul.ie>
-	<4A0A64FB.4080504@kernel.org>
-	<20090513145950.GB28097@csn.ul.ie>
-	<4A0C4910.7090508@kernel.org>
-	<4A0C4A2A.6080009@kernel.org>
-	<20090514095414.ba8356e5.akpm@linux-foundation.org>
-	<4A0C4F67.5080802@kernel.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Thu, 14 May 2009 13:29:35 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:51537 "EHLO kernel.dk"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751159AbZENR3e (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 13:29:34 -0400
+Date: Thu, 14 May 2009 19:29:35 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: Miklos Szeredi <miklos@szeredi.hu>
+Cc: akpm@linux-foundation.org, max@duempel.org, torvalds@linux-foundation.org,
+       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [patch 2/3] splice: implement default splice_read method
+Message-ID: <20090514172935.GR4140@kernel.dk>
+References: <20090507133734.450612199@szeredi.hu> <20090507133748.161689790@szeredi.hu> <20090512223500.d7ef4648.akpm@linux-foundation.org> <20090513063707.GC4140@kernel.dk> <E1M4ALP-0005za-1i@pomaz-ex.szeredi.hu>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <E1M4ALP-0005za-1i@pomaz-ex.szeredi.hu>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 May 2009 10:05:43 -0700
-Yinghai Lu <yinghai@kernel.org> wrote:
-
-> Andrew Morton wrote:
-> > On Thu, 14 May 2009 09:43:22 -0700
-> > Yinghai Lu <yinghai@kernel.org> wrote:
-> > 
-> >> incase some system strange SRAT table. some kind of small range.
-> >> or with mem= etc
-> >>
-> > 
-> > That description is very hard to understand.  Please provide more details.
+On Wed, May 13 2009, Miklos Szeredi wrote:
+> On Wed, 13 May 2009, Jens Axboe wrote:
+> > On Tue, May 12 2009, Andrew Morton wrote:
+> > > On Thu, 07 May 2009 15:37:36 +0200 Miklos Szeredi <miklos@szeredi.hu> wrote:
+> > > 
+> > > > +	for (i = 0; i < spd.nr_pages; i++) {
+> > > > +		kunmap(pages[i]);
+> > > 
+> > > It is deadlockable if any thread of control holds more than a single
+> > > kmap at a time.
+> > > 
+> > > Because there are a finite number of kmaps available, and if one is
+> > > unavailable, kmap() waits for one to become free.  If the number of
+> > > waiting threads equals the number of available slots, nobody makes any
+> > > progress.
 > 
-> if the wrong SRAT table, have small range for some node. that node will not be onlined.
-> In the early checking, the bit in node_states[N_HIGH_MEMORY] for the node is set even 
-> that node has less RAM like 1M, and it is not cleared before the bit is set again in 
-> the following loop according online nodes.
-
-Where in the kernel does this setting of the bit in node_states[]
-occur?  early_calculate_totalpages()?
-
-Where in the kernel is it later decided to _not_ use these pages in
-that node?  Perhaps that's the place where the problem should be fixed.
-
-
-> > 
-> >> Signed-off-by: Yinghai Lu <Yinghai@kernel.org>
-> >> Tested-by: Jack Steiner <steiner@sgi.com>
-> > 
-> > What reason did Jack have to test this?  Perhaps he hit some bug? 
-> > If so, please fully describe that bug in the changelog.
+> Ouch.
 > 
-> for some memmoryless node and strange memmap.
-
-That's not a very good problem description.
-
-Put yourself in the position of a distro engineer whose customer
-reports a 2.6.26 problem.  He's going to look at your patch wondering
-whether it might fix his customer's problem.  We should provide him
-with sufficient information to be able to determine this.
-
 > > 
-> > 
-> >> Index: linux-2.6/mm/page_alloc.c
-> >> ===================================================================
-> >> --- linux-2.6.orig/mm/page_alloc.c
-> >> +++ linux-2.6/mm/page_alloc.c
-> >> @@ -4041,6 +4047,11 @@ void __init free_area_init_nodes(unsigne
-> >>  						early_node_map[i].start_pfn,
-> >>  						early_node_map[i].end_pfn);
-> >>  
-> >> +	/*
-> >> +	 * find_zone_movable_pfns_for_nodes/early_calculate_totalpages init
-> >> +	 * that node_mask, clear it at first
-> >> +	 */
-> >> +	nodes_clear(node_states[N_HIGH_MEMORY]);
-> >>  	/* Initialise every node */
-> >>  	mminit_verify_pageflags_layout();
-> >>  	setup_nr_node_ids();
-> > 
-> > If CONFIG_HIGHMEM=n, this will clear the N_NORMAL_MEMORY entry in
-> > node_states[].  Why is this correct and desirable?
+> > Good catch, that will not work reliably. I've applied the below.
 > 
-> then N_NORMAL_MEMORY == N_HIGH_MEMORY
+> Thanks.
+> 
+> The bigger problem is that the default_file_splice_write()
+> implementation in the other patch does the same (it calls
+> buf->ops->map() on all buffers).
 
-I know.
+Yep that's even worse, as that should go BUG() pretty much immediately
+when the KM_USER0 slot is reused!
 
-But it's unobvious that this change is correct and desirable with both
-CONFIG_HIGHMEM=n and CONFIG_HIGHMEM=y.
+> Hmm.  Simple solution would be to do a write() for each buffer.  But
+> this only affects HIGHMEM kernels, so it's a bit pointless to do that
+> on all archs.  Sigh...
+
+It is unfortunate, we are going to be stuck with that for some time
+still...
+
+-- 
+Jens Axboe
 
