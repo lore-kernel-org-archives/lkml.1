@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763308AbZENXJr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756692AbZENXKL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763308AbZENXJr (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:09:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762316AbZENW6y
+	id S1756692AbZENXKL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:10:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762264AbZENW6z
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:58:54 -0400
-Received: from kroah.org ([198.145.64.141]:46171 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:58:55 -0400
+Received: from kroah.org ([198.145.64.141]:46085 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760946AbZENW6t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:58:49 -0400
+	id S1754895AbZENW6q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:58:46 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:40 2009
-Message-Id: <20090514225240.556329624@mini.kroah.org>
+Message-Id: <20090514225239.866163756@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:51:51 -0700
+Date: Thu, 14 May 2009 15:51:47 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 25/28] splice: split up __splice_from_pipe()
+       alan@lxorguk.ukuu.org.uk, "J. Bruce Fields" <bfields@citi.umich.edu>
+Subject: [patch 21/28] nfsd4: check for negative dentry before use in nfsv4 readdir
 References: <20090514225126.907908936@mini.kroah.org>
-Content-Disposition: inline; filename=splice-split-up-__splice_from_pipe.patch
+Content-Disposition: inline; filename=nfsd4-check-for-negative-dentry-before-use-in-nfsv4-readdir.patch
 In-Reply-To: <20090514225413.GA705@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,317 +38,76 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Miklos Szeredi <miklos@szeredi.hu>
+From: J. Bruce Fields <bfields@citi.umich.edu>
 
-commit b3c2d2ddd63944ef2a1e4a43077b602288107e01 upstream.
+commit b2c0cea6b1cb210e962f07047df602875564069e upstream.
 
-Split up __splice_from_pipe() into four helper functions:
+After 2f9092e1020246168b1309b35e085ecd7ff9ff72 "Fix i_mutex vs.  readdir
+handling in nfsd" (and 14f7dd63 "Copy XFS readdir hack into nfsd code"),
+an entry may be removed between the first mutex_unlock and the second
+mutex_lock. In this case, lookup_one_len() will return a negative
+dentry.  Check for this case to avoid a NULL dereference.
 
-  splice_from_pipe_begin()
-  splice_from_pipe_next()
-  splice_from_pipe_feed()
-  splice_from_pipe_end()
-
-splice_from_pipe_next() will wait (if necessary) for more buffers to
-be added to the pipe.  splice_from_pipe_feed() will feed the buffers
-to the supplied actor and return when there's no more data available
-(or if all of the requested data has been copied).
-
-This is necessary so that implementations can do locking around the
-non-waiting splice_from_pipe_feed().
-
-This patch should not cause any change in behavior.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: J. Bruce Fields <bfields@citi.umich.edu>
+Reviewed-by: J. R. Okajima <hooanon05@yahoo.co.jp>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/splice.c            |  223 ++++++++++++++++++++++++++++++++-----------------
- include/linux/splice.h |   10 ++
- 2 files changed, 156 insertions(+), 77 deletions(-)
+ fs/nfsd/nfs4xdr.c |   16 +++++++++++++++-
+ 1 file changed, 15 insertions(+), 1 deletion(-)
 
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -599,107 +599,176 @@ out:
- 	return ret;
- }
- 
-+static void wakeup_pipe_writers(struct pipe_inode_info *pipe)
-+{
-+	smp_mb();
-+	if (waitqueue_active(&pipe->wait))
-+		wake_up_interruptible(&pipe->wait);
-+	kill_fasync(&pipe->fasync_writers, SIGIO, POLL_OUT);
-+}
-+
- /**
-- * __splice_from_pipe - splice data from a pipe to given actor
-+ * splice_from_pipe_feed - feed available data from a pipe to a file
-  * @pipe:	pipe to splice from
-  * @sd:		information to @actor
-  * @actor:	handler that splices the data
-  *
-  * Description:
-- *    This function does little more than loop over the pipe and call
-- *    @actor to do the actual moving of a single struct pipe_buffer to
-- *    the desired destination. See pipe_to_file, pipe_to_sendpage, or
-- *    pipe_to_user.
-+
-+ *    This function loops over the pipe and calls @actor to do the
-+ *    actual moving of a single struct pipe_buffer to the desired
-+ *    destination.  It returns when there's no more buffers left in
-+ *    the pipe or if the requested number of bytes (@sd->total_len)
-+ *    have been copied.  It returns a positive number (one) if the
-+ *    pipe needs to be filled with more data, zero if the required
-+ *    number of bytes have been copied and -errno on error.
-  *
-+ *    This, together with splice_from_pipe_{begin,end,next}, may be
-+ *    used to implement the functionality of __splice_from_pipe() when
-+ *    locking is required around copying the pipe buffers to the
-+ *    destination.
-  */
--ssize_t __splice_from_pipe(struct pipe_inode_info *pipe, struct splice_desc *sd,
--			   splice_actor *actor)
-+int splice_from_pipe_feed(struct pipe_inode_info *pipe, struct splice_desc *sd,
-+			  splice_actor *actor)
- {
--	int ret, do_wakeup, err;
--
--	ret = 0;
--	do_wakeup = 0;
-+	int ret;
- 
--	for (;;) {
--		if (pipe->nrbufs) {
--			struct pipe_buffer *buf = pipe->bufs + pipe->curbuf;
--			const struct pipe_buf_operations *ops = buf->ops;
--
--			sd->len = buf->len;
--			if (sd->len > sd->total_len)
--				sd->len = sd->total_len;
--
--			err = actor(pipe, buf, sd);
--			if (err <= 0) {
--				if (!ret && err != -ENODATA)
--					ret = err;
-+	while (pipe->nrbufs) {
-+		struct pipe_buffer *buf = pipe->bufs + pipe->curbuf;
-+		const struct pipe_buf_operations *ops = buf->ops;
-+
-+		sd->len = buf->len;
-+		if (sd->len > sd->total_len)
-+			sd->len = sd->total_len;
-+
-+		ret = actor(pipe, buf, sd);
-+		if (ret <= 0) {
-+			if (ret == -ENODATA)
-+				ret = 0;
-+			return ret;
-+		}
-+		buf->offset += ret;
-+		buf->len -= ret;
-+
-+		sd->num_spliced += ret;
-+		sd->len -= ret;
-+		sd->pos += ret;
-+		sd->total_len -= ret;
- 
--				break;
--			}
-+		if (!buf->len) {
-+			buf->ops = NULL;
-+			ops->release(pipe, buf);
-+			pipe->curbuf = (pipe->curbuf + 1) & (PIPE_BUFFERS - 1);
-+			pipe->nrbufs--;
-+			if (pipe->inode)
-+				sd->need_wakeup = true;
-+		}
- 
--			ret += err;
--			buf->offset += err;
--			buf->len -= err;
--
--			sd->len -= err;
--			sd->pos += err;
--			sd->total_len -= err;
--			if (sd->len)
--				continue;
--
--			if (!buf->len) {
--				buf->ops = NULL;
--				ops->release(pipe, buf);
--				pipe->curbuf = (pipe->curbuf + 1) & (PIPE_BUFFERS - 1);
--				pipe->nrbufs--;
--				if (pipe->inode)
--					do_wakeup = 1;
--			}
-+		if (!sd->total_len)
-+			return 0;
+--- a/fs/nfsd/nfs4xdr.c
++++ b/fs/nfsd/nfs4xdr.c
+@@ -1833,6 +1833,15 @@ nfsd4_encode_dirent_fattr(struct nfsd4_r
+ 	dentry = lookup_one_len(name, cd->rd_fhp->fh_dentry, namlen);
+ 	if (IS_ERR(dentry))
+ 		return nfserrno(PTR_ERR(dentry));
++	if (!dentry->d_inode) {
++		/*
++		 * nfsd_buffered_readdir drops the i_mutex between
++		 * readdir and calling this callback, leaving a window
++		 * where this directory entry could have gone away.
++		 */
++		dput(dentry);
++		return nfserr_noent;
 +	}
  
--			if (!sd->total_len)
--				break;
--		}
-+	return 1;
-+}
-+EXPORT_SYMBOL(splice_from_pipe_feed);
+ 	exp_get(exp);
+ 	/*
+@@ -1895,6 +1904,7 @@ nfsd4_encode_dirent(void *ccdv, const ch
+ 	struct nfsd4_readdir *cd = container_of(ccd, struct nfsd4_readdir, common);
+ 	int buflen;
+ 	__be32 *p = cd->buffer;
++	__be32 *cookiep;
+ 	__be32 nfserr = nfserr_toosmall;
  
--		if (pipe->nrbufs)
--			continue;
-+/**
-+ * splice_from_pipe_next - wait for some data to splice from
-+ * @pipe:	pipe to splice from
-+ * @sd:		information about the splice operation
-+ *
-+ * Description:
-+ *    This function will wait for some data and return a positive
-+ *    value (one) if pipe buffers are available.  It will return zero
-+ *    or -errno if no more data needs to be spliced.
-+ */
-+int splice_from_pipe_next(struct pipe_inode_info *pipe, struct splice_desc *sd)
-+{
-+	while (!pipe->nrbufs) {
- 		if (!pipe->writers)
--			break;
--		if (!pipe->waiting_writers) {
--			if (ret)
--				break;
--		}
-+			return 0;
+ 	/* In nfsv4, "." and ".." never make it onto the wire.. */
+@@ -1911,7 +1921,7 @@ nfsd4_encode_dirent(void *ccdv, const ch
+ 		goto fail;
  
--		if (sd->flags & SPLICE_F_NONBLOCK) {
--			if (!ret)
--				ret = -EAGAIN;
--			break;
--		}
-+		if (!pipe->waiting_writers && sd->num_spliced)
-+			return 0;
+ 	*p++ = xdr_one;                             /* mark entry present */
+-	cd->offset = p;                             /* remember pointer */
++	cookiep = p;
+ 	p = xdr_encode_hyper(p, NFS_OFFSET_MAX);    /* offset of next entry */
+ 	p = xdr_encode_array(p, name, namlen);      /* name length & name */
  
--		if (signal_pending(current)) {
--			if (!ret)
--				ret = -ERESTARTSYS;
--			break;
--		}
-+		if (sd->flags & SPLICE_F_NONBLOCK)
-+			return -EAGAIN;
- 
--		if (do_wakeup) {
--			smp_mb();
--			if (waitqueue_active(&pipe->wait))
--				wake_up_interruptible_sync(&pipe->wait);
--			kill_fasync(&pipe->fasync_writers, SIGIO, POLL_OUT);
--			do_wakeup = 0;
-+		if (signal_pending(current))
-+			return -ERESTARTSYS;
-+
-+		if (sd->need_wakeup) {
-+			wakeup_pipe_writers(pipe);
-+			sd->need_wakeup = false;
- 		}
- 
- 		pipe_wait(pipe);
+@@ -1925,6 +1935,8 @@ nfsd4_encode_dirent(void *ccdv, const ch
+ 		goto fail;
+ 	case nfserr_dropit:
+ 		goto fail;
++	case nfserr_noent:
++		goto skip_entry;
+ 	default:
+ 		/*
+ 		 * If the client requested the RDATTR_ERROR attribute,
+@@ -1943,6 +1955,8 @@ nfsd4_encode_dirent(void *ccdv, const ch
  	}
- 
--	if (do_wakeup) {
--		smp_mb();
--		if (waitqueue_active(&pipe->wait))
--			wake_up_interruptible(&pipe->wait);
--		kill_fasync(&pipe->fasync_writers, SIGIO, POLL_OUT);
--	}
-+	return 1;
-+}
-+EXPORT_SYMBOL(splice_from_pipe_next);
- 
--	return ret;
-+/**
-+ * splice_from_pipe_begin - start splicing from pipe
-+ * @pipe:	pipe to splice from
-+ *
-+ * Description:
-+ *    This function should be called before a loop containing
-+ *    splice_from_pipe_next() and splice_from_pipe_feed() to
-+ *    initialize the necessary fields of @sd.
-+ */
-+void splice_from_pipe_begin(struct splice_desc *sd)
-+{
-+	sd->num_spliced = 0;
-+	sd->need_wakeup = false;
-+}
-+EXPORT_SYMBOL(splice_from_pipe_begin);
-+
-+/**
-+ * splice_from_pipe_end - finish splicing from pipe
-+ * @pipe:	pipe to splice from
-+ * @sd:		information about the splice operation
-+ *
-+ * Description:
-+ *    This function will wake up pipe writers if necessary.  It should
-+ *    be called after a loop containing splice_from_pipe_next() and
-+ *    splice_from_pipe_feed().
-+ */
-+void splice_from_pipe_end(struct pipe_inode_info *pipe, struct splice_desc *sd)
-+{
-+	if (sd->need_wakeup)
-+		wakeup_pipe_writers(pipe);
-+}
-+EXPORT_SYMBOL(splice_from_pipe_end);
-+
-+/**
-+ * __splice_from_pipe - splice data from a pipe to given actor
-+ * @pipe:	pipe to splice from
-+ * @sd:		information to @actor
-+ * @actor:	handler that splices the data
-+ *
-+ * Description:
-+ *    This function does little more than loop over the pipe and call
-+ *    @actor to do the actual moving of a single struct pipe_buffer to
-+ *    the desired destination. See pipe_to_file, pipe_to_sendpage, or
-+ *    pipe_to_user.
-+ *
-+ */
-+ssize_t __splice_from_pipe(struct pipe_inode_info *pipe, struct splice_desc *sd,
-+			   splice_actor *actor)
-+{
-+	int ret;
-+
-+	splice_from_pipe_begin(sd);
-+	do {
-+		ret = splice_from_pipe_next(pipe, sd);
-+		if (ret > 0)
-+			ret = splice_from_pipe_feed(pipe, sd, actor);
-+	} while (ret > 0);
-+	splice_from_pipe_end(pipe, sd);
-+
-+	return sd->num_spliced ? sd->num_spliced : ret;
- }
- EXPORT_SYMBOL(__splice_from_pipe);
- 
---- a/include/linux/splice.h
-+++ b/include/linux/splice.h
-@@ -36,6 +36,8 @@ struct splice_desc {
- 		void *data;		/* cookie */
- 	} u;
- 	loff_t pos;			/* file position */
-+	size_t num_spliced;		/* number of bytes already spliced */
-+	bool need_wakeup;		/* need to wake up writer */
- };
- 
- struct partial_page {
-@@ -66,6 +68,14 @@ extern ssize_t splice_from_pipe(struct p
- 				splice_actor *);
- extern ssize_t __splice_from_pipe(struct pipe_inode_info *,
- 				  struct splice_desc *, splice_actor *);
-+extern int splice_from_pipe_feed(struct pipe_inode_info *, struct splice_desc *,
-+				 splice_actor *);
-+extern int splice_from_pipe_next(struct pipe_inode_info *,
-+				 struct splice_desc *);
-+extern void splice_from_pipe_begin(struct splice_desc *);
-+extern void splice_from_pipe_end(struct pipe_inode_info *,
-+				 struct splice_desc *);
-+
- extern ssize_t splice_to_pipe(struct pipe_inode_info *,
- 			      struct splice_pipe_desc *);
- extern ssize_t splice_direct_to_actor(struct file *, struct splice_desc *,
+ 	cd->buflen -= (p - cd->buffer);
+ 	cd->buffer = p;
++	cd->offset = cookiep;
++skip_entry:
+ 	cd->common.err = nfs_ok;
+ 	return 0;
+ fail:
 
 
