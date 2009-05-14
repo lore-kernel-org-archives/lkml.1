@@ -1,53 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755742AbZENWXs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756023AbZENW2n@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755742AbZENWXs (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:23:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753127AbZENWXj
+	id S1756023AbZENW2n (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:28:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753653AbZENW2e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:23:39 -0400
-Received: from dovecot.org ([82.118.211.50]:47150 "EHLO dovecot.org"
+	Thu, 14 May 2009 18:28:34 -0400
+Received: from www.tglx.de ([62.245.132.106]:49597 "EHLO www.tglx.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752863AbZENWXj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:23:39 -0400
-X-Greylist: delayed 1291 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 May 2009 18:23:38 EDT
-Subject: ext3/ext4 directories don't shrink after deleting lots of files
-From: Timo Sirainen <tss@iki.fi>
-To: linux-kernel@vger.kernel.org
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-UyXqKQlYD3/uo4g/C+IM"
-Date: Thu, 14 May 2009 18:02:03 -0400
-Message-Id: <1242338523.6933.664.camel@timo-desktop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	id S1753016AbZENW2d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:28:33 -0400
+Date: Fri, 15 May 2009 00:27:14 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Len Brown <lenb@kernel.org>
+cc: Janne Kulmala <janne.t.kulmala@tut.fi>, Frans Pop <elendil@planet.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       johnstul@us.ibm.com
+Subject: Re: [PATCH] ACPI: idle: fix init-time TSC check regression
+In-Reply-To: <alpine.LFD.2.00.0905141750100.24833@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0905150025030.3561@localhost.localdomain>
+References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com> <200905110226.50115.elendil@planet.nl> <alpine.LFD.2.00.0905111614570.3561@localhost.localdomain> <4A0855A5.8040109@tut.fi> <alpine.LFD.2.00.0905141545280.24833@localhost.localdomain>
+ <alpine.LFD.2.00.0905141608070.24833@localhost.localdomain> <alpine.LFD.2.00.0905142217340.3561@localhost.localdomain> <alpine.LFD.2.00.0905141750100.24833@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 14 May 2009, Len Brown wrote:
+> From: Len Brown <len.brown@intel.com>
+> 
+> A previous 2.6.30 patch, a71e4917dc0ebbcb5a0ecb7ca3486643c1c9a6e2,
+> (ACPI: idle: mark_tsc_unstable() at init-time, not run-time)
+> erroneously disabled the TSC on systems that did not actually
+> have valid deep C-states.
+> 
+> Move the check after the deep-C-states are validated,
+> via new helper, tsc_check_state(), hich replaces tsc_halts_in_c().
+> 
+> Signed-off-by: Len Brown <len.brown@intel.com>
+> Acked-by: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+> ---
+> Thomas,
+> I decided to use a tsc-specific helper
+> rather than piggyback on acpi_timer_check_state(),
+> since that is not general, but rather LAPIC timer specific.
+> (and I'll re-name that to reflect its specific function
+>  in a cosmetic follow-up patch)
 
---=-UyXqKQlYD3/uo4g/C+IM
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I have no strong opinion on that :)
 
-I've noticed that if you create e.g. 100k files to a directory and then
-delete the files, the directory entry still seems to take a couple of
-megabytes. Later whenever accessing the (almost empty) directory it can
-take a few seconds to load it into cache.
+> +		if (cx->valid)
+> +			tsc_check_state(cx->type);
+>  
+>  		if (cx->valid)
+>  			working++;
 
-Is there a way to shrink the directory somehow without having to rmdir()
-it? Would be nice if kernel did it automatically, but I could live with
-a manual userspace syscall/tool as well.
+Could do with
 
+      	 if (cx->valid) {
+            	tsc_check_state(cx->type);
+                working++;
+      	 }
 
---=-UyXqKQlYD3/uo4g/C+IM
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkoMlNsACgkQyUhSUUBVisndUACfQ7KJuuSvpU7WZqBpTEMfGvTj
-UywAoIF5rsv1oJc8rsfcUlG0ivfJl0Nm
-=0EY9
------END PGP SIGNATURE-----
-
---=-UyXqKQlYD3/uo4g/C+IM--
-
+Otherwise Acked-by: Thomas Gleixner <tglx@linutronix.de>
