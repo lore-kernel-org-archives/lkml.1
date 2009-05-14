@@ -1,64 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760744AbZENM6y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760095AbZENM7s@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760744AbZENM6y (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 08:58:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZENM6h
+	id S1760095AbZENM7s (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 08:59:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754790AbZENM7j
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 08:58:37 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:60960 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753155AbZENM6g (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 08:58:36 -0400
-Message-ID: <4A0C1571.2020106@redhat.com>
-Date: Thu, 14 May 2009 08:58:25 -0400
-From: Rik van Riel <riel@redhat.com>
-Organization: Red Hat, Inc
-User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
+	Thu, 14 May 2009 08:59:39 -0400
+Received: from wf-out-1314.google.com ([209.85.200.175]:46630 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753311AbZENM7i convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 08:59:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=CIX6SyGjYngUsZD/y9jOWyK0wogmZ4bK7NDxEPm01W+MYwH52r7ntYvm/f863KZYat
+         gHrUW8AREX6o4irMsD+EeX59ZFwxSZSW4YjNFnOhAZZmBKJfIDN6LTzeacQZNwWEg+Ev
+         DNvm0JOndogzSPkT/8GL+P7ey4e0f5/EAicrw=
 MIME-Version: 1.0
-To: Minchan Kim <minchan.kim@gmail.com>
-CC: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>
-Subject: Re: [PATCH] mmtom: Prevent shrinking of active anon lru list in case
- of no swap space V2
-References: <20090514201150.8536f86e.minchan.kim@barrios-desktop>
-In-Reply-To: <20090514201150.8536f86e.minchan.kim@barrios-desktop>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <d82e647a0905140538s63ae1b23g93bf3b473767e6d8@mail.gmail.com>
+References: <a8e1da0905102316v1037c89cs48cb052924c250a9@mail.gmail.com>
+	 <a8e1da0905140504x1d1d99ebq911018d5aaa80a16@mail.gmail.com>
+	 <d82e647a0905140538s63ae1b23g93bf3b473767e6d8@mail.gmail.com>
+Date: Thu, 14 May 2009 20:59:39 +0800
+Message-ID: <a8e1da0905140559s9ca37a0w82f54d19a9884e92@mail.gmail.com>
+Subject: Re: [PATCH 1/3] kobject : kobject_set_name_vargs leak fix
+From: Dave Young <hidave.darkstar@gmail.com>
+To: Ming Lei <tom.leiming@gmail.com>
+Cc: Greg KH <gregkh@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Minchan Kim wrote:
+On Thu, May 14, 2009 at 8:38 PM, Ming Lei <tom.leiming@gmail.com> wrote:
+> 2009/5/14 Dave Young <hidave.darkstar@gmail.com>:
+>> On Mon, May 11, 2009 at 2:16 PM, Dave Young <hidave.darkstar@gmail.com> wrote:
+>>> kobject_set_name_vargs will leak the old_name when return -ENOMEM,
+>>> move the kfree(old_name) before the return path.
+>>
+>> Hi, greg
+>>
+>> I rethought about this problem, does such issue exist really? I means
+>> that kobject->name != NULL scenario.
+>>
+>> there's following comments of this function:
+>>
+>>  * This sets the name of the kobject.  If you have already added the
+>>  * kobject to the system, you must call kobject_rename() in order to
+>>  * change the name of the kobject
+>>
+>> So what if something like :
+>>
+>> if (kobject->name) {
+>>  WARN(1, KERN_WARNING, "there's name for kobject already!");
+>>  return -EINVAL;
+>> }
+>>
+>> if (!fmt)
+>>  return 0;
+>>
+>>>
+>>> Signed-off-by: Dave Young <hidave.darkstar@gmail.com>
+>>> ---
+>>> lib/kobject.c |    2 +-
+>>> 1 file changed, 1 insertion(+), 1 deletion(-)
+>>>
+>>> diff -uprN linux.old/lib/kobject.c linux.new/lib/kobject.c
+>>> --- linux.old/lib/kobject.c     2009-05-11 13:59:01.000000000 +0800
+>>> +++ linux.new/lib/kobject.c     2009-05-11 13:59:34.000000000 +0800
+>>> @@ -221,6 +221,7 @@ int kobject_set_name_vargs(struct kobjec
+>>>        if (kobj->name && !fmt)
+>>>                return 0;
+>>>
+>>> +       kfree(old_name);
+>>>        kobj->name = kvasprintf(GFP_KERNEL, fmt, vargs);
+>>>        if (!kobj->name)
+>>>                return -ENOMEM;
+>
+> IMO, Greg means it is better that the fix should be :
+>        if (!kobj->name) {
+>                kobj->name = old_name;
+>                return -ENOMEM;
+>        }
+>
+> Right?
 
-> Now shrink_active_list is called several places.
-> But if we don't have a swap space, we can't reclaim anon pages.
+Hm, it's better against my original patch. I have gave up the approach.
 
-If swap space has run out, get_scan_ratio() will return
-0 for the anon scan ratio, meaning we do not scan the
-anon lists.
+It does not make sense for (!old_name) case , furthermore as my reply
+kobject with name set before should not come into this function,
+kobject_rename should be used instead.
 
-> So, we don't need deactivating anon pages in anon lru list.
+>
+>>> @@ -229,7 +230,6 @@ int kobject_set_name_vargs(struct kobjec
+>>>        while ((s = strchr(kobj->name, '/')))
+>>>                s[0] = '!';
+>>>
+>>> -       kfree(old_name);
+>>>        return 0;
+>>>  }
+>>>
+>>
+>>
+>>
+>> --
+>> Regards
+>> dave
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>
+>
+>
+> --
+> Lei Ming
+>
 
-If we are close to running out of swap space, with
-swapins freeing up swap space on a regular basis,
-I believe we do want to do aging on the active
-pages, just so we can pick a decent page to swap
-out next time swap space becomes available.
 
-> +static int can_reclaim_anon(struct zone *zone, struct scan_control *sc)
-> +{
-> +	return (inactive_anon_is_low(zone, sc) && nr_swap_pages <= 0);
-> +}
-> +
-
-This function name is misleading, because when we do have
-swap space available but inactive_anon_is_low is false,
-we still want to reclaim inactive anon pages!
-
-What problem did you encounter that you think this patch
-solves?
 
 -- 
-All rights reversed.
+Regards
+dave
