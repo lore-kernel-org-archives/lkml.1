@@ -1,65 +1,105 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761475AbZENMXm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759807AbZENMfZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761475AbZENMXm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 08:23:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761251AbZENMXQ
+	id S1759807AbZENMfZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 08:35:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbZENMfJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 08:23:16 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50569 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1761100AbZENMXP (ORCPT
+	Thu, 14 May 2009 08:35:09 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:22012 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755250AbZENMfG convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 08:23:15 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: David Rientjes <rientjes@google.com>
-Subject: Re: [patch 1/5] oom: cleanup android low memory killer
-Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
-       Greg KH <greg@kroah.com>, Arve Hjonnevag <arve@android.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Nick Piggin <npiggin@suse.de>, San Mehat <san@android.com>,
-       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>
-In-Reply-To: <alpine.DEB.2.00.0905111241120.23739@chino.kir.corp.google.com>
-References: <49FF7B02.9050608@redhat.com> <alpine.DEB.2.00.0905111241120.23739@chino.kir.corp.google.com>
-Message-Id: <20090514211934.F5B3.A69D9226@jp.fujitsu.com>
+	Thu, 14 May 2009 08:35:06 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=RUTReB5uNBULKghbTch9z2qtObkUUb5JxYdNZTPctXW9tUUXXMUBYbbwCSog6eo6Bw
+         VdDdBB8NQeBQ6Zsd31WxMH7J9tyXNgtIAFVOIzj+shNWiBOo2PQzQ8yGrH3fmE+em7QL
+         rb8BTqnQ/C1XkNsVLjvASZhN4poauh0jeqLTo=
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Thu, 14 May 2009 21:23:13 +0900 (JST)
+In-Reply-To: <20090514210839.9B90.A69D9226@jp.fujitsu.com>
+References: <20090514204033.9B87.A69D9226@jp.fujitsu.com>
+	 <28c262360905140505h2db7ac3bp5ca10fcf2b4301bb@mail.gmail.com>
+	 <20090514210839.9B90.A69D9226@jp.fujitsu.com>
+Date: Thu, 14 May 2009 21:35:07 +0900
+Message-ID: <28c262360905140535w4bfdbbccp55f395daa18fbf0e@mail.gmail.com>
+Subject: Re: [PATCH] mmtom: Prevent shrinking of active anon lru list in case 
+	of no swap space V2
+From: Minchan Kim <minchan.kim@gmail.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Johannes Weiner <hannes@cmpxchg.org>, Rik van Riel <riel@redhat.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, May 14, 2009 at 9:11 PM, KOSAKI Motohiro
+<kosaki.motohiro@jp.fujitsu.com> wrote:
+>> On Thu, May 14, 2009 at 8:44 PM, KOSAKI Motohiro
+>> <kosaki.motohiro@jp.fujitsu.com> wrote:
+>> >> >
+>> >> > Changelog since V2
+>> >> > ?o Add new function - can_reclaim_anon : it tests anon_list can be reclaim
+>> >> >
+>> >> > Changelog since V1
+>> >> > ?o Use nr_swap_pages <= 0 in shrink_active_list to prevent scanning ?of active anon list.
+>> >> >
+>> >> > Now shrink_active_list is called several places.
+>> >> > But if we don't have a swap space, we can't reclaim anon pages.
+>> >> > So, we don't need deactivating anon pages in anon lru list.
+>> >> >
+>> >> > Signed-off-by: Minchan Kim <minchan.kim@gmail.com>
+>> >> > Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+>> >> > Cc: Johannes Weiner <hannes@cmpxchg.org>
+>> >> > Cc: Rik van Riel <riel@redhat.com>
+>> >>
+>> >> looks good to me. thanks :)
+>> >
+>> > Grr, my fault.
+>> >
+>> >
+>> >
+>> >> ?static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
+>> >> ? ? ? struct zone *zone, struct scan_control *sc, int priority)
+>> >> ?{
+>> >> @@ -1399,7 +1412,7 @@ static unsigned long shrink_list(enum lru_list lru, unsigned long nr_to_scan,
+>> >> ? ? ? ? ? ? ? return 0;
+>> >> ? ? ? }
+>> >>
+>> >> - ? ? if (lru == LRU_ACTIVE_ANON && inactive_anon_is_low(zone, sc)) {
+>> >> + ? ? if (lru == LRU_ACTIVE_ANON && can_reclaim_anon(zone, sc)) {
+>> >> ? ? ? ? ? ? ? shrink_active_list(nr_to_scan, zone, sc, priority, file);
+>> >> ? ? ? ? ? ? ? return 0;
+>> >
+>> > you shouldn't do that. if nr_swap_pages==0, get_scan_ratio return anon=0%.
+>> > then, this branch is unnecessary.
+>> >
+>>
+>> But, I think at last it can be happen following as.
+>>
+>> 1515         * Even if we did not try to evict anon pages at all, we want to
+>> 1516         * rebalance the anon lru active/inactive ratio.
+>> 1517         */
+>> 1518        if (inactive_anon_is_low(zone, sc))
+>> 1519                shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
+>
+> I pointed to shrink_list(), but you replayed shrink_zone().
+> I only talked about shrink_list().
+>
 
-sorry late responce.
+In shrink_zone, we call get_scan_ratio. it prevent scanning anon list.
+but, in shrink_all_zones can't prevent it.
 
-> On Mon, 4 May 2009, Rik van Riel wrote:
-> 
-> > > There was an interest in a low mem userspace notifier that applications can
-> > > poll() on at configurable low mem levels to react accordingly.  This would
-> > > probably address the problem that the Android team is trying to fix.
-> > 
-> > This would also make it easier for virtual machines to be
-> > ballooned down to size when the host experiences memory
-> > pressure.
-> > 
-> > The low memory notification could also be useful for JVMs,
-> > databases that do (some of) their own caching and any garbage
-> > collected program in general.
-> > 
-> 
-> I agree, and I'd suggest that it be implemented as a cgroup so that 
-> individual sets of tasks can be responsible for their own lowmem 
-> notifiers.
-> 
-> KOSAKI, you were pushing the /dev/mem_notify patchset last year from 
-> Marcelo.  Do you have any plans of recreating that in a cgroup or have you 
-> dropped it?
+Also,  I think shrink_list is not hot patch.
+So check of one condition adding is trivial
 
-sorry, I've pending this because I think I have to stabilize VM 
-as top priority.
-
-I can't say when I resume this works, sorry.
+If I don't understand your point, please explain detaily
 
 
-
+-- 
+Kinds regards,
+Minchan Kim
