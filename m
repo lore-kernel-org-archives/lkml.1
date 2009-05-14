@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760495AbZENWvz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761336AbZENWvi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760495AbZENWvz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:51:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756883AbZENWmj
+	id S1761336AbZENWvi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:51:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756752AbZENWmi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:39 -0400
-Received: from kroah.org ([198.145.64.141]:52512 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:38 -0400
+Received: from kroah.org ([198.145.64.141]:52469 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756215AbZENWmX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:23 -0400
+	id S1756578AbZENWmU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:20 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:25 2009
-Message-Id: <20090514223525.385368502@mini.kroah.org>
+Message-Id: <20090514223524.855079595@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:33:06 -0700
+Date: Thu, 14 May 2009 15:33:03 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,111 +25,139 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Chris Mason <chris.mason@oracle.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: [patch 31/51] fs: fix page_mkwrite error cases in core code and btrfs
+       alan@lxorguk.ukuu.org.uk, Steve French <smfrench@gmail.com>,
+       Jeff Layton <jlayton@redhat.com>, Steve French <sfrench@us.ibm.com>,
+       Suresh Jayaraman <sjayaraman@suse.de>
+Subject: [patch 28/51] cifs: Fix unicode string area word alignment in session setup
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=fs-fix-page_mkwrite-error-cases-in-core-code-and-btrfs.patch
+Content-Disposition: inline; filename=cifs-fix-unicode-string-area-word-alignment-in-session-setup.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Nick Piggin <npiggin@suse.de>
+From: Jeff Layton <jlayton@redhat.com>
 
-commit 56a76f8275c379ed73c8a43cfa1dfa2f5e9cfa19 upstream.
+commit 27b87fe52baba0a55e9723030e76fce94fabcea4 refreshed.
 
-page_mkwrite is called with neither the page lock nor the ptl held.  This
-means a page can be concurrently truncated or invalidated out from
-underneath it.  Callers are supposed to prevent truncate races themselves,
-however previously the only thing they can do in case they hit one is to
-raise a SIGBUS.  A sigbus is wrong for the case that the page has been
-invalidated or truncated within i_size (eg.  hole punched).  Callers may
-also have to perform memory allocations in this path, where again, SIGBUS
-would be wrong.
+cifs: fix unicode string area word alignment in session setup
 
-The previous patch ("mm: page_mkwrite change prototype to match fault")
-made it possible to properly specify errors.  Convert the generic buffer.c
-code and btrfs to return sane error values (in the case of page removed
-from pagecache, VM_FAULT_NOPAGE will cause the fault handler to exit
-without doing anything, and the fault will be retried properly).
+The handling of unicode string area alignment is wrong.
+decode_unicode_ssetup improperly assumes that it will always be preceded
+by a pad byte. This isn't the case if the string area is already
+word-aligned.
 
-This fixes core code, and converts btrfs as a template/example.  All other
-filesystems defining their own page_mkwrite should be fixed in a similar
-manner.
+This problem, combined with the bad buffer sizing for the serverDomain
+string can cause memory corruption. The bad alignment can make it so
+that the alignment of the characters is off. This can make them
+translate to characters that are greater than 2 bytes each. If this
+happens we can overflow the allocation.
 
-Acked-by: Chris Mason <chris.mason@oracle.com>
-Signed-off-by: Nick Piggin <npiggin@suse.de>
-Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+Fix this by fixing the alignment in CIFS_SessSetup instead so we can
+verify it against the head of the response. Also, clean up the
+workaround for improperly terminated strings by checking for a
+odd-length unicode buffers and then forcibly terminating them.
+
+Finally, resize the buffer for serverDomain. Now that we've fixed
+the alignment, it's probably fine, but a malicious server could
+overflow it.
+
+A better solution for handling these strings is still needed, but
+this should be a suitable bandaid.
+
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
+Cc: Suresh Jayaraman <sjayaraman@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/btrfs/inode.c |   11 +++++++----
- fs/buffer.c      |   12 ++++++++----
- 2 files changed, 15 insertions(+), 8 deletions(-)
+ fs/cifs/sess.c |   44 +++++++++++++++++++++++---------------------
+ 1 file changed, 23 insertions(+), 21 deletions(-)
 
---- a/fs/btrfs/inode.c
-+++ b/fs/btrfs/inode.c
-@@ -4307,10 +4307,15 @@ int btrfs_page_mkwrite(struct vm_area_st
- 	u64 page_end;
+--- a/fs/cifs/sess.c
++++ b/fs/cifs/sess.c
+@@ -285,27 +285,26 @@ static int decode_unicode_ssetup(char **
+ 	int words_left, len;
+ 	char *data = *pbcc_area;
  
- 	ret = btrfs_check_data_free_space(root, inode, PAGE_CACHE_SIZE);
--	if (ret)
-+	if (ret) {
-+		if (ret == -ENOMEM)
-+			ret = VM_FAULT_OOM;
-+		else /* -ENOSPC, -EIO, etc */
-+			ret = VM_FAULT_SIGBUS;
- 		goto out;
+-
+-
+ 	cFYI(1, ("bleft %d", bleft));
+ 
+-
+-	/* SMB header is unaligned, so cifs servers word align start of
+-	   Unicode strings */
+-	data++;
+-	bleft--; /* Windows servers do not always double null terminate
+-		    their final Unicode string - in which case we
+-		    now will not attempt to decode the byte of junk
+-		    which follows it */
++	/*
++	 * Windows servers do not always double null terminate their final
++	 * Unicode string. Check to see if there are an uneven number of bytes
++	 * left. If so, then add an extra NULL pad byte to the end of the
++	 * response.
++	 *
++	 * See section 2.7.2 in "Implementing CIFS" for details
++	 */
++	if (bleft % 2) {
++		data[bleft] = 0;
++		++bleft;
 +	}
  
--	ret = -EINVAL;
-+	ret = VM_FAULT_NOPAGE; /* make the VM retry the fault */
- again:
- 	lock_page(page);
- 	size = i_size_read(inode);
-@@ -4363,8 +4368,6 @@ again:
- out_unlock:
- 	unlock_page(page);
- out:
--	if (ret)
--		ret = VM_FAULT_SIGBUS;
- 	return ret;
- }
+ 	words_left = bleft / 2;
  
---- a/fs/buffer.c
-+++ b/fs/buffer.c
-@@ -2472,7 +2472,7 @@ block_page_mkwrite(struct vm_area_struct
- 	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
- 	unsigned long end;
- 	loff_t size;
--	int ret = -EINVAL;
-+	int ret = VM_FAULT_NOPAGE; /* make the VM retry the fault */
+ 	/* save off server operating system */
+ 	len = UniStrnlen((wchar_t *) data, words_left);
  
- 	lock_page(page);
- 	size = i_size_read(inode);
-@@ -2492,10 +2492,14 @@ block_page_mkwrite(struct vm_area_struct
- 	if (!ret)
- 		ret = block_commit_write(page, 0, end);
+-/* We look for obvious messed up bcc or strings in response so we do not go off
+-   the end since (at least) WIN2K and Windows XP have a major bug in not null
+-   terminating last Unicode string in response  */
+ 	if (len >= words_left)
+ 		return rc;
  
--out_unlock:
--	if (ret)
--		ret = VM_FAULT_SIGBUS;
-+	if (unlikely(ret)) {
-+		if (ret == -ENOMEM)
-+			ret = VM_FAULT_OOM;
-+		else /* -ENOSPC, -EIO, etc */
-+			ret = VM_FAULT_SIGBUS;
+@@ -343,13 +342,10 @@ static int decode_unicode_ssetup(char **
+ 		return rc;
+ 
+ 	kfree(ses->serverDomain);
+-	ses->serverDomain = kzalloc(2 * (len + 1), GFP_KERNEL); /* BB FIXME wrong length */
+-	if (ses->serverDomain != NULL) {
++	ses->serverDomain = kzalloc((4 * len) + 2, GFP_KERNEL);
++	if (ses->serverDomain != NULL)
+ 		cifs_strfromUCS_le(ses->serverDomain, (__le16 *)data, len,
+ 				   nls_cp);
+-		ses->serverDomain[2*len] = 0;
+-		ses->serverDomain[(2*len) + 1] = 0;
+-	}
+ 	data += 2 * (len + 1);
+ 	words_left -= len + 1;
+ 
+@@ -702,12 +698,18 @@ CIFS_SessSetup(unsigned int xid, struct 
+ 	}
+ 
+ 	/* BB check if Unicode and decode strings */
+-	if (smb_buf->Flags2 & SMBFLG2_UNICODE)
++	if (smb_buf->Flags2 & SMBFLG2_UNICODE) {
++		/* unicode string area must be word-aligned */
++		if (((unsigned long) bcc_ptr - (unsigned long) smb_buf) % 2) {
++			++bcc_ptr;
++			--bytes_remaining;
++		}
+ 		rc = decode_unicode_ssetup(&bcc_ptr, bytes_remaining,
+-						   ses, nls_cp);
+-	else
++					   ses, nls_cp);
++	} else {
+ 		rc = decode_ascii_ssetup(&bcc_ptr, bytes_remaining,
+ 					 ses, nls_cp);
 +	}
  
-+out_unlock:
- 	unlock_page(page);
- 	return ret;
- }
+ ssetup_exit:
+ 	if (spnego_key) {
 
 
