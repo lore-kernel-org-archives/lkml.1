@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762442AbZENXHP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763193AbZENXHi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762442AbZENXHP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:07:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762277AbZENW6o
+	id S1763193AbZENXHi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:07:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762283AbZENW6q
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:58:44 -0400
-Received: from kroah.org ([198.145.64.141]:46052 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:58:46 -0400
+Received: from kroah.org ([198.145.64.141]:46060 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762249AbZENW6i (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:58:38 -0400
+	id S1761634AbZENW6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:58:39 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:38 2009
-Message-Id: <20090514225238.505627993@mini.kroah.org>
+Message-Id: <20090514225238.664075863@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:51:39 -0700
+Date: Thu, 14 May 2009 15:51:40 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -28,13 +28,14 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        alan@lxorguk.ukuu.org.uk, linux-fsdevel@vger.kernel.org,
        linux-mm@vger.kernel.org, Trond Myklebust <Trond.Myklebust@netapp.com>,
        Nick Piggin <npiggin@suse.de>
-Subject: [patch 13/28] NFS: Fix the return value in nfs_page_mkwrite()
+Subject: [patch 14/28] NFS: Close page_mkwrite() races
 References: <20090514225126.907908936@mini.kroah.org>
-Content-Disposition: inline; filename=nfs-fix-the-return-value-in-nfs_page_mkwrite.patch
+Content-Disposition: inline; filename=nfs-close-page_mkwrite-races.patch
 In-Reply-To: <20090514225413.GA705@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
 
 2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
@@ -42,31 +43,38 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-commit 2b2ec7554cf7ec5e4412f89a5af6abe8ce950700 upstream
+commit 7fdf523067666b0eaff330f362401ee50ce187c4 upstream
 
-Commit c2ec175c39f62949438354f603f4aa170846aabb ("mm: page_mkwrite
-change prototype to match fault") exposed a bug in the NFS
-implementation of page_mkwrite.  We should be returning 0 on success...
+Follow up to Nick Piggin's patches to ensure that nfs_vm_page_mkwrite
+returns with the page lock held, and sets the VM_FAULT_LOCKED flag.
+
+See http://bugzilla.kernel.org/show_bug.cgi?id=12913
 
 Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Nick Piggin <npiggin@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
+
 ---
- fs/nfs/file.c |    2 --
- 1 file changed, 2 deletions(-)
+ fs/nfs/file.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 --- a/fs/nfs/file.c
 +++ b/fs/nfs/file.c
-@@ -477,8 +477,6 @@ static int nfs_vm_page_mkwrite(struct vm
- 		goto out_unlock;
+@@ -478,10 +478,10 @@ static int nfs_vm_page_mkwrite(struct vm
  
  	ret = nfs_updatepage(filp, page, 0, pagelen);
--	if (ret == 0)
--		ret = pagelen;
  out_unlock:
++	if (!ret)
++		return VM_FAULT_LOCKED;
  	unlock_page(page);
- 	if (ret)
+-	if (ret)
+-		ret = VM_FAULT_SIGBUS;
+-	return ret;
++	return VM_FAULT_SIGBUS;
+ }
+ 
+ static struct vm_operations_struct nfs_file_vm_ops = {
 
 
