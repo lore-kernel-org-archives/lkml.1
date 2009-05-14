@@ -1,113 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755234AbZENPxP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753310AbZENPym@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755234AbZENPxP (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 11:53:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752258AbZENPw5
+	id S1753310AbZENPym (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 11:54:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751718AbZENPyd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 11:52:57 -0400
-Received: from victor.provo.novell.com ([137.65.250.26]:53643 "EHLO
-	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751010AbZENPw4 (ORCPT
+	Thu, 14 May 2009 11:54:33 -0400
+Received: from casper.infradead.org ([85.118.1.10]:37370 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751486AbZENPyc (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 11:52:56 -0400
-Message-ID: <4A0C3E54.1090109@novell.com>
-Date: Thu, 14 May 2009 11:52:52 -0400
-From: Gregory Haskins <ghaskins@novell.com>
-User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
-MIME-Version: 1.0
-To: Avi Kivity <avi@redhat.com>
-CC: kvm@vger.kernel.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
-       davidel@xmailserver.org
-Subject: Re: [KVM PATCH v7 2/3] kvm: add support for irqfd via	eventfd-notification
- interface
-References: <20090512181134.26131.10023.stgit@dev.haskins.net> <20090512182655.26131.53824.stgit@dev.haskins.net> <4A0BFF13.9090802@redhat.com>
-In-Reply-To: <4A0BFF13.9090802@redhat.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enigABD6D377238A2E5039B3DC33"
+	Thu, 14 May 2009 11:54:32 -0400
+Subject: Re: Next May 13:[drivers/base/firmware*] Bug while booting on x86
+From: David Woodhouse <dwmw2@infradead.org>
+To: Sachin Sant <sachinp@in.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org
+In-Reply-To: <4A0AC5E6.2010402@in.ibm.com>
+References: <20090513164832.c8a0de7d.sfr@canb.auug.org.au>
+	 <4A0AC5E6.2010402@in.ibm.com>
+Content-Type: text/plain
+Date: Thu, 14 May 2009 16:54:27 +0100
+Message-Id: <1242316467.3393.14.camel@macbook.infradead.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 (2.26.1-2.fc11) 
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <dwmw2@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enigABD6D377238A2E5039B3DC33
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2009-05-13 at 18:36 +0530, Sachin Sant wrote:
+> BUG: unable to handle kernel NULL pointer dereference at 0000050c
+> IP: [<c0119c5d>] kunmap+0x33/0x59
 
-Avi Kivity wrote:
-> Gregory Haskins wrote:
->> KVM provides a complete virtual system environment for guests, includi=
-ng
->> support for injecting interrupts modeled after the real
->> exception/interrupt
->> facilities present on the native platform (such as the IDT on x86).
->> Virtual interrupts can come from a variety of sources (emulated device=
-s,
->> pass-through devices, etc) but all must be injected to the guest via
->> the KVM infrastructure.  This patch adds a new mechanism to inject a
->> specific
->> interrupt to a guest using a decoupled eventfd mechnanism:  Any legal
->> signal
->> on the irqfd (using eventfd semantics from either userspace or
->> kernel) will
->> translate into an injected interrupt in the guest at the next availabl=
-e
->> interrupt window.
->>
->> +
->> +static void
->> +irqfd_inject(struct work_struct *work)
->> +{
->> +    struct _irqfd *irqfd =3D container_of(work, struct _irqfd, work);=
+Oops. Does this fix it?
 
->> +    struct kvm *kvm =3D irqfd->kvm;
->> +
->>  =20
->
->
-> I think you need to ->read() from the irqfd, otherwise the count will
-> never clear.
+--- a/drivers/base/firmware_class.c
++++ b/drivers/base/firmware_class.c
+@@ -328,7 +328,7 @@ firmware_data_write(struct kobject *kobj, struct
+bin_attribute *bin_attr,
+ 
+ 		memcpy(page_data + page_ofs, buffer, page_cnt);
+ 
+-		kunmap(page_data);
++		kunmap(fw_priv->pages[page_nr]);
+ 		buffer += page_cnt;
+ 		offset += page_cnt;
+ 		count -= page_cnt;
 
-Yeah, and this is a disavantage to using eventfd vs a custom anon-fd
-implementation.
+-- 
+David Woodhouse                            Open Source Technology Centre
+David.Woodhouse@intel.com                              Intel Corporation
 
-However, the count is really only there for deciding whether to sleep a
-traditional eventfd recipient which doesn't really apply in this
-application.  I suppose we could try to invoke the read method (or add a
-new method to eventfd to allow it to be cleared independent of the
-f_ops->read() (ala eventfd_signal() vs f_ops->write()).  I'm not
-convinced we really need to worry about it, though.  IMO we can just let
-the count accumulate.
-
-But if you insist this loose end should be addressed, perhaps Davide has
-some thoughts on how to best do this?
-
--Greg
-
->
->> +    mutex_lock(&kvm->lock);
->> +    kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
->> +    kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
->> +    mutex_unlock(&kvm->lock);
->> +}
->>  =20
->
-
-
-
---------------enigABD6D377238A2E5039B3DC33
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkoMPlQACgkQlOSOBdgZUxlesQCeIUXVz6XpRlfqKbP8zlzNoHjt
-gOQAn0nRRf+JOWbK9TBCvVLez2Gkggx0
-=hKEt
------END PGP SIGNATURE-----
-
---------------enigABD6D377238A2E5039B3DC33--
