@@ -1,70 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753651AbZENNry@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754305AbZENNwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753651AbZENNry (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 09:47:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752510AbZENNro
+	id S1754305AbZENNwR (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 09:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752827AbZENNwA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 09:47:44 -0400
-Received: from tx2ehsobe002.messaging.microsoft.com ([65.55.88.12]:6828 "EHLO
-	TX2EHSOBE004.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1751970AbZENNro convert rfc822-to-8bit
-	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 09:47:44 -0400
-X-BigFish: VPS-24(zz1432R98dR1805M936fJzz1202hzzz32i6bh43j)
-X-FB-SS: 5,13,8,
-X-WSS-ID: 0KJMZN3-02-5K5-01
-Date: Thu, 14 May 2009 15:47:30 +0200
-From: "Roedel, Joerg" <Joerg.Roedel@amd.com>
-To: Neil Turton <nturton@solarflare.com>
-CC: Linux Kernel <linux-kernel@vger.kernel.org>,
-       iommu@lists.linux-foundation.org
-Subject: Re: [PATCH] Fixed the handling of device aliases in the AMD IOMMU
-	driver.
-Message-ID: <20090514134730.GM9835@amd.com>
-References: <4A0C17BB.4010300@solarflare.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="iso-8859-1"
+	Thu, 14 May 2009 09:52:00 -0400
+Received: from tomts40.bellnexxia.net ([209.226.175.97]:43793 "EHLO
+	tomts40-srv.bellnexxia.net" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1751788AbZENNwA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 09:52:00 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AvAHALe5C0pMQW1W/2dsb2JhbACBUIEwzTeEAgU
+Date: Thu, 14 May 2009 09:51:59 -0400
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Steven Rostedt <rostedt@goodmis.org>
+Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       zhaolei@cn.fujitsu.com, laijs@cn.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH v4] ftrace: add a tracepoint for
+	__raise_softirq_irqoff()
+Message-ID: <20090514135159.GA23866@Krystal>
+References: <4A07D3B3.10605@cn.fujitsu.com> <20090511134019.GB10932@Krystal> <alpine.DEB.2.00.0905111003280.14976@gandalf.stny.rr.com> <20090511142734.GA12722@Krystal> <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com> <20090511151353.GA14391@Krystal> <4A094677.5090900@cn.fujitsu.com> <4A0BF82A.2070208@cn.fujitsu.com> <20090514124013.GC21241@Krystal> <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A0C17BB.4010300@solarflare.com>
+In-Reply-To: <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com>
+X-Editor: vi
+X-Info: http://krystal.dyndns.org:8080
+X-Operating-System: Linux/2.6.21.3-grsec (i686)
+X-Uptime: 09:51:49 up 75 days, 10:18,  3 users,  load average: 0.91, 0.66,
+	0.51
 User-Agent: Mutt/1.5.18 (2008-05-17)
-Content-Transfer-Encoding: 8BIT
-X-OriginalArrivalTime: 14 May 2009 13:47:31.0193 (UTC) FILETIME=[8702CE90:01C9D49A]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 14, 2009 at 02:08:11PM +0100, Neil Turton wrote:
-> The devid parameter to set_dev_entry_from_acpi is the requester ID
-> rather than the device ID since it is used to index the IOMMU device
-> table.  The handling of IVHD_DEV_ALIAS used to pass the device ID.
-> This patch fixes it to pass the requester ID.
+* Steven Rostedt (rostedt@goodmis.org) wrote:
 > 
-> Signed-off-by: Neil Turton <nturton@solarflare.com>
-> ---
->  arch/x86/kernel/amd_iommu_init.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> On Thu, 14 May 2009, Mathieu Desnoyers wrote:
+> > > From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > > 
+> > > This patch is modified from Mathieu Desnoyers' patch. The original patch
+> > > can be found here: 
+> > > 	http://marc.info/?l=linux-kernel&m=123791201816245&w=2
+> > > This tracepoint can trace the time stamp when softirq action is raised. 
+> > > 
+> > > Changelog for v1 -> v2: 
+> > > 1: Use TRACE_EVENT instead of DEFINE_TRACE
+> > > 2: Move the tracepoint from raise_softirq_irqoff() to
+> > >    __raise_softirq_irqoff()
+> > > 
+> > > Changelog for v2 -> v3: 
+> > > Move the definition of __raise_softifq_irqoff() to .c file when
+> > > CONFIG_TRACEPOINTS is enabled, to avoid recursive includes
+> > > 
+> > > Changelog for v3 -> v4: 
+> > > 1: Come back to v2, and use forward declarations to avoid
+> > >    recursive includes as Mathieu's suggestion
+> > > 2: Modifiy the tracepoint name
+> > > 3: Add comments for this tracepoint
+> > > 
+> > 
+> > This is a step in the right direction, but please see my email to Lai
+> > about the fact that this assumes correct and undocumented include
+> > dependencies in kernel/trace/events.c. Not explicitely stating the
+> > include dependencies is a build error waiting to happen.
+> > 
+> > Including interrupt.h under a ifdef would allow keeping track of
+> > TRACE_EVENT specific build dependencies neatly on a per header basis.
 > 
-> diff --git a/arch/x86/kernel/amd_iommu_init.c b/arch/x86/kernel/amd_iommu_init.c
-> index 61479ba..c013906 100644
-> --- a/arch/x86/kernel/amd_iommu_init.c
-> +++ b/arch/x86/kernel/amd_iommu_init.c
-> @@ -618,7 +618,7 @@ static void __init init_iommu_from_acpi(struct amd_iommu *iommu,
->  		case IVHD_DEV_ALIAS:
->  			devid = e->devid;
->  			devid_to = e->ext >> 8;
-> -			set_dev_entry_from_acpi(iommu, devid, e->flags, 0);
-> +			set_dev_entry_from_acpi(iommu, devid_to, e->flags, 0);
->  			amd_iommu_alias_table[devid] = devid_to;
->  			break;
->  		case IVHD_DEV_ALIAS_RANGE:
+> This is all moot, the events.c file no longer exists and as not an issue.
+> 
 
-Applied too, thanks.
+OK, thanks for the update :)
+
+Mathieu
+
+> -- Steve
+> 
 
 -- 
-           | Advanced Micro Devices GmbH
- Operating | Karl-Hammerschmidt-Str. 34, 85609 Dornach bei München
- System    | 
- Research  | Geschäftsführer: Thomas M. McCoy, Giuliano Meroni
- Center    | Sitz: Dornach, Gemeinde Aschheim, Landkreis München
-           | Registergericht München, HRB Nr. 43632
-
+Mathieu Desnoyers
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
