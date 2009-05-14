@@ -1,234 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762285AbZENBwV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762275AbZENCBM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762285AbZENBwV (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 21:52:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754966AbZENBwK
+	id S1762275AbZENCBM (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 22:01:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753885AbZENCAy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 21:52:10 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:57438 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754305AbZENBwJ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 21:52:09 -0400
-Message-ID: <4A0B7911.6080005@cn.fujitsu.com>
-Date: Thu, 14 May 2009 09:51:13 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
-MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] IO Controller: Add per-device weight and ioprio_class
- handling
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A0A29B5.7030109@cn.fujitsu.com> <20090513155900.GA15623@redhat.com>
-In-Reply-To: <20090513155900.GA15623@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Wed, 13 May 2009 22:00:54 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:56513 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753010AbZENCAx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 22:00:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=E8hXNfIS2RrZFxAwQOTXNoUPJ1woq1w5KZMe0Eitvj6isoMXExYZM6r/+yDcjSeNEb
+         IBBxRJGyfY818402ufraenqBIhPhoYUPgSWaDFA6kT2uZK2b3dUie/RPksBSHn7rEtgX
+         ZJHoRy+CZkzzhv0sp9OXAQ3NryzCc02MUM498=
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Reiserfs <reiserfs-devel@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Frederic Weisbecker <fweisbec@gmail.com>, Jeff Mahoney <jeffm@suse.com>,
+       Chris Mason <chris.mason@oracle.com>, Ingo Molnar <mingo@elte.hu>,
+       Alexander Beregalov <a.beregalov@gmail.com>
+Subject: [PATCH] kill-the-bkl/reiserfs: update
+Date: Thu, 14 May 2009 04:00:48 +0200
+Message-Id: <1242266449-21121-1-git-send-email-fweisbec@gmail.com>
+X-Mailer: git-send-email 1.6.2.3
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
-> 
-> Hi Gui,
-> 
-> It might make sense to also store the device name or device major and
-> minor number in io_group while creating the io group. This will help us
-> to display io.disk_time and io.disk_sector statistics per device instead
-> of aggregate.
-> 
-> I am attaching a patch I was playing around with to display per device
-> statistics instead of aggregate one. So if user has specified the per
-> device rule.
-> 
-> Thanks
-> Vivek
-> 
-> 
-> o Currently the statistics exported through cgroup are aggregate of statistics
->   on all devices for that cgroup. Instead of aggregate, make these per device.
+Hi,
 
-Hi Vivek,
+Here is a new patch which increases the performances with
+reiserfs using a mutex instead of the bkl.
 
-Actually, I did it also.
-FYI
+Now I've compared with dbench on a fresh and empty reiserfs
+partition with 64 GB and the results are better with the mutex than with
+the bkl.
 
-Examples:
-# cat io.disk_time
-dev:/dev/hdb time:4421
-dev:others time:3741
+Also this new patch increases the throughput a bit more.
+Dbench on SMP (2 Cpus), Preempt and 100 threads during 400 seconds:
 
-# cat io.disk_sectors
-dev:/dev/hdb sectors:585696
-dev:others sectors:2664
+Bkl:		          37.6764 MB/sec
+Mutex, before this patch: 39.4532 MB/sec
+Mutex, after this patch:  40.3758 MB/sec
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/elevator-fq.c |  104 +++++++++++++++++++++++---------------------------
- 1 files changed, 48 insertions(+), 56 deletions(-)
+The following graph shows better the difference:
+http://kernel.org/pub/linux/kernel/people/frederic/dbench.pdf
 
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 7c95d55..1620074 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -1162,90 +1162,82 @@ STORE_FUNCTION(weight, 0, WEIGHT_MAX);
- STORE_FUNCTION(ioprio_class, IOPRIO_CLASS_RT, IOPRIO_CLASS_IDLE);
- #undef STORE_FUNCTION
- 
--/*
-- * traverse through all the io_groups associated with this cgroup and calculate
-- * the aggr disk time received by all the groups on respective disks.
-- */
--static u64 calculate_aggr_disk_time(struct io_cgroup *iocg)
-+static int io_cgroup_disk_time_read(struct cgroup *cgroup,
-+				    struct cftype *cftype,
-+				    struct seq_file *m)
- {
-+	struct io_cgroup *iocg;
- 	struct io_group *iog;
- 	struct hlist_node *n;
--	u64 disk_time = 0;
--
--	rcu_read_lock();
--	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
--		/*
--		 * There might be groups which are not functional and
--		 * waiting to be reclaimed upon cgoup deletion.
--		 */
--		if (rcu_dereference(iog->key))
--			disk_time += iog->entity.total_service;
--	}
--	rcu_read_unlock();
--
--	return disk_time;
--}
-+	struct policy_node *pn;
-+	unsigned int other, time;
- 
--static u64 io_cgroup_disk_time_read(struct cgroup *cgroup,
--					struct cftype *cftype)
--{
--	struct io_cgroup *iocg;
--	u64 ret;
-+	other = 0;
- 
- 	if (!cgroup_lock_live_group(cgroup))
- 		return -ENODEV;
- 
- 	iocg = cgroup_to_io_cgroup(cgroup);
- 	spin_lock_irq(&iocg->lock);
--	ret = jiffies_to_msecs(calculate_aggr_disk_time(iocg));
-+	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
-+		if (iog->key != NULL) {
-+			pn = policy_search_node(iocg, iog->key);
-+			if (pn) {
-+				time = jiffies_to_msecs(iog->entity.
-+							total_service);
-+				seq_printf(m, "dev:%s time:%u\n",
-+					   pn->dev_name, time);
-+			} else {
-+				other += jiffies_to_msecs(iog->entity.
-+							  total_service);
-+			}
-+		}
-+	}
-+	seq_printf(m, "dev:others time:%u\n", other);
-+
- 	spin_unlock_irq(&iocg->lock);
- 
- 	cgroup_unlock();
- 
--	return ret;
-+	return 0;
- }
- 
--/*
-- * traverse through all the io_groups associated with this cgroup and calculate
-- * the aggr number of sectors transferred by all the groups on respective disks.
-- */
--static u64 calculate_aggr_disk_sectors(struct io_cgroup *iocg)
-+static int io_cgroup_disk_sectors_read(struct cgroup *cgroup,
-+				       struct cftype *cftype,
-+				       struct seq_file *m)
- {
-+	struct io_cgroup *iocg;
- 	struct io_group *iog;
- 	struct hlist_node *n;
--	u64 disk_sectors = 0;
--
--	rcu_read_lock();
--	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
--		/*
--		 * There might be groups which are not functional and
--		 * waiting to be reclaimed upon cgoup deletion.
--		 */
--		if (rcu_dereference(iog->key))
--			disk_sectors += iog->entity.total_sector_service;
--	}
--	rcu_read_unlock();
-+	struct policy_node *pn;
-+	u64 other = 0;
- 
--	return disk_sectors;
--}
--
--static u64 io_cgroup_disk_sectors_read(struct cgroup *cgroup,
--					struct cftype *cftype)
--{
--	struct io_cgroup *iocg;
--	u64 ret;
- 
- 	if (!cgroup_lock_live_group(cgroup))
- 		return -ENODEV;
- 
- 	iocg = cgroup_to_io_cgroup(cgroup);
- 	spin_lock_irq(&iocg->lock);
--	ret = calculate_aggr_disk_sectors(iocg);
-+	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
-+		if (iog->key) {
-+			pn = policy_search_node(iocg, iog->key);
-+			if (pn) {
-+				seq_printf(m, "dev:%s sectors:%lu\n",
-+					   pn->dev_name,
-+					   iog->entity.total_sector_service);
-+			} else {
-+				other += iog->entity.total_sector_service;
-+			}
-+		}
-+	}
-+
-+	seq_printf(m, "dev:others sectors:%llu\n", other);
-+
- 	spin_unlock_irq(&iocg->lock);
- 
- 	cgroup_unlock();
- 
--	return ret;
-+	return 0;
- }
- 
- /**
-@@ -1783,11 +1775,11 @@ struct cftype bfqio_files[] = {
- 	},
- 	{
- 		.name = "disk_time",
--		.read_u64 = io_cgroup_disk_time_read,
-+		.read_seq_string = io_cgroup_disk_time_read,
- 	},
- 	{
- 		.name = "disk_sectors",
--		.read_u64 = io_cgroup_disk_sectors_read,
-+		.read_seq_string = io_cgroup_disk_sectors_read,
- 	},
- };
- 
--- 
-1.5.4.rc3
+So it looks like on some cases, it is faster (fresh filesystem ?)
+and sometimes slower (filesystem already well filled ?).
 
+Of course it is also supposed to be faster on parallel multiple partitions
+accesses but I have no benchmark yet to show that.
 
+The following changes since commit 2989c5541d5ab1138e538f8c713f491f7b2416b1:
+  Frederic Weisbecker (1):
+        kill-the-bkl/reiserfs: use mutex_lock in reiserfs_mutex_lock_safe
+
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/frederic/random-tracing.git
+	kill-the-bkl/reiserfs
+
+Frederic Weisbecker (1):
+      kill-the-bkl/reiserfs: unlock only when needed in search_by_key
+
+ fs/reiserfs/stree.c |   42 ++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 34 insertions(+), 8 deletions(-)
