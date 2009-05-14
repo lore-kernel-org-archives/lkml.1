@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759554AbZENWrR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760852AbZENWwU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759554AbZENWrR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:47:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756516AbZENWmR
+	id S1760852AbZENWwU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:52:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756859AbZENWml
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:17 -0400
-Received: from kroah.org ([198.145.64.141]:51567 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:41 -0400
+Received: from kroah.org ([198.145.64.141]:52528 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756010AbZENWmG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:06 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:22 2009
-Message-Id: <20090514223522.480625164@mini.kroah.org>
+	id S1756652AbZENWmY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:24 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:25 2009
+Message-Id: <20090514223525.532342914@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:32:49 -0700
+Date: Thu, 14 May 2009 15:33:07 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,74 +25,327 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Enrik Berkhan <Enrik.Berkhan@ge.com>,
-       Jean Delvare <khali@linux-fr.org>
-Subject: [patch 14/51] i2c-algo-pca: Let PCA9564 recover from unacked data byte (state 0x30)
+       alan@lxorguk.ukuu.org.uk, Sage Weil <sage@newdream.net>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Nick Piggin <npiggin@suse.de>,
+       Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
+Subject: [patch 32/51] mm: close page_mkwrite races
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=i2c-algo-pca-let-pca9564-recover-from-unacked-data-byte.patch
+Content-Disposition: inline; filename=mm-close-page_mkwrite-races.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Enrik Berkhan <Enrik.Berkhan@ge.com>
+From: Nick Piggin <npiggin@suse.de>
 
-commit 2196d1cf4afab93fb64c2e5b417096e49b661612 upstream
+commit b827e496c893de0c0f142abfaeb8730a2fd6b37f upstream.
 
-Currently, the i2c-algo-pca driver does nothing if the chip enters state
-0x30 (Data byte in I2CDAT has been transmitted; NOT ACK has been
-received).  Thus, the i2c bus connected to the controller gets stuck
-afterwards.
+Change page_mkwrite to allow implementations to return with the page
+locked, and also change it's callers (in page fault paths) to hold the
+lock until the page is marked dirty.  This allows the filesystem to have
+full control of page dirtying events coming from the VM.
 
-I have seen this kind of error on a custom board in certain load
-situations most probably caused by interference or noise.
+Rather than simply hold the page locked over the page_mkwrite call, we
+call page_mkwrite with the page unlocked and allow callers to return with
+it locked, so filesystems can avoid LOR conditions with page lock.
 
-A possible reaction is to let the controller generate a STOP condition.
-This is documented in the PCA9564 data sheet (2006-09-01) and the same
-is done for other NACK states as well.
+The problem with the current scheme is this: a filesystem that wants to
+associate some metadata with a page as long as the page is dirty, will
+perform this manipulation in its ->page_mkwrite.  It currently then must
+return with the page unlocked and may not hold any other locks (according
+to existing page_mkwrite convention).
 
-Further, state 0x38 isn't handled completely, either. Try to do another
-START in this case like the data sheet says. As this couldn't be tested,
-I've added a comment to try to reset the chip if the START doesn't help
-as suggested by Wolfram Sang.
+In this window, the VM could write out the page, clearing page-dirty.  The
+filesystem has no good way to detect that a dirty pte is about to be
+attached, so it will happily write out the page, at which point, the
+filesystem may manipulate the metadata to reflect that the page is no
+longer dirty.
 
-Signed-off-by: Enrik Berkhan <Enrik.Berkhan@ge.com>
-Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
+It is not always possible to perform the required metadata manipulation in
+->set_page_dirty, because that function cannot block or fail.  The
+filesystem may need to allocate some data structure, for example.
+
+And the VM cannot mark the pte dirty before page_mkwrite, because
+page_mkwrite is allowed to fail, so we must not allow any window where the
+page could be written to if page_mkwrite does fail.
+
+This solution of holding the page locked over the 3 critical operations
+(page_mkwrite, setting the pte dirty, and finally setting the page dirty)
+closes out races nicely, preventing page cleaning for writeout being
+initiated in that window.  This provides the filesystem with a strong
+synchronisation against the VM here.
+
+- Sage needs this race closed for ceph filesystem.
+- Trond for NFS (http://bugzilla.kernel.org/show_bug.cgi?id=12913).
+- I need it for fsblock.
+- I suspect other filesystems may need it too (eg. btrfs).
+- I have converted buffer.c to the new locking. Even simple block allocation
+  under dirty pages might be susceptible to i_size changing under partial page
+  at the end of file (we also have a buffer.c-side problem here, but it cannot
+  be fixed properly without this patch).
+- Other filesystems (eg. NFS, maybe btrfs) will need to change their
+  page_mkwrite functions themselves.
+
+[ This also moves page_mkwrite another step closer to fault, which should
+  eventually allow page_mkwrite to be moved into ->fault, and thus avoiding a
+  filesystem calldown and page lock/unlock cycle in __do_fault. ]
+
+[akpm@linux-foundation.org: fix derefs of NULL ->mapping]
+Cc: Sage Weil <sage@newdream.net>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Cc: Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
+Cc: <stable@kernel.org>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/i2c/algos/i2c-algo-pca.c |   11 +++++++++++
- 1 file changed, 11 insertions(+)
+ Documentation/filesystems/Locking |   24 +++++---
+ fs/buffer.c                       |   10 ++-
+ mm/memory.c                       |  108 ++++++++++++++++++++++++++------------
+ 3 files changed, 98 insertions(+), 44 deletions(-)
 
---- a/drivers/i2c/algos/i2c-algo-pca.c
-+++ b/drivers/i2c/algos/i2c-algo-pca.c
-@@ -270,10 +270,21 @@ static int pca_xfer(struct i2c_adapter *
+--- a/Documentation/filesystems/Locking
++++ b/Documentation/filesystems/Locking
+@@ -509,16 +509,24 @@ locking rules:
+ 		BKL	mmap_sem	PageLocked(page)
+ open:		no	yes
+ close:		no	yes
+-fault:		no	yes
+-page_mkwrite:	no	yes		no
++fault:		no	yes		can return with page locked
++page_mkwrite:	no	yes		can return with page locked
+ access:		no	yes
  
- 		case 0x30: /* Data byte in I2CDAT has been transmitted; NOT ACK has been received */
- 			DEB2("NOT ACK received after data byte\n");
-+			pca_stop(adap);
- 			goto out;
+-	->page_mkwrite() is called when a previously read-only page is
+-about to become writeable. The file system is responsible for
+-protecting against truncate races. Once appropriate action has been
+-taking to lock out truncate, the page range should be verified to be
+-within i_size. The page mapping should also be checked that it is not
+-NULL.
++	->fault() is called when a previously not present pte is about
++to be faulted in. The filesystem must find and return the page associated
++with the passed in "pgoff" in the vm_fault structure. If it is possible that
++the page may be truncated and/or invalidated, then the filesystem must lock
++the page, then ensure it is not already truncated (the page lock will block
++subsequent truncate), and then return with VM_FAULT_LOCKED, and the page
++locked. The VM will unlock the page.
++
++	->page_mkwrite() is called when a previously read-only pte is
++about to become writeable. The filesystem again must ensure that there are
++no truncate/invalidate races, and then return with the page locked. If
++the page has been truncated, the filesystem should not look up a new page
++like the ->fault() handler, but simply return with VM_FAULT_NOPAGE, which
++will cause the VM to retry the fault.
  
- 		case 0x38: /* Arbitration lost during SLA+W, SLA+R or data bytes */
- 			DEB2("Arbitration lost\n");
+ 	->access() is called when get_user_pages() fails in
+ acces_process_vm(), typically used to debug a process through
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -2479,7 +2479,8 @@ block_page_mkwrite(struct vm_area_struct
+ 	if ((page->mapping != inode->i_mapping) ||
+ 	    (page_offset(page) > size)) {
+ 		/* page got truncated out from underneath us */
+-		goto out_unlock;
++		unlock_page(page);
++		goto out;
+ 	}
+ 
+ 	/* page is wholly or partially inside EOF */
+@@ -2493,14 +2494,15 @@ block_page_mkwrite(struct vm_area_struct
+ 		ret = block_commit_write(page, 0, end);
+ 
+ 	if (unlikely(ret)) {
++		unlock_page(page);
+ 		if (ret == -ENOMEM)
+ 			ret = VM_FAULT_OOM;
+ 		else /* -ENOSPC, -EIO, etc */
+ 			ret = VM_FAULT_SIGBUS;
+-	}
++	} else
++		ret = VM_FAULT_LOCKED;
+ 
+-out_unlock:
+-	unlock_page(page);
++out:
+ 	return ret;
+ }
+ 
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1966,6 +1966,15 @@ static int do_wp_page(struct mm_struct *
+ 				ret = tmp;
+ 				goto unwritable_page;
+ 			}
++			if (unlikely(!(tmp & VM_FAULT_LOCKED))) {
++				lock_page(old_page);
++				if (!old_page->mapping) {
++					ret = 0; /* retry the fault */
++					unlock_page(old_page);
++					goto unwritable_page;
++				}
++			} else
++				VM_BUG_ON(!PageLocked(old_page));
+ 
+ 			/*
+ 			 * Since we dropped the lock we need to revalidate
+@@ -1975,9 +1984,11 @@ static int do_wp_page(struct mm_struct *
+ 			 */
+ 			page_table = pte_offset_map_lock(mm, pmd, address,
+ 							 &ptl);
+-			page_cache_release(old_page);
+-			if (!pte_same(*page_table, orig_pte))
++			if (!pte_same(*page_table, orig_pte)) {
++				unlock_page(old_page);
++				page_cache_release(old_page);
+ 				goto unlock;
++			}
+ 
+ 			page_mkwrite = 1;
+ 		}
+@@ -2089,9 +2100,6 @@ gotten:
+ unlock:
+ 	pte_unmap_unlock(page_table, ptl);
+ 	if (dirty_page) {
+-		if (vma->vm_file)
+-			file_update_time(vma->vm_file);
+-
+ 		/*
+ 		 * Yes, Virginia, this is actually required to prevent a race
+ 		 * with clear_page_dirty_for_io() from clearing the page dirty
+@@ -2100,16 +2108,41 @@ unlock:
+ 		 *
+ 		 * do_no_page is protected similarly.
+ 		 */
+-		wait_on_page_locked(dirty_page);
+-		set_page_dirty_balance(dirty_page, page_mkwrite);
++		if (!page_mkwrite) {
++			wait_on_page_locked(dirty_page);
++			set_page_dirty_balance(dirty_page, page_mkwrite);
++		}
+ 		put_page(dirty_page);
++		if (page_mkwrite) {
++			struct address_space *mapping = dirty_page->mapping;
++
++			set_page_dirty(dirty_page);
++			unlock_page(dirty_page);
++			page_cache_release(dirty_page);
++			if (mapping)	{
++				/*
++				 * Some device drivers do not set page.mapping
++				 * but still dirty their pages
++				 */
++				balance_dirty_pages_ratelimited(mapping);
++			}
++		}
++
++		/* file_update_time outside page_lock */
++		if (vma->vm_file)
++			file_update_time(vma->vm_file);
+ 	}
+ 	return ret;
+ oom_free_new:
+ 	page_cache_release(new_page);
+ oom:
+-	if (old_page)
++	if (old_page) {
++		if (page_mkwrite) {
++			unlock_page(old_page);
++			page_cache_release(old_page);
++		}
+ 		page_cache_release(old_page);
++	}
+ 	return VM_FAULT_OOM;
+ 
+ unwritable_page:
+@@ -2661,27 +2694,22 @@ static int __do_fault(struct mm_struct *
+ 				int tmp;
+ 
+ 				unlock_page(page);
+-				vmf.flags |= FAULT_FLAG_MKWRITE;
++				vmf.flags = FAULT_FLAG_WRITE|FAULT_FLAG_MKWRITE;
+ 				tmp = vma->vm_ops->page_mkwrite(vma, &vmf);
+ 				if (unlikely(tmp &
+ 					  (VM_FAULT_ERROR | VM_FAULT_NOPAGE))) {
+ 					ret = tmp;
+-					anon = 1; /* no anon but release vmf.page */
+-					goto out_unlocked;
+-				}
+-				lock_page(page);
+-				/*
+-				 * XXX: this is not quite right (racy vs
+-				 * invalidate) to unlock and relock the page
+-				 * like this, however a better fix requires
+-				 * reworking page_mkwrite locking API, which
+-				 * is better done later.
+-				 */
+-				if (!page->mapping) {
+-					ret = 0;
+-					anon = 1; /* no anon but release vmf.page */
+-					goto out;
++					goto unwritable_page;
+ 				}
++				if (unlikely(!(tmp & VM_FAULT_LOCKED))) {
++					lock_page(page);
++					if (!page->mapping) {
++						ret = 0; /* retry the fault */
++						unlock_page(page);
++						goto unwritable_page;
++					}
++				} else
++					VM_BUG_ON(!PageLocked(page));
+ 				page_mkwrite = 1;
+ 			}
+ 		}
+@@ -2733,19 +2761,35 @@ static int __do_fault(struct mm_struct *
+ 	pte_unmap_unlock(page_table, ptl);
+ 
+ out:
+-	unlock_page(vmf.page);
+-out_unlocked:
+-	if (anon)
+-		page_cache_release(vmf.page);
+-	else if (dirty_page) {
+-		if (vma->vm_file)
+-			file_update_time(vma->vm_file);
++	if (dirty_page) {
++		struct address_space *mapping = page->mapping;
+ 
+-		set_page_dirty_balance(dirty_page, page_mkwrite);
++		if (set_page_dirty(dirty_page))
++			page_mkwrite = 1;
++		unlock_page(dirty_page);
+ 		put_page(dirty_page);
++		if (page_mkwrite && mapping) {
 +			/*
-+			 * The PCA9564 data sheet (2006-09-01) says "A
-+			 * START condition will be transmitted when the
-+			 * bus becomes free (STOP or SCL and SDA high)"
-+			 * when the STA bit is set (p. 11).
-+			 *
-+			 * In case this won't work, try pca_reset()
-+			 * instead.
++			 * Some device drivers do not set page.mapping but still
++			 * dirty their pages
 +			 */
-+			pca_start(adap);
- 			goto out;
++			balance_dirty_pages_ratelimited(mapping);
++		}
++
++		/* file_update_time outside page_lock */
++		if (vma->vm_file)
++			file_update_time(vma->vm_file);
++	} else {
++		unlock_page(vmf.page);
++		if (anon)
++			page_cache_release(vmf.page);
+ 	}
  
- 		case 0x58: /* Data byte has been received; NOT ACK has been returned */
+ 	return ret;
++
++unwritable_page:
++	page_cache_release(page);
++	return ret;
+ }
+ 
+ static int do_linear_fault(struct mm_struct *mm, struct vm_area_struct *vma,
 
 
