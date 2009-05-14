@@ -1,63 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761368AbZENMX0@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761475AbZENMXm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761368AbZENMX0 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 08:23:26 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760322AbZENMWz
+	id S1761475AbZENMXm (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 08:23:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761251AbZENMXQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 08:22:55 -0400
-Received: from h155.mvista.com ([63.81.120.155]:3937 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1760944AbZENMWx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 08:22:53 -0400
-Message-ID: <4A0C0D44.9020308@ru.mvista.com>
-Date: Thu, 14 May 2009 16:23:32 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Organization: MontaVista Software Inc.
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
-X-Accept-Language: ru, en-us, en-gb
+	Thu, 14 May 2009 08:23:16 -0400
+Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:50569 "EHLO
+	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1761100AbZENMXP (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 08:23:15 -0400
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [patch 1/5] oom: cleanup android low memory killer
+Cc: kosaki.motohiro@jp.fujitsu.com, Rik van Riel <riel@redhat.com>,
+       Greg KH <greg@kroah.com>, Arve Hjonnevag <arve@android.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Nick Piggin <npiggin@suse.de>, San Mehat <san@android.com>,
+       linux-kernel@vger.kernel.org, Greg KH <gregkh@suse.de>
+In-Reply-To: <alpine.DEB.2.00.0905111241120.23739@chino.kir.corp.google.com>
+References: <49FF7B02.9050608@redhat.com> <alpine.DEB.2.00.0905111241120.23739@chino.kir.corp.google.com>
+Message-Id: <20090514211934.F5B3.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Joe Perches <joe@perches.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/7] ide: merge ide_disk_special() into do_special()
-References: <20090513205139.28638.87226.sendpatchset@localhost.localdomain>	 <20090513205200.28638.90827.sendpatchset@localhost.localdomain> <1242248102.4639.17.camel@Joe-AcerAspire>
-In-Reply-To: <1242248102.4639.17.camel@Joe-AcerAspire>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
+X-Mailer: Becky! ver. 2.50.07 [ja]
+Date: Thu, 14 May 2009 21:23:13 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
 
-Joe Perches wrote:
+sorry late responce.
 
->>While at it:
->>- change debug printk() level to KERN_DEBUG
->>- update documentation
+> On Mon, 4 May 2009, Rik van Riel wrote:
+> 
+> > > There was an interest in a low mem userspace notifier that applications can
+> > > poll() on at configurable low mem levels to react accordingly.  This would
+> > > probably address the problem that the Android team is trying to fix.
+> > 
+> > This would also make it easier for virtual machines to be
+> > ballooned down to size when the host experiences memory
+> > pressure.
+> > 
+> > The low memory notification could also be useful for JVMs,
+> > databases that do (some of) their own caching and any garbage
+> > collected program in general.
+> > 
+> 
+> I agree, and I'd suggest that it be implemented as a cgroup so that 
+> individual sets of tasks can be responsible for their own lowmem 
+> notifiers.
+> 
+> KOSAKI, you were pushing the /dev/mem_notify patchset last year from 
+> Marcelo.  Do you have any plans of recreating that in a cgroup or have you 
+> dropped it?
 
->>There should be no functional changes caused by this patch.
+sorry, I've pending this because I think I have to stabilize VM 
+as top priority.
 
->>Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>---
->> drivers/ide/ide-io.c |   44 ++++++++++++++++++--------------------------
->> 1 file changed, 18 insertions(+), 26 deletions(-)
+I can't say when I resume this works, sorry.
 
->>Index: b/drivers/ide/ide-io.c
->>===================================================================
->>--- a/drivers/ide/ide-io.c
->>+++ b/drivers/ide/ide-io.c
->>@@ -184,11 +184,28 @@ static void ide_tf_set_setmult_cmd(ide_d
 
-> []
 
->>+#ifdef DEBUG
->>+	printk(KERN_DEBUG "%s: %s: 0x%02x\n", drive->name, s->all);
->>+#endif
-
-> pr_debug?
-
-    Yes, and the number of arguments doesn't correspond to the number of the 
-format specifiers.
-
-WBR, Sergei
