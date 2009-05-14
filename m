@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760549AbZENWsl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761584AbZENWw7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760549AbZENWsl (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:48:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756687AbZENWm0
+	id S1761584AbZENWw7 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:52:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756785AbZENWmn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:26 -0400
-Received: from kroah.org ([198.145.64.141]:51610 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:43 -0400
+Received: from kroah.org ([198.145.64.141]:52498 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756326AbZENWmK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:10 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:23 2009
-Message-Id: <20090514223523.199696101@mini.kroah.org>
+	id S1755952AbZENWmW (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:22 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:25 2009
+Message-Id: <20090514223525.206789949@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:32:53 -0700
+Date: Thu, 14 May 2009 15:33:05 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       linux-security-module@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -26,10 +25,17 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Paul Moore <paul.moore@hp.com>
-Subject: [patch 18/51] netlabel: Add CIPSO {set, del}attr request_sock functions
+       alan@lxorguk.ukuu.org.uk, Nick Piggin <npiggin@suse.de>,
+       Chris Mason <chris.mason@oracle.com>,
+       Trond Myklebust <trond.myklebust@fys.uio.no>,
+       Miklos Szeredi <miklos@szeredi.hu>,
+       Steven Whitehouse <swhiteho@redhat.com>, Mark Fasheh <mfasheh@suse.com>,
+       Joel Becker <joel.becker@oracle.com>,
+       Artem Bityutskiy <dedekind@infradead.org>,
+       Felix Blyakher <felixb@sgi.com>
+Subject: [patch 30/51] mm: page_mkwrite change prototype to match fault
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=netlabel-add-cipso-set-del-attr-request_sock-functions.patch
+Content-Disposition: inline; filename=mm-page_mkwrite-change-prototype-to-match-fault.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,207 +45,387 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Paul Moore <paul.moore@hp.com>
+From: Nick Piggin <npiggin@suse.de>
 
-[NOTE: based on 389fb800ac8be2832efedd19978a2b8ced37eb61]
+commit c2ec175c39f62949438354f603f4aa170846aabb upstream.
 
-Add the cipso_v4_req_setattr() and cipso_v4_req_delattr() functions to set and
-delete the CIPSO security attributes on a request_sock used during a incoming
-connection request.
+Change the page_mkwrite prototype to take a struct vm_fault, and return
+VM_FAULT_xxx flags.  There should be no functional change.
 
-Signed-off-by: Paul Moore <paul.moore@hp.com>
+This makes it possible to return much more detailed error information to
+the VM (and also can provide more information eg.  virtual_address to the
+driver, which might be important in some special cases).
+
+This is required for a subsequent fix.  And will also make it easier to
+merge page_mkwrite() with fault() in future.
+
+Signed-off-by: Nick Piggin <npiggin@suse.de>
+Cc: Chris Mason <chris.mason@oracle.com>
+Cc: Trond Myklebust <trond.myklebust@fys.uio.no>
+Cc: Miklos Szeredi <miklos@szeredi.hu>
+Cc: Steven Whitehouse <swhiteho@redhat.com>
+Cc: Mark Fasheh <mfasheh@suse.com>
+Cc: Joel Becker <joel.becker@oracle.com>
+Cc: Artem Bityutskiy <dedekind@infradead.org>
+Cc: Felix Blyakher <felixb@sgi.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
+ Documentation/filesystems/Locking |    2 +-
+ drivers/video/fb_defio.c          |    3 ++-
+ fs/btrfs/ctree.h                  |    2 +-
+ fs/btrfs/inode.c                  |    5 ++++-
+ fs/buffer.c                       |    6 +++++-
+ fs/ext4/ext4.h                    |    2 +-
+ fs/ext4/inode.c                   |    5 ++++-
+ fs/fuse/file.c                    |    3 ++-
+ fs/gfs2/ops_file.c                |    5 ++++-
+ fs/nfs/file.c                     |    5 ++++-
+ fs/ocfs2/mmap.c                   |    6 ++++--
+ fs/ubifs/file.c                   |    9 ++++++---
+ fs/xfs/linux-2.6/xfs_file.c       |    4 ++--
+ include/linux/buffer_head.h       |    2 +-
+ include/linux/mm.h                |    3 ++-
+ mm/memory.c                       |   26 ++++++++++++++++++++++----
+ 16 files changed, 65 insertions(+), 23 deletions(-)
 
- include/net/cipso_ipv4.h |   17 ++++++
- net/ipv4/cipso_ipv4.c    |  130 +++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 147 insertions(+)
-
---- a/include/net/cipso_ipv4.h
-+++ b/include/net/cipso_ipv4.h
-@@ -40,6 +40,7 @@
- #include <linux/net.h>
- #include <linux/skbuff.h>
- #include <net/netlabel.h>
-+#include <net/request_sock.h>
- #include <asm/atomic.h>
+--- a/Documentation/filesystems/Locking
++++ b/Documentation/filesystems/Locking
+@@ -502,7 +502,7 @@ prototypes:
+ 	void (*open)(struct vm_area_struct*);
+ 	void (*close)(struct vm_area_struct*);
+ 	int (*fault)(struct vm_area_struct*, struct vm_fault *);
+-	int (*page_mkwrite)(struct vm_area_struct *, struct page *);
++	int (*page_mkwrite)(struct vm_area_struct *, struct vm_fault *);
+ 	int (*access)(struct vm_area_struct *, unsigned long, void*, int, int);
  
- /* known doi values */
-@@ -215,6 +216,10 @@ int cipso_v4_sock_setattr(struct sock *s
- 			  const struct netlbl_lsm_secattr *secattr);
- void cipso_v4_sock_delattr(struct sock *sk);
- int cipso_v4_sock_getattr(struct sock *sk, struct netlbl_lsm_secattr *secattr);
-+int cipso_v4_req_setattr(struct request_sock *req,
-+			 const struct cipso_v4_doi *doi_def,
-+			 const struct netlbl_lsm_secattr *secattr);
-+void cipso_v4_req_delattr(struct request_sock *req);
- int cipso_v4_skbuff_setattr(struct sk_buff *skb,
- 			    const struct cipso_v4_doi *doi_def,
- 			    const struct netlbl_lsm_secattr *secattr);
-@@ -247,6 +252,18 @@ static inline int cipso_v4_sock_getattr(
- 	return -ENOSYS;
+ locking rules:
+--- a/drivers/video/fb_defio.c
++++ b/drivers/video/fb_defio.c
+@@ -85,8 +85,9 @@ EXPORT_SYMBOL_GPL(fb_deferred_io_fsync);
+ 
+ /* vm_ops->page_mkwrite handler */
+ static int fb_deferred_io_mkwrite(struct vm_area_struct *vma,
+-				  struct page *page)
++				  struct vm_fault *vmf)
+ {
++	struct page *page = vmf->page;
+ 	struct fb_info *info = vma->vm_private_data;
+ 	struct fb_deferred_io *fbdefio = info->fbdefio;
+ 	struct page *cur;
+--- a/fs/btrfs/ctree.h
++++ b/fs/btrfs/ctree.h
+@@ -2060,7 +2060,7 @@ int btrfs_merge_bio_hook(struct page *pa
+ unsigned long btrfs_force_ra(struct address_space *mapping,
+ 			      struct file_ra_state *ra, struct file *file,
+ 			      pgoff_t offset, pgoff_t last_index);
+-int btrfs_page_mkwrite(struct vm_area_struct *vma, struct page *page);
++int btrfs_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf);
+ int btrfs_readpage(struct file *file, struct page *page);
+ void btrfs_delete_inode(struct inode *inode);
+ void btrfs_put_inode(struct inode *inode);
+--- a/fs/btrfs/inode.c
++++ b/fs/btrfs/inode.c
+@@ -4292,8 +4292,9 @@ static void btrfs_invalidatepage(struct 
+  * beyond EOF, then the page is guaranteed safe against truncation until we
+  * unlock the page.
+  */
+-int btrfs_page_mkwrite(struct vm_area_struct *vma, struct page *page)
++int btrfs_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
+ {
++	struct page *page = vmf->page;
+ 	struct inode *inode = fdentry(vma->vm_file)->d_inode;
+ 	struct btrfs_root *root = BTRFS_I(inode)->root;
+ 	struct extent_io_tree *io_tree = &BTRFS_I(inode)->io_tree;
+@@ -4362,6 +4363,8 @@ again:
+ out_unlock:
+ 	unlock_page(page);
+ out:
++	if (ret)
++		ret = VM_FAULT_SIGBUS;
+ 	return ret;
  }
  
-+static inline int cipso_v4_req_setattr(struct request_sock *req,
-+				       const struct cipso_v4_doi *doi_def,
-+				       const struct netlbl_lsm_secattr *secattr)
-+{
-+	return -ENOSYS;
-+}
+--- a/fs/buffer.c
++++ b/fs/buffer.c
+@@ -2465,9 +2465,10 @@ int block_commit_write(struct page *page
+  * unlock the page.
+  */
+ int
+-block_page_mkwrite(struct vm_area_struct *vma, struct page *page,
++block_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf,
+ 		   get_block_t get_block)
+ {
++	struct page *page = vmf->page;
+ 	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
+ 	unsigned long end;
+ 	loff_t size;
+@@ -2492,6 +2493,9 @@ block_page_mkwrite(struct vm_area_struct
+ 		ret = block_commit_write(page, 0, end);
+ 
+ out_unlock:
++	if (ret)
++		ret = VM_FAULT_SIGBUS;
 +
-+static inline void cipso_v4_req_delattr(struct request_sock *req)
-+{
-+	return;
-+}
-+
- static inline int cipso_v4_skbuff_setattr(struct sk_buff *skb,
- 				      const struct cipso_v4_doi *doi_def,
- 				      const struct netlbl_lsm_secattr *secattr)
---- a/net/ipv4/cipso_ipv4.c
-+++ b/net/ipv4/cipso_ipv4.c
-@@ -1942,6 +1942,72 @@ socket_setattr_failure:
+ 	unlock_page(page);
+ 	return ret;
+ }
+--- a/fs/ext4/ext4.h
++++ b/fs/ext4/ext4.h
+@@ -1097,7 +1097,7 @@ extern int ext4_meta_trans_blocks(struct
+ extern int ext4_chunk_trans_blocks(struct inode *, int nrblocks);
+ extern int ext4_block_truncate_page(handle_t *handle,
+ 		struct address_space *mapping, loff_t from);
+-extern int ext4_page_mkwrite(struct vm_area_struct *vma, struct page *page);
++extern int ext4_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf);
+ 
+ /* ioctl.c */
+ extern long ext4_ioctl(struct file *, unsigned int, unsigned long);
+--- a/fs/ext4/inode.c
++++ b/fs/ext4/inode.c
+@@ -5116,8 +5116,9 @@ static int ext4_bh_unmapped(handle_t *ha
+ 	return !buffer_mapped(bh);
  }
  
- /**
-+ * cipso_v4_req_setattr - Add a CIPSO option to a connection request socket
-+ * @req: the connection request socket
-+ * @doi_def: the CIPSO DOI to use
-+ * @secattr: the specific security attributes of the socket
-+ *
-+ * Description:
-+ * Set the CIPSO option on the given socket using the DOI definition and
-+ * security attributes passed to the function.  Returns zero on success and
-+ * negative values on failure.
-+ *
-+ */
-+int cipso_v4_req_setattr(struct request_sock *req,
-+			 const struct cipso_v4_doi *doi_def,
-+			 const struct netlbl_lsm_secattr *secattr)
-+{
-+	int ret_val = -EPERM;
-+	unsigned char *buf = NULL;
-+	u32 buf_len;
-+	u32 opt_len;
-+	struct ip_options *opt = NULL;
-+	struct inet_request_sock *req_inet;
-+
-+	/* We allocate the maximum CIPSO option size here so we are probably
-+	 * being a little wasteful, but it makes our life _much_ easier later
-+	 * on and after all we are only talking about 40 bytes. */
-+	buf_len = CIPSO_V4_OPT_LEN_MAX;
-+	buf = kmalloc(buf_len, GFP_ATOMIC);
-+	if (buf == NULL) {
-+		ret_val = -ENOMEM;
-+		goto req_setattr_failure;
-+	}
-+
-+	ret_val = cipso_v4_genopt(buf, buf_len, doi_def, secattr);
-+	if (ret_val < 0)
-+		goto req_setattr_failure;
-+	buf_len = ret_val;
-+
-+	/* We can't use ip_options_get() directly because it makes a call to
-+	 * ip_options_get_alloc() which allocates memory with GFP_KERNEL and
-+	 * we won't always have CAP_NET_RAW even though we _always_ want to
-+	 * set the IPOPT_CIPSO option. */
-+	opt_len = (buf_len + 3) & ~3;
-+	opt = kzalloc(sizeof(*opt) + opt_len, GFP_ATOMIC);
-+	if (opt == NULL) {
-+		ret_val = -ENOMEM;
-+		goto req_setattr_failure;
-+	}
-+	memcpy(opt->__data, buf, buf_len);
-+	opt->optlen = opt_len;
-+	opt->cipso = sizeof(struct iphdr);
-+	kfree(buf);
-+	buf = NULL;
-+
-+	req_inet = inet_rsk(req);
-+	opt = xchg(&req_inet->opt, opt);
-+	kfree(opt);
-+
-+	return 0;
-+
-+req_setattr_failure:
-+	kfree(buf);
-+	kfree(opt);
-+	return ret_val;
-+}
-+
-+/**
-  * cipso_v4_sock_delattr - Delete the CIPSO option from a socket
-  * @sk: the socket
-  *
-@@ -2016,6 +2082,70 @@ void cipso_v4_sock_delattr(struct sock *
+-int ext4_page_mkwrite(struct vm_area_struct *vma, struct page *page)
++int ext4_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
+ {
++	struct page *page = vmf->page;
+ 	loff_t size;
+ 	unsigned long len;
+ 	int ret = -EINVAL;
+@@ -5169,6 +5170,8 @@ int ext4_page_mkwrite(struct vm_area_str
+ 		goto out_unlock;
+ 	ret = 0;
+ out_unlock:
++	if (ret)
++		ret = VM_FAULT_SIGBUS;
+ 	up_read(&inode->i_alloc_sem);
+ 	return ret;
+ }
+--- a/fs/fuse/file.c
++++ b/fs/fuse/file.c
+@@ -1234,8 +1234,9 @@ static void fuse_vma_close(struct vm_are
+  * - sync(2)
+  * - try_to_free_pages() with order > PAGE_ALLOC_COSTLY_ORDER
+  */
+-static int fuse_page_mkwrite(struct vm_area_struct *vma, struct page *page)
++static int fuse_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
+ {
++	struct page *page = vmf->page;
+ 	/*
+ 	 * Don't use page->mapping as it may become NULL from a
+ 	 * concurrent truncate.
+--- a/fs/gfs2/ops_file.c
++++ b/fs/gfs2/ops_file.c
+@@ -336,8 +336,9 @@ static int gfs2_allocate_page_backing(st
+  * blocks allocated on disk to back that page.
+  */
+ 
+-static int gfs2_page_mkwrite(struct vm_area_struct *vma, struct page *page)
++static int gfs2_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
+ {
++	struct page *page = vmf->page;
+ 	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
+ 	struct gfs2_inode *ip = GFS2_I(inode);
+ 	struct gfs2_sbd *sdp = GFS2_SB(inode);
+@@ -409,6 +410,8 @@ out_unlock:
+ 	gfs2_glock_dq(&gh);
+ out:
+ 	gfs2_holder_uninit(&gh);
++	if (ret)
++		ret = VM_FAULT_SIGBUS;
+ 	return ret;
  }
  
- /**
-+ * cipso_v4_req_delattr - Delete the CIPSO option from a request socket
-+ * @reg: the request socket
-+ *
-+ * Description:
-+ * Removes the CIPSO option from a request socket, if present.
-+ *
-+ */
-+void cipso_v4_req_delattr(struct request_sock *req)
-+{
-+	struct ip_options *opt;
-+	struct inet_request_sock *req_inet;
+--- a/fs/nfs/file.c
++++ b/fs/nfs/file.c
+@@ -451,8 +451,9 @@ const struct address_space_operations nf
+ 	.launder_page = nfs_launder_page,
+ };
+ 
+-static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct page *page)
++static int nfs_vm_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
+ {
++	struct page *page = vmf->page;
+ 	struct file *filp = vma->vm_file;
+ 	struct dentry *dentry = filp->f_path.dentry;
+ 	unsigned pagelen;
+@@ -483,6 +484,8 @@ static int nfs_vm_page_mkwrite(struct vm
+ 		ret = pagelen;
+ out_unlock:
+ 	unlock_page(page);
++	if (ret)
++		ret = VM_FAULT_SIGBUS;
+ 	return ret;
+ }
+ 
+--- a/fs/ocfs2/mmap.c
++++ b/fs/ocfs2/mmap.c
+@@ -154,8 +154,9 @@ out:
+ 	return ret;
+ }
+ 
+-static int ocfs2_page_mkwrite(struct vm_area_struct *vma, struct page *page)
++static int ocfs2_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
+ {
++	struct page *page = vmf->page;
+ 	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
+ 	struct buffer_head *di_bh = NULL;
+ 	sigset_t blocked, oldset;
+@@ -196,7 +197,8 @@ out:
+ 	ret2 = ocfs2_vm_op_unblock_sigs(&oldset);
+ 	if (ret2 < 0)
+ 		mlog_errno(ret2);
+-
++	if (ret)
++		ret = VM_FAULT_SIGBUS;
+ 	return ret;
+ }
+ 
+--- a/fs/ubifs/file.c
++++ b/fs/ubifs/file.c
+@@ -1434,8 +1434,9 @@ static int ubifs_releasepage(struct page
+  * mmap()d file has taken write protection fault and is being made
+  * writable. UBIFS must ensure page is budgeted for.
+  */
+-static int ubifs_vm_page_mkwrite(struct vm_area_struct *vma, struct page *page)
++static int ubifs_vm_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf)
+ {
++	struct page *page = vmf->page;
+ 	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
+ 	struct ubifs_info *c = inode->i_sb->s_fs_info;
+ 	struct timespec now = ubifs_current_time(inode);
+@@ -1447,7 +1448,7 @@ static int ubifs_vm_page_mkwrite(struct 
+ 	ubifs_assert(!(inode->i_sb->s_flags & MS_RDONLY));
+ 
+ 	if (unlikely(c->ro_media))
+-		return -EROFS;
++		return VM_FAULT_SIGBUS; /* -EROFS */
+ 
+ 	/*
+ 	 * We have not locked @page so far so we may budget for changing the
+@@ -1480,7 +1481,7 @@ static int ubifs_vm_page_mkwrite(struct 
+ 		if (err == -ENOSPC)
+ 			ubifs_warn("out of space for mmapped file "
+ 				   "(inode number %lu)", inode->i_ino);
+-		return err;
++		return VM_FAULT_SIGBUS;
+ 	}
+ 
+ 	lock_page(page);
+@@ -1520,6 +1521,8 @@ static int ubifs_vm_page_mkwrite(struct 
+ out_unlock:
+ 	unlock_page(page);
+ 	ubifs_release_budget(c, &req);
++	if (err)
++		err = VM_FAULT_SIGBUS;
+ 	return err;
+ }
+ 
+--- a/fs/xfs/linux-2.6/xfs_file.c
++++ b/fs/xfs/linux-2.6/xfs_file.c
+@@ -234,9 +234,9 @@ xfs_file_mmap(
+ STATIC int
+ xfs_vm_page_mkwrite(
+ 	struct vm_area_struct	*vma,
+-	struct page		*page)
++	struct vm_fault		*vmf)
+ {
+-	return block_page_mkwrite(vma, page, xfs_get_blocks);
++	return block_page_mkwrite(vma, vmf, xfs_get_blocks);
+ }
+ 
+ const struct file_operations xfs_file_operations = {
+--- a/include/linux/buffer_head.h
++++ b/include/linux/buffer_head.h
+@@ -223,7 +223,7 @@ int cont_write_begin(struct file *, stru
+ 			get_block_t *, loff_t *);
+ int generic_cont_expand_simple(struct inode *inode, loff_t size);
+ int block_commit_write(struct page *page, unsigned from, unsigned to);
+-int block_page_mkwrite(struct vm_area_struct *vma, struct page *page,
++int block_page_mkwrite(struct vm_area_struct *vma, struct vm_fault *vmf,
+ 				get_block_t get_block);
+ void block_sync_page(struct page *);
+ sector_t generic_block_bmap(struct address_space *, sector_t, get_block_t *);
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -145,6 +145,7 @@ extern pgprot_t protection_map[16];
+ 
+ #define FAULT_FLAG_WRITE	0x01	/* Fault was a write access */
+ #define FAULT_FLAG_NONLINEAR	0x02	/* Fault was via a nonlinear mapping */
++#define FAULT_FLAG_MKWRITE	0x04	/* Fault was mkwrite of existing pte */
+ 
+ /*
+  * This interface is used by x86 PAT code to identify a pfn mapping that is
+@@ -197,7 +198,7 @@ struct vm_operations_struct {
+ 
+ 	/* notification that a previously read-only page is about to become
+ 	 * writable, if an error is returned it will cause a SIGBUS */
+-	int (*page_mkwrite)(struct vm_area_struct *vma, struct page *page);
++	int (*page_mkwrite)(struct vm_area_struct *vma, struct vm_fault *vmf);
+ 
+ 	/* called by access_process_vm when get_user_pages() fails, typically
+ 	 * for use by special VMAs that can switch between memory and hardware
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -1940,6 +1940,15 @@ static int do_wp_page(struct mm_struct *
+ 		 * get_user_pages(.write=1, .force=1).
+ 		 */
+ 		if (vma->vm_ops && vma->vm_ops->page_mkwrite) {
++			struct vm_fault vmf;
++			int tmp;
 +
-+	req_inet = inet_rsk(req);
-+	opt = req_inet->opt;
-+	if (opt == NULL || opt->cipso == 0)
-+		return;
++			vmf.virtual_address = (void __user *)(address &
++								PAGE_MASK);
++			vmf.pgoff = old_page->index;
++			vmf.flags = FAULT_FLAG_WRITE|FAULT_FLAG_MKWRITE;
++			vmf.page = old_page;
 +
-+	if (opt->srr || opt->rr || opt->ts || opt->router_alert) {
-+		u8 cipso_len;
-+		u8 cipso_off;
-+		unsigned char *cipso_ptr;
-+		int iter;
-+		int optlen_new;
+ 			/*
+ 			 * Notify the address space that the page is about to
+ 			 * become writable so that it can prohibit this or wait
+@@ -1951,8 +1960,12 @@ static int do_wp_page(struct mm_struct *
+ 			page_cache_get(old_page);
+ 			pte_unmap_unlock(page_table, ptl);
+ 
+-			if (vma->vm_ops->page_mkwrite(vma, old_page) < 0)
++			tmp = vma->vm_ops->page_mkwrite(vma, &vmf);
++			if (unlikely(tmp &
++					(VM_FAULT_ERROR | VM_FAULT_NOPAGE))) {
++				ret = tmp;
+ 				goto unwritable_page;
++			}
+ 
+ 			/*
+ 			 * Since we dropped the lock we need to revalidate
+@@ -2101,7 +2114,7 @@ oom:
+ 
+ unwritable_page:
+ 	page_cache_release(old_page);
+-	return VM_FAULT_SIGBUS;
++	return ret;
+ }
+ 
+ /*
+@@ -2645,9 +2658,14 @@ static int __do_fault(struct mm_struct *
+ 			 * to become writable
+ 			 */
+ 			if (vma->vm_ops->page_mkwrite) {
++				int tmp;
 +
-+		cipso_off = opt->cipso - sizeof(struct iphdr);
-+		cipso_ptr = &opt->__data[cipso_off];
-+		cipso_len = cipso_ptr[1];
-+
-+		if (opt->srr > opt->cipso)
-+			opt->srr -= cipso_len;
-+		if (opt->rr > opt->cipso)
-+			opt->rr -= cipso_len;
-+		if (opt->ts > opt->cipso)
-+			opt->ts -= cipso_len;
-+		if (opt->router_alert > opt->cipso)
-+			opt->router_alert -= cipso_len;
-+		opt->cipso = 0;
-+
-+		memmove(cipso_ptr, cipso_ptr + cipso_len,
-+			opt->optlen - cipso_off - cipso_len);
-+
-+		/* determining the new total option length is tricky because of
-+		 * the padding necessary, the only thing i can think to do at
-+		 * this point is walk the options one-by-one, skipping the
-+		 * padding at the end to determine the actual option size and
-+		 * from there we can determine the new total option length */
-+		iter = 0;
-+		optlen_new = 0;
-+		while (iter < opt->optlen)
-+			if (opt->__data[iter] != IPOPT_NOP) {
-+				iter += opt->__data[iter + 1];
-+				optlen_new = iter;
-+			} else
-+				iter++;
-+		opt->optlen = (optlen_new + 3) & ~3;
-+	} else {
-+		/* only the cipso option was present on the socket so we can
-+		 * remove the entire option struct */
-+		req_inet->opt = NULL;
-+		kfree(opt);
-+	}
-+}
-+
-+/**
-  * cipso_v4_getattr - Helper function for the cipso_v4_*_getattr functions
-  * @cipso: the CIPSO v4 option
-  * @secattr: the security attributes
+ 				unlock_page(page);
+-				if (vma->vm_ops->page_mkwrite(vma, page) < 0) {
+-					ret = VM_FAULT_SIGBUS;
++				vmf.flags |= FAULT_FLAG_MKWRITE;
++				tmp = vma->vm_ops->page_mkwrite(vma, &vmf);
++				if (unlikely(tmp &
++					  (VM_FAULT_ERROR | VM_FAULT_NOPAGE))) {
++					ret = tmp;
+ 					anon = 1; /* no anon but release vmf.page */
+ 					goto out_unlocked;
+ 				}
 
 
