@@ -1,105 +1,145 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761117AbZENLuB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760751AbZENLxW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761117AbZENLuB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 07:50:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758359AbZENLtu
+	id S1760751AbZENLxW (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 07:53:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757657AbZENLxG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 07:49:50 -0400
-Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:54369 "EHLO
-	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1758173AbZENLtt (ORCPT
+	Thu, 14 May 2009 07:53:06 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:37042 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755791AbZENLxF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 07:49:49 -0400
-From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Message-Id: <200905141149.n4EBngvc017279@mercury.physics.adelaide.edu.au>
-Subject: Re: Realtek 8168D: no active link (2.6.29.2)
-To: romieu@fr.zoreil.com (Francois Romieu)
-Date: Thu, 14 May 2009 21:19:42 +0930 (CST)
-Cc: jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090513220436.GD729@electric-eye.fr.zoreil.com> from "Francois Romieu" at May 14, 2009 12:04:36 AM
-X-Mailer: ELM [version 2.5 PL6]
+	Thu, 14 May 2009 07:53:05 -0400
+Message-ID: <4A0C060D.2060107@novell.com>
+Date: Thu, 14 May 2009 07:52:45 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+To: Avi Kivity <avi@redhat.com>
+CC: kvm@vger.kernel.org, viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org,
+       davidel@xmailserver.org
+Subject: Re: [KVM PATCH v7 2/3] kvm: add support for irqfd via	eventfd-notification
+ interface
+References: <20090512181134.26131.10023.stgit@dev.haskins.net> <20090512182655.26131.53824.stgit@dev.haskins.net> <4A0BE8CA.7080801@redhat.com>
+In-Reply-To: <4A0BE8CA.7080801@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigCC5672938E37500B7BB07ACB"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi 
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigCC5672938E37500B7BB07ACB
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-> [...]
-> > I am currently testing a Gigabyte EX58-UD4P mainboard which is equipped with
-> > an onboard Realtek RTL-8168D network controller.  The kernel version is
-> > 2.6.29.2.  The r8169 module is loaded correctly, identifies the chip as an
-> > 8168D and seemingly is happy.  However, after loading the module the link
-> > remains dead.  The green and orange status LEDs remain off at all times.
-> 
-> Which XID does it display in dmesg when the module is inserted and which
-> behavior do you experience with version 8.011.00 of Realtek's r8168 driver ?
+Avi Kivity wrote:
+> Gregory Haskins wrote:
+>> KVM provides a complete virtual system environment for guests, includi=
+ng
+>> support for injecting interrupts modeled after the real
+>> exception/interrupt
+>> facilities present on the native platform (such as the IDT on x86).
+>> Virtual interrupts can come from a variety of sources (emulated device=
+s,
+>> pass-through devices, etc) but all must be injected to the guest via
+>> the KVM infrastructure.  This patch adds a new mechanism to inject a
+>> specific
+>> interrupt to a guest using a decoupled eventfd mechnanism:  Any legal
+>> signal
+>> on the irqfd (using eventfd semantics from either userspace or
+>> kernel) will
+>> translate into an injected interrupt in the guest at the next availabl=
+e
+>> interrupt window.
+>>  =20
+>
+>>          r =3D 1;
+>>          break;
+>>      case KVM_CAP_COALESCED_MMIO:
+>> diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+>> index 3db5d8d..dfc4bcc 100644
+>> --- a/include/linux/kvm.h
+>> +++ b/include/linux/kvm.h
+>> @@ -415,6 +415,7 @@ struct kvm_trace_rec {
+>>  #define KVM_CAP_ASSIGN_DEV_IRQ 29
+>>  /* Another bug in KVM_SET_USER_MEMORY_REGION fixed: */
+>>  #define KVM_CAP_JOIN_MEMORY_REGIONS_WORKS 30
+>> +#define KVM_CAP_EVENTFD 31
+>>  =20
+>
+> Let's keep a fine granularity and call it IRQFD.
 
-Ok, FYI the machine concerned is now running 2.6.30-rc5.  As far as I can
-tell there is no change with this kernel version (I will double-check in a
-few moments time and follow up if there are changes).  On initialisation the
-2.6.30-r5 r8169 driver gives
+Yeah, the iofd stuff is still immature and is not likely to be ready at
+the same time anyway.  The CAP bits are cheap enough as it is, so not
+sure what I was thinking.  Will fix.
 
-  r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
-  r8169 0000:08:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-  r8169 0000:08:00.0: setting latency timer to 64
-  r8169 0000:08:00.0: irq 33 for MSI/MSI-X
-  eth1: RTL8168d/8111d at 0xf91be000, 00:24:1d:15:5d:a9, XID 281000c0 IRQ 33
+>
+>> +
+>> +int
+>> +kvm_deassign_irqfd(struct kvm *kvm, int fd)
+>> +{
+>> +    struct _irqfd *irqfd, *tmp;
+>> +
+>> +    mutex_lock(&kvm->lock);
+>> +
+>> +    /*
+>> +     * linear search isn't brilliant, but this should be a infrequent=
 
-I then downloaded Realtek's 8.012.00 driver, it being the latest release.
-Some internal API changes in 2.6.30-rc mean that this doesn't compile, but
-it was trivial to fix these (for the benefit of those trawling the archives
-the diff is at the end of this email).  With this done I get this when the
-module is inserted (having removed the previously loaded r8169 driver):
+>> +     * operation and the list should not grow very large
+>> +     */
+>> +    list_for_each_entry_safe(irqfd, tmp, &kvm->irqfds, list) {
+>> +        if (irqfd->fd !=3D fd)
+>> +            continue;
+>>  =20
+>
+> Please fget() the new fd and compare the filps; fds aren't meaningful
+> in the kernel.  You can also drop _irqfd::fd.
 
-  r8168 0000:08:00.0: PCI INT A -> GSI 16 (level, low) -> IRQ 16
-  r8168 0000:08:00.0: setting latency timer to 64
-  r8168 0000:08:00.0: irq 33 for MSI/MSI-X
-  eth1 (r8168): not using net_device_ops yet
-  eth1: Identified chip type is 'RTL8168D/8111D'.
-  eth1: RTL8168B/8111B at 0xfcb1e000, 00:24:1d:15:5d:a9, IRQ 33
-  r8168: eth1: link down
-  r8168: eth1: link up
+I like this as a second option...
 
-The "link up" occurred as soon as I plugged a live network cable into the
-card.  Under the kernel's r8169 driver I never saw any "link up" messages.
+>
+> It may also be useful to compare the gsi, this allows a
+> "make-before-break" switchover:
 
-Regards
-  jonathan
+=2E..but I like this best.  Good idea.
 
-diff -ruP r8168-8.012.00-orig/src/r8168.h r8168-8.012.00-new/src/r8168.h
---- r8168-8.012.00-orig/src/r8168.h	2009-04-20 17:37:23.000000000 +0930
-+++ r8168-8.012.00-new/src/r8168.h	2009-05-14 20:57:45.166102000 +0930
-@@ -37,11 +37,13 @@
- #define CHECKSUM_PARTIAL CHECKSUM_HW
- #endif
- 
-+#if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,30)
- #ifndef IRQ_HANDLED
- #define irqreturn_t void
- #define IRQ_HANDLED
- #define IRQ_NONE
- #endif
-+#endif
- 
- #ifndef HAVE_FREE_NETDEV
- #define free_netdev(x)	kfree(x)
-@@ -255,10 +257,14 @@
- 	#define RTL_NETIF_RX_COMPLETE(dev, napi)		netif_rx_complete(dev, napi)
- 	#define RTL_NETIF_RX_SCHEDULE_PREP(dev, napi)		netif_rx_schedule_prep(dev, napi)
- 	#define __RTL_NETIF_RX_SCHEDULE(dev, napi)		__netif_rx_schedule(dev, napi)
-- #else
-+ #elif LINUX_VERSION_CODE == KERNEL_VERSION(2,6,29)
- 	#define RTL_NETIF_RX_COMPLETE(dev, napi)		netif_rx_complete(napi)
- 	#define RTL_NETIF_RX_SCHEDULE_PREP(dev, napi)		netif_rx_schedule_prep(napi)
- 	#define __RTL_NETIF_RX_SCHEDULE(dev, napi)		__netif_rx_schedule(napi)
-+ #else
-+	#define RTL_NETIF_RX_COMPLETE(dev, napi)		napi_complete(napi)
-+	#define RTL_NETIF_RX_SCHEDULE_PREP(dev, napi)		napi_schedule_prep(napi)
-+	#define __RTL_NETIF_RX_SCHEDULE(dev, napi)		__napi_schedule(napi)
-  #endif
- 	#define RTL_NAPI_RETURN_VALUE work_done
- 	#define RTL_NAPI_ENABLE(dev, napi)			napi_enable(napi)
+>
+> - guest reroutes irq to a different gsi
+> - associate irqfd with new gsi
+> - disassociate irqfd from old gsi
+>
+>> +
+>> +        irqfd_release(irqfd);
+>> +        mutex_unlock(&kvm->lock);
+>> +        return 0;
+>>  =20
+>
+> Don't return, userspace may have multiple associations?
+
+Parse error.  Can you elaborate?
+
+-Greg
+
+>
+>
+
+
+
+--------------enigCC5672938E37500B7BB07ACB
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkoMBg0ACgkQlOSOBdgZUxnlewCeJGqRqf5HmZt0zpZ8jo6kDQHx
+fI0An3ikxl1JmQMWgl7FFiMU0fBdbkmT
+=Sr2C
+-----END PGP SIGNATURE-----
+
+--------------enigCC5672938E37500B7BB07ACB--
