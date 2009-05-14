@@ -1,61 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761418AbZENQVR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761361AbZENQUu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761418AbZENQVR (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 12:21:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761222AbZENQU2
+	id S1761361AbZENQUu (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 12:20:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756237AbZENQTj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 12:20:28 -0400
-Received: from vms173017pub.verizon.net ([206.46.173.17]:44396 "EHLO
-	vms173017pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760833AbZENQUZ (ORCPT
+	Thu, 14 May 2009 12:19:39 -0400
+Received: from qw-out-2122.google.com ([74.125.92.26]:45168 "EHLO
+	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1760585AbZENQTi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 12:20:25 -0400
-Date: Thu, 14 May 2009 12:20:22 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org,
-       ACPI Devel Maling List <linux-acpi@vger.kernel.org>
-Subject: Re: [PATCH 2/7] x86/acpi: calling mp_config_acpi_gsi in
- mp_register_gsi -v2
-In-reply-to: <4A01C387.7090103@kernel.org>
-Message-id: <alpine.LFD.2.00.0905141154390.19537@localhost.localdomain>
-References: <4A01C35C.7060207@kernel.org> <4A01C387.7090103@kernel.org>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 14 May 2009 12:19:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=XhZeidiDCSSXKUN5kUTQhKjMHryV92zWuv3Hhv0HmFj1uuF7mohjzmnobGzWFy5LyW
+         774FBKpjQd3SLrkGniZLxqvO/7naYBqbk3J7Jsg3PEn8oui+ARzsKRf1IxaCWm4tOGru
+         f7Vo3iwumTvprgBRUceT+cN9g3zmotHk5qF9w=
+MIME-Version: 1.0
+In-Reply-To: <20090514140138.GB10933@one.firstfloor.org>
+References: <200904301408.09370.tobias.doerffel@gmail.com>
+	 <877i0xib7d.fsf@basil.nowhere.org>
+	 <a36005b50905120720p14e0ea0av79f99551262a920a@mail.gmail.com>
+	 <20090512150408.GH19296@one.firstfloor.org>
+	 <a36005b50905121045s62c16760p3aba003647a572c7@mail.gmail.com>
+	 <1242277453.23058.35.camel@brick>
+	 <a36005b50905140638r56f73095kfc669bae1333e2bd@mail.gmail.com>
+	 <20090514140138.GB10933@one.firstfloor.org>
+Date: Thu, 14 May 2009 09:19:38 -0700
+Message-ID: <a36005b50905140919m3ab2356cqb3b8a32fd507e49e@mail.gmail.com>
+Subject: Re: Specific support for Intel Atom architecture
+From: Ulrich Drepper <drepper@gmail.com>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Harvey Harrison <harvey.harrison@gmail.com>,
+       Tobias Doerffel <tobias.doerffel@gmail.com>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-mp_config_acpi_gsi() has been dead code since the day it went into 2.6.27.
-Rather than repairing that, I'd rather see it removed.
+On Thu, May 14, 2009 at 7:01 AM, Andi Kleen <andi@firstfloor.org> wrote:
+> How would you test that?
 
-The justification for 2944e16b25e7fb8b5ee0dd9dc7197a0f9e523cfd
-"x86: update mptable" was:
+Compare runtimes with mov+bswap for some simple code which uses the
+value after the conversion (e.g., just add to something).
 
-    1. kexec kernel with acpi=off
-    2. work around BIOSes where acpi routing is working, but mptable is
-       not right, so can use kernel/kexec to start other OSes that don't have
-       good acpi support.
-    
-    command line: update_mptable
-
-So this is a command line option to allow
-MPS code to call into ACPI code to support kexec from an ACPI
-mode into non-ACPI mode -- all without a single comment in the code.
-
-I'm not convinced that the scenario that this code was
-intended to address justifies adding unreadable code to
-an area of the kernel which is notoriously over-complicated
-and fragile.  Doing so is the opposite of optimizing for maintenance.
-
-No, I don't want to see any MPS code ever call into ACPI code.
-
-thanks,
-Len Brown, Intel Open Source Technology Center
+Or in your case: get the Atom designers to comment.
