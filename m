@@ -1,57 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760406AbZENL6g@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758758AbZENMAY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760406AbZENL6g (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 07:58:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753892AbZENL61
+	id S1758758AbZENMAY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 08:00:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755759AbZENMAI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 07:58:27 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:50843 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753342AbZENL60 (ORCPT
+	Thu, 14 May 2009 08:00:08 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:52424 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755046AbZENMAG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 07:58:26 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=I/TW8r0MkOUWys+sklwYcLFpbOqUGXCsjbkJlsF1UB9KjzL18fkEIoIAZM42lfClop
-         g8D5+yUKJdIVQepv/k3yFF6dq/1Fa7uvHkAW43CF2pH3W1gY69nTW4quLyXATYY16/xz
-         XQytg1O9MMgdwzar7h4xRobvNiJFeEbWQbS3U=
-Message-ID: <4A0C0762.60906@gmail.com>
-Date: Thu, 14 May 2009 13:58:26 +0200
-From: Roel Kluin <roel.kluin@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090302)
+	Thu, 14 May 2009 08:00:06 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Geert Uytterhoeven <geert.uytterhoeven@gmail.com>
+Subject: Re: [PATCH 00/27] more non-ABI asm-generic headers
+Date: Thu, 14 May 2009 13:59:59 +0200
+User-Agent: KMail/1.9.9
+Cc: linux-arch@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+       Remis Lima Baima <remis.developer@googlemail.com>,
+       linux-kernel@vger.kernel.org
+References: <cover.1241105648.git.arnd@arndb.de> <200905041632.28026.arnd@arndb.de> <10f740e80905080704q4d2336b2v8ec851d0c87c6cda@mail.gmail.com>
+In-Reply-To: <10f740e80905080704q4d2336b2v8ec851d0c87c6cda@mail.gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?utf-8?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60Y=2Ea=5E?=
+ =?utf-8?q?3zb?=)
+ =?utf-8?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5Cwg?=
+ =?utf-8?q?=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
-To: Greg KH <gregkh@suse.de>
-CC: lkml <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] staging: missing parentheses?
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Disposition: inline
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200905141359.59897.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/Z/2QhF/F6tCWVV9+brgH3x4QScUUUefNHd+v
+ xAUhAHsTPNLfmQRsV+YDJ8aBzQjOE6cBM242AG6xvh2Cn1XElM
+ 3ayL8MB8/T8Xt895V3ygw==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add missing parentheses.
+On Friday 08 May 2009, Geert Uytterhoeven wrote:
+> On Mon, May 4, 2009 at 16:32, Arnd Bergmann <arnd@arndb.de> wrote:
+> > I haven't tried using git send-email yet, because it does not let
+> > me inspect mails after changing the headers but before sending
+> > them out.
+> 
+> The --dry-run option is not sufficient for you?
 
-Signed-off-by: Roel Kluin <roel.kluin@gmail.com>
----
-The original code looks odd, but I am not sure whether my patch is correct.
-So please review.
+I've now started using git-send-email after yet another screwup
+with quilt+kmail. I now played around using '--suppress-cc all' sending
+patches to myself and fixed the problems I found there, which gave
+me enough confidence in the general procedure.
 
-diff --git a/drivers/staging/comedi/drivers/pcl818.c b/drivers/staging/comedi/drivers/pcl818.c
-index 43a9d56..a6fbf43 100644
---- a/drivers/staging/comedi/drivers/pcl818.c
-+++ b/drivers/staging/comedi/drivers/pcl818.c
-@@ -460,9 +460,9 @@ static int pcl818_ao_insn_write(struct comedi_device * dev, struct comedi_subdev
- 	for (n = 0; n < insn->n; n++) {
- 		devpriv->ao_readback[chan] = data[n];
- 		outb((data[n] & 0x000f) << 4, dev->iobase +
--			(chan) ? PCL718_DA2_LO : PCL818_DA_LO);
-+			(chan ? PCL718_DA2_LO : PCL818_DA_LO));
- 		outb((data[n] & 0x0ff0) >> 4, dev->iobase +
--			(chan) ? PCL718_DA2_HI : PCL818_DA_HI);
-+			(chan ? PCL718_DA2_HI : PCL818_DA_HI));
- 	}
- 
- 	return n;
+	Arnd <><
