@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762750AbZENXDS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762296AbZENXDf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762750AbZENXDS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:03:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762239AbZENW62
+	id S1762296AbZENXDf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:03:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762244AbZENW63
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:58:28 -0400
-Received: from kroah.org ([198.145.64.141]:45898 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:58:29 -0400
+Received: from kroah.org ([198.145.64.141]:45921 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762232AbZENW61 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:58:27 -0400
+	id S1762237AbZENW62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:58:28 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:36 2009
-Message-Id: <20090514225236.591127690@mini.kroah.org>
+Message-Id: <20090514225236.779005751@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:51:28 -0700
+Date: Thu, 14 May 2009 15:51:29 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -26,9 +26,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>
-Subject: [patch 02/28] md: fix some (more) errors with bitmaps on devices larger than 2TB.
+Subject: [patch 03/28] md/raid10: dont clear bitmap during recovery if array will still be degraded.
 References: <20090514225126.907908936@mini.kroah.org>
-Content-Disposition: inline; filename=md-fix-some-errors-with-bitmaps-on-devices-larger-than-2tb.patch
+Content-Disposition: inline; filename=md-raid10-don-t-clear-bitmap-during-recovery-if-array-will-still-be-degraded.patch
 In-Reply-To: <20090514225413.GA705@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,71 +40,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: NeilBrown <neilb@suse.de>
 
-commit db305e507d554430a69ede901a6308e6ecb72349 upstream.
+commit 18055569127253755d01733f6ecc004ed02f88d0 upstream.
 
-If a write intent bitmap covers more than 2TB, we sometimes work with
-values beyond 32bit, so these need to be sector_t.  This patches
-add the required casts to some unsigned longs that are being shifted
-up.
+If we have a raid10 with multiple missing devices, and we recover just
+one of these to a spare, then we risk (depending on the bitmap and
+array chunk size) clearing bits of the bitmap for which recovery isn't
+complete (because a device is still missing).
 
-This will affect any raid10 larger than 2TB, or any raid1/4/5/6 with
-member devices that are larger than 2TB.
+This can lead to a subsequent "re-add" being recovered without
+any IO happening, which would result in loss of data.
 
+This patch takes the safe approach of not clearing bitmap bits
+if the array will still be degraded.
+
+This patch is suitable for all active -stable kernels.
+
+Cc: stable@kernel.org
 Signed-off-by: NeilBrown <neilb@suse.de>
-Reported-by: "Mario 'BitKoenig' Holbe" <Mario.Holbe@TU-Ilmenau.DE>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/bitmap.c |   18 +++++++++++-------
- 1 file changed, 11 insertions(+), 7 deletions(-)
+ drivers/md/raid10.c |   12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
---- a/drivers/md/bitmap.c
-+++ b/drivers/md/bitmap.c
-@@ -1013,9 +1013,11 @@ static int bitmap_init_from_disk(struct 
- 		kunmap_atomic(paddr, KM_USER0);
- 		if (b) {
- 			/* if the disk bit is set, set the memory bit */
--			bitmap_set_memory_bits(bitmap, i << CHUNK_BLOCK_SHIFT(bitmap),
--					       ((i+1) << (CHUNK_BLOCK_SHIFT(bitmap)) >= start)
--				);
-+			int needed = ((sector_t)(i+1) << (CHUNK_BLOCK_SHIFT(bitmap))
-+				      >= start);
-+			bitmap_set_memory_bits(bitmap,
-+					       (sector_t)i << CHUNK_BLOCK_SHIFT(bitmap),
-+					       needed);
- 			bit_cnt++;
- 			set_page_attr(bitmap, page, BITMAP_PAGE_CLEAN);
- 		}
-@@ -1151,8 +1153,9 @@ void bitmap_daemon_work(struct bitmap *b
- 			spin_lock_irqsave(&bitmap->lock, flags);
- 			clear_page_attr(bitmap, page, BITMAP_PAGE_CLEAN);
- 		}
--		bmc = bitmap_get_counter(bitmap, j << CHUNK_BLOCK_SHIFT(bitmap),
--					&blocks, 0);
-+		bmc = bitmap_get_counter(bitmap,
-+					 (sector_t)j << CHUNK_BLOCK_SHIFT(bitmap),
-+					 &blocks, 0);
- 		if (bmc) {
- /*
-   if (j < 100) printk("bitmap: j=%lu, *bmc = 0x%x\n", j, *bmc);
-@@ -1166,7 +1169,8 @@ void bitmap_daemon_work(struct bitmap *b
- 			} else if (*bmc == 1) {
- 				/* we can clear the bit */
- 				*bmc = 0;
--				bitmap_count_page(bitmap, j << CHUNK_BLOCK_SHIFT(bitmap),
-+				bitmap_count_page(bitmap,
-+						  (sector_t)j << CHUNK_BLOCK_SHIFT(bitmap),
- 						  -1);
+--- a/drivers/md/raid10.c
++++ b/drivers/md/raid10.c
+@@ -1805,17 +1805,17 @@ static sector_t sync_request(mddev_t *md
+ 				r10_bio->sector = sect;
  
- 				/* clear the bit */
-@@ -1482,7 +1486,7 @@ void bitmap_dirty_bits(struct bitmap *bi
- 	unsigned long chunk;
+ 				raid10_find_phys(conf, r10_bio);
+-				/* Need to check if this section will still be
++
++				/* Need to check if the array will still be
+ 				 * degraded
+ 				 */
+-				for (j=0; j<conf->copies;j++) {
+-					int d = r10_bio->devs[j].devnum;
+-					if (conf->mirrors[d].rdev == NULL ||
+-					    test_bit(Faulty, &conf->mirrors[d].rdev->flags)) {
++				for (j=0; j<conf->raid_disks; j++)
++					if (conf->mirrors[j].rdev == NULL ||
++					    test_bit(Faulty, &conf->mirrors[j].rdev->flags)) {
+ 						still_degraded = 1;
+ 						break;
+ 					}
+-				}
++
+ 				must_sync = bitmap_start_sync(mddev->bitmap, sect,
+ 							      &sync_blocks, still_degraded);
  
- 	for (chunk = s; chunk <= e; chunk++) {
--		sector_t sec = chunk << CHUNK_BLOCK_SHIFT(bitmap);
-+		sector_t sec = (sector_t)chunk << CHUNK_BLOCK_SHIFT(bitmap);
- 		bitmap_set_memory_bits(bitmap, sec, 1);
- 		bitmap_file_set_bit(bitmap, sec);
- 	}
 
 
