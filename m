@@ -1,55 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754010AbZENUTi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbZENUVV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754010AbZENUTi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 16:19:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZENUT2
+	id S1754874AbZENUVV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 16:21:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZENUVB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 16:19:28 -0400
-Received: from h155.mvista.com ([63.81.120.155]:12556 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1750957AbZENUT2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 16:19:28 -0400
-Message-ID: <4A0C7CCB.1040805@ru.mvista.com>
-Date: Fri, 15 May 2009 00:19:23 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 14 May 2009 16:21:01 -0400
+Received: from www.tglx.de ([62.245.132.106]:57180 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752663AbZENUVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 16:21:01 -0400
+Date: Thu, 14 May 2009 22:19:51 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Len Brown <lenb@kernel.org>
+cc: Janne Kulmala <janne.t.kulmala@tut.fi>, Frans Pop <elendil@planet.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       johnstul@us.ibm.com
+Subject: Re: [PATCH] ACPI: do not mark TSC unstable for invalid C-states
+In-Reply-To: <alpine.LFD.2.00.0905141608070.24833@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0905142217340.3561@localhost.localdomain>
+References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com> <200905110226.50115.elendil@planet.nl> <alpine.LFD.2.00.0905111614570.3561@localhost.localdomain> <4A0855A5.8040109@tut.fi> <alpine.LFD.2.00.0905141545280.24833@localhost.localdomain>
+ <alpine.LFD.2.00.0905141608070.24833@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 6/7] ide: pass number of ports to ide_host_{alloc,add}()
-References: <20090513205139.28638.87226.sendpatchset@localhost.localdomain> <20090513205222.28638.19386.sendpatchset@localhost.localdomain> <4A0C6A27.7010703@ru.mvista.com> <200905142151.15854.bzolnier@gmail.com>
-In-Reply-To: <200905142151.15854.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Thu, 14 May 2009, Len Brown wrote:
 
-Bartlomiej Zolnierkiewicz wrote:
+> hang on, that patch will fail for the case where valid
+> is (about to be) set to 1 and we'll fail to disable the TSC
+> for systems which _do_ have c3.  I'll send an updated patch shortly.
 
->>> @@ -467,7 +467,7 @@ icside_register_v6(struct icside_state *
->>>  	struct ide_host *host;
->>>  	unsigned int sel = 0;
->>>  	int ret;
->>> -	hw_regs_t hw[2], *hws[] = { &hw[0], NULL, NULL, NULL };
->>> +	hw_regs_t hw[2], *hws[] = { &hw[0], NULL };
->>>       
->>     I wonder if there's an old bug here since I'm not seeing when hws[1] is 
->> set to non-NULL -- despite there are apparently two ports?
->>
->>     Indeed, this bug seems to date back to the 'struct ide_host' 
->> introduction, see this:
->>  
->> http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commitdiff;h=48c3c1072651922ed153bcf0a33ea82cf20df390#patch1...
->>     
->
-> Care to send a fix?
->   
+Yep, you are right. I missed the cx->valid update in
+apic_processor_power_verify_cX(). So my patch would break the laptops
+instead of breaking desktops and servers :)
 
-   I will...
+Moving it to acpi_timer_check_state() is the best we can do and that
+saves us ifdeffery as well as acpi_timer_check_state() is already x86
+only.
 
-MBR, Sergei
+Thanks,
 
-
+	tglx
