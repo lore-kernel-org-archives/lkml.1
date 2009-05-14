@@ -1,63 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753624AbZENTGk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754431AbZENTOa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753624AbZENTGk (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 15:06:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753292AbZENTG3
+	id S1754431AbZENTOa (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 15:14:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752754AbZENTOT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 15:06:29 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:40612 "EHLO mx2.redhat.com"
+	Thu, 14 May 2009 15:14:19 -0400
+Received: from emroute2.ornl.gov ([160.91.86.17]:51663 "EHLO emroute2.ornl.gov"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751198AbZENTG3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 15:06:29 -0400
-Date: Thu, 14 May 2009 15:05:21 -0400
-From: Josef Bacik <josef@redhat.com>
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Cc: Josef Bacik <josef@redhat.com>, sandeen@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/2] sys_write() should write all valid data
-Message-ID: <20090514190521.GF10059@dhcp231-156.rdu.redhat.com>
-References: <1242317939-15392-1-git-send-email-v.mayatskih@gmail.com> <20090514180234.GB10059@dhcp231-156.rdu.redhat.com> <87eiurzfkd.wl%vmayatsk@redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <87eiurzfkd.wl%vmayatsk@redhat.com>
-User-Agent: Mutt/1.5.19 (2009-01-05)
+	id S1752694AbZENTOS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 15:14:18 -0400
+Date: Thu, 14 May 2009 15:14:17 -0400
+From: David Dillow <dave@thedillows.org>
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+In-reply-to: <4A0C6504.8000704@googlemail.com>
+To: Michael Riepe <michael.riepe@googlemail.com>
+Cc: Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       Michael =?ISO-8859-1?Q?B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Message-id: <1242328457.32579.12.camel@lap75545.ornl.gov>
+MIME-version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10)
+Content-type: text/plain
+Content-transfer-encoding: 7bit
+References: <200903041828.49972.m.bueker@berlin.de>
+ <1242001754.4093.12.camel@obelisk.thedillows.org>
+ <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>
+ <1242077392.3716.15.camel@lap75545.ornl.gov> <4A09DC3E.2080807@googlemail.com>
+ <1242268709.4979.7.camel@obelisk.thedillows.org>
+ <4A0C6504.8000704@googlemail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 14, 2009 at 08:48:18PM +0200, Vitaly Mayatskikh wrote:
-> At Thu, 14 May 2009 14:02:34 -0400, Josef Bacik wrote:
+On Thu, 2009-05-14 at 20:37 +0200, Michael Riepe wrote:
 > 
-> > Ok all in all I don't think this is a good way to handle this problem.
-> > Hopefully somebody smarter than I will speak up, but what you are trying to do
-> > here is have your cake and eat it too.  You want to get the size of what we were
-> > able to fault in and return that, which should be a size_t,
+> David Dillow wrote:
+> > On Tue, 2009-05-12 at 22:29 +0200, Michael Riepe wrote:
+> > The patched driver runs on 2.6.27 and survives my 5 minutes 'dd
+> > if=/dev/zero bs=1024k | nc target 9000' test which usually dies in less
+> > than 90 seconds on 2.6.28+.
 > 
-> btw, fault_in_pages_readable() has argument `size' of type int...
->
+> Not on my system:
 
-Yeah I noticed that, it should be fixed to be size_t.
- 
-> > but you also want to
-> > throw back an error if something happened, which needs a signed value.  I think
-> > the best way to handle this would be to make check_readable_bytes return size_t,
-> > and then if you get an EFAULT back, have it return 0.  Then the caller can say
-> > "hey I couldn't fault anything in, let me make what I want to fault in smaller",
-> > and then if that fault returns 0 we can exit.
-> 
-> Won't it be suboptimal to trap in the same place twice?
->
+> This happened less than half a minute after the transfer had started.
+> And it's going to happen earlier if I increase the load. With four
+> connections to two other hosts, the transmission usually pauses after
+> less than ten seconds. Sometimes it lasts for only two or three seconds.
 
-Yes, but only in the case we fail to fault in the entire range of userspace
-pages we wanted, to which I say "meh" :).  Userspace gave us a bad buffer, I
-think having optimal performance in this case isn't a high priority.
+Bummer, but a good data point; thanks for testing.
 
-The fact of the matter is we need to be return'ing a size_t of the number of
-bytes we were able to fault in, so 0 is the only sane way to tell us we weren't
-successfull in faulting what we wanted in.  Maybe change what you've currently
-done to do the above, and then we just return size_t of what we were able to
-fault in, and then the next time we loop around when we get a 0 back we know we
-couldn't fault anymore in and return -EFAULT then.  Thanks,
+I added some code to print the irq status when it hangs, and it shows
+0x0085, which is RxOK | TxOK | TxDescUnavail, which makes me think we've
+lost an MSI-edge interrupt somehow. You being able to reproduce it on
+2.6.27 where I cannot leads me to think that the bisection down into the
+genirq tree just changed the timing and made it easier to hit after it
+was merged.
 
-Josef
+So, I suppose a good review of the IRQ handling of r8169.c is in order,
+though my SATA disks (AHCI w/ MSI irqs) also seem to have similar issues
+with delays, though that is entirely unqualified and unmeasured.
+
+Dave
