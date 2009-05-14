@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762296AbZENXDf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762767AbZENXDy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762296AbZENXDf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:03:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762244AbZENW63
+	id S1762767AbZENXDy (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:03:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762250AbZENW6a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:58:29 -0400
-Received: from kroah.org ([198.145.64.141]:45921 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:58:30 -0400
+Received: from kroah.org ([198.145.64.141]:45939 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762237AbZENW62 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:58:28 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:36 2009
-Message-Id: <20090514225236.779005751@mini.kroah.org>
+	id S1762232AbZENW63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:58:29 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:37 2009
+Message-Id: <20090514225236.958517047@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:51:29 -0700
+Date: Thu, 14 May 2009 15:51:30 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>
-Subject: [patch 03/28] md/raid10: dont clear bitmap during recovery if array will still be degraded.
+       alan@lxorguk.ukuu.org.uk, Dan Williams <dan.j.williams@intel.com>,
+       NeilBrown <neilb@suse.de>
+Subject: [patch 04/28] md: remove ability to explicit set an inactive array to clean.
 References: <20090514225126.907908936@mini.kroah.org>
-Content-Disposition: inline; filename=md-raid10-don-t-clear-bitmap-during-recovery-if-array-will-still-be-degraded.patch
+Content-Disposition: inline; filename=md-remove-ability-to-explicit-set-an-inactive-array-to-clean.patch
 In-Reply-To: <20090514225413.GA705@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,54 +41,55 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: NeilBrown <neilb@suse.de>
 
-commit 18055569127253755d01733f6ecc004ed02f88d0 upstream.
+commit 5bf295975416f8e97117bbbcfb0191c00bc3e2b4 upstream.
 
-If we have a raid10 with multiple missing devices, and we recover just
-one of these to a spare, then we risk (depending on the bitmap and
-array chunk size) clearing bits of the bitmap for which recovery isn't
-complete (because a device is still missing).
+Being able to write 'clean' to an 'array_state' of an inactive array
+to activate it in 'clean' mode is both unnecessary and inconvenient.
 
-This can lead to a subsequent "re-add" being recovered without
-any IO happening, which would result in loss of data.
+It is unnecessary because the same can be achieved by writing
+'active'.  This activates and array, but it still remains 'clean'
+until the first write.
 
-This patch takes the safe approach of not clearing bitmap bits
-if the array will still be degraded.
+It is inconvenient because writing 'clean' is more often used to
+cause an 'active' array to revert to 'clean' mode (thus blocking
+any writes until a 'write-pending' is promoted to 'active').
 
-This patch is suitable for all active -stable kernels.
+Allowing 'clean' to both activate an array and mark an active array as
+clean can lead to races:  One program writes 'clean' to mark the
+active array as clean at the same time as another program writes
+'inactive' to deactivate (stop) and active array.  Depending on which
+writes first, the array could be deactivated and immediately
+reactivated which isn't what was desired.
 
-Cc: stable@kernel.org
+So just disable the use of 'clean' to activate an array.
+
+This avoids a race that can be triggered with mdadm-3.0 and external
+metadata, so it suitable for -stable.
+
+Reported-by: Rafal Marszewski <rafal.marszewski@intel.com>
+Acked-by: Dan Williams <dan.j.williams@intel.com>
 Signed-off-by: NeilBrown <neilb@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/raid10.c |   12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ drivers/md/md.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
 
---- a/drivers/md/raid10.c
-+++ b/drivers/md/raid10.c
-@@ -1805,17 +1805,17 @@ static sector_t sync_request(mddev_t *md
- 				r10_bio->sector = sect;
- 
- 				raid10_find_phys(conf, r10_bio);
--				/* Need to check if this section will still be
-+
-+				/* Need to check if the array will still be
- 				 * degraded
- 				 */
--				for (j=0; j<conf->copies;j++) {
--					int d = r10_bio->devs[j].devnum;
--					if (conf->mirrors[d].rdev == NULL ||
--					    test_bit(Faulty, &conf->mirrors[d].rdev->flags)) {
-+				for (j=0; j<conf->raid_disks; j++)
-+					if (conf->mirrors[j].rdev == NULL ||
-+					    test_bit(Faulty, &conf->mirrors[j].rdev->flags)) {
- 						still_degraded = 1;
- 						break;
- 					}
--				}
-+
- 				must_sync = bitmap_start_sync(mddev->bitmap, sect,
- 							      &sync_blocks, still_degraded);
- 
+--- a/drivers/md/md.c
++++ b/drivers/md/md.c
+@@ -2772,11 +2772,8 @@ array_state_store(mddev_t *mddev, const 
+ 			} else
+ 				err = -EBUSY;
+ 			spin_unlock_irq(&mddev->write_lock);
+-		} else {
+-			mddev->ro = 0;
+-			mddev->recovery_cp = MaxSector;
+-			err = do_md_run(mddev);
+-		}
++		} else
++			err = -EINVAL;
+ 		break;
+ 	case active:
+ 		if (mddev->pers) {
 
 
