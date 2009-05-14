@@ -1,132 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbZENSiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752881AbZENSnV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753394AbZENSiU (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 14:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbZENSiB
+	id S1752881AbZENSnV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 14:43:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752101AbZENSnL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 14:38:01 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:36548 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750957AbZENSiA (ORCPT
+	Thu, 14 May 2009 14:43:11 -0400
+Received: from web50103.mail.re2.yahoo.com ([206.190.38.31]:47310 "HELO
+	web50103.mail.re2.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750957AbZENSnL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 14:38:00 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
-         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=pYT1890lIdG9TJ8M7lCCNOZKnplAiodluXO4Npjf3V9oQ068jSLE3avfiGs0jfGM79
-         0mnndoi4sV36cyyu6pVqSp18ZmUayJd/ZQ9VuXAfZIjj0mMgjXh77+LJwbQi4v//oJgs
-         BKSKSKPRDiSQ/A7yPcFKT4R7mQ3wkhOc52Dh8=
-Message-ID: <4A0C6504.8000704@googlemail.com>
-Date: Thu, 14 May 2009 20:37:56 +0200
-From: Michael Riepe <michael.riepe@googlemail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
-X-Accept-Language: de-de, de, en-us, en
+	Thu, 14 May 2009 14:43:11 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.com;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:References:Date:From:Subject:To:Cc:In-Reply-To:MIME-Version:Content-Type;
+  b=KCShlQNwIjwGvJ2KHFyHe89xVcZvL7r2ouQcqbaEO3jB8ncQYmEq5ENJ2QJ9CGfkTsPsFT/XoclgSsDY1HSo/DtUASCA0QstxVma6xOvNMFTw6LvLVSD0FNAkYb4AP63TYrQ/fxXmEr9Vg95LML25kXStLX0mI07l0YA3woMCyM=;
+Message-ID: <391836.21526.qm@web50103.mail.re2.yahoo.com>
+X-YMail-OSG: JvbDKW8VM1nLEpjsvPxBGA.DmTCkrx0I57pDGd1DmNCioNbJPLB5ZB3iSTaJ4WypcG77GRFSSvw3XZVXpizENNmmhvfHb4HiD6xdd2V0HKDZ5512.pc6tEsHOkaVQSQ5uMH6tJTnPfR9OCUiAukxDERWtypFS90utTcDVXa8oDrWQU.BN6m5gDgDobIzuJin1Qj8lwWNpW_oYYyRjJwXJPceFR8.UQQ7teDKh0Fn.D6JNu0RVGyMlT_Zex9fBipUu6_nZu2Q.GMzTpYITqPxe06ffFz9MCH4_Iu8YrZ.kFVK.PeG3b7PIQ--
+X-Mailer: YahooMailRC/1277.43 YahooMailWebService/0.7.289.10
+References: <1241704183-29223-1-git-send-email-borislav.petkov@amd.com> <1241704183-29223-22-git-send-email-borislav.petkov@amd.com> <20090507215815.GB28770@elte.hu> <20090514175205.GB8575@aftab>
+Date: Thu, 14 May 2009 11:43:11 -0700 (PDT)
+From: Doug Thompson <norsk5@yahoo.com>
+Subject: Re: [PATCH 21/21] amd64_edac: add module registration routines
+To: Borislav Petkov <borislav.petkov@amd.com>, Ingo Molnar <mingo@elte.hu>
+Cc: akpm@linux-foundation.org, greg@kroah.com, tglx@linutronix.de,
+       hpa@zytor.com, mchehab@redhat.com, aris@redhat.com, edt@aei.ca,
+       linux-kernel@vger.kernel.org, Doug Thompson <dougthompson@xmission.com>
+In-Reply-To: <20090514175205.GB8575@aftab>
 MIME-Version: 1.0
-To: David Dillow <dave@thedillows.org>
-CC: Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
-       Rui Santos <rsantos@grupopie.com>,
-       =?ISO-8859-15?Q?Michael_B=FCker?= <m.bueker@berlin.de>,
-       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
-Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
-References: <200903041828.49972.m.bueker@berlin.de>	 <1242001754.4093.12.camel@obelisk.thedillows.org>	 <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>	 <1242077392.3716.15.camel@lap75545.ornl.gov>	 <4A09DC3E.2080807@googlemail.com> <1242268709.4979.7.camel@obelisk.thedillows.org>
-In-Reply-To: <1242268709.4979.7.camel@obelisk.thedillows.org>
-X-Enigmail-Version: 0.91.0.0
 Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+---- Original Message ----
 
-David Dillow wrote:
-> On Tue, 2009-05-12 at 22:29 +0200, Michael Riepe wrote:
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: akpm@linux-foundation.org; greg@kroah.com; norsk5@yahoo.com; tglx@linutronix.de; hpa@zytor.com; mchehab@redhat.com; aris@redhat.com; edt@aei.ca; linux-kernel@vger.kernel.org; Doug Thompson <dougthompson@xmission.com>
+Sent: Thursday, May 14, 2009 10:52:05 AM
+Subject: Re: [PATCH 21/21] amd64_edac: add module registration routines
+
+
+> > +      Recent Opterons (Family 10h and later) provide for Memory Error
+> > +      Injection into the ECC detection circuits. The amd64_edac module
+> > +      allows the operator/user to inject Uncorrectable and Correctable
+> > +      errors into DRAM.
+> > +
+> > +      When enabled, in each of the respective memory controller directories
+> > +      (/sys/devices/system/edac/mc/mcX), there are 3 input files:
+> > +
+> > +      - z_inject_section (0..3, 16-byte section of 64-byte cacheline),
+> > +      - z_inject_word (0..8, 16-bit word of 16-byte section),
+> > +      - z_inject_bit_map (hex bitmap vector: mask bits of 16 bit word to
+> > +        error-out)
+> > +
+> > +      In addition, there are two control files, z_inject_read and
+> > +      z_inject_write, which trigger the Read and Write errors respectively.
 > 
->>Hi!
->>
->>David Dillow wrote:
->>
->>
->>>I was saying that I don't think the timeouts are necessarily the NIC
->>>chipset -- or the bridge chip for that matter --  having issues with
->>>MSI. There were some substantial IRQ handling changes in 2.6.28 and my
->>>bisection of the problem seem to lead into that code. I'll try this
->>>later tonight hopefully, but can you try to run 2.6.27 with the current
->>>r8169 driver and see if it is solid for you? That way it is using the
->>>same driver code, but avoids the IRQ changes.
->>
->>Unfortunately, 2.6.27 won't build with r8169.c copied from 2.6.29.
+> I think the file names should follow existing EDAC driver practices, 
+> and be named according to the existing inject_data_* pattern?
 > 
-> 
-> You are correct, and I should have thought about that. The following
-> patch reverts the following commits:
-> 
-> 288379 net: Remove redundant NAPI functions
-> 908a7a net: Remove unused netdev arg from some NAPI interfaces.
-> 008298 netdev: add more functions to netdevice ops
-> 8b4ab2 r8169: convert to net_device_ops
-> babcda drivers/net: Kill now superfluous ->last_rx stores.
-> 
-> The patched driver runs on 2.6.27 and survives my 5 minutes 'dd
-> if=/dev/zero bs=1024k | nc target 9000' test which usually dies in less
-> than 90 seconds on 2.6.28+.
+> There's nothing more annoying to users (and tools) than inconsistent 
+> driver namespaces.
 
-Not on my system:
+Agreed. Done.
 
-WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0x258/0x270()
-NETDEV WATCHDOG: eth0 (r8169): transmit timed out
-Modules linked in: nfsd lockd nfs_acl sunrpc exportfs autofs4 deflate
-zlib_deflate ctr twofish twofish_common camellia serpent blowfish
-des_generic cbc aes_x86_64 aes_generic xcbc rmd160 sha256_generic
-sha1_generic crypto_null crypto_blkcipher af_key ipt_REJECT
-nf_conntrack_ipv6 ip6table_filter ip6_tables xt_tcpudp xt_conntrack
-iptable_filter ip_tables x_tables sg nf_conntrack_irc nf_conntrack_ftp
-nf_conntrack_ipv4 nf_conntrack rfcomm l2cap bluetooth dm_mod tun eeprom
-smsc47m192 hwmon_vid smsc47m1 hwmon cpufreq_stats cpufreq_powersave
-video backlight output fan container battery ac usbhid usb_storage
-i2c_dev hid evdev intelfb fb i2c_algo_bit ff_memless parport_pc
-cfbcopyarea r8169 snd_hda_intel i2c_i801 thermal cfbimgblt serio_raw
-ehci_hcd mii button iTCO_wdt snd_pcm processor parport i2c_core
-cfbfillrect intel_agp snd_timer snd_page_alloc snd_hwdep snd uhci_hcd
-soundcore
-Pid: 0, comm: swapper Not tainted 2.6.27-ai-x64-r8169 #1
+@Doug: edac-utils doesn't use those yet, right?
 
-Call Trace:
- <IRQ>  [<ffffffff802498f7>] warn_slowpath+0xb7/0xf0
- [<ffffffff804b98e0>] ? ip_output+0x90/0xf0
- [<ffffffff804b858f>] ? __ip_local_out+0x9f/0xb0
- [<ffffffff804b85c0>] ? ip_local_out+0x20/0x30
- [<ffffffff804b8e9c>] ? ip_queue_xmit+0x21c/0x3f0
- [<ffffffff80488ddc>] ? pskb_copy+0x1c/0x1a0
- [<ffffffff8048884e>] ? __alloc_skb+0x6e/0x150
- [<ffffffff80512972>] ? fib6_clean_node+0x42/0xc0
- [<ffffffff8054ad04>] ? _write_unlock_bh+0x24/0x30
- [<ffffffff8054aa0f>] ? _spin_lock_irqsave+0x3f/0x50
- [<ffffffff8037baca>] ? strlcpy+0x4a/0x60
- [<ffffffff8049fe78>] dev_watchdog+0x258/0x270
- [<ffffffff80512360>] ? fib6_gc_timer_cb+0x0/0x10
- [<ffffffff8054ad63>] ? _spin_unlock_bh+0x23/0x30
- [<ffffffff8049fc20>] ? dev_watchdog+0x0/0x270
- [<ffffffff80254650>] run_timer_softirq+0x170/0x250
- [<ffffffff8026adff>] ? clockevents_program_event+0x4f/0x90
- [<ffffffff8024fcc4>] __do_softirq+0x84/0x100
- [<ffffffff80213fdc>] call_softirq+0x1c/0x30
- [<ffffffff802161ad>] do_softirq+0x5d/0xa0
- [<ffffffff8024f92d>] irq_exit+0x9d/0xb0
- [<ffffffff80224b84>] smp_apic_timer_interrupt+0x84/0xc0
- [<ffffffff802138b3>] apic_timer_interrupt+0x83/0x90
- <EOI>  [<ffffffff8021b250>] ? mwait_idle+0x40/0x60
- [<ffffffff80211662>] ? enter_idle+0x22/0x30
- [<ffffffff802116dd>] ? cpu_idle+0x6d/0x120
- [<ffffffff80538038>] ? rest_init+0x88/0x90
+[..]
 
-This happened less than half a minute after the transfer had started.
-And it's going to happen earlier if I increase the load. With four
-connections to two other hosts, the transmission usually pauses after
-less than ten seconds. Sometimes it lasts for only two or three seconds.
 
--- 
-Michael "Tired" Riepe <michael.riepe@googlemail.com>
-X-Tired: Each morning I get up I die a little
+No, and probably won't.  Those injection semantics are specific to the AMD64 only
+
+I have only done one other inject implementation with Sicortex's MIPS processors
+and these two do not provide enough to generate an abstract interface quite yet.
+Hence, it is driver SPECIFIC methods at this time
+
+doug t
