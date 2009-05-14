@@ -1,54 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757578AbZENXNn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762354AbZENW7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757578AbZENXNn (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:13:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759263AbZENXCM
+	id S1762354AbZENW7Z (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757258AbZENWnB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 19:02:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:50291 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1762628AbZENXCK (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 19:02:10 -0400
-Date: Thu, 14 May 2009 15:55:06 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jake Edge <jake@lwn.net>
-cc: Ingo Molnar <mingo@elte.hu>, Alan@hera.kernel.org, security@kernel.org,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Roland McGrath <roland@redhat.com>, Linux@hera.kernel.org,
-       List <linux-kernel@vger.kernel.org>, Eric Paris <eparis@redhat.com>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       mingo@redhat.com, Arjan@hera.kernel.org, Matt Mackall <mpm@selenic.com>,
-       Dave Jones <davej@redhat.com>,
-       Andrew Morton <akpm@linux-foundation.org>, stable@kernel.org,
-       Cox <alan@lxorguk.ukuu.org.uk>, de Ven <arjan@infradead.org>
-Subject: Re: [Security] [patch] random: make get_random_int() more random
-In-Reply-To: <20090514164737.6eaab4f0@chukar>
-Message-ID: <alpine.LFD.2.01.0905141553010.3343@localhost.localdomain>
-References: <m1vdogbows.fsf@fess.ebiederm.org> <alpine.LFD.2.01.0905041514350.4983@localhost.localdomain> <20090505055011.GE31071@waste.org> <20090505063156.GA24504@elte.hu> <m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu>
- <20090505202219.GL31071@waste.org> <20090506103034.GA25203@elte.hu> <20090506162543.GT31071@waste.org> <alpine.LFD.2.01.0905060942340.4983@localhost.localdomain> <20090506200954.GA21484@elte.hu> <20090514164737.6eaab4f0@chukar>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 14 May 2009 18:43:01 -0400
+Received: from kroah.org ([198.145.64.141]:52735 "EHLO coco.kroah.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756355AbZENWmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:39 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:28 2009
+Message-Id: <20090514223528.265736331@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 14 May 2009 15:33:23 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [patch 48/51] splice: fix i_mutex locking in generic_splice_write()
+References: <20090514223235.348540705@mini.kroah.org>
+Content-Disposition: inline; filename=splice-fix-i_mutex-locking-in-generic_splice_write.patch
+In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+2.6.29-stable review patch.  If anyone has any objections, please let us know.
+
+------------------
+
+From: Miklos Szeredi <miklos@szeredi.hu>
+
+commit eb443e5a25d43996deb62b9bcee1a4ce5dea2ead upstream.
+
+Rearrange locking of i_mutex on destination so it's only held while
+buffers are copied with the pipe_to_file() actor, and not while
+waiting for more data on the pipe.
+
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ fs/splice.c |   34 +++++++++++++++++++++++-----------
+ 1 file changed, 23 insertions(+), 11 deletions(-)
+
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -894,17 +894,29 @@ generic_file_splice_write(struct pipe_in
+ 	};
+ 	ssize_t ret;
+ 
+-	WARN_ON(S_ISFIFO(inode->i_mode));
+-	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
+-	ret = file_remove_suid(out);
+-	if (likely(!ret)) {
+-		if (pipe->inode)
+-			mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
+-		ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
+-		if (pipe->inode)
+-			mutex_unlock(&pipe->inode->i_mutex);
+-	}
+-	mutex_unlock(&inode->i_mutex);
++	if (pipe->inode)
++		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_PARENT);
++
++	splice_from_pipe_begin(&sd);
++	do {
++		ret = splice_from_pipe_next(pipe, &sd);
++		if (ret <= 0)
++			break;
++
++		mutex_lock_nested(&inode->i_mutex, I_MUTEX_CHILD);
++		ret = file_remove_suid(out);
++		if (!ret)
++			ret = splice_from_pipe_feed(pipe, &sd, pipe_to_file);
++		mutex_unlock(&inode->i_mutex);
++	} while (ret > 0);
++	splice_from_pipe_end(pipe, &sd);
++
++	if (pipe->inode)
++		mutex_unlock(&pipe->inode->i_mutex);
++
++	if (sd.num_spliced)
++		ret = sd.num_spliced;
++
+ 	if (ret > 0) {
+ 		unsigned long nr_pages;
+ 
 
 
-On Thu, 14 May 2009, Jake Edge wrote:
->
-> It seems like this should be queued up for stable, yes?  I just saw the
-> 2.6.29.4 review patches go out, but this wasn't part of it ...
-
-Well, I was hoping to maybe have actual timing numbers from some better 
-hash, in case Matt can make one that is efficient enough. So I committed 
-the randomness improvement as a clear _improvement_ over what we had, but 
-it may not be the final version.
-
-That said, I guess the same argument can be used for pushing it towards 
-stable too. Even if we end up doing something fancier, the patch is 
-clearly not any worse than what we have currently.
-
-		Linus
