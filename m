@@ -1,58 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762071AbZENAuR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761958AbZENBAg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762071AbZENAuR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 20:50:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753795AbZENAuA
+	id S1761958AbZENBAg (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 21:00:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754181AbZENBA0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 20:50:00 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:45492 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753448AbZENAt7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 20:49:59 -0400
-Message-ID: <4A0B6A96.2030008@garzik.org>
-Date: Wed, 13 May 2009 20:49:26 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Wed, 13 May 2009 21:00:26 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:49867 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753228AbZENBAZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 21:00:25 -0400
+Message-ID: <4A0B6CEE.90907@cn.fujitsu.com>
+Date: Thu, 14 May 2009 08:59:26 +0800
+From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>
-CC: Hitoshi Mitake <h.mitake@gmail.com>, Roland Dreier <rdreier@cisco.com>,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, tglx@linutronix.de,
-       rpjday@crashcourse.ca, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
-References: <49EE37AF.4020507@zytor.com>	 <20090421.173123.191021055.davem@davemloft.net>	 <adak55438gp.fsf_-_@cisco.com>	 <20090428.221228.217954247.davem@davemloft.net>	 <20090429115654.GC11586@elte.hu> <49F843BC.7020902@garzik.org>	 <adahc071ie4.fsf@cisco.com> <49F8B1A1.4010208@garzik.org> <a6b9f31a0905122232s2d23b4e3h6e447c3fa5c29ee6@mail.gmail.com> <4A0B2B54.5090803@zytor.com> <4A0B4C1C.9000706@garzik.org> <4A0B5A34.1080301@zytor.com>
-In-Reply-To: <4A0B5A34.1080301@zytor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Vivek Goyal <vgoyal@redhat.com>
+CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
+       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
+       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
+       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
+       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
+       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
+Subject: Re: [PATCH] IO Controller: Add per-device weight and ioprio_class
+ handling
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A0A29B5.7030109@cn.fujitsu.com> <20090513144432.GA7696@redhat.com>
+In-Reply-To: <20090513144432.GA7696@redhat.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-H. Peter Anvin wrote:
-> Jeff Garzik wrote:
->> Judging from this thread and past, I think people will continue to 
->> complain and get confused, even with the above.
+Vivek Goyal wrote:
+> On Wed, May 13, 2009 at 10:00:21AM +0800, Gui Jianfeng wrote:
+>> Hi Vivek,
+>>
+>> This patch enables per-cgroup per-device weight and ioprio_class handling.
+>> A new cgroup interface "policy" is introduced. You can make use of this 
+>> file to configure weight and ioprio_class for each device in a given cgroup.
+>> The original "weight" and "ioprio_class" files are still available. If you
+>> don't do special configuration for a particular device, "weight" and 
+>> "ioprio_class" are used as default values in this device.
+>>
+>> You can use the following format to play with the new interface.
+>> #echo DEV:weight:ioprio_class > /patch/to/cgroup/policy
+>> weight=0 means removing the policy for DEV.
 >>
 > 
-> Do you really think so?  Seems unfortunate, since an API rename would be
-> way more invasive.  This is the entirety of the header patch
-> (compile-tested using 32-bit allyesconfig).
+> Thanks for the patch Gui. I will test it out and let you know how does
+> it go.
 
-The header patch does not lessen the confusion, because you cannot look 
-at the code and immediately tell what is going on...
+  Hi Vivek,
 
-Having a single function's behavior change based on #include selection 
-is /not/ intuitive at all, particularly for driver writers.  That is 
-unlike almost every other Linux API, where functions' behavior stays 
-constant across platforms, regardless of magic "under the hood."
+  I forgot to mention that this patch isn't tested through, just for showing
+  the design. I'd like to test it soon.
+  
 
-That sort of trick is reserved for arch maintainers who know what they 
-are doing :)
+> 
+> Thanks
+> Vivek
+> 
 
-	Jeff
-
-
+-- 
+Regards
+Gui Jianfeng
 
