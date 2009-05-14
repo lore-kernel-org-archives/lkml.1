@@ -1,90 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759637AbZENLOa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760288AbZENLQS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759637AbZENLOa (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 07:14:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754748AbZENLOU
+	id S1760288AbZENLQS (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 07:16:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbZENLQD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 07:14:20 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44692 "EHLO
+	Thu, 14 May 2009 07:16:03 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44808 "EHLO
 	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754667AbZENLOT (ORCPT
+	with ESMTP id S1754954AbZENLQB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 07:14:19 -0400
-Date: Thu, 14 May 2009 13:14:13 +0200
+	Thu, 14 May 2009 07:16:01 -0400
+Date: Thu, 14 May 2009 13:15:56 +0200
 From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@tuxonice.net>,
-       David Rientjes <rientjes@google.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to allocate too much
-	memory too hard
-Message-ID: <20090514111413.GB8871@elf.ucw.cz>
-References: <200905070040.08561.rjw@sisk.pl> <200905101548.57557.rjw@sisk.pl> <200905131032.53624.rjw@sisk.pl> <200905131042.18137.rjw@sisk.pl>
+To: kernel list <linux-kernel@vger.kernel.org>,
+       Trivial patch monkey <trivial@kernel.org>
+Subject: drivers/serial/Kconfig: .ko is normally not included in kconfig
+	help
+Message-ID: <20090514111556.GA9347@elf.ucw.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200905131042.18137.rjw@sisk.pl>
 X-Warning: Reading this can be dangerous to your mental health.
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> We want to avoid attempting to free too much memory too hard during
-> hibernation, so estimate the minimum size of the image to use as the
-> lower limit for preallocating memory.
+.ko is normally not included in Kconfig help, make it consistent.
 
-Why? Is freeing memory too slow?
+Signed-off-by: Pavel Machek <pavel@ucw.cz>
 
-It used to be that user controlled image size, so he was able to
-balance "time to save image" vs. "responsiveness of system after
-resume".
+---
+commit 3f582fadb61bfcf948609b9fa5d832d2bab098a7
+tree c0adf6e1122a15be49c046d1c84f94c6a61ff73c
+parent 4d874471a704784cf7e0fe1bf7e9c050d0e1063c
+author Pavel <pavel@ucw.cz> Thu, 14 May 2009 13:15:20 +0200
+committer Pavel <pavel@ucw.cz> Thu, 14 May 2009 13:15:20 +0200
 
-Does this just override user's preference when he chooses too small
-image size?
+ drivers/serial/Kconfig |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-> The approach here is based on the (experimental) observation that we
-> can't free more page frames than the sum of:
-> 
-> * global_page_state(NR_SLAB_RECLAIMABLE)
-> * global_page_state(NR_ACTIVE_ANON)
-> * global_page_state(NR_INACTIVE_ANON)
-> * global_page_state(NR_ACTIVE_FILE)
-> * global_page_state(NR_INACTIVE_FILE)
-> 
-> and even that is usually impossible to free in practice, because some
-> of the pages reported as global_page_state(NR_SLAB_RECLAIMABLE) can't
-> in fact be freed.  It turns out, however, that if the sum of the
-> above numbers is subtracted from the number of saveable pages in the
-> system and the result is multiplied by 1.25, we get a suitable
-> estimate of the minimum size of the image.
-
-
-
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  kernel/power/snapshot.c |   56 ++++++++++++++++++++++++++++++++++++++++++++----
->  1 file changed, 52 insertions(+), 4 deletions(-)
-
-
->  /**
-> + * minimum_image_size - Estimate the minimum acceptable size of an image
-> + * @saveable: The total number of saveable pages in the system.
-> + *
-> + * We want to avoid attempting to free too much memory too hard, so estimate the
-> + * minimum acceptable size of a hibernation image to use as the lower limit for
-> + * preallocating memory.
-
-I don't get it. If user sets image size as 0, we should free as much
-memory as we can. I just don't see why "we want to avoid... it".
-
-									Pavel
+diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
+index 343e3a3..472a572 100644
+--- a/drivers/serial/Kconfig
++++ b/drivers/serial/Kconfig
+@@ -860,7 +860,7 @@ config SERIAL_UARTLITE
+ 	  Say Y here if you want to use the Xilinx uartlite serial controller.
+ 
+ 	  To compile this driver as a module, choose M here: the
+-	  module will be called uartlite.ko.
++	  module will be called uartlite.
+ 
+ config SERIAL_UARTLITE_CONSOLE
+ 	bool "Support for console on Xilinx uartlite serial port"
 
 -- 
 (english) http://www.livejournal.com/~pavelmachek
