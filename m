@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbZENW4o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761562AbZENW6U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758927AbZENW4o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:56:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756980AbZENWmw
+	id S1761562AbZENW6U (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:58:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757252AbZENWm7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:52 -0400
-Received: from kroah.org ([198.145.64.141]:52608 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:59 -0400
+Received: from kroah.org ([198.145.64.141]:52721 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756504AbZENWma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:30 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:26 2009
-Message-Id: <20090514223526.767911677@mini.kroah.org>
+	id S1756446AbZENWmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:38 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:28 2009
+Message-Id: <20090514223528.073034541@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:33:14 -0700
+Date: Thu, 14 May 2009 15:33:22 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Trond Myklebust <Trond.Myklebust@netapp.com>
-Subject: [patch 39/51] NFS: Fix the notifications when renaming onto an existing file
+       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
+       Jens Axboe <jens.axboe@oracle.com>
+Subject: [patch 47/51] splice: remove i_mutex locking in splice_from_pipe()
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=nfs-fix-the-notifications-when-renaming-onto-an-existing-file.patch
+Content-Disposition: inline; filename=splice-remove-i_mutex-locking-in-splice_from_pipe.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,56 +39,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+From: Miklos Szeredi <miklos@szeredi.hu>
 
-commit b1e4adf4ea41bb8b5a7bfc1a7001f137e65495df upstream.
+commit 2933970b960223076d6affcf7a77e2bc546b8102 upstream.
 
-NFS appears to be returning an unnecessary "delete" notification when
-we're doing an atomic rename. See
+splice_from_pipe() is only called from two places:
 
-  http://bugzilla.gnome.org/show_bug.cgi?id=575684
+  - generic_splice_sendpage()
+  - splice_write_null()
 
-The fix is to get rid of the redundant call to d_delete().
+Neither of these require i_mutex to be taken on the destination inode.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/nfs/dir.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ fs/splice.c |   18 ++----------------
+ 1 file changed, 2 insertions(+), 16 deletions(-)
 
---- a/fs/nfs/dir.c
-+++ b/fs/nfs/dir.c
-@@ -1624,8 +1624,7 @@ static int nfs_rename(struct inode *old_
- 		} else if (atomic_read(&new_dentry->d_count) > 1)
- 			/* dentry still busy? */
- 			goto out;
--	} else
--		nfs_drop_nlink(new_inode);
-+	}
+--- a/fs/splice.c
++++ b/fs/splice.c
+@@ -783,7 +783,7 @@ EXPORT_SYMBOL(__splice_from_pipe);
+  * @actor:	handler that splices the data
+  *
+  * Description:
+- *    See __splice_from_pipe. This function locks the input and output inodes,
++ *    See __splice_from_pipe. This function locks the pipe inode,
+  *    otherwise it's identical to __splice_from_pipe().
+  *
+  */
+@@ -792,7 +792,6 @@ ssize_t splice_from_pipe(struct pipe_ino
+ 			 splice_actor *actor)
+ {
+ 	ssize_t ret;
+-	struct inode *inode = out->f_mapping->host;
+ 	struct splice_desc sd = {
+ 		.total_len = len,
+ 		.flags = flags,
+@@ -800,24 +799,11 @@ ssize_t splice_from_pipe(struct pipe_ino
+ 		.u.file = out,
+ 	};
  
- go_ahead:
- 	/*
-@@ -1638,10 +1637,8 @@ go_ahead:
- 	}
- 	nfs_inode_return_delegation(old_inode);
+-	/*
+-	 * The actor worker might be calling ->write_begin and
+-	 * ->write_end. Most of the time, these expect i_mutex to
+-	 * be held. Since this may result in an ABBA deadlock with
+-	 * pipe->inode, we have to order lock acquiry here.
+-	 *
+-	 * Outer lock must be inode->i_mutex, as pipe_wait() will
+-	 * release and reacquire pipe->inode->i_mutex, AND inode must
+-	 * never be a pipe.
+-	 */
+-	WARN_ON(S_ISFIFO(inode->i_mode));
+-	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
+ 	if (pipe->inode)
+-		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
++		mutex_lock(&pipe->inode->i_mutex);
+ 	ret = __splice_from_pipe(pipe, &sd, actor);
+ 	if (pipe->inode)
+ 		mutex_unlock(&pipe->inode->i_mutex);
+-	mutex_unlock(&inode->i_mutex);
  
--	if (new_inode != NULL) {
-+	if (new_inode != NULL)
- 		nfs_inode_return_delegation(new_inode);
--		d_delete(new_dentry);
--	}
- 
- 	error = NFS_PROTO(old_dir)->rename(old_dir, &old_dentry->d_name,
- 					   new_dir, &new_dentry->d_name);
-@@ -1650,6 +1647,8 @@ out:
- 	if (rehash)
- 		d_rehash(rehash);
- 	if (!error) {
-+		if (new_inode != NULL)
-+			nfs_drop_nlink(new_inode);
- 		d_move(old_dentry, new_dentry);
- 		nfs_set_verifier(new_dentry,
- 					nfs_save_change_attribute(new_dir));
+ 	return ret;
+ }
 
 
