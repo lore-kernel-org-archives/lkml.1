@@ -1,116 +1,121 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760479AbZENQT6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755036AbZENQU3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760479AbZENQT6 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 12:19:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754260AbZENQTO
+	id S1755036AbZENQU3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 12:20:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754930AbZENQTY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 12:19:14 -0400
-Received: from fg-out-1718.google.com ([72.14.220.155]:65364 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752893AbZENQTJ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 12:19:09 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=xwJftZq8/TZQuOQobLZJVZcQwE8j3cO2GolptUljaYJIY5PHxvI7fJIyBdqNOjONBE
-         zggfVNsGktuFs+YmH+4gnBYoXc4clW5BwU27ZTLRiB6o8U9+fLtguuEdKNqwUYU3dtiM
-         WneFCGYem447GL9lWaNv1gJKXnAN8xILxkNh0=
-From: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-To: Josef Bacik <josef@redhat.com>
-Cc: sandeen@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] Perform check in iov_iter_fault_in_readable() by check_readable_bytes()
-Date: Thu, 14 May 2009 18:19:01 +0200
-Message-Id: <1242317939-15392-3-git-send-email-v.mayatskih@gmail.com>
-X-Mailer: git-send-email 1.6.2.2
-In-Reply-To: <1242317939-15392-1-git-send-email-v.mayatskih@gmail.com>
-References: <1242317939-15392-1-git-send-email-v.mayatskih@gmail.com>
+	Thu, 14 May 2009 12:19:24 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:42463 "EHLO mx2.suse.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755422AbZENQTX (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 12:19:23 -0400
+Message-ID: <4A0C44D4.8030108@novell.com>
+Date: Fri, 15 May 2009 01:20:36 +0900
+From: Tejun Heo <teheo@novell.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Jan Beulich <JBeulich@novell.com>
+Cc: mingo@elte.hu, andi@firstfloor.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, linux-kernel-owner@vger.kernel.org,
+       hpa@zytor.com
+Subject: [PATCH UPDATED 2/4] x86: reorganize cpa_process_alias()
+References: <1242305390-21958-1-git-send-email-tj@kernel.org> <1242305390-21958-3-git-send-email-tj@kernel.org> <4A0C43C50200007800000ECA@vpn.id2.novell.com> <4A0C3AAA.2080908@kernel.org>
+In-Reply-To: <4A0C3AAA.2080908@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes iov_iter_fault_in_readable() to use check_readable_bytes()
-instead of fault_in_pages_readable(). It allows iov_iter_fault_in_readable()
-callers to know how much data is accessible and proceed with it. It makes
-sys_write() more POSIX-friendly.
+Reorganize cpa_process_alias() so that new alias condition can be
+added easily.
 
-Signed-off-by: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+Jan Beulich spotted problem in the original cleanup thread which
+incorrectly assumed the two existing conditions were mutially
+exclusive.
+
+[ Impact: code reorganization ]
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Cc: Jan Beulich <JBeulich@novell.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>
 ---
- fs/fuse/file.c |    6 ++++--
- mm/filemap.c   |   13 +++++++++----
- 2 files changed, 13 insertions(+), 6 deletions(-)
+ arch/x86/mm/pageattr.c |   44 ++++++++++++++++++++------------------------
+ 1 files changed, 20 insertions(+), 24 deletions(-)
 
-diff --git a/fs/fuse/file.c b/fs/fuse/file.c
-index 06f30e9..c74ef04 100644
---- a/fs/fuse/file.c
-+++ b/fs/fuse/file.c
-@@ -782,13 +782,15 @@ static ssize_t fuse_fill_write_pages(struct fuse_req *req,
- 		pgoff_t index = pos >> PAGE_CACHE_SHIFT;
- 		size_t bytes = min_t(size_t, PAGE_CACHE_SIZE - offset,
- 				     iov_iter_count(ii));
--
-+		long accessible;
- 		bytes = min_t(size_t, bytes, fc->max_write - count);
- 
-  again:
- 		err = -EFAULT;
--		if (iov_iter_fault_in_readable(ii, bytes))
-+		accessible = iov_iter_fault_in_readable(ii, bytes);
-+		if (accessible < 0)
- 			break;
-+		bytes = accessible;
- 
- 		err = -ENOMEM;
- 		page = grab_cache_page_write_begin(mapping, index, 0);
-diff --git a/mm/filemap.c b/mm/filemap.c
-index 379ff0b..ef598a1 100644
---- a/mm/filemap.c
-+++ b/mm/filemap.c
-@@ -1947,8 +1947,9 @@ EXPORT_SYMBOL(iov_iter_advance);
- 
- /*
-  * Fault in the first iovec of the given iov_iter, to a maximum length
-- * of bytes. Returns 0 on success, or non-zero if the memory could not be
-- * accessed (ie. because it is an invalid address).
-+ * of bytes. Returns count of accessible bytes on success, or -EFAULT
-+ * if the  memory could not be accessed (ie. because it is an invalid
-+ * address).
-  *
-  * writev-intensive code may want this to prefault several iovecs -- that
-  * would be possible (callers must not rely on the fact that _only_ the
-@@ -1958,7 +1959,7 @@ int iov_iter_fault_in_readable(struct iov_iter *i, size_t bytes)
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 797f9f1..8bc64b0 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -686,8 +686,8 @@ static int __change_page_attr_set_clr(struct cpa_data *cpa, int checkalias);
+ static int cpa_process_alias(struct cpa_data *cpa)
  {
- 	char __user *buf = i->iov->iov_base + i->iov_offset;
- 	bytes = min(bytes, i->iov->iov_len - i->iov_offset);
--	return fault_in_pages_readable(buf, bytes);
-+	return check_readable_bytes(buf, bytes);
- }
- EXPORT_SYMBOL(iov_iter_fault_in_readable);
+ 	struct cpa_data alias_cpa;
+-	int ret = 0;
+ 	unsigned long temp_cpa_vaddr, vaddr;
++	int ret;
  
-@@ -2215,6 +2216,7 @@ static ssize_t generic_perform_write(struct file *file,
- 		unsigned long offset;	/* Offset into pagecache page */
- 		unsigned long bytes;	/* Bytes to write to page */
- 		size_t copied;		/* Bytes copied from user */
-+		long accessible;
- 		void *fsdata;
+ 	if (cpa->pfn >= max_pfn_mapped)
+ 		return 0;
+@@ -715,38 +715,34 @@ static int cpa_process_alias(struct cpa_data *cpa)
+ 		alias_cpa.vaddr = &temp_cpa_vaddr;
+ 		alias_cpa.flags &= ~(CPA_PAGES_ARRAY | CPA_ARRAY);
  
- 		offset = (pos & (PAGE_CACHE_SIZE - 1));
-@@ -2234,10 +2236,13 @@ again:
- 		 * to check that the address is actually valid, when atomic
- 		 * usercopies are used, below.
- 		 */
--		if (unlikely(iov_iter_fault_in_readable(i, bytes))) {
+-
+ 		ret = __change_page_attr_set_clr(&alias_cpa, 0);
++		if (ret)
++			return ret;
+ 	}
+ 
+ #ifdef CONFIG_X86_64
+-	if (ret)
+-		return ret;
+ 	/*
+-	 * No need to redo, when the primary call touched the high
+-	 * mapping already:
+-	 */
+-	if (within(vaddr, (unsigned long) _text, _brk_end))
+-		return 0;
+-
+-	/*
+-	 * If the physical address is inside the kernel map, we need
++	 * If the primary call didn't touch the high mapping already
++	 * and the physical address is inside the kernel map, we need
+ 	 * to touch the high mapped kernel as well:
+ 	 */
+-	if (!within(cpa->pfn, highmap_start_pfn(), highmap_end_pfn()))
+-		return 0;
+-
+-	alias_cpa = *cpa;
+-	temp_cpa_vaddr = (cpa->pfn << PAGE_SHIFT) + __START_KERNEL_map - phys_base;
+-	alias_cpa.vaddr = &temp_cpa_vaddr;
+-	alias_cpa.flags &= ~(CPA_PAGES_ARRAY | CPA_ARRAY);
++	if (!within(vaddr, (unsigned long)_text, _brk_end) &&
++	    within(cpa->pfn, highmap_start_pfn(), highmap_end_pfn())) {
++		alias_cpa = *cpa;
++		temp_cpa_vaddr = (cpa->pfn << PAGE_SHIFT) +
++				 __START_KERNEL_map - phys_base;
++		alias_cpa.vaddr = &temp_cpa_vaddr;
++		alias_cpa.flags &= ~(CPA_PAGES_ARRAY | CPA_ARRAY);
+ 
+-	/*
+-	 * The high mapping range is imprecise, so ignore the return value.
+-	 */
+-	__change_page_attr_set_clr(&alias_cpa, 0);
++		/*
++		 * The high mapping range is imprecise, so ignore the
++		 * return value.
++		 */
++		__change_page_attr_set_clr(&alias_cpa, 0);
++	}
+ #endif
+-	return ret;
 +
-+		accessible = iov_iter_fault_in_readable(i, bytes);
-+		if (accessible < 0) {
- 			status = -EFAULT;
- 			break;
- 		}
-+		bytes = accessible;
++	return 0;
+ }
  
- 		status = a_ops->write_begin(file, mapping, pos, bytes, flags,
- 						&page, &fsdata);
+ static int __change_page_attr_set_clr(struct cpa_data *cpa, int checkalias)
 -- 
-1.6.2.2
+1.6.0.2
 
