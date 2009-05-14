@@ -1,63 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757486AbZENXCb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S932089AbZENXCs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757486AbZENXCb (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:02:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760014AbZENWrm
+	id S932089AbZENXCs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:02:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762230AbZENW61
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:47:42 -0400
-Received: from vena.lwn.net ([206.168.112.25]:60721 "EHLO vena.lwn.net"
+	Thu, 14 May 2009 18:58:27 -0400
+Received: from kroah.org ([198.145.64.141]:45887 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757875AbZENWrk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:47:40 -0400
-Date: Thu, 14 May 2009 16:47:37 -0600
-From: Jake Edge <jake@lwn.net>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-       Matt Mackall <mpm@selenic.com>,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Arjan van de Ven <arjan@infradead.org>, security@kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       James Morris <jmorris@namei.org>, linux-security-module@vger.kernel.org,
-       Eric Paris <eparis@redhat.com>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Roland McGrath <roland@redhat.com>, mingo@redhat.com,
-       Andrew Morton <akpm@linux-foundation.org>, Greg KH <greg@kroah.com>,
-       Dave Jones <davej@redhat.com>, stable@kernel.org
-Subject: Re: [patch] random: make get_random_int() more random
-Message-ID: <20090514164737.6eaab4f0@chukar>
-In-Reply-To: <20090506200954.GA21484@elte.hu>
-References: <m1vdogbows.fsf@fess.ebiederm.org>
-	<alpine.LFD.2.01.0905041514350.4983@localhost.localdomain>
-	<20090505055011.GE31071@waste.org>
-	<20090505063156.GA24504@elte.hu>
-	<m14ow0ynjm.fsf@fess.ebiederm.org>
-	<20090505195246.GC21973@elte.hu>
-	<20090505202219.GL31071@waste.org>
-	<20090506103034.GA25203@elte.hu>
-	<20090506162543.GT31071@waste.org>
-	<alpine.LFD.2.01.0905060942340.4983@localhost.localdomain>
-	<20090506200954.GA21484@elte.hu>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1762225AbZENW60 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:58:26 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:36 2009
+Message-Id: <20090514225236.474346708@mini.kroah.org>
+User-Agent: quilt/0.48-1
+Date: Thu, 14 May 2009 15:51:27 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, NeilBrown <neilb@suse.de>
+Subject: [patch 01/28] md: fix loading of out-of-date bitmap.
+References: <20090514225126.907908936@mini.kroah.org>
+Content-Disposition: inline; filename=md-fix-loading-of-out-of-date-bitmap.patch
+In-Reply-To: <20090514225413.GA705@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 6 May 2009 22:09:54 +0200 Ingo Molnar wrote:
+2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-> Subject: random: make get_random_int() more random
-> From: Linus Torvalds <torvalds@linux-foundation.org>
-> Date: Tue, 5 May 2009 08:17:43 -0700 (PDT)
-> 
-> It's a really simple patch that basically just open-codes the current
-> "secure_ip_id()" call, but when open-coding it we now use a _static_
-> hashing area, so that it gets updated every time.
+------------------
 
-It seems like this should be queued up for stable, yes?  I just saw the
-2.6.29.4 review patches go out, but this wasn't part of it ...
+From: NeilBrown <neilb@suse.de>
 
-jake
+commit b74fd2826c5acce20e6f691437b2d19372bc2057 upstream.
 
--- 
-Jake Edge - LWN - jake@lwn.net - http://lwn.net
+When md is loading a bitmap which it knows is out of date, it fills
+each page with 1s and writes it back out again.  However the
+write_page call makes used of bitmap->file_pages and
+bitmap->last_page_size which haven't been set correctly yet.  So this
+can sometimes fail.
+
+Move the setting of file_pages and last_page_size to before the call
+to write_page.
+
+This bug can cause the assembly on an array to fail, thus making the
+data inaccessible.  Hence I think it is a suitable candidate for
+-stable.
+
+Reported-by: Vojtech Pavlik <vojtech@suse.cz>
+Signed-off-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
+---
+ drivers/md/bitmap.c |   11 ++++-------
+ 1 file changed, 4 insertions(+), 7 deletions(-)
+
+--- a/drivers/md/bitmap.c
++++ b/drivers/md/bitmap.c
+@@ -986,6 +986,9 @@ static int bitmap_init_from_disk(struct 
+ 			oldindex = index;
+ 			oldpage = page;
+ 
++			bitmap->filemap[bitmap->file_pages++] = page;
++			bitmap->last_page_size = count;
++
+ 			if (outofdate) {
+ 				/*
+ 				 * if bitmap is out of date, dirty the
+@@ -998,15 +1001,9 @@ static int bitmap_init_from_disk(struct 
+ 				write_page(bitmap, page, 1);
+ 
+ 				ret = -EIO;
+-				if (bitmap->flags & BITMAP_WRITE_ERROR) {
+-					/* release, page not in filemap yet */
+-					put_page(page);
++				if (bitmap->flags & BITMAP_WRITE_ERROR)
+ 					goto err;
+-				}
+ 			}
+-
+-			bitmap->filemap[bitmap->file_pages++] = page;
+-			bitmap->last_page_size = count;
+ 		}
+ 		paddr = kmap_atomic(page, KM_USER0);
+ 		if (bitmap->flags & BITMAP_HOSTENDIAN)
+
+
