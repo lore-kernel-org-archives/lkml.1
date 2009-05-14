@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762767AbZENXDy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762178AbZENXEU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762767AbZENXDy (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:03:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762250AbZENW6a
+	id S1762178AbZENXEU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:04:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762253AbZENW6b
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:58:30 -0400
-Received: from kroah.org ([198.145.64.141]:45939 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:58:31 -0400
+Received: from kroah.org ([198.145.64.141]:45958 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762232AbZENW63 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:58:29 -0400
+	id S1762237AbZENW6a (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:58:30 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:37 2009
-Message-Id: <20090514225236.958517047@mini.kroah.org>
+Message-Id: <20090514225237.209345581@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:51:30 -0700
+Date: Thu, 14 May 2009 15:51:31 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dan Williams <dan.j.williams@intel.com>,
-       NeilBrown <neilb@suse.de>
-Subject: [patch 04/28] md: remove ability to explicit set an inactive array to clean.
+       alan@lxorguk.ukuu.org.uk, Alan Stern <stern@rowland.harvard.edu>,
+       David Brownell <dbrownell@users.sourceforge.net>
+Subject: [patch 05/28] USB: Gadget: fix UTF conversion in the usbstring library
 References: <20090514225126.907908936@mini.kroah.org>
-Content-Disposition: inline; filename=md-remove-ability-to-explicit-set-an-inactive-array-to-clean.patch
+Content-Disposition: inline; filename=usb-gadget-fix-utf-conversion-in-the-usbstring-library.patch
 In-Reply-To: <20090514225413.GA705@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,57 +39,50 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: NeilBrown <neilb@suse.de>
+From: Alan Stern <stern@rowland.harvard.edu>
 
-commit 5bf295975416f8e97117bbbcfb0191c00bc3e2b4 upstream.
+commit 0f43158caddcbb110916212ebe4e39993ae70864 upstream.
 
-Being able to write 'clean' to an 'array_state' of an inactive array
-to activate it in 'clean' mode is both unnecessary and inconvenient.
+This patch (as1234) fixes a bug in the UTF8 -> UTF-16 conversion
+routine in the gadget/usbstring library.  In a UTF-8 multi-byte
+sequence, all bytes after the first should have their high-order
+two bits set to 10, not 11.
 
-It is unnecessary because the same can be achieved by writing
-'active'.  This activates and array, but it still remains 'clean'
-until the first write.
-
-It is inconvenient because writing 'clean' is more often used to
-cause an 'active' array to revert to 'clean' mode (thus blocking
-any writes until a 'write-pending' is promoted to 'active').
-
-Allowing 'clean' to both activate an array and mark an active array as
-clean can lead to races:  One program writes 'clean' to mark the
-active array as clean at the same time as another program writes
-'inactive' to deactivate (stop) and active array.  Depending on which
-writes first, the array could be deactivated and immediately
-reactivated which isn't what was desired.
-
-So just disable the use of 'clean' to activate an array.
-
-This avoids a race that can be triggered with mdadm-3.0 and external
-metadata, so it suitable for -stable.
-
-Reported-by: Rafal Marszewski <rafal.marszewski@intel.com>
-Acked-by: Dan Williams <dan.j.williams@intel.com>
-Signed-off-by: NeilBrown <neilb@suse.de>
+Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
+Acked-by: David Brownell <dbrownell@users.sourceforge.net>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/md/md.c |    7 ++-----
- 1 file changed, 2 insertions(+), 5 deletions(-)
+ drivers/usb/gadget/usbstring.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -2772,11 +2772,8 @@ array_state_store(mddev_t *mddev, const 
- 			} else
- 				err = -EBUSY;
- 			spin_unlock_irq(&mddev->write_lock);
--		} else {
--			mddev->ro = 0;
--			mddev->recovery_cp = MaxSector;
--			err = do_md_run(mddev);
--		}
-+		} else
-+			err = -EINVAL;
- 		break;
- 	case active:
- 		if (mddev->pers) {
+--- a/drivers/usb/gadget/usbstring.c
++++ b/drivers/usb/gadget/usbstring.c
+@@ -38,7 +38,7 @@ static int utf8_to_utf16le(const char *s
+ 				uchar = (c & 0x1f) << 6;
+ 
+ 				c = (u8) *s++;
+-				if ((c & 0xc0) != 0xc0)
++				if ((c & 0xc0) != 0x80)
+ 					goto fail;
+ 				c &= 0x3f;
+ 				uchar |= c;
+@@ -49,13 +49,13 @@ static int utf8_to_utf16le(const char *s
+ 				uchar = (c & 0x0f) << 12;
+ 
+ 				c = (u8) *s++;
+-				if ((c & 0xc0) != 0xc0)
++				if ((c & 0xc0) != 0x80)
+ 					goto fail;
+ 				c &= 0x3f;
+ 				uchar |= c << 6;
+ 
+ 				c = (u8) *s++;
+-				if ((c & 0xc0) != 0xc0)
++				if ((c & 0xc0) != 0x80)
+ 					goto fail;
+ 				c &= 0x3f;
+ 				uchar |= c;
 
 
