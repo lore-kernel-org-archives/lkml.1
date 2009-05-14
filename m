@@ -1,133 +1,119 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761636AbZENG2f@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762122AbZENGbV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761636AbZENG2f (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 02:28:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751423AbZENG2X
+	id S1762122AbZENGbV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 02:31:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753818AbZENGbJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 02:28:23 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37282 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751235AbZENG2W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 02:28:22 -0400
-Subject: [PATCH -tip] x86: kvm replace MSR_IA32_TIME_STAMP_COUNTER with
- MSR_IA32_TSC of msr-index.h
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
-       Avi Kivity <avi@redhat.com>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <1242279010.4574.6.camel@localhost.localdomain>
-References: <1242031695.8213.17.camel@yhuang-dev.sh.intel.com>
-	 <1242032701.3114.4.camel@localhost.localdomain>
-	 <1242032889.8213.32.camel@yhuang-dev.sh.intel.com>
-	 <1242279010.4574.6.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 14 May 2009 11:57:22 +0530
-Message-Id: <1242282442.4574.11.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Thu, 14 May 2009 02:31:09 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:39463 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752266AbZENGbI (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 02:31:08 -0400
+From: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+Cc: "H. Peter Anvin" <hpa@zytor.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
+       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
+       x86@kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+       Subrata Modak <subrata@linux.vnet.ibm.com>,
+       Andi Kleen <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
+Date: Thu, 14 May 2009 12:00:59 +0530
+Message-Id: <20090514063059.17737.43329.sendpatchset@subratamodak.linux.ibm.com>
+Subject: Re:[PATCH] Fix Warnining in arch/x86/kernel/signal.c
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hello Hiroshi-san,
 
-Use standard msr-index.h's MSR declaration.
+On Thu, 2009-05-14 at 09:24 +0900, Hiroshi Shimamoto wrote:
+H. Peter Anvin wrote:
+> > Ingo Molnar wrote:
+> >>>>>  
+> >>>>>  	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
+> >>>>>  		goto badframe;
+> >>>>> -	if (__get_user(set.sig[0], &frame->sc.oldmask) || (_NSIG_WORDS > 1
+> >>>>> -		&& __copy_from_user(&set.sig[1], &frame->extramask,
+> >>>>> -				    sizeof(frame->extramask))))
+> >>>>> +
+> >>>>> +        if ( (__copy_from_user(&set.sig[1], &frame->extramask,
+> >>>>> +                sizeof(frame->extramask)) && _NSIG_WORDS > 1) || 
+> >>>>> +                __get_user(set.sig[0], &frame->sc.oldmask))
+> >>>>>  		goto badframe;
+> >>>> I'm not sure why this eliminates that warning.
+> >>>> set.sig[0] may not be initialized too, if __copy_from_user() failed.
+> >>> True, but only when either or both of __copy_from_user() and
+> >>> (_NSIG_WORDS > 1) fails. But in all instances set.sig[1] gets
+> >>> initialized.
+> >>>
+> >>>> I don't have enough time to look at this right now, sorry.
+> >>>>
+> >>>> Another question, __copy_from_user() will be called even if
+> >>>> _NSIG_WORDS is less than 2, perhaps it never occurs.
+> >>>> I think, to check _NSIG_WORDS > 1 before calling __copy_from_user()
+> >>>> is better.
+> >>> Fine. Let Ingo/Thomas/Peter decide whether they would like this fix or
+> >>> drop it.
+> >> If you get the Acked-by from Hiroshi-san it looks good to me. He 
+> >> modified this code last.
+> >>
+> > 
+> > This seriously looks wrong to me.  If _NSIG_WORDS == 1, then calling
+> > __copy_from_user here is a serious error.
+> 
+> Right. If _NSIG_WORDS is 1, sigset_t set has only sig[0], writing to
+> set.sig[1] means stack corruption.
+> 
+> Subrata, could you try like this?
+> if ((_NSIG_WORDS > 1 && __copy_from_user(&set.sig[1], ...) ||
+> 	__get_user(set.sig[0], ...))
+> 
+> 
 
-MSR_IA32_TSC is better than MSR_IA32_TIME_STAMP_COUNTER as it also solves
-80 column issue.
+I tried out and the compiler does not complain in this case.
+Updated Patch below. Please review.
 
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+Signed-Off-By: Subrata Modak <subrata@linux.vnet.ibm.com>
+To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+Cc: H. Peter Anvin <hpa@zytor.com>,
+Cc: Ingo Molnar <mingo@elte.hu>,
+Cc: x86@kernel.org,
+Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
+Cc: Andi Kleen <andi@firstfloor.org>,
+Cc: Andi Kleen <ak@linux.intel.com>,
+Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
+Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+Cc: Ingo Molnar <mingo@redhat.com>
+Subject: Re:[PATCH] Fix Warnining in arch/x86/kernel/signal.c
 ---
- arch/x86/include/asm/kvm_host.h |    2 --
- arch/x86/kvm/svm.c              |    4 ++--
- arch/x86/kvm/vmx.c              |    4 ++--
- arch/x86/kvm/x86.c              |    5 ++---
- 4 files changed, 6 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index f0faf58..824f5e6 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -750,8 +750,6 @@ static inline void kvm_inject_gp(struct kvm_vcpu *vcpu, u32 error_code)
- 	kvm_queue_exception_e(vcpu, GP_VECTOR, error_code);
- }
+--- a/arch/x86/kernel/signal.c	2009-05-14 11:27:15.000000000 +0530
++++ b/arch/x86/kernel/signal.c	2009-05-14 11:50:52.000000000 +0530
+@@ -576,9 +576,9 @@ unsigned long sys_sigreturn(struct pt_re
  
--#define MSR_IA32_TIME_STAMP_COUNTER		0x010
--
- #define TSS_IOPB_BASE_OFFSET 0x66
- #define TSS_BASE_SIZE 0x68
- #define TSS_IOPB_SIZE (65536 / 8)
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 1821c20..f149d17 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1889,7 +1889,7 @@ static int svm_get_msr(struct kvm_vcpu *vcpu, unsigned ecx, u64 *data)
- 	struct vcpu_svm *svm = to_svm(vcpu);
+ 	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
+ 		goto badframe;
+-	if (__get_user(set.sig[0], &frame->sc.oldmask) || (_NSIG_WORDS > 1
+-		&& __copy_from_user(&set.sig[1], &frame->extramask,
+-				    sizeof(frame->extramask))))
++	if ( (_NSIG_WORDS > 1 && __copy_from_user(&set.sig[1],
++               &frame->extramask, sizeof(frame->extramask))) ||
++               __get_user(set.sig[0], &frame->sc.oldmask))
+ 		goto badframe;
  
- 	switch (ecx) {
--	case MSR_IA32_TIME_STAMP_COUNTER: {
-+	case MSR_IA32_TSC: {
- 		u64 tsc;
- 
- 		rdtscll(tsc);
-@@ -1979,7 +1979,7 @@ static int svm_set_msr(struct kvm_vcpu *vcpu, unsigned ecx, u64 data)
- 	struct vcpu_svm *svm = to_svm(vcpu);
- 
- 	switch (ecx) {
--	case MSR_IA32_TIME_STAMP_COUNTER: {
-+	case MSR_IA32_TSC: {
- 		u64 tsc;
- 
- 		rdtscll(tsc);
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index bb48133..c8d3234 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -897,7 +897,7 @@ static int vmx_get_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 *pdata)
- 	case MSR_EFER:
- 		return kvm_get_msr_common(vcpu, msr_index, pdata);
- #endif
--	case MSR_IA32_TIME_STAMP_COUNTER:
-+	case MSR_IA32_TSC:
- 		data = guest_read_tsc();
- 		break;
- 	case MSR_IA32_SYSENTER_CS:
-@@ -957,7 +957,7 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 data)
- 	case MSR_IA32_SYSENTER_ESP:
- 		vmcs_writel(GUEST_SYSENTER_ESP, data);
- 		break;
--	case MSR_IA32_TIME_STAMP_COUNTER:
-+	case MSR_IA32_TSC:
- 		rdtscll(host_tsc);
- 		guest_write_tsc(data, host_tsc);
- 		break;
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 8e4a0ef..db0fd7d 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -465,7 +465,7 @@ static u32 msrs_to_save[] = {
- #ifdef CONFIG_X86_64
- 	MSR_CSTAR, MSR_KERNEL_GS_BASE, MSR_SYSCALL_MASK, MSR_LSTAR,
- #endif
--	MSR_IA32_TIME_STAMP_COUNTER, MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
-+	MSR_IA32_TSC, MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
- 	MSR_IA32_PERF_STATUS, MSR_IA32_CR_PAT, MSR_VM_HSAVE_PA
- };
- 
-@@ -637,8 +637,7 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
- 
- 	/* Keep irq disabled to prevent changes to the clock */
- 	local_irq_save(flags);
--	kvm_get_msr(v, MSR_IA32_TIME_STAMP_COUNTER,
--			  &vcpu->hv_clock.tsc_timestamp);
-+	kvm_get_msr(v, MSR_IA32_TSC, &vcpu->hv_clock.tsc_timestamp);
- 	ktime_get_ts(&ts);
- 	local_irq_restore(flags);
- 
--- 
-1.6.0.6
+ 	sigdelsetmask(&set, ~_BLOCKABLE);
 
+---
+Regards--
+Subrata
 
-
+> I wonder whether gcc really complains about the case of
+> __get_user(set.sig[0], ...) failure.
+> Why, the case which sig[0] initialized and sig[1] uninitialized is NG
+> and the case which sig[0] uninitialized and sig[1] initialized is OK.
+> 
+> Thanks,
+> Hiroshi
