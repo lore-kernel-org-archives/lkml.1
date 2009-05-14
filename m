@@ -1,65 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756448AbZENU5i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756055AbZENU7A@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756448AbZENU5i (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 16:57:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753761AbZENU53
+	id S1756055AbZENU7A (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 16:59:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753499AbZENU6v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 16:57:29 -0400
-Received: from acsinet12.oracle.com ([141.146.126.234]:50688 "EHLO
-	acsinet12.oracle.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753499AbZENU52 (ORCPT
+	Thu, 14 May 2009 16:58:51 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:58393 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753006AbZENU6u (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 16:57:28 -0400
-Message-ID: <4A0C8631.7090106@oracle.com>
-Date: Thu, 14 May 2009 13:59:29 -0700
-From: Randy Dunlap <randy.dunlap@oracle.com>
-Organization: Oracle Linux Engineering
-User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
+	Thu, 14 May 2009 16:58:50 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=Fhh4olZcRDEMDNIcoCgKeN/PKQ3a/kBxpn4v9xAQfR0DD6K+Up7v7WRLSdwpBt2pIm
+         iTDR8b6zWbQQlAh4Or3LMpQM7wD+jVR8m1syXYNtxNF8MwAxtG9d9z3jPoD53trXNFTQ
+         1dW0NnuyNLqiONW1GvtLZ1umwBF22bi1j4yiU=
 MIME-Version: 1.0
-To: Alex Chiang <achiang@hp.com>
-CC: jkosina@suse.cz, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] TRIVIAL: fix grammo in bus_for_each_dev() kerneldoc
-References: <20090514144339.18912.65431.stgit@bob.kio>
-In-Reply-To: <20090514144339.18912.65431.stgit@bob.kio>
-Content-Type: text/plain; charset=UTF-8
+In-Reply-To: <alpine.DEB.1.10.0905141533550.1381@qirst.com>
+References: <4A05269D.8000701@kernel.org> <4A052721.4010201@kernel.org>
+	 <alpine.DEB.1.10.0905112126410.28512@qirst.com>
+	 <4A089E53.8010106@kernel.org>
+	 <alpine.DEB.1.10.0905121658140.14226@qirst.com>
+	 <4A09AEFB.4070808@kernel.org>
+	 <alpine.DEB.1.10.0905121720430.24066@qirst.com>
+	 <86802c440905122239h7a187627i6158b79045ba1024@mail.gmail.com>
+	 <alpine.DEB.1.10.0905141533550.1381@qirst.com>
+Date: Thu, 14 May 2009 13:58:51 -0700
+Message-ID: <86802c440905141358p1274e389q135e0d766f02cb21@mail.gmail.com>
+Subject: Re: [PATCH 2/3] x86: add numa_move_cpus_to_node
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Suresh Siddha <suresh.b.siddha@intel.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Al Viro <viro@zeniv.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Pekka Enberg <penberg@cs.helsinki.fi>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-X-Source-IP: abhmt008.oracle.com [141.146.116.17]
-X-Auth-Type: Internal IP
-X-CT-RefId: str=0001.0A010203.4A0C85B0.021B:SCFSTAT5015188,ss=1,fgs=0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Alex Chiang wrote:
-> Cc: Randy Dunlap <randy.dunlap@oracle.com>
+On Thu, May 14, 2009 at 12:34 PM, Christoph Lameter
+<cl@linux-foundation.org> wrote:
+> On Tue, 12 May 2009, Yinghai Lu wrote:
+>
+>> so i recored this OK as one Reviewed-by or Acked-by ?
+>
+> Well why do we need this functionality in the kernel if offlining and
+> onlining the cpu again will properly allocate the kernel metadata?
 
-Acked-by: Randy Dunlap <randy.dunlap@oracle.com>
+ok, you are right, for x86 64 bit, srat_detect_node will call
+numa_set_node when online the cpu again.
 
-Thanks.
+we don't this patch.
 
-> Signed-off-by: Alex Chiang <achiang@hp.com>
-> ---
-> 
->  drivers/base/bus.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
-> 
-> diff --git a/drivers/base/bus.c b/drivers/base/bus.c
-> index dc030f1..4476a4e 100644
-> --- a/drivers/base/bus.c
-> +++ b/drivers/base/bus.c
-> @@ -279,7 +279,7 @@ static struct device *next_device(struct klist_iter *i)
->   *
->   * NOTE: The device that returns a non-zero value is not retained
->   * in any way, nor is its refcount incremented. If the caller needs
-> - * to retain this data, it should do, and increment the reference
-> + * to retain this data, it should do so, and increment the reference
->   * count in the supplied callback.
->   */
->  int bus_for_each_dev(struct bus_type *bus, struct device *start,
-> 
-
-
--- 
-~Randy
-LPC 2009, Sept. 23-25, Portland, Oregon
-http://linuxplumbersconf.org/2009/
+YH
