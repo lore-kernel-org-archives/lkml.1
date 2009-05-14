@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758300AbZENXEz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762870AbZENXFY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758300AbZENXEz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:04:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762258AbZENW6d
+	id S1762870AbZENXFY (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:05:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762246AbZENW6e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:58:33 -0400
-Received: from kroah.org ([198.145.64.141]:45977 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:58:34 -0400
+Received: from kroah.org ([198.145.64.141]:45991 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762255AbZENW6c (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:58:32 -0400
+	id S1762217AbZENW6d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:58:33 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:37 2009
-Message-Id: <20090514225237.489649146@mini.kroah.org>
+Message-Id: <20090514225237.618325356@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:51:33 -0700
+Date: Thu, 14 May 2009 15:51:34 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,11 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Dave Airlie <airlied@redhat.com>,
+       alan@lxorguk.ukuu.org.uk, Enrik Berkhan <Enrik.Berkhan@ge.com>,
        Jean Delvare <khali@linux-fr.org>
-Subject: [patch 07/28] i2c-algo-bit: Fix timeout test
+Subject: [patch 08/28] i2c-algo-pca: Let PCA9564 recover from unacked data byte (state 0x30)
 References: <20090514225126.907908936@mini.kroah.org>
-Content-Disposition: inline; filename=i2c-algo-bit-fix-timeout-test.patch
+Content-Disposition: inline; filename=i2c-algo-pca-let-pca9564-recover-from-unacked-data-byte.patch
 In-Reply-To: <20090514225413.GA705@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -40,36 +40,59 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Dave Airlie <airlied@redhat.com>
+From: Enrik Berkhan <Enrik.Berkhan@ge.com>
 
-commit 0cdba07bb23cdd3e0d64357ec3d983e6b75e541f upstream
+commit 2196d1cf4afab93fb64c2e5b417096e49b661612 upstream
 
-When fetching DDC using i2c algo bit, we were often seeing timeouts
-before getting valid EDID on a retry. The VESA spec states 2ms is the
-DDC timeout, so when this translates into 1 jiffie and we are close
-to the end of the time period, it could return with a timeout less than
-2ms.
+Currently, the i2c-algo-pca driver does nothing if the chip enters state
+0x30 (Data byte in I2CDAT has been transmitted; NOT ACK has been
+received).  Thus, the i2c bus connected to the controller gets stuck
+afterwards.
 
-Change this code to use time_after instead of time_after_eq.
+I have seen this kind of error on a custom board in certain load
+situations most probably caused by interference or noise.
 
-Signed-off-by: Dave Airlie <airlied@redhat.com>
+A possible reaction is to let the controller generate a STOP condition.
+This is documented in the PCA9564 data sheet (2006-09-01) and the same
+is done for other NACK states as well.
+
+Further, state 0x38 isn't handled completely, either. Try to do another
+START in this case like the data sheet says. As this couldn't be tested,
+I've added a comment to try to reset the chip if the START doesn't help
+as suggested by Wolfram Sang.
+
+Signed-off-by: Enrik Berkhan <Enrik.Berkhan@ge.com>
+Reviewed-by: Wolfram Sang <w.sang@pengutronix.de>
 Signed-off-by: Jean Delvare <khali@linux-fr.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/i2c/algos/i2c-algo-bit.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/i2c/algos/i2c-algo-pca.c |   11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
---- a/drivers/i2c/algos/i2c-algo-bit.c
-+++ b/drivers/i2c/algos/i2c-algo-bit.c
-@@ -104,7 +104,7 @@ static int sclhi(struct i2c_algo_bit_dat
- 		 * chips may hold it low ("clock stretching") while they
- 		 * are processing data internally.
- 		 */
--		if (time_after_eq(jiffies, start + adap->timeout))
-+		if (time_after(jiffies, start + adap->timeout))
- 			return -ETIMEDOUT;
- 		cond_resched();
- 	}
+--- a/drivers/i2c/algos/i2c-algo-pca.c
++++ b/drivers/i2c/algos/i2c-algo-pca.c
+@@ -270,10 +270,21 @@ static int pca_xfer(struct i2c_adapter *
+ 
+ 		case 0x30: /* Data byte in I2CDAT has been transmitted; NOT ACK has been received */
+ 			DEB2("NOT ACK received after data byte\n");
++			pca_stop(adap);
+ 			goto out;
+ 
+ 		case 0x38: /* Arbitration lost during SLA+W, SLA+R or data bytes */
+ 			DEB2("Arbitration lost\n");
++			/*
++			 * The PCA9564 data sheet (2006-09-01) says "A
++			 * START condition will be transmitted when the
++			 * bus becomes free (STOP or SCL and SDA high)"
++			 * when the STA bit is set (p. 11).
++			 *
++			 * In case this won't work, try pca_reset()
++			 * instead.
++			 */
++			pca_start(adap);
+ 			goto out;
+ 
+ 		case 0x58: /* Data byte has been received; NOT ACK has been returned */
 
 
