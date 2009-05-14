@@ -1,47 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754874AbZENUVV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755982AbZENUXg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754874AbZENUVV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 16:21:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752943AbZENUVB
+	id S1755982AbZENUXg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 16:23:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753352AbZENUX1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 16:21:01 -0400
-Received: from www.tglx.de ([62.245.132.106]:57180 "EHLO www.tglx.de"
+	Thu, 14 May 2009 16:23:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:43826 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752663AbZENUVB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 16:21:01 -0400
-Date: Thu, 14 May 2009 22:19:51 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Len Brown <lenb@kernel.org>
-cc: Janne Kulmala <janne.t.kulmala@tut.fi>, Frans Pop <elendil@planet.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       johnstul@us.ibm.com
-Subject: Re: [PATCH] ACPI: do not mark TSC unstable for invalid C-states
-In-Reply-To: <alpine.LFD.2.00.0905141608070.24833@localhost.localdomain>
-Message-ID: <alpine.LFD.2.00.0905142217340.3561@localhost.localdomain>
-References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com> <200905110226.50115.elendil@planet.nl> <alpine.LFD.2.00.0905111614570.3561@localhost.localdomain> <4A0855A5.8040109@tut.fi> <alpine.LFD.2.00.0905141545280.24833@localhost.localdomain>
- <alpine.LFD.2.00.0905141608070.24833@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+	id S1752881AbZENUX0 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 16:23:26 -0400
+Message-ID: <4A0C7DB6.6010601@redhat.com>
+Date: Thu, 14 May 2009 16:23:18 -0400
+From: Rik van Riel <riel@redhat.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Christoph Lameter <cl@linux-foundation.org>
+CC: Robin Holt <holt@sgi.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 4/4] zone_reclaim_mode is always 0 by default
+References: <20090513120155.5879.A69D9226@jp.fujitsu.com> <20090513120729.5885.A69D9226@jp.fujitsu.com> <20090513152256.GM7601@sgi.com> <alpine.DEB.1.10.0905141602010.1381@qirst.com>
+In-Reply-To: <alpine.DEB.1.10.0905141602010.1381@qirst.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 May 2009, Len Brown wrote:
+Christoph Lameter wrote:
+> Not having zone reclaim on a NUMA system often means that per node
+> allocations will fall back. Optimized node local allocations become very
+> difficult for the page allocator. If the latency penalties are not
+> significant then this may not matter. The larger the system, the larger
+> the NUMA latencies become.
+> 
+> One possibility would be to disable zone reclaim for low node numbers.
+> Eanble it only if more than 4 nodes exist?
 
-> hang on, that patch will fail for the case where valid
-> is (about to be) set to 1 and we'll fail to disable the TSC
-> for systems which _do_ have c3.  I'll send an updated patch shortly.
-
-Yep, you are right. I missed the cx->valid update in
-apic_processor_power_verify_cX(). So my patch would break the laptops
-instead of breaking desktops and servers :)
-
-Moving it to acpi_timer_check_state() is the best we can do and that
-saves us ifdeffery as well as acpi_timer_check_state() is already x86
-only.
-
-Thanks,
-
-	tglx
+I suspect that patches 1/4 through 3/4 will cause the
+system to behave better already, by only reclaiming
+the easiest to reclaim pages from zone reclaim and
+falling back after that - or am overlooking something?
