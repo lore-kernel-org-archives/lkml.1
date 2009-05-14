@@ -1,21 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758187AbZENWs7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761096AbZENWvV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758187AbZENWs7 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:48:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756326AbZENWm2
+	id S1761096AbZENWvV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:51:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756798AbZENWmh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:28 -0400
-Received: from kroah.org ([198.145.64.141]:51626 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:37 -0400
+Received: from kroah.org ([198.145.64.141]:52454 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756470AbZENWmM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:12 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:23 2009
-Message-Id: <20090514223523.529046126@mini.kroah.org>
+	id S1756446AbZENWmT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:19 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:24 2009
+Message-Id: <20090514223524.705172355@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:32:55 -0700
+Date: Thu, 14 May 2009 15:33:02 -0700
 From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org,
-       linux-security-module@vger.kernel.org
+To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Zwane Mwaikambo <zwane@arm.linux.org.uk>,
        "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
@@ -26,242 +25,58 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Paul Moore <paul.moore@hp.com>
-Subject: [patch 20/51] selinux: Add new NetLabel glue code to handle labeling of connection requests
+       alan@lxorguk.ukuu.org.uk, Steve French <smfrench@gmail.com>,
+       Jeff Layton <jlayton@redhat.com>, Suresh Jayaraman <sjayaraman@suse.de>,
+       Steve French <sfrench@us.ibm.com>
+Subject: [patch 27/51] cifs: Fix buffer size in cifs_convertUCSpath
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=selinux-add-new-netlabel-glue-code-to-handle-labeling-of-connection-requests.patch
+Content-Disposition: inline; filename=cifs-fix-buffer-size-in-cifs_convertucspath.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Paul Moore <paul.moore@hp.com>
+From: Suresh Jayaraman <sjayaraman@suse.de>
 
-[NOTE: based on 389fb800ac8be2832efedd19978a2b8ced37eb61]
+Relevant commits 7fabf0c9479fef9fdb9528a5fbdb1cb744a744a4 and
+f58841666bc22e827ca0dcef7b71c7bc2758ce82. The upstream commits adds
+cifs_from_ucs2 that includes functionality of cifs_convertUCSpath and
+does cleanup.
 
-This patch provides the missing functions to properly handle the labeling of
-responses to incoming connection requests within SELinux.
-
-Signed-off-by: Paul Moore <paul.moore@hp.com>
+Reported-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
+Acked-by: Steve French <sfrench@us.ibm.com>
+Acked-by: Jeff Layton <jlayton@redhat.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+
 ---
+ fs/cifs/misc.c |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
- security/selinux/hooks.c            |    4 -
- security/selinux/include/netlabel.h |   17 +++--
- security/selinux/netlabel.c         |  118 ++++++++++++++++++------------------
- 3 files changed, 72 insertions(+), 67 deletions(-)
-
---- a/security/selinux/hooks.c
-+++ b/security/selinux/hooks.c
-@@ -3799,7 +3799,7 @@ static int selinux_socket_post_create(st
- 		sksec = sock->sk->sk_security;
- 		sksec->sid = isec->sid;
- 		sksec->sclass = isec->sclass;
--		err = selinux_netlbl_socket_post_create(sock);
-+		err = selinux_netlbl_socket_post_create(sock->sk, family);
+--- a/fs/cifs/misc.c
++++ b/fs/cifs/misc.c
+@@ -691,14 +691,15 @@ cifs_convertUCSpath(char *target, const 
+ 						NLS_MAX_CHARSET_SIZE);
+ 				if (len > 0) {
+ 					j += len;
+-					continue;
++					goto overrun_chk;
+ 				} else {
+ 					target[j] = '?';
+ 				}
+ 		}
+ 		j++;
+ 		/* make sure we do not overrun callers allocated temp buffer */
+-		if (j >= (2 * NAME_MAX))
++overrun_chk:
++		if (j >= UNICODE_NAME_MAX)
+ 			break;
  	}
- 
- 	return err;
-@@ -4467,8 +4467,6 @@ static void selinux_inet_conn_establishe
- 		family = PF_INET;
- 
- 	selinux_skb_peerlbl_sid(skb, family, &sksec->peer_sid);
--
--	selinux_netlbl_inet_conn_established(sk, family);
- }
- 
- static void selinux_req_classify_flow(const struct request_sock *req,
---- a/security/selinux/include/netlabel.h
-+++ b/security/selinux/include/netlabel.h
-@@ -32,6 +32,7 @@
- #include <linux/net.h>
- #include <linux/skbuff.h>
- #include <net/sock.h>
-+#include <net/request_sock.h>
- 
- #include "avc.h"
- #include "objsec.h"
-@@ -53,8 +54,9 @@ int selinux_netlbl_skbuff_setsid(struct 
- 				 u16 family,
- 				 u32 sid);
- 
--void selinux_netlbl_inet_conn_established(struct sock *sk, u16 family);
--int selinux_netlbl_socket_post_create(struct socket *sock);
-+int selinux_netlbl_inet_conn_request(struct request_sock *req, u16 family);
-+void selinux_netlbl_inet_csk_clone(struct sock *sk, u16 family);
-+int selinux_netlbl_socket_post_create(struct sock *sk, u16 family);
- int selinux_netlbl_inode_permission(struct inode *inode, int mask);
- int selinux_netlbl_sock_rcv_skb(struct sk_security_struct *sksec,
- 				struct sk_buff *skb,
-@@ -113,12 +115,17 @@ static inline int selinux_netlbl_conn_se
- 	return 0;
- }
- 
--static inline void selinux_netlbl_inet_conn_established(struct sock *sk,
--							u16 family)
-+static inline int selinux_netlbl_inet_conn_request(struct request_sock *req,
-+						   u16 family)
-+{
-+	return 0;
-+}
-+static inline void selinux_netlbl_inet_csk_clone(struct sock *sk, u16 family)
- {
- 	return;
- }
--static inline int selinux_netlbl_socket_post_create(struct socket *sock)
-+static inline int selinux_netlbl_socket_post_create(struct sock *sk,
-+						    u16 family)
- {
- 	return 0;
- }
---- a/security/selinux/netlabel.c
-+++ b/security/selinux/netlabel.c
-@@ -281,73 +281,52 @@ skbuff_setsid_return:
- }
- 
- /**
-- * selinux_netlbl_inet_conn_established - Netlabel the newly accepted connection
-- * @sk: the new connection
-+ * selinux_netlbl_inet_conn_request - Label an incoming stream connection
-+ * @req: incoming connection request socket
-  *
-  * Description:
-- * A new connection has been established on @sk so make sure it is labeled
-- * correctly with the NetLabel susbsystem.
-+ * A new incoming connection request is represented by @req, we need to label
-+ * the new request_sock here and the stack will ensure the on-the-wire label
-+ * will get preserved when a full sock is created once the connection handshake
-+ * is complete.  Returns zero on success, negative values on failure.
-  *
-  */
--void selinux_netlbl_inet_conn_established(struct sock *sk, u16 family)
-+int selinux_netlbl_inet_conn_request(struct request_sock *req, u16 family)
- {
- 	int rc;
--	struct sk_security_struct *sksec = sk->sk_security;
--	struct netlbl_lsm_secattr *secattr;
--	struct inet_sock *sk_inet = inet_sk(sk);
--	struct sockaddr_in addr;
-+	struct netlbl_lsm_secattr secattr;
- 
--	if (sksec->nlbl_state != NLBL_REQUIRE)
--		return;
-+	if (family != PF_INET)
-+		return 0;
- 
--	secattr = selinux_netlbl_sock_genattr(sk);
--	if (secattr == NULL)
--		return;
-+	netlbl_secattr_init(&secattr);
-+	rc = security_netlbl_sid_to_secattr(req->secid, &secattr);
-+	if (rc != 0)
-+		goto inet_conn_request_return;
-+	rc = netlbl_req_setattr(req, &secattr);
-+inet_conn_request_return:
-+	netlbl_secattr_destroy(&secattr);
-+	return rc;
-+}
- 
--	rc = netlbl_sock_setattr(sk, secattr);
--	switch (rc) {
--	case 0:
-+/**
-+ * selinux_netlbl_inet_csk_clone - Initialize the newly created sock
-+ * @sk: the new sock
-+ *
-+ * Description:
-+ * A new connection has been established using @sk, we've already labeled the
-+ * socket via the request_sock struct in selinux_netlbl_inet_conn_request() but
-+ * we need to set the NetLabel state here since we now have a sock structure.
-+ *
-+ */
-+void selinux_netlbl_inet_csk_clone(struct sock *sk, u16 family)
-+{
-+	struct sk_security_struct *sksec = sk->sk_security;
-+
-+	if (family == PF_INET)
- 		sksec->nlbl_state = NLBL_LABELED;
--		break;
--	case -EDESTADDRREQ:
--		/* no PF_INET6 support yet because we don't support any IPv6
--		 * labeling protocols */
--		if (family != PF_INET) {
--			sksec->nlbl_state = NLBL_UNSET;
--			return;
--		}
--
--		addr.sin_family = family;
--		addr.sin_addr.s_addr = sk_inet->daddr;
--		if (netlbl_conn_setattr(sk, (struct sockaddr *)&addr,
--					secattr) != 0) {
--			/* we failed to label the connected socket (could be
--			 * for a variety of reasons, the actual "why" isn't
--			 * important here) so we have to go to our backup plan,
--			 * labeling the packets individually in the netfilter
--			 * local output hook.  this is okay but we need to
--			 * adjust the MSS of the connection to take into
--			 * account any labeling overhead, since we don't know
--			 * the exact overhead at this point we'll use the worst
--			 * case value which is 40 bytes for IPv4 */
--			struct inet_connection_sock *sk_conn = inet_csk(sk);
--			sk_conn->icsk_ext_hdr_len += 40 -
--				      (sk_inet->opt ? sk_inet->opt->optlen : 0);
--			sk_conn->icsk_sync_mss(sk, sk_conn->icsk_pmtu_cookie);
--
--			sksec->nlbl_state = NLBL_REQSKB;
--		} else
--			sksec->nlbl_state = NLBL_CONNLABELED;
--		break;
--	default:
--		/* note that we are failing to label the socket which could be
--		 * a bad thing since it means traffic could leave the system
--		 * without the desired labeling, however, all is not lost as
--		 * we have a check in selinux_netlbl_inode_permission() to
--		 * pick up the pieces that we might drop here because we can't
--		 * return an error code */
--		break;
--	}
-+	else
-+		sksec->nlbl_state = NLBL_UNSET;
- }
- 
- /**
-@@ -359,9 +338,30 @@ void selinux_netlbl_inet_conn_establishe
-  * SID.  Returns zero values on success, negative values on failure.
-  *
-  */
--int selinux_netlbl_socket_post_create(struct socket *sock)
-+int selinux_netlbl_socket_post_create(struct sock *sk, u16 family)
- {
--	return selinux_netlbl_sock_setsid(sock->sk);
-+	int rc;
-+	struct sk_security_struct *sksec = sk->sk_security;
-+	struct netlbl_lsm_secattr *secattr;
-+
-+	if (family != PF_INET)
-+		return 0;
-+
-+	secattr = selinux_netlbl_sock_genattr(sk);
-+	if (secattr == NULL)
-+		return -ENOMEM;
-+	rc = netlbl_sock_setattr(sk, secattr);
-+	switch (rc) {
-+	case 0:
-+		sksec->nlbl_state = NLBL_LABELED;
-+		break;
-+	case -EDESTADDRREQ:
-+		sksec->nlbl_state = NLBL_REQSKB;
-+		rc = 0;
-+		break;
-+	}
-+
-+	return rc;
- }
- 
- /**
+ cUCS_out:
 
 
