@@ -1,129 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S932140AbZENDut@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762700AbZENDwR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S932140AbZENDut (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 23:50:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754664AbZENDuj
+	id S1762700AbZENDwR (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 23:52:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbZENDwD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 23:50:39 -0400
-Received: from tomts20-srv.bellnexxia.net ([209.226.175.74]:43691 "EHLO
-	tomts20-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754646AbZENDui (ORCPT
+	Wed, 13 May 2009 23:52:03 -0400
+Received: from mga10.intel.com ([192.55.52.92]:3649 "EHLO
+	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1754664AbZENDwB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 23:50:38 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: As8EAKUsC0pMQW1W/2dsb2JhbACBUMxVhAIF
-Date: Wed, 13 May 2009 23:50:37 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Lai Jiangshan <laijs@cn.fujitsu.com>
-Cc: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
-       linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
-       rostedt@goodmis.org, zhaolei@cn.fujitsu.com,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH v3] ftrace: add a tracepoint for
-	__raise_softirq_irqoff()
-Message-ID: <20090514035037.GA8159@Krystal>
-References: <49FFDF9C.7040505@cn.fujitsu.com> <20090505161604.GA15524@Krystal> <4A07D3B3.10605@cn.fujitsu.com> <20090511134019.GB10932@Krystal> <4A0B859B.8070801@cn.fujitsu.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Wed, 13 May 2009 23:52:01 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,192,1241420400"; 
+   d="scan'208";a="690271296"
+From: Sheng Yang <sheng@linux.intel.com>
+Organization: Intel Opensource Technology Center
+To: "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [PATCH] x86: Extend test_and_set_bit() test_and_clean_bit() to 64 bits in X86_64
+Date: Thu, 14 May 2009 11:52:28 +0800
+User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; x86_64; ; )
+Cc: linux-kernel@vger.kernel.org, "linux-mm" <linux-mm@kvack.org>,
+       Ingo Molnar <mingo@elte.hu>
+References: <1242202647-32446-1-git-send-email-sheng@linux.intel.com> <4A0AFB7D.2080105@zytor.com> <4A0B036B.7000107@zytor.com>
+In-Reply-To: <4A0B036B.7000107@zytor.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <4A0B859B.8070801@cn.fujitsu.com>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 23:49:15 up 75 days, 15 min,  5 users,  load average: 0.27, 0.31,
-	0.33
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905141152.29378.sheng@linux.intel.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Lai Jiangshan (laijs@cn.fujitsu.com) wrote:
-> Mathieu Desnoyers wrote:
-> > 
-> > I partially agree with you :
-> > 
-> > Yes, we should try to fix TRACE_EVENT, but we should fix it _before_ we
-> > start using it widely. Circular header dependencies is a real problem
-> > with TRACE_EVENT right now.
-> > 
-> > Until we fix this, I will be tempted to stay with a known-good solution,
-> > which is DECLARE/DEFINE_TRACE.
-> > 
-> > 
-> 
-> I partially agree with you:
-> 
-> Yes, Circular header dependencies is a real problem with TRACE_EVENT
-> right now. It is also a problem with DECLARE_TRACE. It's a stubborn
-> disease with C-Language (for complex headers). Can we fix C-Language?
-> 
-> o Macros in header (!CREATE_TRACE_POINTS)
-> 
-> When CREATE_TRACE_POINTS is not defined, TRACE_EVENT is definitely
-> the same as DECLARE_TRACE. Actually, TRACE_EVENT is:
-> 
-> #define TRACE_EVENT(name, proto, args, struct, assign, print)	\
-> 	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
-> 
-> So TRACE_EVENT and DECLARE_TRACE are the same in header files.
-> And so TRACE_EVENT and DECLARE_TRACE have the same advantages and
-> disadvantages. More TRACE_EVENT equals to a known-good solution.
-> 
-> o Macros in c-file
-> 
-> tracepoint uses DEFINE_TRACE only.
-> 
-> ftrace uses CREATE_TRACE_POINTS + TRACE_EVENT:
-> 	#define CREATE_TRACE_POINTS
-> 	#include <trace/events/sched.h> (which uses TRACE_EVENT)
-> 
-> ftrace generates more code which uses the tracepoints.
-> 
-> > 
-> > Then add a forward declaration of
-> > 
-> > struct softirqaction;
-> > 
-> > At the top of trace/irq.h. I did it in quite a few places in the LTTng
-> > tree. TP_PROTO just needs a forward declaration, not the full structure
-> > declaration.
-> > 
-> 
-> Thank you for your valuable suggestions.
-> 
-> You are the father of tracepoint and LTTng, your experience in
-> LTTng is very useful for ftrace.
-> 
-> I'm glad for your suggestions.
-> 
-> 
-> Xiao Guangrong, could you add forward declarations of
-> 
-> struct irqaction;
-> struct softirq_action;
-> 
-> at the top of trace/irq.h as Mathieu's suggestions.
-> (and remove "#include <linux/interrupt.h>")
-> 
+On Thursday 14 May 2009 01:29:15 H. Peter Anvin wrote:
+> H. Peter Anvin wrote:
+> > H. Peter Anvin wrote:
+> >> Sheng Yang wrote:
+> >>> This fix 44/45 bit width memory can't boot up issue. The reason is
+> >>> free_bootmem_node()->mark_bootmem_node()->__free() use
+> >>> test_and_clean_bit() to clean node_bootmem_map, but for 44bits width
+> >>> address, the idx set bit 31 (43 - 12), which consider as a nagetive
+> >>> value for bts.
+> >>>
+> >>> This patch applied to tip/mm.
+> >>
+> >> Hi Sheng,
+> >>
+> >> Could you try the attached patch instead?
+> >
+> > Sorry, wrong patch entirely... here is the right one.
+>
+> This time, for real?  Sheesh.  I'm having a morning, apparently.
+>
+> 	-hpa
 
-You will probably still need something like :
+Yeah, this one also works well(lightly tested). :)
 
-#ifdef CREATE_TRACE_POINTS
-#include <linux/interrupt.h>
-#else
-struct irqaction;
-struct softirq_action;
-#endif
-
-So that FTRACE has the header dependencies it needs to build.
-
-Mathieu
-
-> Lai
-> 
-> 
+But one thing should be noticed that, bit ops recognized the input as signed. 
+According to SDM 2A 3.1.1.7 Operation Section, Bit(BitBase, BitOffset) can 
+accept BitOffset as negative value, then search backward... Well, I indeed 
+don't know when we need this, but I think keep signed here should be better...
 
 -- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+regards
+Yang, Sheng 
