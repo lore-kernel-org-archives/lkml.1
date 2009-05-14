@@ -1,94 +1,143 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763085AbZENXMm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762209AbZENXNA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763085AbZENXMm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:12:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762359AbZENW7G
+	id S1762209AbZENXNA (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:13:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762374AbZENW7I
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:59:06 -0400
-Received: from kroah.org ([198.145.64.141]:46082 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:59:08 -0400
+Received: from mail.windriver.com ([147.11.1.11]:43877 "EHLO mail.wrs.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760004AbZENW6l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:58:41 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:39 2009
-Message-Id: <20090514225238.955922444@mini.kroah.org>
-User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:51:42 -0700
-From: Greg KH <gregkh@suse.de>
-To: linux-kernel@vger.kernel.org, stable@kernel.org
-Cc: Justin Forbes <jmforbes@linuxtx.org>,
-       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
-       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
-       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
-       Chris Wedgwood <reviews@ml.cw.f00f.org>,
-       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
-       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
-       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
-       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
-       torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Steve French <smfrench@gmail.com>,
-       Jeff Layton <jlayton@redhat.com>, Suresh Jayaraman <sjayaraman@suse.de>,
-       Steve French <sfrench@us.ibm.com>
-Subject: [patch 16/28] cifs: Increase size of tmp_buf in cifs_readdir to avoid potential overflows
-References: <20090514225126.907908936@mini.kroah.org>
-Content-Disposition: inline; filename=cifs-increase-size-of-tmp_buf-in-cifs_readdir-to-avoid-potential-overflows.patch
-In-Reply-To: <20090514225413.GA705@kroah.com>
+	id S1760004AbZENW7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:59:07 -0400
+Message-ID: <4A0CA203.7050907@windriver.com>
+Date: Thu, 14 May 2009 17:58:11 -0500
+From: Jason Wessel <jason.wessel@windriver.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+MIME-Version: 1.0
+To: jbarnes@virtuousgeek.org
+CC: Andrew Morton <akpm@linux-foundation.org>, eric@anholt.net,
+       airlied@redhat.com, Randy Dunlap <randy.dunlap@oracle.com>,
+       lkml <linux-kernel@vger.kernel.org>
+Subject: [PATCH] sysrq, intel_fb: fix sysrq g collision
+Content-Type: multipart/mixed;
+ boundary="------------020401080406080701050509"
+X-OriginalArrivalTime: 14 May 2009 22:58:11.0828 (UTC) FILETIME=[74C39B40:01C9D4E7]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+This is a multi-part message in MIME format.
+--------------020401080406080701050509
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 
-2.6.27-stable review patch.  If anyone has any objections, please let us know.
 
-------------------
+This is patch is both a clean up and a regression fix because two things
+in the mainline kernel can register for sysrq-g, which is certainly a
+problem when you want to use both.
 
-From: Suresh Jayaraman <sjayaraman@suse.de>
+I talked to Randy and Jesse briefly about changing the intel fb video
+driver to use 'v' instead of 'g' and they agreed it would be ok to see a
+patch.  Hopefully each will ack this patch, or discuss it further.   If
+they ack the patch, I can send it on to Linus for consideration.
 
-Commit 7b0c8fcff47a885743125dd843db64af41af5a61 refreshed and use
-a #define from commit f58841666bc22e827ca0dcef7b71c7bc2758ce82.
+The long term intent here is to get mode switching with a generic kernel
+debug front end, with the short term intent to fix the sysrq collision.
 
-cifs: Increase size of tmp_buf in cifs_readdir to avoid potential overflows
+Thanks,
+Jason.
 
-Increase size of tmp_buf to possible maximum to avoid potential
-overflows. Also moved UNICODE_NAME_MAX definition so that it can be used
-elsewhere.
+--------------020401080406080701050509
+Content-Type: text/x-diff;
+ name="0001-Cleanup-sysrq.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-Cleanup-sysrq.patch"
 
-Pointed-out-by: Jeff Layton <jlayton@redhat.com>
-Signed-off-by: Suresh Jayaraman <sjayaraman@suse.de>
-Acked-by: Jeff Layton <jlayton@redhat.com>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+From: Jason Wessel <jason.wessel@windriver.com>
+Date: Wed, 13 May 2009 21:56:59 -0500
+Subject: [PATCH] sysrq, intel_fb: fix sysrq g collision
+
+Commit 79e539453b34e35f39299a899d263b0a1f1670bd introduced a
+regression where you cannot use sysrq 'g' to enter kgdb.  The solution
+is to move the intel fb sysrq over to V for video instead of G for
+graphics.  The SMP VOYAGER code to register for the sysrq-v is not
+anywhere to be found in the mainline kernel, so the comments in the
+code were cleaned up as well.
+
+This patch also cleans up the sysrq definitions for kgdb to make it
+generic for the kernel debugger, such that the sysrq 'g' can be used
+in the future to enter a gdbstub or another kernel debugger.
+
+Signed-off-by: Jason Vessel <jason.wessel@windriver.com>
 
 ---
- fs/cifs/cifs_unicode.h |    7 +++++++
- fs/cifs/readdir.c      |    2 +-
- 2 files changed, 8 insertions(+), 1 deletion(-)
+ drivers/char/sysrq.c            |    4 ++--
+ drivers/gpu/drm/i915/intel_fb.c |    4 ++--
+ kernel/kgdb.c                   |    4 ++--
+ 3 files changed, 6 insertions(+), 6 deletions(-)
 
---- a/fs/cifs/cifs_unicode.h
-+++ b/fs/cifs/cifs_unicode.h
-@@ -64,6 +64,13 @@ int cifs_strtoUCS(__le16 *, const char *
+diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
+index b0a6a3e..d6a807f 100644
+--- a/drivers/char/sysrq.c
++++ b/drivers/char/sysrq.c
+@@ -406,7 +406,7 @@ static struct sysrq_key_op *sysrq_key_table[36] = {
+ 	&sysrq_showlocks_op,		/* d */
+ 	&sysrq_term_op,			/* e */
+ 	&sysrq_moom_op,			/* f */
+-	/* g: May be registered by ppc for kgdb */
++	/* g: May be registered for the kernel debugger */
+ 	NULL,				/* g */
+ 	NULL,				/* h - reserved for help */
+ 	&sysrq_kill_op,			/* i */
+@@ -431,7 +431,7 @@ static struct sysrq_key_op *sysrq_key_table[36] = {
+ 	&sysrq_sync_op,			/* s */
+ 	&sysrq_showstate_op,		/* t */
+ 	&sysrq_mountro_op,		/* u */
+-	/* v: May be registered at init time by SMP VOYAGER */
++	/* v: May be registered for frame buffer video console restore */
+ 	NULL,				/* v */
+ 	&sysrq_showstate_blocked_op,	/* w */
+ 	/* x: May be registered on ppc/powerpc for xmon */
+diff --git a/drivers/gpu/drm/i915/intel_fb.c b/drivers/gpu/drm/i915/intel_fb.c
+index 3e094be..e4652dc 100644
+--- a/drivers/gpu/drm/i915/intel_fb.c
++++ b/drivers/gpu/drm/i915/intel_fb.c
+@@ -864,7 +864,7 @@ static void intelfb_sysrq(int dummy1, struct tty_struct *dummy3)
+ 
+ static struct sysrq_key_op sysrq_intelfb_restore_op = {
+         .handler = intelfb_sysrq,
+-        .help_msg = "force-fb(G)",
++        .help_msg = "force-fb(V)",
+         .action_msg = "Restore framebuffer console",
+ };
+ 
+@@ -898,7 +898,7 @@ int intelfb_probe(struct drm_device *dev)
+ 		ret = intelfb_single_fb_probe(dev);
+ 	}
+ 
+-	register_sysrq_key('g', &sysrq_intelfb_restore_op);
++	register_sysrq_key('v', &sysrq_intelfb_restore_op);
+ 
+ 	return ret;
+ }
+diff --git a/kernel/kgdb.c b/kernel/kgdb.c
+index e4dcfb2..9147a31 100644
+--- a/kernel/kgdb.c
++++ b/kernel/kgdb.c
+@@ -1583,8 +1583,8 @@ static void sysrq_handle_gdb(int key, struct tty_struct *tty)
+ 
+ static struct sysrq_key_op sysrq_gdb_op = {
+ 	.handler	= sysrq_handle_gdb,
+-	.help_msg	= "Gdb",
+-	.action_msg	= "GDB",
++	.help_msg	= "debug(G)",
++	.action_msg	= "DEBUG",
+ };
  #endif
  
- /*
-+ * To be safe - for UCS to UTF-8 with strings loaded with the rare long
-+ * characters alloc more to account for such multibyte target UTF-8
-+ * characters.
-+ */
-+#define UNICODE_NAME_MAX ((4 * NAME_MAX) + 2)
-+
-+/*
-  * UniStrcat:  Concatenate the second string to the first
-  *
-  * Returns:
---- a/fs/cifs/readdir.c
-+++ b/fs/cifs/readdir.c
-@@ -1075,7 +1075,7 @@ int cifs_readdir(struct file *file, void
- 		with the rare long characters alloc more to account for
- 		such multibyte target UTF-8 characters. cifs_unicode.c,
- 		which actually does the conversion, has the same limit */
--		tmp_buf = kmalloc((2 * NAME_MAX) + 4, GFP_KERNEL);
-+		tmp_buf = kmalloc(UNICODE_NAME_MAX, GFP_KERNEL);
- 		for (i = 0; (i < num_to_fill) && (rc == 0); i++) {
- 			if (current_entry == NULL) {
- 				/* evaluate whether this case is an error */
+-- 
+1.6.3.9.g6345d
 
 
+--------------020401080406080701050509--
