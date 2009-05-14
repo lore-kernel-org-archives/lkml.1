@@ -1,60 +1,41 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760288AbZENLQS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757189AbZENLWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760288AbZENLQS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 07:16:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755362AbZENLQD
+	id S1757189AbZENLWo (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 07:22:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753792AbZENLWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 07:16:03 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44808 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754954AbZENLQB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 07:16:01 -0400
-Date: Thu, 14 May 2009 13:15:56 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: kernel list <linux-kernel@vger.kernel.org>,
-       Trivial patch monkey <trivial@kernel.org>
-Subject: drivers/serial/Kconfig: .ko is normally not included in kconfig
-	help
-Message-ID: <20090514111556.GA9347@elf.ucw.cz>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 14 May 2009 07:22:34 -0400
+Received: from www.tglx.de ([62.245.132.106]:36725 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753722AbZENLWe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 07:22:34 -0400
+Message-Id: <20090514105915.973318588@linutronix.de>
+User-Agent: quilt/0.47-1
+Date: Thu, 14 May 2009 11:21:14 -0000
+From: Thomas Gleixner <tglx@linutronix.de>
+To: LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Dimitri Sivanich <sivanich@sgi.com>,
+       Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@elte.hu>
+Subject: [patch 0/2] sched,
+	timers: simplify calc_load and avoid cpu iteration loop
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Dimitri Sivanich pointed out that calc_load iterates over all online
+CPUs under xtime lock which can cause long latencies on large SMP
+systems.
 
-.ko is normally not included in Kconfig help, make it consistent.
+The following patch series removes the iteration loop and lets
+scheduler_tick() on each CPU update the number of active tasks. The
+calc_load() function just uses this variable and updates avenrun from
+do_timer().
 
-Signed-off-by: Pavel Machek <pavel@ucw.cz>
+Dimitri, can you please test run this on one of your large machines ?
 
----
-commit 3f582fadb61bfcf948609b9fa5d832d2bab098a7
-tree c0adf6e1122a15be49c046d1c84f94c6a61ff73c
-parent 4d874471a704784cf7e0fe1bf7e9c050d0e1063c
-author Pavel <pavel@ucw.cz> Thu, 14 May 2009 13:15:20 +0200
-committer Pavel <pavel@ucw.cz> Thu, 14 May 2009 13:15:20 +0200
+Thanks,
 
- drivers/serial/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+	tglx
 
-diff --git a/drivers/serial/Kconfig b/drivers/serial/Kconfig
-index 343e3a3..472a572 100644
---- a/drivers/serial/Kconfig
-+++ b/drivers/serial/Kconfig
-@@ -860,7 +860,7 @@ config SERIAL_UARTLITE
- 	  Say Y here if you want to use the Xilinx uartlite serial controller.
- 
- 	  To compile this driver as a module, choose M here: the
--	  module will be called uartlite.ko.
-+	  module will be called uartlite.
- 
- config SERIAL_UARTLITE_CONSOLE
- 	bool "Support for console on Xilinx uartlite serial port"
 
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
