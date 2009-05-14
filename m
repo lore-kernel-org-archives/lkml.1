@@ -1,85 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbZENVmS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753758AbZENVsc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756048AbZENVmS (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 17:42:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754901AbZENVlu
+	id S1753758AbZENVsc (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 17:48:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZENVsX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 17:41:50 -0400
-Received: from e39.co.us.ibm.com ([32.97.110.160]:44278 "EHLO
-	e39.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754533AbZENVlt (ORCPT
+	Thu, 14 May 2009 17:48:23 -0400
+Received: from az33egw02.freescale.net ([192.88.158.103]:38967 "EHLO
+	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752831AbZENVsW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 17:41:49 -0400
-Subject: Re: Misleading OOM messages
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Pavel Machek <pavel@ucw.cz>
-Cc: Christoph Lameter <cl@linux-foundation.org>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
-       San Mehat <san@android.com>, Arve Hj?nnev?g <arve@android.com>,
+	Thu, 14 May 2009 17:48:22 -0400
+Date: Thu, 14 May 2009 16:48:19 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Heiko Schocher <hs@denx.de>
+Cc: Wolfgang Denk <wd@denx.de>, linuxppc-dev@ozlabs.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20090514213403.GB14741@elf.ucw.cz>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
-	 <alpine.DEB.2.00.0905101503070.18804@chino.kir.corp.google.com>
-	 <alpine.DEB.1.10.0905121708470.14226@qirst.com>
-	 <20090514092909.GG1365@ucw.cz>
-	 <alpine.DEB.1.10.0905141546040.1381@qirst.com>
-	 <1242333519.15391.210.camel@nimitz>
-	 <alpine.DEB.2.00.0905141346030.28074@chino.kir.corp.google.com>
-	 <1242335120.15391.242.camel@nimitz>
-	 <alpine.DEB.1.10.0905141729180.30187@qirst.com>
-	 <20090514213403.GB14741@elf.ucw.cz>
-Content-Type: text/plain
-Date: Thu, 14 May 2009 14:41:39 -0700
-Message-Id: <1242337299.28440.47.camel@nimitz>
+Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash, size
+Message-ID: <20090514214819.GA15549@b07421-ec1.am.freescale.net>
+References: <mailman.7754.1242158509.26545.linuxppc-dev@ozlabs.org> <4A0A683B.5010209@denx.de>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A0A683B.5010209@denx.de>
+User-Agent: Mutt/1.4.1i
+X-Brightmail-Tracker: AAAAAQAAAWE=
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-14 at 23:34 +0200, Pavel Machek wrote:
-> On Thu 2009-05-14 17:30:02, Christoph Lameter wrote:
-> > On Thu, 14 May 2009, Dave Hansen wrote: 
-> > > -	printk(KERN_ERR "%s: kill process %d (%s) score %li or a child\n",
-> > > +	printk(KERN_ERR "No available memory %s: "
-> > > +			"kill process %d (%s) score %li or a child\n",
-> > >  					message, task_pid_nr(p), p->comm, points);
-> > 
-> > "No available memory" still suggests that plugging in more memory is the
-> > right solution.
+On Wed, May 13, 2009 at 08:27:07AM +0200, Heiko Schocher wrote:
+> Hello Wolfgang,
 > 
-> And... on correctly working kernel, it is, right?
+> > The current device tree for the MPC8272ADS assumes a mapping of 32 MB
+> > of NOR flash at 0xFE00.0000, while there are actually only 8 MB on
+> > the boards, mapped at 0xFF80.0000. When booting an uImage with such a
+> > device tree, the kernel crashes because 0xFE00.0000 is not mapped.
 > 
-> If you have no swap space and too many applications, you plug more
-> memory. (Or invent some swap).
-> 
-> If you misconfigured cgroups, you give more memory to them.
-> 
-> If your applications mlocked 900MB and you have 1GB, you need to plug
-> more memory.
-> 
-> So... when is plugging more memory _not_ valid answer? AFAICT it is
-> when it is some kernel problem, resulting in memory not being
-> reclaimed fast enough....
+> Wouldn;t it be better, if u-boot fixes the device tree entries?
 
-I recently had a problem (~2.6.27) where the user did an mlock() of ~95%
-of memory then started doing ftp tests.  The machine also had 64k base
-pages.  We let you dirty ~30% of memory, so they were able to dirty 6x
-more memory than what we even had to work with.  We OOMed pretty fast
-every time.
+We should proabbly leave out the ranges altogether, and have u-boot
+populate it from the mappings it establishes.
 
-Now, that situation never gets better when you add more memory.  It only
-gets worse because that "30% of memory number" takes longer and longer
-to write out to the disk.
+> I think, u-boot should know, where the flash begins and ends, and
+> because this is maybe a dynamic variable for this board, it should
+> be better, if u-boot fixes this, so no need for adding a device tree
+> for every board variant.
 
-This is actually a pretty common scenario for the HPC and database
-folks.  They go sucking up and locking as much memory as they can get
-their hands on.  Adding memory never helps them because they'll use up
-whatever is there.
+Flash is on a SIMM on this board, and the board manual says it's
+expandable to 32 MiB.  However, I suspect that the current DTS was just
+an error as I based it on a board that had not had its flash SIMM
+modified.  That specific flash SIMM is no longer working (or perhaps just
+got its contents corrupted -- one of these days I may hook up a BDI and
+try to reflash), so I can't go back and check.
 
--- Dave
+I don't see how current u-boot would accomodate more than 8MiB flash on
+this board (there's some detection in board/freescale/mpc8260ads/flash.c,
+but I don't see any setting of BR0 besides the preliminary value at
+0xff800000).
 
+-Scott
