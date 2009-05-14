@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761562AbZENW6U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761632AbZENWx0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761562AbZENW6U (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:58:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757252AbZENWm7
+	id S1761632AbZENWx0 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:53:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756796AbZENWmo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:59 -0400
-Received: from kroah.org ([198.145.64.141]:52721 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:44 -0400
+Received: from kroah.org ([198.145.64.141]:52552 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756446AbZENWmi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:38 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:28 2009
-Message-Id: <20090514223528.073034541@mini.kroah.org>
+	id S1756692AbZENWmZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:25 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:26 2009
+Message-Id: <20090514223525.883486559@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:33:22 -0700
+Date: Thu, 14 May 2009 15:33:09 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 47/51] splice: remove i_mutex locking in splice_from_pipe()
+       alan@lxorguk.ukuu.org.uk, Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [patch 34/51] NFS: Fix the return value in nfs_page_mkwrite()
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=splice-remove-i_mutex-locking-in-splice_from_pipe.patch
+Content-Disposition: inline; filename=nfs-fix-the-return-value-in-nfs_page_mkwrite.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,69 +38,32 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Miklos Szeredi <miklos@szeredi.hu>
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-commit 2933970b960223076d6affcf7a77e2bc546b8102 upstream.
+commit 2b2ec7554cf7ec5e4412f89a5af6abe8ce950700 upstream.
 
-splice_from_pipe() is only called from two places:
+Commit c2ec175c39f62949438354f603f4aa170846aabb ("mm: page_mkwrite
+change prototype to match fault") exposed a bug in the NFS
+implementation of page_mkwrite.  We should be returning 0 on success...
 
-  - generic_splice_sendpage()
-  - splice_write_null()
-
-Neither of these require i_mutex to be taken on the destination inode.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/splice.c |   18 ++----------------
- 1 file changed, 2 insertions(+), 16 deletions(-)
+ fs/nfs/file.c |    2 --
+ 1 file changed, 2 deletions(-)
 
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -783,7 +783,7 @@ EXPORT_SYMBOL(__splice_from_pipe);
-  * @actor:	handler that splices the data
-  *
-  * Description:
-- *    See __splice_from_pipe. This function locks the input and output inodes,
-+ *    See __splice_from_pipe. This function locks the pipe inode,
-  *    otherwise it's identical to __splice_from_pipe().
-  *
-  */
-@@ -792,7 +792,6 @@ ssize_t splice_from_pipe(struct pipe_ino
- 			 splice_actor *actor)
- {
- 	ssize_t ret;
--	struct inode *inode = out->f_mapping->host;
- 	struct splice_desc sd = {
- 		.total_len = len,
- 		.flags = flags,
-@@ -800,24 +799,11 @@ ssize_t splice_from_pipe(struct pipe_ino
- 		.u.file = out,
- 	};
+--- a/fs/nfs/file.c
++++ b/fs/nfs/file.c
+@@ -480,8 +480,6 @@ static int nfs_vm_page_mkwrite(struct vm
+ 		goto out_unlock;
  
--	/*
--	 * The actor worker might be calling ->write_begin and
--	 * ->write_end. Most of the time, these expect i_mutex to
--	 * be held. Since this may result in an ABBA deadlock with
--	 * pipe->inode, we have to order lock acquiry here.
--	 *
--	 * Outer lock must be inode->i_mutex, as pipe_wait() will
--	 * release and reacquire pipe->inode->i_mutex, AND inode must
--	 * never be a pipe.
--	 */
--	WARN_ON(S_ISFIFO(inode->i_mode));
--	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
- 	if (pipe->inode)
--		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
-+		mutex_lock(&pipe->inode->i_mutex);
- 	ret = __splice_from_pipe(pipe, &sd, actor);
- 	if (pipe->inode)
- 		mutex_unlock(&pipe->inode->i_mutex);
--	mutex_unlock(&inode->i_mutex);
- 
- 	return ret;
- }
+ 	ret = nfs_updatepage(filp, page, 0, pagelen);
+-	if (ret == 0)
+-		ret = pagelen;
+ out_unlock:
+ 	unlock_page(page);
+ 	if (ret)
 
 
