@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760027AbZENWrg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758978AbZENWuf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760027AbZENWrg (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:47:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756567AbZENWmU
+	id S1758978AbZENWuf (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:50:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756850AbZENWmd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:20 -0400
-Received: from kroah.org ([198.145.64.141]:51576 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:33 -0400
+Received: from kroah.org ([198.145.64.141]:52414 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756155AbZENWmH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:07 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:22 2009
-Message-Id: <20090514223522.666875800@mini.kroah.org>
+	id S1756250AbZENWmQ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:16 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:24 2009
+Message-Id: <20090514223524.208387428@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:32:50 -0700
+Date: Thu, 14 May 2009 15:32:59 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,63 +25,65 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jeff Mahoney <jeffm@suse.com>
-Subject: [patch 15/51] dup2: Fix return value with oldfd == newfd and invalid fd
+       alan@lxorguk.ukuu.org.uk, Steve French <smfrench@gmail.com>,
+       Jeff Layton <jlayton@redhat.com>, Steve French <sfrench@us.ibm.com>,
+       Suresh Jayaraman <sjayaraman@suse.de>
+Subject: [patch 24/51] cifs: Fix buffer size for tcon->nativeFileSystem field
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=dup2-fix-return-value-with-oldfd-newfd-and-invalid-fd.patch
+Content-Disposition: inline; filename=cifs-fix-buffer-size-for-tcon-nativefilesystem-field.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+
 2.6.29-stable review patch.  If anyone has any objections, please let us know.
 
 ------------------
 
-From: Jeff Mahoney <jeffm@suse.com>
+From: Jeff Layton <jlayton@redhat.com>
 
-commit 2b79bc4f7ebbd5af3c8b867968f9f15602d5f802 upstream.
+Commit f083def68f84b04fe3f97312498911afce79609e refreshed.
 
-The return value of dup2 when oldfd == newfd and the fd isn't valid is
-not getting properly sign extended.  We end up with 4294967287 instead
-of -EBADF.
+cifs: fix buffer size for tcon->nativeFileSystem field
 
-I've reproduced this on SLE11 (2.6.27.21), openSUSE Factory
-(2.6.29-rc5), and Ubuntu 9.04 (2.6.28).
+The buffer for this was resized recently to fix a bug. It's still
+possible however that a malicious server could overflow this field
+by sending characters in it that are >2 bytes in the local charset.
+Double the size of the buffer to account for this possibility.
 
-This patch uses a signed int for the error value so it is properly
-extended.
+Also get rid of some really strange and seemingly pointless NULL
+termination. It's NULL terminating the string in the source buffer,
+but by the time that happens, we've already copied the string.
 
-Commit 6c5d0512a091480c9f981162227fdb1c9d70e555 introduced this
-regression.
-
-Reported-by: Jiri Dluhos <jdluhos@novell.com>
-Signed-off-by: Jeff Mahoney <jeffm@suse.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
+Cc: Suresh Jayaraman <sjayaraman@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/fcntl.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ fs/cifs/connect.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
---- a/fs/fcntl.c
-+++ b/fs/fcntl.c
-@@ -117,11 +117,13 @@ SYSCALL_DEFINE2(dup2, unsigned int, oldf
- {
- 	if (unlikely(newfd == oldfd)) { /* corner case */
- 		struct files_struct *files = current->files;
-+		int retval = oldfd;
-+
- 		rcu_read_lock();
- 		if (!fcheck_files(files, oldfd))
--			oldfd = -EBADF;
-+			retval = -EBADF;
- 		rcu_read_unlock();
--		return oldfd;
-+		return retval;
- 	}
- 	return sys_dup3(oldfd, newfd, 0);
- }
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -3667,16 +3667,12 @@ CIFSTCon(unsigned int xid, struct cifsSe
+ 			    BCC(smb_buffer_response)) {
+ 				kfree(tcon->nativeFileSystem);
+ 				tcon->nativeFileSystem =
+-				    kzalloc(2*(length + 1), GFP_KERNEL);
++				    kzalloc((4 * length) + 2, GFP_KERNEL);
+ 				if (tcon->nativeFileSystem)
+ 					cifs_strfromUCS_le(
+ 						tcon->nativeFileSystem,
+ 						(__le16 *) bcc_ptr,
+ 						length, nls_codepage);
+-				bcc_ptr += 2 * length;
+-				bcc_ptr[0] = 0;	/* null terminate the string */
+-				bcc_ptr[1] = 0;
+-				bcc_ptr += 2;
+ 			}
+ 			/* else do not bother copying these information fields*/
+ 		} else {
 
 
