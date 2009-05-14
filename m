@@ -1,50 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754986AbZENJ3b@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZENJiw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754986AbZENJ3b (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 05:29:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754205AbZENJ3M
+	id S1753967AbZENJiw (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 05:38:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbZENJin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 05:29:12 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:58779 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753595AbZENJ3L (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 05:29:11 -0400
-Date: Thu, 14 May 2009 11:29:09 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
-       Dave Hansen <dave@linux.vnet.ibm.com>, San Mehat <san@android.com>,
-       Arve Hj?nnev?g <arve@android.com>, linux-kernel@vger.kernel.org
-Subject: Re: Misleading OOM messages
-Message-ID: <20090514092909.GG1365@ucw.cz>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101503070.18804@chino.kir.corp.google.com> <alpine.DEB.1.10.0905121708470.14226@qirst.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0905121708470.14226@qirst.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Thu, 14 May 2009 05:38:43 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49461 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751205AbZENJim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 05:38:42 -0400
+Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
+	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
+	Kingdom.
+	Registered in England and Wales under Company Registration No. 3798903
+From: David Howells <dhowells@redhat.com>
+To: akpm@linux-foundation.org, Chris Peterson <cpeterso@cpeterso.com>
+cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
+In-Reply-To: <alpine.DEB.2.00.0905101959070.2913@ubuntu-desktop>
+References: <alpine.DEB.2.00.0905101959070.2913@ubuntu-desktop> <200905131838.n4DIcu5h023360@imap1.linux-foundation.org>
+Subject: [PATCH] Use round_jiffies() for slow work thread pool's cull and OOM timers
+Date: Thu, 14 May 2009 10:38:09 +0100
+Message-ID: <22791.1242293889@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi!
 
-> While we are at it: Could we get rid of the name "Out of Memory" and stop
-> printing texts to that effect? What we call an OOM is a failure to
-> perform memory reclaim or we are running out of reserves due
-> to not being able to run reclaim. Mostly this is due to OS internal issues
-> having nothing to do actual amounts of memory available.
+From: Chris Peterson <cpeterso@cpeterso.com>
 
-It can be 'low on memory' if you play with mlock() a bit. 
+Round the slow work queue's cull and OOM timeouts to whole second boundary with
+round_jiffies().  The slow work queue uses a pair of timers to cull idle
+threads and, after OOM, to delay new thread creation.
 
-It is out of memory if you run out of swap (or have no swap to begin with).
+This patch also extracts the mod_timer() logic for the cull timer into a
+separate helper function.
 
-I believe message is often correct. What message would you suggest?
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+By rounding non-time-critical timers such as these to whole seconds, they will
+be batched up to fire at the same time rather than being spread out.  This
+allows the CPU wake up less, which saves power.
+
+Signed-off-by: Chris Peterson <cpeterso@cpeterso.com>
+Signed-off-by: David Howells <dhowells@redhat.com>
+---
+
+ kernel/slow-work.c |   23 ++++++++++++++---------
+ 1 files changed, 14 insertions(+), 9 deletions(-)
+
+
+diff --git a/kernel/slow-work.c b/kernel/slow-work.c
+index 96e418d..a3ce6cf 100644
+--- a/kernel/slow-work.c
++++ b/kernel/slow-work.c
+@@ -319,6 +319,15 @@ cant_get_ref:
+ EXPORT_SYMBOL(slow_work_enqueue);
+ 
+ /*
++ * Schedule a cull of the thread pool at some time in the near future
++ */
++static void slow_work_schedule_cull(void)
++{
++	mod_timer(&slow_work_cull_timer,
++		  round_jiffies(jiffies + SLOW_WORK_CULL_TIMEOUT));
++}
++
++/*
+  * Worker thread culling algorithm
+  */
+ static bool slow_work_cull_thread(void)
+@@ -335,8 +344,7 @@ static bool slow_work_cull_thread(void)
+ 		    list_empty(&vslow_work_queue) &&
+ 		    atomic_read(&slow_work_thread_count) >
+ 		    slow_work_min_threads) {
+-			mod_timer(&slow_work_cull_timer,
+-				  jiffies + SLOW_WORK_CULL_TIMEOUT);
++			slow_work_schedule_cull();
+ 			do_cull = true;
+ 		}
+ 	}
+@@ -394,8 +402,7 @@ static int slow_work_thread(void *_data)
+ 			    list_empty(&vslow_work_queue) &&
+ 			    atomic_read(&slow_work_thread_count) >
+ 			    slow_work_min_threads)
+-				mod_timer(&slow_work_cull_timer,
+-					  jiffies + SLOW_WORK_CULL_TIMEOUT);
++				slow_work_schedule_cull();
+ 			continue;
+ 		}
+ 
+@@ -460,7 +467,7 @@ static void slow_work_new_thread_execute(struct slow_work *work)
+ 		if (atomic_dec_and_test(&slow_work_thread_count))
+ 			BUG(); /* we're running on a slow work thread... */
+ 		mod_timer(&slow_work_oom_timer,
+-			  jiffies + SLOW_WORK_OOM_TIMEOUT);
++			  round_jiffies(jiffies + SLOW_WORK_OOM_TIMEOUT));
+ 	} else {
+ 		/* ratelimit the starting of new threads */
+ 		mod_timer(&slow_work_oom_timer, jiffies + 1);
+@@ -504,8 +511,7 @@ static int slow_work_min_threads_sysctl(struct ctl_table *table, int write,
+ 			if (n < 0 && !slow_work_may_not_start_new_thread)
+ 				slow_work_enqueue(&slow_work_new_thread);
+ 			else if (n > 0)
+-				mod_timer(&slow_work_cull_timer,
+-					  jiffies + SLOW_WORK_CULL_TIMEOUT);
++				slow_work_schedule_cull();
+ 		}
+ 		mutex_unlock(&slow_work_user_lock);
+ 	}
+@@ -531,8 +537,7 @@ static int slow_work_max_threads_sysctl(struct ctl_table *table, int write,
+ 				atomic_read(&slow_work_thread_count);
+ 
+ 			if (n < 0)
+-				mod_timer(&slow_work_cull_timer,
+-					  jiffies + SLOW_WORK_CULL_TIMEOUT);
++				slow_work_schedule_cull();
+ 		}
+ 		mutex_unlock(&slow_work_user_lock);
+ 	}
