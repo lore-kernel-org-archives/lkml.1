@@ -1,55 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760878AbZENOFd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759713AbZENOJs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760878AbZENOFd (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 10:05:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754266AbZENOFW
+	id S1759713AbZENOJs (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 10:09:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbZENOJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 10:05:22 -0400
-Received: from hera.kernel.org ([140.211.167.34]:60063 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753006AbZENOFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 10:05:21 -0400
-Message-ID: <4A0C2515.9060602@kernel.org>
-Date: Thu, 14 May 2009 23:05:09 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Thu, 14 May 2009 10:09:39 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:55660 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752982AbZENOJi (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 10:09:38 -0400
+Message-ID: <4A0C2614.4010803@zytor.com>
+Date: Thu, 14 May 2009 07:09:24 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
 MIME-Version: 1.0
-To: Boaz Harrosh <bharrosh@panasas.com>
-CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, jens.axboe@oracle.com,
-       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] block: completion related functions cleanup
-References: <1242032169-22422-1-git-send-email-fujita.tomonori@lab.ntt.co.jp> <4A0C2297.5040001@panasas.com>
-In-Reply-To: <4A0C2297.5040001@panasas.com>
-X-Enigmail-Version: 0.95.7
+To: Sheng Yang <sheng@linux.intel.com>
+CC: linux-kernel@vger.kernel.org, linux-mm <linux-mm@kvack.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86: Extend test_and_set_bit() test_and_clean_bit() to
+ 64 bits in X86_64
+References: <1242202647-32446-1-git-send-email-sheng@linux.intel.com> <4A0AFB7D.2080105@zytor.com> <4A0B036B.7000107@zytor.com> <200905141152.29378.sheng@linux.intel.com>
+In-Reply-To: <200905141152.29378.sheng@linux.intel.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Thu, 14 May 2009 14:05:13 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Boaz Harrosh wrote:
-> ---
->  drivers/scsi/scsi_lib.c |    1 -
->  1 files changed, 0 insertions(+), 1 deletions(-)
+Sheng Yang wrote:
 > 
-> diff --git a/drivers/scsi/scsi_lib.c b/drivers/scsi/scsi_lib.c
-> index e410d66..f8600d6 100644
-> --- a/drivers/scsi/scsi_lib.c
-> +++ b/drivers/scsi/scsi_lib.c
-> @@ -789,7 +789,6 @@ void scsi_io_completion(struct scsi_cmnd *cmd, unsigned int good_bytes)
->  	 */
->  	if (scsi_end_request(cmd, error, good_bytes, result == 0) == NULL)
->  		return;
-> -	this_count = blk_rq_bytes(req);
->  
->  	error = -EIO;
->  
+> Yeah, this one also works well(lightly tested). :)
+> 
+> But one thing should be noticed that, bit ops recognized the input as signed. 
+> According to SDM 2A 3.1.1.7 Operation Section, Bit(BitBase, BitOffset) can 
+> accept BitOffset as negative value, then search backward... Well, I indeed 
+> don't know when we need this, but I think keep signed here should be better...
+> 
 
-Nice spotting.  Looks like the variable can be killed completely?
+Urk, you're right.  How daft.  I had preferred to switch it to unsigned
+long to match MIPS and SPARC, but that probably is a good reason to
+leave it signed.  Pain.
 
-Thanks.
+	-hpa
 
 -- 
-tejun
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
+
