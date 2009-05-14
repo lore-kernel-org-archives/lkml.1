@@ -1,83 +1,51 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762213AbZENAUt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762258AbZENAVG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762213AbZENAUt (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 20:20:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760286AbZENAUg
+	id S1762258AbZENAVG (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 20:21:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761707AbZENAUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 20:20:36 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:42264 "EHLO mx2.redhat.com"
+	Wed, 13 May 2009 20:20:41 -0400
+Received: from sh.osrg.net ([192.16.179.4]:48552 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752827AbZENAUg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 20:20:36 -0400
-Message-ID: <4A0B6289.2000502@redhat.com>
-Date: Thu, 14 May 2009 03:15:05 +0300
-From: Izik Eidus <ieidus@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: linux-kernel@vger.kernel.org, linux-mm@kvack.org, kvm@vger.kernel.org,
-       avi@redhat.com, aarcange@redhat.com, chrisw@redhat.com,
-       mtosatti@redhat.com, hugh@veritas.com
-Subject: Re: [PATCH 5/5] add ksm kernel shared memory driver.
-References: <1240191366-10029-1-git-send-email-ieidus@redhat.com>	<1240191366-10029-2-git-send-email-ieidus@redhat.com>	<1240191366-10029-3-git-send-email-ieidus@redhat.com>	<1240191366-10029-4-git-send-email-ieidus@redhat.com>	<1240191366-10029-5-git-send-email-ieidus@redhat.com>	<1240191366-10029-6-git-send-email-ieidus@redhat.com> <20090513161739.d801ab67.akpm@linux-foundation.org>
-In-Reply-To: <20090513161739.d801ab67.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	id S1762034AbZENAUk (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 20:20:40 -0400
+Date: Thu, 14 May 2009 09:18:50 +0900
+To: hancockrwd@gmail.com
+Cc: alan@lxorguk.ukuu.org.uk, flar@allandria.com,
+       schmitz@biophys.uni-duesseldorf.de, arnd@arndb.de,
+       linux-kernel@vger.kernel.org, jgarzik@pobox.com,
+       linux-ide@vger.kernel.org, takata@linux-m32r.org, geert@linux-m68k.org,
+       linux-m68k@vger.kernel.org, ysato@users.sourceforge.jp
+Subject: Re: [PATCH] ata: libata depends on HAS_DMA
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4A0B5E5A.4090906@gmail.com>
+References: <20090513043409.GA13577@cynthia.pants.nu>
+	<20090513095127.308b00e7@lxorguk.ukuu.org.uk>
+	<4A0B5E5A.4090906@gmail.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-Id: <20090514091928R.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Thu, 14 May 2009 09:18:51 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Mon, 20 Apr 2009 04:36:06 +0300
-> Izik Eidus <ieidus@redhat.com> wrote:
->
->   
->> Ksm is driver that allow merging identical pages between one or more
->> applications in way unvisible to the application that use it.
->> Pages that are merged are marked as readonly and are COWed when any
->> application try to change them.
->>
->> Ksm is used for cases where using fork() is not suitable,
->> one of this cases is where the pages of the application keep changing
->> dynamicly and the application cannot know in advance what pages are
->> going to be identical.
->>
->> Ksm works by walking over the memory pages of the applications it
->> scan in order to find identical pages.
->> It uses a two sorted data strctures called stable and unstable trees
->> to find in effective way the identical pages.
->>
->> When ksm finds two identical pages, it marks them as readonly and merges
->> them into single one page,
->> after the pages are marked as readonly and merged into one page, linux
->> will treat this pages as normal copy_on_write pages and will fork them
->> when write access will happen to them.
->>
->> Ksm scan just memory areas that were registred to be scanned by it.
->>
->> ...
->> +	copy_user_highpage(kpage, page1, addr1, vma);
->> ...
->>     
->
-> Breaks ppc64 allmodcofnig because that architecture doesn't export its
-> copy_user_page() to modules.
->
-> Architectures are inconsistent about this.  x86 _does_ export it,
-> because it bounces it to the exported copy_page().
->
-> So can I ask that you sit down and work out upon which architectures it
-> really makes sense to offer KSM?  Disallow the others in Kconfig and
-> arrange for copy_user_highpage() to be available on the allowed architectures?
->   
+On Wed, 13 May 2009 17:57:14 -0600
+Robert Hancock <hancockrwd@gmail.com> wrote:
 
-Hi
+> Alan Cox wrote:
+> >>> If it doesn't interfere with plain PIO mode, fine. 
+> >> I agree. There definitely needs to still be support for IDE ports that
+> >> don't have DMA capability.
+> > 
+> > There is - it's just if the platform doesn't implement the dma_* APIs you
+> > get a problem.
+> 
+> Wouldn't the easiest solution be to just dummy out the DMA API calls on 
+> this platform to always fail? That would fix these compile problems..
 
-There is some way (script) that i can run that will allow compile this 
-code for every possible arch?
-
-(I dont mind to allow it just for archs that support virtualization - 
-x86, ia64, powerpc, s390, but is it the right thing to do ?)
-> Thanks.
->   
-
+Can libata call dma_supported() per device to decide DMA or PIO mode?
+Then, we can solve this problem by add dummy DMA API (just calls BUG)
+on such architectures, without Kconfig magic or adding ifdef (like the
+old ide stack does), I think.
