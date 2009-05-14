@@ -1,117 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753155AbZENJNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbZENJOB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753155AbZENJNK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 05:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZENJMz
+	id S1754873AbZENJOB (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 05:14:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZENJNv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 05:12:55 -0400
-Received: from e2.ny.us.ibm.com ([32.97.182.142]:44013 "EHLO e2.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751010AbZENJMy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 05:12:54 -0400
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       Subrata Modak <subrata@linux.vnet.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
-Date: Thu, 14 May 2009 14:42:47 +0530
-Message-Id: <20090514091247.32082.38639.sendpatchset@subratamodak.linux.ibm.com>
-Subject: Re:[PATCH] Fix Warnining in arch/x86/kernel/signal.c
+	Thu, 14 May 2009 05:13:51 -0400
+Received: from vervifontaine.sonytel.be ([80.88.33.193]:35085 "EHLO
+	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1752931AbZENJNu (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 05:13:50 -0400
+Date: Thu, 14 May 2009 11:13:49 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+cc: Marc Dionne <marc.c.dionne@gmail.com>,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: Regression in 2.6.30 - /dev/pts - mount options - bisected
+In-Reply-To: <20090513171519.GA937@linux.vnet.ibm.com>
+Message-ID: <alpine.LRH.2.00.0905141113220.2225@vixen.sonytel.be>
+References: <6041d2000905081454x4c9d8818oaccbcd14d1f4a506@mail.gmail.com> <alpine.LRH.2.00.0905131440010.28386@vixen.sonytel.be> <20090513171519.GA937@linux.vnet.ibm.com>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=ISO-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Hiroshi-san,
-
-On Thu, 2009-05-14 at 09:24 +0900, Hiroshi Shimamoto wrote:
-H. Peter Anvin wrote:
-> > Ingo Molnar wrote:
-> >>>>>  
-> >>>>>         if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
-> >>>>>                 goto badframe;
-> >>>>> -       if (__get_user(set.sig[0], &frame->sc.oldmask) || (_NSIG_WORDS > 1
-> >>>>> -               && __copy_from_user(&set.sig[1], &frame->extramask,
-> >>>>> -                                   sizeof(frame->extramask))))
-> >>>>> +
-> >>>>> +        if ( (__copy_from_user(&set.sig[1], &frame->extramask,
-> >>>>> +                sizeof(frame->extramask)) && _NSIG_WORDS > 1) || 
-> >>>>> +                __get_user(set.sig[0], &frame->sc.oldmask))
-> >>>>>                 goto badframe;
-> >>>> I'm not sure why this eliminates that warning.
-> >>>> set.sig[0] may not be initialized too, if __copy_from_user() failed.
-> >>> True, but only when either or both of __copy_from_user() and
-> >>> (_NSIG_WORDS > 1) fails. But in all instances set.sig[1] gets
-> >>> initialized.
-> >>>
-> >>>> I don't have enough time to look at this right now, sorry.
-> >>>>
-> >>>> Another question, __copy_from_user() will be called even if
-> >>>> _NSIG_WORDS is less than 2, perhaps it never occurs.
-> >>>> I think, to check _NSIG_WORDS > 1 before calling __copy_from_user()
-> >>>> is better.
-> >>> Fine. Let Ingo/Thomas/Peter decide whether they would like this fix or
-> >>> drop it.
-> >> If you get the Acked-by from Hiroshi-san it looks good to me. He 
-> >> modified this code last.
-> >>
-> > 
-> > This seriously looks wrong to me.  If _NSIG_WORDS == 1, then calling
-> > __copy_from_user here is a serious error.
+On Wed, 13 May 2009, Sukadev Bhattiprolu wrote:
+> Geert Uytterhoeven [Geert.Uytterhoeven@sonycom.com] wrote:
 > 
-> Right. If _NSIG_WORDS is 1, sigset_t set has only sig[0], writing to
-> set.sig[1] means stack corruption.
+> | And indeed, disabling CONFIG_DEVPTS_MULTIPLE_INSTANCES in the Fedora-based
+> | config makes the problem go away, and brings back my terminal-emulators.
 > 
-> Subrata, could you try like this?
-> if ((_NSIG_WORDS > 1 && __copy_from_user(&set.sig[1], ...) ||
->       __get_user(set.sig[0], ...))
+> Yes, a patch is available for this at
 > 
+> 	http://lkml.org/lkml/2009/5/11/586
 > 
+> The patch has been merged into -mm.
 
-How about now ? Thanks for pointing that out. My mistake ;-)
+Thanks, I missed that one, as there were no replies to Marc's email.
 
-Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
-Cc: H. Peter Anvin <hpa@zytor.com>,
-Cc: Ingo Molnar <mingo@elte.hu>,
-Cc: x86@kernel.org,
-Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-Cc: Andi Kleen <andi@firstfloor.org>,
-Cc: Andi Kleen <ak@linux.intel.com>,
-Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-Cc: Ingo Molnar <mingo@redhat.com>
-Subject: Re:[PATCH] Fix Warnining in arch/x86/kernel/signal.c
----
+With kind regards,
 
---- a/arch/x86/kernel/signal.c	2009-05-14 11:27:15.000000000 +0530
-+++ b/arch/x86/kernel/signal.c	2009-05-14 14:36:24.000000000 +0530
-@@ -576,9 +576,9 @@ unsigned long sys_sigreturn(struct pt_re
- 
- 	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
- 		goto badframe;
--	if (__get_user(set.sig[0], &frame->sc.oldmask) || (_NSIG_WORDS > 1
--		&& __copy_from_user(&set.sig[1], &frame->extramask,
--				    sizeof(frame->extramask))))
-+	if ((_NSIG_WORDS > 1 && __copy_from_user(&set.sig[1],
-+		&frame->extramask, sizeof(frame->extramask))) ||
-+		__get_user(set.sig[0], &frame->sc.oldmask))
- 		goto badframe;
- 
- 	sigdelsetmask(&set, ~_BLOCKABLE);
+Geert Uytterhoeven
+Software Architect
+Techsoft Centre
 
----
-Regards--
-Subrata
+Technology and Software Centre Europe
+The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
 
-> I wonder whether gcc really complains about the case of
-> __get_user(set.sig[0], ...) failure.
-> Why, the case which sig[0] initialized and sig[1] uninitialized is NG
-> and the case which sig[0] uninitialized and sig[1] initialized is OK.
-> 
-> Thanks,
-> Hiroshi
+Phone:    +32 (0)2 700 8453
+Fax:      +32 (0)2 700 8622
+E-mail:   Geert.Uytterhoeven@sonycom.com
+Internet: http://www.sony-europe.com/
+
+A division of Sony Europe (Belgium) N.V.
+VAT BE 0413.825.160 · RPR Brussels
+Fortis · BIC GEBABEBB · IBAN BE41293037680010
