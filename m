@@ -1,77 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759604AbZENX2T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757686AbZENXiX@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759604AbZENX2T (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:28:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755967AbZENX2G
+	id S1757686AbZENXiX (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:38:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754272AbZENXiM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 19:28:06 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:56031 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754902AbZENX2E (ORCPT
+	Thu, 14 May 2009 19:38:12 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:46491 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753241AbZENXiL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 19:28:04 -0400
+	Thu, 14 May 2009 19:38:11 -0400
 From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Subject: Re: [PATCH -mm] vmscan: protect a fraction of file backed mapped pages from reclaim
-Cc: kosaki.motohiro@jp.fujitsu.com, Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-In-Reply-To: <alpine.DEB.1.10.0905141612100.15881@qirst.com>
-References: <20090513084306.5874.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0905141612100.15881@qirst.com>
-Message-Id: <20090515082312.F5B6.A69D9226@jp.fujitsu.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Subject: Re: kernel BUG at mm/slqb.c:1411!
+Cc: kosaki.motohiro@jp.fujitsu.com, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Minchan Kim <minchan.kim@gmail.com>, linux-mm <linux-mm@kvack.org>,
+       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>
+In-Reply-To: <20090514175332.9B7B.A69D9226@jp.fujitsu.com>
+References: <1242289830.21646.5.camel@penberg-laptop> <20090514175332.9B7B.A69D9226@jp.fujitsu.com>
+Message-Id: <20090515083726.F5BF.A69D9226@jp.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
 Content-Transfer-Encoding: 7bit
 X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 15 May 2009 08:28:02 +0900 (JST)
+Date: Fri, 15 May 2009 08:38:04 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> On Wed, 13 May 2009, KOSAKI Motohiro wrote:
+> > On Wed, 2009-05-13 at 17:37 +0900, Minchan Kim wrote:
+> > > On Wed, 13 May 2009 16:42:37 +0900 (JST)
+> > > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
+> > > 
+> > > Hmm. I don't know slqb well.
+> > > So, It's just my guess. 
+> > > 
+> > > We surely increase l->nr_partial in  __slab_alloc_page.
+> > > In between l->nr_partial++ and call __cache_list_get_page, Who is decrease l->nr_partial again.
+> > > After all, __cache_list_get_page return NULL and hit the VM_BUG_ON.
+> > > 
+> > > Comment said :
+> > > 
+> > >         /* Protects nr_partial, nr_slabs, and partial */
+> > >   spinlock_t    page_lock;
+> > > 
+> > > As comment is right, We have to hold the l->page_lock ?
+> > 
+> > Makes sense. Nick? Motohiro-san, can you try this patch please?
 > 
-> > > All these expiration modifications do not take into account that a desktop
-> > > may sit idle for hours while some other things run in the background (like
-> > > backups at night or updatedb and other maintenance things). This still
-> > > means that the desktop will be usuable in the morning.
-> >
-> > Have you seen this phenomenom?
-> > I always use linux desktop for development. but I haven't seen it.
-> > perhaps I have no luck. I really want to know reproduce way.
-> >
-> > Please let me know reproduce way.
-> 
-> Run a backup (or rsync) over a few hundred GB.
+> This issue is very rarely. please give me one night.
 
 -ENOTREPRODUCED
 
-umm.
-May I ask detail operation?
-
-
-> > > The percentage of file backed pages protected is set via
-> > > /proc/sys/vm/file_mapped_ratio. This defaults to 20%.
-> >
-> > Why do you think typical mapped ratio is less than 20% on desktop machine?
-> 
-> Observation of the typical mapped size of Firefox under KDE.
-
-My point is, desktop people have very various mapped ratio.
-Do you oppose this?
-
-
-> > key point is access-once vs access-many.
-> 
-> Nothing against it if it works.
-> 
+I guess your patch is right fix. thanks!
 
 
 
