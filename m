@@ -1,143 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762209AbZENXNA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763558AbZENXN1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762209AbZENXNA (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:13:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762374AbZENW7I
+	id S1763558AbZENXN1 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:13:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762322AbZENW71
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:59:08 -0400
-Received: from mail.windriver.com ([147.11.1.11]:43877 "EHLO mail.wrs.com"
+	Thu, 14 May 2009 18:59:27 -0400
+Received: from kroah.org ([198.145.64.141]:46263 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1760004AbZENW7H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:59:07 -0400
-Message-ID: <4A0CA203.7050907@windriver.com>
-Date: Thu, 14 May 2009 17:58:11 -0500
-From: Jason Wessel <jason.wessel@windriver.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	id S1762379AbZENW70 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:59:26 -0400
+Date: Thu, 14 May 2009 15:54:13 -0700
+From: Greg KH <gregkh@suse.de>
+To: linux-kernel@vger.kernel.org, stable@kernel.org
+Cc: Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk
+Subject: [patch 00/28] 2.6.27.24-stable review
+Message-ID: <20090514225413.GA705@kroah.com>
 MIME-Version: 1.0
-To: jbarnes@virtuousgeek.org
-CC: Andrew Morton <akpm@linux-foundation.org>, eric@anholt.net,
-       airlied@redhat.com, Randy Dunlap <randy.dunlap@oracle.com>,
-       lkml <linux-kernel@vger.kernel.org>
-Subject: [PATCH] sysrq, intel_fb: fix sysrq g collision
-Content-Type: multipart/mixed;
- boundary="------------020401080406080701050509"
-X-OriginalArrivalTime: 14 May 2009 22:58:11.0828 (UTC) FILETIME=[74C39B40:01C9D4E7]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is a multi-part message in MIME format.
---------------020401080406080701050509
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
 
+This is the start of the stable review cycle for the 2.6.27.24 release.
+There are 28 patches in this series, all will be posted as a response to
+this one.  If anyone has any issues with these being applied, please let
+us know.  If anyone is a maintainer of the proper subsystem, and wants
+to add a Signed-off-by: line to the patch, please respond with it.
 
-This is patch is both a clean up and a regression fix because two things
-in the mainline kernel can register for sysrq-g, which is certainly a
-problem when you want to use both.
+These patches are sent out with a number of different people on the Cc:
+line.  If you wish to be a reviewer, please email stable@kernel.org to
+add your name to the list.  If you want to be off the reviewer list,
+also email us.
 
-I talked to Randy and Jesse briefly about changing the intel fb video
-driver to use 'v' instead of 'g' and they agreed it would be ok to see a
-patch.  Hopefully each will ack this patch, or discuss it further.   If
-they ack the patch, I can send it on to Linus for consideration.
+Responses should be made by Saturday, May 16, 20:00:00 UTC.  Anything
+received after that time might be too late.
 
-The long term intent here is to get mode switching with a generic kernel
-debug front end, with the short term intent to fix the sysrq collision.
+The whole patch series can be found in one patch at:
+	kernel.org/pub/linux/kernel/v2.6/stable-review/patch-2.6.27.24-rc1.gz
+and the diffstat can be found below.
 
-Thanks,
-Jason.
+thanks,
 
---------------020401080406080701050509
-Content-Type: text/x-diff;
- name="0001-Cleanup-sysrq.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="0001-Cleanup-sysrq.patch"
+greg k-h
 
-From: Jason Wessel <jason.wessel@windriver.com>
-Date: Wed, 13 May 2009 21:56:59 -0500
-Subject: [PATCH] sysrq, intel_fb: fix sysrq g collision
-
-Commit 79e539453b34e35f39299a899d263b0a1f1670bd introduced a
-regression where you cannot use sysrq 'g' to enter kgdb.  The solution
-is to move the intel fb sysrq over to V for video instead of G for
-graphics.  The SMP VOYAGER code to register for the sysrq-v is not
-anywhere to be found in the mainline kernel, so the comments in the
-code were cleaned up as well.
-
-This patch also cleans up the sysrq definitions for kgdb to make it
-generic for the kernel debugger, such that the sysrq 'g' can be used
-in the future to enter a gdbstub or another kernel debugger.
-
-Signed-off-by: Jason Vessel <jason.wessel@windriver.com>
-
----
- drivers/char/sysrq.c            |    4 ++--
- drivers/gpu/drm/i915/intel_fb.c |    4 ++--
- kernel/kgdb.c                   |    4 ++--
- 3 files changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/char/sysrq.c b/drivers/char/sysrq.c
-index b0a6a3e..d6a807f 100644
---- a/drivers/char/sysrq.c
-+++ b/drivers/char/sysrq.c
-@@ -406,7 +406,7 @@ static struct sysrq_key_op *sysrq_key_table[36] = {
- 	&sysrq_showlocks_op,		/* d */
- 	&sysrq_term_op,			/* e */
- 	&sysrq_moom_op,			/* f */
--	/* g: May be registered by ppc for kgdb */
-+	/* g: May be registered for the kernel debugger */
- 	NULL,				/* g */
- 	NULL,				/* h - reserved for help */
- 	&sysrq_kill_op,			/* i */
-@@ -431,7 +431,7 @@ static struct sysrq_key_op *sysrq_key_table[36] = {
- 	&sysrq_sync_op,			/* s */
- 	&sysrq_showstate_op,		/* t */
- 	&sysrq_mountro_op,		/* u */
--	/* v: May be registered at init time by SMP VOYAGER */
-+	/* v: May be registered for frame buffer video console restore */
- 	NULL,				/* v */
- 	&sysrq_showstate_blocked_op,	/* w */
- 	/* x: May be registered on ppc/powerpc for xmon */
-diff --git a/drivers/gpu/drm/i915/intel_fb.c b/drivers/gpu/drm/i915/intel_fb.c
-index 3e094be..e4652dc 100644
---- a/drivers/gpu/drm/i915/intel_fb.c
-+++ b/drivers/gpu/drm/i915/intel_fb.c
-@@ -864,7 +864,7 @@ static void intelfb_sysrq(int dummy1, struct tty_struct *dummy3)
- 
- static struct sysrq_key_op sysrq_intelfb_restore_op = {
-         .handler = intelfb_sysrq,
--        .help_msg = "force-fb(G)",
-+        .help_msg = "force-fb(V)",
-         .action_msg = "Restore framebuffer console",
- };
- 
-@@ -898,7 +898,7 @@ int intelfb_probe(struct drm_device *dev)
- 		ret = intelfb_single_fb_probe(dev);
- 	}
- 
--	register_sysrq_key('g', &sysrq_intelfb_restore_op);
-+	register_sysrq_key('v', &sysrq_intelfb_restore_op);
- 
- 	return ret;
- }
-diff --git a/kernel/kgdb.c b/kernel/kgdb.c
-index e4dcfb2..9147a31 100644
---- a/kernel/kgdb.c
-+++ b/kernel/kgdb.c
-@@ -1583,8 +1583,8 @@ static void sysrq_handle_gdb(int key, struct tty_struct *tty)
- 
- static struct sysrq_key_op sysrq_gdb_op = {
- 	.handler	= sysrq_handle_gdb,
--	.help_msg	= "Gdb",
--	.action_msg	= "GDB",
-+	.help_msg	= "debug(G)",
-+	.action_msg	= "DEBUG",
- };
- #endif
- 
--- 
-1.6.3.9.g6345d
-
-
---------------020401080406080701050509--
+ Documentation/filesystems/Locking |   26 +++--
+ Makefile                          |    2 +-
+ drivers/i2c/algos/i2c-algo-bit.c  |    2 +-
+ drivers/i2c/algos/i2c-algo-pca.c  |   11 ++
+ drivers/md/bitmap.c               |   29 ++--
+ drivers/md/md.c                   |    7 +-
+ drivers/md/raid10.c               |   12 +-
+ drivers/net/ehea/ehea_main.c      |   31 +++--
+ drivers/serial/mpc52xx_uart.c     |    2 +-
+ drivers/usb/gadget/usbstring.c    |    6 +-
+ drivers/video/fb_defio.c          |    3 +-
+ fs/buffer.c                       |   20 ++-
+ fs/cifs/cifs_unicode.h            |    7 +
+ fs/cifs/cifssmb.c                 |   17 +--
+ fs/cifs/connect.c                 |    6 +-
+ fs/cifs/misc.c                    |    5 +-
+ fs/cifs/readdir.c                 |    2 +-
+ fs/cifs/sess.c                    |   44 +++---
+ fs/eventpoll.c                    |    2 +-
+ fs/ext4/ext4.h                    |    2 +-
+ fs/ext4/inode.c                   |    5 +-
+ fs/fcntl.c                        |    6 +-
+ fs/fuse/file.c                    |    3 +-
+ fs/gfs2/ops_file.c                |    7 +-
+ fs/nfs/dir.c                      |    9 +-
+ fs/nfs/file.c                     |    9 +-
+ fs/nfsd/nfs4xdr.c                 |   16 ++-
+ fs/ocfs2/file.c                   |   94 ++++++++++---
+ fs/ocfs2/mmap.c                   |    6 +-
+ fs/splice.c                       |  276 +++++++++++++++++++++++--------------
+ fs/ubifs/file.c                   |    9 +-
+ fs/xfs/linux-2.6/xfs_file.c       |    4 +-
+ include/linux/buffer_head.h       |    2 +-
+ include/linux/mm.h                |    3 +-
+ include/linux/splice.h            |   12 ++
+ mm/memory.c                       |  132 +++++++++++++-----
+ 36 files changed, 547 insertions(+), 282 deletions(-)
