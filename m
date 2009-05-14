@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762354AbZENW7Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759977AbZENXAH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762354AbZENW7Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:59:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757258AbZENWnB
+	id S1759977AbZENXAH (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:00:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756776AbZENWnF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:43:01 -0400
-Received: from kroah.org ([198.145.64.141]:52735 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:43:05 -0400
+Received: from kroah.org ([198.145.64.141]:52764 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756355AbZENWmj (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:39 -0400
+	id S1756433AbZENWml (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:41 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:28 2009
-Message-Id: <20090514223528.265736331@mini.kroah.org>
+Message-Id: <20090514223528.516280955@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:33:23 -0700
+Date: Thu, 14 May 2009 15:33:25 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
-       Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 48/51] splice: fix i_mutex locking in generic_splice_write()
+       alan@lxorguk.ukuu.org.uk, Hannes Hering <hering2@de.ibm.com>,
+       Jan-Bernd Themann <themann@de.ibm.com>,
+       "David S. Miller" <davem@davemloft.net>
+Subject: [patch 50/51] ehea: fix invalid pointer access
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=splice-fix-i_mutex-locking-in-generic_splice_write.patch
+Content-Disposition: inline; filename=ehea-fix-invalid-pointer-access.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,64 +40,69 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Miklos Szeredi <miklos@szeredi.hu>
+From: Hannes Hering <hering2@de.ibm.com>
 
-commit eb443e5a25d43996deb62b9bcee1a4ce5dea2ead upstream.
+commit 0b2febf38a33d7c40fb7bb4a58c113a1fa33c412 upstream.
 
-Rearrange locking of i_mutex on destination so it's only held while
-buffers are copied with the pipe_to_file() actor, and not while
-waiting for more data on the pipe.
+This patch fixes an invalid pointer access in case the receive queue
+holds no pointer to the next skb when the queue is empty.
 
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
-Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
+Signed-off-by: Hannes Hering <hering2@de.ibm.com>
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+Signed-off-by: David S. Miller <davem@davemloft.net>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/splice.c |   34 +++++++++++++++++++++++-----------
- 1 file changed, 23 insertions(+), 11 deletions(-)
+ drivers/net/ehea/ehea_main.c |   31 ++++++++++++++++++-------------
+ 1 file changed, 18 insertions(+), 13 deletions(-)
 
---- a/fs/splice.c
-+++ b/fs/splice.c
-@@ -894,17 +894,29 @@ generic_file_splice_write(struct pipe_in
- 	};
- 	ssize_t ret;
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -529,14 +529,17 @@ static inline struct sk_buff *get_skb_by
+ 	x &= (arr_len - 1);
  
--	WARN_ON(S_ISFIFO(inode->i_mode));
--	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
--	ret = file_remove_suid(out);
--	if (likely(!ret)) {
--		if (pipe->inode)
--			mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
--		ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
--		if (pipe->inode)
--			mutex_unlock(&pipe->inode->i_mutex);
--	}
--	mutex_unlock(&inode->i_mutex);
-+	if (pipe->inode)
-+		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_PARENT);
+ 	pref = skb_array[x];
+-	prefetchw(pref);
+-	prefetchw(pref + EHEA_CACHE_LINE);
++	if (pref) {
++		prefetchw(pref);
++		prefetchw(pref + EHEA_CACHE_LINE);
 +
-+	splice_from_pipe_begin(&sd);
-+	do {
-+		ret = splice_from_pipe_next(pipe, &sd);
-+		if (ret <= 0)
-+			break;
-+
-+		mutex_lock_nested(&inode->i_mutex, I_MUTEX_CHILD);
-+		ret = file_remove_suid(out);
-+		if (!ret)
-+			ret = splice_from_pipe_feed(pipe, &sd, pipe_to_file);
-+		mutex_unlock(&inode->i_mutex);
-+	} while (ret > 0);
-+	splice_from_pipe_end(pipe, &sd);
-+
-+	if (pipe->inode)
-+		mutex_unlock(&pipe->inode->i_mutex);
-+
-+	if (sd.num_spliced)
-+		ret = sd.num_spliced;
-+
- 	if (ret > 0) {
- 		unsigned long nr_pages;
++		pref = (skb_array[x]->data);
++		prefetch(pref);
++		prefetch(pref + EHEA_CACHE_LINE);
++		prefetch(pref + EHEA_CACHE_LINE * 2);
++		prefetch(pref + EHEA_CACHE_LINE * 3);
++	}
  
+-	pref = (skb_array[x]->data);
+-	prefetch(pref);
+-	prefetch(pref + EHEA_CACHE_LINE);
+-	prefetch(pref + EHEA_CACHE_LINE * 2);
+-	prefetch(pref + EHEA_CACHE_LINE * 3);
+ 	skb = skb_array[skb_index];
+ 	skb_array[skb_index] = NULL;
+ 	return skb;
+@@ -553,12 +556,14 @@ static inline struct sk_buff *get_skb_by
+ 	x &= (arr_len - 1);
+ 
+ 	pref = skb_array[x];
+-	prefetchw(pref);
+-	prefetchw(pref + EHEA_CACHE_LINE);
+-
+-	pref = (skb_array[x]->data);
+-	prefetchw(pref);
+-	prefetchw(pref + EHEA_CACHE_LINE);
++	if (pref) {
++		prefetchw(pref);
++		prefetchw(pref + EHEA_CACHE_LINE);
++
++		pref = (skb_array[x]->data);
++		prefetchw(pref);
++		prefetchw(pref + EHEA_CACHE_LINE);
++	}
+ 
+ 	skb = skb_array[wqe_index];
+ 	skb_array[wqe_index] = NULL;
 
 
