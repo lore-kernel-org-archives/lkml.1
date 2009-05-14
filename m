@@ -1,45 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756800AbZENN4Z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752510AbZENN4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756800AbZENN4Z (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 09:56:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753348AbZENN4N
+	id S1752510AbZENN4l (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 09:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759400AbZENN4T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 09:56:13 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:42307 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753221AbZENN4N (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 09:56:13 -0400
-Date: Thu, 14 May 2009 16:01:38 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Ulrich Drepper <drepper@gmail.com>
-Cc: Harvey Harrison <harvey.harrison@gmail.com>,
-       Andi Kleen <andi@firstfloor.org>,
-       Tobias Doerffel <tobias.doerffel@gmail.com>,
-       LKML <linux-kernel@vger.kernel.org>
-Subject: Re: Specific support for Intel Atom architecture
-Message-ID: <20090514140138.GB10933@one.firstfloor.org>
-References: <200904301408.09370.tobias.doerffel@gmail.com> <877i0xib7d.fsf@basil.nowhere.org> <a36005b50905120720p14e0ea0av79f99551262a920a@mail.gmail.com> <20090512150408.GH19296@one.firstfloor.org> <a36005b50905121045s62c16760p3aba003647a572c7@mail.gmail.com> <1242277453.23058.35.camel@brick> <a36005b50905140638r56f73095kfc669bae1333e2bd@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <a36005b50905140638r56f73095kfc669bae1333e2bd@mail.gmail.com>
-User-Agent: Mutt/1.4.2.1i
+	Thu, 14 May 2009 09:56:19 -0400
+Received: from www.tglx.de ([62.245.132.106]:43479 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758604AbZENN4S (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 09:56:18 -0400
+Date: Thu, 14 May 2009 15:54:56 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Stanislaw Gruszka <sgruszka@redhat.com>
+cc: Ingo Molnar <mingo@elte.hu>, Oleg Nesterov <oleg@redhat.com>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/2] itimers: periodic timers fixes
+In-Reply-To: <20090514153908.0e689f70@dhcp-lab-109.englab.brq.redhat.com>
+Message-ID: <alpine.LFD.2.00.0905141554080.3561@localhost.localdomain>
+References: <20090402141135.655d1b2b@dhcp-lab-109.englab.brq.redhat.com> <20090402165753.GA12793@elte.hu> <20090415142232.46a97f70@dhcp-lab-109.englab.brq.redhat.com> <20090415135902.GC12760@elte.hu> <alpine.LFD.2.00.0905122308350.3561@localhost.localdomain>
+ <20090514153908.0e689f70@dhcp-lab-109.englab.brq.redhat.com>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 14, 2009 at 06:38:48AM -0700, Ulrich Drepper wrote:
-> On Wed, May 13, 2009 at 10:04 PM, Harvey Harrison
-> <harvey.harrison@gmail.com> wrote:
-> > It's called be16_to_cpup, or on x86, swab16p()
+On Thu, 14 May 2009, Stanislaw Gruszka wrote:
+> On Tue, 12 May 2009 23:11:57 +0200 (CEST)
+> Thomas Gleixner <tglx@linutronix.de> wrote:
 > 
-> Indeed.  If now somebody with an Atom could test whether using movbe
-> has an advantage (my guess is that there is a slight advantage) then
+> > On Wed, 15 Apr 2009, Ingo Molnar wrote:
+> > > > Could the patches be merged and possible other work done in later 
+> > > > time? Or perhaps I should rework on them?
+> > > 
+> > > It's up to Thomas - but they certainly looked good to me.
+> > 
+> > Huch, did I inherit the cputimers horror as a gratification for
+> > touching kernel/*timer* at some point ?
+> > 
+> > Seriously, give me a day or two to have a close look. I'm fighting
+> > with a set of other timer related patches which I have delayed long
+> > enough already.
+> 
+> Thomas is your timers work accessible somewhere? I'm planing to do more
+> changes in posix timers area and don't want to duplicate your work.
 
-How would you test that?
+I did not touch posix timers and I'm not planing to do so.
 
--Andi
+Thanks,
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+	tglx
