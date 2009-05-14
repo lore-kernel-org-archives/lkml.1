@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754459AbZENWpT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758927AbZENW4o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754459AbZENWpT (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:45:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756114AbZENWmG
+	id S1758927AbZENW4o (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:56:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756980AbZENWmw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:06 -0400
-Received: from kroah.org ([198.145.64.141]:51531 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:52 -0400
+Received: from kroah.org ([198.145.64.141]:52608 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755883AbZENWmD (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:03 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:22 2009
-Message-Id: <20090514223522.005939835@mini.kroah.org>
+	id S1756504AbZENWma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:30 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:26 2009
+Message-Id: <20090514223526.767911677@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:32:46 -0700
+Date: Thu, 14 May 2009 15:33:14 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,10 +25,10 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Jean Delvare <khali@linux-fr.org>
-Subject: [patch 11/51] hwmon: (w83781d) Fix W83782D support (NULL pointer dereference)
+       alan@lxorguk.ukuu.org.uk, Trond Myklebust <Trond.Myklebust@netapp.com>
+Subject: [patch 39/51] NFS: Fix the notifications when renaming onto an existing file
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=hwmon-fix-w83782d-support.patch
+Content-Disposition: inline; filename=nfs-fix-the-notifications-when-renaming-onto-an-existing-file.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -38,36 +38,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Jean Delvare <khali@linux-fr.org>
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
 
-Commit 848ddf116b3d1711c956fac8627be12dfe8d736f upstream
+commit b1e4adf4ea41bb8b5a7bfc1a7001f137e65495df upstream.
 
-Commit 360782dde00a2e6e7d9fd57535f90934707ab8a8 (hwmon: (w83781d) Stop
-abusing struct i2c_client for ISA devices) broke W83782D support for
-devices connected on the ISA bus. You will hit a NULL pointer
-dereference as soon as you read any device attribute. Other devices,
-and W83782D devices on the SMBus, aren't affected.
+NFS appears to be returning an unnecessary "delete" notification when
+we're doing an atomic rename. See
 
-Reported-by: Michel Abraham
-Signed-off-by: Jean Delvare <khali@linux-fr.org>
-Tested-by: Michel Abraham
+  http://bugzilla.gnome.org/show_bug.cgi?id=575684
+
+The fix is to get rid of the redundant call to d_delete().
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/hwmon/w83781d.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ fs/nfs/dir.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
---- a/drivers/hwmon/w83781d.c
-+++ b/drivers/hwmon/w83781d.c
-@@ -1462,7 +1462,8 @@ static struct w83781d_data *w83781d_upda
- 				data->pwm[i] =
- 				    w83781d_read_value(data,
- 						       W83781D_REG_PWM[i]);
--				if ((data->type != w83782d || !client->driver)
-+				/* Only W83782D on SMBus has PWM3 and PWM4 */
-+				if ((data->type != w83782d || !client)
- 				    && i == 1)
- 					break;
- 			}
+--- a/fs/nfs/dir.c
++++ b/fs/nfs/dir.c
+@@ -1624,8 +1624,7 @@ static int nfs_rename(struct inode *old_
+ 		} else if (atomic_read(&new_dentry->d_count) > 1)
+ 			/* dentry still busy? */
+ 			goto out;
+-	} else
+-		nfs_drop_nlink(new_inode);
++	}
+ 
+ go_ahead:
+ 	/*
+@@ -1638,10 +1637,8 @@ go_ahead:
+ 	}
+ 	nfs_inode_return_delegation(old_inode);
+ 
+-	if (new_inode != NULL) {
++	if (new_inode != NULL)
+ 		nfs_inode_return_delegation(new_inode);
+-		d_delete(new_dentry);
+-	}
+ 
+ 	error = NFS_PROTO(old_dir)->rename(old_dir, &old_dentry->d_name,
+ 					   new_dir, &new_dentry->d_name);
+@@ -1650,6 +1647,8 @@ out:
+ 	if (rehash)
+ 		d_rehash(rehash);
+ 	if (!error) {
++		if (new_inode != NULL)
++			nfs_drop_nlink(new_inode);
+ 		d_move(old_dentry, new_dentry);
+ 		nfs_set_verifier(new_dentry,
+ 					nfs_save_change_attribute(new_dir));
 
 
