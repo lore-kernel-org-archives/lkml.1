@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763337AbZENXKz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762835AbZENXKi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763337AbZENXKz (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:10:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761162AbZENW65
+	id S1762835AbZENXKi (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:10:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762287AbZENW64
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:58:57 -0400
-Received: from kroah.org ([198.145.64.141]:46179 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:58:56 -0400
+Received: from kroah.org ([198.145.64.141]:46189 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762245AbZENW6u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:58:50 -0400
-X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:40 2009
-Message-Id: <20090514225240.749224877@mini.kroah.org>
+	id S1762295AbZENW6v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:58:51 -0400
+X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:41 2009
+Message-Id: <20090514225240.923018470@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:51:52 -0700
+Date: Thu, 14 May 2009 15:51:53 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -27,9 +27,9 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
        alan@lxorguk.ukuu.org.uk, Miklos Szeredi <mszeredi@suse.cz>,
        Jens Axboe <jens.axboe@oracle.com>
-Subject: [patch 26/28] splice: remove i_mutex locking in splice_from_pipe()
+Subject: [patch 27/28] splice: fix i_mutex locking in generic_splice_write()
 References: <20090514225126.907908936@mini.kroah.org>
-Content-Disposition: inline; filename=splice-remove-i_mutex-locking-in-splice_from_pipe.patch
+Content-Disposition: inline; filename=splice-fix-i_mutex-locking-in-generic_splice_write.patch
 In-Reply-To: <20090514225413.GA705@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,67 +41,62 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Miklos Szeredi <miklos@szeredi.hu>
 
-commit 2933970b960223076d6affcf7a77e2bc546b8102 upstream.
+commit eb443e5a25d43996deb62b9bcee1a4ce5dea2ead upstream.
 
-splice_from_pipe() is only called from two places:
-
-  - generic_splice_sendpage()
-  - splice_write_null()
-
-Neither of these require i_mutex to be taken on the destination inode.
+Rearrange locking of i_mutex on destination so it's only held while
+buffers are copied with the pipe_to_file() actor, and not while
+waiting for more data on the pipe.
 
 Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
 Signed-off-by: Jens Axboe <jens.axboe@oracle.com>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/splice.c |   18 ++----------------
- 1 file changed, 2 insertions(+), 16 deletions(-)
+ fs/splice.c |   34 +++++++++++++++++++++++-----------
+ 1 file changed, 23 insertions(+), 11 deletions(-)
 
 --- a/fs/splice.c
 +++ b/fs/splice.c
-@@ -782,7 +782,7 @@ EXPORT_SYMBOL(__splice_from_pipe);
-  * @actor:	handler that splices the data
-  *
-  * Description:
-- *    See __splice_from_pipe. This function locks the input and output inodes,
-+ *    See __splice_from_pipe. This function locks the pipe inode,
-  *    otherwise it's identical to __splice_from_pipe().
-  *
-  */
-@@ -791,7 +791,6 @@ ssize_t splice_from_pipe(struct pipe_ino
- 			 splice_actor *actor)
- {
- 	ssize_t ret;
--	struct inode *inode = out->f_mapping->host;
- 	struct splice_desc sd = {
- 		.total_len = len,
- 		.flags = flags,
-@@ -799,24 +798,11 @@ ssize_t splice_from_pipe(struct pipe_ino
- 		.u.file = out,
+@@ -893,17 +893,29 @@ generic_file_splice_write(struct pipe_in
  	};
+ 	ssize_t ret;
  
--	/*
--	 * The actor worker might be calling ->prepare_write and
--	 * ->commit_write. Most of the time, these expect i_mutex to
--	 * be held. Since this may result in an ABBA deadlock with
--	 * pipe->inode, we have to order lock acquiry here.
--	 *
--	 * Outer lock must be inode->i_mutex, as pipe_wait() will
--	 * release and reacquire pipe->inode->i_mutex, AND inode must
--	 * never be a pipe.
--	 */
 -	WARN_ON(S_ISFIFO(inode->i_mode));
 -	mutex_lock_nested(&inode->i_mutex, I_MUTEX_PARENT);
- 	if (pipe->inode)
--		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
-+		mutex_lock(&pipe->inode->i_mutex);
- 	ret = __splice_from_pipe(pipe, &sd, actor);
- 	if (pipe->inode)
- 		mutex_unlock(&pipe->inode->i_mutex);
+-	ret = file_remove_suid(out);
+-	if (likely(!ret)) {
+-		if (pipe->inode)
+-			mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_CHILD);
+-		ret = __splice_from_pipe(pipe, &sd, pipe_to_file);
+-		if (pipe->inode)
+-			mutex_unlock(&pipe->inode->i_mutex);
+-	}
 -	mutex_unlock(&inode->i_mutex);
++	if (pipe->inode)
++		mutex_lock_nested(&pipe->inode->i_mutex, I_MUTEX_PARENT);
++
++	splice_from_pipe_begin(&sd);
++	do {
++		ret = splice_from_pipe_next(pipe, &sd);
++		if (ret <= 0)
++			break;
++
++		mutex_lock_nested(&inode->i_mutex, I_MUTEX_CHILD);
++		ret = file_remove_suid(out);
++		if (!ret)
++			ret = splice_from_pipe_feed(pipe, &sd, pipe_to_file);
++		mutex_unlock(&inode->i_mutex);
++	} while (ret > 0);
++	splice_from_pipe_end(pipe, &sd);
++
++	if (pipe->inode)
++		mutex_unlock(&pipe->inode->i_mutex);
++
++	if (sd.num_spliced)
++		ret = sd.num_spliced;
++
+ 	if (ret > 0) {
+ 		unsigned long nr_pages;
  
- 	return ret;
- }
 
 
