@@ -1,66 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762632AbZENCp3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762559AbZENCrS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762632AbZENCp3 (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 22:45:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755223AbZENCpU
+	id S1762559AbZENCrS (ORCPT <rfc822;w@1wt.eu>);
+	Wed, 13 May 2009 22:47:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761187AbZENCrB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 22:45:20 -0400
-Received: from gate.crashing.org ([63.228.1.57]:40534 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761282AbZENCpT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 22:45:19 -0400
-Cc: pierre@ossman.eu, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Message-Id: <889F831A-D38C-43E8-BADB-BE772F7A3ADF@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Pierre Ossman <drzeus-sdhci@drzeus.cx>
-In-Reply-To: <1241790769-3843-1-git-send-email-galak@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed; delsp=yes
+	Wed, 13 May 2009 22:47:01 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:52458 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1754790AbZENCrB (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Wed, 13 May 2009 22:47:01 -0400
+Message-ID: <4A0B859B.8070801@cn.fujitsu.com>
+Date: Thu, 14 May 2009 10:44:43 +0800
+From: Lai Jiangshan <laijs@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+CC: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>,
+       linux-kernel@vger.kernel.org, mingo@elte.hu, fweisbec@gmail.com,
+       rostedt@goodmis.org, zhaolei@cn.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH v3] ftrace: add a tracepoint for	__raise_softirq_irqoff()
+References: <49FFDF9C.7040505@cn.fujitsu.com> <20090505161604.GA15524@Krystal> <4A07D3B3.10605@cn.fujitsu.com> <20090511134019.GB10932@Krystal>
+In-Reply-To: <20090511134019.GB10932@Krystal>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-Mime-Version: 1.0 (Apple Message framework v930.3)
-Subject: Re: [PATCH] mmc: Add fsl,esdhc as a valid compatible to bind against
-Date: Wed, 13 May 2009 21:45:08 -0500
-References: <1241790769-3843-1-git-send-email-galak@kernel.crashing.org>
-X-Mailer: Apple Mail (2.930.3)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Mathieu Desnoyers wrote:
+> 
+> I partially agree with you :
+> 
+> Yes, we should try to fix TRACE_EVENT, but we should fix it _before_ we
+> start using it widely. Circular header dependencies is a real problem
+> with TRACE_EVENT right now.
+> 
+> Until we fix this, I will be tempted to stay with a known-good solution,
+> which is DECLARE/DEFINE_TRACE.
+> 
+> 
 
-On May 8, 2009, at 8:52 AM, Kumar Gala wrote:
+I partially agree with you:
 
-> We plan to use fsl,esdhc going forward as the base compatible so  
-> update
-> the driver to bind against it.
->
-> Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-> ---
-> drivers/mmc/host/sdhci-of.c |    1 +
-> 1 files changed, 1 insertions(+), 0 deletions(-)
+Yes, Circular header dependencies is a real problem with TRACE_EVENT
+right now. It is also a problem with DECLARE_TRACE. It's a stubborn
+disease with C-Language (for complex headers). Can we fix C-Language?
 
-Any feedback or possibility of picking this up.
+o Macros in header (!CREATE_TRACE_POINTS)
 
-- k
+When CREATE_TRACE_POINTS is not defined, TRACE_EVENT is definitely
+the same as DECLARE_TRACE. Actually, TRACE_EVENT is:
 
->
->
-> diff --git a/drivers/mmc/host/sdhci-of.c b/drivers/mmc/host/sdhci-of.c
-> index 3ff4ac3..09cc597 100644
-> --- a/drivers/mmc/host/sdhci-of.c
-> +++ b/drivers/mmc/host/sdhci-of.c
-> @@ -277,6 +277,7 @@ static int __devexit sdhci_of_remove(struct  
-> of_device *ofdev)
-> static const struct of_device_id sdhci_of_match[] = {
-> 	{ .compatible = "fsl,mpc8379-esdhc", .data = &sdhci_esdhc, },
-> 	{ .compatible = "fsl,mpc8536-esdhc", .data = &sdhci_esdhc, },
-> +	{ .compatible = "fsl,esdhc", .data = &sdhci_esdhc, },
-> 	{ .compatible = "generic-sdhci", },
-> 	{},
-> };
-> -- 
-> 1.6.0.6
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+#define TRACE_EVENT(name, proto, args, struct, assign, print)	\
+	DECLARE_TRACE(name, PARAMS(proto), PARAMS(args))
+
+So TRACE_EVENT and DECLARE_TRACE are the same in header files.
+And so TRACE_EVENT and DECLARE_TRACE have the same advantages and
+disadvantages. More TRACE_EVENT equals to a known-good solution.
+
+o Macros in c-file
+
+tracepoint uses DEFINE_TRACE only.
+
+ftrace uses CREATE_TRACE_POINTS + TRACE_EVENT:
+	#define CREATE_TRACE_POINTS
+	#include <trace/events/sched.h> (which uses TRACE_EVENT)
+
+ftrace generates more code which uses the tracepoints.
+
+> 
+> Then add a forward declaration of
+> 
+> struct softirqaction;
+> 
+> At the top of trace/irq.h. I did it in quite a few places in the LTTng
+> tree. TP_PROTO just needs a forward declaration, not the full structure
+> declaration.
+> 
+
+Thank you for your valuable suggestions.
+
+You are the father of tracepoint and LTTng, your experience in
+LTTng is very useful for ftrace.
+
+I'm glad for your suggestions.
+
+
+Xiao Guangrong, could you add forward declarations of
+
+struct irqaction;
+struct softirq_action;
+
+at the top of trace/irq.h as Mathieu's suggestions.
+(and remove "#include <linux/interrupt.h>")
+
+Lai
+
 
