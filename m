@@ -1,91 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760829AbZENHyY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761269AbZENHzL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760829AbZENHyY (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 03:54:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755881AbZENHyO
+	id S1761269AbZENHzL (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 03:55:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759528AbZENHy5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 03:54:14 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:63776 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1754665AbZENHyN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 03:54:13 -0400
-Message-ID: <4A0BCDEE.5020708@cn.fujitsu.com>
-Date: Thu, 14 May 2009 15:53:18 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Thu, 14 May 2009 03:54:57 -0400
+Received: from www.tglx.de ([62.245.132.106]:49507 "EHLO www.tglx.de"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756857AbZENHy4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 03:54:56 -0400
+Date: Thu, 14 May 2009 09:53:44 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Jaswinder Singh Rajput <jaswinder@kernel.org>
+cc: Ingo Molnar <mingo@elte.hu>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/2] x86: apic/apic.c declare default_init_apic_ldr()
+ before it get used
+In-Reply-To: <1242251841.3364.17.camel@localhost.localdomain>
+Message-ID: <alpine.LFD.2.00.0905140952220.3561@localhost.localdomain>
+References: <1242251841.3364.17.camel@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: nauman@google.com, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH 07/18] io-controller: Export disk time used and nr	sectors
- dipatched through cgroups
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <1241553525-28095-8-git-send-email-vgoyal@redhat.com> <4A0A32CB.4020609@cn.fujitsu.com> <20090513145127.GB7696@redhat.com>
-In-Reply-To: <20090513145127.GB7696@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-> On Wed, May 13, 2009 at 10:39:07AM +0800, Gui Jianfeng wrote:
->> Vivek Goyal wrote:
->> ...
->>>  
->>> +/*
->>> + * traverse through all the io_groups associated with this cgroup and calculate
->>> + * the aggr disk time received by all the groups on respective disks.
->>> + */
->>> +static u64 calculate_aggr_disk_time(struct io_cgroup *iocg)
->>> +{
->>> +	struct io_group *iog;
->>> +	struct hlist_node *n;
->>> +	u64 disk_time = 0;
->>> +
->>> +	rcu_read_lock();
->>   This function is in slow-path, so no need to call rcu_read_lock(), just need to ensure
->>   that the caller already holds the iocg->lock.
->>
+On Thu, 14 May 2009, Jaswinder Singh Rajput wrote:
 > 
-> Or can we get rid of requirement of iocg_lock here and just read the io
-> group data under rcu read lock? Actually I am wondering why do we require
-> an iocg_lock here. We are not modifying the rcu protected list. We are
-> just traversing through it and reading the data.
+> default_init_apic_ldr() is also required for 64 bit so moving it out
+> from CONFIG_X86_32.
 
-  Yes, i think removing the iocg->lock from caller(io_cgroup_disk_time_read()) 
-  is a better choice.
+[linux-2.6-tip]$ git grep default_init_apic_ldr arch/x86/
+arch/x86/include/asm/apic.h:extern void default_init_apic_ldr(void);
+arch/x86/kernel/apic/apic.c:void default_init_apic_ldr(void)
+arch/x86/kernel/apic/probe_32.c:        .init_apic_ldr                  = default_init_apic_ldr,
 
-> 
-> Thanks
-> Vivek
-> 
->>> +	hlist_for_each_entry_rcu(iog, n, &iocg->group_data, group_node) {
->>> +		/*
->>> +		 * There might be groups which are not functional and
->>> +		 * waiting to be reclaimed upon cgoup deletion.
->>> +		 */
->>> +		if (rcu_dereference(iog->key))
->>> +			disk_time += iog->entity.total_service;
->>> +	}
->>> +	rcu_read_unlock();
->>> +
->>> +	return disk_time;
->>> +}
->>> +
->> -- 
->> Regards
->> Gui Jianfeng
-> 
-> 
-> 
+I have a hard time to see how 64bit requires that function.
 
--- 
-Regards
-Gui Jianfeng
+Thanks,
 
+	tglx
