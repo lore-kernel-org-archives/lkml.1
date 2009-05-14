@@ -1,333 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761624AbZENF56@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761704AbZENGGZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761624AbZENF56 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 01:57:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZENF5s
+	id S1761704AbZENGGZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 02:06:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbZENGGQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 01:57:48 -0400
-Received: from gw1.cosmosbay.com ([212.99.114.194]:41273 "EHLO
-	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750895AbZENF5r convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 01:57:47 -0400
-Message-ID: <4A0BB2CD.5010901@cosmosbay.com>
-Date: Thu, 14 May 2009 07:57:33 +0200
-From: Eric Dumazet <dada1@cosmosbay.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       linux-fsdevel@vger.kernel.org
-Subject: Re: [RESEND][PATCH] lseek: remove i_mutex
-References: <6.0.0.20.2.20090514092629.04f4e6b0@172.19.0.2>
-In-Reply-To: <6.0.0.20.2.20090514092629.04f4e6b0@172.19.0.2>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 14 May 2009 07:57:32 +0200 (CEST)
+	Thu, 14 May 2009 02:06:16 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38771 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753557AbZENGGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 02:06:15 -0400
+Subject: [PATCH -tip] x86: powernow-k8 move power management MSRs
+ declaration to msr-index.h
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Ingo Molnar <mingo@elte.hu>, "Langsdorf, Mark" <mark.langsdorf@amd.com>,
+       Dave Jones <davej@redhat.com>, x86 maintainers <x86@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Date: Thu, 14 May 2009 11:35:12 +0530
+Message-Id: <1242281112.4574.8.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hisashi Hifumi a écrit :
-> Hi, 
-> 
-> Following patch removes i_mutex from generic_file_llseek.
-> I think the reason of protecting lseek with i_mutex is just
-> touching i_size (and f_pos) atomically.
-> So i_mutex is no longer needed here by introducing i_size_read 
-> to read i_size.
-> I also made f_pos access atomic here without i_mutex regarding
-> former i_mutex holders by introducing file_pos_read/file_pos_write
-> that use seqlock to preserve atomicity.
-> 
-> Following patch removes i_mutex from generic_file_llseek, and deletes 
-> generic_file_llseek_nolock totally.
-> 
-> Currently there is i_mutex contention not only around lseek, but also fsync or write.
-> So,  I think we can mitigate i_mutex contention between fsync lseek and write by
-> removing i_mutex.
-> 
-> Thanks.
 
-One problem with this patch is :
+Keep all MSRs declaration in msr-index.h to easily access MSRs declaration.
 
-Currently on x86_32, filp kmem_cache uses 128 bytes
-per object, because sizeof(struct file) = 128
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/msr-index.h          |    9 +++++++++
+ arch/x86/kernel/cpu/cpufreq/powernow-k8.h |    9 +--------
+ 2 files changed, 10 insertions(+), 8 deletions(-)
 
-Adding a seqlock_t makes sizeof(struct file) = 136,
-and filp kmem_cache uses 192 or 256 bytes per object, a 50% or 100 % increase,
-depending on processor (64 or 128 bytes L1 cache lines)
+diff --git a/arch/x86/include/asm/msr-index.h b/arch/x86/include/asm/msr-index.h
+index 4d58d04..103a253 100644
+--- a/arch/x86/include/asm/msr-index.h
++++ b/arch/x86/include/asm/msr-index.h
+@@ -109,6 +109,15 @@
+ #define MSR_AMD64_IBSDCPHYSAD		0xc0011039
+ #define MSR_AMD64_IBSCTL		0xc001103a
+ 
++/* Power Management MSRs */
++#define MSR_FIDVID_CTL			0xc0010041
++#define MSR_FIDVID_STATUS		0xc0010042
++
++#define MSR_PSTATE_CUR_LIMIT		0xc0010061 /* Pstate current limit */
++#define MSR_PSTATE_CTRL			0xc0010062 /* Pstate control	*/
++#define MSR_PSTATE_STATUS		0xc0010063 /* Pstate Status	*/
++#define MSR_PSTATE_DEF_BASE		0xc0010064 /* base of Pstate	*/
++
+ /* Fam 10h MSRs */
+ #define MSR_FAM10H_MMIO_CONF_BASE	0xc0010058
+ #define FAM10H_MMIO_CONF_ENABLE		(1<<0)
+diff --git a/arch/x86/kernel/cpu/cpufreq/powernow-k8.h b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
+index 6c6698f..d420ea0 100644
+--- a/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
++++ b/arch/x86/kernel/cpu/cpufreq/powernow-k8.h
+@@ -73,9 +73,6 @@ struct powernow_k8_data {
+ /* the value to write is placed in edx:eax. For reads (rdmsr - opcode 0f 32), */
+ /* the register number is placed in ecx, and the data is returned in edx:eax. */
+ 
+-#define MSR_FIDVID_CTL      0xc0010041
+-#define MSR_FIDVID_STATUS   0xc0010042
+-
+ /* Field definitions within the FID VID Low Control MSR : */
+ #define MSR_C_LO_INIT_FID_VID     0x00010000
+ #define MSR_C_LO_NEW_VID          0x00003f00
+@@ -100,16 +97,12 @@ struct powernow_k8_data {
+ #define MSR_C_HI_STP_GNT_BENIGN	  0x00000001
+ 
+ 
+-/* Hardware Pstate _PSS and MSR definitions */
++/* Hardware Pstate _PSS */
+ #define USE_HW_PSTATE		0x00000080
+ #define HW_PSTATE_MASK 		0x00000007
+ #define HW_PSTATE_VALID_MASK 	0x80000000
+ #define HW_PSTATE_MAX_MASK	0x000000f0
+ #define HW_PSTATE_MAX_SHIFT	4
+-#define MSR_PSTATE_DEF_BASE 	0xc0010064 /* base of Pstate MSRs */
+-#define MSR_PSTATE_STATUS 	0xc0010063 /* Pstate Status MSR */
+-#define MSR_PSTATE_CTRL 	0xc0010062 /* Pstate control MSR */
+-#define MSR_PSTATE_CUR_LIMIT	0xc0010061 /* pstate current limit MSR */
+ 
+ /* define the two driver architectures */
+ #define CPU_OPTERON 0
+-- 
+1.6.0.6
 
-Maybe just use existing f_lock (spinlock) ?
-
-A seqlock is nice whe you have many readers on SMP.
-
-But on every file syscall (mentioned in your changelog) 
-every "seqlock reader" will have to take a reference on f_count
-any way, so the cache line is already dirtied : We already lost
-seqlock benefit. f_pos is not a "read mostly" field, its quite
-the reverse in the real world.
-
-
-> 
-> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-> 
-> diff -Nrup linux-2.6.30-rc5.org/fs/cifs/cifsfs.c linux-2.6.30-rc5.lseek/fs/cifs/cifsfs.c
-> --- linux-2.6.30-rc5.org/fs/cifs/cifsfs.c	2009-05-11 10:07:14.000000000 +0900
-> +++ linux-2.6.30-rc5.lseek/fs/cifs/cifsfs.c	2009-05-11 10:10:36.000000000 +0900
-> @@ -635,7 +635,7 @@ static loff_t cifs_llseek(struct file *f
->  		if (retval < 0)
->  			return (loff_t)retval;
->  	}
-> -	return generic_file_llseek_unlocked(file, offset, origin);
-> +	return generic_file_llseek(file, offset, origin);
->  }
->  
->  #ifdef CONFIG_CIFS_EXPERIMENTAL
-> diff -Nrup linux-2.6.30-rc5.org/fs/file_table.c linux-2.6.30-rc5.lseek/fs/file_table.c
-> --- linux-2.6.30-rc5.org/fs/file_table.c	2009-05-11 10:07:14.000000000 +0900
-> +++ linux-2.6.30-rc5.lseek/fs/file_table.c	2009-05-11 10:10:36.000000000 +0900
-> @@ -126,6 +126,7 @@ struct file *get_empty_filp(void)
->  
->  	INIT_LIST_HEAD(&f->f_u.fu_list);
->  	atomic_long_set(&f->f_count, 1);
-> +	f_pos_ordered_init(f);
->  	rwlock_init(&f->f_owner.lock);
->  	f->f_cred = get_cred(cred);
->  	spin_lock_init(&f->f_lock);
-> diff -Nrup linux-2.6.30-rc5.org/fs/gfs2/ops_file.c linux-2.6.30-rc5.lseek/fs/gfs2/ops_file.c
-> --- linux-2.6.30-rc5.org/fs/gfs2/ops_file.c	2009-05-11 10:07:15.000000000 +0900
-> +++ linux-2.6.30-rc5.lseek/fs/gfs2/ops_file.c	2009-05-11 10:10:36.000000000 +0900
-> @@ -63,11 +63,11 @@ static loff_t gfs2_llseek(struct file *f
->  		error = gfs2_glock_nq_init(ip->i_gl, LM_ST_SHARED, LM_FLAG_ANY,
->  					   &i_gh);
->  		if (!error) {
-> -			error = generic_file_llseek_unlocked(file, offset, origin);
-> +			error = generic_file_llseek(file, offset, origin);
->  			gfs2_glock_dq_uninit(&i_gh);
->  		}
->  	} else
-> -		error = generic_file_llseek_unlocked(file, offset, origin);
-> +		error = generic_file_llseek(file, offset, origin);
->  
->  	return error;
->  }
-> diff -Nrup linux-2.6.30-rc5.org/fs/ncpfs/file.c linux-2.6.30-rc5.lseek/fs/ncpfs/file.c
-> --- linux-2.6.30-rc5.org/fs/ncpfs/file.c	2009-03-24 08:12:14.000000000 +0900
-> +++ linux-2.6.30-rc5.lseek/fs/ncpfs/file.c	2009-05-11 10:10:36.000000000 +0900
-> @@ -286,7 +286,7 @@ static loff_t ncp_remote_llseek(struct f
->  {
->  	loff_t ret;
->  	lock_kernel();
-> -	ret = generic_file_llseek_unlocked(file, offset, origin);
-> +	ret = generic_file_llseek(file, offset, origin);
->  	unlock_kernel();
->  	return ret;
->  }
-> diff -Nrup linux-2.6.30-rc5.org/fs/nfs/file.c linux-2.6.30-rc5.lseek/fs/nfs/file.c
-> --- linux-2.6.30-rc5.org/fs/nfs/file.c	2009-05-11 10:07:15.000000000 +0900
-> +++ linux-2.6.30-rc5.lseek/fs/nfs/file.c	2009-05-11 10:10:36.000000000 +0900
-> @@ -188,10 +188,10 @@ static loff_t nfs_file_llseek(struct fil
->  			return (loff_t)retval;
->  
->  		spin_lock(&inode->i_lock);
-> -		loff = generic_file_llseek_unlocked(filp, offset, origin);
-> +		loff = generic_file_llseek(filp, offset, origin);
->  		spin_unlock(&inode->i_lock);
->  	} else
-> -		loff = generic_file_llseek_unlocked(filp, offset, origin);
-> +		loff = generic_file_llseek(filp, offset, origin);
->  	return loff;
->  }
->  
-> diff -Nrup linux-2.6.30-rc5.org/fs/read_write.c linux-2.6.30-rc5.lseek/fs/read_write.c
-> --- linux-2.6.30-rc5.org/fs/read_write.c	2009-05-11 10:07:15.000000000 +0900
-> +++ linux-2.6.30-rc5.lseek/fs/read_write.c	2009-05-11 10:10:36.000000000 +0900
-> @@ -31,23 +31,61 @@ const struct file_operations generic_ro_
->  
->  EXPORT_SYMBOL(generic_ro_fops);
->  
-> +static inline loff_t file_pos_read(struct file *file)
-> +{
-> +#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
-> +	loff_t pos;
-> +	unsigned int seq;
-> +
-> +	do {
-> +		seq = read_seqbegin(&file->f_pos_seqlock);
-> +		pos = file->f_pos;
-> +	} while (read_seqretry(&file->f_pos_seqlock, seq));
-> +	return pos;
-> +#elif BITS_PER_LONG == 32 && defined(CONFIG_PREEMPT)
-> +	loff_t pos;
-> +
-> +	preempt_disable();
-> +	pos = file->f_pos;
-> +	preempt_enable();
-> +	return pos;
-> +#else
-> +	return file->f_pos;
-> +#endif
-> +}
-> +
-> +static inline void file_pos_write(struct file *file, loff_t pos)
-> +{
-> +#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
-> +	write_seqlock(&file->f_pos_seqlock);
-> +	file->f_pos = pos;
-> +	write_sequnlock(&file->f_pos_seqlock);
-> +#elif BITS_PER_LONG == 32 && defined(CONFIG_PREEMPT)
-> +	preempt_disable();
-> +	file->f_pos = pos;
-> +	preempt_enable();
-> +#else
-> +	file->f_pos = pos;
-> +#endif
-> +}
-> +
->  /**
-> - * generic_file_llseek_unlocked - lockless generic llseek implementation
-> + * generic_file_llseek - generic llseek implementation for regular files
->   * @file:	file structure to seek on
->   * @offset:	file offset to seek to
->   * @origin:	type of seek
->   *
-> - * Updates the file offset to the value specified by @offset and @origin.
-> - * Locking must be provided by the caller.
-> + * This is a generic implemenation of ->llseek useable for all normal local
-> + * filesystems.  It just updates the file offset to the value specified by
-> + * @offset and @origin.
->   */
-> -loff_t
-> -generic_file_llseek_unlocked(struct file *file, loff_t offset, int origin)
-> +loff_t generic_file_llseek(struct file *file, loff_t offset, int origin)
->  {
->  	struct inode *inode = file->f_mapping->host;
->  
->  	switch (origin) {
->  	case SEEK_END:
-> -		offset += inode->i_size;
-> +		offset += i_size_read(inode);
->  		break;
->  	case SEEK_CUR:
->  		/*
-> @@ -57,8 +95,8 @@ generic_file_llseek_unlocked(struct file
->  		* write() or lseek() might have altered it
->  		*/
->  		if (offset == 0)
-> -			return file->f_pos;
-> -		offset += file->f_pos;
-> +			return file_pos_read(file);
-> +		offset += file_pos_read(file);
->  		break;
->  	}
->  
-> @@ -66,35 +104,13 @@ generic_file_llseek_unlocked(struct file
->  		return -EINVAL;
->  
->  	/* Special lock needed here? */
-> -	if (offset != file->f_pos) {
-> -		file->f_pos = offset;
-> +	if (offset != file_pos_read(file)) {
-> +		file_pos_write(file, offset);
->  		file->f_version = 0;
->  	}
->  
->  	return offset;
->  }
-> -EXPORT_SYMBOL(generic_file_llseek_unlocked);
-> -
-> -/**
-> - * generic_file_llseek - generic llseek implementation for regular files
-> - * @file:	file structure to seek on
-> - * @offset:	file offset to seek to
-> - * @origin:	type of seek
-> - *
-> - * This is a generic implemenation of ->llseek useable for all normal local
-> - * filesystems.  It just updates the file offset to the value specified by
-> - * @offset and @origin under i_mutex.
-> - */
-> -loff_t generic_file_llseek(struct file *file, loff_t offset, int origin)
-> -{
-> -	loff_t rval;
-> -
-> -	mutex_lock(&file->f_dentry->d_inode->i_mutex);
-> -	rval = generic_file_llseek_unlocked(file, offset, origin);
-> -	mutex_unlock(&file->f_dentry->d_inode->i_mutex);
-> -
-> -	return rval;
-> -}
->  EXPORT_SYMBOL(generic_file_llseek);
->  
->  loff_t no_llseek(struct file *file, loff_t offset, int origin)
-> @@ -359,16 +375,6 @@ ssize_t vfs_write(struct file *file, con
->  
->  EXPORT_SYMBOL(vfs_write);
->  
-> -static inline loff_t file_pos_read(struct file *file)
-> -{
-> -	return file->f_pos;
-> -}
-> -
-> -static inline void file_pos_write(struct file *file, loff_t pos)
-> -{
-> -	file->f_pos = pos;
-> -}
-> -
->  SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
->  {
->  	struct file *file;
-> diff -Nrup linux-2.6.30-rc5.org/fs/smbfs/file.c linux-2.6.30-rc5.lseek/fs/smbfs/file.c
-> --- linux-2.6.30-rc5.org/fs/smbfs/file.c	2009-03-24 08:12:14.000000000 +0900
-> +++ linux-2.6.30-rc5.lseek/fs/smbfs/file.c	2009-05-11 10:10:36.000000000 +0900
-> @@ -426,7 +426,7 @@ static loff_t smb_remote_llseek(struct f
->  {
->  	loff_t ret;
->  	lock_kernel();
-> -	ret = generic_file_llseek_unlocked(file, offset, origin);
-> +	ret = generic_file_llseek(file, offset, origin);
->  	unlock_kernel();
->  	return ret;
->  }
-> diff -Nrup linux-2.6.30-rc5.org/include/linux/fs.h linux-2.6.30-rc5.lseek/include/linux/fs.h
-> --- linux-2.6.30-rc5.org/include/linux/fs.h	2009-05-11 10:07:17.000000000 +0900
-> +++ linux-2.6.30-rc5.lseek/include/linux/fs.h	2009-05-11 10:10:36.000000000 +0900
-> @@ -896,6 +896,16 @@ static inline int ra_has_index(struct fi
->  #define FILE_MNT_WRITE_TAKEN	1
->  #define FILE_MNT_WRITE_RELEASED	2
->  
-> +/*
-> + * Use sequence lock to get consistent f_pos on 32-bit processors.
-> + */
-> +#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
-> +#define __NEED_F_POS_ORDERED
-> +#define f_pos_ordered_init(file) seqlock_init(&file->f_pos_seqlock)
-> +#else
-> +#define f_pos_ordered_init(file) do { } while (0)
-> +#endif
-> +
->  struct file {
->  	/*
->  	* fu_list becomes invalid after file_free is called and queued via
-> @@ -914,6 +924,9 @@ struct file {
->  	unsigned int 		f_flags;
->  	fmode_t			f_mode;
->  	loff_t			f_pos;
-> +#ifdef __NEED_F_POS_ORDERED
-> +	seqlock_t               f_pos_seqlock;
-> +#endif
->  	struct fown_struct	f_owner;
->  	const struct cred	*f_cred;
->  	struct file_ra_state	f_ra;
-> @@ -2215,8 +2228,6 @@ extern void
->  file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping);
->  extern loff_t no_llseek(struct file *file, loff_t offset, int origin);
->  extern loff_t generic_file_llseek(struct file *file, loff_t offset, int origin);
-> -extern loff_t generic_file_llseek_unlocked(struct file *file, loff_t offset,
-> -			int origin);
->  extern int generic_file_open(struct inode * inode, struct file * filp);
->  extern int nonseekable_open(struct inode * inode, struct file * filp);
->  
-> 
 
 
