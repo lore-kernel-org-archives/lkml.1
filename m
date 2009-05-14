@@ -1,75 +1,373 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755921AbZENQ5D@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761212AbZENQ6X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755921AbZENQ5D (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 12:57:03 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752881AbZENQ4w
+	id S1761212AbZENQ6X (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 12:58:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754425AbZENQ6L
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 12:56:52 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42244 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752551AbZENQ4v (ORCPT
+	Thu, 14 May 2009 12:58:11 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:41936 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755157AbZENQ6K (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 12:56:51 -0400
-Date: Thu, 14 May 2009 09:54:14 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Yinghai Lu <yinghai@kernel.org>
-Cc: mel@csn.ul.ie, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       cl@linux-foundation.org, suresh.b.siddha@intel.com,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       rusty@rustcorp.com.au, steiner@sgi.com, rientjes@google.com
-Subject: Re: [PATCH 5/5] mm: clear N_HIGH_MEMORY map before se set it again
- -v2
-Message-Id: <20090514095414.ba8356e5.akpm@linux-foundation.org>
-In-Reply-To: <4A0C4A2A.6080009@kernel.org>
-References: <4A05269D.8000701@kernel.org>
-	<20090512111623.GG25923@csn.ul.ie>
-	<4A0A64FB.4080504@kernel.org>
-	<20090513145950.GB28097@csn.ul.ie>
-	<4A0C4910.7090508@kernel.org>
-	<4A0C4A2A.6080009@kernel.org>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 14 May 2009 12:58:10 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+Subject: [KVM PATCH v8] kvm: add support for irqfd via eventfd-notification
+	interface
+To: kvm@vger.kernel.org
+Cc: viro@ZenIV.linux.org.uk, linux-kernel@vger.kernel.org, avi@redhat.com,
+       davidel@xmailserver.org
+Date: Thu, 14 May 2009 12:58:05 -0400
+Message-ID: <20090514165805.11345.98882.stgit@dev.haskins.net>
+User-Agent: StGIT/0.14.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 May 2009 09:43:22 -0700
-Yinghai Lu <yinghai@kernel.org> wrote:
+KVM provides a complete virtual system environment for guests, including
+support for injecting interrupts modeled after the real exception/interrupt
+facilities present on the native platform (such as the IDT on x86).
+Virtual interrupts can come from a variety of sources (emulated devices,
+pass-through devices, etc) but all must be injected to the guest via
+the KVM infrastructure.  This patch adds a new mechanism to inject a specific
+interrupt to a guest using a decoupled eventfd mechnanism:  Any legal signal
+on the irqfd (using eventfd semantics from either userspace or kernel) will
+translate into an injected interrupt in the guest at the next available
+interrupt window.
 
-> 
-> incase some system strange SRAT table. some kind of small range.
-> or with mem= etc
-> 
+Signed-off-by: Gregory Haskins <ghaskins@novell.com>
+---
 
-That description is very hard to understand.  Please provide more details.
+ arch/x86/kvm/Makefile    |    2 
+ arch/x86/kvm/x86.c       |    1 
+ include/linux/kvm.h      |   11 +++
+ include/linux/kvm_host.h |    4 +
+ virt/kvm/eventfd.c       |  198 ++++++++++++++++++++++++++++++++++++++++++++++
+ virt/kvm/kvm_main.c      |   11 +++
+ 6 files changed, 226 insertions(+), 1 deletions(-)
+ create mode 100644 virt/kvm/eventfd.c
 
-> 
-> Signed-off-by: Yinghai Lu <Yinghai@kernel.org>
-> Tested-by: Jack Steiner <steiner@sgi.com>
-
-What reason did Jack have to test this?  Perhaps he hit some bug? 
-If so, please fully describe that bug in the changelog.
-
-
-> Index: linux-2.6/mm/page_alloc.c
-> ===================================================================
-> --- linux-2.6.orig/mm/page_alloc.c
-> +++ linux-2.6/mm/page_alloc.c
-> @@ -4041,6 +4047,11 @@ void __init free_area_init_nodes(unsigne
->  						early_node_map[i].start_pfn,
->  						early_node_map[i].end_pfn);
->  
-> +	/*
-> +	 * find_zone_movable_pfns_for_nodes/early_calculate_totalpages init
-> +	 * that node_mask, clear it at first
-> +	 */
-> +	nodes_clear(node_states[N_HIGH_MEMORY]);
->  	/* Initialise every node */
->  	mminit_verify_pageflags_layout();
->  	setup_nr_node_ids();
-
-If CONFIG_HIGHMEM=n, this will clear the N_NORMAL_MEMORY entry in
-node_states[].  Why is this correct and desirable?
+diff --git a/arch/x86/kvm/Makefile b/arch/x86/kvm/Makefile
+index b43c4ef..4d50904 100644
+--- a/arch/x86/kvm/Makefile
++++ b/arch/x86/kvm/Makefile
+@@ -3,7 +3,7 @@
+ #
+ 
+ common-objs = $(addprefix ../../../virt/kvm/, kvm_main.o ioapic.o \
+-                coalesced_mmio.o irq_comm.o)
++                coalesced_mmio.o irq_comm.o eventfd.o)
+ ifeq ($(CONFIG_KVM_TRACE),y)
+ common-objs += $(addprefix ../../../virt/kvm/, kvm_trace.o)
+ endif
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index c6d3ff3..1d062eb 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -1026,6 +1026,7 @@ int kvm_dev_ioctl_check_extension(long ext)
+ 	case KVM_CAP_REINJECT_CONTROL:
+ 	case KVM_CAP_IRQ_INJECT_STATUS:
+ 	case KVM_CAP_ASSIGN_DEV_IRQ:
++	case KVM_CAP_IRQFD:
+ 		r = 1;
+ 		break;
+ 	case KVM_CAP_COALESCED_MMIO:
+diff --git a/include/linux/kvm.h b/include/linux/kvm.h
+index 3db5d8d..a1ecc6a 100644
+--- a/include/linux/kvm.h
++++ b/include/linux/kvm.h
+@@ -415,6 +415,7 @@ struct kvm_trace_rec {
+ #define KVM_CAP_ASSIGN_DEV_IRQ 29
+ /* Another bug in KVM_SET_USER_MEMORY_REGION fixed: */
+ #define KVM_CAP_JOIN_MEMORY_REGIONS_WORKS 30
++#define KVM_CAP_IRQFD 31
+ 
+ #ifdef KVM_CAP_IRQ_ROUTING
+ 
+@@ -454,6 +455,15 @@ struct kvm_irq_routing {
+ 
+ #endif
+ 
++#define KVM_IRQFD_FLAG_DEASSIGN (1 << 0)
++
++struct kvm_irqfd {
++	__u32 fd;
++	__u32 gsi;
++	__u32 flags;
++	__u8  pad[20];
++};
++
+ /*
+  * ioctls for VM fds
+  */
+@@ -498,6 +508,7 @@ struct kvm_irq_routing {
+ #define KVM_ASSIGN_SET_MSIX_ENTRY \
+ 			_IOW(KVMIO, 0x74, struct kvm_assigned_msix_entry)
+ #define KVM_DEASSIGN_DEV_IRQ       _IOW(KVMIO, 0x75, struct kvm_assigned_irq)
++#define KVM_IRQFD                  _IOW(KVMIO, 0x76, struct kvm_irqfd)
+ 
+ /*
+  * ioctls for vcpu fds
+diff --git a/include/linux/kvm_host.h b/include/linux/kvm_host.h
+index 2b8df0c..dc91610 100644
+--- a/include/linux/kvm_host.h
++++ b/include/linux/kvm_host.h
+@@ -134,6 +134,7 @@ struct kvm {
+ 	struct list_head vm_list;
+ 	struct kvm_io_bus mmio_bus;
+ 	struct kvm_io_bus pio_bus;
++	struct list_head irqfds;
+ 	struct kvm_vm_stat stat;
+ 	struct kvm_arch arch;
+ 	atomic_t users_count;
+@@ -525,4 +526,7 @@ static inline void kvm_free_irq_routing(struct kvm *kvm) {}
+ 
+ #endif
+ 
++int kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags);
++void kvm_irqfd_release(struct kvm *kvm);
++
+ #endif
+diff --git a/virt/kvm/eventfd.c b/virt/kvm/eventfd.c
+new file mode 100644
+index 0000000..884df16
+--- /dev/null
++++ b/virt/kvm/eventfd.c
+@@ -0,0 +1,198 @@
++/*
++ * kvm eventfd support - use eventfd objects to signal various KVM events
++ *
++ * Copyright 2009 Novell.  All Rights Reserved.
++ *
++ * Author:
++ *	Gregory Haskins <ghaskins@novell.com>
++ *
++ * This file is free software; you can redistribute it and/or modify
++ * it under the terms of version 2 of the GNU General Public License
++ * as published by the Free Software Foundation.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	 See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software Foundation,
++ * Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA.
++ */
++
++#include <linux/kvm_host.h>
++#include <linux/workqueue.h>
++#include <linux/syscalls.h>
++#include <linux/wait.h>
++#include <linux/poll.h>
++#include <linux/file.h>
++#include <linux/list.h>
++
++/*
++ * --------------------------------------------------------------------
++ * irqfd: Allows an fd to be used to inject an interrupt to the guest
++ *
++ * Credit goes to Avi Kivity for the original idea.
++ * --------------------------------------------------------------------
++ */
++struct _irqfd {
++	struct kvm               *kvm;
++	int                       gsi;
++	struct file              *file;
++	struct list_head          list;
++	poll_table                pt;
++	wait_queue_head_t        *wqh;
++	wait_queue_t              wait;
++	struct work_struct        work;
++};
++
++static void
++irqfd_inject(struct work_struct *work)
++{
++	struct _irqfd *irqfd = container_of(work, struct _irqfd, work);
++	struct kvm *kvm = irqfd->kvm;
++
++	mutex_lock(&kvm->lock);
++	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 1);
++	kvm_set_irq(kvm, KVM_USERSPACE_IRQ_SOURCE_ID, irqfd->gsi, 0);
++	mutex_unlock(&kvm->lock);
++}
++
++static int
++irqfd_wakeup(wait_queue_t *wait, unsigned mode, int sync, void *key)
++{
++	struct _irqfd *irqfd = container_of(wait, struct _irqfd, wait);
++
++	/*
++	 * The wake_up with interrupts disabled.  Therefore we need to defer
++	 * the IRQ injection until later since we need to acquire the
++	 * kvm->lock to do so.
++	 */
++	schedule_work(&irqfd->work);
++
++	return 0;
++}
++
++static void
++irqfd_ptable_queue_proc(struct file *file, wait_queue_head_t *wqh,
++			poll_table *pt)
++{
++	struct _irqfd *irqfd = container_of(pt, struct _irqfd, pt);
++
++	irqfd->wqh = wqh;
++	add_wait_queue(wqh, &irqfd->wait);
++}
++
++static int
++kvm_assign_irqfd(struct kvm *kvm, int fd, int gsi)
++{
++	struct _irqfd *irqfd;
++	struct file *file = NULL;
++	int ret;
++
++	irqfd = kzalloc(sizeof(*irqfd), GFP_KERNEL);
++	if (!irqfd)
++		return -ENOMEM;
++
++	irqfd->kvm = kvm;
++	irqfd->gsi = gsi;
++	INIT_LIST_HEAD(&irqfd->list);
++	INIT_WORK(&irqfd->work, irqfd_inject);
++
++	/*
++	 * Embed the file* lifetime in the irqfd.
++	 */
++	file = fget(fd);
++	if (IS_ERR(file)) {
++		ret = PTR_ERR(file);
++		goto fail;
++	}
++
++	/*
++	 * Install our own custom wake-up handling so we are notified via
++	 * a callback whenever someone signals the underlying eventfd
++	 */
++	init_waitqueue_func_entry(&irqfd->wait, irqfd_wakeup);
++	init_poll_funcptr(&irqfd->pt, irqfd_ptable_queue_proc);
++
++	ret = file->f_op->poll(file, &irqfd->pt);
++	if (ret < 0)
++		goto fail;
++
++	irqfd->file = file;
++
++	mutex_lock(&kvm->lock);
++	list_add_tail(&irqfd->list, &kvm->irqfds);
++	mutex_unlock(&kvm->lock);
++
++	return 0;
++
++fail:
++	if (irqfd->wqh)
++		remove_wait_queue(irqfd->wqh, &irqfd->wait);
++
++	if (file && !IS_ERR(file))
++		fput(file);
++
++	kfree(irqfd);
++	return ret;
++}
++
++static void
++irqfd_release(struct _irqfd *irqfd)
++{
++	remove_wait_queue(irqfd->wqh, &irqfd->wait);
++
++	flush_work(&irqfd->work);
++	fput(irqfd->file);
++
++	list_del(&irqfd->list);
++	kfree(irqfd);
++}
++
++static int
++kvm_deassign_irqfd(struct kvm *kvm, int fd, int gsi)
++{
++	struct _irqfd *irqfd, *tmp;
++	struct file *file;
++
++	file = fget(fd);
++	if (IS_ERR(file))
++		return PTR_ERR(file);
++
++	mutex_lock(&kvm->lock);
++
++	/*
++	 * linear search isn't brilliant, but this should be a infrequent
++	 * operation and the list should not grow very large
++	 */
++	list_for_each_entry_safe(irqfd, tmp, &kvm->irqfds, list) {
++		if (irqfd->file == file && irqfd->gsi == gsi)
++			irqfd_release(irqfd);
++	}
++
++	mutex_unlock(&kvm->lock);
++
++	fput(file);
++
++	return -ENOENT;
++}
++
++int
++kvm_irqfd(struct kvm *kvm, int fd, int gsi, int flags)
++{
++	if (flags & KVM_IRQFD_FLAG_DEASSIGN)
++		return kvm_deassign_irqfd(kvm, fd, gsi);
++
++	return kvm_assign_irqfd(kvm, fd, gsi);
++}
++
++void
++kvm_irqfd_release(struct kvm *kvm)
++{
++	struct _irqfd *irqfd, *tmp;
++
++	/* don't bother with the lock..we are shutting down */
++	list_for_each_entry_safe(irqfd, tmp, &kvm->irqfds, list)
++		irqfd_release(irqfd);
++}
+diff --git a/virt/kvm/kvm_main.c b/virt/kvm/kvm_main.c
+index 4d00942..b2db766 100644
+--- a/virt/kvm/kvm_main.c
++++ b/virt/kvm/kvm_main.c
+@@ -983,6 +983,7 @@ static struct kvm *kvm_create_vm(void)
+ 	atomic_inc(&kvm->mm->mm_count);
+ 	spin_lock_init(&kvm->mmu_lock);
+ 	kvm_io_bus_init(&kvm->pio_bus);
++	INIT_LIST_HEAD(&kvm->irqfds);
+ 	mutex_init(&kvm->lock);
+ 	kvm_io_bus_init(&kvm->mmio_bus);
+ 	init_rwsem(&kvm->slots_lock);
+@@ -1034,6 +1035,7 @@ static void kvm_destroy_vm(struct kvm *kvm)
+ 	spin_lock(&kvm_lock);
+ 	list_del(&kvm->vm_list);
+ 	spin_unlock(&kvm_lock);
++	kvm_irqfd_release(kvm);
+ 	kvm_free_irq_routing(kvm);
+ 	kvm_io_bus_destroy(&kvm->pio_bus);
+ 	kvm_io_bus_destroy(&kvm->mmio_bus);
+@@ -2208,6 +2210,15 @@ static long kvm_vm_ioctl(struct file *filp,
+ 	}
+ #endif
+ #endif /* KVM_CAP_IRQ_ROUTING */
++	case KVM_IRQFD: {
++		struct kvm_irqfd data;
++
++		r = -EFAULT;
++		if (copy_from_user(&data, argp, sizeof data))
++			goto out;
++		r = kvm_irqfd(kvm, data.fd, data.gsi, data.flags);
++		break;
++	}
+ 	default:
+ 		r = kvm_arch_vm_ioctl(filp, ioctl, arg);
+ 	}
 
