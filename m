@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761950AbZENWyq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbZENWzk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761950AbZENWyq (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 18:54:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756893AbZENWmr
+	id S1757324AbZENWzk (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 18:55:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756863AbZENWmt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:42:47 -0400
-Received: from kroah.org ([198.145.64.141]:52573 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:42:49 -0400
+Received: from kroah.org ([198.145.64.141]:52585 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756719AbZENWm1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:42:27 -0400
+	id S1756481AbZENWm2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:42:28 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:35:26 2009
-Message-Id: <20090514223526.233786534@mini.kroah.org>
+Message-Id: <20090514223526.425937347@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:33:11 -0700
+Date: Thu, 14 May 2009 15:33:12 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,11 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, Shirish Pargaonkar <shirishp@us.ibm.com>,
-       Jeff Layton <jlayton@redhat.com>, Steve French <sfrench@us.ibm.com>
-Subject: [patch 36/51] CIFS: Fix endian conversion of vcnum field
+       alan@lxorguk.ukuu.org.uk, Davide Libenzi <davidel@xmailserver.org>,
+       <Hiroyuki.Mach@gmail.com>, rohit verma <rohit.170309@gmail.com>,
+       Ulrich Drepper <drepper@redhat.com>
+Subject: [patch 37/51] epoll: fix size check in epoll_create()
 References: <20090514223235.348540705@mini.kroah.org>
-Content-Disposition: inline; filename=cifs-fix-endian-conversion-of-vcnum-field.patch
+Content-Disposition: inline; filename=epoll-fix-size-check-in-epoll_create.patch
 In-Reply-To: <20090514223755.GA27019@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -39,35 +40,36 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Steve French <sfrench@us.ibm.com>
+From: Davide Libenzi <davidel@xmailserver.org>
 
-commit 051a2a0d3242b448281376bb63cfa9385e0b6c68 upstream.
+commit bfe3891a5f5d3b78146a45f40e435d14f5ae39dd upstream.
 
-When multiply mounting from the same client to the same server, with
-different userids, we create a vcnum which should be unique if
-possible (this is not the same as the smb uid, which is the handle
-to the security context).  We were not endian converting additional
-(beyond the first which is zero) vcnum properly.
+Fix a size check WRT the manual pages.  This was inadvertently broken by
+commit 9fe5ad9c8cef9ad5873d8ee55d1cf00d9b607df0 ("flag parameters
+add-on: remove epoll_create size param").
 
-Acked-by: Shirish Pargaonkar <shirishp@us.ibm.com>
-Acked-by: Jeff Layton <jlayton@redhat.com>
-Signed-off-by: Steve French <sfrench@us.ibm.com>
+Signed-off-by: Davide Libenzi <davidel@xmailserver.org>
+Cc: <Hiroyuki.Mach@gmail.com>
+Cc: rohit verma <rohit.170309@gmail.com>
+Cc: Ulrich Drepper <drepper@redhat.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- fs/cifs/sess.c |    2 +-
+ fs/eventpoll.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
---- a/fs/cifs/sess.c
-+++ b/fs/cifs/sess.c
-@@ -111,7 +111,7 @@ static __le16 get_next_vcnum(struct cifs
- get_vc_num_exit:
- 	write_unlock(&cifs_tcp_ses_lock);
+--- a/fs/eventpoll.c
++++ b/fs/eventpoll.c
+@@ -1136,7 +1136,7 @@ error_return:
  
--	return le16_to_cpu(vcnum);
-+	return cpu_to_le16(vcnum);
- }
+ SYSCALL_DEFINE1(epoll_create, int, size)
+ {
+-	if (size < 0)
++	if (size <= 0)
+ 		return -EINVAL;
  
- static __u32 cifs_ssetup_hdr(struct cifsSesInfo *ses, SESSION_SETUP_ANDX *pSMB)
+ 	return sys_epoll_create1(0);
 
 
