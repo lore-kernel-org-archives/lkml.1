@@ -1,57 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760503AbZENRHm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761443AbZENRH5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760503AbZENRHm (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 13:07:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754027AbZENRHc
+	id S1761443AbZENRH5 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 13:07:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755407AbZENRHn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 13:07:32 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37627 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754011AbZENRHb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 13:07:31 -0400
-Date: Thu, 14 May 2009 10:07:18 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: =?ISO-8859-1?Q?Micha=5F=5F?= Nazarewicz <m.nazarewicz@samsung.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org,
-       m.szyprowski@samsung.com, kyungmin.park@samsung.com, linux-mm@kvack.org
-Subject: Re: [PATCH] Physical Memory Management [0/1]
-Message-Id: <20090514100718.d8c20b64.akpm@linux-foundation.org>
-In-Reply-To: <op.utw7yhv67p4s8u@amdc030>
-References: <op.utu26hq77p4s8u@amdc030>
-	<20090513151142.5d166b92.akpm@linux-foundation.org>
-	<op.utwwmpsf7p4s8u@amdc030>
-	<1242300002.6642.1091.camel@laptop>
-	<op.utw4fdhz7p4s8u@amdc030>
-	<1242302702.6642.1140.camel@laptop>
-	<op.utw7yhv67p4s8u@amdc030>
-X-Mailer: Sylpheed version 2.2.4 (GTK+ 2.8.20; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 14 May 2009 13:07:43 -0400
+Received: from h155.mvista.com ([63.81.120.155]:9128 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1757895AbZENRHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 13:07:41 -0400
+Message-ID: <4A0C5004.9040904@ru.mvista.com>
+Date: Thu, 14 May 2009 21:08:20 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/7] ide: remove chipset field from hw_regs_t
+References: <20090513205139.28638.87226.sendpatchset@localhost.localdomain> <20090513205215.28638.80164.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090513205215.28638.80164.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 May 2009 15:04:55 +0200
-Micha__ Nazarewicz <m.nazarewicz@samsung.com> wrote:
+Bartlomiej Zolnierkiewicz wrote:
 
-> On Thu, 14 May 2009 14:05:02 +0200, Peter Zijlstra wrote:
-> > And who says your pre-allocated pool won't fragment with repeated PMM
-> > use?
-> 
-> Yes, this is a good question.  What's more, there's no good answer. ;)
-> 
+> * Convert host drivers that still use hw_regs_t's chipset field to use
+>   the one in struct ide_port_info instead.
 
-We do have capability in page reclaim to deliberately free up
-physically contiguous pages (known as "lumpy reclaim").
+> * Move special handling of ide_pci chipset type from ide_hw_configure()
+>   to ide_init_port().
 
-It would be interesting were someone to have a go at making that
-available to userspace: ask the kernel to give you 1MB of physically
-contiguous memory.  There are reasons why this can fail, but migrating
-pages can be used to improve the success rate, and userspace can be
-careful to not go nuts using mlock(), etc.
+> * Remove chipset field from hw_regs_t.
 
-The returned memory would of course need to be protected from other
-reclaim/migration/etc activity.
+> While at it:
+> - remove stale comment in delkin_cb.c
 
+> There should be no functional changes caused by this patch.
+
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+MBR, Sergei
