@@ -1,94 +1,628 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761355AbZENI2l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760289AbZENIVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761355AbZENI2l (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 04:28:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754228AbZENI2a
+	id S1760289AbZENIVU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 04:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753818AbZENIVD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 04:28:30 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:3725 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753859AbZENI22 convert rfc822-to-8bit (ORCPT
+	Thu, 14 May 2009 04:21:03 -0400
+Received: from courier.cs.helsinki.fi ([128.214.9.1]:53257 "EHLO
+	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755076AbZENIU6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 04:28:28 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=D4yNwih8ekoyLg5nolqm/7dAPYNa//aEPooiZJPmxwB+SydcdDPUnGQdzDMj5oaTXM
-         eHwSGmfy45PSyw5TmhRUNHj3sOXghT++bMf2guGIPnzgecGfUzTKKYNY8R5nW8CyFRer
-         unuz5OmDh5hiQiF9x7BfXkJxEBHqyNxQJWcRo=
-MIME-Version: 1.0
-In-Reply-To: <1242289418.31161.45.camel@centos51>
-References: <1242289418.31161.45.camel@centos51>
-Date: Thu, 14 May 2009 17:28:29 +0900
-Message-ID: <28c262360905140128q3458e39fu62def873f2d95ae0@mail.gmail.com>
-Subject: Re: [PATCH]append prompt in /debug/tracing/README file.
-From: Minchan Kim <minchan.kim@gmail.com>
-To: leemgs1@gmail.com
-Cc: Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-rt-users <linux-rt-users@vger.kernel.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       williams <williams@redhat.com>, tglx <tglx@linutronix.de>,
-       Jiri Kosina <trivial@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Thu, 14 May 2009 04:20:58 -0400
+Date: Thu, 14 May 2009 11:15:57 +0300 (EEST)
+From: Pekka J Enberg <penberg@cs.helsinki.fi>
+To: torvalds@linux-foundation.org
+cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       cl@linux-foundation.org, linux-mm@kvack.org, mpm@selenic.com,
+       npiggin@suse.de, randy.dunlap@oracle.com, rientjes@google.com,
+       stable@kernel.org
+Subject: [GIT PULL] SLAB updates for 2.6.30-rc5
+Message-ID: <Pine.LNX.4.64.0905141114540.7518@melkki.cs.Helsinki.FI>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, GeunkSik.
+Hi Linus,
 
-For fixing trivial typo, Let Cced trivial patch maintainer.
+Here are some last minute fixes and documentation updates for the slab
+allocators.
 
-TRIVIAL PATCHES
-P:  Jiri Kosina
-M:  trivial@kernel.org
-L:  linux-kernel@vger.kernel.org
-T:  git kernel.org:/pub/scm/linux/kernel/git/jikos/trivial.git
-S:  Maintained
+The most important one is a fix from Nick Piggin to a long-standing memory
+reclaim regression in SLUB and SLOB. The problem is that during reclaim,
+we don't update ->reclaim_state properly so vmscan doesn't know how many pages
+SLUB or SLOB has reclaimed. See the full discussion here:
 
+  http://marc.info/?l=linux-mm&m=124151497107092&w=2
 
-2009/5/14 GeunSik Lim <leemgs1@gmail.com>:
->
-> Dear Steven Rostedt,
->
->    Please, Append prompt in /debug/tracing/README file.
->
->    This is trivial issue. Fix typo Mini Howto file(README) for ftrace.
->
->    Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
->
-> diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
-> index 1ce5dc6..a4726f5 100644
-> --- a/kernel/trace/trace.c
-> +++ b/kernel/trace/trace.c
-> @@ -2380,7 +2380,7 @@ static const char readme_msg[] =
->        "# echo print-parent > /debug/tracing/trace_options\n"
->        "# echo 1 > /debug/tracing/tracing_enabled\n"
->        "# cat /debug/tracing/trace > /tmp/trace.txt\n"
-> -       "echo 0 > /debug/tracing/tracing_enabled\n"
-> +       "# echo 0 > /debug/tracing/tracing_enabled\n"
->  ;
->
->  static ssize_t
->
->
->
-> -----------------------------------------------
-> To unsubscribe from this list: send the line "unsubscribe linux-***"
-> in the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-> GeunSik Lim (ELS - OS Group - S/W Lab - SAIT - SAMSUNG)
-> e-Mail  :1) geunsik.lim@samsung.com
->         2) leemgs@gmail.com , leemgs1@gmail.com
-> HomePage: http://intomail.dnip.net/invain/me/
-> -----------------------------------------------
->
+I've also included a SLUB ABI documentation update and a MAX_ORDER bug fix from
+David Rientjes.
 
+			Pekka
 
+The following changes since commit ce8a7424d23a36f043d0de8484f888971c831119:
+  Tim Abbott (1):
+        sparc: convert to use __HEAD and HEAD_TEXT macros.
 
--- 
-Kinds regards,
-Minchan Kim
+are available in the git repository at:
+
+  git://git.kernel.org/pub/scm/linux/kernel/git/penberg/slab-2.6 for-linus
+
+David Rientjes (2):
+      slub: enforce MAX_ORDER
+      slub: add Documentation/ABI/testing/sysfs-kernel-slab
+
+Nick Piggin (2):
+      mm: SLUB fix reclaim_state
+      mm: SLOB fix reclaim_state
+
+Pekka Enberg (1):
+      Merge branches 'topic/documentation', 'topic/slub/fixes' and 'topic/urgent' into for-linus
+
+ Documentation/ABI/testing/sysfs-kernel-slab |  479 +++++++++++++++++++++++++++
+ mm/slob.c                                   |    5 +-
+ mm/slub.c                                   |    6 +-
+ 3 files changed, 488 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/ABI/testing/sysfs-kernel-slab
+
+ Documentation/ABI/testing/sysfs-kernel-slab |  479 +++++++++++++++++++++++++++
+ mm/slob.c                                   |    5 +-
+ mm/slub.c                                   |    6 +-
+ 3 files changed, 488 insertions(+), 2 deletions(-)
+
+diff --git a/Documentation/ABI/testing/sysfs-kernel-slab b/Documentation/ABI/testing/sysfs-kernel-slab
+new file mode 100644
+index 0000000..6dcf75e
+--- /dev/null
++++ b/Documentation/ABI/testing/sysfs-kernel-slab
+@@ -0,0 +1,479 @@
++What:		/sys/kernel/slab
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The /sys/kernel/slab directory contains a snapshot of the
++		internal state of the SLUB allocator for each cache.  Certain
++		files may be modified to change the behavior of the cache (and
++		any cache it aliases, if any).
++Users:		kernel memory tuning tools
++
++What:		/sys/kernel/slab/cache/aliases
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The aliases file is read-only and specifies how many caches
++		have merged into this cache.
++
++What:		/sys/kernel/slab/cache/align
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The align file is read-only and specifies the cache's object
++		alignment in bytes.
++
++What:		/sys/kernel/slab/cache/alloc_calls
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The alloc_calls file is read-only and lists the kernel code
++		locations from which allocations for this cache were performed.
++		The alloc_calls file only contains information if debugging is
++		enabled for that cache (see Documentation/vm/slub.txt).
++
++What:		/sys/kernel/slab/cache/alloc_fastpath
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The alloc_fastpath file is read-only and specifies how many
++		objects have been allocated using the fast path.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/alloc_from_partial
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The alloc_from_partial file is read-only and specifies how
++		many times a cpu slab has been full and it has been refilled
++		by using a slab from the list of partially used slabs.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/alloc_refill
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The alloc_refill file is read-only and specifies how many
++		times the per-cpu freelist was empty but there were objects
++		available as the result of remote cpu frees.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/alloc_slab
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The alloc_slab file is read-only and specifies how many times
++		a new slab had to be allocated from the page allocator.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/alloc_slowpath
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The alloc_slowpath file is read-only and specifies how many
++		objects have been allocated using the slow path because of a
++		refill or allocation from a partial or new slab.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/cache_dma
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The cache_dma file is read-only and specifies whether objects
++		are from ZONE_DMA.
++		Available when CONFIG_ZONE_DMA is enabled.
++
++What:		/sys/kernel/slab/cache/cpu_slabs
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The cpu_slabs file is read-only and displays how many cpu slabs
++		are active and their NUMA locality.
++
++What:		/sys/kernel/slab/cache/cpuslab_flush
++Date:		April 2009
++KernelVersion:	2.6.31
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The file cpuslab_flush is read-only and specifies how many
++		times a cache's cpu slabs have been flushed as the result of
++		destroying or shrinking a cache, a cpu going offline, or as
++		the result of forcing an allocation from a certain node.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/ctor
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The ctor file is read-only and specifies the cache's object
++		constructor function, which is invoked for each object when a
++		new slab is allocated.
++
++What:		/sys/kernel/slab/cache/deactivate_empty
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The file deactivate_empty is read-only and specifies how many
++		times an empty cpu slab was deactivated.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/deactivate_full
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The file deactivate_full is read-only and specifies how many
++		times a full cpu slab was deactivated.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/deactivate_remote_frees
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The file deactivate_remote_frees is read-only and specifies how
++		many times a cpu slab has been deactivated and contained free
++		objects that were freed remotely.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/deactivate_to_head
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The file deactivate_to_head is read-only and specifies how
++		many times a partial cpu slab was deactivated and added to the
++		head of its node's partial list.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/deactivate_to_tail
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The file deactivate_to_tail is read-only and specifies how
++		many times a partial cpu slab was deactivated and added to the
++		tail of its node's partial list.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/destroy_by_rcu
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The destroy_by_rcu file is read-only and specifies whether
++		slabs (not objects) are freed by rcu.
++
++What:		/sys/kernel/slab/cache/free_add_partial
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The file free_add_partial is read-only and specifies how many
++		times an object has been freed in a full slab so that it had to
++		added to its node's partial list.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/free_calls
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The free_calls file is read-only and lists the locations of
++		object frees if slab debugging is enabled (see
++		Documentation/vm/slub.txt).
++
++What:		/sys/kernel/slab/cache/free_fastpath
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The free_fastpath file is read-only and specifies how many
++		objects have been freed using the fast path because it was an
++		object from the cpu slab.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/free_frozen
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The free_frozen file is read-only and specifies how many
++		objects have been freed to a frozen slab (i.e. a remote cpu
++		slab).
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/free_remove_partial
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The file free_remove_partial is read-only and specifies how
++		many times an object has been freed to a now-empty slab so
++		that it had to be removed from its node's partial list.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/free_slab
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The free_slab file is read-only and specifies how many times an
++		empty slab has been freed back to the page allocator.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/free_slowpath
++Date:		February 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The free_slowpath file is read-only and specifies how many
++		objects have been freed using the slow path (i.e. to a full or
++		partial slab).
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/hwcache_align
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The hwcache_align file is read-only and specifies whether
++		objects are aligned on cachelines.
++
++What:		/sys/kernel/slab/cache/min_partial
++Date:		February 2009
++KernelVersion:	2.6.30
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		David Rientjes <rientjes@google.com>
++Description:
++		The min_partial file specifies how many empty slabs shall
++		remain on a node's partial list to avoid the overhead of
++		allocating new slabs.  Such slabs may be reclaimed by utilizing
++		the shrink file.
++
++What:		/sys/kernel/slab/cache/object_size
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The object_size file is read-only and specifies the cache's
++		object size.
++
++What:		/sys/kernel/slab/cache/objects
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The objects file is read-only and displays how many objects are
++		active and from which nodes they are from.
++
++What:		/sys/kernel/slab/cache/objects_partial
++Date:		April 2008
++KernelVersion:	2.6.26
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The objects_partial file is read-only and displays how many
++		objects are on partial slabs and from which nodes they are
++		from.
++
++What:		/sys/kernel/slab/cache/objs_per_slab
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The file objs_per_slab is read-only and specifies how many
++		objects may be allocated from a single slab of the order
++		specified in /sys/kernel/slab/cache/order.
++
++What:		/sys/kernel/slab/cache/order
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The order file specifies the page order at which new slabs are
++		allocated.  It is writable and can be changed to increase the
++		number of objects per slab.  If a slab cannot be allocated
++		because of fragmentation, SLUB will retry with the minimum order
++		possible depending on its characteristics.
++
++What:		/sys/kernel/slab/cache/order_fallback
++Date:		April 2008
++KernelVersion:	2.6.26
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The file order_fallback is read-only and specifies how many
++		times an allocation of a new slab has not been possible at the
++		cache's order and instead fallen back to its minimum possible
++		order.
++		Available when CONFIG_SLUB_STATS is enabled.
++
++What:		/sys/kernel/slab/cache/partial
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The partial file is read-only and displays how long many
++		partial slabs there are and how long each node's list is.
++
++What:		/sys/kernel/slab/cache/poison
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The poison file specifies whether objects should be poisoned
++		when a new slab is allocated.
++
++What:		/sys/kernel/slab/cache/reclaim_account
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The reclaim_account file specifies whether the cache's objects
++		are reclaimable (and grouped by their mobility).
++
++What:		/sys/kernel/slab/cache/red_zone
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The red_zone file specifies whether the cache's objects are red
++		zoned.
++
++What:		/sys/kernel/slab/cache/remote_node_defrag_ratio
++Date:		January 2008
++KernelVersion:	2.6.25
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The file remote_node_defrag_ratio specifies the percentage of
++		times SLUB will attempt to refill the cpu slab with a partial
++		slab from a remote node as opposed to allocating a new slab on
++		the local node.  This reduces the amount of wasted memory over
++		the entire system but can be expensive.
++		Available when CONFIG_NUMA is enabled.
++
++What:		/sys/kernel/slab/cache/sanity_checks
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The sanity_checks file specifies whether expensive checks
++		should be performed on free and, at minimum, enables double free
++		checks.  Caches that enable sanity_checks cannot be merged with
++		caches that do not.
++
++What:		/sys/kernel/slab/cache/shrink
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The shrink file is written when memory should be reclaimed from
++		a cache.  Empty partial slabs are freed and the partial list is
++		sorted so the slabs with the fewest available objects are used
++		first.
++
++What:		/sys/kernel/slab/cache/slab_size
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The slab_size file is read-only and specifies the object size
++		with metadata (debugging information and alignment) in bytes.
++
++What:		/sys/kernel/slab/cache/slabs
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The slabs file is read-only and displays how long many slabs
++		there are (both cpu and partial) and from which nodes they are
++		from.
++
++What:		/sys/kernel/slab/cache/store_user
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The store_user file specifies whether the location of
++		allocation or free should be tracked for a cache.
++
++What:		/sys/kernel/slab/cache/total_objects
++Date:		April 2008
++KernelVersion:	2.6.26
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The total_objects file is read-only and displays how many total
++		objects a cache has and from which nodes they are from.
++
++What:		/sys/kernel/slab/cache/trace
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		The trace file specifies whether object allocations and frees
++		should be traced.
++
++What:		/sys/kernel/slab/cache/validate
++Date:		May 2007
++KernelVersion:	2.6.22
++Contact:	Pekka Enberg <penberg@cs.helsinki.fi>,
++		Christoph Lameter <cl@linux-foundation.org>
++Description:
++		Writing to the validate file causes SLUB to traverse all of its
++		cache's objects and check the validity of metadata.
+diff --git a/mm/slob.c b/mm/slob.c
+index a2d4ab3..f92e66d 100644
+--- a/mm/slob.c
++++ b/mm/slob.c
+@@ -60,6 +60,7 @@
+ #include <linux/kernel.h>
+ #include <linux/slab.h>
+ #include <linux/mm.h>
++#include <linux/swap.h> /* struct reclaim_state */
+ #include <linux/cache.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+@@ -255,6 +256,8 @@ static void *slob_new_pages(gfp_t gfp, int order, int node)
+ 
+ static void slob_free_pages(void *b, int order)
+ {
++	if (current->reclaim_state)
++		current->reclaim_state->reclaimed_slab += 1 << order;
+ 	free_pages((unsigned long)b, order);
+ }
+ 
+@@ -407,7 +410,7 @@ static void slob_free(void *block, int size)
+ 		spin_unlock_irqrestore(&slob_lock, flags);
+ 		clear_slob_page(sp);
+ 		free_slob_page(sp);
+-		free_page((unsigned long)b);
++		slob_free_pages(b, 0);
+ 		return;
+ 	}
+ 
+diff --git a/mm/slub.c b/mm/slub.c
+index 7ab54ec..65ffda5 100644
+--- a/mm/slub.c
++++ b/mm/slub.c
+@@ -9,6 +9,7 @@
+  */
+ 
+ #include <linux/mm.h>
++#include <linux/swap.h> /* struct reclaim_state */
+ #include <linux/module.h>
+ #include <linux/bit_spinlock.h>
+ #include <linux/interrupt.h>
+@@ -1170,6 +1171,8 @@ static void __free_slab(struct kmem_cache *s, struct page *page)
+ 
+ 	__ClearPageSlab(page);
+ 	reset_page_mapcount(page);
++	if (current->reclaim_state)
++		current->reclaim_state->reclaimed_slab += pages;
+ 	__free_pages(page, order);
+ }
+ 
+@@ -1909,7 +1912,7 @@ static inline int calculate_order(int size)
+ 	 * Doh this slab cannot be placed using slub_max_order.
+ 	 */
+ 	order = slab_order(size, 1, MAX_ORDER, 1);
+-	if (order <= MAX_ORDER)
++	if (order < MAX_ORDER)
+ 		return order;
+ 	return -ENOSYS;
+ }
+@@ -2522,6 +2525,7 @@ __setup("slub_min_order=", setup_slub_min_order);
+ static int __init setup_slub_max_order(char *str)
+ {
+ 	get_option(&str, &slub_max_order);
++	slub_max_order = min(slub_max_order, MAX_ORDER - 1);
+ 
+ 	return 1;
+ }
