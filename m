@@ -1,62 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754873AbZENJOB@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754905AbZENJRQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754873AbZENJOB (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 05:14:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752544AbZENJNv
+	id S1754905AbZENJRQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 05:17:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751159AbZENJRA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 05:13:51 -0400
-Received: from vervifontaine.sonytel.be ([80.88.33.193]:35085 "EHLO
-	pophost.sonytel.be" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752931AbZENJNu (ORCPT
+	Thu, 14 May 2009 05:17:00 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:44466 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750920AbZENJQ7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 05:13:50 -0400
-Date: Thu, 14 May 2009 11:13:49 +0200 (CEST)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-cc: Marc Dionne <marc.c.dionne@gmail.com>,
-       Linux Kernel Development <linux-kernel@vger.kernel.org>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: Regression in 2.6.30 - /dev/pts - mount options - bisected
-In-Reply-To: <20090513171519.GA937@linux.vnet.ibm.com>
-Message-ID: <alpine.LRH.2.00.0905141113220.2225@vixen.sonytel.be>
-References: <6041d2000905081454x4c9d8818oaccbcd14d1f4a506@mail.gmail.com> <alpine.LRH.2.00.0905131440010.28386@vixen.sonytel.be> <20090513171519.GA937@linux.vnet.ibm.com>
-User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+	Thu, 14 May 2009 05:16:59 -0400
+Date: Thu, 14 May 2009 11:16:17 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: nigel@tuxonice.net, linux-pm@lists.linux-foundation.org,
+       tuxonice-devel@lists.tuxonice.net, linux-kernel@vger.kernel.org
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+Message-ID: <20090514091616.GB6417@elf.ucw.cz>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net> <200905090046.21282.rjw@sisk.pl> <20090509132711.GD10859@elf.ucw.cz> <200905092132.11138.rjw@sisk.pl>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905092132.11138.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, 13 May 2009, Sukadev Bhattiprolu wrote:
-> Geert Uytterhoeven [Geert.Uytterhoeven@sonycom.com] wrote:
+Hi!
+
+> > > > And we have different ideas about how things should be done. Userspace
+> > > > vs kernel space. Providing tuning knobs vs not. And so on.
+> > > 
+> > > This isn't _that_ important.  Actually, I'm not against an entirely in-kernel
+> > > solution, as there are some clear benefits of doing it this way.  We only
+> > > need to be careful enough not to break the existing setups.
+> > 
+> > Would you elaborate?
 > 
-> | And indeed, disabling CONFIG_DEVPTS_MULTIPLE_INSTANCES in the Fedora-based
-> | config makes the problem go away, and brings back my terminal-emulators.
+> One benefit is that we need not anything in the initrd for hibernation to work.
+> Another one is that we can get superior performance, for obvious reasons
+> (less copying of data, faster I/O).   Yet another is simpler configuration and
+> no need to maintain a separate set of user space tools.  I probably could
+> find more.
+>  
+> > I would really hate to put progressbar painting into kernel; and if
+> > that's in userspace, we can do compression/encryption there too as
+> > well....
 > 
-> Yes, a patch is available for this at
-> 
-> 	http://lkml.org/lkml/2009/5/11/586
-> 
-> The patch has been merged into -mm.
+> That's correct, we can.  But since we have LZO in the kernel now, we can use
+> it for compression just as well, can't we?
 
-Thanks, I missed that one, as there were no replies to Marc's email.
+Yes, but we do not have progressbar painting in the kernel -- yet --
+so users will still need initrd etc.
 
-With kind regards,
-
-Geert Uytterhoeven
-Software Architect
-Techsoft Centre
-
-Technology and Software Centre Europe
-The Corporate Village · Da Vincilaan 7-D1 · B-1935 Zaventem · Belgium
-
-Phone:    +32 (0)2 700 8453
-Fax:      +32 (0)2 700 8622
-E-mail:   Geert.Uytterhoeven@sonycom.com
-Internet: http://www.sony-europe.com/
-
-A division of Sony Europe (Belgium) N.V.
-VAT BE 0413.825.160 · RPR Brussels
-Fortis · BIC GEBABEBB · IBAN BE41293037680010
+Yes, we can move LZO into kernel pretty cheaply, and it will have
+minor benefit of slightly faster reguler swsusp, but...
+									Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
