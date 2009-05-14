@@ -1,118 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753967AbZENJiw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754590AbZENJlF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753967AbZENJiw (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 05:38:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751235AbZENJin
+	id S1754590AbZENJlF (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 05:41:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZENJky
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 05:38:43 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49461 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751205AbZENJim (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 05:38:42 -0400
-Organization: Red Hat UK Ltd. Registered Address: Red Hat UK Ltd, Amberley
-	Place, 107-111 Peascod Street, Windsor, Berkshire, SI4 1TE, United
-	Kingdom.
-	Registered in England and Wales under Company Registration No. 3798903
-From: David Howells <dhowells@redhat.com>
-To: akpm@linux-foundation.org, Chris Peterson <cpeterso@cpeterso.com>
-cc: dhowells@redhat.com, linux-kernel@vger.kernel.org
-In-Reply-To: <alpine.DEB.2.00.0905101959070.2913@ubuntu-desktop>
-References: <alpine.DEB.2.00.0905101959070.2913@ubuntu-desktop> <200905131838.n4DIcu5h023360@imap1.linux-foundation.org>
-Subject: [PATCH] Use round_jiffies() for slow work thread pool's cull and OOM timers
-Date: Thu, 14 May 2009 10:38:09 +0100
-Message-ID: <22791.1242293889@redhat.com>
+	Thu, 14 May 2009 05:40:54 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:45707 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751731AbZENJkx (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 05:40:53 -0400
+Date: Thu, 14 May 2009 11:40:46 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com,
+       linux-kernel@vger.kernel.org, nigel@tuxonice.net, rientjes@google.com,
+       linux-mm@kvack.org
+Subject: Re: [PATCH 4/6] PM/Hibernate: Rework shrinking of memory
+Message-ID: <20090514094046.GF6417@elf.ucw.cz>
+References: <200905070040.08561.rjw@sisk.pl> <200905132255.04681.rjw@sisk.pl> <20090513141647.076b67f0.akpm@linux-foundation.org> <200905132356.39481.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905132356.39481.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-From: Chris Peterson <cpeterso@cpeterso.com>
+> > > > The main point (I thought) was to remove shrink_all_memory().  Instead,
+> > > > we're retaining it and adding even more stuff?
+> > > 
+> > > The idea is that afterwards we can drop shrink_all_memory() once the
+> > > performance problem has been resolved.  Also, we now allocate memory for the
+> > > image using GFP_KERNEL instead of doing it with GFP_ATOMIC after freezing
+> > > devices.  I'd think that's an improvement?
+> > 
+> > Dunno.  GFP_KERNEL might attempt to do writeback/swapout/etc, which
+> > could be embarrassing if the devices are frozen.
+> 
+> They aren't, because the preallocation is done upfront, so once the OOM killer
+> has been taken care of, it's totally safe. :-)
 
-Round the slow work queue's cull and OOM timeouts to whole second boundary with
-round_jiffies().  The slow work queue uses a pair of timers to cull idle
-threads and, after OOM, to delay new thread creation.
+As is GFP_ATOMIC. Except that GFP_KERNEL will cause catastrophic
+consequences when accounting goes wrong. (New kernel's idea of what is
+on disk will differ from what is _really_ on disk.)
 
-This patch also extracts the mod_timer() logic for the cull timer into a
-separate helper function.
+If accounting is right, GFP_ATOMIC and GFP_KERNEL is equivalent.
 
-By rounding non-time-critical timers such as these to whole seconds, they will
-be batched up to fire at the same time rather than being spread out.  This
-allows the CPU wake up less, which saves power.
+If accounting is wrong, GFP_ATOMIC will fail with NULL, while
+GFP_KERNEL will do something bad.
 
-Signed-off-by: Chris Peterson <cpeterso@cpeterso.com>
-Signed-off-by: David Howells <dhowells@redhat.com>
----
+I'd keep GFP_ATOMIC (or GFP_NOIO or similar). 
 
- kernel/slow-work.c |   23 ++++++++++++++---------
- 1 files changed, 14 insertions(+), 9 deletions(-)
-
-
-diff --git a/kernel/slow-work.c b/kernel/slow-work.c
-index 96e418d..a3ce6cf 100644
---- a/kernel/slow-work.c
-+++ b/kernel/slow-work.c
-@@ -319,6 +319,15 @@ cant_get_ref:
- EXPORT_SYMBOL(slow_work_enqueue);
- 
- /*
-+ * Schedule a cull of the thread pool at some time in the near future
-+ */
-+static void slow_work_schedule_cull(void)
-+{
-+	mod_timer(&slow_work_cull_timer,
-+		  round_jiffies(jiffies + SLOW_WORK_CULL_TIMEOUT));
-+}
-+
-+/*
-  * Worker thread culling algorithm
-  */
- static bool slow_work_cull_thread(void)
-@@ -335,8 +344,7 @@ static bool slow_work_cull_thread(void)
- 		    list_empty(&vslow_work_queue) &&
- 		    atomic_read(&slow_work_thread_count) >
- 		    slow_work_min_threads) {
--			mod_timer(&slow_work_cull_timer,
--				  jiffies + SLOW_WORK_CULL_TIMEOUT);
-+			slow_work_schedule_cull();
- 			do_cull = true;
- 		}
- 	}
-@@ -394,8 +402,7 @@ static int slow_work_thread(void *_data)
- 			    list_empty(&vslow_work_queue) &&
- 			    atomic_read(&slow_work_thread_count) >
- 			    slow_work_min_threads)
--				mod_timer(&slow_work_cull_timer,
--					  jiffies + SLOW_WORK_CULL_TIMEOUT);
-+				slow_work_schedule_cull();
- 			continue;
- 		}
- 
-@@ -460,7 +467,7 @@ static void slow_work_new_thread_execute(struct slow_work *work)
- 		if (atomic_dec_and_test(&slow_work_thread_count))
- 			BUG(); /* we're running on a slow work thread... */
- 		mod_timer(&slow_work_oom_timer,
--			  jiffies + SLOW_WORK_OOM_TIMEOUT);
-+			  round_jiffies(jiffies + SLOW_WORK_OOM_TIMEOUT));
- 	} else {
- 		/* ratelimit the starting of new threads */
- 		mod_timer(&slow_work_oom_timer, jiffies + 1);
-@@ -504,8 +511,7 @@ static int slow_work_min_threads_sysctl(struct ctl_table *table, int write,
- 			if (n < 0 && !slow_work_may_not_start_new_thread)
- 				slow_work_enqueue(&slow_work_new_thread);
- 			else if (n > 0)
--				mod_timer(&slow_work_cull_timer,
--					  jiffies + SLOW_WORK_CULL_TIMEOUT);
-+				slow_work_schedule_cull();
- 		}
- 		mutex_unlock(&slow_work_user_lock);
- 	}
-@@ -531,8 +537,7 @@ static int slow_work_max_threads_sysctl(struct ctl_table *table, int write,
- 				atomic_read(&slow_work_thread_count);
- 
- 			if (n < 0)
--				mod_timer(&slow_work_cull_timer,
--					  jiffies + SLOW_WORK_CULL_TIMEOUT);
-+				slow_work_schedule_cull();
- 		}
- 		mutex_unlock(&slow_work_user_lock);
- 	}
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
