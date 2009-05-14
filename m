@@ -1,85 +1,333 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761677AbZENFj5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761624AbZENF56@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761677AbZENFj5 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 01:39:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754878AbZENFjn
+	id S1761624AbZENF56 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 01:57:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751230AbZENF5s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 01:39:43 -0400
-Received: from cathcart.site5.com ([74.54.107.137]:55851 "EHLO
-	cathcart.site5.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754528AbZENFjl (ORCPT
+	Thu, 14 May 2009 01:57:48 -0400
+Received: from gw1.cosmosbay.com ([212.99.114.194]:41273 "EHLO
+	gw1.cosmosbay.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750895AbZENF5r convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 01:39:41 -0400
-Message-ID: <4A0BAE9B.1090401@compulab.co.il>
-Date: Thu, 14 May 2009 08:39:39 +0300
-From: Mike Rapoport <mike@compulab.co.il>
-User-Agent: Thunderbird 2.0.0.16 (X11/20080907)
+	Thu, 14 May 2009 01:57:47 -0400
+Message-ID: <4A0BB2CD.5010901@cosmosbay.com>
+Date: Thu, 14 May 2009 07:57:33 +0200
+From: Eric Dumazet <dada1@cosmosbay.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: cbou@mail.ru, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] da9030_battery: fix race between event handler and monitor
-References: <1242112809-10021-1-git-send-email-mike@compulab.co.il> <20090513114046.6557fc0e.akpm@linux-foundation.org>
-In-Reply-To: <20090513114046.6557fc0e.akpm@linux-foundation.org>
+To: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+CC: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       linux-fsdevel@vger.kernel.org
+Subject: Re: [RESEND][PATCH] lseek: remove i_mutex
+References: <6.0.0.20.2.20090514092629.04f4e6b0@172.19.0.2>
+In-Reply-To: <6.0.0.20.2.20090514092629.04f4e6b0@172.19.0.2>
 Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-X-AntiAbuse: This header was added to track abuse, please include it with any abuse report
-X-AntiAbuse: Primary Hostname - cathcart.site5.com
-X-AntiAbuse: Original Domain - vger.kernel.org
-X-AntiAbuse: Originator/Caller UID/GID - [47 12] / [47 12]
-X-AntiAbuse: Sender Address Domain - compulab.co.il
-X-Source: 
-X-Source-Args: 
-X-Source-Dir: 
+Content-Transfer-Encoding: 8BIT
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-1.6 (gw1.cosmosbay.com [0.0.0.0]); Thu, 14 May 2009 07:57:32 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-
-Andrew Morton wrote:
-> On Tue, 12 May 2009 10:20:09 +0300
-> Mike Rapoport <mike@compulab.co.il> wrote:
+Hisashi Hifumi a écrit :
+> Hi, 
 > 
->> Signed-off-by: Mike Rapoport <mike@compulab.co.il>
+> Following patch removes i_mutex from generic_file_llseek.
+> I think the reason of protecting lseek with i_mutex is just
+> touching i_size (and f_pos) atomically.
+> So i_mutex is no longer needed here by introducing i_size_read 
+> to read i_size.
+> I also made f_pos access atomic here without i_mutex regarding
+> former i_mutex holders by introducing file_pos_read/file_pos_write
+> that use seqlock to preserve atomicity.
 > 
-> We seem to be missing a changelog.
+> Following patch removes i_mutex from generic_file_llseek, and deletes 
+> generic_file_llseek_nolock totally.
+> 
+> Currently there is i_mutex contention not only around lseek, but also fsync or write.
+> So,  I think we can mitigate i_mutex contention between fsync lseek and write by
+> removing i_mutex.
+> 
+> Thanks.
 
-My bad...
+One problem with this patch is :
 
->> diff --git a/drivers/power/da9030_battery.c b/drivers/power/da9030_battery.c
->> index 1662bb0..3364198 100644
->> --- a/drivers/power/da9030_battery.c
->> +++ b/drivers/power/da9030_battery.c
->> @@ -22,8 +22,6 @@
->>  #include <linux/debugfs.h>
->>  #include <linux/seq_file.h>
+Currently on x86_32, filp kmem_cache uses 128 bytes
+per object, because sizeof(struct file) = 128
 
-[ snip ]
+Adding a seqlock_t makes sizeof(struct file) = 136,
+and filp kmem_cache uses 192 or 256 bytes per object, a 50% or 100 % increase,
+depending on processor (64 or 128 bytes L1 cache lines)
 
-> What is this race? What are the user-visible effects when it occurs? 
+Maybe just use existing f_lock (spinlock) ?
 
-There are cases when charging monitor and the event handler try to change the
-charger state simultaneously. For instance, a charger is connected to the
-system, there's the detection event and the event handler tries to enable
-charging. It is possible that the periodic charging monitor runs at the same
-time and it still thinks there's no external charger. So it tries to disable the
-charging. As the result, even if the conditions necessary to charge the battery
-hold, there will be no actual charging.
+A seqlock is nice whe you have many readers on SMP.
 
-> How does the patch fix the race?
+But on every file syscall (mentioned in your changelog) 
+every "seqlock reader" will have to take a reference on f_count
+any way, so the cache line is already dirtied : We already lost
+seqlock benefit. f_pos is not a "read mostly" field, its quite
+the reverse in the real world.
 
-The patch changes the event handler so that instead of enabling/disabling the
-charger immediately it would rather make the monitor run. The monitor code then
-decides what should be the charger state.
 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
+> 
+> diff -Nrup linux-2.6.30-rc5.org/fs/cifs/cifsfs.c linux-2.6.30-rc5.lseek/fs/cifs/cifsfs.c
+> --- linux-2.6.30-rc5.org/fs/cifs/cifsfs.c	2009-05-11 10:07:14.000000000 +0900
+> +++ linux-2.6.30-rc5.lseek/fs/cifs/cifsfs.c	2009-05-11 10:10:36.000000000 +0900
+> @@ -635,7 +635,7 @@ static loff_t cifs_llseek(struct file *f
+>  		if (retval < 0)
+>  			return (loff_t)retval;
+>  	}
+> -	return generic_file_llseek_unlocked(file, offset, origin);
+> +	return generic_file_llseek(file, offset, origin);
+>  }
+>  
+>  #ifdef CONFIG_CIFS_EXPERIMENTAL
+> diff -Nrup linux-2.6.30-rc5.org/fs/file_table.c linux-2.6.30-rc5.lseek/fs/file_table.c
+> --- linux-2.6.30-rc5.org/fs/file_table.c	2009-05-11 10:07:14.000000000 +0900
+> +++ linux-2.6.30-rc5.lseek/fs/file_table.c	2009-05-11 10:10:36.000000000 +0900
+> @@ -126,6 +126,7 @@ struct file *get_empty_filp(void)
+>  
+>  	INIT_LIST_HEAD(&f->f_u.fu_list);
+>  	atomic_long_set(&f->f_count, 1);
+> +	f_pos_ordered_init(f);
+>  	rwlock_init(&f->f_owner.lock);
+>  	f->f_cred = get_cred(cred);
+>  	spin_lock_init(&f->f_lock);
+> diff -Nrup linux-2.6.30-rc5.org/fs/gfs2/ops_file.c linux-2.6.30-rc5.lseek/fs/gfs2/ops_file.c
+> --- linux-2.6.30-rc5.org/fs/gfs2/ops_file.c	2009-05-11 10:07:15.000000000 +0900
+> +++ linux-2.6.30-rc5.lseek/fs/gfs2/ops_file.c	2009-05-11 10:10:36.000000000 +0900
+> @@ -63,11 +63,11 @@ static loff_t gfs2_llseek(struct file *f
+>  		error = gfs2_glock_nq_init(ip->i_gl, LM_ST_SHARED, LM_FLAG_ANY,
+>  					   &i_gh);
+>  		if (!error) {
+> -			error = generic_file_llseek_unlocked(file, offset, origin);
+> +			error = generic_file_llseek(file, offset, origin);
+>  			gfs2_glock_dq_uninit(&i_gh);
+>  		}
+>  	} else
+> -		error = generic_file_llseek_unlocked(file, offset, origin);
+> +		error = generic_file_llseek(file, offset, origin);
+>  
+>  	return error;
+>  }
+> diff -Nrup linux-2.6.30-rc5.org/fs/ncpfs/file.c linux-2.6.30-rc5.lseek/fs/ncpfs/file.c
+> --- linux-2.6.30-rc5.org/fs/ncpfs/file.c	2009-03-24 08:12:14.000000000 +0900
+> +++ linux-2.6.30-rc5.lseek/fs/ncpfs/file.c	2009-05-11 10:10:36.000000000 +0900
+> @@ -286,7 +286,7 @@ static loff_t ncp_remote_llseek(struct f
+>  {
+>  	loff_t ret;
+>  	lock_kernel();
+> -	ret = generic_file_llseek_unlocked(file, offset, origin);
+> +	ret = generic_file_llseek(file, offset, origin);
+>  	unlock_kernel();
+>  	return ret;
+>  }
+> diff -Nrup linux-2.6.30-rc5.org/fs/nfs/file.c linux-2.6.30-rc5.lseek/fs/nfs/file.c
+> --- linux-2.6.30-rc5.org/fs/nfs/file.c	2009-05-11 10:07:15.000000000 +0900
+> +++ linux-2.6.30-rc5.lseek/fs/nfs/file.c	2009-05-11 10:10:36.000000000 +0900
+> @@ -188,10 +188,10 @@ static loff_t nfs_file_llseek(struct fil
+>  			return (loff_t)retval;
+>  
+>  		spin_lock(&inode->i_lock);
+> -		loff = generic_file_llseek_unlocked(filp, offset, origin);
+> +		loff = generic_file_llseek(filp, offset, origin);
+>  		spin_unlock(&inode->i_lock);
+>  	} else
+> -		loff = generic_file_llseek_unlocked(filp, offset, origin);
+> +		loff = generic_file_llseek(filp, offset, origin);
+>  	return loff;
+>  }
+>  
+> diff -Nrup linux-2.6.30-rc5.org/fs/read_write.c linux-2.6.30-rc5.lseek/fs/read_write.c
+> --- linux-2.6.30-rc5.org/fs/read_write.c	2009-05-11 10:07:15.000000000 +0900
+> +++ linux-2.6.30-rc5.lseek/fs/read_write.c	2009-05-11 10:10:36.000000000 +0900
+> @@ -31,23 +31,61 @@ const struct file_operations generic_ro_
+>  
+>  EXPORT_SYMBOL(generic_ro_fops);
+>  
+> +static inline loff_t file_pos_read(struct file *file)
+> +{
+> +#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
+> +	loff_t pos;
+> +	unsigned int seq;
+> +
+> +	do {
+> +		seq = read_seqbegin(&file->f_pos_seqlock);
+> +		pos = file->f_pos;
+> +	} while (read_seqretry(&file->f_pos_seqlock, seq));
+> +	return pos;
+> +#elif BITS_PER_LONG == 32 && defined(CONFIG_PREEMPT)
+> +	loff_t pos;
+> +
+> +	preempt_disable();
+> +	pos = file->f_pos;
+> +	preempt_enable();
+> +	return pos;
+> +#else
+> +	return file->f_pos;
+> +#endif
+> +}
+> +
+> +static inline void file_pos_write(struct file *file, loff_t pos)
+> +{
+> +#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
+> +	write_seqlock(&file->f_pos_seqlock);
+> +	file->f_pos = pos;
+> +	write_sequnlock(&file->f_pos_seqlock);
+> +#elif BITS_PER_LONG == 32 && defined(CONFIG_PREEMPT)
+> +	preempt_disable();
+> +	file->f_pos = pos;
+> +	preempt_enable();
+> +#else
+> +	file->f_pos = pos;
+> +#endif
+> +}
+> +
+>  /**
+> - * generic_file_llseek_unlocked - lockless generic llseek implementation
+> + * generic_file_llseek - generic llseek implementation for regular files
+>   * @file:	file structure to seek on
+>   * @offset:	file offset to seek to
+>   * @origin:	type of seek
+>   *
+> - * Updates the file offset to the value specified by @offset and @origin.
+> - * Locking must be provided by the caller.
+> + * This is a generic implemenation of ->llseek useable for all normal local
+> + * filesystems.  It just updates the file offset to the value specified by
+> + * @offset and @origin.
+>   */
+> -loff_t
+> -generic_file_llseek_unlocked(struct file *file, loff_t offset, int origin)
+> +loff_t generic_file_llseek(struct file *file, loff_t offset, int origin)
+>  {
+>  	struct inode *inode = file->f_mapping->host;
+>  
+>  	switch (origin) {
+>  	case SEEK_END:
+> -		offset += inode->i_size;
+> +		offset += i_size_read(inode);
+>  		break;
+>  	case SEEK_CUR:
+>  		/*
+> @@ -57,8 +95,8 @@ generic_file_llseek_unlocked(struct file
+>  		* write() or lseek() might have altered it
+>  		*/
+>  		if (offset == 0)
+> -			return file->f_pos;
+> -		offset += file->f_pos;
+> +			return file_pos_read(file);
+> +		offset += file_pos_read(file);
+>  		break;
+>  	}
+>  
+> @@ -66,35 +104,13 @@ generic_file_llseek_unlocked(struct file
+>  		return -EINVAL;
+>  
+>  	/* Special lock needed here? */
+> -	if (offset != file->f_pos) {
+> -		file->f_pos = offset;
+> +	if (offset != file_pos_read(file)) {
+> +		file_pos_write(file, offset);
+>  		file->f_version = 0;
+>  	}
+>  
+>  	return offset;
+>  }
+> -EXPORT_SYMBOL(generic_file_llseek_unlocked);
+> -
+> -/**
+> - * generic_file_llseek - generic llseek implementation for regular files
+> - * @file:	file structure to seek on
+> - * @offset:	file offset to seek to
+> - * @origin:	type of seek
+> - *
+> - * This is a generic implemenation of ->llseek useable for all normal local
+> - * filesystems.  It just updates the file offset to the value specified by
+> - * @offset and @origin under i_mutex.
+> - */
+> -loff_t generic_file_llseek(struct file *file, loff_t offset, int origin)
+> -{
+> -	loff_t rval;
+> -
+> -	mutex_lock(&file->f_dentry->d_inode->i_mutex);
+> -	rval = generic_file_llseek_unlocked(file, offset, origin);
+> -	mutex_unlock(&file->f_dentry->d_inode->i_mutex);
+> -
+> -	return rval;
+> -}
+>  EXPORT_SYMBOL(generic_file_llseek);
+>  
+>  loff_t no_llseek(struct file *file, loff_t offset, int origin)
+> @@ -359,16 +375,6 @@ ssize_t vfs_write(struct file *file, con
+>  
+>  EXPORT_SYMBOL(vfs_write);
+>  
+> -static inline loff_t file_pos_read(struct file *file)
+> -{
+> -	return file->f_pos;
+> -}
+> -
+> -static inline void file_pos_write(struct file *file, loff_t pos)
+> -{
+> -	file->f_pos = pos;
+> -}
+> -
+>  SYSCALL_DEFINE3(read, unsigned int, fd, char __user *, buf, size_t, count)
+>  {
+>  	struct file *file;
+> diff -Nrup linux-2.6.30-rc5.org/fs/smbfs/file.c linux-2.6.30-rc5.lseek/fs/smbfs/file.c
+> --- linux-2.6.30-rc5.org/fs/smbfs/file.c	2009-03-24 08:12:14.000000000 +0900
+> +++ linux-2.6.30-rc5.lseek/fs/smbfs/file.c	2009-05-11 10:10:36.000000000 +0900
+> @@ -426,7 +426,7 @@ static loff_t smb_remote_llseek(struct f
+>  {
+>  	loff_t ret;
+>  	lock_kernel();
+> -	ret = generic_file_llseek_unlocked(file, offset, origin);
+> +	ret = generic_file_llseek(file, offset, origin);
+>  	unlock_kernel();
+>  	return ret;
+>  }
+> diff -Nrup linux-2.6.30-rc5.org/include/linux/fs.h linux-2.6.30-rc5.lseek/include/linux/fs.h
+> --- linux-2.6.30-rc5.org/include/linux/fs.h	2009-05-11 10:07:17.000000000 +0900
+> +++ linux-2.6.30-rc5.lseek/include/linux/fs.h	2009-05-11 10:10:36.000000000 +0900
+> @@ -896,6 +896,16 @@ static inline int ra_has_index(struct fi
+>  #define FILE_MNT_WRITE_TAKEN	1
+>  #define FILE_MNT_WRITE_RELEASED	2
+>  
+> +/*
+> + * Use sequence lock to get consistent f_pos on 32-bit processors.
+> + */
+> +#if BITS_PER_LONG == 32 && defined(CONFIG_SMP)
+> +#define __NEED_F_POS_ORDERED
+> +#define f_pos_ordered_init(file) seqlock_init(&file->f_pos_seqlock)
+> +#else
+> +#define f_pos_ordered_init(file) do { } while (0)
+> +#endif
+> +
+>  struct file {
+>  	/*
+>  	* fu_list becomes invalid after file_free is called and queued via
+> @@ -914,6 +924,9 @@ struct file {
+>  	unsigned int 		f_flags;
+>  	fmode_t			f_mode;
+>  	loff_t			f_pos;
+> +#ifdef __NEED_F_POS_ORDERED
+> +	seqlock_t               f_pos_seqlock;
+> +#endif
+>  	struct fown_struct	f_owner;
+>  	const struct cred	*f_cred;
+>  	struct file_ra_state	f_ra;
+> @@ -2215,8 +2228,6 @@ extern void
+>  file_ra_state_init(struct file_ra_state *ra, struct address_space *mapping);
+>  extern loff_t no_llseek(struct file *file, loff_t offset, int origin);
+>  extern loff_t generic_file_llseek(struct file *file, loff_t offset, int origin);
+> -extern loff_t generic_file_llseek_unlocked(struct file *file, loff_t offset,
+> -			int origin);
+>  extern int generic_file_open(struct inode * inode, struct file * filp);
+>  extern int nonseekable_open(struct inode * inode, struct file * filp);
+>  
 > 
 
--- 
-Sincerely yours,
-Mike.
 
