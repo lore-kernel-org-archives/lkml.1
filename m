@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763193AbZENXHi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762278AbZENXH4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763193AbZENXHi (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 19:07:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762283AbZENW6q
+	id S1762278AbZENXH4 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 19:07:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762290AbZENW6r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 18:58:46 -0400
-Received: from kroah.org ([198.145.64.141]:46060 "EHLO coco.kroah.org"
+	Thu, 14 May 2009 18:58:47 -0400
+Received: from kroah.org ([198.145.64.141]:46067 "EHLO coco.kroah.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761634AbZENW6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 18:58:39 -0400
+	id S1762240AbZENW6k (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 18:58:40 -0400
 X-Mailbox-Line: From gregkh@mini.kroah.org Thu May 14 15:52:38 2009
-Message-Id: <20090514225238.664075863@mini.kroah.org>
+Message-Id: <20090514225238.810281932@mini.kroah.org>
 User-Agent: quilt/0.48-1
-Date: Thu, 14 May 2009 15:51:40 -0700
+Date: Thu, 14 May 2009 15:51:41 -0700
 From: Greg KH <gregkh@suse.de>
 To: linux-kernel@vger.kernel.org, stable@kernel.org
 Cc: Justin Forbes <jmforbes@linuxtx.org>,
@@ -25,12 +25,12 @@ Cc: Justin Forbes <jmforbes@linuxtx.org>,
        Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
        Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
        torvalds@linux-foundation.org, akpm@linux-foundation.org,
-       alan@lxorguk.ukuu.org.uk, linux-fsdevel@vger.kernel.org,
-       linux-mm@vger.kernel.org, Trond Myklebust <Trond.Myklebust@netapp.com>,
-       Nick Piggin <npiggin@suse.de>
-Subject: [patch 14/28] NFS: Close page_mkwrite() races
+       alan@lxorguk.ukuu.org.uk, Steve French <smfrench@gmail.com>,
+       Jeff Layton <jlayton@redhat.com>, Steve French <sfrench@us.ibm.com>,
+       Suresh Jayaraman <sjayaraman@suse.de>
+Subject: [patch 15/28] cifs: Fix buffer size for tcon->nativeFileSystem field
 References: <20090514225126.907908936@mini.kroah.org>
-Content-Disposition: inline; filename=nfs-close-page_mkwrite-races.patch
+Content-Disposition: inline; filename=cifs-fix-buffer-size-for-tcon-nativefilesystem-field.patch
 In-Reply-To: <20090514225413.GA705@kroah.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -41,40 +41,49 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 ------------------
 
-From: Trond Myklebust <Trond.Myklebust@netapp.com>
+From: Jeff Layton <jlayton@redhat.com>
 
-commit 7fdf523067666b0eaff330f362401ee50ce187c4 upstream
+Commit f083def68f84b04fe3f97312498911afce79609e refreshed.
 
-Follow up to Nick Piggin's patches to ensure that nfs_vm_page_mkwrite
-returns with the page lock held, and sets the VM_FAULT_LOCKED flag.
+cifs: fix buffer size for tcon->nativeFileSystem field
 
-See http://bugzilla.kernel.org/show_bug.cgi?id=12913
+The buffer for this was resized recently to fix a bug. It's still
+possible however that a malicious server could overflow this field
+by sending characters in it that are >2 bytes in the local charset.
+Double the size of the buffer to account for this possibility.
 
-Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
-Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
-Cc: Nick Piggin <npiggin@suse.de>
+Also get rid of some really strange and seemingly pointless NULL
+termination. It's NULL terminating the string in the source buffer,
+but by the time that happens, we've already copied the string.
+
+Signed-off-by: Jeff Layton <jlayton@redhat.com>
+Signed-off-by: Steve French <sfrench@us.ibm.com>
+Cc: Suresh Jayaraman <sjayaraman@suse.de>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
-
 ---
- fs/nfs/file.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ fs/cifs/connect.c |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
 
---- a/fs/nfs/file.c
-+++ b/fs/nfs/file.c
-@@ -478,10 +478,10 @@ static int nfs_vm_page_mkwrite(struct vm
- 
- 	ret = nfs_updatepage(filp, page, 0, pagelen);
- out_unlock:
-+	if (!ret)
-+		return VM_FAULT_LOCKED;
- 	unlock_page(page);
--	if (ret)
--		ret = VM_FAULT_SIGBUS;
--	return ret;
-+	return VM_FAULT_SIGBUS;
- }
- 
- static struct vm_operations_struct nfs_file_vm_ops = {
+--- a/fs/cifs/connect.c
++++ b/fs/cifs/connect.c
+@@ -3549,16 +3549,12 @@ CIFSTCon(unsigned int xid, struct cifsSe
+ 			    BCC(smb_buffer_response)) {
+ 				kfree(tcon->nativeFileSystem);
+ 				tcon->nativeFileSystem =
+-				    kzalloc(2*(length + 1), GFP_KERNEL);
++				    kzalloc((4 * length) + 2, GFP_KERNEL);
+ 				if (tcon->nativeFileSystem)
+ 					cifs_strfromUCS_le(
+ 						tcon->nativeFileSystem,
+ 						(__le16 *) bcc_ptr,
+ 						length, nls_codepage);
+-				bcc_ptr += 2 * length;
+-				bcc_ptr[0] = 0;	/* null terminate the string */
+-				bcc_ptr[1] = 0;
+-				bcc_ptr += 2;
+ 			}
+ 			/* else do not bother copying these information fields*/
+ 		} else {
 
 
