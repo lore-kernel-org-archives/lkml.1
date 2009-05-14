@@ -1,67 +1,171 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762700AbZENDwR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753425AbZENEQ3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762700AbZENDwR (ORCPT <rfc822;w@1wt.eu>);
-	Wed, 13 May 2009 23:52:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754552AbZENDwD
+	id S1753425AbZENEQ3 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 00:16:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751058AbZENEQS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Wed, 13 May 2009 23:52:03 -0400
-Received: from mga10.intel.com ([192.55.52.92]:3649 "EHLO
-	fmsmga102.fm.intel.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1754664AbZENDwB (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Wed, 13 May 2009 23:52:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,192,1241420400"; 
-   d="scan'208";a="690271296"
-From: Sheng Yang <sheng@linux.intel.com>
-Organization: Intel Opensource Technology Center
-To: "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [PATCH] x86: Extend test_and_set_bit() test_and_clean_bit() to 64 bits in X86_64
-Date: Thu, 14 May 2009 11:52:28 +0800
-User-Agent: KMail/1.11.2 (Linux/2.6.28-11-generic; KDE/4.2.2; x86_64; ; )
-Cc: linux-kernel@vger.kernel.org, "linux-mm" <linux-mm@kvack.org>,
-       Ingo Molnar <mingo@elte.hu>
-References: <1242202647-32446-1-git-send-email-sheng@linux.intel.com> <4A0AFB7D.2080105@zytor.com> <4A0B036B.7000107@zytor.com>
-In-Reply-To: <4A0B036B.7000107@zytor.com>
+	Thu, 14 May 2009 00:16:18 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:47459 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750900AbZENEQR (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 00:16:17 -0400
+Message-ID: <4A0B9B0D.6080006@garzik.org>
+Date: Thu, 14 May 2009 00:16:13 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-15"
+To: "Mukker, Atul" <Atul.Mukker@lsi.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Austria, Winston" <Winston.Austria@lsi.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Subject: Re: [RFQ] New driver architecture questions
+References: <6C678488C5CEE74F813A4D1948FD2DC7A95E6D37@cosmail02.lsi.com>,<4A0B858F.3080405@garzik.org> <6C678488C5CEE74F813A4D1948FD2DC7A95E6D38@cosmail02.lsi.com>
+In-Reply-To: <6C678488C5CEE74F813A4D1948FD2DC7A95E6D38@cosmail02.lsi.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905141152.29378.sheng@linux.intel.com>
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thursday 14 May 2009 01:29:15 H. Peter Anvin wrote:
-> H. Peter Anvin wrote:
-> > H. Peter Anvin wrote:
-> >> Sheng Yang wrote:
-> >>> This fix 44/45 bit width memory can't boot up issue. The reason is
-> >>> free_bootmem_node()->mark_bootmem_node()->__free() use
-> >>> test_and_clean_bit() to clean node_bootmem_map, but for 44bits width
-> >>> address, the idx set bit 31 (43 - 12), which consider as a nagetive
-> >>> value for bts.
-> >>>
-> >>> This patch applied to tip/mm.
-> >>
-> >> Hi Sheng,
-> >>
-> >> Could you try the attached patch instead?
-> >
-> > Sorry, wrong patch entirely... here is the right one.
->
-> This time, for real?  Sheesh.  I'm having a morning, apparently.
->
-> 	-hpa
+Mukker, Atul wrote:
+> Interesting answer :-)
+> 
+> But it definitely makes few things clear:
+> 
+> 1. The possibility definitely exists, if done right. We will review Intel's code and try to use as a reference.
+> 2. Earlier the code is made public, more likely that it would stay on the "right" track.
 
-Yeah, this one also works well(lightly tested). :)
+Agreed!
 
-But one thing should be noticed that, bit ops recognized the input as signed. 
-According to SDM 2A 3.1.1.7 Operation Section, Bit(BitBase, BitOffset) can 
-accept BitOffset as negative value, then search backward... Well, I indeed 
-don't know when we need this, but I think keep signed here should be better...
 
--- 
-regards
-Yang, Sheng 
+> Are there known pitfalls we should guard against? Why's your focus on Linux "drivers"? Do you expect more than one?
+
+Good questions :)  I use "drivers", plural, to illustrate how Linux 
+maintainers attempt to take a whole-system approach to driver evaluation.
+
+We have to consider the user experience, support and maintenance of 
+multiple Linux drivers from multiple hardware vendors.
+
+To pick an easy example in my area of expertise, every major vendor of 
+[typically non-firmware-based] SATA controllers that I deal with, such 
+as Intel, NVIDIA, Silicon Image, Promise and Marvell, ship a Windows 
+driver that includes software code in the OS driver for
+	* supporting their hardware controller
+	* implementing software RAID levels 0, 1, and 5
+
+This is fine because the hardware vendor is only concerned with their 
+own hardware.
+
+However, in Linux, we aim to maintain a consistent level of support 
+_across_ multiple hardware vendors.  This is the same why the same 
+driver, drivers/ata/ahci.c, is used for AHCI controllers from
+	- Intel
+	- NVIDIA
+	- ULi
+	- SiS
+	- VIA
+	- JMicron
+	- Marvell
+	- ACard/Artop
+
+When a bug is fixed in the ahci.c driver, _all_ customers benefit from 
+this bug fix.  When a new feature is added, _all_ customers benefit from 
+a new feature.
+
+Of course, if there is an NVIDIA-specific hardware feature, that does 
+not apply to other hardware vendors, that is welcomed!  It is placed in 
+an NVIDIA-specific driver module.
+
+To pick another example, cross-OS layers from hardware vendor A, created 
+in the past, have included workarounds for errata in system platforms 
+from hardware vendor B.  In Linux, we typically put system workarounds 
+in drivers/pci/quirks.c or arch/* so that the workaround is applied to 
+all _systems_ that need it.  (of course, if the errata is truly specific 
+only to A+B, then yes, the workaround should be in A's driver generally)
+
+Additionally, minimizing duplicate code across hardware vendors 
+MAXIMIZES TESTING across all Linux drivers.
+
+In Linux, when there is a change to software RAID-5, it is instantly 
+tested and verified across multiple hardware vendors, on multiple system 
+architectures and technologies.
+
+
+So, what does this mean for LSI?  In my humble opinion :)
+
+1) A driver should be modular, in order to properly separate out 
+hardware-specific and OS-specific pieces.  Taking drivers/net/e1000e as 
+an example,
+
+	hw.h		hardware-specific defines, ~cross-OS
+	82571.c		code specific to 8257x chip family, ~cross-OS
+	ich8lan.c	code specific to ICH8+ chip family, ~cross-OS
+	netdev.c	core driver code, Linux-specific
+
+A key engineering task is decomposing the driver into fine-grained, 
+OS-specific OR hardware-specific operations.
+
+Avoid large amounts of C pre-processor wrappers, and maximize use of 
+native C types and enums.
+
+
+2) Highly standardized, not-specific-to-LSI-hardware routines such as 
+SAS discovery or software RAID5 XOR'ing should be separate from the 
+driver itself.
+
+This is very different from Windows!!
+
+As an example, the Adaptec 94xx and Marvell 6440 drivers share the same 
+SAS discovery code -- drivers/scsi/libsas, because discovery is 99% in 
+the OS driver.
+
+However, LSI's mpt2sas is more firmware-based, so more of the discovery 
+process is found in hardware-specific drivers/scsi/mpt2sas.
+
+Another example:  RAID5 and RAID6 algorithms in Linux have been 
+hand-optimized for specific CPU architectures (drivers/md/raid6*). 
+Implementing your own software RAID would decrease performance and 
+eliminate the years of field testing performed on the existing code base.
+
+For implementations of RAID that are largely firmware-based, most of the 
+RAID implementation is found in microcontroller firmware.  This relieves 
+you of the burden of driver code duplication.
+
+
+3) Ensure that the userland Application Binary Interface (ABI) for your 
+driver is consistent with other Linux drivers, for the same features.
+
+If there is a feature NOT unique to LSI, attempt to maintain consistency 
+with existing Linux driver APIs.
+
+If the feature is LSI-specific, use your best design judgement.
+
+This ensures that existing Linux tools work.
+
+
+4) For reasons stated above, we are FORCED to consider your driver in 
+the context of other Linux drivers from other hardware vendors.
+
+The main reason, as I said, is to avoid code duplication.
+
+Two implementations of software RAID 5 mean twice the bugs, and twice 
+the support/maintenance costs for Linux maintainers and distributors.
+
+It is unfortunate but true that Linux maintainers must consider when a 
+chip reaches end-of-life support, or a hardware vendor goes out of 
+business, and users still want to keep using their hardware.
+
+
+Whew, that was long.  I hope this makes sense...
+
+Regards,
+
+	Jeff
+
+
+
+
+
