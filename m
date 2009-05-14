@@ -1,384 +1,132 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753229AbZENS1F@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753394AbZENSiU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753229AbZENS1F (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 14:27:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752427AbZENS0w
+	id S1753394AbZENSiU (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 14:38:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbZENSiB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 14:26:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:59666 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751861AbZENS0v (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 14:26:51 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 4/6] PM/Hibernate: Rework shrinking of memory
-Date: Thu, 14 May 2009 20:26:18 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
-Cc: linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com,
-       linux-kernel@vger.kernel.org, pavel@ucw.cz, nigel@tuxonice.net,
-       rientjes@google.com, linux-mm@kvack.org
-References: <200905070040.08561.rjw@sisk.pl> <20090513123409.302f4307.akpm@linux-foundation.org> <200905132255.04681.rjw@sisk.pl>
-In-Reply-To: <200905132255.04681.rjw@sisk.pl>
+	Thu, 14 May 2009 14:38:01 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:36548 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750957AbZENSiA (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 14:38:00 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=message-id:date:from:user-agent:x-accept-language:mime-version:to
+         :cc:subject:references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=pYT1890lIdG9TJ8M7lCCNOZKnplAiodluXO4Npjf3V9oQ068jSLE3avfiGs0jfGM79
+         0mnndoi4sV36cyyu6pVqSp18ZmUayJd/ZQ9VuXAfZIjj0mMgjXh77+LJwbQi4v//oJgs
+         BKSKSKPRDiSQ/A7yPcFKT4R7mQ3wkhOc52Dh8=
+Message-ID: <4A0C6504.8000704@googlemail.com>
+Date: Thu, 14 May 2009 20:37:56 +0200
+From: Michael Riepe <michael.riepe@googlemail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux i686 (x86_64); en-US; rv:1.7.13) Gecko/20060417
+X-Accept-Language: de-de, de, en-us, en
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
+To: David Dillow <dave@thedillows.org>
+CC: Michael Buesch <mb@bu3sch.de>, Francois Romieu <romieu@fr.zoreil.com>,
+       Rui Santos <rsantos@grupopie.com>,
+       =?ISO-8859-15?Q?Michael_B=FCker?= <m.bueker@berlin.de>,
+       linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.27.19 + 28.7: network timeouts for r8169 and 8139too
+References: <200903041828.49972.m.bueker@berlin.de>	 <1242001754.4093.12.camel@obelisk.thedillows.org>	 <200905112248.44868.mb@bu3sch.de> <200905112310.08534.mb@bu3sch.de>	 <1242077392.3716.15.camel@lap75545.ornl.gov>	 <4A09DC3E.2080807@googlemail.com> <1242268709.4979.7.camel@obelisk.thedillows.org>
+In-Reply-To: <1242268709.4979.7.camel@obelisk.thedillows.org>
+X-Enigmail-Version: 0.91.0.0
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905142026.19862.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 May 2009, Rafael J. Wysocki wrote:
-> On Wednesday 13 May 2009, Andrew Morton wrote:
-> > On Wed, 13 May 2009 10:39:25 +0200
-> > "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
-> > 
-> > > From: Rafael J. Wysocki <rjw@sisk.pl>
-> > > 
-> > > Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
-> > > just once to make some room for the image and then allocates memory
-> > > to apply more pressure to the memory management subsystem, if
-> > > necessary.
-> > > 
-> > > Unfortunately, we don't seem to be able to drop shrink_all_memory()
-> > > entirely just yet, because that would lead to huge performance
-> > > regressions in some test cases.
-> > > 
-> > 
-> > Isn't this a somewhat large problem?
-> 
-> Yes, it is.  The thing is 8 times slower (15 s vs 2 s) without the
-> shrink_all_memory() in at least one test case.  100% reproducible.
-> 
-> > The main point (I thought) was to remove shrink_all_memory().  Instead,
-> > we're retaining it and adding even more stuff?
-> 
-> The idea is that afterwards we can drop shrink_all_memory() once the
-> performance problem has been resolved.  Also, we now allocate memory for the
-> image using GFP_KERNEL instead of doing it with GFP_ATOMIC after freezing
-> devices.  I'd think that's an improvement?
-> 
-> > > +/**
-> > > + * compute_fraction - Compute approximate fraction x * (a/b)
-> > > + * @x: Number to multiply.
-> > > + * @numerator: Numerator of the fraction (a).
-> > > + * @denominator: Denominator of the fraction (b).
-> > >   *
-> > > - *	Notice: all userland should be stopped before it is called, or
-> > > - *	livelock is possible.
-> > > + * Compute an approximate value of the expression x * (a/b), where a is less
-> > > + * than b, all x, a, b are unsigned longs and x * a may be greater than the
-> > > + * maximum unsigned long.
-> > >   */
-> > > +static unsigned long compute_fraction(
-> > > +	unsigned long x, unsigned long numerator, unsigned long denominator)
-> > 
-> > I can't say I'm a great fan of the code layout here.
-> > 
-> > static unsigned long compute_fraction(unsigned long x, unsigned long numerator, unsigned long denominator)
-> > 
-> > or
-> > 
-> > static unsigned long compute_fraction(unsigned long x, unsigned long numerator,
-> > 					unsigned long denominator)
-> > 
-> > would be more typical.
-> 
-> OK
->  
-> > > +{
-> > > +	unsigned long ratio = (numerator << FRACTION_SHIFT) / denominator;
-> > >  
-> > > -#define SHRINK_BITE	10000
-> > > -static inline unsigned long __shrink_memory(long tmp)
-> > > +	x *= ratio;
-> > > +	return x >> FRACTION_SHIFT;
-> > > +}
-> > 
-> > Strange function.  Would it not be simpler/clearer to do it with 64-bit
-> > scalars, multiplication and do_div()?
-> 
-> Sure, I can do it this way too.  Is it fine to use u64 for this purpose?
-> 
-> > > +static unsigned long highmem_size(
-> > > +	unsigned long size, unsigned long highmem, unsigned long count)
-> > > +{
-> > > +	return highmem > count / 2 ?
-> > > +			compute_fraction(size, highmem, count) :
-> > > +			size - compute_fraction(size, count - highmem, count);
-> > > +}
-> > 
-> > This would be considerably easier to follow if we know what the three
-> > arguments represent.  Amount of memory?  In what units?  `count' of
-> > what?
-> > 
-> > The `count/2' thing there is quite mysterious.
-> > 
-> > <does some reverse-engineering>
-> > 
-> > OK, `count' is "the number of pageframes we can use".  (I don't think I
-> > helped myself a lot there).  But what's up with that divde-by-two?
-> > 
-> > <considers poking at callers to work out what `size' is>
-> > 
-> > <gives up>
-> > 
-> > Is this code as clear as we can possibly make it??
-> 
-> Heh
-> 
-> OK, I'll do my best to clean it up.
 
-Updated patch is appended.
 
----
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM/Hibernate: Rework shrinking of memory (rev. 2)
+David Dillow wrote:
+> On Tue, 2009-05-12 at 22:29 +0200, Michael Riepe wrote:
+> 
+>>Hi!
+>>
+>>David Dillow wrote:
+>>
+>>
+>>>I was saying that I don't think the timeouts are necessarily the NIC
+>>>chipset -- or the bridge chip for that matter --  having issues with
+>>>MSI. There were some substantial IRQ handling changes in 2.6.28 and my
+>>>bisection of the problem seem to lead into that code. I'll try this
+>>>later tonight hopefully, but can you try to run 2.6.27 with the current
+>>>r8169 driver and see if it is solid for you? That way it is using the
+>>>same driver code, but avoids the IRQ changes.
+>>
+>>Unfortunately, 2.6.27 won't build with r8169.c copied from 2.6.29.
+> 
+> 
+> You are correct, and I should have thought about that. The following
+> patch reverts the following commits:
+> 
+> 288379 net: Remove redundant NAPI functions
+> 908a7a net: Remove unused netdev arg from some NAPI interfaces.
+> 008298 netdev: add more functions to netdevice ops
+> 8b4ab2 r8169: convert to net_device_ops
+> babcda drivers/net: Kill now superfluous ->last_rx stores.
+> 
+> The patched driver runs on 2.6.27 and survives my 5 minutes 'dd
+> if=/dev/zero bs=1024k | nc target 9000' test which usually dies in less
+> than 90 seconds on 2.6.28+.
 
-Rework swsusp_shrink_memory() so that it calls shrink_all_memory()
-just once to make some room for the image and then allocates memory
-to apply more pressure to the memory management subsystem, if
-necessary.
+Not on my system:
 
-Unfortunately, we don't seem to be able to drop shrink_all_memory()
-entirely just yet, because that would lead to huge performance
-regressions in some test cases.
+WARNING: at net/sched/sch_generic.c:219 dev_watchdog+0x258/0x270()
+NETDEV WATCHDOG: eth0 (r8169): transmit timed out
+Modules linked in: nfsd lockd nfs_acl sunrpc exportfs autofs4 deflate
+zlib_deflate ctr twofish twofish_common camellia serpent blowfish
+des_generic cbc aes_x86_64 aes_generic xcbc rmd160 sha256_generic
+sha1_generic crypto_null crypto_blkcipher af_key ipt_REJECT
+nf_conntrack_ipv6 ip6table_filter ip6_tables xt_tcpudp xt_conntrack
+iptable_filter ip_tables x_tables sg nf_conntrack_irc nf_conntrack_ftp
+nf_conntrack_ipv4 nf_conntrack rfcomm l2cap bluetooth dm_mod tun eeprom
+smsc47m192 hwmon_vid smsc47m1 hwmon cpufreq_stats cpufreq_powersave
+video backlight output fan container battery ac usbhid usb_storage
+i2c_dev hid evdev intelfb fb i2c_algo_bit ff_memless parport_pc
+cfbcopyarea r8169 snd_hda_intel i2c_i801 thermal cfbimgblt serio_raw
+ehci_hcd mii button iTCO_wdt snd_pcm processor parport i2c_core
+cfbfillrect intel_agp snd_timer snd_page_alloc snd_hwdep snd uhci_hcd
+soundcore
+Pid: 0, comm: swapper Not tainted 2.6.27-ai-x64-r8169 #1
 
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/snapshot.c |  204 +++++++++++++++++++++++++++++++++++++-----------
- 1 file changed, 158 insertions(+), 46 deletions(-)
+Call Trace:
+ <IRQ>  [<ffffffff802498f7>] warn_slowpath+0xb7/0xf0
+ [<ffffffff804b98e0>] ? ip_output+0x90/0xf0
+ [<ffffffff804b858f>] ? __ip_local_out+0x9f/0xb0
+ [<ffffffff804b85c0>] ? ip_local_out+0x20/0x30
+ [<ffffffff804b8e9c>] ? ip_queue_xmit+0x21c/0x3f0
+ [<ffffffff80488ddc>] ? pskb_copy+0x1c/0x1a0
+ [<ffffffff8048884e>] ? __alloc_skb+0x6e/0x150
+ [<ffffffff80512972>] ? fib6_clean_node+0x42/0xc0
+ [<ffffffff8054ad04>] ? _write_unlock_bh+0x24/0x30
+ [<ffffffff8054aa0f>] ? _spin_lock_irqsave+0x3f/0x50
+ [<ffffffff8037baca>] ? strlcpy+0x4a/0x60
+ [<ffffffff8049fe78>] dev_watchdog+0x258/0x270
+ [<ffffffff80512360>] ? fib6_gc_timer_cb+0x0/0x10
+ [<ffffffff8054ad63>] ? _spin_unlock_bh+0x23/0x30
+ [<ffffffff8049fc20>] ? dev_watchdog+0x0/0x270
+ [<ffffffff80254650>] run_timer_softirq+0x170/0x250
+ [<ffffffff8026adff>] ? clockevents_program_event+0x4f/0x90
+ [<ffffffff8024fcc4>] __do_softirq+0x84/0x100
+ [<ffffffff80213fdc>] call_softirq+0x1c/0x30
+ [<ffffffff802161ad>] do_softirq+0x5d/0xa0
+ [<ffffffff8024f92d>] irq_exit+0x9d/0xb0
+ [<ffffffff80224b84>] smp_apic_timer_interrupt+0x84/0xc0
+ [<ffffffff802138b3>] apic_timer_interrupt+0x83/0x90
+ <EOI>  [<ffffffff8021b250>] ? mwait_idle+0x40/0x60
+ [<ffffffff80211662>] ? enter_idle+0x22/0x30
+ [<ffffffff802116dd>] ? cpu_idle+0x6d/0x120
+ [<ffffffff80538038>] ? rest_init+0x88/0x90
 
-Index: linux-2.6/kernel/power/snapshot.c
-===================================================================
---- linux-2.6.orig/kernel/power/snapshot.c
-+++ linux-2.6/kernel/power/snapshot.c
-@@ -1066,69 +1066,181 @@ void swsusp_free(void)
- 	buffer = NULL;
- }
- 
-+/* Helper functions used for the shrinking of memory. */
-+
-+#define GFP_IMAGE	(GFP_KERNEL | __GFP_NOWARN)
-+
- /**
-- *	swsusp_shrink_memory -  Try to free as much memory as needed
-+ * preallocate_image_pages - Allocate a number of pages for hibernation image
-+ * @nr_pages: Number of page frames to allocate.
-+ * @mask: GFP flags to use for the allocation.
-  *
-- *	... but do not OOM-kill anyone
-- *
-- *	Notice: all userland should be stopped before it is called, or
-- *	livelock is possible.
-+ * Return value: Number of page frames actually allocated
-  */
-+static unsigned long preallocate_image_pages(unsigned long nr_pages, gfp_t mask)
-+{
-+	unsigned long nr_alloc = 0;
-+
-+	while (nr_pages > 0) {
-+		if (!alloc_image_page(mask))
-+			break;
-+		nr_pages--;
-+		nr_alloc++;
-+	}
-+
-+	return nr_alloc;
-+}
-+
-+static unsigned long preallocate_image_memory(unsigned long nr_pages)
-+{
-+	return preallocate_image_pages(nr_pages, GFP_IMAGE);
-+}
- 
--#define SHRINK_BITE	10000
--static inline unsigned long __shrink_memory(long tmp)
-+#ifdef CONFIG_HIGHMEM
-+static unsigned long preallocate_image_highmem(unsigned long nr_pages)
- {
--	if (tmp > SHRINK_BITE)
--		tmp = SHRINK_BITE;
--	return shrink_all_memory(tmp);
-+	return preallocate_image_pages(nr_pages, GFP_IMAGE | __GFP_HIGHMEM);
- }
- 
-+/**
-+ *  __fraction - Compute (an approximation of) x * (multiplier / base)
-+ */
-+static unsigned long __fraction(u64 x, u64 multiplier, u64 base)
-+{
-+	x *= multiplier;
-+	do_div(x, base);
-+	return (unsigned long)x;
-+}
-+
-+static unsigned long preallocate_highmem_fraction(unsigned long nr_pages,
-+						unsigned long highmem,
-+						unsigned long total)
-+{
-+	unsigned long alloc = __fraction(nr_pages, highmem, total);
-+
-+	return preallocate_image_pages(alloc, GFP_IMAGE | __GFP_HIGHMEM);
-+}
-+#else /* CONFIG_HIGHMEM */
-+static inline unsigned long preallocate_image_highmem(unsigned long nr_pages)
-+{
-+	return 0;
-+}
-+
-+static inline unsigned long preallocate_highmem_fraction(unsigned long nr_pages,
-+						unsigned long highmem,
-+						unsigned long total)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_HIGHMEM */
-+
-+/**
-+ * swsusp_shrink_memory -  Make the kernel release as much memory as needed
-+ *
-+ * To create a hibernation image it is necessary to make a copy of every page
-+ * frame in use.  We also need a number of page frames to be free during
-+ * hibernation for allocations made while saving the image and for device
-+ * drivers, in case they need to allocate memory from their hibernation
-+ * callbacks (these two numbers are given by PAGES_FOR_IO and SPARE_PAGES,
-+ * respectively, both of which are rough estimates).  To make this happen, we
-+ * compute the total number of available page frames and allocate at least
-+ *
-+ * ([page frames total] + PAGES_FOR_IO + [metadata pages]) / 2 + 2 * SPARE_PAGES
-+ *
-+ * of them, which corresponds to the maximum size of a hibernation image.
-+ *
-+ * If image_size is set below the number following from the above formula,
-+ * the preallocation of memory is continued until the total number of saveable
-+ * pages in the system is below the requested image size or it is impossible to
-+ * allocate more memory, whichever happens first.
-+ */
- int swsusp_shrink_memory(void)
- {
--	long tmp;
- 	struct zone *zone;
--	unsigned long pages = 0;
--	unsigned int i = 0;
--	char *p = "-\\|/";
-+	unsigned long saveable, size, max_size, count, highmem, pages = 0;
-+	unsigned long alloc, pages_highmem;
- 	struct timeval start, stop;
-+	int error = 0;
- 
--	printk(KERN_INFO "PM: Shrinking memory...  ");
-+	printk(KERN_INFO "PM: Shrinking memory... ");
- 	do_gettimeofday(&start);
--	do {
--		long size, highmem_size;
- 
--		highmem_size = count_highmem_pages();
--		size = count_data_pages() + PAGES_FOR_IO + SPARE_PAGES;
--		tmp = size;
--		size += highmem_size;
--		for_each_populated_zone(zone) {
--			tmp += snapshot_additional_pages(zone);
--			if (is_highmem(zone)) {
--				highmem_size -=
--					zone_page_state(zone, NR_FREE_PAGES);
--			} else {
--				tmp -= zone_page_state(zone, NR_FREE_PAGES);
--				tmp += zone->lowmem_reserve[ZONE_NORMAL];
--			}
--		}
-+	/* Count the number of saveable data pages. */
-+	highmem = count_highmem_pages();
-+	saveable = count_data_pages();
-+
-+	/*
-+	 * Compute the total number of page frames we can use (count) and the
-+	 * number of pages needed for image metadata (size).
-+	 */
-+	count = saveable;
-+	saveable += highmem;
-+	size = 0;
-+	for_each_populated_zone(zone) {
-+		size += snapshot_additional_pages(zone);
-+		if (is_highmem(zone))
-+			highmem += zone_page_state(zone, NR_FREE_PAGES);
-+		else
-+			count += zone_page_state(zone, NR_FREE_PAGES);
-+	}
-+	count += highmem;
-+	count -= totalreserve_pages;
-+
-+	/* Compute the maximum number of saveable pages to leave in memory. */
-+	max_size = (count - (size + PAGES_FOR_IO)) / 2 - 2 * SPARE_PAGES;
-+	size = DIV_ROUND_UP(image_size, PAGE_SIZE);
-+	if (size > max_size)
-+		size = max_size;
-+	/*
-+	 * If the maximum is not less than the current number of saveable pages
-+	 * in memory, we don't need to do anything more.
-+	 */
-+	if (size >= saveable)
-+		goto out;
- 
--		if (highmem_size < 0)
--			highmem_size = 0;
-+	/*
-+	 * Let the memory management subsystem know that we're going to need a
-+	 * large number of page frames to allocate and make it free some memory.
-+	 * NOTE: If this is not done, performance will be hurt badly in some
-+	 * test cases.
-+	 */
-+	shrink_all_memory(saveable - size);
- 
--		tmp += highmem_size;
--		if (tmp > 0) {
--			tmp = __shrink_memory(tmp);
--			if (!tmp)
--				return -ENOMEM;
--			pages += tmp;
--		} else if (size > image_size / PAGE_SIZE) {
--			tmp = __shrink_memory(size - (image_size / PAGE_SIZE));
--			pages += tmp;
--		}
--		printk("\b%c", p[i++%4]);
--	} while (tmp > 0);
-+	/*
-+	 * The number of saveable pages in memory was too high, so apply some
-+	 * pressure to decrease it.  First, make room for the largest possible
-+	 * image and fail if that doesn't work.  Next, try to decrease the size
-+	 * of the image as much as indicated by image_size using allocations
-+	 * from highmem and non-highmem zones separately.
-+	 */
-+	pages_highmem = preallocate_image_highmem(highmem / 2);
-+	max_size += pages_highmem;
-+	alloc = count - max_size;
-+	pages = preallocate_image_memory(alloc);
-+	if (pages < alloc) {
-+		error = -ENOMEM;
-+		goto free_out;
-+	}
-+	size = max_size - size;
-+	alloc = size;
-+	size = preallocate_highmem_fraction(size, highmem, count);
-+	pages_highmem += size;
-+	alloc -= size;
-+	pages += preallocate_image_memory(alloc);
-+	pages += pages_highmem;
-+
-+ free_out:
-+	/* Release all of the preallocated page frames. */
-+	swsusp_free();
-+
-+	if (error) {
-+		printk(KERN_CONT "\n");
-+		return error;
-+	}
-+
-+ out:
- 	do_gettimeofday(&stop);
--	printk("\bdone (%lu pages freed)\n", pages);
-+	printk(KERN_CONT "done (preallocated %lu free pages)\n", pages);
- 	swsusp_show_speed(&start, &stop, pages, "Freed");
- 
- 	return 0;
+This happened less than half a minute after the transfer had started.
+And it's going to happen earlier if I increase the load. With four
+connections to two other hosts, the transmission usually pauses after
+less than ten seconds. Sometimes it lasts for only two or three seconds.
+
+-- 
+Michael "Tired" Riepe <michael.riepe@googlemail.com>
+X-Tired: Each morning I get up I die a little
