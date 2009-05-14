@@ -1,60 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761632AbZENO2s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755425AbZENOdQ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761632AbZENO2s (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 10:28:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754583AbZENO2h
+	id S1755425AbZENOdQ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 10:33:16 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753565AbZENOc7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 10:28:37 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:45693 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753047AbZENO2g convert rfc822-to-8bit (ORCPT
+	Thu, 14 May 2009 10:32:59 -0400
+Received: from terminus.zytor.com ([198.137.202.10]:46752 "EHLO
+	terminus.zytor.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753042AbZENOc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 10:28:36 -0400
-X-Greylist: delayed 753 seconds by postgrey-1.27 at vger.kernel.org; Thu, 14 May 2009 10:28:36 EDT
-Message-Id: <4A0C46B80200007800000ED4@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Thu, 14 May 2009 15:28:40 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Tejun Heo" <tj@kernel.org>
-Cc: <mingo@elte.hu>, <andi@firstfloor.org>, <tglx@linutronix.de>,
-       <linux-kernel@vger.kernel.org>, <linux-kernel-owner@vger.kernel.org>,
-       <hpa@zytor.com>
-Subject: Re: [GIT PATCH] x86,percpu: fix pageattr handling with remap
-	 allocator
-References: <1242305390-21958-1-git-send-email-tj@kernel.org>
-In-Reply-To: <1242305390-21958-1-git-send-email-tj@kernel.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
-Content-Disposition: inline
+	Thu, 14 May 2009 10:32:59 -0400
+Message-ID: <4A0C2AC6.3000207@zytor.com>
+Date: Thu, 14 May 2009 07:29:26 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+User-Agent: Thunderbird 2.0.0.14 (X11/20080501)
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@infradead.org>
+CC: Sheng Yang <sheng@linux.intel.com>, linux-kernel@vger.kernel.org,
+       linux-mm <linux-mm@kvack.org>, Ingo Molnar <mingo@elte.hu>
+Subject: Re: [PATCH] x86: Extend test_and_set_bit() test_and_clean_bit() to
+ 64 bits in X86_64
+References: <1242202647-32446-1-git-send-email-sheng@linux.intel.com> <20090514135747.GA7926@infradead.org>
+In-Reply-To: <20090514135747.GA7926@infradead.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Tejun Heo <tj@kernel.org> 14.05.09 14:49 >>>
->The remap allocator allocates a PMD page per cpu, returns whatever is
->unnecessary to the page allocator and remaps the PMD page into vmalloc
->area to construct the first percpu chunk.  This is to take advantage
->of large page mapping.  However this creates active aliases for the
->recycled pages.  When some user allocates the recycled pages and tries
->to change pageattr on it, remapped PMD alias might end up having
->different attributes with the regular page mapped addresses which can
->lead to subtle data corruption according to Andi.
+Christoph Hellwig wrote:
+> On Wed, May 13, 2009 at 04:17:27PM +0800, Sheng Yang wrote:
+>> This fix 44/45 bit width memory can't boot up issue. The reason is
+>> free_bootmem_node()->mark_bootmem_node()->__free() use test_and_clean_bit() to
+>> clean node_bootmem_map, but for 44bits width address, the idx set bit 31 (43 -
+>> 12), which consider as a nagetive value for bts.
+> 
+> Should we really have different prototypes for these helpers on
+> different architectures?
+> 
 
-In order to reduce the amount of work to do during lookup as well as the
-chance of having a collision at all, wouldn't it be reasonable to use as much
-of an allocated 2/4M page as possible rather than returning whatever is
-left after a single CPU got its per-CPU memory chunk from it? I.e. you'd
-return only those (few) pages that either don't fit another CPU's chunk
-anymore or that are left after running through all CPUs.
+We already do: SPARC and MIPS have unsigned long, and apparently have
+been unsigned long for a long time.  Given how the x86 bitops work, they
+would have to be signed, which would mean to introduce a third
+prototype, which really is the suck, but it's not like it would be the
+only oddball.  Either that or we have to redesign the bootmem system for
+very large amounts of memory.
 
-Or is there some hidden requirement that each CPU's per-CPU area must
-start on a PMD boundary?
+	-hpa
 
-This would additionally address a potential problem on 32-bits - currently,
-for a 32-CPU system you consume half of the vmalloc space with PAE (on
-non-PAE you'd even exhaust it, but I think it's unreasonable to expect a
-system having 32 CPUs to not need PAE).
-
-Jan
+-- 
+H. Peter Anvin, Intel Open Source Technology Center
+I work for Intel.  I don't speak on their behalf.
 
