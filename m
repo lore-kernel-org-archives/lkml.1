@@ -1,120 +1,110 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754232AbZENRgV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752468AbZENRgg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754232AbZENRgV (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 13:36:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752185AbZENRgI
+	id S1752468AbZENRgg (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 13:36:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752789AbZENRgO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 13:36:08 -0400
-Received: from hera.kernel.org ([140.211.167.34]:44701 "EHLO hera.kernel.org"
+	Thu, 14 May 2009 13:36:14 -0400
+Received: from gw.goop.org ([64.81.55.164]:55149 "EHLO mail.goop.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751731AbZENRgH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 13:36:07 -0400
-Message-ID: <4A0C563A.3020100@kernel.org>
-Date: Thu, 14 May 2009 10:34:50 -0700
-From: Yinghai Lu <yinghai@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1752566AbZENRgN (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 13:36:13 -0400
+Message-ID: <4A0C568B.7070907@goop.org>
+Date: Thu, 14 May 2009 10:36:11 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: mel@csn.ul.ie, mingo@elte.hu, tglx@linutronix.de, hpa@zytor.com,
-       cl@linux-foundation.org, suresh.b.siddha@intel.com,
-       linux-kernel@vger.kernel.org, viro@zeniv.linux.org.uk,
-       rusty@rustcorp.com.au, steiner@sgi.com, rientjes@google.com
-Subject: Re: [PATCH 5/5] mm: clear N_HIGH_MEMORY map before se set it again
- -v2
-References: <4A05269D.8000701@kernel.org>	<20090512111623.GG25923@csn.ul.ie>	<4A0A64FB.4080504@kernel.org>	<20090513145950.GB28097@csn.ul.ie>	<4A0C4910.7090508@kernel.org>	<4A0C4A2A.6080009@kernel.org>	<20090514095414.ba8356e5.akpm@linux-foundation.org>	<4A0C4F67.5080802@kernel.org> <20090514102554.b3a36f19.akpm@linux-foundation.org>
-In-Reply-To: <20090514102554.b3a36f19.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: "H. Peter Anvin" <hpa@zytor.com>
+CC: Ingo Molnar <mingo@elte.hu>, "Xin, Xiaohui" <xiaohui.xin@intel.com>,
+       "Li, Xin" <xin.li@intel.com>, "Nakajima, Jun" <jun.nakajima@intel.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: Performance overhead of paravirt_ops on native identified
+References: <4A0B62F7.5030802@goop.org> <4A0B6F9C.4060405@zytor.com>
+In-Reply-To: <4A0B6F9C.4060405@zytor.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> On Thu, 14 May 2009 10:05:43 -0700
-> Yinghai Lu <yinghai@kernel.org> wrote:
-> 
->> Andrew Morton wrote:
->>> On Thu, 14 May 2009 09:43:22 -0700
->>> Yinghai Lu <yinghai@kernel.org> wrote:
->>>
->>>> incase some system strange SRAT table. some kind of small range.
->>>> or with mem= etc
->>>>
->>> That description is very hard to understand.  Please provide more details.
->> if the wrong SRAT table, have small range for some node. that node will not be onlined.
->> In the early checking, the bit in node_states[N_HIGH_MEMORY] for the node is set even 
->> that node has less RAM like 1M, and it is not cleared before the bit is set again in 
->> the following loop according online nodes.
-> 
-> Where in the kernel does this setting of the bit in node_states[]
-> occur?  early_calculate_totalpages()?
+H. Peter Anvin wrote:
+> The other obvious option, it would seem to me, would be to eliminate the
+> *inner* call/return pair, i.e. merging the _spin_lock setup code in with
+> the internals of each available implementation (in the case above,
+> __ticket_spin_lock).  This is effectively what happens on native.  The
+> one problem with that is that every callsite now becomes a patching target.
+>   
 
-yes.
+Yes, that's an option.  It has the downside of requiring changes to the 
+common spinlock code in kernel/spinlock.c and linux/spinlock_api*.h.   
+The amount of duplicated code is potentially quite large, but there 
+aren't that many spinlock implementations.
 
-> 
-> Where in the kernel is it later decided to _not_ use these pages in
-> that node?  Perhaps that's the place where the problem should be fixed.
+Also, there's not much point in using pv spinlocks when all the 
+instrumentation is on.  Lock contention metering, for example, never 
+does a proper lock operation, but does a spin with repeated trylocks; we 
+can't optimise that, so there's no point in trying.
 
-in free_area_init_nodes()
+So maybe if we can fast-path the fast-path to pv spinlocks, the problem 
+is more tractable...
 
-        /* Initialise every node */
-        mminit_verify_pageflags_layout();
-        setup_nr_node_ids();
-        for_each_online_node(nid) {
-                pg_data_t *pgdat = NODE_DATA(nid);
-                free_area_init_node(nid, NULL,
-                                find_min_pfn_for_node(nid), NULL);
+> That brings me to a somewhat half-arsed thought I have been walking
+> around with for a while.
+>
+> Consider a paravirt -- or for that matter any other call which is
+> runtime-static; this isn't just limited to paravirt -- function which
+> looks to the C compiler just like any other external function -- no
+> indirection.  We can point it by default to a function which is really
+> just an indirect jump to the appropriate handler, that handles the
+> prepatching case.  However, a linktime pass over vmlinux.o can find all
+> the points where this function is called, and turn it into a list of
+> patch sites(*).  The advantages are:
+>
+> 1. [minor] no additional nop padding due to indirect function calls.
+> 2. [major] no need for a ton of wrapper macros manifest in the code.
+>
+> paravirt_ops that turn into pure inline code in the native case is
+> obviously another ball of wax entirely; there inline assembly wrappers
+> are simply unavoidable.
+>   
 
-                /* Any memory on that node */
-                if (pgdat->node_present_pages)
-                        node_set_state(nid, N_HIGH_MEMORY);
-                check_for_regular_memory(pgdat);
-        }
+We did consider something like this at the outset.  As I remember, there 
+were a few concerns:
 
-so that patch clear that node_mask before set those bits according if that node is online
-and node_present_pages is there.
+    * There was no relocation data available in the kernel.  I played
+      around with ways to make it work, but they ended up being fairly
+      complex and brittle, with a tendency (of course) to trigger
+      binutils bugs.  Maybe that has changed.
+    * We didn't really want to implement two separate mechanisms for the
+      same thing.  Given that we wanted to inline things like
+      cli/sti/pushf/popf, we needed to have something capable of full
+      patching.  Having a separate mechanisms for patching calls is
+      harder to justify.  Now that pvops is well settled, perhaps it
+      makes sense to consider adding another more general patching
+      mechanism to avoid the indirect calls (a dynamic linker, essentially).
 
-> 
-> 
->>>> Signed-off-by: Yinghai Lu <Yinghai@kernel.org>
->>>> Tested-by: Jack Steiner <steiner@sgi.com>
->>> What reason did Jack have to test this?  Perhaps he hit some bug? 
->>> If so, please fully describe that bug in the changelog.
->> for some memmoryless node and strange memmap.
-> 
-> That's not a very good problem description.
-> 
-> Put yourself in the position of a distro engineer whose customer
-> reports a 2.6.26 problem.  He's going to look at your patch wondering
-> whether it might fix his customer's problem.  We should provide him
-> with sufficient information to be able to determine this.
-> 
->>>
->>>> Index: linux-2.6/mm/page_alloc.c
->>>> ===================================================================
->>>> --- linux-2.6.orig/mm/page_alloc.c
->>>> +++ linux-2.6/mm/page_alloc.c
->>>> @@ -4041,6 +4047,11 @@ void __init free_area_init_nodes(unsigne
->>>>  						early_node_map[i].start_pfn,
->>>>  						early_node_map[i].end_pfn);
->>>>  
->>>> +	/*
->>>> +	 * find_zone_movable_pfns_for_nodes/early_calculate_totalpages init
->>>> +	 * that node_mask, clear it at first
->>>> +	 */
->>>> +	nodes_clear(node_states[N_HIGH_MEMORY]);
->>>>  	/* Initialise every node */
->>>>  	mminit_verify_pageflags_layout();
->>>>  	setup_nr_node_ids();
->>> If CONFIG_HIGHMEM=n, this will clear the N_NORMAL_MEMORY entry in
->>> node_states[].  Why is this correct and desirable?
->> then N_NORMAL_MEMORY == N_HIGH_MEMORY
-> 
-> I know.
-> 
-> But it's unobvious that this change is correct and desirable with both
-> CONFIG_HIGHMEM=n and CONFIG_HIGHMEM=y.
+I won't make any great claims about the beauty of the PV_CALL* gunk, but 
+at the very least it is contained within paravirt.h.
 
-use ifdef ?
+> (*) if patching code on SMP was cheaper, we could actually do this
+> lazily, and wouldn't have to store a list of patch sites.  I don't feel
+> brave enough to go down that route.
+>   
 
-YH
+The problem that the tracepoints people were trying to solve was harder, 
+where they wanted to replace an arbitrary set of instructions with some 
+other arbitrary instructions (or a call) - that would need some kind SMP 
+synchronization, both for general sanity and to keep the Intel rules happy.
+
+In theory relinking a call should just be a single word write into the 
+instruction, but I don't know if that gets into undefined territory or 
+not.  On older P4 systems it would end up blowing away the trace cache 
+on all cpus when you write to code like that, so you'd want to be sure 
+that your references are getting resolved fairly quickly.  But its hard 
+to see how patching the offset in a call instruction would end up 
+calling something other than the old or new function.
+
+    J
