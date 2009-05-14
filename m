@@ -1,110 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbZENOk2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757418AbZENOub@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbZENOk2 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 10:40:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753189AbZENOkC
+	id S1757418AbZENOub (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 10:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751510AbZENOuU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 10:40:02 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:49496 "EHLO mx2.redhat.com"
+	Thu, 14 May 2009 10:50:20 -0400
+Received: from gate.crashing.org ([63.228.1.57]:53506 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753311AbZENOj7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 10:39:59 -0400
-From: Jeff Moyer <jmoyer@redhat.com>
-To: Trond Myklebust <trond.myklebust@fys.uio.no>
-Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Olga Kornievskaia <aglo@citi.umich.edu>,
-       "J. Bruce Fields" <bfields@fieldses.org>, Jim Rees <rees@umich.edu>,
-       linux-nfs@vger.kernel.org
-Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone over NFS
-References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
-	<20090508120119.8c93cfd7.akpm@linux-foundation.org>
-	<20090511081415.GL4694@kernel.dk>
-	<x49skjb21b7.fsf@segfault.boston.devel.redhat.com>
-	<20090511165826.GG4694@kernel.dk>
-	<x494ovp4r51.fsf@segfault.boston.devel.redhat.com>
-	<20090512204433.7eb69075.akpm@linux-foundation.org>
-	<x49y6t1rqw0.fsf@segfault.boston.devel.redhat.com>
-	<x49k54ku7i2.fsf@segfault.boston.devel.redhat.com>
-	<1242258338.5407.244.camel@heimdal.trondhjem.org>
-	<x49octv7qr8.fsf@segfault.boston.devel.redhat.com>
-	<1242311620.6560.14.camel@heimdal.trondhjem.org>
-X-PGP-KeyID: 1F78E1B4
-X-PGP-CertKey: F6FE 280D 8293 F72C 65FD  5A58 1FF8 A7CA 1F78 E1B4
-X-PCLoadLetter: What the f**k does that mean?
-Date: Thu, 14 May 2009 10:38:41 -0400
-In-Reply-To: <1242311620.6560.14.camel@heimdal.trondhjem.org> (Trond
-	Myklebust's message of "Thu, 14 May 2009 10:33:40 -0400")
-Message-ID: <x49ab5f7nri.fsf@segfault.boston.devel.redhat.com>
-User-Agent: Gnus/5.13 (Gnus v5.13) Emacs/23.0.60 (gnu/linux)
+	id S1751299AbZENOuT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 10:50:19 -0400
+Date: Thu, 14 May 2009 09:47:07 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+X-X-Sender: galak@localhost.localdomain
+To: Jeff Garzik <jeff@garzik.org>
+cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       linuxppc-dev@ozlabs.org, daveliu@freescale.com
+Subject: [PATCH] sata_fsl: Fix the command description of FSL SATA controller
+Message-ID: <Pine.LNX.4.64.0905140945540.8378@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Trond Myklebust <trond.myklebust@fys.uio.no> writes:
+From: Dave Liu <daveliu@freescale.com>
 
-> On Thu, 2009-05-14 at 09:34 -0400, Jeff Moyer wrote:
->> Trond Myklebust <trond.myklebust@fys.uio.no> writes:
->> 
->> > On Wed, 2009-05-13 at 15:29 -0400, Jeff Moyer wrote:
->> >> Hi, netdev folks.  The summary here is:
->> >> 
->> >> A patch added in the 2.6.30 development cycle caused a performance
->> >> regression in my NFS iozone testing.  The patch in question is the
->> >> following:
->> >> 
->> >> commit 47a14ef1af48c696b214ac168f056ddc79793d0e
->> >> Author: Olga Kornievskaia <aglo@citi.umich.edu>
->> >> Date:   Tue Oct 21 14:13:47 2008 -0400
->> >> 
->> >>     svcrpc: take advantage of tcp autotuning
->> >>  
->> >> which is also quoted below.  Using 8 nfsd threads, a single client doing
->> >> 2GB of streaming read I/O goes from 107590 KB/s under 2.6.29 to 65558
->> >> KB/s under 2.6.30-rc4.  I also see more run to run variation under
->> >> 2.6.30-rc4 using the deadline I/O scheduler on the server.  That
->> >> variation disappears (as does the performance regression) when reverting
->> >> the above commit.
->> >
->> > It looks to me as if we've got a bug in the svc_tcp_has_wspace() helper
->> > function. I can see no reason why we should stop processing new incoming
->> > RPC requests just because the send buffer happens to be 2/3 full. If we
->> > see that we have space for another reply, then we should just go for it.
->> > OTOH, we do want to ensure that the SOCK_NOSPACE flag remains set, so
->> > that the TCP layer knows that we're congested, and that we'd like it to
->> > increase the send window size, please.
->> >
->> > Could you therefore please see if the following (untested) patch helps?
->> 
->> I'm seeing slightly better results with the patch:
->> 
->> 71548
->> 75987
->> 71557
->> 87432
->> 83538
->> 
->> But that's still not up to the speeds we saw under 2.6.29.  The packet
->> capture for one run can be found here:
->>   http://people.redhat.com/jmoyer/trond.pcap.bz2
->> 
->> Cheers,
->> Jeff
->
-> Yes. Something is very wrong there...
->
-> See for instance frame 1195, where the client finishes sending a whole
-> series of READ requests, and we go into a flurry of ACKs passing
-> backwards and forwards, but no data. It looks as if the NFS server isn't
-> processing anything, probably because the window size falls afoul of the
-> svc_tcp_has_wspace()...
->
-> Does something like this help?
+The bit 11 of command description is reserved bit in Freescale
+SATA controller and needs to be set to '1'.  This is needed to
+make sure the last write from the controller to the buffer
+descriptor is seen before an interrupt is raised.
 
-Is this in addition to the previous patch or instead of it?
+Signed-off-by: Dave Liu <daveliu@freescale.com>
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+---
 
-Cheers,
-Jeff
+Jeff, please pick this up as a bug fix for 2.6.30
+
+ drivers/ata/sata_fsl.c |    8 +++++---
+ 1 files changed, 5 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/ata/sata_fsl.c b/drivers/ata/sata_fsl.c
+index 5edd654..36b8629 100644
+--- a/drivers/ata/sata_fsl.c
++++ b/drivers/ata/sata_fsl.c
+@@ -205,6 +205,7 @@ struct cmdhdr_tbl_entry {
+  * Description information bitdefs
+  */
+ enum {
++	CMD_DESC_RES = (1 << 11),
+ 	VENDOR_SPECIFIC_BIST = (1 << 10),
+ 	CMD_DESC_SNOOP_ENABLE = (1 << 9),
+ 	FPDMA_QUEUED_CMD = (1 << 8),
+@@ -388,7 +389,7 @@ static void sata_fsl_qc_prep(struct ata_queued_cmd *qc)
+ 	void __iomem *hcr_base = host_priv->hcr_base;
+ 	unsigned int tag = sata_fsl_tag(qc->tag, hcr_base);
+ 	struct command_desc *cd;
+-	u32 desc_info = CMD_DESC_SNOOP_ENABLE;
++	u32 desc_info = CMD_DESC_RES | CMD_DESC_SNOOP_ENABLE;
+ 	u32 num_prde = 0;
+ 	u32 ttl_dwords = 0;
+ 	dma_addr_t cd_paddr;
+@@ -841,7 +842,7 @@ issue_srst:
+
+ 	/* device reset/SRST is a control register update FIS, uses tag0 */
+ 	sata_fsl_setup_cmd_hdr_entry(pp, 0,
+-				     SRST_CMD | CMD_DESC_SNOOP_ENABLE, 0, 0, 5);
++		SRST_CMD | CMD_DESC_RES | CMD_DESC_SNOOP_ENABLE, 0, 0, 5);
+
+ 	tf.ctl |= ATA_SRST;	/* setup SRST bit in taskfile control reg */
+ 	ata_tf_to_fis(&tf, pmp, 0, cfis);
+@@ -887,7 +888,8 @@ issue_srst:
+ 	 * using ATA signature D2H register FIS to the host controller.
+ 	 */
+
+-	sata_fsl_setup_cmd_hdr_entry(pp, 0, CMD_DESC_SNOOP_ENABLE, 0, 0, 5);
++	sata_fsl_setup_cmd_hdr_entry(pp, 0, CMD_DESC_RES | CMD_DESC_SNOOP_ENABLE,
++				      0, 0, 5);
+
+ 	tf.ctl &= ~ATA_SRST;	/* 2nd H2D Ctl. register FIS */
+ 	ata_tf_to_fis(&tf, pmp, 0, cfis);
+-- 
+1.6.0.6
+
