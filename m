@@ -1,86 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754471AbZEOTpW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757254AbZEOTpk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754471AbZEOTpW (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 15:45:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751257AbZEOTpE
+	id S1757254AbZEOTpk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 15:45:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754134AbZEOTpN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 15:45:04 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:55119 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750958AbZEOTpC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 15:45:02 -0400
-Message-ID: <4A0DC639.8060104@garzik.org>
-Date: Fri, 15 May 2009 15:44:57 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-CC: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
-       jens.axboe@oracle.com, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, Mauelshagen@RedHat.com, dm-devel@RedHat.com,
-       dan.j.williams@gmail.com
-Subject: ATA ULD (was Re: [PATCH 2/3] scsi: add scsi_device->alt_capacity)
-References: <1241828002-12742-1-git-send-email-tj@kernel.org>	 <1241828002-12742-3-git-send-email-tj@kernel.org>	 <1241842999.6357.2.camel@mulgrave>  <4A05AAA4.9010806@kernel.org> <1241886223.3542.37.camel@mulgrave.int.hansenpartnership.com>
-In-Reply-To: <1241886223.3542.37.camel@mulgrave.int.hansenpartnership.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+	Fri, 15 May 2009 15:45:13 -0400
+Received: from relay3.sgi.com ([192.48.156.57]:41006 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755135AbZEOTpL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 15:45:11 -0400
+Date: Fri, 15 May 2009 14:45:08 -0500
+From: Jack Steiner <steiner@sgi.com>
+To: mingo@elte.hu, tglx@linutronix.de
+Cc: linux-kernel@vger.kernel.org
+Subject: [PATCH] x86_64 - UV fix for memory-only blades
+Message-ID: <20090515194508.GA8305@sgi.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.4.2.2i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-James Bottomley wrote:
-> On Sun, 2009-05-10 at 01:09 +0900, Tejun Heo wrote:
->> James Bottomley wrote:
->>> This is done at slightly the wrong level.  Capacity is actually a
->>> property of struct scsi_disk not struct scsi_device ... shouldn't
->>> alt_capacity be at the same level?
->> Hmmm... I think that was my first try and then I moved it to sdev for
->> some reason I can't rememer now.  I'll look into it again and try to
->> move it into sdev.
-> 
-> Really one of the things I was wondering is why even scsi_disk ...
-> capacity is in there, but it's also in gendisk, so I've thought
-> (admittedly never translated it to action) that we could just remove the
-> duplication in scsi_disk.
-> 
-> This alt_capacity looks to be a pure ATA thing ... I can't find it in
-> the SCSI specs and there doesn't seem to be a SAT equivalent of the
-> commands.  Ideally, what should be happening is that the ata ULD would
-> issue the capacity commands and just set the block alt_capacity without
-> having to worry about transporting the value up and down the stack.
-> Matthew Wilcox thought we could begin an implementation of the ATA uld
-> using the ATA_16 command to transport it through SCSI ... this might
-> provide the good reason to begin that.
+Fix an endcase in handling UV blades that have memory
+but no cpus. The calculation of the highest blade number
+failed to handle these blades if they appear last in the
+configuration.
 
-hmmmmm.  Well, ATA ULD is certainly the long term goal.  My main worry 
-would then be user impact & confusion, and increasing the difficulty of 
-separating libata from SCSI by increasing difficulty of making SCSI 
-emulation an optional piece.
+Signed-off-by: Jack Steiner <steiner@sgi.com>
 
-At this point the SCSI emulation is not only a hack to get sd.c to do 
-work for us, it is also part of the ABI expected of diagnostic tools and 
-the like.  That complicates changes.
+---
+ arch/x86/kernel/apic/x2apic_uv_x.c |    1 +
+ 1 file changed, 1 insertion(+)
 
-It is my hope that we can separate libata-scsi.c into a separate kernel 
-module, thus at least making it _optional_, thus providing a path for 
-CONFIG_ATA + !CONFIG_SCSI.
-
-I do also agree that the ATA hacks can only go on for so long, before 
-they start infecting SCSI.   e.g. there was a patch to add DMI check in 
-sd.c for an ATA hardware special case.
-
-So far the "ATA infection" has been thankfully limited to things that sd 
-might need anyway, like suspend/resume (start/stop)
-
-A "libsd" does not seem viable, though.  Might be better to
-	cp sd.c ata-disk.c
-and then iterate from there, over time.
-
-	Jeff
-
-
-
-
+Index: linux/arch/x86/kernel/apic/x2apic_uv_x.c
+===================================================================
+--- linux.orig/arch/x86/kernel/apic/x2apic_uv_x.c	2009-05-15 12:00:59.000000000 -0500
++++ linux/arch/x86/kernel/apic/x2apic_uv_x.c	2009-05-15 14:38:16.000000000 -0500
+@@ -632,6 +632,7 @@ void __init uv_system_init(void)
+ 		pnode = (paddr >> m_val) & pnode_mask;
+ 		blade = boot_pnode_to_blade(pnode);
+ 		uv_node_to_blade[nid] = blade;
++		max_pnode = max(pnode, max_pnode);
+ 	}
+ 
+ 	map_gru_high(max_pnode);
