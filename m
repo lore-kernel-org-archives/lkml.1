@@ -1,85 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756488AbZEOWIf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757024AbZEOWJ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756488AbZEOWIf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 18:08:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753800AbZEOWI1
+	id S1757024AbZEOWJ4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 18:09:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754900AbZEOWJr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 18:08:27 -0400
-Received: from g4t0015.houston.hp.com ([15.201.24.18]:35395 "EHLO
-	g4t0015.houston.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752941AbZEOWI0 (ORCPT
+	Fri, 15 May 2009 18:09:47 -0400
+Received: from outbound-mail-23.bluehost.com ([69.89.21.18]:58905 "HELO
+	outbound-mail-23.bluehost.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1754073AbZEOWJq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 18:08:26 -0400
-From: Bjorn Helgaas <bjorn.helgaas@hp.com>
-To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH] x86: update_mptable need pci_routeirq
-Date: Fri, 15 May 2009 16:08:24 -0600
-User-Agent: KMail/1.9.10
-Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Jesse Barnes <jbarnes@virtuousgeek.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       linux-pci@vger.kernel.org
-References: <4A0DC7DC.7000204@kernel.org> <200905151552.53139.bjorn.helgaas@hp.com> <4A0DE6C5.6060903@kernel.org>
-In-Reply-To: <4A0DE6C5.6060903@kernel.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
+	Fri, 15 May 2009 18:09:46 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=default; d=virtuousgeek.org;
+	h=Received:Date:From:To:Subject:Message-ID:X-Mailer:Mime-Version:Content-Type:Content-Transfer-Encoding:X-Identified-User;
+	b=OI4NFGCO87GbXwElf9yBP9IBj73lvISwgeJn2khM3Xq2p4pitCTkICSQyav7v36NQAWicG5jZFvGsguHvD5aV/qnNNXjbmlS1vRUICJE/1kb2eiPs9tyiCRZtg2MSebH;
+Date: Fri, 15 May 2009 15:09:42 -0700
+From: Jesse Barnes <jbarnes@virtuousgeek.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>, linux-pci@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: [git pull] PCI fixes
+Message-ID: <20090515150942.3515bcd5@jbarnes-g45>
+X-Mailer: Claws Mail 3.6.1 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905151608.25250.bjorn.helgaas@hp.com>
+X-Identified-User: {10642:box514.bluehost.com:virtuous:virtuousgeek.org} {sentby:smtp auth 75.111.28.251 authed with jbarnes@virtuousgeek.org}
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 15 May 2009 04:03:49 pm Yinghai Lu wrote:
-> Bjorn Helgaas wrote:
-> > On Friday 15 May 2009 03:13:20 pm Yinghai Lu wrote:
-> >> Bjorn Helgaas wrote:
-> >>> On Friday 15 May 2009 01:51:56 pm Yinghai Lu wrote:
-> >>>> to get all device irq routing and save them
-> >>> This changelog isn't really enough for me to understand
-> >>> what's going on.
-> >>>
-> >>>> Index: linux-2.6/arch/x86/kernel/mpparse.c
-> >>>> ===================================================================
-> >>>> --- linux-2.6.orig/arch/x86/kernel/mpparse.c
-> >>>> +++ linux-2.6/arch/x86/kernel/mpparse.c
-> >>>> @@ -17,6 +17,7 @@
-> >>>>  #include <linux/acpi.h>
-> >>>>  #include <linux/module.h>
-> >>>>  #include <linux/smp.h>
-> >>>> +#include <linux/pci.h>
-> >>>>  
-> >>>>  #include <asm/mtrr.h>
-> >>>>  #include <asm/mpspec.h>
-> >>>> @@ -961,6 +962,7 @@ static int __initdata enable_update_mpta
-> >>>>  static int __init update_mptable_setup(char *str)
-> >>>>  {
-> >>>>  	enable_update_mptable = 1;
-> >>>> +	pci_routeirq = 1;
-> >>> I hate to see new uses of pci_routeirq.  It'd be nice to remove it
-> >>> completely someday.  But maybe it can't be helped.
-> >>>
-> >>>>  	return 0;
-> >>>>  }
-> >>>>  early_param("update_mptable", update_mptable_setup);
-> >>> "update_mptable" is apparently a boot option, but it's not mentioned
-> >>> in Documentation/kernel-parameters.txt.  Is this some sort of debug
-> >>> code or BIOS-writer's helper?  Same with "alloc_mptable".  Why do
-> >>> we have this stuff?
-> >>>
-> >> 1. kexec path: after acpi kernel and use kexec to load kerenl with mptable support only or acpi=off
-> >> 2. help to BIOS engineer to understand how to set mptable and irq routing setup by chipset.
-> >>    esp system have several cards and there is bridge in those cards.
-> ...
-> > Is (1) common enough to worry about?  What OSes don't have ACPI
-> > support?  What advantage is there to using "acpi=off"?
-> ...
-> 
-> some one want to disable acpi, because acpid is using 100%...
+Please consider pulling the PCI fixes from
+git://git.kernel.org/pub/scm/linux/kernel/git/jbarnes/pci-2.6 for-linus
 
-I'd rather fix the problem with acpid than make it easier to
-use "acpi=off".
+The MSI fix has been tested and fixes the problem Dave reported.  It's
+not a complete fix (i.e. it doesn't prevent writes to MSI regs when
+MSI is disabled), but I'd rather have the tested one upstream at this
+point than delay things further. We can fix the more theoretical
+problems in linux-next (there's ongoing discussion about the best way
+to do this).
 
-Bjorn
+Matthew Wilcox (1):
+      PCI MSI: Fix MSI-X with NIU cards
+
+Zhang, Yanmin (1):
+      PCI: Fix pci-e port driver slot_reset bad default return value
+
+ drivers/pci/msi.c              |    8 ++++++--
+ drivers/pci/pcie/aer/aerdrv.h  |    3 +++
+ drivers/pci/pcie/portdrv_pci.c |    2 +-
+ 3 files changed, 10 insertions(+), 3 deletions(-)
+
+-- 
+Jesse Barnes, Intel Open Source Technology Center
