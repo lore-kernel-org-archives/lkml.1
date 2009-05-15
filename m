@@ -1,326 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757972AbZEOGpX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755356AbZEOGru@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757972AbZEOGpX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 02:45:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755131AbZEOGn7
+	id S1755356AbZEOGru (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 02:47:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753479AbZEOGrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 02:43:59 -0400
-Received: from sh.osrg.net ([192.16.179.4]:39340 "EHLO sh.osrg.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754646AbZEOGn5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 02:43:57 -0400
-From: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-To: Al Viro <viro@zeniv.linux.org.uk>, Christoph Hellwig <hch@infradead.org>
-Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Subject: [PATCH 3/4] nilfs2: stop using sget to acquire nilfs object
-Date: Fri, 15 May 2009 15:37:25 +0900
-Message-Id: <1242369446-25771-4-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-X-Mailer: git-send-email 1.5.6.5
-In-Reply-To: <1242369446-25771-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-References: <1242369446-25771-1-git-send-email-konishi.ryusuke@lab.ntt.co.jp>
-X-Dispatcher: imput version 20050308(IM148)
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 15 May 2009 15:43:12 +0900 (JST)
+	Fri, 15 May 2009 02:47:39 -0400
+Received: from mail-qy0-f112.google.com ([209.85.221.112]:47337 "EHLO
+	mail-qy0-f112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752740AbZEOGri (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 02:47:38 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=wR/xfdFPkXDV3mnNhVqrY7+dbG2zu/M06ccnac7OLJFs/8rC7RqTpzjthRi2BNU+eO
+         4Mtzp/0iPZqq1Vq/YtlYUR471GiTt9nTzliaqW3NKLp7NQYGNjTy27bH2rCCY42RI6kN
+         MtczghApJk9SDdVkenUns66nO+9ccxnbTZhb0=
+MIME-Version: 1.0
+Date: Thu, 14 May 2009 23:47:39 -0700
+Message-ID: <cf70f0210905142347y7738d194k5a616e7d9e4bf092@mail.gmail.com>
+Subject: Understanding kernel Oops while using M-USB
+From: Shivdas Gujare <shivdas.tech@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-usb@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This will change the way to obtain nilfs object in nilfs_get_sb()
-function.
+Following is a part of Oops on BeagleBoard, which I am trying to understand...
+I have pasted complete Oops at http://pastie.org/478896
 
-Previously, a preliminary sget() call was performed, and the nilfs
-object was acquired from a super block instance found by the sget()
-call.
+[<c0036d24>] (omap3_pm_idle+0x0/0x120) from [<c002c184>] (cpu_idle+0x40/0x60)
+[<c002c144>] (cpu_idle+0x0/0x60) from [<c0299bfc>] (rest_init+0x58/0x6c)
+ r5:c037ee8c r4:c0387d38
+[<c0299ba4>] (rest_init+0x0/0x6c) from [<c0008a00>] (start_kernel+0x260/0x2b8)
+[<c00087a0>] (start_kernel+0x0/0x2b8) from [<80008034>] (0x80008034)
 
-This patch, instead, instroduces a new dedicated function
-find_or_create_nilfs(); as the name implies, the function finds an
-existent nilfs object from a global list or creates a new one if no
-object is found on the device.
+--------------------end of oops------------------
+c00087a0(virtual address of start_kernel) + 0x260(offset) = c0008a00
+(value in square bracket above)
+where c0008a00 is the address of next instruction after branch
+instruction to c0299ba4(i.e rest_init)
 
-Signed-off-by: Ryusuke Konishi <konishi.ryusuke@lab.ntt.co.jp>
-Cc: Al Viro <viro@zeniv.linux.org.uk>
----
- fs/nilfs2/super.c     |   94 +++++++++++++------------------------------------
- fs/nilfs2/the_nilfs.c |   57 ++++++++++++++++++++++++++++--
- fs/nilfs2/the_nilfs.h |    4 ++-
- 3 files changed, 82 insertions(+), 73 deletions(-)
+But here, I didn't understood what is 0x2b8 from
+(start_kernel+0x260/0x2b8). i.e. 0x260 is a offset from start_kernel
+but what is 0x2b8?
+Also what address 0x80008034 points to?
 
-diff --git a/fs/nilfs2/super.c b/fs/nilfs2/super.c
-index afa67ec..5992997 100644
---- a/fs/nilfs2/super.c
-+++ b/fs/nilfs2/super.c
-@@ -1044,13 +1044,6 @@ static int nilfs_set_bdev_super(struct super_block *s, void *data)
- static int nilfs_test_bdev_super(struct super_block *s, void *data)
- {
- 	struct nilfs_super_data *sd = data;
--
--	return s->s_bdev == sd->bdev;
--}
--
--static int nilfs_test_bdev_super2(struct super_block *s, void *data)
--{
--	struct nilfs_super_data *sd = data;
- 	int ret;
- 
- 	if (s->s_bdev != sd->bdev)
-@@ -1079,8 +1072,8 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
- 	     const char *dev_name, void *data, struct vfsmount *mnt)
- {
- 	struct nilfs_super_data sd;
--	struct super_block *s, *s2;
--	struct the_nilfs *nilfs = NULL;
-+	struct super_block *s;
-+	struct the_nilfs *nilfs;
- 	int err, need_to_close = 1;
- 
- 	sd.bdev = open_bdev_exclusive(dev_name, flags, fs_type);
-@@ -1101,67 +1094,37 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
- 		goto failed;
- 	}
- 
--	/*
--	 * once the super is inserted into the list by sget, s_umount
--	 * will protect the lockfs code from trying to start a snapshot
--	 * while we are mounting
--	 */
-+	nilfs = find_or_create_nilfs(sd.bdev);
-+	if (!nilfs) {
-+		err = -ENOMEM;
-+		goto failed;
-+	}
-+
- 	down(&sd.bdev->bd_mount_sem);
- 
-+	if (!sd.cno &&
-+	    nilfs_current_mount_is_there(nilfs, !(flags & MS_RDONLY), NULL)) {
-+		err = -EBUSY;
-+		goto failed_unlock;
-+	}
-+
- 	/*
--	 * Phase-1: search any existent instance and get the_nilfs
-+	 * Search specified snapshot or R/W mode super_block
- 	 */
--	s = sget(fs_type, nilfs_test_bdev_super, nilfs_set_bdev_super, &sd);
--	if (IS_ERR(s))
--		goto error_s;
-+	if (!sd.cno)
-+		/* trying to get the latest checkpoint.  */
-+		sd.cno = nilfs_last_cno(nilfs);
- 
--	if (!s->s_root) {
--		err = -ENOMEM;
--		nilfs = alloc_nilfs(sd.bdev);
--		if (!nilfs)
--			goto cancel_new;
--	} else {
--		struct nilfs_sb_info *sbi = NILFS_SB(s);
--
--		/*
--		 * s_umount protects super_block from unmount process;
--		 * It covers pointers of nilfs_sb_info and the_nilfs.
--		 */
--		nilfs = sbi->s_nilfs;
--		get_nilfs(nilfs);
--		up_write(&s->s_umount);
--
--		if (!sd.cno &&
--		    nilfs_current_mount_is_there(nilfs, !(flags & MS_RDONLY),
--						 NULL)) {
--			err = -EBUSY;
--			deactivate_super(s);
--			put_nilfs(nilfs);
--			goto failed_unlock;
--		}
--		/*
--		 * Phase-2: search specified snapshot or R/W mode super_block
--		 */
--		if (!sd.cno)
--			/* trying to get the latest checkpoint.  */
--			sd.cno = nilfs_last_cno(nilfs);
--
--		s2 = sget(fs_type, nilfs_test_bdev_super2,
--			  nilfs_set_bdev_super, &sd);
--		deactivate_super(s);
--		/*
--		 * Although deactivate_super() invokes close_bdev_exclusive() at
--		 * kill_block_super().  Here, s is an existent mount; we need
--		 * one more close_bdev_exclusive() call.
--		 */
--		s = s2;
--		if (IS_ERR(s))
--			goto error_s;
-+	s = sget(fs_type, nilfs_test_bdev_super, nilfs_set_bdev_super, &sd);
-+	if (IS_ERR(s)) {
-+		err = PTR_ERR(s);
-+		goto failed_unlock;
- 	}
- 
- 	if (!s->s_root) {
- 		char b[BDEVNAME_SIZE];
- 
-+		/* New superblock instance created */
- 		s->s_flags = flags;
- 		strlcpy(s->s_id, bdevname(sd.bdev, b), sizeof(s->s_id));
- 		sb_set_blocksize(s, block_size(sd.bdev));
-@@ -1181,15 +1144,9 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
- 	simple_set_mnt(mnt, s);
- 	return 0;
- 
-- error_s:
--	up(&sd.bdev->bd_mount_sem);
--	if (nilfs)
--		put_nilfs(nilfs);
--	close_bdev_exclusive(sd.bdev, flags);
--	return PTR_ERR(s);
--
-  failed_unlock:
- 	up(&sd.bdev->bd_mount_sem);
-+	put_nilfs(nilfs);
-  failed:
- 	close_bdev_exclusive(sd.bdev, flags);
- 
-@@ -1198,8 +1155,7 @@ nilfs_get_sb(struct file_system_type *fs_type, int flags,
-  cancel_new:
- 	/* Abandoning the newly allocated superblock */
- 	up(&sd.bdev->bd_mount_sem);
--	if (nilfs)
--		put_nilfs(nilfs);
-+	put_nilfs(nilfs);
- 	up_write(&s->s_umount);
- 	deactivate_super(s);
- 	/*
-diff --git a/fs/nilfs2/the_nilfs.c b/fs/nilfs2/the_nilfs.c
-index e5599e1..8ac22f6 100644
---- a/fs/nilfs2/the_nilfs.c
-+++ b/fs/nilfs2/the_nilfs.c
-@@ -35,6 +35,10 @@
- #include "seglist.h"
- #include "segbuf.h"
- 
-+
-+static LIST_HEAD(nilfs_objects);
-+static DEFINE_SPINLOCK(nilfs_lock);
-+
- void nilfs_set_last_segment(struct the_nilfs *nilfs,
- 			    sector_t start_blocknr, u64 seq, __u64 cno)
- {
-@@ -55,7 +59,7 @@ void nilfs_set_last_segment(struct the_nilfs *nilfs,
-  * Return Value: On success, pointer to the_nilfs is returned.
-  * On error, NULL is returned.
-  */
--struct the_nilfs *alloc_nilfs(struct block_device *bdev)
-+static struct the_nilfs *alloc_nilfs(struct block_device *bdev)
- {
- 	struct the_nilfs *nilfs;
- 
-@@ -69,6 +73,7 @@ struct the_nilfs *alloc_nilfs(struct block_device *bdev)
- 	atomic_set(&nilfs->ns_ndirtyblks, 0);
- 	init_rwsem(&nilfs->ns_sem);
- 	mutex_init(&nilfs->ns_writer_mutex);
-+	INIT_LIST_HEAD(&nilfs->ns_list);
- 	INIT_LIST_HEAD(&nilfs->ns_supers);
- 	spin_lock_init(&nilfs->ns_last_segment_lock);
- 	nilfs->ns_gc_inodes_h = NULL;
-@@ -78,6 +83,45 @@ struct the_nilfs *alloc_nilfs(struct block_device *bdev)
- }
- 
- /**
-+ * find_or_create_nilfs - find or create nilfs object
-+ * @bdev: block device to which the_nilfs is related
-+ *
-+ * find_nilfs() looks up an existent nilfs object created on the
-+ * device and gets the reference count of the object.  If no nilfs object
-+ * is found on the device, a new nilfs object is allocated.
-+ *
-+ * Return Value: On success, pointer to the_nilfs is returned.
-+ * On error, NULL is returned.
-+ */
-+struct the_nilfs *find_or_create_nilfs(struct block_device *bdev)
-+{
-+	struct the_nilfs *nilfs, *new = NULL;
-+
-+ retry:
-+	spin_lock(&nilfs_lock);
-+	list_for_each_entry(nilfs, &nilfs_objects, ns_list) {
-+		if (nilfs->ns_bdev == bdev) {
-+			get_nilfs(nilfs);
-+			spin_unlock(&nilfs_lock);
-+			if (new)
-+				put_nilfs(new);
-+			return nilfs; /* existing object */
-+		}
-+	}
-+	if (new) {
-+		list_add_tail(&new->ns_list, &nilfs_objects);
-+		spin_unlock(&nilfs_lock);
-+		return new; /* new object */
-+	}
-+	spin_unlock(&nilfs_lock);
-+
-+	new = alloc_nilfs(bdev);
-+	if (new)
-+		goto retry;
-+	return NULL; /* insufficient memory */
-+}
-+
-+/**
-  * put_nilfs - release a reference to the_nilfs
-  * @nilfs: the_nilfs structure to be released
-  *
-@@ -86,13 +130,20 @@ struct the_nilfs *alloc_nilfs(struct block_device *bdev)
-  */
- void put_nilfs(struct the_nilfs *nilfs)
- {
--	if (!atomic_dec_and_test(&nilfs->ns_count))
-+	spin_lock(&nilfs_lock);
-+	if (!atomic_dec_and_test(&nilfs->ns_count)) {
-+		spin_unlock(&nilfs_lock);
- 		return;
-+	}
-+	list_del_init(&nilfs->ns_list);
-+	spin_unlock(&nilfs_lock);
-+
- 	/*
--	 * Increment of ns_count never occur below because the caller
-+	 * Increment of ns_count never occurs below because the caller
- 	 * of get_nilfs() holds at least one reference to the_nilfs.
- 	 * Thus its exclusion control is not required here.
- 	 */
-+
- 	might_sleep();
- 	if (nilfs_loaded(nilfs)) {
- 		nilfs_mdt_clear(nilfs->ns_sufile);
-diff --git a/fs/nilfs2/the_nilfs.h b/fs/nilfs2/the_nilfs.h
-index e9cfd74..4249eb3 100644
---- a/fs/nilfs2/the_nilfs.h
-+++ b/fs/nilfs2/the_nilfs.h
-@@ -43,6 +43,7 @@ enum {
-  * struct the_nilfs - struct to supervise multiple nilfs mount points
-  * @ns_flags: flags
-  * @ns_count: reference count
-+ * @ns_list: list head for nilfs_list
-  * @ns_bdev: block device
-  * @ns_bdi: backing dev info
-  * @ns_writer: back pointer to writable nilfs_sb_info
-@@ -88,6 +89,7 @@ enum {
- struct the_nilfs {
- 	unsigned long		ns_flags;
- 	atomic_t		ns_count;
-+	struct list_head	ns_list;
- 
- 	struct block_device    *ns_bdev;
- 	struct backing_dev_info *ns_bdi;
-@@ -191,7 +193,7 @@ THE_NILFS_FNS(DISCONTINUED, discontinued)
- #define NILFS_ALTSB_FREQ	60  /* spare superblock */
- 
- void nilfs_set_last_segment(struct the_nilfs *, sector_t, u64, __u64);
--struct the_nilfs *alloc_nilfs(struct block_device *);
-+struct the_nilfs *find_or_create_nilfs(struct block_device *);
- void put_nilfs(struct the_nilfs *);
- int init_nilfs(struct the_nilfs *, struct nilfs_sb_info *, char *);
- int load_nilfs(struct the_nilfs *, struct nilfs_sb_info *);
--- 
-1.6.2
+I tried to analyze this using "arm-none-linux-gnueabi-objdump -D vmlinux".
 
+I what general scenarios "Unable to handle kernel paging request at
+virtual address" this message gets printed?
+
+
+Thanks for your help.
+
+Thanks and Regards,
+Shivdas Gujare
