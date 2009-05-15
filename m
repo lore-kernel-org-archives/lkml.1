@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbZEOLGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753907AbZEOLL6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756021AbZEOLGU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 07:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZEOLFu
+	id S1753907AbZEOLL6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 07:11:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751203AbZEOLLs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 07:05:50 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:47835 "EHLO bilbo.ozlabs.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752865AbZEOLFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 07:05:49 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-ID: <18957.19594.735792.15284@cargo.ozlabs.ibm.com>
-Date: Fri, 15 May 2009 21:05:46 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com
-Subject: Re: [tip:perfcounters/core] perf_counter: Rework the perf counter disable/enable
-In-Reply-To: <tip-9e35ad388bea89f7d6f375af4c0ae98803688666@git.kernel.org>
-References: <new-submission>
-	<tip-9e35ad388bea89f7d6f375af4c0ae98803688666@git.kernel.org>
-X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
+	Fri, 15 May 2009 07:11:48 -0400
+Received: from mailout1.w1.samsung.com ([210.118.77.11]:57740 "EHLO
+	mailout1.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750944AbZEOLLs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 07:11:48 -0400
+Date: Fri, 15 May 2009 13:11:44 +0200
+From: =?utf-8?B?TWljaGHFgiBOYXphcmV3aWN6?= <m.nazarewicz@samsung.com>
+Subject: Re: [PATCH] Physical Memory Management [0/1]
+In-reply-to: <1242385414.26820.55.camel@twins>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       m.szyprowski@samsung.com, kyungmin.park@samsung.com, linux-mm@kvack.org
+Message-id: <op.utyxdu2j7p4s8u@amdc030>
+Organization: Samsung Electronics
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-transfer-encoding: 8BIT
+User-Agent: Opera Mail/10.00 (Win32)
+References: <op.utu26hq77p4s8u@amdc030>
+ <20090513151142.5d166b92.akpm@linux-foundation.org>
+ <op.utwwmpsf7p4s8u@amdc030> <1242300002.6642.1091.camel@laptop>
+ <op.utw4fdhz7p4s8u@amdc030> <1242302702.6642.1140.camel@laptop>
+ <op.utw7yhv67p4s8u@amdc030>
+ <20090514100718.d8c20b64.akpm@linux-foundation.org>
+ <1242321000.6642.1456.camel@laptop> <op.utyudge07p4s8u@amdc030>
+ <20090515101811.GC16682@one.firstfloor.org> <op.utyv89ek7p4s8u@amdc030>
+ <1242385414.26820.55.camel@twins>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-tip-bot for Peter Zijlstra writes:
+> On Fri, 2009-05-15 at 12:47 +0200, Michał Nazarewicz wrote:
+>> I cannot create a huge page SysV shared memory segment
+>> with pages of specified size, can I?
 
-> x86 NMI/INT throttling has non-nested use of this, breaking things. Therefore
-> provide a reference counter disable/enable interface, where the first disable
-> disables the hardware, and the last enable enables the hardware again.
+On Fri, 15 May 2009 13:03:34 +0200, Peter Zijlstra wrote:
+> Well, hugetlbfs is a fs, so you can simply create a file on there and
+> map that shared -- much saner interface than sysvshm if you ask me.
 
-It looks to me like what you've done for powerpc enables the hardware
-again on the first enable, not the last one:
+It's not a question of being sane or not, it's a question of whether
+X server supports it and it doesn't.  X can read data from Sys V shm
+to avoid needles copying (or sending via unix socket or whatever)
+pixmaps (or whatever) and so PMM lets it read from continuous blocks
+without knowing or carying about it.
 
-> @@ -436,7 +435,7 @@ u64 hw_perf_save_disable(void)
->   * If we were previously disabled and counters were added, then
->   * put the new config on the PMU.
->   */
-> -void hw_perf_restore(u64 disable)
-> +void hw_perf_enable(void)
->  {
->  	struct perf_counter *counter;
->  	struct cpu_hw_counters *cpuhw;
-> @@ -448,9 +447,12 @@ void hw_perf_restore(u64 disable)
->  	int n_lim;
->  	int idx;
->  
-> -	if (disable)
-> -		return;
->  	local_irq_save(flags);
-> +	if (!cpuhw->disabled) {
-> +		local_irq_restore(flags);
-> +		return;
-> +	}
-> +
->  	cpuhw = &__get_cpu_var(cpu_hw_counters);
->  	cpuhw->disabled = 0;
+-- 
+Best regards,                                            _     _
+ .o. | Liege of Serenly Enlightened Majesty of         o' \,=./ `o
+ ..o | Computer Science,  Michał "mina86" Nazarewicz      (o o)
+ ooo +-<m.nazarewicz@samsung.com>-<mina86@jabber.org>-ooO--(_)--Ooo--
 
-I do rely on nesting the disable/enable calls and only having the
-hardware re-enabled on the last enable.  I can't see anything here
-that detects the last enable.  Have I missed it somewhere?
-
-Paul.
