@@ -1,22 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762970AbZEOSDX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762507AbZEOSDi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762970AbZEOSDX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 14:03:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761402AbZEOSAJ
+	id S1762507AbZEOSDi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 14:03:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761893AbZEOSAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 14:00:09 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2057 "EHLO
+	Fri, 15 May 2009 14:00:13 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2064 "EHLO
 	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755045AbZEOSAF (ORCPT
+	with ESMTP id S1760700AbZEOSAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 14:00:05 -0400
+	Fri, 15 May 2009 14:00:09 -0400
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: linux-scsi@vger.kernel.org,
-       "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>
-Subject: [PATCH 09/11] drivers/scsi: Convert #ifdef DEBUG printk(KERN_DEBUG to pr_debug(
-Date: Fri, 15 May 2009 10:59:43 -0700
-Message-Id: <d6d5dc09d259cc1da0fef2b1e9c6b7588cccf0b4.1242407227.git.joe@perches.com>
+Cc: linux-mm@kvack.org, Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, David Rientjes <rientjes@google.com>,
+       Serge Hallyn <serue@us.ibm.com>, David Howells <dhowells@redhat.com>
+Subject: [PATCH 11/11] mm: Convert #ifdef DEBUG printk(KERN_DEBUG to pr_debug(
+Date: Fri, 15 May 2009 10:59:45 -0700
+Message-Id: <d2d789905b3ec219d015729a162be7707564fb67.1242407227.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.9.g95405b.dirty
 In-Reply-To: <cover.1242407227.git.joe@perches.com>
 References: <cover.1242407227.git.joe@perches.com>
@@ -30,34 +31,25 @@ From: Joe Perches <joe@perches.com>
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- drivers/scsi/aha1542.c |    8 ++------
- 1 files changed, 2 insertions(+), 6 deletions(-)
+ mm/oom_kill.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/scsi/aha1542.c b/drivers/scsi/aha1542.c
-index 8059494..29d5118 100644
---- a/drivers/scsi/aha1542.c
-+++ b/drivers/scsi/aha1542.c
-@@ -509,9 +509,7 @@ static void aha1542_intr_handle(struct Scsi_Host *shost)
- 		if (mbistatus == 3)
- 			continue;	/* Aborted command not found */
+diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+index 92bcf1d..8f7fb51 100644
+--- a/mm/oom_kill.c
++++ b/mm/oom_kill.c
+@@ -159,10 +159,8 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+ 			points >>= -(p->oomkilladj);
+ 	}
  
 -#ifdef DEBUG
--		printk(KERN_DEBUG "...done %d %d\n", mbo, mbi);
+-	printk(KERN_DEBUG "OOMkill: task %d (%s) got %lu points\n",
+-	p->pid, p->comm, points);
 -#endif
-+		pr_debug("...done %d %d\n", mbo, mbi);
- 
- 		SCtmp = HOSTDATA(shost)->SCint[mbo];
- 
-@@ -654,9 +652,7 @@ static int aha1542_queuecommand(Scsi_Cmnd * SCpnt, void (*done) (Scsi_Cmnd *))
- 	HOSTDATA(SCpnt->device->host)->aha1542_last_mbo_used = mbo;
- 	spin_unlock_irqrestore(&aha1542_lock, flags);
- 
--#ifdef DEBUG
--	printk(KERN_DEBUG "Sending command (%d %x)...", mbo, done);
--#endif
-+	pr_debug("Sending command (%d %x)...", mbo, done);
- 
- 	any2scsi(mb[mbo].ccbptr, SCSI_BUF_PA(&ccb[mbo]));	/* This gets trashed for some reason */
++	pr_debug("OOMkill: task %d (%s) got %lu points\n",
++		 p->pid, p->comm, points);
+ 	return points;
+ }
  
 -- 
 1.6.3.1.9.g95405b.dirty
