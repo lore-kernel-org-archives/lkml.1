@@ -1,67 +1,106 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757062AbZEOWKV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbZEOWPS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757062AbZEOWKV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 18:10:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755572AbZEOWJ7
+	id S1757134AbZEOWPS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 18:15:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZEOWO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 18:09:59 -0400
-Received: from yx-out-2324.google.com ([74.125.44.30]:35435 "EHLO
-	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756142AbZEOWJ6 convert rfc822-to-8bit (ORCPT
+	Fri, 15 May 2009 18:14:59 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:64615 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754214AbZEOWO5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 18:09:58 -0400
+	Fri, 15 May 2009 18:14:57 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=eObdn7htfGR9mQyXVwKwckVlHVQ1id6WZRGhMtisHE7Vx6lDnaRkVirie5sxExTUHB
-         AaX1HyzERopr5uGKJSMYYFIC57dwjZqIdsiQv5/Pcu3ql/Y8v57FhVdp6OHmg67p+o3g
-         19HZyCUySPJzxiOGjRJ7hPG4yMD84wakdShQ4=
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=xLpdweJL+Dml3GnYYkBRPWqW3JFuOxr0hmr++LG5i/wIBaZX5GvboQVeoVec4/SRVe
+         3UQ7IGEW2qgfLpR7h88RAWf/MmxHp6J/lqc+LuYLoOni5FckGNIgOLfgQsAYynp03Lcm
+         cnIfQtSGxMe4+XsHkNupelYvRDvzBWLyIo4HY=
+Message-ID: <4A0DE954.4020102@gmail.com>
+Date: Sat, 16 May 2009 07:14:44 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <84144f020905151342w3565e8bcq4c6e7397e6c802b@mail.gmail.com>
-References: <56e1b5710902040628w5ceb36f5kdb1f433087355f80@mail.gmail.com>
-	 <84144f020905150323m76cdd775p87abec356e355d37@mail.gmail.com>
-	 <56e1b5710905150628w912759an21c82efc3fae7f4a@mail.gmail.com>
-	 <84144f020905151342w3565e8bcq4c6e7397e6c802b@mail.gmail.com>
-Date: Sat, 16 May 2009 00:09:59 +0200
-Message-ID: <56e1b5710905151509t3b15e75dv115a064534c0f39a@mail.gmail.com>
-Subject: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag
-From: Floris Kraak <randakar@gmail.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Sam Ravnborg <sam@ravnborg.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Trivial Patch Monkey <trivial@kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Al Viro <viro@zeniv.linux.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Pete Zaitcev <zaitcev@redhat.com>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Eric Moore <Eric.Moore@lsi.com>, "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH block#for-2.6.31 2/3] block: set rq->resid_len to blk_rq_bytes()
+ on issue
+References: <4A0D86DB.9000203@kernel.org>	<4A0D87D2.7090806@gmail.com> <20090515112901.84d4dd97.zaitcev@redhat.com>
+In-Reply-To: <20090515112901.84d4dd97.zaitcev@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 10:42 PM, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
-> On Fri, May 15, 2009 at 4:28 PM, Floris Kraak <randakar@gmail.com> wrote:
->> Quite honestly I still believe just disabling this check is the best
->> thing to do.
+Pete Zaitcev wrote:
+> On Sat, 16 May 2009 00:18:42 +0900, Tejun Heo <htejun@gmail.com> wrote:
+> 
+>> In commit c3a4d78c580de4edc9ef0f7c59812fb02ceb037f, while introducing
+>> rq->resid_len, the default value of residue count was changed from
+>> full count to zero. []
+> 
+> So it's not a residue anymore, right? You should've renamed it to
+> rq->count or something, then. Now we have this:
+
+It still is.  It just is restoring the original behavior.
+
+>> +++ block/drivers/block/ub.c
+>> @@ -781,8 +781,7 @@ static void ub_rw_cmd_done(struct ub_dev
+>>  
+>>  	if (cmd->error == 0) {
+>>  		if (blk_pc_request(rq)) {
+>> -			if (cmd->act_len < blk_rq_bytes(rq))
+>> -				rq->resid_len = blk_rq_bytes(rq) - cmd->act_len;
+>> +			rq->resid_len -= min(cmd->act_len, rq->resid_len);
+>>  			scsi_status = 0;
+> 
+> You are subtracting resid_len from itself. Just how in the world
+> can this be correct?
 >
-> Agreed. The proposed "fixes" to silence the warning don't improve the
-> code and apparently in some cases they even increase kernel text.
->
+> Even it if is, in fact, correct, it's such an eggregious violation
+> of good style, that your good programmer's card is going to lose
+> a big coupon and have a hole punched in it.
 
-The exercise needed to be done to prove the point though ;-)
+The original code was
 
-Regards,
-Floris
----
-'Or lawyers may say, “But if I decline, someone else will do it. So
-what is gained?” My reply: “Let someone else do it. But not you. Honor
-is personal. Worry about yourself.  You don’t get a pass from moral
-responsibility because you acted for a client.”
+ if (cmd->act_len >= rq->data_len)
+	rq->data_len = 0;
+ else
+	rq->data_len -= cmd->act_len
 
-That’s the first lesson I would offer, aimed at lawyers. A second
-lesson, aimed at all, is this: Keep ready your capacity for outrage.
-This is very important. Next to the vote, outrage is the one response
-each of us can contribute. Outrage is how honor must confront
-dishonor. If we lose the capacity for outrage, we are in serious
-trouble. '
-   --- Stephen Gillers
+So, I could have written
+
+ if (cmd->act_len >= rq->resid_len)
+	rq->resid_len = 0;
+ else
+	rq->resid_len -= cmd->act_len
+
+Instead I wrote
+
+ rq->resid_len -= min(cmd->act_len, rq->resid_len);
+
+It's just capping the amount to be subtracted so that resid_len
+doesn't underflow.  What is so wrong or bad style about that?
+
+> This is not in Linus' tree yet, but I'm going to take a hard look
+> at this once it shows up.
+
+It would be great if you do before it hits Linus's tree.
+
+Thanks.
+
+-- 
+tejun
