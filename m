@@ -1,104 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756648AbZEOB3B@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758665AbZEOBic@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756648AbZEOB3B (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 21:29:01 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754270AbZEOB2v
+	id S1758665AbZEOBic (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 21:38:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754104AbZEOBiX
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 21:28:51 -0400
-Received: from yw-out-2324.google.com ([74.125.46.31]:43652 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753796AbZEOB2u convert rfc822-to-8bit (ORCPT
+	Thu, 14 May 2009 21:38:23 -0400
+Received: from rv-out-0506.google.com ([209.85.198.231]:51703 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753818AbZEOBiW (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 21:28:50 -0400
+	Thu, 14 May 2009 21:38:22 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=lrs8Arx6vl03paJSws/e2m8FkHi6ufdhDA/SkOJg35tLd9Qczndgiay92OXiYzAL0H
-         819BJT+1p5m+f3/gsvO1gCks1reAaDAaX06nFzEWHohu6AlHo/N7vqrN34InrucWvCLa
-         PUdFLKDVyCTuWgQVzECfJEOs34NuYG3wj/RDs=
-MIME-Version: 1.0
-In-Reply-To: <20090514162201.GA2361@cmpxchg.org>
-References: <20090514231555.f52c81eb.minchan.kim@gmail.com>
-	 <2f11576a0905140727j5ba02b07t94826f57dd99839c@mail.gmail.com>
-	 <44c63dc40905140739n271d3d2w2e0cc364c0012d71@mail.gmail.com>
-	 <20090514162201.GA2361@cmpxchg.org>
-Date: Fri, 15 May 2009 10:28:50 +0900
-Message-ID: <28c262360905141828v6c9503e9q12cd0e6157a8b5e9@mail.gmail.com>
-Subject: Re: [PATCH] mmtom: Prevent shrinking of active anon lru list in case 
-	of no swap space V3
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=u2ml6CoT+x3g0hD3wQ5oyFOnoeU41hFaX96rpLPBilDzlMxrs3k14vouL7hJ/xDdeH
+         OLOVuTW3ACrqqZosaeLxTZa064RalNcE8krVWCaT74jWv+0TGEZ+d6AX2N861Z1qvRBb
+         +WCugIl8975p2c4ZleXEq5sbXEX2S5d+1ehK0=
+Date: Fri, 15 May 2009 10:38:18 +0900
 From: Minchan Kim <minchan.kim@gmail.com>
-To: Johannes Weiner <hannes@cmpxchg.org>
-Cc: Minchan Kim <barrioskmc@gmail.com>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Rik van Riel <riel@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+To: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Rik van Riel <riel@redhat.com>
+Subject: [PATCH] mmtom: Prevent shrinking of active anon lru list in case of
+ no swap space V4
+Message-Id: <20090515103818.2c46d48a.minchan.kim@gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 1:22 AM, Johannes Weiner <hannes@cmpxchg.org> wrote:
-> On Thu, May 14, 2009 at 11:39:49PM +0900, Minchan Kim wrote:
->> On Thu, May 14, 2009 at 11:27 PM, KOSAKI Motohiro
->> <kosaki.motohiro@jp.fujitsu.com> wrote:
->> >>  mm/vmscan.c |    2 +-
->> >>  1 files changed, 1 insertions(+), 1 deletions(-)
->> >>
->> >> diff --git a/mm/vmscan.c b/mm/vmscan.c
->> >> index 2f9d555..621708f 100644
->> >> --- a/mm/vmscan.c
->> >> +++ b/mm/vmscan.c
->> >> @@ -1577,7 +1577,7 @@ static void shrink_zone(int priority, struct zone *zone,
->> >>         * Even if we did not try to evict anon pages at all, we want to
->> >>         * rebalance the anon lru active/inactive ratio.
->> >>         */
->> >> -       if (inactive_anon_is_low(zone, sc))
->> >> +       if (inactive_anon_is_low(zone, sc) && nr_swap_pages > 0)
->> >>                shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
->> >
->> >
->> >       if (nr_swap_pages > 0 && inactive_anon_is_low(zone, sc))
->> >
->> > is better?
->> > compiler can't swap evaluate order around &&.
->>
->> If GCC optimizes away that branch with CONFIG_SWAP=n as Rik mentioned,
->> we don't have a concern.
->
-> It can only optimize it away when the condition is a compile time
-> constant.
->
-> But inactive_anon_is_low() contains atomic operations which the
-> compiler is not allowed to drop and so the && semantics lead to
->
->        atomic_read() && 0
->
-> emitting the read while still knowing the whole expression is 0 at
-> compile-time, optimizing away only the branch itself but leaving the
-> read in place!
->
-> Compared to
->
->        0 && atomic_read()
->
-> where the && short-circuitry leads to atomic_read() not being
-> executed.  And since the 0 is a compile time constant, no code has to
-> be emitted for the read.
->
-> So KOSAKI-san's is right.  Your version results in bigger object code.
+Hi, Adnrew. 
 
-You're right.  I realized it from you.
-I will repost this.
-Thanks for great review, Hannes :)
+Please, drop my previous version and merge this. 
+This versoin can enhance code size and performance by GCC code optimization.
+If you wnat to know it detail, please, reference to Johannes Weiner's saying in V3 thread.
 
->        Hannes
->
+Changelog since V4
+ o Make to check nr_swap_pages at first. - by Hannes's advise
+  o It can reduce text size and increase performance a litte bit by GCC code optimization.
 
+Changelog since V3
+ o Remove can_reclaim_anon.
+ o Add nr_swap_page > 0 in only shrink_zone - By Rik's advise.
+ o Change patch description.
+
+Changelog since V2
+ o Add new function - can_reclaim_anon : it tests anon_list can be reclaim.
+
+Changelog since V1
+ o Use nr_swap_pages <= 0 in shrink_active_list to prevent scanning  of active anon list.
+
+Now shrink_zone can deactivate active anon pages even if we don't have a swap device.
+Many embedded products don't have a swap device. So the deactivation of anon pages is unnecessary.
+
+This patch prevents unnecessary deactivation of anon lru pages.
+But, it doesn't prevent aging of anon pages to swap out.
+
+Thanks for good review. Rik,Kosaki and Hannes.
+
+>From 723464ea5c61027e3b3b2e0b14311eec9c57c3e6 Mon Sep 17 00:00:00 2001
+From: barrios <minchan.kim@gmail.com>
+Date: Fri, 15 May 2009 10:23:45 +0900
+Subject: [PATCH] test2
+ Signed-off-by: barrios <minchan.kim@gmail.com>
+
+---
+ mm/vmscan.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 2f9d555..1b4ee95 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1577,7 +1577,7 @@ static void shrink_zone(int priority, struct zone *zone,
+ 	 * Even if we did not try to evict anon pages at all, we want to
+ 	 * rebalance the anon lru active/inactive ratio.
+ 	 */
+-	if (inactive_anon_is_low(zone, sc))
++	if (nr_swap_pages > 0 && inactive_anon_is_low(zone, sc))
+ 		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
+ 
+ 	throttle_vm_writeout(sc->gfp_mask);
+-- 
+1.5.4.3
 
 
 -- 
-Kinds regards,
-Minchan Kim
+Kinds Regards,
+Minchan Kim 
