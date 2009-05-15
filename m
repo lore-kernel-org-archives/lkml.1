@@ -1,66 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZEOSkC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756829AbZEOSkd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756178AbZEOSkC (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 14:40:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbZEOSjv
+	id S1756829AbZEOSkd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 14:40:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753524AbZEOSkR
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 14:39:51 -0400
-Received: from exprod7og115.obsmtp.com ([64.18.2.217]:43523 "EHLO
-	exprod7og115.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752665AbZEOSju convert rfc822-to-8bit (ORCPT
+	Fri, 15 May 2009 14:40:17 -0400
+Received: from fg-out-1718.google.com ([72.14.220.155]:60422 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755222AbZEOSkP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 14:39:50 -0400
-From: "Mukker, Atul" <Atul.Mukker@lsi.com>
-To: Matthew Wilcox <matthew@wil.cx>
-CC: Jeff Garzik <jeff@garzik.org>, Julian Calaby <julian.calaby@gmail.com>,
-       adam radford <aradford@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Austria, Winston" <Winston.Austria@lsi.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Date: Fri, 15 May 2009 12:38:40 -0600
-Subject: RE: [RFQ] New driver architecture questions
-Thread-Topic: [RFQ] New driver architecture questions
-Thread-Index: AcnViU8Ajthoxv1rQ/WOr+hhFNSsCwAAp4KA
-Message-ID: <6C678488C5CEE74F813A4D1948FD2DC7A96C787D@cosmail02.lsi.com>
-References: <6C678488C5CEE74F813A4D1948FD2DC7A95E6D37@cosmail02.lsi.com>
- <4A0B858F.3080405@garzik.org>
- <6C678488C5CEE74F813A4D1948FD2DC7A95E6D38@cosmail02.lsi.com>
- <4A0B9B0D.6080006@garzik.org>
- <b1bc6a000905141758y20aa7852h8b1012e3da6f8c0f@mail.gmail.com>
- <646765f40905141801k5ae6249p925a4a377652c62e@mail.gmail.com>
- <4A0CDB27.6090009@garzik.org>
- <6C678488C5CEE74F813A4D1948FD2DC7A96C7789@cosmail02.lsi.com>
- <20090515163626.GA15360@parisc-linux.org>
- <6C678488C5CEE74F813A4D1948FD2DC7A96C7848@cosmail02.lsi.com>
- <20090515181641.GB15360@parisc-linux.org>
-In-Reply-To: <20090515181641.GB15360@parisc-linux.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 15 May 2009 14:40:15 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:content-type:content-transfer-encoding;
+        b=Qx8XAj39W6uPsLQyt75+GZ23Lqc9xoR53hdPzItYt7Ce5PFbiIIrkCzAlObz7xrK1V
+         HReGlqFZmFBH9f3uvBDupQG6Q45k2jUaEQkxksGZuVM06/tG9kKHMXbh7cOLxWfLnqvV
+         MrDmnpipBV4cRZuoA0Yjx+rNdEGCcHM4o/AYQ=
+Message-ID: <4A0DB70F.5000209@gmail.com>
+Date: Fri, 15 May 2009 20:40:15 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b5pre) Gecko/20090511 SUSE/3.0b2-9.1 Thunderbird/3.0b3pre
 MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org
+CC: johannes@sipsolutions.net, linux-wireless@vger.kernel.org,
+       Felix Fietkau <nbd@openwrt.org>
+Subject: Re: [PATCH 1/2] mac80211: minstrel, fix memory corruption
+References: <1241453096-8517-1-git-send-email-jirislaby@gmail.com> <20090515182131.GA6439@fancy-poultry.org>
+In-Reply-To: <20090515182131.GA6439@fancy-poultry.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- 
-> > > Using one or the other internally is fine (we don't care what you do),
-> > > but we want to see memcpy().  By the way, the documentation I found
-> for
-> > > ScsiPortMoveMemory() seems to indicate that it's memmove(), not
-> memcpy().
-> > > Mapping memcpy() to ScsiPortMoveMemory() is fine ... but you can't
-> > > realiably go the other way.
-> > [Atul] It's actually memcpy(),http://msdn.microsoft.com/en-
-> us/library/ms805434.aspx
-> 
-> No, it's memmove().  "The (ReadBuffer + Length) can overlap the area
-> pointed to by WriteBuffer."
-[Atul] Look, you are already figuring out possible issues with the source code without it being out yet :-).
+On 05/15/2009 08:21 PM, Heinz Diehl wrote:
+> This patchset crashes my WLAN. Reverting it does fix this:
 
-Thanks everyone for your inputs so far!
-
-Atul
+Could you try this fix
+http://git.kernel.org/?p=linux/kernel/git/linville/wireless-testing.git;a=commitdiff_plain;h=b3f25c62aa41e0c372536c0f3975b39f21217b57;hp=30e2341dd2c82780eddd785eb54695115c6aea8d
+?
