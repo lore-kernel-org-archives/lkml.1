@@ -1,59 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbZEOS45@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756434AbZEOS5j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757794AbZEOS45 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 14:56:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZEOS4r
+	id S1756434AbZEOS5j (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 14:57:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753016AbZEOS52
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 14:56:47 -0400
-Received: from bedivere.hansenpartnership.com ([66.63.167.143]:59746 "EHLO
-	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751571AbZEOS4q (ORCPT
+	Fri, 15 May 2009 14:57:28 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:54932 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752297AbZEOS51 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 14:56:46 -0400
-Subject: Re: [PATCH 09/11] drivers/scsi: Convert #ifdef DEBUG
-	printk(KERN_DEBUG to pr_debug(
-From: James Bottomley <James.Bottomley@HansenPartnership.com>
-To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <d6d5dc09d259cc1da0fef2b1e9c6b7588cccf0b4.1242407227.git.joe@perches.com>
-References: <cover.1242407227.git.joe@perches.com>
-	 <d6d5dc09d259cc1da0fef2b1e9c6b7588cccf0b4.1242407227.git.joe@perches.com>
-Content-Type: text/plain
-Date: Fri, 15 May 2009 18:56:46 +0000
-Message-Id: <1242413806.22585.2.camel@mulgrave.int.hansenpartnership.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
-Content-Transfer-Encoding: 7bit
+	Fri, 15 May 2009 14:57:27 -0400
+Date: Fri, 15 May 2009 14:53:58 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
+       johannes@sipsolutions.net, linux-wireless@vger.kernel.org,
+       Felix Fietkau <nbd@openwrt.org>, davem@davemloft.net
+Subject: Re: [PATCH 1/2] mac80211: minstrel, fix memory corruption
+Message-ID: <20090515185358.GG2773@tuxdriver.com>
+References: <1241453096-8517-1-git-send-email-jirislaby@gmail.com> <20090515182131.GA6439@fancy-poultry.org> <20090515183319.GF2773@tuxdriver.com> <alpine.LFD.2.01.0905151147520.3343@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <alpine.LFD.2.01.0905151147520.3343@localhost.localdomain>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-15 at 10:59 -0700, Joe Perches wrote:
-> From: Joe Perches <joe@perches.com>
+On Fri, May 15, 2009 at 11:49:04AM -0700, Linus Torvalds wrote:
 > 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  drivers/scsi/aha1542.c |    8 ++------
->  1 files changed, 2 insertions(+), 6 deletions(-)
 > 
-> diff --git a/drivers/scsi/aha1542.c b/drivers/scsi/aha1542.c
-> index 8059494..29d5118 100644
-> --- a/drivers/scsi/aha1542.c
-> +++ b/drivers/scsi/aha1542.c
-> @@ -509,9 +509,7 @@ static void aha1542_intr_handle(struct Scsi_Host *shost)
->  		if (mbistatus == 3)
->  			continue;	/* Aborted command not found */
->  
-> -#ifdef DEBUG
-> -		printk(KERN_DEBUG "...done %d %d\n", mbo, mbi);
-> -#endif
-> +		pr_debug("...done %d %d\n", mbo, mbi);
+> On Fri, 15 May 2009, John W. Linville wrote:
+> >
+> > Unfortunately, I think Dave might have limited availability right now...
+> 
+> Yeah, I think he's on some Alaskan cruise.
+> 
+> Should I just pull directly from you this time?
 
-This one looks dangerous ... that's a per trigger printk from interrupt
-context.  That's a lot of stuff to bung in the log buffer for a normal
-operating case (which is pretty interrupt heavy).  What does this do to
-system responsiveness?
+I think that is the best option.
 
-James
+Thanks!
 
-
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
