@@ -1,44 +1,50 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759042AbZEOBrG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758321AbZEOBtl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759042AbZEOBrG (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 21:47:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753154AbZEOBqw
+	id S1758321AbZEOBtl (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 21:49:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754339AbZEOBtb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 21:46:52 -0400
-Received: from fgwmail7.fujitsu.co.jp ([192.51.44.37]:37290 "EHLO
-	fgwmail7.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755522AbZEOBqv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 21:46:51 -0400
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH] mmtom: Prevent shrinking of active anon lru list in case of no swap space V4
-Cc: kosaki.motohiro@jp.fujitsu.com, Minchan Kim <minchan.kim@gmail.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       Johannes Weiner <hannes@cmpxchg.org>
-In-Reply-To: <4A0CC951.6070003@redhat.com>
-References: <20090515103818.2c46d48a.minchan.kim@gmail.com> <4A0CC951.6070003@redhat.com>
-Message-Id: <20090515104629.87ED.A69D9226@jp.fujitsu.com>
+	Thu, 14 May 2009 21:49:31 -0400
+Received: from tundra.namei.org ([65.99.196.166]:42929 "EHLO tundra.namei.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753154AbZEOBtb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 21:49:31 -0400
+Date: Fri, 15 May 2009 11:49:29 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>
+cc: linux-security-module@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] TOMOYO: Add garbage collector support. (v2)
+In-Reply-To: <200905142108.JIF10080.OOFHJVFtOSQMFL@I-love.SAKURA.ne.jp>
+Message-ID: <alpine.LRH.2.00.0905151146320.5937@tundra.namei.org>
+References: <20090501102438.GA7470@elf.ucw.cz> <200905012207.BFC60616.QStOHOMJFOLFFV@I-love.SAKURA.ne.jp> <20090503215615.GA1368@ucw.cz> <200905041524.GGH52160.FFFVMSJOOLtHOQ@I-love.SAKURA.ne.jp> <200905062116.HCI09807.VOFFHFSMOLOtQJ@I-love.SAKURA.ne.jp>
+ <200905142108.JIF10080.OOFHJVFtOSQMFL@I-love.SAKURA.ne.jp>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Mailer: Becky! ver. 2.50.07 [ja]
-Date: Fri, 15 May 2009 10:46:49 +0900 (JST)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Minchan Kim wrote:
-> 
-> > This patch prevents unnecessary deactivation of anon lru pages.
-> > But, it doesn't prevent aging of anon pages to swap out.
-> 
-> >  Signed-off-by: barrios <minchan.kim@gmail.com>
-> 
-> Reviewed-by: Rik van Riel <riel@redhat.com>
+On Thu, 14 May 2009, Tetsuo Handa wrote:
 
- Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+> ---
+>  security/tomoyo/common.c   |  456 +++++++++++++++++++-----------------
+>  security/tomoyo/common.h   |  134 ++++++++--
+>  security/tomoyo/domain.c   |  437 +++++++++++++---------------------
+>  security/tomoyo/file.c     |  369 +++++++++++++++--------------
+>  security/tomoyo/realpath.c |  567 ++++++++++++++++++++++++++++++++++-----------
+>  security/tomoyo/realpath.h |   25 +
+>  security/tomoyo/tomoyo.c   |   40 +--
+>  security/tomoyo/tomoyo.h   |   13 -
+>  8 files changed, 1190 insertions(+), 851 deletions(-)
+
+This seems like an awfully large and invasive patch just to add GC support 
+which you didn't originally didn't think was necessary.
+
+I think it needs review from people outside of your project.
 
 
-
+- James
+-- 
+James Morris
+<jmorris@namei.org>
