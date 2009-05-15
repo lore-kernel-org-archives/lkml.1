@@ -1,82 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762915AbZEOPVv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763128AbZEOPXk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762915AbZEOPVv (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 11:21:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbZEOPVn
+	id S1763128AbZEOPXk (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 11:23:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761636AbZEOPXd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 11:21:43 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:39213 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751466AbZEOPVm convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 11:21:42 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=VSBd5sSjBerFRzLnwgCtG2RbK7k/cGuje2ZPJvhQ+ePKdDAY0Ah1L1xkqzpY7cWPwK
-         cCzeyhEbPhxSJRFpB7TpRqlCH6r9WILCaf7Y4SGPmpeFScnYwN4ZoeiGhzOHJX+nWDzH
-         OVBz+wnT9Q4aHLlyuu5ldJneldTrLZfXxOA8s=
-MIME-Version: 1.0
-In-Reply-To: <1242374931.21646.30.camel@penberg-laptop>
-References: <1242289830.21646.5.camel@penberg-laptop>
-	 <20090514175332.9B7B.A69D9226@jp.fujitsu.com>
-	 <20090515083726.F5BF.A69D9226@jp.fujitsu.com>
-	 <1242374931.21646.30.camel@penberg-laptop>
-Date: Sat, 16 May 2009 00:21:42 +0900
-X-Google-Sender-Auth: 5e6cc4294ab915cc
-Message-ID: <2f11576a0905150821m5c602ef7g996766ae5d7f0141@mail.gmail.com>
-Subject: Re: kernel BUG at mm/slqb.c:1411!
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Cc: Minchan Kim <minchan.kim@gmail.com>, linux-mm <linux-mm@kvack.org>,
-       LKML <linux-kernel@vger.kernel.org>, Nick Piggin <npiggin@suse.de>,
-       matthew.r.wilcox@intel.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 15 May 2009 11:23:33 -0400
+Received: from mba.ocn.ne.jp ([122.1.235.107]:52231 "EHLO smtp.mba.ocn.ne.jp"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751466AbZEOPXc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 11:23:32 -0400
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+To: linux-mips@linux-mips.org
+Cc: ralf@linux-mips.org, dan.j.williams@intel.com,
+       linux-kernel@vger.kernel.org
+Subject: [PATCH] txx9dmac: use dma_unmap_single if DMA_COMPL_{SRC,DEST}_UNMAP_SINGLE was set
+Date: Sat, 16 May 2009 00:23:30 +0900
+Message-Id: <1242401010-17017-1-git-send-email-anemo@mba.ocn.ne.jp>
+X-Mailer: git-send-email 1.5.6.5
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/15 Pekka Enberg <penberg@cs.helsinki.fi>:
-> Hi Motohiro-san,
->
-> On Wed, 2009-05-13 at 17:37 +0900, Minchan Kim wrote:
->> > > > On Wed, 13 May 2009 16:42:37 +0900 (JST)
->> > > > KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com> wrote:
->> > > >
->> > > > Hmm. I don't know slqb well.
->> > > > So, It's just my guess.
->> > > >
->> > > > We surely increase l->nr_partial in  __slab_alloc_page.
->> > > > In between l->nr_partial++ and call __cache_list_get_page, Who is decrease l->nr_partial again.
->> > > > After all, __cache_list_get_page return NULL and hit the VM_BUG_ON.
->> > > >
->> > > > Comment said :
->> > > >
->> > > >         /* Protects nr_partial, nr_slabs, and partial */
->> > > >   spinlock_t    page_lock;
->> > > >
->> > > > As comment is right, We have to hold the l->page_lock ?
->> > >
->> > > Makes sense. Nick? Motohiro-san, can you try this patch please?
->> >
->> > This issue is very rarely. please give me one night.
->
-> On Fri, 2009-05-15 at 08:38 +0900, KOSAKI Motohiro wrote:
->> -ENOTREPRODUCED
->>
->> I guess your patch is right fix. thanks!
->
-> Thank you so much for testing!
->
-> Nick seems to have gone silent for the past few days so I went ahead and
-> merged the patch.
->
-> Did you have CONFIG_PROVE_LOCKING enabled, btw? I think I got the lock
-> order correct but I don't have a NUMA machine to test it with here.
+This patch does not change actual behaviour since dma_unmap_page is just
+an alias of dma_unmap_single on MIPS.
 
-my x86_64 with CONFIG_PROVE_LOCKING don't output any warnings.
+Signed-off-by: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+---
+This patch is against linux-mips.org linux-queue tree.
+Please queue this or fold into "DMA: TXx9 Soc DMA Controller driver" patch.
 
-thanks.
+ drivers/dma/txx9dmac.c |   20 ++++++++++++--------
+ 1 files changed, 12 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/dma/txx9dmac.c b/drivers/dma/txx9dmac.c
+index 9aa9ea9..88dab52 100644
+--- a/drivers/dma/txx9dmac.c
++++ b/drivers/dma/txx9dmac.c
+@@ -432,23 +432,27 @@ txx9dmac_descriptor_complete(struct txx9dmac_chan *dc,
+ 	list_splice_init(&txd->tx_list, &dc->free_list);
+ 	list_move(&desc->desc_node, &dc->free_list);
+ 
+-	/*
+-	 * We use dma_unmap_page() regardless of how the buffers were
+-	 * mapped before they were submitted...
+-	 */
+ 	if (!ds) {
+ 		dma_addr_t dmaaddr;
+ 		if (!(txd->flags & DMA_COMPL_SKIP_DEST_UNMAP)) {
+ 			dmaaddr = is_dmac64(dc) ?
+ 				desc->hwdesc.DAR : desc->hwdesc32.DAR;
+-			dma_unmap_page(chan2parent(&dc->chan), dmaaddr,
+-				       desc->len, DMA_FROM_DEVICE);
++			if (txd->flags & DMA_COMPL_DEST_UNMAP_SINGLE)
++				dma_unmap_single(chan2parent(&dc->chan),
++					dmaaddr, desc->len, DMA_FROM_DEVICE);
++			else
++				dma_unmap_page(chan2parent(&dc->chan),
++					dmaaddr, desc->len, DMA_FROM_DEVICE);
+ 		}
+ 		if (!(txd->flags & DMA_COMPL_SKIP_SRC_UNMAP)) {
+ 			dmaaddr = is_dmac64(dc) ?
+ 				desc->hwdesc.SAR : desc->hwdesc32.SAR;
+-			dma_unmap_page(chan2parent(&dc->chan), dmaaddr,
+-				       desc->len, DMA_TO_DEVICE);
++			if (txd->flags & DMA_COMPL_SRC_UNMAP_SINGLE)
++				dma_unmap_single(chan2parent(&dc->chan),
++					dmaaddr, desc->len, DMA_TO_DEVICE);
++			else
++				dma_unmap_page(chan2parent(&dc->chan),
++					dmaaddr, desc->len, DMA_TO_DEVICE);
+ 		}
+ 	}
+ 
+-- 
+1.5.6.5
+
