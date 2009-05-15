@@ -1,78 +1,38 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762915AbZEOPTf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762850AbZEOPVU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762915AbZEOPTf (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 11:19:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757628AbZEOPTY
+	id S1762850AbZEOPVU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 11:21:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754105AbZEOPVM
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 11:19:24 -0400
-Received: from rv-out-0506.google.com ([209.85.198.225]:34251 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754950AbZEOPTW (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 11:19:22 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=mJEevxvL1AaadbBqdPN+B8nJ3u6um3KHidVAyYTKZlxiorKjK6kbf7Vf+SwT+3UvJP
-         164HEW9Xfy7pboIZlCd7GhL46pUHMJ5Twah4bSldFXioXVhfx1kotbFk+QukaUIB/ShP
-         /iOo0txXf7UGLV8K6bW+H5dZKFwoW+AgveivE=
-Message-ID: <4A0D87F7.8090401@gmail.com>
-Date: Sat, 16 May 2009 00:19:19 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 15 May 2009 11:21:12 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38785 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754108AbZEOPVL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 11:21:11 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: "Luis R. Rodriguez" <mcgrof@gmail.com>
+Subject: Re: pm-susend on 2.6.30-rc5
+Date: Fri, 15 May 2009 17:20:50 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       David Brownell <dbrownell@users.sourceforge.net>
+References: <43e72e890905131833k291c8720r4045e9e497430b40@mail.gmail.com>
+In-Reply-To: <43e72e890905131833k291c8720r4045e9e497430b40@mail.gmail.com>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Pete Zaitcev <zaitcev@redhat.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Eric Moore <Eric.Moore@lsi.com>, "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: [PATCH block#for-2.6.31 3/3] bio: always copy back data for copied
- kernel requests
-References: <4A0D86DB.9000203@kernel.org> <4A0D87D2.7090806@gmail.com>
-In-Reply-To: <4A0D87D2.7090806@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905151720.51731.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-When a read bio_copy_kern() request fails, the content of the bounce
-buffer is not copied back.  However, as request failure doesn't
-necessarily mean complete failure, the buffer state can be useful.
-This behavior is also inconsistent with the user map counterpart and
-causes the subtle difference between bounced and unbounced IO causes
-confusion.
+On Thursday 14 May 2009, Luis R. Rodriguez wrote:
+> When trying suspend on 2.6.30-rc5 I get the following WARN and also
+> cannot use my write to my file system. I cannot even reboot:
 
-This patch makes bio_copy_kern_endio() ignore @err and always copy
-back data on request completion.
+Can you attach the .config, please?
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
----
- fs/bio.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: block/fs/bio.c
-===================================================================
---- block.orig/fs/bio.c
-+++ block/fs/bio.c
-@@ -1198,7 +1198,7 @@ static void bio_copy_kern_endio(struct b
- 		char *addr = page_address(bvec->bv_page);
- 		int len = bmd->iovecs[i].bv_len;
- 
--		if (read && !err)
-+		if (read)
- 			memcpy(p, addr, len);
- 
- 		__free_page(bvec->bv_page);
+Rafael
