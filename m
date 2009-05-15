@@ -1,67 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754912AbZEOUC2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753058AbZEOUKH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754912AbZEOUC2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 16:02:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753376AbZEOUCT
+	id S1753058AbZEOUKH (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 16:10:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752238AbZEOUJz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 16:02:19 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:52405 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752955AbZEOUCS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 16:02:18 -0400
-Date: Fri, 15 May 2009 22:02:13 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: Dave Hansen <dave@linux.vnet.ibm.com>,
-       David Rientjes <rientjes@google.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
-       San Mehat <san@android.com>, Arve Hj?nnev?g <arve@android.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Misleading OOM messages
-Message-ID: <20090515200213.GA1406@ucw.cz>
-References: <20090514092909.GG1365@ucw.cz> <alpine.DEB.1.10.0905141546040.1381@qirst.com> <1242333519.15391.210.camel@nimitz> <alpine.DEB.2.00.0905141346030.28074@chino.kir.corp.google.com> <1242335120.15391.242.camel@nimitz> <alpine.DEB.1.10.0905141729180.30187@qirst.com> <20090514213403.GB14741@elf.ucw.cz> <1242337299.28440.47.camel@nimitz> <20090515130547.GA1976@elf.ucw.cz> <alpine.DEB.1.10.0905151358430.26559@qirst.com>
+	Fri, 15 May 2009 16:09:55 -0400
+Received: from gw.goop.org ([64.81.55.164]:37716 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751423AbZEOUJy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 16:09:54 -0400
+Message-ID: <4A0DCC11.10307@goop.org>
+Date: Fri, 15 May 2009 13:09:53 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <alpine.DEB.1.10.0905151358430.26559@qirst.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Ingo Molnar <mingo@elte.hu>
+CC: the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+Subject: Re: [GIT PULL] xen /proc/mtrr implementation
+References: <1242170864-13560-1-git-send-email-jeremy@goop.org> <20090513133021.GA7277@elte.hu> <4A0ADBA2.2020300@goop.org> <20090515182757.GA19256@elte.hu>
+In-Reply-To: <20090515182757.GA19256@elte.hu>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri 2009-05-15 13:59:50, Christoph Lameter wrote:
-> On Fri, 15 May 2009, Pavel Machek wrote:
-> 
-> > Ok, so kernel should be fixed to make limits 30% of non-mlocked
-> > memory.
-> 
-> There is already ulimit.
+Ingo Molnar wrote:
+> Right now there's no MTRR support under Xen guests and the Xen 
+> hypervisor was able to survive, right? Why should we do it under 
+> dom0?
+>   
 
-...which does not work as described in the message you snipped.
+Because dom0 has direct hardware access, and is running real device 
+drivers.  domU guests don't see physical memory, and so MTRR has no 
+relevance for them.
 
-> > > folks.  They go sucking up and locking as much memory as they can get
-> > > their hands on.  Adding memory never helps them because they'll use up
-> > > whatever is there.
-> >
-> > Well, but it is uncommon everywhere else. If you have desktop system,
-> > job size is pretty much constant. If you have too little memory, you
-> > OOM.
-> 
-> Nope. If you have too little memory for your app then the kernel pages
-> portions of the app out to disk. Thats is why you have a VM (VIRTUAL
-> machine). The app is not running with physical memory.
+> The MTRR code is extremely fragile, we dont really need an added 
+> layer there. _Especially_ since /proc/mtrr is an obsolete API.
+>   
 
-Try running your machine with mem=8M, then tell me how virtual memory
-works.
+There's no added layer there.  I'm just adding another implementation of 
+mtrr_ops.
 
-If you have too little RAM+swap, you OOM. (Adding memory helps).
+/proc/mtrr is in wide use today.  It may be planned for obsolescence, 
+but there's no way you can claim its obsolete today (my completely 
+up-to-date F10 X server is using it, for example).  We don't break 
+oldish usermode ABIs in new kernels.
 
-If you have *way* too little RAM, you OOM. (Kernel data is
-unswappable. Task struct is 8KB. At some point it breaks).
-									Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Besides, the MTRR code is also a kernel-internal API, used by DRM and 
+other drivers to configure the system MTRR state.  Those drivers will 
+either perform badly or outright fail if they can't set the appropriate 
+cachability properties.  That is not obsolete in any way.
+
+> If you want to allow a guest to do MTRR ops, you can do it by 
+> catching the native kernel accesses to the MTRR space. There's no 
+> guest side support needed for that.
+>   
+
+MTRR can't be virtualized like that.  It can't be meaningfully 
+multiplexed, and must be set in a uniform way on all physical CPUs.  
+Guests run on virtual CPUs, and don't have any knowledge of what the 
+mapping of VCPU to PCPU is, or even any visibility of all PCPUs.
+
+It is not a piece of per-guest state; it is system-wide property, 
+maintained by Xen.  These patches add the mechanism for dom0 (=hardware 
+control domain) to tell Xen what state they should be in.
+
+    J
