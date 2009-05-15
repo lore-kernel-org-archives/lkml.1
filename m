@@ -1,69 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757556AbZEORdK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758640AbZEORhi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757556AbZEORdK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 13:33:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755438AbZEORcx
+	id S1758640AbZEORhi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 13:37:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754156AbZEORh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 13:32:53 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52156 "EHLO mx2.redhat.com"
+	Fri, 15 May 2009 13:37:29 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:34754 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755249AbZEORcw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 13:32:52 -0400
-Date: Fri, 15 May 2009 11:29:01 -0600
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Eric Moore <Eric.Moore@lsi.com>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       zaitcev@redhat.com
-Subject: Re: [PATCH block#for-2.6.31 2/3] block: set rq->resid_len to
- blk_rq_bytes() on issue
-Message-Id: <20090515112901.84d4dd97.zaitcev@redhat.com>
-In-Reply-To: <4A0D87D2.7090806@gmail.com>
-References: <4A0D86DB.9000203@kernel.org>
-	<4A0D87D2.7090806@gmail.com>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	id S1755329AbZEORh3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 13:37:29 -0400
+Date: Fri, 15 May 2009 19:37:20 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
+Cc: Roland McGrath <roland@redhat.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Oleg Nesterov <oleg@redhat.com>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 1/3] Introduce "struct wait_info" to simplify
+	wait_task*() pathes
+Message-ID: <20090515173720.GB29647@elte.hu>
+References: <1242216490-8226-1-git-send-email-v.mayatskih@gmail.com> <1242216490-8226-2-git-send-email-v.mayatskih@gmail.com> <87tz3ozuuw.wl%vmayatsk@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <87tz3ozuuw.wl%vmayatsk@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 May 2009 00:18:42 +0900, Tejun Heo <htejun@gmail.com> wrote:
 
-> In commit c3a4d78c580de4edc9ef0f7c59812fb02ceb037f, while introducing
-> rq->resid_len, the default value of residue count was changed from
-> full count to zero. []
+* Vitaly Mayatskikh <v.mayatskih@gmail.com> wrote:
 
-So it's not a residue anymore, right? You should've renamed it to
-rq->count or something, then. Now we have this:
+> At Wed, 13 May 2009 11:13:58 -0700 (PDT), Roland McGrath wrote:
+> 
+> > What's the benefit of this?  Those parameters are probably 
+> > happily in registers and compiled well, I would guess.  Adding 
+> > more memory copying does not seem like a benefit.  Have you 
+> > verified that your change reduces code size or something like 
+> > that?
+> 
+> Yeah, I was wrong. There's no benefit in size of .text
 
-> +++ block/drivers/block/ub.c
-> @@ -781,8 +781,7 @@ static void ub_rw_cmd_done(struct ub_dev
->  
->  	if (cmd->error == 0) {
->  		if (blk_pc_request(rq)) {
-> -			if (cmd->act_len < blk_rq_bytes(rq))
-> -				rq->resid_len = blk_rq_bytes(rq) - cmd->act_len;
-> +			rq->resid_len -= min(cmd->act_len, rq->resid_len);
->  			scsi_status = 0;
+but there's a lot of benefit in cleanliness - just look at the 
+simplification of the prototypes.
 
-You are subtracting resid_len from itself. Just how in the world
-can this be correct?
-
-Even it if is, in fact, correct, it's such an eggregious violation
-of good style, that your good programmer's card is going to lose
-a big coupon and have a hole punched in it.
-
-This is not in Linus' tree yet, but I'm going to take a hard look
-at this once it shows up.
-
--- Pete
+	Ingo
