@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763625AbZEOM07@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763773AbZEOM2U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763625AbZEOM07 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 08:26:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762253AbZEOMXI
+	id S1763773AbZEOM2U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 08:28:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762669AbZEOMXO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 08:23:08 -0400
-Received: from tx2ehsobe005.messaging.microsoft.com ([65.55.88.15]:20507 "EHLO
-	TX2EHSOBE009.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1762055AbZEOMWz (ORCPT
+	Fri, 15 May 2009 08:23:14 -0400
+Received: from tx2ehsobe001.messaging.microsoft.com ([65.55.88.11]:42478 "EHLO
+	TX2EHSOBE001.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758075AbZEOMXG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 08:22:55 -0400
-X-BigFish: VPS-3(zz936eNzz1202hzzz32i43j)
+	Fri, 15 May 2009 08:23:06 -0400
+X-BigFish: VPS4(zz30e4izz1202hzzz32i43j)
 X-FB-SS: 5,
-X-WSS-ID: 0KJOQDT-01-0BY-01
+X-WSS-ID: 0KJOQE2-01-0CA-01
 From: Borislav Petkov <borislav.petkov@amd.com>
 To: <akpm@linux-foundation.org>, <greg@kroah.com>, <mingo@elte.hu>
 CC: <norsk5@yahoo.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
@@ -20,13 +20,13 @@ CC: <norsk5@yahoo.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
        <linux-kernel@vger.kernel.org>,
        Doug Thompson <dougthompson@xmission.com>,
        Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 09/22] amd64_edac: add functionality to compute the DRAM hole
-Date: Fri, 15 May 2009 14:22:20 +0200
-Message-ID: <1242390153-24493-10-git-send-email-borislav.petkov@amd.com>
+Subject: [PATCH 22/22] amd64_edac: add module registration routines
+Date: Fri, 15 May 2009 14:22:33 +0200
+Message-ID: <1242390153-24493-23-git-send-email-borislav.petkov@amd.com>
 X-Mailer: git-send-email 1.6.2.4
 In-Reply-To: <1242390153-24493-1-git-send-email-borislav.petkov@amd.com>
 References: <1242390153-24493-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 15 May 2009 12:22:43.0774 (UTC) FILETIME=[D91605E0:01C9D557]
+X-OriginalArrivalTime: 15 May 2009 12:22:52.0712 (UTC) FILETIME=[DE69DA80:01C9D557]
 MIME-Version: 1.0
 Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
@@ -35,192 +35,505 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Doug Thompson <dougthompson@xmission.com>
 
-Borislav:
+Also, link into Kbuild by adding Kconfig and Makefile entries.
 
-- cleanup/fix comments, add BKDG refs
+Borislav:
+- Kconfig/Makefile splitting
+- use zero-sized arrays for the sysfs attrs if not enabled
+- rename sysfs attrs to more conform values
+- shorten CONFIG_ names
+- make multiple structure members assignment vertically aligned
+- fix/cleanup comments
+- fix function return value patterns
+- fix err labels
+- fix a memleak bug caught by Ingo
+- remove the NUMA dependency and use num_k8_northbrides for initializing
+  a driver instance per NB.
+- do not copy the pvt contents into the mci struct in
+  amd64_init_2nd_stage() and save it in the mci->pvt_info void ptr
+  instead.
 - cleanup debug calls
+- simplify amd64_setup_pci_device()
 
 Reviewed-by: Mauro Carvalho Chehab <mchehab@redhat.com>
 Signed-off-by: Doug Thompson <dougthompson@xmission.com>
 Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
 ---
- drivers/edac/amd64_edac.c |  166 +++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 166 insertions(+), 0 deletions(-)
+ drivers/edac/Kconfig      |   26 +++
+ drivers/edac/Makefile     |    7 +
+ drivers/edac/amd64_edac.c |  375 +++++++++++++++++++++++++++++++++++++++++++++
+ drivers/edac/amd64_edac.h |   15 ++
+ 4 files changed, 423 insertions(+), 0 deletions(-)
 
+diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
+index e5f5c5a..1c5a325 100644
+--- a/drivers/edac/Kconfig
++++ b/drivers/edac/Kconfig
+@@ -58,6 +58,32 @@ config EDAC_MM_EDAC
+ 	  occurred so that a particular failing memory module can be
+ 	  replaced.  If unsure, select 'Y'.
+ 
++config EDAC_AMD64
++	tristate "AMD64 (Opteron, Athlon64) K8, F10h, F11h"
++	depends on EDAC_MM_EDAC && X86 && PCI
++	default m
++	help
++	Support for error detection and correction on the AMD 64
++	Families of Memory Controllers (K8, F10h and F11h)
++
++config EDAC_AMD64_ERROR_INJECTION
++	bool "Sysfs Error Injection facilities"
++	depends on EDAC_AMD64
++	help
++	  Recent Opterons (Family 10h and later) provide for Memory Error
++	  Injection into the ECC detection circuits. The amd64_edac module
++	  allows the operator/user to inject Uncorrectable and Correctable
++	  errors into DRAM.
++
++	  When enabled, in each of the respective memory controller directories
++	  (/sys/devices/system/edac/mc/mcX), there are 3 input files:
++
++	  - inject_section (0..3, 16-byte section of 64-byte cacheline),
++	  - inject_word (0..8, 16-bit word of 16-byte section),
++	  - inject_ecc_vector (hex ecc vector: select bits of inject word)
++
++	  In addition, there are two control files, inject_read and inject_write,
++	  which trigger the DRAM ECC Read and Write respectively.
+ 
+ config EDAC_AMD76X
+ 	tristate "AMD 76x (760, 762, 768)"
+diff --git a/drivers/edac/Makefile b/drivers/edac/Makefile
+index a5fdcf0..6f334e6 100644
+--- a/drivers/edac/Makefile
++++ b/drivers/edac/Makefile
+@@ -30,6 +30,13 @@ obj-$(CONFIG_EDAC_I3000)		+= i3000_edac.o
+ obj-$(CONFIG_EDAC_X38)			+= x38_edac.o
+ obj-$(CONFIG_EDAC_I82860)		+= i82860_edac.o
+ obj-$(CONFIG_EDAC_R82600)		+= r82600_edac.o
++
++amd64_edac_mod-y :=  amd64_edac_err_types.o amd64_edac.o
++amd64_edac_mod-$(CONFIG_EDAC_DEBUG) += amd64_edac_dbg.o
++amd64_edac_mod-$(CONFIG_EDAC_AMD64_ERROR_INJECTION) += amd64_edac_inj.o
++
++obj-$(CONFIG_EDAC_AMD64)		+= amd64_edac_mod.o
++
+ obj-$(CONFIG_EDAC_PASEMI)		+= pasemi_edac.o
+ obj-$(CONFIG_EDAC_MPC85XX)		+= mpc85xx_edac.o
+ obj-$(CONFIG_EDAC_MV64X60)		+= mv64x60_edac.o
 diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
-index a774f34..4716fb5 100644
+index 6a9d763..46e0a25 100644
 --- a/drivers/edac/amd64_edac.c
 +++ b/drivers/edac/amd64_edac.c
-@@ -269,3 +269,169 @@ err_no_match:
+@@ -1,4 +1,5 @@
+ #include "amd64_edac.h"
++#include <asm/k8.h>
  
- 	return NULL;
+ static struct edac_pci_ctl_info *amd64_ctl_pci;
+ 
+@@ -2977,3 +2978,377 @@ static int amd64_check_ecc_enabled(struct amd64_pvt *pvt)
+ 	return ret;
  }
+ 
++struct mcidev_sysfs_attribute sysfs_attrs[ARRAY_SIZE(amd64_dbg_attrs) +
++					  ARRAY_SIZE(amd64_inj_attrs) +
++					  1];
 +
-+/*
-+ * Extract the DRAM CS base address from selected csrow register.
-+ */
-+static u64 base_from_dct_base(struct amd64_pvt *pvt, int csrow)
++struct mcidev_sysfs_attribute terminator = { .attr = { .name = NULL } };
++
++static void amd64_set_mc_sysfs_attributes(struct mem_ctl_info *mci)
 +{
-+	return ((u64) (amd64_get_dct_base(pvt, 0, csrow) & pvt->dcsb_base)) <<
-+				pvt->dcs_shift;
++	unsigned int i = 0, j = 0;
++
++	for (; i < ARRAY_SIZE(amd64_dbg_attrs); i++)
++		sysfs_attrs[i] = amd64_dbg_attrs[i];
++
++	for (j = 0; j < ARRAY_SIZE(amd64_inj_attrs); j++, i++)
++		sysfs_attrs[i] = amd64_inj_attrs[j];
++
++	sysfs_attrs[i] = terminator;
++
++	mci->mc_driver_sysfs_attributes = sysfs_attrs;
++}
++
++static void amd64_setup_mci_misc_attributes(struct mem_ctl_info *mci)
++{
++	struct amd64_pvt *pvt = mci->pvt_info;
++
++	mci->mtype_cap		= MEM_FLAG_DDR2 | MEM_FLAG_RDDR2;
++	mci->edac_ctl_cap	= EDAC_FLAG_NONE;
++	mci->edac_cap		= EDAC_FLAG_NONE;
++
++	if (pvt->nbcap & K8_NBCAP_SECDED)
++		mci->edac_ctl_cap |= EDAC_FLAG_SECDED;
++
++	if (pvt->nbcap & K8_NBCAP_CHIPKILL)
++		mci->edac_ctl_cap |= EDAC_FLAG_S4ECD4ED;
++
++	mci->edac_cap		= amd64_determine_edac_cap(pvt);
++	mci->mod_name		= EDAC_MOD_STR;
++	mci->mod_ver		= EDAC_AMD64_VERSION;
++	mci->ctl_name		= get_amd_family_name(pvt->mc_type_index);
++	mci->dev_name		= pci_name(pvt->dram_f2_ctl);
++	mci->ctl_page_to_phys	= NULL;
++
++	/* IMPORTANT: Set the polling 'check' function in this module */
++	mci->edac_check		= amd64_check;
++
++	/* memory scrubber interface */
++	mci->set_sdram_scrub_rate = amd64_set_scrub_rate;
++	mci->get_sdram_scrub_rate = amd64_get_scrub_rate;
 +}
 +
 +/*
-+ * Extract the mask from the dcsb0[csrow] entry in a CPU revision-specific way.
++ * Init stuff for this DRAM Controller device.
++ *
++ * Due to a hardware feature on Fam10h CPUs, the Enable Extended Configuration
++ * Space feature MUST be enabled on ALL Processors prior to actually reading
++ * from the ECS registers. Since the loading of the module can occur on any
++ * 'core', and cores don't 'see' all the other processors ECS data when the
++ * others are NOT enabled. Our solution is to first enable ECS access in this
++ * routine on all processors, gather some data in a amd64_pvt structure and
++ * later come back in a finish-setup function to perform that final
++ * initialization. See also amd64_init_2nd_stage() for that.
 + */
-+static u64 mask_from_dct_mask(struct amd64_pvt *pvt, int csrow)
++static int amd64_probe_one_instance(struct pci_dev *dram_f2_ctl,
++				    int mc_type_index)
 +{
-+	u64 dcsm_bits, other_bits;
-+	u64 mask;
++	struct amd64_pvt *pvt = NULL;
++	int err = 0, ret;
 +
-+	/* Extract bits from DRAM CS Mask. */
-+	dcsm_bits = amd64_get_dct_mask(pvt, 0, csrow) & pvt->dcsm_mask;
++	ret = -ENOMEM;
++	pvt = kzalloc(sizeof(struct amd64_pvt), GFP_KERNEL);
++	if (!pvt)
++		goto err_exit;
 +
-+	other_bits = pvt->dcsm_mask;
-+	other_bits = ~(other_bits << pvt->dcs_shift);
++	pvt->mc_node_id = get_mc_node_id_from_pdev(dram_f2_ctl);
++
++	pvt->dram_f2_ctl	= dram_f2_ctl;
++	pvt->ext_model		= boot_cpu_data.x86_model >> 4;
++	pvt->mc_type_index	= mc_type_index;
++	pvt->ops		= family_ops(mc_type_index);
++	pvt->old_mcgctl		= 0;
 +
 +	/*
-+	 * The extracted bits from DCSM belong in the spaces represented by
-+	 * the cleared bits in other_bits.
++	 * We have the dram_f2_ctl device as an argument, now go reserve its
++	 * sibling devices from the PCI system.
 +	 */
-+	mask = (dcsm_bits << pvt->dcs_shift) | other_bits;
++	ret = -ENODEV;
++	err = amd64_reserve_mc_sibling_devices(pvt, mc_type_index);
++	if (err)
++		goto err_free;
 +
-+	return mask;
++	ret = -EINVAL;
++	err = amd64_check_ecc_enabled(pvt);
++	if (err)
++		goto err_put;
++
++	/*
++	 * Key operation here: setup of HW prior to performing ops on it. Some
++	 * setup is required to access ECS data. After this is performed, the
++	 * 'teardown' function must be called upon error and normal exit paths.
++	 */
++	if (boot_cpu_data.x86 >= 0x10)
++		amd64_setup(pvt);
++
++	/*
++	 * Save the pointer to the private data for use in 2nd initialization
++	 * stage
++	 */
++	pvt_lookup[pvt->mc_node_id] = pvt;
++
++	return 0;
++
++err_put:
++	amd64_free_mc_sibling_devices(pvt);
++
++err_free:
++	kfree(pvt);
++
++err_exit:
++	return ret;
 +}
 +
 +/*
-+ * @input_addr is an InputAddr associated with the node given by mci. Return the
-+ * csrow that input_addr maps to, or -1 on failure (no csrow claims input_addr).
++ * This is the finishing stage of the init code. Needs to be performed after all
++ * MCs' hardware have been prepped for accessing extended config space.
 + */
-+static int input_addr_to_csrow(struct mem_ctl_info *mci, u64 input_addr)
++static int amd64_init_2nd_stage(struct amd64_pvt *pvt)
 +{
++	int node_id = pvt->mc_node_id;
++	struct mem_ctl_info *mci;
++	int ret, err = 0;
++
++	amd64_read_mc_registers(pvt);
++
++	ret = -ENODEV;
++	if (pvt->ops->probe_valid_hardware) {
++		err = pvt->ops->probe_valid_hardware(pvt);
++		if (err)
++			goto err_exit;
++	}
++
++	/*
++	 * We need to determine how many memory channels there are. Then use
++	 * that information for calculating the size of the dynamic instance
++	 * tables in the 'mci' structure
++	 */
++	pvt->channel_count = pvt->ops->early_channel_count(pvt);
++	if (pvt->channel_count < 0)
++		goto err_exit;
++
++	ret = -ENOMEM;
++	mci = edac_mc_alloc(0, CHIPSELECT_COUNT, pvt->channel_count, node_id);
++	if (!mci)
++		goto err_exit;
++
++	mci->pvt_info = pvt;
++
++	mci->dev = &pvt->dram_f2_ctl->dev;
++	amd64_setup_mci_misc_attributes(mci);
++
++	if (amd64_init_csrows(mci))
++		mci->edac_cap = EDAC_FLAG_NONE;
++
++	amd64_enable_ecc_error_reporting(mci);
++	amd64_set_mc_sysfs_attributes(mci);
++
++	ret = -ENODEV;
++	if (edac_mc_add_mc(mci)) {
++		debugf1("failed edac_mc_add_mc()\n");
++		goto err_add_mc;
++	}
++
++	mci_lookup[node_id] = mci;
++	pvt_lookup[node_id] = NULL;
++	return 0;
++
++err_add_mc:
++	edac_mc_free(mci);
++
++err_exit:
++	debugf0("failure to init 2nd stage: ret=%d\n", ret);
++
++	amd64_restore_ecc_error_reporting(pvt);
++
++	if (boot_cpu_data.x86 > 0xf)
++		amd64_teardown(pvt);
++
++	amd64_free_mc_sibling_devices(pvt);
++
++	kfree(pvt_lookup[pvt->mc_node_id]);
++	pvt_lookup[node_id] = NULL;
++
++	return ret;
++}
++
++
++static int __devinit amd64_init_one_instance(struct pci_dev *pdev,
++				 const struct pci_device_id *mc_type)
++{
++	int ret = 0;
++
++	debugf0("(MC node=%d,mc_type='%s')\n",
++		get_mc_node_id_from_pdev(pdev),
++		get_amd_family_name(mc_type->driver_data));
++
++	ret = pci_enable_device(pdev);
++	if (ret < 0)
++		ret = -EIO;
++	else
++		ret = amd64_probe_one_instance(pdev, mc_type->driver_data);
++
++	if (ret < 0)
++		debugf0("ret=%d\n", ret);
++
++	return ret;
++}
++
++static void __devexit amd64_remove_one_instance(struct pci_dev *pdev)
++{
++	struct mem_ctl_info *mci;
 +	struct amd64_pvt *pvt;
-+	int csrow;
-+	u64 base, mask;
++
++	/* Remove from EDAC CORE tracking list */
++	mci = edac_mc_del_mc(&pdev->dev);
++	if (!mci)
++		return;
 +
 +	pvt = mci->pvt_info;
 +
-+	/*
-+	 * Here we use the DRAM CS Base and DRAM CS Mask registers. For each CS
-+	 * base/mask register pair, test the condition shown near the start of
-+	 * section 3.5.4 (p. 84, BKDG #26094, K8, revA-E).
-+	 */
-+	for (csrow = 0; csrow < CHIPSELECT_COUNT; csrow++) {
-+
-+		/* This DRAM chip select is disabled on this node */
-+		if ((pvt->dcsb0[csrow] & K8_DCSB_CS_ENABLE) == 0)
-+			continue;
-+
-+		base = base_from_dct_base(pvt, csrow);
-+		mask = ~mask_from_dct_mask(pvt, csrow);
-+
-+		if ((input_addr & mask) == (base & mask)) {
-+			debugf2("InputAddr 0x%lx matches csrow %d (node %d)\n",
-+				(unsigned long)input_addr, csrow,
-+				pvt->mc_node_id);
-+
-+			return csrow;
-+		}
-+	}
-+
-+	debugf2("no matching csrow for InputAddr 0x%lx (MC node %d)\n",
-+		(unsigned long)input_addr, pvt->mc_node_id);
-+
-+	return -1;
-+}
-+
-+/*
-+ * Return the base value defined by the DRAM Base register for the node
-+ * represented by mci.  This function returns the full 40-bit value despite the
-+ * fact that the register only stores bits 39-24 of the value. See section
-+ * 3.4.4.1 (BKDG #26094, K8, revA-E)
-+ */
-+static inline u64 get_dram_base(struct mem_ctl_info *mci)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return pvt->dram_base[pvt->mc_node_id];
-+}
-+
-+/*
-+ * Obtain info from the DRAM Hole Address Register (section 3.4.8, pub #26094)
-+ * for the node represented by mci. Info is passed back in *hole_base,
-+ * *hole_offset, and *hole_size.  Function returns 0 if info is valid or 1 if
-+ * info is invalid. Info may be invalid for either of the following reasons:
-+ *
-+ * - The revision of the node is not E or greater.  In this case, the DRAM Hole
-+ *   Address Register does not exist.
-+ *
-+ * - The DramHoleValid bit is cleared in the DRAM Hole Address Register,
-+ *   indicating that its contents are not valid.
-+ *
-+ * The values passed back in *hole_base, *hole_offset, and *hole_size are
-+ * complete 32-bit values despite the fact that the bitfields in the DHAR
-+ * only represent bits 31-24 of the base and offset values.
-+ */
-+int amd64_get_dram_hole_info(struct mem_ctl_info *mci, u64 *hole_base,
-+			     u64 *hole_offset, u64 *hole_size)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	u64 base;
-+
-+	/* only revE and later have the DRAM Hole Address Register */
-+	if (boot_cpu_data.x86 == 0xf && pvt->ext_model < OPTERON_CPU_REV_E) {
-+		debugf1("  revision %d for node %d does not support DHAR\n",
-+			pvt->ext_model, pvt->mc_node_id);
-+		return 1;
-+	}
-+
-+	/* only valid for Fam10h */
-+	if (boot_cpu_data.x86 == 0x10 &&
-+	    (pvt->dhar & F10_DRAM_MEM_HOIST_VALID) == 0) {
-+		debugf1("  Dram Memory Hoisting is DISABLED on this system\n");
-+		return 1;
-+	}
-+
-+	if ((pvt->dhar & DHAR_VALID) == 0) {
-+		debugf1("  Dram Memory Hoisting is DISABLED on this node %d\n",
-+			pvt->mc_node_id);
-+		return 1;
-+	}
-+
-+	/* This node has Memory Hoisting */
-+
-+	/* +------------------+--------------------+--------------------+-----
-+	 * | memory           | DRAM hole          | relocated          |
-+	 * | [0, (x - 1)]     | [x, 0xffffffff]    | addresses from     |
-+	 * |                  |                    | DRAM hole          |
-+	 * |                  |                    | [0x100000000,      |
-+	 * |                  |                    |  (0x100000000+     |
-+	 * |                  |                    |   (0xffffffff-x))] |
-+	 * +------------------+--------------------+--------------------+-----
-+	 *
-+	 * Above is a diagram of physical memory showing the DRAM hole and the
-+	 * relocated addresses from the DRAM hole.  As shown, the DRAM hole
-+	 * starts at address x (the base address) and extends through address
-+	 * 0xffffffff.  The DRAM Hole Address Register (DHAR) relocates the
-+	 * addresses in the hole so that they start at 0x100000000.
-+	 */
-+
-+	base = dhar_base(pvt->dhar);
-+
-+	*hole_base = base;
-+	*hole_size = (0x1ull << 32) - base;
++	amd64_restore_ecc_error_reporting(pvt);
 +
 +	if (boot_cpu_data.x86 > 0xf)
-+		*hole_offset = f10_dhar_offset(pvt->dhar);
-+	else
-+		*hole_offset = k8_dhar_offset(pvt->dhar);
++		amd64_teardown(pvt);
 +
-+	debugf1("  DHAR info for node %d base 0x%lx offset 0x%lx size 0x%lx\n",
-+		pvt->mc_node_id, (unsigned long)*hole_base,
-+		(unsigned long)*hole_offset, (unsigned long)*hole_size);
++	amd64_free_mc_sibling_devices(pvt);
++
++	kfree(pvt);
++	mci->pvt_info = NULL;
++
++	mci_lookup[pvt->mc_node_id] = NULL;
++
++	/* Free the EDAC CORE resources */
++	edac_mc_free(mci);
++}
++
++/*
++ * This table is part of the interface for loading drivers for PCI devices. The
++ * PCI core identifies what devices are on a system during boot, and then
++ * inquiry this table to see if this driver is for a given device found.
++ */
++static const struct pci_device_id amd64_pci_table[] __devinitdata = {
++	{
++		.vendor		= PCI_VENDOR_ID_AMD,
++		.device		= PCI_DEVICE_ID_AMD_K8_NB_MEMCTL,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.class		= 0,
++		.class_mask	= 0,
++		.driver_data	= K8_CPUS
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_AMD,
++		.device		= PCI_DEVICE_ID_AMD_10H_NB_DRAM,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.class		= 0,
++		.class_mask	= 0,
++		.driver_data	= F10_CPUS
++	},
++	{
++		.vendor		= PCI_VENDOR_ID_AMD,
++		.device		= PCI_DEVICE_ID_AMD_11H_NB_DRAM,
++		.subvendor	= PCI_ANY_ID,
++		.subdevice	= PCI_ANY_ID,
++		.class		= 0,
++		.class_mask	= 0,
++		.driver_data	= F11_CPUS
++	},
++	{0, }
++};
++MODULE_DEVICE_TABLE(pci, amd64_pci_table);
++
++static struct pci_driver amd64_pci_driver = {
++	.name		= EDAC_MOD_STR,
++	.probe		= amd64_init_one_instance,
++	.remove		= __devexit_p(amd64_remove_one_instance),
++	.id_table	= amd64_pci_table,
++};
++
++static void amd64_setup_pci_device(void)
++{
++	struct mem_ctl_info *mci;
++	struct amd64_pvt *pvt;
++
++	if (amd64_ctl_pci)
++		return;
++
++	mci = mci_lookup[0];
++	if (mci) {
++
++		pvt = mci->pvt_info;
++		amd64_ctl_pci =
++			edac_pci_create_generic_ctl(&pvt->dram_f2_ctl->dev,
++						    EDAC_MOD_STR);
++
++		if (!amd64_ctl_pci) {
++			pr_warning("%s(): Unable to create PCI control\n",
++				   __func__);
++
++			pr_warning("%s(): PCI error report via EDAC not set\n",
++				   __func__);
++			}
++	}
++}
++
++static int __init amd64_edac_init(void)
++{
++	int nb, err = -ENODEV;
++
++	edac_printk(KERN_INFO, EDAC_MOD_STR, EDAC_AMD64_VERSION "\n");
++
++	opstate_init();
++
++	if (cache_k8_northbridges() < 0)
++		goto err_exit;
++
++	err = pci_register_driver(&amd64_pci_driver);
++
++	/*
++	 * At this point, the array 'pvt_lookup[]' contains pointers to alloc'd
++	 * amd64_pvt structs. These will be used in the 2nd stage init function
++	 * to finish initialization of the MC instances.
++	 */
++	if (err)
++		return err;
++
++	for (nb = 0; nb < num_k8_northbridges; nb++) {
++		if (!pvt_lookup[nb])
++			continue;
++
++		err = amd64_init_2nd_stage(pvt_lookup[nb]);
++		if (err)
++			goto err_exit;
++	}
++
++	amd64_setup_pci_device();
 +
 +	return 0;
++
++err_exit:
++	debugf0("'finish_setup' stage failed\n");
++	pci_unregister_driver(&amd64_pci_driver);
++
++	return err;
 +}
-+EXPORT_SYMBOL_GPL(amd64_get_dram_hole_info);
 +
++static void __exit amd64_edac_exit(void)
++{
++	if (amd64_ctl_pci)
++		edac_pci_release_generic_ctl(amd64_ctl_pci);
 +
++	pci_unregister_driver(&amd64_pci_driver);
++}
++
++module_init(amd64_edac_init);
++module_exit(amd64_edac_exit);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("SoftwareBitMaker: Doug Thompson, "
++		"Dave Peterson, Thayne Harbaugh");
++MODULE_DESCRIPTION("MC support for AMD64 memory controllers - "
++		EDAC_AMD64_VERSION);
++
++module_param(edac_op_state, int, 0444);
++MODULE_PARM_DESC(edac_op_state, "EDAC Error Reporting state: 0=Poll,1=NMI");
+diff --git a/drivers/edac/amd64_edac.h b/drivers/edac/amd64_edac.h
+index 1a3e62d..0386d1d 100644
+--- a/drivers/edac/amd64_edac.h
++++ b/drivers/edac/amd64_edac.h
+@@ -590,6 +590,21 @@ extern const char *ii_msgs[4];
+ extern const char *ext_msgs[32];
+ extern const char *htlink_msgs[8];
+ 
++#ifdef CONFIG_EDAC_DEBUG
++#define NUM_DBG_ATTRS 9
++#else
++#define NUM_DBG_ATTRS 0
++#endif
++
++#ifdef CONFIG_EDAC_AMD64_ERROR_INJECTION
++#define NUM_INJ_ATTRS 5
++#else
++#define NUM_INJ_ATTRS 0
++#endif
++
++extern struct mcidev_sysfs_attribute amd64_dbg_attrs[NUM_DBG_ATTRS],
++				     amd64_inj_attrs[NUM_INJ_ATTRS];
++
+ /*
+  * Each of the PCI Device IDs types have their own set of hardware accessor
+  * functions and per device encoding/decoding logic.
 -- 
 1.6.2.4
 
