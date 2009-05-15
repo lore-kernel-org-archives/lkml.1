@@ -1,70 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755709AbZEOS4V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbZEOS45@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755709AbZEOS4V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 14:56:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbZEOS4D
+	id S1757794AbZEOS45 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 14:56:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753241AbZEOS4r
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 14:56:03 -0400
-Received: from e33.co.us.ibm.com ([32.97.110.151]:43464 "EHLO
-	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752047AbZEOS4B (ORCPT
+	Fri, 15 May 2009 14:56:47 -0400
+Received: from bedivere.hansenpartnership.com ([66.63.167.143]:59746 "EHLO
+	bedivere.hansenpartnership.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751571AbZEOS4q (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 14:56:01 -0400
-Date: Fri, 15 May 2009 13:56:02 -0500
-From: "Serge E. Hallyn" <serue@us.ibm.com>
+	Fri, 15 May 2009 14:56:46 -0400
+Subject: Re: [PATCH 09/11] drivers/scsi: Convert #ifdef DEBUG
+	printk(KERN_DEBUG to pr_debug(
+From: James Bottomley <James.Bottomley@HansenPartnership.com>
 To: Joe Perches <joe@perches.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-       Andrew Morton <akpm@linux-foundation.org>,
-       James Morris <jmorris@namei.org>, David Rientjes <rientjes@google.com>,
-       David Howells <dhowells@redhat.com>
-Subject: Re: [PATCH 11/11] mm: Convert #ifdef DEBUG printk(KERN_DEBUG to
-	pr_debug(
-Message-ID: <20090515185602.GA28604@us.ibm.com>
-References: <cover.1242407227.git.joe@perches.com> <d2d789905b3ec219d015729a162be7707564fb67.1242407227.git.joe@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <d2d789905b3ec219d015729a162be7707564fb67.1242407227.git.joe@perches.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+In-Reply-To: <d6d5dc09d259cc1da0fef2b1e9c6b7588cccf0b4.1242407227.git.joe@perches.com>
+References: <cover.1242407227.git.joe@perches.com>
+	 <d6d5dc09d259cc1da0fef2b1e9c6b7588cccf0b4.1242407227.git.joe@perches.com>
+Content-Type: text/plain
+Date: Fri, 15 May 2009 18:56:46 +0000
+Message-Id: <1242413806.22585.2.camel@mulgrave.int.hansenpartnership.com>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 (2.22.3.1-1.fc9) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Quoting Joe Perches (joe@perches.com):
+On Fri, 2009-05-15 at 10:59 -0700, Joe Perches wrote:
 > From: Joe Perches <joe@perches.com>
 > 
 > Signed-off-by: Joe Perches <joe@perches.com>
-
-Seems reasonable - apart from my woes with dynamic_printk :)
-
-Can you also remove the commented-out '#define DEBUG' line on
-line 35 if you haven't already?
-
-Acked-by: Serge Hallyn <serue@us.ibm.com>
-
-thanks,
--serge
-
 > ---
->  mm/oom_kill.c |    6 ++----
->  1 files changed, 2 insertions(+), 4 deletions(-)
+>  drivers/scsi/aha1542.c |    8 ++------
+>  1 files changed, 2 insertions(+), 6 deletions(-)
 > 
-> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
-> index 92bcf1d..8f7fb51 100644
-> --- a/mm/oom_kill.c
-> +++ b/mm/oom_kill.c
-> @@ -159,10 +159,8 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
->  			points >>= -(p->oomkilladj);
->  	}
-> 
+> diff --git a/drivers/scsi/aha1542.c b/drivers/scsi/aha1542.c
+> index 8059494..29d5118 100644
+> --- a/drivers/scsi/aha1542.c
+> +++ b/drivers/scsi/aha1542.c
+> @@ -509,9 +509,7 @@ static void aha1542_intr_handle(struct Scsi_Host *shost)
+>  		if (mbistatus == 3)
+>  			continue;	/* Aborted command not found */
+>  
 > -#ifdef DEBUG
-> -	printk(KERN_DEBUG "OOMkill: task %d (%s) got %lu points\n",
-> -	p->pid, p->comm, points);
+> -		printk(KERN_DEBUG "...done %d %d\n", mbo, mbi);
 > -#endif
-> +	pr_debug("OOMkill: task %d (%s) got %lu points\n",
-> +		 p->pid, p->comm, points);
->  	return points;
->  }
-> 
-> -- 
-> 1.6.3.1.9.g95405b.dirty
+> +		pr_debug("...done %d %d\n", mbo, mbi);
+
+This one looks dangerous ... that's a per trigger printk from interrupt
+context.  That's a lot of stuff to bung in the log buffer for a normal
+operating case (which is pretty interrupt heavy).  What does this do to
+system responsiveness?
+
+James
+
+
