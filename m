@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761991AbZEOSA1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762300AbZEOSAt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761991AbZEOSA1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 14:00:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755113AbZEOR7r
+	id S1762300AbZEOSAt (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 14:00:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756803AbZEOR7t
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 13:59:47 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2039 "EHLO
+	Fri, 15 May 2009 13:59:49 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2041 "EHLO
 	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753378AbZEOR7q (ORCPT
+	with ESMTP id S1755438AbZEOR7s (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 13:59:46 -0400
+	Fri, 15 May 2009 13:59:48 -0400
 From: Joe Perches <joe@perches.com>
 To: linux-kernel@vger.kernel.org
-Cc: Russell King <linux@arm.linux.org.uk>, Tony Lindgren <tony@atomide.com>
-Subject: [PATCH 01/11] arch/arm: Convert #ifdef DEBUG printk(KERN_DEBUG to pr_debug(
-Date: Fri, 15 May 2009 10:59:35 -0700
-Message-Id: <95639f9b68460c13a86c121cc5ae73e722f4dc67.1242407227.git.joe@perches.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 02/11] arch/h8300: Convert #ifdef DEBUG printk(KERN_DEBUG to pr_debug(
+Date: Fri, 15 May 2009 10:59:36 -0700
+Message-Id: <ba728843ea27d48a54d7dcaa43264e3ed9a7bb34.1242407227.git.joe@perches.com>
 X-Mailer: git-send-email 1.6.3.1.9.g95405b.dirty
 In-Reply-To: <cover.1242407227.git.joe@perches.com>
 References: <cover.1242407227.git.joe@perches.com>
@@ -29,46 +29,67 @@ From: Joe Perches <joe@perches.com>
 
 Signed-off-by: Joe Perches <joe@perches.com>
 ---
- arch/arm/mach-omap1/id.c |   26 ++++++++++++--------------
- 1 files changed, 12 insertions(+), 14 deletions(-)
+ arch/h8300/kernel/setup.c |   24 ++++++++++--------------
+ arch/h8300/mm/init.c      |    4 +---
+ 2 files changed, 11 insertions(+), 17 deletions(-)
 
-diff --git a/arch/arm/mach-omap1/id.c b/arch/arm/mach-omap1/id.c
-index 4ef26fa..f72a221 100644
---- a/arch/arm/mach-omap1/id.c
-+++ b/arch/arm/mach-omap1/id.c
-@@ -130,20 +130,18 @@ void __init omap_check_revision(void)
- 	die_rev = omap_get_die_rev();
- 	omap_id = omap_readl(OMAP32_ID_0);
+diff --git a/arch/h8300/kernel/setup.c b/arch/h8300/kernel/setup.c
+index 7fda657..9d17c40 100644
+--- a/arch/h8300/kernel/setup.c
++++ b/arch/h8300/kernel/setup.c
+@@ -133,17 +133,15 @@ void __init setup_arch(char **cmdline_p)
+ 	printk(KERN_INFO "Flat model support (C) 1998,1999 Kenneth Albanowski, D. Jeff Dionne\n");
+ 	printk(KERN_INFO "H8/300 series support by Yoshinori Sato <ysato@users.sourceforge.jp>\n");
  
 -#ifdef DEBUG
--	printk(KERN_DEBUG "OMAP_DIE_ID_0: 0x%08x\n", omap_readl(OMAP_DIE_ID_0));
--	printk(KERN_DEBUG "OMAP_DIE_ID_1: 0x%08x DIE_REV: %i\n",
--		omap_readl(OMAP_DIE_ID_1),
--	       (omap_readl(OMAP_DIE_ID_1) >> 17) & 0xf);
--	printk(KERN_DEBUG "OMAP_PRODUCTION_ID_0: 0x%08x\n",
--		omap_readl(OMAP_PRODUCTION_ID_0));
--	printk(KERN_DEBUG "OMAP_PRODUCTION_ID_1: 0x%08x JTAG_ID: 0x%04x\n",
--		omap_readl(OMAP_PRODUCTION_ID_1),
--		omap_readl(OMAP_PRODUCTION_ID_1) & 0xffff);
--	printk(KERN_DEBUG "OMAP32_ID_0: 0x%08x\n", omap_readl(OMAP32_ID_0));
--	printk(KERN_DEBUG "OMAP32_ID_1: 0x%08x\n", omap_readl(OMAP32_ID_1));
--	printk(KERN_DEBUG "JTAG_ID: 0x%04x DIE_REV: %i\n", jtag_id, die_rev);
+-	printk(KERN_DEBUG "KERNEL -> TEXT=0x%06x-0x%06x DATA=0x%06x-0x%06x "
+-		"BSS=0x%06x-0x%06x\n", (int) &_stext, (int) &_etext,
+-		(int) &_sdata, (int) &_edata,
+-		(int) &_sbss, (int) &_ebss);
+-	printk(KERN_DEBUG "KERNEL -> ROMFS=0x%06x-0x%06x MEM=0x%06x-0x%06x "
+-		"STACK=0x%06x-0x%06x\n",
+-	       (int) &_ebss, (int) memory_start,
+-		(int) memory_start, (int) memory_end,
+-		(int) memory_end, (int) &_ramend);
 -#endif
-+	pr_debug("OMAP_DIE_ID_0: 0x%08x\n", omap_readl(OMAP_DIE_ID_0));
-+	pr_debug("OMAP_DIE_ID_1: 0x%08x DIE_REV: %i\n",
-+		 omap_readl(OMAP_DIE_ID_1),
-+		 (omap_readl(OMAP_DIE_ID_1) >> 17) & 0xf);
-+	pr_debug("OMAP_PRODUCTION_ID_0: 0x%08x\n",
-+		 omap_readl(OMAP_PRODUCTION_ID_0));
-+	pr_debug("OMAP_PRODUCTION_ID_1: 0x%08x JTAG_ID: 0x%04x\n",
-+		 omap_readl(OMAP_PRODUCTION_ID_1),
-+		 omap_readl(OMAP_PRODUCTION_ID_1) & 0xffff);
-+	pr_debug("OMAP32_ID_0: 0x%08x\n", omap_readl(OMAP32_ID_0));
-+	pr_debug("OMAP32_ID_1: 0x%08x\n", omap_readl(OMAP32_ID_1));
-+	pr_debug("JTAG_ID: 0x%04x DIE_REV: %i\n", jtag_id, die_rev);
++	pr_debug("KERNEL -> TEXT=0x%06x-0x%06x DATA=0x%06x-0x%06x "
++		 "BSS=0x%06x-0x%06x\n", (int) &_stext, (int) &_etext,
++		 (int) &_sdata, (int) &_edata,
++		 (int) &_sbss, (int) &_ebss);
++	pr_debug("KERNEL -> ROMFS=0x%06x-0x%06x MEM=0x%06x-0x%06x "
++		 "STACK=0x%06x-0x%06x\n",
++		 (int) &_ebss, (int) memory_start,
++		 (int) memory_start, (int) memory_end,
++		 (int) memory_end, (int) &_ramend);
  
- 	system_serial_high = omap_readl(OMAP_DIE_ID_0);
- 	system_serial_low = omap_readl(OMAP_DIE_ID_1);
+ #ifdef CONFIG_DEFAULT_CMDLINE
+ 	/* set from default command line */
+@@ -190,9 +188,7 @@ void __init setup_arch(char **cmdline_p)
+ 		*cscr  |= (AREABIT(CONFIG_H8300_IDE_BASE) | AREABIT(CONFIG_H8300_IDE_ALT)) | 0x0f;
+ 	}
+ #endif
+-#ifdef DEBUG
+-	printk(KERN_DEBUG "Done setup_arch\n");
+-#endif
++	pr_debug("Done setup_arch\n");
+ }
+ 
+ /*
+diff --git a/arch/h8300/mm/init.c b/arch/h8300/mm/init.c
+index 9942f24..61a3977 100644
+--- a/arch/h8300/mm/init.c
++++ b/arch/h8300/mm/init.c
+@@ -130,9 +130,7 @@ void __init mem_init(void)
+ 	unsigned long start_mem = memory_start; /* DAVIDM - these must start at end of kernel */
+ 	unsigned long end_mem   = memory_end; /* DAVIDM - this must not include kernel stack at top */
+ 
+-#ifdef DEBUG
+-	printk(KERN_DEBUG "Mem_init: start=%lx, end=%lx\n", start_mem, end_mem);
+-#endif
++	pr_debug("Mem_init: start=%lx, end=%lx\n", start_mem, end_mem);
+ 
+ 	end_mem &= PAGE_MASK;
+ 	high_memory = (void *) end_mem;
 -- 
 1.6.3.1.9.g95405b.dirty
 
