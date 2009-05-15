@@ -1,59 +1,227 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758747AbZEODh1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757385AbZEOD4q@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758747AbZEODh1 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 23:37:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754261AbZEODhP
+	id S1757385AbZEOD4q (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 23:56:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbZEOD4e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 23:37:15 -0400
-Received: from vms173019pub.verizon.net ([206.46.173.19]:36056 "EHLO
-	vms173019pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755153AbZEODhN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 23:37:13 -0400
-Date: Thu, 14 May 2009 23:36:49 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: Janne Kulmala <janne.t.kulmala@tut.fi>, Frans Pop <elendil@planet.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       johnstul@us.ibm.com
-Subject: Re: [PATCH] ACPI: idle: fix init-time TSC check regression
-In-reply-to: <alpine.LFD.2.00.0905150025030.3561@localhost.localdomain>
-Message-id: <alpine.LFD.2.00.0905142334090.24833@localhost.localdomain>
-References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com>
- <200905110226.50115.elendil@planet.nl>
- <alpine.LFD.2.00.0905111614570.3561@localhost.localdomain>
- <4A0855A5.8040109@tut.fi>
- <alpine.LFD.2.00.0905141545280.24833@localhost.localdomain>
- <alpine.LFD.2.00.0905141608070.24833@localhost.localdomain>
- <alpine.LFD.2.00.0905142217340.3561@localhost.localdomain>
- <alpine.LFD.2.00.0905141750100.24833@localhost.localdomain>
- <alpine.LFD.2.00.0905150025030.3561@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Thu, 14 May 2009 23:56:34 -0400
+Received: from sh.osrg.net ([192.16.179.4]:52078 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754034AbZEOD4d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 23:56:33 -0400
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+To: linux-kernel@vger.kernel.org
+Cc: mingo@elte.hu, tony.luck@intel.com, linux-ia64@vger.kernel.org,
+       fujita.tomonori@lab.ntt.co.jp, arnd@arndb.de, joerg.roedel@amd.com
+Subject: [PATCH -tip 5/5] dma-debug: fix compiler warnings on IA64
+Date: Fri, 15 May 2009 12:55:05 +0900
+Message-Id: <1242359705-2117-6-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Mailer: git-send-email 1.6.0.6
+In-Reply-To: <1242359705-2117-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+References: <1242359705-2117-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 15 May 2009 12:56:18 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> > +		if (cx->valid)
-> > +			tsc_check_state(cx->type);
-> >  
-> >  		if (cx->valid)
-> >  			working++;
-> 
-> Could do with
-> 
->       	 if (cx->valid) {
->             	tsc_check_state(cx->type);
->                 working++;
->       	 }
+Hopefully, we don't need such cast in the future (uses int-ll64.h) but
+for now we get the following warnings:
 
-right, i deferred that to a cosmetic-only patch
-that will also rename and move acpi_timer_check_state.
+lib/dma-debug.c: In function 'debug_dma_dump_mappings':
+lib/dma-debug.c:233: warning: format '%Lx' expects type 'long long unsigned int', but argument 7 has type 'u64'
+lib/dma-debug.c:233: warning: format '%Lx' expects type 'long long unsigned int', but argument 8 has type 'u64'
+lib/dma-debug.c: In function 'check_unmap':
+lib/dma-debug.c:553: warning: format '%016llx' expects type 'long long unsigned int', but argument 6 has type 'u64'
+lib/dma-debug.c:553: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+lib/dma-debug.c:561: warning: format '%016llx' expects type 'long long unsigned int', but argument 6 has type 'u64'
+lib/dma-debug.c:561: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+lib/dma-debug.c:561: warning: format '%llu' expects type 'long long unsigned int', but argument 8 has type 'u64'
+lib/dma-debug.c:569: warning: format '%016llx' expects type 'long long unsigned int', but argument 6 has type 'u64'
+lib/dma-debug.c:569: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+lib/dma-debug.c:577: warning: format '%016llx' expects type 'long long unsigned int', but argument 6 has type 'u64'
+lib/dma-debug.c:577: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+lib/dma-debug.c:598: warning: format '%016llx' expects type 'long long unsigned int', but argument 6 has type 'u64'
+lib/dma-debug.c:598: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+lib/dma-debug.c: In function 'check_for_illegal_area':
+lib/dma-debug.c:634: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+lib/dma-debug.c: In function 'check_sync':
+lib/dma-debug.c:657: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+lib/dma-debug.c:665: warning: format '%016llx' expects type 'long long unsigned int', but argument 6 has type 'u64'
+lib/dma-debug.c:665: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+lib/dma-debug.c:665: warning: format '%llu' expects type 'long long unsigned int', but argument 8 has type 'u64'
+lib/dma-debug.c:665: warning: format '%llu' expects type 'long long unsigned int', but argument 9 has type 'u64'
+lib/dma-debug.c:674: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+lib/dma-debug.c:688: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
+lib/dma-debug.c:698: warning: format '%llu' expects type 'long long unsigned int', but argument 7 has type 'u64'
 
-> Otherwise Acked-by: Thomas Gleixner <tglx@linutronix.de>
+Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+Acked-by: Joerg Roedel <joerg.roedel@amd.com>
+---
+ lib/dma-debug.c |   82 ++++++++++++++++++++++++++++++++-----------------------
+ 1 files changed, 48 insertions(+), 34 deletions(-)
 
-thanks,
-Len Brown, Intel Open Source Technology Center
+diff --git a/lib/dma-debug.c b/lib/dma-debug.c
+index cdd205d..14e0fc2 100644
+--- a/lib/dma-debug.c
++++ b/lib/dma-debug.c
+@@ -234,7 +234,8 @@ void debug_dma_dump_mappings(struct device *dev)
+ 					 "%s idx %d P=%Lx D=%Lx L=%Lx %s\n",
+ 					 type2name[entry->type], idx,
+ 					 (unsigned long long)entry->paddr,
+-					 entry->dev_addr, entry->size,
++					 (unsigned long long)entry->dev_addr,
++					 (unsigned long long)entry->size,
+ 					 dir2name[entry->direction]);
+ 			}
+ 		}
+@@ -553,7 +554,8 @@ static void check_unmap(struct dma_debug_entry *ref)
+ 		err_printk(ref->dev, NULL, "DMA-API: device driver tries "
+ 			   "to free DMA memory it has not allocated "
+ 			   "[device address=0x%016llx] [size=%llu bytes]\n",
+-			   ref->dev_addr, ref->size);
++			   (unsigned long long)ref->dev_addr,
++			   (unsigned long long)ref->size);
+ 		goto out;
+ 	}
+ 
+@@ -562,7 +564,9 @@ static void check_unmap(struct dma_debug_entry *ref)
+ 			   "DMA memory with different size "
+ 			   "[device address=0x%016llx] [map size=%llu bytes] "
+ 			   "[unmap size=%llu bytes]\n",
+-			   ref->dev_addr, entry->size, ref->size);
++			   (unsigned long long)ref->dev_addr,
++			   (unsigned long long)entry->size,
++			   (unsigned long long)ref->size);
+ 	}
+ 
+ 	if (ref->type != entry->type) {
+@@ -570,7 +574,8 @@ static void check_unmap(struct dma_debug_entry *ref)
+ 			   "DMA memory with wrong function "
+ 			   "[device address=0x%016llx] [size=%llu bytes] "
+ 			   "[mapped as %s] [unmapped as %s]\n",
+-			   ref->dev_addr, ref->size,
++			   (unsigned long long)ref->dev_addr,
++			   (unsigned long long)ref->size,
+ 			   type2name[entry->type], type2name[ref->type]);
+ 	} else if ((entry->type == dma_debug_coherent) &&
+ 		   (ref->paddr != entry->paddr)) {
+@@ -578,7 +583,8 @@ static void check_unmap(struct dma_debug_entry *ref)
+ 			   "DMA memory with different CPU address "
+ 			   "[device address=0x%016llx] [size=%llu bytes] "
+ 			   "[cpu alloc address=%p] [cpu free address=%p]",
+-			   ref->dev_addr, ref->size,
++			   (unsigned long long)ref->dev_addr,
++			   (unsigned long long)ref->size,
+ 			   (void *)entry->paddr, (void *)ref->paddr);
+ 	}
+ 
+@@ -599,7 +605,8 @@ static void check_unmap(struct dma_debug_entry *ref)
+ 			   "DMA memory with different direction "
+ 			   "[device address=0x%016llx] [size=%llu bytes] "
+ 			   "[mapped with %s] [unmapped with %s]\n",
+-			   ref->dev_addr, ref->size,
++			   (unsigned long long)ref->dev_addr,
++			   (unsigned long long)ref->size,
+ 			   dir2name[entry->direction],
+ 			   dir2name[ref->direction]);
+ 	}
+@@ -632,8 +639,9 @@ static void check_for_illegal_area(struct device *dev, void *addr, u64 size)
+ 	if (overlap(addr, size, _text, _etext) ||
+ 	    overlap(addr, size, __start_rodata, __end_rodata))
+ 		err_printk(dev, NULL, "DMA-API: device driver maps "
+-				"memory from kernel text or rodata "
+-				"[addr=%p] [size=%llu]\n", addr, size);
++			   "memory from kernel text or rodata "
++			   "[addr=%p] [size=%llu]\n", addr,
++			   (unsigned long long)size);
+ }
+ 
+ static void check_sync(struct device *dev, dma_addr_t addr,
+@@ -655,29 +663,33 @@ static void check_sync(struct device *dev, dma_addr_t addr,
+ 
+ 	if (!entry) {
+ 		err_printk(dev, NULL, "DMA-API: device driver tries "
+-				"to sync DMA memory it has not allocated "
+-				"[device address=0x%016llx] [size=%llu bytes]\n",
+-				(unsigned long long)addr, size);
++			   "to sync DMA memory it has not allocated "
++			   "[device address=0x%016llx] [size=%llu bytes]\n",
++			   (unsigned long long)addr, (unsigned long long)size);
+ 		goto out;
+ 	}
+ 
+ 	if ((offset + size) > entry->size) {
+ 		err_printk(dev, entry, "DMA-API: device driver syncs"
+-				" DMA memory outside allocated range "
+-				"[device address=0x%016llx] "
+-				"[allocation size=%llu bytes] [sync offset=%llu] "
+-				"[sync size=%llu]\n", entry->dev_addr, entry->size,
+-				offset, size);
++			   " DMA memory outside allocated range "
++			   "[device address=0x%016llx] "
++			   "[allocation size=%llu bytes] [sync offset=%llu] "
++			   "[sync size=%llu]\n",
++			   (unsigned long long)entry->dev_addr,
++			   (unsigned long long)entry->size,
++			   (unsigned long long)offset,
++			   (unsigned long long)size);
+ 	}
+ 
+ 	if (direction != entry->direction) {
+ 		err_printk(dev, entry, "DMA-API: device driver syncs "
+-				"DMA memory with different direction "
+-				"[device address=0x%016llx] [size=%llu bytes] "
+-				"[mapped with %s] [synced with %s]\n",
+-				(unsigned long long)addr, entry->size,
+-				dir2name[entry->direction],
+-				dir2name[direction]);
++			   "DMA memory with different direction "
++			   "[device address=0x%016llx] [size=%llu bytes] "
++			   "[mapped with %s] [synced with %s]\n",
++			   (unsigned long long)addr,
++			   (unsigned long long)entry->size,
++			   dir2name[entry->direction],
++			   dir2name[direction]);
+ 	}
+ 
+ 	if (entry->direction == DMA_BIDIRECTIONAL)
+@@ -686,22 +698,24 @@ static void check_sync(struct device *dev, dma_addr_t addr,
+ 	if (to_cpu && !(entry->direction == DMA_FROM_DEVICE) &&
+ 		      !(direction == DMA_TO_DEVICE))
+ 		err_printk(dev, entry, "DMA-API: device driver syncs "
+-				"device read-only DMA memory for cpu "
+-				"[device address=0x%016llx] [size=%llu bytes] "
+-				"[mapped with %s] [synced with %s]\n",
+-				(unsigned long long)addr, entry->size,
+-				dir2name[entry->direction],
+-				dir2name[direction]);
++			   "device read-only DMA memory for cpu "
++			   "[device address=0x%016llx] [size=%llu bytes] "
++			   "[mapped with %s] [synced with %s]\n",
++			   (unsigned long long)addr,
++			   (unsigned long long)entry->size,
++			   dir2name[entry->direction],
++			   dir2name[direction]);
+ 
+ 	if (!to_cpu && !(entry->direction == DMA_TO_DEVICE) &&
+ 		       !(direction == DMA_FROM_DEVICE))
+ 		err_printk(dev, entry, "DMA-API: device driver syncs "
+-				"device write-only DMA memory to device "
+-				"[device address=0x%016llx] [size=%llu bytes] "
+-				"[mapped with %s] [synced with %s]\n",
+-				(unsigned long long)addr, entry->size,
+-				dir2name[entry->direction],
+-				dir2name[direction]);
++			   "device write-only DMA memory to device "
++			   "[device address=0x%016llx] [size=%llu bytes] "
++			   "[mapped with %s] [synced with %s]\n",
++			   (unsigned long long)addr,
++			   (unsigned long long)entry->size,
++			   dir2name[entry->direction],
++			   dir2name[direction]);
+ 
+ out:
+ 	put_hash_bucket(bucket, &flags);
+-- 
+1.6.0.6
+
