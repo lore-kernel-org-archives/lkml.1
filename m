@@ -1,39 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755204AbZEON4Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756889AbZEON4h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755204AbZEON4Y (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 09:56:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbZEON4G
+	id S1756889AbZEON4h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 09:56:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754282AbZEON4S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 09:56:06 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:34716 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751159AbZEON4F (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 09:56:05 -0400
-Date: Fri, 15 May 2009 16:01:37 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Andi Kleen <andi@firstfloor.org>,
-       Vitaly Mayatskikh <v.mayatskih@gmail.com>,
-       Josef Bacik <josef@redhat.com>, sandeen@redhat.com,
-       linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Perform check in iov_iter_fault_in_readable() by check_readable_bytes()
-Message-ID: <20090515140137.GF16682@one.firstfloor.org>
-References: <1242317939-15392-1-git-send-email-v.mayatskih@gmail.com> <1242317939-15392-3-git-send-email-v.mayatskih@gmail.com> <87k54iq2gv.fsf@basil.nowhere.org> <871vqqkdf0.wl%vmayatsk@redhat.com> <20090515093838.GB16682@one.firstfloor.org> <20090515134315.GB8235@shareable.org>
-Mime-Version: 1.0
+	Fri, 15 May 2009 09:56:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:36531 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754001AbZEON4Q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 09:56:16 -0400
+Date: Fri, 15 May 2009 15:56:04 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Srivatsa Vaddagiri <vatsa@in.ibm.com>
+Cc: a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       Mike Galbraith <efault@gmx.de>, Thomas Gleixner <tglx@linutronix.de>,
+       Arnaldo Carvalho de Melo <acme@redhat.com>,
+       Paul Mackerras <paulus@samba.org>,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>
+Subject: Re: perf counter issue -
+	WARN_ON_ONCE(!list_empty(&tsk->perf_counter_ctx.counter_list));
+Message-ID: <20090515135604.GC16389@elte.hu>
+References: <20090513165433.GD16373@in.ibm.com> <20090513165724.GA32707@in.ibm.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090515134315.GB8235@shareable.org>
-User-Agent: Mutt/1.4.2.1i
+In-Reply-To: <20090513165724.GA32707@in.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> It would be quite nice if it were safe to call read(), get EFAULT
 
-Even with that patch it is not safe, not even for write, because
-it's racy.
+* Srivatsa Vaddagiri <vatsa@in.ibm.com> wrote:
 
--Andi
--- 
-ak@linux.intel.com -- Speaking for myself only.
+> On Wed, May 13, 2009 at 10:24:33PM +0530, Srivatsa Vaddagiri wrote:
+> > I am hitting this warning in kernel/exit.c (latest -tip code):
+> > 
+> > WARN_ON_ONCE(!list_empty(&tsk->perf_counter_ctx.counter_list));
+> > 
+> > I was using perf counters against a java benchmark.
+> 
+> Basically using perf counters as:
+> 
+> 	$ perf stat java ....
+
+hm, is there a reproducer perhaps? Is there some class file i could 
+run with specific parameters to reproduce it?
+
+	Ingo
