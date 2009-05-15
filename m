@@ -1,23 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbZEOWV5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758752AbZEOWXV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758609AbZEOWV5 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 18:21:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756107AbZEOWVs
+	id S1758752AbZEOWXV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 18:23:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753227AbZEOWXL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 18:21:48 -0400
-Received: from mail-px0-f123.google.com ([209.85.216.123]:42004 "EHLO
+	Fri, 15 May 2009 18:23:11 -0400
+Received: from mail-px0-f123.google.com ([209.85.216.123]:49728 "EHLO
 	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755118AbZEOWVr (ORCPT
+	with ESMTP id S1751956AbZEOWXJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 18:21:47 -0400
+	Fri, 15 May 2009 18:23:09 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=subject:from:reply-to:to:cc:content-type:organization:date
          :message-id:mime-version:x-mailer:content-transfer-encoding;
-        b=wonGGvrCCCx9hZPwCymgOKF4v94gaoi78xnoFzSrh6ybyrtCKtc/bCoSQa+WvqXEEF
-         /1hEQUs1xnR79rOBHLcLX00OGSPTrJ7oVzlTkMaPJXPtrhhculuYJ9f6xDCtR15TLsNL
-         xZT4vqoCTRpvQrFOh8JDnGhGYFAUrbNGUw648=
-Subject: [PATCH 22/30] loongson: Loongson2 specific OProfile driver
+        b=jDPe8CRTsGbMSPYFFTLvctkZYVCLKg3I6dzFXKn+YFDI1VBErjsBifC9QafEVvQyfp
+         xqIA23wA7iQbmmsMgMCjIvxOG5LD90Y5k10kfysY8/MYpSKzzr1cQmomW5dQ46c8DVvk
+         pxOEvgnwAheEouQTteAiebOzXt+H1qkWzou2w=
+Subject: [PATCH 23/30] loongson: CS5536 MFGPT as system clock source support
 From: Wu Zhangjin <wuzhangjin@gmail.com>
 Reply-To: wuzhangjin@gmail.com
 To: linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>,
@@ -28,8 +28,8 @@ Cc: Arnaud Patard <apatard@mandriva.com>, loongson-dev@googlegroups.com,
        Erwan Lerale <erwan@thiscow.com>
 Content-Type: text/plain
 Organization: DSLab, Lanzhou University, China
-Date: Sat, 16 May 2009 06:21:42 +0800
-Message-Id: <1242426102.10164.166.camel@falcon>
+Date: Sat, 16 May 2009 06:23:02 +0800
+Message-Id: <1242426182.10164.168.camel@falcon>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
@@ -37,259 +37,391 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->From 2f7d1f4ed962d5edcd63254f1a5d3913d6634c82 Mon Sep 17 00:00:00 2001
+>From a3524f6a9c412e6e814277b2dfea6f136a0c3fef Mon Sep 17 00:00:00 2001
 From: Wu Zhangjin <wuzhangjin@gmail.com>
-Date: Sat, 16 May 2009 04:39:56 +0800
-Subject: [PATCH 22/30] loongson: Loongson2 specific OProfile driver
+Date: Sat, 16 May 2009 04:43:36 +0800
+Subject: [PATCH 23/30] loongson: CS5536 MFGPT as system clock source
+support
 
-Note: there are some conflicts between performance counters and CPU
-count timers, so use a different system timer if you want to use
-OProfile on loongson2 systems
+The cpu count timer should not be used if oprofile and cpufreq are to be
+supported. Instead the CS5536's mfgpt is a proper timer alternative
 ---
- arch/mips/oprofile/Makefile             |    1 +
- arch/mips/oprofile/common.c             |    5 +
- arch/mips/oprofile/op_model_loongson2.c |  191
-+++++++++++++++++++++++++++++++
- 3 files changed, 197 insertions(+), 0 deletions(-)
- create mode 100644 arch/mips/oprofile/op_model_loongson2.c
+ arch/mips/loongson/Kconfig         |   19 ++-
+ arch/mips/loongson/common/Makefile |    5 +
+ arch/mips/loongson/common/mfgpt.c  |  259
+++++++++++++++++++++++++++++++++++++
+ arch/mips/loongson/common/time.c   |    6 +
+ 4 files changed, 283 insertions(+), 6 deletions(-)
+ create mode 100644 arch/mips/loongson/common/mfgpt.c
 
-diff --git a/arch/mips/oprofile/Makefile b/arch/mips/oprofile/Makefile
-index bf3be6f..d039d6b 100644
---- a/arch/mips/oprofile/Makefile
-+++ b/arch/mips/oprofile/Makefile
-@@ -15,3 +15,4 @@ oprofile-$(CONFIG_CPU_MIPS64)		+= op_model_mipsxx.o
- oprofile-$(CONFIG_CPU_R10000)		+= op_model_mipsxx.o
- oprofile-$(CONFIG_CPU_SB1)		+= op_model_mipsxx.o
- oprofile-$(CONFIG_CPU_RM9000)		+= op_model_rm9000.o
-+oprofile-$(CONFIG_CPU_LOONGSON2)  	+= op_model_loongson2.o
-diff --git a/arch/mips/oprofile/common.c b/arch/mips/oprofile/common.c
-index 3bf3354..f0e79e3 100644
---- a/arch/mips/oprofile/common.c
-+++ b/arch/mips/oprofile/common.c
-@@ -16,6 +16,7 @@
+diff --git a/arch/mips/loongson/Kconfig b/arch/mips/loongson/Kconfig
+index 49cb375..572054c 100644
+--- a/arch/mips/loongson/Kconfig
++++ b/arch/mips/loongson/Kconfig
+@@ -5,8 +5,8 @@ choice
+ config LEMOTE_FULOONG2E
+ 	bool "Lemote Fuloong(2e) mini-PC"
+ 	select ARCH_SPARSEMEM_ENABLE
+-	select CEVT_R4K
+-	select CSRC_R4K
++	select CEVT_R4K if !CS5536_MFGPT
++	select CSRC_R4K if !CS5536_MFGPT
+ 	select SYS_HAS_CPU_LOONGSON2E
+ 	select DMA_NONCOHERENT
+ 	select BOOT_ELF32
+@@ -32,8 +32,8 @@ config LEMOTE_FULOONG2E
+ config LEMOTE_FULOONG2F
+ 	bool "Lemote Fuloong(2f) mini-PC"
+ 	select ARCH_SPARSEMEM_ENABLE
+-	select CEVT_R4K
+-	select CSRC_R4K
++	select CEVT_R4K if !CS5536_MFGPT
++	select CSRC_R4K if !CS5536_MFGPT
+ 	select SYS_HAS_CPU_LOONGSON2F
+ 	select DMA_NONCOHERENT
+ 	select BOOT_ELF32
+@@ -62,8 +62,8 @@ config LEMOTE_FULOONG2F
+ config LEMOTE_YEELOONG2F
+ 	bool "Lemote Yeeloong(2f) mini Notebook"
+ 	select ARCH_SPARSEMEM_ENABLE
+-	select CEVT_R4K
+-	select CSRC_R4K
++	select CEVT_R4K if !CS5536_MFGPT
++	select CSRC_R4K if !CS5536_MFGPT
+ 	select SYS_HAS_CPU_LOONGSON2F
+ 	select DMA_NONCOHERENT
+ 	select BOOT_ELF32
+@@ -100,6 +100,13 @@ config CS5536
+ config SYS_HAS_MACH_PROM_INIT_CMDLINE
+ 	bool
  
- extern struct op_mips_model op_model_mipsxx_ops __attribute__((weak));
- extern struct op_mips_model op_model_rm9000_ops __attribute__((weak));
-+extern struct op_mips_model op_model_loongson2_ops
-__attribute__((weak));
++config CS5536_MFGPT
++ 	bool "Using cs5536's MFGPT as system clock"
++ 	depends on CS5536
++ 	help
++ 	  This is needed if cpufreq and oprofile should be enabled in
++ 	  Loongson2(F) machines
++
+ config UCA_SIZE
+  	hex "Uncache Accelerated Region size"
+  	depends on LOONGSON2F 
+diff --git a/arch/mips/loongson/common/Makefile
+b/arch/mips/loongson/common/Makefile
+index 91ba177..c95629c 100644
+--- a/arch/mips/loongson/common/Makefile
++++ b/arch/mips/loongson/common/Makefile
+@@ -24,6 +24,11 @@ obj-$(CONFIG_RTC_DRV_CMOS) += rtc.o
+ obj-$(CONFIG_CS5536) += cs5536_vsm.o
  
- static struct op_mips_model *model;
- 
-@@ -93,6 +94,10 @@ int __init oprofile_arch_init(struct
-oprofile_operations *ops)
- 	case CPU_RM9000:
- 		lmodel = &op_model_rm9000_ops;
- 		break;
-+	
-+	case CPU_LOONGSON2:
-+		lmodel = &op_model_loongson2_ops;
-+		break;
- 	};
- 
- 	if (!lmodel)
-diff --git a/arch/mips/oprofile/op_model_loongson2.c
-b/arch/mips/oprofile/op_model_loongson2.c
+ #
++# Enable cs5536 mfgpt Timer
++#
++obj-$(CONFIG_CS5536_MFGPT) += mfgpt.o
++
++#
+ # Enable serial port
+ #
+ obj-$(CONFIG_SERIAL_8250) += serial.o
+diff --git a/arch/mips/loongson/common/mfgpt.c
+b/arch/mips/loongson/common/mfgpt.c
 new file mode 100644
-index 0000000..d8ab47e
+index 0000000..8af6061
 --- /dev/null
-+++ b/arch/mips/oprofile/op_model_loongson2.c
-@@ -0,0 +1,191 @@
++++ b/arch/mips/loongson/common/mfgpt.c
+@@ -0,0 +1,259 @@
 +/*
-+ * Loongson2 performance counter driver for oprofile
++ * CS5536 General timer functions
++ *
++ * Copyright (C) 2007 Lemote Inc. & Insititute of Computing Technology
++ * Author: Yanhua, yanh@lemote.com
 + *
 + * Copyright (C) 2009 Lemote Inc. & Insititute of Computing Technology
-+ * Author: Yanhua <yanh@lemote.com>
++ * Author: Wu zhangjin, wuzj@lemote.com
 + *
-+ * This file is subject to the terms and conditions of the GNU General
-Public
-+ * License.  See the file "COPYING" in the main directory of this
-archive
-+ * for more details.
++ * Reference: 'AMD Geode(TM) CS5536 Companion Device Data Book'
 + *
++ *  This program is free software; you can redistribute  it and/or
+modify it
++ *  under  the terms of  the GNU General  Public License as published
+by the
++ *  Free Software Foundation;  either version 2 of the  License, or (at
+your
++ *  option) any later version.
 + */
++#include <linux/clockchips.h>
 +#include <linux/init.h>
-+#include <linux/oprofile.h>
 +#include <linux/interrupt.h>
-+#include <linux/smp.h>
++#include <linux/jiffies.h>
++#include <linux/module.h>
 +#include <linux/spinlock.h>
-+#include <linux/proc_fs.h>
-+#include <asm/uaccess.h>
 +
-+#include <irq.h>
-+#include "op_impl.h"
++#include <asm/delay.h>
++#include <asm/io.h>
++#include <asm/time.h>
 +
-+#define PERF_IRQ (MIPS_CPU_IRQ_BASE + 6 )
++#include <cs5536/mfgpt.h>
 +
-+#define LOONGSON_COUNTER1_EVENT(event)	((event&0x0f) << 5)
-+#define LOONGSON_COUNTER1_SUPERVISOR	(1UL    <<  2)
-+#define LOONGSON_COUNTER1_KERNEL	(1UL    <<  1)
-+#define LOONGSON_COUNTER1_USER		(1UL    <<  3)
-+#define LOONGSON_COUNTER1_ENABLE	(1UL    <<  4)
-+#define LOONGSON_COUNTER1_OVERFLOW	(1ULL   << 31)
-+#define LOONGSON_COUNTER1_EXL		(1UL	<<  0)
++DEFINE_SPINLOCK(mfgpt_lock);
++EXPORT_SYMBOL(mfgpt_lock);
 +
-+#define LOONGSON_COUNTER2_EVENT(event)	((event&0x0f) << 9)
-+#define LOONGSON_COUNTER2_SUPERVISOR	LOONGSON_COUNTER1_SUPERVISOR
-+#define LOONGSON_COUNTER2_KERNEL	LOONGSON_COUNTER1_KERNEL
-+#define LOONGSON_COUNTER2_USER		LOONGSON_COUNTER1_USER
-+#define LOONGSON_COUNTER2_ENABLE	LOONGSON_COUNTER1_ENABLE
-+#define LOONGSON_COUNTER2_OVERFLOW	LOONGSON_COUNTER1_OVERFLOW
-+#define LOONGSON_COUNTER2_EXL		LOONGSON_COUNTER1_EXL
-+#define LOONGSON_COUNTER_EXL		LOONGSON_COUNTER1_EXL
++#if 1
++#define MFGPT_TICK_RATE 14318000
++#else
++#define MFGPT_TICK_RATE (14318180 / 8)
++#endif
++#define COMPARE  ((MFGPT_TICK_RATE + HZ/2) / HZ)
 +
-+/* Loongson2 PerfCount performance counter register */
-+#define read_c0_perflo() __read_64bit_c0_register($24, 0)
-+#define write_c0_perflo(val) __write_64bit_c0_register($24, 0, val)
-+#define read_c0_perfhi() __read_64bit_c0_register($25, 0)
-+#define write_c0_perfhi(val) __write_64bit_c0_register($25, 0, val)
++static u32 MFGPT_BASE;
 +
-+extern unsigned int loongson2_perfcount_irq;
++/*
++ * Initialize the MFGPT timer.
++ *
++ * This is also called after resume to bring the MFGPT into operation
+again.
++ */
++/* setup register bit fields:
++   15: counter enable
++   14: compare2 output status, write 1 to clear when in event mode
++   13: compare1 output status
++   12: setup(ro)
++   11: stop enable, stop on sleep
++   10: external enable
++   9:8 compare2 mode; 00: disable, 01: compare on equal; 10: compare on
+GE, 11 event: GE + irq
++   7:6 compare1 mode
++   5:  reverse enable, bit reverse of the counter
++   4:  clock select. 0: 32KHz, 1: 14.318MHz
++   3:0 counter prescaler scale factor. select the input clock divide-by
+value. 2^n
++   bit 11:0 is write once.
++*/
 +
-+static struct loongson2_register_config {
-+	unsigned int control;
-+	unsigned long long reset_counter1;
-+	unsigned long long reset_counter2;
-+	int ctr1_enable, ctr2_enable;
-+} reg;
-+
-+DEFINE_SPINLOCK(sample_lock);
-+
-+static char *oprofid = "LoongsonPerf";
-+static irqreturn_t loongson2_perfcount_handler(int irq, void *dev_id);
-+/* Compute all of the registers in preparation for enabling profiling.
-*/
-+
-+static void loongson2_reg_setup(struct op_counter_config *ctr)
++static void init_mfgpt_timer(enum clock_event_mode mode,
++			     struct clock_event_device *evt)
 +{
-+	unsigned int control = 0;
++	spin_lock(&mfgpt_lock);
 +
-+	reg.reset_counter1 = 0;
-+	reg.reset_counter2 = 0;
-+	/* Compute the performance counter control word.  */
-+	/* For now count kernel and user mode */
-+	if (ctr[0].enabled) {
-+		control |= LOONGSON_COUNTER1_EVENT(ctr[0].event) |
-+		    LOONGSON_COUNTER1_ENABLE;
-+		if (ctr[0].kernel)
-+			control |= LOONGSON_COUNTER1_KERNEL;
-+		if (ctr[0].user)
-+			control |= LOONGSON_COUNTER1_USER;
-+		reg.reset_counter1 = 0x80000000ULL - ctr[0].count;
++	switch (mode) {
++	case CLOCK_EVT_MODE_PERIODIC:
++		outw(COMPARE, MFGPT0_CMP2);	/* set comparator2 */
++		outw(0, MFGPT0_CNT);	/* set counter to 0 */
++		/* enable counter, comparator2 to event mode, 14.318MHz clock */
++		outw(0xe310, MFGPT0_SETUP);
++		break;
++
++	case CLOCK_EVT_MODE_SHUTDOWN:
++	case CLOCK_EVT_MODE_UNUSED:
++		if (evt->mode == CLOCK_EVT_MODE_PERIODIC ||
++		    evt->mode == CLOCK_EVT_MODE_ONESHOT) {
++			/* disable counter */
++			outw(inw(MFGPT0_SETUP) & 0x7fff, MFGPT0_SETUP);
++		}
++		break;
++
++	case CLOCK_EVT_MODE_ONESHOT:
++		/* One shot setup */
++		outw(0xe300, MFGPT0_SETUP);
++		break;
++
++	case CLOCK_EVT_MODE_RESUME:
++		/* Nothing to do here */
++		break;
 +	}
-+
-+	if (ctr[1].enabled) {
-+		control |= LOONGSON_COUNTER2_EVENT(ctr[1].event) |
-+		    LOONGSON_COUNTER2_ENABLE;
-+		if (ctr[1].kernel)
-+			control |= LOONGSON_COUNTER2_KERNEL;
-+		if (ctr[1].user)
-+			control |= LOONGSON_COUNTER2_USER;
-+		reg.reset_counter2 = (0x80000000ULL - ctr[1].count);
-+	}
-+
-+	if (ctr[0].enabled || ctr[1].enabled)
-+		control |= LOONGSON_COUNTER_EXL;
-+
-+	reg.control = control;
-+
-+	reg.ctr1_enable = ctr[0].enabled;
-+	reg.ctr2_enable = ctr[1].enabled;
-+
++	spin_unlock(&mfgpt_lock);
 +}
 +
-+/* Program all of the registers in preparation for enabling profiling.
-*/
-+
-+static void loongson2_cpu_setup(void *args)
++/*
++ * Program the next event in oneshot mode
++ *
++ * Delta is given in MFGPT ticks
++ */
++static int mfgpt_next_event(unsigned long delta, struct
+clock_event_device *evt)
 +{
-+	uint64_t perfcount;
++	spin_lock(&mfgpt_lock);
++	outw(delta & 0xffff, MFGPT0_CMP2);	/* set comparator2 */
++	outw(0, MFGPT0_CNT);	/* set counter to 0 */
++	spin_unlock(&mfgpt_lock);
 +
-+	perfcount = (reg.reset_counter2 << 32) | reg.reset_counter1;
-+	write_c0_perfhi(perfcount);
++	return 0;
 +}
 +
-+static void loongson2_cpu_start(void *args)
-+{
-+	/* Start all counters on current CPU */
-+	if (reg.ctr1_enable || reg.ctr2_enable) {
-+		write_c0_perflo(reg.control);
-+	}
-+}
++static struct clock_event_device mfgpt_clockevent = {
++	.name = "mfgpt",
++	.features = CLOCK_EVT_FEAT_PERIODIC | CLOCK_EVT_MODE_ONESHOT,
++	.set_mode = init_mfgpt_timer,
++	.set_next_event = mfgpt_next_event,
++	.rating = 2000,
++	.irq = 5,
++};
 +
-+static void loongson2_cpu_stop(void *args)
++static irqreturn_t timer_interrupt(int irq, void *dev_id)
 +{
-+	/* Stop all counters on current CPU */
-+	write_c0_perflo(0);
-+	memset(&reg, 0, sizeof(reg));
-+}
++	u32 basehi;
 +
-+static irqreturn_t loongson2_perfcount_handler(int irq, void *dev_id)
-+{
-+	uint64_t counter, counter1, counter2;
-+	struct pt_regs *regs = get_irq_regs();
-+	int enabled;
-+	unsigned long flags;
-+
-+	/*
-+	 * LOONGSON2 defines two 32-bit performance counters.
-+	 * To avoid a race updating the registers we need to stop the
-counters 
-+	 * while we're messing with
-+	 * them ...
++	/* 
++	 * get MFGPT base address
++	 *
++	 * NOTE: do not remove me, it's need for the value of mfgpt_base is
+variable
 +	 */
++	_rdmsr(CS5536_DIVIL_MSR_BASE + DIVIL_LBAR_MFGPT, &basehi,
+&mfgpt_base);
 +
-+	/* Check whether the irq belongs to me */
-+	enabled = reg.ctr1_enable | reg.ctr2_enable;
-+	if (!enabled) {
-+		return IRQ_NONE;
-+	}
++	/* ack */
++	outw(inw(MFGPT0_SETUP) | 0x4000, MFGPT0_SETUP);
 +
-+	counter = read_c0_perfhi();
-+	counter1 = counter & 0xffffffff;
-+	counter2 = counter >> 32;
-+
-+	spin_lock_irqsave(&sample_lock, flags);
-+
-+	if (counter1 & LOONGSON_COUNTER1_OVERFLOW) {
-+		if (reg.ctr1_enable)
-+			oprofile_add_sample(regs, 0);
-+		counter1 = reg.reset_counter1;
-+	}
-+	if (counter2 & LOONGSON_COUNTER2_OVERFLOW) {
-+		if (reg.ctr2_enable)
-+			oprofile_add_sample(regs, 1);
-+		counter2 = reg.reset_counter2;
-+	}
-+
-+	spin_unlock_irqrestore(&sample_lock, flags);
-+
-+	write_c0_perfhi((counter2 << 32) | counter1);
++	mfgpt_clockevent.event_handler(&mfgpt_clockevent);
 +
 +	return IRQ_HANDLED;
 +}
 +
-+static int __init loongson2_init(void)
-+{
-+	return request_irq(PERF_IRQ, loongson2_perfcount_handler,
-+			   IRQF_SHARED, "Perfcounter", oprofid);
-+}
-+
-+static void loongson2_exit(void)
-+{
-+	write_c0_perflo(0);
-+	free_irq(PERF_IRQ, oprofid);
-+}
-+
-+struct op_mips_model op_model_loongson2_ops = {
-+	.reg_setup = loongson2_reg_setup,
-+	.cpu_setup = loongson2_cpu_setup,
-+	.init = loongson2_init,
-+	.exit = loongson2_exit,
-+	.cpu_start = loongson2_cpu_start,
-+	.cpu_stop = loongson2_cpu_stop,
-+	.cpu_type = "mips/loongson2",
-+	.num_counters = 2
++static struct irqaction irq5 = {
++	.handler = timer_interrupt,
++	.flags = IRQF_DISABLED | IRQF_NOBALANCING,
++	.mask = CPU_MASK_NONE,
++	.name = "timer"
 +};
++
++/*
++ * Initialize the conversion factor and the min/max deltas of the clock
+event
++ * structure and register the clock event source with the framework.
++ */
++void __init setup_mfgpt_timer(void)
++{
++	u32 basehi;
++	struct clock_event_device *cd = &mfgpt_clockevent;
++	unsigned int cpu = smp_processor_id();
++
++	cd->cpumask = cpumask_of(cpu);
++	clockevent_set_clock(cd, MFGPT_TICK_RATE);
++	cd->max_delta_ns = clockevent_delta2ns(0xffff, cd);
++	cd->min_delta_ns = clockevent_delta2ns(0xf, cd);
++
++	/* Enable MFGPT0 Comparator 2 Output to the Interrupt Mapper */
++	_wrmsr(CS5536_DIVIL_MSR_BASE + MFGPT_IRQ, 0, 0x100);
++
++	/* Enable Interrupt Gate 5 */
++	_wrmsr(CS5536_DIVIL_MSR_BASE + PIC_ZSEL_LOW, 0, 0x50000);
++
++	/* get MFGPT base address */
++	_rdmsr(CS5536_DIVIL_MSR_BASE + DIVIL_LBAR_MFGPT, &basehi,
+&mfgpt_base);
++
++	irq5.mask = cpumask_of_cpu(cpu);
++
++	clockevents_register_device(cd);
++
++	setup_irq(5, &irq5);
++}
++
++/*
++ * Since the MFGPT overflows every tick, its not very useful
++ * to just read by itself. So use jiffies to emulate a free
++ * running counter:
++ */
++static cycle_t mfgpt_read(void)
++{
++	unsigned long flags;
++	int count;
++	u32 jifs;
++	static int old_count;
++	static u32 old_jifs;
++
++	spin_lock_irqsave(&mfgpt_lock, flags);
++	/*
++	 * Although our caller may have the read side of xtime_lock,
++	 * this is now a seqlock, and we are cheating in this routine
++	 * by having side effects on state that we cannot undo if
++	 * there is a collision on the seqlock and our caller has to
++	 * retry.  (Namely, old_jifs and old_count.)  So we must treat
++	 * jiffies as volatile despite the lock.  We read jiffies
++	 * before latching the timer count to guarantee that although
++	 * the jiffies value might be older than the count (that is,
++	 * the counter may underflow between the last point where
++	 * jiffies was incremented and the point where we latch the
++	 * count), it cannot be newer.
++	 */
++	jifs = jiffies;
++	outw(inw(MFGPT0_SETUP) | 0x0200, MFGPT0_SETUP);	/* latch the counter
+*/
++	count = inw(MFGPT0_CNT);			/* read the latched count */
++	outw(inw(MFGPT0_SETUP) & 0xfdff, MFGPT0_SETUP);	/* restart the counter
+*/
++
++	/* reset the latch if count > max + 1 */
++	if (count > COMPARE) {
++		/* set comparator2 */
++		outw(COMPARE, MFGPT0_CMP2);
++		/* set counter to 0 */
++		outw(0, MFGPT0_CNT);
++		/* enable counter, comparator2 to event mode, 14.318MHz clock */
++		outw(0xe310, MFGPT0_SETUP);
++
++		count = COMPARE - 1;
++	}
++
++	/*
++	 * It's possible for count to appear to go the wrong way for this
+reason:
++	 *
++	 *  The timer counter underflows, but we haven't handled the
++	 *  resulting interrupt and incremented jiffies yet.
++	 *
++	 * Previous attempts to handle these cases intelligently were
++	 * buggy, so we just do the simple thing now.
++	 */
++	if (count > old_count && jifs == old_jifs) {
++		count = old_count;
++	}
++	old_count = count;
++	old_jifs = jifs;
++
++	spin_unlock_irqrestore(&mfgpt_lock, flags);
++
++	return (cycle_t) (jifs * COMPARE) + count;
++}
++
++static struct clocksource clocksource_mfgpt = {
++	.name = "mfgpt",
++	.rating = 1200,
++	.read = mfgpt_read,
++	.mask = CLOCKSOURCE_MASK(32),
++	.mult = 0,
++	.shift = 22,
++};
++
++int __init init_mfgpt_clocksource(void)
++{
++	if (num_possible_cpus() > 1)	/* MFGPT does not scale! */
++		return 0;
++
++	clocksource_mfgpt.mult = clocksource_hz2mult(MFGPT_TICK_RATE, 22);
++	return clocksource_register(&clocksource_mfgpt);
++}
++
++arch_initcall(init_mfgpt_clocksource);
+diff --git a/arch/mips/loongson/common/time.c
+b/arch/mips/loongson/common/time.c
+index 8c916ff..148761b 100644
+--- a/arch/mips/loongson/common/time.c
++++ b/arch/mips/loongson/common/time.c
+@@ -20,8 +20,14 @@ unsigned long read_persistent_clock(void)
+ 
+ extern unsigned long cpu_clock_freq;
+ 
++extern void setup_mfgpt_timer(void);
++
+ void __init plat_time_init(void)
+ {
+ 	/* setup mips r4k timer */
+ 	mips_hpt_frequency = cpu_clock_freq / 2;
++
++#ifdef CONFIG_CS5536_MFGPT
++ 	setup_mfgpt_timer();
++#endif
+ }
 -- 
 1.6.2.1
 
