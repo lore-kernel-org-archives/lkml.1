@@ -1,321 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752431AbZEOMkb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758241AbZEOMlj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752431AbZEOMkb (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 08:40:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755622AbZEOMkV
+	id S1758241AbZEOMlj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 08:41:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZEOMl2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 08:40:21 -0400
-Received: from mail-sin.bigfish.com ([207.46.51.104]:50096 "EHLO
-	mail219-sin-R.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1755579AbZEOMkT (ORCPT
+	Fri, 15 May 2009 08:41:28 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:39974 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbZEOMl1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 08:40:19 -0400
-X-Greylist: delayed 1044 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 May 2009 08:40:18 EDT
-X-BigFish: VPS1(zzzz1202hzzz32i66h)
-X-Spam-TCS-SCL: 5:0
-X-MS-Exchange-Organization-Antispam-Report: OrigIP: 163.181.251.22;Service: EHS
-X-WSS-ID: 0KJOQDR-01-0BS-01
-From: Borislav Petkov <borislav.petkov@amd.com>
-To: <akpm@linux-foundation.org>, <greg@kroah.com>, <mingo@elte.hu>
-Cc: <norsk5@yahoo.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
-       <mchehab@redhat.com>, <aris@redhat.com>, edt@aei.ca,
-       <linux-kernel@vger.kernel.org>,
-       Doug Thompson <dougthompson@xmission.com>,
-       Borislav Petkov <borislav.petkov@amd.com>
-Subject: [PATCH 04/22] amd64_edac: add debugging/testing code
-Date: Fri, 15 May 2009 14:22:15 +0200
-Message-Id: <1242390153-24493-5-git-send-email-borislav.petkov@amd.com>
-X-Mailer: git-send-email 1.6.2.4
-In-Reply-To: <1242390153-24493-1-git-send-email-borislav.petkov@amd.com>
-References: <1242390153-24493-1-git-send-email-borislav.petkov@amd.com>
-X-OriginalArrivalTime: 15 May 2009 12:22:40.0727 (UTC) FILETIME=[D7451670:01C9D557]
+	Fri, 15 May 2009 08:41:27 -0400
+To: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>
+Cc: linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
+       netdev@vger.kernel.org, rusty@rustcorp.com.au
+Subject: Re: [BUG 2.6.30-rc1] panic when loading oprofile
+From: Andi Kleen <andi@firstfloor.org>
+References: <alpine.WNT.2.00.0905131327430.7052__41366.1100705669$1242253861$gmane$org@jbrandeb-desk1.amr.corp.intel.com>
+Date: Fri, 15 May 2009 14:41:26 +0200
+In-Reply-To: <alpine.WNT.2.00.0905131327430.7052__41366.1100705669$1242253861$gmane$org@jbrandeb-desk1.amr.corp.intel.com> (Jesse Brandeburg's message of "Wed, 13 May 2009 15:30:07 -0700 (Pacific Daylight Time)")
+Message-ID: <87fxf6pmh5.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Doug Thompson <dougthompson@xmission.com>
+"Brandeburg, Jesse" <jesse.brandeburg@intel.com> writes:
 
-This is for dumping different registers and testing the address mapping
-logic using the ECC syndromes.
+Hi Jesse,
 
-Borislav:
+> when starting a profile run on the latest net-next kernel, I'm currently 
+> trying to reproduce on 2.6.30-rc5 stock.
 
-- split sysfs attrs per file
-- use more conform names for the sysfs attrs
-- fix function return value patterns
-- cleanup/fix comments
-- cleanup debug calls
+Were you able to reproduce it?
 
-Reviewed-by: Mauro Carvalho Chehab <mchehab@redhat.com>
-Signed-off-by: Doug Thompson <dougthompson@xmission.com>
-Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
----
- drivers/edac/amd64_edac_dbg.c |  255 +++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 255 insertions(+), 0 deletions(-)
- create mode 100644 drivers/edac/amd64_edac_dbg.c
+>
+> config available upon request, arch=x86_64, recent (F10 or newer) oprofile 
+> userspace.
 
-diff --git a/drivers/edac/amd64_edac_dbg.c b/drivers/edac/amd64_edac_dbg.c
-new file mode 100644
-index 0000000..0a41b24
---- /dev/null
-+++ b/drivers/edac/amd64_edac_dbg.c
-@@ -0,0 +1,255 @@
-+#include "amd64_edac.h"
-+
-+/*
-+ * accept a hex value and store it into the virtual error register file, field:
-+ * nbeal and nbeah. Assume virtual error values have already been set for: NBSL,
-+ * NBSH and NBCFG. Then proceed to map the error values to a MC, CSROW and
-+ * CHANNEL
-+ */
-+static ssize_t amd64_nbea_store(struct mem_ctl_info *mci, const char *data,
-+				size_t count)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	unsigned long long value;
-+	int ret = 0;
-+
-+	ret = strict_strtoull(data, 16, &value);
-+	if (ret != -EINVAL) {
-+		debugf0("received NBEA= 0x%llx\n", value);
-+
-+		/* place the value into the virtual error packet */
-+		pvt->ctl_error_info.nbeal = (u32) value;
-+		value >>= 32;
-+		pvt->ctl_error_info.nbeah = (u32) value;
-+
-+		/* Process the Mapping request */
-+		/* TODO: Add race prevention */
-+		amd64_process_error_info(mci, &pvt->ctl_error_info, 1);
-+
-+		return count;
-+	}
-+	return ret;
-+}
-+
-+/* display back what the last NBEA (MCA NB Address (MC4_ADDR)) was written */
-+static ssize_t amd64_nbea_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	u64 value;
-+
-+	value = pvt->ctl_error_info.nbeah;
-+	value <<= 32;
-+	value |= pvt->ctl_error_info.nbeal;
-+
-+	return sprintf(data, "%llx\n", value);
-+}
-+
-+/* store the NBSL (MCA NB Status Low (MC4_STATUS)) value user desires */
-+static ssize_t amd64_nbsl_store(struct mem_ctl_info *mci, const char *data,
-+				size_t count)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	unsigned long value;
-+	int ret = 0;
-+
-+	ret = strict_strtoul(data, 16, &value);
-+	if (ret != -EINVAL) {
-+		debugf0("received NBSL= 0x%lx\n", value);
-+
-+		pvt->ctl_error_info.nbsl = (u32) value;
-+
-+		return count;
-+	}
-+	return ret;
-+}
-+
-+/* display back what the last NBSL value written */
-+static ssize_t amd64_nbsl_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	u32 value;
-+
-+	value = pvt->ctl_error_info.nbsl;
-+
-+	return sprintf(data, "%x\n", value);
-+}
-+
-+/* store the NBSH (MCA NB Status High) value user desires */
-+static ssize_t amd64_nbsh_store(struct mem_ctl_info *mci, const char *data,
-+				size_t count)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	unsigned long value;
-+	int ret = 0;
-+
-+	ret = strict_strtoul(data, 16, &value);
-+	if (ret != -EINVAL) {
-+		debugf0("received NBSH= 0x%lx\n", value);
-+
-+		pvt->ctl_error_info.nbsh = (u32) value;
-+
-+		return count;
-+	}
-+	return ret;
-+}
-+
-+/* display back what the last NBSH value written */
-+static ssize_t amd64_nbsh_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	u32 value;
-+
-+	value = pvt->ctl_error_info.nbsh;
-+
-+	return sprintf(data, "%x\n", value);
-+}
-+
-+/* accept and store the NBCFG (MCA NB Configuration) value user desires */
-+static ssize_t amd64_nbcfg_store(struct mem_ctl_info *mci,
-+					const char *data, size_t count)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+	unsigned long value;
-+	int ret = 0;
-+
-+	ret = strict_strtoul(data, 16, &value);
-+	if (ret != -EINVAL) {
-+		debugf0("received NBCFG= 0x%lx\n", value);
-+
-+		pvt->ctl_error_info.nbcfg = (u32) value;
-+
-+		return count;
-+	}
-+	return ret;
-+}
-+
-+/* various show routines for the controls of a MCI */
-+static ssize_t amd64_nbcfg_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%x\n", pvt->ctl_error_info.nbcfg);
-+}
-+
-+
-+static ssize_t amd64_dhar_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%x\n", pvt->dhar);
-+}
-+
-+
-+static ssize_t amd64_dbam_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%x\n", pvt->dbam0);
-+}
-+
-+
-+static ssize_t amd64_topmem_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%llx\n", pvt->top_mem);
-+}
-+
-+
-+static ssize_t amd64_topmem2_show(struct mem_ctl_info *mci, char *data)
-+{
-+	struct amd64_pvt *pvt = mci->pvt_info;
-+
-+	return sprintf(data, "%llx\n", pvt->top_mem2);
-+}
-+
-+static ssize_t amd64_hole_show(struct mem_ctl_info *mci, char *data)
-+{
-+	u64 hole_base = 0;
-+	u64 hole_offset = 0;
-+	u64 hole_size = 0;
-+
-+	amd64_get_dram_hole_info(mci, &hole_base, &hole_offset, &hole_size);
-+
-+	return sprintf(data, "%llx %llx %llx\n", hole_base, hole_offset,
-+						 hole_size);
-+}
-+
-+/*
-+ * update NUM_DBG_ATTRS in case you add new members
-+ */
-+struct mcidev_sysfs_attribute amd64_dbg_attrs[] = {
-+
-+	{
-+		.attr = {
-+			.name = "nbea_ctl",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = amd64_nbea_show,
-+		.store = amd64_nbea_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "nbsl_ctl",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = amd64_nbsl_show,
-+		.store = amd64_nbsl_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "nbsh_ctl",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = amd64_nbsh_show,
-+		.store = amd64_nbsh_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "nbcfg_ctl",
-+			.mode = (S_IRUGO | S_IWUSR)
-+		},
-+		.show = amd64_nbcfg_show,
-+		.store = amd64_nbcfg_store,
-+	},
-+	{
-+		.attr = {
-+			.name = "dhar",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_dhar_show,
-+		.store = NULL,
-+	},
-+	{
-+		.attr = {
-+			.name = "dbam",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_dbam_show,
-+		.store = NULL,
-+	},
-+	{
-+		.attr = {
-+			.name = "topmem",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_topmem_show,
-+		.store = NULL,
-+	},
-+	{
-+		.attr = {
-+			.name = "topmem2",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_topmem2_show,
-+		.store = NULL,
-+	},
-+	{
-+		.attr = {
-+			.name = "dram_hole",
-+			.mode = (S_IRUGO)
-+		},
-+		.show = amd64_hole_show,
-+		.store = NULL,
-+	},
-+};
+it looks like two bugs: oprofile didn't catch a NMI that belongs to 
+it (most likely) and the NMI watchdog referenced a NULL pointer
+while processing an NMI.
+
+Did you have the nmi watchdog enabled on the command line?
+
+>
+> BUG: unable to handle kernel NULL pointer dereference at (null)
+> IP: [<ffffffff8066080a>] nmi_watchdog_tick+0xa1/0x1d6
+
+I don't get the same code as you. But the oopsing instruction in your
+oops is
+
+  2b:*  44 0f a3 28             bt     %r13d,(%rax)     <-- trapping instruction
+
+with rax == 0 and I suspect it's one of the new cpu mask checks
+I would try reverting
+
+fcc5c4a2feea3886dc058498b28508b2731720d5
+2f537a9f8e82f55c241b002c8cfbf34303b45ada
+fcef8576d8a64fc603e719c97d423f9f6d4e0e8b
+
+and see which one causes it. That would only fix the NMI watchdog bug
+of course.
+
+The oprofile not catching a event problem would be still open then.
+I think the checks for overflowed counters are not 100% perfect
+so that could happen. I have some patches in the works to use the new
+global status register on arch perfmon 2, with that the overflow
+check is somewhat more reliable. But that's more work.
+
+-Andi
+
 -- 
-1.6.2.4
-
-
+ak@linux.intel.com -- Speaking for myself only.
