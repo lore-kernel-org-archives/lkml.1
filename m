@@ -1,58 +1,150 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762430AbZEONMl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762709AbZEONNK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762430AbZEONMl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 09:12:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756759AbZEONMa
+	id S1762709AbZEONNK (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 09:13:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761636AbZEONMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 09:12:30 -0400
-Received: from mail-out.m-online.net ([212.18.0.9]:42800 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754531AbZEONM3 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 09:12:29 -0400
-X-Auth-Info: 6M5MUUowc5iIS4lI+ABergfViFbR+FIvKXTY5FZlQVY=
-Message-ID: <4A0D6A39.2000104@grandegger.com>
-Date: Fri, 15 May 2009 15:12:25 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Sascha Hauer <s.hauer@pengutronix.de>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Marc Kleine-Budde <mkl@pengutronix.de>,
-       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-Subject: Re: [PATCH v2 5/7] [PATCH 5/8] can: SJA1000 generic platform bus
- driver
-References: <20090512092757.048938233@denx.de> <20090512092757.894204198@denx.de> <20090514064633.GT29278@pengutronix.de> <4A0D374A.8080006@grandegger.com> <20090515120711.GE26519@pengutronix.de>
-In-Reply-To: <20090515120711.GE26519@pengutronix.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 15 May 2009 09:12:54 -0400
+Received: from hera.kernel.org ([140.211.167.34]:34760 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1758381AbZEONMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 09:12:52 -0400
+Subject: Re: [PATCH -tip] x86: kvm replace MSR_IA32_TIME_STAMP_COUNTER with
+ MSR_IA32_TSC of msr-index.h
+From: Jaswinder Singh Rajput <jaswinder@kernel.org>
+To: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>
+Cc: x86 maintainers <x86@kernel.org>,
+       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <1242282442.4574.11.camel@localhost.localdomain>
+References: <1242031695.8213.17.camel@yhuang-dev.sh.intel.com>
+	 <1242032701.3114.4.camel@localhost.localdomain>
+	 <1242032889.8213.32.camel@yhuang-dev.sh.intel.com>
+	 <1242279010.4574.6.camel@localhost.localdomain>
+	 <1242282442.4574.11.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 15 May 2009 18:42:05 +0530
+Message-Id: <1242393125.3082.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sascha Hauer wrote:
-> On Fri, May 15, 2009 at 11:35:06AM +0200, Wolfgang Grandegger wrote:
->> Hi Sascha,
->>
->> Sascha Hauer wrote:
->>> Hi Wolfgang,
-[...}
->>>> +	irq = res_irq->start;
->>>> +	if (res_irq->flags & IRQF_TRIGGER_MASK)
->>>> +		set_irq_type(irq, res_irq->flags & IRQF_TRIGGER_MASK);
->>> You shouldn't use set_irq_type on not yet requested irqs but instead
->>> pass the flags to the real driver and pass them in request_irq.
->> Why? I would require an extra member in the struct sja1000_priv.
+Hello Avi,
+
+On Thu, 2009-05-14 at 11:57 +0530, Jaswinder Singh Rajput wrote:
+> Use standard msr-index.h's MSR declaration.
 > 
-> You change a resource you do not own. What if request_irq returns with
-> -EBUSY? You already screwed up any other potential user.
+> MSR_IA32_TSC is better than MSR_IA32_TIME_STAMP_COUNTER as it also solves
+> 80 column issue.
+> 
+> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+> ---
 
-OK, I added irq_flags to struct sja1000_priv, which  will then be used
-by the request_irq(). The driver must to set it appropriately, including
-IRQF_SHARED. This also fixes the problem, that drivers used IRQF_SHARED
-without reason.
+If this patch looks sane to you can apply in kvm tree.
 
-Thanks,
+Here is the updated patch based on kvm tree:
 
-Wolfgang.
+[PATCH] x86: kvm replace MSR_IA32_TIME_STAMP_COUNTER with MSR_IA32_TSC of msr-index.h
+
+Use standard msr-index.h's MSR declaration.
+
+MSR_IA32_TSC is better than MSR_IA32_TIME_STAMP_COUNTER as it also solves
+80 column issue.
+
+Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
+---
+ arch/x86/include/asm/kvm_host.h |    2 --
+ arch/x86/kvm/svm.c              |    4 ++--
+ arch/x86/kvm/vmx.c              |    4 ++--
+ arch/x86/kvm/x86.c              |    5 ++---
+ 4 files changed, 6 insertions(+), 9 deletions(-)
+
+diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
+index 716a4ec..5c72897 100644
+--- a/arch/x86/include/asm/kvm_host.h
++++ b/arch/x86/include/asm/kvm_host.h
+@@ -753,8 +753,6 @@ static inline void kvm_inject_gp(struct kvm_vcpu *vcpu, u32 error_code)
+ 	kvm_queue_exception_e(vcpu, GP_VECTOR, error_code);
+ }
+ 
+-#define MSR_IA32_TIME_STAMP_COUNTER		0x010
+-
+ #define TSS_IOPB_BASE_OFFSET 0x66
+ #define TSS_BASE_SIZE 0x68
+ #define TSS_IOPB_SIZE (65536 / 8)
+diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
+index 71510e0..dd667dd 100644
+--- a/arch/x86/kvm/svm.c
++++ b/arch/x86/kvm/svm.c
+@@ -1953,7 +1953,7 @@ static int svm_get_msr(struct kvm_vcpu *vcpu, unsigned ecx, u64 *data)
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+ 
+ 	switch (ecx) {
+-	case MSR_IA32_TIME_STAMP_COUNTER: {
++	case MSR_IA32_TSC: {
+ 		u64 tsc;
+ 
+ 		rdtscll(tsc);
+@@ -2043,7 +2043,7 @@ static int svm_set_msr(struct kvm_vcpu *vcpu, unsigned ecx, u64 data)
+ 	struct vcpu_svm *svm = to_svm(vcpu);
+ 
+ 	switch (ecx) {
+-	case MSR_IA32_TIME_STAMP_COUNTER: {
++	case MSR_IA32_TSC: {
+ 		u64 tsc;
+ 
+ 		rdtscll(tsc);
+diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
+index fe2ce2b..98e6915 100644
+--- a/arch/x86/kvm/vmx.c
++++ b/arch/x86/kvm/vmx.c
+@@ -931,7 +931,7 @@ static int vmx_get_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 *pdata)
+ 	case MSR_EFER:
+ 		return kvm_get_msr_common(vcpu, msr_index, pdata);
+ #endif
+-	case MSR_IA32_TIME_STAMP_COUNTER:
++	case MSR_IA32_TSC:
+ 		data = guest_read_tsc();
+ 		break;
+ 	case MSR_IA32_SYSENTER_CS:
+@@ -991,7 +991,7 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 data)
+ 	case MSR_IA32_SYSENTER_ESP:
+ 		vmcs_writel(GUEST_SYSENTER_ESP, data);
+ 		break;
+-	case MSR_IA32_TIME_STAMP_COUNTER:
++	case MSR_IA32_TSC:
+ 		rdtscll(host_tsc);
+ 		guest_write_tsc(data, host_tsc);
+ 		break;
+diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
+index 44e87a5..4150edb 100644
+--- a/arch/x86/kvm/x86.c
++++ b/arch/x86/kvm/x86.c
+@@ -462,7 +462,7 @@ static u32 msrs_to_save[] = {
+ #ifdef CONFIG_X86_64
+ 	MSR_CSTAR, MSR_KERNEL_GS_BASE, MSR_SYSCALL_MASK, MSR_LSTAR,
+ #endif
+-	MSR_IA32_TIME_STAMP_COUNTER, MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
++	MSR_IA32_TSC, MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
+ 	MSR_IA32_PERF_STATUS, MSR_IA32_CR_PAT, MSR_VM_HSAVE_PA
+ };
+ 
+@@ -640,8 +640,7 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
+ 
+ 	/* Keep irq disabled to prevent changes to the clock */
+ 	local_irq_save(flags);
+-	kvm_get_msr(v, MSR_IA32_TIME_STAMP_COUNTER,
+-			  &vcpu->hv_clock.tsc_timestamp);
++	kvm_get_msr(v, MSR_IA32_TSC, &vcpu->hv_clock.tsc_timestamp);
+ 	ktime_get_ts(&ts);
+ 	local_irq_restore(flags);
+ 
+-- 
+1.6.1.1
+
+
+
