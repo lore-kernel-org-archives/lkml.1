@@ -1,106 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757134AbZEOWPS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757785AbZEOWRU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757134AbZEOWPS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 18:15:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754216AbZEOWO7
+	id S1757785AbZEOWRU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 18:17:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754697AbZEOWRK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 18:14:59 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:64615 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754214AbZEOWO5 (ORCPT
+	Fri, 15 May 2009 18:17:10 -0400
+Received: from fmailhost05.isp.att.net ([204.127.217.105]:57223 "EHLO
+	fmailhost05.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751740AbZEOWRJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 18:14:57 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=xLpdweJL+Dml3GnYYkBRPWqW3JFuOxr0hmr++LG5i/wIBaZX5GvboQVeoVec4/SRVe
-         3UQ7IGEW2qgfLpR7h88RAWf/MmxHp6J/lqc+LuYLoOni5FckGNIgOLfgQsAYynp03Lcm
-         cnIfQtSGxMe4+XsHkNupelYvRDvzBWLyIo4HY=
-Message-ID: <4A0DE954.4020102@gmail.com>
-Date: Sat, 16 May 2009 07:14:44 +0900
-From: Tejun Heo <htejun@gmail.com>
+	Fri, 15 May 2009 18:17:09 -0400
+X-Originating-IP: [71.195.50.4]
+Message-ID: <4A0DE9CC.5050109@lwfinger.net>
+Date: Fri, 15 May 2009 17:16:44 -0500
+From: Larry Finger <Larry.Finger@lwfinger.net>
 User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Pete Zaitcev <zaitcev@redhat.com>
-CC: Jens Axboe <jens.axboe@oracle.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Eric Moore <Eric.Moore@lsi.com>, "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: Re: [PATCH block#for-2.6.31 2/3] block: set rq->resid_len to blk_rq_bytes()
- on issue
-References: <4A0D86DB.9000203@kernel.org>	<4A0D87D2.7090806@gmail.com> <20090515112901.84d4dd97.zaitcev@redhat.com>
-In-Reply-To: <20090515112901.84d4dd97.zaitcev@redhat.com>
-X-Enigmail-Version: 0.95.7
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+CC: Johannes Berg <johannes@sipsolutions.net>,
+       wireless <linux-wireless@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Subject: Re: Regression since 2.6.30-rc1 - Page allocation failures
+References: <49F8C03D.6040909@lwfinger.net> <1241040451.5067.0.camel@johannes.local> <49F8E145.1050708@lwfinger.net> <200905152349.47940.rjw@sisk.pl>
+In-Reply-To: <200905152349.47940.rjw@sisk.pl>
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Pete Zaitcev wrote:
-> On Sat, 16 May 2009 00:18:42 +0900, Tejun Heo <htejun@gmail.com> wrote:
+Rafael J. Wysocki wrote:
+>>
+>> kernel: phy0: failed to reallocate TX buffer 0, 404, need 0, 0
+>> kernel: protocol 0008 is buggy, dev eth1
+>>
+>> kernel: phy0: failed to reallocate TX buffer 0, 1728, need 0, 18
+>>
+>> Device eth1 is the b43 wireless device.
 > 
->> In commit c3a4d78c580de4edc9ef0f7c59812fb02ceb037f, while introducing
->> rq->resid_len, the default value of residue count was changed from
->> full count to zero. []
-> 
-> So it's not a residue anymore, right? You should've renamed it to
-> rq->count or something, then. Now we have this:
+> Can you please tell me what the status of this bug is?
 
-It still is.  It just is restoring the original behavior.
+I have not had the opportunity to trace this bug.
 
->> +++ block/drivers/block/ub.c
->> @@ -781,8 +781,7 @@ static void ub_rw_cmd_done(struct ub_dev
->>  
->>  	if (cmd->error == 0) {
->>  		if (blk_pc_request(rq)) {
->> -			if (cmd->act_len < blk_rq_bytes(rq))
->> -				rq->resid_len = blk_rq_bytes(rq) - cmd->act_len;
->> +			rq->resid_len -= min(cmd->act_len, rq->resid_len);
->>  			scsi_status = 0;
-> 
-> You are subtracting resid_len from itself. Just how in the world
-> can this be correct?
->
-> Even it if is, in fact, correct, it's such an eggregious violation
-> of good style, that your good programmer's card is going to lose
-> a big coupon and have a hole punched in it.
-
-The original code was
-
- if (cmd->act_len >= rq->data_len)
-	rq->data_len = 0;
- else
-	rq->data_len -= cmd->act_len
-
-So, I could have written
-
- if (cmd->act_len >= rq->resid_len)
-	rq->resid_len = 0;
- else
-	rq->resid_len -= cmd->act_len
-
-Instead I wrote
-
- rq->resid_len -= min(cmd->act_len, rq->resid_len);
-
-It's just capping the amount to be subtracted so that resid_len
-doesn't underflow.  What is so wrong or bad style about that?
-
-> This is not in Linus' tree yet, but I'm going to take a hard look
-> at this once it shows up.
-
-It would be great if you do before it hits Linus's tree.
-
-Thanks.
-
--- 
-tejun
