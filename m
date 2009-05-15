@@ -1,19 +1,19 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754865AbZEOVHp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756084AbZEOVH7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754865AbZEOVHp (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 17:07:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZEOVHU
+	id S1756084AbZEOVH7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 17:07:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753311AbZEOVHV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 17:07:20 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.123]:49522 "EHLO
+	Fri, 15 May 2009 17:07:21 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.122]:54236 "EHLO
 	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754391AbZEOVHS (ORCPT
+	with ESMTP id S1754408AbZEOVHS (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 May 2009 17:07:18 -0400
-Message-Id: <20090515210717.973776350@goodmis.org>
+Message-Id: <20090515210718.211132919@goodmis.org>
 References: <20090515210342.488025506@goodmis.org>
 User-Agent: quilt/0.46-1
-Date: Fri, 15 May 2009 17:03:44 -0400
+Date: Fri, 15 May 2009 17:03:45 -0400
 From: Steven Rostedt <rostedt@goodmis.org>
 To: linux-kernel@vger.kernel.org
 Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
@@ -21,55 +21,126 @@ Cc: Ingo Molnar <mingo@elte.hu>, Andrew Morton <akpm@linux-foundation.org>,
        Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
        Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
        Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: [PATCH 2/3] tracing: add previous task state info to sched switch event
-Content-Disposition: inline; filename=0002-tracing-add-previous-task-state-info-to-sched-switc.patch
+Subject: [PATCH 3/3] tracing: add flag output for kmem events
+Content-Disposition: inline; filename=0003-tracing-add-flag-output-for-kmem-events.patch
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 From: Steven Rostedt <srostedt@redhat.com>
 
-It is useful to see the state of a task that is being switched out.
-This patch adds the output of the state of the previous task in
-the context switch event.
+This patch changes the output for gfp_flags from being a simple hex value
+to the actual names.
 
-[ Impact: see state of switched out task in context switch ]
+  gfp_flags=GFP_ATOMIC  instead of gfp_flags=00000020
+
+And even
+
+  gfp_flags=GFP_KERNEL instead of gfp_flags=000000d0
+
+[ Impact: more human readable output from tracer ]
 
 Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 ---
- include/trace/events/sched.h |    8 +++++++-
- 1 files changed, 7 insertions(+), 1 deletions(-)
+ include/trace/events/kmem.h |   43 +++++++++++++++++++++++++++++++++++--------
+ 1 files changed, 35 insertions(+), 8 deletions(-)
 
-diff --git a/include/trace/events/sched.h b/include/trace/events/sched.h
-index dd4033c..f887462 100644
---- a/include/trace/events/sched.h
-+++ b/include/trace/events/sched.h
-@@ -156,6 +156,7 @@ TRACE_EVENT(sched_switch,
- 		__array(	char,	prev_comm,	TASK_COMM_LEN	)
- 		__field(	pid_t,	prev_pid			)
- 		__field(	int,	prev_prio			)
-+		__field(	long,	prev_state			)
- 		__array(	char,	next_comm,	TASK_COMM_LEN	)
- 		__field(	pid_t,	next_pid			)
- 		__field(	int,	next_prio			)
-@@ -165,13 +166,18 @@ TRACE_EVENT(sched_switch,
- 		memcpy(__entry->next_comm, next->comm, TASK_COMM_LEN);
- 		__entry->prev_pid	= prev->pid;
- 		__entry->prev_prio	= prev->prio;
-+		__entry->prev_state	= prev->state;
- 		memcpy(__entry->prev_comm, prev->comm, TASK_COMM_LEN);
- 		__entry->next_pid	= next->pid;
- 		__entry->next_prio	= next->prio;
+diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
+index c22c42f..9b3886b 100644
+--- a/include/trace/events/kmem.h
++++ b/include/trace/events/kmem.h
+@@ -7,6 +7,33 @@
+ #undef TRACE_SYSTEM
+ #define TRACE_SYSTEM kmem
+ 
++#define show_gfp_flags(flags)						\
++	(flags) ? __print_flags(flags, "|",				\
++	(unsigned long)GFP_KERNEL,		"GFP_KERNEL",		\
++	(unsigned long)GFP_NOFS,		"GFP_NOFS",		\
++	(unsigned long)GFP_TEMPORARY,		"GFP_TEMPORARY",	\
++	(unsigned long)GFP_USER,		"GFP_USER",		\
++	(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER",		\
++	(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE",	\
++	(unsigned long)GFP_ATOMIC,		"GFP_ATOMIC",		\
++	(unsigned long)GFP_NOIO,		"GFP_NOIO",		\
++	(unsigned long)__GFP_HIGH,		"GFP_HIGH",		\
++	(unsigned long)__GFP_WAIT,		"GFP_WAIT",		\
++	(unsigned long)__GFP_IO,		"GFP_IO",		\
++	(unsigned long)__GFP_COLD,		"GFP_COLD",		\
++	(unsigned long)__GFP_NOWARN,		"GFP_NOWARN",		\
++	(unsigned long)__GFP_REPEAT,		"GFP_REPEAT",		\
++	(unsigned long)__GFP_NOFAIL,		"GFP_NOFAIL",		\
++	(unsigned long)__GFP_NORETRY,		"GFP_NORETRY",		\
++	(unsigned long)__GFP_COMP,		"GFP_COMP",		\
++	(unsigned long)__GFP_ZERO,		"GFP_ZERO",		\
++	(unsigned long)__GFP_NOMEMALLOC,	"GFP_NOMEMALLOC",	\
++	(unsigned long)__GFP_HARDWALL,		"GFP_HARDWALL",		\
++	(unsigned long)__GFP_THISNODE,		"GFP_THISNODE",		\
++	(unsigned long)__GFP_RECLAIMABLE,	"GFP_RECLAIMABLE",	\
++	(unsigned long)__GFP_MOVABLE,		"GFP_MOVABLE"		\
++	) : "GFP_NOWAIT"
++
+ TRACE_EVENT(kmalloc,
+ 
+ 	TP_PROTO(unsigned long call_site,
+@@ -33,12 +60,12 @@ TRACE_EVENT(kmalloc,
+ 		__entry->gfp_flags	= gfp_flags;
  	),
  
--	TP_printk("task %s:%d [%d] ==> %s:%d [%d]",
-+	TP_printk("task %s:%d [%d] (%s) ==> %s:%d [%d]",
- 		__entry->prev_comm, __entry->prev_pid, __entry->prev_prio,
-+		__entry->prev_state ?
-+		  __print_flags(__entry->prev_state, "|",
-+				1, "S", 2, "D", 4, "T", 8, "t",
-+				16, "Z", 32, "X", 64, "x", 128, "W") : "R",
- 		__entry->next_comm, __entry->next_pid, __entry->next_prio)
+-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x",
++	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s",
+ 		__entry->call_site,
+ 		__entry->ptr,
+ 		__entry->bytes_req,
+ 		__entry->bytes_alloc,
+-		__entry->gfp_flags)
++		show_gfp_flags(__entry->gfp_flags))
+ );
+ 
+ TRACE_EVENT(kmem_cache_alloc,
+@@ -67,12 +94,12 @@ TRACE_EVENT(kmem_cache_alloc,
+ 		__entry->gfp_flags	= gfp_flags;
+ 	),
+ 
+-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x",
++	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s",
+ 		__entry->call_site,
+ 		__entry->ptr,
+ 		__entry->bytes_req,
+ 		__entry->bytes_alloc,
+-		__entry->gfp_flags)
++		show_gfp_flags(__entry->gfp_flags))
+ );
+ 
+ TRACE_EVENT(kmalloc_node,
+@@ -104,12 +131,12 @@ TRACE_EVENT(kmalloc_node,
+ 		__entry->node		= node;
+ 	),
+ 
+-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x node=%d",
++	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s node=%d",
+ 		__entry->call_site,
+ 		__entry->ptr,
+ 		__entry->bytes_req,
+ 		__entry->bytes_alloc,
+-		__entry->gfp_flags,
++		show_gfp_flags(__entry->gfp_flags),
+ 		__entry->node)
+ );
+ 
+@@ -142,12 +169,12 @@ TRACE_EVENT(kmem_cache_alloc_node,
+ 		__entry->node		= node;
+ 	),
+ 
+-	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%08x node=%d",
++	TP_printk("call_site=%lx ptr=%p bytes_req=%zu bytes_alloc=%zu gfp_flags=%s node=%d",
+ 		__entry->call_site,
+ 		__entry->ptr,
+ 		__entry->bytes_req,
+ 		__entry->bytes_alloc,
+-		__entry->gfp_flags,
++		show_gfp_flags(__entry->gfp_flags),
+ 		__entry->node)
  );
  
 -- 
