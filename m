@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758033AbZEOI2A@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760846AbZEOI2u@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758033AbZEOI2A (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 04:28:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755904AbZEOI1m
+	id S1760846AbZEOI2u (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 04:28:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757545AbZEOI2a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 04:27:42 -0400
-Received: from hera.kernel.org ([140.211.167.34]:52684 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755530AbZEOI1m (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 04:27:42 -0400
-Message-ID: <4A0D276B.4010703@kernel.org>
-Date: Fri, 15 May 2009 17:27:23 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 15 May 2009 04:28:30 -0400
+Received: from cpsmtpm-eml104.kpnxchange.com ([195.121.3.8]:59468 "EHLO
+	CPSMTPM-EML104.kpnxchange.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1755904AbZEOI23 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 04:28:29 -0400
+To: Netdev <netdev@vger.kernel.org>
+Subject: [PATCH] ipv4: make default for INET_LRO consistent with help text
+Cc: "David S. Miller" <davem@davemloft.net>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Disposition: inline
+From: Frans Pop <elendil@planet.nl>
+Date: Fri, 15 May 2009 10:28:26 +0200
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: mingo@elte.hu, andi@firstfloor.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, hpa@zytor.com
-Subject: Re: [GIT PATCH] x86,percpu: fix pageattr handling with remap			 allocator
-References: <1242305390-21958-1-git-send-email-tj@kernel.org> <4A0C46B80200007800000ED4@vpn.id2.novell.com> <4A0C3EF9.4050907@kernel.org> <4A0D3A390200007800001081@vpn.id2.novell.com> <4A0D23A4.30006@kernel.org> <4A0D424802000078000010C1@vpn.id2.novell.com>
-In-Reply-To: <4A0D424802000078000010C1@vpn.id2.novell.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 15 May 2009 08:27:26 +0000 (UTC)
+Message-Id: <200905151028.28833.elendil@planet.nl>
+X-OriginalArrivalTime: 15 May 2009 08:28:29.0887 (UTC) FILETIME=[20510CF0:01C9D537]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
->>>> Tejun Heo <tj@kernel.org> 15.05.09 10:11 >>>
->>>>> This would additionally address a potential problem on 32-bits -
->>>>> currently, for a 32-CPU system you consume half of the vmalloc space
->>>>> with PAE (on non-PAE you'd even exhaust it, but I think it's
->>>>> unreasonable to expect a system having 32 CPUs to not need PAE).
->>>> I recall having about the same conversation before.  Looking up...
->>>>
->>>> -- QUOTE --
->>>>  Actually, I've been looking at the numbers and I'm not sure if the
->>>>  concern is valid.  On x86_32, the practical number of maximum
->>>>  processors would be around 16 so it will end up 32M, which isn't
->>>>  nice and it would probably a good idea to introduce a parameter to
->>>>  select which allocator to use but still it's far from consuming all
->>>>  the VM area.  On x86_64, the vmalloc area is obscenely large at 245,
->>>>  ie 32 terabytes.  Even with 4096 processors, single chunk is measly
->>>>  0.02%.
->>> Just to note - there must be a reason we (SuSE/Novell) build our default
->>> 32-bit kernel with support for 128 CPUs, which now is simply broken.
->> It's not broken, it will just fall back to 4k allocator.  Also, please
-> 
-> I'm afraid I have to disagree: There's no check (not even in
-> vm_area_register_early()) whether the vmalloc area is actually large enough
-> to fulfill the request.
+Commit e81963b1 changed this config from tristate to bool.
+Add default so that it is consistent with the help text.
 
-Hah... indeed.  Well, it's solved now.
+Signed-off-by: Frans Pop <elendil@planet.nl>
 
-Thanks.
-
--- 
-tejun
+diff --git a/net/ipv4/Kconfig b/net/ipv4/Kconfig
+index 9d26a3d..5b919f7 100644
+--- a/net/ipv4/Kconfig
++++ b/net/ipv4/Kconfig
+@@ -408,7 +408,7 @@ config INET_XFRM_MODE_BEET
+ 
+ config INET_LRO
+ 	bool "Large Receive Offload (ipv4/tcp)"
+-
++	default y
+ 	---help---
+ 	  Support for Large Receive Offload (ipv4/tcp).
+ 
