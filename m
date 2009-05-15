@@ -1,56 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754507AbZEOTFG@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756048AbZEOTMd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754507AbZEOTFG (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 15:05:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753087AbZEOTEy
+	id S1756048AbZEOTMd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 15:12:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752785AbZEOTMW
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 15:04:54 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:2167 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751500AbZEOTEx (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 15:04:53 -0400
-Subject: Re: [PATCH 09/11] drivers/scsi: Convert #ifdef DEBUG
- printk(KERN_DEBUG to pr_debug(
-From: Joe Perches <joe@perches.com>
-To: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
-In-Reply-To: <1242413806.22585.2.camel@mulgrave.int.hansenpartnership.com>
-References: <cover.1242407227.git.joe@perches.com>
-	 <d6d5dc09d259cc1da0fef2b1e9c6b7588cccf0b4.1242407227.git.joe@perches.com>
-	 <1242413806.22585.2.camel@mulgrave.int.hansenpartnership.com>
-Content-Type: text/plain
-Date: Fri, 15 May 2009 12:04:52 -0700
-Message-Id: <1242414292.3373.6.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 15 May 2009 15:12:22 -0400
+Received: from e4.ny.us.ibm.com ([32.97.182.144]:51651 "EHLO e4.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751349AbZEOTMV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 15:12:21 -0400
+Date: Fri, 15 May 2009 12:12:21 -0700
+From: "Darrick J. Wong" <djwong@us.ibm.com>
+To: Matthew Garrett <mjg59@srcf.ucam.org>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Renninger <trenn@suse.de>,
+       linux-kernel <linux-kernel@vger.kernel.org>, cpufreq@vger.kernel.org,
+       linux-acpi@vger.kernel.org
+Subject: Re: [PATCH v2] acpi: Fix regression where _PPC is not read at boot
+	even when ignore_ppc=0
+Message-ID: <20090515191219.GH6968@plum>
+Reply-To: djwong@us.ibm.com
+References: <20090416174217.GY8311@plum> <20090416224507.GA31984@srcf.ucam.org> <20090428193303.GC6968@plum> <20090428195348.GA8376@srcf.ucam.org> <20090429213930.GE6968@plum> <20090429220037.GA8604@srcf.ucam.org> <20090430072556.GD16737@elte.hu> <20090430095414.GA19462@srcf.ucam.org> <20090430111042.GA12809@elte.hu> <20090430111338.GA21297@srcf.ucam.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090430111338.GA21297@srcf.ucam.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-15 at 18:56 +0000, James Bottomley wrote:
-> On Fri, 2009-05-15 at 10:59 -0700, Joe Perches wrote:
-> > diff --git a/drivers/scsi/aha1542.c b/drivers/scsi/aha1542.c
-> > index 8059494..29d5118 100644
-> > --- a/drivers/scsi/aha1542.c
-> > +++ b/drivers/scsi/aha1542.c
-> > @@ -509,9 +509,7 @@ static void aha1542_intr_handle(struct Scsi_Host *shost)
-> >  		if (mbistatus == 3)
-> >  			continue;	/* Aborted command not found */
-> >  
-> > -#ifdef DEBUG
-> > -		printk(KERN_DEBUG "...done %d %d\n", mbo, mbi);
-> > -#endif
-> > +		pr_debug("...done %d %d\n", mbo, mbi);
+On Thu, Apr 30, 2009 at 12:13:38PM +0100, Matthew Garrett wrote:
+> On Thu, Apr 30, 2009 at 01:10:42PM +0200, Ingo Molnar wrote:
 > 
-> This one looks dangerous ... that's a per trigger printk from interrupt
-> context.  That's a lot of stuff to bung in the log buffer for a normal
-> operating case (which is pretty interrupt heavy).  What does this do to
-> system responsiveness?
+> > thanks - i've applied this and started testing it. I suspect 1-2 
+> > days of test-time should be enough to see if it breaks this box in 
+> > any way.
+> 
+> My recollection was that you'd see the machine limited to 1GHz on every 
+> boot?
 
-The normal operating case is not to define DEBUG.
+That seems accurate based on my reading of the old thread.
 
-Hmm, if CONFIG_DYNAMIC_DEBUG is enabled, it is a functional change.
-Maybe the changes should be to pr_devel?
+It's been a couple of weeks; has anyone seen any problems?
 
+--D
