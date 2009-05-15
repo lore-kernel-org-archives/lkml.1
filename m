@@ -1,113 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758953AbZEOHsx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759241AbZEOHvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758953AbZEOHsx (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 03:48:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbZEOHso
+	id S1759241AbZEOHvv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 03:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754957AbZEOHvm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 03:48:44 -0400
-Received: from ey-out-2122.google.com ([74.125.78.26]:62086 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754865AbZEOHsn (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 03:48:43 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=fgXzVcn8fFP2gWry5Svc8e1/GmFqUd38DMUQ36CT95QJEktz+boel9A5vJs69aP9BW
-         VNiDikKtFXQFPA2To6d4hQ0Nlcy6p4MQ3V/YSdgb5B1gtAYZey8/znxOTNVvk6z6CEsB
-         lS/BumllKvX8PLc5GbGd2CKPjd2TXlQha/VTw=
-Date: Fri, 15 May 2009 09:48:40 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Nauman Rafique <nauman@google.com>,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, agk@redhat.com,
-       dm-devel@redhat.com, snitzer@redhat.com, m-ikeda@ds.jp.nec.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] io-controller: Add io group reference handling for
-	request
-Message-ID: <20090515074839.GA3340@linux>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A03FF3C.4020506@cn.fujitsu.com> <20090508135724.GE7293@redhat.com> <e98e18940905081041r386e52a5q5a2b1f13f1e8c634@mail.gmail.com> <4A078051.5060702@cn.fujitsu.com> <20090511154127.GD6036@redhat.com> <4A0CFA6C.3080609@cn.fujitsu.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A0CFA6C.3080609@cn.fujitsu.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 15 May 2009 03:51:42 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59381 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754633AbZEOHvl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 03:51:41 -0400
+Date: Fri, 15 May 2009 03:51:18 -0400
+From: Amerigo Wang <amwang@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: akpm@linux-foundation.org, Amerigo Wang <amwang@redhat.com>,
+       Sam Ravnborg <sam@ravnborg.org>
+Message-Id: <20090515075229.11346.6710.sendpatchset@localhost.localdomain>
+Subject: [Patch] kbuild: fix a compile warning
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 01:15:24PM +0800, Gui Jianfeng wrote:
-> Vivek Goyal wrote:
-> ...
-> >  }
-> > @@ -1462,20 +1462,27 @@ struct io_cgroup *get_iocg_from_bio(stru
-> >  /*
-> >   * Find the io group bio belongs to.
-> >   * If "create" is set, io group is created if it is not already present.
-> > + * If "curr" is set, io group is information is searched for current
-> > + * task and not with the help of bio.
-> > + *
-> > + * FIXME: Can we assume that if bio is NULL then lookup group for current
-> > + * task and not create extra function parameter ?
-> >   *
-> > - * Note: There is a narrow window of race where a group is being freed
-> > - * by cgroup deletion path and some rq has slipped through in this group.
-> > - * Fix it.
-> >   */
-> > -struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
-> > -					int create)
-> > +struct io_group *io_get_io_group(struct request_queue *q, struct bio *bio,
-> > +					int create, int curr)
-> 
->   Hi Vivek,
-> 
->   IIUC we can get rid of curr, and just determine iog from bio. If bio is not NULL,
->   get iog from bio, otherwise get it from current task.
 
-Consider also that get_cgroup_from_bio() is much more slow than
-task_cgroup() and need to lock/unlock_page_cgroup() in
-get_blkio_cgroup_id(), while task_cgroup() is rcu protected.
+I got this warning:
 
-BTW another optimization could be to use the blkio-cgroup functionality
-only for dirty pages and cut out some blkio_set_owner(). For all the
-other cases IO always occurs in the same context of the current task,
-and you can use task_cgroup().
+ HOSTCC  scripts/basic/fixdep
+scripts/basic/fixdep.c: In function 'traps':
+scripts/basic/fixdep.c:377: warning: dereferencing type-punned pointer will break strict-aliasing rules
+scripts/basic/fixdep.c:379: warning: dereferencing type-punned pointer will break strict-aliasing rules
 
-However, this is true only for page cache pages, for IO generated by
-anonymous pages (swap) you still need the page tracking functionality
-both for reads and writes.
+Patch below fixes it.
 
--Andrea
+Signed-off-by: WANG Cong <amwang@redhat.com>
+Cc: Sam Ravnborg <sam@ravnborg.org> 
 
-> 
-> >  {
-> >  	struct cgroup *cgroup;
-> >  	struct io_group *iog;
-> >  	struct elv_fq_data *efqd = &q->elevator->efqd;
-> >  
-> >  	rcu_read_lock();
-> > -	cgroup = get_cgroup_from_bio(bio);
-> > +
-> > +	if (curr)
-> > +		cgroup = task_cgroup(current, io_subsys_id);
-> > +	else
-> > +		cgroup = get_cgroup_from_bio(bio);
-> > +
-> >  	if (!cgroup) {
-> >  		if (create)
-> >  			iog = efqd->root_group;
-> > @@ -1500,7 +1507,7 @@ out:
-> >  	rcu_read_unlock();
-> >  	return iog;
-> >  }
-> 
-> -- 
-> Regards
-> Gui Jianfeng
-> 
+---
+diff --git a/scripts/basic/fixdep.c b/scripts/basic/fixdep.c
+index 8912c0f..72c1520 100644
+--- a/scripts/basic/fixdep.c
++++ b/scripts/basic/fixdep.c
+@@ -373,10 +373,11 @@ void print_deps(void)
+ void traps(void)
+ {
+ 	static char test[] __attribute__((aligned(sizeof(int)))) = "CONF";
++	int *p = (int *)test;
+ 
+-	if (*(int *)test != INT_CONF) {
++	if (*p != INT_CONF) {
+ 		fprintf(stderr, "fixdep: sizeof(int) != 4 or wrong endianess? %#x\n",
+-			*(int *)test);
++			*p);
+ 		exit(2);
+ 	}
+ }
