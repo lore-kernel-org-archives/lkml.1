@@ -1,77 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760095AbZEOBxZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757172AbZEOB7r@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760095AbZEOBxZ (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 21:53:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZEOBxP
+	id S1757172AbZEOB7r (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 21:59:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755857AbZEOB7h
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 21:53:15 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:60260 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753900AbZEOBxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 21:53:14 -0400
-Message-ID: <4A0CCB2E.10202@cn.fujitsu.com>
-Date: Fri, 15 May 2009 09:53:50 +0800
-From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
-MIME-Version: 1.0
-To: Steven Rostedt <rostedt@goodmis.org>
-CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, mingo@elte.hu,
-       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
-       zhaolei@cn.fujitsu.com, laijs@cn.fujitsu.com,
-       Li Zefan <lizf@cn.fujitsu.com>
-Subject: Re: [PATCH v4] ftrace: add a tracepoint for __raise_softirq_irqoff()
-References: <49FFDF9C.7040505@cn.fujitsu.com> <20090505161604.GA15524@Krystal> <4A07D3B3.10605@cn.fujitsu.com> <20090511134019.GB10932@Krystal> <alpine.DEB.2.00.0905111003280.14976@gandalf.stny.rr.com> <20090511142734.GA12722@Krystal> <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com> <20090511151353.GA14391@Krystal> <4A094677.5090900@cn.fujitsu.com> <4A0BF82A.2070208@cn.fujitsu.com> <20090514124013.GC21241@Krystal> <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com>
-In-Reply-To: <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com>
-Content-Type: text/plain; charset=UTF-8
+	Thu, 14 May 2009 21:59:37 -0400
+Received: from mail-px0-f123.google.com ([209.85.216.123]:64885 "EHLO
+	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755439AbZEOB7g (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 21:59:36 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:x-mailer:mime-version
+         :content-type:content-transfer-encoding;
+        b=cTcdA/0S3/BJ1tdHysEpVz95X4wdStvJjerLcD/WRK4pnh6lM6jTcvV+FMSUizkU2V
+         7E6CixLNqrFMQCn9zmNgfAjt816yvpFYC6oDmJl/RFbxuyWRdTPZJ+OYMfVXtM3kSMNN
+         jGIWAzFdRyP3QmW2aevZU9CsukdlPzfm2jKVs=
+Date: Fri, 15 May 2009 10:59:33 +0900
+From: Minchan Kim <minchan.kim@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>
+Cc: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Johannes Weiner <hannes@cmpxchg.org>, Rik van Riel <riel@redhat.com>
+Subject: [PATCH] mmtom: Prevent shrinking of active anon lru list in case of
+ no swap space V4
+Message-Id: <20090515105933.1e7eb768.minchan.kim@gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.9; i486-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
+I repost this version with Rik and Kosaki's Reviewed-by sign and correcting my Signed-off-by.  
 
-Steven Rostedt wrote:
-> On Thu, 14 May 2009, Mathieu Desnoyers wrote:
->>> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->>>
->>> This patch is modified from Mathieu Desnoyers' patch. The original patch
->>> can be found here: 
->>> 	http://marc.info/?l=linux-kernel&m=123791201816245&w=2
->>> This tracepoint can trace the time stamp when softirq action is raised. 
->>>
->>> Changelog for v1 -> v2: 
->>> 1: Use TRACE_EVENT instead of DEFINE_TRACE
->>> 2: Move the tracepoint from raise_softirq_irqoff() to
->>>    __raise_softirq_irqoff()
->>>
->>> Changelog for v2 -> v3: 
->>> Move the definition of __raise_softifq_irqoff() to .c file when
->>> CONFIG_TRACEPOINTS is enabled, to avoid recursive includes
->>>
->>> Changelog for v3 -> v4: 
->>> 1: Come back to v2, and use forward declarations to avoid
->>>    recursive includes as Mathieu's suggestion
->>> 2: Modifiy the tracepoint name
->>> 3: Add comments for this tracepoint
->>>
->> This is a step in the right direction, but please see my email to Lai
->> about the fact that this assumes correct and undocumented include
->> dependencies in kernel/trace/events.c. Not explicitely stating the
->> include dependencies is a build error waiting to happen.
->>
->> Including interrupt.h under a ifdef would allow keeping track of
->> TRACE_EVENT specific build dependencies neatly on a per header basis.
-> 
-> This is all moot, the events.c file no longer exists and as not an issue.
-> 
+--
 
-As Steve's says, use ftrace in ftrace.h not in events.c now. 
-So, this mistake does not exist.
-Dose this patch has other error? I expect for your views.
+Hi, Adnrew. 
 
-Thanks for your review, is great help to me. ;-) 
+Please, drop my previous version and merge this. 
+This versoin can enhance code size and performance by GCC code optimization.
+If you wnat to know it detail, please, reference to Johannes Weiner's saying in V3 thread.
 
-> -- Steve
-> 
-> 
-> 
+Changelog since V4
+ o Make to check nr_swap_pages at first. - by Hannes's advise
+  o It can reduce text size and increase performance a litte bit by GCC code optimization.
+
+Changelog since V3
+ o Remove can_reclaim_anon.
+ o Add nr_swap_page > 0 in only shrink_zone - By Rik's advise.
+ o Change patch description.
+
+Changelog since V2
+ o Add new function - can_reclaim_anon : it tests anon_list can be reclaim.
+
+Changelog since V1
+ o Use nr_swap_pages <= 0 in shrink_active_list to prevent scanning  of active anon list.
+
+Now shrink_zone can deactivate active anon pages even if we don't have a swap device.
+Many embedded products don't have a swap device. So the deactivation of anon pages is unnecessary.
+
+This patch prevents unnecessary deactivation of anon lru pages.
+But, it doesn't prevent aging of anon pages to swap out.
+
+Thanks for good review. Rik,Kosaki and Hannes.
+
+Signed-off-by: Minchan kim <minchan.kim@gmail.com>
+Reviewed-by: Rik van Riel <riel@redhat.com>
+Reviewed-by: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Johannes Weiner <hannes@cmpxchg.org>
+
+---
+ mm/vmscan.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 2f9d555..1b4ee95 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -1577,7 +1577,7 @@ static void shrink_zone(int priority, struct zone *zone,
+ 	 * Even if we did not try to evict anon pages at all, we want to
+ 	 * rebalance the anon lru active/inactive ratio.
+ 	 */
+-	if (inactive_anon_is_low(zone, sc))
++	if (nr_swap_pages > 0 && inactive_anon_is_low(zone, sc))
+ 		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
+ 
+ 	throttle_vm_writeout(sc->gfp_mask);
+-- 
+1.5.4.3
+
+
+-- 
+Kinds Regards,
+Minchan Kim 
