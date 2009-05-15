@@ -1,88 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbZEOSz6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755709AbZEOS4V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753805AbZEOSz6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 14:55:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbZEOSzu
+	id S1755709AbZEOS4V (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 14:56:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753968AbZEOS4D
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 14:55:50 -0400
-Received: from arroyo.ext.ti.com ([192.94.94.40]:38370 "EHLO arroyo.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751652AbZEOSzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 14:55:49 -0400
-Message-ID: <4A0DBA9D.2050107@ti.com>
-Date: Fri, 15 May 2009 13:55:25 -0500
-From: Jon Hunter <jon-hunter@ti.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Fri, 15 May 2009 14:56:03 -0400
+Received: from e33.co.us.ibm.com ([32.97.110.151]:43464 "EHLO
+	e33.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752047AbZEOS4B (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 14:56:01 -0400
+Date: Fri, 15 May 2009 13:56:02 -0500
+From: "Serge E. Hallyn" <serue@us.ibm.com>
+To: Joe Perches <joe@perches.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, David Rientjes <rientjes@google.com>,
+       David Howells <dhowells@redhat.com>
+Subject: Re: [PATCH 11/11] mm: Convert #ifdef DEBUG printk(KERN_DEBUG to
+	pr_debug(
+Message-ID: <20090515185602.GA28604@us.ibm.com>
+References: <cover.1242407227.git.joe@perches.com> <d2d789905b3ec219d015729a162be7707564fb67.1242407227.git.joe@perches.com>
 MIME-Version: 1.0
-To: John Stultz <johnstul@us.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] Dynamic Tick: Allow 32-bit machines to sleep   
- formorethan2.15 seconds
-References: <49ECE615.2010800@ti.com>  <20090421063523.GA8020@elte.hu>	 <1240345936.6080.6.camel@localhost>  <49EE54B4.9020700@ti.com>	 <1240358525.6080.40.camel@localhost>  <4A02F5A3.3050004@ti.com>	 <1241744048.7518.132.camel@localhost.localdomain> <4A04584E.4020307@ti.com>	 <1241830281.7297.21.camel@localhost.localdomain>  <4A0A07D6.90408@ti.com>	 <1242172727.3462.55.camel@localhost>  <4A0AE3E3.5090304@ti.com>	 <1242232872.9110.98.camel@jstultz-laptop>  <4A0B0939.5030008@ti.com> <1242242497.9777.2.camel@jstultz-laptop> <4A0D99E0.3050306@ti.com>
-In-Reply-To: <4A0D99E0.3050306@ti.com>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d2d789905b3ec219d015729a162be7707564fb67.1242407227.git.joe@perches.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Quoting Joe Perches (joe@perches.com):
+> From: Joe Perches <joe@perches.com>
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
 
-Jon Hunter wrote:
-> +	/*
-> +	 * If the result overflows, return the max value we can.
-> +	 */
-> +	if (overflow)
-> +		ret = LONG_MAX;
-> +	else
-> +		ret = (s64)((upper << 32) + lower);
-> +
->   	return ret;
->   }
+Seems reasonable - apart from my woes with dynamic_printk :)
 
-Correction. Should have been LLONG_MAX and not LONG_MAX in the above. 
-See below.
+Can you also remove the commented-out '#define DEBUG' line on
+line 35 if you haven't already?
 
-Jon
+Acked-by: Serge Hallyn <serue@us.ibm.com>
 
+thanks,
+-serge
 
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index 5a40d14..647f228 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -316,8 +316,32 @@ static inline void clocksource_disable(struct 
-clocksource *cs)
-   */
-  static inline s64 cyc2ns(struct clocksource *cs, cycle_t cycles)
-  {
--       u64 ret = (u64)cycles;
--       ret = (ret * cs->mult) >> cs->shift;
-+       s64 ret;
-+       u64 upper, lower, overflow;
-+
-+       /*
-+        * Split the calculation into two halves to ensure
-+        * that we can catch any overflow that may occur.
-+        */
-+       upper = ((cycles >> 32) * cs->mult) >> cs->shift;
-+       lower = ((cycles & 0xFFFFFFFF) * cs->mult) >> cs->shift;
-+
-+       /*
-+        * Check to see if the result will overflow. If
-+        * overflow is non-zero then the result is greater
-+        * than 63-bits which is the max positive value
-+        * for a signed result.
-+        */
-+       overflow = (upper + (lower >> 32)) >> 31;
-+
-+       /*
-+        * If the result overflows, return the max value we can.
-+        */
-+       if (overflow)
-+               ret = LLONG_MAX;
-+       else
-+               ret = (s64)((upper << 32) + lower);
-+
-         return ret;
-  }
-
+> ---
+>  mm/oom_kill.c |    6 ++----
+>  1 files changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/mm/oom_kill.c b/mm/oom_kill.c
+> index 92bcf1d..8f7fb51 100644
+> --- a/mm/oom_kill.c
+> +++ b/mm/oom_kill.c
+> @@ -159,10 +159,8 @@ unsigned long badness(struct task_struct *p, unsigned long uptime)
+>  			points >>= -(p->oomkilladj);
+>  	}
+> 
+> -#ifdef DEBUG
+> -	printk(KERN_DEBUG "OOMkill: task %d (%s) got %lu points\n",
+> -	p->pid, p->comm, points);
+> -#endif
+> +	pr_debug("OOMkill: task %d (%s) got %lu points\n",
+> +		 p->pid, p->comm, points);
+>  	return points;
+>  }
+> 
+> -- 
+> 1.6.3.1.9.g95405b.dirty
