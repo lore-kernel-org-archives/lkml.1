@@ -1,111 +1,160 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756027AbZEOHAV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbZEOHPe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756027AbZEOHAV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 03:00:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbZEOHAF
+	id S1757332AbZEOHPe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 03:15:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754806AbZEOHPV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 03:00:05 -0400
-Received: from rv-out-0506.google.com ([209.85.198.224]:6660 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753216AbZEOHAB convert rfc822-to-8bit (ORCPT
+	Fri, 15 May 2009 03:15:21 -0400
+Received: from mxout1.volkswagen.de ([194.114.62.41]:27781 "EHLO
+	mxout1.volkswagen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754716AbZEOHPU (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 03:00:01 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CVZ/ycnaN1XC9OXW8YI3NxOKCw5yH9PeoKNK6BCu9ebI1Xcbs0IhOCKV2nua7Cf1Kp
-         Ka10vD+pkyxJbK0Y1uWr6GDJPx9bSuXXBVmhvVEWO1n3XkRzjdo8e2VrNGjNEKpbHSsb
-         iYqPtzNlsuir/BbuLRiLOgB++AiXZyW1GTtYw=
+	Fri, 15 May 2009 03:15:20 -0400
+Message-ID: <4A0D1677.4020209@volkswagen.de>
+Date: Fri, 15 May 2009 09:15:03 +0200
+From: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-In-Reply-To: <20090512.203014.71110404.ryov@valinux.co.jp>
-References: <2891419e0905040423y27f25ce7y61e5211aded85f99@mail.gmail.com>
-	 <20090505.073655.193711315.ryov@valinux.co.jp>
-	 <2891419e0905051735s7371e590gc942e4c6c475aa67@mail.gmail.com>
-	 <20090512.203014.71110404.ryov@valinux.co.jp>
-Date: Fri, 15 May 2009 16:00:00 +0900
-Message-ID: <2891419e0905150000x5f19908eh975c83690f38b9ac@mail.gmail.com>
-Subject: Re: [PATCH] range-bw: Another I/O scheduling policy of dm-ioband 
-	supporting the predicable I/O bandwidth (range bandwidth)
-From: Dong-Jae Kang <baramsori72@gmail.com>
-To: Ryo Tsuruta <ryov@valinux.co.jp>
-Cc: righi.andrea@gmail.com, menage@google.com, balbir@linux.vnet.ibm.com,
-       guijianfeng@cn.fujitsu.com, kamezawa.hiroyu@jp.fujitsu.com,
-       agk@sourceware.org, akpm@linux-foundation.org, axboe@kernel.dk,
-       chlunde@ping.uio.no, dave@linux.vnet.ibm.com, dpshah@google.com,
-       eric.rannaud@gmail.com, fernando@oss.ntt.co.jp, taka@valinux.co.jp,
-       lizf@cn.fujitsu.com, matt@bluehost.com, dradford@bluehost.com,
-       ngupta@google.com, randy.dunlap@oracle.com, roberto@unbit.it,
-       s-uchida@ap.jp.nec.com, subrata@linux.vnet.ibm.com,
-       yoshikawa.takuya@oss.ntt.co.jp, nauman@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, containers@lists.linux-foundation.org,
-       linux-kernel@vger.kernel.org, corsetproject@googlegroups.com
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Wolfgang Grandegger <wg@grandegger.com>
+CC: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 3/7] [PATCH 3/8] can: CAN Network device driver and
+ Netlink interface
+References: <20090512092757.048938233@denx.de><20090512092757.574693100@denx.de> <20090512233052.ecd600f1.akpm@linux-foundation.org> <4A0A9AC1.2090603@volkswagen.de> <4A0AB17B.3080308@grandegger.com> <4A0AB824.40702@volkswagen.de> <4A0ABBD3.2030605@grandegger.com>
+In-Reply-To: <4A0ABBD3.2030605@grandegger.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-OriginalArrivalTime: 15 May 2009 07:15:06.0701 (UTC) FILETIME=[DFD02FD0:01C9D52C]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Ryo.
-
-Sorry for late reply.
-
-2009/5/12 Ryo Tsuruta <ryov@valinux.co.jp>:
-> Hi Dong-Jae,
->> >> after bug-fix,I evaluated range-bw according to your configuration and
->> >> test environment
->> >> the result is in new relesed range-bw mail, [PATCH 0/2]
->> >> and more detailed documentation is also available and it can be
->> >> referred in [PATCH 1/2]
->> >>
->> >> Ryo,
->> >> can you check the result ?
+Wolfgang Grandegger wrote:
+> Oliver Hartkopp wrote:
+>   
+>> Wolfgang Grandegger wrote:
+>>     
+>>> Oliver Hartkopp wrote:
+>>>  
+>>>       
+>>>> Andrew Morton wrote:
+>>>>    
+>>>>         
+>>>>> On Tue, 12 May 2009 11:28:00 +0200 Wolfgang Grandegger
+>>>>> <wg@grandegger.com> wrote:
+>>>>>
+>>>>>  
+>>>>>      
+>>>>>           
+>>>>>> +int can_restart_now(struct net_device *dev)
+>>>>>> +{
+>>>>>> +    struct can_priv *priv = netdev_priv(dev);
+>>>>>> +    struct net_device_stats *stats = &dev->stats;
+>>>>>> +    struct sk_buff *skb;
+>>>>>> +    struct can_frame *cf;
+>>>>>> +    int err;
+>>>>>> +
+>>>>>> +    /* Synchronize with dev->hard_start_xmit() */
+>>>>>> +    netif_tx_lock(dev);
+>>>>>> +
+>>>>>> +    /* Ensure that no more messages can go out */
+>>>>>> +    if (netif_carrier_ok(dev))
+>>>>>> +        netif_carrier_off(dev);
+>>>>>> +
+>>>>>> +    /* Ensure that no more messages can come in */
+>>>>>> +    err = priv->do_set_mode(dev, CAN_MODE_STOP);
+>>>>>> +    if (err)
+>>>>>> +        return err;
+>>>>>> +
+>>>>>> +    /*  Now it's save to clean up */
+>>>>>> +    del_timer_sync(&priv->restart_timer);
+>>>>>>             
+>>>>>>             
+>>>>> This is deadlockable.
+>>>>>
+>>>>> It calls del_timer_sync() while holding netif_tx_lock().  But the timer
+>>>>> handler (can_restart_now()) also takes netif_tx_lock().  So if the
+>>>>> timer handler is presently running, it's sitting there spinning in
+>>>>> netif_tx_lock().  And del_timer_sync() is sitting there waiting for the
+>>>>> timer handler to complete.
+>>>>>
+>>>>>
+>>>>>         
+>>>>>           
+>>>> Hi Wolfgang,
+>>>>
+>>>> would it be an appropriate solution, just to invoke
+>>>>
+>>>> netif_stop_queue() in can_bus_off()
+>>>>
+>>>> and invoke
+>>>>
+>>>> netif_wake_queue() in can_restart_now()
+>>>>
+>>>> ???
+>>>>
+>>>> In a BUSOFF condition we're not able to send CAN frames anyway, so  we
+>>>> can disable the device queue and the we won't  need any netif_tx_lock()
+>>>> right?
+>>>>
+>>>> AFAIK this was the original implementation before some of the latest
+>>>> improvement with the netif_carrier stuff.
+>>>>
+>>>> What do you think?
+>>>>     
+>>>>         
+>>> The problem is the "manual" restart triggered via the netlink interface,
+>>> which can occur in the middle of ndo_start_xmit().
+>>>
+>>>   
+>>>       
+>> Ah, i see.
+>>
+>> What if the manual restart via netlink would also stop the queue and
+>> start the timer?
+>>     
 >
-> I did the same test as before and got the results as expected.
+> It will not help if the restart is triggered in the middle of
+> ndo_start_xmit().
 >
->               cgroup1    cgroup2
->  min:max-bw    0:100      0:200
->  -------------------------------------
->  read          100         197
->  write         103         198 [KB/s]
->
+>   
 
-I think upper result is reasonable.
-because you configured min and  max bandwidth as 0K:100K(for cgroup1)
-and 0K:200K(for cgroup2).
-So, range-bw supported appropriate and expected bandwidth with 1~3% error range.
-minimum bandwidth was satisfied (0K, 0K ) and maximum bandwidth was
-limited (100K, 200K)
-but there is some considered point in use of range-bw as I described
-in [PATCH 0/2] as below.
+Hi Wolfgang,
 
-* Attention
------------------
-Range-BW supports the predicable I/O bandwidth, but it should be
-configured in the scope of total I/O bandwidth of the I/O system to
-guarantee the minimum I/O requirement. For example, if total I/O
-bandwidth is 40Mbytes/sec, the summary of I/O bandwidth configured in
-each process group should be equal or smaller than 40Mbytes/sec.
-So, we need to check total I/O bandwidth before set it up.
+i think, i found a solution that removes the locking problem completely:
 
-If you need more another information about range-bw, reply to me.
+When a bus-off occurs in the controller, the communication on the CAN 
+bus can be treated as unusable for this controller (let's say it is dead).
+E.g. the SJA1000 set's its reset bit for that reason and waits to be 
+initialized by the CPU again.
 
-> I got errors while applying your patch, some lines are wrapped with
-> carriage returns.
->
->    +extern int policy_range_bw_init(struct ioband_device *dp, int argc,
->  >> char **argv);
+So IMO restarting the CAN controller while in operational state is not a 
+valid use case.
 
-Thank you for bug reporting
-I will check it again.
+When a bus-off (interrupt) occurs, we should
 
->
-> Thanks,
-> Ryo Tsuruta
->
+- invoke netif_carrier_off(dev)
+- invoke netif_stop_queue(dev)
+- set the state to CAN_STATE_BUS_OFF
 
+and of course create the error message, clear the interrupts(!) and then 
+leave the irq service function.
 
+That's it.
 
--- 
-Best Regards,
-Dong-Jae Kang
+When the automatic CAN controller restart is enabled: start the timer.
+
+For the manual netlink function: Test for CAN_STATE_BUS_OFF (!) and 
+invoke the current can_restart_now(dev) or start the timer with e.g. 1ms ...
+
+This approach should make it and fulfills the bus-off intention of the 
+CAN controllers ("disabled and wait for re-initialisation").
+
+And there's no locking of the tx_queue needed anymore as the tx_queue is 
+already stopped, when the restart is performed.
+
+What do you think about this approach?
+
+Regards,
+Oliver
+
