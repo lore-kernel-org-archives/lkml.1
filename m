@@ -1,72 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754195AbZEOSjI@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756178AbZEOSkC@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754195AbZEOSjI (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 14:39:08 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbZEOSix
+	id S1756178AbZEOSkC (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 14:40:02 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752783AbZEOSjv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 14:38:53 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:53231 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752680AbZEOSiw convert rfc822-to-8bit (ORCPT
+	Fri, 15 May 2009 14:39:51 -0400
+Received: from exprod7og115.obsmtp.com ([64.18.2.217]:43523 "EHLO
+	exprod7og115.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752665AbZEOSju convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 14:38:52 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=w3FpqJjatVYp3fX447RMawcjDzfjfOX8fUkUUyzOuZ27RU9hgCwjCvWtQxJBDk53HQ
-         k7FVbDX6U4E5ZxyNJAYvuovNiE3tXvFK/wxxSUzgT7XTxKAD8rmzGvRvjWxU5xV5EF1z
-         8vrX58Oe0a/0nWFgSJ4NiFYbxRZ1sUzpjlLLQ=
-MIME-Version: 1.0
-In-Reply-To: <4A0D8178.4060604@bull.net>
-References: <4A0D8178.4060604@bull.net>
-Date: Fri, 15 May 2009 11:38:52 -0700
-Message-ID: <86802c440905151138t42705477s95a972704db2ce9c@mail.gmail.com>
-Subject: Re: SRAT v1 support
-From: Yinghai Lu <yhlu.kernel@gmail.com>
-To: xb <xavier.bru@bull.net>, Ingo Molnar <mingo@elte.hu>,
-       "H. Peter Anvin" <hpa@zytor.com>,
-       Suresh Siddha <suresh.b.siddha@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>, Len Brown <lenb@kernel.org>
-Cc: linux-acpi@vger.kernel.org, Zoltan <zoltan.menyhart@bull.net>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri, 15 May 2009 14:39:50 -0400
+From: "Mukker, Atul" <Atul.Mukker@lsi.com>
+To: Matthew Wilcox <matthew@wil.cx>
+CC: Jeff Garzik <jeff@garzik.org>, Julian Calaby <julian.calaby@gmail.com>,
+       adam radford <aradford@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Austria, Winston" <Winston.Austria@lsi.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Date: Fri, 15 May 2009 12:38:40 -0600
+Subject: RE: [RFQ] New driver architecture questions
+Thread-Topic: [RFQ] New driver architecture questions
+Thread-Index: AcnViU8Ajthoxv1rQ/WOr+hhFNSsCwAAp4KA
+Message-ID: <6C678488C5CEE74F813A4D1948FD2DC7A96C787D@cosmail02.lsi.com>
+References: <6C678488C5CEE74F813A4D1948FD2DC7A95E6D37@cosmail02.lsi.com>
+ <4A0B858F.3080405@garzik.org>
+ <6C678488C5CEE74F813A4D1948FD2DC7A95E6D38@cosmail02.lsi.com>
+ <4A0B9B0D.6080006@garzik.org>
+ <b1bc6a000905141758y20aa7852h8b1012e3da6f8c0f@mail.gmail.com>
+ <646765f40905141801k5ae6249p925a4a377652c62e@mail.gmail.com>
+ <4A0CDB27.6090009@garzik.org>
+ <6C678488C5CEE74F813A4D1948FD2DC7A96C7789@cosmail02.lsi.com>
+ <20090515163626.GA15360@parisc-linux.org>
+ <6C678488C5CEE74F813A4D1948FD2DC7A96C7848@cosmail02.lsi.com>
+ <20090515181641.GB15360@parisc-linux.org>
+In-Reply-To: <20090515181641.GB15360@parisc-linux.org>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+acceptlanguage: en-US
+Content-Type: text/plain; charset="us-ascii"
 Content-Transfer-Encoding: 8BIT
+MIME-Version: 1.0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 7:51 AM, xb <xavier.bru@bull.net> wrote:
-> Recent linux kernels suppose that the  SRAT table is in rev 2 format (ACPI
-> 3.0), but some BIOSes still provide SRAT table in rev 1.
-> The rev 2 of the SRAT extension mainly provides an extension of the
-> "proximity_domain" item from 8 bits to 32 bits, using a "reserved" field of
-> the structure.
-> When the "reserved" field is not null, linux finds a wrong proximity domain,
-> and numa initialization is wrong.
-> Following patch tests the SRAT revision to allow a correct initialization:
->
-> This patch tests the version of SRAT ACPI table to allow supporting SRAT rev
-> 1 and SRAT rev 2.
->
-> diff -Nru linux-2.6.29-rc7-orig/arch/x86/kernel/acpi/boot.c
-> linux-2.6.29-rc7-tmp/arch/x86/kernel/acpi/boot.c
-> --- linux-2.6.29-rc7-orig/arch/x86/kernel/acpi/boot.c    2009-03-12
-> 14:41:38.000000000 +0100
-> +++ linux-2.6.29-rc7-tmp/arch/x86/kernel/acpi/boot.c    2009-03-16
-> 14:52:07.000000000 +0100
-> @@ -260,7 +260,8 @@
-> }
->
-> static int __init
-> -acpi_parse_lapic(struct acpi_subtable_header * header, const unsigned long
-> end)
-> +acpi_parse_lapic(const struct acpi_subtable_header * const header,
-> +                const unsigned long end, const int rev)
+ 
+> > > Using one or the other internally is fine (we don't care what you do),
+> > > but we want to see memcpy().  By the way, the documentation I found
+> for
+> > > ScsiPortMoveMemory() seems to indicate that it's memmove(), not
+> memcpy().
+> > > Mapping memcpy() to ScsiPortMoveMemory() is fine ... but you can't
+> > > realiably go the other way.
+> > [Atul] It's actually memcpy(),http://msdn.microsoft.com/en-
+> us/library/ms805434.aspx
+> 
+> No, it's memmove().  "The (ReadBuffer + Length) can overlap the area
+> pointed to by WriteBuffer."
+[Atul] Look, you are already figuring out possible issues with the source code without it being out yet :-).
 
-do we need to pass that rev all over around?
+Thanks everyone for your inputs so far!
 
-looks like we could use one srat_version or pxm_mask variable to get
-the same result.
-
-YH
+Atul
