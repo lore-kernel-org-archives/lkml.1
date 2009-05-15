@@ -1,268 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760904AbZEOIyr@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758127AbZEOJJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760904AbZEOIyr (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 04:54:47 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760864AbZEOIyY
+	id S1758127AbZEOJJA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 05:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757423AbZEOJIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 04:54:24 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:58616 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1760642AbZEOIyV (ORCPT
+	Fri, 15 May 2009 05:08:49 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36285 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757006AbZEOJIs (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 04:54:21 -0400
-X-Auth-Info: 1ryHZ1AQX+aKvUHCepQw+3xvkQw7cyHno2Vxy3Wl+oI=
-Message-ID: <4A0D2DB8.5010606@grandegger.com>
-Date: Fri, 15 May 2009 10:54:16 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Fri, 15 May 2009 05:08:48 -0400
+Date: Fri, 15 May 2009 11:08:44 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+Cc: kernel list <linux-kernel@vger.kernel.org>,
+       linux-pm@lists.linux-foundation.org, linux-acpi@vger.kernel.org
+Subject: suspending machine from kernel (was Re: [linux-pm] [RFC] why do we
+	need run disk sync before entering S3)
+Message-ID: <20090515090843.GC32740@elf.ucw.cz>
+References: <Pine.LNX.4.44L0.0905131000360.3004-100000@iolanthe.rowland.org> <200905131616.27334.rjw@sisk.pl> <20090514094249.GG6417@elf.ucw.cz> <20090515010055.GB21718@khazad-dum.debian.net>
 MIME-Version: 1.0
-To: Jonathan Corbet <corbet@lwn.net>
-CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Per Dalen <per.dalen@cnw.se>
-Subject: Re: [PATCH v2 7/7] [PATCH 7/8] can: SJA1000 driver for Kvaser PCI
- cards
-References: <20090512092757.048938233@denx.de>	<20090512092758.213114373@denx.de> <20090513162014.1f5c1bb1@bike.lwn.net>
-In-Reply-To: <20090513162014.1f5c1bb1@bike.lwn.net>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090515010055.GB21718@khazad-dum.debian.net>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jonathan Corbet wrote:
-> On Tue, 12 May 2009 11:28:04 +0200
-> Wolfgang Grandegger <wg@grandegger.com> wrote:
+On Thu 2009-05-14 22:00:56, Henrique de Moraes Holschuh wrote:
+> On Thu, 14 May 2009, Pavel Machek wrote:
+> > But remember there are even in-kernel s2ram triggers, for example on
+> > zaurus when battery goes critical.
 > 
->> The patch adds support for the PCI cards: PCIcan and PCIcanx
->> (1, 2 or 4 channel) from Kvaser (http://www.kvaser.com).
-> 
->> +static void kvaser_pci_disable_irq(struct net_device *dev)
->> +{
->> +	struct sja1000_priv *priv = netdev_priv(dev);
->> +	struct kvaser_pci *board = priv->priv;
->> +	u32 tmp;
-> 
-> I've seen certain reviewers getting grumpy about variables called "tmp"
-> recently.  
+> Are there?  I am quite interested on this!
 
-No problem. I'm going to change the name to something more reasonable.
+Yes.
 
->> +	/* Disable interrupts from card */
->> +	tmp = ioread32(board->conf_addr + S5920_INTCSR);
->> +	tmp &= ~INTCSR_ADDON_INTENABLE_M;
->> +	iowrite32(tmp, board->conf_addr + S5920_INTCSR);
->> +}
-> 
-> [...]
-> 
->> +static int number_of_sja1000_chip(void __iomem *base_addr)
->> +{
->> +	u8 status;
->> +	int i;
->> +
->> +	for (i = 0; i < MAX_NO_OF_CHANNELS; i++) {
->> +		/* reset chip */
->> +		iowrite8(MOD_RM, base_addr +
->> +			 (i * KVASER_PCI_PORT_BYTES) + REG_MOD);
->> +		status = ioread8(base_addr +
->> +				 (i * KVASER_PCI_PORT_BYTES) + REG_MOD);
->> +		udelay(10);
->> +		/* check reset bit */
->> +		if (!(status & MOD_RM))
->> +			break;
-> 
-> Why would you delay before checking status?  It ain't gonna change.
+It is a bit of mess, but see
 
-Right.
+common/sharpsl_pm.c:
 
->> +	}
->> +
->> +	return i;
->> +}
->> +
->> +static void kvaser_pci_del_chan(struct net_device *dev)
->> +{
->> +	struct sja1000_priv *priv;
->> +	struct kvaser_pci *board;
->> +	int i;
->> +
->> +	if (!dev)
->> +		return;
->> +	priv = netdev_priv(dev);
->> +	if (!priv)
->> +		return;
-> 
-> Can this happen?
+   /* Suspend if critical battery level */
+        if ((sharpsl_pm.battstat.ac_status != APM_AC_ONLINE)
+                        && (sharpsl_pm.battstat.mainbat_status ==
+APM_BATTERY_STATUS_CRITICAL)
+                        && !(sharpsl_pm.flags & SHARPSL_APM_QUEUED)) {
+                sharpsl_pm.flags |= SHARPSL_APM_QUEUED;
+                dev_err(sharpsl_pm.dev, "Fatal Off\n");
+                apm_queue_event(APM_CRITICAL_SUSPEND);
+        }
 
-No, it's a bug if it happens.
+it eventually triggers regular s2ram paths.
 
->> +	board = priv->priv;
->> +	if (!board)
->> +		return;
->> +
->> +	dev_info(&board->pci_dev->dev, "Removing device %s\n",
->> +		 dev->name);
->> +
->> +	for (i = 0; i < board->no_channels - 1; i++) {
->> +		if (board->slave_dev[i]) {
->> +			dev_info(&board->pci_dev->dev, "Removing device %s\n",
->> +				 board->slave_dev[i]->name);
->> +			unregister_sja1000dev(board->slave_dev[i]);
->> +			free_sja1000dev(board->slave_dev[i]);
->> +		}
->> +	}
->> +	unregister_sja1000dev(dev);
->> +
->> +	/* Disable PCI interrupts */
->> +	kvaser_pci_disable_irq(dev);
-> 
-> It seems to me like you might want to disable interrupts *before* tearing
-> down all that structure?  What happens if it interrupts after the sja1000
-> layer has forgotten about it?
+Older versions did suspend on power button press. (You can't really
+turn zaurus _off_, AFAICT.)
 
-Right.
+> Are they safe on x86?
 
->> +	pci_iounmap(board->pci_dev, (void __iomem *)dev->base_addr);
->> +	pci_iounmap(board->pci_dev, board->conf_addr);
->> +	pci_iounmap(board->pci_dev, board->res_addr);
->> +
->> +	free_sja1000dev(dev);
->> +}
->> +
->> +static int kvaser_pci_add_chan(struct pci_dev *pdev, int channel,
->> +			       struct net_device **master_dev,
->> +			       void __iomem *conf_addr,
->> +			       void __iomem *res_addr,
->> +			       unsigned long base_addr)
->> +{
->> +	struct net_device *dev;
->> +	struct sja1000_priv *priv;
->> +	struct kvaser_pci *board;
->> +	int err, init_step;
->> +
->> +	dev = alloc_sja1000dev(sizeof(struct kvaser_pci));
->> +	if (dev == NULL)
->> +		return -ENOMEM;
->> +
->> +	priv = netdev_priv(dev);
-> 
-> Here you don't have the !priv check.
-> 
->> +	board = priv->priv;
->> +
->> +	board->pci_dev = pdev;
->> +	board->channel = channel;
->> +
->> +	/*S5920*/
->> +	board->conf_addr = conf_addr;
->> +
->> +	/*XILINX board wide address*/
->> +	board->res_addr = res_addr;
->> +
->> +	if (channel == 0) {
->> +		board->xilinx_ver =
->> +			ioread8(board->res_addr + XILINX_VERINT) >> 4;
->> +		init_step = 2;
->> +
->> +		/* Assert PTADR# - we're in passive mode so the other bits are
->> +		   not important */
->> +		iowrite32(0x80808080UL, board->conf_addr + S5920_PTCR);
->> +
->> +		/* Disable interrupts from card */
->> +		kvaser_pci_disable_irq(dev);
->> +		/* Enable interrupts from card */
->> +		kvaser_pci_enable_irq(dev);
-> 
-> I'm sure there's a perfectly good reason for the disable/enable dance.
-> Presumably the hardware needs it or it misbehaves?  Worth commenting.
+Well, probably safe but definitely would need some cleanup.
 
-Hm, I think the hardware does not need it. I will check with original other.
+> thinkpad-acpi receives some critical alarms from the firmware, for which the
+> recommended action by the vendor is to go into S3 immediately.  There is
+> also one which requires S4 as the recommended damage control measure.
 
->> +	} else {
->> +		struct sja1000_priv *master_priv = netdev_priv(*master_dev);
->> +		struct kvaser_pci *master_board = master_priv->priv;
->> +		master_board->slave_dev[channel - 1] = dev;
->> +		master_board->no_channels = channel + 1;
->> +		board->xilinx_ver = master_board->xilinx_ver;
->> +	}
->> +
->> +	dev->base_addr = base_addr + channel * KVASER_PCI_PORT_BYTES;
->> +
->> +	priv->read_reg = kvaser_pci_read_reg;
->> +	priv->write_reg = kvaser_pci_write_reg;
->> +
->> +	priv->can.clock.freq = KVASER_PCI_CAN_CLOCK;
->> +
->> +	priv->ocr = KVASER_PCI_OCR;
->> +	priv->cdr = KVASER_PCI_CDR;
->> +
->> +	/* Register and setup interrupt handling */
->> +	dev->irq = pdev->irq;
->> +	init_step = 4;
->> +
->> +	dev_info(&pdev->dev, "base_addr=%#lx conf_addr=%p irq=%d\n",
->> +		 dev->base_addr, board->conf_addr, dev->irq);
->> +
->> +	SET_NETDEV_DEV(dev, &pdev->dev);
->> +
->> +	/* Register SJA1000 device */
->> +	err = register_sja1000dev(dev);
->> +	if (err) {
->> +		dev_err(&pdev->dev, "Registering device failed (err=%d)\n",
->> +			err);
->> +		goto failure;
->> +	}
->> +
->> +	if (channel == 0)
->> +		*master_dev = dev;
->> +
->> +	return 0;
->> +
->> +failure:
->> +	kvaser_pci_del_chan(dev);
->> +	return err;
->> +}
->> +
->> +static int __devinit kvaser_pci_init_one(struct pci_dev *pdev,
->> +					 const struct pci_device_id *ent)
->> +{
->> +	int err;
->> +	struct net_device *master_dev = NULL;
->> +	struct sja1000_priv *priv;
->> +	struct kvaser_pci *board;
->> +	int no_channels;
->> +	void __iomem *base_addr = NULL;
->> +	void __iomem *conf_addr = NULL;
->> +	void __iomem *res_addr = NULL;
->> +	int i;
->> +
->> +	dev_info(&pdev->dev, "initializing device %04x:%04x\n",
->> +		 pdev->vendor, pdev->device);
->> +
->> +	err = pci_enable_device(pdev);
->> +	if (err)
->> +		goto failure;
->> +
->> +	err = pci_request_regions(pdev, DRV_NAME);
->> +	if (err)
->> +		goto failure_release_pci;
->> +
->> +	/*S5920*/
->> +	conf_addr = pci_iomap(pdev, 0, PCI_CONFIG_PORT_SIZE);
->> +	if (conf_addr == NULL) {
->> +		err = -ENODEV;
->> +		goto failure_iounmap;
-> 
-> Why go there?  You know there's nothing to unmap.
+While s2ram should always work on hardware that supports it (zaurus),
+S4 is more tricky. It needs swap to be configured, and userspace
+cooperation in uswsusp case.
 
-OK.
+I guess sending signal to init would be right solution in that
+case. (ACPI already does that on overheat.)
 
-I will resend a revised patch a.s.a.p.
-
-Thanks,
-
-Wolfgang.
-
-
-
+								Pavel
+(Sorry about breaking Ccs)
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
