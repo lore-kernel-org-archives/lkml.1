@@ -1,169 +1,239 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbZEOEWl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbZEOEZw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754950AbZEOEWl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 00:22:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbZEOEWc
+	id S1757558AbZEOEZw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 00:25:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbZEOEZm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 00:22:32 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:41340 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751343AbZEOEWb (ORCPT
+	Fri, 15 May 2009 00:25:42 -0400
+Received: from wf-out-1314.google.com ([209.85.200.173]:34683 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750958AbZEOEZk convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 00:22:31 -0400
-Date: Fri, 15 May 2009 13:09:59 +0900
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
-       Balbir Singh <balbir@in.ibm.com>, Hugh Dickins <hugh@veritas.com>,
-       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: [PATCH] memcg: fix stale swapcache at swapout
-Message-Id: <20090515130959.330dbd56.nishimura@mxp.nes.nec.co.jp>
-Organization: NEC Soft, Ltd.
-X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 15 May 2009 00:25:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=LB5kAmvgygtWIU+4VEfZREHM+QxV1lt7G3zIIppBqbQwEbtNcRaCaMcPS1gPCOojWf
+         BnIf1T/FgUwNVW8I3B7gCTkEYxohzjhNd6cU69R+rlf0TFlKz096haRw+CBpESdmrGCL
+         UI4RP2X8iUyU8vgBMl3XiTGhkOTD/0LbWM2ao=
+MIME-Version: 1.0
+In-Reply-To: <5d5443650905140328v319e673o2f7b865e21619486@mail.gmail.com>
+References: <20090514100909.GA23626@roarinelk.homelinux.net>
+	 <5d5443650905140328v319e673o2f7b865e21619486@mail.gmail.com>
+Date: Fri, 15 May 2009 13:25:41 +0900
+Message-ID: <483a38b80905142125l6f3be674m3b7ef9083cfcbdeb@mail.gmail.com>
+Subject: Re: [PATCH] TSC2007: private data for platform callbacks.
+From: Kwangwoo Lee <kwangwoo.lee@gmail.com>
+To: Manuel Lauss <mano@roarinelk.homelinux.net>
+Cc: Trilok Soni <soni.trilok@gmail.com>, Kwangwoo Lee <kwangwoo.lee@gmail.com>,
+       linux-kernel@vger.kernel.org,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch is split out from Kamezawa-san's fix stale swap cache account leak
-patch set(v7).
+Hi Manual,
 
-  http://lkml.org/lkml/2009/5/11/688
+On Thu, May 14, 2009 at 7:28 PM, Trilok Soni <soni.trilok@gmail.com> wrote:
+> Hi Manuel,
+>
+> CCing linux-input mailing list, so not deleting any code from this
+> e-mail while replying.
+>
+> On Thu, May 14, 2009 at 3:39 PM, Manuel Lauss
+> <mano@roarinelk.homelinux.net> wrote:
+>> Add a private data field to the tsc2007 platform data and pass this
+>> to the callbacks.
+>
+> I hope that you have created this patch on top of two recently posted
+> patches by Kwangwoo Lee
+> to merge changes from Thierry.
+>
+>>
+>> Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
+>> ---
+>>  drivers/input/touchscreen/tsc2007.c |   52 +++++++++++++++++++++++-----------
+>>  include/linux/i2c/tsc2007.h         |   10 ++++---
+>>  2 files changed, 41 insertions(+), 21 deletions(-)
+>>
+>> diff --git a/drivers/input/touchscreen/tsc2007.c b/drivers/input/touchscreen/tsc2007.c
+>> index 948e167..5c4242d 100644
+>> --- a/drivers/input/touchscreen/tsc2007.c
+>> +++ b/drivers/input/touchscreen/tsc2007.c
+>> @@ -83,10 +83,35 @@ struct tsc2007 {
+>>        unsigned                pendown;
+>>        int                     irq;
+>>
+>> -       int                     (*get_pendown_state)(void);
+>> -       void                    (*clear_penirq)(void);
+>> +       struct tsc2007_platform_data *pd;
 
-I moved the definition of memcg_free_unused_swapcache() back to memcontrol.c
-(as I did in my original version) to avoid confilict with
-Kosaki-san's remove CONFIG_UNEVICTABLE_LRU config option patch.
-(it's not on mmotm yet though).
-And IMHO, this function might not be appropriate for "vmscan".
+Why is this pd is contained in struct tsc2007?
 
-This patch is based on mmotm-2009-05-13-16-34.
-===
-From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+>>  };
+>>
+>> +/* ask platform for pendown state */
+>> +static inline int ts_get_pendown_state(struct tsc2007 *ts)
+>> +{
+>> +       return ts->pd->get_pendown_state(ts->pd->priv);
 
-Reclaiming anonymous memory in vmscan.c does following 2 steps.
-  1. add to swap and unmap.
-  2. pageout
-But above 2 steps doesn't occur at once. There are many chances
-to avoid pageout, and _really_ unused pages are swapped out by
-visit-and-check-again logic of LRU rotation.
+Is it required in get_pendown_state() function in your platform?
+The function just return true/false indicating the pendown state.
 
-But this behavior has troubles with memcg because memcg doesn't put
-!PageCgroupUsed swapcache back to its LRU.
-These swapcache cannot be freed in memcg's LRU scanning, so swp_entry cannot
-be freed properly as a result.
+>
+> So, we don't need check here, like this:
+>
+> if (ts->pd->get_pendown_state)
+>          ret =  ts->pd->get_pendown_state(ts->pd->priv);
+>
+>> +}
+>> +
+>> +/* ask platform to clear pendown irq if available */
+>> +static inline void ts_clear_penirq(struct tsc2007 *ts)
+>> +{
+>> +       if (ts->pd->clear_penirq)
+>> +               ts->pd->clear_penirq(ts->pd->priv);
+>> +}
+>> +
+>> +static inline void ts_init_platform_hw(struct tsc2007 *ts)
+>> +{
+>> +       if (ts->pd->init_platform_hw)
+>> +               ts->pd->init_platform_hw(ts->pd->priv);
+>> +}
+>> +
+>> +static inline void ts_exit_platform_hw(struct tsc2007 *ts)
+>> +{
+>> +       if (ts->pd->exit_platform_hw)
+>> +               ts->pd->exit_platform_hw(ts->pd->priv);
+>> +}
+>> +
+>> +
+>>  static inline int tsc2007_xfer(struct tsc2007 *tsc, u8 cmd)
+>>  {
+>>        s32 data;
+>> @@ -129,7 +154,7 @@ static void tsc2007_send_event(void *tsc)
+>>                rt = z2;
+>>                rt -= z1;
+>>                rt *= x;
+>> -               rt *= ts->x_plate_ohms;
+>> +               rt *= ts->pd->x_plate_ohms;
+>>                rt /= z1;
+>>                rt = (rt + 2047) >> 12;
+>>        } else
+>> @@ -204,7 +229,7 @@ static enum hrtimer_restart tsc2007_timer(struct hrtimer *handle)
+>>
+>>        spin_lock_irqsave(&ts->lock, flags);
+>>
+>> -       if (unlikely(!ts->get_pendown_state() && ts->pendown)) {
+>> +       if (unlikely(!ts_get_pendown_state(ts) && ts->pendown)) {
+>>                struct input_dev *input = ts->input;
+>>
+>>                dev_dbg(&ts->client->dev, "UP\n");
+>> @@ -235,14 +260,13 @@ static irqreturn_t tsc2007_irq(int irq, void *handle)
+>>
+>>        spin_lock_irqsave(&ts->lock, flags);
+>>
+>> -       if (likely(ts->get_pendown_state())) {
+>> +       if (likely(ts_get_pendown_state(ts))) {
+>>                disable_irq_nosync(ts->irq);
+>>                hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_DELAY),
+>>                                        HRTIMER_MODE_REL);
+>>        }
+>>
+>> -       if (ts->clear_penirq)
+>> -               ts->clear_penirq();
+>> +       ts_clear_penirq(ts);
+>>
+>>        spin_unlock_irqrestore(&ts->lock, flags);
+>>
+>> @@ -253,7 +277,7 @@ static int tsc2007_probe(struct i2c_client *client,
+>>                        const struct i2c_device_id *id)
+>>  {
+>>        struct tsc2007 *ts;
+>> -       struct tsc2007_platform_data *pdata = pdata = client->dev.platform_data;
+>> +       struct tsc2007_platform_data *pdata = client->dev.platform_data;
+>
+> This change shows that you need to rebase based on two patches
+> submitted by Lee recently.
+>
+>>        struct input_dev *input_dev;
+>>        int err;
+>>
+>> @@ -283,12 +307,8 @@ static int tsc2007_probe(struct i2c_client *client,
+>>
+>>        spin_lock_init(&ts->lock);
+>>
+>> -       ts->model             = pdata->model;
+>> -       ts->x_plate_ohms      = pdata->x_plate_ohms;
+>> -       ts->get_pendown_state = pdata->get_pendown_state;
+>> -       ts->clear_penirq      = pdata->clear_penirq;
+>> -
+>> -       pdata->init_platform_hw();
+>> +       ts->pd = pdata;
+>> +       ts_init_platform_hw(ts);
+>>
+>>        snprintf(ts->phys, sizeof(ts->phys),
+>>                 "%s/input0", dev_name(&client->dev));
+>> @@ -335,10 +355,8 @@ static int tsc2007_probe(struct i2c_client *client,
+>>  static int tsc2007_remove(struct i2c_client *client)
+>>  {
+>>        struct tsc2007  *ts = i2c_get_clientdata(client);
+>> -       struct tsc2007_platform_data *pdata;
+>>
+>> -       pdata = client->dev.platform_data;
+>> -       pdata->exit_platform_hw();
+>> +       ts_exit_platform_hw(ts);
+>>
+>>        free_irq(ts->irq, ts);
+>>        hrtimer_cancel(&ts->timer);
+>> diff --git a/include/linux/i2c/tsc2007.h b/include/linux/i2c/tsc2007.h
+>> index c6361fb..45582b3 100644
+>> --- a/include/linux/i2c/tsc2007.h
+>> +++ b/include/linux/i2c/tsc2007.h
+>> @@ -7,11 +7,13 @@ struct tsc2007_platform_data {
+>>        u16     model;                          /* 2007. */
+>>        u16     x_plate_ohms;
+>>
+>> -       int     (*get_pendown_state)(void);
+>> -       void    (*clear_penirq)(void);          /* If needed, clear 2nd level
+>> +       int     (*get_pendown_state)(void *priv);
+>> +       void    (*clear_penirq)(void *priv);    /* If needed, clear 2nd level
+>>                                                   interrupt source */
+>> -       int     (*init_platform_hw)(void);
+>> -       void    (*exit_platform_hw)(void);
+>> +       int     (*init_platform_hw)(void *priv);
+>> +       void    (*exit_platform_hw)(void *priv);
+>> +
+>> +       void    *priv;                          /* passed to callbacks */
+>>  };
+>>
+>>  #endif
+>> --
+>> 1.6.3
+>>
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>> Please read the FAQ at  http://www.tux.org/lkml/
+>>
+>
+>
+>
+> --
+> ---Trilok Soni
+> http://triloksoni.wordpress.com
+> http://www.linkedin.com/in/triloksoni
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-input" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
 
-These swapcaches can be created by a race like below:
+Regards,
 
-    Assume processA is exiting and pte points to a page(!PageSwapCache).
-    And processB is trying reclaim the page.
-
-              processA                   |           processB
-    -------------------------------------+-------------------------------------
-      (page_remove_rmap())               |  (shrink_page_list())
-         mem_cgroup_uncharge_page()      |
-            ->uncharged because it's not |
-              PageSwapCache yet.         |
-              So, both mem/memsw.usage   |
-              are decremented.           |
-                                         |    add_to_swap() -> added to swapcache.
-
-    If this page goes thorough without being freed for some reason, this page
-    doesn't goes back to memcg's LRU because of !PageCgroupUsed.
-
-This patch adds a hook after add_to_swap() to check the page is mapped by a
-process or not, and frees it if it has been unmapped already.
-
-If a page has been on swap cache already when the owner process calls
-page_remove_rmap() -> mem_cgroup_uncharge_page(), the page is not uncharged.
-It goes back to memcg's LRU even if it goes through shrink_page_list()
-without being freed, so this patch ignores these case.
-
-Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
----
- include/linux/swap.h |   12 ++++++++++++
- mm/memcontrol.c      |   14 +++++++++++++-
- mm/vmscan.c          |    8 ++++++++
- 3 files changed, 33 insertions(+), 1 deletions(-)
-
-diff --git a/include/linux/swap.h b/include/linux/swap.h
-index 6ea541d..00d8066 100644
---- a/include/linux/swap.h
-+++ b/include/linux/swap.h
-@@ -336,11 +336,17 @@ static inline void disable_swap_token(void)
- 
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR
- extern void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent);
-+extern int memcg_free_unused_swapcache(struct page *page);
- #else
- static inline void
- mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
- {
- }
-+static inline int
-+memcg_free_unused_swapcache(struct page *page)
-+{
-+	return 0;
-+}
- #endif
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
- extern void mem_cgroup_uncharge_swap(swp_entry_t ent);
-@@ -436,6 +442,12 @@ mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
- {
- }
- 
-+static inline int
-+memcg_free_unused_swapcache(struct page *page)
-+{
-+	return 0;
-+}
-+
- #endif /* CONFIG_SWAP */
- #endif /* __KERNEL__*/
- #endif /* _LINUX_SWAP_H */
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 0c90345..63844cd 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -1578,7 +1578,19 @@ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
- 	if (memcg)
- 		css_put(&memcg->css);
- }
--#endif
-+
-+int memcg_free_unused_swapcache(struct page *page)
-+{
-+	VM_BUG_ON(!PageLocked(page));
-+	VM_BUG_ON(!PageSwapCache(page));
-+
-+	if (mem_cgroup_disabled())
-+		return 0;
-+	if (!PageAnon(page) || page_mapped(page))
-+		return 0;
-+	return try_to_free_swap(page);	/* checks page_swapcount */
-+}
-+#endif /* CONFIG_SWAP */
- 
- #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
- /*
-diff --git a/mm/vmscan.c b/mm/vmscan.c
-index 2f9d555..1fd0e43 100644
---- a/mm/vmscan.c
-+++ b/mm/vmscan.c
-@@ -665,6 +665,14 @@ static unsigned long shrink_page_list(struct list_head *page_list,
- 				goto keep_locked;
- 			if (!add_to_swap(page))
- 				goto activate_locked;
-+			/*
-+			 * The owner process might have uncharged the page
-+			 * (by page_remove_rmap()) before it has been added
-+			 * to swap cache.
-+			 * Check it here to avoid making it stale.
-+			 */
-+			if (memcg_free_unused_swapcache(page))
-+				goto keep_locked;
- 			may_enter_fs = 1;
- 		}
- 
+-- 
+Kwangwoo Lee <kwangwoo.lee@gmail.com>
