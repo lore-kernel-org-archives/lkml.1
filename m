@@ -1,69 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761808AbZEOKYm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761298AbZEOKhN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761808AbZEOKYm (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 06:24:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758212AbZEOKYd
+	id S1761298AbZEOKhN (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 06:37:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757757AbZEOKg6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 06:24:33 -0400
-Received: from courier.cs.helsinki.fi ([128.214.9.1]:47504 "EHLO
-	mail.cs.helsinki.fi" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756447AbZEOKYc (ORCPT
+	Fri, 15 May 2009 06:36:58 -0400
+Received: from lxorguk.ukuu.org.uk ([81.2.110.251]:53261 "EHLO
+	lxorguk.ukuu.org.uk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757329AbZEOKg6 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 06:24:32 -0400
-Date: Fri, 15 May 2009 13:24:31 +0300 (EEST)
-From: Pekka J Enberg <penberg@cs.helsinki.fi>
-To: akpm@linux-foundation.org
-cc: linux-kernel@vger.kernel.org
-Subject: [PATCH] memcg: use ifdef for mem_cgroup_is_obsolete()
-Message-ID: <Pine.LNX.4.64.0905151323560.32670@melkki.cs.Helsinki.FI>
-MIME-Version: 1.0
-Content-Type: MULTIPART/MIXED; BOUNDARY="-696229367-1309287308-1242383071=:32670"
+	Fri, 15 May 2009 06:36:58 -0400
+X-Greylist: delayed 1805 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 May 2009 06:36:57 EDT
+Date: Fri, 15 May 2009 10:50:32 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Wei Yongjun <yjwei@cn.fujitsu.com>
+Cc: Al Viro <viro@zeniv.linux.org.uk>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] devpts: change the default value of devpts mode to 0620
+Message-ID: <20090515105032.167eeb66@lxorguk.ukuu.org.uk>
+In-Reply-To: <4A0D2438.7020509@cn.fujitsu.com>
+References: <4A0CFB90.3060109@cn.fujitsu.com>
+	<4A0CFCD0.70605@cn.fujitsu.com>
+	<4A0D2438.7020509@cn.fujitsu.com>
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+On Fri, 15 May 2009 16:13:44 +0800
+Wei Yongjun <yjwei@cn.fujitsu.com> wrote:
 
----696229367-1309287308-1242383071=:32670
-Content-Type: TEXT/PLAIN; charset=ISO-8859-15
-Content-Transfer-Encoding: 8BIT
+> The value of devpts mode is usually set to 620 in file
+> /etc/fstab like this:
+> 
+> $grep devpts /etc/fstab
+> devpts /dev/pts devpts gid=5,mode=620 0 0
+> 
+> But the default mode value of devpts is 0600. Why not
+> set it to 0620? This patch change it 0620.
 
-From: Pekka Enberg <penberg@cs.helsinki.fi>
+NAK
 
-When CONFIG_DEBUG_VM is disabled, I get the following warning:
-
-    CC      mm/memcontrol.o
-  mm/memcontrol.c:318: warning: ‘mem_cgroup_is_obsolete’ defined but not
-  used
-
-Fix that up by wrapping mem_cgroup_is_obsolete() in an ifdef.
-
-Signed-off-by: Pekka Enberg <penberg@cs.helsinki.fi>
----
- mm/memcontrol.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
-
-diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-index 01c2d8f..51f2dbd 100644
---- a/mm/memcontrol.c
-+++ b/mm/memcontrol.c
-@@ -314,12 +314,14 @@ static struct mem_cgroup *try_get_mem_cgroup_from_mm(struct mm_struct *mm)
- 	return mem;
- }
- 
-+#ifdef CONFIG_DEBUG_VM
- static bool mem_cgroup_is_obsolete(struct mem_cgroup *mem)
- {
- 	if (!mem)
- 		return true;
- 	return css_is_removed(&mem->css);
- }
-+#endif
- 
- 
- /*
--- 
-1.5.6.3
-
----696229367-1309287308-1242383071=:32670--
+The default is effectively ABI so you are changing it for people using
+the 0600 default and doing nothing at all useful for those with 0620
+defaults in their mount tab (which btw is distro dependant policy)
