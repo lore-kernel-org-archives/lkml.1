@@ -1,100 +1,98 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757072AbZEOOKa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757794AbZEOOLU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757072AbZEOOKa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 10:10:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751366AbZEOOKW
+	id S1757794AbZEOOLU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 10:11:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751602AbZEOOLF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 10:10:22 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:59707 "EHLO mx2.redhat.com"
+	Fri, 15 May 2009 10:11:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:59736 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751225AbZEOOKV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 10:10:21 -0400
-Date: Fri, 15 May 2009 10:06:43 -0400
+	id S1751225AbZEOOLC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 10:11:02 -0400
+Date: Fri, 15 May 2009 10:09:30 -0400
 From: Vivek Goyal <vgoyal@redhat.com>
-To: Andrea Righi <righi.andrea@gmail.com>
-Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Nauman Rafique <nauman@google.com>, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
+To: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
+Cc: Andrea Righi <righi.andrea@gmail.com>, Nauman Rafique <nauman@google.com>,
+       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
+       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
+       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
+       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
+       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+       containers@lists.linux-foundation.org, agk@redhat.com,
+       dm-devel@redhat.com, snitzer@redhat.com, m-ikeda@ds.jp.nec.com,
+       akpm@linux-foundation.org
 Subject: Re: [PATCH] io-controller: Add io group reference handling for
 	request
-Message-ID: <20090515140643.GB19350@redhat.com>
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A03FF3C.4020506@cn.fujitsu.com> <20090508135724.GE7293@redhat.com> <e98e18940905081041r386e52a5q5a2b1f13f1e8c634@mail.gmail.com> <4A078051.5060702@cn.fujitsu.com> <20090511154127.GD6036@redhat.com> <4A0CFA6C.3080609@cn.fujitsu.com> <20090515074839.GA3340@linux>
+Message-ID: <20090515140930.GC19350@redhat.com>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A03FF3C.4020506@cn.fujitsu.com> <20090508135724.GE7293@redhat.com> <e98e18940905081041r386e52a5q5a2b1f13f1e8c634@mail.gmail.com> <4A078051.5060702@cn.fujitsu.com> <20090511154127.GD6036@redhat.com> <4A0CFA6C.3080609@cn.fujitsu.com> <20090515074839.GA3340@linux> <4A0D24E6.6010807@cn.fujitsu.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090515074839.GA3340@linux>
+In-Reply-To: <4A0D24E6.6010807@cn.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 09:48:40AM +0200, Andrea Righi wrote:
-> On Fri, May 15, 2009 at 01:15:24PM +0800, Gui Jianfeng wrote:
-> > Vivek Goyal wrote:
-> > ...
-> > >  }
-> > > @@ -1462,20 +1462,27 @@ struct io_cgroup *get_iocg_from_bio(stru
-> > >  /*
-> > >   * Find the io group bio belongs to.
-> > >   * If "create" is set, io group is created if it is not already present.
-> > > + * If "curr" is set, io group is information is searched for current
-> > > + * task and not with the help of bio.
-> > > + *
-> > > + * FIXME: Can we assume that if bio is NULL then lookup group for current
-> > > + * task and not create extra function parameter ?
-> > >   *
-> > > - * Note: There is a narrow window of race where a group is being freed
-> > > - * by cgroup deletion path and some rq has slipped through in this group.
-> > > - * Fix it.
-> > >   */
-> > > -struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
-> > > -					int create)
-> > > +struct io_group *io_get_io_group(struct request_queue *q, struct bio *bio,
-> > > +					int create, int curr)
+On Fri, May 15, 2009 at 04:16:38PM +0800, Gui Jianfeng wrote:
+> Andrea Righi wrote:
+> > On Fri, May 15, 2009 at 01:15:24PM +0800, Gui Jianfeng wrote:
+> >> Vivek Goyal wrote:
+> >> ...
+> >>>  }
+> >>> @@ -1462,20 +1462,27 @@ struct io_cgroup *get_iocg_from_bio(stru
+> >>>  /*
+> >>>   * Find the io group bio belongs to.
+> >>>   * If "create" is set, io group is created if it is not already present.
+> >>> + * If "curr" is set, io group is information is searched for current
+> >>> + * task and not with the help of bio.
+> >>> + *
+> >>> + * FIXME: Can we assume that if bio is NULL then lookup group for current
+> >>> + * task and not create extra function parameter ?
+> >>>   *
+> >>> - * Note: There is a narrow window of race where a group is being freed
+> >>> - * by cgroup deletion path and some rq has slipped through in this group.
+> >>> - * Fix it.
+> >>>   */
+> >>> -struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
+> >>> -					int create)
+> >>> +struct io_group *io_get_io_group(struct request_queue *q, struct bio *bio,
+> >>> +					int create, int curr)
+> >>   Hi Vivek,
+> >>
+> >>   IIUC we can get rid of curr, and just determine iog from bio. If bio is not NULL,
+> >>   get iog from bio, otherwise get it from current task.
 > > 
-> >   Hi Vivek,
+> > Consider also that get_cgroup_from_bio() is much more slow than
+> > task_cgroup() and need to lock/unlock_page_cgroup() in
+> > get_blkio_cgroup_id(), while task_cgroup() is rcu protected.
 > > 
-> >   IIUC we can get rid of curr, and just determine iog from bio. If bio is not NULL,
-> >   get iog from bio, otherwise get it from current task.
+> > BTW another optimization could be to use the blkio-cgroup functionality
+> > only for dirty pages and cut out some blkio_set_owner(). For all the
+> > other cases IO always occurs in the same context of the current task,
+> > and you can use task_cgroup().
+> > 
+> > However, this is true only for page cache pages, for IO generated by
+> > anonymous pages (swap) you still need the page tracking functionality
+> > both for reads and writes.
 > 
-> Consider also that get_cgroup_from_bio() is much more slow than
-> task_cgroup() and need to lock/unlock_page_cgroup() in
-> get_blkio_cgroup_id(), while task_cgroup() is rcu protected.
+>   Hi Andrea,
 > 
-
-True.
-
-> BTW another optimization could be to use the blkio-cgroup functionality
-> only for dirty pages and cut out some blkio_set_owner(). For all the
-> other cases IO always occurs in the same context of the current task,
-> and you can use task_cgroup().
-> 
-
-Yes, may be in some cases we can avoid setting page owner. I will get
-to it once I have got functionality going well. In the mean time if
-you have a patch for it, it will be great.
-
-> However, this is true only for page cache pages, for IO generated by
-> anonymous pages (swap) you still need the page tracking functionality
-> both for reads and writes.
+>   Thanks for pointing this out. Yes, i think we can determine io group in
+>   terms of bio->bi_rw. If bio is a READ bio, just taking io group by 
+>   task_cgroup(). If it's a WRITE bio, getting it from blkio_cgroup.
 > 
 
-Right now I am assuming that all the sync IO will belong to task
-submitting the bio hence use task_cgroup() for that. Only for async
-IO, I am trying to use page tracking functionality to determine the owner.
-Look at elv_bio_sync(bio).
+Gui, we are already doing it. page tracking functionality is used only
+for async IO and for all sync IO, we are using submitting tasks's group
+to determine io group bio belongs to.
 
-You seem to be saying that there are cases where even for sync IO, we
-can't use submitting task's context and need to rely on page tracking
-functionlity? In case of getting page (read) from swap, will it not happen
-in the context of process who will take a page fault and initiate the
-swap read?
+	if (elv_bio_sync(bio)) {
+		/* sync io. Determine cgroup from submitting task
+		 * context.*/
+                cgroup = task_cgroup(current, io_subsys_id);
+                return cgroup;
+        }
 
 Thanks
 Vivek
