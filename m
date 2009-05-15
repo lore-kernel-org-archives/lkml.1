@@ -1,125 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756158AbZEOPP1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756826AbZEOPRG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756158AbZEOPP1 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 11:15:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbZEOPPK
+	id S1756826AbZEOPRG (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 11:17:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbZEOPQ4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 11:15:10 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55127 "EHLO hera.kernel.org"
+	Fri, 15 May 2009 11:16:56 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:38761 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752461AbZEOPPI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 11:15:08 -0400
-Message-ID: <4A0D86DB.9000203@kernel.org>
-Date: Sat, 16 May 2009 00:14:35 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1752079AbZEOPQ4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 11:16:56 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: hibernate vs. WoL
+Date: Fri, 15 May 2009 17:15:53 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
+Cc: "linux-kernel" <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       pm list <linux-pm@lists.linux-foundation.org>
+References: <1242396160.5799.92.camel@johannes.local>
+In-Reply-To: <1242396160.5799.92.camel@johannes.local>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Pete Zaitcev <zaitcev@redhat.com>
-Subject: [PATCH block#for-2.6.31 1/3] ub: use __blk_end_request_all()
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
+Content-Type: Text/Plain;
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 15 May 2009 15:14:41 +0000 (UTC)
+Content-Disposition: inline
+Message-Id: <200905151715.54123.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-ub_end_rq() always tries to complete full request.  The @cmd_len
-parameter was there because rq->data_len used to be overwritten with
-residue count.  Drop @cmd_len and use __blk_end_request_all().
+On Friday 15 May 2009, Johannes Berg wrote:
+> Hi,
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Pete Zaitcev <zaitcev@redhat.com>
----
- drivers/block/ub.c |   24 +++++++-----------------
- 1 file changed, 7 insertions(+), 17 deletions(-)
+Hi,
 
-Index: block/drivers/block/ub.c
-===================================================================
---- block.orig/drivers/block/ub.c
-+++ block/drivers/block/ub.c
-@@ -360,8 +360,7 @@ static void ub_cmd_build_block(struct ub
- static void ub_cmd_build_packet(struct ub_dev *sc, struct ub_lun *lun,
-     struct ub_scsi_cmd *cmd, struct ub_request *urq);
- static void ub_rw_cmd_done(struct ub_dev *sc, struct ub_scsi_cmd *cmd);
--static void ub_end_rq(struct request *rq, unsigned int status,
--    unsigned int cmd_len);
-+static void ub_end_rq(struct request *rq, unsigned int status);
- static int ub_rw_cmd_retry(struct ub_dev *sc, struct ub_lun *lun,
-     struct ub_request *urq, struct ub_scsi_cmd *cmd);
- static int ub_submit_scsi(struct ub_dev *sc, struct ub_scsi_cmd *cmd);
-@@ -644,13 +643,13 @@ static int ub_request_fn_1(struct ub_lun
- 
- 	if (atomic_read(&sc->poison)) {
- 		blk_start_request(rq);
--		ub_end_rq(rq, DID_NO_CONNECT << 16, blk_rq_bytes(rq));
-+		ub_end_rq(rq, DID_NO_CONNECT << 16);
- 		return 0;
- 	}
- 
- 	if (lun->changed && !blk_pc_request(rq)) {
- 		blk_start_request(rq);
--		ub_end_rq(rq, SAM_STAT_CHECK_CONDITION, blk_rq_bytes(rq));
-+		ub_end_rq(rq, SAM_STAT_CHECK_CONDITION);
- 		return 0;
- 	}
- 
-@@ -702,7 +701,7 @@ static int ub_request_fn_1(struct ub_lun
- 
- drop:
- 	ub_put_cmd(lun, cmd);
--	ub_end_rq(rq, DID_ERROR << 16, blk_rq_bytes(rq));
-+	ub_end_rq(rq, DID_ERROR << 16);
- 	return 0;
- }
- 
-@@ -777,7 +776,6 @@ static void ub_rw_cmd_done(struct ub_dev
- 	struct ub_request *urq = cmd->back;
- 	struct request *rq;
- 	unsigned int scsi_status;
--	unsigned int cmd_len;
- 
- 	rq = urq->rq;
- 
-@@ -816,17 +814,14 @@ static void ub_rw_cmd_done(struct ub_dev
- 
- 	urq->rq = NULL;
- 
--	cmd_len = cmd->len;
- 	ub_put_cmd(lun, cmd);
--	ub_end_rq(rq, scsi_status, cmd_len);
-+	ub_end_rq(rq, scsi_status);
- 	blk_start_queue(lun->disk->queue);
- }
- 
--static void ub_end_rq(struct request *rq, unsigned int scsi_status,
--    unsigned int cmd_len)
-+static void ub_end_rq(struct request *rq, unsigned int scsi_status)
- {
- 	int error;
--	long rqlen;
- 
- 	if (scsi_status == 0) {
- 		error = 0;
-@@ -834,12 +829,7 @@ static void ub_end_rq(struct request *rq
- 		error = -EIO;
- 		rq->errors = scsi_status;
- 	}
--	rqlen = blk_rq_bytes(rq);    /* Oddly enough, this is the residue. */
--	if (__blk_end_request(rq, error, cmd_len)) {
--		printk(KERN_WARNING DRV_NAME
--		    ": __blk_end_request blew, %s-cmd total %u rqlen %ld\n",
--		    blk_pc_request(rq)? "pc": "fs", cmd_len, rqlen);
--	}
-+	__blk_end_request_all(rq, error);
- }
- 
- static int ub_rw_cmd_retry(struct ub_dev *sc, struct ub_lun *lun,
+> According to pm.h one should enable wakup events in the suspend() and
+> poweroff() callbacks.
+> 
+> However, poweroff is not called for the 'shutdown' or 'restart'
+> hibernate methods. This seems problematic, since then with proper
+> drivers platforms that have no 'platform' suspend method then cannot WoL
+> or anything like that (well, for 'restart' that isn't very relevant).
+
+I think the solution for these platforms is to define hibernation operations
+(struct platform_hibernation_ops) that do nothing and use the 'platform' mode.
+
+WoL is not really supported in the 'shutdown' mode due to drivers that
+don't have a ->shutdown() method setting up WoL.  Also, on ACPI systems we
+often need to do some ACPI magic for the WoL to really work and this is not
+done in the 'platform' mode.
+
+> The only way to hack around that seems to be to implement the
+> dev->driver->shutdown method, but I don't think that is intended? On the
+> other hand calling both ->shutdown and ->poweroff seems problematic.
+> 
+> Right now what I'm trying to do is preserve a wireless connection across
+> hibernate. This is possible by telling the AP that we're asleep, in
+> which case it will buffer frames for us (it may eventually kick us off
+> anyway, but that's ok, without telling it we're asleep I don't even
+> survive a 'reboot' method cycle).
+> 
+> Also, shouldn't it be possible to WoL while your machine is shut down?
+> How do you program that?
+
+Set up WoL in ->shutdown(), like e1000 for example.
+
+In fact I don't like it too, because IMO we clearly seem to need to split
+the current ->shutdown() into non-PM and PM parts, but that's how it goes
+at the moment.
+
+Thanks,
+Rafael
+
