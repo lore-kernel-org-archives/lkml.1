@@ -1,61 +1,47 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbZEOISi@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760642AbZEOITf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760131AbZEOISi (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 04:18:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbZEOISU
+	id S1760642AbZEOITf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 04:19:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756572AbZEOITT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 04:18:20 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46720 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756680AbZEOIST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 04:18:19 -0400
-Message-ID: <4A0D253A.1070705@kernel.org>
-Date: Fri, 15 May 2009 17:18:02 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Fri, 15 May 2009 04:19:19 -0400
+Received: from opensource.wolfsonmicro.com ([80.75.67.52]:36695 "EHLO
+	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1756031AbZEOITS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 04:19:18 -0400
+Date: Fri, 15 May 2009 09:19:18 +0100
+From: Mark Brown <broonie@opensource.wolfsonmicro.com>
+To: David Brownell <david-b@pacbell.net>
+Cc: lrg@slimlogic.co.uk, lkml <linux-kernel@vger.kernel.org>,
+       DaVinci <davinci-linux-open-source@linux.davincidsp.com>
+Subject: Re: [patch 0/3] DaVinci ASoC updates
+Message-ID: <20090515081917.GA29556@rakim.wolfsonmicro.main>
+References: <200905141235.35600.david-b@pacbell.net>
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: mingo@elte.hu, andi@firstfloor.org, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org, hpa@zytor.com
-Subject: Re: [PATCH 3/5] x86: fix pageattr handling for remap percpu	 allocator
-References: <1242361739-21186-1-git-send-email-tj@kernel.org> <1242361739-21186-4-git-send-email-tj@kernel.org> <4A0D3CC6020000780000108F@vpn.id2.novell.com>
-In-Reply-To: <4A0D3CC6020000780000108F@vpn.id2.novell.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 15 May 2009 08:18:06 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905141235.35600.david-b@pacbell.net>
+X-Cookie: WRONG!
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Thu, May 14, 2009 at 12:35:35PM -0700, David Brownell wrote:
 
-Jan Beulich wrote:
->>>> Tejun Heo <tj@kernel.org> 15.05.09 06:28 >>>
->> @@ -742,6 +744,27 @@ static int cpa_process_alias(struct cpa_data *cpa)
->> 	}
->> #endif
->>
->> +	/*
->> +	 * If the PMD page was partially used for per-cpu remapping,
->> +	 * the remapped area needs to be split and modified.  Note
->> +	 * that the partial recycling only happens at the tail of a
->> +	 * partially used PMD page, so touching single PMD page is
->> +	 * always enough.
->> +	 */
->> +	remapped = pcpu_pmd_remapped((void *)vaddr);
-> 
-> vaddr here is the passed-in address, but in order for the lookup to
-> be positive it needs to be the canonical address (i.e. the one
-> pointing into the 1:1 mapping), i.e. __va(cpa->pfn << PAGE_SHIFT),
-> just like temp_cpa_vaddr gets calculated earlier in the same
-> function.
+> The 2.6.30-rc5 merges included a bunch of DaVinci platform
+> updates, including EDMA support.  Which means that finally
+> the ASoC stuff can be made to build in mainline ... it was
+> probably sent to mainline before its time.  ;)
 
-Hmmm... There's no need to match percpu map -> linear addr.  Okay,
-right, if the recycled part has been aliased to different vmalloc
-mapping than the pfn should be matched.
+I've applied all three patches.  Obviously they should all have been
+merged much earlier but given that the code didn't even build there's
+no risk of making the situation worse and they look fine.
 
-Thanks for spotting it.  Will posted updated patch.
+> (I'm cc'ing all interested parties -- except alsa-devel,
+> which is members-only -- on this note, but will only cc
+> the DaVinci list on the three patches.)
 
--- 
-tejun
+In future I'd suggest not sending the cover letter to more recipients
+than the actual patches, it just creates confusion.
