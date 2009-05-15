@@ -1,58 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbZEOSv3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753805AbZEOSz6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757921AbZEOSv3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 14:51:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756248AbZEOSuy
+	id S1753805AbZEOSz6 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 14:55:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752047AbZEOSzu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 14:50:54 -0400
-Received: from gw.goop.org ([64.81.55.164]:60747 "EHLO mail.goop.org"
+	Fri, 15 May 2009 14:55:50 -0400
+Received: from arroyo.ext.ti.com ([192.94.94.40]:38370 "EHLO arroyo.ext.ti.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756781AbZEOSuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 14:50:51 -0400
-Message-ID: <4A0DB988.6000009@goop.org>
-Date: Fri, 15 May 2009 11:50:48 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	id S1751652AbZEOSzt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 14:55:49 -0400
+Message-ID: <4A0DBA9D.2050107@ti.com>
+Date: Fri, 15 May 2009 13:55:25 -0500
+From: Jon Hunter <jon-hunter@ti.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@novell.com>
-CC: Ingo Molnar <mingo@elte.hu>, Jun Nakajima <jun.nakajima@intel.com>,
-       Xiaohui Xin <xiaohui.xin@intel.com>, Xin Li <xin.li@intel.com>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [Xen-devel] Performance overhead of paravirt_ops on		 nativeidentified
-References: <4A0B62F7.5030802@goop.org> <4A0BED040200007800000DB0@vpn.id2.novell.com> <4A0C58BB.3090303@goop.org> <4A0D3F8C02000078000010A7@vpn.id2.novell.com>
-In-Reply-To: <4A0D3F8C02000078000010A7@vpn.id2.novell.com>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+To: John Stultz <johnstul@us.ibm.com>
+CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [RFC][PATCH] Dynamic Tick: Allow 32-bit machines to sleep   
+ formorethan2.15 seconds
+References: <49ECE615.2010800@ti.com>  <20090421063523.GA8020@elte.hu>	 <1240345936.6080.6.camel@localhost>  <49EE54B4.9020700@ti.com>	 <1240358525.6080.40.camel@localhost>  <4A02F5A3.3050004@ti.com>	 <1241744048.7518.132.camel@localhost.localdomain> <4A04584E.4020307@ti.com>	 <1241830281.7297.21.camel@localhost.localdomain>  <4A0A07D6.90408@ti.com>	 <1242172727.3462.55.camel@localhost>  <4A0AE3E3.5090304@ti.com>	 <1242232872.9110.98.camel@jstultz-laptop>  <4A0B0939.5030008@ti.com> <1242242497.9777.2.camel@jstultz-laptop> <4A0D99E0.3050306@ti.com>
+In-Reply-To: <4A0D99E0.3050306@ti.com>
+Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jan Beulich wrote:
-> A patch for the pv-ops kernel would require some time. What I can give you
-> right away - just for reference - are the sources we currently use in our kernel:
-> attached.
 
-Hm, I see.  Putting a call out to a pv-ops function in the ticket lock 
-slow path looks pretty straightforward.  The need for an extra lock on 
-the contended unlock side is a bit unfortunate; have you measured to see 
-what hit that has?  Seems to me like you could avoid the problem by 
-using per-cpu storage rather than stack storage (though you'd need to 
-copy the per-cpu data to stack when handling a nested spinlock).
+Jon Hunter wrote:
+> +	/*
+> +	 * If the result overflows, return the max value we can.
+> +	 */
+> +	if (overflow)
+> +		ret = LONG_MAX;
+> +	else
+> +		ret = (s64)((upper << 32) + lower);
+> +
+>   	return ret;
+>   }
 
-What's the thinking behind the xen_spin_adjust() stuff?
+Correction. Should have been LLONG_MAX and not LONG_MAX in the above. 
+See below.
 
-> static __always_inline void __ticket_spin_lock(raw_spinlock_t *lock) { 
-> unsigned int token, count; bool free; __ticket_spin_lock_preamble; if 
-> (unlikely(!free)) token = xen_spin_adjust(lock, token); do { count = 1 
-> << 10; __ticket_spin_lock_body; } while (unlikely(!count) && 
-> !xen_spin_wait(lock, token)); } 
+Jon
 
 
-How does this work?  Doesn't it always go into the slowpath loop even if 
-the preamble got the lock with no contention?
+diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
+index 5a40d14..647f228 100644
+--- a/include/linux/clocksource.h
++++ b/include/linux/clocksource.h
+@@ -316,8 +316,32 @@ static inline void clocksource_disable(struct 
+clocksource *cs)
+   */
+  static inline s64 cyc2ns(struct clocksource *cs, cycle_t cycles)
+  {
+-       u64 ret = (u64)cycles;
+-       ret = (ret * cs->mult) >> cs->shift;
++       s64 ret;
++       u64 upper, lower, overflow;
++
++       /*
++        * Split the calculation into two halves to ensure
++        * that we can catch any overflow that may occur.
++        */
++       upper = ((cycles >> 32) * cs->mult) >> cs->shift;
++       lower = ((cycles & 0xFFFFFFFF) * cs->mult) >> cs->shift;
++
++       /*
++        * Check to see if the result will overflow. If
++        * overflow is non-zero then the result is greater
++        * than 63-bits which is the max positive value
++        * for a signed result.
++        */
++       overflow = (upper + (lower >> 32)) >> 31;
++
++       /*
++        * If the result overflows, return the max value we can.
++        */
++       if (overflow)
++               ret = LLONG_MAX;
++       else
++               ret = (s64)((upper << 32) + lower);
++
+         return ret;
+  }
 
-    J
