@@ -1,71 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbZEOA41@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756917AbZEOA6S@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757148AbZEOA41 (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 20:56:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZEOA4S
+	id S1756917AbZEOA6S (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 20:58:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755405AbZEOA6F
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 20:56:18 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:59855 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752894AbZEOA4R (ORCPT
+	Thu, 14 May 2009 20:58:05 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:34465 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754261AbZEOA6E (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 20:56:17 -0400
-Date: Fri, 15 May 2009 09:54:45 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: balbir@linux.vnet.ibm.com, "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "akpm@linux-foundation.org" <akpm@linux-foundation.org>, mingo@elte.hu,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/3] fix stale swap cache account leak  in memcg v7
-Message-Id: <20090515095445.9492fe13.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090515093853.e97fd120.nishimura@mxp.nes.nec.co.jp>
-References: <20090512104401.28edc0a8.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090512095158.GB6351@balbir.in.ibm.com>
-	<20090513093127.4dadac97.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090515084716.544930d9.kamezawa.hiroyu@jp.fujitsu.com>
-	<20090515093853.e97fd120.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Thu, 14 May 2009 20:58:04 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=WWLclRf3nvSat8jgUjzrjnXqPIsPoWi3pmEyHjq4DZn4Cskiht4auu/GXBiuLn7C8N
+         vA0eXSGdcE8+njJ2d3GKap6agrcUwpyYKDJsiGFk00qsSZYnil8gxmJOLfdwrBT/J1Lh
+         q5C2NHO+56BNLXHEWU+dzty1+DCY4VNazQABg=
+MIME-Version: 1.0
+In-Reply-To: <4A0B9B0D.6080006@garzik.org>
+References: <6C678488C5CEE74F813A4D1948FD2DC7A95E6D37@cosmail02.lsi.com>
+	 <4A0B858F.3080405@garzik.org>
+	 <6C678488C5CEE74F813A4D1948FD2DC7A95E6D38@cosmail02.lsi.com>
+	 <4A0B9B0D.6080006@garzik.org>
+Date: Thu, 14 May 2009 17:58:03 -0700
+Message-ID: <b1bc6a000905141758y20aa7852h8b1012e3da6f8c0f@mail.gmail.com>
+Subject: Re: [RFQ] New driver architecture questions
+From: adam radford <aradford@gmail.com>
+To: Jeff Garzik <jeff@garzik.org>
+Cc: "Mukker, Atul" <Atul.Mukker@lsi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Austria, Winston" <Winston.Austria@lsi.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 May 2009 09:38:53 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On Wed, May 13, 2009 at 9:16 PM, Jeff Garzik <jeff@garzik.org> wrote:
+> Taking drivers/net/e1000e as an
+> example,
+>
+>        hw.h            hardware-specific defines, ~cross-OS
+>        82571.c         code specific to 8257x chip family, ~cross-OS
 
-> On Fri, 15 May 2009 08:47:16 +0900, KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > On Wed, 13 May 2009 09:31:27 +0900
-> > KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> wrote:
-> > 
-> > > On Tue, 12 May 2009 15:21:58 +0530
-> > > Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > > The patch set includes followng
-> > > > >  [1/3] add mem_cgroup_is_activated() function. which tell us memcg is _really_ used.
-> > > > >  [2/3] fix swap cache handling race by avoidng readahead.
-> > > > >  [3/3] fix swap cache handling race by check swapcount again.
-> > > > > 
-> > > > > Result is good under my test.
-> > > > 
-> > > > What was the result (performance data impact) of disabling swap
-> > > > readahead? Otherwise, this looks the most reasonable set of patches
-> > > > for this problem.
-> > > > 
-> > > I'll measure some and report it in the next post.
-> > > 
-> > I confirmed there are cases which swapin readahead works very well....
-> > 
-> > Nishimura-san, could you post a patch for fixing leak at writeback ? as [3/3]
-> > I'd like to fix readahead case...with some large patch.
-> > 
-> Sure.
-> I'll rebase my patch onto [1-2/3] of your new patch and post it.
-> 
-Ah, plz go ahead and don't wait for me. Mine is just under rough design now.
+82571.c contains Linux specific code such as:  including Linux
+specific header files, calls to msleep().
 
-Thanks,
--Kame
+>        ich8lan.c       code specific to ICH8+ chip family, ~cross-OS
 
+ich8lan.c contains Linux specific code such as:  might_sleep(),
+mutex_trylock(), mutex_unlock(), udelay(), msleep(), writel(), readl().
+
+Perhaps this is a bad example?  It seems like the "common layer"
+sections that are "cross-OS" shouldn't contain any Linux specific code at all.
+
+-Adam
