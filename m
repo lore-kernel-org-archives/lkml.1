@@ -1,93 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbZEOE3i@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760864AbZEOE35@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757442AbZEOE3i (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 00:29:38 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbZEOE3Y
+	id S1760864AbZEOE35 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 00:29:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756233AbZEOE3e
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 00:29:24 -0400
-Received: from n23a.bullet.mail.mud.yahoo.com ([68.142.207.189]:27977 "HELO
-	n23a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1751556AbZEOE3X (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 00:29:23 -0400
-X-Yahoo-Newman-Id: 269596.77825.bm@omp418.mail.mud.yahoo.com
-X-YMail-OSG: xltqR1wVM1kuzpwILP1iSFYQQcDZtrT6kbisvKnsLkSYSqLBLO_vWWMhF1wdiLarRxVcJdRw0eafERWbdK_YAYiulISJaHhhGlG9DviYTshGnZ1WaXl8G0nyIF8uXauRN.GV8dDBymfsPgHCWXEdekrgBjIYF9urpKQ7ReKA7ApLuWA9hcth63ykn5iqtYt.7U7rytGzlLgIEzvGDsZ8qm1cVXboIzeOXkaQi9ZaJ_dbqSV.F6hgXP_9GNiVxLumeObVAqefn50xrEWJW3sveMCzWWGnCmU2IkvUWBxkR7Eh89v1KtAVyf_FmLXbry4idrgcBKMn_VdRqRigPXGLJWcU0kQ14S0F6._TCVJ6fz6_jwRuPeLISJsvKY8lev6fGZ80GWg-
-X-Yahoo-Newman-Property: ymail-3
-Subject: KVM 10/Gb Ethernet PCIe passthrough with Linux/iSCSI and large
-	block sizes
-From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
-To: kvm-devel <kvm@vger.kernel.org>, linux-scsi <linux-scsi@vger.kernel.org>,
-       Linux-netdev <netdev@vger.kernel.org>,
-       LKML <linux-kernel@vger.kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       "H. Peter Anvin" <hpa@zytor.com>, Hannes Reinecke <hare@suse.de>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Mike Christie <michaelc@cs.wisc.edu>, Christoph Hellwig <hch@lst.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sheng Yang <sheng@linux.intel.com>,
-       Leonid Grossman <leonid.grossman@neterion.com>,
-       Ramkrishna Vepa <Ramkrishna.Vepa@neterion.com>,
-       Rastapur Santosh <santosh.rastapur@neterion.com>
-Content-Type: text/plain
-Date: Thu, 14 May 2009 21:29:21 -0700
-Message-Id: <1242361761.21442.276.camel@haakon2.linux-iscsi.org>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.22.3.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 15 May 2009 00:29:34 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41561 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755748AbZEOE3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 00:29:33 -0400
+From: Tejun Heo <tj@kernel.org>
+To: JBeulich@novell.com, andi@firstfloor.org, mingo@elte.hu,
+       linux-kernel-owner@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org
+Cc: Tejun Heo <tj@kernel.org>
+Subject: [PATCH 5/5] x86: ensure percpu remap doesn't consume too much vmalloc space
+Date: Fri, 15 May 2009 13:28:59 +0900
+Message-Id: <1242361739-21186-6-git-send-email-tj@kernel.org>
+X-Mailer: git-send-email 1.6.0.2
+In-Reply-To: <1242361739-21186-1-git-send-email-tj@kernel.org>
+References: <1242361739-21186-1-git-send-email-tj@kernel.org>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 15 May 2009 04:29:10 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Greetings all,
+On extreme configuration (e.g. 32bit 32-way NUMA machine), remap
+percpu first chunk allocator can consume too much of vmalloc space.
+Make it fall back to 4k allocator if the consumption goes over 20%.
 
-The first test results for Linux/iSCSI Initiators and targets for large
-block sizes using 10 Gb/sec Ethernet + PCIe device-passthrough into
-Linux/KVM guests have been posted at:
+[ Impact: add sanity check for remap percpu first chunk allocator ]
 
-http://linux-iscsi.org/index.php/KVM-LIO-Target
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Reported-by: Jan Beulich <JBeulich@novell.com>
+Cc: Andi Kleen <andi@firstfloor.org>
+Cc: Ingo Molnar <mingo@elte.hu>
+---
+ arch/x86/kernel/setup_percpu.c |   18 +++++++++++++++---
+ 1 files changed, 15 insertions(+), 3 deletions(-)
 
-So far, the results have been quite impressive using the Neterion X3100
-series hardware with recent KVM-85 stable code (with Marcelo's patches,
-see the above link) on v2.6.29.2 KVM guests, and using v2.6.30-rc3 KVM
-Hosts.
-
-Using iSCSI RFC defined MC/S to scale a *single* KVM accessable
-Linux/iSCSI Logical Unit to 10 Gb/sec line-rate speeds has been
-successful using Core-iSCSI WRITE/READ (bi-directional) traffic using
-Linux-Test-Project disktest pthreaded benchmark with O_DIRECT enabled.
-Using Core-iSCSI MC/S w/ iSCSI READ (uni-directional) the average is
-about 6-7 Gb/sec, and with MC/S iSCSI WRITE (uni-directional) the
-average is about 5 Gb/sec to the RAMDISK_DR and FILEIO storage objects
-for these same streaming tests.  Please see the link for more
-information on the tests and hardware/software setup.
-
-The tests have been run with both upstream Open-iSCSI and Core-iSCSI
-Initiators against Target_Core_Mod/LIO-Target v3.0 in KVM guests.  It is
-important to note that these tests have been run with tcp_sendpage()
-disabled (tcp_sendpage() is enabled by default in LIO-Target and
-Open-iSCSI) in 10 Gb/sec KVM guests, which have been disable into order
-to get up running with the 10 Gb/sec hardware.  1 Gb/sec e1000e ports
-are stable with sendpage() in LIO-Target KVM guests, and these will be
-enabled in 10 Gb/sec hardware in subsequent tests.  Also note that
-Open-iSCSI WRITEs using tcp_sendpage() have been ommited for this first
-run of tests.
-
-It is also important to note that both iSCSI MC/S and dm-multipath are
-methods to allow a single Linux/SCSI Logical Unit to scale across
-multiple TCP connections using the iSCSI Protocol.  Both of these
-methods (iSCSI RFC fabric level multiplexing and OS-level SCSI
-Multipath) allow for means for scaling across multiple X3110 Vpaths
-(MSI-X TX/RX pairs), and MC/S is a method that has a low amount of
-overhead.
-
-Some of the future setups for KVM + 10 Gb/sec will be using dm-multipath
-block devices, 10 Gb/sec Ethernet PCIe multi-function mode into KVM
-guest, as well as PCIe SR-IOV on recent IOMMU capable hardware
-platforms.
-
-Many thanks to the Neterion folks and Sheng Yang for answering my
-questions!
-
---nab
-
+diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
+index 29be178..1f28574 100644
+--- a/arch/x86/kernel/setup_percpu.c
++++ b/arch/x86/kernel/setup_percpu.c
+@@ -169,9 +169,21 @@ static ssize_t __init setup_pcpu_remap(size_t static_size, bool chosen)
+ 		return -EINVAL;
+ 	}
+ 
+-	/* on non-NUMA, embedding is better */
+-	if (!chosen && !pcpu_need_numa())
+-		return -EINVAL;
++	if (!chosen) {
++		size_t vm_size = VMALLOC_END - VMALLOC_START;
++		size_t tot_size = num_possible_cpus() * PMD_SIZE;
++
++		/* on non-NUMA, embedding is better */
++		if (!pcpu_need_numa())
++			return -EINVAL;
++
++		/* don't consume more than 20% of vmalloc area */
++		if (tot_size > vm_size / 5) {
++			pr_info("PERCPU: too large chunk size %zuMB for "
++				"large page remap\n", tot_size >> 20);
++			return -EINVAL;
++		}
++	}
+ 
+ 	/*
+ 	 * Currently supports only single page.  Supporting multiple
+-- 
+1.6.0.2
 
