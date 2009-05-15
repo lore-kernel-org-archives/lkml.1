@@ -1,84 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760528AbZEOKrh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761750AbZEOKvq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760528AbZEOKrh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 06:47:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759493AbZEOKr2
+	id S1761750AbZEOKvq (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 06:51:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759629AbZEOKvi
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 06:47:28 -0400
-Received: from mailout2.w1.samsung.com ([210.118.77.12]:13600 "EHLO
-	mailout2.w1.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758977AbZEOKr1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 06:47:27 -0400
-Date: Fri, 15 May 2009 12:47:23 +0200
-From: =?utf-8?B?TWljaGHFgiBOYXphcmV3aWN6?= <m.nazarewicz@samsung.com>
-Subject: Re: [PATCH] Physical Memory Management [0/1]
-In-reply-to: <20090515101811.GC16682@one.firstfloor.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       m.szyprowski@samsung.com, kyungmin.park@samsung.com, linux-mm@kvack.org
-Message-id: <op.utyv89ek7p4s8u@amdc030>
-Organization: Samsung Electronics
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-transfer-encoding: 8BIT
-User-Agent: Opera Mail/10.00 (Win32)
-References: <op.utu26hq77p4s8u@amdc030>
- <20090513151142.5d166b92.akpm@linux-foundation.org>
- <op.utwwmpsf7p4s8u@amdc030> <1242300002.6642.1091.camel@laptop>
- <op.utw4fdhz7p4s8u@amdc030> <1242302702.6642.1140.camel@laptop>
- <op.utw7yhv67p4s8u@amdc030>
- <20090514100718.d8c20b64.akpm@linux-foundation.org>
- <1242321000.6642.1456.camel@laptop> <op.utyudge07p4s8u@amdc030>
- <20090515101811.GC16682@one.firstfloor.org>
+	Fri, 15 May 2009 06:51:38 -0400
+Received: from relay1.sgi.com ([192.48.179.29]:53898 "EHLO relay.sgi.com"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1759509AbZEOKvh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 06:51:37 -0400
+Date: Fri, 15 May 2009 05:51:37 -0500
+From: Robin Holt <holt@sgi.com>
+To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+Cc: Christoph Lameter <cl@linux-foundation.org>, Robin Holt <holt@sgi.com>,
+       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Rik van Riel <riel@redhat.com>
+Subject: Re: [PATCH 4/4] zone_reclaim_mode is always 0 by default
+Message-ID: <20090515105137.GO7601@sgi.com>
+References: <20090513152256.GM7601@sgi.com> <alpine.DEB.1.10.0905141602010.1381@qirst.com> <20090515082836.F5B9.A69D9226@jp.fujitsu.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090515082836.F5B9.A69D9226@jp.fujitsu.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->> Correct me if I'm wrong, but if I understand correctly, currently only
->> one size of huge page may be defined, even if underlaying architecture
+> Current linux policy is, zone_reclaim_mode is enabled by default if the machine
+> has large remote node distance. it's because we could assume that large distance 
+> mean large server until recently.
+> 
+> Unfortunately, recent modern x86 CPU (e.g. Core i7, Opeteron) have P2P transport
+> memory controller. IOW it's seen as NUMA from software view.
+> 
+> Some Core i7 machine has large remote node distance, but zone_reclaim don't
+> fit desktop and small file server. it cause performance degression.
+> 
+> Thus, zone_reclaim == 0 is better by default if the machine is small.
 
-On Fri, 15 May 2009 12:18:11 +0200, Andi Kleen wrote:
-> That's not correct, support for multiple huge page sizes was recently
-> added. The interface is a bit clumpsy admittedly, but it's there.
+What if I had a node 0 with 32GB or 128GB of memory.  In that case,
+we would have 3GB for DMA32, 125GB for Normal and then a node 1 with
+128GB.  I would suggest that zone reclaim would perform normally and
+be beneficial.
 
-I'll have to look into that further then.  Having said that, I cannot
-create a huge page SysV shared memory segment with pages of specified
-size, can I?
+You are unfairly classifying this as a size of machine problem when it is
+really a problem with the underlying zone reclaim code being triggered
+due to imbalanced node/zones, part of which is due to a single node
+having multiple zones and those multiple zones setting up the conditions
+for extremely agressive reclaim.  In other words, you are putting a
+bandage in place to hide a problem on your particular hardware.
 
-> However for non fragmentation purposes you probably don't
-> want too many different sizes anyways, the more sizes, the worse
-> the fragmentation. Ideal is only a single size.
+Can RECLAIM_DISTANCE be adjusted so your Ci7 boxes are no longer caught?
+Aren't 4 node Ci7 boxes soon to be readily available?  How are your apps
+different from my apps in that you are not impacted by node locality?
+Are you being too insensitive to node locality?  Conversely am I being
+too sensitive?
 
-Unfortunately, sizes may very from several KiBs to a few MiBs.
-On the other hand, only a handful of apps will use PMM in our system
-and at most two or three will be run at the same time so hopefully
-fragmentation won't be so bad.  But yes, I admit it is a concern.
+All that said, I would not stop this from going in.  I just think the
+selection criteria is rather random.  I think we know the condition we
+are trying to avoid which is a small Normal zone on one node and a larger
+Normal zone on another causing zone reclaim to be overly agressive.
+I don't know how to quantify "small" versus "large".  I would suggest
+that a node 0 with 16 or more GB should have zone reclaim on by default
+as well.  Can that be expressed in the selection criteria.
 
->> largest blocks that may ever be requested and then waste a lot of
->> memory when small pages are requested or (ii) define smaller huge
->> page size but then special handling of large regions need to be
->> implemented.
->
-> If you don't do that then long term fragmentation will
-> kill you anyways. it's easy to show that pre allocation with lots
-> of different sizes is about equivalent what the main page allocator
-> does anyways.
-
-However, having an allocator in PMM used by a handful of apps, an
-architect may provide a use cases that need to be supported and then
-PMM may be reimplemented to guarantee that those cases are handled.
-
-> As Peter et.al. explained earlier varying buffer sizes don't work
-> anyways.
-
-Either I missed something or Peter and Adrew only pointed the problem
-we all seem to agree exists: a problem of fragmentation.
-
--- 
-Best regards,                                            _     _
- .o. | Liege of Serenly Enlightened Majesty of         o' \,=./ `o
- ..o | Computer Science,  Michał "mina86" Nazarewicz      (o o)
- ooo +-<m.nazarewicz@samsung.com>-<mina86@jabber.org>-ooO--(_)--Ooo--
-
+Thanks,
+Robin Holt
