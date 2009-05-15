@@ -1,57 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbZEOAOK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757482AbZEOAUN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758749AbZEOAOK (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 20:14:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbZEOANw
+	id S1757482AbZEOAUN (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 20:20:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753563AbZEOAT7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 20:13:52 -0400
-Received: from sh.osrg.net ([192.16.179.4]:46160 "EHLO sh.osrg.net"
+	Thu, 14 May 2009 20:19:59 -0400
+Received: from tundra.namei.org ([65.99.196.166]:60207 "EHLO tundra.namei.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755079AbZEOANv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 20:13:51 -0400
-Date: Fri, 15 May 2009 09:12:41 +0900
-To: bharrosh@panasas.com
-Cc: tj@kernel.org, fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
-       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 0/3] block: completion related functions cleanup
-From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
-In-Reply-To: <4A0C2769.4090508@panasas.com>
-References: <4A0C2297.5040001@panasas.com>
-	<4A0C2515.9060602@kernel.org>
-	<4A0C2769.4090508@panasas.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
-Message-Id: <20090515091134C.fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 15 May 2009 09:12:43 +0900 (JST)
+	id S1753529AbZEOAT6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 20:19:58 -0400
+Date: Fri, 15 May 2009 10:17:56 +1000 (EST)
+From: James Morris <jmorris@namei.org>
+To: Theodore Tso <tytso@mit.edu>
+cc: Joseph Cihula <joseph.cihula@intel.com>, linux-kernel@vger.kernel.org,
+       mingo@elte.hu, arjan@linux.intel.com, hpa@zytor.com,
+       andi@firstfloor.org, chrisw@sous-sol.org, jbeulich@novell.com,
+       peterm@redhat.com, gang.wei@intel.com, shane.wang@intel.com,
+       John Gilmore <gnu@toad.com>
+Subject: Re: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
+ support
+In-Reply-To: <20090512210154.GC23773@mit.edu>
+Message-ID: <alpine.LRH.2.00.0905151006020.5527@tundra.namei.org>
+References: <4A03B9C3.9090607@intel.com> <20090512210154.GC23773@mit.edu>
+User-Agent: Alpine 2.00 (LRH 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 14 May 2009 17:15:05 +0300
-Boaz Harrosh <bharrosh@panasas.com> wrote:
+On Tue, 12 May 2009, Theodore Tso wrote:
 
-> On 05/14/2009 05:05 PM, Tejun Heo wrote:
-> > Nice spotting.  Looks like the variable can be killed completely?
-> > 
-> > Thanks.
-> > 
-> 
-> Sorry yes, here:
-> ---
-> From: Boaz Harrosh <bharrosh@panasas.com>
-> Date: Thu, 14 May 2009 16:46:03 +0300
-> Subject: [PATCH] scsi_lib: remove unused variable
-> 
-> The last request completion cleanup in scsi_lib left an unused
-> this_count variable in scsi_io_completion().
-> (It was used before in a code segment that now uses blk_end_request_all())
-> 
-> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
+> So we should expect a certain amount of controversy and people
+> lobbying to resist the acceptance of this patch.
 
-Ah, I overlooked this.
+FWIW, here's my response to an earlier private enquiry from John on the 
+topic:
 
-Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+  I'd prefer discussion to be public, so I don't mind leaving more 
+  detailed discussion to that.
 
-Thanks,
+  There has been considerable discussion on the issue, following Linus' 
+  statement (which I'm sure you're aware of):
+
+  http://marc.info/?l=linux-kernel&m=105115686114064&w=2
+
+  My position is similar -- people can decide for themselves whether they 
+  want to use DRM technology.  I'm also confident that technical measures 
+  taken to prevent real freedom will always be broken (when have they ever 
+  not been?)
+
+  I also feel there may be genuinely useful applications of some of the 
+  technology (e.g. sealing disk encryption keys in the TPM a la 
+  BitLocker).
+
+
+I'm fairly neutral on the technology itself and feel that "market 
+pressure" from users as well as local regulatory policy (e.g. anti-trust 
+laws) should determine how the technology is used, rather than the views 
+of a few kernel hackers.
+
+
+- James
+-- 
+James Morris
+<jmorris@namei.org>
