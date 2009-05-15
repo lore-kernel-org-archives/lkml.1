@@ -1,160 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762554AbZEOK6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762641AbZEOK6g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762554AbZEOK6V (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 06:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762321AbZEOK6F
+	id S1762641AbZEOK6g (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 06:58:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762611AbZEOK6X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 06:58:05 -0400
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:36477 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762179AbZEOK6A (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 06:58:00 -0400
-Date: Fri, 15 May 2009 16:27:53 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
-       Roland McGrath <roland@redhat.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 05/12] Use wrapper routines around debug registers in
-	processor related functions
-Message-ID: <20090515105753.GF21581@in.ibm.com>
-References: <20090515105133.629980476@prasadkr_t60p.in.ibm.com>
+	Fri, 15 May 2009 06:58:23 -0400
+Received: from thunk.org ([69.25.196.29]:42646 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1762593AbZEOK6W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 06:58:22 -0400
+Date: Fri, 15 May 2009 06:58:15 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Timo Sirainen <tss@iki.fi>
+Cc: Josef Bacik <josef@toxicpanda.com>, linux-kernel@vger.kernel.org
+Subject: Re: ext3/ext4 directories don't shrink after deleting lots of files
+Message-ID: <20090515105815.GD6816@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Timo Sirainen <tss@iki.fi>,
+	Josef Bacik <josef@toxicpanda.com>, linux-kernel@vger.kernel.org
+References: <1242338523.6933.664.camel@timo-desktop> <1b7401870905141732v43bd7321g1f0d9721b5e3f761@mail.gmail.com> <605A8D56-81CD-4775-8FCD-58CDB12CBA36@iki.fi>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=modify_processor_related_05
+Content-Disposition: inline
+In-Reply-To: <605A8D56-81CD-4775-8FCD-58CDB12CBA36@iki.fi>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Alan Stern <stern@rowland.harvard.edu>
+On Thu, May 14, 2009 at 08:45:38PM -0400, Timo Sirainen wrote:
+>
+> I was rather thinking something that I could run while the system was  
+> fully operational. Otherwise just moving the files to a temp directory + 
+> rmdir() + rename() would have been fine too.
+>
+> I just tested that xfs, jfs and reiserfs all shrink the directories  
+> immediately. Is it more difficult to implement for ext* or has no one  
+> else found this to be a problem?
 
-This patch enables the use of wrapper routines to access the debug/breakpoint
-registers.
+It's probably fairest to say no one has thought it worth the effort.
+It would require some fancy games to swap out block locations in the
+extent trees (life would be easier with non-extent-using inodes), and
+in the case of htree, we would have to keep track of the index block
+so we could remove it from the htree index.  So it's all doable, if a
+bit tricky in terms of the technical details; it's just that the
+people who could do it have been busy enough with other things.
 
-[K.Prasad: Split-out from the bigger patch and minor changes following
-           re-basing]
+It's hasn't been considered high priority because most of the time
+directories don't go from holding thousands of files down to a small
+handful.  
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
-Signed-off-by: Alan Stern <stern@rowland.harvard.edu>
----
- arch/x86/kernel/smpboot.c |    3 +++
- arch/x86/power/cpu_32.c   |   16 +++-------------
- arch/x86/power/cpu_64.c   |   15 +++------------
- 3 files changed, 9 insertions(+), 25 deletions(-)
-
-Index: arch/x86/kernel/smpboot.c
-===================================================================
---- arch/x86/kernel/smpboot.c.orig
-+++ arch/x86/kernel/smpboot.c
-@@ -63,6 +63,7 @@
- #include <asm/apic.h>
- #include <asm/setup.h>
- #include <asm/uv/uv.h>
-+#include <asm/debugreg.h>
- #include <linux/mc146818rtc.h>
- 
- #include <asm/smpboot_hooks.h>
-@@ -326,6 +327,7 @@ notrace static void __cpuinit start_seco
- 	setup_secondary_clock();
- 
- 	wmb();
-+	load_debug_registers();
- 	cpu_idle();
- }
- 
-@@ -1252,6 +1254,7 @@ void cpu_disable_common(void)
- 	remove_cpu_from_maps(cpu);
- 	unlock_vector_lock();
- 	fixup_irqs();
-+	hw_breakpoint_disable();
- }
- 
- int native_cpu_disable(void)
-Index: arch/x86/power/cpu_32.c
-===================================================================
---- arch/x86/power/cpu_32.c.orig
-+++ arch/x86/power/cpu_32.c
-@@ -13,6 +13,7 @@
- #include <asm/mce.h>
- #include <asm/xcr.h>
- #include <asm/suspend.h>
-+#include <asm/debugreg.h>
- 
- static struct saved_context saved_context;
- 
-@@ -48,6 +49,7 @@ static void __save_processor_state(struc
- 	ctxt->cr2 = read_cr2();
- 	ctxt->cr3 = read_cr3();
- 	ctxt->cr4 = read_cr4_safe();
-+	hw_breakpoint_disable();
- }
- 
- /* Needed by apm.c */
-@@ -80,19 +82,7 @@ static void fix_processor_context(void)
- 	load_TR_desc();				/* This does ltr */
- 	load_LDT(&current->active_mm->context);	/* This does lldt */
- 
--	/*
--	 * Now maybe reload the debug registers
--	 */
--	if (current->thread.debugreg7) {
--		set_debugreg(current->thread.debugreg0, 0);
--		set_debugreg(current->thread.debugreg1, 1);
--		set_debugreg(current->thread.debugreg2, 2);
--		set_debugreg(current->thread.debugreg3, 3);
--		/* no 4 and 5 */
--		set_debugreg(current->thread.debugreg6, 6);
--		set_debugreg(current->thread.debugreg7, 7);
--	}
--
-+	load_debug_registers();
- }
- 
- static void __restore_processor_state(struct saved_context *ctxt)
-Index: arch/x86/power/cpu_64.c
-===================================================================
---- arch/x86/power/cpu_64.c.orig
-+++ arch/x86/power/cpu_64.c
-@@ -16,6 +16,7 @@
- #include <asm/mtrr.h>
- #include <asm/xcr.h>
- #include <asm/suspend.h>
-+#include <asm/debugreg.h>
- 
- static void fix_processor_context(void);
- 
-@@ -71,6 +72,7 @@ static void __save_processor_state(struc
- 	ctxt->cr3 = read_cr3();
- 	ctxt->cr4 = read_cr4();
- 	ctxt->cr8 = read_cr8();
-+	hw_breakpoint_disable();
- }
- 
- void save_processor_state(void)
-@@ -159,16 +161,5 @@ static void fix_processor_context(void)
- 	load_TR_desc();				/* This does ltr */
- 	load_LDT(&current->active_mm->context);	/* This does lldt */
- 
--	/*
--	 * Now maybe reload the debug registers
--	 */
--	if (current->thread.debugreg7){
--                loaddebug(&current->thread, 0);
--                loaddebug(&current->thread, 1);
--                loaddebug(&current->thread, 2);
--                loaddebug(&current->thread, 3);
--                /* no 4 and 5 */
--                loaddebug(&current->thread, 6);
--                loaddebug(&current->thread, 7);
--	}
-+	load_debug_registers();
- }
-
+						- Ted
