@@ -1,35 +1,39 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756863AbZEON73 (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 May 2009 09:59:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZEON7P
+	id S1755201AbZEOOau (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Fri, 15 May 2009 10:30:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbZEOOag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 09:59:15 -0400
-Received: from tomts8.bellnexxia.net ([209.226.175.52]:58768 "EHLO
-	tomts8-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751652AbZEON7O convert rfc822-to-8bit (ORCPT
+	Fri, 15 May 2009 10:30:36 -0400
+Received: from mailfilter11.ihug.co.nz ([203.109.136.11]:47585 "EHLO
+	mailfilter11.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751152AbZEOOag (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 09:59:14 -0400
-X-Greylist: delayed 8223 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 May 2009 09:59:13 EDT
+	Fri, 15 May 2009 10:30:36 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: AphSAG/xDErR4q+H/2dsb2JhbACBL4l5glO3FYp7g3EF
-X-Mailer: Openwave WebEngine, version 2.8.11 (webedge20-101-194-20030622)
-X-Originating-IP: [65.120.56.2]
-From: =?ISO-8859-1?B?qVNpZW1lbnM=?= Alert <dkantor@nbnet.nb.ca>
-Reply-To: fl.remittance@btinternet.com
-To: <info@lotto.com>
-Subject: Lucky  Winners
-Date: Fri, 15 May 2009 7:42:09 -0400
+X-IronPort-Anti-Spam-Result: At0sAI4ZDUopv2yC/2dsb2JhbACWLoIJB4VkEqEIgUYJj16CTYE0BQ
+X-IronPort-AV: E=Sophos;i="4.41,199,1241352000"; 
+   d="scan'208";a="184208988"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
-Message-Id: <20090515114211.ITCI1756.tomts31-srv.bellnexxia.net@toip35-bus.srvr.bell.ca>
+Date: Sat, 16 May 2009 02:29:20 +1200
+From: il <il.erikander@yahoo.ie>
+To: undisclosed-recipients:;
+Subject: (no subject)
+Reply-To: barrkellymoore@9.cn
+Message-ID: <ccfb118c25651a13fbcc7d45a49ce411@ihug.co.nz>
+SenderIP: 41.191.108.130
+User-Agent: Vodafone Webmail/0.1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-£750.000.00 GBP has been award to you in the siemens online,send us your
-Names:........
-Address:......
-Country:......
-Sex/Tel.......
+
+-- 
+Hello,
+801,613 Euro is now yours. Congrats... You have won.
+
+Send your information to Monte Fred +44-704-574-9850 on
+barrkellymoore@9.cn to help you process your claims.
+Provide your name, address, age, phone number, occupation.
 
