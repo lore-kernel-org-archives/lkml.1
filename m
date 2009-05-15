@@ -1,72 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762216AbZEONJq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762446AbZEONKF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762216AbZEONJq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 09:09:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756385AbZEONJi
+	id S1762446AbZEONKF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 09:10:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761808AbZEONJv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 09:09:38 -0400
-Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:36412 "EHLO
-	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755747AbZEONJh (ORCPT
+	Fri, 15 May 2009 09:09:51 -0400
+Received: from smtp.nokia.com ([192.100.105.134]:61870 "EHLO
+	mgw-mx09.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756385AbZEONJv (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 09:09:37 -0400
-Date: Fri, 15 May 2009 15:09:31 +0200
-From: Pavel Machek <pavel@ucw.cz>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       linux-pm@lists.linux-foundation.org, fengguang.wu@intel.com,
-       linux-kernel@vger.kernel.org, nigel@tuxonice.net, rientjes@google.com,
-       linux-mm@kvack.org
-Subject: Re: [PATCH 4/6] PM/Hibernate: Rework shrinking of memory
-Message-ID: <20090515130930.GB1976@elf.ucw.cz>
-References: <200905070040.08561.rjw@sisk.pl> <200905132356.39481.rjw@sisk.pl> <20090514094046.GF6417@elf.ucw.cz> <200905141949.53108.rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905141949.53108.rjw@sisk.pl>
-X-Warning: Reading this can be dangerous to your mental health.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 15 May 2009 09:09:51 -0400
+Subject: Re: [resending-2] [PATCH] [MTD] [NAND] Add OMAP2 / OMAP3 NAND
+ driver
+From: Artem Bityutskiy <dedekind@infradead.org>
+Reply-To: dedekind@infradead.org
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-mtd@lists.infradead.org,
+       linux-kernel@vger.kernel.org, vimal singh <vimalsingh@ti.com>
+In-Reply-To: <46851.192.168.10.89.1241083986.squirrel@dbdmail.itg.ti.com>
+References: <61255.192.168.10.89.1240984646.squirrel@dbdmail.itg.ti.com>
+	 <46851.192.168.10.89.1241083986.squirrel@dbdmail.itg.ti.com>
+Content-Type: text/plain; charset="UTF-8"
+Date: Fri, 15 May 2009 16:08:39 +0300
+Message-Id: <1242392919.27996.238.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
+Content-Transfer-Encoding: 8bit
+X-OriginalArrivalTime: 15 May 2009 13:08:41.0184 (UTC) FILETIME=[44A16600:01C9D55E]
+X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu 2009-05-14 19:49:52, Rafael J. Wysocki wrote:
-> On Thursday 14 May 2009, Pavel Machek wrote:
-> > 
-> > > > > > The main point (I thought) was to remove shrink_all_memory().  Instead,
-> > > > > > we're retaining it and adding even more stuff?
-> > > > > 
-> > > > > The idea is that afterwards we can drop shrink_all_memory() once the
-> > > > > performance problem has been resolved.  Also, we now allocate memory for the
-> > > > > image using GFP_KERNEL instead of doing it with GFP_ATOMIC after freezing
-> > > > > devices.  I'd think that's an improvement?
-> > > > 
-> > > > Dunno.  GFP_KERNEL might attempt to do writeback/swapout/etc, which
-> > > > could be embarrassing if the devices are frozen.
-> > > 
-> > > They aren't, because the preallocation is done upfront, so once the OOM killer
-> > > has been taken care of, it's totally safe. :-)
-> > 
-> > As is GFP_ATOMIC. Except that GFP_KERNEL will cause catastrophic
-> > consequences when accounting goes wrong. (New kernel's idea of what is
-> > on disk will differ from what is _really_ on disk.)
-> > 
-> > If accounting is right, GFP_ATOMIC and GFP_KERNEL is equivalent.
-> > 
-> > If accounting is wrong, GFP_ATOMIC will fail with NULL, while
-> > GFP_KERNEL will do something bad.
-> > 
-> > I'd keep GFP_ATOMIC (or GFP_NOIO or similar). 
+On Thu, 2009-04-30 at 15:03 +0530, vimal singh wrote:
+> This driver is present in the OMAP tree, now pushing it to MTD.
 > 
-> Repeating myself: with this and the next patch applied, we preallocate memory
-> for the image _before_ freezing devices and therefore it is safe to use
-> GFP_KERNEL, because the OOM killer has been taken care of by [3/6].
+> Original author(s):
+>        Jian Zhang <jzhang@ti.com>
+> 
+> Signed-off-by: Vimal Singh <vimalsingh@ti.com>
+> ---
+>  drivers/mtd/nand/Kconfig  |    6
+>  drivers/mtd/nand/Makefile |    1
+>  drivers/mtd/nand/omap2.c  |  776 ++++++++++++++++++++++++++++++++++++++++++++++
+>  3 files changed, 783 insertions(+)
 
-Aha, I misparsed the sentecnes above.
+Hi Thomas,
 
-Acked-by: Pavel Machek <pavel@ucw.cz>
-									Pavel
+would you please find a little time and Ack/Nack this
+please?
 
 -- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+Best regards,
+Artem Bityutskiy (Битюцкий Артём)
+
