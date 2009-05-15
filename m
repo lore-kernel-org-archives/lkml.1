@@ -1,63 +1,55 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756643AbZEOO0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbZEOOeJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756643AbZEOO0U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 10:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbZEOO0K
+	id S1756894AbZEOOeJ (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 10:34:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZEOOd4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 10:26:10 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:34473 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750803AbZEOO0J (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 10:26:09 -0400
-Date: Fri, 15 May 2009 16:25:54 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Steven Rostedt <rostedt@goodmis.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
-       Frederic Weisbecker <fweisbec@gmail.com>
-Subject: Re: [PATCH 0/4] [GIT PULL] tracing: small updates for tip
-Message-ID: <20090515142554.GA2736@elte.hu>
-References: <20090515040554.074680910@goodmis.org>
+	Fri, 15 May 2009 10:33:56 -0400
+Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:57564 "EHLO
+	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752427AbZEOOdz (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 10:33:55 -0400
+Date: Fri, 15 May 2009 10:33:54 -0400 (EDT)
+From: Steven Rostedt <rostedt@goodmis.org>
+X-X-Sender: rostedt@gandalf.stny.rr.com
+To: LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@ozlabs.org
+cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+       Ingo Molnar <mingo@elte.hu>, Frederic Weisbecker <fweisbec@gmail.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] powerpc/ftrace: fix constraint to be early clobber
+Message-ID: <alpine.DEB.2.00.0905141236420.30591@gandalf.stny.rr.com>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090515040554.074680910@goodmis.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-* Steven Rostedt <rostedt@goodmis.org> wrote:
+After upgrading my distcc boxes from gcc 4.2.2 to 4.4.0, the function 
+graph tracer broke. This was discovered on my x86 boxes.
 
-> Ingo,
-> 
-> Please pull the latest tip/tracing/ftrace tree, which can be found at:
-> 
->   git://git.kernel.org/pub/scm/linux/kernel/git/rostedt/linux-2.6-trace.git
-> tip/tracing/ftrace
-> 
-> 
-> Li Zefan (2):
->       tracing/filters: add missing unlock in a failure path
->       tracing/filters: fix off-by-one bug
-> 
-> Steven Rostedt (2):
->       x86/stacktrace: return 0 instead of -1 for stack ops
->       tracing: stop stack trace on first empty entry
-> 
-> ----
->  arch/x86/kernel/stacktrace.c       |    2 +-
->  kernel/trace/trace_events_filter.c |   12 +++++++-----
->  kernel/trace/trace_output.c        |    2 ++
->  3 files changed, 10 insertions(+), 6 deletions(-)
+The issue is that gcc used the same register for an output as it did for 
+an input in an asm statement. I first thought this was a bug in gcc and 
+reported it. I was notified that gcc was correct and that the output had 
+to be flagged as an "early clobber".
 
-Pulled, thanks Steve!
+I noticed that powerpc had the same issue and this patch fixes it.
 
-	Ingo
+Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
+
+diff --git a/arch/powerpc/kernel/ftrace.c b/arch/powerpc/kernel/ftrace.c
+index 70e2a73..68fd74e 100644
+--- a/arch/powerpc/kernel/ftrace.c
++++ b/arch/powerpc/kernel/ftrace.c
+@@ -594,7 +594,7 @@ void prepare_ftrace_return(unsigned long *parent, unsigned long self_addr)
+ 			PPC_LONG "2b,4b\n"
+ 		".previous"
+ 
+-		: [old] "=r" (old), [faulted] "=r" (faulted)
++		: [old] "=&r" (old), [faulted] "=r" (faulted)
+ 		: [parent] "r" (parent), [return_hooker] "r" (return_hooker)
+ 		: "memory"
+ 	);
+
