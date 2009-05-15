@@ -1,65 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbZEOAHf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758749AbZEOAOK@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756233AbZEOAHf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 20:07:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753529AbZEOAHZ
+	id S1758749AbZEOAOK (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 20:14:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756255AbZEOANw
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 20:07:25 -0400
-Received: from g1t0027.austin.hp.com ([15.216.28.34]:18231 "EHLO
-	g1t0027.austin.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753099AbZEOAHZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 20:07:25 -0400
-Date: Thu, 14 May 2009 18:07:25 -0600
-From: Alex Chiang <achiang@hp.com>
-To: Jesse Barnes <jbarnes@virtuousgeek.org>
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       the arch/x86 maintainers <x86@kernel.org>,
-       Matthew Wilcox <willy@linux.intel.com>,
-       Joerg Roedel <joerg.roedel@amd.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Xen-devel <xen-devel@lists.xensource.com>,
-       Alex Nixon <alex.nixon@citrix.com>,
-       Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-Subject: Re: [PATCH 06/10] x86/PCI: Enable scanning of all pci functions
-Message-ID: <20090515000725.GA27084@ldl.fc.hp.com>
-References: <1242164891-3859-1-git-send-email-jeremy@goop.org> <1242164891-3859-7-git-send-email-jeremy@goop.org> <20090513095535.140134e1@jbarnes-g45> <4A0AFE84.2040805@goop.org> <20090513102316.5ef3ce4e@jbarnes-g45> <4A0C66DB.9020707@goop.org> <20090514121513.198ada4e@jbarnes-g45>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090514121513.198ada4e@jbarnes-g45>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+	Thu, 14 May 2009 20:13:52 -0400
+Received: from sh.osrg.net ([192.16.179.4]:46160 "EHLO sh.osrg.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755079AbZEOANv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 20:13:51 -0400
+Date: Fri, 15 May 2009 09:12:41 +0900
+To: bharrosh@panasas.com
+Cc: tj@kernel.org, fujita.tomonori@lab.ntt.co.jp, jens.axboe@oracle.com,
+       James.Bottomley@HansenPartnership.com, linux-scsi@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/3] block: completion related functions cleanup
+From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
+In-Reply-To: <4A0C2769.4090508@panasas.com>
+References: <4A0C2297.5040001@panasas.com>
+	<4A0C2515.9060602@kernel.org>
+	<4A0C2769.4090508@panasas.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
+Message-Id: <20090515091134C.fujita.tomonori@lab.ntt.co.jp>
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 15 May 2009 09:12:43 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Jesse Barnes <jbarnes@virtuousgeek.org>:
-> On Thu, 14 May 2009 11:45:47 -0700
-> Jeremy Fitzhardinge <jeremy@goop.org> wrote:
+On Thu, 14 May 2009 17:15:05 +0300
+Boaz Harrosh <bharrosh@panasas.com> wrote:
+
+> On 05/14/2009 05:05 PM, Tejun Heo wrote:
+> > Nice spotting.  Looks like the variable can be killed completely?
+> > 
+> > Thanks.
+> > 
 > 
-> > Jesse Barnes wrote:
-> > > Anyway it's not a big deal, this code is already ugly (a 0 define
-> > > for all arches?  why?) so you shouldn't have to spend too much time
-> > > cleaning it up.
-> > >   
-> > 
-> > OK, how's this as a delta (I can fold it into the previous patch if 
-> > you're OK with it):
-> > 
-> > Subject: [PATCH] pci: add HAVE_ARCH_PCIBIOS_SCAN_ALL_FNS
-> > 
-> > Jesse objected to the "#undef pcibios_scan_all_fns"'s ugliness,
-> > so replace it with the more common HAVE_ARCH_ idiom.
-> > 
-> > Signed-off-by: Jeremy Fitzhardinge <jeremy.fitzhardinge@citrix.com>
-> > Cc: Jesse Barnes <jbarnes@virtuousgeek.org>
+> Sorry yes, here:
+> ---
+> From: Boaz Harrosh <bharrosh@panasas.com>
+> Date: Thu, 14 May 2009 16:46:03 +0300
+> Subject: [PATCH] scsi_lib: remove unused variable
 > 
-> That's slightly better.  It looks like we should just get rid of
-> pcibios_scan_all_fns altogether, but this is fine for now.
+> The last request completion cleanup in scsi_lib left an unused
+> this_count variable in scsi_io_completion().
+> (It was used before in a code segment that now uses blk_end_request_all())
+> 
+> Signed-off-by: Boaz Harrosh <bharrosh@panasas.com>
 
-It's been on my TODO list for a while now, but then holiday and
-now surgery got in the way.
+Ah, I overlooked this.
 
-/ac
+Acked-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 
+Thanks,
