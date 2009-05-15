@@ -1,22 +1,22 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761510AbZEOEb2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761793AbZEOEbo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761510AbZEOEb2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 00:31:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759426AbZEOE3n
+	id S1761793AbZEOEbo (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 00:31:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbZEOE3o
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 00:29:43 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41574 "EHLO hera.kernel.org"
+	Fri, 15 May 2009 00:29:44 -0400
+Received: from hera.kernel.org ([140.211.167.34]:41605 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758789AbZEOE3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 00:29:41 -0400
+	id S1759411AbZEOE3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 00:29:43 -0400
 From: Tejun Heo <tj@kernel.org>
 To: JBeulich@novell.com, andi@firstfloor.org, mingo@elte.hu,
        linux-kernel-owner@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de,
        linux-kernel@vger.kernel.org
 Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 1/5] x86: prepare setup_pcpu_remap() for pageattr fix
-Date: Fri, 15 May 2009 13:28:55 +0900
-Message-Id: <1242361739-21186-2-git-send-email-tj@kernel.org>
+Subject: [PATCH 3/5] x86: fix pageattr handling for remap percpu allocator
+Date: Fri, 15 May 2009 13:28:57 +0900
+Message-Id: <1242361739-21186-4-git-send-email-tj@kernel.org>
 X-Mailer: git-send-email 1.6.0.2
 In-Reply-To: <1242361739-21186-1-git-send-email-tj@kernel.org>
 References: <1242361739-21186-1-git-send-email-tj@kernel.org>
@@ -25,143 +25,204 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Make the following changes in preparation of coming pageattr updates.
+Remap allocator aliases a PMD page for each cpu and returns whatever
+is unused to the page allocator.  When the pageattr of the recycled
+pages are changed, this makes the two aliases point to the overlapping
+regions with different attributes which isn't allowed and known to
+cause subtle data corruption in certain cases.
 
-* Define and use array of struct pcpur_ent instead of array of
-  pointers.  The only difference is ->cpu field which is set but
-  unused yet.
+This can be handled in simliar manner to the x86_64 highmap alias.
+pageattr code should detect if the target pages have PMD alias and
+split the PMD alias and synchronize the attributes.
 
-* Rename variables according to the above change.
+pcpur allocator is updated to keep the allocated PMD pages map sorted
+in ascending address order and provide pcpu_pmd_remapped() function
+which binary searches the array to determine whether the given address
+is aliased and if so to which address.  pageattr is updated to use
+pcpu_pmd_remapped() to detect the PMD alias and split it up as
+necessary from cpa_process_alias().
 
-* Rename local variable vm to pcpur_vm and move it out of the
-  function.
+This problem has been spotted by Jan Beulich.
 
-[ Impact: no functional difference ]
+[ Impact: fix subtle pageattr bug ]
 
 Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Jan Beulich <JBeulich@novell.com>
+Reported-by: Jan Beulich <JBeulich@novell.com>
 Cc: Andi Kleen <andi@firstfloor.org>
 Cc: Ingo Molnar <mingo@elte.hu>
 ---
- arch/x86/kernel/setup_percpu.c |   58 ++++++++++++++++++++++-----------------
- 1 files changed, 33 insertions(+), 25 deletions(-)
+ arch/x86/include/asm/percpu.h  |    9 +++++
+ arch/x86/kernel/setup_percpu.c |   68 ++++++++++++++++++++++++++++++++++++---
+ arch/x86/mm/pageattr.c         |   23 +++++++++++++
+ 3 files changed, 94 insertions(+), 6 deletions(-)
 
+diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
+index aee103b..cad3531 100644
+--- a/arch/x86/include/asm/percpu.h
++++ b/arch/x86/include/asm/percpu.h
+@@ -155,6 +155,15 @@ do {							\
+ /* We can use this directly for local CPU (faster). */
+ DECLARE_PER_CPU(unsigned long, this_cpu_off);
+ 
++#ifdef CONFIG_NEED_MULTIPLE_NODES
++void *pcpu_pmd_remapped(void *kaddr);
++#else
++static inline void *pcpu_pmd_remapped(void *kaddr)
++{
++	return NULL;
++}
++#endif
++
+ #endif /* !__ASSEMBLY__ */
+ 
+ #ifdef CONFIG_SMP
 diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index 3a97a4c..c17059c 100644
+index c17059c..dd567a7 100644
 --- a/arch/x86/kernel/setup_percpu.c
 +++ b/arch/x86/kernel/setup_percpu.c
-@@ -137,8 +137,14 @@ static void * __init pcpu_alloc_bootmem(unsigned int cpu, unsigned long size,
-  * better than only using 4k mappings while still being NUMA friendly.
-  */
- #ifdef CONFIG_NEED_MULTIPLE_NODES
-+struct pcpur_ent {
-+	unsigned int	cpu;
-+	void		*ptr;
-+};
-+
- static size_t pcpur_size __initdata;
--static void **pcpur_ptrs __initdata;
-+static struct pcpur_ent *pcpur_map __initdata;
-+static struct vm_struct pcpur_vm;
+@@ -142,8 +142,8 @@ struct pcpur_ent {
+ 	void		*ptr;
+ };
+ 
+-static size_t pcpur_size __initdata;
+-static struct pcpur_ent *pcpur_map __initdata;
++static size_t pcpur_size;
++static struct pcpur_ent *pcpur_map;
+ static struct vm_struct pcpur_vm;
  
  static struct page * __init pcpur_get_page(unsigned int cpu, int pageno)
+@@ -160,6 +160,7 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
  {
-@@ -147,13 +153,12 @@ static struct page * __init pcpur_get_page(unsigned int cpu, int pageno)
- 	if (off >= pcpur_size)
- 		return NULL;
- 
--	return virt_to_page(pcpur_ptrs[cpu] + off);
-+	return virt_to_page(pcpur_map[cpu].ptr + off);
- }
- 
- static ssize_t __init setup_pcpu_remap(size_t static_size)
- {
--	static struct vm_struct vm;
--	size_t ptrs_size, dyn_size;
-+	size_t map_size, dyn_size;
+ 	size_t map_size, dyn_size;
  	unsigned int cpu;
++	int i, j;
  	ssize_t ret;
  
-@@ -178,12 +183,14 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
- 	dyn_size = pcpur_size - static_size - PERCPU_FIRST_CHUNK_RESERVE;
- 
- 	/* allocate pointer array and alloc large pages */
--	ptrs_size = PFN_ALIGN(num_possible_cpus() * sizeof(pcpur_ptrs[0]));
--	pcpur_ptrs = alloc_bootmem(ptrs_size);
-+	map_size = PFN_ALIGN(num_possible_cpus() * sizeof(pcpur_map[0]));
-+	pcpur_map = alloc_bootmem(map_size);
- 
- 	for_each_possible_cpu(cpu) {
--		pcpur_ptrs[cpu] = pcpu_alloc_bootmem(cpu, PMD_SIZE, PMD_SIZE);
--		if (!pcpur_ptrs[cpu])
-+		pcpur_map[cpu].cpu = cpu;
-+		pcpur_map[cpu].ptr = pcpu_alloc_bootmem(cpu, PMD_SIZE,
-+							PMD_SIZE);
-+		if (!pcpur_map[cpu].ptr)
- 			goto enomem;
- 
- 		/*
-@@ -194,42 +201,43 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
- 		 * not well-specified to have a PAT-incompatible area
- 		 * (unmapped RAM, device memory, etc.) in that hole.
- 		 */
--		free_bootmem(__pa(pcpur_ptrs[cpu] + pcpur_size),
-+		free_bootmem(__pa(pcpur_map[cpu].ptr + pcpur_size),
- 			     PMD_SIZE - pcpur_size);
- 
--		memcpy(pcpur_ptrs[cpu], __per_cpu_load, static_size);
-+		memcpy(pcpur_map[cpu].ptr, __per_cpu_load, static_size);
- 	}
- 
- 	/* allocate address and map */
--	vm.flags = VM_ALLOC;
--	vm.size = num_possible_cpus() * PMD_SIZE;
--	vm_area_register_early(&vm, PMD_SIZE);
-+	pcpur_vm.flags = VM_ALLOC;
-+	pcpur_vm.size = num_possible_cpus() * PMD_SIZE;
-+	vm_area_register_early(&pcpur_vm, PMD_SIZE);
- 
- 	for_each_possible_cpu(cpu) {
--		pmd_t *pmd;
-+		pmd_t *pmd, pmd_v;
- 
--		pmd = populate_extra_pmd((unsigned long)vm.addr
--					 + cpu * PMD_SIZE);
--		set_pmd(pmd, pfn_pmd(page_to_pfn(virt_to_page(pcpur_ptrs[cpu])),
--				     PAGE_KERNEL_LARGE));
-+		pmd = populate_extra_pmd((unsigned long)pcpur_vm.addr +
-+					 cpu * PMD_SIZE);
-+		pmd_v = pfn_pmd(page_to_pfn(virt_to_page(pcpur_map[cpu].ptr)),
-+				PAGE_KERNEL_LARGE);
-+		set_pmd(pmd, pmd_v);
- 	}
- 
- 	/* we're ready, commit */
- 	pr_info("PERCPU: Remapped at %p with large pages, static data "
--		"%zu bytes\n", vm.addr, static_size);
-+		"%zu bytes\n", pcpur_vm.addr, static_size);
- 
+ 	/*
+@@ -229,16 +230,71 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
  	ret = pcpu_setup_first_chunk(pcpur_get_page, static_size,
  				     PERCPU_FIRST_CHUNK_RESERVE, dyn_size,
--				     PMD_SIZE, vm.addr, NULL);
--	goto out_free_ar;
-+				     PMD_SIZE, pcpur_vm.addr, NULL);
-+	goto out_free_map;
+ 				     PMD_SIZE, pcpur_vm.addr, NULL);
+-	goto out_free_map;
++
++	/* sort pcpur_map array for pcpu_pmd_remapped() */
++	for (i = 0; i < num_possible_cpus() - 1; i++)
++		for (j = i + 1; j < num_possible_cpus(); j++)
++			if (pcpur_map[i].ptr > pcpur_map[j].ptr) {
++				struct pcpur_ent tmp = pcpur_map[i];
++				pcpur_map[i] = pcpur_map[j];
++				pcpur_map[j] = tmp;
++			}
++
++	return ret;
  
  enomem:
  	for_each_possible_cpu(cpu)
--		if (pcpur_ptrs[cpu])
--			free_bootmem(__pa(pcpur_ptrs[cpu]), PMD_SIZE);
-+		if (pcpur_map[cpu].ptr)
-+			free_bootmem(__pa(pcpur_map[cpu].ptr), PMD_SIZE);
- 	ret = -ENOMEM;
--out_free_ar:
--	free_bootmem(__pa(pcpur_ptrs), ptrs_size);
-+out_free_map:
-+	free_bootmem(__pa(pcpur_map), map_size);
- 	return ret;
+ 		if (pcpur_map[cpu].ptr)
+ 			free_bootmem(__pa(pcpur_map[cpu].ptr), PMD_SIZE);
+-	ret = -ENOMEM;
+-out_free_map:
+ 	free_bootmem(__pa(pcpur_map), map_size);
+-	return ret;
++	return -ENOMEM;
++}
++
++/**
++ * pcpu_pmd_remapped - determine whether a kaddr is in pcpur recycled area
++ * @kaddr: the kernel address in question
++ *
++ * Determine whether @kaddr falls in the pcpur recycled area.  This is
++ * used by pageattr to detect VM aliases and break up the pcpu PMD
++ * mapping such that the same physical page is not mapped under
++ * different attributes.
++ *
++ * The recycled area is always at the tail of a partially used PMD
++ * page.
++ *
++ * RETURNS:
++ * Address of corresponding remapped pcpu address if match is found;
++ * otherwise, NULL.
++ */
++void *pcpu_pmd_remapped(void *kaddr)
++{
++	void *pmd_addr = (void *)((unsigned long)kaddr & PMD_MASK);
++	unsigned long offset = (unsigned long)kaddr & ~PMD_MASK;
++	int left = 0, right = num_possible_cpus() - 1;
++	int pos;
++
++	/* pcpur in use at all? */
++	if (!pcpur_map)
++		return NULL;
++
++	/* okay, perform binary search */
++	while (left <= right) {
++		pos = (left + right) / 2;
++
++		if (pcpur_map[pos].ptr < pmd_addr)
++			left = pos + 1;
++		else if (pcpur_map[pos].ptr > pmd_addr)
++			right = pos - 1;
++		else {
++			/* it shouldn't be in the area for the first chunk */
++			WARN_ON(offset < pcpur_size);
++
++			return pcpur_vm.addr +
++				pcpur_map[pos].cpu * PMD_SIZE + offset;
++		}
++	}
++
++	return NULL;
  }
  #else
+ static ssize_t __init setup_pcpu_remap(size_t static_size)
+diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
+index 8bc64b0..a1bcead 100644
+--- a/arch/x86/mm/pageattr.c
++++ b/arch/x86/mm/pageattr.c
+@@ -11,6 +11,7 @@
+ #include <linux/interrupt.h>
+ #include <linux/seq_file.h>
+ #include <linux/debugfs.h>
++#include <linux/pfn.h>
+ 
+ #include <asm/e820.h>
+ #include <asm/processor.h>
+@@ -687,6 +688,7 @@ static int cpa_process_alias(struct cpa_data *cpa)
+ {
+ 	struct cpa_data alias_cpa;
+ 	unsigned long temp_cpa_vaddr, vaddr;
++	void *remapped;
+ 	int ret;
+ 
+ 	if (cpa->pfn >= max_pfn_mapped)
+@@ -742,6 +744,27 @@ static int cpa_process_alias(struct cpa_data *cpa)
+ 	}
+ #endif
+ 
++	/*
++	 * If the PMD page was partially used for per-cpu remapping,
++	 * the remapped area needs to be split and modified.  Note
++	 * that the partial recycling only happens at the tail of a
++	 * partially used PMD page, so touching single PMD page is
++	 * always enough.
++	 */
++	remapped = pcpu_pmd_remapped((void *)vaddr);
++	if (remapped) {
++		int max_pages = PFN_DOWN(PMD_SIZE - (vaddr & ~PMD_MASK));
++
++		alias_cpa = *cpa;
++		temp_cpa_vaddr = (unsigned long)remapped;
++		alias_cpa.vaddr = &temp_cpa_vaddr;
++		alias_cpa.numpages = min(alias_cpa.numpages, max_pages);
++		alias_cpa.flags &= ~(CPA_PAGES_ARRAY | CPA_ARRAY);
++		ret = __change_page_attr_set_clr(&alias_cpa, 0);
++		if (ret)
++			return ret;
++	}
++
+ 	return 0;
+ }
+ 
 -- 
 1.6.0.2
 
