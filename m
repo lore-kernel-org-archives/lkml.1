@@ -1,165 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756426AbZEOHqd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758310AbZEOHrs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756426AbZEOHqd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 03:46:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbZEOHqV
+	id S1758310AbZEOHrs (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 03:47:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753295AbZEOHrj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 03:46:21 -0400
-Received: from mail-out.m-online.net ([212.18.0.10]:59726 "EHLO
-	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754828AbZEOHqU (ORCPT
+	Fri, 15 May 2009 03:47:39 -0400
+Received: from vpn.id2.novell.com ([195.33.99.129]:21032 "EHLO
+	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752892AbZEOHri convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 03:46:20 -0400
-X-Auth-Info: Bz6r4t/3kr1TIr7cXkWUCYTCfuO9HmxrcCQm0Gam1tU=
-Message-ID: <4A0D1DCA.8090306@grandegger.com>
-Date: Fri, 15 May 2009 09:46:18 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-CC: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 3/7] [PATCH 3/8] can: CAN Network device driver and
- Netlink interface
-References: <20090512092757.048938233@denx.de><20090512092757.574693100@denx.de> <20090512233052.ecd600f1.akpm@linux-foundation.org> <4A0A9AC1.2090603@volkswagen.de> <4A0AB17B.3080308@grandegger.com> <4A0AB824.40702@volkswagen.de> <4A0ABBD3.2030605@grandegger.com> <4A0D1677.4020209@volkswagen.de>
-In-Reply-To: <4A0D1677.4020209@volkswagen.de>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Fri, 15 May 2009 03:47:38 -0400
+Message-Id: <4A0D3A390200007800001081@vpn.id2.novell.com>
+X-Mailer: Novell GroupWise Internet Agent 8.0.0 
+Date: Fri, 15 May 2009 08:47:37 +0100
+From: "Jan Beulich" <JBeulich@novell.com>
+To: "Tejun Heo" <tj@kernel.org>
+Cc: <mingo@elte.hu>, <andi@firstfloor.org>, <tglx@linutronix.de>,
+       <linux-kernel@vger.kernel.org>, <hpa@zytor.com>
+Subject: Re: [GIT PATCH] x86,percpu: fix pageattr handling with remap	
+	 allocator
+References: <1242305390-21958-1-git-send-email-tj@kernel.org>
+ <4A0C46B80200007800000ED4@vpn.id2.novell.com>
+ <4A0C3EF9.4050907@kernel.org>
+In-Reply-To: <4A0C3EF9.4050907@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Oliver Hartkopp wrote:
-> Wolfgang Grandegger wrote:
->> Oliver Hartkopp wrote:
->>  
->>> Wolfgang Grandegger wrote:
->>>    
->>>> Oliver Hartkopp wrote:
->>>>  
->>>>      
->>>>> Andrew Morton wrote:
->>>>>           
->>>>>> On Tue, 12 May 2009 11:28:00 +0200 Wolfgang Grandegger
->>>>>> <wg@grandegger.com> wrote:
->>>>>>
->>>>>>  
->>>>>>               
->>>>>>> +int can_restart_now(struct net_device *dev)
->>>>>>> +{
->>>>>>> +    struct can_priv *priv = netdev_priv(dev);
->>>>>>> +    struct net_device_stats *stats = &dev->stats;
->>>>>>> +    struct sk_buff *skb;
->>>>>>> +    struct can_frame *cf;
->>>>>>> +    int err;
->>>>>>> +
->>>>>>> +    /* Synchronize with dev->hard_start_xmit() */
->>>>>>> +    netif_tx_lock(dev);
->>>>>>> +
->>>>>>> +    /* Ensure that no more messages can go out */
->>>>>>> +    if (netif_carrier_ok(dev))
->>>>>>> +        netif_carrier_off(dev);
->>>>>>> +
->>>>>>> +    /* Ensure that no more messages can come in */
->>>>>>> +    err = priv->do_set_mode(dev, CAN_MODE_STOP);
->>>>>>> +    if (err)
->>>>>>> +        return err;
->>>>>>> +
->>>>>>> +    /*  Now it's save to clean up */
->>>>>>> +    del_timer_sync(&priv->restart_timer);
->>>>>>>                         
->>>>>> This is deadlockable.
->>>>>>
->>>>>> It calls del_timer_sync() while holding netif_tx_lock().  But the
->>>>>> timer
->>>>>> handler (can_restart_now()) also takes netif_tx_lock().  So if the
->>>>>> timer handler is presently running, it's sitting there spinning in
->>>>>> netif_tx_lock().  And del_timer_sync() is sitting there waiting
->>>>>> for the
->>>>>> timer handler to complete.
->>>>>>
->>>>>>
->>>>>>                   
->>>>> Hi Wolfgang,
->>>>>
->>>>> would it be an appropriate solution, just to invoke
->>>>>
->>>>> netif_stop_queue() in can_bus_off()
->>>>>
->>>>> and invoke
->>>>>
->>>>> netif_wake_queue() in can_restart_now()
->>>>>
->>>>> ???
->>>>>
->>>>> In a BUSOFF condition we're not able to send CAN frames anyway, so  we
->>>>> can disable the device queue and the we won't  need any
->>>>> netif_tx_lock()
->>>>> right?
->>>>>
->>>>> AFAIK this was the original implementation before some of the latest
->>>>> improvement with the netif_carrier stuff.
->>>>>
->>>>> What do you think?
->>>>>             
->>>> The problem is the "manual" restart triggered via the netlink
->>>> interface,
->>>> which can occur in the middle of ndo_start_xmit().
->>>>
->>>>         
->>> Ah, i see.
->>>
->>> What if the manual restart via netlink would also stop the queue and
->>> start the timer?
->>>     
->>
->> It will not help if the restart is triggered in the middle of
->> ndo_start_xmit().
->>
->>   
-> 
-> Hi Wolfgang,
-> 
-> i think, i found a solution that removes the locking problem completely:
-> 
-> When a bus-off occurs in the controller, the communication on the CAN
-> bus can be treated as unusable for this controller (let's say it is dead).
-> E.g. the SJA1000 set's its reset bit for that reason and waits to be
-> initialized by the CPU again.
-> 
-> So IMO restarting the CAN controller while in operational state is not a
-> valid use case.
+>>> Tejun Heo <tj@kernel.org> 14.05.09 17:55 >>>
+>> In order to reduce the amount of work to do during lookup as well as
+>> the chance of having a collision at all, wouldn't it be reasonable
+>> to use as much of an allocated 2/4M page as possible rather than
+>> returning whatever is left after a single CPU got its per-CPU memory
+>> chunk from it? I.e. you'd return only those (few) pages that either
+>> don't fit another CPU's chunk anymore or that are left after running
+>> through all CPUs.
+>> 
+>> Or is there some hidden requirement that each CPU's per-CPU area must
+>> start on a PMD boundary?
 >
-> When a bus-off (interrupt) occurs, we should
-> 
-> - invoke netif_carrier_off(dev)
-> - invoke netif_stop_queue(dev)
-> - set the state to CAN_STATE_BUS_OFF
-> 
-> and of course create the error message, clear the interrupts(!) and then
-> leave the irq service function.
-> 
-> That's it.
+>The whole point of doing the remapping is giving each CPU its own PMD
+>mapping for perpcu area, so, yeah, that's the requirement.  I don't
+>think the requirement is hidden tho.
 
-It's already like that.
+No, from looking at the code the requirement seems to only be that you
+get memory allocated from the correct node and mapped by a large page.
+There's nothing said why the final virtual address would need to be large
+page aligned. I.e., with a slight modification to take the NUMA requirement
+into account (I noticed I ignored that aspect after I had already sent that
+mail), the previous suggestion would still appear usable to me.
 
-> When the automatic CAN controller restart is enabled: start the timer.
-> 
-> For the manual netlink function: Test for CAN_STATE_BUS_OFF (!) and
-> invoke the current can_restart_now(dev) or start the timer with e.g. 1ms
-> ...
-> 
-> This approach should make it and fulfills the bus-off intention of the
-> CAN controllers ("disabled and wait for re-initialisation").
-> 
-> And there's no locking of the tx_queue needed anymore as the tx_queue is
-> already stopped, when the restart is performed.
-> 
-> What do you think about this approach?
+>How hot is the cpa path?  On my test systems, there were only few
+>calls during init and then nothing.  Does it become very hot if, for
+>example, GEM is used?  But I really don't think the log2 binary search
+>overhead would be anything noticeable compared to TLB shootdown and
+>all other stuff going on there.
 
-That's a solution and would comply with the can spec, I believe, but it
-should be discussed on the Socket-CAN mailing list. We should not change
-policy just to avoid locking or simplify the code.
+I would view cutting down on that only as a nice side effect, not a primary
+reason to do the change. The primary reason is this:
 
-Wolfgang.
+>> This would additionally address a potential problem on 32-bits -
+>> currently, for a 32-CPU system you consume half of the vmalloc space
+>> with PAE (on non-PAE you'd even exhaust it, but I think it's
+>> unreasonable to expect a system having 32 CPUs to not need PAE).
+>
+>I recall having about the same conversation before.  Looking up...
+>
+>-- QUOTE --
+>  Actually, I've been looking at the numbers and I'm not sure if the
+>  concern is valid.  On x86_32, the practical number of maximum
+>  processors would be around 16 so it will end up 32M, which isn't
+>  nice and it would probably a good idea to introduce a parameter to
+>  select which allocator to use but still it's far from consuming all
+>  the VM area.  On x86_64, the vmalloc area is obscenely large at 245,
+>  ie 32 terabytes.  Even with 4096 processors, single chunk is measly
+>  0.02%.
+
+Just to note - there must be a reason we (SuSE/Novell) build our default
+32-bit kernel with support for 128 CPUs, which now is simply broken.
+
+>  If it's a problem for other archs or extreme x86_32 configurations,
+>  we can add some safety measures but in general I don't think it is a
+>  problem.
+>-- END OF QUOTE --
+>
+>So, yeah, if there are 32bit 32-way NUMA machines out there, it would
+>be wise to skip remap allocator on such machines.  Maybe we can
+>implement a heuristic - something like "if vm area consumption goes
+>over 25%, don't use remap".
+
+Possibly, as a secondary consideration on top of the suggested reduction
+of virtual address space consumption.
+
+Jan
+
