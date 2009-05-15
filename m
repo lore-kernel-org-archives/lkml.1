@@ -1,110 +1,99 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762011AbZEON1U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763028AbZEON21@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762011AbZEON1U (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 09:27:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754570AbZEON1L
+	id S1763028AbZEON21 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 09:28:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754633AbZEON2S
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 09:27:11 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:37142 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753332AbZEON1K (ORCPT
+	Fri, 15 May 2009 09:28:18 -0400
+Received: from yw-out-2324.google.com ([74.125.46.31]:64830 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754570AbZEON2R convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 09:27:10 -0400
-Date: Fri, 15 May 2009 16:16:36 +0300
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: linux-kernel@vger.kernel.org
-Cc: Dmitry Torokhov <dmitry.torokhov@gmail.com>
-Subject: [RFC] Add Input IOCTL for accelerometer devices
-Message-ID: <20090515131636.GE4443@nokia.com>
-Reply-To: felipe.balbi@nokia.com
+	Fri, 15 May 2009 09:28:17 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=E5i+pLiZUMYnVq5YGy3f5rkyP2IppScFlD5npU7HczxfFGLuMtQ8sdu0tqUN0r2Dty
+         HeiZPMa+pqLJ2HoJikPouIjglVzM1Ki0ldtaXaEWEpe1Vy0IHloxjtrlo4u0fNCklvtF
+         riTyJAau7q3LSRit60JXCzvSNkJ16U2/pWNOg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 15 May 2009 13:27:03.0969 (UTC) FILETIME=[D5F10910:01C9D560]
-X-Nokia-AV: Clean
+In-Reply-To: <84144f020905150323m76cdd775p87abec356e355d37@mail.gmail.com>
+References: <56e1b5710902040628w5ceb36f5kdb1f433087355f80@mail.gmail.com>
+	 <84144f020905150323m76cdd775p87abec356e355d37@mail.gmail.com>
+Date: Fri, 15 May 2009 15:28:18 +0200
+Message-ID: <56e1b5710905150628w912759an21c82efc3fae7f4a@mail.gmail.com>
+Subject: Re: [PATCH] Kbuild: Disable the -Wformat-security gcc flag
+From: Floris Kraak <randakar@gmail.com>
+To: Pekka Enberg <penberg@cs.helsinki.fi>
+Cc: Sam Ravnborg <sam@ravnborg.org>, Alan Cox <alan@lxorguk.ukuu.org.uk>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Trivial Patch Monkey <trivial@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On 5/15/09, Pekka Enberg <penberg@cs.helsinki.fi> wrote:
+>
+> On Wed, Feb 4, 2009 at 5:28 PM, Floris Kraak <randakar@gmail.com> wrote:
+> > Some distributions have enabled the gcc flag -Wformat-security by default.*
+> > This results in a number of warnings about format arguments to
+> > functions, sometimes in cases where fixing the warning is not likely
+> > to actually fix a bug.
+> > Instead of hand patching a dozens of places (possibly more) that
+> > produce warnings that get ignored anyway we just turn off the flag in
+> > the Makefile.
+> >
+>
+> Is there a reason this patch was not merged? Yes, it's clearly a
+> distro problem but apparently there's no easy way to turn it off.
+>
 
-the following patch is just an idea to see how the community feels about
-it. Considering accelerometer devices, you might have different use
-cases for it while running different applications. You could be using it
-for screen rotation in one case but when opening a game, you could use
-it as a game controller by turning the device side-by-side.
+Well, I posted a few follow up patches that turned this one on his
+head - instead of disabling the feature in GCC I attempted to hand
+patch every location that caused the warning instead.
 
-Thinking about that, I decided it would be nice to have some parameters
-configured at runtime in order to be able to use the accelerometer on
-different use cases.
+However, that is quite a large job for fixing a mere 'minor annoyance'
+- there are a number of obvious places where merely changing the
+definition of a 'char* foo' variable into a 'char foo[]' variable
+makes the warning go away (hence easily done)but getting rid of all of
+them requires some real code changes here and there. In theory all of
+them are harmless but it adds up to well over 130 patches. (When
+split.)
 
-The following proposal (really draft) tries to add a new IOCTL on input
-layer such as userland could use that for passing proper parameters to
-accelerometer drivers.
+I was still in the process of triaging the whole thing into a
+mergeable form when some assignment came along that caused me to drop
+the whole thing on the floor. I can dig them up and repost them if you
+like ;-)
 
-ps: the patch is in really early stage, I'm guessing the best would be
-to, as force feedback devices, provide proper registration for an
-accelerometer device.
+Tellingly enough I didn't find any place where the warning was
+actually warning about anything harmful. Maybe I just need better
+glasses though ;-)
 
-diff --git a/include/linux/input.h b/include/linux/input.h
-index adc1332..c3c9e82 100644
---- a/include/linux/input.h
-+++ b/include/linux/input.h
-@@ -55,6 +55,26 @@ struct input_absinfo {
-        __s32 flat;
- };
- 
-+#define INPUT_ACCEL_IRQ_NONE   0
-+#define INPUT_ACCEL_IRQ_HIGH   BIT(0)
-+#define INPUT_ACCEL_IRQ_LOW    BIT(1)
-+#define INPUT_ACCEL_IRQ_LATCH  BIT(2)
-+
-+struct input_accelinfo {
-+       __u32 threshold;
-+       __u32 duration;
-+
-+       /* the following 4 fields configure how the irqs will be generated:
-+        * - High Event
-+        * - Low Event
-+        * - Latch irq request
-+        */
-+       __u8 x_irq;
-+       __u8 y_irq;
-+       __u8 z_irq;
-+       __u8 click_irq;
-+};
-+
- #define EVIOCGVERSION          _IOR('E', 0x01, int)                    /* get driver version */
- #define EVIOCGID               _IOR('E', 0x02, struct input_id)        /* get device ID */
- #define EVIOCGREP              _IOR('E', 0x03, int[2])                 /* get repeat settings */
-@@ -81,6 +101,8 @@ struct input_absinfo {
- 
- #define EVIOCGRAB              _IOW('E', 0x90, int)                    /* Grab/Release device */
- 
-+#define EVIOCACCELINFO         _IOW('E', 0x91, struct input_accelinfo) /* set accelerometer's parameters */
-+
- /*
-  * Event types
-  */
-@@ -975,6 +997,8 @@ struct ff_effect {
- #include <linux/timer.h>
- #include <linux/mod_devicetable.h>
- 
-+struct input_accelinfo;
-+
- /**
-  * struct input_dev - represents an input device
-  * @name: name of the device
-@@ -1069,6 +1093,7 @@ struct input_dev {
-        void *keycode;
-        int (*setkeycode)(struct input_dev *dev, int scancode, int keycode);
-        int (*getkeycode)(struct input_dev *dev, int scancode, int *keycode);
-+       int (*set_accelinfo)(struct input_dev *dev, struct input_accelinfo *info);
- 
-        struct ff_device *ff;
- 
+Quite honestly I still believe just disabling this check is the best
+thing to do.
 
+It would be *really* nice if printk could just check instead how many
+arguments it has and refrain from parsing the format string if there
+aren't any. Unfortunately that's seemingly impossible - or at least,
+well beyond my abilities ;-)
 
--- 
-balbi
+Regards,
+Floris
+---
+'Or lawyers may say, “But if I decline, someone else will do it. So
+what is gained?” My reply: “Let someone else do it. But not you. Honor
+is personal. Worry about yourself.  You don’t get a pass from moral
+responsibility because you acted for a client.”
+
+That’s the first lesson I would offer, aimed at lawyers. A second
+lesson, aimed at all, is this: Keep ready your capacity for outrage.
+This is very important. Next to the vote, outrage is the one response
+each of us can contribute. Outrage is how honor must confront
+dishonor. If we lose the capacity for outrage, we are in serious
+trouble. '
+   --- Stephen Gillers
