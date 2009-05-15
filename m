@@ -1,71 +1,78 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751500AbZEOLVh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbZEOLWS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751500AbZEOLVh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 07:21:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752476AbZEOLV1
+	id S1753481AbZEOLWS (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 07:22:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752111AbZEOLV6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 07:21:27 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:53504 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751876AbZEOLV1 (ORCPT
+	Fri, 15 May 2009 07:21:58 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:30041 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751262AbZEOLV4 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 07:21:27 -0400
-Date: Fri, 15 May 2009 13:26:56 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: =?utf-8?Q?Micha=C5=82?= Nazarewicz <m.nazarewicz@samsung.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Peter Zijlstra <peterz@infradead.org>,
-       Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       m.szyprowski@samsung.com, kyungmin.park@samsung.com, linux-mm@kvack.org
-Subject: Re: [PATCH] Physical Memory Management [0/1]
-Message-ID: <20090515112656.GD16682@one.firstfloor.org>
-References: <op.utwwmpsf7p4s8u@amdc030> <1242300002.6642.1091.camel@laptop> <op.utw4fdhz7p4s8u@amdc030> <1242302702.6642.1140.camel@laptop> <op.utw7yhv67p4s8u@amdc030> <20090514100718.d8c20b64.akpm@linux-foundation.org> <1242321000.6642.1456.camel@laptop> <op.utyudge07p4s8u@amdc030> <20090515101811.GC16682@one.firstfloor.org> <op.utyv89ek7p4s8u@amdc030>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <op.utyv89ek7p4s8u@amdc030>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 15 May 2009 07:21:56 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=IVTA+IAHQ1Xm5lM9bXqkyM/CbcrCCAwgFZZMU9ET062+8x2089eR8c/rcpZNGBwAfN
+         16ViYUR0UDQPDKLRwBNl5t78Vbn733hRblPeLAPxpAdjpBKKYC5SEhRCvTCYyNHHOwEK
+         0VSYYmaUkuG+lB6E65puUCC/zPMFfrfZHVqFA=
+Message-ID: <4A0D5051.90708@gmail.com>
+Date: Fri, 15 May 2009 20:21:53 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+CC: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>, hancockrwd@gmail.com,
+       alan@lxorguk.ukuu.org.uk, flar@allandria.com,
+       schmitz@biophys.uni-duesseldorf.de, linux-kernel@vger.kernel.org,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org, takata@linux-m32r.org,
+       geert@linux-m68k.org, linux-m68k@vger.kernel.org,
+       ysato@users.sourceforge.jp
+Subject: Re: [PATCH] ata: libata depends on HAS_DMA
+References: <20090513043409.GA13577@cynthia.pants.nu> <20090514091928R.fujita.tomonori@lab.ntt.co.jp> <4A0CFE1F.5080409@gmail.com> <200905151316.31521.arnd@arndb.de>
+In-Reply-To: <200905151316.31521.arnd@arndb.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 12:47:23PM +0200, Michał Nazarewicz wrote:
-> On Fri, 15 May 2009 12:18:11 +0200, Andi Kleen wrote:
-> > That's not correct, support for multiple huge page sizes was recently
-> > added. The interface is a bit clumpsy admittedly, but it's there.
+Hello,
+
+Arnd Bergmann wrote:
+> On Friday 15 May 2009, Tejun Heo wrote:
+>> FUJITA Tomonori wrote:
+>>> Can libata call dma_supported() per device to decide DMA or PIO mode?
+>>> Then, we can solve this problem by add dummy DMA API (just calls BUG)
+>>> on such architectures, without Kconfig magic or adding ifdef (like the
+>>> old ide stack does), I think.
 > 
-> I'll have to look into that further then.  Having said that, I cannot
-> create a huge page SysV shared memory segment with pages of specified
-> size, can I?
-
-sysv shared memory supports huge pages, but there is currently
-no interface to specify the intended page size, you always
-get the default.
-
+> That would be the !CONFIG_PCI half of the old
+> include/asm-generic/dma-mapping.h file that you just removed,
+> right?
 > 
-> > However for non fragmentation purposes you probably don't
-> > want too many different sizes anyways, the more sizes, the worse
-> > the fragmentation. Ideal is only a single size.
+> In general, I'd prefer keeping the asm-generic/dma-mapping-broken.h
+> implementation that gives us a compile-time error, but maybe there
+> is an even better option based on the mn10300 implementation which
+> basically pretends everything works with just page_to_phys() mappings.
+
+Don't know much history here but I don't wanna sprinkle ifdefs around
+in libata so I would much prefer dummy implementation which doesn't
+fail compile.
+
+>> Sure it can.  Which specific drivers are we talking about?
 > 
-> Unfortunately, sizes may very from several KiBs to a few MiBs.
+> The main problem is libata-core.c, which references DMA mapping
+> API calls that are only implemented on architectures setting
+> CONFIG_HAS_DMA.
 
-Then your approach will likely not be reliable.
+Yeah, sure, libata-core is used by every driver but I was wondering
+whether only SFF drivers are of interest or there are others.
 
-> On the other hand, only a handful of apps will use PMM in our system
-> and at most two or three will be run at the same time so hopefully
-> fragmentation won't be so bad.  But yes, I admit it is a concern.
+Thanks.
 
-Such tight restrictions might work for you, but for mainline Linux the quality 
-standards are higher.
- 
-> > As Peter et.al. explained earlier varying buffer sizes don't work
-> > anyways.
-> 
-> Either I missed something or Peter and Adrew only pointed the problem
-> we all seem to agree exists: a problem of fragmentation.
-
-Multiple buffer sizes lead to fragmentation.
-
--Andi
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+tejun
