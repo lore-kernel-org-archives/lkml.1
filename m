@@ -1,15 +1,15 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762804AbZEOOqF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763085AbZEOOq2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762804AbZEOOqF (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 10:46:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762405AbZEOOoo
+	id S1763085AbZEOOq2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 10:46:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762511AbZEOOo4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 10:44:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:54788 "EHLO hera.kernel.org"
+	Fri, 15 May 2009 10:44:56 -0400
+Received: from hera.kernel.org ([140.211.167.34]:55962 "EHLO hera.kernel.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761383AbZEOOol (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 10:44:41 -0400
-Date: Fri, 15 May 2009 14:44:08 GMT
+	id S1762507AbZEOOoy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 10:44:54 -0400
+Date: Fri, 15 May 2009 14:44:20 GMT
 From: tip-bot for Paul Mackerras <paulus@samba.org>
 To: linux-tip-commits@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
@@ -18,434 +18,115 @@ Cc: linux-kernel@vger.kernel.org, acme@redhat.com, paulus@samba.org,
 Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org, acme@redhat.com,
        linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
        tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <18955.36874.472452.353104@drongo.ozlabs.ibm.com>
-References: <18955.36874.472452.353104@drongo.ozlabs.ibm.com>
-Subject: [tip:perfcounters/core] perf_counter: powerpc: use u64 for event codes internally
-Message-ID: <tip-ef923214a4816c289e4af2d67a9ebb1a31e4ac61@git.kernel.org>
-Git-Commit-ID: ef923214a4816c289e4af2d67a9ebb1a31e4ac61
+In-Reply-To: <18956.1272.818511.561835@cargo.ozlabs.ibm.com>
+References: <18956.1272.818511.561835@cargo.ozlabs.ibm.com>
+Subject: [tip:perfcounters/core] perf_counter: allow arch to supply event misc flags and instruction pointer
+Message-ID: <tip-9d23a90a67261e73b2fcac04d8ca963c6b496afb@git.kernel.org>
+Git-Commit-ID: 9d23a90a67261e73b2fcac04d8ca963c6b496afb
 X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 15 May 2009 14:44:11 +0000 (UTC)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 15 May 2009 14:44:21 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  ef923214a4816c289e4af2d67a9ebb1a31e4ac61
-Gitweb:     http://git.kernel.org/tip/ef923214a4816c289e4af2d67a9ebb1a31e4ac61
+Commit-ID:  9d23a90a67261e73b2fcac04d8ca963c6b496afb
+Gitweb:     http://git.kernel.org/tip/9d23a90a67261e73b2fcac04d8ca963c6b496afb
 Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Thu, 14 May 2009 13:29:14 +1000
+AuthorDate: Thu, 14 May 2009 21:48:08 +1000
 Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 15 May 2009 16:38:55 +0200
+CommitDate: Fri, 15 May 2009 16:38:56 +0200
 
-perf_counter: powerpc: use u64 for event codes internally
+perf_counter: allow arch to supply event misc flags and instruction pointer
 
-Although the perf_counter API allows 63-bit raw event codes,
-internally in the powerpc back-end we had been using 32-bit
-event codes.  This expands them to 64 bits so that we can add
-bits for specifying threshold start/stop events and instruction
-sampling modes later.
+At present the values we put in overflow events for the misc
+flags indicating processor mode and the instruction pointer are
+obtained using the standard user_mode() and
+instruction_pointer() functions. Those functions tell you where
+the performance monitor interrupt was taken, which might not be
+exactly where the counter overflow occurred, for example
+because interrupts were disabled at the point where the
+overflow occurred, or because the processor had many
+instructions in flight and chose to complete some more
+instructions beyond the one that caused the counter overflow.
 
-This also corrects the return value of can_go_on_limited_pmc;
-we were returning an event code rather than just a 0/1 value in
-some circumstances. That didn't particularly matter while event
-codes were 32-bit, but now that event codes are 64-bit it
-might, so this fixes it.
+Some architectures (e.g. powerpc) can supply more precise
+information about where the counter overflow occurred and the
+processor mode at that point.  This introduces new functions,
+perf_misc_flags() and perf_instruction_pointer(), which arch
+code can override to provide more precise information if
+available.  They have default implementations which are
+identical to the existing code.
 
-[ Impact: extend PowerPC perfcounter interfaces from u32 to u64 ]
+This also adds a new misc flag value,
+PERF_EVENT_MISC_HYPERVISOR, for the case where a counter
+overflow occurred in the hypervisor.  We encode the processor
+mode in the 2 bits previously used to indicate user or kernel
+mode; the values for user and kernel mode are unchanged and
+hypervisor mode is indicated by both bits being set.
+
+[ Impact: generalize perfcounter core facilities ]
 
 Signed-off-by: Paul Mackerras <paulus@samba.org>
 Acked-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
 Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
 Cc: Arnaldo Carvalho de Melo <acme@redhat.com>
-LKML-Reference: <18955.36874.472452.353104@drongo.ozlabs.ibm.com>
+LKML-Reference: <18956.1272.818511.561835@cargo.ozlabs.ibm.com>
 Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
 ---
- arch/powerpc/include/asm/perf_counter.h |   10 +++++-----
- arch/powerpc/kernel/perf_counter.c      |   26 ++++++++++++--------------
- arch/powerpc/kernel/power4-pmu.c        |    9 ++++-----
- arch/powerpc/kernel/power5+-pmu.c       |   14 +++++++-------
- arch/powerpc/kernel/power5-pmu.c        |   16 ++++++++--------
- arch/powerpc/kernel/power6-pmu.c        |   16 ++++++++--------
- arch/powerpc/kernel/ppc970-pmu.c        |    9 ++++-----
- 7 files changed, 48 insertions(+), 52 deletions(-)
+ include/linux/perf_counter.h |   11 ++++++++++-
+ kernel/perf_counter.c        |    5 ++---
+ 2 files changed, 12 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/perf_counter.h b/arch/powerpc/include/asm/perf_counter.h
-index 56d66c3..ceea76a 100644
---- a/arch/powerpc/include/asm/perf_counter.h
-+++ b/arch/powerpc/include/asm/perf_counter.h
-@@ -23,13 +23,13 @@ struct power_pmu {
- 	int	max_alternatives;
- 	u64	add_fields;
- 	u64	test_adder;
--	int	(*compute_mmcr)(unsigned int events[], int n_ev,
-+	int	(*compute_mmcr)(u64 events[], int n_ev,
- 				unsigned int hwc[], u64 mmcr[]);
--	int	(*get_constraint)(unsigned int event, u64 *mskp, u64 *valp);
--	int	(*get_alternatives)(unsigned int event, unsigned int flags,
--				    unsigned int alt[]);
-+	int	(*get_constraint)(u64 event, u64 *mskp, u64 *valp);
-+	int	(*get_alternatives)(u64 event, unsigned int flags,
-+				    u64 alt[]);
- 	void	(*disable_pmc)(unsigned int pmc, u64 mmcr[]);
--	int	(*limited_pmc_event)(unsigned int event);
-+	int	(*limited_pmc_event)(u64 event);
- 	int	limited_pmc5_6;	/* PMC5 and PMC6 have limited function */
- 	int	n_generic;
- 	int	*generic_events;
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index db8d5ca..8d4cafc 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -26,7 +26,7 @@ struct cpu_hw_counters {
- 	int n_limited;
- 	u8  pmcs_enabled;
- 	struct perf_counter *counter[MAX_HWCOUNTERS];
--	unsigned int events[MAX_HWCOUNTERS];
-+	u64 events[MAX_HWCOUNTERS];
- 	unsigned int flags[MAX_HWCOUNTERS];
- 	u64 mmcr[3];
- 	struct perf_counter *limited_counter[MAX_LIMITED_HWCOUNTERS];
-@@ -131,11 +131,11 @@ static void write_pmc(int idx, unsigned long val)
-  * and see if any combination of alternative codes is feasible.
-  * The feasible set is returned in event[].
-  */
--static int power_check_constraints(unsigned int event[], unsigned int cflags[],
-+static int power_check_constraints(u64 event[], unsigned int cflags[],
- 				   int n_ev)
- {
- 	u64 mask, value, nv;
--	unsigned int alternatives[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
-+	u64 alternatives[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
- 	u64 amasks[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
- 	u64 avalues[MAX_HWCOUNTERS][MAX_EVENT_ALTERNATIVES];
- 	u64 smasks[MAX_HWCOUNTERS], svalues[MAX_HWCOUNTERS];
-@@ -564,7 +564,7 @@ void hw_perf_enable(void)
- }
- 
- static int collect_events(struct perf_counter *group, int max_count,
--			  struct perf_counter *ctrs[], unsigned int *events,
-+			  struct perf_counter *ctrs[], u64 *events,
- 			  unsigned int *flags)
- {
- 	int n = 0;
-@@ -752,11 +752,11 @@ struct pmu power_pmu = {
-  * that a limited PMC can count, doesn't require interrupts, and
-  * doesn't exclude any processor mode.
-  */
--static int can_go_on_limited_pmc(struct perf_counter *counter, unsigned int ev,
-+static int can_go_on_limited_pmc(struct perf_counter *counter, u64 ev,
- 				 unsigned int flags)
- {
- 	int n;
--	unsigned int alt[MAX_EVENT_ALTERNATIVES];
-+	u64 alt[MAX_EVENT_ALTERNATIVES];
- 
- 	if (counter->hw_event.exclude_user
- 	    || counter->hw_event.exclude_kernel
-@@ -776,10 +776,8 @@ static int can_go_on_limited_pmc(struct perf_counter *counter, unsigned int ev,
- 
- 	flags |= PPMU_LIMITED_PMC_OK | PPMU_LIMITED_PMC_REQD;
- 	n = ppmu->get_alternatives(ev, flags, alt);
--	if (n)
--		return alt[0];
- 
--	return 0;
-+	return n > 0;
- }
- 
- /*
-@@ -787,10 +785,9 @@ static int can_go_on_limited_pmc(struct perf_counter *counter, unsigned int ev,
-  * and return the event code, or 0 if there is no such alternative.
-  * (Note: event code 0 is "don't count" on all machines.)
-  */
--static unsigned long normal_pmc_alternative(unsigned long ev,
--					    unsigned long flags)
-+static u64 normal_pmc_alternative(u64 ev, unsigned long flags)
- {
--	unsigned int alt[MAX_EVENT_ALTERNATIVES];
-+	u64 alt[MAX_EVENT_ALTERNATIVES];
- 	int n;
- 
- 	flags &= ~(PPMU_LIMITED_PMC_OK | PPMU_LIMITED_PMC_REQD);
-@@ -820,9 +817,10 @@ static void hw_perf_counter_destroy(struct perf_counter *counter)
- 
- const struct pmu *hw_perf_counter_init(struct perf_counter *counter)
- {
--	unsigned long ev, flags;
-+	u64 ev;
-+	unsigned long flags;
- 	struct perf_counter *ctrs[MAX_HWCOUNTERS];
--	unsigned int events[MAX_HWCOUNTERS];
-+	u64 events[MAX_HWCOUNTERS];
- 	unsigned int cflags[MAX_HWCOUNTERS];
- 	int n;
- 	int err;
-diff --git a/arch/powerpc/kernel/power4-pmu.c b/arch/powerpc/kernel/power4-pmu.c
-index 744a275..836fa11 100644
---- a/arch/powerpc/kernel/power4-pmu.c
-+++ b/arch/powerpc/kernel/power4-pmu.c
-@@ -213,7 +213,7 @@ static unsigned char direct_marked_event[8] = {
-  * Returns 1 if event counts things relating to marked instructions
-  * and thus needs the MMCRA_SAMPLE_ENABLE bit set, or 0 if not.
-  */
--static int p4_marked_instr_event(unsigned int event)
-+static int p4_marked_instr_event(u64 event)
- {
- 	int pmc, psel, unit, byte, bit;
- 	unsigned int mask;
-@@ -249,7 +249,7 @@ static int p4_marked_instr_event(unsigned int event)
- 	return (mask >> (byte * 8 + bit)) & 1;
- }
- 
--static int p4_get_constraint(unsigned int event, u64 *maskp, u64 *valp)
-+static int p4_get_constraint(u64 event, u64 *maskp, u64 *valp)
- {
- 	int pmc, byte, unit, lower, sh;
- 	u64 mask = 0, value = 0;
-@@ -320,8 +320,7 @@ static unsigned int ppc_inst_cmpl[] = {
- 	0x1001, 0x4001, 0x6001, 0x7001, 0x8001
+diff --git a/include/linux/perf_counter.h b/include/linux/perf_counter.h
+index 004b6e1..c8c1dfc 100644
+--- a/include/linux/perf_counter.h
++++ b/include/linux/perf_counter.h
+@@ -215,8 +215,11 @@ struct perf_counter_mmap_page {
+ 	__u32   data_head;		/* head in the data section */
  };
  
--static int p4_get_alternatives(unsigned int event, unsigned int flags,
--			       unsigned int alt[])
-+static int p4_get_alternatives(u64 event, unsigned int flags, u64 alt[])
- {
- 	int i, j, na;
++#define PERF_EVENT_MISC_CPUMODE_MASK	(3 << 0)
++#define PERF_EVENT_MISC_CPUMODE_UNKNOWN	(0 << 0)
+ #define PERF_EVENT_MISC_KERNEL		(1 << 0)
+-#define PERF_EVENT_MISC_USER		(1 << 1)
++#define PERF_EVENT_MISC_USER		(2 << 0)
++#define PERF_EVENT_MISC_HYPERVISOR	(3 << 0)
+ #define PERF_EVENT_MISC_OVERFLOW	(1 << 2)
  
-@@ -353,7 +352,7 @@ static int p4_get_alternatives(unsigned int event, unsigned int flags,
- 	return na;
- }
+ struct perf_event_header {
+@@ -596,6 +599,12 @@ extern int sysctl_perf_counter_mlock;
  
--static int p4_compute_mmcr(unsigned int event[], int n_ev,
-+static int p4_compute_mmcr(u64 event[], int n_ev,
- 			   unsigned int hwc[], u64 mmcr[])
- {
- 	u64 mmcr0 = 0, mmcr1 = 0, mmcra = 0;
-diff --git a/arch/powerpc/kernel/power5+-pmu.c b/arch/powerpc/kernel/power5+-pmu.c
-index 8154eaa..3ac0654 100644
---- a/arch/powerpc/kernel/power5+-pmu.c
-+++ b/arch/powerpc/kernel/power5+-pmu.c
-@@ -135,7 +135,7 @@ static u64 unit_cons[PM_LASTUNIT+1][2] = {
- 	[PM_GRS] =   { 0x0e00000000ull, 0x0c40000000ull },
- };
+ extern void perf_counter_init(void);
  
--static int power5p_get_constraint(unsigned int event, u64 *maskp, u64 *valp)
-+static int power5p_get_constraint(u64 event, u64 *maskp, u64 *valp)
- {
- 	int pmc, byte, unit, sh;
- 	int bit, fmask;
-@@ -188,7 +188,7 @@ static int power5p_get_constraint(unsigned int event, u64 *maskp, u64 *valp)
- 	return 0;
- }
++#ifndef perf_misc_flags
++#define perf_misc_flags(regs)	(user_mode(regs) ? PERF_EVENT_MISC_USER : \
++				 PERF_EVENT_MISC_KERNEL)
++#define perf_instruction_pointer(regs)	instruction_pointer(regs)
++#endif
++
+ #else
+ static inline void
+ perf_counter_task_sched_in(struct task_struct *task, int cpu)		{ }
+diff --git a/kernel/perf_counter.c b/kernel/perf_counter.c
+index 728a595..57840a9 100644
+--- a/kernel/perf_counter.c
++++ b/kernel/perf_counter.c
+@@ -2042,11 +2042,10 @@ static void perf_counter_output(struct perf_counter *counter,
+ 	header.size = sizeof(header);
  
--static int power5p_limited_pmc_event(unsigned int event)
-+static int power5p_limited_pmc_event(u64 event)
- {
- 	int pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
+ 	header.misc = PERF_EVENT_MISC_OVERFLOW;
+-	header.misc |= user_mode(regs) ?
+-		PERF_EVENT_MISC_USER : PERF_EVENT_MISC_KERNEL;
++	header.misc |= perf_misc_flags(regs);
  
-@@ -273,11 +273,11 @@ static int find_alternative_bdecode(unsigned int event)
- 	return -1;
- }
- 
--static int power5p_get_alternatives(unsigned int event, unsigned int flags,
--				    unsigned int alt[])
-+static int power5p_get_alternatives(u64 event, unsigned int flags, u64 alt[])
- {
--	int i, j, ae, nalt = 1;
-+	int i, j, nalt = 1;
- 	int nlim;
-+	u64 ae;
- 
- 	alt[0] = event;
- 	nalt = 1;
-@@ -402,7 +402,7 @@ static unsigned char direct_event_is_marked[0x28] = {
-  * Returns 1 if event counts things relating to marked instructions
-  * and thus needs the MMCRA_SAMPLE_ENABLE bit set, or 0 if not.
-  */
--static int power5p_marked_instr_event(unsigned int event)
-+static int power5p_marked_instr_event(u64 event)
- {
- 	int pmc, psel;
- 	int bit, byte, unit;
-@@ -451,7 +451,7 @@ static int power5p_marked_instr_event(unsigned int event)
- 	return (mask >> (byte * 8 + bit)) & 1;
- }
- 
--static int power5p_compute_mmcr(unsigned int event[], int n_ev,
-+static int power5p_compute_mmcr(u64 event[], int n_ev,
- 				unsigned int hwc[], u64 mmcr[])
- {
- 	u64 mmcr1 = 0;
-diff --git a/arch/powerpc/kernel/power5-pmu.c b/arch/powerpc/kernel/power5-pmu.c
-index 6e667dc..d534496 100644
---- a/arch/powerpc/kernel/power5-pmu.c
-+++ b/arch/powerpc/kernel/power5-pmu.c
-@@ -139,7 +139,7 @@ static u64 unit_cons[PM_LASTUNIT+1][2] = {
- 	[PM_GRS] =   { 0x30002000000000ull, 0x30000400000000ull },
- };
- 
--static int power5_get_constraint(unsigned int event, u64 *maskp, u64 *valp)
-+static int power5_get_constraint(u64 event, u64 *maskp, u64 *valp)
- {
- 	int pmc, byte, unit, sh;
- 	int bit, fmask;
-@@ -224,7 +224,7 @@ static const unsigned int event_alternatives[][MAX_ALT] = {
-  * Scan the alternatives table for a match and return the
-  * index into the alternatives table if found, else -1.
-  */
--static int find_alternative(unsigned int event)
-+static int find_alternative(u64 event)
- {
- 	int i, j;
- 
-@@ -250,7 +250,7 @@ static const unsigned char bytedecode_alternatives[4][4] = {
-  * PMCSEL values on other counters.  This returns the alternative
-  * event code for those that do, or -1 otherwise.
-  */
--static int find_alternative_bdecode(unsigned int event)
-+static u64 find_alternative_bdecode(u64 event)
- {
- 	int pmc, altpmc, pp, j;
- 
-@@ -269,10 +269,10 @@ static int find_alternative_bdecode(unsigned int event)
- 	return -1;
- }
- 
--static int power5_get_alternatives(unsigned int event, unsigned int flags,
--				   unsigned int alt[])
-+static int power5_get_alternatives(u64 event, unsigned int flags, u64 alt[])
- {
--	int i, j, ae, nalt = 1;
-+	int i, j, nalt = 1;
-+	u64 ae;
- 
- 	alt[0] = event;
- 	nalt = 1;
-@@ -338,7 +338,7 @@ static unsigned char direct_event_is_marked[0x28] = {
-  * Returns 1 if event counts things relating to marked instructions
-  * and thus needs the MMCRA_SAMPLE_ENABLE bit set, or 0 if not.
-  */
--static int power5_marked_instr_event(unsigned int event)
-+static int power5_marked_instr_event(u64 event)
- {
- 	int pmc, psel;
- 	int bit, byte, unit;
-@@ -382,7 +382,7 @@ static int power5_marked_instr_event(unsigned int event)
- 	return (mask >> (byte * 8 + bit)) & 1;
- }
- 
--static int power5_compute_mmcr(unsigned int event[], int n_ev,
-+static int power5_compute_mmcr(u64 event[], int n_ev,
- 			       unsigned int hwc[], u64 mmcr[])
- {
- 	u64 mmcr1 = 0;
-diff --git a/arch/powerpc/kernel/power6-pmu.c b/arch/powerpc/kernel/power6-pmu.c
-index d44049f..ab7c615 100644
---- a/arch/powerpc/kernel/power6-pmu.c
-+++ b/arch/powerpc/kernel/power6-pmu.c
-@@ -134,7 +134,7 @@ static u32 marked_bus_events[16] = {
-  * Returns 1 if event counts things relating to marked instructions
-  * and thus needs the MMCRA_SAMPLE_ENABLE bit set, or 0 if not.
-  */
--static int power6_marked_instr_event(unsigned int event)
-+static int power6_marked_instr_event(u64 event)
- {
- 	int pmc, psel, ptype;
- 	int bit, byte, unit;
-@@ -172,7 +172,7 @@ static int power6_marked_instr_event(unsigned int event)
- /*
-  * Assign PMC numbers and compute MMCR1 value for a set of events
-  */
--static int p6_compute_mmcr(unsigned int event[], int n_ev,
-+static int p6_compute_mmcr(u64 event[], int n_ev,
- 			   unsigned int hwc[], u64 mmcr[])
- {
- 	u64 mmcr1 = 0;
-@@ -265,7 +265,7 @@ static int p6_compute_mmcr(unsigned int event[], int n_ev,
-  *	20-23, 24-27, 28-31 ditto for bytes 1, 2, 3
-  *	32-34	select field: nest (subunit) event selector
-  */
--static int p6_get_constraint(unsigned int event, u64 *maskp, u64 *valp)
-+static int p6_get_constraint(u64 event, u64 *maskp, u64 *valp)
- {
- 	int pmc, byte, sh, subunit;
- 	u64 mask = 0, value = 0;
-@@ -298,7 +298,7 @@ static int p6_get_constraint(unsigned int event, u64 *maskp, u64 *valp)
- 	return 0;
- }
- 
--static int p6_limited_pmc_event(unsigned int event)
-+static int p6_limited_pmc_event(u64 event)
- {
- 	int pmc = (event >> PM_PMC_SH) & PM_PMC_MSK;
- 
-@@ -337,7 +337,7 @@ static const unsigned int event_alternatives[][MAX_ALT] = {
-  * This could be made more efficient with a binary search on
-  * a presorted list, if necessary
-  */
--static int find_alternatives_list(unsigned int event)
-+static int find_alternatives_list(u64 event)
- {
- 	int i, j;
- 	unsigned int alt;
-@@ -356,12 +356,12 @@ static int find_alternatives_list(unsigned int event)
- 	return -1;
- }
- 
--static int p6_get_alternatives(unsigned int event, unsigned int flags,
--			       unsigned int alt[])
-+static int p6_get_alternatives(u64 event, unsigned int flags, u64 alt[])
- {
- 	int i, j, nlim;
--	unsigned int aevent, psel, pmc;
-+	unsigned int psel, pmc;
- 	unsigned int nalt = 1;
-+	u64 aevent;
- 
- 	alt[0] = event;
- 	nlim = p6_limited_pmc_event(event);
-diff --git a/arch/powerpc/kernel/ppc970-pmu.c b/arch/powerpc/kernel/ppc970-pmu.c
-index af2d188..eed47c4 100644
---- a/arch/powerpc/kernel/ppc970-pmu.c
-+++ b/arch/powerpc/kernel/ppc970-pmu.c
-@@ -147,7 +147,7 @@ static unsigned char direct_marked_event[8] = {
-  * Returns 1 if event counts things relating to marked instructions
-  * and thus needs the MMCRA_SAMPLE_ENABLE bit set, or 0 if not.
-  */
--static int p970_marked_instr_event(unsigned int event)
-+static int p970_marked_instr_event(u64 event)
- {
- 	int pmc, psel, unit, byte, bit;
- 	unsigned int mask;
-@@ -192,7 +192,7 @@ static u64 unit_cons[PM_LASTUNIT+1][2] = {
- 	[PM_STS] =   { 0x380000000000ull, 0x310000000000ull },
- };
- 
--static int p970_get_constraint(unsigned int event, u64 *maskp, u64 *valp)
-+static int p970_get_constraint(u64 event, u64 *maskp, u64 *valp)
- {
- 	int pmc, byte, unit, sh, spcsel;
- 	u64 mask = 0, value = 0;
-@@ -243,8 +243,7 @@ static int p970_get_constraint(unsigned int event, u64 *maskp, u64 *valp)
- 	return 0;
- }
- 
--static int p970_get_alternatives(unsigned int event, unsigned int flags,
--				 unsigned int alt[])
-+static int p970_get_alternatives(u64 event, unsigned int flags, u64 alt[])
- {
- 	alt[0] = event;
- 
-@@ -257,7 +256,7 @@ static int p970_get_alternatives(unsigned int event, unsigned int flags,
- 	return 1;
- }
- 
--static int p970_compute_mmcr(unsigned int event[], int n_ev,
-+static int p970_compute_mmcr(u64 event[], int n_ev,
- 			     unsigned int hwc[], u64 mmcr[])
- {
- 	u64 mmcr0 = 0, mmcr1 = 0, mmcra = 0;
+ 	if (record_type & PERF_RECORD_IP) {
+-		ip = instruction_pointer(regs);
++		ip = perf_instruction_pointer(regs);
+ 		header.type |= PERF_RECORD_IP;
+ 		header.size += sizeof(ip);
+ 	}
