@@ -1,180 +1,109 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760809AbZEOEcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760649AbZEOEcz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760809AbZEOEcV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 00:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZEOEcF
+	id S1760649AbZEOEcz (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 00:32:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754036AbZEOEcn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 00:32:05 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40934 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751257AbZEOEcD (ORCPT
+	Fri, 15 May 2009 00:32:43 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:17215 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753016AbZEOEcm convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 00:32:03 -0400
-Date: Fri, 15 May 2009 13:30:26 +0900
-From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
-To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Balbir Singh <balbir@in.ibm.com>, Hugh Dickins <hugh@veritas.com>,
-       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] memcg: fix stale swapcache at swapout
-Message-Id: <20090515133026.a26596fd.kamezawa.hiroyu@jp.fujitsu.com>
-In-Reply-To: <20090515130959.330dbd56.nishimura@mxp.nes.nec.co.jp>
-References: <20090515130959.330dbd56.nishimura@mxp.nes.nec.co.jp>
-Organization: FUJITSU Co. LTD.
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 15 May 2009 00:32:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=rdN/5hRKZAaWldH/lYDLohp7all5iSsKUz65lpr1pEdxfnjtXQ7BnTP2xLevpH61iA
+         L0fmWhIyjwaeLSC/L5tfy34xy/oIXGN5/DS3Rz7VHt07xjsqLVps1MBq2fyG/Q4TM1EH
+         iAY8HeXl6UIPh9kBWetIh8vkhvRhIH+VtbZuc=
+MIME-Version: 1.0
+In-Reply-To: <20090514103731.GA23814@roarinelk.homelinux.net>
+References: <20090514100909.GA23626@roarinelk.homelinux.net>
+	 <5d5443650905140328v319e673o2f7b865e21619486@mail.gmail.com>
+	 <20090514103731.GA23814@roarinelk.homelinux.net>
+Date: Fri, 15 May 2009 13:32:43 +0900
+Message-ID: <483a38b80905142132q7642c57w1d12812bda6f845@mail.gmail.com>
+Subject: Re: [PATCH] TSC2007: private data for platform callbacks.
+From: Kwangwoo Lee <kwangwoo.lee@gmail.com>
+To: Manuel Lauss <mano@roarinelk.homelinux.net>
+Cc: Trilok Soni <soni.trilok@gmail.com>, Kwangwoo Lee <kwlee@mtekvision.com>,
+       linux-kernel@vger.kernel.org,
+       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 May 2009 13:09:59 +0900
-Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
+On Thu, May 14, 2009 at 7:37 PM, Manuel Lauss
+<mano@roarinelk.homelinux.net> wrote:
+> Hi Trilok,
+>
+> On Thu, May 14, 2009 at 03:58:19PM +0530, Trilok Soni wrote:
+>> CCing linux-input mailing list, so not deleting any code from this
+>> e-mail while replying.
+>>
+>> On Thu, May 14, 2009 at 3:39 PM, Manuel Lauss
+>> <mano@roarinelk.homelinux.net> wrote:
+>> > Add a private data field to the tsc2007 platform data and pass this
+>> > to the callbacks.
+>>
+>> I hope that you have created this patch on top of two recently posted
+>> patches by Kwangwoo Lee
+>> to merge changes from Thierry.
+>
+> No; it's against Linux's git. Will rediff.
+>
+>
+>
+>> > - ? ? ? int ? ? ? ? ? ? ? ? ? ? (*get_pendown_state)(void);
+>> > - ? ? ? void ? ? ? ? ? ? ? ? ? ?(*clear_penirq)(void);
+>> > + ? ? ? struct tsc2007_platform_data *pd;
+>> > ?};
+>> >
+>> > +/* ask platform for pendown state */
+>> > +static inline int ts_get_pendown_state(struct tsc2007 *ts)
+>> > +{
+>> > + ? ? ? return ts->pd->get_pendown_state(ts->pd->priv);
+>>
+>> So, we don't need check here, like this:
+>>
+>> if (ts->pd->get_pendown_state)
+>>           ret =  ts->pd->get_pendown_state(ts->pd->priv);
+>
+> The driver doesn't work right without that callback so the check
+> in here is kind of pointless. Better to check for it in the
+> probe function and refuse to probe if it isn't there.  All other
+> callbacks seem optional to me.
 
-> This patch is split out from Kamezawa-san's fix stale swap cache account leak
-> patch set(v7).
-> 
->   http://lkml.org/lkml/2009/5/11/688
-> 
-> I moved the definition of memcg_free_unused_swapcache() back to memcontrol.c
-> (as I did in my original version) to avoid confilict with
-> Kosaki-san's remove CONFIG_UNEVICTABLE_LRU config option patch.
-> (it's not on mmotm yet though).
-> And IMHO, this function might not be appropriate for "vmscan".
-> 
-> This patch is based on mmotm-2009-05-13-16-34.
-> ===
-> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
-> 
-> Reclaiming anonymous memory in vmscan.c does following 2 steps.
->   1. add to swap and unmap.
->   2. pageout
-> But above 2 steps doesn't occur at once. There are many chances
-> to avoid pageout, and _really_ unused pages are swapped out by
-> visit-and-check-again logic of LRU rotation.
-> 
-> But this behavior has troubles with memcg because memcg doesn't put
-> !PageCgroupUsed swapcache back to its LRU.
-> These swapcache cannot be freed in memcg's LRU scanning, so swp_entry cannot
-> be freed properly as a result.
-> 
-> These swapcaches can be created by a race like below:
-> 
->     Assume processA is exiting and pte points to a page(!PageSwapCache).
->     And processB is trying reclaim the page.
-> 
->               processA                   |           processB
->     -------------------------------------+-------------------------------------
->       (page_remove_rmap())               |  (shrink_page_list())
->          mem_cgroup_uncharge_page()      |
->             ->uncharged because it's not |
->               PageSwapCache yet.         |
->               So, both mem/memsw.usage   |
->               are decremented.           |
->                                          |    add_to_swap() -> added to swapcache.
-> 
->     If this page goes thorough without being freed for some reason, this page
->     doesn't goes back to memcg's LRU because of !PageCgroupUsed.
-> 
-> This patch adds a hook after add_to_swap() to check the page is mapped by a
-> process or not, and frees it if it has been unmapped already.
-> 
-> If a page has been on swap cache already when the owner process calls
-> page_remove_rmap() -> mem_cgroup_uncharge_page(), the page is not uncharged.
-> It goes back to memcg's LRU even if it goes through shrink_page_list()
-> without being freed, so this patch ignores these case.
-> 
-> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+I agree. This function should be checked in the probe one.
 
-Thank you!
-Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+>
+>
+>> > ? ? ? ?struct tsc2007 *ts;
+>> > - ? ? ? struct tsc2007_platform_data *pdata = pdata = client->dev.platform_data;
+>> > + ? ? ? struct tsc2007_platform_data *pdata = client->dev.platform_data;
+>>
+>> This change shows that you need to rebase based on two patches
+>> submitted by Lee recently.
+>
+> Ah, that shouldn't be in there in the first place.
 
+This should be fixed.
 
-> ---
->  include/linux/swap.h |   12 ++++++++++++
->  mm/memcontrol.c      |   14 +++++++++++++-
->  mm/vmscan.c          |    8 ++++++++
->  3 files changed, 33 insertions(+), 1 deletions(-)
-> 
-> diff --git a/include/linux/swap.h b/include/linux/swap.h
-> index 6ea541d..00d8066 100644
-> --- a/include/linux/swap.h
-> +++ b/include/linux/swap.h
-> @@ -336,11 +336,17 @@ static inline void disable_swap_token(void)
->  
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
->  extern void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent);
-> +extern int memcg_free_unused_swapcache(struct page *page);
->  #else
->  static inline void
->  mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
->  {
->  }
-> +static inline int
-> +memcg_free_unused_swapcache(struct page *page)
-> +{
-> +	return 0;
-> +}
->  #endif
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->  extern void mem_cgroup_uncharge_swap(swp_entry_t ent);
-> @@ -436,6 +442,12 @@ mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
->  {
->  }
->  
-> +static inline int
-> +memcg_free_unused_swapcache(struct page *page)
-> +{
-> +	return 0;
-> +}
-> +
->  #endif /* CONFIG_SWAP */
->  #endif /* __KERNEL__*/
->  #endif /* _LINUX_SWAP_H */
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 0c90345..63844cd 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -1578,7 +1578,19 @@ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
->  	if (memcg)
->  		css_put(&memcg->css);
->  }
-> -#endif
-> +
-> +int memcg_free_unused_swapcache(struct page *page)
-> +{
-> +	VM_BUG_ON(!PageLocked(page));
-> +	VM_BUG_ON(!PageSwapCache(page));
-> +
-> +	if (mem_cgroup_disabled())
-> +		return 0;
-> +	if (!PageAnon(page) || page_mapped(page))
-> +		return 0;
-> +	return try_to_free_swap(page);	/* checks page_swapcount */
-> +}
-> +#endif /* CONFIG_SWAP */
->  
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->  /*
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 2f9d555..1fd0e43 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -665,6 +665,14 @@ static unsigned long shrink_page_list(struct list_head *page_list,
->  				goto keep_locked;
->  			if (!add_to_swap(page))
->  				goto activate_locked;
-> +			/*
-> +			 * The owner process might have uncharged the page
-> +			 * (by page_remove_rmap()) before it has been added
-> +			 * to swap cache.
-> +			 * Check it here to avoid making it stale.
-> +			 */
-> +			if (memcg_free_unused_swapcache(page))
-> +				goto keep_locked;
->  			may_enter_fs = 1;
->  		}
->  
-> 
+>
+> Thanks!
+>        Manuel Lauss
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
 
+Thanks,
+
+-- 
+Kwangwoo Lee <kwangwoo.lee@gmail.com>
