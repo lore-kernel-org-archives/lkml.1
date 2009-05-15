@@ -1,84 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762559AbZEOIsO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760318AbZEOIwm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762559AbZEOIsO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 04:48:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761950AbZEOIp1
+	id S1760318AbZEOIwm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 04:52:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbZEOIwd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 04:45:27 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41165 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1761761AbZEOIpY (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 04:45:24 -0400
-Date: Fri, 15 May 2009 08:44:12 GMT
-From: tip-bot for Ingo Molnar <mingo@elte.hu>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <new-submission>
-References: <new-submission>
-Subject: [tip:perfcounters/core] perf_counter: Remove ACPI quirk
-Message-ID: <tip-251e8e3c7235f5944805a64f24c79fc4696793f1@git.kernel.org>
-Git-Commit-ID: 251e8e3c7235f5944805a64f24c79fc4696793f1
-X-Mailer: tip-git-log-daemon
+	Fri, 15 May 2009 04:52:33 -0400
+Received: from smtp126.sbc.mail.sp1.yahoo.com ([69.147.65.185]:25511 "HELO
+	smtp126.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1755097AbZEOIwd (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 04:52:33 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=pacbell.net;
+  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
+  b=5glCwZCN9t/YhpZsGc39CNKl2jBKNiGTBL3Uq4+wjwcOYV05+IfJ428UR85XRVCFx2QoCMICTaQu+RjRP793liX6pj5AOMU5AmZO8gigxr3zWU1kk5icOGncA8NP7T/BRw5/FrPmdh+LWAItrFH8t7zNzUWY6iKH6jkkkc0q/U4=  ;
+X-YMail-OSG: V5DPO_sVM1lV4otHx68B1Y3KeVoAmiFfeyKj6So4VHG9kW8bRxws8KwGU7ZWqRcqhHybRFPzw7cF9tbPSzP8oHFLEvVl9Ws_2TS3FDohy20NECwetoX9zm08SI9wqij.YunYdd7yg.UGhx7ov3z8_q1PY30aHDjHKUjl956H8brK_twtvr0O9fP3AiVzMsq56JxAj1UI.5kHzK9ACU8lHcsFq3dSbg10VeYhwWk_6oKGd0NOhI1BlZ25wMzx6PTkcXi7RwOpPZMiysg-
+X-Yahoo-Newman-Property: ymail-3
+From: David Brownell <david-b@pacbell.net>
+To: Mark Brown <broonie@opensource.wolfsonmicro.com>
+Subject: Re: [patch 0/3] DaVinci ASoC updates
+Date: Fri, 15 May 2009 01:52:32 -0700
+User-Agent: KMail/1.9.10
+Cc: lrg@slimlogic.co.uk, lkml <linux-kernel@vger.kernel.org>,
+       DaVinci <davinci-linux-open-source@linux.davincidsp.com>
+References: <200905141235.35600.david-b@pacbell.net> <20090515081917.GA29556@rakim.wolfsonmicro.main>
+In-Reply-To: <20090515081917.GA29556@rakim.wolfsonmicro.main>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 15 May 2009 08:44:14 +0000 (UTC)
+Message-Id: <200905150152.33171.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  251e8e3c7235f5944805a64f24c79fc4696793f1
-Gitweb:     http://git.kernel.org/tip/251e8e3c7235f5944805a64f24c79fc4696793f1
-Author:     Ingo Molnar <mingo@elte.hu>
-AuthorDate: Thu, 14 May 2009 05:16:59 +0200
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Fri, 15 May 2009 09:47:07 +0200
+On Friday 15 May 2009, Mark Brown wrote:
+> On Thu, May 14, 2009 at 12:35:35PM -0700, David Brownell wrote:
+> 
+> > The 2.6.30-rc5 merges included a bunch of DaVinci platform
+> > updates, including EDMA support.  Which means that finally
+> > the ASoC stuff can be made to build in mainline ... it was
+> > probably sent to mainline before its time.  ;)
+> 
+> I've applied all three patches.
 
-perf_counter: Remove ACPI quirk
-
-We had a disable/enable around acpi_idle_do_entry() due to an erratum
-in an early prototype CPU i had access to. That erratum has been fixed
-in the BIOS so remove the quirk.
-
-The quirk also kept us from profiling interrupts that hit the ACPI idle
-instruction - so this is an improvement as well, beyond a cleanup and
-a micro-optimization.
-
-[ Impact: improve profiling scope, cleanup, micro-optimization ]
-
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-LKML-Reference: <new-submission>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Thanks.
 
 
----
- drivers/acpi/processor_idle.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+> Obviously they should all have been 
+> merged much earlier but given that the code didn't even build there's
+> no risk of making the situation worse and they look fine.
 
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index 9645758..f7ca8c5 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -765,7 +765,6 @@ static inline void acpi_idle_do_entry(struct acpi_processor_cx *cx)
- {
- 	/* Don't trace irqs off for idle */
- 	stop_critical_timings();
--	perf_disable();
- 	if (cx->entry_method == ACPI_CSTATE_FFH) {
- 		/* Call into architectural FFH based C-state */
- 		acpi_processor_ffh_cstate_enter(cx);
-@@ -780,7 +779,6 @@ static inline void acpi_idle_do_entry(struct acpi_processor_cx *cx)
- 		   gets asserted in time to freeze execution properly. */
- 		unused = inl(acpi_gbl_FADT.xpm_timer_block.address);
- 	}
--	perf_enable();
- 	start_critical_timings();
- }
- 
+Yeah; I'm glad those updates managed to get into RC5.
+Until they did, there wasn't much point in sending what
+would likely have been an incomplete synch.
