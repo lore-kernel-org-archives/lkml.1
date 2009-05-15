@@ -1,45 +1,198 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761581AbZEOJdl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761621AbZEOJf1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761581AbZEOJdl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 05:33:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759409AbZEOJdM
+	id S1761621AbZEOJf1 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 05:35:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760528AbZEOJfI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 05:33:12 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:50345 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757979AbZEOJdJ (ORCPT
+	Fri, 15 May 2009 05:35:08 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:55830 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1759409AbZEOJfG (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 05:33:09 -0400
-Date: Fri, 15 May 2009 11:38:38 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Josef Bacik <josef@redhat.com>,
-       sandeen@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Perform check in iov_iter_fault_in_readable() by check_readable_bytes()
-Message-ID: <20090515093838.GB16682@one.firstfloor.org>
-References: <1242317939-15392-1-git-send-email-v.mayatskih@gmail.com> <1242317939-15392-3-git-send-email-v.mayatskih@gmail.com> <87k54iq2gv.fsf@basil.nowhere.org> <871vqqkdf0.wl%vmayatsk@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <871vqqkdf0.wl%vmayatsk@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+	Fri, 15 May 2009 05:35:06 -0400
+X-Auth-Info: bhyMhyPzd3JcZYvIlIUA8SB1AHpxE+6Lk/RHvdtTMuQ=
+Message-ID: <4A0D374A.8080006@grandegger.com>
+Date: Fri, 15 May 2009 11:35:06 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Sascha Hauer <s.hauer@pengutronix.de>
+CC: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Marc Kleine-Budde <mkl@pengutronix.de>,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+Subject: Re: [PATCH v2 5/7] [PATCH 5/8] can: SJA1000 generic platform bus
+ driver
+References: <20090512092757.048938233@denx.de> <20090512092757.894204198@denx.de> <20090514064633.GT29278@pengutronix.de>
+In-Reply-To: <20090514064633.GT29278@pengutronix.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> ptr = mmap(0, page_size, ....);
-> ...
-> write(fd, ptr + page_size - 256, 512);
+Hi Sascha,
+
+Sascha Hauer wrote:
+> Hi Wolfgang,
 > 
-> Write() will fail here, but it can write first 256 bytes. Previously,
-> all 512 bytes were proceeded, but last 256 bytes were zeroed, and
-> sys_write() returned 256. Not very nice too. 
+> some comments inline.
+> 
+> Sascha
+> 
+> On Tue, May 12, 2009 at 11:28:02AM +0200, Wolfgang Grandegger wrote:
+>> This driver adds support for the SJA1000 chips connected to the
+>> "platform bus", which can be found on various embedded systems.
+>>
+>> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+>> Signed-off-by: Wolfgang Grandegger <wg@grandegger.com>
+>> Signed-off-by: Marc Kleine-Budde <mkl@pengutronix.de>
+>> Signed-off-by: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+>> ---
+>>  drivers/net/can/Kconfig                    |   10 +
+>>  drivers/net/can/sja1000/Makefile           |    1 
+>>  drivers/net/can/sja1000/sja1000_platform.c |  169 +++++++++++++++++++++++++++++
+>>  include/linux/can/platform/sja1000.h       |   32 +++++
+>>  4 files changed, 212 insertions(+)
+>>  create mode 100644 drivers/net/can/sja1000/sja1000_platform.c
+>>  create mode 100644 include/linux/can/platform/sja1000.h
+>>
+>> Index: net-next-2.6/drivers/net/can/Kconfig
+>> ===================================================================
+>> --- net-next-2.6.orig/drivers/net/can/Kconfig	2009-05-12 10:47:25.747720647 +0200
+>> +++ net-next-2.6/drivers/net/can/Kconfig	2009-05-12 10:47:26.411720627 +0200
+>> @@ -41,6 +41,16 @@
+>>  	---help---
+>>  	  Driver for the SJA1000 CAN controllers from Philips or NXP
+>>  
+>> +config CAN_SJA1000_PLATFORM
+>> +	depends on CAN_SJA1000
+>> +	tristate "Generic Platform Bus based SJA1000 driver"
+>> +	---help---
+>> +	  This driver adds support for the SJA1000 chips connected to
+>> +	  the "platform bus" (Linux abstraction for directly to the
+>> +	  processor attached devices).  Which can be found on various
+>> +	  boards from Phytec (http://www.phytec.de) like the PCM027,
+>> +	  PCM038.
+>> +
+>>  config CAN_DEBUG_DEVICES
+>>  	bool "CAN devices debugging messages"
+>>  	depends on CAN
+>> Index: net-next-2.6/drivers/net/can/sja1000/Makefile
+>> ===================================================================
+>> --- net-next-2.6.orig/drivers/net/can/sja1000/Makefile	2009-05-12 10:47:25.753720385 +0200
+>> +++ net-next-2.6/drivers/net/can/sja1000/Makefile	2009-05-12 10:47:26.412720490 +0200
+>> @@ -3,5 +3,6 @@
+>>  #
+>>  
+>>  obj-$(CONFIG_CAN_SJA1000) += sja1000.o
+>> +obj-$(CONFIG_CAN_SJA1000_PLATFORM) += sja1000_platform.o
+>>  
+>>  ccflags-$(CONFIG_CAN_DEBUG_DEVICES) := -DDEBUG
+>> Index: net-next-2.6/drivers/net/can/sja1000/sja1000_platform.c
+>> ===================================================================
+>> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+>> +++ net-next-2.6/drivers/net/can/sja1000/sja1000_platform.c	2009-05-12 10:47:26.416720502 +0200
+>> @@ -0,0 +1,169 @@
+>> +/*
+>> + * Copyright (C) 2005 Sascha Hauer, Pengutronix
+>> + * Copyright (C) 2007 Wolfgang Grandegger <wg@grandegger.com>
+>> + *
+>> + * This program is free software; you can redistribute it and/or modify
+>> + * it under the terms of the version 2 of the GNU General Public License
+>> + * as published by the Free Software Foundation
+>> + *
+>> + * This program is distributed in the hope that it will be useful,
+>> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+>> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+>> + * GNU General Public License for more details.
+>> + *
+>> + * You should have received a copy of the GNU General Public License
+>> + * along with this program; if not, write to the Free Software
+>> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+>> + */
+>> +
+>> +#include <linux/kernel.h>
+>> +#include <linux/module.h>
+>> +#include <linux/interrupt.h>
+>> +#include <linux/netdevice.h>
+>> +#include <linux/delay.h>
+>> +#include <linux/pci.h>
+>> +#include <linux/platform_device.h>
+>> +#include <linux/irq.h>
+>> +#include <linux/can.h>
+>> +#include <linux/can/dev.h>
+>> +#include <linux/can/platform/sja1000.h>
+>> +#include <linux/io.h>
+>> +
+>> +#include "sja1000.h"
+>> +
+>> +#define DRV_NAME "sja1000_platform"
+>> +
+>> +MODULE_AUTHOR("Sascha Hauer <s.hauer@pengutronix.de>");
+>> +MODULE_DESCRIPTION("Socket-CAN driver for SJA1000 on the platform bus");
+>> +MODULE_LICENSE("GPL v2");
+>> +
+>> +static u8 sp_read_reg(const struct net_device *dev, int reg)
+>> +{
+>> +	return ioread8((void __iomem *)(dev->base_addr + reg));
+>> +}
+>> +
+>> +static void sp_write_reg(const struct net_device *dev, int reg, u8 val)
+>> +{
+>> +	iowrite8(val, (void __iomem *)(dev->base_addr + reg));
+>> +}
+>> +
+>> +static int sp_probe(struct platform_device *pdev)
+>> +{
+>> +	int err, irq;
+>> +	void __iomem *addr;
+>> +	struct net_device *dev;
+>> +	struct sja1000_priv *priv;
+>> +	struct resource *res_mem, *res_irq;
+>> +	struct sja1000_platform_data *pdata;
+>> +
+>> +	pdata = pdev->dev.platform_data;
+>> +	if (!pdata) {
+>> +		dev_err(&pdev->dev, "No platform data provided!\n");
+>> +		err = -ENODEV;
+>> +		goto exit;
+>> +	}
+>> +
+>> +	res_mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+>> +	res_irq = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+>> +	if (!res_mem || !res_irq) {
+>> +		err = -ENODEV;
+>> +		goto exit;
+>> +	}
+>> +
+>> +	if (!request_mem_region(res_mem->start,
+>> +				res_mem->end - res_mem->start + 1,
+>> +				DRV_NAME)) {
+> 
+> resource_size(res_mem) please, also for the other occurrences in this
+> file
 
-Is that really something that users rely on? It looks like a seriously
-broken user program. Which one is that? (just that I can avoid it :)
+OK.
 
--Andi
+>> +		err = -EBUSY;
+>> +		goto exit;
+>> +	}
+>> +
+>> +	addr = ioremap_nocache(res_mem->start,
+>> +			       res_mem->end - res_mem->start + 1);
+>> +	if (!addr) {
+>> +		err = -ENOMEM;
+>> +		goto exit_release;
+>> +	}
+>> +
+>> +	irq = res_irq->start;
+>> +	if (res_irq->flags & IRQF_TRIGGER_MASK)
+>> +		set_irq_type(irq, res_irq->flags & IRQF_TRIGGER_MASK);
+> 
+> You shouldn't use set_irq_type on not yet requested irqs but instead
+> pass the flags to the real driver and pass them in request_irq.
 
--- 
-ak@linux.intel.com -- Speaking for myself only.
+Why? I would require an extra member in the struct sja1000_priv.
+
+Wolfgang.
