@@ -1,55 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753829AbZEOTfO@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756219AbZEOThw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753829AbZEOTfO (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 15:35:14 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753026AbZEOTe7
+	id S1756219AbZEOThw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 15:37:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752859AbZEOThn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 15:34:59 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:45585 "EHLO mx3.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752941AbZEOTe7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 15:34:59 -0400
-Date: Fri, 15 May 2009 21:34:39 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: =?iso-8859-1?Q?Am=E9rico?= Wang <xiyou.wangcong@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, chrisw@sous-sol.org,
-       oleg@redhat.com, roland@redhat.com, linux-kernel@vger.kernel.org,
-       viro@zeniv.linux.org.uk
-Subject: Re: [patch 1/2] ptrace, security: rename ptrace_may_access =>
-	ptrace_access_check
-Message-ID: <20090515193439.GF22312@elte.hu>
-References: <20090507082027.GD12285@elte.hu> <20090507083102.GA20125@redhat.com> <20090507083851.GA19133@elte.hu> <20090507085742.GB3036@sequoia.sous-sol.org> <20090507090459.GE19133@elte.hu> <20090507093124.GA355@elte.hu> <20090507094947.GA4911@elte.hu> <20090507125526.c257c23d.akpm@linux-foundation.org> <20090511133949.GA28533@elte.hu> <2375c9f90905141810qc7a4c3eg7b800aaf8aac2e7b@mail.gmail.com>
+	Fri, 15 May 2009 15:37:43 -0400
+Received: from smtp-out.google.com ([216.239.33.17]:39948 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753258AbZEOThm (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 15:37:42 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=U5We+ikzSz++Rv2zPabF8xC85dw/S5T90SUngBCA0TQmTL+hxakzL7R4W01mCKDPa
+	wKZqL3WQ3d1g/b/wkmnDQ==
+Date: Fri, 15 May 2009 12:37:03 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Dave Hansen <dave@linux.vnet.ibm.com>
+cc: Christoph Lameter <cl@linux-foundation.org>, Pavel Machek <pavel@ucw.cz>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Mel Gorman <mel@csn.ul.ie>, San Mehat <san@android.com>,
+       Arve Hj?nnev?g <arve@android.com>, linux-kernel@vger.kernel.org,
+       Peter Zijlstra <peterz@infradead.org>,
+       Balbir Singh <balbir@linux.vnet.ibm.com>
+Subject: Re: Misleading OOM messages
+In-Reply-To: <1242411807.28257.44.camel@nimitz>
+Message-ID: <alpine.DEB.2.00.0905151235220.925@chino.kir.corp.google.com>
+References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com> <alpine.DEB.2.00.0905101503070.18804@chino.kir.corp.google.com> <alpine.DEB.1.10.0905121708470.14226@qirst.com> <20090514092909.GG1365@ucw.cz> <alpine.DEB.1.10.0905141546040.1381@qirst.com>
+ <1242333519.15391.210.camel@nimitz> <alpine.DEB.2.00.0905141346030.28074@chino.kir.corp.google.com> <1242335120.15391.242.camel@nimitz> <alpine.DEB.1.10.0905141729180.30187@qirst.com> <1242337042.28440.34.camel@nimitz> <alpine.DEB.2.00.0905141459370.624@chino.kir.corp.google.com>
+ <alpine.DEB.1.10.0905151358070.26559@qirst.com> <1242411807.28257.44.camel@nimitz>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <2375c9f90905141810qc7a4c3eg7b800aaf8aac2e7b@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 15 May 2009, Dave Hansen wrote:
 
-* Américo Wang <xiyou.wangcong@gmail.com> wrote:
-
-> On Mon, May 11, 2009 at 9:39 PM, Ingo Molnar <mingo@elte.hu> wrote:
-> >
-> > I.e. any function name that can be plain-English answered with:
-> > 'yes' or 'no' is a red flag for a retval function.
-> >
-> > You cannot answer ptrace_access_check() with 'yes' or 'no'. You
-> > could if it was ptrace_access_ok() or ptrace_may_access.
+> We get a wee bit of info out for the cgroups case at least:
 > 
-> Aha, then why do you agree with this patch? You don't see 
-> ptrace_access_check() returns bool?? :-)
+> void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask)
+> {
+> ...
+>         if (oom_kill_process(p, gfp_mask, 0, points, mem,
+>                                 "Memory cgroup out of memory"))
+>                 goto retry;
+> 
+> That can surely be improved, but it's a decent start.
+> 
 
-except that it doesnt ...
-
-	Ingo
+Cpusets are also cgroups and have their own oom handling logic 
+(CONSTRAINT_CPUSET and the penalization of the badness score for not 
+sharing memory with current's set of allowed nodes).  In this case, we're 
+interested in only the nodes set in cpuset_current_mems_allowed, for 
+instance, and not the entire state of the machine for exclusive cpusets.
