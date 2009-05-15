@@ -1,130 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756922AbZEODBf@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754543AbZEODCV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756922AbZEODBf (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 23:01:35 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZEODBZ
+	id S1754543AbZEODCV (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 23:02:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753596AbZEODCF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 23:01:25 -0400
-Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:57746 "EHLO
-	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752038AbZEODBZ (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 23:01:25 -0400
-Message-ID: <4A0CDA37.9040603@ct.jp.nec.com>
-Date: Fri, 15 May 2009 11:57:59 +0900
-From: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Thu, 14 May 2009 23:02:05 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:43181 "EHLO mail.dvmed.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753165AbZEODCE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 23:02:04 -0400
+Message-ID: <4A0CDB27.6090009@garzik.org>
+Date: Thu, 14 May 2009 23:01:59 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Subrata Modak <subrata@linux.vnet.ibm.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
-Subject: Re: [PATCH] Fix Warnining in arch/x86/kernel/signal.c
-References: <20090514091247.32082.38639.sendpatchset@subratamodak.linux.ibm.com>
-In-Reply-To: <20090514091247.32082.38639.sendpatchset@subratamodak.linux.ibm.com>
-Content-Type: text/plain; charset=ISO-2022-JP
+To: Julian Calaby <julian.calaby@gmail.com>
+CC: adam radford <aradford@gmail.com>, "Mukker, Atul" <Atul.Mukker@lsi.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Austria, Winston" <Winston.Austria@lsi.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Subject: Re: [RFQ] New driver architecture questions
+References: <6C678488C5CEE74F813A4D1948FD2DC7A95E6D37@cosmail02.lsi.com> 	<4A0B858F.3080405@garzik.org> <6C678488C5CEE74F813A4D1948FD2DC7A95E6D38@cosmail02.lsi.com> 	<4A0B9B0D.6080006@garzik.org> <b1bc6a000905141758y20aa7852h8b1012e3da6f8c0f@mail.gmail.com> <646765f40905141801k5ae6249p925a4a377652c62e@mail.gmail.com>
+In-Reply-To: <646765f40905141801k5ae6249p925a4a377652c62e@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Subrata Modak wrote:
-> Hello Hiroshi-san,
-> 
-> On Thu, 2009-05-14 at 09:24 +0900, Hiroshi Shimamoto wrote:
-> H. Peter Anvin wrote:
->>> Ingo Molnar wrote:
->>>>>>>  
->>>>>>>         if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
->>>>>>>                 goto badframe;
->>>>>>> -       if (__get_user(set.sig[0], &frame->sc.oldmask) || (_NSIG_WORDS > 1
->>>>>>> -               && __copy_from_user(&set.sig[1], &frame->extramask,
->>>>>>> -                                   sizeof(frame->extramask))))
->>>>>>> +
->>>>>>> +        if ( (__copy_from_user(&set.sig[1], &frame->extramask,
->>>>>>> +                sizeof(frame->extramask)) && _NSIG_WORDS > 1) || 
->>>>>>> +                __get_user(set.sig[0], &frame->sc.oldmask))
->>>>>>>                 goto badframe;
->>>>>> I'm not sure why this eliminates that warning.
->>>>>> set.sig[0] may not be initialized too, if __copy_from_user() failed.
->>>>> True, but only when either or both of __copy_from_user() and
->>>>> (_NSIG_WORDS > 1) fails. But in all instances set.sig[1] gets
->>>>> initialized.
->>>>>
->>>>>> I don't have enough time to look at this right now, sorry.
->>>>>>
->>>>>> Another question, __copy_from_user() will be called even if
->>>>>> _NSIG_WORDS is less than 2, perhaps it never occurs.
->>>>>> I think, to check _NSIG_WORDS > 1 before calling __copy_from_user()
->>>>>> is better.
->>>>> Fine. Let Ingo/Thomas/Peter decide whether they would like this fix or
->>>>> drop it.
->>>> If you get the Acked-by from Hiroshi-san it looks good to me. He 
->>>> modified this code last.
->>>>
->>> This seriously looks wrong to me.  If _NSIG_WORDS == 1, then calling
->>> __copy_from_user here is a serious error.
->> Right. If _NSIG_WORDS is 1, sigset_t set has only sig[0], writing to
->> set.sig[1] means stack corruption.
+Julian Calaby wrote:
+> On Fri, May 15, 2009 at 10:58, adam radford <aradford@gmail.com> wrote:
+>> On Wed, May 13, 2009 at 9:16 PM, Jeff Garzik <jeff@garzik.org> wrote:
+>>> Taking drivers/net/e1000e as an
+>>> example,
+>>>
+>>>        hw.h            hardware-specific defines, ~cross-OS
+>>>        82571.c         code specific to 8257x chip family, ~cross-OS
+>> 82571.c contains Linux specific code such as:  including Linux
+>> specific header files, calls to msleep().
 >>
->> Subrata, could you try like this?
->> if ((_NSIG_WORDS > 1 && __copy_from_user(&set.sig[1], ...) ||
->>       __get_user(set.sig[0], ...))
+>>>        ich8lan.c       code specific to ICH8+ chip family, ~cross-OS
+>> ich8lan.c contains Linux specific code such as:  might_sleep(),
+>> mutex_trylock(), mutex_unlock(), udelay(), msleep(), writel(), readl().
 >>
->>
+>> Perhaps this is a bad example?  It seems like the "common layer"
+>> sections that are "cross-OS" shouldn't contain any Linux specific code at all.
 > 
-> How about now ? Thanks for pointing that out. My mistake ;-)
-> 
-> Signed-off-by: Subrata Modak <subrata@linux.vnet.ibm.com>
-> To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>,
+> I think the implication is that the cross-OS parts are coded, as it
+> happens, in the linux coding style, using linux functions, but then a
+> Windows layer maps these to Windows specific functions.
 
-looks good to me.
-BTW who writes the description?
+Correct.
 
-Acked-by: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
+	Jeff
 
-> Cc: H. Peter Anvin <hpa@zytor.com>,
-> Cc: Ingo Molnar <mingo@elte.hu>,
-> Cc: x86@kernel.org,
-> Cc: Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-> Cc: Andi Kleen <andi@firstfloor.org>,
-> Cc: Andi Kleen <ak@linux.intel.com>,
-> Cc: Linux Kernel <linux-kernel@vger.kernel.org>,
-> Cc: Balbir Singh <balbir@linux.vnet.ibm.com>,
-> Cc: Thomas Gleixner <tglx@linutronix.de>,
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Subject: Re:[PATCH] Fix Warnining in arch/x86/kernel/signal.c
-> ---
-> 
-> --- a/arch/x86/kernel/signal.c	2009-05-14 11:27:15.000000000 +0530
-> +++ b/arch/x86/kernel/signal.c	2009-05-14 14:36:24.000000000 +0530
-> @@ -576,9 +576,9 @@ unsigned long sys_sigreturn(struct pt_re
->  
->  	if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
->  		goto badframe;
-> -	if (__get_user(set.sig[0], &frame->sc.oldmask) || (_NSIG_WORDS > 1
-> -		&& __copy_from_user(&set.sig[1], &frame->extramask,
-> -				    sizeof(frame->extramask))))
-> +	if ((_NSIG_WORDS > 1 && __copy_from_user(&set.sig[1],
-> +		&frame->extramask, sizeof(frame->extramask))) ||
-> +		__get_user(set.sig[0], &frame->sc.oldmask))
->  		goto badframe;
->  
->  	sigdelsetmask(&set, ~_BLOCKABLE);
-> 
-> ---
-> Regards--
-> Subrata
-> 
->> I wonder whether gcc really complains about the case of
->> __get_user(set.sig[0], ...) failure.
->> Why, the case which sig[0] initialized and sig[1] uninitialized is NG
->> and the case which sig[0] uninitialized and sig[1] initialized is OK.
->>
->> Thanks,
->> Hiroshi
-> 
+
+
 
