@@ -1,177 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbZEOMSU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763164AbZEOMSi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756726AbZEOMSU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 08:18:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762733AbZEOMPQ
+	id S1763164AbZEOMSi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 08:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762462AbZEOMQU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 08:15:16 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:37687 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762730AbZEOMPN (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 08:15:13 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=WQpftSuFEDbK9+Ha1kywmp/jf1TvkKtgwWiKtx8N2RU5k+94yJXOl1IZIHjAsLRevd
-         9VYOlo9bB64dP6/+jCUxLmnTb1xbu7ew8QDrN7jNn4VYA1sWXWUBRg98CrdGm54jgJ7h
-         nih1ZPK3qJig2LR9BdaSZM17iUNx3fHuMl8XY=
+	Fri, 15 May 2009 08:16:20 -0400
+Received: from h155.mvista.com ([63.81.120.155]:34378 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1762766AbZEOMQT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 08:16:19 -0400
+Message-ID: <4A0D5D3C.4000805@ru.mvista.com>
+Date: Fri, 15 May 2009 16:17:00 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
 MIME-Version: 1.0
-Date: Fri, 15 May 2009 08:15:13 -0400
-Message-ID: <e75d22a90905150515u44860fbdm287f6ca17f1cf97c@mail.gmail.com>
-Subject: kernel softlocks
-From: Michael Di Domenico <mdidomenico4@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 7/7] ide: remove hw_regs_t typedef
+References: <20090513205139.28638.87226.sendpatchset@localhost.localdomain> <20090513205231.28638.12447.sendpatchset@localhost.localdomain>
+In-Reply-To: <20090513205231.28638.12447.sendpatchset@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have a user application that seems to be soft locking the linux
-kernel, in this case 2.6.18
+Hello.
 
-Can anyone narrow down whether this is a bug in the linux kernel (and
-perhaps if so, whether is was fixed in a later version) or not?
+Bartlomiej Zolnierkiewicz wrote:
 
-Or what this user application might have done to create this issue if
-its not a bug?
+> Remove hw_regs_t typedef and rename struct hw_regs_s to struct ide_hw.
 
-thanks
-- Michael
+> There should be no functional changes caused by this patch.
 
+> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
 
+Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
+MBR, Sergei
 
-BUG: soft lockup detected on CPU#33!
-
-Call Trace:
- [<a000000100013b20>] show_stack+0x40/0xa0
-                       sp=e00000ff000b73d0 bsp=e00000ff000b1818
- [<a000000100013bb0>] dump_stack+0x30/0x60
-                       sp=e00000ff000b75a0 bsp=e00000ff000b1800
- [<a0000001000e5fe0>] softlockup_tick+0x240/0x280
-                       sp=e00000ff000b75a0 bsp=e00000ff000b17b8
- [<a000000100092df0>] run_local_timers+0x30/0x60
-                       sp=e00000ff000b75b0 bsp=e00000ff000b17a0
- [<a000000100092ea0>] update_process_times+0x80/0x100
-                       sp=e00000ff000b75b0 bsp=e00000ff000b1770
- [<a000000100037220>] timer_interrupt+0x180/0x360
-                       sp=e00000ff000b75b0 bsp=e00000ff000b1730
- [<a0000001000e6650>] handle_IRQ_event+0x90/0x120
-                       sp=e00000ff000b75b0 bsp=e00000ff000b16f0
- [<a0000001000e6810>] __do_IRQ+0x130/0x420
-                       sp=e00000ff000b75b0 bsp=e00000ff000b16a8
- [<a000000100011630>] ia64_handle_irq+0xf0/0x1a0
-                       sp=e00000ff000b75b0 bsp=e00000ff000b1678
- [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
-                       sp=e00000ff000b75b0 bsp=e00000ff000b1678
- [<a000000100626b90>] _spin_unlock_irqrestore+0x30/0x60
-                       sp=e00000ff000b7780 bsp=e00000ff000b1660
- [<a0000001000989d0>] force_sig_info+0x130/0x160
-                       sp=e00000ff000b7780 bsp=e00000ff000b1620
- [<a00000010003c620>] ia64_handle_unaligned+0x2d00/0x2d20
-                       sp=e00000ff000b7780 bsp=e00000ff000b1580
- [<a00000010000c630>] ia64_prepare_handle_unaligned+0x30/0x60
-                       sp=e00000ff000b7970 bsp=e00000ff000b1580
- [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
-                       sp=e00000ff000b7b80 bsp=e00000ff000b1580
- [<a0000001000b9150>] exit_robust_list+0x250/0x2e0
-                       sp=e00000ff000b7d50 bsp=e00000ff000b1518
- [<a000000100081690>] do_exit+0x510/0x14a0
-                       sp=e00000ff000b7d60 bsp=e00000ff000b14c0
- [<a000000100082770>] do_group_exit+0x150/0x160
-                       sp=e00000ff000b7d80 bsp=e00000ff000b1488
- [<a000000100099a00>] get_signal_to_deliver+0x740/0x7c0
-                       sp=e00000ff000b7d80 bsp=e00000ff000b1438
- [<a0000001000341d0>] ia64_do_signal+0x90/0xde0
-                       sp=e00000ff000b7d80 bsp=e00000ff000b1350
- [<a0000001000139a0>] do_notify_resume_user+0x100/0x160
-                       sp=e00000ff000b7e20 bsp=e00000ff000b1320
- [<a00000010000c500>] notify_resume_user+0x40/0x60
-                       sp=e00000ff000b7e20 bsp=e00000ff000b12d0
- [<a00000010000c430>] skip_rbs_switch+0xe0/0x110
-                       sp=e00000ff000b7e30 bsp=e00000ff000b12d0
-
-BUG: soft lockup detected on CPU#72!
-
-Call Trace:
- [<a000000100013b20>] show_stack+0x40/0xa0
-                       sp=e00000fbe5e3f3d0 bsp=e00000fbe5e39830
- [<a000000100013bb0>] dump_stack+0x30/0x60
-                       sp=e00000fbe5e3f5a0 bsp=e00000fbe5e39818
- [<a0000001000e5fe0>] softlockup_tick+0x240/0x280
-                       sp=e00000fbe5e3f5a0 bsp=e00000fbe5e397d0
- [<a000000100092df0>] run_local_timers+0x30/0x60
-                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e397b8
- [<a000000100092ea0>] update_process_times+0x80/0x100
-                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39788
- [<a000000100037220>] timer_interrupt+0x180/0x360
-                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39748
- [<a0000001000e6650>] handle_IRQ_event+0x90/0x120
-                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39708
- [<a0000001000e6810>] __do_IRQ+0x130/0x420
-                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e396c0
- [<a000000100011630>] ia64_handle_irq+0xf0/0x1a0
-                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39690
- [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
-                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39690
- [<a000000100009100>] ia64_spinlock_contention+0x20/0x60
-                       sp=e00000fbe5e3f780 bsp=e00000fbe5e39690
- [<a000000100626a20>] _spin_lock_irqsave+0x60/0x80
-                       sp=e00000fbe5e3f780 bsp=e00000fbe5e39688
- [<a0000001000988d0>] force_sig_info+0x30/0x160
-                       sp=e00000fbe5e3f780 bsp=e00000fbe5e39648
- [<a00000010003c620>] ia64_handle_unaligned+0x2d00/0x2d20
-                       sp=e00000fbe5e3f780 bsp=e00000fbe5e395a8
- [<a00000010000c630>] ia64_prepare_handle_unaligned+0x30/0x60
-                       sp=e00000fbe5e3f970 bsp=e00000fbe5e395a8
- [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
-                       sp=e00000fbe5e3fb80 bsp=e00000fbe5e395a8
- [<a0000001000b4ff0>] handle_futex_death+0x90/0x1a0
-                       sp=e00000fbe5e3fd50 bsp=e00000fbe5e39568
- [<a0000001000b90f0>] exit_robust_list+0x1f0/0x2e0
-                       sp=e00000fbe5e3fd50 bsp=e00000fbe5e39518
- [<a000000100081690>] do_exit+0x510/0x14a0
-                       sp=e00000fbe5e3fd60 bsp=e00000fbe5e394c0
- [<a000000100082770>] do_group_exit+0x150/0x160
-                       sp=e00000fbe5e3fd80 bsp=e00000fbe5e39488
- [<a000000100099a00>] get_signal_to_deliver+0x740/0x7c0
-                       sp=e00000fbe5e3fd80 bsp=e00000fbe5e39438
- [<a0000001000341d0>] ia64_do_signal+0x90/0xde0
-                       sp=e00000fbe5e3fd80 bsp=e00000fbe5e39350
- [<a0000001000139a0>] do_notify_resume_user+0x100/0x160
-                       sp=e00000fbe5e3fe20 bsp=e00000fbe5e39320
- [<a00000010000c500>] notify_resume_user+0x40/0x60
-                       sp=e00000fbe5e3fe20 bsp=e00000fbe5e392d0
- [<a00000010000c430>] skip_rbs_switch+0xe0/0x110
-                       sp=e00000fbe5e3fe30 bsp=e00000fbe5e392d0
-
-BUG: soft lockup detected on CPU#104!
-
-Call Trace:
- [<a000000100013b20>] show_stack+0x40/0xa0
-                       sp=e00000fc4b03f7d0 bsp=e00000fc4b039730
- [<a000000100013bb0>] dump_stack+0x30/0x60
-                       sp=e00000fc4b03f9a0 bsp=e00000fc4b039718
- [<a0000001000e5fe0>] softlockup_tick+0x240/0x280
-                       sp=e00000fc4b03f9a0 bsp=e00000fc4b0396d8
- [<a000000100092df0>] run_local_timers+0x30/0x60
-                       sp=e00000fc4b03f9b0 bsp=e00000fc4b0396c0
- [<a000000100092ea0>] update_process_times+0x80/0x100
-                       sp=e00000fc4b03f9b0 bsp=e00000fc4b039690
- [<a000000100037220>] timer_interrupt+0x180/0x360
-                       sp=e00000fc4b03f9b0 bsp=e00000fc4b039650
- [<a0000001000e6650>] handle_IRQ_event+0x90/0x120
-                       sp=e00000fc4b03f9b0 bsp=e00000fc4b039610
- [<a0000001000e6810>] __do_IRQ+0x130/0x420
-                       sp=e00000fc4b03f9b0 bsp=e00000fc4b0395c0
- [<a000000100011630>] ia64_handle_irq+0xf0/0x1a0
-                       sp=e00000fc4b03f9b0 bsp=e00000fc4b039590
- [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
-                       sp=e00000fc4b03f9b0 bsp=e00000fc4b039590
- [<a000000100004ac0>] dispatch_unaligned_handler+0x2a0/0x400
-                       sp=e00000fc4b03fb80 bsp=e00000fc4b039580
- [<a0000001000b90f0>] exit_robust_list+0x1f0/0x2e0
-                       sp=e00000fc4b03fb80 bsp=e00000fc4b039530
