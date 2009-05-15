@@ -1,25 +1,25 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759401AbZEOD5o@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759336AbZEOD53@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759401AbZEOD5o (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 23:57:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757773AbZEOD4w
+	id S1759336AbZEOD53 (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 23:57:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755298AbZEOD4v
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 23:56:52 -0400
-Received: from sh.osrg.net ([192.16.179.4]:52093 "EHLO sh.osrg.net"
+	Thu, 14 May 2009 23:56:51 -0400
+Received: from sh.osrg.net ([192.16.179.4]:52095 "EHLO sh.osrg.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756809AbZEOD4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1756326AbZEOD4u (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Thu, 14 May 2009 23:56:50 -0400
 From: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 To: linux-kernel@vger.kernel.org
 Cc: mingo@elte.hu, tony.luck@intel.com, linux-ia64@vger.kernel.org,
        fujita.tomonori@lab.ntt.co.jp, arnd@arndb.de, joerg.roedel@amd.com
-Subject: [PATCH -tip 3/5] ia64: use asm-generic/dma-mapping-common.h
-Date: Fri, 15 May 2009 12:55:03 +0900
-Message-Id: <1242359705-2117-4-git-send-email-fujita.tomonori@lab.ntt.co.jp>
+Subject: [PATCH -tip 4/5] ia64: add CONFIG_DMA_API_DEBUG support
+Date: Fri, 15 May 2009 12:55:04 +0900
+Message-Id: <1242359705-2117-5-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 X-Mailer: git-send-email 1.6.0.6
 In-Reply-To: <1242359705-2117-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
 References: <1242359705-2117-1-git-send-email-fujita.tomonori@lab.ntt.co.jp>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 15 May 2009 12:56:17 +0900 (JST)
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-3.0 (sh.osrg.net [192.16.179.4]); Fri, 15 May 2009 12:56:18 +0900 (JST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -27,130 +27,54 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 Signed-off-by: FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>
 Acked-by: Joerg Roedel <joerg.roedel@amd.com>
 ---
- arch/ia64/include/asm/dma-mapping.h |  102 +---------------------------------
- 1 files changed, 3 insertions(+), 99 deletions(-)
+ arch/ia64/Kconfig                   |    1 +
+ arch/ia64/include/asm/dma-mapping.h |    8 +++++++-
+ 2 files changed, 8 insertions(+), 1 deletions(-)
 
+diff --git a/arch/ia64/Kconfig b/arch/ia64/Kconfig
+index 294a3b1..170042b 100644
+--- a/arch/ia64/Kconfig
++++ b/arch/ia64/Kconfig
+@@ -28,6 +28,7 @@ config IA64
+ 	select HAVE_DMA_ATTRS
+ 	select HAVE_KVM
+ 	select HAVE_ARCH_TRACEHOOK
++	select HAVE_DMA_API_DEBUG
+ 	default y
+ 	help
+ 	  The Itanium Processor Family is Intel's 64-bit successor to
 diff --git a/arch/ia64/include/asm/dma-mapping.h b/arch/ia64/include/asm/dma-mapping.h
-index 36c0009..2475c91 100644
+index 2475c91..5a61b5c 100644
 --- a/arch/ia64/include/asm/dma-mapping.h
 +++ b/arch/ia64/include/asm/dma-mapping.h
-@@ -37,82 +37,10 @@ static inline void dma_free_coherent(struct device *dev, size_t size,
- #define dma_alloc_noncoherent(d, s, h, f) dma_alloc_coherent(d, s, h, f)
- #define dma_free_noncoherent(d, s, v, h) dma_free_coherent(d, s, v, h)
+@@ -8,6 +8,7 @@
+ #include <asm/machvec.h>
+ #include <linux/scatterlist.h>
+ #include <asm/swiotlb.h>
++#include <linux/dma-debug.h>
  
--static inline dma_addr_t dma_map_single_attrs(struct device *dev,
--					      void *caddr, size_t size,
--					      enum dma_data_direction dir,
--					      struct dma_attrs *attrs)
--{
--	struct dma_map_ops *ops = platform_dma_get_ops(dev);
--	return ops->map_page(dev, virt_to_page(caddr),
--			     (unsigned long)caddr & ~PAGE_MASK, size,
--			     dir, attrs);
--}
--
--static inline void dma_unmap_single_attrs(struct device *dev, dma_addr_t daddr,
--					  size_t size,
--					  enum dma_data_direction dir,
--					  struct dma_attrs *attrs)
--{
--	struct dma_map_ops *ops = platform_dma_get_ops(dev);
--	ops->unmap_page(dev, daddr, size, dir, attrs);
--}
--
--#define dma_map_single(d, a, s, r) dma_map_single_attrs(d, a, s, r, NULL)
--#define dma_unmap_single(d, a, s, r) dma_unmap_single_attrs(d, a, s, r, NULL)
--
--static inline int dma_map_sg_attrs(struct device *dev, struct scatterlist *sgl,
--				   int nents, enum dma_data_direction dir,
--				   struct dma_attrs *attrs)
--{
--	struct dma_map_ops *ops = platform_dma_get_ops(dev);
--	return ops->map_sg(dev, sgl, nents, dir, attrs);
--}
--
--static inline void dma_unmap_sg_attrs(struct device *dev,
--				      struct scatterlist *sgl, int nents,
--				      enum dma_data_direction dir,
--				      struct dma_attrs *attrs)
--{
--	struct dma_map_ops *ops = platform_dma_get_ops(dev);
--	ops->unmap_sg(dev, sgl, nents, dir, attrs);
--}
-+#define get_dma_ops(dev) platform_dma_get_ops(dev)
-+#define flush_write_buffers()
+ #define ARCH_HAS_DMA_GET_REQUIRED_MASK
  
--#define dma_map_sg(d, s, n, r) dma_map_sg_attrs(d, s, n, r, NULL)
--#define dma_unmap_sg(d, s, n, r) dma_unmap_sg_attrs(d, s, n, r, NULL)
--
--static inline void dma_sync_single_for_cpu(struct device *dev, dma_addr_t daddr,
--					   size_t size,
--					   enum dma_data_direction dir)
--{
--	struct dma_map_ops *ops = platform_dma_get_ops(dev);
--	ops->sync_single_for_cpu(dev, daddr, size, dir);
--}
--
--static inline void dma_sync_sg_for_cpu(struct device *dev,
--				       struct scatterlist *sgl,
--				       int nents, enum dma_data_direction dir)
--{
--	struct dma_map_ops *ops = platform_dma_get_ops(dev);
--	ops->sync_sg_for_cpu(dev, sgl, nents, dir);
--}
--
--static inline void dma_sync_single_for_device(struct device *dev,
--					      dma_addr_t daddr,
--					      size_t size,
--					      enum dma_data_direction dir)
--{
--	struct dma_map_ops *ops = platform_dma_get_ops(dev);
--	ops->sync_single_for_device(dev, daddr, size, dir);
--}
--
--static inline void dma_sync_sg_for_device(struct device *dev,
--					  struct scatterlist *sgl,
--					  int nents,
--					  enum dma_data_direction dir)
--{
--	struct dma_map_ops *ops = platform_dma_get_ops(dev);
--	ops->sync_sg_for_device(dev, sgl, nents, dir);
--}
-+#include <asm-generic/dma-mapping-common.h>
- 
- static inline int dma_mapping_error(struct device *dev, dma_addr_t daddr)
- {
-@@ -120,30 +48,6 @@ static inline int dma_mapping_error(struct device *dev, dma_addr_t daddr)
- 	return ops->mapping_error(dev, daddr);
- }
- 
--static inline dma_addr_t dma_map_page(struct device *dev, struct page *page,
--				      size_t offset, size_t size,
--				      enum dma_data_direction dir)
--{
--	struct dma_map_ops *ops = platform_dma_get_ops(dev);
--	return ops->map_page(dev, page, offset, size, dir, NULL);
--}
--
--static inline void dma_unmap_page(struct device *dev, dma_addr_t addr,
--				  size_t size, enum dma_data_direction dir)
--{
--	dma_unmap_single(dev, addr, size, dir);
--}
--
--/*
-- * Rest of this file is part of the "Advanced DMA API".  Use at your own risk.
-- * See Documentation/DMA-API.txt for details.
-- */
--
--#define dma_sync_single_range_for_cpu(dev, dma_handle, offset, size, dir)	\
--	dma_sync_single_for_cpu(dev, dma_handle, size, dir)
--#define dma_sync_single_range_for_device(dev, dma_handle, offset, size, dir)	\
--	dma_sync_single_for_device(dev, dma_handle, size, dir)
--
- static inline int dma_supported(struct device *dev, u64 mask)
+@@ -24,13 +25,18 @@ static inline void *dma_alloc_coherent(struct device *dev, size_t size,
+ 				       dma_addr_t *daddr, gfp_t gfp)
  {
  	struct dma_map_ops *ops = platform_dma_get_ops(dev);
+-	return ops->alloc_coherent(dev, size, daddr, gfp);
++	void *caddr;
++
++	caddr = ops->alloc_coherent(dev, size, daddr, gfp);
++	debug_dma_alloc_coherent(dev, size, *daddr, caddr);
++	return caddr;
+ }
+ 
+ static inline void dma_free_coherent(struct device *dev, size_t size,
+ 				     void *caddr, dma_addr_t daddr)
+ {
+ 	struct dma_map_ops *ops = platform_dma_get_ops(dev);
++	debug_dma_free_coherent(dev, size, caddr, daddr);
+ 	ops->free_coherent(dev, size, caddr, daddr);
+ }
+ 
 -- 
 1.6.0.6
 
