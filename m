@@ -1,27 +1,27 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761974AbZEOFOl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761659AbZEOFPf@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761974AbZEOFOl (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 01:14:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758171AbZEOFLy
+	id S1761659AbZEOFPf (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 01:15:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757620AbZEOFMA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 01:11:54 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:38151 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755838AbZEOFLm (ORCPT
+	Fri, 15 May 2009 01:12:00 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:50978 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754459AbZEOFLm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 May 2009 01:11:42 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=googlemail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=Q8OtIJg4kaB1aVSffXHbSDit+CvCd/TmsrrLlPpu7p0yXsBa1Co7NiRVqbCDLDVtpF
-         orgid+/dG3Dx59BVu+rKUXX5ygS8S4NDs8y/ZKWIWvX56dVDzuTy3V5YJhfZOWMmr5yJ
-         HaWEDpmqmzsU9+ATt1v+oV8LDTGX2mLEcmz7g=
+        b=YmVM9tSp+TqK3xqroOFYTV9VTrFw0nJJsY4Qng9KXo2VT9hkYHfiYA9sfUHwWmG/qp
+         V3DE9nGk4jCwklqvS7lUU51WZhVl9arCNLl1cvrJKjF9ptb07pvdEllMlRuAjQ8sX4nR
+         8WLYLGB3qRVtLnpatMdCOIIS0luRZ0kLYRbnc=
 From: Borislav Petkov <petkovbb@googlemail.com>
 To: <bzolnier@gmail.com>
 Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: [PATCH 13/15] ide-atapi: remove pc->buf
-Date: Fri, 15 May 2009 07:11:31 +0200
-Message-Id: <1242364293-29223-14-git-send-email-petkovbb@gmail.com>
+Subject: [PATCH 15/15] ide: unify interrupt reason checking
+Date: Fri, 15 May 2009 07:11:33 +0200
+Message-Id: <1242364293-29223-16-git-send-email-petkovbb@gmail.com>
 X-Mailer: git-send-email 1.6.3
 In-Reply-To: <1242364293-29223-1-git-send-email-petkovbb@gmail.com>
 References: <1242364293-29223-1-git-send-email-petkovbb@gmail.com>
@@ -29,150 +29,286 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Now after all users of pc->buf have been converted, remove the 64B buffer
-embedded in each packet command.
+Add ide_check_ireason() function that handles all ATAPI devices.
+Reorganize all unlikely cases in ireason checking further down in the
+code path.
 
-There should be no functional change resulting from this patch.
+In addition, add PFX for printks originating from ide-atapi. Finally,
+remove ide_cd_check_ireason.
 
 Signed-off-by: Borislav Petkov <petkovbb@gmail.com>
 ---
- drivers/ide/ide-atapi.c        |    6 ------
- drivers/ide/ide-floppy.c       |    8 +-------
- drivers/ide/ide-floppy_ioctl.c |    1 -
- drivers/ide/ide-tape.c         |    7 ++-----
- include/linux/ide.h            |   11 -----------
- 5 files changed, 3 insertions(+), 30 deletions(-)
+ drivers/ide/ide-atapi.c |   95 +++++++++++++++++++++++++++++++++-------------
+ drivers/ide/ide-cd.c    |   47 +-----------------------
+ include/linux/ide.h     |    2 +
+ 3 files changed, 71 insertions(+), 73 deletions(-)
 
 diff --git a/drivers/ide/ide-atapi.c b/drivers/ide/ide-atapi.c
-index 66ea1e7..3075b04 100644
+index 3075b04..1125ce2 100644
 --- a/drivers/ide/ide-atapi.c
 +++ b/drivers/ide/ide-atapi.c
-@@ -74,8 +74,6 @@ EXPORT_SYMBOL_GPL(ide_check_atapi_device);
- void ide_init_pc(struct ide_atapi_pc *pc)
- {
- 	memset(pc, 0, sizeof(*pc));
--	pc->buf = pc->pc_buf;
--	pc->buf_size = IDE_PC_BUFFER_SIZE;
- }
- EXPORT_SYMBOL_GPL(ide_init_pc);
+@@ -10,6 +10,9 @@
  
-@@ -254,10 +252,6 @@ void ide_retry_pc(ide_drive_t *drive)
- 	ide_init_pc(pc);
- 	memcpy(pc->c, sense_rq->cmd, 12);
+ #include <scsi/scsi.h>
  
--	/* pointer to mapped address */
--	pc->buf = bio_data(sense_rq->bio);
--	pc->req_xfer = blk_rq_bytes(sense_rq);
--
- 	if (drive->media == ide_tape)
- 		set_bit(IDE_AFLAG_IGNORE_DSC, &drive->atapi_flags);
- 
-diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
-index 14e5e9c..800c83a 100644
---- a/drivers/ide/ide-floppy.c
-+++ b/drivers/ide/ide-floppy.c
-@@ -210,8 +210,7 @@ static void idefloppy_create_rw_cmd(ide_drive_t *drive,
- 	pc->rq = rq;
- 	if (rq->cmd_flags & REQ_RW)
- 		pc->flags |= PC_FLAG_WRITING;
--	pc->buf = NULL;
--	pc->buf_size = blk_rq_bytes(rq);
++#define DRV_NAME "ide-atapi"
++#define PFX DRV_NAME ": "
 +
- 	pc->flags |= PC_FLAG_DMA_OK;
- }
- 
-@@ -226,9 +225,6 @@ static void idefloppy_blockpc_cmd(struct ide_disk_obj *floppy,
- 		if (rq_data_dir(rq) == WRITE)
- 			pc->flags |= PC_FLAG_WRITING;
+ #ifdef DEBUG
+ #define debug_log(fmt, args...) \
+ 	printk(KERN_INFO "ide: " fmt, ## args)
+@@ -197,8 +200,8 @@ void ide_prep_sense(ide_drive_t *drive, struct request *rq)
+ 			      GFP_NOIO);
+ 	if (unlikely(err)) {
+ 		if (printk_ratelimit())
+-			printk(KERN_WARNING "%s: failed to map sense buffer\n",
+-			       drive->name);
++			printk(KERN_WARNING PFX "%s: failed to map sense "
++					    "buffer\n", drive->name);
+ 		return;
  	}
--	/* pio will be performed by ide_pio_bytes() which handles sg fine */
--	pc->buf = NULL;
--	pc->buf_size = blk_rq_bytes(rq);
- }
  
- static ide_startstop_t ide_floppy_do_request(ide_drive_t *drive,
-@@ -388,8 +384,6 @@ static int ide_floppy_get_capacity(ide_drive_t *drive)
- 	drive->capacity64 = 0;
+@@ -219,7 +222,7 @@ int ide_queue_sense_rq(ide_drive_t *drive, void *special)
+ {
+ 	/* deferred failure from ide_prep_sense() */
+ 	if (!drive->sense_rq_armed) {
+-		printk(KERN_WARNING "%s: failed queue sense request\n",
++		printk(KERN_WARNING PFX "%s: error queuing a sense request\n",
+ 		       drive->name);
+ 		return -ENOMEM;
+ 	}
+@@ -292,7 +295,7 @@ int ide_cd_expiry(ide_drive_t *drive)
+ 		break;
+ 	default:
+ 		if (!(rq->cmd_flags & REQ_QUIET))
+-			printk(KERN_INFO "cmd 0x%x timed out\n",
++			printk(KERN_INFO PFX "cmd 0x%x timed out\n",
+ 					 rq->cmd[0]);
+ 		wait = 0;
+ 		break;
+@@ -326,6 +329,55 @@ void ide_read_bcount_and_ireason(ide_drive_t *drive, u16 *bcount, u8 *ireason)
+ EXPORT_SYMBOL_GPL(ide_read_bcount_and_ireason);
  
- 	ide_floppy_create_read_capacity_cmd(&pc);
--	pc.buf_size = sizeof(pc_buf);
--
- 	if (ide_queue_pc_tail(drive, disk, &pc, pc_buf, pc.req_xfer)) {
- 		printk(KERN_ERR PFX "Can't get floppy parameters\n");
- 		return 1;
-diff --git a/drivers/ide/ide-floppy_ioctl.c b/drivers/ide/ide-floppy_ioctl.c
-index 3a1f9b5..9c22882 100644
---- a/drivers/ide/ide-floppy_ioctl.c
-+++ b/drivers/ide/ide-floppy_ioctl.c
-@@ -47,7 +47,6 @@ static int ide_floppy_get_format_capacities(ide_drive_t *drive,
- 		return -EINVAL;
- 
- 	ide_floppy_create_read_capacity_cmd(pc);
--	pc->buf_size = sizeof(pc_buf);
- 
- 	if (ide_queue_pc_tail(drive, floppy->disk, pc, pc_buf, pc->req_xfer)) {
- 		printk(KERN_ERR "ide-floppy: Can't get floppy parameters\n");
-diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-index ead2734..9ca2665 100644
---- a/drivers/ide/ide-tape.c
-+++ b/drivers/ide/ide-tape.c
-@@ -568,9 +568,8 @@ static void ide_tape_create_rw_cmd(idetape_tape_t *tape,
- 	ide_init_pc(pc);
- 	put_unaligned(cpu_to_be32(length), (unsigned int *) &pc->c[1]);
- 	pc->c[1] = 1;
--	pc->buf = NULL;
--	pc->buf_size = blk_rq_bytes(rq);
--	if (pc->buf_size == tape->buffer_size)
+ /*
++ * Check the contents of the interrupt reason register and attempt to recover if
++ * there are problems.
++ *
++ * Returns:
++ * - 0 if everything's ok
++ * - 1 if the request has to be terminated.
++ */
++int ide_check_ireason(ide_drive_t *drive, struct request *rq, int len,
++		      int ireason, int rw)
++{
++	ide_hwif_t *hwif = drive->hwif;
 +
-+	if (blk_rq_bytes(rq) == tape->buffer_size)
- 		pc->flags |= PC_FLAG_DMA_OK;
++	debug_log("ireason: 0x%x, rw: 0x%x\n", ireason, rw);
++
++	if (ireason == (!rw << 1))
++		return 0;
++	else if (ireason == (rw << 1)) {
++		printk(KERN_ERR PFX "%s: %s: wrong transfer direction!\n",
++				drive->name, __func__);
++
++		if (dev_is_idecd(drive))
++			ide_pad_transfer(drive, rw, len);
++	} else if (!rw && ireason == ATAPI_COD) {
++		if (dev_is_idecd(drive)) {
++			/*
++			 * Some drives (ASUS) seem to tell us that status info
++			 * is available.  Just get it and ignore.
++			 */
++			(void)hwif->tp_ops->read_status(hwif);
++			return 0;
++		}
++	} else {
++		if (ireason & ATAPI_COD)
++			printk(KERN_ERR PFX "%s: CoD != 0 in %s\n", drive->name,
++					__func__);
++
++		/* drive wants a command packet, or invalid ireason... */
++		printk(KERN_ERR PFX "%s: %s: bad interrupt reason 0x%02x\n",
++				drive->name, __func__, ireason);
++	}
++
++	if (dev_is_idecd(drive) && rq->cmd_type == REQ_TYPE_ATA_PC)
++		rq->cmd_flags |= REQ_FAILED;
++
++	return 1;
++}
++EXPORT_SYMBOL_GPL(ide_check_ireason);
++
++/*
+  * This is the usual interrupt handler which will be called during a packet
+  * command.  We will transfer some of the data (as requested by the drive)
+  * and will re-point interrupt handler to us.
+@@ -359,7 +411,7 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
  
- 	if (opcode == READ_6)
-@@ -1608,8 +1607,6 @@ static void idetape_get_inquiry_results(ide_drive_t *drive)
- 	char fw_rev[4], vendor_id[8], product_id[16];
+ 		if (rc || (drive->media == ide_tape && (stat & ATA_ERR))) {
+ 			if (drive->media == ide_floppy)
+-				printk(KERN_ERR "%s: DMA %s error\n",
++				printk(KERN_ERR PFX "%s: DMA %s error\n",
+ 					drive->name, rq_data_dir(pc->rq)
+ 						     ? "write" : "read");
+ 			pc->flags |= PC_FLAG_DMA_ERROR;
+@@ -391,8 +443,8 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
+ 				pc->rq->errors++;
  
- 	idetape_create_inquiry_cmd(&pc);
--	pc.buf_size = sizeof(pc_buf);
+ 			if (rq->cmd[0] == REQUEST_SENSE) {
+-				printk(KERN_ERR "%s: I/O error in request sense"
+-						" command\n", drive->name);
++				printk(KERN_ERR PFX "%s: I/O error in request "
++						"sense command\n", drive->name);
+ 				return ide_do_reset(drive);
+ 			}
+ 
+@@ -434,8 +486,8 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
+ 
+ 	if (pc->flags & PC_FLAG_DMA_IN_PROGRESS) {
+ 		pc->flags &= ~PC_FLAG_DMA_IN_PROGRESS;
+-		printk(KERN_ERR "%s: The device wants to issue more interrupts "
+-				"in DMA mode\n", drive->name);
++		printk(KERN_ERR PFX "%s: The device wants to issue more "
++				"interrupts in DMA mode\n", drive->name);
+ 		ide_dma_off(drive);
+ 		return ide_do_reset(drive);
+ 	}
+@@ -443,19 +495,8 @@ static ide_startstop_t ide_pc_intr(ide_drive_t *drive)
+ 	/* Get the number of bytes to transfer on this interrupt. */
+ 	ide_read_bcount_and_ireason(drive, &bcount, &ireason);
+ 
+-	if (ireason & ATAPI_COD) {
+-		printk(KERN_ERR "%s: CoD != 0 in %s\n", drive->name, __func__);
++	if (ide_check_ireason(drive, rq, bcount, ireason, write))
+ 		return ide_do_reset(drive);
+-	}
 -
- 	if (ide_queue_pc_tail(drive, tape->disk, &pc, pc_buf, pc.req_xfer)) {
- 		printk(KERN_ERR "ide-tape: %s: can't get INQUIRY results\n",
- 				tape->name);
-diff --git a/include/linux/ide.h b/include/linux/ide.h
-index 4cd7157..59aedcd 100644
---- a/include/linux/ide.h
-+++ b/include/linux/ide.h
-@@ -341,11 +341,6 @@ enum {
- 	PC_FLAG_WRITING			= (1 << 6),
- };
+-	if (((ireason & ATAPI_IO) == ATAPI_IO) == write) {
+-		/* Hopefully, we will never get here */
+-		printk(KERN_ERR "%s: We wanted to %s, but the device wants us "
+-				"to %s!\n", drive->name,
+-				(ireason & ATAPI_IO) ? "Write" : "Read",
+-				(ireason & ATAPI_IO) ? "Read" : "Write");
+-		return ide_do_reset(drive);
+-	}
+ 
+ 	done = min_t(unsigned int, bcount, cmd->nleft);
+ 	ide_pio_bytes(drive, cmd, write, done);
+@@ -503,13 +544,13 @@ static u8 ide_wait_ireason(ide_drive_t *drive, u8 ireason)
+ 
+ 	while (retries-- && ((ireason & ATAPI_COD) == 0 ||
+ 		(ireason & ATAPI_IO))) {
+-		printk(KERN_ERR "%s: (IO,CoD != (0,1) while issuing "
++		printk(KERN_ERR PFX "%s: (IO,CoD != (0,1) while issuing "
+ 				"a packet command, retrying\n", drive->name);
+ 		udelay(100);
+ 		ireason = ide_read_ireason(drive);
+ 		if (retries == 0) {
+-			printk(KERN_ERR "%s: (IO,CoD != (0,1) while issuing "
+-					"a packet command, ignoring\n",
++			printk(KERN_ERR PFX "%s: (IO,CoD != (0,1) while issuing"
++					" a packet command, ignoring\n",
+ 					drive->name);
+ 			ireason |= ATAPI_COD;
+ 			ireason &= ~ATAPI_IO;
+@@ -540,7 +581,7 @@ static ide_startstop_t ide_transfer_pc(ide_drive_t *drive)
+ 	u8 ireason;
+ 
+ 	if (ide_wait_stat(&startstop, drive, ATA_DRQ, ATA_BUSY, WAIT_READY)) {
+-		printk(KERN_ERR "%s: Strange, packet command initiated yet "
++		printk(KERN_ERR PFX "%s: Strange, packet command initiated yet "
+ 				"DRQ isn't asserted\n", drive->name);
+ 		return startstop;
+ 	}
+@@ -582,8 +623,8 @@ static ide_startstop_t ide_transfer_pc(ide_drive_t *drive)
+ 			ireason = ide_wait_ireason(drive, ireason);
+ 
+ 		if ((ireason & ATAPI_COD) == 0 || (ireason & ATAPI_IO)) {
+-			printk(KERN_ERR "%s: (IO,CoD) != (0,1) while issuing "
+-					"a packet command\n", drive->name);
++			printk(KERN_ERR PFX "%s: (IO,CoD) != (0,1) while "
++				"issuing a packet command\n", drive->name);
+ 
+ 			return ide_do_reset(drive);
+ 		}
+diff --git a/drivers/ide/ide-cd.c b/drivers/ide/ide-cd.c
+index dca41ae..d299713 100644
+--- a/drivers/ide/ide-cd.c
++++ b/drivers/ide/ide-cd.c
+@@ -410,50 +410,6 @@ end_request:
+ 		return 2;
+ }
  
 -/*
-- * With each packet command, we allocate a buffer of IDE_PC_BUFFER_SIZE bytes.
-- * This is used for several packet commands (not for READ/WRITE commands).
+- * Check the contents of the interrupt reason register from the cdrom
+- * and attempt to recover if there are problems.  Returns  0 if everything's
+- * ok; nonzero if the request has been terminated.
 - */
--#define IDE_PC_BUFFER_SIZE	64
- #define ATAPI_WAIT_PC		(60 * HZ)
- 
- struct ide_atapi_pc {
-@@ -358,10 +353,6 @@ struct ide_atapi_pc {
- 	/* bytes to transfer */
- 	int req_xfer;
- 
--	/* data buffer */
--	u8 *buf;
--	int buf_size;
+-static int ide_cd_check_ireason(ide_drive_t *drive, struct request *rq,
+-				int len, int ireason, int rw)
+-{
+-	ide_hwif_t *hwif = drive->hwif;
 -
- 	/* the corresponding request */
- 	struct request *rq;
- 
-@@ -371,8 +362,6 @@ struct ide_atapi_pc {
- 	 * those are more or less driver-specific and some of them are subject
- 	 * to change/removal later.
- 	 */
--	u8 pc_buf[IDE_PC_BUFFER_SIZE];
+-	ide_debug_log(IDE_DBG_FUNC, "ireason: 0x%x, rw: 0x%x", ireason, rw);
 -
- 	unsigned long timeout;
- };
+-	/*
+-	 * ireason == 0: the drive wants to receive data from us
+-	 * ireason == 2: the drive is expecting to transfer data to us
+-	 */
+-	if (ireason == (!rw << 1))
+-		return 0;
+-	else if (ireason == (rw << 1)) {
+-
+-		/* whoops... */
+-		printk(KERN_ERR PFX "%s: %s: wrong transfer direction!\n",
+-				drive->name, __func__);
+-
+-		ide_pad_transfer(drive, rw, len);
+-	} else  if (rw == 0 && ireason == 1) {
+-		/*
+-		 * Some drives (ASUS) seem to tell us that status info is
+-		 * available.  Just get it and ignore.
+-		 */
+-		(void)hwif->tp_ops->read_status(hwif);
+-		return 0;
+-	} else {
+-		/* drive wants a command packet, or invalid ireason... */
+-		printk(KERN_ERR PFX "%s: %s: bad interrupt reason 0x%02x\n",
+-				drive->name, __func__, ireason);
+-	}
+-
+-	if (rq->cmd_type == REQ_TYPE_ATA_PC)
+-		rq->cmd_flags |= REQ_FAILED;
+-
+-	return -1;
+-}
+-
+ static void ide_cd_request_sense_fixup(ide_drive_t *drive, struct ide_cmd *cmd)
+ {
+ 	struct request *rq = cmd->rq;
+@@ -645,8 +601,7 @@ static ide_startstop_t cdrom_newpc_intr(ide_drive_t *drive)
+ 		goto out_end;
+ 	}
  
+-	/* check which way to transfer data */
+-	rc = ide_cd_check_ireason(drive, rq, len, ireason, write);
++	rc = ide_check_ireason(drive, rq, len, ireason, write);
+ 	if (rc)
+ 		goto out_end;
+ 
+diff --git a/include/linux/ide.h b/include/linux/ide.h
+index 59aedcd..70a2c94 100644
+--- a/include/linux/ide.h
++++ b/include/linux/ide.h
+@@ -1125,6 +1125,8 @@ void SELECT_MASK(ide_drive_t *, int);
+ u8 ide_read_error(ide_drive_t *);
+ void ide_read_bcount_and_ireason(ide_drive_t *, u16 *, u8 *);
+ 
++int ide_check_ireason(ide_drive_t *, struct request *, int, int, int);
++
+ int ide_check_atapi_device(ide_drive_t *, const char *);
+ 
+ void ide_init_pc(struct ide_atapi_pc *);
 -- 
 1.6.3
 
