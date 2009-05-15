@@ -1,47 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760095AbZEOBwN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760095AbZEOBxZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760095AbZEOBwN (ORCPT <rfc822;w@1wt.eu>);
-	Thu, 14 May 2009 21:52:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755454AbZEOBv4
+	id S1760095AbZEOBxZ (ORCPT <rfc822;w@1wt.eu>);
+	Thu, 14 May 2009 21:53:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZEOBxP
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Thu, 14 May 2009 21:51:56 -0400
-Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1096 "EHLO
-	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754195AbZEOBv4 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Thu, 14 May 2009 21:51:56 -0400
-Subject: RE: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
- support
-From: Joe Perches <joe@perches.com>
-To: "Cihula, Joseph" <joseph.cihula@intel.com>
-Cc: James Morris <jmorris@namei.org>, Theodore Tso <tytso@mit.edu>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>, "Wang, Shane" <shane.wang@intel.com>,
-       John Gilmore <gnu@toad.com>
-In-Reply-To: <4F65016F6CB04E49BFFA15D4F7B798D99B4752F3@orsmsx506.amr.corp.intel.com>
-References: <4A03B9C3.9090607@intel.com> <20090512210154.GC23773@mit.edu>
-	 <alpine.LRH.2.00.0905151006020.5527@tundra.namei.org>
-	 <4F65016F6CB04E49BFFA15D4F7B798D99B4752F3@orsmsx506.amr.corp.intel.com>
-Content-Type: text/plain
-Date: Thu, 14 May 2009 18:51:17 -0700
-Message-Id: <1242352277.646.16.camel@Joe-Laptop.home>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Thu, 14 May 2009 21:53:15 -0400
+Received: from cn.fujitsu.com ([222.73.24.84]:60260 "EHLO song.cn.fujitsu.com"
+	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
+	id S1753900AbZEOBxO (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Thu, 14 May 2009 21:53:14 -0400
+Message-ID: <4A0CCB2E.10202@cn.fujitsu.com>
+Date: Fri, 15 May 2009 09:53:50 +0800
+From: Xiao Guangrong <xiaoguangrong@cn.fujitsu.com>
+User-Agent: Thunderbird 2.0.0.6 (Windows/20070728)
+MIME-Version: 1.0
+To: Steven Rostedt <rostedt@goodmis.org>
+CC: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>, mingo@elte.hu,
+       linux-kernel@vger.kernel.org, fweisbec@gmail.com,
+       zhaolei@cn.fujitsu.com, laijs@cn.fujitsu.com,
+       Li Zefan <lizf@cn.fujitsu.com>
+Subject: Re: [PATCH v4] ftrace: add a tracepoint for __raise_softirq_irqoff()
+References: <49FFDF9C.7040505@cn.fujitsu.com> <20090505161604.GA15524@Krystal> <4A07D3B3.10605@cn.fujitsu.com> <20090511134019.GB10932@Krystal> <alpine.DEB.2.00.0905111003280.14976@gandalf.stny.rr.com> <20090511142734.GA12722@Krystal> <alpine.DEB.2.00.0905111039470.2492@gandalf.stny.rr.com> <20090511151353.GA14391@Krystal> <4A094677.5090900@cn.fujitsu.com> <4A0BF82A.2070208@cn.fujitsu.com> <20090514124013.GC21241@Krystal> <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com>
+In-Reply-To: <alpine.DEB.2.00.0905140926010.30591@gandalf.stny.rr.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-14 at 18:45 -0700, Cihula, Joseph wrote:
-> For a balanced view [] read [] rebuttal
-
-By definition a rebuttal is not balanced.
 
 
+Steven Rostedt wrote:
+> On Thu, 14 May 2009, Mathieu Desnoyers wrote:
+>>> From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>>>
+>>> This patch is modified from Mathieu Desnoyers' patch. The original patch
+>>> can be found here: 
+>>> 	http://marc.info/?l=linux-kernel&m=123791201816245&w=2
+>>> This tracepoint can trace the time stamp when softirq action is raised. 
+>>>
+>>> Changelog for v1 -> v2: 
+>>> 1: Use TRACE_EVENT instead of DEFINE_TRACE
+>>> 2: Move the tracepoint from raise_softirq_irqoff() to
+>>>    __raise_softirq_irqoff()
+>>>
+>>> Changelog for v2 -> v3: 
+>>> Move the definition of __raise_softifq_irqoff() to .c file when
+>>> CONFIG_TRACEPOINTS is enabled, to avoid recursive includes
+>>>
+>>> Changelog for v3 -> v4: 
+>>> 1: Come back to v2, and use forward declarations to avoid
+>>>    recursive includes as Mathieu's suggestion
+>>> 2: Modifiy the tracepoint name
+>>> 3: Add comments for this tracepoint
+>>>
+>> This is a step in the right direction, but please see my email to Lai
+>> about the fact that this assumes correct and undocumented include
+>> dependencies in kernel/trace/events.c. Not explicitely stating the
+>> include dependencies is a build error waiting to happen.
+>>
+>> Including interrupt.h under a ifdef would allow keeping track of
+>> TRACE_EVENT specific build dependencies neatly on a per header basis.
+> 
+> This is all moot, the events.c file no longer exists and as not an issue.
+> 
+
+As Steve's says, use ftrace in ftrace.h not in events.c now. 
+So, this mistake does not exist.
+Dose this patch has other error? I expect for your views.
+
+Thanks for your review, is great help to me. ;-) 
+
+> -- Steve
+> 
+> 
+> 
