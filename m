@@ -1,149 +1,177 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762943AbZEOMRh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756726AbZEOMSU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762943AbZEOMRh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 08:17:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760096AbZEOML6
+	id S1756726AbZEOMSU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 08:18:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762733AbZEOMPQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 08:11:58 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:47291 "EHLO
-	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758977AbZEOMLs (ORCPT
+	Fri, 15 May 2009 08:15:16 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:37687 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762730AbZEOMPN (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 08:11:48 -0400
-From: Philipp Reisner <philipp.reisner@linbit.com>
+	Fri, 15 May 2009 08:15:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:content-type
+         :content-transfer-encoding;
+        b=WQpftSuFEDbK9+Ha1kywmp/jf1TvkKtgwWiKtx8N2RU5k+94yJXOl1IZIHjAsLRevd
+         9VYOlo9bB64dP6/+jCUxLmnTb1xbu7ew8QDrN7jNn4VYA1sWXWUBRg98CrdGm54jgJ7h
+         nih1ZPK3qJig2LR9BdaSZM17iUNx3fHuMl8XY=
+MIME-Version: 1.0
+Date: Fri, 15 May 2009 08:15:13 -0400
+Message-ID: <e75d22a90905150515u44860fbdm287f6ca17f1cf97c@mail.gmail.com>
+Subject: kernel softlocks
+From: Michael Di Domenico <mdidomenico4@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
-       Neil Brown <neilb@suse.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       "Lars Marowsky-Bree" <lmb@suse.de>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>,
-       Philipp Reisner <philipp.reisner@linbit.com>
-Subject: [PATCH 16/16] DRBD: final
-Date: Fri, 15 May 2009 14:10:43 +0200
-Message-Id: <1242389443-3470-17-git-send-email-philipp.reisner@linbit.com>
-X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1242389443-3470-16-git-send-email-philipp.reisner@linbit.com>
-References: <1242389443-3470-1-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-2-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-3-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-4-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-5-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-6-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-7-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-8-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-9-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-10-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-11-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-12-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-13-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-14-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-15-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-16-git-send-email-philipp.reisner@linbit.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Kconfig integration and Makefile
+I have a user application that seems to be soft locking the linux
+kernel, in this case 2.6.18
 
-Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
-Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
+Can anyone narrow down whether this is a bug in the linux kernel (and
+perhaps if so, whether is was fixed in a later version) or not?
 
----
-diff --git a/drivers/block/Kconfig b/drivers/block/Kconfig
-index ddea8e4..e8db999 100644
---- a/drivers/block/Kconfig
-+++ b/drivers/block/Kconfig
-@@ -271,6 +271,8 @@ config BLK_DEV_CRYPTOLOOP
- 	  instead, which can be configured to be on-disk compatible with the
- 	  cryptoloop device.
- 
-+source "drivers/block/drbd/Kconfig"
-+
- config BLK_DEV_NBD
- 	tristate "Network block device support"
- 	depends on NET
-diff --git a/drivers/block/Makefile b/drivers/block/Makefile
-index 7755a5e..33f0046 100644
---- a/drivers/block/Makefile
-+++ b/drivers/block/Makefile
-@@ -35,5 +35,6 @@ obj-$(CONFIG_BLK_DEV_UB)	+= ub.o
- obj-$(CONFIG_BLK_DEV_HD)	+= hd.o
- 
- obj-$(CONFIG_XEN_BLKDEV_FRONTEND)	+= xen-blkfront.o
-+obj-$(CONFIG_BLK_DEV_DRBD)     += drbd/
- 
- swim_mod-objs	:= swim.o swim_asm.o
-diff --git a/drivers/block/drbd/Kconfig b/drivers/block/drbd/Kconfig
-new file mode 100644
-index 0000000..b367677
---- /dev/null
-+++ b/drivers/block/drbd/Kconfig
-@@ -0,0 +1,48 @@
-+#
-+# DRBD device driver configuration
-+#
-+
-+comment "DRBD disabled because PROC_FS, INET or CONNECTOR not selected"
-+	depends on !PROC_FS || !INET || !CONNECTOR
-+
-+config BLK_DEV_DRBD
-+	tristate "DRBD Distributed Replicated Block Device support"
-+	depends on PROC_FS && INET && CONNECTOR
-+	select LRU_CACHE
-+	help
-+
-+	  NOTE: In order to authenticate connections you have to select
-+	  CRYPTO_HMAC and a hash function as well.
-+
-+	  DRBD is a shared-nothing, synchronously replicated block device. It
-+	  is designed to serve as a building block for high availability
-+	  clusters and in this context, is a "drop-in" replacement for shared
-+	  storage. Simplistically, you could see it as a network RAID 1.
-+
-+	  Each minor device has a role, which can be 'primary' or 'secondary'.
-+	  On the node with the primary device the application is supposed to
-+	  run and to access the device (/dev/drbdX). Every write is sent to
-+	  the local 'lower level block device' and, across the network, to the
-+	  node with the device in 'secondary' state.  The secondary device
-+	  simply writes the data to its lower level block device.
-+
-+	  DRBD can also be used in dual-Primary mode (device writable on both
-+	  nodes), which means it can exhibit shared disk semantics in a
-+	  shared-nothing cluster.  Needless to say, on top of dual-Primary
-+	  DRBD utilizing a cluster file system is necessary to maintain for
-+	  cache coherency.
-+
-+	  For automatic failover you need a cluster manager (e.g. heartbeat).
-+	  See also: http://www.drbd.org/, http://www.linux-ha.org
-+
-+	  If unsure, say N.
-+
-+config DRBD_TRACE
-+	tristate "DRBD tracing"
-+	depends on BLK_DEV_DRBD
-+	select TRACEPOINTS
-+	help
-+
-+	  Say Y here if you want to be able to trace various events in DRBD.
-+
-+	  If unsure, say N.
-diff --git a/drivers/block/drbd/Makefile b/drivers/block/drbd/Makefile
-new file mode 100644
-index 0000000..9dd069b
---- /dev/null
-+++ b/drivers/block/drbd/Makefile
-@@ -0,0 +1,8 @@
-+drbd-y := drbd_buildtag.o drbd_bitmap.o drbd_proc.o
-+drbd-y += drbd_worker.o drbd_receiver.o drbd_req.o drbd_actlog.o
-+drbd-y += drbd_main.o drbd_strings.o drbd_nl.o
-+
-+drbd_trace-y := drbd_tracing.o drbd_strings.o
-+
-+obj-$(CONFIG_BLK_DEV_DRBD)     += drbd.o
-+obj-$(CONFIG_DRBD_TRACE)       += drbd_trace.o
+Or what this user application might have done to create this issue if
+its not a bug?
+
+thanks
+- Michael
+
+
+
+
+BUG: soft lockup detected on CPU#33!
+
+Call Trace:
+ [<a000000100013b20>] show_stack+0x40/0xa0
+                       sp=e00000ff000b73d0 bsp=e00000ff000b1818
+ [<a000000100013bb0>] dump_stack+0x30/0x60
+                       sp=e00000ff000b75a0 bsp=e00000ff000b1800
+ [<a0000001000e5fe0>] softlockup_tick+0x240/0x280
+                       sp=e00000ff000b75a0 bsp=e00000ff000b17b8
+ [<a000000100092df0>] run_local_timers+0x30/0x60
+                       sp=e00000ff000b75b0 bsp=e00000ff000b17a0
+ [<a000000100092ea0>] update_process_times+0x80/0x100
+                       sp=e00000ff000b75b0 bsp=e00000ff000b1770
+ [<a000000100037220>] timer_interrupt+0x180/0x360
+                       sp=e00000ff000b75b0 bsp=e00000ff000b1730
+ [<a0000001000e6650>] handle_IRQ_event+0x90/0x120
+                       sp=e00000ff000b75b0 bsp=e00000ff000b16f0
+ [<a0000001000e6810>] __do_IRQ+0x130/0x420
+                       sp=e00000ff000b75b0 bsp=e00000ff000b16a8
+ [<a000000100011630>] ia64_handle_irq+0xf0/0x1a0
+                       sp=e00000ff000b75b0 bsp=e00000ff000b1678
+ [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
+                       sp=e00000ff000b75b0 bsp=e00000ff000b1678
+ [<a000000100626b90>] _spin_unlock_irqrestore+0x30/0x60
+                       sp=e00000ff000b7780 bsp=e00000ff000b1660
+ [<a0000001000989d0>] force_sig_info+0x130/0x160
+                       sp=e00000ff000b7780 bsp=e00000ff000b1620
+ [<a00000010003c620>] ia64_handle_unaligned+0x2d00/0x2d20
+                       sp=e00000ff000b7780 bsp=e00000ff000b1580
+ [<a00000010000c630>] ia64_prepare_handle_unaligned+0x30/0x60
+                       sp=e00000ff000b7970 bsp=e00000ff000b1580
+ [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
+                       sp=e00000ff000b7b80 bsp=e00000ff000b1580
+ [<a0000001000b9150>] exit_robust_list+0x250/0x2e0
+                       sp=e00000ff000b7d50 bsp=e00000ff000b1518
+ [<a000000100081690>] do_exit+0x510/0x14a0
+                       sp=e00000ff000b7d60 bsp=e00000ff000b14c0
+ [<a000000100082770>] do_group_exit+0x150/0x160
+                       sp=e00000ff000b7d80 bsp=e00000ff000b1488
+ [<a000000100099a00>] get_signal_to_deliver+0x740/0x7c0
+                       sp=e00000ff000b7d80 bsp=e00000ff000b1438
+ [<a0000001000341d0>] ia64_do_signal+0x90/0xde0
+                       sp=e00000ff000b7d80 bsp=e00000ff000b1350
+ [<a0000001000139a0>] do_notify_resume_user+0x100/0x160
+                       sp=e00000ff000b7e20 bsp=e00000ff000b1320
+ [<a00000010000c500>] notify_resume_user+0x40/0x60
+                       sp=e00000ff000b7e20 bsp=e00000ff000b12d0
+ [<a00000010000c430>] skip_rbs_switch+0xe0/0x110
+                       sp=e00000ff000b7e30 bsp=e00000ff000b12d0
+
+BUG: soft lockup detected on CPU#72!
+
+Call Trace:
+ [<a000000100013b20>] show_stack+0x40/0xa0
+                       sp=e00000fbe5e3f3d0 bsp=e00000fbe5e39830
+ [<a000000100013bb0>] dump_stack+0x30/0x60
+                       sp=e00000fbe5e3f5a0 bsp=e00000fbe5e39818
+ [<a0000001000e5fe0>] softlockup_tick+0x240/0x280
+                       sp=e00000fbe5e3f5a0 bsp=e00000fbe5e397d0
+ [<a000000100092df0>] run_local_timers+0x30/0x60
+                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e397b8
+ [<a000000100092ea0>] update_process_times+0x80/0x100
+                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39788
+ [<a000000100037220>] timer_interrupt+0x180/0x360
+                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39748
+ [<a0000001000e6650>] handle_IRQ_event+0x90/0x120
+                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39708
+ [<a0000001000e6810>] __do_IRQ+0x130/0x420
+                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e396c0
+ [<a000000100011630>] ia64_handle_irq+0xf0/0x1a0
+                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39690
+ [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
+                       sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39690
+ [<a000000100009100>] ia64_spinlock_contention+0x20/0x60
+                       sp=e00000fbe5e3f780 bsp=e00000fbe5e39690
+ [<a000000100626a20>] _spin_lock_irqsave+0x60/0x80
+                       sp=e00000fbe5e3f780 bsp=e00000fbe5e39688
+ [<a0000001000988d0>] force_sig_info+0x30/0x160
+                       sp=e00000fbe5e3f780 bsp=e00000fbe5e39648
+ [<a00000010003c620>] ia64_handle_unaligned+0x2d00/0x2d20
+                       sp=e00000fbe5e3f780 bsp=e00000fbe5e395a8
+ [<a00000010000c630>] ia64_prepare_handle_unaligned+0x30/0x60
+                       sp=e00000fbe5e3f970 bsp=e00000fbe5e395a8
+ [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
+                       sp=e00000fbe5e3fb80 bsp=e00000fbe5e395a8
+ [<a0000001000b4ff0>] handle_futex_death+0x90/0x1a0
+                       sp=e00000fbe5e3fd50 bsp=e00000fbe5e39568
+ [<a0000001000b90f0>] exit_robust_list+0x1f0/0x2e0
+                       sp=e00000fbe5e3fd50 bsp=e00000fbe5e39518
+ [<a000000100081690>] do_exit+0x510/0x14a0
+                       sp=e00000fbe5e3fd60 bsp=e00000fbe5e394c0
+ [<a000000100082770>] do_group_exit+0x150/0x160
+                       sp=e00000fbe5e3fd80 bsp=e00000fbe5e39488
+ [<a000000100099a00>] get_signal_to_deliver+0x740/0x7c0
+                       sp=e00000fbe5e3fd80 bsp=e00000fbe5e39438
+ [<a0000001000341d0>] ia64_do_signal+0x90/0xde0
+                       sp=e00000fbe5e3fd80 bsp=e00000fbe5e39350
+ [<a0000001000139a0>] do_notify_resume_user+0x100/0x160
+                       sp=e00000fbe5e3fe20 bsp=e00000fbe5e39320
+ [<a00000010000c500>] notify_resume_user+0x40/0x60
+                       sp=e00000fbe5e3fe20 bsp=e00000fbe5e392d0
+ [<a00000010000c430>] skip_rbs_switch+0xe0/0x110
+                       sp=e00000fbe5e3fe30 bsp=e00000fbe5e392d0
+
+BUG: soft lockup detected on CPU#104!
+
+Call Trace:
+ [<a000000100013b20>] show_stack+0x40/0xa0
+                       sp=e00000fc4b03f7d0 bsp=e00000fc4b039730
+ [<a000000100013bb0>] dump_stack+0x30/0x60
+                       sp=e00000fc4b03f9a0 bsp=e00000fc4b039718
+ [<a0000001000e5fe0>] softlockup_tick+0x240/0x280
+                       sp=e00000fc4b03f9a0 bsp=e00000fc4b0396d8
+ [<a000000100092df0>] run_local_timers+0x30/0x60
+                       sp=e00000fc4b03f9b0 bsp=e00000fc4b0396c0
+ [<a000000100092ea0>] update_process_times+0x80/0x100
+                       sp=e00000fc4b03f9b0 bsp=e00000fc4b039690
+ [<a000000100037220>] timer_interrupt+0x180/0x360
+                       sp=e00000fc4b03f9b0 bsp=e00000fc4b039650
+ [<a0000001000e6650>] handle_IRQ_event+0x90/0x120
+                       sp=e00000fc4b03f9b0 bsp=e00000fc4b039610
+ [<a0000001000e6810>] __do_IRQ+0x130/0x420
+                       sp=e00000fc4b03f9b0 bsp=e00000fc4b0395c0
+ [<a000000100011630>] ia64_handle_irq+0xf0/0x1a0
+                       sp=e00000fc4b03f9b0 bsp=e00000fc4b039590
+ [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
+                       sp=e00000fc4b03f9b0 bsp=e00000fc4b039590
+ [<a000000100004ac0>] dispatch_unaligned_handler+0x2a0/0x400
+                       sp=e00000fc4b03fb80 bsp=e00000fc4b039580
+ [<a0000001000b90f0>] exit_robust_list+0x1f0/0x2e0
+                       sp=e00000fc4b03fb80 bsp=e00000fc4b039530
