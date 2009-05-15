@@ -1,60 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756233AbZEOL2n@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756837AbZEOLao@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756233AbZEOL2n (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 07:28:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751470AbZEOL2e
+	id S1756837AbZEOLao (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 07:30:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751500AbZEOLag
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 07:28:34 -0400
-Received: from e23smtp09.au.ibm.com ([202.81.31.142]:38656 "EHLO
-	e23smtp09.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751220AbZEOL2d (ORCPT
+	Fri, 15 May 2009 07:30:36 -0400
+Received: from ocean.emcraft.com ([213.221.7.182]:59523 "EHLO
+	ocean.emcraft.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751220AbZEOLaf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 07:28:33 -0400
-Message-ID: <4A0D51DF.4020108@in.ibm.com>
-Date: Fri, 15 May 2009 16:58:31 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
+	Fri, 15 May 2009 07:30:35 -0400
+Message-ID: <4A0D525B.5070509@emcraft.com>
+Date: Fri, 15 May 2009 15:30:35 +0400
+From: Sergei Poselenov <sposelenov@emcraft.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: David Woodhouse <dwmw2@infradead.org>
-CC: LKML <linux-kernel@vger.kernel.org>,
-       Stephen Rothwell <sfr@canb.auug.org.au>, linux-next@vger.kernel.org
-Subject: Re: Next May 13:[drivers/base/firmware*] Bug while booting on x86
-References: <20090513164832.c8a0de7d.sfr@canb.auug.org.au>  <4A0AC5E6.2010402@in.ibm.com> <1242316467.3393.14.camel@macbook.infradead.org>
-In-Reply-To: <1242316467.3393.14.camel@macbook.infradead.org>
+To: Arnd Bergmann <arnd@arndb.de>
+CC: linux-kernel@vger.kernel.org
+Subject: Re: 'make headers_check' failed to install headers to arbitrary location
+References: <4A0C3BFB.1010305@emcraft.com> <200905141854.37869.arnd@arndb.de>
+In-Reply-To: <200905141854.37869.arnd@arndb.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-David Woodhouse wrote:
-> Oops. Does this fix it?
->
-> --- a/drivers/base/firmware_class.c
-> +++ b/drivers/base/firmware_class.c
-> @@ -328,7 +328,7 @@ firmware_data_write(struct kobject *kobj, struct
-> bin_attribute *bin_attr,
->
->  		memcpy(page_data + page_ofs, buffer, page_cnt);
->
-> -		kunmap(page_data);
-> +		kunmap(fw_priv->pages[page_nr]);
->  		buffer += page_cnt;
->  		offset += page_cnt;
->  		count -= page_cnt;
-Thanks David. This patch fixed the issue.
+Hello Arnd,
 
-Tested-by : Sachin Sant <sachinp@in.ibm.com>
+Thanks, but it doesn't help. The same error.
 
-Thanks
--Sachin
+This is actually not a perl error, but the shell's
+passing a list of files with added $(install) prefix.
 
--- 
+Regards,
+Sergei
 
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
-
+Arnd Bergmann wrote:
+> On Thursday 14 May 2009, Sergei Poselenov wrote:
+>>    CHECK   include/linux/tc_ematch (4 files)
+>>    CHECK   include/linux/usb (8 files)
+>> make[2]: execvp: /bin/sh: Argument list too long
+>> make[2]: *** 
+> 
+> Can you try this patch?
+> 
+> 	Arnd <><
+> 
+> --- a/scripts/Makefile.headersinst
+> +++ b/scripts/Makefile.headersinst
+> @@ -54,8 +54,8 @@ quiet_cmd_remove = REMOVE  $(unwanted)
+>        cmd_remove = rm -f $(unwanted-file)
+>  
+>  quiet_cmd_check = CHECK   $(printdir) ($(words $(all-files)) files)
+> -      cmd_check = $(PERL) $< $(INSTALL_HDR_PATH)/include $(SRCARCH) \
+> -                  $(addprefix $(install)/, $(all-files));           \
+> +      cmd_check = echo $(addprefix $(install)/, $(all-files)) | \
+> +		  xargs $(PERL) $< $(INSTALL_HDR_PATH)/include $(SRCARCH) ; \
+>  	          touch $@
+>  
+>  PHONY += __headersinst __headerscheck
