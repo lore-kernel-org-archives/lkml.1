@@ -1,141 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762554AbZEOSGw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762734AbZEOSP0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762554AbZEOSGw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 14:06:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755313AbZEOSGn
+	id S1762734AbZEOSP0 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 14:15:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756268AbZEOSPO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 14:06:43 -0400
-Received: from qw-out-2122.google.com ([74.125.92.27]:64036 "EHLO
-	qw-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753001AbZEOSGl convert rfc822-to-8bit (ORCPT
+	Fri, 15 May 2009 14:15:14 -0400
+Received: from e31.co.us.ibm.com ([32.97.110.149]:43567 "EHLO
+	e31.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755257AbZEOSPM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 14:06:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CodHmpIrqVPHaQ4Wg1Ftxvf04w92U7YXBhNAAuSI0HmRuQg/ZX3iCUJYu66nwiYF3/
-         urO7a0q3oaeZTnP9z8u5ByA12eR53SSePPxcleac7rgunhqC2bXBrzh5eAU2ajdkl2Dq
-         Mj1wUKuEt8gVSBtdy66vgbxmR+LoXLD/FFHac=
-MIME-Version: 1.0
-In-Reply-To: <20090515131636.GE4443@nokia.com>
-References: <20090515131636.GE4443@nokia.com>
-Date: Fri, 15 May 2009 23:36:41 +0530
-Message-ID: <5d5443650905151106v2fe7ad1ci6c966463a991e732@mail.gmail.com>
-Subject: Re: [RFC] Add Input IOCTL for accelerometer devices
-From: Trilok Soni <soni.trilok@gmail.com>
-To: felipe.balbi@nokia.com
-Cc: linux-kernel@vger.kernel.org, Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       Jonathan Cameron <jic23@cam.ac.uk>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 15 May 2009 14:15:12 -0400
+Subject: Re: Misleading OOM messages
+From: Dave Hansen <dave@linux.vnet.ibm.com>
+To: Christoph Lameter <cl@linux-foundation.org>
+Cc: Pavel Machek <pavel@ucw.cz>, David Rientjes <rientjes@google.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
+       San Mehat <san@android.com>, Arve Hj?nnev?g <arve@android.com>,
+       linux-kernel@vger.kernel.org, Balbir Singh <balbir@linux.vnet.ibm.com>
+In-Reply-To: <alpine.DEB.1.10.0905151346550.26559@qirst.com>
+References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
+	 <alpine.DEB.2.00.0905101503070.18804@chino.kir.corp.google.com>
+	 <alpine.DEB.1.10.0905121708470.14226@qirst.com>
+	 <20090514092909.GG1365@ucw.cz>
+	 <alpine.DEB.1.10.0905141546040.1381@qirst.com>
+	 <1242333519.15391.210.camel@nimitz>
+	 <alpine.DEB.2.00.0905141346030.28074@chino.kir.corp.google.com>
+	 <1242335120.15391.242.camel@nimitz>
+	 <alpine.DEB.1.10.0905141729180.30187@qirst.com>
+	 <20090514213403.GB14741@elf.ucw.cz>
+	 <alpine.DEB.1.10.0905151346550.26559@qirst.com>
+Content-Type: text/plain
+Date: Fri, 15 May 2009 11:15:07 -0700
+Message-Id: <1242411307.28257.25.camel@nimitz>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Felipe,
+On Fri, 2009-05-15 at 13:57 -0400, Christoph Lameter wrote:
+> > If you misconfigured cgroups, you give more memory to them.
+> 
+> If you do not have enough memory in a cgroup then your application should
+> slow down (because of page evictions) but the system should not OOM.
+> Are cgroups broken or why are you getting OOMs when using them?
 
-Adding linux-input and Jonathan, so not deleting any lines from this e-mail.
+See mm/oom_kill.c::mem_cgroup_out_of_memory().  A group itself can have
+an OOM done on it.  It's not a system-wide oom.  We just need to ensure
+that we continue to differentiate the cgroup-specific oom message from
+the general one.  Maybe also include some more cgroup info in the debug
+outbut.
 
-On Fri, May 15, 2009 at 6:46 PM, Felipe Balbi <felipe.balbi@nokia.com> wrote:
-> Hi all,
->
-> the following patch is just an idea to see how the community feels about
-> it. Considering accelerometer devices, you might have different use
-> cases for it while running different applications. You could be using it
-> for screen rotation in one case but when opening a game, you could use
-> it as a game controller by turning the device side-by-side.
+-- Dave
 
-There was one proposal from Jonathan called Industrial IO patchset
-which tried to address these sensor devices. Please grep in your
-linux-kernel archieve. I believe there are accelerometer drivers under
-drivers/hwmon.
-
->
-> Thinking about that, I decided it would be nice to have some parameters
-> configured at runtime in order to be able to use the accelerometer on
-> different use cases.
->
-> The following proposal (really draft) tries to add a new IOCTL on input
-> layer such as userland could use that for passing proper parameters to
-> accelerometer drivers.
->
-> ps: the patch is in really early stage, I'm guessing the best would be
-> to, as force feedback devices, provide proper registration for an
-> accelerometer device.
->
-> diff --git a/include/linux/input.h b/include/linux/input.h
-> index adc1332..c3c9e82 100644
-> --- a/include/linux/input.h
-> +++ b/include/linux/input.h
-> @@ -55,6 +55,26 @@ struct input_absinfo {
->        __s32 flat;
->  };
->
-> +#define INPUT_ACCEL_IRQ_NONE   0
-> +#define INPUT_ACCEL_IRQ_HIGH   BIT(0)
-> +#define INPUT_ACCEL_IRQ_LOW    BIT(1)
-> +#define INPUT_ACCEL_IRQ_LATCH  BIT(2)
-> +
-> +struct input_accelinfo {
-> +       __u32 threshold;
-> +       __u32 duration;
-> +
-> +       /* the following 4 fields configure how the irqs will be generated:
-> +        * - High Event
-> +        * - Low Event
-> +        * - Latch irq request
-> +        */
-> +       __u8 x_irq;
-> +       __u8 y_irq;
-> +       __u8 z_irq;
-> +       __u8 click_irq;
-> +};
-> +
->  #define EVIOCGVERSION          _IOR('E', 0x01, int)                    /* get driver version */
->  #define EVIOCGID               _IOR('E', 0x02, struct input_id)        /* get device ID */
->  #define EVIOCGREP              _IOR('E', 0x03, int[2])                 /* get repeat settings */
-> @@ -81,6 +101,8 @@ struct input_absinfo {
->
->  #define EVIOCGRAB              _IOW('E', 0x90, int)                    /* Grab/Release device */
->
-> +#define EVIOCACCELINFO         _IOW('E', 0x91, struct input_accelinfo) /* set accelerometer's parameters */
-> +
->  /*
->  * Event types
->  */
-> @@ -975,6 +997,8 @@ struct ff_effect {
->  #include <linux/timer.h>
->  #include <linux/mod_devicetable.h>
->
-> +struct input_accelinfo;
-> +
->  /**
->  * struct input_dev - represents an input device
->  * @name: name of the device
-> @@ -1069,6 +1093,7 @@ struct input_dev {
->        void *keycode;
->        int (*setkeycode)(struct input_dev *dev, int scancode, int keycode);
->        int (*getkeycode)(struct input_dev *dev, int scancode, int *keycode);
-> +       int (*set_accelinfo)(struct input_dev *dev, struct input_accelinfo *info);
->
->        struct ff_device *ff;
->
->
->
-> --
-> balbi
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
-
-
-
--- 
----Trilok Soni
-http://triloksoni.wordpress.com
-http://www.linkedin.com/in/triloksoni
