@@ -1,110 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757708AbZEOVvL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756248AbZEOVxT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757708AbZEOVvL (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 17:51:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756966AbZEOVup
+	id S1756248AbZEOVxT (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 17:53:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752420AbZEOVxD
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 17:50:45 -0400
-Received: from hrndva-omtalb.mail.rr.com ([71.74.56.125]:44307 "EHLO
-	hrndva-omtalb.mail.rr.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757511AbZEOVuo (ORCPT
+	Fri, 15 May 2009 17:53:03 -0400
+Received: from g5t0008.atlanta.hp.com ([15.192.0.45]:3441 "EHLO
+	g5t0008.atlanta.hp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754739AbZEOVxB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 17:50:44 -0400
-Date: Fri, 15 May 2009 17:50:44 -0400 (EDT)
-From: Steven Rostedt <rostedt@goodmis.org>
-X-X-Sender: rostedt@gandalf.stny.rr.com
-To: Frederic Weisbecker <fweisbec@gmail.com>
-cc: linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Christoph Hellwig <hch@infradead.org>, Li Zefan <lizf@cn.fujitsu.com>,
-       Eduard - Gabriel Munteanu <eduard.munteanu@linux360.ro>,
-       Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [PATCH 3/3] tracing: add flag output for kmem events
-In-Reply-To: <20090515212328.GA6156@nowhere>
-Message-ID: <alpine.DEB.2.00.0905151745080.3647@gandalf.stny.rr.com>
-References: <20090515210342.488025506@goodmis.org> <20090515210718.211132919@goodmis.org> <20090515212328.GA6156@nowhere>
-User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+	Fri, 15 May 2009 17:53:01 -0400
+From: Bjorn Helgaas <bjorn.helgaas@hp.com>
+To: Yinghai Lu <yinghai@kernel.org>
+Subject: Re: [PATCH] x86: update_mptable need pci_routeirq
+Date: Fri, 15 May 2009 15:52:51 -0600
+User-Agent: KMail/1.9.10
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+References: <4A0DC7DC.7000204@kernel.org> <200905151507.29083.bjorn.helgaas@hp.com> <4A0DDAF0.7080005@kernel.org>
+In-Reply-To: <4A0DDAF0.7080005@kernel.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905151552.53139.bjorn.helgaas@hp.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-On Fri, 15 May 2009, Frederic Weisbecker wrote:
-
-> On Fri, May 15, 2009 at 05:03:45PM -0400, Steven Rostedt wrote:
-> > From: Steven Rostedt <srostedt@redhat.com>
+On Friday 15 May 2009 03:13:20 pm Yinghai Lu wrote:
+> Bjorn Helgaas wrote:
+> > On Friday 15 May 2009 01:51:56 pm Yinghai Lu wrote:
+> >> to get all device irq routing and save them
 > > 
-> > This patch changes the output for gfp_flags from being a simple hex value
-> > to the actual names.
+> > This changelog isn't really enough for me to understand
+> > what's going on.
 > > 
-> >   gfp_flags=GFP_ATOMIC  instead of gfp_flags=00000020
+> >> Index: linux-2.6/arch/x86/kernel/mpparse.c
+> >> ===================================================================
+> >> --- linux-2.6.orig/arch/x86/kernel/mpparse.c
+> >> +++ linux-2.6/arch/x86/kernel/mpparse.c
+> >> @@ -17,6 +17,7 @@
+> >>  #include <linux/acpi.h>
+> >>  #include <linux/module.h>
+> >>  #include <linux/smp.h>
+> >> +#include <linux/pci.h>
+> >>  
+> >>  #include <asm/mtrr.h>
+> >>  #include <asm/mpspec.h>
+> >> @@ -961,6 +962,7 @@ static int __initdata enable_update_mpta
+> >>  static int __init update_mptable_setup(char *str)
+> >>  {
+> >>  	enable_update_mptable = 1;
+> >> +	pci_routeirq = 1;
 > > 
-> > And even
+> > I hate to see new uses of pci_routeirq.  It'd be nice to remove it
+> > completely someday.  But maybe it can't be helped.
 > > 
-> >   gfp_flags=GFP_KERNEL instead of gfp_flags=000000d0
+> >>  	return 0;
+> >>  }
+> >>  early_param("update_mptable", update_mptable_setup);
 > > 
-> > [ Impact: more human readable output from tracer ]
+> > "update_mptable" is apparently a boot option, but it's not mentioned
+> > in Documentation/kernel-parameters.txt.  Is this some sort of debug
+> > code or BIOS-writer's helper?  Same with "alloc_mptable".  Why do
+> > we have this stuff?
 > > 
-> > Signed-off-by: Steven Rostedt <rostedt@goodmis.org>
 > 
-> 
-> Nice!
-> 
-> 
-> > ---
-> >  include/trace/events/kmem.h |   43 +++++++++++++++++++++++++++++++++++--------
-> >  1 files changed, 35 insertions(+), 8 deletions(-)
-> > 
-> > diff --git a/include/trace/events/kmem.h b/include/trace/events/kmem.h
-> > index c22c42f..9b3886b 100644
-> > --- a/include/trace/events/kmem.h
-> > +++ b/include/trace/events/kmem.h
-> > @@ -7,6 +7,33 @@
-> >  #undef TRACE_SYSTEM
-> >  #define TRACE_SYSTEM kmem
-> >  
-> > +#define show_gfp_flags(flags)						\
-> > +	(flags) ? __print_flags(flags, "|",				\
-> > +	(unsigned long)GFP_KERNEL,		"GFP_KERNEL",		\
-> > +	(unsigned long)GFP_NOFS,		"GFP_NOFS",		\
-> > +	(unsigned long)GFP_TEMPORARY,		"GFP_TEMPORARY",	\
-> > +	(unsigned long)GFP_USER,		"GFP_USER",		\
-> 
-> 
-> Because you clear the mask value after finding out a matching mask
-> string, you should sort the masks from the highest number of bits
-> to the lowest.
-> 
-> GFP_USER should be placed before GFP_KERNEL otherwise it will always be
-> eaten.
-> Instead of GFP_USER, you will get:
-> 
-> GFP_KERNEL | __GFP_HARDWALL
+> 1. kexec path: after acpi kernel and use kexec to load kerenl with mptable support only or acpi=off
+> 2. help to BIOS engineer to understand how to set mptable and irq routing setup by chipset.
+>    esp system have several cards and there is bridge in those cards.
 
-Ug, I was thinking the code only printed the mask if the mask matched 
-fully.
+I was sort of hoping for a Documentation/kernel-parameters.txt patch.
 
-> 
-> 
-> > +	(unsigned long)GFP_HIGHUSER,		"GFP_HIGHUSER",		\
-> 
-> 
-> Ditto, it should be placed before GFP_USER otherwise you will get:
-> 
-> GFP_USER | __GFP_HIGHMEM
-> 
-> 
-> > +	(unsigned long)GFP_HIGHUSER_MOVABLE,	"GFP_HIGHUSER_MOVABLE",	\
-> 
-> And this one before HIGH_USER otherwise:
-> 
-> GFP_HIGHUSER__GFP_MOVABLE
+Is (1) common enough to worry about?  What OSes don't have ACPI
+support?  What advantage is there to using "acpi=off"?
 
-Anyway, I thought I did sort it out, but I did not realize that some masks 
-have masks within. I need more sleep.
+(2) sounds like something that should be under a config option, if
+it's in the mainline kernel at all.
 
-Will fix in take two. Still waiting for comments from the MM folks.
+Bjorn
 
--- Steve
