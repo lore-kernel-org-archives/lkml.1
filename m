@@ -1,195 +1,91 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755522AbZEOMoa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757329AbZEOMrx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755522AbZEOMoa (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 08:44:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZEOMoU
+	id S1757329AbZEOMrx (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 08:47:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZEOMro
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 08:44:20 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:60939 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752431AbZEOMoT (ORCPT
+	Fri, 15 May 2009 08:47:44 -0400
+Received: from an-out-0708.google.com ([209.85.132.247]:25389 "EHLO
+	an-out-0708.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751152AbZEOMro (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 08:44:19 -0400
-Date: Fri, 15 May 2009 14:44:16 +0200
-From: Frederik Deweerdt <frederik.deweerdt@xprog.eu>
-To: Michael Di Domenico <mdidomenico4@gmail.com>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: kernel softlocks
-Message-ID: <20090515124416.GA12245@gambetta>
-References: <e75d22a90905150515u44860fbdm287f6ca17f1cf97c@mail.gmail.com>
+	Fri, 15 May 2009 08:47:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :content-type:content-transfer-encoding;
+        b=kzNnaXN8sf3AS3d4GmQxmrChPEpEna6iihsu4SXph4YusxEaI5OXpKtDcRXuNDj9cb
+         mTVmIeJbLubChmpBxGQipxEeJ9vebzIlgDjqfmJlIP/rZF+xepfqAayHPExgvWgiT4zu
+         JEPGmj513WA+vfSEA05ADPaenKnW3tCMZwMFg=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <e75d22a90905150515u44860fbdm287f6ca17f1cf97c@mail.gmail.com>
-User-Agent: Mutt/1.5.17+20080114 (2008-01-14)
+In-Reply-To: <8bfdd4d60905110658g186bc26el703eb1baf076616e@mail.gmail.com>
+References: <8bfdd4d60905110658g186bc26el703eb1baf076616e@mail.gmail.com>
+Date: Fri, 15 May 2009 08:47:42 -0400
+Message-ID: <8bfdd4d60905150547l6a313507g66476e1fa82c3871@mail.gmail.com>
+Subject: Re: fixed timeslice
+From: Jason mclaughlin <mcjason@gmail.com>
+To: mingo@elte.hu, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Michael,
+doesn't it work out that scheduling fairness is accomplished by
+ready-to-run and next-in-line?
 
-The behaviour of the soft lockup has been modified since 2.6.18 to match
-the increasing RAM found on systems (flushing large amounts of RAM to
-disk tend to keep the CPUs busy).
+so when is it the turn to have your next-in-line when you're ready to
+run? when something else is done before, right?
 
-On recent kernels, the soft lockup threshold is set to 60s whereas 2.6.18
-used a 10s threshold, IIRC.
+so what opportunity does something want to have when it's ready to
+run? it's when it comes up in line.
+so what is the change of being available to run right away when IO
+finishes and you can have your read succeed?
+isn't it when something is done before sometimes?
 
-So if you do have large amounts of RAM, you can safely ignore this
-warning if you don't observe any other weird behaviour.
+can what's before use as much time as a timeslice though?
 
-Regards,
-Frederik
+ok..
 
-On Fri, May 15, 2009 at 08:15:13AM -0400, Michael Di Domenico wrote:
-> I have a user application that seems to be soft locking the linux
-> kernel, in this case 2.6.18
-> 
-> Can anyone narrow down whether this is a bug in the linux kernel (and
-> perhaps if so, whether is was fixed in a later version) or not?
-> 
-> Or what this user application might have done to create this issue if
-> its not a bug?
-> 
-> thanks
-> - Michael
-> 
-> 
-> 
-> 
-> BUG: soft lockup detected on CPU#33!
-> 
-> Call Trace:
->  [<a000000100013b20>] show_stack+0x40/0xa0
->                        sp=e00000ff000b73d0 bsp=e00000ff000b1818
->  [<a000000100013bb0>] dump_stack+0x30/0x60
->                        sp=e00000ff000b75a0 bsp=e00000ff000b1800
->  [<a0000001000e5fe0>] softlockup_tick+0x240/0x280
->                        sp=e00000ff000b75a0 bsp=e00000ff000b17b8
->  [<a000000100092df0>] run_local_timers+0x30/0x60
->                        sp=e00000ff000b75b0 bsp=e00000ff000b17a0
->  [<a000000100092ea0>] update_process_times+0x80/0x100
->                        sp=e00000ff000b75b0 bsp=e00000ff000b1770
->  [<a000000100037220>] timer_interrupt+0x180/0x360
->                        sp=e00000ff000b75b0 bsp=e00000ff000b1730
->  [<a0000001000e6650>] handle_IRQ_event+0x90/0x120
->                        sp=e00000ff000b75b0 bsp=e00000ff000b16f0
->  [<a0000001000e6810>] __do_IRQ+0x130/0x420
->                        sp=e00000ff000b75b0 bsp=e00000ff000b16a8
->  [<a000000100011630>] ia64_handle_irq+0xf0/0x1a0
->                        sp=e00000ff000b75b0 bsp=e00000ff000b1678
->  [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
->                        sp=e00000ff000b75b0 bsp=e00000ff000b1678
->  [<a000000100626b90>] _spin_unlock_irqrestore+0x30/0x60
->                        sp=e00000ff000b7780 bsp=e00000ff000b1660
->  [<a0000001000989d0>] force_sig_info+0x130/0x160
->                        sp=e00000ff000b7780 bsp=e00000ff000b1620
->  [<a00000010003c620>] ia64_handle_unaligned+0x2d00/0x2d20
->                        sp=e00000ff000b7780 bsp=e00000ff000b1580
->  [<a00000010000c630>] ia64_prepare_handle_unaligned+0x30/0x60
->                        sp=e00000ff000b7970 bsp=e00000ff000b1580
->  [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
->                        sp=e00000ff000b7b80 bsp=e00000ff000b1580
->  [<a0000001000b9150>] exit_robust_list+0x250/0x2e0
->                        sp=e00000ff000b7d50 bsp=e00000ff000b1518
->  [<a000000100081690>] do_exit+0x510/0x14a0
->                        sp=e00000ff000b7d60 bsp=e00000ff000b14c0
->  [<a000000100082770>] do_group_exit+0x150/0x160
->                        sp=e00000ff000b7d80 bsp=e00000ff000b1488
->  [<a000000100099a00>] get_signal_to_deliver+0x740/0x7c0
->                        sp=e00000ff000b7d80 bsp=e00000ff000b1438
->  [<a0000001000341d0>] ia64_do_signal+0x90/0xde0
->                        sp=e00000ff000b7d80 bsp=e00000ff000b1350
->  [<a0000001000139a0>] do_notify_resume_user+0x100/0x160
->                        sp=e00000ff000b7e20 bsp=e00000ff000b1320
->  [<a00000010000c500>] notify_resume_user+0x40/0x60
->                        sp=e00000ff000b7e20 bsp=e00000ff000b12d0
->  [<a00000010000c430>] skip_rbs_switch+0xe0/0x110
->                        sp=e00000ff000b7e30 bsp=e00000ff000b12d0
-> 
-> BUG: soft lockup detected on CPU#72!
-> 
-> Call Trace:
->  [<a000000100013b20>] show_stack+0x40/0xa0
->                        sp=e00000fbe5e3f3d0 bsp=e00000fbe5e39830
->  [<a000000100013bb0>] dump_stack+0x30/0x60
->                        sp=e00000fbe5e3f5a0 bsp=e00000fbe5e39818
->  [<a0000001000e5fe0>] softlockup_tick+0x240/0x280
->                        sp=e00000fbe5e3f5a0 bsp=e00000fbe5e397d0
->  [<a000000100092df0>] run_local_timers+0x30/0x60
->                        sp=e00000fbe5e3f5b0 bsp=e00000fbe5e397b8
->  [<a000000100092ea0>] update_process_times+0x80/0x100
->                        sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39788
->  [<a000000100037220>] timer_interrupt+0x180/0x360
->                        sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39748
->  [<a0000001000e6650>] handle_IRQ_event+0x90/0x120
->                        sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39708
->  [<a0000001000e6810>] __do_IRQ+0x130/0x420
->                        sp=e00000fbe5e3f5b0 bsp=e00000fbe5e396c0
->  [<a000000100011630>] ia64_handle_irq+0xf0/0x1a0
->                        sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39690
->  [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
->                        sp=e00000fbe5e3f5b0 bsp=e00000fbe5e39690
->  [<a000000100009100>] ia64_spinlock_contention+0x20/0x60
->                        sp=e00000fbe5e3f780 bsp=e00000fbe5e39690
->  [<a000000100626a20>] _spin_lock_irqsave+0x60/0x80
->                        sp=e00000fbe5e3f780 bsp=e00000fbe5e39688
->  [<a0000001000988d0>] force_sig_info+0x30/0x160
->                        sp=e00000fbe5e3f780 bsp=e00000fbe5e39648
->  [<a00000010003c620>] ia64_handle_unaligned+0x2d00/0x2d20
->                        sp=e00000fbe5e3f780 bsp=e00000fbe5e395a8
->  [<a00000010000c630>] ia64_prepare_handle_unaligned+0x30/0x60
->                        sp=e00000fbe5e3f970 bsp=e00000fbe5e395a8
->  [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
->                        sp=e00000fbe5e3fb80 bsp=e00000fbe5e395a8
->  [<a0000001000b4ff0>] handle_futex_death+0x90/0x1a0
->                        sp=e00000fbe5e3fd50 bsp=e00000fbe5e39568
->  [<a0000001000b90f0>] exit_robust_list+0x1f0/0x2e0
->                        sp=e00000fbe5e3fd50 bsp=e00000fbe5e39518
->  [<a000000100081690>] do_exit+0x510/0x14a0
->                        sp=e00000fbe5e3fd60 bsp=e00000fbe5e394c0
->  [<a000000100082770>] do_group_exit+0x150/0x160
->                        sp=e00000fbe5e3fd80 bsp=e00000fbe5e39488
->  [<a000000100099a00>] get_signal_to_deliver+0x740/0x7c0
->                        sp=e00000fbe5e3fd80 bsp=e00000fbe5e39438
->  [<a0000001000341d0>] ia64_do_signal+0x90/0xde0
->                        sp=e00000fbe5e3fd80 bsp=e00000fbe5e39350
->  [<a0000001000139a0>] do_notify_resume_user+0x100/0x160
->                        sp=e00000fbe5e3fe20 bsp=e00000fbe5e39320
->  [<a00000010000c500>] notify_resume_user+0x40/0x60
->                        sp=e00000fbe5e3fe20 bsp=e00000fbe5e392d0
->  [<a00000010000c430>] skip_rbs_switch+0xe0/0x110
->                        sp=e00000fbe5e3fe30 bsp=e00000fbe5e392d0
-> 
-> BUG: soft lockup detected on CPU#104!
-> 
-> Call Trace:
->  [<a000000100013b20>] show_stack+0x40/0xa0
->                        sp=e00000fc4b03f7d0 bsp=e00000fc4b039730
->  [<a000000100013bb0>] dump_stack+0x30/0x60
->                        sp=e00000fc4b03f9a0 bsp=e00000fc4b039718
->  [<a0000001000e5fe0>] softlockup_tick+0x240/0x280
->                        sp=e00000fc4b03f9a0 bsp=e00000fc4b0396d8
->  [<a000000100092df0>] run_local_timers+0x30/0x60
->                        sp=e00000fc4b03f9b0 bsp=e00000fc4b0396c0
->  [<a000000100092ea0>] update_process_times+0x80/0x100
->                        sp=e00000fc4b03f9b0 bsp=e00000fc4b039690
->  [<a000000100037220>] timer_interrupt+0x180/0x360
->                        sp=e00000fc4b03f9b0 bsp=e00000fc4b039650
->  [<a0000001000e6650>] handle_IRQ_event+0x90/0x120
->                        sp=e00000fc4b03f9b0 bsp=e00000fc4b039610
->  [<a0000001000e6810>] __do_IRQ+0x130/0x420
->                        sp=e00000fc4b03f9b0 bsp=e00000fc4b0395c0
->  [<a000000100011630>] ia64_handle_irq+0xf0/0x1a0
->                        sp=e00000fc4b03f9b0 bsp=e00000fc4b039590
->  [<a00000010000c020>] __ia64_leave_kernel+0x0/0x280
->                        sp=e00000fc4b03f9b0 bsp=e00000fc4b039590
->  [<a000000100004ac0>] dispatch_unaligned_handler+0x2a0/0x400
->                        sp=e00000fc4b03fb80 bsp=e00000fc4b039580
->  [<a0000001000b90f0>] exit_robust_list+0x1f0/0x2e0
->                        sp=e00000fc4b03fb80 bsp=e00000fc4b039530
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+so if so,
+
+isn't it scheduling on-time opportunity that matters the most for IO?
+
+so when a read is successful, it's time to run right away, to do
+another read perhaps.
+
+because that's when it's stop-go for IO.
+
+so scheduling can't always make opportunity to run when IO is
+successful right? sometimes though.
+but isn't what's before that's running now maybe a whole timeslice?
+but with the same fairness to run?
+
+can't this make it so IO schedules with a timeslice between stop-go?
+
+
+
+
+
+
+On Mon, May 11, 2009 at 9:58 AM, Jason mclaughlin <mcjason@gmail.com> wrote:
+> can't scheduling be unfair when a fixed timeslice is used as the time
+> up til a process can run?
+>
+> won't it work out that if a program is using the harddrive, and
+> another is using cpu time and using up it's timeslices, that the
+> cpu user will give less runtime opportunity to the harddrive user
+> because of a wait up until timeslice to use the harddrive again?
+>
+> like, doesn't the length of a timeslice change the fairness of
+> scheduling opportunity for harddrive use?
+>
+> can't it span the time that something is ready to take from the
+> harddrive, til the time the harddrive can be used again?
+>
+> can't it anyways in some cases though no matter what, because of how
+> using up til a timeslice is available sometimes when something wants
+> to use the harddrive again,
+> and because what wants to use the harddrive can be behind what uses a
+> whole timeslice?
+>
