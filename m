@@ -1,59 +1,97 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756834AbZEOHcV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756306AbZEOHdw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756834AbZEOHcV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 03:32:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755057AbZEOHcH
+	id S1756306AbZEOHdw (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 03:33:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755135AbZEOHdm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 03:32:07 -0400
-Received: from brick.kernel.dk ([93.163.65.50]:41774 "EHLO kernel.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754660AbZEOHcG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 03:32:06 -0400
-Date: Fri, 15 May 2009 09:32:06 +0200
-From: Jens Axboe <jens.axboe@oracle.com>
-To: Jamie Lokier <jamie@shareable.org>
-Cc: Miklos Szeredi <miklos@szeredi.hu>, Max Kellermann <max@duempel.org>,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org, npiggin@suse.de
-Subject: Re: [patch 0/3] make splice more generic
-Message-ID: <20090515073206.GW4140@kernel.dk>
-References: <20090507133734.450612199@szeredi.hu> <20090511121247.GZ4694@kernel.dk> <20090514202706.GB20363@shareable.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090514202706.GB20363@shareable.org>
+	Fri, 15 May 2009 03:33:42 -0400
+Received: from demumfd002.nsn-inter.net ([217.115.75.234]:10652 "EHLO
+	demumfd002.nsn-inter.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754619AbZEOHdl (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 03:33:41 -0400
+Subject: Re: RapidIO - general questions
+From: Jan Neskudla <jan.neskudla.ext@nsn.com>
+To: ext Li Yang <leoli@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, linux-kernel@vger.kernel.org
+In-Reply-To: <2a27d3730905130357re0adf41l19f5603a70dac57b@mail.gmail.com>
+References: <1242119872.16400.113.camel@demuxf9c>
+	 <2a27d3730905130357re0adf41l19f5603a70dac57b@mail.gmail.com>
+Content-Type: text/plain
+Date: Fri, 15 May 2009 09:33:11 +0200
+Message-Id: <1242372791.26759.34.camel@demuxf9c>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.0.2 (2.0.2-41.el4_7.2) 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 14 2009, Jamie Lokier wrote:
-> Jens Axboe wrote:
-> > SPLICE_F_MOVE is a soft flag in that it will move if it
-> > can, but not fail if it can't.
+On Wed, 2009-05-13 at 18:57 +0800, ext Li Yang wrote:
+> cc'ed LKML
 > 
-> According to local man page, it's not even that.
+> On Tue, May 12, 2009 at 5:17 PM, Jan Neskudla <jan.neskudla.ext@nsn.com> wrote:
+> > Hallo
+> >
+> > we'd likes to use a RapidIO as a general communication bus on our new
+> > product, and so I have some questions about general design of Linux RIO
+> > subsystem. I did not find any better mailing list for RapidIO
+> > discussion.
+> >
+> > [1] - we'd like to implement following features
+> >    * Hot-plug (hot-insert/hot-remove) of devices
+> >    * Error handling (port-write packets - configuration, handling of
+> > them)
+> >    * Static ID configuration based on port numbers
+> >    * Aux driver - basic driver, for sending messages over different
+> > mboxes, handling ranges of doorbells
+> >
+> >    Is it here anyone who is working on any improvement, or anyone who
+> > knows the development plans for RapidIO subsystem?
+> >
 > 
->   SPLICE_F_MOVE      [...] The initial implementation of this flag  was  buggy:
-> 		     therefore  starting  in  Linux  2.6.21 it is a *no-op*
-> 		     (but is still permitted in a splice() call); in  the
-> 		     future, a correct implementation may be restored.
+> AFAIK, there is no one currently working on these features for Linux.
+> It will be good if you can add these useful features.
+Yes it looks like that, currently we are analyzing current rapidIO
+system, and how we can add these features. 
 
-That's a temporary condition, and the statement isn't completely true
-either.  What happened was that the stealing of fs pages was disabled.
-Other users of splice could still implement it and take advantage of it.
-
-Nick pulled the original code and did promise to work on a replacement,
-but so far that hasn't happened.
-
-> > Perhaps we should add a flag that does pass back an error if we
-> > can't just move pages around, SPLICE_F_STRICT or something like
-> > that.
 > 
-> What should it do in cases where the kernel would choose to copy data,
-> i.e. data that isn't a whole page?
+> > [2] - I have a following problem with a current implementation of
+> > loading drivers. The driver probe-function call is based on comparison
+> > of VendorID (VID) and DeviceID (DID) only. Thus if I have 3 devices with
+> > same DID and VID connected to the same network (bus), the driver is
+> > loaded 3times, instead only once for the actual device Master port.
+> 
+> This should be the correct way as you actually have 3 instances of the device.
+> 
+> >
+> > Rionet driver solved this by enabling to call initialization function
+> > just once, and it expect that this is the Master port.
+> 
+> Rionet is kind of special.  It's not working like a simple device
+> driver, but more like a customized protocol stack to support multiple
+> ethernet over rio links.
+> 
+> >
+> > Is it this correct behavior  ? It looks to me that RapidIO is handled
+> > like a local bus (like PCI)
+> 
+> This is correct behavior.  All of them are using Linux device/driver
+> infrastructure, but rionet is a special device.
 
-Probably -EINVAL, like O_DIRECT would.
+But I do not have a 3 devices on one silicon. I am talking about 3
+devices (3 x EP8548 boards + IDT switch) connected over rapidIO through
+the switch. And in this case I'd like to have only one driver siting on
+the top of Linux RapidIO subsystem. I don't see the advantage of loading
+a driver locally for remote device. Am I missing something  ?
 
--- 
-Jens Axboe
+And one more think, I am getting so much Bus errors OOPSes. Whenever
+there is a problem with a comunication over Rio I get such a kernel OPS.
+I had to add some delays into some function to be able to finish the
+enum+discovery process. Did you have some experience with some bigger
+rio network running under linux ? 
+
+
+                Jan 
+
 
