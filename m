@@ -1,182 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbZEOGSn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760672AbZEOGYa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758408AbZEOGSn (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 02:18:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZEOGSc
+	id S1760672AbZEOGYa (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 02:24:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757903AbZEOGYU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 02:18:32 -0400
-Received: from vms173003pub.verizon.net ([206.46.173.3]:16871 "EHLO
-	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751917AbZEOGSb (ORCPT
+	Fri, 15 May 2009 02:24:20 -0400
+Received: from mu-out-0910.google.com ([209.85.134.185]:53023 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1756492AbZEOGYT (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 02:18:31 -0400
-Date: Fri, 15 May 2009 02:18:25 -0400 (EDT)
-From: Len Brown <lenb@kernel.org>
-X-X-Sender: lenb@localhost.localdomain
-To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>,
-       Janne Kulmala <janne.t.kulmala@tut.fi>, Frans Pop <elendil@planet.nl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
-       johnstul@us.ibm.com, linux-acpi@vger.kernel.org
-Subject: [PATCH] ACPI: idle: rename lapic timer workaround routines
-In-reply-to: <alpine.LFD.2.00.0905150138001.10065@localhost.localdomain>
-Message-id: <alpine.LFD.2.00.0905150217220.4995@localhost.localdomain>
-References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com>
- <200905110226.50115.elendil@planet.nl>
- <alpine.LFD.2.00.0905111614570.3561@localhost.localdomain>
- <4A0855A5.8040109@tut.fi>
- <alpine.LFD.2.00.0905141545280.24833@localhost.localdomain>
- <alpine.LFD.2.00.0905141608070.24833@localhost.localdomain>
- <alpine.LFD.2.00.0905142217340.3561@localhost.localdomain>
- <alpine.LFD.2.00.0905141750100.24833@localhost.localdomain>
- <alpine.LFD.2.00.0905150138001.10065@localhost.localdomain>
-User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
-MIME-version: 1.0
-Content-type: TEXT/PLAIN; charset=US-ASCII
+	Fri, 15 May 2009 02:24:19 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=odiEPUVB4zvV89Fbkk0lqskhnhVSqbBcBAc+OfTMv/MLmbGIf+PKxrfdEKYfSvCZ77
+         AY3Exm/f8qV3I8NB+1ZM6bJSlDVvYabNRLBkaVu0QW3i+wu3iw5Xct5666JFx/UqwZB1
+         QgtUwxIvMrUdP6vuuBisLDFUTQiZ09V3lpows=
+Message-ID: <4A0D0A76.7040806@gmail.com>
+Date: Fri, 15 May 2009 08:23:50 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b5pre) Gecko/20090511 SUSE/3.0b2-9.1 Thunderbird/3.0b3pre
+MIME-Version: 1.0
+To: Greg KH <gregkh@suse.de>
+CC: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [patch 29/51] mac80211: pid, fix memory corruption
+References: <20090514223235.348540705@mini.kroah.org> <20090514223525.042094922@mini.kroah.org>
+In-Reply-To: <20090514223525.042094922@mini.kroah.org>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Len Brown <len.brown@intel.com>
+Hi,
 
-cosmetic only.  The lapic_timer workaround routines
-are specific to the lapic_timer, and are not acpi-generic.
+note that you were about to drop this one now because of waiting for a
+fixup which is not upstream so far. Did anything change?
 
-old:
+(This is the one which fixes a memory corruption, but triggers a bug
+causing oopses on single band cards.)
 
-acpi_timer_check_state()
-acpi_propagate_timer_broadcast()
-acpi_state_timer_broadcast()
+On 05/15/2009 12:33 AM, Greg KH wrote:
+From: Jiri Slaby <jirislaby@gmail.com>
 
-new:
+commit 6909268dc93ae4b0b8e1ebb4b2fa70b1a47dd347 upstream.
 
-lapic_timer_check_state()
-lapic_timer_propagate_broadcast()
-lapic_timer_state_broadcast()
+pid doesn't count with some band having more bitrates than the one
+associated the first time.
+Fix that by counting the maximal available bitrate count and allocate
+big enough space.
 
-also, simplify the code in acpi_processor_power_verify()
-so that lapic_timer_check_state() is simply called
-from one place for all valid C-states, including C1.
+Secondly, fix touching uninitialized memory which causes panics.
+Index sucked from this random memory points to the hell.
+The fix is to sort the rates on each band change.
 
-Signed-off-by: Len Brown <len.brown@intel.com>
----
- drivers/acpi/processor_idle.c |   35 ++++++++++++++++-------------------
- 1 files changed, 16 insertions(+), 19 deletions(-)
-
-diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
-index e65476f..60c3bcd 100644
---- a/drivers/acpi/processor_idle.c
-+++ b/drivers/acpi/processor_idle.c
-@@ -139,7 +139,7 @@ static void acpi_safe_halt(void)
-  * are affected too. We pick the most conservative approach: we assume
-  * that the local APIC stops in both C2 and C3.
-  */
--static void acpi_timer_check_state(int state, struct acpi_processor *pr,
-+static void lapic_timer_check_state(int state, struct acpi_processor *pr,
- 				   struct acpi_processor_cx *cx)
- {
- 	struct acpi_processor_power *pwr = &pr->power;
-@@ -159,7 +159,7 @@ static void acpi_timer_check_state(int state, struct acpi_processor *pr,
- 		pr->power.timer_broadcast_on_state = state;
- }
- 
--static void acpi_propagate_timer_broadcast(struct acpi_processor *pr)
-+static void lapic_timer_propagate_broadcast(struct acpi_processor *pr)
- {
- 	unsigned long reason;
- 
-@@ -170,7 +170,7 @@ static void acpi_propagate_timer_broadcast(struct acpi_processor *pr)
- }
- 
- /* Power(C) State timer broadcast control */
--static void acpi_state_timer_broadcast(struct acpi_processor *pr,
-+static void lapic_timer_state_broadcast(struct acpi_processor *pr,
- 				       struct acpi_processor_cx *cx,
- 				       int broadcast)
- {
-@@ -187,10 +187,10 @@ static void acpi_state_timer_broadcast(struct acpi_processor *pr,
- 
- #else
- 
--static void acpi_timer_check_state(int state, struct acpi_processor *pr,
-+static void lapic_timer_check_state(int state, struct acpi_processor *pr,
- 				   struct acpi_processor_cx *cstate) { }
--static void acpi_propagate_timer_broadcast(struct acpi_processor *pr) { }
--static void acpi_state_timer_broadcast(struct acpi_processor *pr,
-+static void lapic_timer_propagate_broadcast(struct acpi_processor *pr) { }
-+static void lapic_timer_state_broadcast(struct acpi_processor *pr,
- 				       struct acpi_processor_cx *cx,
- 				       int broadcast)
- {
-@@ -592,24 +592,21 @@ static int acpi_processor_power_verify(struct acpi_processor *pr)
- 
- 		case ACPI_STATE_C2:
- 			acpi_processor_power_verify_c2(cx);
--			if (cx->valid)
--				acpi_timer_check_state(i, pr, cx);
- 			break;
- 
- 		case ACPI_STATE_C3:
- 			acpi_processor_power_verify_c3(pr, cx);
--			if (cx->valid)
--				acpi_timer_check_state(i, pr, cx);
- 			break;
- 		}
--		if (cx->valid)
--			tsc_check_state(cx->type);
-+		if (!cx->valid)
-+			continue;
- 
--		if (cx->valid)
--			working++;
-+		lapic_timer_check_state(i, pr, cx);
-+		tsc_check_state(cx->type);
-+		working++;
- 	}
- 
--	acpi_propagate_timer_broadcast(pr);
-+	lapic_timer_propagate_broadcast(pr);
- 
- 	return (working);
- }
-@@ -863,7 +860,7 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
- 	 * Must be done before busmaster disable as we might need to
- 	 * access HPET !
- 	 */
--	acpi_state_timer_broadcast(pr, cx, 1);
-+	lapic_timer_state_broadcast(pr, cx, 1);
- 
- 	if (cx->type == ACPI_STATE_C3)
- 		ACPI_FLUSH_CPU_CACHE();
-@@ -885,7 +882,7 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
- 
- 	cx->usage++;
- 
--	acpi_state_timer_broadcast(pr, cx, 0);
-+	lapic_timer_state_broadcast(pr, cx, 0);
- 	cx->time += sleep_ticks;
- 	return idle_time;
- }
-@@ -952,7 +949,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 	 * Must be done before busmaster disable as we might need to
- 	 * access HPET !
- 	 */
--	acpi_state_timer_broadcast(pr, cx, 1);
-+	lapic_timer_state_broadcast(pr, cx, 1);
- 
- 	kt1 = ktime_get_real();
- 	/*
-@@ -997,7 +994,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
- 
- 	cx->usage++;
- 
--	acpi_state_timer_broadcast(pr, cx, 0);
-+	lapic_timer_state_broadcast(pr, cx, 0);
- 	cx->time += sleep_ticks;
- 	return idle_time;
- }
--- 
-1.6.3.1.9.g95405b
-
-
+Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+Signed-off-by: John W. Linville <linville@tuxdriver.com>
+Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
