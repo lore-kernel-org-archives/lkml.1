@@ -1,60 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760129AbZEOO5t@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761473AbZEOPAb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760129AbZEOO5t (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 10:57:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751225AbZEOO5j
+	id S1761473AbZEOPAb (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 11:00:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754979AbZEOPAN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 10:57:39 -0400
-Received: from exprod7og111.obsmtp.com ([64.18.2.175]:54621 "EHLO
-	exprod7og111.obsmtp.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753436AbZEOO5i convert rfc822-to-8bit (ORCPT
+	Fri, 15 May 2009 11:00:13 -0400
+Received: from charlotte.tuxdriver.com ([70.61.120.58]:38050 "EHLO
+	smtp.tuxdriver.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753490AbZEOPAL (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 10:57:38 -0400
-From: "Mukker, Atul" <Atul.Mukker@lsi.com>
-To: Jeff Garzik <jeff@garzik.org>, Julian Calaby <julian.calaby@gmail.com>
-CC: adam radford <aradford@gmail.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Austria, Winston" <Winston.Austria@lsi.com>,
-       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
-Date: Fri, 15 May 2009 08:56:25 -0600
-Subject: RE: [RFQ] New driver architecture questions
-Thread-Topic: [RFQ] New driver architecture questions
-Thread-Index: AcnVCYguckM1XJhxQOu5hjlIH97UfgAY0w7Q
-Message-ID: <6C678488C5CEE74F813A4D1948FD2DC7A96C7789@cosmail02.lsi.com>
-References: <6C678488C5CEE74F813A4D1948FD2DC7A95E6D37@cosmail02.lsi.com>
- 	<4A0B858F.3080405@garzik.org>
- <6C678488C5CEE74F813A4D1948FD2DC7A95E6D38@cosmail02.lsi.com>
- 	<4A0B9B0D.6080006@garzik.org>
- <b1bc6a000905141758y20aa7852h8b1012e3da6f8c0f@mail.gmail.com>
- <646765f40905141801k5ae6249p925a4a377652c62e@mail.gmail.com>
- <4A0CDB27.6090009@garzik.org>
-In-Reply-To: <4A0CDB27.6090009@garzik.org>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	Fri, 15 May 2009 11:00:11 -0400
+Date: Fri, 15 May 2009 10:46:28 -0400
+From: "John W. Linville" <linville@tuxdriver.com>
+To: Ken Lewis <kennylewis@gmail.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, linux-net@vger.kernel.org,
+       linux-wireless@vger.kernel.org, davem@davemloft.net
+Subject: Re: Regression: 2.6.30-rc5 and rt2x00 / rt2500pci
+Message-ID: <20090515144628.GE2773@tuxdriver.com>
+References: <5a44caba0905150740n3bf90e05i17a74e82f35edcf4@mail.gmail.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <5a44caba0905150740n3bf90e05i17a74e82f35edcf4@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>
-> >> Perhaps this is a bad example?  It seems like the "common layer"
-> >> sections that are "cross-OS" shouldn't contain any Linux specific code
-> at all.
-> >
-> > I think the implication is that the cross-OS parts are coded, as it
-> > happens, in the linux coding style, using linux functions, but then a
-> > Windows layer maps these to Windows specific functions.
-> 
-> Correct.
-> 
-> 	Jeff
-> 
-> 
-> 
-[Atul] I think we are close, for example, memcpy API in the stack is osi_memcpy(), which translates to memcpy() on Linux and ScsiPortMoveMemory() on windows.
+On Fri, May 15, 2009 at 03:40:44PM +0100, Ken Lewis wrote:
+> I've been looking for a bug in Linux-Next that makes my rt2500pci
+> wireless card unusable.  When testing 2.6.30-rc5, I saw the following
+> bug while trying to associate with a WPA-PSK encrypted access point.
+> It's a regression over 2.6.30-rc4 and I'm trying to git-bisect my way
+> to the source of the problem.  I think that a problem in the same area
+> is stopping my card from associating when using a kernel from
+> linux-next also.
 
+Please apply this patch:
+
+	http://www.kernel.org/pub/linux/kernel/people/linville/wireless-2.6/0002-mac80211-avoid-NULL-ptr-deref-when-finding-max_rate.patch
+
+A pull request was sent to Dave M. a couple of days ago.  I imagine
+that it will make its way to Linus shortly.
+
+John
+-- 
+John W. Linville		Someday the world will need a hero, and you
+linville@tuxdriver.com			might be all we have.  Be ready.
