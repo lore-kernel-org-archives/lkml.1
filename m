@@ -1,53 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763266AbZEOMSy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761406AbZEOMXF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763266AbZEOMSy (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 08:18:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763033AbZEOMSJ
+	id S1761406AbZEOMXF (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 08:23:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752460AbZEOMWs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 08:18:09 -0400
-Received: from gate.in-addr.de ([212.8.193.158]:45013 "EHLO mx.in-addr.de"
-	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1761718AbZEOMSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 08:18:07 -0400
-Date: Fri, 15 May 2009 14:18:38 +0200
-From: Lars Marowsky-Bree <lmb@suse.de>
-To: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
-       Neil Brown <neilb@suse.de>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
-       Nikanth Karthikesan <knikanth@suse.de>,
-       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
-       Kyle Moffett <kyle@moffetthome.net>,
-       Bart Van Assche <bart.vanassche@gmail.com>,
-       Lars Ellenberg <lars.ellenberg@linbit.com>
-Subject: Re: [PATCH 13/16] DRBD: misc
-Message-ID: <20090515121838.GK8610@suse.de>
-References: <1242389443-3470-5-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-6-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-7-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-8-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-9-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-10-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-11-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-12-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-13-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-14-git-send-email-philipp.reisner@linbit.com>
+	Fri, 15 May 2009 08:22:48 -0400
+Received: from outbound-dub.frontbridge.com ([213.199.154.16]:1269 "EHLO
+	IE1EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751877AbZEOMWs (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 08:22:48 -0400
+X-BigFish: VPS-15(zz154dM14ffO4015Lzz1202hzzz32i63h)
+X-Spam-TCS-SCL: 2:0
+X-WSS-ID: 0KJOQDO-01-0BP-01
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: <akpm@linux-foundation.org>, <greg@kroah.com>, <mingo@elte.hu>
+CC: <norsk5@yahoo.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
+       <mchehab@redhat.com>, <aris@redhat.com>, edt@aei.ca,
+       <linux-kernel@vger.kernel.org>,
+       Borislav Petkov <borislav.petkov@amd.com>
+Subject: [RFC PATCH 00/21 v4] amd64_edac: EDAC module for AMD64
+Date: Fri, 15 May 2009 14:22:11 +0200
+Message-ID: <1242390153-24493-1-git-send-email-borislav.petkov@amd.com>
+X-Mailer: git-send-email 1.6.2.4
+X-OriginalArrivalTime: 15 May 2009 12:22:38.0540 (UTC) FILETIME=[D5F760C0:01C9D557]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <1242389443-3470-14-git-send-email-philipp.reisner@linbit.com>
-X-Ctuhulu: HASTUR
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 2009-05-15T14:10:40, Philipp Reisner <philipp.reisner@linbit.com> wrote:
+Hi all,
 
-> buildtag.c tag will go away when we are not longer an external module.
+here's the newest reworked patchset of the EDAC module for AMD k8,
+Fam10h and Fam11h processors with a _LOT_ of changes all over the
+place, among which are removal of NUMA dependency, several bugfixes,
+reworking error paths/labels in code flow, sysfs attributes renaming, a
+substantial comments fix/cleanup and many more. The diffstat speaks for
+itself and additional changes are described in each commit message.
 
-So I would assume it shouldn't be part of the upstream submission? ;-)
+Bunch of thanks to Ingo for his diligent review.
 
+The git repo with the patchset based on Linus' branch from yesterday is
+at:
 
-Regards,
-    Lars
+git://git.kernel.org/pub/scm/linux/kernel/git/bp/bp.git for-linus
 
--- 
-SuSE Labs, OPS Engineering, Novell, Inc.
-SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
-"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
+Changelog:
+
+- v3:
+Split the driver into several .c files based on functionality, removal
+of StinkyIdentifiers and bunch of cleanups all over the place.
+
+- v2:
+Highlights are the addition of two helpers to read/write MSRs on several
+CPUs, denoted by a cpumask and using an array of MSR values per-CPU, as
+hpa suggested. Since IMHO they look generic enough I've added them to
+arch/x86/lib/msr-on-cpu.c (now renamed to msr.c).
+
+Thanks,
+Boris.
+
+ arch/x86/include/asm/msr.h          |   21 +
+ arch/x86/lib/Makefile               |    2 +-
+ arch/x86/lib/msr-on-cpu.c           |   97 -
+ arch/x86/lib/msr.c                  |  152 ++
+ drivers/edac/Kconfig                |   26 +
+ drivers/edac/Makefile               |    7 +
+ drivers/edac/amd64_edac.c           | 3361 +++++++++++++++++++++++++++++++++++
+ drivers/edac/amd64_edac.h           |  657 +++++++
+ drivers/edac/amd64_edac_dbg.c       |  255 +++
+ drivers/edac/amd64_edac_err_types.c |  161 ++
+ drivers/edac/amd64_edac_inj.c       |  185 ++
+ drivers/edac/edac_core.h            |    9 +-
+ 12 files changed, 4831 insertions(+), 102 deletions(-)
 
