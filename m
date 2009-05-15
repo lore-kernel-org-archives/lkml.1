@@ -1,209 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761581AbZEORpV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762165AbZEORqe@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761581AbZEORpV (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 13:45:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753874AbZEORpH
+	id S1762165AbZEORqe (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 13:46:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753601AbZEORq0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 13:45:07 -0400
-Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:38887 "EHLO
-	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752234AbZEORpF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 13:45:05 -0400
-Message-ID: <b7dd123f0a15fff62150bc560747d7f0.squirrel@webmail-b.css.fujitsu.com>
-Date: Sat, 16 May 2009 02:45:03 +0900 (JST)
-Subject: Re: [RFC] Low overhead patches for the memory cgroup controller
- (v2)
-From: "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>
-To: balbir@linux.vnet.ibm.com
-Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "Andrew Morton" <akpm@linux-foundation.org>,
-       "KAMEZAWA Hiroyuki" <kamezawa.hiroyu@jp.fujitsu.com>,
-       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
-       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
-       "menage@google.com" <menage@google.com>,
-       "KOSAKI Motohiro" <m-kosaki@ceres.dti.ne.jp>
-User-Agent: SquirrelMail/1.4.16
+	Fri, 15 May 2009 13:46:26 -0400
+Received: from hera.kernel.org ([140.211.167.34]:42785 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753241AbZEORqZ (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 13:46:25 -0400
+Date: Fri, 15 May 2009 17:45:45 GMT
+From: tip-bot for GeunSik Lim <leemgs1@gmail.com>
+To: linux-tip-commits@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, hpa@zytor.com, mingo@redhat.com,
+       williams@redhat.com, geunsik.lim@samsung.com, leemgs1@gmail.com,
+       rostedt@goodmis.org, tglx@linutronix.de, mingo@elte.hu
+Reply-To: mingo@redhat.com, hpa@zytor.com, linux-kernel@vger.kernel.org,
+       rostedt@goodmis.org, geunsik.lim@samsung.com, williams@redhat.com,
+       leemgs1@gmail.com, tglx@linutronix.de, mingo@elte.hu
+In-Reply-To: <1242289418.31161.45.camel@centos51>
+References: <1242289418.31161.45.camel@centos51>
+Subject: [tip:tracing/urgent] tracing: Append prompt in /debug/tracing/README file
+Message-ID: <tip-88fc86c283d9c3854e67e4155808027bc2519eb6@git.kernel.org>
+Git-Commit-ID: 88fc86c283d9c3854e67e4155808027bc2519eb6
+X-Mailer: tip-git-log-daemon
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-2022-jp
-Content-Transfer-Encoding: 8bit
-X-Priority: 3 (Normal)
-Importance: Normal
+Content-Type: text/plain; charset=UTF-8
+Content-Disposition: inline
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 15 May 2009 17:45:47 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Balbir Singh wrote:
-> Feature: Remove the overhead associated with the root cgroup
->
-> From: Balbir Singh <balbir@linux.vnet.ibm.com>
->
-> This patch changes the memory cgroup and removes the overhead associated
-> with LRU maintenance of all pages in the root cgroup. As a side-effect, we
-> can
-> no longer set a memory hard limit in the root cgroup.
->
-> A new flag is used to track page_cgroup associated with the root cgroup
-> pages. A new flag to track whether the page has been accounted or not
-> has been added as well.
->
-> Review comments higly appreciated
->
-> Tests
->
-> 1. Tested with allocate, touch and limit test case for a non-root cgroup
-> 2. For the root cgroup tested performance impact with reaim
->
->
-> 		+patch		mmtom-08-may-2009
-> AIM9		1362.93		1338.17
-> Dbase		17457.75	16021.58
-> New Dbase	18070.18	16518.54
-> Shared		9681.85		8882.11
-> Compute		16197.79	15226.13
->
-Hmm, at first impression, I can't convice the numbers...
-Just avoiding list_add/del makes programs _10%_ faster ?
-Could you show changes in cpu cache-miss late if you can ?
-(And why Aim9 goes bad ?)
-Hmm, page_cgroup_zoneinfo() is accessed anyway, then...per zone counter
-is not a problem here..
+Commit-ID:  88fc86c283d9c3854e67e4155808027bc2519eb6
+Gitweb:     http://git.kernel.org/tip/88fc86c283d9c3854e67e4155808027bc2519eb6
+Author:     GeunSik Lim <leemgs1@gmail.com>
+AuthorDate: Thu, 14 May 2009 17:23:38 +0900
+Committer:  Ingo Molnar <mingo@elte.hu>
+CommitDate: Fri, 15 May 2009 19:43:22 +0200
 
-Could you show your .config and environment ?
-When I trunst above numbers, it seems there is more optimization/
-prefetch point in usual path
+tracing: Append prompt in /debug/tracing/README file
 
-BTW, how the perfomance changes in children(not default) groups ?
+append prompt in /debug/tracing/README file.
 
-> 3. Tested accounting in root cgroup to make sure it looks sane and
-> correct.
->
-Not sure but swap and shmem case should be checked carefully..
+This is trivial issue. Fix typo Mini Howto file(README) for ftrace.
+
+[ Impact: cleanup ]
+
+Signed-off-by: GeunSik Lim <geunsik.lim@samsung.com>
+Acked-by: Steven Rostedt <rostedt@goodmis.org>
+Cc: williams <williams@redhat.com>
+LKML-Reference: <1242289418.31161.45.camel@centos51>
+Signed-off-by: Ingo Molnar <mingo@elte.hu>
 
 
-> Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
-> ---
->
->  include/linux/page_cgroup.h |   10 ++++++++++
->  mm/memcontrol.c             |   29 ++++++++++++++++++++++++++---
->  mm/page_cgroup.c            |    1 -
->  3 files changed, 36 insertions(+), 4 deletions(-)
->
->
-> diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
-> index 7339c7b..8b85752 100644
-> --- a/include/linux/page_cgroup.h
-> +++ b/include/linux/page_cgroup.h
-> @@ -26,6 +26,8 @@ enum {
->  	PCG_LOCK,  /* page cgroup is locked */
->  	PCG_CACHE, /* charged as cache */
->  	PCG_USED, /* this object is in use. */
-> +	PCG_ROOT, /* page belongs to root cgroup */
-> +	PCG_ACCT, /* page has been accounted for */
-Reading codes, this PCG_ACCT should be PCG_AcctLRU.
+---
+ kernel/trace/trace.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
->  };
->
->  #define TESTPCGFLAG(uname, lname)			\
-> @@ -46,6 +48,14 @@ TESTPCGFLAG(Cache, CACHE)
->  TESTPCGFLAG(Used, USED)
->  CLEARPCGFLAG(Used, USED)
->
-> +SETPCGFLAG(Root, ROOT)
-> +CLEARPCGFLAG(Root, ROOT)
-> +TESTPCGFLAG(Root, ROOT)
-> +
-> +SETPCGFLAG(Acct, ACCT)
-> +CLEARPCGFLAG(Acct, ACCT)
-> +TESTPCGFLAG(Acct, ACCT)
-> +
->  static inline int page_cgroup_nid(struct page_cgroup *pc)
->  {
->  	return page_to_nid(pc->page);
-> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
-> index 9712ef7..18d2819 100644
-> --- a/mm/memcontrol.c
-> +++ b/mm/memcontrol.c
-> @@ -43,6 +43,7 @@
->
->  struct cgroup_subsys mem_cgroup_subsys __read_mostly;
->  #define MEM_CGROUP_RECLAIM_RETRIES	5
-> +struct mem_cgroup *root_mem_cgroup __read_mostly;
->
->  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
->  /* Turned on only when memory cgroup is enabled && really_do_swap_account
-> = 0 */
-> @@ -196,6 +197,10 @@ enum charge_type {
->  #define PCGF_CACHE	(1UL << PCG_CACHE)
->  #define PCGF_USED	(1UL << PCG_USED)
->  #define PCGF_LOCK	(1UL << PCG_LOCK)
-> +/* Not used, but added here for completeness */
-> +#define PCGF_ROOT	(1UL << PCG_ROOT)
-> +#define PCGF_ACCT	(1UL << PCG_ACCT)
-> +
->  static const unsigned long
->  pcg_default_flags[NR_CHARGE_TYPE] = {
->  	PCGF_CACHE | PCGF_USED | PCGF_LOCK, /* File Cache */
-> @@ -420,7 +425,7 @@ void mem_cgroup_del_lru_list(struct page *page, enum
-> lru_list lru)
->  		return;
->  	pc = lookup_page_cgroup(page);
->  	/* can happen while we handle swapcache. */
-> -	if (list_empty(&pc->lru) || !pc->mem_cgroup)
-> +	if ((!PageCgroupAcct(pc) && list_empty(&pc->lru)) || !pc->mem_cgroup)
->  		return;
->  	/*
->  	 * We don't check PCG_USED bit. It's cleared when the "page" is finally
-> @@ -429,6 +434,9 @@ void mem_cgroup_del_lru_list(struct page *page, enum
-> lru_list lru)
->  	mz = page_cgroup_zoneinfo(pc);
->  	mem = pc->mem_cgroup;
->  	MEM_CGROUP_ZSTAT(mz, lru) -= 1;
-> +	ClearPageCgroupAcct(pc);
-> +	if (PageCgroupRoot(pc))
-> +		return;
->  	list_del_init(&pc->lru);
->  	return;
->  }
-
-
-> @@ -452,8 +460,8 @@ void mem_cgroup_rotate_lru_list(struct page *page,
-> enum lru_list lru)
->  	 * For making pc->mem_cgroup visible, insert smp_rmb() here.
->  	 */
->  	smp_rmb();
-> -	/* unused page is not rotated. */
-> -	if (!PageCgroupUsed(pc))
-> +	/* unused or root page is not rotated. */
-> +	if (!PageCgroupUsed(pc) || PageCgroupRoot(pc))
->  		return;
->  	mz = page_cgroup_zoneinfo(pc);
->  	list_move(&pc->lru, &mz->lists[lru]);
-> @@ -477,6 +485,9 @@ void mem_cgroup_add_lru_list(struct page *page, enum
-> lru_list lru)
->
->  	mz = page_cgroup_zoneinfo(pc);
->  	MEM_CGROUP_ZSTAT(mz, lru) += 1;
-> +	SetPageCgroupAcct(pc);
-> +	if (PageCgroupRoot(pc))
-> +		return;
->  	list_add(&pc->lru, &mz->lists[lru]);
->  }
-I think set/clear flag here adds race condtion....because pc->flags is
-modfied by
-  pc->flags = pcg_dafault_flags[ctype] in commit_charge()
-you have to modify above lines to be
-
-  SetPageCgroupCache(pc) or some..
-  ...
-  SetPageCgroupUsed(pc)
-
-Then, you can use set_bit() without lock_page_cgroup().
-(Currently, pc->flags is modified only under lock_page_cgroup(), so,
- non atomic code is used.)
-
-Regards,
--Kame
-
-
+diff --git a/kernel/trace/trace.c b/kernel/trace/trace.c
+index a884c09..cda81ec 100644
+--- a/kernel/trace/trace.c
++++ b/kernel/trace/trace.c
+@@ -2380,7 +2380,7 @@ static const char readme_msg[] =
+ 	"# echo print-parent > /debug/tracing/trace_options\n"
+ 	"# echo 1 > /debug/tracing/tracing_enabled\n"
+ 	"# cat /debug/tracing/trace > /tmp/trace.txt\n"
+-	"echo 0 > /debug/tracing/tracing_enabled\n"
++	"# echo 0 > /debug/tracing/tracing_enabled\n"
+ ;
+ 
+ static ssize_t
