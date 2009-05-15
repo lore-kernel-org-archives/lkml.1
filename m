@@ -1,35 +1,31 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388AbZEOS32@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756796AbZEOS3l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756388AbZEOS32 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 14:29:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753244AbZEOS3Q
+	id S1756796AbZEOS3l (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 14:29:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756764AbZEOS3X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 14:29:16 -0400
-Received: from smtp3.ultrahosting.com ([74.213.175.254]:55237 "EHLO
+	Fri, 15 May 2009 14:29:23 -0400
+Received: from smtp3.ultrahosting.com ([74.213.175.254]:45009 "EHLO
 	smtp.ultrahosting.com" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1750958AbZEOS3P (ORCPT
+	with ESMTP id S1756280AbZEOS3W (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 14:29:15 -0400
-Date: Fri, 15 May 2009 14:09:25 -0400 (EDT)
+	Fri, 15 May 2009 14:29:22 -0400
+Date: Fri, 15 May 2009 13:59:50 -0400 (EDT)
 From: Christoph Lameter <cl@linux-foundation.org>
 X-X-Sender: cl@qirst.com
-To: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-cc: Wu Fengguang <fengguang.wu@intel.com>,
+To: Pavel Machek <pavel@ucw.cz>
+cc: Dave Hansen <dave@linux.vnet.ibm.com>,
+       David Rientjes <rientjes@google.com>,
        Andrew Morton <akpm@linux-foundation.org>,
-       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
-       "peterz@infradead.org" <peterz@infradead.org>,
-       "riel@redhat.com" <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>,
-       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
-Subject: Re: [PATCH -mm] vmscan: protect a fraction of file backed mapped
- pages from reclaim
-In-Reply-To: <20090515082312.F5B6.A69D9226@jp.fujitsu.com>
-Message-ID: <alpine.DEB.1.10.0905151402370.26559@qirst.com>
-References: <20090513084306.5874.A69D9226@jp.fujitsu.com> <alpine.DEB.1.10.0905141612100.15881@qirst.com> <20090515082312.F5B6.A69D9226@jp.fujitsu.com>
+       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
+       Mel Gorman <mel@csn.ul.ie>, Peter Ziljstra <a.p.ziljstra@chello.nl>,
+       San Mehat <san@android.com>, Arve Hj?nnev?g <arve@android.com>,
+       linux-kernel@vger.kernel.org
+Subject: Re: Misleading OOM messages
+In-Reply-To: <20090515130547.GA1976@elf.ucw.cz>
+Message-ID: <alpine.DEB.1.10.0905151358430.26559@qirst.com>
+References: <alpine.DEB.2.00.0905101503070.18804@chino.kir.corp.google.com> <alpine.DEB.1.10.0905121708470.14226@qirst.com> <20090514092909.GG1365@ucw.cz> <alpine.DEB.1.10.0905141546040.1381@qirst.com> <1242333519.15391.210.camel@nimitz>
+ <alpine.DEB.2.00.0905141346030.28074@chino.kir.corp.google.com> <1242335120.15391.242.camel@nimitz> <alpine.DEB.1.10.0905141729180.30187@qirst.com> <20090514213403.GB14741@elf.ucw.cz> <1242337299.28440.47.camel@nimitz> <20090515130547.GA1976@elf.ucw.cz>
 User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -37,20 +33,23 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 May 2009, KOSAKI Motohiro wrote:
+On Fri, 15 May 2009, Pavel Machek wrote:
 
-> May I ask detail operation?
+> Ok, so kernel should be fixed to make limits 30% of non-mlocked
+> memory.
 
-Detailed operation? Well no. More of an experience.
+There is already ulimit.
 
-Browse the web in the evening. Let the backup run overnight. Try to access
-the web in the morning. Pretty unscientific.
-
-> > Observation of the typical mapped size of Firefox under KDE.
+> > folks.  They go sucking up and locking as much memory as they can get
+> > their hands on.  Adding memory never helps them because they'll use up
+> > whatever is there.
 >
-> My point is, desktop people have very various mapped ratio.
-> Do you oppose this?
+> Well, but it is uncommon everywhere else. If you have desktop system,
+> job size is pretty much constant. If you have too little memory, you
+> OOM.
 
-No of course not. Loads may have different mapped ratios. That is why
-there is a /proc/sys/vm tunable in my patch (which is not good as
-mentioned in the patch). If Rik's solution works without it great.
+Nope. If you have too little memory for your app then the kernel pages
+portions of the app out to disk. Thats is why you have a VM (VIRTUAL
+machine). The app is not running with physical memory.
+
+
