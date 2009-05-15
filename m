@@ -1,106 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763580AbZEOQgd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756385AbZEOQgv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763580AbZEOQgd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 12:36:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZEOQgU
+	id S1756385AbZEOQgv (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 12:36:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763532AbZEOQg2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 12:36:20 -0400
-Received: from bear.ext.ti.com ([192.94.94.41]:51694 "EHLO bear.ext.ti.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751159AbZEOQgT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 12:36:19 -0400
-Message-ID: <4A0D99E0.3050306@ti.com>
-Date: Fri, 15 May 2009 11:35:44 -0500
-From: Jon Hunter <jon-hunter@ti.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
+	Fri, 15 May 2009 12:36:28 -0400
+Received: from palinux.external.hp.com ([192.25.206.14]:57315 "EHLO
+	mail.parisc-linux.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1762468AbZEOQg0 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 12:36:26 -0400
+Date: Fri, 15 May 2009 10:36:27 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: "Mukker, Atul" <Atul.Mukker@lsi.com>
+Cc: Jeff Garzik <jeff@garzik.org>, Julian Calaby <julian.calaby@gmail.com>,
+       adam radford <aradford@gmail.com>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       "Austria, Winston" <Winston.Austria@lsi.com>,
+       "linux-scsi@vger.kernel.org" <linux-scsi@vger.kernel.org>
+Subject: Re: [RFQ] New driver architecture questions
+Message-ID: <20090515163626.GA15360@parisc-linux.org>
+References: <6C678488C5CEE74F813A4D1948FD2DC7A95E6D37@cosmail02.lsi.com> <4A0B858F.3080405@garzik.org> <6C678488C5CEE74F813A4D1948FD2DC7A95E6D38@cosmail02.lsi.com> <4A0B9B0D.6080006@garzik.org> <b1bc6a000905141758y20aa7852h8b1012e3da6f8c0f@mail.gmail.com> <646765f40905141801k5ae6249p925a4a377652c62e@mail.gmail.com> <4A0CDB27.6090009@garzik.org> <6C678488C5CEE74F813A4D1948FD2DC7A96C7789@cosmail02.lsi.com>
 MIME-Version: 1.0
-To: John Stultz <johnstul@us.ibm.com>
-CC: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [RFC][PATCH] Dynamic Tick: Allow 32-bit machines to sleep   
- formorethan2.15 seconds
-References: <49ECE615.2010800@ti.com>  <20090421063523.GA8020@elte.hu>	 <1240345936.6080.6.camel@localhost>  <49EE54B4.9020700@ti.com>	 <1240358525.6080.40.camel@localhost>  <4A02F5A3.3050004@ti.com>	 <1241744048.7518.132.camel@localhost.localdomain> <4A04584E.4020307@ti.com>	 <1241830281.7297.21.camel@localhost.localdomain>  <4A0A07D6.90408@ti.com>	 <1242172727.3462.55.camel@localhost>  <4A0AE3E3.5090304@ti.com>	 <1242232872.9110.98.camel@jstultz-laptop>  <4A0B0939.5030008@ti.com> <1242242497.9777.2.camel@jstultz-laptop>
-In-Reply-To: <1242242497.9777.2.camel@jstultz-laptop>
-Content-Type: text/plain; charset="ISO-8859-1"; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <6C678488C5CEE74F813A4D1948FD2DC7A96C7789@cosmail02.lsi.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, May 15, 2009 at 08:56:25AM -0600, Mukker, Atul wrote:
+> [Atul] I think we are close, for example, memcpy API in the stack is osi_memcpy(), which translates to memcpy() on Linux and ScsiPortMoveMemory() on windows.
 
-John Stultz wrote:
->>>> One final question, I noticed in clocksource.h that the definition of 
->>>> function cyc2ns returns a type of s64, however, in the function itself a 
->>>> variable of type u64 is used and returned. Should this function be 
->>>> modified as follows?
->>>>
->>>>   static inline s64 cyc2ns(struct clocksource *cs, cycle_t cycles)
->>>>   {
->>>> -       u64 ret = (u64)cycles;
->>>> +       s64 ret = (s64)cycles;
->>>>          ret = (ret * cs->mult) >> cs->shift;
->>>>          return ret;
->>>>   }
->>> Damn. So this brings up an issue I had missed prior.
->> Any comments on whether this should be u64 versus s64?
-> 
-> I'd leave it alone for now. I'm concerns that in large multiplies, if
-> its a s64 the sign might get extended down by the shift. I need to look
-> at it in more detail though.
+The solution to "We have some people who speak French and other people who
+speak German" is not to invent Esperanto ;-)
 
-I have been thinking about this some more and I do agree that there is a 
-chance that the multiply could overflow if the "cycles" and "mult" are 
-large. From the perspective of the timekeeping_max_deferment() function 
-this would be very likely for 64-bit clocksources when the mask will be 
-equal to (2^64)-1. Therefore, how about modifying the function as 
-follows in order to catch any occurrences of overflow?
-
-Let me know if this is aligned with your thinking or if I am barking up 
-the wrong tree here.
-
-Cheers
-Jon
-
-
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index 507235a..8204373 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -316,8 +316,32 @@ static inline void clocksource_disable(struct 
-clocksource *cs)
-   */
-  static inline s64 cyc2ns(struct clocksource *cs, cycle_t cycles)
-  {
--	s64 ret = (s64)cycles;
--	ret = (ret * cs->mult) >> cs->shift;
-+	s64 ret;
-+	u64 upper, lower, overflow;
-+
-+	/*
-+	 * Split the calculation into two halves to ensure
-+	 * that we can catch any overflow that may occur.
-+	 */
-+	upper = ((cycles >> 32) * cs->mult) >> cs->shift;
-+	lower = ((cycles & 0xFFFFFFFF) * cs->mult) >> cs->shift;
-+
-+	/*
-+	 * Check to see if the result will overflow. If
-+	 * overflow is non-zero then the result is greater
-+	 * than 63-bits which is the max positive value
-+	 * for a signed result.
-+	 */
-+	overflow = (upper + (lower >> 32)) >> 31;
-+
-+	/*
-+	 * If the result overflows, return the max value we can.
-+	 */
-+	if (overflow)
-+		ret = LONG_MAX;
-+	else
-+		ret = (s64)((upper << 32) + lower);
-+
-  	return ret;
-  }
+Using one or the other internally is fine (we don't care what you do),
+but we want to see memcpy().  By the way, the documentation I found for
+ScsiPortMoveMemory() seems to indicate that it's memmove(), not memcpy().
+Mapping memcpy() to ScsiPortMoveMemory() is fine ... but you can't
+realiably go the other way.
 
 -- 
-1.6.1
+Matthew Wilcox				Intel Open Source Technology Centre
+"Bill, look, we understand that you're interested in selling us this
+operating system, but compare it to ours.  We can't possibly take such
+a retrograde step."
