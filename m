@@ -1,65 +1,104 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755911AbZEOXTX@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756858AbZEOX02@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755911AbZEOXTX (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 19:19:23 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755249AbZEOXTI
+	id S1756858AbZEOX02 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 19:26:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755198AbZEOX0T
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 19:19:08 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:58646 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755198AbZEOXTH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 19:19:07 -0400
-Date: Fri, 15 May 2009 17:16:45 -0600
-From: Pete Zaitcev <zaitcev@redhat.com>
-To: Tejun Heo <htejun@gmail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Eric Moore <Eric.Moore@lsi.com>, "Darrick J. Wong" <djwong@us.ibm.com>,
-       zaitcev@redhat.com
-Subject: Re: [PATCH block#for-2.6.31 2/3] block: set rq->resid_len to
- blk_rq_bytes() on issue
-Message-Id: <20090515171645.7a92d46c.zaitcev@redhat.com>
-In-Reply-To: <4A0DE954.4020102@gmail.com>
-References: <4A0D86DB.9000203@kernel.org>
-	<4A0D87D2.7090806@gmail.com>
-	<20090515112901.84d4dd97.zaitcev@redhat.com>
-	<4A0DE954.4020102@gmail.com>
-Organization: Red Hat, Inc.
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Fri, 15 May 2009 19:26:19 -0400
+Received: from out02.mta.xmission.com ([166.70.13.232]:52644 "EHLO
+	out02.mta.xmission.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754687AbZEOX0S (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 19:26:18 -0400
+To: Jeremy Fitzhardinge <jeremy@goop.org>
+Cc: Ingo Molnar <mingo@elte.hu>, the arch/x86 maintainers <x86@kernel.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Xen-devel <xen-devel@lists.xensource.com>
+References: <1242170864-13560-1-git-send-email-jeremy@goop.org>
+	<20090513133021.GA7277@elte.hu> <4A0ADBA2.2020300@goop.org>
+	<20090515182757.GA19256@elte.hu> <4A0DCC11.10307@goop.org>
+From: ebiederm@xmission.com (Eric W. Biederman)
+Date: Fri, 15 May 2009 16:26:11 -0700
+In-Reply-To: <4A0DCC11.10307@goop.org> (Jeremy Fitzhardinge's message of "Fri\, 15 May 2009 13\:09\:53 -0700")
+Message-ID: <m1my9ex818.fsf@fess.ebiederm.org>
+User-Agent: Gnus/5.11 (Gnus v5.11) Emacs/22.2 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+X-XM-SPF: eid=;;;mid=;;;hst=in02.mta.xmission.com;;;ip=67.169.126.145;;;frm=ebiederm@xmission.com;;;spf=neutral
+X-SA-Exim-Connect-IP: 67.169.126.145
+X-SA-Exim-Rcpt-To: jeremy@goop.org, xen-devel@lists.xensource.com, linux-kernel@vger.kernel.org, x86@kernel.org, mingo@elte.hu
+X-SA-Exim-Mail-From: ebiederm@xmission.com
+X-Spam-DCC: XMission; sa03 1397; Body=1 Fuz1=1 Fuz2=1 
+X-Spam-Combo: **;Jeremy Fitzhardinge <jeremy@goop.org>
+X-Spam-Relay-Country: 
+X-Spam-Report: * -1.8 ALL_TRUSTED Passed through trusted hosts only via SMTP
+	*  0.0 T_TM2_M_HEADER_IN_MSG BODY: T_TM2_M_HEADER_IN_MSG
+	*  0.0 BAYES_50 BODY: Bayesian spam probability is 40 to 60%
+	*      [score: 0.4437]
+	* -0.0 DCC_CHECK_NEGATIVE Not listed in DCC
+	*      [sa03 1397; Body=1 Fuz1=1 Fuz2=1]
+	*  2.2 XMSubMetaSxObfu_03 Obfuscated Sexy Noun-People
+	*  1.6 XMSubMetaSx_00 1+ Sexy Words
+	*  0.0 XM_SPF_Neutral SPF-Neutral
+	*  0.4 UNTRUSTED_Relay Comes from a non-trusted relay
+Subject: Re: [GIT PULL] xen /proc/mtrr implementation
+X-SA-Exim-Version: 4.2.1 (built Thu, 25 Oct 2007 00:26:12 +0000)
+X-SA-Exim-Scanned: Yes (on in02.mta.xmission.com)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 16 May 2009 07:14:44 +0900, Tejun Heo <htejun@gmail.com> wrote:
+Jeremy Fitzhardinge <jeremy@goop.org> writes:
 
-> So, I could have written
-> 
->  if (cmd->act_len >= rq->resid_len)
-> 	rq->resid_len = 0;
->  else
-> 	rq->resid_len -= cmd->act_len
-> 
-> Instead I wrote
-> 
->  rq->resid_len -= min(cmd->act_len, rq->resid_len);
-> 
-> It's just capping the amount to be subtracted so that resid_len
-> doesn't underflow.  What is so wrong or bad style about that?
+> Ingo Molnar wrote:
+>> Right now there's no MTRR support under Xen guests and the Xen hypervisor was
+>> able to survive, right? Why should we do it under dom0?
+>>   
+>
+> Because dom0 has direct hardware access, and is running real device drivers.
+> domU guests don't see physical memory, and so MTRR has no relevance for them.
 
-Curse of the gifted, I guess. To use a subtraction instead of zero
-this way looks like a pointless, even mischievous obfuscation to me.
 
-Also, we probably want a stack_dump or a printk when actual length
-exceeds the requested length, don't we? If it ever happens, we
-might be overwriting some I/O buffer somewhere.
+>> The MTRR code is extremely fragile, we dont really need an added layer
+>> there. _Especially_ since /proc/mtrr is an obsolete API.
+>>   
+>
+> There's no added layer there.  I'm just adding another implementation of
+> mtrr_ops.
+>
+> /proc/mtrr is in wide use today.  It may be planned for obsolescence, but
+> there's no way you can claim its obsolete today (my completely up-to-date F10 X
+> server is using it, for example).  We don't break oldish usermode ABIs in new
+> kernels.
 
--- Pete
+Sure it is.  There is a better newer replacement.  It is taking a while to
+get userspace transitioned but that is different.  Honestly I am puzzled
+why that it but whatever.
+
+> Besides, the MTRR code is also a kernel-internal API, used by DRM and other
+> drivers to configure the system MTRR state.  Those drivers will either perform
+> badly or outright fail if they can't set the appropriate cachability properties.
+> That is not obsolete in any way.
+
+There are about 5 of them so let's fix them.
+With PAT we are in a much better position both for portability and for
+flexibility.
+
+>> If you want to allow a guest to do MTRR ops, you can do it by catching the
+>> native kernel accesses to the MTRR space. There's no guest side support needed
+>> for that.
+>>   
+>
+> MTRR can't be virtualized like that.  It can't be meaningfully multiplexed, and
+> must be set in a uniform way on all physical CPUs.  Guests run on virtual CPUs,
+> and don't have any knowledge of what the mapping of VCPU to PCPU is, or even any
+> visibility of all PCPUs.
+>
+> It is not a piece of per-guest state; it is system-wide property, maintained by
+> Xen.  These patches add the mechanism for dom0 (=hardware control domain) to
+> tell Xen what state they should be in.
+
+Is it possible to fix PAT and get that working first.   That is very definitely
+the preferend API.
+
+Eric
