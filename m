@@ -1,77 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753953AbZEONiA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754651AbZEONn2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753953AbZEONiA (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 09:38:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758794AbZEONhw
+	id S1754651AbZEONn2 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 09:43:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751461AbZEONnS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 09:37:52 -0400
-Received: from casper.infradead.org ([85.118.1.10]:38018 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758592AbZEONhw (ORCPT
+	Fri, 15 May 2009 09:43:18 -0400
+Received: from mail2.shareable.org ([80.68.89.115]:48590 "EHLO
+	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751763AbZEONnR (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 09:37:52 -0400
-Subject: Re: [PATCH 3/4] perf_counter: frequency based adaptive irq_period
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Paul Mackerras <paulus@samba.org>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+	Fri, 15 May 2009 09:43:17 -0400
+Date: Fri, 15 May 2009 14:43:15 +0100
+From: Jamie Lokier <jamie@shareable.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: Vitaly Mayatskikh <v.mayatskih@gmail.com>, Josef Bacik <josef@redhat.com>,
+       sandeen@redhat.com, linux-fsdevel@vger.kernel.org,
        linux-kernel@vger.kernel.org
-In-Reply-To: <20090515132018.646195868@chello.nl>
-References: <20090515131925.616419905@chello.nl>
-	 <20090515132018.646195868@chello.nl>
-Content-Type: text/plain
-Date: Fri, 15 May 2009 15:37:47 +0200
-Message-Id: <1242394667.6642.1887.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+Subject: Re: [PATCH 2/2] Perform check in iov_iter_fault_in_readable() by check_readable_bytes()
+Message-ID: <20090515134315.GB8235@shareable.org>
+References: <1242317939-15392-1-git-send-email-v.mayatskih@gmail.com> <1242317939-15392-3-git-send-email-v.mayatskih@gmail.com> <87k54iq2gv.fsf@basil.nowhere.org> <871vqqkdf0.wl%vmayatsk@redhat.com> <20090515093838.GB16682@one.firstfloor.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090515093838.GB16682@one.firstfloor.org>
+User-Agent: Mutt/1.5.13 (2006-08-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-15 at 15:19 +0200, Peter Zijlstra wrote:
-> plain text document attachment (perf_counter-freq.patch)
-> Instead of specifying the irq_period for a counter, provide a target interrupt
-> frequency and dynamically adapt the irq_period to match this frequency.
+Andi Kleen wrote:
+> > ptr = mmap(0, page_size, ....);
+> > ...
+> > write(fd, ptr + page_size - 256, 512);
+> > 
+> > Write() will fail here, but it can write first 256 bytes. Previously,
+> > all 512 bytes were proceeded, but last 256 bytes were zeroed, and
+> > sys_write() returned 256. Not very nice too. 
 > 
-> Paul, please verify ppc64, I only did a very quick pass over that code.
-> 
-> Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
-> CC: Paul Mackerras <paulus@samba.org>
-> CC: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-> ---
+> Is that really something that users rely on? It looks like a seriously
+> broken user program. Which one is that? (just that I can avoid it :)
 
-> @@ -2907,6 +2940,12 @@ perf_counter_alloc(struct perf_counter_h
->  
->  	pmu = NULL;
->  
-> +	hwc = &counter->hw;
-> +	if (hw_event->freq && hw_event->irq_freq)
-> +		hwc->irq_period = TICK_NSEC / hw_event->irq_freq;
-> +	else
-> +		hwc->irq_period = hw_event->irq_period;
-> +
+A few programs set pages read-only, and rely on SIGSEGVs to trigger
+mprotect() in the signal handler and thus track dirty pages.
 
+I think the Boehm garbage collector has this option, as do some LISP
+interpreters.
 
+System calls don't trigger SIGSEGVs so they can't rely on that when
+calling read().  I'm not sure how they handle that.
 
-kernel/built-in.o: In function `perf_counter_alloc':
-perf_counter.c:(.text+0x7ddc7): undefined reference to `__udivdi3'
+It would be quite nice if it were safe to call read(), get EFAULT
+immediately, or a truncated read() then the next read() gets EFAULT
+because it starts at a missing page boundary, and then that's a hint
+for the program to consult it's data structures and do it's mprotect()
+thing.
 
-Signed-off-by: Peter Zijlstra <a.p.zijlstra@chello.nl>
----
+Hopefully no programs assume they can do that already, but it would be
+nice if they could begin to assume it, instead of checking their data
+structure in advance of every read() call.
 
-Index: linux-2.6/kernel/perf_counter.c
-===================================================================
---- linux-2.6.orig/kernel/perf_counter.c
-+++ linux-2.6/kernel/perf_counter.c
-@@ -2942,7 +2942,7 @@ perf_counter_alloc(struct perf_counter_h
- 
- 	hwc = &counter->hw;
- 	if (hw_event->freq && hw_event->irq_freq)
--		hwc->irq_period = TICK_NSEC / hw_event->irq_freq;
-+		hwc->irq_period = div64_u64(TICK_NSEC, hw_event->irq_freq);
- 	else
- 		hwc->irq_period = hw_event->irq_period;
- 
+I don't know of any program which would need the same thing with
+write(), but obviously good for symmetry.
 
-
+-- Jamie
