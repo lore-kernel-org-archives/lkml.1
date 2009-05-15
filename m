@@ -1,202 +1,165 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758609AbZEOHlS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756426AbZEOHqd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758609AbZEOHlS (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 03:41:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754287AbZEOHlF
+	id S1756426AbZEOHqd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 03:46:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755935AbZEOHqV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 03:41:05 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:59336 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1753673AbZEOHlE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 03:41:04 -0400
-Message-ID: <4A0D1C55.9040700@cn.fujitsu.com>
-Date: Fri, 15 May 2009 15:40:05 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Fri, 15 May 2009 03:46:21 -0400
+Received: from mail-out.m-online.net ([212.18.0.10]:59726 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754828AbZEOHqU (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 03:46:20 -0400
+X-Auth-Info: Bz6r4t/3kr1TIr7cXkWUCYTCfuO9HmxrcCQm0Gam1tU=
+Message-ID: <4A0D1DCA.8090306@grandegger.com>
+Date: Fri, 15 May 2009 09:46:18 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-To: Vivek Goyal <vgoyal@redhat.com>
-CC: Nauman Rafique <nauman@google.com>, dpshah@google.com, lizf@cn.fujitsu.com,
-       mikew@google.com, fchecconi@gmail.com, paolo.valente@unimore.it,
-       jens.axboe@oracle.com, ryov@valinux.co.jp, fernando@oss.ntt.co.jp,
-       s-uchida@ap.jp.nec.com, taka@valinux.co.jp, jmoyer@redhat.com,
-       dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       righi.andrea@gmail.com, agk@redhat.com, dm-devel@redhat.com,
-       snitzer@redhat.com, m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] io-controller: Add io group reference handling for	request
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A03FF3C.4020506@cn.fujitsu.com> <20090508135724.GE7293@redhat.com> <e98e18940905081041r386e52a5q5a2b1f13f1e8c634@mail.gmail.com> <4A078051.5060702@cn.fujitsu.com> <20090511154127.GD6036@redhat.com>
-In-Reply-To: <20090511154127.GD6036@redhat.com>
-Content-Type: text/plain; charset=UTF-8
+To: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+CC: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 3/7] [PATCH 3/8] can: CAN Network device driver and
+ Netlink interface
+References: <20090512092757.048938233@denx.de><20090512092757.574693100@denx.de> <20090512233052.ecd600f1.akpm@linux-foundation.org> <4A0A9AC1.2090603@volkswagen.de> <4A0AB17B.3080308@grandegger.com> <4A0AB824.40702@volkswagen.de> <4A0ABBD3.2030605@grandegger.com> <4A0D1677.4020209@volkswagen.de>
+In-Reply-To: <4A0D1677.4020209@volkswagen.de>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Vivek Goyal wrote:
-...
-> Ok, here is the patch which gets rid of rq->iog and rq->rl fields. Good to
-> see some code and data structures trimming. It seems to be working fine for me.
+Oliver Hartkopp wrote:
+> Wolfgang Grandegger wrote:
+>> Oliver Hartkopp wrote:
+>>  
+>>> Wolfgang Grandegger wrote:
+>>>    
+>>>> Oliver Hartkopp wrote:
+>>>>  
+>>>>      
+>>>>> Andrew Morton wrote:
+>>>>>           
+>>>>>> On Tue, 12 May 2009 11:28:00 +0200 Wolfgang Grandegger
+>>>>>> <wg@grandegger.com> wrote:
+>>>>>>
+>>>>>>  
+>>>>>>               
+>>>>>>> +int can_restart_now(struct net_device *dev)
+>>>>>>> +{
+>>>>>>> +    struct can_priv *priv = netdev_priv(dev);
+>>>>>>> +    struct net_device_stats *stats = &dev->stats;
+>>>>>>> +    struct sk_buff *skb;
+>>>>>>> +    struct can_frame *cf;
+>>>>>>> +    int err;
+>>>>>>> +
+>>>>>>> +    /* Synchronize with dev->hard_start_xmit() */
+>>>>>>> +    netif_tx_lock(dev);
+>>>>>>> +
+>>>>>>> +    /* Ensure that no more messages can go out */
+>>>>>>> +    if (netif_carrier_ok(dev))
+>>>>>>> +        netif_carrier_off(dev);
+>>>>>>> +
+>>>>>>> +    /* Ensure that no more messages can come in */
+>>>>>>> +    err = priv->do_set_mode(dev, CAN_MODE_STOP);
+>>>>>>> +    if (err)
+>>>>>>> +        return err;
+>>>>>>> +
+>>>>>>> +    /*  Now it's save to clean up */
+>>>>>>> +    del_timer_sync(&priv->restart_timer);
+>>>>>>>                         
+>>>>>> This is deadlockable.
+>>>>>>
+>>>>>> It calls del_timer_sync() while holding netif_tx_lock().  But the
+>>>>>> timer
+>>>>>> handler (can_restart_now()) also takes netif_tx_lock().  So if the
+>>>>>> timer handler is presently running, it's sitting there spinning in
+>>>>>> netif_tx_lock().  And del_timer_sync() is sitting there waiting
+>>>>>> for the
+>>>>>> timer handler to complete.
+>>>>>>
+>>>>>>
+>>>>>>                   
+>>>>> Hi Wolfgang,
+>>>>>
+>>>>> would it be an appropriate solution, just to invoke
+>>>>>
+>>>>> netif_stop_queue() in can_bus_off()
+>>>>>
+>>>>> and invoke
+>>>>>
+>>>>> netif_wake_queue() in can_restart_now()
+>>>>>
+>>>>> ???
+>>>>>
+>>>>> In a BUSOFF condition we're not able to send CAN frames anyway, so  we
+>>>>> can disable the device queue and the we won't  need any
+>>>>> netif_tx_lock()
+>>>>> right?
+>>>>>
+>>>>> AFAIK this was the original implementation before some of the latest
+>>>>> improvement with the netif_carrier stuff.
+>>>>>
+>>>>> What do you think?
+>>>>>             
+>>>> The problem is the "manual" restart triggered via the netlink
+>>>> interface,
+>>>> which can occur in the middle of ndo_start_xmit().
+>>>>
+>>>>         
+>>> Ah, i see.
+>>>
+>>> What if the manual restart via netlink would also stop the queue and
+>>> start the timer?
+>>>     
+>>
+>> It will not help if the restart is triggered in the middle of
+>> ndo_start_xmit().
+>>
+>>   
 > 
+> Hi Wolfgang,
 > 
-> o Get rid of rq->iog field and rq->rl fields. request descriptor stores
->   the pointer the the queue it belongs to (rq->ioq) and from the io queue one
->   can determine the group queue belongs to hence request belongs to. Thanks
->   to Nauman for the idea.
+> i think, i found a solution that removes the locking problem completely:
 > 
-> o There are couple of places where rq->ioq information is not present yet
->   as request and queue are being setup. In those places "bio" is passed 
->   around as function argument to determine the group rq will go into. I
->   did not pass "iog" as function argument becuase when memory is scarce,
->   we can release queue lock and sleep to wait for memory to become available
->   and once we wake up, it is possible that io group is gone. Passing bio
->   around helps that one shall have to remap bio to right group after waking
->   up. 
+> When a bus-off occurs in the controller, the communication on the CAN
+> bus can be treated as unusable for this controller (let's say it is dead).
+> E.g. the SJA1000 set's its reset bit for that reason and waits to be
+> initialized by the CPU again.
 > 
-> o Got rid of io_lookup_io_group_current() function and merged it with
->   io_get_io_group() to also take care of looking for group using current
->   task info and not from bio.
+> So IMO restarting the CAN controller while in operational state is not a
+> valid use case.
+>
+> When a bus-off (interrupt) occurs, we should
+> 
+> - invoke netif_carrier_off(dev)
+> - invoke netif_stop_queue(dev)
+> - set the state to CAN_STATE_BUS_OFF
+> 
+> and of course create the error message, clear the interrupts(!) and then
+> leave the irq service function.
+> 
+> That's it.
 
-Hi Vivek,
+It's already like that.
 
-This patch gets rid of "curr" from io_get_io_group, and seems to be 
-working fine for me.
+> When the automatic CAN controller restart is enabled: start the timer.
+> 
+> For the manual netlink function: Test for CAN_STATE_BUS_OFF (!) and
+> invoke the current can_restart_now(dev) or start the timer with e.g. 1ms
+> ...
+> 
+> This approach should make it and fulfills the bus-off intention of the
+> CAN controllers ("disabled and wait for re-initialisation").
+> 
+> And there's no locking of the tx_queue needed anymore as the tx_queue is
+> already stopped, when the restart is performed.
+> 
+> What do you think about this approach?
 
-Signed-off-by: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
----
- block/cfq-iosched.c |   12 ++++++------
- block/elevator-fq.c |   16 ++++++++--------
- block/elevator-fq.h |    2 +-
- 3 files changed, 15 insertions(+), 15 deletions(-)
+That's a solution and would comply with the can spec, I believe, but it
+should be discussed on the Socket-CAN mailing list. We should not change
+policy just to avoid locking or simplify the code.
 
-diff --git a/block/cfq-iosched.c b/block/cfq-iosched.c
-index c0bb8db..bf87843 100644
---- a/block/cfq-iosched.c
-+++ b/block/cfq-iosched.c
-@@ -196,7 +196,7 @@ static struct cfq_queue *cic_bio_to_cfqq(struct cfq_data *cfqd,
- 		 * async bio tracking is enabled and we are not caching
- 		 * async queue pointer in cic.
- 		 */
--		iog = io_get_io_group(cfqd->queue, bio, 0, 0);
-+		iog = io_get_io_group(cfqd->queue, bio, 0);
- 		if (!iog) {
- 			/*
- 			 * May be this is first rq/bio and io group has not
-@@ -1294,7 +1294,7 @@ static void changed_cgroup(struct io_context *ioc, struct cfq_io_context *cic)
- 
- 	spin_lock_irqsave(q->queue_lock, flags);
- 
--	iog = io_get_io_group(q, NULL, 0, 1);
-+	iog = io_get_io_group(q, NULL, 0);
- 
- 	if (async_cfqq != NULL) {
- 		__iog = cfqq_to_io_group(async_cfqq);
-@@ -1346,9 +1346,9 @@ retry:
- 	 * back.
- 	 */
- 	if (bio)
--		iog = io_get_io_group(q, bio, 1, 0);
-+		iog = io_get_io_group(q, bio, 1);
- 	else
--		iog = io_get_io_group(q, NULL, 1, 1);
-+		iog = io_get_io_group(q, NULL, 1);
- 
- 	cic = cfq_cic_lookup(cfqd, ioc);
- 	/* cic always exists here */
-@@ -1469,9 +1469,9 @@ cfq_get_queue(struct cfq_data *cfqd, struct bio *bio, int is_sync,
- 	struct io_group *iog = NULL;
- 
- 	if (bio)
--		iog = io_get_io_group(cfqd->queue, bio, 1, 0);
-+		iog = io_get_io_group(cfqd->queue, bio, 1);
- 	else
--		iog = io_get_io_group(cfqd->queue, NULL, 1, 1);
-+		iog = io_get_io_group(cfqd->queue, NULL, 1);
- 
- 	if (!is_sync) {
- 		async_cfqq = io_group_async_queue_prio(iog, ioprio_class,
-diff --git a/block/elevator-fq.c b/block/elevator-fq.c
-index 9b7319e..951c163 100644
---- a/block/elevator-fq.c
-+++ b/block/elevator-fq.c
-@@ -1006,7 +1006,7 @@ struct request_list *io_group_get_request_list(struct request_queue *q,
- {
- 	struct io_group *iog;
- 
--	iog = io_get_io_group(q, bio, 1, 0);
-+	iog = io_get_io_group(q, bio, 1);
- 	BUG_ON(!iog);
- 	return &iog->rl;
- }
-@@ -1470,7 +1470,7 @@ struct io_cgroup *get_iocg_from_bio(struct bio *bio)
-  *
-  */
- struct io_group *io_get_io_group(struct request_queue *q, struct bio *bio,
--					int create, int curr)
-+					int create)
- {
- 	struct cgroup *cgroup;
- 	struct io_group *iog;
-@@ -1478,7 +1478,7 @@ struct io_group *io_get_io_group(struct request_queue *q, struct bio *bio,
- 
- 	rcu_read_lock();
- 
--	if (curr)
-+	if (!bio)
- 		cgroup = task_cgroup(current, io_subsys_id);
- 	else
- 		cgroup = get_cgroup_from_bio(bio);
-@@ -1959,7 +1959,7 @@ int io_group_allow_merge(struct request *rq, struct bio *bio)
- 		return 1;
- 
- 	/* Determine the io group of the bio submitting task */
--	iog = io_get_io_group(q, bio, 0, 0);
-+	iog = io_get_io_group(q, bio, 0);
- 	if (!iog) {
- 		/* May be task belongs to a differet cgroup for which io
- 		 * group has not been setup yet. */
-@@ -2000,9 +2000,9 @@ int elv_fq_set_request_ioq(struct request_queue *q, struct request *rq,
- retry:
- 	/* Determine the io group request belongs to */
- 	if (bio)
--		iog = io_get_io_group(q, bio, 1, 0);
-+		iog = io_get_io_group(q, bio, 1);
- 	else
--		iog = io_get_io_group(q, bio, 1, 1);
-+		iog = io_get_io_group(q, NULL, 1);
- 
- 	BUG_ON(!iog);
- 
-@@ -2098,7 +2098,7 @@ struct io_queue *elv_lookup_ioq_bio(struct request_queue *q, struct bio *bio)
- 	struct io_group *iog;
- 
- 	/* lookup the io group and io queue of the bio submitting task */
--	iog = io_get_io_group(q, bio, 0, 0);
-+	iog = io_get_io_group(q, bio, 0);
- 	if (!iog) {
- 		/* May be bio belongs to a cgroup for which io group has
- 		 * not been setup yet. */
-@@ -2159,7 +2159,7 @@ struct io_group *io_lookup_io_group_current(struct request_queue *q)
- EXPORT_SYMBOL(io_lookup_io_group_current);
- 
- struct io_group *io_get_io_group(struct request_queue *q, struct bio *bio,
--					int create, int curr)
-+					int create)
- {
- 	return q->elevator->efqd.root_group;
- }
-diff --git a/block/elevator-fq.h b/block/elevator-fq.h
-index 8d190ab..d8d8f61 100644
---- a/block/elevator-fq.h
-+++ b/block/elevator-fq.h
-@@ -657,7 +657,7 @@ extern void io_group_set_async_queue(struct io_group *iog, int ioprio_class,
- 					int ioprio, struct io_queue *ioq);
- extern struct io_group *io_lookup_io_group_current(struct request_queue *q);
- extern struct io_group *io_get_io_group(struct request_queue *q,
--				struct bio *bio, int create, int curr);
-+				struct bio *bio, int create);
- extern int elv_nr_busy_ioq(struct elevator_queue *e);
- extern int elv_nr_busy_rt_ioq(struct elevator_queue *e);
- extern struct io_queue *elv_alloc_ioq(struct request_queue *q, gfp_t gfp_mask);
--- 
-1.5.4.rc3
-
+Wolfgang.
