@@ -1,71 +1,80 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754801AbZEOSXq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753688AbZEOSZ4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754801AbZEOSXq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 14:23:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752416AbZEOSXf
+	id S1753688AbZEOSZ4 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 14:25:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752073AbZEOSZr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 14:23:35 -0400
-Received: from e35.co.us.ibm.com ([32.97.110.153]:35780 "EHLO
-	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752034AbZEOSXe (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 14:23:34 -0400
-Subject: Re: Misleading OOM messages
-From: Dave Hansen <dave@linux.vnet.ibm.com>
-To: Christoph Lameter <cl@linux-foundation.org>
-Cc: David Rientjes <rientjes@google.com>, Pavel Machek <pavel@ucw.cz>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Greg Kroah-Hartman <gregkh@suse.de>, Nick Piggin <npiggin@suse.de>,
-       Mel Gorman <mel@csn.ul.ie>, San Mehat <san@android.com>,
-       Arve Hj?nnev?g <arve@android.com>, linux-kernel@vger.kernel.org,
-       Peter Zijlstra <peterz@infradead.org>,
-       Balbir Singh <balbir@linux.vnet.ibm.com>
-In-Reply-To: <alpine.DEB.1.10.0905151358070.26559@qirst.com>
-References: <alpine.DEB.2.00.0905101458430.18804@chino.kir.corp.google.com>
-	 <alpine.DEB.2.00.0905101503070.18804@chino.kir.corp.google.com>
-	 <alpine.DEB.1.10.0905121708470.14226@qirst.com>
-	 <20090514092909.GG1365@ucw.cz>
-	 <alpine.DEB.1.10.0905141546040.1381@qirst.com>
-	 <1242333519.15391.210.camel@nimitz>
-	 <alpine.DEB.2.00.0905141346030.28074@chino.kir.corp.google.com>
-	 <1242335120.15391.242.camel@nimitz>
-	 <alpine.DEB.1.10.0905141729180.30187@qirst.com>
-	 <1242337042.28440.34.camel@nimitz>
-	 <alpine.DEB.2.00.0905141459370.624@chino.kir.corp.google.com>
-	 <alpine.DEB.1.10.0905151358070.26559@qirst.com>
-Content-Type: text/plain
-Date: Fri, 15 May 2009 11:23:27 -0700
-Message-Id: <1242411807.28257.44.camel@nimitz>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Fri, 15 May 2009 14:25:47 -0400
+Received: from THUNK.ORG ([69.25.196.29]:41188 "EHLO thunker.thunk.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751317AbZEOSZr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 14:25:47 -0400
+Date: Fri, 15 May 2009 14:25:41 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: Timo Sirainen <tss@iki.fi>
+Cc: Josef Bacik <josef@toxicpanda.com>, linux-kernel@vger.kernel.org
+Subject: Re: ext3/ext4 directories don't shrink after deleting lots of files
+Message-ID: <20090515182541.GB6641@mit.edu>
+Mail-Followup-To: Theodore Tso <tytso@mit.edu>, Timo Sirainen <tss@iki.fi>,
+	Josef Bacik <josef@toxicpanda.com>, linux-kernel@vger.kernel.org
+References: <1242338523.6933.664.camel@timo-desktop> <1b7401870905141732v43bd7321g1f0d9721b5e3f761@mail.gmail.com> <605A8D56-81CD-4775-8FCD-58CDB12CBA36@iki.fi> <20090515105815.GD6816@mit.edu> <1242408544.6933.687.camel@timo-desktop>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242408544.6933.687.camel@timo-desktop>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-SA-Exim-Connect-IP: <locally generated>
+X-SA-Exim-Mail-From: tytso@mit.edu
+X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-15 at 13:58 -0400, Christoph Lameter wrote:
-> On Thu, 14 May 2009, David Rientjes wrote:
-> > > To me it at least adds the fact that more should be made *available* and
-> > > not just that you're out of it.  So, definitely not perfect, but better
-> > > than "out".
+On Fri, May 15, 2009 at 01:29:04PM -0400, Timo Sirainen wrote:
+> On Fri, 2009-05-15 at 06:58 -0400, Theodore Tso wrote:
+> > > I was rather thinking something that I could run while the system was  
+> > > fully operational. Otherwise just moving the files to a temp directory + 
+> > > rmdir() + rename() would have been fine too.
 > > >
-> >
-> > I think "no allowable memory" followed by information on what is and is
-> > not allowed in that specific context would remove any ambiguity.
+> > > I just tested that xfs, jfs and reiserfs all shrink the directories  
+> > > immediately. Is it more difficult to implement for ext* or has no one  
+> > > else found this to be a problem?
+> > 
+> > It's probably fairest to say no one has thought it worth the effort.
 > 
-> Useful information to have. If a NUMA or cgroup restriction caused the
-> failure then we should print that out.
+> My problem is with mail servers and Maildir format where it's possible
+> that a user has tons of emails and wants to delete them. The mailbox
+> maybe slowly grows back to the huge size, but in the meantime it's
+> slower than necessary.
 
-We get a wee bit of info out for the cgroups case at least:
+The problem is that unless the user is deleting a *huge* number of
+files, it's rare that the directory entry block goes completely empty.
+If you shrink from 15,000 messages to 12,000 messages, say, because of
+the fact that we use a hashed b-tree as our data structure, the leaf
+blocks in the btree generally still contain some directory entries.
+So to fix this we need to actually coalesce directory leaf blocks on
+the fly, on top of everything else that I had mentioned.  It's
+certianly doable, but again, someone would have to submit a patch.  We
+might get around to it one of these days, but plates of those of us
+who are doing ext4 are pretty full with higher priority items at
+present.
 
-void mem_cgroup_out_of_memory(struct mem_cgroup *mem, gfp_t gfp_mask)
-{
-...
-        if (oom_kill_process(p, gfp_mask, 0, points, mem,
-                                "Memory cgroup out of memory"))
-                goto retry;
+There is an off-line fix that works quite well -- e2fsck -fD, but
+obviously that requires scheduling downtime.
 
-That can surely be improved, but it's a decent start.
+How big of a deal is this for you?  I use a local maildir myself, and
+they can get quite large:
 
--- Dave
+% ls /home/tytso/isync/mit
+total 2132
+1412 cur/   716 new/     4 tmp/
 
+But once they are in cache, it's no longer a major problem.  I suppose
+on a mail server where you have a very large number of users, caching
+2 megs of directory data per user could get ugly; and it does take
+time the first time you pull their directory entry into the cache.
+What sort of performance degredation are you measuring, and what are
+the impacts operationally at the moment for you?  Is this just a
+theoretical concern, or are you measuring a significant slowdown as a result?
+
+	    	     	    		    - Ted
