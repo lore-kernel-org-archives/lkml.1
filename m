@@ -1,45 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761383AbZEOJUk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760834AbZEOJ2T@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761383AbZEOJUk (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 05:20:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757918AbZEOJUb
+	id S1760834AbZEOJ2T (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 05:28:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757617AbZEOJ2G
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 05:20:31 -0400
-Received: from opensource.wolfsonmicro.com ([80.75.67.52]:46723 "EHLO
-	opensource2.wolfsonmicro.com" rhost-flags-OK-OK-OK-FAIL)
-	by vger.kernel.org with ESMTP id S1757027AbZEOJUb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 05:20:31 -0400
-Date: Fri, 15 May 2009 10:20:30 +0100
-From: Mark Brown <broonie@opensource.wolfsonmicro.com>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "linux-arm-kernel@lists.arm.linux.org.uk" 
-	<linux-arm-kernel@lists.arm.linux.org.uk>,
-       "'Liam Girdwood'" <lrg@slimlogic.co.uk>,
-       "kyungmin.park@samsung.com" <kyungmin.park@samsung.com>
-Subject: Re: [PATCH] LP3971 PMIC regulator driver update
-Message-ID: <20090515092030.GA2202@rakim.wolfsonmicro.main>
-References: <E4D3F24EA6C9E54F817833EAE0D912AC02245E9A11@bssrvexch01.BS.local>
+	Fri, 15 May 2009 05:28:06 -0400
+Received: from hera.kernel.org ([140.211.167.34]:38156 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1757487AbZEOJ2D (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 05:28:03 -0400
+Message-ID: <4A0D357A.1070705@kernel.org>
+Date: Fri, 15 May 2009 18:27:22 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <E4D3F24EA6C9E54F817833EAE0D912AC02245E9A11@bssrvexch01.BS.local>
-X-Cookie: So much food
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Jan Beulich <JBeulich@novell.com>
+CC: mingo@elte.hu, andi@firstfloor.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: [PATCH 4/5] x86: implement percpu_alloc kernel parameter
+References: <1242361739-21186-1-git-send-email-tj@kernel.org> <1242361739-21186-5-git-send-email-tj@kernel.org> <4A0D3E11020000780000109C@vpn.id2.novell.com>
+In-Reply-To: <4A0D3E11020000780000109C@vpn.id2.novell.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 15 May 2009 09:27:26 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 11:16:19AM +0200, Marek Szyprowski wrote:
-> This patch fixes issues reported by Mark Brown in his review of National Semiconductors LP3971
-> PMIC regulator driver. It contains:
-> - a little code cleanup
-> - list_voltage() callback added
+Jan Beulich wrote:
+>>>> Tejun Heo <tj@kernel.org> 15.05.09 06:28 >>>
+>> @@ -395,6 +404,16 @@ out_free_ar:
+>> 	return ret;
+>> }
+>>
+>> +/* for explicit first chunk allocator selection */
+>> +static char pcpu_chosen_alloc[16] __initdata;
+>> +
+>> +static int __init percpu_alloc_setup(char *str)
+>> +{
+>> +	strncpy(pcpu_chosen_alloc, str, sizeof(pcpu_chosen_alloc) - 1);
+>> +	return 0;
+>> +}
+>> +early_param("percpu_alloc", percpu_alloc_setup);
+>> +
+>> static inline void setup_percpu_segment(int cpu)
+>> {
+>> #ifdef CONFIG_X86_32
+> 
+> Does this really need to be early_param()? setup_per_cpu_areas()
+> runs after setup_arch(), which is where the full command line
+> parsing happens.
 
-> Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
-> Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+__setup() callbacks ran after PERCPU allocation.  Confirmed with
+printk.
 
-Looks good.
+Thanks.
 
-Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+-- 
+tejun
