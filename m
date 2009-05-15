@@ -1,116 +1,67 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754214AbZEOUdt@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754194AbZEOUjm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754214AbZEOUdt (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 16:33:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZEOUdl
+	id S1754194AbZEOUjm (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 16:39:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751956AbZEOUj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 16:33:41 -0400
-Received: from 69-30-77-85.dq1sn.easystreet.com ([69.30.77.85]:41573 "EHLO
-	kingsolver.anholt.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751244AbZEOUdk (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 16:33:40 -0400
-Subject: Fwd: [git pull] drm-intel fixes for 2.6.30-rc4
-From: Eric Anholt <eric@anholt.net>
-To: lkml <linux-kernel@vger.kernel.org>
-Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-8J5KbUILV/rRRdeBUEYJ"
-Date: Fri, 15 May 2009 13:33:40 -0700
-Message-Id: <1242419620.18219.331.camel@gaiman.anholt.net>
+	Fri, 15 May 2009 16:39:28 -0400
+Received: from vena.lwn.net ([206.168.112.25]:47079 "EHLO vena.lwn.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750958AbZEOUj1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 16:39:27 -0400
+Date: Fri, 15 May 2009 14:39:27 -0600
+From: Jonathan Corbet <corbet@lwn.net>
+To: Wolfgang Grandegger <wg@grandegger.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
+Subject: Re: [PATCH v2 4/7] [PATCH 4/8] can: Driver for the SJA1000 CAN
+ controller
+Message-ID: <20090515143927.7ba06f10@bike.lwn.net>
+In-Reply-To: <4A0BDE79.4060606@grandegger.com>
+References: <20090512092757.048938233@denx.de>
+	<20090512092757.756749047@denx.de>
+	<20090513155205.4bf06c25@bike.lwn.net>
+	<4A0BDE79.4060606@grandegger.com>
+Organization: LWN.net
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Thu, 14 May 2009 11:03:53 +0200
+Wolfgang Grandegger <wg@grandegger.com> wrote:
 
---=-8J5KbUILV/rRRdeBUEYJ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> > So you're still using the "put the higher-level structure at the top so we
+> > can treat it like either kind of pointer" trick.  I'd still recommend
+> > against that.  Far better to do something like:
+> > 
+> > 	struct can_priv *canpriv = netdev_priv(dev);
+> > 	struct sja_1000_priv *priv = container_of(canpriv, struct sja_1000_priv, can);
+> > 
+> > Of course, you can put that dance into a helper function.  
+> 
+> There is no way to initialize the value returned by netdev_priv() as it
+> does not point to a member of struct net_device. I already commented here:
+> 
+>   http://marc.info/?l=linux-netdev&m=124120212106891&w=2
+> 
+> Have I missed something?
 
-I fail at CC.
+I'm confused.  It points to the struct can_priv that you registered at
+the beginning.  Since that structure is contained within struct
+sja1000_priv, you can use container_of(), as described above, to get
+it.
 
--------- Forwarded Message --------
-From: Eric Anholt <eric@anholt.net>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [git pull] drm-intel fixes for 2.6.30-rc4
-Date: Fri, 15 May 2009 13:09:46 -0700
+I would probably just write something like:
 
-The following changes since commit 091438dd5668396328a3419abcbc6591159eb8d1=
-:
-  Linus Torvalds (1):
-        Linux 2.6.30-rc4
+static inline struct sja1000_priv *to_sja1000_priv(struct net_device *dev)
+{
+	return container_of(netdev_priv(dev), struct sja1000_priv, can);
+}
 
-are available in the git repository at:
+So have *I* missed something?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/anholt/drm-intel drm-intel-=
-next
-
-For the most part this is a bunch of regression fixes for moving to KMS
-from UMS.  My fix should make a bunch of people with "My chip hangs
-randomly every couple of days" happy.  And jbarnes's should help us
-point fingers at distros who muck with chip state by pointlessly calling
-the BIOS and have it show up as "regressions" in our driver :)
-
-Carl Worth (1):
-      drm/i915: Add new GET_PIPE_FROM_CRTC_ID ioctl.
-
-Eric Anholt (1):
-      drm/i915: Don't allow binding objects into the last page of the apert=
-ure.
-
-Jarod Wilson (1):
-      drm/i915: ignore LVDS on intel graphics systems that lie about having=
- it
-
-Jesse Barnes (1):
-      drm/i915: sanity check IER at wait_request time
-
-Keith Packard (2):
-      drm/i915: x86 always has writeq. Add I915_READ64 for symmetry.
-      drm/i915: save/restore fence registers across suspend/resume
-
-Ma Ling (3):
-      drm/i915: Use the GM45 VGA hotplug workaround on G45 as well.
-      drm/i915: Include 965GME pci ID in IS_I965GM(dev) to match UMS.
-      drm/i915: Set HDMI hot plug interrupt enable for only the output in q=
-uestion.
-
-Shaohua Li (1):
-      drm/i915: workaround IGD i2c bus issue in kernel side (v2)
-
- drivers/gpu/drm/i915/i915_dma.c      |   13 +++++++-
- drivers/gpu/drm/i915/i915_drv.h      |   11 ++----
- drivers/gpu/drm/i915/i915_gem.c      |    9 +++++
- drivers/gpu/drm/i915/i915_reg.h      |    1 +
- drivers/gpu/drm/i915/i915_suspend.c  |   24 +++++++++++++++
- drivers/gpu/drm/i915/intel_crt.c     |    2 +-
- drivers/gpu/drm/i915/intel_display.c |   31 +++++++++++++++++++
- drivers/gpu/drm/i915/intel_drv.h     |    4 ++-
- drivers/gpu/drm/i915/intel_hdmi.c    |   17 +++++++---
- drivers/gpu/drm/i915/intel_i2c.c     |   17 ++++++++++
- drivers/gpu/drm/i915/intel_lvds.c    |   54 +++++++++++++++++++++++++++++-=
-----
- drivers/gpu/drm/i915/intel_modes.c   |    6 ++++
- include/drm/i915_drm.h               |   10 ++++++
- 13 files changed, 175 insertions(+), 24 deletions(-)
-
---=20
-Eric Anholt
-eric@anholt.net                         eric.anholt@intel.com
-
-
-
---=-8J5KbUILV/rRRdeBUEYJ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-
-iEYEABECAAYFAkoN0aQACgkQHUdvYGzw6vfd6QCeMYHnEGsJuYheYlJn2QvtTqOX
-/+gAniunLp/dCbZV25PRLhmoxXu28cOT
-=0QkS
------END PGP SIGNATURE-----
-
---=-8J5KbUILV/rRRdeBUEYJ--
-
+jon
