@@ -1,85 +1,182 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761480AbZEOGLQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758408AbZEOGSn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761480AbZEOGLQ (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 02:11:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1759847AbZEOGK7
+	id S1758408AbZEOGSn (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 02:18:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753985AbZEOGSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 02:10:59 -0400
-Received: from fnoeppeil48.netpark.at ([217.175.205.176]:40762 "EHLO
-	roarinelk.homelinux.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757539AbZEOGK6 (ORCPT
+	Fri, 15 May 2009 02:18:32 -0400
+Received: from vms173003pub.verizon.net ([206.46.173.3]:16871 "EHLO
+	vms173003pub.verizon.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751917AbZEOGSb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 02:10:58 -0400
-Date: Fri, 15 May 2009 08:10:58 +0200
-From: Manuel Lauss <mano@roarinelk.homelinux.net>
-To: Kwangwoo Lee <kwangwoo.lee@gmail.com>
-Cc: Trilok Soni <soni.trilok@gmail.com>, linux-kernel@vger.kernel.org,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
-Subject: Re: [PATCH] TSC2007: private data for platform callbacks.
-Message-ID: <20090515061058.GA31862@roarinelk.homelinux.net>
-References: <20090514100909.GA23626@roarinelk.homelinux.net> <5d5443650905140328v319e673o2f7b865e21619486@mail.gmail.com> <483a38b80905142125l6f3be674m3b7ef9083cfcbdeb@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <483a38b80905142125l6f3be674m3b7ef9083cfcbdeb@mail.gmail.com>
-User-Agent: Mutt/1.5.16 (2007-06-09)
+	Fri, 15 May 2009 02:18:31 -0400
+Date: Fri, 15 May 2009 02:18:25 -0400 (EDT)
+From: Len Brown <lenb@kernel.org>
+X-X-Sender: lenb@localhost.localdomain
+To: Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+       Janne Kulmala <janne.t.kulmala@tut.fi>, Frans Pop <elendil@planet.nl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@elte.hu>,
+       johnstul@us.ibm.com, linux-acpi@vger.kernel.org
+Subject: [PATCH] ACPI: idle: rename lapic timer workaround routines
+In-reply-to: <alpine.LFD.2.00.0905150138001.10065@localhost.localdomain>
+Message-id: <alpine.LFD.2.00.0905150217220.4995@localhost.localdomain>
+References: <alpine.DEB.2.00.0905072359530.28378@gandalf.stny.rr.com>
+ <200905110226.50115.elendil@planet.nl>
+ <alpine.LFD.2.00.0905111614570.3561@localhost.localdomain>
+ <4A0855A5.8040109@tut.fi>
+ <alpine.LFD.2.00.0905141545280.24833@localhost.localdomain>
+ <alpine.LFD.2.00.0905141608070.24833@localhost.localdomain>
+ <alpine.LFD.2.00.0905142217340.3561@localhost.localdomain>
+ <alpine.LFD.2.00.0905141750100.24833@localhost.localdomain>
+ <alpine.LFD.2.00.0905150138001.10065@localhost.localdomain>
+User-Agent: Alpine 2.00 (LFD 1167 2008-08-23)
+MIME-version: 1.0
+Content-type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 01:25:41PM +0900, Kwangwoo Lee wrote:
-> Hi Manual,
-> 
-> On Thu, May 14, 2009 at 7:28 PM, Trilok Soni <soni.trilok@gmail.com> wrote:
-> > Hi Manuel,
-> >
-> > CCing linux-input mailing list, so not deleting any code from this
-> > e-mail while replying.
-> >
-> > On Thu, May 14, 2009 at 3:39 PM, Manuel Lauss
-> > <mano@roarinelk.homelinux.net> wrote:
-> >> Add a private data field to the tsc2007 platform data and pass this
-> >> to the callbacks.
-> >
-> > I hope that you have created this patch on top of two recently posted
-> > patches by Kwangwoo Lee
-> > to merge changes from Thierry.
-> >
-> >>
-> >> Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
-> >> ---
-> >> ?drivers/input/touchscreen/tsc2007.c | ? 52 +++++++++++++++++++++++-----------
-> >> ?include/linux/i2c/tsc2007.h ? ? ? ? | ? 10 ++++---
-> >> ?2 files changed, 41 insertions(+), 21 deletions(-)
-> >>
-> >> diff --git a/drivers/input/touchscreen/tsc2007.c b/drivers/input/touchscreen/tsc2007.c
-> >> index 948e167..5c4242d 100644
-> >> --- a/drivers/input/touchscreen/tsc2007.c
-> >> +++ b/drivers/input/touchscreen/tsc2007.c
-> >> @@ -83,10 +83,35 @@ struct tsc2007 {
-> >> ? ? ? ?unsigned ? ? ? ? ? ? ? ?pendown;
-> >> ? ? ? ?int ? ? ? ? ? ? ? ? ? ? irq;
-> >>
-> >> - ? ? ? int ? ? ? ? ? ? ? ? ? ? (*get_pendown_state)(void);
-> >> - ? ? ? void ? ? ? ? ? ? ? ? ? ?(*clear_penirq)(void);
-> >> + ? ? ? struct tsc2007_platform_data *pd;
-> 
-> Why is this pd is contained in struct tsc2007?
+From: Len Brown <len.brown@intel.com>
 
-It just seemed nicer to me to store a pointer to the platform data
-instead of duplicating its members.
+cosmetic only.  The lapic_timer workaround routines
+are specific to the lapic_timer, and are not acpi-generic.
 
+old:
+
+acpi_timer_check_state()
+acpi_propagate_timer_broadcast()
+acpi_state_timer_broadcast()
+
+new:
+
+lapic_timer_check_state()
+lapic_timer_propagate_broadcast()
+lapic_timer_state_broadcast()
+
+also, simplify the code in acpi_processor_power_verify()
+so that lapic_timer_check_state() is simply called
+from one place for all valid C-states, including C1.
+
+Signed-off-by: Len Brown <len.brown@intel.com>
+---
+ drivers/acpi/processor_idle.c |   35 ++++++++++++++++-------------------
+ 1 files changed, 16 insertions(+), 19 deletions(-)
+
+diff --git a/drivers/acpi/processor_idle.c b/drivers/acpi/processor_idle.c
+index e65476f..60c3bcd 100644
+--- a/drivers/acpi/processor_idle.c
++++ b/drivers/acpi/processor_idle.c
+@@ -139,7 +139,7 @@ static void acpi_safe_halt(void)
+  * are affected too. We pick the most conservative approach: we assume
+  * that the local APIC stops in both C2 and C3.
+  */
+-static void acpi_timer_check_state(int state, struct acpi_processor *pr,
++static void lapic_timer_check_state(int state, struct acpi_processor *pr,
+ 				   struct acpi_processor_cx *cx)
+ {
+ 	struct acpi_processor_power *pwr = &pr->power;
+@@ -159,7 +159,7 @@ static void acpi_timer_check_state(int state, struct acpi_processor *pr,
+ 		pr->power.timer_broadcast_on_state = state;
+ }
  
-> >> +/* ask platform for pendown state */
-> >> +static inline int ts_get_pendown_state(struct tsc2007 *ts)
-> >> +{
-> >> + ? ? ? return ts->pd->get_pendown_state(ts->pd->priv);
-> 
-> Is it required in get_pendown_state() function in your platform?
-> The function just return true/false indicating the pendown state.
+-static void acpi_propagate_timer_broadcast(struct acpi_processor *pr)
++static void lapic_timer_propagate_broadcast(struct acpi_processor *pr)
+ {
+ 	unsigned long reason;
+ 
+@@ -170,7 +170,7 @@ static void acpi_propagate_timer_broadcast(struct acpi_processor *pr)
+ }
+ 
+ /* Power(C) State timer broadcast control */
+-static void acpi_state_timer_broadcast(struct acpi_processor *pr,
++static void lapic_timer_state_broadcast(struct acpi_processor *pr,
+ 				       struct acpi_processor_cx *cx,
+ 				       int broadcast)
+ {
+@@ -187,10 +187,10 @@ static void acpi_state_timer_broadcast(struct acpi_processor *pr,
+ 
+ #else
+ 
+-static void acpi_timer_check_state(int state, struct acpi_processor *pr,
++static void lapic_timer_check_state(int state, struct acpi_processor *pr,
+ 				   struct acpi_processor_cx *cstate) { }
+-static void acpi_propagate_timer_broadcast(struct acpi_processor *pr) { }
+-static void acpi_state_timer_broadcast(struct acpi_processor *pr,
++static void lapic_timer_propagate_broadcast(struct acpi_processor *pr) { }
++static void lapic_timer_state_broadcast(struct acpi_processor *pr,
+ 				       struct acpi_processor_cx *cx,
+ 				       int broadcast)
+ {
+@@ -592,24 +592,21 @@ static int acpi_processor_power_verify(struct acpi_processor *pr)
+ 
+ 		case ACPI_STATE_C2:
+ 			acpi_processor_power_verify_c2(cx);
+-			if (cx->valid)
+-				acpi_timer_check_state(i, pr, cx);
+ 			break;
+ 
+ 		case ACPI_STATE_C3:
+ 			acpi_processor_power_verify_c3(pr, cx);
+-			if (cx->valid)
+-				acpi_timer_check_state(i, pr, cx);
+ 			break;
+ 		}
+-		if (cx->valid)
+-			tsc_check_state(cx->type);
++		if (!cx->valid)
++			continue;
+ 
+-		if (cx->valid)
+-			working++;
++		lapic_timer_check_state(i, pr, cx);
++		tsc_check_state(cx->type);
++		working++;
+ 	}
+ 
+-	acpi_propagate_timer_broadcast(pr);
++	lapic_timer_propagate_broadcast(pr);
+ 
+ 	return (working);
+ }
+@@ -863,7 +860,7 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+ 	 * Must be done before busmaster disable as we might need to
+ 	 * access HPET !
+ 	 */
+-	acpi_state_timer_broadcast(pr, cx, 1);
++	lapic_timer_state_broadcast(pr, cx, 1);
+ 
+ 	if (cx->type == ACPI_STATE_C3)
+ 		ACPI_FLUSH_CPU_CACHE();
+@@ -885,7 +882,7 @@ static int acpi_idle_enter_simple(struct cpuidle_device *dev,
+ 
+ 	cx->usage++;
+ 
+-	acpi_state_timer_broadcast(pr, cx, 0);
++	lapic_timer_state_broadcast(pr, cx, 0);
+ 	cx->time += sleep_ticks;
+ 	return idle_time;
+ }
+@@ -952,7 +949,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+ 	 * Must be done before busmaster disable as we might need to
+ 	 * access HPET !
+ 	 */
+-	acpi_state_timer_broadcast(pr, cx, 1);
++	lapic_timer_state_broadcast(pr, cx, 1);
+ 
+ 	kt1 = ktime_get_real();
+ 	/*
+@@ -997,7 +994,7 @@ static int acpi_idle_enter_bm(struct cpuidle_device *dev,
+ 
+ 	cx->usage++;
+ 
+-	acpi_state_timer_broadcast(pr, cx, 0);
++	lapic_timer_state_broadcast(pr, cx, 0);
+ 	cx->time += sleep_ticks;
+ 	return idle_time;
+ }
+-- 
+1.6.3.1.9.g95405b
 
-It enables me to reuse the same callbacks if more than one tsc2007 is
-soldered on (different bits to fiddle with in external registers).
 
-Thanks,
-	Manuel Lauss
