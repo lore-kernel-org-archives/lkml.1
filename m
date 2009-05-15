@@ -1,63 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762240AbZEOPgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757785AbZEOPiA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762240AbZEOPgq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 11:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751572AbZEOPgi
+	id S1757785AbZEOPiA (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 11:38:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754917AbZEOPht
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 11:36:38 -0400
-Received: from az33egw02.freescale.net ([192.88.158.103]:42737 "EHLO
-	az33egw02.freescale.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751440AbZEOPgi (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 11:36:38 -0400
-Date: Fri, 15 May 2009 10:36:19 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Heiko Schocher <hs@denx.de>
-Cc: linuxppc-dev@ozlabs.org, Wolfgang Denk <wd@denx.de>,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash, size
-Message-ID: <20090515153619.GA24872@b07421-ec1.am.freescale.net>
-References: <mailman.7754.1242158509.26545.linuxppc-dev@ozlabs.org> <4A0A683B.5010209@denx.de> <20090514214819.GA15549@b07421-ec1.am.freescale.net> <4A0D03AB.2040602@denx.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <4A0D03AB.2040602@denx.de>
-User-Agent: Mutt/1.4.1i
-X-Brightmail-Tracker: AAAAAQAAAWE=
+	Fri, 15 May 2009 11:37:49 -0400
+Received: from h155.mvista.com ([63.81.120.155]:39661 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1751947AbZEOPhs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 11:37:48 -0400
+Message-ID: <4A0D8C73.50208@ru.mvista.com>
+Date: Fri, 15 May 2009 19:38:27 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Organization: MontaVista Software Inc.
+User-Agent: Mozilla/5.0 (X11; U; Linux i686; rv:1.7.2) Gecko/20040803
+X-Accept-Language: ru, en-us, en-gb
+MIME-Version: 1.0
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       Pete Zaitcev <zaitcev@redhat.com>, Eric Moore <Eric.Moore@lsi.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH block#for-2.6.31 2/3] block: set rq->resid_len to blk_rq_bytes()
+ on issue
+References: <4A0D86DB.9000203@kernel.org> <4A0D87D2.7090806@gmail.com>
+In-Reply-To: <4A0D87D2.7090806@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 07:54:51AM +0200, Heiko Schocher wrote:
-> Scott Wood wrote:
-> > We should proabbly leave out the ranges altogether, and have u-boot
-> > populate it from the mappings it establishes.
-> 
-> No, I vote for manipulating just the entries, which u-boot dynamically
-> detect, and let the other entries untouched. It is possible that
-> there is a device which u-boot didn;t use/know, and there is in the DTS
-> an ranges entry for it (Maybe not on the MPC8727ADS, but we should
-> define a rule, how a bootloader has to manipulate entries). So if
-> u-boot build the complete ranges entry, it maybe miss something.
+Hello.
 
-If u-boot doesn't know about it, then it didn't create the mapping, and
-thus it's not accessible (if something later on creates a mapping, it can
-update ranges itself).  The devices themselves would still be described,
-just not the non-existent mapping.
+Tejun Heo wrote:
 
-The benefit is that you would have just one place that reads out the
-localbus config into the device tree, with no error-prone duplication of
-data, or separate hacks for each board that has something that is
-variable.
+> In commit c3a4d78c580de4edc9ef0f7c59812fb02ceb037f, while introducing
+> rq->resid_len, the default value of residue count was changed from
+> full count to zero.  The conversion was done under the assumption that
+> when a request fails residue count wasn't defined.  However, Boaz and
+> James pointed out that this wasn't true and the residue count should
+> be preserved for failed requests too.
 
-We could leave ranges in the dts for cuImage, and have u-boot just
-overwrite the entire thing rather than patch up individual entries.
+> This patchset restores the original behavior by setting rq->resid_len
+> to blk_rq_bytes(rq) on issue and restoring explicit clearing in
+> affected drivers.  While at it, take advantage of the fact that
+> rq->resid_len is set to full count where applicable.
 
-> > I don't see how current u-boot would accomodate more than 8MiB flash on
-> > this board (there's some detection in board/freescale/mpc8260ads/flash.c,
-> 
-> Didn;t this board uses the CFI driver? :-(
+> * ide-cd: rq->resid_len cleared on pc success
 
-Not yet, unfortunately.  This is pretty old code.
+> * mptsas: req->resid_len cleared on success
 
--Scott
+> * sas_expander: rsp/req->resid_len cleared on success
+
+> * mpt2sas_transport: req->resid_len cleared on success
+
+> * ide-cd, ide-tape, mptsas, sas_host_smp, mpt2sas_transport, ub: take
+>   advantage of initial full count to simplify code
+
+> Signed-off-by: Tejun Heo <tj@kernel.org>
+
+    The patch looks er... strange at some places.
+
+> Index: block/drivers/message/fusion/mptsas.c
+> ===================================================================
+> --- block.orig/drivers/message/fusion/mptsas.c
+> +++ block/drivers/message/fusion/mptsas.c
+> @@ -1357,7 +1357,8 @@ static int mptsas_smp_handler(struct Scs
+>  		smprep = (SmpPassthroughReply_t *)ioc->sas_mgmt.reply;
+>  		memcpy(req->sense, smprep, sizeof(*smprep));
+>  		req->sense_len = sizeof(*smprep);
+> -		rsp->resid_len = blk_rq_bytes(rsp) - smprep->ResponseDataLength;
+> +		req->resid_len = 0;
+> +		rsp->resid_len -= smprep->ResponseDataLength;
+
+    Is negative resid_len intended here? If so, shouldn't it be simply:
+
+		rsp->resid_len = -smprep->ResponseDataLength;
+
+
+> Index: block/drivers/scsi/libsas/sas_expander.c
+> ===================================================================
+> --- block.orig/drivers/scsi/libsas/sas_expander.c
+> +++ block/drivers/scsi/libsas/sas_expander.c
+> @@ -1937,7 +1937,11 @@ int sas_smp_handler(struct Scsi_Host *sh
+>  	if (ret > 0) {
+>  		/* positive number is the untransferred residual */
+>  		rsp->resid_len = ret;
+> +		req->resid_len = 0;
+>  		ret = 0;
+> +	} else if (ret == 0) {
+> +		rsp->resid_len = 0;
+> +		req->resid_len = 0;
+
+    ???
+
+> Index: block/drivers/scsi/libsas/sas_host_smp.c
+> ===================================================================
+> --- block.orig/drivers/scsi/libsas/sas_host_smp.c
+> +++ block/drivers/scsi/libsas/sas_host_smp.c
+> @@ -176,9 +176,6 @@ int sas_smp_host_handler(struct Scsi_Hos
+>  	resp_data[1] = req_data[1];
+>  	resp_data[2] = SMP_RESP_FUNC_UNK;
+>  
+> -	req->resid_len = blk_rq_bytes(req);
+> -	rsp->resid_len = blk_rq_bytes(rsp);
+> -
+
+    ???
+
+>  	switch (req_data[1]) {
+>  	case SMP_REPORT_GENERAL:
+>  		req->resid_len -= 8;
+> Index: block/drivers/scsi/mpt2sas/mpt2sas_transport.c
+> ===================================================================
+> --- block.orig/drivers/scsi/mpt2sas/mpt2sas_transport.c
+> +++ block/drivers/scsi/mpt2sas/mpt2sas_transport.c
+> @@ -1170,8 +1170,8 @@ transport_smp_handler(struct Scsi_Host *
+>  
+>  		memcpy(req->sense, mpi_reply, sizeof(*mpi_reply));
+>  		req->sense_len = sizeof(*mpi_reply);
+> -		rsp->resid_len = blk_rq_bytes(rsp) -
+> -				 mpi_reply->ResponseDataLength;
+> +		req->resid_len = 0;
+> +		rsp->resid_len -= mpi_reply->ResponseDataLength;
+
+    Again, is negative resid_len intended?
+
+MBR, Sergei
