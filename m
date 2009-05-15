@@ -1,69 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761517AbZEOFp7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1761442AbZEOGJy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761517AbZEOFp7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 01:45:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757223AbZEOFpt
+	id S1761442AbZEOGJy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 02:09:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758046AbZEOGJp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 01:45:49 -0400
-Received: from smtp124.sbc.mail.sp1.yahoo.com ([69.147.64.97]:46203 "HELO
-	smtp124.sbc.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1756143AbZEOFpt (ORCPT
+	Fri, 15 May 2009 02:09:45 -0400
+Received: from mail-out.m-online.net ([212.18.0.9]:60905 "EHLO
+	mail-out.m-online.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757882AbZEOGJo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 01:45:49 -0400
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
-  s=s1024; d=pacbell.net;
-  h=Received:X-YMail-OSG:X-Yahoo-Newman-Property:From:To:Subject:Date:User-Agent:Cc:References:In-Reply-To:MIME-Version:Content-Type:Content-Transfer-Encoding:Content-Disposition:Message-Id;
-  b=erDIy1RGSlnjjFO0O+HoZtMIXVGBsgUXwXw87e+uyPb/sBJoIYBVk/VunIVkGOC7Hy+1wewt07L7qOrZzNCqknbTV5YZiWUBMXBcuueK9bIKY/mYKJ/q73Zdtgcoc3eFXuh6Xw33dZEmNhzl2YDfR++DS73eps5lQJwBnHNvImQ=  ;
-X-YMail-OSG: p4uQgtgVM1kMG4qRlFR4Qa3Aq1QywuWFMu5AuVevhoyD0UyvSo5iAJXy9tgRmMpbXfJLpEKA.OZASAGfA2oV0No4rhU1Hx28LMsE0KN7.QXV6wXh.XeSjz1K5RR9LDfP40U4rMjaxelTV3.t3qYjuuucNPmnqwWt1jxhEdekdEYH8d9W8pyagu_aP9pprHwdFufVn9fzmJrKp7YWyGkQyokAx_o5kxy8DSi_.LNRHDp3_smhBa7w9hjqUhOkcNg2SdjfJxAVGBcpY6I-
-X-Yahoo-Newman-Property: ymail-3
-From: David Brownell <david-b@pacbell.net>
-To: "Luis R. Rodriguez" <mcgrof@gmail.com>
-Subject: Re: pm-susend on 2.6.30-rc5
-Date: Thu, 14 May 2009 22:45:48 -0700
-User-Agent: KMail/1.9.10
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Arjan van de Ven <arjan@linux.intel.com>
-References: <43e72e890905131833k291c8720r4045e9e497430b40@mail.gmail.com>
-In-Reply-To: <43e72e890905131833k291c8720r4045e9e497430b40@mail.gmail.com>
+	Fri, 15 May 2009 02:09:44 -0400
+X-Auth-Info: YVrg4tyv2M6dDJo8RNwxpDaSmFf6LW/++EeWkI09t1c=
+Message-ID: <4A0D03AB.2040602@denx.de>
+Date: Fri, 15 May 2009 07:54:51 +0200
+From: Heiko Schocher <hs@denx.de>
+Reply-To: hs@denx.de
+Organization: DENX GmbH
+User-Agent: Thunderbird 2.0.0.6 (X11/20070801)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
+To: Scott Wood <scottwood@freescale.com>
+CC: Wolfgang Denk <wd@denx.de>, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] [PowerPC] MPC8272ADS: fix device tree for 8 MB flash,
+ size
+References: <mailman.7754.1242158509.26545.linuxppc-dev@ozlabs.org> <4A0A683B.5010209@denx.de> <20090514214819.GA15549@b07421-ec1.am.freescale.net>
+In-Reply-To: <20090514214819.GA15549@b07421-ec1.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905142245.49150.david-b@pacbell.net>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wednesday 13 May 2009, Luis R. Rodriguez wrote:
-> When trying suspend on 2.6.30-rc5 I get the following WARN and also
-> cannot use my write to my file system. I cannot even reboot:
-> 
-> mcgrof@pogo ~ $ sudo reboot
-> sudo: unable to execute /sbin/reboot: Success
-> mcgrof@pogo ~ $ echo $?
-> 127
-> 
-> Granted, I've never tried to suspend on this box, its a development
-> desktop, but still think you'd like to know about it. The actual WARN
-> in question is:
-> 
->         /* Warning on suspend means the RTC alarm period needs to be
->          * larger -- the system was sooo slooowwww to suspend that the
->          * alarm (should have) fired before the system went to sleep!
->          *
->          * Warning on either suspend or resume also means the system
->          * has some performance issues.  The stack dump of a WARN_ON
->          * is more likely to get the right attention than a printk...
->          */
->         WARN(msec > (TEST_SUSPEND_SECONDS * 1000), "Component: %s\n", label);
+Hello Scott,
 
-None of that was supposed to be executing *except* during
-(a) initial boot, when (b) the command line parameter was
-set to enable that test during boot ... see test_suspend().
+Scott Wood wrote:
+> On Wed, May 13, 2009 at 08:27:07AM +0200, Heiko Schocher wrote:
+>> Hello Wolfgang,
+>>
+>>> The current device tree for the MPC8272ADS assumes a mapping of 32 MB
+>>> of NOR flash at 0xFE00.0000, while there are actually only 8 MB on
+>>> the boards, mapped at 0xFF80.0000. When booting an uImage with such a
+>>> device tree, the kernel crashes because 0xFE00.0000 is not mapped.
+>> Wouldn;t it be better, if u-boot fixes the device tree entries?
+> 
+> We should proabbly leave out the ranges altogether, and have u-boot
+> populate it from the mappings it establishes.
 
-If we can't enter standby/suspend/hibernate then, it's
-either a regression or a bug to fix; ergo the warning.
+No, I vote for manipulating just the entries, which u-boot dynamically
+detect, and let the other entries untouched. It is possible that
+there is a device which u-boot didn;t use/know, and there is in the DTS
+an ranges entry for it (Maybe not on the MPC8727ADS, but we should
+define a rule, how a bootloader has to manipulate entries). So if
+u-boot build the complete ranges entry, it maybe miss something.
 
-Clearly that's been changed at some point, and this problem
-relates to those changes.
+>> I think, u-boot should know, where the flash begins and ends, and
+>> because this is maybe a dynamic variable for this board, it should
+>> be better, if u-boot fixes this, so no need for adding a device tree
+>> for every board variant.
+> 
+> Flash is on a SIMM on this board, and the board manual says it's
+> expandable to 32 MiB.  However, I suspect that the current DTS was just
+> an error as I based it on a board that had not had its flash SIMM
+> modified.  That specific flash SIMM is no longer working (or perhaps just
+> got its contents corrupted -- one of these days I may hook up a BDI and
+> try to reflash), so I can't go back and check.
+> 
+> I don't see how current u-boot would accomodate more than 8MiB flash on
+> this board (there's some detection in board/freescale/mpc8260ads/flash.c,
+
+Didn;t this board uses the CFI driver? :-(
+
+> but I don't see any setting of BR0 besides the preliminary value at
+> 0xff800000).
+
+OK, then the patch from Wolfgang should be sufficient.
+
+bye
+Heiko
+-- 
+DENX Software Engineering GmbH,     MD: Wolfgang Denk & Detlev Zundel
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
