@@ -1,44 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757540AbZEOOhh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757772AbZEOOjh@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757540AbZEOOhh (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 10:37:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752055AbZEOOh2
+	id S1757772AbZEOOjh (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 10:39:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752234AbZEOOj2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 10:37:28 -0400
-Received: from mail2.shareable.org ([80.68.89.115]:41369 "EHLO
-	mail2.shareable.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751763AbZEOOh1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 10:37:27 -0400
-Date: Fri, 15 May 2009 15:37:27 +0100
-From: Jamie Lokier <jamie@shareable.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: Vitaly Mayatskikh <v.mayatskih@gmail.com>, Josef Bacik <josef@redhat.com>,
-       sandeen@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Perform check in iov_iter_fault_in_readable() by check_readable_bytes()
-Message-ID: <20090515143726.GE8235@shareable.org>
-References: <1242317939-15392-1-git-send-email-v.mayatskih@gmail.com> <1242317939-15392-3-git-send-email-v.mayatskih@gmail.com> <87k54iq2gv.fsf@basil.nowhere.org> <871vqqkdf0.wl%vmayatsk@redhat.com> <20090515093838.GB16682@one.firstfloor.org> <20090515134315.GB8235@shareable.org> <20090515140137.GF16682@one.firstfloor.org>
+	Fri, 15 May 2009 10:39:28 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37076 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752055AbZEOOj2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 10:39:28 -0400
+Date: Fri, 15 May 2009 16:39:12 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Paul Mackerras <paulus@samba.org>
+Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
+       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
+       Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [PATCH 2/3 v2] perf_counter: allow arch to supply event misc
+	flags and instruction pointer
+Message-ID: <20090515143912.GA5478@elte.hu>
+References: <18956.1272.818511.561835@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090515140137.GF16682@one.firstfloor.org>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+In-Reply-To: <18956.1272.818511.561835@cargo.ozlabs.ibm.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andi Kleen wrote:
-> > It would be quite nice if it were safe to call read(), get EFAULT
+
+* Paul Mackerras <paulus@samba.org> wrote:
+
+> At present the values we put in overflow events for the misc flags 
+> indicating processor mode and the instruction pointer are obtained 
+> using the standard user_mode() and instruction_pointer() 
+> functions. Those functions tell you where the performance monitor 
+> interrupt was taken, which might not be exactly where the counter 
+> overflow occurred, for example because interrupts were disabled at 
+> the point where the overflow occurred, or because the processor 
+> had many instructions in flight and chose to complete some more 
+> instructions beyond the one that caused the counter overflow.
 > 
-> Even with that patch it is not safe, not even for write, because
-> it's racy.
+> Some architectures (e.g. powerpc) can supply more precise 
+> information about where the counter overflow occurred and the 
+> processor mode at that point.  This introduces new functions, 
+> perf_misc_flags() and perf_instruction_pointer(), which arch code 
+> can override to provide more precise information if available.  
+> They have default implementations which are identical to the 
+> existing code.
+> 
+> This also adds a new misc flag value, PERF_EVENT_MISC_HYPERVISOR, for
+> the case where a counter overflow occurred in the hypervisor.  We
+> encode the processor mode in the 2 bits previously used to indicate
+> user or kernel mode; the values for user and kernel mode are unchanged
+> and hypervisor mode is indicated by both bits being set.
+> 
+> Signed-off-by: Paul Mackerras <paulus@samba.org>
+> ---
+> Patches 1/3 and 3/3 of this series are unchanged.  Ingo, do you need
+> me to repost them?
 
-That's not necessarily a problem for the applications I described,
-because they can be made to only increase access in parallel with
-access; decreasing access can be synchronised over the whole program.
+no need, picked them all up, thanks Paul!
 
-But I agree with you, as no application should depend on such subtle
-details, which would probably be broken again in a future kernel anyway.
-
--- Jamie
+	Ingo
