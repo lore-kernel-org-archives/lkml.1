@@ -1,71 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1760546AbZEORiY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759618AbZEORlW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1760546AbZEORiY (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 13:38:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755329AbZEORiP
+	id S1759618AbZEORlW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 13:41:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756101AbZEORlF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 13:38:15 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:57526 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755438AbZEORiP (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 13:38:15 -0400
-Subject: Re: perf counter issue -
- WARN_ON_ONCE(!list_empty(&tsk->perf_counter_ctx.counter_list));
-From: Peter Zijlstra <peterz@infradead.org>
-To: vatsa@in.ibm.com
-Cc: Arnaldo Carvalho de Melo <acme@redhat.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, Mike Galbraith <efault@gmx.de>,
-       Thomas Gleixner <tglx@linutronix.de>, Paul Mackerras <paulus@samba.org>,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Oleg Nesterov <oleg@redhat.com>
-In-Reply-To: <1242404001.32543.100.camel@laptop>
-References: <20090513165433.GD16373@in.ibm.com>
-	 <20090513165724.GA32707@in.ibm.com> <20090515135604.GC16389@elte.hu>
-	 <20090515145144.GD13664@ghostprotocols.net>
-	 <20090515155807.GA25957@in.ibm.com>  <1242404001.32543.100.camel@laptop>
-Content-Type: text/plain
-Date: Fri, 15 May 2009 19:37:53 +0200
-Message-Id: <1242409073.32543.187.camel@laptop>
+	Fri, 15 May 2009 13:41:05 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:49531 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1754985AbZEORlC (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 13:41:02 -0400
+Date: Fri, 15 May 2009 11:31:14 -0600
+From: Pete Zaitcev <zaitcev@redhat.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Borislav Petkov <petkovbb@googlemail.com>
+Subject: Re: [PATCH block#for-2.6.31 1/3] ub: use __blk_end_request_all()
+Message-Id: <20090515113114.68ae93ae.zaitcev@redhat.com>
+In-Reply-To: <4A0D86DB.9000203@kernel.org>
+References: <4A0D86DB.9000203@kernel.org>
+Organization: Red Hat, Inc.
 Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 2009-05-15 at 18:13 +0200, Peter Zijlstra wrote:
-> On Fri, 2009-05-15 at 21:28 +0530, Srivatsa Vaddagiri wrote:
-> > On Fri, May 15, 2009 at 11:51:44AM -0300, Arnaldo Carvalho de Melo wrote:
-> > > > hm, is there a reproducer perhaps? Is there some class file i could 
-> > > > run with specific parameters to reproduce it?
-> > > 
-> > > I'll try this with some java benchmarks we have, AMQP related, lets see
-> > > if I can reproduce it.
-> > 
-> > I tried this with SPECJbb - which I am not at liberty to distribute
-> > unfortunately. I will try and recreate it with volanomark or other open
-> > source benchmarks.
-> 
-> I could indeed reproduce with vmark. Am poking at it.. still clueless
-> though ;-)
+On Sat, 16 May 2009 00:14:35 +0900, Tejun Heo <tj@kernel.org> wrote:
 
-[root@opteron tmp]# cat foo.c
-#include <pthread.h>
-#include <unistd.h>
+> @@ -834,12 +829,7 @@ static void ub_end_rq(struct request *rq
+>  		error = -EIO;
+>  		rq->errors = scsi_status;
+>  	}
+> -	rqlen = blk_rq_bytes(rq);    /* Oddly enough, this is the residue. */
+> -	if (__blk_end_request(rq, error, cmd_len)) {
+> -		printk(KERN_WARNING DRV_NAME
+> -		    ": __blk_end_request blew, %s-cmd total %u rqlen %ld\n",
+> -		    blk_pc_request(rq)? "pc": "fs", cmd_len, rqlen);
+> -	}
+> +	__blk_end_request_all(rq, error);
+>  }
 
-void *thread(void *arg)
-{
-        sleep(5);
-        return NULL;
-}
+I applaud this. We needed blk_end_this_mudafakin_request() for a long time.
+Why two underscores?
 
-void main(void)
-{
-        pthread_t thr;
-        pthread_create(&thr, NULL, thread, NULL);
-}
-
-The above instantly triggers it. It appears we fail to cleanup on the
-reparent path. I'll go root around in exit.c.
-
+-- Pete
