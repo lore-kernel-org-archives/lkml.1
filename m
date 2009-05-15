@@ -1,79 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761608AbZEOOw6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756434AbZEOOxl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761608AbZEOOw6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 10:52:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752745AbZEOOwt
+	id S1756434AbZEOOxl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 10:53:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753490AbZEOOxc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 10:52:49 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:38632 "EHLO ogre.sisk.pl"
+	Fri, 15 May 2009 10:53:32 -0400
+Received: from cantor2.suse.de ([195.135.220.15]:40389 "EHLO mx2.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752200AbZEOOws (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 10:52:48 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pavel Machek <pavel@ucw.cz>
-Subject: Re: [PATCH 5/6] PM/Hibernate: Do not release preallocated memory unnecessarily (rev. 2)
-Date: Fri, 15 May 2009 16:52:16 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Wu Fengguang <fengguang.wu@intel.com>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Nigel Cunningham <nigel@tuxonice.net>,
-       David Rientjes <rientjes@google.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-References: <200905070040.08561.rjw@sisk.pl> <200905141952.21267.rjw@sisk.pl> <20090515131115.GC1976@elf.ucw.cz>
-In-Reply-To: <20090515131115.GC1976@elf.ucw.cz>
+	id S1752008AbZEOOxb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 10:53:31 -0400
+Date: Fri, 15 May 2009 07:49:01 -0700
+From: Greg KH <gregkh@suse.de>
+To: Jiri Slaby <jirislaby@gmail.com>
+Cc: linux-kernel@vger.kernel.org, stable@kernel.org,
+       Justin Forbes <jmforbes@linuxtx.org>,
+       Zwane Mwaikambo <zwane@arm.linux.org.uk>,
+       "Theodore Ts'o" <tytso@mit.edu>, Randy Dunlap <rdunlap@xenotime.net>,
+       Dave Jones <davej@redhat.com>, Chuck Wolber <chuckw@quantumlinux.com>,
+       Chris Wedgwood <reviews@ml.cw.f00f.org>,
+       Michael Krufky <mkrufky@linuxtv.org>, Chuck Ebbert <cebbert@redhat.com>,
+       Domenico Andreoli <cavokz@gmail.com>, Willy Tarreau <w@1wt.eu>,
+       Rodrigo Rubira Branco <rbranco@la.checkpoint.com>,
+       Jake Edge <jake@lwn.net>, Eugene Teo <eteo@redhat.com>,
+       torvalds@linux-foundation.org, akpm@linux-foundation.org,
+       alan@lxorguk.ukuu.org.uk, "John W. Linville" <linville@tuxdriver.com>
+Subject: Re: [patch 29/51] mac80211: pid, fix memory corruption
+Message-ID: <20090515144901.GB27812@suse.de>
+References: <20090514223235.348540705@mini.kroah.org> <20090514223525.042094922@mini.kroah.org> <4A0D0A76.7040806@gmail.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905151652.17418.rjw@sisk.pl>
+In-Reply-To: <4A0D0A76.7040806@gmail.com>
+User-Agent: Mutt/1.5.19 (2009-01-05)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Friday 15 May 2009, Pavel Machek wrote:
-> On Thu 2009-05-14 19:52:20, Rafael J. Wysocki wrote:
-> > On Thursday 14 May 2009, Pavel Machek wrote:
-> > > Hi!
-> > > 
-> > > > Since the hibernation code is now going to use allocations of memory
-> > > > to make enough room for the image, it can also use the page frames
-> > > > allocated at this stage as image page frames.  The low-level
-> > > > hibernation code needs to be rearranged for this purpose, but it
-> > > > allows us to avoid freeing a great number of pages and allocating
-> > > > these same pages once again later, so it generally is worth doing.
-> > > > 
-> > > > [rev. 2: Take highmem into account correctly.]
-> > > 
-> > > I don't get it. What is advantage of this patch? It makes the code
-> > > more complex... Is it supposed to be faster?
-> > 
-> > Yes, in some test cases it is reported to be faster (along with [4/6],
-> > actually).
-> > 
-> > Besides, we'd like to get rid of shrink_all_memory() eventually and it is a
-> > step in this direction.
+On Fri, May 15, 2009 at 08:23:50AM +0200, Jiri Slaby wrote:
+> Hi,
 > 
-> Ok, but maybe we should wait with applying this until we have patches
-> that actually get us rid of shrink_all_memory?
+> note that you were about to drop this one now because of waiting for a
+> fixup which is not upstream so far. Did anything change?
 
-Well, the $subject patch is only an optimization of top of [4/6] that you've
-just acked. ;-)
+Hm, no, I dropped a different patch,
+	mac80211-minstrel-fix-memory-corruption.patch
+did I drop the wrong one?
 
-In fact [4/6] changes the approach to the memory shrinking and the $subject
-one is only to avoid freeing all of the memory we've allocated and allocating
-it once again later.
 
-> Maybe it will not be feasible for speed reasons after all, or something...
+Should I bring that one back and drop the one below?
 
-At least it allows us to drop shrink_all_memory() easily for the sake of
-experimentation (it's sufficient to comment out just one line of code for this
-purpose).
+confused,
 
-Besides, after this patchset shrink_all_memory() is _only_ needed for
-performance, so it should be possible to get rid of it relatively quckly.
+greg k-h
 
-Thanks,
-Rafael
+> (This is the one which fixes a memory corruption, but triggers a bug
+> causing oopses on single band cards.)
+> 
+> On 05/15/2009 12:33 AM, Greg KH wrote:
+> From: Jiri Slaby <jirislaby@gmail.com>
+> 
+> commit 6909268dc93ae4b0b8e1ebb4b2fa70b1a47dd347 upstream.
+> 
+> pid doesn't count with some band having more bitrates than the one
+> associated the first time.
+> Fix that by counting the maximal available bitrate count and allocate
+> big enough space.
+> 
+> Secondly, fix touching uninitialized memory which causes panics.
+> Index sucked from this random memory points to the hell.
+> The fix is to sort the rates on each band change.
+> 
+> Signed-off-by: Jiri Slaby <jirislaby@gmail.com>
+> Signed-off-by: John W. Linville <linville@tuxdriver.com>
+> Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
