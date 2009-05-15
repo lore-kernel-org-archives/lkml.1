@@ -1,56 +1,228 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762521AbZEOPR2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762302AbZEOPSl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762521AbZEOPR2 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 11:17:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754836AbZEOPRS
+	id S1762302AbZEOPSl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 11:18:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbZEOPSc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 11:17:18 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:41730 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753057AbZEOPRR (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 11:17:17 -0400
-Date: Fri, 15 May 2009 08:16:26 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jason Wessel <jason.wessel@windriver.com>
-cc: linux-kernel@vger.kernel.org, kgdb-bugreport@lists.sourceforge.net
-Subject: Re: [PATCH 2/3] kgdb,i386: use address that SP register points to
- in the exception frame
-In-Reply-To: <1242393479-19351-3-git-send-email-jason.wessel@windriver.com>
-Message-ID: <alpine.LFD.2.01.0905150814180.3343@localhost.localdomain>
-References: <1242393479-19351-1-git-send-email-jason.wessel@windriver.com> <1242393479-19351-2-git-send-email-jason.wessel@windriver.com> <1242393479-19351-3-git-send-email-jason.wessel@windriver.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Fri, 15 May 2009 11:18:32 -0400
+Received: from e5.ny.us.ibm.com ([32.97.182.145]:34184 "EHLO e5.ny.us.ibm.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752079AbZEOPSb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 11:18:31 -0400
+Date: Fri, 15 May 2009 20:48:08 +0530
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: "linux-mm@kvack.org" <linux-mm@kvack.org>
+Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>
+Subject: [RFC] Low overhead patches for the memory cgroup controller (v2)
+Message-ID: <20090515151808.GE4451@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Feature: Remove the overhead associated with the root cgroup
+
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+
+This patch changes the memory cgroup and removes the overhead associated
+with LRU maintenance of all pages in the root cgroup. As a side-effect, we can
+no longer set a memory hard limit in the root cgroup.
+
+A new flag is used to track page_cgroup associated with the root cgroup
+pages. A new flag to track whether the page has been accounted or not
+has been added as well.
+
+Review comments higly appreciated
+
+Tests
+
+1. Tested with allocate, touch and limit test case for a non-root cgroup
+2. For the root cgroup tested performance impact with reaim
 
 
-On Fri, 15 May 2009, Jason Wessel wrote:
->
-> The treatment of the SP register is different on x86_64 and i386.
-> This is a regression fix that lived outside the mainline kernel from
-> 2.6.27 to now.  The regression was a result of the original merge
-> consolidation of the i386 and x86_64 archs to x86.
-> 
-> The incorrectly reported SP on i386 prevented stack tracebacks from
-> working correctly in gdb.
+		+patch		mmtom-08-may-2009
+AIM9		1362.93		1338.17
+Dbase		17457.75	16021.58
+New Dbase	18070.18	16518.54
+Shared		9681.85		8882.11
+Compute		16197.79	15226.13
 
-Is this only ever used for kernel register state?
+3. Tested accounting in root cgroup to make sure it looks sane and
+correct.
 
-Because in the _general_ case, the code should likely be something like
+Signed-off-by: Balbir Singh <balbir@linux.vnet.ibm.com>
+---
 
-	if (user_mode_vm(regs)) {
-		gdb_regs[GDB_SS] = regs->ss;
-		gdb_regs[GDB_SP] = regs->sp;
-	} else {
-		gdb_regs[GDB_SS] = __KERNEL_DS;
-		gdb_regs[GDB_SP] = (unsigned long)&regs->sp
-	}
+ include/linux/page_cgroup.h |   10 ++++++++++
+ mm/memcontrol.c             |   29 ++++++++++++++++++++++++++---
+ mm/page_cgroup.c            |    1 -
+ 3 files changed, 36 insertions(+), 4 deletions(-)
 
-if the 'regs' contents can ever point to user mode state.
 
-		Linus
+diff --git a/include/linux/page_cgroup.h b/include/linux/page_cgroup.h
+index 7339c7b..8b85752 100644
+--- a/include/linux/page_cgroup.h
++++ b/include/linux/page_cgroup.h
+@@ -26,6 +26,8 @@ enum {
+ 	PCG_LOCK,  /* page cgroup is locked */
+ 	PCG_CACHE, /* charged as cache */
+ 	PCG_USED, /* this object is in use. */
++	PCG_ROOT, /* page belongs to root cgroup */
++	PCG_ACCT, /* page has been accounted for */
+ };
+ 
+ #define TESTPCGFLAG(uname, lname)			\
+@@ -46,6 +48,14 @@ TESTPCGFLAG(Cache, CACHE)
+ TESTPCGFLAG(Used, USED)
+ CLEARPCGFLAG(Used, USED)
+ 
++SETPCGFLAG(Root, ROOT)
++CLEARPCGFLAG(Root, ROOT)
++TESTPCGFLAG(Root, ROOT)
++
++SETPCGFLAG(Acct, ACCT)
++CLEARPCGFLAG(Acct, ACCT)
++TESTPCGFLAG(Acct, ACCT)
++
+ static inline int page_cgroup_nid(struct page_cgroup *pc)
+ {
+ 	return page_to_nid(pc->page);
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 9712ef7..18d2819 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -43,6 +43,7 @@
+ 
+ struct cgroup_subsys mem_cgroup_subsys __read_mostly;
+ #define MEM_CGROUP_RECLAIM_RETRIES	5
++struct mem_cgroup *root_mem_cgroup __read_mostly;
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ /* Turned on only when memory cgroup is enabled && really_do_swap_account = 0 */
+@@ -196,6 +197,10 @@ enum charge_type {
+ #define PCGF_CACHE	(1UL << PCG_CACHE)
+ #define PCGF_USED	(1UL << PCG_USED)
+ #define PCGF_LOCK	(1UL << PCG_LOCK)
++/* Not used, but added here for completeness */
++#define PCGF_ROOT	(1UL << PCG_ROOT)
++#define PCGF_ACCT	(1UL << PCG_ACCT)
++
+ static const unsigned long
+ pcg_default_flags[NR_CHARGE_TYPE] = {
+ 	PCGF_CACHE | PCGF_USED | PCGF_LOCK, /* File Cache */
+@@ -420,7 +425,7 @@ void mem_cgroup_del_lru_list(struct page *page, enum lru_list lru)
+ 		return;
+ 	pc = lookup_page_cgroup(page);
+ 	/* can happen while we handle swapcache. */
+-	if (list_empty(&pc->lru) || !pc->mem_cgroup)
++	if ((!PageCgroupAcct(pc) && list_empty(&pc->lru)) || !pc->mem_cgroup)
+ 		return;
+ 	/*
+ 	 * We don't check PCG_USED bit. It's cleared when the "page" is finally
+@@ -429,6 +434,9 @@ void mem_cgroup_del_lru_list(struct page *page, enum lru_list lru)
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	mem = pc->mem_cgroup;
+ 	MEM_CGROUP_ZSTAT(mz, lru) -= 1;
++	ClearPageCgroupAcct(pc);
++	if (PageCgroupRoot(pc))
++		return;
+ 	list_del_init(&pc->lru);
+ 	return;
+ }
+@@ -452,8 +460,8 @@ void mem_cgroup_rotate_lru_list(struct page *page, enum lru_list lru)
+ 	 * For making pc->mem_cgroup visible, insert smp_rmb() here.
+ 	 */
+ 	smp_rmb();
+-	/* unused page is not rotated. */
+-	if (!PageCgroupUsed(pc))
++	/* unused or root page is not rotated. */
++	if (!PageCgroupUsed(pc) || PageCgroupRoot(pc))
+ 		return;
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	list_move(&pc->lru, &mz->lists[lru]);
+@@ -477,6 +485,9 @@ void mem_cgroup_add_lru_list(struct page *page, enum lru_list lru)
+ 
+ 	mz = page_cgroup_zoneinfo(pc);
+ 	MEM_CGROUP_ZSTAT(mz, lru) += 1;
++	SetPageCgroupAcct(pc);
++	if (PageCgroupRoot(pc))
++		return;
+ 	list_add(&pc->lru, &mz->lists[lru]);
+ }
+ 
+@@ -1114,10 +1125,14 @@ static void __mem_cgroup_commit_charge(struct mem_cgroup *mem,
+ 		css_put(&mem->css);
+ 		return;
+ 	}
++
+ 	pc->mem_cgroup = mem;
+ 	smp_wmb();
+ 	pc->flags = pcg_default_flags[ctype];
+ 
++	if (mem == root_mem_cgroup)
++		SetPageCgroupRoot(pc);
++
+ 	mem_cgroup_charge_statistics(mem, pc, true);
+ 
+ 	unlock_page_cgroup(pc);
+@@ -1521,6 +1536,8 @@ __mem_cgroup_uncharge_common(struct page *page, enum charge_type ctype)
+ 	mem_cgroup_charge_statistics(mem, pc, false);
+ 
+ 	ClearPageCgroupUsed(pc);
++	if (mem == root_mem_cgroup)
++		ClearPageCgroupRoot(pc);
+ 	/*
+ 	 * pc->mem_cgroup is not cleared here. It will be accessed when it's
+ 	 * freed from LRU. This is safe because uncharged page is expected not
+@@ -2038,6 +2055,10 @@ static int mem_cgroup_write(struct cgroup *cont, struct cftype *cft,
+ 	name = MEMFILE_ATTR(cft->private);
+ 	switch (name) {
+ 	case RES_LIMIT:
++		if (memcg == root_mem_cgroup) { /* Can't set limit on root */
++			ret = -EINVAL;
++			break;
++		}
+ 		/* This function does all necessary parse...reuse it */
+ 		ret = res_counter_memparse_write_strategy(buffer, &val);
+ 		if (ret)
+@@ -2504,6 +2525,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+ 	if (cont->parent == NULL) {
+ 		enable_swap_cgroup();
+ 		parent = NULL;
++		root_mem_cgroup = mem;
+ 	} else {
+ 		parent = mem_cgroup_from_cont(cont->parent);
+ 		mem->use_hierarchy = parent->use_hierarchy;
+@@ -2532,6 +2554,7 @@ mem_cgroup_create(struct cgroup_subsys *ss, struct cgroup *cont)
+ 	return &mem->css;
+ free_out:
+ 	__mem_cgroup_free(mem);
++	root_mem_cgroup = NULL;
+ 	return ERR_PTR(error);
+ }
+ 
+diff --git a/mm/page_cgroup.c b/mm/page_cgroup.c
+index 09b73c5..6145ff6 100644
+--- a/mm/page_cgroup.c
++++ b/mm/page_cgroup.c
+@@ -276,7 +276,6 @@ void __meminit pgdat_page_cgroup_init(struct pglist_data *pgdat)
+ 
+ #endif
+ 
+-
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ 
+ static DEFINE_MUTEX(swap_cgroup_mutex);
+
+-- 
+	Balbir
