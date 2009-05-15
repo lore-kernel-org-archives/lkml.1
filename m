@@ -1,93 +1,169 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754593AbZEOEK3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754950AbZEOEWl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754593AbZEOEK3 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 00:10:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752431AbZEOEKO
+	id S1754950AbZEOEWl (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 00:22:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbZEOEWc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 00:10:14 -0400
-Received: from mail.deathmatch.net ([72.66.92.28]:1240 "EHLO
-	mail.deathmatch.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752418AbZEOEKM (ORCPT
+	Fri, 15 May 2009 00:22:32 -0400
+Received: from TYO202.gate.nec.co.jp ([202.32.8.206]:41340 "EHLO
+	tyo202.gate.nec.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751343AbZEOEWb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 00:10:12 -0400
-Date: Fri, 15 May 2009 00:09:04 -0400
-From: Bob Copeland <me@bobcopeland.com>
-To: Sitsofe Wheeler <sitsofe@yahoo.com>
-Cc: Jiri Slaby <jirislaby@gmail.com>, Nick Kossifidis <mickflemm@gmail.com>,
-       Frederic Weisbecker <fweisbec@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-wireless@vger.kernel.org, ath5k-devel@venema.h4ckr.net,
-       "Luis R. Rodriguez" <lrodriguez@atheros.com>
-Subject: Re: [TIP] BUG kmalloc-4096: Poison overwritten (ath5k_rx_skb_alloc)
-Message-ID: <20090515040904.GA32357@hash.localnet>
-References: <20090308030928.GB14966@hash.localnet> <49B38FB7.3000002@gmail.com> <20090310004344.GA23466@hash.localnet> <20090312061047.GA13401@silver.sucs.org> <20090313095213.GA14250@silver.sucs.org> <20090320131437.GA30120@hash.localnet> <20090329142432.GA15578@sucs.org> <20090329151401.GA26510@hash.localnet> <20090331083041.GA19657@sucs.org> <20090513214416.GA4492@sucs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090513214416.GA4492@sucs.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Fri, 15 May 2009 00:22:31 -0400
+Date: Fri, 15 May 2009 13:09:59 +0900
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>,
+       Balbir Singh <balbir@in.ibm.com>, Hugh Dickins <hugh@veritas.com>,
+       Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: [PATCH] memcg: fix stale swapcache at swapout
+Message-Id: <20090515130959.330dbd56.nishimura@mxp.nes.nec.co.jp>
+Organization: NEC Soft, Ltd.
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Wed, May 13, 2009 at 10:44:17PM +0100, Sitsofe Wheeler wrote:
-> Could you repost the patches you wanted me to test with against the
-> latest kernel?
+This patch is split out from Kamezawa-san's fix stale swap cache account leak
+patch set(v7).
 
-This is too ugly to live, but I'd like to know if you can reproduce
-with this patch.  If it still happens, then I guess it's back to
-debugging patches.  I'd love to be able to replicate this here :(
+  http://lkml.org/lkml/2009/5/11/688
 
-diff --git a/drivers/net/wireless/ath5k/base.c b/drivers/net/wireless/ath5k/base.c
-index a08bc8a..e01da34 100644
---- a/drivers/net/wireless/ath5k/base.c
-+++ b/drivers/net/wireless/ath5k/base.c
-@@ -1143,6 +1143,13 @@ struct sk_buff *ath5k_rx_skb_alloc(struct ath5k_softc *sc, dma_addr_t *skb_addr)
+I moved the definition of memcg_free_unused_swapcache() back to memcontrol.c
+(as I did in my original version) to avoid confilict with
+Kosaki-san's remove CONFIG_UNEVICTABLE_LRU config option patch.
+(it's not on mmotm yet though).
+And IMHO, this function might not be appropriate for "vmscan".
+
+This patch is based on mmotm-2009-05-13-16-34.
+===
+From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+
+Reclaiming anonymous memory in vmscan.c does following 2 steps.
+  1. add to swap and unmap.
+  2. pageout
+But above 2 steps doesn't occur at once. There are many chances
+to avoid pageout, and _really_ unused pages are swapped out by
+visit-and-check-again logic of LRU rotation.
+
+But this behavior has troubles with memcg because memcg doesn't put
+!PageCgroupUsed swapcache back to its LRU.
+These swapcache cannot be freed in memcg's LRU scanning, so swp_entry cannot
+be freed properly as a result.
+
+These swapcaches can be created by a race like below:
+
+    Assume processA is exiting and pte points to a page(!PageSwapCache).
+    And processB is trying reclaim the page.
+
+              processA                   |           processB
+    -------------------------------------+-------------------------------------
+      (page_remove_rmap())               |  (shrink_page_list())
+         mem_cgroup_uncharge_page()      |
+            ->uncharged because it's not |
+              PageSwapCache yet.         |
+              So, both mem/memsw.usage   |
+              are decremented.           |
+                                         |    add_to_swap() -> added to swapcache.
+
+    If this page goes thorough without being freed for some reason, this page
+    doesn't goes back to memcg's LRU because of !PageCgroupUsed.
+
+This patch adds a hook after add_to_swap() to check the page is mapped by a
+process or not, and frees it if it has been unmapped already.
+
+If a page has been on swap cache already when the owner process calls
+page_remove_rmap() -> mem_cgroup_uncharge_page(), the page is not uncharged.
+It goes back to memcg's LRU even if it goes through shrink_page_list()
+without being freed, so this patch ignores these case.
+
+Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+---
+ include/linux/swap.h |   12 ++++++++++++
+ mm/memcontrol.c      |   14 +++++++++++++-
+ mm/vmscan.c          |    8 ++++++++
+ 3 files changed, 33 insertions(+), 1 deletions(-)
+
+diff --git a/include/linux/swap.h b/include/linux/swap.h
+index 6ea541d..00d8066 100644
+--- a/include/linux/swap.h
++++ b/include/linux/swap.h
+@@ -336,11 +336,17 @@ static inline void disable_swap_token(void)
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+ extern void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent);
++extern int memcg_free_unused_swapcache(struct page *page);
+ #else
+ static inline void
+ mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+ {
+ }
++static inline int
++memcg_free_unused_swapcache(struct page *page)
++{
++	return 0;
++}
+ #endif
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ extern void mem_cgroup_uncharge_swap(swp_entry_t ent);
+@@ -436,6 +442,12 @@ mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+ {
  }
  
- static int
-+ath5k_rxbuf_requeue(struct ath5k_softc *sc, struct ath5k_buf *bf)
++static inline int
++memcg_free_unused_swapcache(struct page *page)
 +{
-+	list_move_tail(&bf->list, &sc->rxbuf);
-+	return ath5k_rxbuf_setup(sc, bf);
++	return 0;
 +}
 +
-+static int
- ath5k_rxbuf_setup(struct ath5k_softc *sc, struct ath5k_buf *bf)
- {
- 	struct ath5k_hw *ah = sc->ah;
-@@ -1751,7 +1758,7 @@ ath5k_tasklet_rx(unsigned long data)
- 		goto unlock;
- 	}
- 	bf_last = list_entry(sc->rxbuf.prev, struct ath5k_buf, list);
--	do {
-+	for (;;) {
- 		rxs.flag = 0;
- 
- 		bf = list_first_entry(&sc->rxbuf, struct ath5k_buf, list);
-@@ -1904,13 +1911,18 @@ accept:
- 		if (sc->opmode == NL80211_IFTYPE_ADHOC)
- 			ath5k_check_ibss_tsf(sc, skb, &rxs);
- 
--		__ieee80211_rx(sc->hw, skb, &rxs);
--
- 		bf->skb = next_skb;
- 		bf->skbaddr = next_skb_addr;
-+		if (ath5k_rxbuf_requeue(sc, bf))
-+			break;
-+
-+		__ieee80211_rx(sc->hw, skb, &rxs);
-+		continue;
- next:
--		list_move_tail(&bf->list, &sc->rxbuf);
--	} while (ath5k_rxbuf_setup(sc, bf) == 0);
-+		if (ath5k_rxbuf_requeue(sc, bf))
-+			break;
-+	}
-+
- unlock:
- 	spin_unlock(&sc->rxbuflock);
+ #endif /* CONFIG_SWAP */
+ #endif /* __KERNEL__*/
+ #endif /* _LINUX_SWAP_H */
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index 0c90345..63844cd 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -1578,7 +1578,19 @@ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+ 	if (memcg)
+ 		css_put(&memcg->css);
  }
-
--- 
-Bob Copeland %% www.bobcopeland.com
-
+-#endif
++
++int memcg_free_unused_swapcache(struct page *page)
++{
++	VM_BUG_ON(!PageLocked(page));
++	VM_BUG_ON(!PageSwapCache(page));
++
++	if (mem_cgroup_disabled())
++		return 0;
++	if (!PageAnon(page) || page_mapped(page))
++		return 0;
++	return try_to_free_swap(page);	/* checks page_swapcount */
++}
++#endif /* CONFIG_SWAP */
+ 
+ #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+ /*
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index 2f9d555..1fd0e43 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -665,6 +665,14 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+ 				goto keep_locked;
+ 			if (!add_to_swap(page))
+ 				goto activate_locked;
++			/*
++			 * The owner process might have uncharged the page
++			 * (by page_remove_rmap()) before it has been added
++			 * to swap cache.
++			 * Check it here to avoid making it stale.
++			 */
++			if (memcg_free_unused_swapcache(page))
++				goto keep_locked;
+ 			may_enter_fs = 1;
+ 		}
+ 
