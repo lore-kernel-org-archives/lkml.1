@@ -1,239 +1,93 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757558AbZEOEZw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757442AbZEOE3i@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757558AbZEOEZw (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 00:25:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751556AbZEOEZm
+	id S1757442AbZEOE3i (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 00:29:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751152AbZEOE3Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 00:25:42 -0400
-Received: from wf-out-1314.google.com ([209.85.200.173]:34683 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750958AbZEOEZk convert rfc822-to-8bit (ORCPT
+	Fri, 15 May 2009 00:29:24 -0400
+Received: from n23a.bullet.mail.mud.yahoo.com ([68.142.207.189]:27977 "HELO
+	n23a.bullet.mail.mud.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751556AbZEOE3X (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 00:25:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=LB5kAmvgygtWIU+4VEfZREHM+QxV1lt7G3zIIppBqbQwEbtNcRaCaMcPS1gPCOojWf
-         BnIf1T/FgUwNVW8I3B7gCTkEYxohzjhNd6cU69R+rlf0TFlKz096haRw+CBpESdmrGCL
-         UI4RP2X8iUyU8vgBMl3XiTGhkOTD/0LbWM2ao=
-MIME-Version: 1.0
-In-Reply-To: <5d5443650905140328v319e673o2f7b865e21619486@mail.gmail.com>
-References: <20090514100909.GA23626@roarinelk.homelinux.net>
-	 <5d5443650905140328v319e673o2f7b865e21619486@mail.gmail.com>
-Date: Fri, 15 May 2009 13:25:41 +0900
-Message-ID: <483a38b80905142125l6f3be674m3b7ef9083cfcbdeb@mail.gmail.com>
-Subject: Re: [PATCH] TSC2007: private data for platform callbacks.
-From: Kwangwoo Lee <kwangwoo.lee@gmail.com>
-To: Manuel Lauss <mano@roarinelk.homelinux.net>
-Cc: Trilok Soni <soni.trilok@gmail.com>, Kwangwoo Lee <kwangwoo.lee@gmail.com>,
-       linux-kernel@vger.kernel.org,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Fri, 15 May 2009 00:29:23 -0400
+X-Yahoo-Newman-Id: 269596.77825.bm@omp418.mail.mud.yahoo.com
+X-YMail-OSG: xltqR1wVM1kuzpwILP1iSFYQQcDZtrT6kbisvKnsLkSYSqLBLO_vWWMhF1wdiLarRxVcJdRw0eafERWbdK_YAYiulISJaHhhGlG9DviYTshGnZ1WaXl8G0nyIF8uXauRN.GV8dDBymfsPgHCWXEdekrgBjIYF9urpKQ7ReKA7ApLuWA9hcth63ykn5iqtYt.7U7rytGzlLgIEzvGDsZ8qm1cVXboIzeOXkaQi9ZaJ_dbqSV.F6hgXP_9GNiVxLumeObVAqefn50xrEWJW3sveMCzWWGnCmU2IkvUWBxkR7Eh89v1KtAVyf_FmLXbry4idrgcBKMn_VdRqRigPXGLJWcU0kQ14S0F6._TCVJ6fz6_jwRuPeLISJsvKY8lev6fGZ80GWg-
+X-Yahoo-Newman-Property: ymail-3
+Subject: KVM 10/Gb Ethernet PCIe passthrough with Linux/iSCSI and large
+	block sizes
+From: "Nicholas A. Bellinger" <nab@linux-iscsi.org>
+To: kvm-devel <kvm@vger.kernel.org>, linux-scsi <linux-scsi@vger.kernel.org>,
+       Linux-netdev <netdev@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       "H. Peter Anvin" <hpa@zytor.com>, Hannes Reinecke <hare@suse.de>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       Mike Christie <michaelc@cs.wisc.edu>, Christoph Hellwig <hch@lst.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sheng Yang <sheng@linux.intel.com>,
+       Leonid Grossman <leonid.grossman@neterion.com>,
+       Ramkrishna Vepa <Ramkrishna.Vepa@neterion.com>,
+       Rastapur Santosh <santosh.rastapur@neterion.com>
+Content-Type: text/plain
+Date: Thu, 14 May 2009 21:29:21 -0700
+Message-Id: <1242361761.21442.276.camel@haakon2.linux-iscsi.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.22.3.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Manual,
+Greetings all,
 
-On Thu, May 14, 2009 at 7:28 PM, Trilok Soni <soni.trilok@gmail.com> wrote:
-> Hi Manuel,
->
-> CCing linux-input mailing list, so not deleting any code from this
-> e-mail while replying.
->
-> On Thu, May 14, 2009 at 3:39 PM, Manuel Lauss
-> <mano@roarinelk.homelinux.net> wrote:
->> Add a private data field to the tsc2007 platform data and pass this
->> to the callbacks.
->
-> I hope that you have created this patch on top of two recently posted
-> patches by Kwangwoo Lee
-> to merge changes from Thierry.
->
->>
->> Signed-off-by: Manuel Lauss <mano@roarinelk.homelinux.net>
->> ---
->>  drivers/input/touchscreen/tsc2007.c |   52 +++++++++++++++++++++++-----------
->>  include/linux/i2c/tsc2007.h         |   10 ++++---
->>  2 files changed, 41 insertions(+), 21 deletions(-)
->>
->> diff --git a/drivers/input/touchscreen/tsc2007.c b/drivers/input/touchscreen/tsc2007.c
->> index 948e167..5c4242d 100644
->> --- a/drivers/input/touchscreen/tsc2007.c
->> +++ b/drivers/input/touchscreen/tsc2007.c
->> @@ -83,10 +83,35 @@ struct tsc2007 {
->>        unsigned                pendown;
->>        int                     irq;
->>
->> -       int                     (*get_pendown_state)(void);
->> -       void                    (*clear_penirq)(void);
->> +       struct tsc2007_platform_data *pd;
+The first test results for Linux/iSCSI Initiators and targets for large
+block sizes using 10 Gb/sec Ethernet + PCIe device-passthrough into
+Linux/KVM guests have been posted at:
 
-Why is this pd is contained in struct tsc2007?
+http://linux-iscsi.org/index.php/KVM-LIO-Target
 
->>  };
->>
->> +/* ask platform for pendown state */
->> +static inline int ts_get_pendown_state(struct tsc2007 *ts)
->> +{
->> +       return ts->pd->get_pendown_state(ts->pd->priv);
+So far, the results have been quite impressive using the Neterion X3100
+series hardware with recent KVM-85 stable code (with Marcelo's patches,
+see the above link) on v2.6.29.2 KVM guests, and using v2.6.30-rc3 KVM
+Hosts.
 
-Is it required in get_pendown_state() function in your platform?
-The function just return true/false indicating the pendown state.
+Using iSCSI RFC defined MC/S to scale a *single* KVM accessable
+Linux/iSCSI Logical Unit to 10 Gb/sec line-rate speeds has been
+successful using Core-iSCSI WRITE/READ (bi-directional) traffic using
+Linux-Test-Project disktest pthreaded benchmark with O_DIRECT enabled.
+Using Core-iSCSI MC/S w/ iSCSI READ (uni-directional) the average is
+about 6-7 Gb/sec, and with MC/S iSCSI WRITE (uni-directional) the
+average is about 5 Gb/sec to the RAMDISK_DR and FILEIO storage objects
+for these same streaming tests.  Please see the link for more
+information on the tests and hardware/software setup.
 
->
-> So, we don't need check here, like this:
->
-> if (ts->pd->get_pendown_state)
->          ret =  ts->pd->get_pendown_state(ts->pd->priv);
->
->> +}
->> +
->> +/* ask platform to clear pendown irq if available */
->> +static inline void ts_clear_penirq(struct tsc2007 *ts)
->> +{
->> +       if (ts->pd->clear_penirq)
->> +               ts->pd->clear_penirq(ts->pd->priv);
->> +}
->> +
->> +static inline void ts_init_platform_hw(struct tsc2007 *ts)
->> +{
->> +       if (ts->pd->init_platform_hw)
->> +               ts->pd->init_platform_hw(ts->pd->priv);
->> +}
->> +
->> +static inline void ts_exit_platform_hw(struct tsc2007 *ts)
->> +{
->> +       if (ts->pd->exit_platform_hw)
->> +               ts->pd->exit_platform_hw(ts->pd->priv);
->> +}
->> +
->> +
->>  static inline int tsc2007_xfer(struct tsc2007 *tsc, u8 cmd)
->>  {
->>        s32 data;
->> @@ -129,7 +154,7 @@ static void tsc2007_send_event(void *tsc)
->>                rt = z2;
->>                rt -= z1;
->>                rt *= x;
->> -               rt *= ts->x_plate_ohms;
->> +               rt *= ts->pd->x_plate_ohms;
->>                rt /= z1;
->>                rt = (rt + 2047) >> 12;
->>        } else
->> @@ -204,7 +229,7 @@ static enum hrtimer_restart tsc2007_timer(struct hrtimer *handle)
->>
->>        spin_lock_irqsave(&ts->lock, flags);
->>
->> -       if (unlikely(!ts->get_pendown_state() && ts->pendown)) {
->> +       if (unlikely(!ts_get_pendown_state(ts) && ts->pendown)) {
->>                struct input_dev *input = ts->input;
->>
->>                dev_dbg(&ts->client->dev, "UP\n");
->> @@ -235,14 +260,13 @@ static irqreturn_t tsc2007_irq(int irq, void *handle)
->>
->>        spin_lock_irqsave(&ts->lock, flags);
->>
->> -       if (likely(ts->get_pendown_state())) {
->> +       if (likely(ts_get_pendown_state(ts))) {
->>                disable_irq_nosync(ts->irq);
->>                hrtimer_start(&ts->timer, ktime_set(0, TS_POLL_DELAY),
->>                                        HRTIMER_MODE_REL);
->>        }
->>
->> -       if (ts->clear_penirq)
->> -               ts->clear_penirq();
->> +       ts_clear_penirq(ts);
->>
->>        spin_unlock_irqrestore(&ts->lock, flags);
->>
->> @@ -253,7 +277,7 @@ static int tsc2007_probe(struct i2c_client *client,
->>                        const struct i2c_device_id *id)
->>  {
->>        struct tsc2007 *ts;
->> -       struct tsc2007_platform_data *pdata = pdata = client->dev.platform_data;
->> +       struct tsc2007_platform_data *pdata = client->dev.platform_data;
->
-> This change shows that you need to rebase based on two patches
-> submitted by Lee recently.
->
->>        struct input_dev *input_dev;
->>        int err;
->>
->> @@ -283,12 +307,8 @@ static int tsc2007_probe(struct i2c_client *client,
->>
->>        spin_lock_init(&ts->lock);
->>
->> -       ts->model             = pdata->model;
->> -       ts->x_plate_ohms      = pdata->x_plate_ohms;
->> -       ts->get_pendown_state = pdata->get_pendown_state;
->> -       ts->clear_penirq      = pdata->clear_penirq;
->> -
->> -       pdata->init_platform_hw();
->> +       ts->pd = pdata;
->> +       ts_init_platform_hw(ts);
->>
->>        snprintf(ts->phys, sizeof(ts->phys),
->>                 "%s/input0", dev_name(&client->dev));
->> @@ -335,10 +355,8 @@ static int tsc2007_probe(struct i2c_client *client,
->>  static int tsc2007_remove(struct i2c_client *client)
->>  {
->>        struct tsc2007  *ts = i2c_get_clientdata(client);
->> -       struct tsc2007_platform_data *pdata;
->>
->> -       pdata = client->dev.platform_data;
->> -       pdata->exit_platform_hw();
->> +       ts_exit_platform_hw(ts);
->>
->>        free_irq(ts->irq, ts);
->>        hrtimer_cancel(&ts->timer);
->> diff --git a/include/linux/i2c/tsc2007.h b/include/linux/i2c/tsc2007.h
->> index c6361fb..45582b3 100644
->> --- a/include/linux/i2c/tsc2007.h
->> +++ b/include/linux/i2c/tsc2007.h
->> @@ -7,11 +7,13 @@ struct tsc2007_platform_data {
->>        u16     model;                          /* 2007. */
->>        u16     x_plate_ohms;
->>
->> -       int     (*get_pendown_state)(void);
->> -       void    (*clear_penirq)(void);          /* If needed, clear 2nd level
->> +       int     (*get_pendown_state)(void *priv);
->> +       void    (*clear_penirq)(void *priv);    /* If needed, clear 2nd level
->>                                                   interrupt source */
->> -       int     (*init_platform_hw)(void);
->> -       void    (*exit_platform_hw)(void);
->> +       int     (*init_platform_hw)(void *priv);
->> +       void    (*exit_platform_hw)(void *priv);
->> +
->> +       void    *priv;                          /* passed to callbacks */
->>  };
->>
->>  #endif
->> --
->> 1.6.3
->>
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->> Please read the FAQ at  http://www.tux.org/lkml/
->>
->
->
->
-> --
-> ---Trilok Soni
-> http://triloksoni.wordpress.com
-> http://www.linkedin.com/in/triloksoni
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-input" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+The tests have been run with both upstream Open-iSCSI and Core-iSCSI
+Initiators against Target_Core_Mod/LIO-Target v3.0 in KVM guests.  It is
+important to note that these tests have been run with tcp_sendpage()
+disabled (tcp_sendpage() is enabled by default in LIO-Target and
+Open-iSCSI) in 10 Gb/sec KVM guests, which have been disable into order
+to get up running with the 10 Gb/sec hardware.  1 Gb/sec e1000e ports
+are stable with sendpage() in LIO-Target KVM guests, and these will be
+enabled in 10 Gb/sec hardware in subsequent tests.  Also note that
+Open-iSCSI WRITEs using tcp_sendpage() have been ommited for this first
+run of tests.
 
-Regards,
+It is also important to note that both iSCSI MC/S and dm-multipath are
+methods to allow a single Linux/SCSI Logical Unit to scale across
+multiple TCP connections using the iSCSI Protocol.  Both of these
+methods (iSCSI RFC fabric level multiplexing and OS-level SCSI
+Multipath) allow for means for scaling across multiple X3110 Vpaths
+(MSI-X TX/RX pairs), and MC/S is a method that has a low amount of
+overhead.
 
--- 
-Kwangwoo Lee <kwangwoo.lee@gmail.com>
+Some of the future setups for KVM + 10 Gb/sec will be using dm-multipath
+block devices, 10 Gb/sec Ethernet PCIe multi-function mode into KVM
+guest, as well as PCIe SR-IOV on recent IOMMU capable hardware
+platforms.
+
+Many thanks to the Neterion folks and Sheng Yang for answering my
+questions!
+
+--nab
+
+
