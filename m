@@ -1,13 +1,13 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762687AbZEOMPd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762676AbZEOMO7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762687AbZEOMPd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 08:15:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757540AbZEOMLr
+	id S1762676AbZEOMO7 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 08:14:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758907AbZEOMLq
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 08:11:47 -0400
-Received: from mail09.linbit.com ([212.69.161.110]:47227 "EHLO
+	Fri, 15 May 2009 08:11:46 -0400
+Received: from mail09.linbit.com ([212.69.161.110]:47211 "EHLO
 	mail09.linbit.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757634AbZEOML3 (ORCPT
+	with ESMTP id S1757631AbZEOML3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 May 2009 08:11:29 -0400
 From: Philipp Reisner <philipp.reisner@linbit.com>
@@ -24,11 +24,11 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
        Bart Van Assche <bart.vanassche@gmail.com>,
        Lars Ellenberg <lars.ellenberg@linbit.com>,
        Philipp Reisner <philipp.reisner@linbit.com>
-Subject: [PATCH 12/16] DRBD: variable_length_integer_encoding
-Date: Fri, 15 May 2009 14:10:39 +0200
-Message-Id: <1242389443-3470-13-git-send-email-philipp.reisner@linbit.com>
+Subject: [PATCH 10/16] DRBD: proc
+Date: Fri, 15 May 2009 14:10:37 +0200
+Message-Id: <1242389443-3470-11-git-send-email-philipp.reisner@linbit.com>
 X-Mailer: git-send-email 1.6.0.4
-In-Reply-To: <1242389443-3470-12-git-send-email-philipp.reisner@linbit.com>
+In-Reply-To: <1242389443-3470-10-git-send-email-philipp.reisner@linbit.com>
 References: <1242389443-3470-1-git-send-email-philipp.reisner@linbit.com>
  <1242389443-3470-2-git-send-email-philipp.reisner@linbit.com>
  <1242389443-3470-3-git-send-email-philipp.reisner@linbit.com>
@@ -39,28 +39,25 @@ References: <1242389443-3470-1-git-send-email-philipp.reisner@linbit.com>
  <1242389443-3470-8-git-send-email-philipp.reisner@linbit.com>
  <1242389443-3470-9-git-send-email-philipp.reisner@linbit.com>
  <1242389443-3470-10-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-11-git-send-email-philipp.reisner@linbit.com>
- <1242389443-3470-12-git-send-email-philipp.reisner@linbit.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Encoding of our simple LRE compression scheme. It is very effective since
-large parts of our bitmap are sparse.
+The /proc/drbd interface.
 
 Signed-off-by: Philipp Reisner <philipp.reisner@linbit.com>
 Signed-off-by: Lars Ellenberg <lars.ellenberg@linbit.com>
 
 ---
-diff --git a/drivers/block/drbd/drbd_vli.h b/drivers/block/drbd/drbd_vli.h
+diff --git a/drivers/block/drbd/drbd_proc.c b/drivers/block/drbd/drbd_proc.c
 new file mode 100644
-index 0000000..fc82400
+index 0000000..b59b9d9
 --- /dev/null
-+++ b/drivers/block/drbd/drbd_vli.h
-@@ -0,0 +1,351 @@
++++ b/drivers/block/drbd/drbd_proc.c
+@@ -0,0 +1,267 @@
 +/*
-+-*- linux-c -*-
-+   drbd_receiver.c
++   drbd_proc.c
++
 +   This file is part of DRBD by Philipp Reisner and Lars Ellenberg.
 +
 +   Copyright (C) 2001-2008, LINBIT Information Technologies GmbH.
@@ -80,332 +77,248 @@ index 0000000..fc82400
 +   You should have received a copy of the GNU General Public License
 +   along with drbd; see the file COPYING.  If not, write to
 +   the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++
 + */
 +
-+#ifndef _DRBD_VLI_H
-+#define _DRBD_VLI_H
++#include <linux/autoconf.h>
++#include <linux/module.h>
 +
-+/*
-+ * At a granularity of 4KiB storage represented per bit,
-+ * and stroage sizes of several TiB,
-+ * and possibly small-bandwidth replication,
-+ * the bitmap transfer time can take much too long,
-+ * if transmitted in plain text.
-+ *
-+ * We try to reduce the transfered bitmap information
-+ * by encoding runlengths of bit polarity.
-+ *
-+ * We never actually need to encode a "zero" (runlengths are positive).
-+ * But then we have to store the value of the first bit.
-+ * The first bit of information thus shall encode if the first runlength
-+ * gives the number of set or unset bits.
-+ *
-+ * We assume that large areas are either completely set or unset,
-+ * which gives good compression with any runlength method,
-+ * even when encoding the runlength as fixed size 32bit/64bit integers.
-+ *
-+ * Still, there may be areas where the polarity flips every few bits,
-+ * and encoding the runlength sequence of those areas with fix size
-+ * integers would be much worse than plaintext.
-+ *
-+ * We want to encode small runlength values with minimum code length,
-+ * while still being able to encode a Huge run of all zeros.
-+ *
-+ * Thus we need a Variable Length Integer encoding, VLI.
-+ *
-+ * For some cases, we produce more code bits than plaintext input.
-+ * We need to send incompressible chunks as plaintext, skip over them
-+ * and then see if the next chunk compresses better.
-+ *
-+ * We don't care too much about "excellent" compression ratio for large
-+ * runlengths (all set/all clear): whether we achieve a factor of 100
-+ * or 1000 is not that much of an issue.
-+ * We do not want to waste too much on short runlengths in the "noisy"
-+ * parts of the bitmap, though.
-+ *
-+ * There are endless variants of VLI, we experimented with:
-+ *  * simple byte-based
-+ *  * various bit based with different code word length.
-+ *
-+ * To avoid yet an other configuration parameter (choice of bitmap compression
-+ * algorithm) which was difficult to explain and tune, we just chose the one
-+ * variant that turned out best in all test cases.
-+ * Based on real world usage patterns, with device sizes ranging from a few GiB
-+ * to several TiB, file server/mailserver/webserver/mysql/postgress,
-+ * mostly idle to really busy, the all time winner (though sometimes only
-+ * marginally better) is:
-+ */
++#include <asm/uaccess.h>
++#include <linux/fs.h>
++#include <linux/file.h>
++#include <linux/slab.h>
++#include <linux/proc_fs.h>
++#include <linux/seq_file.h>
++#include <linux/drbd_config.h>
++#include <linux/drbd.h>
++#include "drbd_int.h"
 +
-+/*
-+ * encoding is "visualised" as
-+ * __little endian__ bitstream, least significant bit first (left most)
-+ *
-+ * this particular encoding is chosen so that the prefix code
-+ * starts as unary encoding the level, then modified so that
-+ * 10 levels can be described in 8bit, with minimal overhead
-+ * for the smaller levels.
-+ *
-+ * Number of data bits follow fibonacci sequence, with the exception of the
-+ * last level (+1 data bit, so it makes 64bit total).  The only worse code when
-+ * encoding bit polarity runlength is 1 plain bits => 2 code bits.
-+prefix    data bits                                    max val  Nº data bits
-+0 x                                                         0x2            1
-+10 x                                                        0x4            1
-+110 xx                                                      0x8            2
-+1110 xxx                                                   0x10            3
-+11110 xxx xx                                               0x30            5
-+111110 xx xxxxxx                                          0x130            8
-+11111100  xxxxxxxx xxxxx                                 0x2130           13
-+11111110  xxxxxxxx xxxxxxxx xxxxx                      0x202130           21
-+11111101  xxxxxxxx xxxxxxxx xxxxxxxx  xxxxxxxx xx   0x400202130           34
-+11111111  xxxxxxxx xxxxxxxx xxxxxxxx  xxxxxxxx xxxxxxxx xxxxxxxx xxxxxxxx 56
-+ * maximum encodable value: 0x100000400202130 == 2**56 + some */
++STATIC int drbd_proc_open(struct inode *inode, struct file *file);
 +
-+/* compression "table":
-+ transmitted   x                                0.29
-+ as plaintext x                                  ........................
-+             x                                   ........................
-+            x                                    ........................
-+           x    0.59                         0.21........................
-+          x      ........................................................
-+         x       .. c ...................................................
-+        x    0.44.. o ...................................................
-+       x .......... d ...................................................
-+      x  .......... e ...................................................
-+     X.............   ...................................................
-+    x.............. b ...................................................
-+2.0x............... i ...................................................
-+ #X................ t ...................................................
-+ #................. s ...........................  plain bits  ..........
-+-+-----------------------------------------------------------------------
-+ 1             16              32                              64
-+*/
 +
-+/* LEVEL: (total bits, prefix bits, prefix value),
-+ * sorted ascending by number of total bits.
-+ * The rest of the code table is calculated at compiletime from this. */
-+
-+/* fibonacci data 1, 1, ... */
-+#define VLI_L_1_1() do { \
-+	LEVEL( 2, 1, 0x00); \
-+	LEVEL( 3, 2, 0x01); \
-+	LEVEL( 5, 3, 0x03); \
-+	LEVEL( 7, 4, 0x07); \
-+	LEVEL(10, 5, 0x0f); \
-+	LEVEL(14, 6, 0x1f); \
-+	LEVEL(21, 8, 0x3f); \
-+	LEVEL(29, 8, 0x7f); \
-+	LEVEL(42, 8, 0xbf); \
-+	LEVEL(64, 8, 0xff); \
-+	} while (0)
-+
-+/* finds a suitable level to decode the least significant part of in.
-+ * returns number of bits consumed.
-+ *
-+ * BUG() for bad input, as that would mean a buggy code table. */
-+static inline int vli_decode_bits(u64 *out, const u64 in)
-+{
-+	u64 adj = 1;
-+
-+#define LEVEL(t,b,v)					\
-+	do {						\
-+		if ((in & ((1 << b) -1)) == v) {	\
-+			*out = ((in & ((~0ULL) >> (64-t))) >> b) + adj;	\
-+			return t;			\
-+		}					\
-+		adj += 1ULL << (t - b);			\
-+	} while (0)
-+
-+	VLI_L_1_1();
-+
-+	/* NOT REACHED, if VLI_LEVELS code table is defined properly */
-+	BUG();
-+#undef LEVEL
-+}
-+
-+/* return number of code bits needed,
-+ * or negative error number */
-+static inline int __vli_encode_bits(u64 *out, const u64 in)
-+{
-+	u64 max = 0;
-+	u64 adj = 1;
-+
-+	if (in == 0)
-+		return -EINVAL;
-+
-+#define LEVEL(t,b,v) do {		\
-+		max += 1ULL << (t - b);	\
-+		if (in <= max) {	\
-+			if (out)	\
-+				*out = ((in - adj) << b) | v;	\
-+			return t;	\
-+		}			\
-+		adj = max + 1;		\
-+	} while (0)
-+
-+	VLI_L_1_1();
-+
-+	return -EOVERFLOW;
-+#undef LEVEL
-+}
-+
-+#undef VLI_L_1_1
-+
-+/* code from here down is independend of actually used bit code */
-+
-+/*
-+ * Code length is determined by some unique (e.g. unary) prefix.
-+ * This encodes arbitrary bit length, not whole bytes: we have a bit-stream,
-+ * not a byte stream.
-+ */
-+
-+/* for the bitstream, we need a cursor */
-+struct bitstream_cursor {
-+	/* the current byte */
-+	u8 *b;
-+	/* the current bit within *b, nomalized: 0..7 */
-+	unsigned int bit;
++struct proc_dir_entry *drbd_proc;
++struct file_operations drbd_proc_fops = {
++	.owner		= THIS_MODULE,
++	.open		= drbd_proc_open,
++	.read		= seq_read,
++	.llseek		= seq_lseek,
++	.release	= single_release,
 +};
 +
-+/* initialize cursor to point to first bit of stream */
-+static inline void bitstream_cursor_reset(struct bitstream_cursor *cur, void *s)
-+{
-+	cur->b = s;
-+	cur->bit = 0;
-+}
 +
-+/* advance cursor by that many bits; maximum expected input value: 64,
-+ * but depending on VLI implementation, it may be more. */
-+static inline void bitstream_cursor_advance(struct bitstream_cursor *cur, unsigned int bits)
-+{
-+	bits += cur->bit;
-+	cur->b = cur->b + (bits >> 3);
-+	cur->bit = bits & 7;
-+}
-+
-+/* the bitstream itself knows its length */
-+struct bitstream {
-+	struct bitstream_cursor cur;
-+	unsigned char *buf;
-+	size_t buf_len;		/* in bytes */
-+
-+	/* for input stream:
-+	 * number of trailing 0 bits for padding
-+	 * total number of valid bits in stream: buf_len * 8 - pad_bits */
-+	unsigned int pad_bits;
-+};
-+
-+static inline void bitstream_init(struct bitstream *bs, void *s, size_t len, unsigned int pad_bits)
-+{
-+	bs->buf = s;
-+	bs->buf_len = len;
-+	bs->pad_bits = pad_bits;
-+	bitstream_cursor_reset(&bs->cur, bs->buf);
-+}
-+
-+static inline void bitstream_rewind(struct bitstream *bs)
-+{
-+	bitstream_cursor_reset(&bs->cur, bs->buf);
-+	memset(bs->buf, 0, bs->buf_len);
-+}
-+
-+/* Put (at most 64) least significant bits of val into bitstream, and advance cursor.
-+ * Ignores "pad_bits".
-+ * Returns zero if bits == 0 (nothing to do).
-+ * Returns number of bits used if successful.
-+ *
-+ * If there is not enough room left in bitstream,
-+ * leaves bitstream unchanged and returns -ENOBUFS.
++/*lge
++ * progress bars shamelessly adapted from driver/md/md.c
++ * output looks like
++ *	[=====>..............] 33.5% (23456/123456)
++ *	finish: 2:20:20 speed: 6,345 (6,456) K/sec
 + */
-+static inline int bitstream_put_bits(struct bitstream *bs, u64 val, const unsigned int bits)
++STATIC void drbd_syncer_progress(struct drbd_conf *mdev, struct seq_file *seq)
 +{
-+	unsigned char *b = bs->cur.b;
-+	unsigned int tmp;
++	unsigned long db, dt, dbdt, rt, rs_left;
++	unsigned int res;
++	int i, x, y;
 +
-+	if (bits == 0)
-+		return 0;
++	drbd_get_syncer_progress(mdev, &rs_left, &res);
 +
-+	if ((bs->cur.b + ((bs->cur.bit + bits -1) >> 3)) - bs->buf >= bs->buf_len)
-+		return -ENOBUFS;
++	x = res/50;
++	y = 20-x;
++	seq_printf(seq, "\t[");
++	for (i = 1; i < x; i++)
++		seq_printf(seq, "=");
++	seq_printf(seq, ">");
++	for (i = 0; i < y; i++)
++		seq_printf(seq, ".");
++	seq_printf(seq, "] ");
 +
-+	/* paranoia: strip off hi bits; they should not be set anyways. */
-+	if (bits < 64)
-+		val &= ~0ULL >> (64 - bits);
++	seq_printf(seq, "sync'ed:%3u.%u%% ", res / 10, res % 10);
++	/* if more than 1 GB display in MB */
++	if (mdev->rs_total > 0x100000L)
++		seq_printf(seq, "(%lu/%lu)M\n\t",
++			    (unsigned long) Bit2KB(rs_left >> 10),
++			    (unsigned long) Bit2KB(mdev->rs_total >> 10));
++	else
++		seq_printf(seq, "(%lu/%lu)K\n\t",
++			    (unsigned long) Bit2KB(rs_left),
++			    (unsigned long) Bit2KB(mdev->rs_total));
 +
-+	*b++ |= (val & 0xff) << bs->cur.bit;
++	/* see drivers/md/md.c
++	 * We do not want to overflow, so the order of operands and
++	 * the * 100 / 100 trick are important. We do a +1 to be
++	 * safe against division by zero. We only estimate anyway.
++	 *
++	 * dt: time from mark until now
++	 * db: blocks written from mark until now
++	 * rt: remaining time
++	 */
++	dt = (jiffies - mdev->rs_mark_time) / HZ;
 +
-+	for (tmp = 8 - bs->cur.bit; tmp < bits; tmp += 8)
-+		*b++ |= (val >> tmp) & 0xff;
-+
-+	bitstream_cursor_advance(&bs->cur, bits);
-+	return bits;
-+}
-+
-+/* Fetch (at most 64) bits from bitstream into *out, and advance cursor.
-+ *
-+ * If more than 64 bits are requested, returns -EINVAL and leave *out unchanged.
-+ *
-+ * If there are less than the requested number of valid bits left in the
-+ * bitstream, still fetches all available bits.
-+ *
-+ * Returns number of actually fetched bits.
-+ */
-+static inline int bitstream_get_bits(struct bitstream *bs, u64 *out, int bits)
-+{
-+	u64 val;
-+	unsigned int n;
-+
-+	if (bits > 64)
-+		return -EINVAL;
-+
-+	if (bs->cur.b + ((bs->cur.bit + bs->pad_bits + bits -1) >> 3) - bs->buf >= bs->buf_len)
-+		bits = ((bs->buf_len - (bs->cur.b - bs->buf)) << 3)
-+			- bs->cur.bit - bs->pad_bits;
-+
-+	if (bits == 0) {
-+		*out = 0;
-+		return 0;
++	if (dt > 20) {
++		/* if we made no update to rs_mark_time for too long,
++		 * we are stalled. show that. */
++		seq_printf(seq, "stalled\n");
++		return;
 +	}
 +
-+	/* get the high bits */
-+	val = 0;
-+	n = (bs->cur.bit + bits + 7) >> 3;
-+	/* n may be at most 9, if cur.bit + bits > 64 */
-+	/* which means this copies at most 8 byte */
-+	if (n) {
-+		memcpy(&val, bs->cur.b+1, n - 1);
-+		val = le64_to_cpu(val) << (8 - bs->cur.bit);
++	if (!dt)
++		dt++;
++	db = mdev->rs_mark_left - rs_left;
++	rt = (dt * (rs_left / (db/100+1)))/100; /* seconds */
++
++	seq_printf(seq, "finish: %lu:%02lu:%02lu",
++		rt / 3600, (rt % 3600) / 60, rt % 60);
++
++	/* current speed average over (SYNC_MARKS * SYNC_MARK_STEP) jiffies */
++	dbdt = Bit2KB(db/dt);
++	if (dbdt > 1000)
++		seq_printf(seq, " speed: %ld,%03ld",
++			dbdt/1000, dbdt % 1000);
++	else
++		seq_printf(seq, " speed: %ld", dbdt);
++
++	/* mean speed since syncer started
++	 * we do account for PausedSync periods */
++	dt = (jiffies - mdev->rs_start - mdev->rs_paused) / HZ;
++	if (dt <= 0)
++		dt = 1;
++	db = mdev->rs_total - rs_left;
++	dbdt = Bit2KB(db/dt);
++	if (dbdt > 1000)
++		seq_printf(seq, " (%ld,%03ld)",
++			dbdt/1000, dbdt % 1000);
++	else
++		seq_printf(seq, " (%ld)", dbdt);
++
++	seq_printf(seq, " K/sec\n");
++}
++
++STATIC void resync_dump_detail(struct seq_file *seq, struct lc_element *e)
++{
++	struct bm_extent *bme = lc_entry(e, struct bm_extent, lce);
++
++	seq_printf(seq, "%5d %s %s\n", bme->rs_left,
++		   bme->flags & BME_NO_WRITES ? "NO_WRITES" : "---------",
++		   bme->flags & BME_LOCKED ? "LOCKED" : "------"
++		   );
++}
++
++STATIC int drbd_seq_show(struct seq_file *seq, void *v)
++{
++	int i, hole = 0;
++	const char *sn;
++	struct drbd_conf *mdev;
++
++	static char write_ordering_chars[] = {
++		[WO_none] = 'n',
++		[WO_drain_io] = 'd',
++		[WO_bdev_flush] = 'f',
++		[WO_bio_barrier] = 'b',
++	};
++
++	seq_printf(seq, "version: " REL_VERSION " (api:%d/proto:%d-%d)\n%s\n",
++		   API_VERSION, PRO_VERSION_MIN, PRO_VERSION_MAX, drbd_buildtag());
++
++	/*
++	  cs .. connection state
++	  ro .. node role (local/remote)
++	  ds .. disk state (local/remote)
++	     protocol
++	     various flags
++	  ns .. network send
++	  nr .. network receive
++	  dw .. disk write
++	  dr .. disk read
++	  al .. activity log write count
++	  bm .. bitmap update write count
++	  pe .. pending (waiting for ack or data reply)
++	  ua .. unack'd (still need to send ack or data reply)
++	  ap .. application requests accepted, but not yet completed
++	  ep .. number of epochs currently "on the fly", P_BARRIER_ACK pending
++	  wo .. write ordering mode currently in use
++	 oos .. known out-of-sync kB
++	*/
++
++	for (i = 0; i < minor_count; i++) {
++		mdev = minor_to_mdev(i);
++		if (!mdev) {
++			hole = 1;
++			continue;
++		}
++		if (hole) {
++			hole = 0;
++			seq_printf(seq, "\n");
++		}
++
++		sn = conns_to_name(mdev->state.conn);
++
++		if (mdev->state.conn == C_STANDALONE &&
++		    mdev->state.disk == D_DISKLESS &&
++		    mdev->state.role == R_SECONDARY) {
++			seq_printf(seq, "%2d: cs:Unconfigured\n", i);
++		} else {
++			seq_printf(seq,
++			   "%2d: cs:%s ro:%s/%s ds:%s/%s %c %c%c%c%c%c\n"
++			   "    ns:%u nr:%u dw:%u dr:%u al:%u bm:%u "
++			   "lo:%d pe:%d ua:%d ap:%d ep:%d wo:%c",
++			   i, sn,
++			   roles_to_name(mdev->state.role),
++			   roles_to_name(mdev->state.peer),
++			   disks_to_name(mdev->state.disk),
++			   disks_to_name(mdev->state.pdsk),
++			   (mdev->net_conf == NULL ? ' ' :
++			    (mdev->net_conf->wire_protocol - DRBD_PROT_A+'A')),
++			   mdev->state.susp ? 's' : 'r',
++			   mdev->state.aftr_isp ? 'a' : '-',
++			   mdev->state.peer_isp ? 'p' : '-',
++			   mdev->state.user_isp ? 'u' : '-',
++			   mdev->congestion_reason ?: '-',
++			   mdev->send_cnt/2,
++			   mdev->recv_cnt/2,
++			   mdev->writ_cnt/2,
++			   mdev->read_cnt/2,
++			   mdev->al_writ_cnt,
++			   mdev->bm_writ_cnt,
++			   atomic_read(&mdev->local_cnt),
++			   atomic_read(&mdev->ap_pending_cnt) +
++			   atomic_read(&mdev->rs_pending_cnt),
++			   atomic_read(&mdev->unacked_cnt),
++			   atomic_read(&mdev->ap_bio_cnt),
++			   mdev->epochs,
++			   write_ordering_chars[mdev->write_ordering]
++			);
++			seq_printf(seq, " oos:%lu\n",
++				   Bit2KB(drbd_bm_total_weight(mdev)));
++		}
++		if (mdev->state.conn == C_SYNC_SOURCE ||
++		    mdev->state.conn == C_SYNC_TARGET)
++			drbd_syncer_progress(mdev, seq);
++
++		if (mdev->state.conn == C_VERIFY_S || mdev->state.conn == C_VERIFY_T)
++			seq_printf(seq, "\t%3d%%      %lu/%lu\n",
++				   (int)((mdev->rs_total-mdev->ov_left) /
++					 (mdev->rs_total/100+1)),
++				   mdev->rs_total - mdev->ov_left,
++				   mdev->rs_total);
++
++		if (proc_details >= 1 && get_ldev_if_state(mdev, D_FAILED)) {
++			lc_seq_printf_stats(seq, mdev->resync);
++			lc_seq_printf_stats(seq, mdev->act_log);
++			put_ldev(mdev);
++		}
++
++		if (proc_details >= 2) {
++			if (mdev->resync) {
++				lc_seq_dump_details(seq, mdev->resync, "rs_left",
++					resync_dump_detail);
++			}
++		}
 +	}
 +
-+	/* we still need the low bits */
-+	val |= bs->cur.b[0] >> bs->cur.bit;
-+
-+	/* and mask out bits we don't want */
-+	val &= ~0ULL >> (64 - bits);
-+
-+	bitstream_cursor_advance(&bs->cur, bits);
-+	*out = val;
-+
-+	return bits;
++	return 0;
 +}
 +
-+/* encodes @in as vli into @bs;
-+
-+ * return values
-+ *  > 0: number of bits successfully stored in bitstream
-+ * -ENOBUFS @bs is full
-+ * -EINVAL input zero (invalid)
-+ * -EOVERFLOW input too large for this vli code (invalid)
-+ */
-+static inline int vli_encode_bits(struct bitstream *bs, u64 in)
++STATIC int drbd_proc_open(struct inode *inode, struct file *file)
 +{
-+	u64 code = code;
-+	int bits = __vli_encode_bits(&code, in);
-+
-+	if (bits <= 0)
-+		return bits;
-+
-+	return bitstream_put_bits(bs, code, bits);
++	return single_open(file, drbd_seq_show, PDE(inode)->data);
 +}
 +
-+#endif
++/* PROC FS stuff end */
