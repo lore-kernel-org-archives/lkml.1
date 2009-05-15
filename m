@@ -1,126 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761666AbZEOJf6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1762006AbZEOJgW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761666AbZEOJf6 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 05:35:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1760609AbZEOJfr
+	id S1762006AbZEOJgW (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 05:36:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761892AbZEOJfz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 05:35:47 -0400
-Received: from hera.kernel.org ([140.211.167.34]:37905 "EHLO hera.kernel.org"
+	Fri, 15 May 2009 05:35:55 -0400
+Received: from brick.kernel.dk ([93.163.65.50]:57738 "EHLO kernel.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758241AbZEOJfq (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 05:35:46 -0400
-Message-ID: <4A0D374D.4000404@kernel.org>
-Date: Fri, 15 May 2009 18:35:09 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1761997AbZEOJfy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 05:35:54 -0400
+Date: Fri, 15 May 2009 11:35:55 +0200
+From: Jens Axboe <jens.axboe@oracle.com>
+To: "Peter W. Morreale" <pmorreale@novell.com>
+Cc: Christoph Hellwig <hch@lst.de>, torvalds@osdl.org, akpm@osdl.org,
+       linux-mm@kvack.org, linux-kernel@vger.kernel.org
+Subject: Re: do we really want to export more pdflush details in sysctls
+Message-ID: <20090515093554.GX4140@kernel.dk>
+References: <20090513130128.GA10382@lst.de> <20090513130811.GE4140@kernel.dk> <1242225024.19182.174.camel@hermosa>
 MIME-Version: 1.0
-To: JBeulich@novell.com, andi@firstfloor.org, mingo@elte.hu,
-       linux-kernel-owner@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Subject: [PATCH UPDATED 2/5] x86: reorganize cpa_process_alias()
-References: <1242361739-21186-1-git-send-email-tj@kernel.org> <1242361739-21186-3-git-send-email-tj@kernel.org>
-In-Reply-To: <1242361739-21186-3-git-send-email-tj@kernel.org>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 15 May 2009 09:35:14 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242225024.19182.174.camel@hermosa>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Reorganize cpa_process_alias() so that new alias condition can be
-added easily.
+On Wed, May 13 2009, Peter W. Morreale wrote:
+> On Wed, 2009-05-13 at 15:08 +0200, Jens Axboe wrote:
+> > On Wed, May 13 2009, Christoph Hellwig wrote:
+> > > Hi all,
+> > > 
+> > > commit fafd688e4c0c34da0f3de909881117d374e4c7af titled
+> > > "mm: add /proc controls for pdflush threads" adds two more sysctl
+> > > variables exposing details about pdflush threads.  At the same time
+> > > Jens Axboe is working on the per-bdi writeback patchset which will
+> > > hopefull soon get rid of the pdflush threads in their current form.
+> > > 
+> > > Is it really a good idea to expose more details now or should we revert
+> > > this patch before 2.6.30 is out?
+> > 
+> > Pained me as well when updating the patchset. I see little value in
+> > these knobs as it is, I'm imagining that the submitter must have had a
+> > use case where it made some difference?
+> > 
+> 
+> No, I didn't.  The rational was as explained in the commit log, merely
+> that one size (eg: 2-8 threads) didn't fit all cases, so give the admin
+> a chance at tuning w/o having to recompile.  
 
-Jan Beulich spotted problem in the original cleanup thread which
-incorrectly assumed the two existing conditions were mutially
-exclusive.
+OK. In general I think it's a pretty bad idea to add such knobs before
+there are specific use cases, as we have to maintain them forever. I
+didn't track where this patch came from, I just spotted it in mainline
+during the merge window.
 
-[ Impact: code reorganization ]
+> More importantly, I didn't know that Jens was working on significant
+> changes to writeback.  This is sorely needed as from what I see in the
+> code, writeback is very unfair to 'fast' block devices (when both 'fast'
+> and 'slow' devices co-exist), and consequently, the apps that reference
+> them.  
+> 
+> Jens: When do you expect to complete the per-bdi patchset?
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Cc: Jan Beulich <JBeulich@novell.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/mm/pageattr.c |   50 ++++++++++++++++++++++---------------------------
- 1 file changed, 23 insertions(+), 27 deletions(-)
+Sooner rather than later. I've been working on it the past few days, I
+needed to make some fundemental changes to support WB_SYNC_ALL and
+sync(1) properly, unfortunately. I'll be posting an updated patchset
+early next week.
 
-Index: work/arch/x86/mm/pageattr.c
-===================================================================
---- work.orig/arch/x86/mm/pageattr.c
-+++ work/arch/x86/mm/pageattr.c
-@@ -686,8 +686,9 @@ static int __change_page_attr_set_clr(st
- static int cpa_process_alias(struct cpa_data *cpa)
- {
- 	struct cpa_data alias_cpa;
--	int ret = 0;
--	unsigned long temp_cpa_vaddr, vaddr;
-+	unsigned long laddr = (unsigned long)__va(cpa->pfn << PAGE_SHIFT);
-+	unsigned long vaddr;
-+	int ret;
- 
- 	if (cpa->pfn >= max_pfn_mapped)
- 		return 0;
-@@ -711,42 +712,37 @@ static int cpa_process_alias(struct cpa_
- 		    PAGE_OFFSET + (max_pfn_mapped << PAGE_SHIFT)))) {
- 
- 		alias_cpa = *cpa;
--		temp_cpa_vaddr = (unsigned long) __va(cpa->pfn << PAGE_SHIFT);
--		alias_cpa.vaddr = &temp_cpa_vaddr;
-+		alias_cpa.vaddr = &laddr;
- 		alias_cpa.flags &= ~(CPA_PAGES_ARRAY | CPA_ARRAY);
- 
--
- 		ret = __change_page_attr_set_clr(&alias_cpa, 0);
-+		if (ret)
-+			return ret;
- 	}
- 
- #ifdef CONFIG_X86_64
--	if (ret)
--		return ret;
--	/*
--	 * No need to redo, when the primary call touched the high
--	 * mapping already:
--	 */
--	if (within(vaddr, (unsigned long) _text, _brk_end))
--		return 0;
--
- 	/*
--	 * If the physical address is inside the kernel map, we need
-+	 * If the primary call didn't touch the high mapping already
-+	 * and the physical address is inside the kernel map, we need
- 	 * to touch the high mapped kernel as well:
- 	 */
--	if (!within(cpa->pfn, highmap_start_pfn(), highmap_end_pfn()))
--		return 0;
--
--	alias_cpa = *cpa;
--	temp_cpa_vaddr = (cpa->pfn << PAGE_SHIFT) + __START_KERNEL_map - phys_base;
--	alias_cpa.vaddr = &temp_cpa_vaddr;
--	alias_cpa.flags &= ~(CPA_PAGES_ARRAY | CPA_ARRAY);
-+	if (!within(vaddr, (unsigned long)_text, _brk_end) &&
-+	    within(cpa->pfn, highmap_start_pfn(), highmap_end_pfn())) {
-+		unsigned long temp_cpa_vaddr = (cpa->pfn << PAGE_SHIFT) +
-+					       __START_KERNEL_map - phys_base;
-+		alias_cpa = *cpa;
-+		alias_cpa.vaddr = &temp_cpa_vaddr;
-+		alias_cpa.flags &= ~(CPA_PAGES_ARRAY | CPA_ARRAY);
- 
--	/*
--	 * The high mapping range is imprecise, so ignore the return value.
--	 */
--	__change_page_attr_set_clr(&alias_cpa, 0);
-+		/*
-+		 * The high mapping range is imprecise, so ignore the
-+		 * return value.
-+		 */
-+		__change_page_attr_set_clr(&alias_cpa, 0);
-+	}
- #endif
--	return ret;
-+
-+	return 0;
- }
- 
- static int __change_page_attr_set_clr(struct cpa_data *cpa, int checkalias)
+> In any event, it is not a good idea to expose knobs that will soon be
+> obviated so please pull the patch. 
+
+Good, I have reverted the commit in my for-linus branch and will be
+asking Linus to pull that soonish.
+
+-- 
+Jens Axboe
+
