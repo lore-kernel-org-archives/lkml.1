@@ -1,84 +1,205 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763966AbZEOM3J@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763929AbZEOM2t@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763966AbZEOM3J (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 08:29:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763596AbZEOM0r
+	id S1763929AbZEOM2t (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 08:28:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762300AbZEOMX0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 08:26:47 -0400
-Received: from thunk.org ([69.25.196.29]:57723 "EHLO thunker.thunk.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1762128AbZEOM0q (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 08:26:46 -0400
-Date: Fri, 15 May 2009 08:26:44 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: "Cihula, Joseph" <joseph.cihula@intel.com>,
-       James Morris <jmorris@namei.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "arjan@linux.intel.com" <arjan@linux.intel.com>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-       "jbeulich@novell.com" <jbeulich@novell.com>,
-       "peterm@redhat.com" <peterm@redhat.com>,
-       "Wei, Gang" <gang.wei@intel.com>, "Wang, Shane" <shane.wang@intel.com>,
-       John Gilmore <gnu@toad.com>
-Subject: Re: [RFC v3][PATCH 2/2] intel_txt: Intel(R) TXT and tboot kernel
-	support
-Message-ID: <20090515122644.GA9173@mit.edu>
-Mail-Followup-To: Theodore Tso <tytso@mit.edu>,
-	"Cihula, Joseph" <joseph.cihula@intel.com>,
-	James Morris <jmorris@namei.org>,
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-	"mingo@elte.hu" <mingo@elte.hu>,
-	"arjan@linux.intel.com" <arjan@linux.intel.com>,
-	"hpa@zytor.com" <hpa@zytor.com>,
-	"andi@firstfloor.org" <andi@firstfloor.org>,
-	"chrisw@sous-sol.org" <chrisw@sous-sol.org>,
-	"jbeulich@novell.com" <jbeulich@novell.com>,
-	"peterm@redhat.com" <peterm@redhat.com>,
-	"Wei, Gang" <gang.wei@intel.com>,
-	"Wang, Shane" <shane.wang@intel.com>, John Gilmore <gnu@toad.com>
-References: <4A03B9C3.9090607@intel.com> <20090512210154.GC23773@mit.edu> <alpine.LRH.2.00.0905151006020.5527@tundra.namei.org> <4F65016F6CB04E49BFFA15D4F7B798D99B4752F3@orsmsx506.amr.corp.intel.com> <20090515120748.GF6816@mit.edu>
+	Fri, 15 May 2009 08:23:26 -0400
+Received: from wa4ehsobe005.messaging.microsoft.com ([216.32.181.15]:5412 "EHLO
+	WA4EHSOBE005.bigfish.com" rhost-flags-OK-OK-OK-FAIL)
+	by vger.kernel.org with ESMTP id S1762546AbZEOMXY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 08:23:24 -0400
+X-BigFish: VPS3(zzzz1202hzzz32i43j66h)
+X-Spam-TCS-SCL: 5:0
+X-FB-SS: 5,
+X-WSS-ID: 0KJOQDT-02-5LJ-01
+From: Borislav Petkov <borislav.petkov@amd.com>
+To: <akpm@linux-foundation.org>, <greg@kroah.com>, <mingo@elte.hu>
+CC: <norsk5@yahoo.com>, <tglx@linutronix.de>, <hpa@zytor.com>,
+       <mchehab@redhat.com>, <aris@redhat.com>, edt@aei.ca,
+       <linux-kernel@vger.kernel.org>,
+       Doug Thompson <dougthompson@xmission.com>,
+       Borislav Petkov <borislav.petkov@amd.com>
+Subject: [PATCH 11/22] amd64_edac: add helper to dump relevant registers
+Date: Fri, 15 May 2009 14:22:22 +0200
+Message-ID: <1242390153-24493-12-git-send-email-borislav.petkov@amd.com>
+X-Mailer: git-send-email 1.6.2.4
+In-Reply-To: <1242390153-24493-1-git-send-email-borislav.petkov@amd.com>
+References: <1242390153-24493-1-git-send-email-borislav.petkov@amd.com>
+X-OriginalArrivalTime: 15 May 2009 12:22:45.0087 (UTC) FILETIME=[D9DE5EF0:01C9D557]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090515120748.GF6816@mit.edu>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SA-Exim-Connect-IP: <locally generated>
-X-SA-Exim-Mail-From: tytso@mit.edu
-X-SA-Exim-Scanned: No (on thunker.thunk.org); SAEximRunCond expanded to false
+Content-Type: text/plain
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-BTW, see this slide set:
+From: Doug Thompson <dougthompson@xmission.com>
 
-http://invisiblethingslab.com/resources/bh09dc/Attacking%20Intel%20TXT%20-%20slides.pdf
+Borislav:
 
-For more details about why a TCPA-style solution (referred to in the
-slide set as a Static Root of Trust Measurement) doesn't really work
-for widespread consumer-usable DRM, where as a Dynamic Root of Trust
-Measurement (DRTM) scheme, such as provided by TXT, makes this be a
-much more tractable solution.
+- cleanup/fix comments
+- fix function return value patterns
+- cleanup dbg calls
 
-Also see their early results for attacking TXT via bugs in the SMM
-Bios.  The one thing which is not discussed much in this slide decks
-is the hardware implemented features which lock out the Host OS from
-being able to read or modify memory used by the trusted code running
-in the secure VM (which must be locked into memory) once the SENTER
-instruction is given.
+Reviewed-by: Mauro Carvalho Chehab <mchehab@redhat.com>
+Signed-off-by: Doug Thompson <dougthompson@xmission.com>
+Signed-off-by: Borislav Petkov <borislav.petkov@amd.com>
+---
+ drivers/edac/amd64_edac.c |  142 +++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 142 insertions(+), 0 deletions(-)
 
-Obviously, yes, it's all under the user's control --- you don't have
-to boot a TXT VM image.  On the other hand, you don't have to have
-access to your on-line banking, medical records, or watch a movie from
-Hollywood, and in the future, it might be that running TXT is the only
-way to do that.  (The argument that it's always under the user's
-control is a standard line used by people defending DRM --- after all,
-you don't have to listen to the protected music, or watch the
-protected movie.  It shifts the ground from the question societal
-question of "is DRM good for society", to a user freedom question,
-which is always true --- of course, user's are also free to boycott
-purchases of hardware that enable DRM; that is also their choice.)
+diff --git a/drivers/edac/amd64_edac.c b/drivers/edac/amd64_edac.c
+index 28f85c9..3d6d000 100644
+--- a/drivers/edac/amd64_edac.c
++++ b/drivers/edac/amd64_edac.c
+@@ -729,3 +729,145 @@ static int sys_addr_to_csrow(struct mem_ctl_info *mci, u64 sys_addr)
+ 	return csrow;
+ }
+ 
++static int get_channel_from_ecc_syndrome(unsigned short syndrome);
++
++static void amd64_cpu_display_info(struct amd64_pvt *pvt)
++{
++	if (boot_cpu_data.x86 == 0x11)
++		edac_printk(KERN_DEBUG, EDAC_MC, "F11h CPU detected\n");
++	else if (boot_cpu_data.x86 == 0x10)
++		edac_printk(KERN_DEBUG, EDAC_MC, "F10h CPU detected\n");
++	else if (boot_cpu_data.x86 == 0xf)
++		edac_printk(KERN_DEBUG, EDAC_MC, "%s detected\n",
++			(pvt->ext_model >= OPTERON_CPU_REV_F) ?
++			"Rev F or later" : "Rev E or earlier");
++	else
++		/* we'll hardly ever ever get here */
++		edac_printk(KERN_ERR, EDAC_MC, "Unknown cpu!\n");
++}
++
++/*
++ * Determine if the DIMMs have ECC enabled. ECC is enabled ONLY if all the DIMMs
++ * are ECC capable.
++ */
++static enum edac_type amd64_determine_edac_cap(struct amd64_pvt *pvt)
++{
++	int bit;
++	enum dev_type edac_cap = EDAC_NONE;
++
++	bit = (boot_cpu_data.x86 > 0xf || pvt->ext_model >= OPTERON_CPU_REV_F)
++		? 19
++		: 17;
++
++	if (pvt->dclr0 >> BIT(bit))
++		edac_cap = EDAC_FLAG_SECDED;
++
++	return edac_cap;
++}
++
++
++static void f10_debug_display_dimm_sizes(int ctrl, struct amd64_pvt *pvt,
++					 int ganged);
++
++/* Display and decode various NB registers for debug purposes. */
++static void amd64_dump_misc_regs(struct amd64_pvt *pvt)
++{
++	int ganged;
++
++	debugf1("  nbcap:0x%8.08x DctDualCap=%s DualNode=%s 8-Node=%s\n",
++		pvt->nbcap,
++		(pvt->nbcap & K8_NBCAP_DCT_DUAL) ? "True" : "False",
++		(pvt->nbcap & K8_NBCAP_DUAL_NODE) ? "True" : "False",
++		(pvt->nbcap & K8_NBCAP_8_NODE) ? "True" : "False");
++	debugf1("    ECC Capable=%s   ChipKill Capable=%s\n",
++		(pvt->nbcap & K8_NBCAP_SECDED) ? "True" : "False",
++		(pvt->nbcap & K8_NBCAP_CHIPKILL) ? "True" : "False");
++	debugf1("  DramCfg0-low=0x%08x DIMM-ECC=%s Parity=%s Width=%s\n",
++		pvt->dclr0,
++		(pvt->dclr0 & BIT(19)) ?  "Enabled" : "Disabled",
++		(pvt->dclr0 & BIT(8)) ?  "Enabled" : "Disabled",
++		(pvt->dclr0 & BIT(11)) ?  "128b" : "64b");
++	debugf1("    DIMM x4 Present: L0=%s L1=%s L2=%s L3=%s  DIMM Type=%s\n",
++		(pvt->dclr0 & BIT(12)) ?  "Y" : "N",
++		(pvt->dclr0 & BIT(13)) ?  "Y" : "N",
++		(pvt->dclr0 & BIT(14)) ?  "Y" : "N",
++		(pvt->dclr0 & BIT(15)) ?  "Y" : "N",
++		(pvt->dclr0 & BIT(16)) ?  "UN-Buffered" : "Buffered");
++
++
++	debugf1("  online-spare: 0x%8.08x\n", pvt->online_spare);
++
++	if (boot_cpu_data.x86 == 0xf) {
++		debugf1("  dhar: 0x%8.08x Base=0x%08x Offset=0x%08x\n",
++			pvt->dhar, dhar_base(pvt->dhar),
++			k8_dhar_offset(pvt->dhar));
++		debugf1("      DramHoleValid=%s\n",
++			(pvt->dhar & DHAR_VALID) ?  "True" : "False");
++
++		debugf1("  dbam-dkt: 0x%8.08x\n", pvt->dbam0);
++
++		/* everything below this point is Fam10h and above */
++		return;
++
++	} else {
++		debugf1("  dhar: 0x%8.08x Base=0x%08x Offset=0x%08x\n",
++			pvt->dhar, dhar_base(pvt->dhar),
++			f10_dhar_offset(pvt->dhar));
++		debugf1("    DramMemHoistValid=%s DramHoleValid=%s\n",
++			(pvt->dhar & F10_DRAM_MEM_HOIST_VALID) ?
++			"True" : "False",
++			(pvt->dhar & DHAR_VALID) ?
++			"True" : "False");
++	}
++
++	/* Only if NOT ganged does dcl1 have valid info */
++	if (!dct_ganging_enabled(pvt)) {
++		debugf1("  DramCfg1-low=0x%08x DIMM-ECC=%s Parity=%s "
++			"Width=%s\n", pvt->dclr1,
++			(pvt->dclr1 & BIT(19)) ?  "Enabled" : "Disabled",
++			(pvt->dclr1 & BIT(8)) ?  "Enabled" : "Disabled",
++			(pvt->dclr1 & BIT(11)) ?  "128b" : "64b");
++		debugf1("    DIMM x4 Present: L0=%s L1=%s L2=%s L3=%s  "
++			"DIMM Type=%s\n",
++			(pvt->dclr1 & BIT(12)) ?  "Y" : "N",
++			(pvt->dclr1 & BIT(13)) ?  "Y" : "N",
++			(pvt->dclr1 & BIT(14)) ?  "Y" : "N",
++			(pvt->dclr1 & BIT(15)) ?  "Y" : "N",
++			(pvt->dclr1 & BIT(16)) ?  "UN-Buffered" : "Buffered");
++	}
++
++	/*
++	 * Determine if ganged and then dump memory sizes for first controller,
++	 * and if NOT ganged dump info for 2nd controller.
++	 */
++	ganged = dct_ganging_enabled(pvt);
++
++	f10_debug_display_dimm_sizes(0, pvt, ganged);
++
++	if (!ganged)
++		f10_debug_display_dimm_sizes(1, pvt, ganged);
++}
++
++/* Read in both of DBAM registers */
++static void amd64_read_dbam_reg(struct amd64_pvt *pvt)
++{
++	int err = 0;
++	unsigned int reg;
++
++	reg = DBAM0;
++	err = pci_read_config_dword(pvt->dram_f2_ctl, reg, &pvt->dbam0);
++	if (err)
++		goto err_reg;
++
++	if (boot_cpu_data.x86 >= 0x10) {
++		reg = DBAM1;
++		err = pci_read_config_dword(pvt->dram_f2_ctl, reg, &pvt->dbam1);
++
++		if (err)
++			goto err_reg;
++	}
++
++err_reg:
++	debugf0("Error reading F2x%03x.\n", reg);
++}
++
+-- 
+1.6.2.4
 
-	     	      	   	       	    - Ted
+
