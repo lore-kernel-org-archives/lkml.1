@@ -1,160 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757332AbZEOHPe@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757148AbZEOHUR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757332AbZEOHPe (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 03:15:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754806AbZEOHPV
+	id S1757148AbZEOHUR (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 03:20:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753625AbZEOHUE
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 03:15:21 -0400
-Received: from mxout1.volkswagen.de ([194.114.62.41]:27781 "EHLO
-	mxout1.volkswagen.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754716AbZEOHPU (ORCPT
+	Fri, 15 May 2009 03:20:04 -0400
+Received: from night.yars.free.net ([193.233.48.54]:44106 "EHLO
+	night.yars.free.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753428AbZEOHUB (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 03:15:20 -0400
-Message-ID: <4A0D1677.4020209@volkswagen.de>
-Date: Fri, 15 May 2009 09:15:03 +0200
-From: Oliver Hartkopp <oliver.hartkopp@volkswagen.de>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Wolfgang Grandegger <wg@grandegger.com>
-CC: Andrew Morton <akpm@linux-foundation.org>, netdev@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 3/7] [PATCH 3/8] can: CAN Network device driver and
- Netlink interface
-References: <20090512092757.048938233@denx.de><20090512092757.574693100@denx.de> <20090512233052.ecd600f1.akpm@linux-foundation.org> <4A0A9AC1.2090603@volkswagen.de> <4A0AB17B.3080308@grandegger.com> <4A0AB824.40702@volkswagen.de> <4A0ABBD3.2030605@grandegger.com>
-In-Reply-To: <4A0ABBD3.2030605@grandegger.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-OriginalArrivalTime: 15 May 2009 07:15:06.0701 (UTC) FILETIME=[DFD02FD0:01C9D52C]
+	Fri, 15 May 2009 03:20:01 -0400
+Date: Fri, 15 May 2009 11:19:46 +0400
+From: "Alexander V. Lukyanov" <lav@netis.ru>
+To: Jarek Poplawski <jarkao2@gmail.com>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org
+Subject: Re: 2.6.29.1: unregister_netdevice problem
+Message-ID: <20090515071946.GA15669@night.netis.ru>
+References: <20090422055735.GA4334@night.netis.ru> <20090427054103.GA27529@night.netis.ru> <20090428125755.GA5242@night.netis.ru> <49F76BF6.4040709@gmail.com> <20090429054510.GA8267@night.netis.ru> <20090429090809.GA2995@ami.dom.local> <20090508062640.GA4555@night.netis.ru> <20090508104628.GA6287@ff.dom.local> <20090510073559.GA8929@night.netis.ru> <20090510124641.GA2978@ami.dom.local>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090510124641.GA2978@ami.dom.local>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Wolfgang Grandegger wrote:
-> Oliver Hartkopp wrote:
->   
->> Wolfgang Grandegger wrote:
->>     
->>> Oliver Hartkopp wrote:
->>>  
->>>       
->>>> Andrew Morton wrote:
->>>>    
->>>>         
->>>>> On Tue, 12 May 2009 11:28:00 +0200 Wolfgang Grandegger
->>>>> <wg@grandegger.com> wrote:
->>>>>
->>>>>  
->>>>>      
->>>>>           
->>>>>> +int can_restart_now(struct net_device *dev)
->>>>>> +{
->>>>>> +    struct can_priv *priv = netdev_priv(dev);
->>>>>> +    struct net_device_stats *stats = &dev->stats;
->>>>>> +    struct sk_buff *skb;
->>>>>> +    struct can_frame *cf;
->>>>>> +    int err;
->>>>>> +
->>>>>> +    /* Synchronize with dev->hard_start_xmit() */
->>>>>> +    netif_tx_lock(dev);
->>>>>> +
->>>>>> +    /* Ensure that no more messages can go out */
->>>>>> +    if (netif_carrier_ok(dev))
->>>>>> +        netif_carrier_off(dev);
->>>>>> +
->>>>>> +    /* Ensure that no more messages can come in */
->>>>>> +    err = priv->do_set_mode(dev, CAN_MODE_STOP);
->>>>>> +    if (err)
->>>>>> +        return err;
->>>>>> +
->>>>>> +    /*  Now it's save to clean up */
->>>>>> +    del_timer_sync(&priv->restart_timer);
->>>>>>             
->>>>>>             
->>>>> This is deadlockable.
->>>>>
->>>>> It calls del_timer_sync() while holding netif_tx_lock().  But the timer
->>>>> handler (can_restart_now()) also takes netif_tx_lock().  So if the
->>>>> timer handler is presently running, it's sitting there spinning in
->>>>> netif_tx_lock().  And del_timer_sync() is sitting there waiting for the
->>>>> timer handler to complete.
->>>>>
->>>>>
->>>>>         
->>>>>           
->>>> Hi Wolfgang,
->>>>
->>>> would it be an appropriate solution, just to invoke
->>>>
->>>> netif_stop_queue() in can_bus_off()
->>>>
->>>> and invoke
->>>>
->>>> netif_wake_queue() in can_restart_now()
->>>>
->>>> ???
->>>>
->>>> In a BUSOFF condition we're not able to send CAN frames anyway, so  we
->>>> can disable the device queue and the we won't  need any netif_tx_lock()
->>>> right?
->>>>
->>>> AFAIK this was the original implementation before some of the latest
->>>> improvement with the netif_carrier stuff.
->>>>
->>>> What do you think?
->>>>     
->>>>         
->>> The problem is the "manual" restart triggered via the netlink interface,
->>> which can occur in the middle of ndo_start_xmit().
->>>
->>>   
->>>       
->> Ah, i see.
->>
->> What if the manual restart via netlink would also stop the queue and
->> start the timer?
->>     
->
-> It will not help if the restart is triggered in the middle of
-> ndo_start_xmit().
->
->   
+On Sun, May 10, 2009 at 02:46:41PM +0200, Jarek Poplawski wrote:
+> On Sun, May 10, 2009 at 11:35:59AM +0400, Alexander V. Lukyanov wrote:
+> > On Fri, May 08, 2009 at 10:46:28AM +0000, Jarek Poplawski wrote:
+> > > I can't see anything suspicious for now, except these UDP and TCP
+> > > warnings. Did you see similar messages with 2.6.27? Btw., could this
+> > 
+> > Yes. Such messages show up with any kernel version.
+> > 
+> > > eth0.987 be "connected" with any of this traffic? (IP# ?)
+> > 
+> > No, eth0.987 is only used for traffic output.
+> > 
+> > BTW, it seems that only actively used vlan interfaces have the problem
+> > (even when the traffic stops). Other vlan interfaces with little traffic
+> > can be removed with no problems.
+> 
+> OK, I'll try to look around this, but how about trying 2.6.28.10 in
+> the meantime? It could limit "a bit" the number of places/lines.
 
-Hi Wolfgang,
+Looks like 2.6.28.10 does not have this refcnt problem. Also, after I have
+reversed net/ipv4/route.c changes from 2.6.29, the problem does not occur either.
 
-i think, i found a solution that removes the locking problem completely:
-
-When a bus-off occurs in the controller, the communication on the CAN 
-bus can be treated as unusable for this controller (let's say it is dead).
-E.g. the SJA1000 set's its reset bit for that reason and waits to be 
-initialized by the CPU again.
-
-So IMO restarting the CAN controller while in operational state is not a 
-valid use case.
-
-When a bus-off (interrupt) occurs, we should
-
-- invoke netif_carrier_off(dev)
-- invoke netif_stop_queue(dev)
-- set the state to CAN_STATE_BUS_OFF
-
-and of course create the error message, clear the interrupts(!) and then 
-leave the irq service function.
-
-That's it.
-
-When the automatic CAN controller restart is enabled: start the timer.
-
-For the manual netlink function: Test for CAN_STATE_BUS_OFF (!) and 
-invoke the current can_restart_now(dev) or start the timer with e.g. 1ms ...
-
-This approach should make it and fulfills the bus-off intention of the 
-CAN controllers ("disabled and wait for re-initialisation").
-
-And there's no locking of the tx_queue needed anymore as the tx_queue is 
-already stopped, when the restart is performed.
-
-What do you think about this approach?
-
-Regards,
-Oliver
-
+-- 
+   Alexander..
