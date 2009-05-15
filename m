@@ -1,117 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758528AbZEOIR4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760131AbZEOISi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758528AbZEOIR4 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 04:17:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbZEOIRf
+	id S1760131AbZEOISi (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 04:18:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755475AbZEOISU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 04:17:35 -0400
-Received: from cn.fujitsu.com ([222.73.24.84]:56124 "EHLO song.cn.fujitsu.com"
-	rhost-flags-OK-FAIL-OK-OK) by vger.kernel.org with ESMTP
-	id S1756730AbZEOIRd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 04:17:33 -0400
-Message-ID: <4A0D24E6.6010807@cn.fujitsu.com>
-Date: Fri, 15 May 2009 16:16:38 +0800
-From: Gui Jianfeng <guijianfeng@cn.fujitsu.com>
-User-Agent: Thunderbird 2.0.0.5 (Windows/20070716)
+	Fri, 15 May 2009 04:18:20 -0400
+Received: from hera.kernel.org ([140.211.167.34]:46720 "EHLO hera.kernel.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756680AbZEOIST (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 04:18:19 -0400
+Message-ID: <4A0D253A.1070705@kernel.org>
+Date: Fri, 15 May 2009 17:18:02 +0900
+From: Tejun Heo <tj@kernel.org>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-To: Andrea Righi <righi.andrea@gmail.com>
-CC: Vivek Goyal <vgoyal@redhat.com>, Nauman Rafique <nauman@google.com>,
-       dpshah@google.com, lizf@cn.fujitsu.com, mikew@google.com,
-       fchecconi@gmail.com, paolo.valente@unimore.it, jens.axboe@oracle.com,
-       ryov@valinux.co.jp, fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com,
-       taka@valinux.co.jp, jmoyer@redhat.com, dhaval@linux.vnet.ibm.com,
-       balbir@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
-       containers@lists.linux-foundation.org, agk@redhat.com,
-       dm-devel@redhat.com, snitzer@redhat.com, m-ikeda@ds.jp.nec.com,
-       akpm@linux-foundation.org
-Subject: Re: [PATCH] io-controller: Add io group reference handling for	request
-References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A03FF3C.4020506@cn.fujitsu.com> <20090508135724.GE7293@redhat.com> <e98e18940905081041r386e52a5q5a2b1f13f1e8c634@mail.gmail.com> <4A078051.5060702@cn.fujitsu.com> <20090511154127.GD6036@redhat.com> <4A0CFA6C.3080609@cn.fujitsu.com> <20090515074839.GA3340@linux>
-In-Reply-To: <20090515074839.GA3340@linux>
-Content-Type: text/plain; charset=UTF-8
+To: Jan Beulich <JBeulich@novell.com>
+CC: mingo@elte.hu, andi@firstfloor.org, tglx@linutronix.de,
+       linux-kernel@vger.kernel.org, hpa@zytor.com
+Subject: Re: [PATCH 3/5] x86: fix pageattr handling for remap percpu	 allocator
+References: <1242361739-21186-1-git-send-email-tj@kernel.org> <1242361739-21186-4-git-send-email-tj@kernel.org> <4A0D3CC6020000780000108F@vpn.id2.novell.com>
+In-Reply-To: <4A0D3CC6020000780000108F@vpn.id2.novell.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
+X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 15 May 2009 08:18:06 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea Righi wrote:
-> On Fri, May 15, 2009 at 01:15:24PM +0800, Gui Jianfeng wrote:
->> Vivek Goyal wrote:
->> ...
->>>  }
->>> @@ -1462,20 +1462,27 @@ struct io_cgroup *get_iocg_from_bio(stru
->>>  /*
->>>   * Find the io group bio belongs to.
->>>   * If "create" is set, io group is created if it is not already present.
->>> + * If "curr" is set, io group is information is searched for current
->>> + * task and not with the help of bio.
->>> + *
->>> + * FIXME: Can we assume that if bio is NULL then lookup group for current
->>> + * task and not create extra function parameter ?
->>>   *
->>> - * Note: There is a narrow window of race where a group is being freed
->>> - * by cgroup deletion path and some rq has slipped through in this group.
->>> - * Fix it.
->>>   */
->>> -struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
->>> -					int create)
->>> +struct io_group *io_get_io_group(struct request_queue *q, struct bio *bio,
->>> +					int create, int curr)
->>   Hi Vivek,
+Hello,
+
+Jan Beulich wrote:
+>>>> Tejun Heo <tj@kernel.org> 15.05.09 06:28 >>>
+>> @@ -742,6 +744,27 @@ static int cpa_process_alias(struct cpa_data *cpa)
+>> 	}
+>> #endif
 >>
->>   IIUC we can get rid of curr, and just determine iog from bio. If bio is not NULL,
->>   get iog from bio, otherwise get it from current task.
+>> +	/*
+>> +	 * If the PMD page was partially used for per-cpu remapping,
+>> +	 * the remapped area needs to be split and modified.  Note
+>> +	 * that the partial recycling only happens at the tail of a
+>> +	 * partially used PMD page, so touching single PMD page is
+>> +	 * always enough.
+>> +	 */
+>> +	remapped = pcpu_pmd_remapped((void *)vaddr);
 > 
-> Consider also that get_cgroup_from_bio() is much more slow than
-> task_cgroup() and need to lock/unlock_page_cgroup() in
-> get_blkio_cgroup_id(), while task_cgroup() is rcu protected.
-> 
-> BTW another optimization could be to use the blkio-cgroup functionality
-> only for dirty pages and cut out some blkio_set_owner(). For all the
-> other cases IO always occurs in the same context of the current task,
-> and you can use task_cgroup().
-> 
-> However, this is true only for page cache pages, for IO generated by
-> anonymous pages (swap) you still need the page tracking functionality
-> both for reads and writes.
+> vaddr here is the passed-in address, but in order for the lookup to
+> be positive it needs to be the canonical address (i.e. the one
+> pointing into the 1:1 mapping), i.e. __va(cpa->pfn << PAGE_SHIFT),
+> just like temp_cpa_vaddr gets calculated earlier in the same
+> function.
 
-  Hi Andrea,
+Hmmm... There's no need to match percpu map -> linear addr.  Okay,
+right, if the recycled part has been aliased to different vmalloc
+mapping than the pfn should be matched.
 
-  Thanks for pointing this out. Yes, i think we can determine io group in
-  terms of bio->bi_rw. If bio is a READ bio, just taking io group by 
-  task_cgroup(). If it's a WRITE bio, getting it from blkio_cgroup.
-
-> 
-> -Andrea
-> 
->>>  {
->>>  	struct cgroup *cgroup;
->>>  	struct io_group *iog;
->>>  	struct elv_fq_data *efqd = &q->elevator->efqd;
->>>  
->>>  	rcu_read_lock();
->>> -	cgroup = get_cgroup_from_bio(bio);
->>> +
->>> +	if (curr)
->>> +		cgroup = task_cgroup(current, io_subsys_id);
->>> +	else
->>> +		cgroup = get_cgroup_from_bio(bio);
->>> +
->>>  	if (!cgroup) {
->>>  		if (create)
->>>  			iog = efqd->root_group;
->>> @@ -1500,7 +1507,7 @@ out:
->>>  	rcu_read_unlock();
->>>  	return iog;
->>>  }
->> -- 
->> Regards
->> Gui Jianfeng
->>
-> 
-> 
-> 
+Thanks for spotting it.  Will posted updated patch.
 
 -- 
-Regards
-Gui Jianfeng
-
+tejun
