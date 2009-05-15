@@ -1,228 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1761793AbZEOEbo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760809AbZEOEcV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1761793AbZEOEbo (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 00:31:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755504AbZEOE3o
+	id S1760809AbZEOEcV (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 00:32:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751917AbZEOEcF
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 00:29:44 -0400
-Received: from hera.kernel.org ([140.211.167.34]:41605 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1759411AbZEOE3n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 00:29:43 -0400
-From: Tejun Heo <tj@kernel.org>
-To: JBeulich@novell.com, andi@firstfloor.org, mingo@elte.hu,
-       linux-kernel-owner@vger.kernel.org, hpa@zytor.com, tglx@linutronix.de,
-       linux-kernel@vger.kernel.org
-Cc: Tejun Heo <tj@kernel.org>
-Subject: [PATCH 3/5] x86: fix pageattr handling for remap percpu allocator
-Date: Fri, 15 May 2009 13:28:57 +0900
-Message-Id: <1242361739-21186-4-git-send-email-tj@kernel.org>
-X-Mailer: git-send-email 1.6.0.2
-In-Reply-To: <1242361739-21186-1-git-send-email-tj@kernel.org>
-References: <1242361739-21186-1-git-send-email-tj@kernel.org>
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Fri, 15 May 2009 04:29:07 +0000 (UTC)
+	Fri, 15 May 2009 00:32:05 -0400
+Received: from fgwmail6.fujitsu.co.jp ([192.51.44.36]:40934 "EHLO
+	fgwmail6.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751257AbZEOEcD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 00:32:03 -0400
+Date: Fri, 15 May 2009 13:30:26 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Balbir Singh <balbir@in.ibm.com>, Hugh Dickins <hugh@veritas.com>,
+       linux-mm <linux-mm@kvack.org>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] memcg: fix stale swapcache at swapout
+Message-Id: <20090515133026.a26596fd.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090515130959.330dbd56.nishimura@mxp.nes.nec.co.jp>
+References: <20090515130959.330dbd56.nishimura@mxp.nes.nec.co.jp>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Remap allocator aliases a PMD page for each cpu and returns whatever
-is unused to the page allocator.  When the pageattr of the recycled
-pages are changed, this makes the two aliases point to the overlapping
-regions with different attributes which isn't allowed and known to
-cause subtle data corruption in certain cases.
+On Fri, 15 May 2009 13:09:59 +0900
+Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp> wrote:
 
-This can be handled in simliar manner to the x86_64 highmap alias.
-pageattr code should detect if the target pages have PMD alias and
-split the PMD alias and synchronize the attributes.
+> This patch is split out from Kamezawa-san's fix stale swap cache account leak
+> patch set(v7).
+> 
+>   http://lkml.org/lkml/2009/5/11/688
+> 
+> I moved the definition of memcg_free_unused_swapcache() back to memcontrol.c
+> (as I did in my original version) to avoid confilict with
+> Kosaki-san's remove CONFIG_UNEVICTABLE_LRU config option patch.
+> (it's not on mmotm yet though).
+> And IMHO, this function might not be appropriate for "vmscan".
+> 
+> This patch is based on mmotm-2009-05-13-16-34.
+> ===
+> From: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
+> 
+> Reclaiming anonymous memory in vmscan.c does following 2 steps.
+>   1. add to swap and unmap.
+>   2. pageout
+> But above 2 steps doesn't occur at once. There are many chances
+> to avoid pageout, and _really_ unused pages are swapped out by
+> visit-and-check-again logic of LRU rotation.
+> 
+> But this behavior has troubles with memcg because memcg doesn't put
+> !PageCgroupUsed swapcache back to its LRU.
+> These swapcache cannot be freed in memcg's LRU scanning, so swp_entry cannot
+> be freed properly as a result.
+> 
+> These swapcaches can be created by a race like below:
+> 
+>     Assume processA is exiting and pte points to a page(!PageSwapCache).
+>     And processB is trying reclaim the page.
+> 
+>               processA                   |           processB
+>     -------------------------------------+-------------------------------------
+>       (page_remove_rmap())               |  (shrink_page_list())
+>          mem_cgroup_uncharge_page()      |
+>             ->uncharged because it's not |
+>               PageSwapCache yet.         |
+>               So, both mem/memsw.usage   |
+>               are decremented.           |
+>                                          |    add_to_swap() -> added to swapcache.
+> 
+>     If this page goes thorough without being freed for some reason, this page
+>     doesn't goes back to memcg's LRU because of !PageCgroupUsed.
+> 
+> This patch adds a hook after add_to_swap() to check the page is mapped by a
+> process or not, and frees it if it has been unmapped already.
+> 
+> If a page has been on swap cache already when the owner process calls
+> page_remove_rmap() -> mem_cgroup_uncharge_page(), the page is not uncharged.
+> It goes back to memcg's LRU even if it goes through shrink_page_list()
+> without being freed, so this patch ignores these case.
+> 
+> Signed-off-by: Daisuke Nishimura <nishimura@mxp.nes.nec.co.jp>
 
-pcpur allocator is updated to keep the allocated PMD pages map sorted
-in ascending address order and provide pcpu_pmd_remapped() function
-which binary searches the array to determine whether the given address
-is aliased and if so to which address.  pageattr is updated to use
-pcpu_pmd_remapped() to detect the PMD alias and split it up as
-necessary from cpa_process_alias().
+Thank you!
+Acked-by: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
 
-This problem has been spotted by Jan Beulich.
 
-[ Impact: fix subtle pageattr bug ]
-
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Reported-by: Jan Beulich <JBeulich@novell.com>
-Cc: Andi Kleen <andi@firstfloor.org>
-Cc: Ingo Molnar <mingo@elte.hu>
----
- arch/x86/include/asm/percpu.h  |    9 +++++
- arch/x86/kernel/setup_percpu.c |   68 ++++++++++++++++++++++++++++++++++++---
- arch/x86/mm/pageattr.c         |   23 +++++++++++++
- 3 files changed, 94 insertions(+), 6 deletions(-)
-
-diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
-index aee103b..cad3531 100644
---- a/arch/x86/include/asm/percpu.h
-+++ b/arch/x86/include/asm/percpu.h
-@@ -155,6 +155,15 @@ do {							\
- /* We can use this directly for local CPU (faster). */
- DECLARE_PER_CPU(unsigned long, this_cpu_off);
- 
-+#ifdef CONFIG_NEED_MULTIPLE_NODES
-+void *pcpu_pmd_remapped(void *kaddr);
-+#else
-+static inline void *pcpu_pmd_remapped(void *kaddr)
-+{
-+	return NULL;
-+}
-+#endif
-+
- #endif /* !__ASSEMBLY__ */
- 
- #ifdef CONFIG_SMP
-diff --git a/arch/x86/kernel/setup_percpu.c b/arch/x86/kernel/setup_percpu.c
-index c17059c..dd567a7 100644
---- a/arch/x86/kernel/setup_percpu.c
-+++ b/arch/x86/kernel/setup_percpu.c
-@@ -142,8 +142,8 @@ struct pcpur_ent {
- 	void		*ptr;
- };
- 
--static size_t pcpur_size __initdata;
--static struct pcpur_ent *pcpur_map __initdata;
-+static size_t pcpur_size;
-+static struct pcpur_ent *pcpur_map;
- static struct vm_struct pcpur_vm;
- 
- static struct page * __init pcpur_get_page(unsigned int cpu, int pageno)
-@@ -160,6 +160,7 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
- {
- 	size_t map_size, dyn_size;
- 	unsigned int cpu;
-+	int i, j;
- 	ssize_t ret;
- 
- 	/*
-@@ -229,16 +230,71 @@ static ssize_t __init setup_pcpu_remap(size_t static_size)
- 	ret = pcpu_setup_first_chunk(pcpur_get_page, static_size,
- 				     PERCPU_FIRST_CHUNK_RESERVE, dyn_size,
- 				     PMD_SIZE, pcpur_vm.addr, NULL);
--	goto out_free_map;
-+
-+	/* sort pcpur_map array for pcpu_pmd_remapped() */
-+	for (i = 0; i < num_possible_cpus() - 1; i++)
-+		for (j = i + 1; j < num_possible_cpus(); j++)
-+			if (pcpur_map[i].ptr > pcpur_map[j].ptr) {
-+				struct pcpur_ent tmp = pcpur_map[i];
-+				pcpur_map[i] = pcpur_map[j];
-+				pcpur_map[j] = tmp;
-+			}
-+
-+	return ret;
- 
- enomem:
- 	for_each_possible_cpu(cpu)
- 		if (pcpur_map[cpu].ptr)
- 			free_bootmem(__pa(pcpur_map[cpu].ptr), PMD_SIZE);
--	ret = -ENOMEM;
--out_free_map:
- 	free_bootmem(__pa(pcpur_map), map_size);
--	return ret;
-+	return -ENOMEM;
-+}
-+
-+/**
-+ * pcpu_pmd_remapped - determine whether a kaddr is in pcpur recycled area
-+ * @kaddr: the kernel address in question
-+ *
-+ * Determine whether @kaddr falls in the pcpur recycled area.  This is
-+ * used by pageattr to detect VM aliases and break up the pcpu PMD
-+ * mapping such that the same physical page is not mapped under
-+ * different attributes.
-+ *
-+ * The recycled area is always at the tail of a partially used PMD
-+ * page.
-+ *
-+ * RETURNS:
-+ * Address of corresponding remapped pcpu address if match is found;
-+ * otherwise, NULL.
-+ */
-+void *pcpu_pmd_remapped(void *kaddr)
-+{
-+	void *pmd_addr = (void *)((unsigned long)kaddr & PMD_MASK);
-+	unsigned long offset = (unsigned long)kaddr & ~PMD_MASK;
-+	int left = 0, right = num_possible_cpus() - 1;
-+	int pos;
-+
-+	/* pcpur in use at all? */
-+	if (!pcpur_map)
-+		return NULL;
-+
-+	/* okay, perform binary search */
-+	while (left <= right) {
-+		pos = (left + right) / 2;
-+
-+		if (pcpur_map[pos].ptr < pmd_addr)
-+			left = pos + 1;
-+		else if (pcpur_map[pos].ptr > pmd_addr)
-+			right = pos - 1;
-+		else {
-+			/* it shouldn't be in the area for the first chunk */
-+			WARN_ON(offset < pcpur_size);
-+
-+			return pcpur_vm.addr +
-+				pcpur_map[pos].cpu * PMD_SIZE + offset;
-+		}
-+	}
-+
-+	return NULL;
- }
- #else
- static ssize_t __init setup_pcpu_remap(size_t static_size)
-diff --git a/arch/x86/mm/pageattr.c b/arch/x86/mm/pageattr.c
-index 8bc64b0..a1bcead 100644
---- a/arch/x86/mm/pageattr.c
-+++ b/arch/x86/mm/pageattr.c
-@@ -11,6 +11,7 @@
- #include <linux/interrupt.h>
- #include <linux/seq_file.h>
- #include <linux/debugfs.h>
-+#include <linux/pfn.h>
- 
- #include <asm/e820.h>
- #include <asm/processor.h>
-@@ -687,6 +688,7 @@ static int cpa_process_alias(struct cpa_data *cpa)
- {
- 	struct cpa_data alias_cpa;
- 	unsigned long temp_cpa_vaddr, vaddr;
-+	void *remapped;
- 	int ret;
- 
- 	if (cpa->pfn >= max_pfn_mapped)
-@@ -742,6 +744,27 @@ static int cpa_process_alias(struct cpa_data *cpa)
- 	}
- #endif
- 
-+	/*
-+	 * If the PMD page was partially used for per-cpu remapping,
-+	 * the remapped area needs to be split and modified.  Note
-+	 * that the partial recycling only happens at the tail of a
-+	 * partially used PMD page, so touching single PMD page is
-+	 * always enough.
-+	 */
-+	remapped = pcpu_pmd_remapped((void *)vaddr);
-+	if (remapped) {
-+		int max_pages = PFN_DOWN(PMD_SIZE - (vaddr & ~PMD_MASK));
-+
-+		alias_cpa = *cpa;
-+		temp_cpa_vaddr = (unsigned long)remapped;
-+		alias_cpa.vaddr = &temp_cpa_vaddr;
-+		alias_cpa.numpages = min(alias_cpa.numpages, max_pages);
-+		alias_cpa.flags &= ~(CPA_PAGES_ARRAY | CPA_ARRAY);
-+		ret = __change_page_attr_set_clr(&alias_cpa, 0);
-+		if (ret)
-+			return ret;
-+	}
-+
- 	return 0;
- }
- 
--- 
-1.6.0.2
+> ---
+>  include/linux/swap.h |   12 ++++++++++++
+>  mm/memcontrol.c      |   14 +++++++++++++-
+>  mm/vmscan.c          |    8 ++++++++
+>  3 files changed, 33 insertions(+), 1 deletions(-)
+> 
+> diff --git a/include/linux/swap.h b/include/linux/swap.h
+> index 6ea541d..00d8066 100644
+> --- a/include/linux/swap.h
+> +++ b/include/linux/swap.h
+> @@ -336,11 +336,17 @@ static inline void disable_swap_token(void)
+>  
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR
+>  extern void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent);
+> +extern int memcg_free_unused_swapcache(struct page *page);
+>  #else
+>  static inline void
+>  mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+>  {
+>  }
+> +static inline int
+> +memcg_free_unused_swapcache(struct page *page)
+> +{
+> +	return 0;
+> +}
+>  #endif
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+>  extern void mem_cgroup_uncharge_swap(swp_entry_t ent);
+> @@ -436,6 +442,12 @@ mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+>  {
+>  }
+>  
+> +static inline int
+> +memcg_free_unused_swapcache(struct page *page)
+> +{
+> +	return 0;
+> +}
+> +
+>  #endif /* CONFIG_SWAP */
+>  #endif /* __KERNEL__*/
+>  #endif /* _LINUX_SWAP_H */
+> diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+> index 0c90345..63844cd 100644
+> --- a/mm/memcontrol.c
+> +++ b/mm/memcontrol.c
+> @@ -1578,7 +1578,19 @@ void mem_cgroup_uncharge_swapcache(struct page *page, swp_entry_t ent)
+>  	if (memcg)
+>  		css_put(&memcg->css);
+>  }
+> -#endif
+> +
+> +int memcg_free_unused_swapcache(struct page *page)
+> +{
+> +	VM_BUG_ON(!PageLocked(page));
+> +	VM_BUG_ON(!PageSwapCache(page));
+> +
+> +	if (mem_cgroup_disabled())
+> +		return 0;
+> +	if (!PageAnon(page) || page_mapped(page))
+> +		return 0;
+> +	return try_to_free_swap(page);	/* checks page_swapcount */
+> +}
+> +#endif /* CONFIG_SWAP */
+>  
+>  #ifdef CONFIG_CGROUP_MEM_RES_CTLR_SWAP
+>  /*
+> diff --git a/mm/vmscan.c b/mm/vmscan.c
+> index 2f9d555..1fd0e43 100644
+> --- a/mm/vmscan.c
+> +++ b/mm/vmscan.c
+> @@ -665,6 +665,14 @@ static unsigned long shrink_page_list(struct list_head *page_list,
+>  				goto keep_locked;
+>  			if (!add_to_swap(page))
+>  				goto activate_locked;
+> +			/*
+> +			 * The owner process might have uncharged the page
+> +			 * (by page_remove_rmap()) before it has been added
+> +			 * to swap cache.
+> +			 * Check it here to avoid making it stale.
+> +			 */
+> +			if (memcg_free_unused_swapcache(page))
+> +				goto keep_locked;
+>  			may_enter_fs = 1;
+>  		}
+>  
+> 
 
