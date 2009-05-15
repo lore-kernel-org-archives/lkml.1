@@ -1,57 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755439AbZEORMq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755329AbZEOR3U@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755439AbZEORMq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 13:12:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753057AbZEORMi
+	id S1755329AbZEOR3U (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 13:29:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754828AbZEOR3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 13:12:38 -0400
-Received: from mail-px0-f123.google.com ([209.85.216.123]:63040 "EHLO
-	mail-px0-f123.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752740AbZEORMh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 13:12:37 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=caIgPToJFKA0mcTrErRiSMIlmewhY5EqrtWiut9289V6DkNU9DVl/QT69s1yZf01QI
-         pkxKvtFiyRQEfJZ0Y6GeWjBuuCh4+Nf60UmqtNO2am3NyT9ft9IN1GDHdlOKl4EAT5j8
-         asJ3AoqbU2BVHi2lVcW9Tpk6NHs6Q93xhp1Sk=
-MIME-Version: 1.0
-In-Reply-To: <93655eb70905151007v5f9bb34aj34be4b65ffeb02a4@mail.gmail.com>
-References: <93655eb70905151007v5f9bb34aj34be4b65ffeb02a4@mail.gmail.com>
-Date: Fri, 15 May 2009 10:12:38 -0700
-Message-ID: <5bdc1c8b0905151012x51c19b5cv639cadab1cee3849@mail.gmail.com>
-Subject: Re: unresponsiveness on linux desktop during file copy
-From: Mark Knecht <markknecht@gmail.com>
-To: Satish Eerpini <eerpini@gmail.com>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+	Fri, 15 May 2009 13:29:09 -0400
+Received: from dovecot.org ([82.118.211.50]:36970 "EHLO dovecot.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753805AbZEOR3I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 13:29:08 -0400
+Subject: Re: ext3/ext4 directories don't shrink after deleting lots of files
+From: Timo Sirainen <tss@iki.fi>
+To: Theodore Tso <tytso@mit.edu>
+Cc: Josef Bacik <josef@toxicpanda.com>, linux-kernel@vger.kernel.org
+In-Reply-To: <20090515105815.GD6816@mit.edu>
+References: <1242338523.6933.664.camel@timo-desktop>
+	 <1b7401870905141732v43bd7321g1f0d9721b5e3f761@mail.gmail.com>
+	 <605A8D56-81CD-4775-8FCD-58CDB12CBA36@iki.fi>
+	 <20090515105815.GD6816@mit.edu>
+Content-Type: multipart/signed; micalg="pgp-sha1"; protocol="application/pgp-signature"; boundary="=-mje98rjrhaqQglbt+pTp"
+Date: Fri, 15 May 2009 13:29:04 -0400
+Message-Id: <1242408544.6933.687.camel@timo-desktop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 10:07 AM, Satish Eerpini <eerpini@gmail.com> wrote:
-> Hello everyone,
->
-> I am trying to figure out why the Linux desktop becomes overly
-> unresponsive whenever there is a file copy going on, this happens to a
-> large extent with GUI based file copying, and some lesser, but with
-> command line copying too.
-> does it have anything to do with the kernel ??,
-> if it does help, then I am running Fedora 10 on a Hp nx 7400, Centrino
-> Duo processor.
->
-> Cheers
-> Satish
-> --
 
-Quickly, is the system getting good hard drive performance overall?
+--=-mje98rjrhaqQglbt+pTp
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-hdparm -tT /dev/sda
+On Fri, 2009-05-15 at 06:58 -0400, Theodore Tso wrote:
+> > I was rather thinking something that I could run while the system was =20
+> > fully operational. Otherwise just moving the files to a temp directory =
++=20
+> > rmdir() + rename() would have been fine too.
+> >
+> > I just tested that xfs, jfs and reiserfs all shrink the directories =20
+> > immediately. Is it more difficult to implement for ext* or has no one =20
+> > else found this to be a problem?
+>=20
+> It's probably fairest to say no one has thought it worth the effort.
 
-or whatever device you are using. Maybe it's stuck in some sort of
-programmed IO or something very old?
+My problem is with mail servers and Maildir format where it's possible
+that a user has tons of emails and wants to delete them. The mailbox
+maybe slowly grows back to the huge size, but in the meantime it's
+slower than necessary.
 
-- Mark
+I can't really fix those directories while the system is running because
+mail reading doesn't use any locking (and adding locking would be
+unnecessary overhead). Writing does use locking though, so I could
+create a new duplicate directory and switch it with the original
+directory. But I suppose there's no way to atomically replace (or swap)
+a non-empty directory with another?
+
+
+--=-mje98rjrhaqQglbt+pTp
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEABECAAYFAkoNpmAACgkQyUhSUUBVisn/qgCcCnblCgs/bZMr9l1AHnzqy4Um
+j0UAnjqoNS1OKkeCJjOKjFU2lSyU3mfN
+=Zk29
+-----END PGP SIGNATURE-----
+
+--=-mje98rjrhaqQglbt+pTp--
+
