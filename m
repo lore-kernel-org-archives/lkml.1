@@ -1,41 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756388AbZEOSvH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757921AbZEOSv3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756388AbZEOSvH (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 14:51:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755541AbZEOSum
+	id S1757921AbZEOSv3 (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 14:51:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756248AbZEOSuy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 14:50:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:38452 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753943AbZEOSul (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 14:50:41 -0400
-Date: Fri, 15 May 2009 11:49:04 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: "John W. Linville" <linville@tuxdriver.com>
-cc: linux-kernel@vger.kernel.org, Jiri Slaby <jirislaby@gmail.com>,
-       johannes@sipsolutions.net, linux-wireless@vger.kernel.org,
-       Felix Fietkau <nbd@openwrt.org>, davem@davemloft.net
-Subject: Re: [PATCH 1/2] mac80211: minstrel, fix memory corruption
-In-Reply-To: <20090515183319.GF2773@tuxdriver.com>
-Message-ID: <alpine.LFD.2.01.0905151147520.3343@localhost.localdomain>
-References: <1241453096-8517-1-git-send-email-jirislaby@gmail.com> <20090515182131.GA6439@fancy-poultry.org> <20090515183319.GF2773@tuxdriver.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Fri, 15 May 2009 14:50:54 -0400
+Received: from gw.goop.org ([64.81.55.164]:60747 "EHLO mail.goop.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1756781AbZEOSuv (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 14:50:51 -0400
+Message-ID: <4A0DB988.6000009@goop.org>
+Date: Fri, 15 May 2009 11:50:48 -0700
+From: Jeremy Fitzhardinge <jeremy@goop.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+To: Jan Beulich <JBeulich@novell.com>
+CC: Ingo Molnar <mingo@elte.hu>, Jun Nakajima <jun.nakajima@intel.com>,
+       Xiaohui Xin <xiaohui.xin@intel.com>, Xin Li <xin.li@intel.com>,
+       Xen-devel <xen-devel@lists.xensource.com>,
+       Nick Piggin <npiggin@suse.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       "H. Peter Anvin" <hpa@zytor.com>
+Subject: Re: [Xen-devel] Performance overhead of paravirt_ops on		 nativeidentified
+References: <4A0B62F7.5030802@goop.org> <4A0BED040200007800000DB0@vpn.id2.novell.com> <4A0C58BB.3090303@goop.org> <4A0D3F8C02000078000010A7@vpn.id2.novell.com>
+In-Reply-To: <4A0D3F8C02000078000010A7@vpn.id2.novell.com>
+X-Enigmail-Version: 0.95.6
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Jan Beulich wrote:
+> A patch for the pv-ops kernel would require some time. What I can give you
+> right away - just for reference - are the sources we currently use in our kernel:
+> attached.
+
+Hm, I see.  Putting a call out to a pv-ops function in the ticket lock 
+slow path looks pretty straightforward.  The need for an extra lock on 
+the contended unlock side is a bit unfortunate; have you measured to see 
+what hit that has?  Seems to me like you could avoid the problem by 
+using per-cpu storage rather than stack storage (though you'd need to 
+copy the per-cpu data to stack when handling a nested spinlock).
+
+What's the thinking behind the xen_spin_adjust() stuff?
+
+> static __always_inline void __ticket_spin_lock(raw_spinlock_t *lock) { 
+> unsigned int token, count; bool free; __ticket_spin_lock_preamble; if 
+> (unlikely(!free)) token = xen_spin_adjust(lock, token); do { count = 1 
+> << 10; __ticket_spin_lock_body; } while (unlikely(!count) && 
+> !xen_spin_wait(lock, token)); } 
 
 
-On Fri, 15 May 2009, John W. Linville wrote:
->
-> Unfortunately, I think Dave might have limited availability right now...
+How does this work?  Doesn't it always go into the slowpath loop even if 
+the preamble got the lock with no contention?
 
-Yeah, I think he's on some Alaskan cruise.
-
-Should I just pull directly from you this time?
-
-		Linus
+    J
