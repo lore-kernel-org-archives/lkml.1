@@ -1,52 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757052AbZEOLF7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756021AbZEOLGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757052AbZEOLF7 (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 07:05:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753412AbZEOLFt
+	id S1756021AbZEOLGU (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 07:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753575AbZEOLFu
 	(ORCPT <rfc822;linux-kernel-outgoing>);
+	Fri, 15 May 2009 07:05:50 -0400
+Received: from bilbo.ozlabs.org ([203.10.76.25]:47835 "EHLO bilbo.ozlabs.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752865AbZEOLFt (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Fri, 15 May 2009 07:05:49 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:62505 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752461AbZEOLFt (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 07:05:49 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:date:message-id:subject:from:to:content-type
-         :content-transfer-encoding;
-        b=aIcjZ+Xl5BU4Vuc80Yhxi04c4xdDd5+Vg1deRtrAvV2pGTaFpXKZQXRrrh820fM2RH
-         tqPDQzTC2UR5h8rzuvPfHtC/50Ke9ShR9eeBs3g9+MBW8ZsdE7A+CK0wUOyv98v75xq4
-         Cl/goRDw4J8hvTTH26BQXM9oVvynAFC6fWdVk=
 MIME-Version: 1.0
-Date: Fri, 15 May 2009 16:35:49 +0530
-Message-ID: <de72ca4e0905150405w495a359ei7c4a625ff82edb11@mail.gmail.com>
-Subject: patch related to SIGSEGV handling in multiple threads and hung 
-	threads
-From: Sudarshan Soma <sudarshan12s@gmail.com>
-To: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
+Content-Type: text/plain; charset=us-ascii
 Content-Transfer-Encoding: 7bit
+Message-ID: <18957.19594.735792.15284@cargo.ozlabs.ibm.com>
+Date: Fri, 15 May 2009 21:05:46 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: mingo@elte.hu, a.p.zijlstra@chello.nl, linux-kernel@vger.kernel.org,
+       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com
+Subject: Re: [tip:perfcounters/core] perf_counter: Rework the perf counter disable/enable
+In-Reply-To: <tip-9e35ad388bea89f7d6f375af4c0ae98803688666@git.kernel.org>
+References: <new-submission>
+	<tip-9e35ad388bea89f7d6f375af4c0ae98803688666@git.kernel.org>
+X-Mailer: VM 8.0.12 under 22.2.1 (i486-pc-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi ,
-I have a program which will create multiple threads. One of the thread
-receives SIGSEGV and it prints stacktrace in its handler and calls
-_exit(-1). The call to exit wont terminate all threads in  a process
-and hence thread hangs here. This causes resouce leaks and other
-problems. It is seen only on linux 2.4.20.
+tip-bot for Peter Zijlstra writes:
 
-For printing stacktrace it uses
-__builtin_return_address and __builtin_frame_address
+> x86 NMI/INT throttling has non-nested use of this, breaking things. Therefore
+> provide a reference counter disable/enable interface, where the first disable
+> disables the hardware, and the last enable enables the hardware again.
 
+It looks to me like what you've done for powerpc enables the hardware
+again on the first enable, not the last one:
 
-The same program works fine on linux 2.6.26 kernel. It  will exit the
-whole process when one of its thread dies as above.
+> @@ -436,7 +435,7 @@ u64 hw_perf_save_disable(void)
+>   * If we were previously disabled and counters were added, then
+>   * put the new config on the PMU.
+>   */
+> -void hw_perf_restore(u64 disable)
+> +void hw_perf_enable(void)
+>  {
+>  	struct perf_counter *counter;
+>  	struct cpu_hw_counters *cpuhw;
+> @@ -448,9 +447,12 @@ void hw_perf_restore(u64 disable)
+>  	int n_lim;
+>  	int idx;
+>  
+> -	if (disable)
+> -		return;
+>  	local_irq_save(flags);
+> +	if (!cpuhw->disabled) {
+> +		local_irq_restore(flags);
+> +		return;
+> +	}
+> +
+>  	cpuhw = &__get_cpu_var(cpu_hw_counters);
+>  	cpuhw->disabled = 0;
 
+I do rely on nesting the disable/enable calls and only having the
+hardware re-enabled on the last enable.  I can't see anything here
+that detects the last enable.  Have I missed it somewhere?
 
-Please let me know the patch details or any workaround, if any. This
-is a bit urgent, so please let me know for any pointers , if any
-
-Thanks and Best Regards,
-Pavan.
+Paul.
