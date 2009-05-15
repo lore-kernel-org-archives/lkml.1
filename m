@@ -1,150 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1762709AbZEONNK@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758366AbZEONOj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1762709AbZEONNK (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 09:13:10 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1761636AbZEONMy
+	id S1758366AbZEONOj (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 09:14:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755842AbZEONOa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 09:12:54 -0400
-Received: from hera.kernel.org ([140.211.167.34]:34760 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758381AbZEONMw (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 09:12:52 -0400
-Subject: Re: [PATCH -tip] x86: kvm replace MSR_IA32_TIME_STAMP_COUNTER with
- MSR_IA32_TSC of msr-index.h
-From: Jaswinder Singh Rajput <jaswinder@kernel.org>
-To: Avi Kivity <avi@redhat.com>, Ingo Molnar <mingo@elte.hu>
-Cc: x86 maintainers <x86@kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-In-Reply-To: <1242282442.4574.11.camel@localhost.localdomain>
-References: <1242031695.8213.17.camel@yhuang-dev.sh.intel.com>
-	 <1242032701.3114.4.camel@localhost.localdomain>
-	 <1242032889.8213.32.camel@yhuang-dev.sh.intel.com>
-	 <1242279010.4574.6.camel@localhost.localdomain>
-	 <1242282442.4574.11.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 15 May 2009 18:42:05 +0530
-Message-Id: <1242393125.3082.4.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Fri, 15 May 2009 09:14:30 -0400
+Received: from atrey.karlin.mff.cuni.cz ([195.113.26.193]:39853 "EHLO
+	atrey.karlin.mff.cuni.cz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754917AbZEONO3 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 09:14:29 -0400
+Date: Fri, 15 May 2009 15:14:22 +0200
+From: Pavel Machek <pavel@ucw.cz>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Wu Fengguang <fengguang.wu@intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Nigel Cunningham <nigel@tuxonice.net>,
+       David Rientjes <rientjes@google.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to allocate too much
+	memory too hard
+Message-ID: <20090515131421.GD1976@elf.ucw.cz>
+References: <200905070040.08561.rjw@sisk.pl> <200905131042.18137.rjw@sisk.pl> <20090514111413.GB8871@elf.ucw.cz> <200905141959.53810.rjw@sisk.pl>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905141959.53810.rjw@sisk.pl>
+X-Warning: Reading this can be dangerous to your mental health.
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello Avi,
+Hi!
 
-On Thu, 2009-05-14 at 11:57 +0530, Jaswinder Singh Rajput wrote:
-> Use standard msr-index.h's MSR declaration.
+> > > We want to avoid attempting to free too much memory too hard during
+> > > hibernation, so estimate the minimum size of the image to use as the
+> > > lower limit for preallocating memory.
+> > 
+> > Why? Is freeing memory too slow?
+> > 
+> > It used to be that user controlled image size, so he was able to
+> > balance "time to save image" vs. "responsiveness of system after
+> > resume".
+> > 
+> > Does this just override user's preference when he chooses too small
+> > image size?
+> > 
+> > > The approach here is based on the (experimental) observation that we
+> > > can't free more page frames than the sum of:
+> > > 
+> > > * global_page_state(NR_SLAB_RECLAIMABLE)
+> > > * global_page_state(NR_ACTIVE_ANON)
+> > > * global_page_state(NR_INACTIVE_ANON)
+> > > * global_page_state(NR_ACTIVE_FILE)
+> > > * global_page_state(NR_INACTIVE_FILE)
+> > > 
+> > > and even that is usually impossible to free in practice, because some
+> > > of the pages reported as global_page_state(NR_SLAB_RECLAIMABLE) can't
+> > > in fact be freed.  It turns out, however, that if the sum of the
+> > > above numbers is subtracted from the number of saveable pages in the
+> > > system and the result is multiplied by 1.25, we get a suitable
+> > > estimate of the minimum size of the image.
+...
+> > >  /**
+> > > + * minimum_image_size - Estimate the minimum acceptable size of an image
+> > > + * @saveable: The total number of saveable pages in the system.
+> > > + *
+> > > + * We want to avoid attempting to free too much memory too hard, so estimate the
+> > > + * minimum acceptable size of a hibernation image to use as the lower limit for
+> > > + * preallocating memory.
+> > 
+> > I don't get it. If user sets image size as 0, we should free as much
+> > memory as we can. I just don't see why "we want to avoid... it".
 > 
-> MSR_IA32_TSC is better than MSR_IA32_TIME_STAMP_COUNTER as it also solves
-> 80 column issue.
-> 
-> Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
-> ---
+> The "as much memory as we can" is not well defined.
 
-If this patch looks sane to you can apply in kvm tree.
+Well, while (1) kmalloc(1024, GFP_KERNEL | GFP_NO_OOMKILL); is
+basically "as much memory as we can". I believe it is pretty well defined.
 
-Here is the updated patch based on kvm tree:
+> Patches [4/6] and [5/6] make hibernation use memory allocations to force some
+> memory to be freed.  However, it is not really reasonable to try to allocate
+> until the allocation fails, because that stresses the memory management
+> subsystem too much.  It is better to predict when it fails and stop allocating
+> at that point, which is what the patch does.
 
-[PATCH] x86: kvm replace MSR_IA32_TIME_STAMP_COUNTER with MSR_IA32_TSC of msr-index.h
+Why is it wrong to stress memory management? It is a computer; it can
+handle it. Does it take too long? Should the user just set image_size
+higher in such case?
 
-Use standard msr-index.h's MSR declaration.
+> The prediction is not very precise, but I think it need not be.  Even if it
+> leaves a few pages more in memory, that won't be a disaster.
 
-MSR_IA32_TSC is better than MSR_IA32_TIME_STAMP_COUNTER as it also solves
-80 column issue.
-
-Signed-off-by: Jaswinder Singh Rajput <jaswinderrajput@gmail.com>
----
- arch/x86/include/asm/kvm_host.h |    2 --
- arch/x86/kvm/svm.c              |    4 ++--
- arch/x86/kvm/vmx.c              |    4 ++--
- arch/x86/kvm/x86.c              |    5 ++---
- 4 files changed, 6 insertions(+), 9 deletions(-)
-
-diff --git a/arch/x86/include/asm/kvm_host.h b/arch/x86/include/asm/kvm_host.h
-index 716a4ec..5c72897 100644
---- a/arch/x86/include/asm/kvm_host.h
-+++ b/arch/x86/include/asm/kvm_host.h
-@@ -753,8 +753,6 @@ static inline void kvm_inject_gp(struct kvm_vcpu *vcpu, u32 error_code)
- 	kvm_queue_exception_e(vcpu, GP_VECTOR, error_code);
- }
- 
--#define MSR_IA32_TIME_STAMP_COUNTER		0x010
--
- #define TSS_IOPB_BASE_OFFSET 0x66
- #define TSS_BASE_SIZE 0x68
- #define TSS_IOPB_SIZE (65536 / 8)
-diff --git a/arch/x86/kvm/svm.c b/arch/x86/kvm/svm.c
-index 71510e0..dd667dd 100644
---- a/arch/x86/kvm/svm.c
-+++ b/arch/x86/kvm/svm.c
-@@ -1953,7 +1953,7 @@ static int svm_get_msr(struct kvm_vcpu *vcpu, unsigned ecx, u64 *data)
- 	struct vcpu_svm *svm = to_svm(vcpu);
- 
- 	switch (ecx) {
--	case MSR_IA32_TIME_STAMP_COUNTER: {
-+	case MSR_IA32_TSC: {
- 		u64 tsc;
- 
- 		rdtscll(tsc);
-@@ -2043,7 +2043,7 @@ static int svm_set_msr(struct kvm_vcpu *vcpu, unsigned ecx, u64 data)
- 	struct vcpu_svm *svm = to_svm(vcpu);
- 
- 	switch (ecx) {
--	case MSR_IA32_TIME_STAMP_COUNTER: {
-+	case MSR_IA32_TSC: {
- 		u64 tsc;
- 
- 		rdtscll(tsc);
-diff --git a/arch/x86/kvm/vmx.c b/arch/x86/kvm/vmx.c
-index fe2ce2b..98e6915 100644
---- a/arch/x86/kvm/vmx.c
-+++ b/arch/x86/kvm/vmx.c
-@@ -931,7 +931,7 @@ static int vmx_get_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 *pdata)
- 	case MSR_EFER:
- 		return kvm_get_msr_common(vcpu, msr_index, pdata);
- #endif
--	case MSR_IA32_TIME_STAMP_COUNTER:
-+	case MSR_IA32_TSC:
- 		data = guest_read_tsc();
- 		break;
- 	case MSR_IA32_SYSENTER_CS:
-@@ -991,7 +991,7 @@ static int vmx_set_msr(struct kvm_vcpu *vcpu, u32 msr_index, u64 data)
- 	case MSR_IA32_SYSENTER_ESP:
- 		vmcs_writel(GUEST_SYSENTER_ESP, data);
- 		break;
--	case MSR_IA32_TIME_STAMP_COUNTER:
-+	case MSR_IA32_TSC:
- 		rdtscll(host_tsc);
- 		guest_write_tsc(data, host_tsc);
- 		break;
-diff --git a/arch/x86/kvm/x86.c b/arch/x86/kvm/x86.c
-index 44e87a5..4150edb 100644
---- a/arch/x86/kvm/x86.c
-+++ b/arch/x86/kvm/x86.c
-@@ -462,7 +462,7 @@ static u32 msrs_to_save[] = {
- #ifdef CONFIG_X86_64
- 	MSR_CSTAR, MSR_KERNEL_GS_BASE, MSR_SYSCALL_MASK, MSR_LSTAR,
- #endif
--	MSR_IA32_TIME_STAMP_COUNTER, MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
-+	MSR_IA32_TSC, MSR_KVM_SYSTEM_TIME, MSR_KVM_WALL_CLOCK,
- 	MSR_IA32_PERF_STATUS, MSR_IA32_CR_PAT, MSR_VM_HSAVE_PA
- };
- 
-@@ -640,8 +640,7 @@ static void kvm_write_guest_time(struct kvm_vcpu *v)
- 
- 	/* Keep irq disabled to prevent changes to the clock */
- 	local_irq_save(flags);
--	kvm_get_msr(v, MSR_IA32_TIME_STAMP_COUNTER,
--			  &vcpu->hv_clock.tsc_timestamp);
-+	kvm_get_msr(v, MSR_IA32_TSC, &vcpu->hv_clock.tsc_timestamp);
- 	ktime_get_ts(&ts);
- 	local_irq_restore(flags);
- 
+Well, on 128MB machine, you'll fail suspend even if it would fit if
+code tried little harder...?
+									Pavel
 -- 
-1.6.1.1
-
-
-
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
