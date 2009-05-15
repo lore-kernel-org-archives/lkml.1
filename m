@@ -1,39 +1,53 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1763028AbZEOMRz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1763266AbZEOMSy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1763028AbZEOMRz (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 08:17:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1762267AbZEOMNi
+	id S1763266AbZEOMSy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 08:18:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1763033AbZEOMSJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 08:13:38 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:43959 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1762213AbZEOMNd (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 08:13:33 -0400
-Date: Fri, 15 May 2009 14:19:05 +0200
-From: Andi Kleen <andi@firstfloor.org>
-To: Vitaly Mayatskikh <v.mayatskih@gmail.com>
-Cc: Andi Kleen <andi@firstfloor.org>, Josef Bacik <josef@redhat.com>,
-       sandeen@redhat.com, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/2] Perform check in iov_iter_fault_in_readable() by check_readable_bytes()
-Message-ID: <20090515121905.GE16682@one.firstfloor.org>
-References: <1242317939-15392-1-git-send-email-v.mayatskih@gmail.com> <1242317939-15392-3-git-send-email-v.mayatskih@gmail.com> <87k54iq2gv.fsf@basil.nowhere.org> <871vqqkdf0.wl%vmayatsk@redhat.com> <20090515093838.GB16682@one.firstfloor.org> <87hbzmd1g6.wl%vmayatsk@redhat.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 15 May 2009 08:18:09 -0400
+Received: from gate.in-addr.de ([212.8.193.158]:45013 "EHLO mx.in-addr.de"
+	rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1761718AbZEOMSH (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 08:18:07 -0400
+Date: Fri, 15 May 2009 14:18:38 +0200
+From: Lars Marowsky-Bree <lmb@suse.de>
+To: Philipp Reisner <philipp.reisner@linbit.com>, linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, Greg KH <gregkh@suse.de>,
+       Neil Brown <neilb@suse.de>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Sam Ravnborg <sam@ravnborg.org>, Dave Jones <davej@redhat.com>,
+       Nikanth Karthikesan <knikanth@suse.de>,
+       "Nicholas A. Bellinger" <nab@linux-iscsi.org>,
+       Kyle Moffett <kyle@moffetthome.net>,
+       Bart Van Assche <bart.vanassche@gmail.com>,
+       Lars Ellenberg <lars.ellenberg@linbit.com>
+Subject: Re: [PATCH 13/16] DRBD: misc
+Message-ID: <20090515121838.GK8610@suse.de>
+References: <1242389443-3470-5-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-6-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-7-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-8-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-9-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-10-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-11-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-12-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-13-git-send-email-philipp.reisner@linbit.com> <1242389443-3470-14-git-send-email-philipp.reisner@linbit.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <87hbzmd1g6.wl%vmayatsk@redhat.com>
-User-Agent: Mutt/1.4.2.1i
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <1242389443-3470-14-git-send-email-philipp.reisner@linbit.com>
+X-Ctuhulu: HASTUR
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Well, "shall attempt"... It's not clear to me, is it enough just to
-> validate user's buffer and gave up with error, like we do now?
+On 2009-05-15T14:10:40, Philipp Reisner <philipp.reisner@linbit.com> wrote:
 
-I think it is.
+> buildtag.c tag will go away when we are not longer an external module.
 
--Andi
+So I would assume it shouldn't be part of the upstream submission? ;-)
+
+
+Regards,
+    Lars
 
 -- 
-ak@linux.intel.com -- Speaking for myself only.
+SuSE Labs, OPS Engineering, Novell, Inc.
+SUSE LINUX Products GmbH, GF: Markus Rex, HRB 16746 (AG Nürnberg)
+"Experience is the name everyone gives to their mistakes." -- Oscar Wilde
+
