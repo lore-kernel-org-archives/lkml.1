@@ -1,51 +1,158 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757151AbZEPM2j@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757194AbZEPM3y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757151AbZEPM2j (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 08:28:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755415AbZEPM22
+	id S1757194AbZEPM3y (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 08:29:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755885AbZEPM3m
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 08:28:28 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:39356 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754786AbZEPM21 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 08:28:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=CZKdFzQ1AhRF+q+tIxdDfNY+tGb1G2qDidKi5QlTNteSqfAVAyW9q8ztrdMZyqDFfK
-         LcOjyTa86mFxbkr6js+eXWWqlh+wRYQg20zyYeFTOYE3p8+V/YPxDBv2RV1uede1AlRg
-         w7ZfyfpSXs9iry0uFvnQ6FCmwqBttKN9f6nZs=
+	Sat, 16 May 2009 08:29:42 -0400
+Received: from h155.mvista.com ([63.81.120.155]:63016 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1755447AbZEPM3l (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 08:29:41 -0400
+Message-ID: <4A0EB1AD.6050806@ru.mvista.com>
+Date: Sat, 16 May 2009 16:29:33 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-In-Reply-To: <200905152350.27270.rjw@sisk.pl>
-References: <38b2ab8a0905030922x722a45f3gf0790b5b90b0f2b3@mail.gmail.com>
-	 <200905031828.14468.florian@openwrt.org>
-	 <38b2ab8a0905031012m5d50b68es22e3c80cfa72fd60@mail.gmail.com>
-	 <200905152350.27270.rjw@sisk.pl>
-Date: Sat, 16 May 2009 14:28:27 +0200
-Message-ID: <38b2ab8a0905160528x20402d0fr9dc188111679ad13@mail.gmail.com>
-Subject: Re: v2.6.30-rc4: b44: eth0: BUG! Timeout waiting for bit 00000002 of 
-	register 42c to clear.
-From: Francis Moreau <francis.moro@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Florian Fainelli <florian@openwrt.org>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
+To: Tejun Heo <htejun@gmail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       Pete Zaitcev <zaitcev@redhat.com>, Eric Moore <Eric.Moore@lsi.com>,
+       "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH block#for-2.6.31 2/3] block: set rq->resid_len to blk_rq_bytes()
+ on issue
+References: <4A0D86DB.9000203@kernel.org> <4A0D87D2.7090806@gmail.com> <4A0D8C73.50208@ru.mvista.com> <4A0DEA33.5050905@gmail.com>
+In-Reply-To: <4A0DEA33.5050905@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+Hello.
 
-On Fri, May 15, 2009 at 11:50 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+Tejun Heo wrote:
+
+>>> Index: block/drivers/message/fusion/mptsas.c
+>>> ===================================================================
+>>> --- block.orig/drivers/message/fusion/mptsas.c
+>>> +++ block/drivers/message/fusion/mptsas.c
+>>> @@ -1357,7 +1357,8 @@ static int mptsas_smp_handler(struct Scs
+>>>          smprep = (SmpPassthroughReply_t *)ioc->sas_mgmt.reply;
+>>>          memcpy(req->sense, smprep, sizeof(*smprep));
+>>>          req->sense_len = sizeof(*smprep);
+>>> -        rsp->resid_len = blk_rq_bytes(rsp) - smprep->ResponseDataLength;
+>>> +        req->resid_len = 0;
+>>> +        rsp->resid_len -= smprep->ResponseDataLength;
+>>>       
+>>    Is negative resid_len intended here? If so, shouldn't it be simply:
+>>
+>>         rsp->resid_len = -smprep->ResponseDataLength;
+>>     
 >
-> Can anyone please tell me what the status of this report is?
+> From patch description.
 >
+>  This patchset restores the original behavior by setting rq->resid_len
+>  to blk_rq_bytes(rq) on issue and restoring explicit clearing in
+>  affected drivers.
+>
+> So, rsp->resid_len equals the initial request length before the
+> subtraction and after subtraction it becomes the residue count.  The
+> original code was
+>
+> 	req->data_len = 0;
+> 	rsp->data_len -= smprep->ResponseDataLength;
+>   
 
-AFAIK, it's still open and unresolved.
+  Ah, I've confused up 'rsp' and 'req' as being one thing. Nevermind 
+then. :-<
 
-thanks
--- 
-Francis
+>>> Index: block/drivers/scsi/libsas/sas_expander.c
+>>> ===================================================================
+>>> --- block.orig/drivers/scsi/libsas/sas_expander.c
+>>> +++ block/drivers/scsi/libsas/sas_expander.c
+>>> @@ -1937,7 +1937,11 @@ int sas_smp_handler(struct Scsi_Host *sh
+>>>      if (ret > 0) {
+>>>          /* positive number is the untransferred residual */
+>>>          rsp->resid_len = ret;
+>>> +        req->resid_len = 0;
+>>>          ret = 0;
+>>> +    } else if (ret == 0) {
+>>> +        rsp->resid_len = 0;
+>>> +        req->resid_len = 0;
+>>>       
+>
+> Heh... there's a reason I mentioned the original commit.  The original
+> code was
+>
+> 	if (ret > 0) {
+> 		/* positive number is the untransferred residual */
+> 		rsp->data_len = ret;
+> 		req->data_len = 0;
+> 		ret = 0;
+> 	} else if (ret == 0) {
+> 		rsp->data_len = 0;
+> 		req->data_len = 0;
+> 	}
+>   
+
+   But still,
+
+                req->data_len = 0;
+
+is common between both branches, so could be moved after the *if* statement.
+
+>>> Index: block/drivers/scsi/libsas/sas_host_smp.c
+>>> ===================================================================
+>>> --- block.orig/drivers/scsi/libsas/sas_host_smp.c
+>>> +++ block/drivers/scsi/libsas/sas_host_smp.c
+>>> @@ -176,9 +176,6 @@ int sas_smp_host_handler(struct Scsi_Hos
+>>>      resp_data[1] = req_data[1];
+>>>      resp_data[2] = SMP_RESP_FUNC_UNK;
+>>>  
+>>> -    req->resid_len = blk_rq_bytes(req);
+>>> -    rsp->resid_len = blk_rq_bytes(rsp);
+>>> -
+>>>       
+>
+> Cuz it's already set to blk_rq_bytes().
+>   
+
+   Mixed them up again... :-<
+
+>>>      switch (req_data[1]) {
+>>>      case SMP_REPORT_GENERAL:
+>>>          req->resid_len -= 8;
+>>> Index: block/drivers/scsi/mpt2sas/mpt2sas_transport.c
+>>> ===================================================================
+>>> --- block.orig/drivers/scsi/mpt2sas/mpt2sas_transport.c
+>>> +++ block/drivers/scsi/mpt2sas/mpt2sas_transport.c
+>>> @@ -1170,8 +1170,8 @@ transport_smp_handler(struct Scsi_Host *
+>>>  
+>>>          memcpy(req->sense, mpi_reply, sizeof(*mpi_reply));
+>>>          req->sense_len = sizeof(*mpi_reply);
+>>> -        rsp->resid_len = blk_rq_bytes(rsp) -
+>>> -                 mpi_reply->ResponseDataLength;
+>>> +        req->resid_len = 0;
+>>> +        rsp->resid_len -= mpi_reply->ResponseDataLength;
+>>>       
+>>    Again, is negative resid_len intended?
+>>     
+>
+> Ditto.
+>   
+
+   ... and again.
+
+> Thanks.
+>   
+
+WBR, Sergei
+
+
