@@ -1,54 +1,90 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbZEPTNL@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbZEPTPx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756337AbZEPTNL (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 15:13:11 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbZEPTMy
+	id S1756337AbZEPTPx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 15:15:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755804AbZEPTPm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 15:12:54 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:51198 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754978AbZEPTMx convert rfc822-to-8bit (ORCPT
+	Sat, 16 May 2009 15:15:42 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:63422 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755756AbZEPTPl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 15:12:53 -0400
+	Sat, 16 May 2009 15:15:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=J5OpZJIFGDVTpNPpfwIIbTsLe6ZhGJe2yM6yZHmta+K+cJXhPd4ScmbP74E5/wWaag
-         aZE7QdHY2frRV0OdZqnpO/PdPusxaB2nBRMuZqRN/L3HljWk5nReGTp6RNvgMzQPBRcU
-         gUH9O/Wn+K2CTi7omzprcUdBDsIcynCLo3tdI=
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=VDIGfuuLUsgfGXYDfiYricMQ+mI22GtksSnZRpZHyiBta3QTXFcYJ41aHZf+QXRvK7
+         J6yRRzq4yn1Q2UjabIFqlF+jqNm60TKgUoLxoVsowNZQ8i8ntSV9UHyZezkxnru1onvq
+         8TmGteHWs0SN7e6/jM1LuKyBed15csh7ElgsU=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Subject: Re: [PATCH 0/15 v2] ide-atapi: remove pc->buf and misc cleanups
+Date: Sat, 16 May 2009 21:07:38 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-00442-ga3668b0; KDE/4.2.2; i686; ; )
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Tejun Heo <tj@kernel.org>, Jens Axboe <axboe@kernel.dk>
+References: <1242364293-29223-1-git-send-email-petkovbb@gmail.com>
+In-Reply-To: <1242364293-29223-1-git-send-email-petkovbb@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <87zldc9987.fsf@sycorax.lbl.gov>
-References: <87zldc9987.fsf@sycorax.lbl.gov>
-Date: Sat, 16 May 2009 23:12:52 +0400
-Message-ID: <a4423d670905161212u53869568ha9b6fa6a2b1c97e4@mail.gmail.com>
-Subject: Re: oops with 2.6.30-rc6 and reiserfs
-From: Alexander Beregalov <a.beregalov@gmail.com>
-To: Alex Romosan <romosan@sycorax.lbl.gov>
-Cc: linux-kernel@vger.kernel.org,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
-       Jeff Mahoney <jeffm@suse.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Disposition: inline
+Message-Id: <200905162107.38332.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/16 Alex Romosan <romosan@sycorax.lbl.gov>:
-> i get an oops trying to boot into 2.6.30-rc6 with reiserfs as the root
-> partition. the root partition never gets mounted rw so there is
-> nothing in the logs but i took a picture of the screen on the laptop:
->
->  http://costard.lbl.gov/~romosan/dsc05513.jpg
->
-> these are the config options i use relevant to reiserfs:
->
-> CONFIG_REISERFS_FS=y
-> # CONFIG_REISERFS_CHECK is not set
-> # CONFIG_REISERFS_PROC_INFO is not set
-> # CONFIG_REISERFS_FS_XATTR is not set
->
-> hope this helps.
->
 
-Add CC.
+Hi,
+
+On Friday 15 May 2009 07:11:18 Borislav Petkov wrote:
+> Hi,
+> 
+> this is the newest respin of the current patchset with all issues from
+> the previous review round fixed:
+> 
+> - 0003: fixed checkpatch issues
+> 
+> - 0005: documented additional change in the commit message
+> 
+> - 0009: converted to using bio_data() helper; pushed pc->buf removal to #12;
+> 	moved unrelated changes to 0010
+> 
+> - 0014: updated/fixed checkpatch issues
+
+Thanks.
+
+> It also got rebased ontop of block/for-2.6.31 after Tejun's stuff got merged.
+
+I would love to merge it but I'm hitting merge conflicts...
+
+I can pull tj/block-peek-fetch into for-next but not block/for-2.6.31...
+
+tj's top commit:
+
+author	Tejun Heo <tj@kernel.org>
+	Fri, 8 May 2009 23:45:23 +0000 (08:45 +0900)
+committer	Tejun Heo <tj@kernel.org>
+	Fri, 8 May 2009 23:45:23 +0000 (08:45 +0900)
+commit	18c551bb4944dec0ce2c0a854b6694ed39ab58f6
+tree	a2a59fd27626e930809a20546c0c02e1df498056
+parent	88fd264e94d01b23339ce614be9141eb2db98e10
+
+corresponding blocks's commit:
+
+author	Tejun Heo <tj@kernel.org>
+	Fri, 8 May 2009 02:54:16 +0000 (11:54 +0900)
+committer	Jens Axboe <jens.axboe@oracle.com>
+	Mon, 11 May 2009 07:52:18 +0000 (09:52 +0200)
+commit	9934c8c04561413609d2bc38c6b9f268cba774a4
+tree	30dd8f7be54f9b2e03094de9cd03b6a9ee2909cd
+parent	2343046826a8ca426b07601d9593ee046c298b68
+
+Looking at creation dates I suspect that somewhere along the way
+something was rebased?
+
+One quick temporary solution would be to recreate bp/pc-remove-buf
+on top of tj/block-peek-fetch...
