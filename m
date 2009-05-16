@@ -1,83 +1,60 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbZEPXgq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756336AbZEPXhn@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755418AbZEPXgq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 19:36:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbZEPXgg
+	id S1756336AbZEPXhn (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 19:37:43 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754829AbZEPXhb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 19:36:36 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:37232 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753605AbZEPXgg convert rfc822-to-8bit (ORCPT
+	Sat, 16 May 2009 19:37:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42351 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753451AbZEPXh3 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 19:36:36 -0400
-MIME-Version: 1.0
-In-Reply-To: <20090516154912.a0efc677.akpm@linux-foundation.org>
-References: <4A0C43C3.9090404@pardus.org.tr> <20090515174056.GD29647@elte.hu> 
-	<20090515210134.758f3123@i1501.lan.towertech.it> <20090516154912.a0efc677.akpm@linux-foundation.org>
-From: Kay Sievers <kay.sievers@vrfy.org>
-Date: Sun, 17 May 2009 01:36:17 +0200
-Message-ID: <ac3eb2510905161636j5137717crdb72ea94e846d4b9@mail.gmail.com>
-Subject: Re: [rtc-linux] Re: [BUG 2.6.30_rc5] Null pointer dereference in 
-	rtc-cmos driver
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-       rtc-linux@googlegroups.com, mingo@elte.hu,
-       =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>,
-       David Brownell <david-b@pacbell.net>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Greg KH <greg@kroah.com>, Tejun Heo <tj@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 16 May 2009 19:37:29 -0400
+Date: Sat, 16 May 2009 16:36:10 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "Johannes Berg" <johannes@sipsolutions.net>,
+       "Larry Finger" <Larry.Finger@lwfinger.net>,
+       linux-wireless@vger.kernel.org
+Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
+Message-Id: <20090516163610.8a012268.akpm@linux-foundation.org>
+In-Reply-To: <385Pu-agh7M.A.SU.iYzDKB@chimera>
+References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
+	<385Pu-agh7M.A.SU.iYzDKB@chimera>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 17, 2009 at 00:49, Andrew Morton <akpm@linux-foundation.org> wrote:
+On Sat, 16 May 2009 21:20:45 +0200 (CEST) "Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-> This should fix the symptoms:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+> 
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
+> 
+> 
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13319
+> Subject		: Page allocation failures with b43 and p54usb
+> Submitter	: Larry Finger <Larry.Finger@lwfinger.net>
+> Date		: 2009-04-29 21:01 (18 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124103897101088&w=4
+> Handled-By	: Johannes Berg <johannes@sipsolutions.net>
+> 
+> 
 
-> +++ a/drivers/rtc/rtc-cmos.c
-> @@ -1179,7 +1179,9 @@ static int __init cmos_init(void)
->        int retval = 0;
->
->  #ifdef CONFIG_PNP
-> -       pnp_register_driver(&cmos_pnp_driver);
-> +       retval = pnp_register_driver(&cmos_pnp_driver);
-> +       if (retval < 0)
-> +               return retval;
->  #endif
+Well..  order-1 GFP_ATOMIC allocations are unreliable.  The networking
+code should hanlde the situation and recover.  I assume that is
+happening in this case?
 
-That looks like a good fix.
+Perhaps we did something in that code after 2.6.29 which increased the
+frequency of the order-1 allocation attempts?  Maybe earlier kernels
+used order-0 all the time?  Those are much more reliable.
 
-> Can someone please test it?
-
-I'll try to reproduce it.
-
->> > > [   10.428728] BUG: unable to handle kernel NULL pointer dereference at 00000018
-...
->> > > [   10.459009]  [<c03037e6>] ? driver_remove_file+0xf/0x11
-
-> But we have arguably multiple more bugs here.
-> pnp_unregister_driver(unregistered-driver) shouldn't oops the kernel.
-> Neither pnp_unregister_driver() nor driver_unregister() nor
-> bus_remove_driver() nor driver_remove_file() nor sysfs_remove_file()
-> detected this.
->
-> Kay, Greg: there are already a pile of checks on that path, but it
-> seems there's one missing.  Could you please take a look and decide at
-> the design level where this check should be occurring?
-
-The issue is caused by a trying to unregister a driver which never got
-registered before. I guess we try to access the private part of the
-driver to reach the kobject, but for unregistered drivers there is no
-such thing at that time. In:
-  driver_remove_file()
-we try to access the private part:
-  sysfs_remove_file(&drv->p->kobj, ...
-and that is NULL, for an unregistered driver, I would expect.
-
-I'll try to reproduce the issue, and see if your fix cover the real problem.
-If I can reproduce it, I'll take a look where to add a check for this.
-
-Thanks,
-Kay
