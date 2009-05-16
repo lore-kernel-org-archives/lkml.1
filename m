@@ -1,363 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756687AbZEPQO3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756364AbZEPQTx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756687AbZEPQO3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 12:14:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753504AbZEPQOU
+	id S1756364AbZEPQTx (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 12:19:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753337AbZEPQTn
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 12:14:20 -0400
-Received: from smtpout12.uol.com.br ([200.221.4.203]:40447 "EHLO
-	smtp.uol.com.br" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1753349AbZEPQOT (ORCPT
+	Sat, 16 May 2009 12:19:43 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:53497 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752627AbZEPQTm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 12:14:19 -0400
-X-Greylist: delayed 560 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 May 2009 12:14:18 EDT
-Date: Sat, 16 May 2009 13:04:53 -0300
-From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: minimizing the configuration of
-	linkstation_defconfig
-Message-ID: <20090516160453.GA15138@ime.usp.br>
-References: <20090424065816.GA15525@ime.usp.br> <Pine.LNX.4.64.0904242158210.8309@axis700.grange> <20090424223355.GB7858@ime.usp.br> <2CE2BC61-1C6B-4D01-870B-BC460730AD79@kernel.crashing.org> <20090428133200.GB12828@ime.usp.br>
+	Sat, 16 May 2009 12:19:42 -0400
+Date: Sat, 16 May 2009 09:17:25 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Oliver Neukum <oliver@neukum.org>
+cc: security@kernel.org, Linux@hera.kernel.org,
+       Andrew Morton <akpm@linux-foundation.org>,
+       James Morris <jmorris@namei.org>, de Ven <arjan@infradead.org>,
+       Roland McGrath <roland@redhat.com>, List <linux-kernel@vger.kernel.org>,
+       Arjan@hera.kernel.org, stable@kernel.org, Dave Jones <davej@redhat.com>,
+       linux-security-module@vger.kernel.org, mingo@redhat.com,
+       Eric Paris <eparis@redhat.com>, Matt Mackall <mpm@selenic.com>,
+       Alan@hera.kernel.org, Jake Edge <jake@lwn.net>,
+       Cox <alan@lxorguk.ukuu.org.uk>,
+       "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [Security] [patch] random: make get_random_int() more random
+In-Reply-To: <alpine.LFD.2.01.0905160854570.3301@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0905160911400.3301@localhost.localdomain>
+References: <20090505202219.GL31071@waste.org> <20090516135828.GA25283@1wt.eu> <alpine.LFD.2.01.0905160811550.3301@localhost.localdomain> <200905161754.03472.oliver@neukum.org> <alpine.LFD.2.01.0905160854570.3301@localhost.localdomain>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20090428133200.GB12828@ime.usp.br>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-SIG5: 43b934a82ba710bfd83907c849ff9106
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi, Kumar, Guennadi, and Co.
 
 
-This patch addresses the following issues:
+On Sat, 16 May 2009, Linus Torvalds wrote:
+>
+> So "one of X known functions" does not help
 
-01. makes CFQ the default scheduler, to be in line with the rest of  
-the kernel.
+Side note - here the keyword is "X known functions". If the function 
+simply isn't known at all, you've now made it harder by a _much_ higher 
+factor. If the function is any good (ie doesn't leave any patterns to 
+guess what function it is), you really basically have to first solve that 
+independent problem.
 
-02. since linkstations are meant to store files, enable large blk  
-devices.
+And the space of possible functions is pretty damn large, even if you 
+start with some assumption ("some combination of known good cryptographic 
+hashes + some unknown seeding algorithm and data").
 
-03. disable CONFIG_MIGRATION in in such low memory devices.
+So practically speaking, nobody ever cracks those things without somehow 
+decoding the function itself (through doing something like disassembling 
+obfuscated code).
 
-04. disable CONFIG_BLK_DEV_RAM.
-
-05. disable CONFIG_SCSI_LOWLEVEL, as no device under that tree is  
-used.
-
-06. idem for CONFIG_NETDEV_10000.
-
-07. idem for CONFIG_WIRELESS.
-
-08. idem for CONFIG_HWMON.
-
-09. idem for CONFIG_CRYPTO_HW.
-
-10. disable CONFIG_VIDEO_OUTPUT_CONTROL.
-
-11. keep consistency and disable extended attributes in CIFS, ext3,  
-and NFS.
-
-12. enable CONFIG_PRINTK_TIME.
-
-Signed-off-by: Rogério Brito <rbrito@ime.usp.br>
-
----
-
-This is the patch for tidying the defconfig. I'm still having issues
-with the MTD devices, it seems. :-( I will investigate this now.
-
-I can send a similar patch to storcenter.
-
-diff --git a/arch/powerpc/configs/linkstation_defconfig b/arch/powerpc/configs/linkstation_defconfig
-index a4053ab..e762af0 100644
---- a/arch/powerpc/configs/linkstation_defconfig
-+++ b/arch/powerpc/configs/linkstation_defconfig
-@@ -155,7 +155,7 @@ CONFIG_MODULE_UNLOAD=y
- # CONFIG_MODVERSIONS is not set
- # CONFIG_MODULE_SRCVERSION_ALL is not set
- CONFIG_BLOCK=y
--# CONFIG_LBD is not set
-+CONFIG_LBD=y
- # CONFIG_BLK_DEV_BSG is not set
- # CONFIG_BLK_DEV_INTEGRITY is not set
- 
-@@ -166,11 +166,11 @@ CONFIG_IOSCHED_NOOP=y
- CONFIG_IOSCHED_AS=y
- CONFIG_IOSCHED_DEADLINE=y
- CONFIG_IOSCHED_CFQ=y
--CONFIG_DEFAULT_AS=y
-+# CONFIG_DEFAULT_AS is not set
- # CONFIG_DEFAULT_DEADLINE is not set
--# CONFIG_DEFAULT_CFQ is not set
-+CONFIG_DEFAULT_CFQ=y
- # CONFIG_DEFAULT_NOOP is not set
--CONFIG_DEFAULT_IOSCHED="anticipatory"
-+CONFIG_DEFAULT_IOSCHED="cfq"
- # CONFIG_FREEZER is not set
- 
- #
-@@ -252,7 +252,7 @@ CONFIG_FLATMEM=y
- CONFIG_FLAT_NODE_MEM_MAP=y
- CONFIG_PAGEFLAGS_EXTENDED=y
- CONFIG_SPLIT_PTLOCK_CPUS=4
--CONFIG_MIGRATION=y
-+# CONFIG_MIGRATION is not set
- # CONFIG_PHYS_ADDR_T_64BIT is not set
- CONFIG_ZONE_DMA_FLAG=1
- CONFIG_BOUNCE=y
-@@ -492,13 +492,7 @@ CONFIG_IP_NF_ARP_MANGLE=m
- # CONFIG_IRDA is not set
- # CONFIG_BT is not set
- # CONFIG_AF_RXRPC is not set
--CONFIG_WIRELESS=y
--# CONFIG_CFG80211 is not set
--CONFIG_WIRELESS_OLD_REGULATORY=y
--CONFIG_WIRELESS_EXT=y
--CONFIG_WIRELESS_EXT_SYSFS=y
--# CONFIG_LIB80211 is not set
--# CONFIG_MAC80211 is not set
-+# CONFIG_WIRELESS is not set
- # CONFIG_WIMAX is not set
- # CONFIG_RFKILL is not set
- # CONFIG_NET_9P is not set
-@@ -625,10 +619,7 @@ CONFIG_BLK_DEV_LOOP=y
- # CONFIG_BLK_DEV_NBD is not set
- # CONFIG_BLK_DEV_SX8 is not set
- # CONFIG_BLK_DEV_UB is not set
--CONFIG_BLK_DEV_RAM=y
--CONFIG_BLK_DEV_RAM_COUNT=2
--CONFIG_BLK_DEV_RAM_SIZE=8192
--# CONFIG_BLK_DEV_XIP is not set
-+# CONFIG_BLK_DEV_RAM is not set
- # CONFIG_CDROM_PKTCDVD is not set
- # CONFIG_ATA_OVER_ETH is not set
- # CONFIG_BLK_DEV_HD is not set
-@@ -688,49 +679,7 @@ CONFIG_SCSI_WAIT_SCAN=m
- # CONFIG_SCSI_ISCSI_ATTRS is not set
- # CONFIG_SCSI_SAS_LIBSAS is not set
- # CONFIG_SCSI_SRP_ATTRS is not set
--CONFIG_SCSI_LOWLEVEL=y
--# CONFIG_ISCSI_TCP is not set
--# CONFIG_SCSI_CXGB3_ISCSI is not set
--# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
--# CONFIG_SCSI_3W_9XXX is not set
--# CONFIG_SCSI_ACARD is not set
--# CONFIG_SCSI_AACRAID is not set
--# CONFIG_SCSI_AIC7XXX is not set
--# CONFIG_SCSI_AIC7XXX_OLD is not set
--# CONFIG_SCSI_AIC79XX is not set
--# CONFIG_SCSI_AIC94XX is not set
--# CONFIG_SCSI_DPT_I2O is not set
--# CONFIG_SCSI_ADVANSYS is not set
--# CONFIG_SCSI_ARCMSR is not set
--# CONFIG_MEGARAID_NEWGEN is not set
--# CONFIG_MEGARAID_LEGACY is not set
--# CONFIG_MEGARAID_SAS is not set
--# CONFIG_SCSI_MPT2SAS is not set
--# CONFIG_SCSI_HPTIOP is not set
--# CONFIG_SCSI_BUSLOGIC is not set
--# CONFIG_LIBFC is not set
--# CONFIG_LIBFCOE is not set
--# CONFIG_FCOE is not set
--# CONFIG_SCSI_DMX3191D is not set
--# CONFIG_SCSI_EATA is not set
--# CONFIG_SCSI_FUTURE_DOMAIN is not set
--# CONFIG_SCSI_GDTH is not set
--# CONFIG_SCSI_IPS is not set
--# CONFIG_SCSI_INITIO is not set
--# CONFIG_SCSI_INIA100 is not set
--# CONFIG_SCSI_MVSAS is not set
--# CONFIG_SCSI_STEX is not set
--# CONFIG_SCSI_SYM53C8XX_2 is not set
--# CONFIG_SCSI_IPR is not set
--# CONFIG_SCSI_QLOGIC_1280 is not set
--# CONFIG_SCSI_QLA_FC is not set
--# CONFIG_SCSI_QLA_ISCSI is not set
--# CONFIG_SCSI_LPFC is not set
--# CONFIG_SCSI_DC395x is not set
--# CONFIG_SCSI_DC390T is not set
--# CONFIG_SCSI_NSP32 is not set
--# CONFIG_SCSI_DEBUG is not set
--# CONFIG_SCSI_SRP is not set
-+# CONFIG_SCSI_LOWLEVEL is not set
- # CONFIG_SCSI_DH is not set
- # CONFIG_SCSI_OSD_INITIATOR is not set
- CONFIG_ATA=y
-@@ -872,25 +821,7 @@ CONFIG_R8169=y
- # CONFIG_ATL1E is not set
- # CONFIG_ATL1C is not set
- # CONFIG_JME is not set
--CONFIG_NETDEV_10000=y
--# CONFIG_CHELSIO_T1 is not set
--CONFIG_CHELSIO_T3_DEPENDS=y
--# CONFIG_CHELSIO_T3 is not set
--# CONFIG_ENIC is not set
--# CONFIG_IXGBE is not set
--# CONFIG_IXGB is not set
--# CONFIG_S2IO is not set
--# CONFIG_VXGE is not set
--# CONFIG_MYRI10GE is not set
--# CONFIG_NETXEN_NIC is not set
--# CONFIG_NIU is not set
--# CONFIG_MLX4_EN is not set
--# CONFIG_MLX4_CORE is not set
--# CONFIG_TEHUTI is not set
--# CONFIG_BNX2X is not set
--# CONFIG_QLGE is not set
--# CONFIG_SFC is not set
--# CONFIG_BE2NET is not set
-+# CONFIG_NETDEV_10000 is not set
- # CONFIG_TR is not set
- 
- #
-@@ -1085,68 +1016,7 @@ CONFIG_ARCH_WANT_OPTIONAL_GPIOLIB=y
- # CONFIG_GPIOLIB is not set
- # CONFIG_W1 is not set
- # CONFIG_POWER_SUPPLY is not set
--CONFIG_HWMON=y
--# CONFIG_HWMON_VID is not set
--# CONFIG_SENSORS_AD7414 is not set
--# CONFIG_SENSORS_AD7418 is not set
--# CONFIG_SENSORS_ADM1021 is not set
--# CONFIG_SENSORS_ADM1025 is not set
--# CONFIG_SENSORS_ADM1026 is not set
--# CONFIG_SENSORS_ADM1029 is not set
--# CONFIG_SENSORS_ADM1031 is not set
--# CONFIG_SENSORS_ADM9240 is not set
--# CONFIG_SENSORS_ADT7462 is not set
--# CONFIG_SENSORS_ADT7470 is not set
--# CONFIG_SENSORS_ADT7473 is not set
--# CONFIG_SENSORS_ADT7475 is not set
--# CONFIG_SENSORS_ATXP1 is not set
--# CONFIG_SENSORS_DS1621 is not set
--# CONFIG_SENSORS_I5K_AMB is not set
--# CONFIG_SENSORS_F71805F is not set
--# CONFIG_SENSORS_F71882FG is not set
--# CONFIG_SENSORS_F75375S is not set
--# CONFIG_SENSORS_G760A is not set
--# CONFIG_SENSORS_GL518SM is not set
--# CONFIG_SENSORS_GL520SM is not set
--# CONFIG_SENSORS_IT87 is not set
--# CONFIG_SENSORS_LM63 is not set
--# CONFIG_SENSORS_LM75 is not set
--# CONFIG_SENSORS_LM77 is not set
--# CONFIG_SENSORS_LM78 is not set
--# CONFIG_SENSORS_LM80 is not set
--# CONFIG_SENSORS_LM83 is not set
--# CONFIG_SENSORS_LM85 is not set
--# CONFIG_SENSORS_LM87 is not set
--# CONFIG_SENSORS_LM90 is not set
--# CONFIG_SENSORS_LM92 is not set
--# CONFIG_SENSORS_LM93 is not set
--# CONFIG_SENSORS_LTC4215 is not set
--# CONFIG_SENSORS_LTC4245 is not set
--# CONFIG_SENSORS_LM95241 is not set
--# CONFIG_SENSORS_MAX1619 is not set
--# CONFIG_SENSORS_MAX6650 is not set
--# CONFIG_SENSORS_PC87360 is not set
--# CONFIG_SENSORS_PC87427 is not set
--# CONFIG_SENSORS_PCF8591 is not set
--# CONFIG_SENSORS_SIS5595 is not set
--# CONFIG_SENSORS_DME1737 is not set
--# CONFIG_SENSORS_SMSC47M1 is not set
--# CONFIG_SENSORS_SMSC47M192 is not set
--# CONFIG_SENSORS_SMSC47B397 is not set
--# CONFIG_SENSORS_ADS7828 is not set
--# CONFIG_SENSORS_THMC50 is not set
--# CONFIG_SENSORS_VIA686A is not set
--# CONFIG_SENSORS_VT1211 is not set
--# CONFIG_SENSORS_VT8231 is not set
--# CONFIG_SENSORS_W83781D is not set
--# CONFIG_SENSORS_W83791D is not set
--# CONFIG_SENSORS_W83792D is not set
--# CONFIG_SENSORS_W83793 is not set
--# CONFIG_SENSORS_W83L785TS is not set
--# CONFIG_SENSORS_W83L786NG is not set
--# CONFIG_SENSORS_W83627HF is not set
--# CONFIG_SENSORS_W83627EHF is not set
--# CONFIG_HWMON_DEBUG_CHIP is not set
-+# CONFIG_HWMON is not set
- # CONFIG_THERMAL is not set
- # CONFIG_THERMAL_HWMON is not set
- # CONFIG_WATCHDOG is not set
-@@ -1193,7 +1063,7 @@ CONFIG_SSB_POSSIBLE=y
- # CONFIG_AGP is not set
- # CONFIG_DRM is not set
- # CONFIG_VGASTATE is not set
--CONFIG_VIDEO_OUTPUT_CONTROL=m
-+# CONFIG_VIDEO_OUTPUT_CONTROL is not set
- # CONFIG_FB is not set
- # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
- 
-@@ -1460,21 +1330,19 @@ CONFIG_EXT2_FS=y
- # CONFIG_EXT2_FS_XIP is not set
- CONFIG_EXT3_FS=y
- # CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
--CONFIG_EXT3_FS_XATTR=y
--# CONFIG_EXT3_FS_POSIX_ACL is not set
--# CONFIG_EXT3_FS_SECURITY is not set
-+# CONFIG_EXT3_FS_XATTR is not set
- # CONFIG_EXT4_FS is not set
- CONFIG_JBD=y
--CONFIG_FS_MBCACHE=y
- # CONFIG_REISERFS_FS is not set
- # CONFIG_JFS_FS is not set
--CONFIG_FS_POSIX_ACL=y
-+# CONFIG_FS_POSIX_ACL is not set
- CONFIG_FILE_LOCKING=y
- CONFIG_XFS_FS=m
- # CONFIG_XFS_QUOTA is not set
- # CONFIG_XFS_POSIX_ACL is not set
- # CONFIG_XFS_RT is not set
- # CONFIG_XFS_DEBUG is not set
-+# CONFIG_GFS2_FS is not set
- # CONFIG_OCFS2_FS is not set
- # CONFIG_BTRFS_FS is not set
- CONFIG_DNOTIFY=y
-@@ -1546,7 +1414,7 @@ CONFIG_MISC_FILESYSTEMS=y
- CONFIG_NETWORK_FILESYSTEMS=y
- CONFIG_NFS_FS=y
- CONFIG_NFS_V3=y
--CONFIG_NFS_V3_ACL=y
-+# CONFIG_NFS_V3_ACL is not set
- CONFIG_NFS_V4=y
- CONFIG_ROOT_NFS=y
- CONFIG_NFSD=m
-@@ -1556,7 +1424,6 @@ CONFIG_NFSD_V3=y
- CONFIG_LOCKD=y
- CONFIG_LOCKD_V4=y
- CONFIG_EXPORTFS=m
--CONFIG_NFS_ACL_SUPPORT=y
- CONFIG_NFS_COMMON=y
- CONFIG_SUNRPC=y
- CONFIG_SUNRPC_GSS=y
-@@ -1649,7 +1516,7 @@ CONFIG_NLATTR=y
- #
- # Kernel hacking
- #
--# CONFIG_PRINTK_TIME is not set
-+CONFIG_PRINTK_TIME=y
- CONFIG_ENABLE_WARN_DEPRECATED=y
- CONFIG_ENABLE_MUST_CHECK=y
- CONFIG_FRAME_WARN=1024
-@@ -1832,8 +1699,6 @@ CONFIG_CRYPTO_DEFLATE=m
- # Random Number Generation
- #
- # CONFIG_CRYPTO_ANSI_CPRNG is not set
--CONFIG_CRYPTO_HW=y
--# CONFIG_CRYPTO_DEV_HIFN_795X is not set
--# CONFIG_CRYPTO_DEV_TALITOS is not set
-+# CONFIG_CRYPTO_HW is not set
- # CONFIG_PPC_CLOCK is not set
- # CONFIG_VIRTUALIZATION is not set
-
-
--- 
-Rogério Brito : rbrito@{mackenzie,ime.usp}.br : GPG key 1024D/7C2CAEB8
-http://www.ime.usp.br/~rbrito : http://meusite.mackenzie.com.br/rbrito
-Projects: algorithms.berlios.de : lame.sf.net : vrms.alioth.debian.org
+				Linus
