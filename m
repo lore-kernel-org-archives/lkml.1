@@ -1,91 +1,141 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756898AbZEPW1s@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754324AbZEPWut@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756898AbZEPW1s (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 18:27:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756802AbZEPWS7
+	id S1754324AbZEPWut (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 18:50:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751404AbZEPWuj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 18:18:59 -0400
-Received: from hera.kernel.org ([140.211.167.34]:46404 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758815AbZEPWS5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 18:18:57 -0400
-Message-ID: <4A0F3BAA.1050907@kernel.org>
-Date: Sun, 17 May 2009 07:18:18 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-CC: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, rusty@rustcorp.com.au,
-       James.Bottomley@HansenPartnership.com, mike.miller@hp.com,
-       donari75@gmail.com, paul.clements@steeleye.com, tim@cyberelk.net,
-       Geert.Uytterhoeven@sonycom.com, davem@davemloft.net,
-       Laurent@lvivier.info, jgarzik@pobox.com, jeremy@xensource.com,
-       grant.likely@secretlab.ca, adrian@mcmen.demon.co.uk,
-       sfr@canb.auug.org.au, bzolnier@gmail.com, petkovbb@googlemail.com,
-       oakad@yahoo.com, drzeus@drzeus.cx, dwmw2@infradead.org,
-       Markus.Lidel@shadowconnect.com, wein@de.ibm.com, schwidefsky@de.ibm.com,
-       zaitcev@redhat.com, fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk
-Subject: Re: [PATCH 11/18] swim: dequeue in-flight request
-References: <1241751256-17435-1-git-send-email-tj@kernel.org> <1241751256-17435-12-git-send-email-tj@kernel.org> <4A0EC2AD.20704@ru.mvista.com> <4A0ECF8E.6000209@kernel.org> <4A0F1A55.8080701@ru.mvista.com>
-In-Reply-To: <4A0F1A55.8080701@ru.mvista.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 16 May 2009 18:50:39 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56337 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751188AbZEPWui (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 18:50:38 -0400
+Date: Sat, 16 May 2009 15:49:12 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: rtc-linux@googlegroups.com, mingo@elte.hu,
+       Ozan =?UTF-8?Q?=C3=87a?= =?UTF-8?Q?=C4=9Flayan?= 
+	<ozan@pardus.org.tr>,
+       David Brownell <david-b@pacbell.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Kay Sievers <kay.sievers@vrfy.org>, Greg KH <greg@kroah.com>,
+       Tejun Heo <tj@kernel.org>
+Subject: Re: [rtc-linux] Re: [BUG 2.6.30_rc5] Null pointer dereference in
+ rtc-cmos driver
+Message-Id: <20090516154912.a0efc677.akpm@linux-foundation.org>
+In-Reply-To: <20090515210134.758f3123@i1501.lan.towertech.it>
+References: <4A0C43C3.9090404@pardus.org.tr>
+	<20090515174056.GD29647@elte.hu>
+	<20090515210134.758f3123@i1501.lan.towertech.it>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 16 May 2009 22:17:03 +0000 (UTC)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Sergei.
+On Fri, 15 May 2009 21:01:34 +0200 Alessandro Zummo <alessandro.zummo@towertech.it> wrote:
 
-Sergei Shtylyov wrote:
->> Similar response as the if/else one on the other thread.  Is it really
->> any significantly better?  The 'duplication' here is basically one
->> liner
+> On Fri, 15 May 2009 19:40:56 +0200
+> Ingo Molnar <mingo@elte.hu> wrote:
 > 
->   Not true, it's 3-liner. I wouldn't bother with one liner.
+>  more Cc:s
+>  
 
-The final result is...
+c'mon guys, it isn't that hard.
 
-	req = blk_fetch_request(q);
-	while (req) {
-		int err = -EIO;
+>
+> ...
+>
+> > > [   10.428691] Error: Driver 'rtc_cmos' is already registered, aborting...
 
-That looks like one liner to me.
+This should fix the symptoms:
 
->> after the peek/fetch change
-> 
->   The peek/fetch code itself is duplicated. :-/
+From: Andrew Morton <akpm@linux-foundation.org>
 
-Do you mean by inlining?  Please note that blk_fetch_request() is not
-inlined anymore after Fujita's bidi end_request cleanup patches.
+Addresses http://bugzilla.kernel.org/show_bug.cgi?id=13326
 
->> and when the duplication is minimal,
->> I usually find it clearer to put the loop condition at the while
->> clause itself.
-> 
->   No problem, we could just keep an old form of *while* loop.
-> 
->> If you think it's significantly better,
-> 
->   I do hink it avoids duplicating peek/fetch code.
-> 
->> please go ahead and submit the patch but to me the change you're
->> proposing is
->> basically cosmetic and not even a clearly better one at that.
-> 
-> Should probably look at the resulting assembly to see how much it's
-> differrent.
+Prevents a null-pointer deref under the above-described circumstances.
 
-Do you seriously think it's worthwhile to optimize the request loop
-according to assembly generation?  That sounds like a bad case of over
-(micro) optimization to me.  It's not gonna make any noticeable
-difference and the changes you make today can be irrelevant or even
-deterimental tomorrow depending on any number of parameters.  Please
-don't do it for performance reasons.
+pnp_unregister_driver() shouldn't oops the kernel either - that's a
+different bug.
+
+Reported-by: <ozan@pardus.org.tr>
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>
+Cc: Ingo Molnar <mingo@elte.hu>
+Cc: David Brownell <david-b@pacbell.net>
+Cc: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+---
+
+ drivers/rtc/rtc-cmos.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff -puN drivers/rtc/rtc-cmos.c~drivers-rtc-rtc-cmosc-cmos_init-dont-ignore-pnp_register_driver-return-value drivers/rtc/rtc-cmos.c
+--- a/drivers/rtc/rtc-cmos.c~drivers-rtc-rtc-cmosc-cmos_init-dont-ignore-pnp_register_driver-return-value
++++ a/drivers/rtc/rtc-cmos.c
+@@ -1179,7 +1179,9 @@ static int __init cmos_init(void)
+ 	int retval = 0;
+ 
+ #ifdef	CONFIG_PNP
+-	pnp_register_driver(&cmos_pnp_driver);
++	retval = pnp_register_driver(&cmos_pnp_driver);
++	if (retval < 0)
++		return retval;
+ #endif
+ 
+ 	if (!cmos_rtc.dev)
+_
+
+
+Can someone please test it?
+
+> > > [   10.428728] BUG: unable to handle kernel NULL pointer dereference at 00000018
+> > > [   10.432460] IP: [<c01e16ba>] sysfs_remove_file+0x1/0xf
+> > > [   10.459009] *pde = 00000000 
+> > > [   10.459009] Oops: 0000 [#1] SMP 
+> > > [   10.459009] last sysfs file: /sys/devices/pci0000:00/0000:00:12.0/host2/target2:0:0/2:0:0:0/type
+> > > [   10.459009] Modules linked in: rtc_cmos(+) sg ati_agp k8temp hwmon i2c_piix4 shpchp agpgart i2c_core mii brd sd_mod crc_t10dif sr_mod cdrom ata_generic pata_acpi ahci pata_atiixp libata scsi_mod
+> > > [   10.459009] 
+> > > [   10.459009] Pid: 633, comm: modprobe Tainted: G        W  (2.6.30_rc5-116 #1) Unknow
+> > > [   10.459009] EIP: 0060:[<c01e16ba>] EFLAGS: 00210282 CPU: 1
+> > > [   10.459009] EIP is at sysfs_remove_file+0x1/0xf
+> > > [   10.459009] EAX: 00000000 EBX: f885a2ec ECX: c1e1a664 EDX: c054d1a0
+> > > [   10.459009] ESI: 00000000 EDI: 00000000 EBP: f6bcdf08 ESP: f6bcdf00
+> > > [   10.459009]  DS: 007b ES: 007b FS: 00d8 GS: 0033 SS: 0068
+> > > [   10.459009] Process modprobe (pid: 633, ti=f6bcc000 task=f6a8d710 task.ti=f6bcc000)
+> > > [   10.459009] Stack:
+> > > [   10.459009]  f6bcdf08 c03037e6 f6bcdf1c c0302809 00000000 f885a2ec 00000000 f6bcdf2c
+> > > [   10.459009]  c030367d ffffffed fffffffc f6bcdf34 c02dcf14 f6bcdf40 f885d038 f885a38c
+> > > [   10.459009]  f6bcdf9c c0101137 f885d000 00000000 f885a38c 00000001 00000000 c0536a04
+> > > [   10.459009] Call Trace:
+> > > [   10.459009]  [<c03037e6>] ? driver_remove_file+0xf/0x11
+> > > [   10.459009]  [<c0302809>] ? bus_remove_driver+0x1a/0x89
+> > > [   10.459009]  [<c030367d>] ? driver_unregister+0x2a/0x2e
+> > > [   10.459009]  [<c02dcf14>] ? pnp_unregister_driver+0xb/0xd
+> > > [   10.459009]  [<f885d038>] ? cmos_init+0x38/0x3d [rtc_cmos]
+> > > [   10.459009]  [<c0101137>] ? do_one_initcall+0x4a/0x115
+> > > [   10.459009]  [<f885d000>] ? cmos_init+0x0/0x3d [rtc_cmos]
+> > > [   10.459009]  [<c0145a65>] ? __blocking_notifier_call_chain+0x40/0x4c
+> > > [   10.459009]  [<c01538d0>] ? sys_init_module+0x87/0x18b
+> > > [   10.459009]  [<c01031d4>] ? sysenter_do_call+0x12/0x28
+> > > [   10.459009] Code: 43 04 89 42 04 89 10 b8 08 9f 53 c0 c7 46 e8 00 01 10 00 c7 43 04 00 02 20 00 e8 1e 9e 1f 00 89 d8 e8 fa ba fb ff 5b 5e 5d c3 55 <8b> 40 18 8b 12 89 e5 e8 12 f5 ff ff 5d c3 55 85 c9 89 e5 57 89 
+> > > [   10.459009] EIP: [<c01e16ba>] sysfs_remove_file+0x1/0xf SS:ESP 0068:f6bcdf00
+
+But we have arguably multiple more bugs here. 
+pnp_unregister_driver(unregistered-driver) shouldn't oops the kernel. 
+Neither pnp_unregister_driver() nor driver_unregister() nor
+bus_remove_driver() nor driver_remove_file() nor sysfs_remove_file()
+detected this.
+
+Kay, Greg: there are already a pile of checks on that path, but it
+seems there's one missing.  Could you please take a look and decide at
+the design level where this check should be occurring?
+
+Rafael, let's keep this one open even if the rtc-cmos fix repairs the
+proximate cause.
 
 Thanks.
 
--- 
-tejun
+
