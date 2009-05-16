@@ -1,112 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758210AbZEPNyv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757183AbZEPOA0@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758210AbZEPNyv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 09:54:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbZEPNyj
+	id S1757183AbZEPOA0 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 10:00:26 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755114AbZEPOAK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 09:54:39 -0400
-Received: from mail-pz0-f115.google.com ([209.85.222.115]:41438 "EHLO
-	mail-pz0-f115.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758064AbZEPNyi (ORCPT
+	Sat, 16 May 2009 10:00:10 -0400
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:52431 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752953AbZEPOAJ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 09:54:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=bcSg/y/dPzx8GFdq4U1EKbx8sWpTbv/j5RqNt3iLHP8nUeYCu280X3Io4ttxavx0HD
-         ujSLy0+ZCHKJ+rDr+1V6+lpRDtcmn5GEyN6KngGcb85Qc5hoVvUf5dMTRDzrY1gD0a0a
-         GS6P6rX6njeBSlHlDbe2htHfYQRAeRt9882gg=
-From: tom.leiming@gmail.com
-To: arjan@infradead.org
-Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
-       cornelia.huck@de.ibm.com, Ming Lei <tom.leiming@gmail.com>
-Subject: [PATCH 2/2] driver core:firmware:fix request_firmware_nowait
-Date: Sat, 16 May 2009 21:54:18 +0800
-Message-Id: <1242482058-5203-2-git-send-email-tom.leiming@gmail.com>
-X-Mailer: git-send-email 1.6.0.GIT
-In-Reply-To: <1242482058-5203-1-git-send-email-tom.leiming@gmail.com>
-References: <1242482058-5203-1-git-send-email-tom.leiming@gmail.com>
+	Sat, 16 May 2009 10:00:09 -0400
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [Security] [patch] random: make get_random_int() more random
+Date: Sat, 16 May 2009 09:00:00 -0500
+User-Agent: KMail/1.9.9
+Cc: Ingo Molnar <mingo@elte.hu>, Willy Tarreau <w@1wt.eu>,
+       Linus Torvalds <torvalds@linux-foundation.org>, security@kernel.org,
+       Linux@hera.kernel.org, stable@kernel.org,
+       Cox <alan@lxorguk.ukuu.org.uk>, Arjan@hera.kernel.org,
+       List <linux-kernel@vger.kernel.org>, Alan@hera.kernel.org,
+       Eric Paris <eparis@redhat.com>, Jake Edge <jake@lwn.net>,
+       linux-security-module@vger.kernel.org, mingo@redhat.com,
+       Matt Mackall <mpm@selenic.com>, Dave Jones <davej@redhat.com>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, de Ven <arjan@infradead.org>
+References: <20090505195246.GC21973@elte.hu> <20090516103909.GB6261@elte.hu> <m1bpptw90d.fsf@fess.ebiederm.org>
+In-Reply-To: <m1bpptw90d.fsf@fess.ebiederm.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905160900.04380.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Ming Lei <tom.leiming@gmail.com>
+On Sat May 16 2009, Eric W. Biederman wrote:
+> Ingo Molnar <mingo@elte.hu> writes:
+> 
+> > * Willy Tarreau <w@1wt.eu> wrote:
+> >
+> >
+> > Bad idea IMHO ...
+> >
+> > It is a bad idea because such sort of tunables do not really help 
+> > the user as those who tweak are a distinct minority.
+> >
+> > Also, having a two-way hack _hinders_ your good idea from being 
+> > adopted for example. Why bother with a faster hash and with using 
+> > the resulting bits sparingly if we can get an 'easy' tunable in and 
+> > can have two sub-par solutions instead of one (harder to implement) 
+> > good solution?
+> >
+> > So tunables are really counter-productive - and this is a pet peeve 
+> > of mine.
+> >
+> > Every time we have such a tunable for something fundamental we've 
+> > not improved the kernel, we've documented a _failure_ in kernel 
+> > design and implementation.
+> >
+> > Sure, we do use tunables for physical constants, limits and other 
+> > natural parameters - and _sometimes_ we just grudingly admit defeat 
+> > and admit that something is really impossible to implement. IMHO 
+> > here we are not at that point yet, at all.
+> 
+> In the lwn comment section there was a suggestion to use a high
+> quality stream cipher (AES?) instead of sha1 or the half md4 thing.
+> Apparently those should be both stronger and faster.
+> 
+> I don't know enough about it except to say that sounds right in
+> principle.
+> 
+> Apparently some of the BSDs do something similar with arc4random.
+> arc4 is old and in some case broken so it is unlikely to make a good
+> choice at this point, but the overall design of a stream cipher
+> that is rekeyed ever 5 minutes seems sound.
+> 
+> Eric
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+> 
+> 
 
-request_firmware_nowait declares it can be called in non-sleep contexts,
-but kthead_run called by request_firmware_nowait may sleep. So use
-async_run_inatomic to start thread to request firmware.
+And when building for the VIA processors that have the
+hardware rng in the padlock firmware - -
+Let the kernel use that for a high quality RNG.
 
-Signed-off-by: Ming Lei <tom.leiming@gmail.com>
----
- drivers/base/firmware_class.c |   18 ++++++++----------
- 1 files changed, 8 insertions(+), 10 deletions(-)
+Note: This may require a Kbuild tweak to force the via-rng
+driver to be built-in if this solution is selected.
 
-diff --git a/drivers/base/firmware_class.c b/drivers/base/firmware_class.c
-index d186149..99cb21e 100644
---- a/drivers/base/firmware_class.c
-+++ b/drivers/base/firmware_class.c
-@@ -19,6 +19,7 @@
- #include <linux/kthread.h>
- #include <linux/highmem.h>
- #include <linux/firmware.h>
-+#include <linux/async.h>
- #include "base.h"
- 
- #define to_dev(obj) container_of(obj, struct device, kobj)
-@@ -582,15 +583,15 @@ struct firmware_work {
- 	int uevent;
- };
- 
--static int
--request_firmware_work_func(void *arg)
-+static void
-+request_firmware_work_func(void *arg, async_cookie_t cookie)
- {
- 	struct firmware_work *fw_work = arg;
- 	const struct firmware *fw;
- 	int ret;
- 	if (!arg) {
- 		WARN_ON(1);
--		return 0;
-+		return;
- 	}
- 	ret = _request_firmware(&fw, fw_work->name, fw_work->device,
- 		fw_work->uevent);
-@@ -602,7 +603,6 @@ request_firmware_work_func(void *arg)
- 	}
- 	module_put(fw_work->module);
- 	kfree(fw_work);
--	return ret;
- }
- 
- /**
-@@ -626,7 +626,7 @@ request_firmware_nowait(
- 	const char *name, struct device *device, void *context,
- 	void (*cont)(const struct firmware *fw, void *context))
- {
--	struct task_struct *task;
-+	int ret;
- 	struct firmware_work *fw_work = kmalloc(sizeof (struct firmware_work),
- 						GFP_ATOMIC);
- 
-@@ -646,14 +646,12 @@ request_firmware_nowait(
- 		.uevent = uevent,
- 	};
- 
--	task = kthread_run(request_firmware_work_func, fw_work,
--			    "firmware/%s", name);
--
--	if (IS_ERR(task)) {
-+	ret = async_run_inatomic(request_firmware_work_func, fw_work);
-+	if (ret) {
- 		fw_work->cont(NULL, fw_work->context);
- 		module_put(fw_work->module);
- 		kfree(fw_work);
--		return PTR_ERR(task);
-+		return ret;
- 	}
- 	return 0;
- }
--- 
-1.6.0.GIT
+PS: I have two (different) VIA C7-M machines available for testing.
 
+Mike
