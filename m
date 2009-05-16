@@ -1,31 +1,34 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZEPBXd@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756010AbZEPB3h@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756223AbZEPBXd (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 21:23:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbZEPBXZ
+	id S1756010AbZEPB3h (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 21:29:37 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753258AbZEPB31
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 21:23:25 -0400
-Received: from e37.co.us.ibm.com ([32.97.110.158]:59268 "EHLO
+	Fri, 15 May 2009 21:29:27 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:59819 "EHLO
 	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752736AbZEPBXZ (ORCPT
+	with ESMTP id S1753198AbZEPB30 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 21:23:25 -0400
-Subject: Re: [PATCH 23/30] loongson: CS5536 MFGPT as system clock source
- support
+	Fri, 15 May 2009 21:29:26 -0400
+Subject: Re: [RFC][PATCH] Dynamic Tick: Allow 32-bit machines to sleep
+ formorethan2.15 seconds
 From: John Stultz <johnstul@us.ibm.com>
-To: wuzhangjin@gmail.com
-Cc: linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>,
-       linux-kernel@vger.kernel.org, Arnaud Patard <apatard@mandriva.com>,
-       loongson-dev@googlegroups.com, zhangfx@lemote.com, yanh@lemote.com,
-       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
-       Erwan Lerale <erwan@thiscow.com>
-In-Reply-To: <1242436541.10164.194.camel@falcon>
-References: <1242426182.10164.168.camel@falcon>
-	 <1f1b08da0905151739v6bc2e5f6t57cb8e06cdda2673@mail.gmail.com>
-	 <1242436541.10164.194.camel@falcon>
+To: Jon Hunter <jon-hunter@ti.com>
+Cc: Ingo Molnar <mingo@elte.hu>, Thomas Gleixner <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A0DBA9D.2050107@ti.com>
+References: <49ECE615.2010800@ti.com>  <20090421063523.GA8020@elte.hu>
+	 <1240345936.6080.6.camel@localhost>  <49EE54B4.9020700@ti.com>
+	 <1240358525.6080.40.camel@localhost>  <4A02F5A3.3050004@ti.com>
+	 <1241744048.7518.132.camel@localhost.localdomain> <4A04584E.4020307@ti.com>
+	 <1241830281.7297.21.camel@localhost.localdomain>  <4A0A07D6.90408@ti.com>
+	 <1242172727.3462.55.camel@localhost>  <4A0AE3E3.5090304@ti.com>
+	 <1242232872.9110.98.camel@jstultz-laptop>  <4A0B0939.5030008@ti.com>
+	 <1242242497.9777.2.camel@jstultz-laptop> <4A0D99E0.3050306@ti.com>
+	 <4A0DBA9D.2050107@ti.com>
 Content-Type: text/plain
-Date: Fri, 15 May 2009 18:23:24 -0700
-Message-Id: <1242437004.29511.202.camel@jstultz-laptop>
+Date: Fri, 15 May 2009 18:29:26 -0700
+Message-Id: <1242437366.29511.208.camel@jstultz-laptop>
 Mime-Version: 1.0
 X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
@@ -33,30 +36,34 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-05-16 at 09:15 +0800, Wu Zhangjin wrote:
-> On Fri, 2009-05-15 at 17:39 -0700, john stultz wrote:
-> > On Fri, May 15, 2009 at 3:23 PM, Wu Zhangjin <wuzhangjin@gmail.com> wrote:
-> > > +static struct clocksource clocksource_mfgpt = {
-> > > +    .name = "mfgpt",
-> > > +    .rating = 1200,
-> > 
-> > Minor nit. Please read the comment over the struct clocksource
-> > definition in include/linux/clocksource.h for a guide to setting the
-> > rating value for your clocksource.
-> > 
+On Fri, 2009-05-15 at 13:55 -0500, Jon Hunter wrote:
+> Jon Hunter wrote:
+> > +	/*
+> > +	 * If the result overflows, return the max value we can.
+> > +	 */
+> > +	if (overflow)
+> > +		ret = LONG_MAX;
+> > +	else
+> > +		ret = (s64)((upper << 32) + lower);
+> > +
+> >   	return ret;
+> >   }
 > 
-> as the comment describes, just like the 8253 Timer, the precision of
-> cs5536 mfgpt Timer is not good, the rating of it should be in the range
-> of 100-199? Functional for real use, but not desired?
+> Correction. Should have been LLONG_MAX and not LONG_MAX in the above. 
+> See below.
 
-That would seem reasonable to me, as it insures that should better
-clocksources become available on the hardware, it will pick the better
-hardware.
+As I said before, I don't think we want to go this path, but as an
+aside, if we did want to catch and handle overflows (which would be bad
+for timekeeping as time would seemingly stop increasing, instead we
+really just want to ensure they never happen), you'd not want to return
+LLONG_MAX, since that would be *way* too big (500 years of nanoseconds)!
 
-But I'll leave the final call to you.
+Instead you'd probably want:  LLONG_MAX >> clocksource->shift
 
-I just wanted to make sure we're all using the same scale, and 1200 was
-off the charts ;)
+Which would better mimic the (cycles*mult) >> shift calculation.
+
+But I think the outline I provided in my last email is the better
+solution.
 
 thanks
 -john
