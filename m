@@ -1,53 +1,58 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757428AbZEPObZ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757230AbZEPOgT@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757428AbZEPObZ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 10:31:25 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754832AbZEPObP
+	id S1757230AbZEPOgT (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 10:36:19 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754891AbZEPOgJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 10:31:15 -0400
-Received: from fk-out-0910.google.com ([209.85.128.184]:49291 "EHLO
-	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753534AbZEPObO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 10:31:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=jl0GhAFkUJ73L8gWQntQBq4haGHWWjJWL3r34uji7AvFvDn6k9D94Mb5Khg0SDKbp7
-         tm2kTmVudi8gV2AankvIqyIQFN7Zq8nrRFBI1aFE/umah59y18WyzDLoDdgsVLtmaHwS
-         EN8KhPWmo0y4Y0BQ5gIhlUA/94av9+/3Oe6aQ=
+	Sat, 16 May 2009 10:36:09 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:44080 "EHLO mx2.redhat.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752610AbZEPOgI (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 10:36:08 -0400
+Message-ID: <4A0ECF1C.4010700@redhat.com>
+Date: Sat, 16 May 2009 10:35:08 -0400
+From: Rik van Riel <riel@redhat.com>
+Organization: Red Hat, Inc
+User-Agent: Thunderbird 2.0.0.17 (X11/20080915)
 MIME-Version: 1.0
-In-Reply-To: <1239479565.8206.25.camel@localhost.localdomain>
-References: <8db1092f0904070037q426fd8dcx4aa48c70e40b5d6c@mail.gmail.com>
-	 <alpine.LFD.2.00.0904101329170.21577@localhost.localdomain>
-	 <8db1092f0904100747w297a0daas9ebd05486d06e706@mail.gmail.com>
-	 <alpine.LFD.2.00.0904101819070.21577@localhost.localdomain>
-	 <8db1092f0904100952x64048907gea6bbaf25488de26@mail.gmail.com>
-	 <alpine.LFD.2.00.0904101854250.21577@localhost.localdomain>
-	 <8db1092f0904101057x56000b73w9de3227b2a3a9abb@mail.gmail.com>
-	 <alpine.LFD.2.00.0904102019220.21577@localhost.localdomain>
-	 <a8e1da0904180604k8108bc5hf95705c42d80fcf9@mail.gmail.com>
-	 <1239479565.8206.25.camel@localhost.localdomain>
-Date: Sat, 16 May 2009 16:31:14 +0200
-Message-ID: <8db1092f0905160731x17719d43m11a7f55d1b43c57f@mail.gmail.com>
-Subject: Re: [2.6.29-git12] BUG: scheduling while atomic: swapper/0/0x10000100
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: Marcel Holtmann <marcel@holtmann.org>
-Cc: Dave Young <hidave.darkstar@gmail.com>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       linux-bluetooth@vger.kernel.org, "Rafael J. Wysocki" <rjw@sisk.pl>
-Content-Type: text/plain; charset=UTF-8
+To: Wu Fengguang <fengguang.wu@intel.com>
+CC: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "hannes@cmpxchg.org" <hannes@cmpxchg.org>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+Subject: Re: [PATCH 3/3] vmscan: merge duplicate code in shrink_active_list()
+References: <20090516090005.916779788@intel.com> <20090516090448.535217680@intel.com>
+In-Reply-To: <20090516090448.535217680@intel.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I already test 2.6.30-rc6, and problem seems be fixed.
+Wu Fengguang wrote:
+> The "move pages to active list" and "move pages to inactive list"
+> code blocks are mostly identical and can be served by a function.
+> 
+> Thanks to Andrew Morton for pointing this out.
+> 
+> Note that buffer_heads_over_limit check will also be carried out
+> for re-activated pages, which is slightly different from pre-2.6.28
+> kernels. Also, Rik's "vmscan: evict use-once pages first" patch
+> could totally stop scans of active list when memory pressure is low.
+> So the net effect could be, the number of buffer heads is now more
+> likely to grow large.
+> 
+> CC: Rik van Riel <riel@redhat.com>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
 
-Thanks
+Reviewed-by: Rik van Riel <riel@redhat.com>
+
 -- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+All rights reversed.
