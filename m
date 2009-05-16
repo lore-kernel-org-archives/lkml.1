@@ -1,72 +1,88 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbZEPKK5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbZEPKLW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756754AbZEPKK5 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 06:10:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbZEPKKr
+	id S1757490AbZEPKLW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 06:11:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbZEPKLG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 06:10:47 -0400
-Received: from 1wt.eu ([62.212.114.60]:1387 "EHLO 1wt.eu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755154AbZEPKKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 06:10:45 -0400
-Date: Sat, 16 May 2009 12:00:39 +0200
-From: Willy Tarreau <w@1wt.eu>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, security@kernel.org,
-       Linux@hera.kernel.org, stable@kernel.org,
-       Cox <alan@lxorguk.ukuu.org.uk>, Arjan@hera.kernel.org,
-       List <linux-kernel@vger.kernel.org>, Alan@hera.kernel.org,
-       Eric Paris <eparis@redhat.com>, Jake Edge <jake@lwn.net>,
-       linux-security-module@vger.kernel.org, mingo@redhat.com,
-       "Eric W. Biederman" <ebiederm@xmission.com>,
-       Matt Mackall <mpm@selenic.com>, Dave Jones <davej@redhat.com>,
-       James Morris <jmorris@namei.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Roland McGrath <roland@redhat.com>, de Ven <arjan@infradead.org>
-Subject: Re: [Security] [patch] random: make get_random_int() more random
-Message-ID: <20090516100039.GA24619@1wt.eu>
-References: <m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu> <20090505202219.GL31071@waste.org> <20090506103034.GA25203@elte.hu> <20090506162543.GT31071@waste.org> <alpine.LFD.2.01.0905060942340.4983@localhost.localdomain> <20090506200954.GA21484@elte.hu> <20090514164737.6eaab4f0@chukar> <alpine.LFD.2.01.0905141553010.3343@localhost.localdomain> <20090515134717.GA16389@elte.hu>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090515134717.GA16389@elte.hu>
-User-Agent: Mutt/1.5.11
+	Sat, 16 May 2009 06:11:06 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:59630 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755154AbZEPKLF (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 06:11:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=mime-version:sender:reply-to:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=sfueBbNAUV8H2HeqcAsmxCCVk2l1v2iaE4i2wYM6ReC3Rw+ulRd77GmcZp50Tj3pxV
+         IaqRxErGxwI1WLxeEZrgtj4sraPtlsSo5rw6KeFzQv2H2Tv/+Q1QIRMiakdIqizI+UYH
+         Hkl2YQPo0rtKX5TInHo9/wv7frq+TDZWNFkTQ=
+MIME-Version: 1.0
+Reply-To: Tobias_Mueller@twam.info
+In-Reply-To: <17be05570905160252l3ffc1923xf5031702947948a6@mail.gmail.com>
+References: <17be05570905130710s1192729cqafa09127f6c34bf9@mail.gmail.com>
+	 <20090513151415.6e84fd82.akpm@linux-foundation.org>
+	 <17be05570905140208n5fd695aayfad221808f70ac21@mail.gmail.com>
+	 <20090515010947.4016ba66.const@mimas.ru>
+	 <17be05570905141323l31ee6f9o71698e57aec4b698@mail.gmail.com>
+	 <20090515023202.57387cb2.const@mimas.ru>
+	 <17be05570905160252l3ffc1923xf5031702947948a6@mail.gmail.com>
+Date: Sat, 16 May 2009 12:11:03 +0200
+X-Google-Sender-Auth: efa2c579525135b3
+Message-ID: <17be05570905160311l3b56bf31q91597eef4050f982@mail.gmail.com>
+Subject: [PATCH v3 001/001] [PATCH 001/001] leds: alix-leds2 fixed for Award 
+	BIOS
+From: =?UTF-8?Q?Tobias_M=C3=BCller?= <Tobias_Mueller@twam.info>
+To: linux-kernel@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       Constantin Baranov <const@mimas.ru>, Richard Purdie <rpurdie@rpsys.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, May 15, 2009 at 03:47:17PM +0200, Ingo Molnar wrote:
-> 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > On Thu, 14 May 2009, Jake Edge wrote:
-> > >
-> > > It seems like this should be queued up for stable, yes?  I just 
-> > > saw the 2.6.29.4 review patches go out, but this wasn't part of 
-> > > it ...
-> > 
-> > Well, I was hoping to maybe have actual timing numbers from some 
-> > better hash, in case Matt can make one that is efficient enough. 
-> > So I committed the randomness improvement as a clear _improvement_ 
-> > over what we had, but it may not be the final version.
-> 
-> yep, it was just a quick hack really. If someone can do a stronger 
-> hash that also happens to be faster i guess we all will be happy 
-> campers. The performance figures showed room for improvement - how 
-> well are those hashes optimized? Many thousands of cycles ... is 
-> that really justified?
+From: Tobias Mueller <Tobias_Mueller@twam.info>
 
-In fact we must keep in mind that those hashes produce far more data
-than we need and we're throwing that data to the bin on every call.
-If we use SHA1, we get 160 bits. We should save them and return them
-by 5 packets of 32 bits, then only call SHA1 once every 5 calls. That
-way, we get one slower exec every 5 calls but faster calls on average.
+Added initialisation of GPIO ports for compatibility with boards with Award
+BIOS (e.g. ALIX.3D3).
+Signed-off-by: Tobias Mueller <Tobias_Mueller@twam.info>
+---
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 9b60b6b..37e9118 100644
+--- a/drivers/leds/Kconfig
++++ b/drivers/leds/Kconfig
+@@ -75,6 +75,7 @@ config LEDS_ALIX2
+ 	depends on LEDS_CLASS && X86 && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the PCEngines ALIX.2 and ALIX.3 LEDs.
++	  You have to set leds-alix2.force=1 for boards with Award BIOS.
 
-And if we can't get a good hash to be fast enough, let's make this
-configurable. Most of us won't ever care about the strength of the
-hash. People concerned about security won't care about the slower
-hash. If we set the slower hash by default and have a tunable for
-it, everyone will have the solution that fits them.
+ config LEDS_H1940
+ 	tristate "LED Support for iPAQ H1940 device"
+diff --git a/drivers/leds/leds-alix2.c b/drivers/leds/leds-alix2.c
+index ddbd773..731d4ee 100644
+--- a/drivers/leds/leds-alix2.c
++++ b/drivers/leds/leds-alix2.c
+@@ -14,7 +14,7 @@
 
-Willy
+ static int force = 0;
+ module_param(force, bool, 0444);
+-MODULE_PARM_DESC(force, "Assume system has ALIX.2 style LEDs");
++MODULE_PARM_DESC(force, "Assume system has ALIX.2/ALIX.3 style LEDs");
 
+ struct alix_led {
+ 	struct led_classdev cdev;
+@@ -155,6 +155,11 @@ static int __init alix_led_init(void)
+ 		goto out;
+ 	}
+
++	/* enable output on GPIO for LED 1,2,3 */
++	outl(1 << 6, 0x6104);
++	outl(1 << 9, 0x6184);
++	outl(1 << 11, 0x6184);
++
+ 	pdev = platform_device_register_simple(KBUILD_MODNAME, -1, NULL, 0);
+ 	if (!IS_ERR(pdev)) {
+ 		ret = platform_driver_probe(&alix_led_driver, alix_led_probe);
