@@ -1,58 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757155AbZEPKCq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756754AbZEPKK5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757155AbZEPKCq (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 06:02:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755230AbZEPKCi
+	id S1756754AbZEPKK5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 06:10:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbZEPKKr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 06:02:38 -0400
-Received: from zone0.gcu-squad.org ([212.85.147.21]:6109 "EHLO
-	services.gcu-squad.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755098AbZEPKCh (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 06:02:37 -0400
-Date: Sat, 16 May 2009 12:02:29 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Mike Frysinger <vapier@gentoo.org>
-Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH] hwmon: (lm78) add missing __devexit_p()
-Message-ID: <20090516120229.4bc622b7@hyperion.delvare>
-In-Reply-To: <1242413423-26654-1-git-send-email-vapier@gentoo.org>
-References: <1242413423-26654-1-git-send-email-vapier@gentoo.org>
-X-Mailer: Claws Mail 3.5.0 (GTK+ 2.14.4; x86_64-suse-linux-gnu)
+	Sat, 16 May 2009 06:10:47 -0400
+Received: from 1wt.eu ([62.212.114.60]:1387 "EHLO 1wt.eu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755154AbZEPKKp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 06:10:45 -0400
+Date: Sat, 16 May 2009 12:00:39 +0200
+From: Willy Tarreau <w@1wt.eu>
+To: Ingo Molnar <mingo@elte.hu>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>, security@kernel.org,
+       Linux@hera.kernel.org, stable@kernel.org,
+       Cox <alan@lxorguk.ukuu.org.uk>, Arjan@hera.kernel.org,
+       List <linux-kernel@vger.kernel.org>, Alan@hera.kernel.org,
+       Eric Paris <eparis@redhat.com>, Jake Edge <jake@lwn.net>,
+       linux-security-module@vger.kernel.org, mingo@redhat.com,
+       "Eric W. Biederman" <ebiederm@xmission.com>,
+       Matt Mackall <mpm@selenic.com>, Dave Jones <davej@redhat.com>,
+       James Morris <jmorris@namei.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Roland McGrath <roland@redhat.com>, de Ven <arjan@infradead.org>
+Subject: Re: [Security] [patch] random: make get_random_int() more random
+Message-ID: <20090516100039.GA24619@1wt.eu>
+References: <m14ow0ynjm.fsf@fess.ebiederm.org> <20090505195246.GC21973@elte.hu> <20090505202219.GL31071@waste.org> <20090506103034.GA25203@elte.hu> <20090506162543.GT31071@waste.org> <alpine.LFD.2.01.0905060942340.4983@localhost.localdomain> <20090506200954.GA21484@elte.hu> <20090514164737.6eaab4f0@chukar> <alpine.LFD.2.01.0905141553010.3343@localhost.localdomain> <20090515134717.GA16389@elte.hu>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090515134717.GA16389@elte.hu>
+User-Agent: Mutt/1.5.11
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Mike,
-
-On Fri, 15 May 2009 14:50:23 -0400, Mike Frysinger wrote:
-> The remove function uses __devexit, so the .remove assignment needs
-> __devexit_p() to fix a build error with hotplug disabled.
+On Fri, May 15, 2009 at 03:47:17PM +0200, Ingo Molnar wrote:
 > 
-> Signed-off-by: Mike Frysinger <vapier@gentoo.org>
-> CC: Jean Delvare <khali@linux-fr.org>
-> ---
->  drivers/hwmon/lm78.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
 > 
-> diff --git a/drivers/hwmon/lm78.c b/drivers/hwmon/lm78.c
-> index b5e3b28..a1787fd 100644
-> --- a/drivers/hwmon/lm78.c
-> +++ b/drivers/hwmon/lm78.c
-> @@ -182,7 +182,7 @@ static struct platform_driver lm78_isa_driver = {
->  		.name	= "lm78",
->  	},
->  	.probe		= lm78_isa_probe,
-> -	.remove		= lm78_isa_remove,
-> +	.remove		= __devexit_p(lm78_isa_remove),
->  };
->  
->  
+> > On Thu, 14 May 2009, Jake Edge wrote:
+> > >
+> > > It seems like this should be queued up for stable, yes?  I just 
+> > > saw the 2.6.29.4 review patches go out, but this wasn't part of 
+> > > it ...
+> > 
+> > Well, I was hoping to maybe have actual timing numbers from some 
+> > better hash, in case Matt can make one that is efficient enough. 
+> > So I committed the randomness improvement as a clear _improvement_ 
+> > over what we had, but it may not be the final version.
+> 
+> yep, it was just a quick hack really. If someone can do a stronger 
+> hash that also happens to be faster i guess we all will be happy 
+> campers. The performance figures showed room for improvement - how 
+> well are those hashes optimized? Many thousands of cycles ... is 
+> that really justified?
 
-Good catch. Applied, thanks!
+In fact we must keep in mind that those hashes produce far more data
+than we need and we're throwing that data to the bin on every call.
+If we use SHA1, we get 160 bits. We should save them and return them
+by 5 packets of 32 bits, then only call SHA1 once every 5 calls. That
+way, we get one slower exec every 5 calls but faster calls on average.
 
--- 
-Jean Delvare
+And if we can't get a good hash to be fast enough, let's make this
+configurable. Most of us won't ever care about the strength of the
+hash. People concerned about security won't care about the slower
+hash. If we set the slower hash by default and have a tunable for
+it, everyone will have the solution that fits them.
+
+Willy
+
