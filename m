@@ -1,78 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756775AbZEPTLa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756337AbZEPTNL@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756775AbZEPTLa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 15:11:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754818AbZEPTLU
+	id S1756337AbZEPTNL (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 15:13:11 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755332AbZEPTMy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 15:11:20 -0400
-Received: from mga01.intel.com ([192.55.52.88]:41325 "EHLO mga01.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753456AbZEPTLT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 15:11:19 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,205,1241420400"; 
-   d="scan'208";a="691002598"
-Subject: Re: [GIT PATCH] x86,percpu: fix pageattr handling with remap
- allocator
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: Tejun Heo <tj@kernel.org>
-Cc: "JBeulich@novell.com" <JBeulich@novell.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel-owner@vger.kernel.org" 
-	<linux-kernel-owner@vger.kernel.org>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <4A0ED8D8.2010303@kernel.org>
-References: <1242305390-21958-1-git-send-email-tj@kernel.org>
-	 <1242436626.27006.8623.camel@localhost.localdomain>
-	 <4A0ED8D8.2010303@kernel.org>
-Content-Type: text/plain
-Organization: Intel Corp
-Date: Sat, 16 May 2009 12:09:24 -0700
-Message-Id: <1242500964.27006.8636.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sat, 16 May 2009 15:12:54 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:51198 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754978AbZEPTMx convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 15:12:53 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=J5OpZJIFGDVTpNPpfwIIbTsLe6ZhGJe2yM6yZHmta+K+cJXhPd4ScmbP74E5/wWaag
+         aZE7QdHY2frRV0OdZqnpO/PdPusxaB2nBRMuZqRN/L3HljWk5nReGTp6RNvgMzQPBRcU
+         gUH9O/Wn+K2CTi7omzprcUdBDsIcynCLo3tdI=
+MIME-Version: 1.0
+In-Reply-To: <87zldc9987.fsf@sycorax.lbl.gov>
+References: <87zldc9987.fsf@sycorax.lbl.gov>
+Date: Sat, 16 May 2009 23:12:52 +0400
+Message-ID: <a4423d670905161212u53869568ha9b6fa6a2b1c97e4@mail.gmail.com>
+Subject: Re: oops with 2.6.30-rc6 and reiserfs
+From: Alexander Beregalov <a.beregalov@gmail.com>
+To: Alex Romosan <romosan@sycorax.lbl.gov>
+Cc: linux-kernel@vger.kernel.org,
+       ReiserFS Development List <reiserfs-devel@vger.kernel.org>,
+       Jeff Mahoney <jeffm@suse.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, 2009-05-16 at 08:16 -0700, Tejun Heo wrote:
-> Hello, Suresh.
-> 
-> Suresh Siddha wrote:
-> > Tejun, Can you please educate me why we need to map this first
-> > percpu chunk (which is pre-allocated during boot and is physically
-> > contiguous) into vmalloc area?
-> 
-> To make areas for each cpu congruent such that the address offset of a
-> percpu symbol for CPU N is always the same from the address for CPU 0.
+2009/5/16 Alex Romosan <romosan@sycorax.lbl.gov>:
+> i get an oops trying to boot into 2.6.30-rc6 with reiserfs as the root
+> partition. the root partition never gets mounted rw so there is
+> nothing in the logs but i took a picture of the screen on the laptop:
+>
+>  http://costard.lbl.gov/~romosan/dsc05513.jpg
+>
+> these are the config options i use relevant to reiserfs:
+>
+> CONFIG_REISERFS_FS=y
+> # CONFIG_REISERFS_CHECK is not set
+> # CONFIG_REISERFS_PROC_INFO is not set
+> # CONFIG_REISERFS_FS_XATTR is not set
+>
+> hope this helps.
+>
 
-But for the first percpu chunk, isn't it the case that the physical
-address allocations for a particular cpu is contiguous (as you are using
-one bootmem allocation for whole PMD_SIZE for any given cpu)? So both
-the kernel direct mapping aswell as the vmalloc mappings are contiguous
-for the first chunk, on any given cpu. Right?
-
-> > Perhaps even for the other dynamically allocated secondary chunks?
-> > (as far as I can see, all the chunk allocations seems to be
-> > physically contiguous and later mapped into vmalloc area)..
-> > 
-> > That should simplify these things quite a bit(atleast for first
-> > percpu chunk).  I am missing something obvious I guess.
-> 
-> Hmm... Sorry I don't really follow.  Can you please elaborate the
-> question?
-
-For the first percpu chunk, we can use the kernel direct mapping and
-avoid the vmalloc mapping of PMD_SIZE. And avoid the vmap address
-aliasing problem (wrt to free pages that we have given back to -mm) that
-we are trying to avoid with this patchset (as the existing cpa code
-already takes care of the kernel direct mappings).
-
-thanks,
-suresh
-
+Add CC.
