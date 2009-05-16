@@ -1,60 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758001AbZEPPPy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755449AbZEPPVd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758001AbZEPPPy (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 11:15:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753755AbZEPPPq
+	id S1755449AbZEPPVd (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 11:21:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753497AbZEPPVY
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 11:15:46 -0400
-Received: from hera.kernel.org ([140.211.167.34]:55075 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753017AbZEPPPp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 11:15:45 -0400
-Message-ID: <4A0ED8D8.2010303@kernel.org>
-Date: Sun, 17 May 2009 00:16:40 +0900
-From: Tejun Heo <tj@kernel.org>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: suresh.b.siddha@intel.com
-CC: "JBeulich@novell.com" <JBeulich@novell.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel-owner@vger.kernel.org" 
-	<linux-kernel-owner@vger.kernel.org>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: [GIT PATCH] x86,percpu: fix pageattr handling with remap allocator
-References: <1242305390-21958-1-git-send-email-tj@kernel.org> <1242436626.27006.8623.camel@localhost.localdomain>
-In-Reply-To: <1242436626.27006.8623.camel@localhost.localdomain>
-X-Enigmail-Version: 0.95.7
+	Sat, 16 May 2009 11:21:24 -0400
+Received: from fg-out-1718.google.com ([72.14.220.158]:32062 "EHLO
+	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752627AbZEPPVY (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 11:21:24 -0400
+Date: Sat, 16 May 2009 20:21:20 +0500
+From: Constantin Baranov <const@mimas.ru>
+To: Tobias_Mueller@twam.info
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Richard Purdie <rpurdie@rpsys.net>
+Subject: Re: [PATCH 001/001] leds: alix-leds2 fixed for Award BIOS
+Message-Id: <20090516202120.95e79b53.const@mimas.ru>
+In-Reply-To: <17be05570905160252l3ffc1923xf5031702947948a6@mail.gmail.com>
+References: <17be05570905130710s1192729cqafa09127f6c34bf9@mail.gmail.com>
+	<20090513151415.6e84fd82.akpm@linux-foundation.org>
+	<17be05570905140208n5fd695aayfad221808f70ac21@mail.gmail.com>
+	<20090515010947.4016ba66.const@mimas.ru>
+	<17be05570905141323l31ee6f9o71698e57aec4b698@mail.gmail.com>
+	<20090515023202.57387cb2.const@mimas.ru>
+	<17be05570905160252l3ffc1923xf5031702947948a6@mail.gmail.com>
+X-Mailer: Sylpheed 2.6.0 (GTK+ 2.16.1; x86_64-pc-linux-gnu)
+Mime-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Sat, 16 May 2009 15:15:24 +0000 (UTC)
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, Suresh.
+On Sat, 16 May 2009 11:52:35 +0200 Tobias Müller <Tobias_Mueller@twam.info> wrote:
+> 2009/5/14 Constantin Baranov <const@mimas.ru>:
+> > OK, 'double' initialization seems good.
+> > I will test it on my ALIX.2c3 later.
+> Did you get some results>
+Yes, I have not found any effect of those three outls on ALIX.2c3.
+Thus I consider the patch to be safe.
 
-Suresh Siddha wrote:
-> Tejun, Can you please educate me why we need to map this first
-> percpu chunk (which is pre-allocated during boot and is physically
-> contiguous) into vmalloc area?
-
-To make areas for each cpu congruent such that the address offset of a
-percpu symbol for CPU N is always the same from the address for CPU 0.
-
-> Perhaps even for the other dynamically allocated secondary chunks?
-> (as far as I can see, all the chunk allocations seems to be
-> physically contiguous and later mapped into vmalloc area)..
-> 
-> That should simplify these things quite a bit(atleast for first
-> percpu chunk).  I am missing something obvious I guess.
-
-Hmm... Sorry I don't really follow.  Can you please elaborate the
-question?
-
-thanks.
-
--- 
-tejun
+Reviewed-by: Constantin Baranov <const@mimas.ru>
