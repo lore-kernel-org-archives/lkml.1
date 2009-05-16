@@ -1,83 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbZEPXUz@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755418AbZEPXgq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757397AbZEPXUz (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 19:20:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbZEPXUm
+	id S1755418AbZEPXgq (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 19:36:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753451AbZEPXgg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 19:20:42 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:33216 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752464AbZEPXUl (ORCPT
+	Sat, 16 May 2009 19:36:36 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:37232 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753605AbZEPXgg convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 19:20:41 -0400
-Date: Sat, 16 May 2009 16:20:17 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Andi Kleen <andi@firstfloor.org>
-Cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
-       linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
-       netdev@vger.kernel.org, rusty@rustcorp.com.au
-Subject: Re: [BUG 2.6.30-rc1] panic when loading oprofile
-Message-Id: <20090516162017.2525511c.akpm@linux-foundation.org>
-In-Reply-To: <87fxf6pmh5.fsf@basil.nowhere.org>
-References: <alpine.WNT.2.00.0905131327430.7052__41366.1100705669$1242253861$gmane$org@jbrandeb-desk1.amr.corp.intel.com>
-	<87fxf6pmh5.fsf@basil.nowhere.org>
-X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sat, 16 May 2009 19:36:36 -0400
+MIME-Version: 1.0
+In-Reply-To: <20090516154912.a0efc677.akpm@linux-foundation.org>
+References: <4A0C43C3.9090404@pardus.org.tr> <20090515174056.GD29647@elte.hu> 
+	<20090515210134.758f3123@i1501.lan.towertech.it> <20090516154912.a0efc677.akpm@linux-foundation.org>
+From: Kay Sievers <kay.sievers@vrfy.org>
+Date: Sun, 17 May 2009 01:36:17 +0200
+Message-ID: <ac3eb2510905161636j5137717crdb72ea94e846d4b9@mail.gmail.com>
+Subject: Re: [rtc-linux] Re: [BUG 2.6.30_rc5] Null pointer dereference in 
+	rtc-cmos driver
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+       rtc-linux@googlegroups.com, mingo@elte.hu,
+       =?UTF-8?B?T3phbiDDh2HEn2xheWFu?= <ozan@pardus.org.tr>,
+       David Brownell <david-b@pacbell.net>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Greg KH <greg@kroah.com>, Tejun Heo <tj@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 May 2009 14:41:26 +0200 Andi Kleen <andi@firstfloor.org> wrote:
+On Sun, May 17, 2009 at 00:49, Andrew Morton <akpm@linux-foundation.org> wrote:
 
-> "Brandeburg, Jesse" <jesse.brandeburg@intel.com> writes:
-> 
-> Hi Jesse,
-> 
-> > when starting a profile run on the latest net-next kernel, I'm currently 
-> > trying to reproduce on 2.6.30-rc5 stock.
-> 
-> Were you able to reproduce it?
-> 
-> >
-> > config available upon request, arch=x86_64, recent (F10 or newer) oprofile 
-> > userspace.
-> 
-> it looks like two bugs: oprofile didn't catch a NMI that belongs to 
-> it (most likely) and the NMI watchdog referenced a NULL pointer
-> while processing an NMI.
-> 
-> Did you have the nmi watchdog enabled on the command line?
-> 
-> >
-> > BUG: unable to handle kernel NULL pointer dereference at (null)
-> > IP: [<ffffffff8066080a>] nmi_watchdog_tick+0xa1/0x1d6
-> 
-> I don't get the same code as you. But the oopsing instruction in your
-> oops is
-> 
->   2b:*  44 0f a3 28             bt     %r13d,(%rax)     <-- trapping instruction
-> 
-> with rax == 0 and I suspect it's one of the new cpu mask checks
-> I would try reverting
-> 
-> fcc5c4a2feea3886dc058498b28508b2731720d5
-> 2f537a9f8e82f55c241b002c8cfbf34303b45ada
-> fcef8576d8a64fc603e719c97d423f9f6d4e0e8b
-> 
-> and see which one causes it. That would only fix the NMI watchdog bug
-> of course.
-> 
-> The oprofile not catching a event problem would be still open then.
-> I think the checks for overflowed counters are not 100% perfect
-> so that could happen. I have some patches in the works to use the new
-> global status register on arch perfmon 2, with that the overflow
-> check is somewhat more reliable. But that's more work.
-> 
+> This should fix the symptoms:
 
-Ping?
+> +++ a/drivers/rtc/rtc-cmos.c
+> @@ -1179,7 +1179,9 @@ static int __init cmos_init(void)
+>        int retval = 0;
+>
+>  #ifdef CONFIG_PNP
+> -       pnp_register_driver(&cmos_pnp_driver);
+> +       retval = pnp_register_driver(&cmos_pnp_driver);
+> +       if (retval < 0)
+> +               return retval;
+>  #endif
 
-This is in Rafael's regression list but I suspect that it's a
-linux-next-only thing?
+That looks like a good fix.
 
+> Can someone please test it?
+
+I'll try to reproduce it.
+
+>> > > [   10.428728] BUG: unable to handle kernel NULL pointer dereference at 00000018
+...
+>> > > [   10.459009]  [<c03037e6>] ? driver_remove_file+0xf/0x11
+
+> But we have arguably multiple more bugs here.
+> pnp_unregister_driver(unregistered-driver) shouldn't oops the kernel.
+> Neither pnp_unregister_driver() nor driver_unregister() nor
+> bus_remove_driver() nor driver_remove_file() nor sysfs_remove_file()
+> detected this.
+>
+> Kay, Greg: there are already a pile of checks on that path, but it
+> seems there's one missing.  Could you please take a look and decide at
+> the design level where this check should be occurring?
+
+The issue is caused by a trying to unregister a driver which never got
+registered before. I guess we try to access the private part of the
+driver to reach the kobject, but for unregistered drivers there is no
+such thing at that time. In:
+  driver_remove_file()
+we try to access the private part:
+  sysfs_remove_file(&drv->p->kobj, ...
+and that is NULL, for an unregistered driver, I would expect.
+
+I'll try to reproduce the issue, and see if your fix cover the real problem.
+If I can reproduce it, I'll take a look where to add a check for this.
+
+Thanks,
+Kay
