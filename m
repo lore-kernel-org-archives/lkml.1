@@ -1,195 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757797AbZEPNme@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757448AbZEPNr5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757797AbZEPNme (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 09:42:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754880AbZEPNmW
+	id S1757448AbZEPNr5 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 09:47:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752953AbZEPNrs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 09:42:22 -0400
-Received: from h155.mvista.com ([63.81.120.155]:64231 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753908AbZEPNmV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 09:42:21 -0400
-Message-ID: <4A0EC2AD.20704@ru.mvista.com>
-Date: Sat, 16 May 2009 17:42:05 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Sat, 16 May 2009 09:47:48 -0400
+Received: from mga14.intel.com ([143.182.124.37]:17772 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752610AbZEPNrr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 09:47:47 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,204,1241420400"; 
+   d="scan'208";a="143550747"
+Date: Sat, 16 May 2009 21:47:18 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Johannes Weiner <hannes@cmpxchg.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Rik van Riel <riel@redhat.com>,
+       Christoph Lameter <cl@linux-foundation.org>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "peterz@infradead.org" <peterz@infradead.org>,
+       "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>,
+       "minchan.kim@gmail.com" <minchan.kim@gmail.com>
+Subject: Re: [PATCH 3/3] vmscan: merge duplicate code in
+	shrink_active_list()
+Message-ID: <20090516134718.GA15263@localhost>
+References: <20090516090005.916779788@intel.com> <20090516090448.535217680@intel.com> <20090516133950.GA5775@cmpxchg.org>
 MIME-Version: 1.0
-To: Tejun Heo <tj@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
-       linux-ide@vger.kernel.org, rusty@rustcorp.com.au,
-       James.Bottomley@HansenPartnership.com, mike.miller@hp.com,
-       donari75@gmail.com, paul.clements@steeleye.com, tim@cyberelk.net,
-       Geert.Uytterhoeven@sonycom.com, davem@davemloft.net,
-       Laurent@lvivier.info, jgarzik@pobox.com, jeremy@xensource.com,
-       grant.likely@secretlab.ca, adrian@mcmen.demon.co.uk,
-       sfr@canb.auug.org.au, bzolnier@gmail.com, petkovbb@googlemail.com,
-       oakad@yahoo.com, drzeus@drzeus.cx, dwmw2@infradead.org,
-       Markus.Lidel@shadowconnect.com, wein@de.ibm.com, schwidefsky@de.ibm.com,
-       zaitcev@redhat.com, fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk
-Subject: Re: [PATCH 11/18] swim: dequeue in-flight request
-References: <1241751256-17435-1-git-send-email-tj@kernel.org> <1241751256-17435-12-git-send-email-tj@kernel.org>
-In-Reply-To: <1241751256-17435-12-git-send-email-tj@kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090516133950.GA5775@cmpxchg.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Sat, May 16, 2009 at 09:39:50PM +0800, Johannes Weiner wrote:
+> On Sat, May 16, 2009 at 05:00:08PM +0800, Wu Fengguang wrote:
+> > The "move pages to active list" and "move pages to inactive list"
+> > code blocks are mostly identical and can be served by a function.
+> > 
+> > Thanks to Andrew Morton for pointing this out.
+> > 
+> > Note that buffer_heads_over_limit check will also be carried out
+> > for re-activated pages, which is slightly different from pre-2.6.28
+> > kernels. Also, Rik's "vmscan: evict use-once pages first" patch
+> > could totally stop scans of active list when memory pressure is low.
+> > So the net effect could be, the number of buffer heads is now more
+> > likely to grow large.
+> 
+> I don't think that this could be harmful.  We just preserve the buffer
+> mappings of what we consider the working set and with low memory
+> pressure, as you say, this set is not big.
+> 
+> As to stripping of reactivated pages: the only pages we re-activate
+> for now are those VM_EXEC mapped ones.  Since we don't expect IO from
+> or to these pages, removing the buffer mappings in case they grow too
+> large should be okay, I guess.
 
-Tejun Heo wrote:
+Agreed - and good analyzes, thanks!
 
-> swim processes requests one-by-one synchronously and can easily be
-> converted to dequeuing model.  Convert it.
->
-> [ Impact: dequeue in-flight request ]
->
-> Signed-off-by: Tejun Heo <tj@kernel.org>
-> Cc: Laurent Vivier <Laurent@lvivier.info>
-> ---
->  drivers/block/swim.c |   47 +++++++++++++++++++++++------------------------
->  1 files changed, 23 insertions(+), 24 deletions(-)
->
-> diff --git a/drivers/block/swim.c b/drivers/block/swim.c
-> index fc6a1c3..dedd489 100644
-> --- a/drivers/block/swim.c
-> +++ b/drivers/block/swim.c
-> @@ -514,7 +514,7 @@ static int floppy_read_sectors(struct floppy_state *fs,
->  			ret = swim_read_sector(fs, side, track, sector,
->  						buffer);
->  			if (try-- == 0)
-> -				return -1;
-> +				return -EIO;
->  		} while (ret != 512);
->  
->  		buffer += ret;
-> @@ -528,38 +528,37 @@ static void redo_fd_request(struct request_queue *q)
->  	struct request *req;
->  	struct floppy_state *fs;
->  
-> -	while ((req = elv_next_request(q))) {
-> +	req = elv_next_request(q);
-> +	if (req)
-> +		blkdev_dequeue_request(req);
-> +
-> +	while (req) {
-> +		int err = -EIO;
->  
->  		fs = req->rq_disk->private_data;
-> -		if (blk_rq_pos(req) >= fs->total_secs) {
-> -			__blk_end_request_cur(req, -EIO);
-> -			continue;
-> -		}
-> -		if (!fs->disk_in) {
-> -			__blk_end_request_cur(req, -EIO);
-> -			continue;
-> -		}
-> -		if (rq_data_dir(req) == WRITE) {
-> -			if (fs->write_protected) {
-> -				__blk_end_request_cur(req, -EIO);
-> -				continue;
-> -			}
-> -		}
-> +		if (blk_rq_pos(req) >= fs->total_secs)
-> +			goto done;
-> +		if (!fs->disk_in)
-> +			goto done;
-> +		if (rq_data_dir(req) == WRITE && fs->write_protected)
-> +			goto done;
-> +
->  		switch (rq_data_dir(req)) {
->  		case WRITE:
->  			/* NOT IMPLEMENTED */
-> -			__blk_end_request_cur(req, -EIO);
->  			break;
->  		case READ:
-> -			if (floppy_read_sectors(fs, blk_rq_pos(req),
-> -						blk_rq_cur_sectors(req),
-> -						req->buffer)) {
-> -				__blk_end_request_cur(req, -EIO);
-> -				continue;
-> -			}
-> -			__blk_end_request_cur(req, 0);
-> +			err = floppy_read_sectors(fs, blk_rq_pos(req),
-> +						  blk_rq_cur_sectors(req),
-> +						  req->buffer);
->  			break;
->  		}
-> +	done:
-> +		if (!__blk_end_request_cur(req, err)) {
-> +			req = elv_next_request(q);
-> +			if (req)
-> +				blkdev_dequeue_request(req);
-> +		}
->  	}
->  }
+Fengguang
 
-   And without duplication:
-
-@@ -528,38 +528,37 @@
- static void redo_fd_request(struct request_queue *q)
- {
-- 	struct request *req;
- 	struct floppy_state *fs;
- 
--	while ((req = elv_next_request(q))) {
-+	while (1) {
-+	 	struct request *req = elv_next_request(q);
-+		int err;
-+ 
-+		if (req == NULL)
-+			break;
-+		blkdev_dequeue_request(req);
- 
-+again:
-+		err = -EIO;
- 		fs = req->rq_disk->private_data;
--		if (blk_rq_pos(req) >= fs->total_secs) {
--			__blk_end_request_cur(req, -EIO);
--			continue;
--		}
--		if (!fs->disk_in) {
--			__blk_end_request_cur(req, -EIO);
--			continue;
--		}
--		if (rq_data_dir(req) == WRITE) {
--			if (fs->write_protected) {
--				__blk_end_request_cur(req, -EIO);
--				continue;
--			}
--		}
-+		if (blk_rq_pos(req) >= fs->total_secs)
-+			goto done;
-+		if (!fs->disk_in)
-+			goto done;
-+		if (rq_data_dir(req) == WRITE && fs->write_protected)
-+			goto done;
-+
- 		switch (rq_data_dir(req)) {
- 		case WRITE:
- 			/* NOT IMPLEMENTED */
--			__blk_end_request_cur(req, -EIO);
- 			break;
- 		case READ:
--			if (floppy_read_sectors(fs, blk_rq_pos(req),
--						blk_rq_cur_sectors(req),
--						req->buffer)) {
--				__blk_end_request_cur(req, -EIO);
--				continue;
--			}
--			__blk_end_request_cur(req, 0);
-+			err = floppy_read_sectors(fs, blk_rq_pos(req),
-+						  blk_rq_cur_sectors(req),
-+						  req->buffer);
- 			break;
- 		}
-+	done:
-+		if (__blk_end_request_cur(req, err))
-+			goto again;
- 	}
- }
-
-
-MBR, Sergei
-
-
+> > CC: Rik van Riel <riel@redhat.com>
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> 
+> Reviewed-by: Johannes Weiner <hannes@cmpxchg.org>
