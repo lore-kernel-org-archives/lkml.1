@@ -1,62 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757324AbZEPJvv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757768AbZEPJwN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757324AbZEPJvv (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 05:51:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755819AbZEPJv1
+	id S1757768AbZEPJwN (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 05:52:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756388AbZEPJv2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 05:51:27 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:53290 "EHLO
+	Sat, 16 May 2009 05:51:28 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:45198 "EHLO
 	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754998AbZEPJvZ (ORCPT
+	with ESMTP id S1755290AbZEPJv1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 05:51:25 -0400
+	Sat, 16 May 2009 05:51:27 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=rKj0+gDSyBkVRbe2vVBcSidv+28DAoqFjVK8SO9fMUMXZk3vmVdS3NSPA3c22qB7HI
-         XC3wkS/S9qSKH1x9tUv2Sb9N7N2aXrtN7Rz0mIpxao1QJg4BjtqUahyzeAs8ytUmqEx4
-         +0YVKqW0dlepg7BKsB3+QZDTPBW4qgTV/DEZ8=
+        b=wPswBOrj+VnA9kKg4ve4I81cFqOqTW6F/afXulfZBAUGt3Xo/824/Sy0z6mzjpx5VF
+         yri3DbjEpZBj1Ea8rp5nhMDATfBaCJL7apKLppLTgajEo47QXipJ2xvcnMTmMywCMONe
+         TuzpLTzVN+ImI9pkX6xMlUTO4MK7pFbOurn3U=
 From: Vegard Nossum <vegard.nossum@gmail.com>
 To: linux-kernel@vger.kernel.org
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>
-Subject: [PATCH 2/4] kmemcheck: add __GFP_NOTRACK_FALSE_POSITIVE flag
-Date: Sat, 16 May 2009 11:51:18 +0200
-Message-Id: <1242467480-14378-2-git-send-email-vegard.nossum@gmail.com>
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH 3/4] kmemcheck: fix do_mount_root() false positive
+Date: Sat, 16 May 2009 11:51:19 +0200
+Message-Id: <1242467480-14378-3-git-send-email-vegard.nossum@gmail.com>
 X-Mailer: git-send-email 1.6.2.rc0.61.g5cd12
-In-Reply-To: <1242467480-14378-1-git-send-email-vegard.nossum@gmail.com>
+In-Reply-To: <1242467480-14378-2-git-send-email-vegard.nossum@gmail.com>
 References: <1242467480-14378-1-git-send-email-vegard.nossum@gmail.com>
+ <1242467480-14378-2-git-send-email-vegard.nossum@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In contrast to __GFP_NOTRACK, this flag indicates that the allocation
-should not be tracked _because_ it would produce a false positive.
-Their values are identical, but need not be so in the future (for
-example, we could now enable/disable false positives with a config
-option).
+Hide the false positive by using the new __getname_gfp() with the
+__GFP_NOTRACK_FALSE_POSITIVE flag.
 
+Cc: Al Viro <viro@zeniv.linux.org.uk>
 Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
 ---
- include/linux/gfp.h |    6 ++++++
- 1 files changed, 6 insertions(+), 0 deletions(-)
+ init/do_mounts.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/include/linux/gfp.h b/include/linux/gfp.h
-index 2700097..3885e7f 100644
---- a/include/linux/gfp.h
-+++ b/include/linux/gfp.h
-@@ -58,6 +58,12 @@ struct vm_area_struct;
- #define __GFP_NOTRACK	((__force gfp_t)0)
- #endif
+diff --git a/init/do_mounts.c b/init/do_mounts.c
+index dd7ee5f..093f659 100644
+--- a/init/do_mounts.c
++++ b/init/do_mounts.c
+@@ -231,7 +231,8 @@ static int __init do_mount_root(char *name, char *fs, int flags, void *data)
  
-+/*
-+ * This may seem redundant, but it's a way of annotating false positives vs.
-+ * allocations that simply cannot be supported (e.g. page tables).
-+ */
-+#define __GFP_NOTRACK_FALSE_POSITIVE (__GFP_NOTRACK)
-+
- #define __GFP_BITS_SHIFT 22	/* Room for 22 __GFP_FOO bits */
- #define __GFP_BITS_MASK ((__force gfp_t)((1 << __GFP_BITS_SHIFT) - 1))
- 
+ void __init mount_block_root(char *name, int flags)
+ {
+-	char *fs_names = __getname();
++	char *fs_names = __getname_gfp(GFP_KERNEL
++		| __GFP_NOTRACK_FALSE_POSITIVE);
+ 	char *p;
+ #ifdef CONFIG_BLOCK
+ 	char b[BDEVNAME_SIZE];
 -- 
 1.6.0.6
 
