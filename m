@@ -1,76 +1,95 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757969AbZEPJwa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbZEPJws@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757969AbZEPJwa (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 05:52:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756674AbZEPJv3
+	id S1758611AbZEPJws (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 05:52:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757309AbZEPJwf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 05:51:29 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:54994 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755653AbZEPJv1 (ORCPT
+	Sat, 16 May 2009 05:52:35 -0400
+Received: from yw-out-2324.google.com ([74.125.46.28]:17750 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758336AbZEPJwe (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 05:51:27 -0400
+	Sat, 16 May 2009 05:52:34 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:cc:subject:date:message-id:x-mailer:in-reply-to:references;
-        b=KqAhAEaDlDHjFve3f1L+7k5ilqntPa8oQqqHJASt8Y1LP+kZDIdTwMUUWhT899hK7Q
-         2S7WiBux6nL7D5MSPkB0Sk8+xJhknyW5jRh7g5+a6z5EmS+rz437AqwX/znOz77ex/Cr
-         XVQNEGY0cYn97lDiYN+h1NZIeGOwpTud+9TD8=
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
-       Oleg Nesterov <oleg@tv-sign.ru>
-Subject: [PATCH 4/4] kmemcheck: fix __send_signal() false positive
-Date: Sat, 16 May 2009 11:51:20 +0200
-Message-Id: <1242467480-14378-4-git-send-email-vegard.nossum@gmail.com>
-X-Mailer: git-send-email 1.6.2.rc0.61.g5cd12
-In-Reply-To: <1242467480-14378-3-git-send-email-vegard.nossum@gmail.com>
-References: <1242467480-14378-1-git-send-email-vegard.nossum@gmail.com>
- <1242467480-14378-2-git-send-email-vegard.nossum@gmail.com>
- <1242467480-14378-3-git-send-email-vegard.nossum@gmail.com>
+        d=googlemail.com; s=gamma;
+        h=mime-version:sender:reply-to:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=IahaUzTXFOm1Z7cEK6Abn/qyQgqfgOpO7cGeel5j+XSuQwJlXlrHK9LaG2MoBvCP/t
+         83PoGwhTTYffTWsRIlqHNedu4JABU6LaqqJbTpPfaLAb0+haUJ4RQhR7ReGFpz51ICDy
+         OS8yiU4XYNxWur/XajULR80lzf4nlpz4DAh/U=
+MIME-Version: 1.0
+Reply-To: Tobias_Mueller@twam.info
+In-Reply-To: <20090515023202.57387cb2.const@mimas.ru>
+References: <17be05570905130710s1192729cqafa09127f6c34bf9@mail.gmail.com>
+	 <20090513151415.6e84fd82.akpm@linux-foundation.org>
+	 <17be05570905140208n5fd695aayfad221808f70ac21@mail.gmail.com>
+	 <20090515010947.4016ba66.const@mimas.ru>
+	 <17be05570905141323l31ee6f9o71698e57aec4b698@mail.gmail.com>
+	 <20090515023202.57387cb2.const@mimas.ru>
+Date: Sat, 16 May 2009 11:52:35 +0200
+X-Google-Sender-Auth: affdbee5e880e155
+Message-ID: <17be05570905160252l3ffc1923xf5031702947948a6@mail.gmail.com>
+Subject: Re: [PATCH 001/001] leds: alix-leds2 fixed for Award BIOS
+From: =?UTF-8?Q?Tobias_M=C3=BCller?= <Tobias_Mueller@twam.info>
+To: Constantin Baranov <const@mimas.ru>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
+       Richard Purdie <rpurdie@rpsys.net>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hide the false positive using the __GFP_NOTRACK_FALSE_POSITIVE flag.
-Also made the rlimit override code a bit clearer by introducing a new
-variable.
+2009/5/14 Constantin Baranov <const@mimas.ru>:
+> OK, 'double' initialization seems good.
+> I will test it on my ALIX.2c3 later.
+Did you get some results>
 
-Cc: Oleg Nesterov <oleg@tv-sign.ru>
-Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+> It should be stated in the Kconfig help message that the 'force' is
+> required for boards with Award BIOS.
+I added this.
+
+From: Tobias Mueller <Tobias_Mueller@twam.info>
+
+Added initialisation of GPIO ports for compatibility with boards with Award
+BIOS (e.g. ALIX.3D3).
+Signed-off-by: Tobias Mueller <Tobias_Mueller@twam.info>
 ---
- kernel/signal.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+index 7427136..ecf1b9c 100644
+--- a/linux-2.6.29.3-org/drivers/leds/Kconfig
++++ b/linux-2.6.29.3/drivers/leds/Kconfig
+@@ -68,6 +68,7 @@ config LEDS_ALIX2
+ 	depends on LEDS_CLASS && X86 && EXPERIMENTAL
+ 	help
+ 	  This option enables support for the PCEngines ALIX.2 and ALIX.3 LEDs.
++	  You have to set leds.alix2.force=1 for boards with Award BIOS.
 
-diff --git a/kernel/signal.c b/kernel/signal.c
-index d803473..57c7440 100644
---- a/kernel/signal.c
-+++ b/kernel/signal.c
-@@ -829,6 +829,7 @@ static int __send_signal(int sig, struct siginfo *info, struct task_struct *t,
- {
- 	struct sigpending *pending;
- 	struct sigqueue *q;
-+	int override_rlimit;
- 
- 	trace_sched_signal_send(sig, t);
- 
-@@ -860,9 +861,13 @@ static int __send_signal(int sig, struct siginfo *info, struct task_struct *t,
- 	   make sure at least one signal gets delivered and don't
- 	   pass on the info struct.  */
- 
--	q = __sigqueue_alloc(t, GFP_ATOMIC, (sig < SIGRTMIN &&
--					     (is_si_special(info) ||
--					      info->si_code >= 0)));
-+	if (sig < SIGRTMIN)
-+		override_rlimit = (is_si_special(info) || info->si_code >= 0);
-+	else
-+		override_rlimit = 0;
+ config LEDS_H1940
+ 	tristate "LED Support for iPAQ H1940 device"
+diff --git a/drivers/leds/leds-alix2.c b/drivers/leds/leds-alix2.c
+index ddbd773..731d4ee 100644
+--- a/linux-2.6.29.3-org/drivers/leds/leds-alix2.c
++++ b/linux-2.6.29.3/drivers/leds/leds-alix2.c
+@@ -14,7 +14,7 @@
+
+ static int force = 0;
+ module_param(force, bool, 0444);
+-MODULE_PARM_DESC(force, "Assume system has ALIX.2 style LEDs");
++MODULE_PARM_DESC(force, "Assume system has ALIX.2/ALIX.3 style LEDs");
+
+ struct alix_led {
+ 	struct led_classdev cdev;
+@@ -155,6 +155,11 @@ static int __init alix_led_init(void)
+ 		goto out;
+ 	}
+
++	/* enable output on GPIO for LED 1,2,3 */
++	outl(1 << 6, 0x6104);
++	outl(1 << 9, 0x6184);
++	outl(1 << 11, 0x6184);
 +
-+	q = __sigqueue_alloc(t, GFP_ATOMIC | __GFP_NOTRACK_FALSE_POSITIVE,
-+		override_rlimit);
- 	if (q) {
- 		list_add_tail(&q->list, &pending->list);
- 		switch ((unsigned long) info) {
--- 
-1.6.0.6
-
+ 	pdev = platform_device_register_simple(KBUILD_MODNAME, -1, NULL, 0);
+ 	if (!IS_ERR(pdev)) {
+ 		ret = platform_driver_probe(&alix_led_driver, alix_led_probe);
