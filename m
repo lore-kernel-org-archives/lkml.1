@@ -1,70 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756880AbZEPBTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756223AbZEPBXd@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756880AbZEPBTU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 21:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754193AbZEPBTG
+	id S1756223AbZEPBXd (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 21:23:33 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753598AbZEPBXZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 21:19:06 -0400
-Received: from mga14.intel.com ([143.182.124.37]:31435 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753132AbZEPBTE (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 21:19:04 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,202,1241420400"; 
-   d="scan'208";a="143448071"
-Subject: Re: [GIT PATCH] x86,percpu: fix pageattr handling with remap
- allocator
-From: Suresh Siddha <suresh.b.siddha@intel.com>
-Reply-To: suresh.b.siddha@intel.com
-To: Tejun Heo <tj@kernel.org>
-Cc: "JBeulich@novell.com" <JBeulich@novell.com>,
-       "andi@firstfloor.org" <andi@firstfloor.org>,
-       "mingo@elte.hu" <mingo@elte.hu>,
-       "linux-kernel-owner@vger.kernel.org" 
-	<linux-kernel-owner@vger.kernel.org>,
-       "hpa@zytor.com" <hpa@zytor.com>,
-       "tglx@linutronix.de" <tglx@linutronix.de>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-In-Reply-To: <1242305390-21958-1-git-send-email-tj@kernel.org>
-References: <1242305390-21958-1-git-send-email-tj@kernel.org>
+	Fri, 15 May 2009 21:23:25 -0400
+Received: from e37.co.us.ibm.com ([32.97.110.158]:59268 "EHLO
+	e37.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752736AbZEPBXZ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Fri, 15 May 2009 21:23:25 -0400
+Subject: Re: [PATCH 23/30] loongson: CS5536 MFGPT as system clock source
+ support
+From: John Stultz <johnstul@us.ibm.com>
+To: wuzhangjin@gmail.com
+Cc: linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>,
+       linux-kernel@vger.kernel.org, Arnaud Patard <apatard@mandriva.com>,
+       loongson-dev@googlegroups.com, zhangfx@lemote.com, yanh@lemote.com,
+       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
+       Erwan Lerale <erwan@thiscow.com>
+In-Reply-To: <1242436541.10164.194.camel@falcon>
+References: <1242426182.10164.168.camel@falcon>
+	 <1f1b08da0905151739v6bc2e5f6t57cb8e06cdda2673@mail.gmail.com>
+	 <1242436541.10164.194.camel@falcon>
 Content-Type: text/plain
-Organization: Intel Corp
-Date: Fri, 15 May 2009 18:17:06 -0700
-Message-Id: <1242436626.27006.8623.camel@localhost.localdomain>
+Date: Fri, 15 May 2009 18:23:24 -0700
+Message-Id: <1242437004.29511.202.camel@jstultz-laptop>
 Mime-Version: 1.0
-X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, 2009-05-14 at 05:49 -0700, Tejun Heo wrote:
-> Hello,
+On Sat, 2009-05-16 at 09:15 +0800, Wu Zhangjin wrote:
+> On Fri, 2009-05-15 at 17:39 -0700, john stultz wrote:
+> > On Fri, May 15, 2009 at 3:23 PM, Wu Zhangjin <wuzhangjin@gmail.com> wrote:
+> > > +static struct clocksource clocksource_mfgpt = {
+> > > +    .name = "mfgpt",
+> > > +    .rating = 1200,
+> > 
+> > Minor nit. Please read the comment over the struct clocksource
+> > definition in include/linux/clocksource.h for a guide to setting the
+> > rating value for your clocksource.
+> > 
 > 
-> Upon ack, please pull from the following git tree.
-> 
->  git://git.kernel.org/pub/scm/linux/kernel/git/tj/misc.git x86-percpu-pageattr
-> 
-> This patchset fixes subtile bug in pageattr handling when remap percpu
-> first chunk allocator is in use and implements percpu_alloc kernel
-> parameter so that allocator can be selected from boot prompt.
-> 
-> This problem was spotted by Jan Beulich.
-> 
-> The remap allocator allocates a PMD page per cpu, returns whatever is
-> unnecessary to the page allocator and remaps the PMD page into vmalloc
-> area to construct the first percpu chunk.  This is to take advantage
-> of large page mapping.  
+> as the comment describes, just like the 8253 Timer, the precision of
+> cs5536 mfgpt Timer is not good, the rating of it should be in the range
+> of 100-199? Functional for real use, but not desired?
 
-Tejun, Can you please educate me why we need to map this first percpu
-chunk (which is pre-allocated during boot and is physically contiguous)
-into vmalloc area? Perhaps even for the other dynamically allocated
-secondary chunks? (as far as I can see, all the chunk allocations seems
-to be physically contiguous and later mapped into vmalloc area)..
+That would seem reasonable to me, as it insures that should better
+clocksources become available on the hardware, it will pick the better
+hardware.
 
-That should simplify these things quite a bit(atleast for first percpu
-chunk). I am missing something obvious I guess.
+But I'll leave the final call to you.
 
-thanks,
-suresh
+I just wanted to make sure we're all using the same scale, and 1200 was
+off the charts ;)
+
+thanks
+-john
 
