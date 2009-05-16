@@ -1,172 +1,81 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbZEPU4l@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755242AbZEPVEP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755169AbZEPU4l (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 16:56:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZEPU4a
+	id S1755242AbZEPVEP (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 17:04:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753685AbZEPVD5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 16:56:30 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43557 "EHLO ogre.sisk.pl"
+	Sat, 16 May 2009 17:03:57 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43604 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752675AbZEPU43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 16:56:29 -0400
+	id S1753451AbZEPVD5 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 17:03:57 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Fabio Comolli <fabio.comolli@gmail.com>
-Subject: Re: 2.6.29.2 - WARNING: at kernel/hrtimer.c:625 hres_timers_resume+0x2f/0x45()
-Date: Sat, 16 May 2009 22:55:54 +0200
+To: Thomas Meyer <thomas@m3y3r.de>
+Subject: Re: 2.6.30-rc4: microcode: failed to init CPU1
+Date: Sat, 16 May 2009 23:04:00 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Pavel Machek <pavel@suse.cz>
-References: <b637ec0b0905041404h481463cckd4f6fb90cfd61ab2@mail.gmail.com>
-In-Reply-To: <b637ec0b0905041404h481463cckd4f6fb90cfd61ab2@mail.gmail.com>
+       Ingo Molnar <mingo@elte.hu>,
+       Jaswinder Singh Rajput <jaswinderrajput@gmail.com>,
+       Dmitry Adamushko <dmitry.adamushko@gmail.com>
+References: <1241633352.4524.3.camel@localhost.localdomain>
+In-Reply-To: <1241633352.4524.3.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-2"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905162255.55548.rjw@sisk.pl>
+Message-Id: <200905162304.01226.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 04 May 2009, Fabio Comolli wrote:
-> Hi.
-> After a successful resume from disk I get this warning:
+On Wednesday 06 May 2009, Thomas Meyer wrote:
+> Hi,
 > 
-> May  4 22:53:15 hawking kernel: ------------[ cut here ]------------
-> May  4 22:53:15 hawking kernel: WARNING: at kernel/hrtimer.c:625
-> hres_timers_resume+0x2f/0x45()
-> May  4 22:53:15 hawking kernel: Hardware name: Pavilion dv4000 (ES973EA#ABZ)
-> May  4 22:53:15 hawking kernel: hres_timers_resume() called with IRQs
-> enabled!Modules linked in: radeon(N) drm(N) michael_mic(N) arc4(N)
-> ecb(N) lib80211_crypt_tkip(N) af_packet(N) snd_pcm_oss(N)
-> snd_mixer_oss(N) snd_seq(N) microcode(N) snd_seq_device(N) edd(N)
-> cpufreq_conservative(N) cpufreq_userspace(N) cpufreq_powersave(N)
-> acpi_cpufreq(N) speedstep_lib(N) fuse(N) loop(N) dm_mod(N)
-> snd_intel8x0m(N) snd_intel8x0(N) snd_ac97_codec(N) pcmcia(N)
-> ac97_bus(N) sdhci_pci(N) sdhci(N) snd_pcm(N) thermal(N) snd_timer(N)
-> yenta_socket(N) btusb(N) iTCO_wdt(N) mmc_core(N) ipw2200(N)
-> tifm_7xx1(N) ohci1394(N) rsrc_nonstatic(N) 8139too(N) snd(N)
-> rtc_cmos(N) iTCO_vendor_support(N) video(N) processor(N) soundcore(N)
-> thermal_sys(N) i2c_i801(N) intel_agp(N) wmi(N) libipw(N) output(N)
-> led_class(N) battery(N) ac(N) 8139cp(N) tifm_core(N) ieee1394(N)
-> pcmcia_core(N) rtc_core(N) sr_mod(N) button(N) snd_page_alloc(N)
-> pcspkr(N) rtc_lib(N) i2c_core(N) hwmon(N) bluetooth(N) agpgart(N)
-> cdrom(N) joydev(N) sg(N) ext4(N) mbcache(N) jbd2(N) crc16(
-> May  4 22:53:15 hawking kernel: N) sd_mod(N) crc_t10dif(N) ata_piix(N)
-> libata(N) scsi_mod(N) ehci_hcd(N) uhci_hcd(N) usbcore(N)
-> May  4 22:53:15 hawking kernel: Supported: Yes
-> May  4 22:53:15 hawking kernel: Pid: 3533, comm: s2disk Tainted: G
->      N  2.6.29.2-6-pae #1
-> May  4 22:53:15 hawking kernel: Call Trace:
-> May  4 22:53:15 hawking kernel:  [<c010688c>] try_stack_unwind+0x51/0x11d
-> May  4 22:53:15 hawking kernel:  [<c0105ca3>] dump_trace+0x55/0xca
-> May  4 22:53:15 hawking kernel:  [<c010665f>] show_trace_log_lvl+0x33/0x3e
-> May  4 22:53:15 hawking kernel:  [<c010667a>] show_trace+0x10/0x14
-> May  4 22:53:15 hawking kernel:  [<c03727ab>] dump_stack+0x57/0x61
-> May  4 22:53:15 hawking kernel:  [<c012f2a2>] warn_slowpath+0x71/0xa8
-> May  4 22:53:16 hawking kernel:  [<c01431cb>] hres_timers_resume+0x2f/0x45
-> May  4 22:53:16 hawking kernel:  [<c0147049>] timekeeping_resume+0x11f/0x125
-> May  4 22:53:16 hawking kernel:  [<c02bdd58>] __sysdev_resume+0x14/0x38
-> May  4 22:53:16 hawking kernel:  [<c02bdedd>] sysdev_resume+0xcb/0x105
-> May  4 22:53:16 hawking kernel:  [<c0155e69>] hibernation_snapshot+0xf1/0x189
-> May  4 22:53:16 hawking kernel:  [<c0159008>] snapshot_ioctl+0x214/0x4c5
-> May  4 22:53:16 hawking kernel:  [<c01b341f>] vfs_ioctl+0x22/0x67
-> May  4 22:53:16 hawking kernel:  [<c01b397a>] do_vfs_ioctl+0x444/0x47d
-> May  4 22:53:16 hawking kernel:  [<c01b3a1a>] sys_ioctl+0x67/0x81
-> May  4 22:53:16 hawking kernel:  [<c010406b>] sysenter_do_call+0x12/0x2f
-> May  4 22:53:17 hawking kernel:  [<ffffe430>] 0xffffe430
-> May  4 22:53:17 hawking kernel: ---[ end trace 8cd3b732941f0f91 ]---
+> With 2.6.30-rc4 I see this after resume from ram or disk. Here log from resume from disk:
 > 
+> [ 6643.757890] Breaking affinity for irq 23
+> [ 6643.759029] kvm: disabling virtualization on CPU1
+> [ 6643.859360] CPU 1 is now offline
+> [ 6643.859366] SMP alternatives: switching to UP code
+> [ 6643.869609] CPU1 is down
+> [ 6643.869682] Extended CMOS year: 2000
+> [ 6643.869786] PM: Creating hibernation image: 
+> [ 6643.872676] PM: Need to copy 124075 pages
+> [ 6643.872676] Intel machine check architecture supported.
+> [ 6643.872676] Intel machine check reporting enabled on CPU#0.
+> [ 6643.872676] PM: Restoring platform NVS memory
+> [ 6643.872676] Extended CMOS year: 2000
+> [ 6643.872676] Enabling non-boot CPUs ...
+> [ 6643.872676] SMP alternatives: switching to SMP code
+> [ 6643.879652] CPU 1 irqstacks, hard=c20d6000 soft=c20d7000
+> [ 6643.879661] Booting processor 1 APIC 0x1 ip 0x6000
+> [ 6643.869076] Initializing CPU#1
+> [ 6643.869076] Calibrating delay using timer specific routine.. 3663.43 BogoMIPS (lpj=6103090)
+> [ 6643.869076] CPU: L1 I cache: 32K, L1 D cache: 32K
+> [ 6643.869076] CPU: L2 cache: 2048K
+> [ 6643.869076] CPU: Physical Processor ID: 0
+> [ 6643.869076] CPU: Processor Core ID: 1
+> [ 6643.869076] Intel machine check architecture supported.
+> [ 6643.869076] Intel machine check reporting enabled on CPU#1.
+> [ 6643.973311] CPU1: Genuine Intel(R) CPU           T2400  @ 1.83GHz stepping 08
+> [ 6643.973364] kvm: enabling virtualization on CPU1
+> [ 6643.973521] Switched to high resolution mode on CPU 1
+> [ 6643.982900] microcode: failed to init CPU1
+> [ 6643.983528] CPU1 is up
+> [ 6643.984529] ACPI: Waking up from system sleep state S4
+> [ 6644.290917] pci 0000:00:1e.0: power state changed by ACPI to D0
+> [ 6644.291103] ata_piix 0000:00:1f.1: power state changed by ACPI to D0
+> [ 6644.291139] ata_piix 0000:00:1f.1: restoring config space at offset 0x1 (was 0x2800001, writing 0x2800005)
+> [ 6644.291187] ata_piix 0000:00:1f.2: restoring config space at offset 0x1 (was 0x2b00003, writing 0x2b00007)
+> [ 6644.297593] pci 0000:00:07.0: PME# disabled
 > 
-> This causes a second hibernate-resume cycle to hang solid during
-> resume. Power cycle is needed.
-> 
-> I'm not sure if this is a regression wrt 2.6.28.7 (my previous kernel)
-> because I changed the DRI driver from fglrx to radeon and also
-> upgraded the X.org userspace. I didn't have any hibernation-related
-> problem with any previous kernels for sure.
-> 
-> It may be related to http://lkml.org/lkml/2009/4/19/133 but the
-> backtrace is somewhat different.
-> 
-> Please let me know if you need more details.
+> Is this an error/problem?
 
-I think this is a cpufreq problem.
+Not sure.
 
-Please try to reproduce the problem with the appended patch applied.
+CCing the people who have worked with the Intel microcode code recently.
 
 Thanks,
 Rafael
-
-
----
-
-    PM: Warn if interrupts are enabled during suspend-resume of sysdevs
-    
-    Sysdevs have to be suspended and resumed with interrupts disabled and
-    things usually break in a way that's difficult to debug if one of
-    sysdev drivers enables interrupts by mistake during suspend or
-    resume.  Add extra checks that will generate warnings in such cases.
-    
-    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-
-diff --git a/drivers/base/sys.c b/drivers/base/sys.c
-index 3236b43..9742a78 100644
---- a/drivers/base/sys.c
-+++ b/drivers/base/sys.c
-@@ -343,11 +343,15 @@ static void __sysdev_resume(struct sys_device *dev)
- 	/* First, call the class-specific one */
- 	if (cls->resume)
- 		cls->resume(dev);
-+	WARN_ONCE(!irqs_disabled(),
-+		"Interrupts enabled after %pF\n", cls->resume);
- 
- 	/* Call auxillary drivers next. */
- 	list_for_each_entry(drv, &cls->drivers, entry) {
- 		if (drv->resume)
- 			drv->resume(dev);
-+		WARN_ONCE(!irqs_disabled(),
-+			"Interrupts enabled after %pF\n", drv->resume);
- 	}
- }
- 
-@@ -377,6 +381,9 @@ int sysdev_suspend(pm_message_t state)
- 	if (ret)
- 		return ret;
- 
-+	WARN_ONCE(!irqs_disabled(),
-+		"Interrupts enabled while suspending system devices\n");
-+
- 	pr_debug("Suspending System Devices\n");
- 
- 	list_for_each_entry_reverse(cls, &system_kset->list, kset.kobj.entry) {
-@@ -393,6 +400,9 @@ int sysdev_suspend(pm_message_t state)
- 					if (ret)
- 						goto aux_driver;
- 				}
-+				WARN_ONCE(!irqs_disabled(),
-+					"Interrupts enabled after %pF\n",
-+					drv->suspend);
- 			}
- 
- 			/* Now call the generic one */
-@@ -400,6 +410,9 @@ int sysdev_suspend(pm_message_t state)
- 				ret = cls->suspend(sysdev, state);
- 				if (ret)
- 					goto cls_driver;
-+				WARN_ONCE(!irqs_disabled(),
-+					"Interrupts enabled after %pF\n",
-+					cls->suspend);
- 			}
- 		}
- 	}
-@@ -452,6 +465,9 @@ int sysdev_resume(void)
- {
- 	struct sysdev_class *cls;
- 
-+	WARN_ONCE(!irqs_disabled(),
-+		"Interrupts enabled while resuming system devices\n");
-+
- 	pr_debug("Resuming System Devices\n");
- 
- 	list_for_each_entry(cls, &system_kset->list, kset.kobj.entry) {
