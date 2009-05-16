@@ -1,62 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZEPBPq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756177AbZEPBQI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755220AbZEPBPq (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 21:15:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752746AbZEPBPh
+	id S1756177AbZEPBQI (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 21:16:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754416AbZEPBPv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 21:15:37 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:34637 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752694AbZEPBPg (ORCPT
+	Fri, 15 May 2009 21:15:51 -0400
+Received: from rv-out-0506.google.com ([209.85.198.224]:63596 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754163AbZEPBPu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 21:15:36 -0400
+	Fri, 15 May 2009 21:15:50 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=Jom2Alm97KDaa9omgMwH92gs3P8GZQstUxPKAFGZyJ1LV9fEv9JKIkyFF3OI0DLgyS
-         6oHmgsTnltL3DAFRoQ/N8l73mIEXOkEoIhRahh6oOV/Bw77YgkHc18v5+KcarJuDCw5z
-         5RyOzXnOkJe74neU0nhD2S1TPWmj9cjldUBwQ=
-Message-ID: <4A0E13B7.90200@gmail.com>
-Date: Fri, 15 May 2009 19:15:35 -0600
-From: Robert Hancock <hancockrwd@gmail.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Sudarshan Soma <sudarshan12s@gmail.com>
-CC: linux-kernel@vger.kernel.org
-Subject: Re: patch related to SIGSEGV handling in multiple threads and hung
-    threads
-References: <de72ca4e0905150405w495a359ei7c4a625ff82edb11@mail.gmail.com>
-In-Reply-To: <de72ca4e0905150405w495a359ei7c4a625ff82edb11@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+        h=subject:from:reply-to:to:cc:in-reply-to:references:content-type
+         :organization:date:message-id:mime-version:x-mailer
+         :content-transfer-encoding;
+        b=wTJd861BVXwqf0wl9DT5VreohgHHqxAe/FPuc7QvMh+ooIJrX/tzJW61u4WrhrtD62
+         fFF9qIgRnJEDZVmip1hfhtkfM9mafEEvAipul+lM++K2vzwkNrjuh34/d5V0xO3xhmBf
+         PLvfYOnEsRCTF0yshhMmxCMRfJYqaoeIVkb9c=
+Subject: Re: [PATCH 23/30] loongson: CS5536 MFGPT as system clock source 
+ support
+From: Wu Zhangjin <wuzhangjin@gmail.com>
+Reply-To: wuzhangjin@gmail.com
+To: john stultz <johnstul@us.ibm.com>
+Cc: linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>,
+       linux-kernel@vger.kernel.org, Arnaud Patard <apatard@mandriva.com>,
+       loongson-dev@googlegroups.com, zhangfx@lemote.com, yanh@lemote.com,
+       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
+       Erwan Lerale <erwan@thiscow.com>
+In-Reply-To: <1f1b08da0905151739v6bc2e5f6t57cb8e06cdda2673@mail.gmail.com>
+References: <1242426182.10164.168.camel@falcon>
+	 <1f1b08da0905151739v6bc2e5f6t57cb8e06cdda2673@mail.gmail.com>
+Content-Type: text/plain
+Organization: DSLab, Lanzhou University, China
+Date: Sat, 16 May 2009 09:15:41 +0800
+Message-Id: <1242436541.10164.194.camel@falcon>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.3 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Sudarshan Soma wrote:
-> Hi ,
-> I have a program which will create multiple threads. One of the thread
-> receives SIGSEGV and it prints stacktrace in its handler and calls
-> _exit(-1). The call to exit wont terminate all threads in  a process
-> and hence thread hangs here. This causes resouce leaks and other
-> problems. It is seen only on linux 2.4.20.
+On Fri, 2009-05-15 at 17:39 -0700, john stultz wrote:
+> On Fri, May 15, 2009 at 3:23 PM, Wu Zhangjin <wuzhangjin@gmail.com> wrote:
+> > +static struct clocksource clocksource_mfgpt = {
+> > +    .name = "mfgpt",
+> > +    .rating = 1200,
 > 
-> For printing stacktrace it uses
-> __builtin_return_address and __builtin_frame_address
+> Minor nit. Please read the comment over the struct clocksource
+> definition in include/linux/clocksource.h for a guide to setting the
+> rating value for your clocksource.
 > 
-> 
-> The same program works fine on linux 2.6.26 kernel. It  will exit the
-> whole process when one of its thread dies as above.
-> 
-> 
-> Please let me know the patch details or any workaround, if any. This
-> is a bit urgent, so please let me know for any pointers , if any
-> 
-> Thanks and Best Regards,
-> Pavan.
 
-That doesn't seem surprising, the old LinuxThreads thread implementation 
-normally used with the 2.4 kernels was pretty poor. However it would 
-likely be better to re-raise the signal rather than trying to exit out 
-of the signal handler.
+as the comment describes, just like the 8253 Timer, the precision of
+cs5536 mfgpt Timer is not good, the rating of it should be in the range
+of 100-199? Functional for real use, but not desired?
+
+thanks!
+Wu Zhangjin
+
