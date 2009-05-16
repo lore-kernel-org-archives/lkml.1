@@ -1,22 +1,34 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757025AbZEPArV (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Fri, 15 May 2009 20:47:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755673AbZEPArI
+	id S1755476AbZEPJVK (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sat, 16 May 2009 05:21:10 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753666AbZEPJUy
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 20:47:08 -0400
-Received: from xm16.infosec.fedex.com ([199.81.195.42]:43247 "EHLO
-	xm16.infosec.fedex.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755118AbZEPArH (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 20:47:07 -0400
-X-Greylist: delayed 3454 seconds by postgrey-1.27 at vger.kernel.org; Fri, 15 May 2009 20:47:07 EDT
-X-AuditID: c75144ef-a5f1cbb000000bb4-10-4a0dff83f448
-Message-Id: <20090515234915.4698D4A0010@xm19.infosec.fedex.com>
-Date: Fri, 15 May 2009 18:49:15 -0500 (CDT)
-From: aabea@yahoo.com
-To: undisclosed-recipients:;
-X-Brightmail-Tracker: AAAABA7a1WoO2+BgDtvgYQ7b4bY=
+	Sat, 16 May 2009 05:20:54 -0400
+Received: from simmts7-qfe0.srvr.bell.ca ([206.47.199.165]:54324 "EHLO
+	simmts7-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753364AbZEPJUy convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 05:20:54 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AratAGcWDkrOL8cR/2dsb2JhbACBT4JRiT8ziEmBUrdpg24FhiI
+X-Mailer: Openwave WebEngine, version 2.8.10 (webedge20-101-191-20030113)
+X-Originating-IP: [200.65.129.2]
+From: <brantford@bellnet.ca>
+Reply-To: drpatrick.joseph01@live.com
+To: <info@winner.org>
+Subject: ***JACKPOT JOY***WINNER
+Date: Sat, 16 May 2009 5:20:50 -0400
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8BIT
+Message-Id: <20090516092050.BYII1679.simmts7-srv.bellnexxia.net@simip9-ac.srvr.bell.ca>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
+
+You have won £750,000 GBP.
+
+contact with your name, age, country and address to,
+
+Dr Joseph Patrick  Email agenttoffices@gmail.com
 
