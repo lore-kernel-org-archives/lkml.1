@@ -1,44 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758220AbZEPXO7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757397AbZEPXUz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758220AbZEPXO7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 19:14:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbZEPXOt
+	id S1757397AbZEPXUz (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 19:20:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753820AbZEPXUm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 19:14:49 -0400
-Received: from smtp.unchartedbackwaters.co.uk ([78.110.170.111]:36594 "EHLO
-	smtp.unchartedbackwaters.co.uk" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1754829AbZEPXOs (ORCPT
+	Sat, 16 May 2009 19:20:42 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:33216 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752464AbZEPXUl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 19:14:48 -0400
-X-Greylist: delayed 492 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 May 2009 19:14:48 EDT
-Message-ID: <4A0F46F9.6080406@unchartedbackwaters.co.uk>
-Date: Sun, 17 May 2009 00:06:33 +0100
-From: Francis Russell <francis+lkml@unchartedbackwaters.co.uk>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
-MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org
-Subject: Spurious power button event on resume from hibernate on Samsung R560
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 16 May 2009 19:20:41 -0400
+Date: Sat, 16 May 2009 16:20:17 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Andi Kleen <andi@firstfloor.org>
+Cc: "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
+       netdev@vger.kernel.org, rusty@rustcorp.com.au
+Subject: Re: [BUG 2.6.30-rc1] panic when loading oprofile
+Message-Id: <20090516162017.2525511c.akpm@linux-foundation.org>
+In-Reply-To: <87fxf6pmh5.fsf@basil.nowhere.org>
+References: <alpine.WNT.2.00.0905131327430.7052__41366.1100705669$1242253861$gmane$org@jbrandeb-desk1.amr.corp.intel.com>
+	<87fxf6pmh5.fsf@basil.nowhere.org>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi all,
+On Fri, 15 May 2009 14:41:26 +0200 Andi Kleen <andi@firstfloor.org> wrote:
 
-I have a Samsung R560 laptop running amd64 Debian testing with a
-2.6.29.3 kernel compiled from vanilla sources. Upon resume from
-hibernate, it appears that the OS receives a power button event that
-causes the system to shut down. I've verified this the best I can by
-killing acpid then watching the output of /proc/acpi/event during
-hibernate (triggered by writing 'disk' to /sys/power/state).
+> "Brandeburg, Jesse" <jesse.brandeburg@intel.com> writes:
+> 
+> Hi Jesse,
+> 
+> > when starting a profile run on the latest net-next kernel, I'm currently 
+> > trying to reproduce on 2.6.30-rc5 stock.
+> 
+> Were you able to reproduce it?
+> 
+> >
+> > config available upon request, arch=x86_64, recent (F10 or newer) oprofile 
+> > userspace.
+> 
+> it looks like two bugs: oprofile didn't catch a NMI that belongs to 
+> it (most likely) and the NMI watchdog referenced a NULL pointer
+> while processing an NMI.
+> 
+> Did you have the nmi watchdog enabled on the command line?
+> 
+> >
+> > BUG: unable to handle kernel NULL pointer dereference at (null)
+> > IP: [<ffffffff8066080a>] nmi_watchdog_tick+0xa1/0x1d6
+> 
+> I don't get the same code as you. But the oopsing instruction in your
+> oops is
+> 
+>   2b:*  44 0f a3 28             bt     %r13d,(%rax)     <-- trapping instruction
+> 
+> with rax == 0 and I suspect it's one of the new cpu mask checks
+> I would try reverting
+> 
+> fcc5c4a2feea3886dc058498b28508b2731720d5
+> 2f537a9f8e82f55c241b002c8cfbf34303b45ada
+> fcef8576d8a64fc603e719c97d423f9f6d4e0e8b
+> 
+> and see which one causes it. That would only fix the NMI watchdog bug
+> of course.
+> 
+> The oprofile not catching a event problem would be still open then.
+> I think the checks for overflowed counters are not 100% perfect
+> so that could happen. I have some patches in the works to use the new
+> global status register on arch perfmon 2, with that the overflow
+> check is somewhat more reliable. But that's more work.
+> 
 
-This problem looked very similar to that discussed in another Bugzilla
-entry (http://bugzilla.kernel.org/show_bug.cgi?id=6612) so I had I
-extended the changes made by the patch in the obvious way to the S4
-state but it made no difference. Is this something the kernel should be
-handling? How can I debug this further?
+Ping?
 
-Many thanks,
+This is in Rafael's regression list but I suspect that it's a
+linux-next-only thing?
 
-Francis
