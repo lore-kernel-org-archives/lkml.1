@@ -1,82 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbZEPJmu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757165AbZEPJvg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755472AbZEPJmu (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 05:42:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758556AbZEPJmG
+	id S1757165AbZEPJvg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 05:51:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755096AbZEPJv0
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 05:42:06 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:50217 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758599AbZEPJmD convert rfc822-to-8bit (ORCPT
+	Sat, 16 May 2009 05:51:26 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:54994 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754863AbZEPJvZ (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 05:42:03 -0400
+	Sat, 16 May 2009 05:51:25 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=aqwW2hGnMYjW/c49SQkUn7VA6sPLgHpA6SKrgFLlOmGkKxUtL/T2zLCZaG6Zo3IBMv
-         XmXtva0GxF+H8XUzJYLQpp6cTbEiAS70kcfOFNKmtukLKe4F69fOOGu+ZTlXXGJRNPOU
-         ox99st7d83KlhGIAtEDP/no4t1XcL1SI5LLkM=
-MIME-Version: 1.0
-In-Reply-To: <200905152350.27270.rjw@sisk.pl>
-References: <38b2ab8a0905030922x722a45f3gf0790b5b90b0f2b3@mail.gmail.com>
-	 <200905031828.14468.florian@openwrt.org>
-	 <38b2ab8a0905031012m5d50b68es22e3c80cfa72fd60@mail.gmail.com>
-	 <200905152350.27270.rjw@sisk.pl>
-Date: Sat, 16 May 2009 11:42:01 +0200
-Message-ID: <8db1092f0905160242v7264a642m9978dd761c160e0c@mail.gmail.com>
-Subject: Re: v2.6.30-rc4: b44: eth0: BUG! Timeout waiting for bit 00000002 of 
-	register 42c to clear.
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Francis Moreau <francis.moro@gmail.com>,
-       Florian Fainelli <florian@openwrt.org>, netdev@vger.kernel.org,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=JW4BIvS4c3SYBgrNgJTF1Kdp7w2k/PRWiGSWCuQh76O6WVIE/dpkj7D3rXSsBy98Lk
+         Q1Ew0wfz31lpxvVRiPxilH14oqUd8aG7k5KsfLydAil3cq80B4h8hZWZ/k+hIPF/5rmp
+         lyJsV5NWWjPTByHKGR/FVmNGTU6yg9I/j6sm8=
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: linux-kernel@vger.kernel.org
+Cc: Pekka Enberg <penberg@cs.helsinki.fi>, Ingo Molnar <mingo@elte.hu>,
+       Al Viro <viro@zeniv.linux.org.uk>
+Subject: [PATCH 1/4] fs: introduce __getname_gfp()
+Date: Sat, 16 May 2009 11:51:17 +0200
+Message-Id: <1242467480-14378-1-git-send-email-vegard.nossum@gmail.com>
+X-Mailer: git-send-email 1.6.2.rc0.61.g5cd12
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/15 Rafael J. Wysocki <rjw@sisk.pl>:
-> On Sunday 03 May 2009, Francis Moreau wrote:
->> Hello Florian,
->>
->> On Sun, May 3, 2009 at 6:28 PM, Florian Fainelli <florian@openwrt.org> wrote:
->> >> I got this since I updated my kernel from 2.6.29 to 2.6.30-rc4.
->> >>
->> >> Let me know if you need more information.
->> >
->> > Is this seen on a Broadcom 47xx/53xx platform or on a computer with a PCI b44
->> > card ?
->> >
->>
->> $ lspci -vv
->>
->> 06:01.0 Ethernet controller: Broadcom Corporation BCM4401-B0 100Base-TX (rev 02)
->>         Subsystem: Acer Incorporated [ALI] Device 0090
->>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
->> ParErr- Stepping- SERR- FastB2B- DisINTx-
->>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
->> <TAbort- <MAbort- >SERR- <PERR- INTx-
->>         Latency: 64
->>         Interrupt: pin A routed to IRQ 21
->>         Region 0: Memory at d2000000 (32-bit, non-prefetchable) [size=8K]
->>         Capabilities: <access denied>
->>         Kernel driver in use: b44
->>
->>
->> Let me know if you need more details.
->
-> Can anyone please tell me what the status of this report is?
->
+The purpose of this change is to allow __getname() users to pass a
+custom GFP mask to kmem_cache_alloc(). This is needed for annotating
+a certain kmemcheck false positive.
 
-Hmm. I also have this message in dmesg when always back to Linux from
-Windows XP, but only in this case and as long as I remember.
+Cc: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Vegard Nossum <vegard.nossum@gmail.com>
+---
+ include/linux/fs.h |    5 +++--
+ 1 files changed, 3 insertions(+), 2 deletions(-)
 
-02:0e.0 Ethernet controller: Broadcom Corporation BCM4401-B0 100Base-TX (rev 02)
-
-Regards
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 5bed436..e45ad64 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -1924,8 +1924,9 @@ extern void __init vfs_caches_init(unsigned long);
+ 
+ extern struct kmem_cache *names_cachep;
+ 
+-#define __getname()	kmem_cache_alloc(names_cachep, GFP_KERNEL)
+-#define __putname(name) kmem_cache_free(names_cachep, (void *)(name))
++#define __getname_gfp(gfp)	kmem_cache_alloc(names_cachep, (gfp))
++#define __getname()		__getname_gfp(GFP_KERNEL)
++#define __putname(name)		kmem_cache_free(names_cachep, (void *)(name))
+ #ifndef CONFIG_AUDITSYSCALL
+ #define putname(name)   __putname(name)
+ #else
 -- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+1.6.0.6
+
