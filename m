@@ -1,71 +1,43 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbZEPUKW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753099AbZEPUdt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757235AbZEPUKW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 16:10:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZEPUKG
+	id S1753099AbZEPUdt (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 16:33:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751388AbZEPUdg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 16:10:06 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:48484 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755143AbZEPUKF convert rfc822-to-8bit (ORCPT
+	Sat, 16 May 2009 16:33:36 -0400
+Received: from 74-93-104-97-Washington.hfc.comcastbusiness.net ([74.93.104.97]:45305
+	"EHLO sunset.davemloft.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751278AbZEPUdf (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 16:10:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=numWpTZIYYK/Xl640XN6FwDBJ5yYHL2XX2CKHkZslbjoP2n38XAUx5CX/Sja7nZsP7
-         AUyQULUcGJunSqoowwXQMIvBqTVrmsQGRgHrVQPVPkVtzYNIb0hswEpzibo3aFYLH/m+
-         Y1f3cUQ68CWULDXHQKUnsQGQvWolm/3IR131o=
-MIME-Version: 1.0
-In-Reply-To: <1241620755-22133-2-git-send-email-nigel@tuxonice.net>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	 <1241620755-22133-2-git-send-email-nigel@tuxonice.net>
-Date: Sat, 16 May 2009 22:10:04 +0200
-Message-ID: <19f34abd0905161310va93c499h158f3d7d5e687313@mail.gmail.com>
-Subject: Re: [PATCH 1/19] TuxOnIce: Documentation
-From: Vegard Nossum <vegard.nossum@gmail.com>
-To: Nigel Cunningham <nigel@tuxonice.net>
-Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
-       tuxonice-devel@lists.tuxonice.net
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sat, 16 May 2009 16:33:35 -0400
+Date: Sat, 16 May 2009 13:33:33 -0700 (PDT)
+Message-Id: <20090516.133333.92480462.davem@davemloft.net>
+To: linville@tuxdriver.com
+Cc: linux-wireless@vger.kernel.org, netdev@vger.kernel.org,
+       linux-kernel@vger.kernel.org
+Subject: Re: pull request: wireless-2.6 2009-05-12
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20090512145423.GA3773@tuxdriver.com>
+References: <20090512145423.GA3773@tuxdriver.com>
+X-Mailer: Mew version 6.2.51 on Emacs 22.1 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+From: "John W. Linville" <linville@tuxdriver.com>
+Date: Tue, 12 May 2009 10:54:24 -0400
 
-Just a very small comment below.
+> Another round of fixes intended for 2.6.30.  In particular, "mac80211:
+> avoid NULL ptr deref when finding max_rates in PID and minstrel" fixes a
+> bug that is a by-product of a fix that has already gone to Linus...oops!
+> As for the others, the iwlwifi patch adds PCI IDs and corrects antenna
+> configurations for a couple of devices, the rtl8187 corrects a problem
+> some people were hitting relating to using non-DMA buffers for USB
+> messages, the airo fix corrects an possible buffer overflow, and the
+> ath5k fix documents the oops it is correcting.
 
-2009/5/6 Nigel Cunningham <nigel@tuxonice.net>:
-> This patch creates new Documentation/power files for describing
-> TuxOnIce, and a MAINTAINERS entry for the code.
->
-> Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
-> ---
->  Documentation/power/tuxonice-internals.txt |  477 ++++++++++++++
->  Documentation/power/tuxonice.txt           |  924 ++++++++++++++++++++++++++++
->  MAINTAINERS                                |    7 +
->  3 files changed, 1408 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/power/tuxonice-internals.txt
->  create mode 100644 Documentation/power/tuxonice.txt
-
-[...]
-
-> +   Most people will only want to hibernate to a local file. To achieve that, do
-> +   something along the lines of:
-> +
-> +   echo "TuxOnIce" > /hibernation-file
-> +   dd if=/dev/zero bs=1M count=512 >> hibernation-file
-
-It seems that a / is missing here?
-
-> +
-> +   This will create a 512MB file called /hibernation-file. To get TuxOnIce to use
-> +   it:
-> +
-> +   echo /hibernation-file > /sys/power/tuxonice/file/target
-
-
-Vegard
+Pulled, Thanks John.  I'll try to get this to Linus over the
+weekend.
