@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758008AbZEPWPk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757852AbZEPWP7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758008AbZEPWPk (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 18:15:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755514AbZEPWNw
+	id S1757852AbZEPWP7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 18:15:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757505AbZEPWOj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 18:13:52 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:43851 "EHLO ogre.sisk.pl"
+	Sat, 16 May 2009 18:14:39 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43860 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755401AbZEPWNu convert rfc822-to-8bit (ORCPT
+	id S1757479AbZEPWOi convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 18:13:50 -0400
+	Sat, 16 May 2009 18:14:38 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "Dan Williams" <dan.j.williams@intel.com>,
-       "Stephen Hemminger" <shemminger@vyatta.com>
+       "Gregory Haskins" <ghaskins@novell.com>,
+       "H. Peter Anvin" <hpa@zytor.com>, "Sam Ravnborg" <sam@ravnborg.org>
 References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
 In-Reply-To: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -20,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <385Pu-agh7M.A.YkC.xZzDKB@chimera>
-Subject: [Bug #13116] Can't boot with nosmp
+Message-ID: <385Pu-agh7M.A.vUC.tZzDKB@chimera>
+Subject: [Bug #13119] Trouble with make-install from a NFS mount
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 16 May 2009 21:20:37 +0200 (CEST)
+Date: Sat, 16 May 2009 21:20:38 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -36,11 +36,11 @@ from 2.6.29.  Please verify if it still should be listed and let me know
 (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13116
-Subject		: Can't boot with nosmp
-Submitter	: Stephen Hemminger <shemminger@vyatta.com>
-Date		: 2009-04-15 4:18 (32 days old)
-References	: http://marc.info/?l=linux-kernel&m=123976917817920&w=4
-Handled-By	: Dan Williams <dan.j.williams@intel.com>
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13119
+Subject		: Trouble with make-install from a NFS mount
+Submitter	: Gregory Haskins <ghaskins@novell.com>
+Date		: 2009-04-14 21:32 (33 days old)
+References	: http://marc.info/?l=linux-kernel&m=123974482327044&w=4
+Handled-By	: H. Peter Anvin <hpa@zytor.com>
 
 
