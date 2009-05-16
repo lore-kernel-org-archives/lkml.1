@@ -1,95 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758611AbZEPJws@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757309AbZEPJ6V@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758611AbZEPJws (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 05:52:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757309AbZEPJwf
+	id S1757309AbZEPJ6V (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 05:58:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754863AbZEPJ6M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 05:52:35 -0400
-Received: from yw-out-2324.google.com ([74.125.46.28]:17750 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758336AbZEPJwe (ORCPT
+	Sat, 16 May 2009 05:58:12 -0400
+Received: from mx3.schottelius.org ([77.109.138.221]:49531 "EHLO
+	mx3.schottelius.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754725AbZEPJ6M (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 05:52:34 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:sender:reply-to:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=IahaUzTXFOm1Z7cEK6Abn/qyQgqfgOpO7cGeel5j+XSuQwJlXlrHK9LaG2MoBvCP/t
-         83PoGwhTTYffTWsRIlqHNedu4JABU6LaqqJbTpPfaLAb0+haUJ4RQhR7ReGFpz51ICDy
-         OS8yiU4XYNxWur/XajULR80lzf4nlpz4DAh/U=
+	Sat, 16 May 2009 05:58:12 -0400
+Date: Sat, 16 May 2009 11:58:03 +0200
+From: Nico Schottelius <nico-linux-20090330@schottelius.org>
+To: Sam Ravnborg <sam@ravnborg.org>
+Cc: Jeff Garzik <jeff@garzik.org>,
+       Nico Schottelius <nico-linux-20090330@schottelius.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: setlocalversion bug [Was: Linux 2.6.30-rc6]
+Message-ID: <20090516095803.GA1724@ikn.schottelius.org>
+Mail-Followup-To: Nico Schottelius <nico-linux-20090330@schottelius.org>,
+	Sam Ravnborg <sam@ravnborg.org>, Jeff Garzik <jeff@garzik.org>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+References: <alpine.LFD.2.01.0905152120140.3301@localhost.localdomain> <4A0E62D4.5080004@garzik.org> <20090516084801.GA16044@uranus.ravnborg.org>
 MIME-Version: 1.0
-Reply-To: Tobias_Mueller@twam.info
-In-Reply-To: <20090515023202.57387cb2.const@mimas.ru>
-References: <17be05570905130710s1192729cqafa09127f6c34bf9@mail.gmail.com>
-	 <20090513151415.6e84fd82.akpm@linux-foundation.org>
-	 <17be05570905140208n5fd695aayfad221808f70ac21@mail.gmail.com>
-	 <20090515010947.4016ba66.const@mimas.ru>
-	 <17be05570905141323l31ee6f9o71698e57aec4b698@mail.gmail.com>
-	 <20090515023202.57387cb2.const@mimas.ru>
-Date: Sat, 16 May 2009 11:52:35 +0200
-X-Google-Sender-Auth: affdbee5e880e155
-Message-ID: <17be05570905160252l3ffc1923xf5031702947948a6@mail.gmail.com>
-Subject: Re: [PATCH 001/001] leds: alix-leds2 fixed for Award BIOS
-From: =?UTF-8?Q?Tobias_M=C3=BCller?= <Tobias_Mueller@twam.info>
-To: Constantin Baranov <const@mimas.ru>
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-kernel@vger.kernel.org,
-       Richard Purdie <rpurdie@rpsys.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="TB36FDmn/VVEgNH/"
+Content-Disposition: inline
+In-Reply-To: <20090516084801.GA16044@uranus.ravnborg.org>
+User-Agent: echo $message | gpg -e $sender  -s | netcat mailhost 25
+X-Unix-Info: http://unix.schottelius.org/
+X-Netzseite: http://nico.schottelius.org/
+X-System-Info: ikn (Linux 2.6.30-rc5-next-20090515-05297-g9bbe396 x86_64)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/14 Constantin Baranov <const@mimas.ru>:
-> OK, 'double' initialization seems good.
-> I will test it on my ALIX.2c3 later.
-Did you get some results>
 
-> It should be stated in the Kconfig help message that the 'force' is
-> required for boards with Award BIOS.
-I added this.
+--TB36FDmn/VVEgNH/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-From: Tobias Mueller <Tobias_Mueller@twam.info>
+Sam Ravnborg [Sat, May 16, 2009 at 10:48:01AM +0200]:
+> On Sat, May 16, 2009 at 02:53:08AM -0400, Jeff Garzik wrote:
+> > "2.6.30-rc6-00000-rc6" seems like something is broken, as building a=20
+> > released version from git always gave me a proper "2.6.30-rc5"-style=20
+> > version, as expected.
+>=20
+> Hi Nico.
+>=20
+> This looks like something introduced by:=20
+> a182ad3d0f858f50bb719a48bb35a013e12366c5
+> ("kbuild: fix scripts/setlocalversion with git")
+>=20
+> Can you take a look at this.
 
-Added initialisation of GPIO ports for compatibility with boards with Award
-BIOS (e.g. ALIX.3D3).
-Signed-off-by: Tobias Mueller <Tobias_Mueller@twam.info>
----
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 7427136..ecf1b9c 100644
---- a/linux-2.6.29.3-org/drivers/leds/Kconfig
-+++ b/linux-2.6.29.3/drivers/leds/Kconfig
-@@ -68,6 +68,7 @@ config LEDS_ALIX2
- 	depends on LEDS_CLASS && X86 && EXPERIMENTAL
- 	help
- 	  This option enables support for the PCEngines ALIX.2 and ALIX.3 LEDs.
-+	  You have to set leds.alix2.force=1 for boards with Award BIOS.
+Sure, I'm just on the way to the train, will send you a fix
+this night.
 
- config LEDS_H1940
- 	tristate "LED Support for iPAQ H1940 device"
-diff --git a/drivers/leds/leds-alix2.c b/drivers/leds/leds-alix2.c
-index ddbd773..731d4ee 100644
---- a/linux-2.6.29.3-org/drivers/leds/leds-alix2.c
-+++ b/linux-2.6.29.3/drivers/leds/leds-alix2.c
-@@ -14,7 +14,7 @@
+Nico
 
- static int force = 0;
- module_param(force, bool, 0444);
--MODULE_PARM_DESC(force, "Assume system has ALIX.2 style LEDs");
-+MODULE_PARM_DESC(force, "Assume system has ALIX.2/ALIX.3 style LEDs");
+--=20
+Think about Free and Open Source Software (FOSS).
+http://nico.schottelius.org/documentations/foss/the-term-foss/
 
- struct alix_led {
- 	struct led_classdev cdev;
-@@ -155,6 +155,11 @@ static int __init alix_led_init(void)
- 		goto out;
- 	}
+PGP: BFE4 C736 ABE5 406F 8F42  F7CF B8BE F92A 9885 188C
 
-+	/* enable output on GPIO for LED 1,2,3 */
-+	outl(1 << 6, 0x6104);
-+	outl(1 << 9, 0x6184);
-+	outl(1 << 11, 0x6184);
-+
- 	pdev = platform_device_register_simple(KBUILD_MODNAME, -1, NULL, 0);
- 	if (!IS_ERR(pdev)) {
- 		ret = platform_driver_probe(&alix_led_driver, alix_led_probe);
+--TB36FDmn/VVEgNH/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.9 (GNU/Linux)
+
+iEYEARECAAYFAkoOjisACgkQuL75KpiFGIxkEACg2VfdrJe2ALfGlMe2lIO+xU8t
+/vwAniFgqZJsI0ltUPd2eEgJewb3Fq36
+=F/IF
+-----END PGP SIGNATURE-----
+
+--TB36FDmn/VVEgNH/--
