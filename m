@@ -1,98 +1,172 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755568AbZEPU4T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755169AbZEPU4l@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755568AbZEPU4T (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 16:56:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752675AbZEPU4H
+	id S1755169AbZEPU4l (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 16:56:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752974AbZEPU4a
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 16:56:07 -0400
-Received: from fg-out-1718.google.com ([72.14.220.159]:35971 "EHLO
-	fg-out-1718.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752665AbZEPU4E (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 16:56:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Vr77jNf0llPLnPFwHW9KO50vWRj2wUTn0bs8IjFU3MF6AzqPm66WyEhOwhlDDba1Md
-         4/ULL1c7s+tet/a+SmDfsOHdDCjl4OkgkAofEko7Ehe7qL4dhApiqXnsQQf3p8x0mcmr
-         DrRNrsIH3r7hkELVie9rHHXlKjMbW9GkmbFRg=
-Date: Sat, 16 May 2009 22:55:58 +0200
-From: Luca Tettamanti <kronos.it@gmail.com>
-To: linux-kernel@vger.kernel.org
-Cc: linux-cifs-client@lists.samba.org
-Subject: Re: [2.6.30-rc6] cifs_close: NULL pointer dereference
-Message-ID: <20090516205558.GA20346@nb-core2.darkstar.lan>
-References: <20090516162813.GA18098@nb-core2.darkstar.lan>
+	Sat, 16 May 2009 16:56:30 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:43557 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752675AbZEPU43 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 16:56:29 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Subject: Re: 2.6.29.2 - WARNING: at kernel/hrtimer.c:625 hres_timers_resume+0x2f/0x45()
+Date: Sat, 16 May 2009 22:55:54 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@suse.cz>
+References: <b637ec0b0905041404h481463cckd4f6fb90cfd61ab2@mail.gmail.com>
+In-Reply-To: <b637ec0b0905041404h481463cckd4f6fb90cfd61ab2@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090516162813.GA18098@nb-core2.darkstar.lan>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Message-Id: <200905162255.55548.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 16, 2009 at 06:28:13PM +0200, Luca Tettamanti wrote:
-> Hello,
-> I just hit a NULL pointer dereference in cifs_close while accessing a file on a
-> remote Samba shared directory.
-[...]
-> BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
-> IP: [<ffffffffa05f105c>] cifs_close+0x1c1/0x2e8 [cifs]
+On Monday 04 May 2009, Fabio Comolli wrote:
+> Hi.
+> After a successful resume from disk I get this warning:
+> 
+> May  4 22:53:15 hawking kernel: ------------[ cut here ]------------
+> May  4 22:53:15 hawking kernel: WARNING: at kernel/hrtimer.c:625
+> hres_timers_resume+0x2f/0x45()
+> May  4 22:53:15 hawking kernel: Hardware name: Pavilion dv4000 (ES973EA#ABZ)
+> May  4 22:53:15 hawking kernel: hres_timers_resume() called with IRQs
+> enabled!Modules linked in: radeon(N) drm(N) michael_mic(N) arc4(N)
+> ecb(N) lib80211_crypt_tkip(N) af_packet(N) snd_pcm_oss(N)
+> snd_mixer_oss(N) snd_seq(N) microcode(N) snd_seq_device(N) edd(N)
+> cpufreq_conservative(N) cpufreq_userspace(N) cpufreq_powersave(N)
+> acpi_cpufreq(N) speedstep_lib(N) fuse(N) loop(N) dm_mod(N)
+> snd_intel8x0m(N) snd_intel8x0(N) snd_ac97_codec(N) pcmcia(N)
+> ac97_bus(N) sdhci_pci(N) sdhci(N) snd_pcm(N) thermal(N) snd_timer(N)
+> yenta_socket(N) btusb(N) iTCO_wdt(N) mmc_core(N) ipw2200(N)
+> tifm_7xx1(N) ohci1394(N) rsrc_nonstatic(N) 8139too(N) snd(N)
+> rtc_cmos(N) iTCO_vendor_support(N) video(N) processor(N) soundcore(N)
+> thermal_sys(N) i2c_i801(N) intel_agp(N) wmi(N) libipw(N) output(N)
+> led_class(N) battery(N) ac(N) 8139cp(N) tifm_core(N) ieee1394(N)
+> pcmcia_core(N) rtc_core(N) sr_mod(N) button(N) snd_page_alloc(N)
+> pcspkr(N) rtc_lib(N) i2c_core(N) hwmon(N) bluetooth(N) agpgart(N)
+> cdrom(N) joydev(N) sg(N) ext4(N) mbcache(N) jbd2(N) crc16(
+> May  4 22:53:15 hawking kernel: N) sd_mod(N) crc_t10dif(N) ata_piix(N)
+> libata(N) scsi_mod(N) ehci_hcd(N) uhci_hcd(N) usbcore(N)
+> May  4 22:53:15 hawking kernel: Supported: Yes
+> May  4 22:53:15 hawking kernel: Pid: 3533, comm: s2disk Tainted: G
+>      N  2.6.29.2-6-pae #1
+> May  4 22:53:15 hawking kernel: Call Trace:
+> May  4 22:53:15 hawking kernel:  [<c010688c>] try_stack_unwind+0x51/0x11d
+> May  4 22:53:15 hawking kernel:  [<c0105ca3>] dump_trace+0x55/0xca
+> May  4 22:53:15 hawking kernel:  [<c010665f>] show_trace_log_lvl+0x33/0x3e
+> May  4 22:53:15 hawking kernel:  [<c010667a>] show_trace+0x10/0x14
+> May  4 22:53:15 hawking kernel:  [<c03727ab>] dump_stack+0x57/0x61
+> May  4 22:53:15 hawking kernel:  [<c012f2a2>] warn_slowpath+0x71/0xa8
+> May  4 22:53:16 hawking kernel:  [<c01431cb>] hres_timers_resume+0x2f/0x45
+> May  4 22:53:16 hawking kernel:  [<c0147049>] timekeeping_resume+0x11f/0x125
+> May  4 22:53:16 hawking kernel:  [<c02bdd58>] __sysdev_resume+0x14/0x38
+> May  4 22:53:16 hawking kernel:  [<c02bdedd>] sysdev_resume+0xcb/0x105
+> May  4 22:53:16 hawking kernel:  [<c0155e69>] hibernation_snapshot+0xf1/0x189
+> May  4 22:53:16 hawking kernel:  [<c0159008>] snapshot_ioctl+0x214/0x4c5
+> May  4 22:53:16 hawking kernel:  [<c01b341f>] vfs_ioctl+0x22/0x67
+> May  4 22:53:16 hawking kernel:  [<c01b397a>] do_vfs_ioctl+0x444/0x47d
+> May  4 22:53:16 hawking kernel:  [<c01b3a1a>] sys_ioctl+0x67/0x81
+> May  4 22:53:16 hawking kernel:  [<c010406b>] sysenter_do_call+0x12/0x2f
+> May  4 22:53:17 hawking kernel:  [<ffffe430>] 0xffffe430
+> May  4 22:53:17 hawking kernel: ---[ end trace 8cd3b732941f0f91 ]---
+> 
+> 
+> This causes a second hibernate-resume cycle to hang solid during
+> resume. Power cycle is needed.
+> 
+> I'm not sure if this is a regression wrt 2.6.28.7 (my previous kernel)
+> because I changed the DRI driver from fglrx to radeon and also
+> upgraded the X.org userspace. I didn't have any hibernation-related
+> problem with any previous kernels for sure.
+> 
+> It may be related to http://lkml.org/lkml/2009/4/19/133 but the
+> backtrace is somewhat different.
+> 
+> Please let me know if you need more details.
 
-Ok, I've reproduced this on a machine with a serial port :)
+I think this is a cpufreq problem.
 
-0xffffffff803574e0 in list_del (entry=0xffff8800ac184210)
-at /home/kronos/src/linux-2.6.git/lib/list_debug.c:46
-46              WARN(entry->prev->next != entry,
-(gdb) bt
-#0  0xffffffff803574e0 in list_del (entry=0xffff8800ac184210)
-    at /home/kronos/src/linux-2.6.git/lib/list_debug.c:46
-#1  0xffffffff80319588 in cifs_close (inode=0xffff8800b8d5f088, file=0xffff8800ad8f6d00)
-    at /home/kronos/src/linux-2.6.git/fs/cifs/file.c:670
-#2  0xffffffff8029d95e in __fput (file=0xffff8800ad8f6d00)
-    at /home/kronos/src/linux-2.6.git/fs/file_table.c:281
-#3  0xffffffff8029da32 in fput (file=0xffff8800ac184210)
-    at /home/kronos/src/linux-2.6.git/fs/file_table.c:227
-#4  0xffffffff8029ad30 in filp_close (filp=0xffff8800ad8f6d00, id=0xffff880037a3e080)
-    at /home/kronos/src/linux-2.6.git/fs/open.c:1108
-#5  0xffffffff8029ade0 in sys_close (fd=0) 
-    at /home/kronos/src/linux-2.6.git/fs/open.c:1137
-#6  0xffffffff802271e4 in sysenter_dispatch ()
-    at /home/kronos/src/linux-2.6.git/arch/x86/ia32/ia32entry.S:161
-#7  0x0000000000000000 in ?? ()
+Please try to reproduce the problem with the appended patch applied.
 
-(gdb) f 1
-#1  0xffffffff80319588 in cifs_close (inode=0xffff8800b8d5f088, file=0xffff8800ad8f6d00)
-    at /home/kronos/src/linux-2.6.git/fs/cifs/file.c:670
-670                     list_del(&pSMBFile->flist);
-
-(gdb) p *&pSMBFile->flist
-$2 = {next = 0x0, prev = 0x0}
-
-(gdb) p *&pSMBFile->tlist
-$5 = {next = 0x0, prev = 0x0}
-
-So both flist and tlist were not initilized in cifs_open.
-
-The content of the whole pSMBFile structure:
-
-(gdb) p *pSMBFile
-$6 = {tlist = {next = 0x0, prev = 0x0}, flist = {next = 0x0, prev = 0x0}, uid = 0, pid = 5322, netfid = 13880,
-  pfile = 0xffff8800ad8f6d00, pInode = 0xffff8800b8d5f088, lock_mutex = {count = {counter = 1}, wait_lock = {raw_lock = {
-        slock = 514}, magic = 3735899821, owner_cpu = 4294967295, owner = 0xffffffffffffffff, dep_map = {
-        key = 0xffffffff806a5c98, class_cache = 0x0, name = 0xffffffff80537308 "&lock->wait_lock"}}, wait_list = {
-      next = 0xffff8800ac184278, prev = 0xffff8800ac184278}, owner = 0x0, name = 0x0, magic = 0xffff8800ac184240, dep_map = {
-      key = 0xffffffff80d7ff50, class_cache = 0xffffffff80835400, name = 0xffffffff8054cdfa "&private_data->lock_mutex"}},
-  llist = {next = 0xffff8800ac1842b8, prev = 0xffff8800ac1842b8}, closePend = true, invalidHandle = false,
-  messageMode = false, wrtPending = {counter = 0}, fh_mutex = {count = {counter = 1}, wait_lock = {raw_lock = {slock = 0},
-      magic = 3735899821, owner_cpu = 4294967295, owner = 0xffffffffffffffff, dep_map = {key = 0xffffffff806a5c98,
-        class_cache = 0x0, name = 0xffffffff80537308 "&lock->wait_lock"}}, wait_list = {next = 0xffff8800ac184308,
-      prev = 0xffff8800ac184308}, owner = 0x0, name = 0x0, magic = 0xffff8800ac1842d0, dep_map = {key = 0xffffffff80d7ff58,
-      class_cache = 0x0, name = 0xffffffff8054cde2 "&private_data->fh_mutex"}}, srch_inf = {index_of_last_entry = 0,
-    entries_in_buffer = 0, info_level = 0, resume_key = 0, ntwrk_buf_start = 0x0, srch_entries_start = 0x0, last_entry = 0x0,
-    presume_name = 0x0, resume_name_len = 0, endOfSearch = false, emptyDir = false, unicode = false, smallBuf = false}}
+Thanks,
+Rafael
 
 
-Luca
+---
+
+    PM: Warn if interrupts are enabled during suspend-resume of sysdevs
+    
+    Sysdevs have to be suspended and resumed with interrupts disabled and
+    things usually break in a way that's difficult to debug if one of
+    sysdev drivers enables interrupts by mistake during suspend or
+    resume.  Add extra checks that will generate warnings in such cases.
+    
+    Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+
+diff --git a/drivers/base/sys.c b/drivers/base/sys.c
+index 3236b43..9742a78 100644
+--- a/drivers/base/sys.c
++++ b/drivers/base/sys.c
+@@ -343,11 +343,15 @@ static void __sysdev_resume(struct sys_device *dev)
+ 	/* First, call the class-specific one */
+ 	if (cls->resume)
+ 		cls->resume(dev);
++	WARN_ONCE(!irqs_disabled(),
++		"Interrupts enabled after %pF\n", cls->resume);
+ 
+ 	/* Call auxillary drivers next. */
+ 	list_for_each_entry(drv, &cls->drivers, entry) {
+ 		if (drv->resume)
+ 			drv->resume(dev);
++		WARN_ONCE(!irqs_disabled(),
++			"Interrupts enabled after %pF\n", drv->resume);
+ 	}
+ }
+ 
+@@ -377,6 +381,9 @@ int sysdev_suspend(pm_message_t state)
+ 	if (ret)
+ 		return ret;
+ 
++	WARN_ONCE(!irqs_disabled(),
++		"Interrupts enabled while suspending system devices\n");
++
+ 	pr_debug("Suspending System Devices\n");
+ 
+ 	list_for_each_entry_reverse(cls, &system_kset->list, kset.kobj.entry) {
+@@ -393,6 +400,9 @@ int sysdev_suspend(pm_message_t state)
+ 					if (ret)
+ 						goto aux_driver;
+ 				}
++				WARN_ONCE(!irqs_disabled(),
++					"Interrupts enabled after %pF\n",
++					drv->suspend);
+ 			}
+ 
+ 			/* Now call the generic one */
+@@ -400,6 +410,9 @@ int sysdev_suspend(pm_message_t state)
+ 				ret = cls->suspend(sysdev, state);
+ 				if (ret)
+ 					goto cls_driver;
++				WARN_ONCE(!irqs_disabled(),
++					"Interrupts enabled after %pF\n",
++					cls->suspend);
+ 			}
+ 		}
+ 	}
+@@ -452,6 +465,9 @@ int sysdev_resume(void)
+ {
+ 	struct sysdev_class *cls;
+ 
++	WARN_ONCE(!irqs_disabled(),
++		"Interrupts enabled while resuming system devices\n");
++
+ 	pr_debug("Resuming System Devices\n");
+ 
+ 	list_for_each_entry(cls, &system_kset->list, kset.kobj.entry) {
