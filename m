@@ -1,76 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757579AbZEPTb3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756563AbZEPT4g@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757579AbZEPTb3 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 15:31:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754409AbZEPTbT
+	id S1756563AbZEPT4g (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 15:56:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753267AbZEPT4X
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 15:31:19 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:37503 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752611AbZEPTbS (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 15:31:18 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=jz5fmfgedZJTWuB0s4lPEmcahvQCVFYdhhGxyrdbWAnrOceFkGiIWCBKa8YjHlqUZu
-         r5x2CSv6mQmeGQWeBE58ANx7/Z08Ushyp7amTuM39/B+eF+/E/KenFdT6oA+GtTRgRTJ
-         XPPNxz2G6D98EiB5emglU7F+HxWtHYjmEr+7k=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: [PATCH 0/15 v2] ide-atapi: remove pc->buf and misc cleanups
-Date: Sat, 16 May 2009 21:35:52 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-00442-ga3668b0; KDE/4.2.2; i686; ; )
-Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
-       Tejun Heo <tj@kernel.org>, Jens Axboe <axboe@kernel.dk>
-References: <1242364293-29223-1-git-send-email-petkovbb@gmail.com> <200905162107.38332.bzolnier@gmail.com> <20090516192319.GB6202@liondog.tnic>
-In-Reply-To: <20090516192319.GB6202@liondog.tnic>
+	Sat, 16 May 2009 15:56:23 -0400
+Received: from h155.mvista.com ([63.81.120.155]:4084 "EHLO imap.sh.mvista.com"
+	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
+	id S1752860AbZEPT4W (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 15:56:22 -0400
+Message-ID: <4A0F1A55.8080701@ru.mvista.com>
+Date: Sat, 16 May 2009 23:56:05 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200905162135.53084.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="utf-8"
+To: Tejun Heo <tj@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org,
+       linux-ide@vger.kernel.org, rusty@rustcorp.com.au,
+       James.Bottomley@HansenPartnership.com, mike.miller@hp.com,
+       donari75@gmail.com, paul.clements@steeleye.com, tim@cyberelk.net,
+       Geert.Uytterhoeven@sonycom.com, davem@davemloft.net,
+       Laurent@lvivier.info, jgarzik@pobox.com, jeremy@xensource.com,
+       grant.likely@secretlab.ca, adrian@mcmen.demon.co.uk,
+       sfr@canb.auug.org.au, bzolnier@gmail.com, petkovbb@googlemail.com,
+       oakad@yahoo.com, drzeus@drzeus.cx, dwmw2@infradead.org,
+       Markus.Lidel@shadowconnect.com, wein@de.ibm.com, schwidefsky@de.ibm.com,
+       zaitcev@redhat.com, fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk
+Subject: Re: [PATCH 11/18] swim: dequeue in-flight request
+References: <1241751256-17435-1-git-send-email-tj@kernel.org> <1241751256-17435-12-git-send-email-tj@kernel.org> <4A0EC2AD.20704@ru.mvista.com> <4A0ECF8E.6000209@kernel.org>
+In-Reply-To: <4A0ECF8E.6000209@kernel.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Saturday 16 May 2009 21:23:19 Borislav Petkov wrote:
-> Hi,
-> 
-> On Sat, May 16, 2009 at 09:07:38PM +0200, Bartlomiej Zolnierkiewicz wrote:
-> > I would love to merge it but I'm hitting merge conflicts...
-> > 
-> > I can pull tj/block-peek-fetch into for-next but not block/for-2.6.31...
-> > 
-> > tj's top commit:
-> > 
-> > author	Tejun Heo <tj@kernel.org>
-> > 	Fri, 8 May 2009 23:45:23 +0000 (08:45 +0900)
-> > committer	Tejun Heo <tj@kernel.org>
-> > 	Fri, 8 May 2009 23:45:23 +0000 (08:45 +0900)
-> > commit	18c551bb4944dec0ce2c0a854b6694ed39ab58f6
-> > tree	a2a59fd27626e930809a20546c0c02e1df498056
-> > parent	88fd264e94d01b23339ce614be9141eb2db98e10
-> > 
-> > corresponding blocks's commit:
-> > 
-> > author	Tejun Heo <tj@kernel.org>
-> > 	Fri, 8 May 2009 02:54:16 +0000 (11:54 +0900)
-> > committer	Jens Axboe <jens.axboe@oracle.com>
-> > 	Mon, 11 May 2009 07:52:18 +0000 (09:52 +0200)
-> > commit	9934c8c04561413609d2bc38c6b9f268cba774a4
-> > tree	30dd8f7be54f9b2e03094de9cd03b6a9ee2909cd
-> > parent	2343046826a8ca426b07601d9593ee046c298b68
-> > 
-> > Looking at creation dates I suspect that somewhere along the way
-> > something was rebased?
-> > 
-> > One quick temporary solution would be to recreate bp/pc-remove-buf
-> > on top of tj/block-peek-fetch...
-> 
-> will do that first thing in the morning and push it for merging.
+Hello.
 
-Cool, please also merge ide-tape DEBUG build fix while at it...
+Tejun Heo wrote:
+
+>>   And without duplication:
+>>     
+>
+> Similar response as the if/else one on the other thread.  Is it really
+> any significantly better?  The 'duplication' here is basically one
+> liner
+
+   Not true, it's 3-liner. I wouldn't bother with one liner.
+
+> after the peek/fetch change
+
+   The peek/fetch code itself is duplicated. :-/
+
+> and when the duplication is minimal,
+> I usually find it clearer to put the loop condition at the while
+> clause itself.
+
+   No problem, we could just keep an old form of *while* loop.
+
+> If you think it's significantly better,
+
+   I do hink it avoids duplicating peek/fetch code.
+
+> please go ahead and submit the patch but to me the change you're proposing is
+> basically cosmetic and not even a clearly better one at that.
+>   
+
+   Should probably look at the resulting assembly to see how much it's 
+differrent.
+
+> Thanks.
+
+WBR, Sergei
+
+
