@@ -1,61 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756210AbZEPHIH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756508AbZEPHKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756210AbZEPHIH (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 03:08:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbZEPHHv
+	id S1756508AbZEPHKg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 03:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753977AbZEPHK2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 03:07:51 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:61470 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752475AbZEPHHu (ORCPT
+	Sat, 16 May 2009 03:10:28 -0400
+Received: from michaelblizek.twilightparadox.com ([193.238.157.55]:50646 "EHLO
+	michaelblizek.twilightparadox.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1753668AbZEPHK1 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 03:07:50 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:cc:subject:references
-         :in-reply-to:content-type:content-transfer-encoding;
-        b=Mgtw/B3jqSLoxVRp0qXrTMDSnBbA+9+o2yTPOUBYP0roYAOh+fA7v6U/3DXVPXoMYZ
-         wibFyQSZ9iCV0qlZwtB03CLl9qqnoB/GC1nCU4NWQWXvUWKHf4bYNYyfjNYSHHSmSh1U
-         r6xFx2hs97xPgqCO1o85Bx1Oto7205hIVawRo=
-Message-ID: <4A0E65F5.1040906@gmail.com>
-Date: Sat, 16 May 2009 09:06:29 +0200
-From: Jarek Poplawski <jarkao2@gmail.com>
-User-Agent: Mozilla-Thunderbird 2.0.0.19 (X11/20090103)
+	Sat, 16 May 2009 03:10:27 -0400
+X-Greylist: delayed 2927 seconds by postgrey-1.27 at vger.kernel.org; Sat, 16 May 2009 03:10:27 EDT
+Date: Sat, 16 May 2009 08:21:37 +0200
+From: Michael Blizek <michi1@michaelblizek.twilightparadox.com>
+To: sikandar shah <sazamsk@gmail.com>
+Cc: kernelnewbies@nl.linux.org, linux-kernel@vger.kernel.org
+Subject: Re: how to access a sound card in linux using nasm in pure
+	assembly language
+Message-ID: <20090516062137.GA6036@grml>
+References: <139247610905131345o5a6b291ex1b2dc9b55b6c644a@mail.gmail.com>
 MIME-Version: 1.0
-CC: "Alexander V. Lukyanov" <lav@netis.ru>, linux-kernel@vger.kernel.org,
-       netdev@vger.kernel.org
-Subject: Re: 2.6.29.1: unregister_netdevice problem
-References: <49F76BF6.4040709@gmail.com> <20090429054510.GA8267@night.netis.ru> <20090429090809.GA2995@ami.dom.local> <20090508062640.GA4555@night.netis.ru> <20090508104628.GA6287@ff.dom.local> <20090510073559.GA8929@night.netis.ru> <20090510124641.GA2978@ami.dom.local> <20090515071946.GA15669@night.netis.ru> <20090515080649.GA5469@ff.dom.local> <20090515085414.GA27744@night.netis.ru> <20090515101209.GA6367@ff.dom.local>
-In-Reply-To: <20090515101209.GA6367@ff.dom.local>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-To: unlisted-recipients:; (no To-header on input)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <139247610905131345o5a6b291ex1b2dc9b55b6c644a@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jarek Poplawski wrote, On 05/15/2009 12:12 PM:
+Hi!
 
-> On Fri, May 15, 2009 at 12:54:14PM +0400, Alexander V. Lukyanov wrote:
->> On Fri, May 15, 2009 at 08:06:49AM +0000, Jarek Poplawski wrote:
->>> On Fri, May 15, 2009 at 11:19:46AM +0400, Alexander V. Lukyanov wrote:
->>> ...
->>>> Looks like 2.6.28.10 does not have this refcnt problem. Also, after I have
->>>> reversed net/ipv4/route.c changes from 2.6.29, the problem does not occur either.
->>> Very nice work! It should be a piece of cake now - there were not much
->>> changes. I'll look at it, as usual ;-), but, of course if it's
->>> possible, it would be great to try "in the meantime" with reverted the
->>> biggest of them append below.
->> I suspect the problem occurs when cand==rthi.
+On 02:45 Thu 14 May     , sikandar shah wrote:
+> Hello i am a interested in linux development,but there are many resources
+> about development in C,C++ in linux but i want to do programming in
+> assembly.
 > 
-> Looks like good catch! (But there could be more than this.) Then, of
-> course it would be interesting to try first some fix (like nulling
-> rthi after rt_free(cand), I guess).
+> i am using ubuntu 8.0.2 and i want to do some task for which i cant get help
+> anywhere
+> 
+> well i have got this assignment to access sound card or pc speaker in
+> assembly using nasm and on linux operating system.
+> 
+> till now i have got to the point that we use interupt 0x80 for kernel calls.
+> but what do we do next.
+> also well i found out while searching the net that the calls are associated
+> with eax
+> and the argument can be upto 5 stored in ebx,ecx,edx,esi,edi
 
+There is a simple low level api you can use which does not rely on user space
+libraries:
+http://manuals.opensound.com/developer/
 
-On the other hand, since this looks like quite obvious bug (even if it
-doesn't fix your problem), feel free to send here a patch fixing it any
-way you like without waiting for the final test results (Cc-ing authors
-of the offending patch, I hope).
+...
+> 4. how can i make it play something even the system beep
 
-Jarek P.
+printf("\a");
+
+	-Michi
+-- 
+programing a layer 3+4 network protocol for mesh networks
+see http://michaelblizek.twilightparadox.com
+
