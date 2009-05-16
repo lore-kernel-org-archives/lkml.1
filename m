@@ -1,103 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbZEPIjY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755628AbZEPIqA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755472AbZEPIjY (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 04:39:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754100AbZEPIjN
+	id S1755628AbZEPIqA (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 04:46:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754656AbZEPIpv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 04:39:13 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:46023 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754121AbZEPIjK (ORCPT
+	Sat, 16 May 2009 04:45:51 -0400
+Received: from pfepa.post.tele.dk ([195.41.46.235]:59794 "EHLO
+	pfepa.post.tele.dk" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753313AbZEPIpu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 04:39:10 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=sender:message-id:date:from:user-agent:mime-version:to:cc:subject
-         :references:in-reply-to:content-type:content-transfer-encoding;
-        b=kb51YqP8fLO+kTCfHhvg3mPHkMNLMUoh99cU5pNrVjIOw+T2j5woFskMtWWIvUqseN
-         wJc0lSBVhYWLo9SJ5ao9oSGb6X3HtNEMvSIE7MF/pzFVQcaNIg34/DIQF8TcR5NzUtN8
-         whR20u+HRcbqbvQ8VvM3lO6p7pqrKtcGysh10=
-Message-ID: <4A0E7BA9.3030205@tuffmail.co.uk>
-Date: Sat, 16 May 2009 09:39:05 +0100
-From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090318)
-MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: John Linville <linville@tuxdriver.com>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>,
-       Arjan van de Ven <arjan@infradead.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>
-Subject: Re: [PATCH] [RFC] EEE PC hangs when booting off battery
-References: <49E065CF.6040408@tuffmail.co.uk> <49F6DA14.7030608@tuffmail.co.uk> <49F83699.3000307@tuffmail.co.uk> <200905152348.56449.rjw@sisk.pl>
-In-Reply-To: <200905152348.56449.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sat, 16 May 2009 04:45:50 -0400
+Date: Sat, 16 May 2009 10:48:01 +0200
+From: Sam Ravnborg <sam@ravnborg.org>
+To: Jeff Garzik <jeff@garzik.org>,
+       Nico Schottelius <nico-linux-20090330@schottelius.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: setlocalversion bug [Was: Linux 2.6.30-rc6]
+Message-ID: <20090516084801.GA16044@uranus.ravnborg.org>
+References: <alpine.LFD.2.01.0905152120140.3301@localhost.localdomain> <4A0E62D4.5080004@garzik.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4A0E62D4.5080004@garzik.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Wednesday 29 April 2009, Alan Jenkins wrote:
->   
->> Alan Jenkins wrote:
->>     
->>> Johannes Berg wrote:
->>>   
->>>       
->>>> That doesn't seem relevant, this just does some initialisation. However,
->>>> you definitely missed adding a call to wep_free().
->>>>   
->>>>     
->>>>         
->>> Hah, I should have realized something was wrong when I noticed I was
->>> removing more lines that I added. 
->>>
->>> The crypto init does cause the module load:
->>>
->>> wait_for_completion
->>> call_usermodehelper_exec
->>> __request_module
->>> crypto_larval_lookup
->>> ? extract_entropy
->>> crypto_alg_mod_lookup
->>> crypto_alloc_base
->>> ieee80211_wep_init
->>> ieee80211_register_hw
->>>   
->>>       
->> Here's a corrected patch complete with changelog.  If there are no other
->> problems with it, can you please  apply this for 2.6.30 to keep my EeePC
->> regression-free?
->>
->> Thanks
->> Alan
->>
->> ------>
->> From c5e9dc036247e70956d1a28e8850c3810385dda0 Mon Sep 17 00:00:00 2001
->> From: Alan Jenkins <alan-jenkins@tuffmail.co.uk>
->> Date: Wed, 29 Apr 2009 11:41:24 +0100
->> Subject: [PATCH] mac80211: fix modprobe deadlock by not calling wep_init under rtnl_lock
->>
->>  - ieee80211_wep_init(), which is called with rtnl_lock held, blocks in
->>    request_module() [waiting for modprobe to load a crypto module].
->>
->>  - modprobe blocks in a call to flush_workqueue(), when it closes a TTY
->>    [presumably when it exits].
->>
->>  - The workqueue item linkwatch_event() blocks on rtnl_lock.
->>
->> There's no reason for wep_init() to be called with rtnl_lock held, so
->> just move it outside the critical section.
->>     
->
-> Has it been merged already or is it queued up for merging?
->
-> Rafael
->   
+On Sat, May 16, 2009 at 02:53:08AM -0400, Jeff Garzik wrote:
+> 
+> Strange version numbering....   x86-64/Fedora 10/2.6.30-rc6 with no 
+> local modifications or 'localversion' file, built straight from git:
+> 
+> $ make -s oldconfig && make -sj17
+> $ sudo make modules_install && sudo make install
+> ...
+>   INSTALL /lib/firmware/edgeport/down2.fw
+>   INSTALL /lib/firmware/whiteheat_loader.fw
+>   INSTALL /lib/firmware/whiteheat.fw
+>   DEPMOD  2.6.30-rc6-00000-rc6
+> sh /spare/repo/linux-2.6/arch/x86/boot/install.sh 2.6.30-rc6-00000-rc6 
+> arch/x86/boot/bzImage \
+> 		System.map "/boot"
+> 
+> 
+> 
+> "2.6.30-rc6-00000-rc6" seems like something is broken, as building a 
+> released version from git always gave me a proper "2.6.30-rc5"-style 
+> version, as expected.
 
-It looks like it's been merged as v2.6.30-rc6~2^2~40^2~1.
+Hi Nico.
 
-Thanks for checking up
-Alan
+This looks like something introduced by: 
+a182ad3d0f858f50bb719a48bb35a013e12366c5
+("kbuild: fix scripts/setlocalversion with git")
+
+Can you take a look at this.
+
+	Sam
