@@ -1,198 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757222AbZEPT64@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757235AbZEPUKW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757222AbZEPT64 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 15:58:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756323AbZEPT6o
+	id S1757235AbZEPUKW (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 16:10:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753030AbZEPUKG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 15:58:44 -0400
-Received: from h155.mvista.com ([63.81.120.155]:4164 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756290AbZEPT6n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 15:58:43 -0400
-Message-ID: <4A0F1AE3.5080105@ru.mvista.com>
-Date: Sat, 16 May 2009 23:58:27 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Sat, 16 May 2009 16:10:06 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:48484 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755143AbZEPUKF convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 16:10:05 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=numWpTZIYYK/Xl640XN6FwDBJ5yYHL2XX2CKHkZslbjoP2n38XAUx5CX/Sja7nZsP7
+         AUyQULUcGJunSqoowwXQMIvBqTVrmsQGRgHrVQPVPkVtzYNIb0hswEpzibo3aFYLH/m+
+         Y1f3cUQ68CWULDXHQKUnsQGQvWolm/3IR131o=
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Tejun Heo <tj@kernel.org>, linux-kernel@vger.kernel.org,
-       linux-scsi@vger.kernel.org, linux-ide@vger.kernel.org,
-       rusty@rustcorp.com.au, James.Bottomley@HansenPartnership.com,
-       mike.miller@hp.com, donari75@gmail.com, paul.clements@steeleye.com,
-       tim@cyberelk.net, Geert.Uytterhoeven@sonycom.com, davem@davemloft.net,
-       Laurent@lvivier.info, jgarzik@pobox.com, jeremy@xensource.com,
-       grant.likely@secretlab.ca, adrian@mcmen.demon.co.uk,
-       sfr@canb.auug.org.au, bzolnier@gmail.com, petkovbb@googlemail.com,
-       oakad@yahoo.com, drzeus@drzeus.cx, dwmw2@infradead.org,
-       Markus.Lidel@shadowconnect.com, wein@de.ibm.com, schwidefsky@de.ibm.com,
-       zaitcev@redhat.com, fujita.tomonori@lab.ntt.co.jp, axboe@kernel.dk
-Subject: Re: [PATCH 15/18] z2ram: dequeue in-flight request
-References: <1241751256-17435-1-git-send-email-tj@kernel.org> <1241751256-17435-16-git-send-email-tj@kernel.org> <4A0EB7A0.10107@ru.mvista.com>
-In-Reply-To: <4A0EB7A0.10107@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <1241620755-22133-2-git-send-email-nigel@tuxonice.net>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	 <1241620755-22133-2-git-send-email-nigel@tuxonice.net>
+Date: Sat, 16 May 2009 22:10:04 +0200
+Message-ID: <19f34abd0905161310va93c499h158f3d7d5e687313@mail.gmail.com>
+Subject: Re: [PATCH 1/19] TuxOnIce: Documentation
+From: Vegard Nossum <vegard.nossum@gmail.com>
+To: Nigel Cunningham <nigel@tuxonice.net>
+Cc: linux-pm@lists.linux-foundation.org, linux-kernel@vger.kernel.org,
+       tuxonice-devel@lists.tuxonice.net
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello, I wrote:
+Hi,
 
-   Oops, sent this message only to Tejun before, so have to repost now...
+Just a very small comment below.
 
->> z2ram processes requests one-by-one synchronously and can be easily
->> converted to dequeueing model.  Convert it.
->>
->> [ Impact: dequeue in-flight request ]
->>
->> Signed-off-by: Tejun Heo <tj@kernel.org>
->> ---
->>  drivers/block/z2ram.c |   19 +++++++++++++++----
->>  1 files changed, 15 insertions(+), 4 deletions(-)
->>
->> diff --git a/drivers/block/z2ram.c b/drivers/block/z2ram.c
->> index 6a13838..c909c1a 100644
->> --- a/drivers/block/z2ram.c
->> +++ b/drivers/block/z2ram.c
->> @@ -70,15 +70,21 @@ static struct gendisk *z2ram_gendisk;
->>  static void do_z2_request(struct request_queue *q)
->>  {
->>      struct request *req;
->> -    while ((req = elv_next_request(q)) != NULL) {
->> +
->> +    req = elv_next_request(q);
->> +    if (req)
->> +        blkdev_dequeue_request(req);
->> +
->> +    while (req) {
->>          unsigned long start = blk_rq_pos(req) << 9;
->>          unsigned long len  = blk_rq_cur_bytes(req);
->> +        int err = 0;
->>  
->>          if (start + len > z2ram_size) {
->>              printk( KERN_ERR DEVICE_NAME ": bad access: block=%lu, 
->> count=%u\n",
->>                  blk_rq_pos(req), blk_rq_cur_sectors(req));
->> -            __blk_end_request_cur(req, -EIO);
->> -            continue;
->> +            err = -EIO;
->> +            goto done;
->>          }
->>          while (len) {
->>              unsigned long addr = start & Z2RAM_CHUNKMASK;
->> @@ -93,7 +99,12 @@ static void do_z2_request(struct request_queue *q)
->>              start += size;
->>              len -= size;
->>          }
->> -        __blk_end_request_cur(req, 0);
->> +    done:
->> +        if (!__blk_end_request_cur(req, err)) {
->> +            req = elv_next_request(q);
->> +            if (req)
->> +                blkdev_dequeue_request(req);
->> +        }
->>      }
->>  }
->>   
+2009/5/6 Nigel Cunningham <nigel@tuxonice.net>:
+> This patch creates new Documentation/power files for describing
+> TuxOnIce, and a MAINTAINERS entry for the code.
 >
->   I'm sure this can be made more compact and without duplication (in 
-> many other cases as well):
->
-> @@ -70,15 +70,21 @@ static struct gendisk *z2ram_gendisk;
->
-> static void do_z2_request(struct request_queue *q)
-> {
->     struct request *req;
+> Signed-off-by: Nigel Cunningham <nigel@tuxonice.net>
+> ---
+>  Documentation/power/tuxonice-internals.txt |  477 ++++++++++++++
+>  Documentation/power/tuxonice.txt           |  924 ++++++++++++++++++++++++++++
+>  MAINTAINERS                                |    7 +
+>  3 files changed, 1408 insertions(+), 0 deletions(-)
+>  create mode 100644 Documentation/power/tuxonice-internals.txt
+>  create mode 100644 Documentation/power/tuxonice.txt
+
+[...]
+
+> +   Most people will only want to hibernate to a local file. To achieve that, do
+> +   something along the lines of:
 > +
->     while ((req = elv_next_request(q)) != NULL) {
->         unsigned long start = blk_rq_pos(req) << 9;
->         unsigned long len  = blk_rq_cur_bytes(req);
+> +   echo "TuxOnIce" > /hibernation-file
+> +   dd if=/dev/zero bs=1M count=512 >> hibernation-file
 
-  Oops, missed:
+It seems that a / is missing here?
 
-+         int err;
-+
->
-> +        blkdev_dequeue_request(req);
 > +
-
-+again:
-
->         if (start + len > z2ram_size) {
->             printk( KERN_ERR DEVICE_NAME ": bad access: block=%lu, 
-> count=%u\n",
->                 blk_rq_pos(req), blk_rq_cur_sectors(req));
-> -            __blk_end_request_cur(req, -EIO);
-> -            continue;
-> +            err = -EIO;
-> +            goto done;
->         }
->         while (len) {
->             unsigned long addr = start & Z2RAM_CHUNKMASK;
-> @@ -93,7 +99,12 @@ static void do_z2_request(struct request_queue *q)
->             start += size;
->             len -= size;
->         }
-> -        __blk_end_request_cur(req, 0);
-+            err = 0;
-> +    done:
-> +        if (__blk_end_request_cur(req, err));
-> +            break;
-
-  Oops, should've been:
-
-+            if (__blk_end_request_cur(req, err))
-+                goto again;
-
->     }
-> }
-
-  It can also be:
-
-@@ -70,15 +70,21 @@ static struct gendisk *z2ram_gendisk;
-static void do_z2_request(struct request_queue *q)
-{
--    struct request *req;
--    while ((req = elv_next_request(q)) != NULL) {
-+    while (1) {
-+        struct request *req = elv_next_request(q);
-+        unsigned long start, len;
-+        int err;
-+
-+        if (req == NULL)
-+            break;
-+
-+        blkdev_dequeue_request(req);
-+
-+again:
-+        start = blk_rq_pos(req) << 9;
-+        len = blk_rq_cur_bytes(req);
-
-        if (start + len > z2ram_size) {
-            printk( KERN_ERR DEVICE_NAME ": bad access: block=%lu, 
-count=%u\n",
-                blk_rq_pos(req), blk_rq_cur_sectors(req));
--            __blk_end_request_cur(req, -EIO);
--            continue;
-+            err = -EIO;
-+            goto done;
-        }
-        while (len) {
-            unsigned long addr = start & Z2RAM_CHUNKMASK;
-@@ -93,7 +99,12 @@ static void do_z2_request(struct request_queue *q)
-            start += size;
-            len -= size;
-        }
--        __blk_end_request_cur(req, 0);
-+        err = 0;
-+    done:
-+        if (__blk_end_request_cur(req, err))
-+            goto again;
-    }
-}
+> +   This will create a 512MB file called /hibernation-file. To get TuxOnIce to use
+> +   it:
+> +
+> +   echo /hibernation-file > /sys/power/tuxonice/file/target
 
 
-if you want to get rid of the assignement in the *while* statement...
-
-MBR, Sergei
-
-
+Vegard
