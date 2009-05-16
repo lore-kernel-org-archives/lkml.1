@@ -1,59 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759280AbZEPJnR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755472AbZEPJmu@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759280AbZEPJnR (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 05:43:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758863AbZEPJmc
+	id S1755472AbZEPJmu (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 05:42:50 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758556AbZEPJmG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 05:42:32 -0400
-Received: from mail.lang.hm ([64.81.33.126]:33573 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758879AbZEPJma (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 05:42:30 -0400
-Date: Sat, 16 May 2009 02:42:17 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: Theodore Tso <tytso@mit.edu>
-cc: Timo Sirainen <tss@iki.fi>, Josef Bacik <josef@toxicpanda.com>,
-       linux-kernel@vger.kernel.org
-Subject: Re: ext3/ext4 directories don't shrink after deleting lots of
- files
-In-Reply-To: <20090515105815.GD6816@mit.edu>
-Message-ID: <alpine.DEB.1.10.0905160241020.26653@asgard>
-References: <1242338523.6933.664.camel@timo-desktop> <1b7401870905141732v43bd7321g1f0d9721b5e3f761@mail.gmail.com> <605A8D56-81CD-4775-8FCD-58CDB12CBA36@iki.fi> <20090515105815.GD6816@mit.edu>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sat, 16 May 2009 05:42:06 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:50217 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758599AbZEPJmD convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 05:42:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=aqwW2hGnMYjW/c49SQkUn7VA6sPLgHpA6SKrgFLlOmGkKxUtL/T2zLCZaG6Zo3IBMv
+         XmXtva0GxF+H8XUzJYLQpp6cTbEiAS70kcfOFNKmtukLKe4F69fOOGu+ZTlXXGJRNPOU
+         ox99st7d83KlhGIAtEDP/no4t1XcL1SI5LLkM=
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+In-Reply-To: <200905152350.27270.rjw@sisk.pl>
+References: <38b2ab8a0905030922x722a45f3gf0790b5b90b0f2b3@mail.gmail.com>
+	 <200905031828.14468.florian@openwrt.org>
+	 <38b2ab8a0905031012m5d50b68es22e3c80cfa72fd60@mail.gmail.com>
+	 <200905152350.27270.rjw@sisk.pl>
+Date: Sat, 16 May 2009 11:42:01 +0200
+Message-ID: <8db1092f0905160242v7264a642m9978dd761c160e0c@mail.gmail.com>
+Subject: Re: v2.6.30-rc4: b44: eth0: BUG! Timeout waiting for bit 00000002 of 
+	register 42c to clear.
+From: Maciej Rutecki <maciej.rutecki@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Francis Moreau <francis.moro@gmail.com>,
+       Florian Fainelli <florian@openwrt.org>, netdev@vger.kernel.org,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 May 2009, Theodore Tso wrote:
-
-> On Thu, May 14, 2009 at 08:45:38PM -0400, Timo Sirainen wrote:
+2009/5/15 Rafael J. Wysocki <rjw@sisk.pl>:
+> On Sunday 03 May 2009, Francis Moreau wrote:
+>> Hello Florian,
 >>
->> I was rather thinking something that I could run while the system was
->> fully operational. Otherwise just moving the files to a temp directory +
->> rmdir() + rename() would have been fine too.
+>> On Sun, May 3, 2009 at 6:28 PM, Florian Fainelli <florian@openwrt.org> wrote:
+>> >> I got this since I updated my kernel from 2.6.29 to 2.6.30-rc4.
+>> >>
+>> >> Let me know if you need more information.
+>> >
+>> > Is this seen on a Broadcom 47xx/53xx platform or on a computer with a PCI b44
+>> > card ?
+>> >
 >>
->> I just tested that xfs, jfs and reiserfs all shrink the directories
->> immediately. Is it more difficult to implement for ext* or has no one
->> else found this to be a problem?
+>> $ lspci -vv
+>>
+>> 06:01.0 Ethernet controller: Broadcom Corporation BCM4401-B0 100Base-TX (rev 02)
+>>         Subsystem: Acer Incorporated [ALI] Device 0090
+>>         Control: I/O- Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop-
+>> ParErr- Stepping- SERR- FastB2B- DisINTx-
+>>         Status: Cap+ 66MHz- UDF- FastB2B- ParErr- DEVSEL=fast >TAbort-
+>> <TAbort- <MAbort- >SERR- <PERR- INTx-
+>>         Latency: 64
+>>         Interrupt: pin A routed to IRQ 21
+>>         Region 0: Memory at d2000000 (32-bit, non-prefetchable) [size=8K]
+>>         Capabilities: <access denied>
+>>         Kernel driver in use: b44
+>>
+>>
+>> Let me know if you need more details.
 >
-> It's probably fairest to say no one has thought it worth the effort.
-> It would require some fancy games to swap out block locations in the
-> extent trees (life would be easier with non-extent-using inodes), and
-> in the case of htree, we would have to keep track of the index block
-> so we could remove it from the htree index.  So it's all doable, if a
-> bit tricky in terms of the technical details; it's just that the
-> people who could do it have been busy enough with other things.
+> Can anyone please tell me what the status of this report is?
 >
-> It's hasn't been considered high priority because most of the time
-> directories don't go from holding thousands of files down to a small
-> handful.
 
-I see it on a fairly regular basis on mail servers. in sendng a large 
-queue builds up due to a remote system being down, but then after the 
-remote system recovers, all access to that directory is slow, hurting 
-everything else on the system.
+Hmm. I also have this message in dmesg when always back to Linux from
+Windows XP, but only in this case and as long as I remember.
 
-David Lang
+02:0e.0 Ethernet controller: Broadcom Corporation BCM4401-B0 100Base-TX (rev 02)
+
+Regards
+-- 
+Maciej Rutecki
+http://www.maciek.unixy.pl
