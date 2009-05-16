@@ -1,167 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759368AbZEPAcU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755612AbZEPAjy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759368AbZEPAcU (ORCPT <rfc822;w@1wt.eu>);
-	Fri, 15 May 2009 20:32:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757268AbZEPAcE
+	id S1755612AbZEPAjy (ORCPT <rfc822;w@1wt.eu>);
+	Fri, 15 May 2009 20:39:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754904AbZEPAjp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Fri, 15 May 2009 20:32:04 -0400
-Received: from e23smtp01.au.ibm.com ([202.81.31.143]:48515 "EHLO
-	e23smtp01.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1756778AbZEPAcB (ORCPT
+	Fri, 15 May 2009 20:39:45 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:55216 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754779AbZEPAjo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Fri, 15 May 2009 20:32:01 -0400
-Date: Sat, 16 May 2009 06:01:50 +0530
-From: "K.Prasad" <prasad@linux.vnet.ibm.com>
-To: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Cc: Alan Stern <stern@rowland.harvard.edu>,
-       Frederic Weisbecker <fweisbec@gmail.com>,
-       Steven Rostedt <rostedt@goodmis.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Benjamin Herrenschmidt <benh@au1.ibm.com>, maneesh@linux.vnet.ibm.com,
-       Roland McGrath <roland@redhat.com>,
-       Masami Hiramatsu <mhiramat@redhat.com>,
-       "K.Prasad" <prasad@linux.vnet.ibm.com>
-Subject: [Patch 12/12] Reset bits in dr6 after the corresponding exception
-	is handled
-Message-ID: <20090516003150.GM16792@in.ibm.com>
-References: <20090515105133.629980476@prasadkr_t60p.in.ibm.com>
+	Fri, 15 May 2009 20:39:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=UuNShpY6o9Eox2jKk5YXl5Lr0qE0QbEDVOOyCchfF/m9hFx7d19bJRuhsQHRJ0r4De
+         L+oKZPEENt6zUcWKlcp0xULjy/kzbWupOl2MmAmwAqfUckq3lPY8PmAS6Gm/IhwneSZf
+         P2jkVyzueWQD32G4Pt60pqdYo820EtJlzlpMY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline; filename=dr6_changes_12
-User-Agent: Mutt/1.5.18 (2008-05-17)
+In-Reply-To: <1242426182.10164.168.camel@falcon>
+References: <1242426182.10164.168.camel@falcon>
+Date: Fri, 15 May 2009 17:39:43 -0700
+X-Google-Sender-Auth: 16a1414bae845d50
+Message-ID: <1f1b08da0905151739v6bc2e5f6t57cb8e06cdda2673@mail.gmail.com>
+Subject: Re: [PATCH 23/30] loongson: CS5536 MFGPT as system clock source 
+	support
+From: john stultz <johnstul@us.ibm.com>
+To: wuzhangjin@gmail.com
+Cc: linux-mips@linux-mips.org, Ralf Baechle <ralf@linux-mips.org>,
+       linux-kernel@vger.kernel.org, Arnaud Patard <apatard@mandriva.com>,
+       loongson-dev@googlegroups.com, zhangfx@lemote.com, yanh@lemote.com,
+       Philippe Vachon <philippe@cowpig.ca>, Zhang Le <r0bertz@gentoo.org>,
+       Erwan Lerale <erwan@thiscow.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch resets the bit in dr6 after the corresponding exception is
-handled in code.
+On Fri, May 15, 2009 at 3:23 PM, Wu Zhangjin <wuzhangjin@gmail.com> wrote:
+> +static struct clocksource clocksource_mfgpt = {
+> +       .name = "mfgpt",
+> +       .rating = 1200,
 
-Signed-off-by: K.Prasad <prasad@linux.vnet.ibm.com>
----
- arch/x86/kernel/hw_breakpoint.c |   13 +++++++++++--
- arch/x86/kernel/kgdb.c          |    6 ++++++
- arch/x86/kernel/kprobes.c       |    9 ++++++++-
- arch/x86/kernel/traps.c         |    4 ++--
- arch/x86/mm/kmmio.c             |    8 +++++++-
- 5 files changed, 34 insertions(+), 6 deletions(-)
+Minor nit. Please read the comment over the struct clocksource
+definition in include/linux/clocksource.h for a guide to setting the
+rating value for your clocksource.
 
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/traps.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/traps.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/traps.c
-@@ -550,8 +550,8 @@ dotraplinkage void __kprobes do_debug(st
- 	/* Store the virtualized DR6 value */
- 	tsk->thread.debugreg6 = dr6;
- 
--	if (notify_die(DIE_DEBUG, "debug", regs, dr6, error_code,
--						SIGTRAP) == NOTIFY_STOP)
-+	if (notify_die(DIE_DEBUG, "debug", regs, PTR_ERR(&dr6), error_code,
-+							SIGTRAP) == NOTIFY_STOP)
- 		return;
- 
- 	/* It's safe to allow irq's after DR6 has been saved */
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/kgdb.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/kgdb.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/kgdb.c
-@@ -43,6 +43,7 @@
- #include <linux/smp.h>
- #include <linux/nmi.h>
- 
-+#include <asm/debugreg.h>
- #include <asm/apicdef.h>
- #include <asm/system.h>
- 
-@@ -433,6 +434,11 @@ single_step_cont(struct pt_regs *regs, s
- 			"resuming...\n");
- 	kgdb_arch_handle_exception(args->trapnr, args->signr,
- 				   args->err, "c", "", regs);
-+	/*
-+	 * Reset the BS bit in dr6 (pointed by args->err) to
-+	 * denote completion of processing
-+	 */
-+	(*(unsigned long *)ERR_PTR(args->err)) &= ~DR_STEP;
- 
- 	return NOTIFY_STOP;
- }
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/kprobes.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/kprobes.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/kprobes.c
-@@ -54,6 +54,7 @@
- #include <asm/pgtable.h>
- #include <asm/uaccess.h>
- #include <asm/alternative.h>
-+#include <asm/debugreg.h>
- 
- void jprobe_return_end(void);
- 
-@@ -967,8 +968,14 @@ int __kprobes kprobe_exceptions_notify(s
- 			ret = NOTIFY_STOP;
- 		break;
- 	case DIE_DEBUG:
--		if (post_kprobe_handler(args->regs))
-+		if (post_kprobe_handler(args->regs)) {
-+			/*
-+			 * Reset the BS bit in dr6 (pointed by args->err) to
-+			 * denote completion of processing
-+			 */
-+			(*(unsigned long *)ERR_PTR(args->err)) &= ~DR_STEP;
- 			ret = NOTIFY_STOP;
-+		}
- 		break;
- 	case DIE_GPF:
- 		/*
-Index: linux-2.6-tip.hbkpt/arch/x86/mm/kmmio.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/mm/kmmio.c
-+++ linux-2.6-tip.hbkpt/arch/x86/mm/kmmio.c
-@@ -540,8 +540,14 @@ kmmio_die_notifier(struct notifier_block
- 	struct die_args *arg = args;
- 
- 	if (val == DIE_DEBUG && (arg->err & DR_STEP))
--		if (post_kmmio_handler(arg->err, arg->regs) == 1)
-+		if (post_kmmio_handler(arg->err, arg->regs) == 1) {
-+			/*
-+			 * Reset the BS bit in dr6 (pointed by args->err) to
-+			 * denote completion of processing
-+			 */
-+			(*(unsigned long *)ERR_PTR(arg->err)) &= ~DR_STEP;
- 			return NOTIFY_STOP;
-+		}
- 
- 	return NOTIFY_DONE;
- }
-Index: linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-===================================================================
---- linux-2.6-tip.hbkpt.orig/arch/x86/kernel/hw_breakpoint.c
-+++ linux-2.6-tip.hbkpt/arch/x86/kernel/hw_breakpoint.c
-@@ -301,8 +301,12 @@ int __kprobes hw_breakpoint_handler(stru
- {
- 	int i, cpu, rc = NOTIFY_STOP;
- 	struct hw_breakpoint *bp;
--	/* The DR6 value is stored in args->err */
--	unsigned long dr7, dr6 = args->err;
-+	unsigned long dr7, dr6;
-+	unsigned long *dr6_p;
-+
-+	/* The DR6 value is pointed by args->err */
-+	dr6_p = (unsigned long *)ERR_PTR(args->err);
-+	dr6 = *dr6_p;
- 
- 	/* Do an early return if no trap bits are set in DR6 */
- 	if ((dr6 & DR_TRAP_BITS) == 0)
-@@ -346,6 +350,11 @@ int __kprobes hw_breakpoint_handler(stru
- 			continue;
- 
- 		(bp->triggered)(bp, args->regs);
-+		/*
-+		 * Reset the 'i'th TRAP bit in dr6 to denote completion of
-+		 * exception handling
-+		 */
-+		(*dr6_p) &= ~(DR_TRAP0 << i);
- 	}
- 	if (dr6 & (~DR_TRAP_BITS))
- 		rc = NOTIFY_DONE;
-
+thanks
+-john
