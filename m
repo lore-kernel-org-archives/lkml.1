@@ -1,19 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758039AbZEPXEo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759411AbZEPXFB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758039AbZEPXEo (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 19:04:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757694AbZEPXAY
+	id S1759411AbZEPXFB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 19:05:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758175AbZEPXAt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 19:00:24 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44252 "EHLO ogre.sisk.pl"
+	Sat, 16 May 2009 19:00:49 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:44258 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757930AbZEPXAS convert rfc822-to-8bit (ORCPT
+	id S1758144AbZEPXAs convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 19:00:18 -0400
+	Sat, 16 May 2009 19:00:48 -0400
 Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "DRI" <dri-devel@lists.sourceforge.net>,
-       "Jos van der Ende" <seraph@xs4all.nl>,
-       "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>
+       "Maciej Rutecki" <maciej.rutecki@gmail.com>,
+       "Yinghai Lu" <yhlu.kernel@gmail.com>
 References: <yO1BmxN79sN.A.xAG.8_zDKB@chimera>
 In-Reply-To: <yO1BmxN79sN.A.xAG.8_zDKB@chimera>
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -21,10 +20,10 @@ MIME-Version: 1.0
 Content-Disposition: inline
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8BIT
-Message-ID: <pQ9WADCjgyE.A.XPH.6A0DKB@chimera>
-Subject: [Bug #12947] r128: system hangs when X is started with DRI enabled
+Message-ID: <pQ9WADCjgyE.A.QrG.PA0DKB@chimera>
+Subject: [Bug #13172] Spontaneous reboots since 2.6.29-rc*
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 16 May 2009 22:05:58 +0200 (CEST)
+Date: Sat, 16 May 2009 22:06:02 +0200 (CEST)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -37,9 +36,10 @@ introduced between 2.6.28 and 2.6.29.  Please verify if it still should
 be listed and let me know (either way).
 
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=12947
-Subject		: r128: system hangs when X is started with DRI enabled
-Submitter	: Jos van der Ende <seraph@xs4all.nl>
-Date		: 2009-03-26 16:14 (52 days old)
+Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13172
+Subject		: Spontaneous reboots since 2.6.29-rc*
+Submitter	: Maciej Rutecki <maciej.rutecki@gmail.com>
+Date		: 2009-04-17 17:03 (30 days old)
+References	: http://marc.info/?l=linux-kernel&m=123998788921733&w=4
 
 
