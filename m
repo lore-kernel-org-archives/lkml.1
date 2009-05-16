@@ -1,43 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757649AbZEPXIS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1760112AbZEPXIg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757649AbZEPXIS (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 19:08:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758470AbZEPXBO
+	id S1760112AbZEPXIg (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 19:08:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757867AbZEPXEb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 19:01:14 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:44279 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758506AbZEPXBH convert rfc822-to-8bit (ORCPT
+	Sat, 16 May 2009 19:04:31 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44989 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1757675AbZEPXEa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 19:01:07 -0400
-Cc: Kernel Testers List <kernel-testers@vger.kernel.org>,
-       "lyman" <lymanrb@gmail.com>
-References: <yO1BmxN79sN.A.xAG.8_zDKB@chimera>
-In-Reply-To: <yO1BmxN79sN.A.xAG.8_zDKB@chimera>
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8BIT
-Message-ID: <pQ9WADCjgyE.A.jCG.AA0DKB@chimera>
-Subject: [Bug #13271] ath9k stop working since 2.6.29
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Date: Sat, 16 May 2009 22:06:05 +0200 (CEST)
+	Sat, 16 May 2009 19:04:30 -0400
+Date: Sat, 16 May 2009 16:03:45 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, LKML <linux-kernel@vger.kernel.org>,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: 2.6.30-rc kills my box hard - and lockdep chains
+Message-Id: <20090516160345.5bec42d7.akpm@linux-foundation.org>
+In-Reply-To: <1242365555.26820.51.camel@twins>
+References: <20090514094951.36fd7333@bike.lwn.net>
+	<1242365555.26820.51.camel@twins>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This message has been generated automatically as a part of a report
-of regressions introduced between 2.6.28 and 2.6.29.
+On Fri, 15 May 2009 07:32:35 +0200 Peter Zijlstra <peterz@infradead.org> wrote:
 
-The following bug entry is on the current list of known regressions
-introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-be listed and let me know (either way).
+> On Thu, 2009-05-14 at 09:49 -0600, Jonathan Corbet wrote:
+> > First time gave me:
+> > 
+> >         BUG: MAX_LOCKDEP_ENTRIES too low!
+> > 
+> > So I doubled it.  Now I get:
+> > 
+> > May 14 01:06:55 bike kernel: [38730.804833] BUG: MAX_LOCKDEP_CHAINS
+> > too low!
+> 
+> Ingo recently raised these numbers, from the -tip tree:
+> 
+> commit d80c19df5fcceb8c741e96f09f275c2da719efef
+> Author: Ingo Molnar <mingo@elte.hu>
+> Date:   Tue May 12 16:29:13 2009 +0200
+> 
+>     lockdep: increase MAX_LOCKDEP_ENTRIES and MAX_LOCKDEP_CHAINS
+> 
+> 
+> This will likely make its way upstream soonish.
 
+That patch isn't in linux-next and I can't be bothered going off and
+finding it.
 
-Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13271
-Subject		: ath9k stop working since 2.6.29
-Submitter	: lyman <lymanrb@gmail.com>
-Date		: 2009-05-10 01:58 (7 days old)
-
+Jon said that doubling MAX_LOCKDEP_CHAINS didn't help.  How much did
+the above patch increase things by?
 
