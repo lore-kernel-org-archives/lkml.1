@@ -1,88 +1,108 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757490AbZEPKLW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757117AbZEPK01@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757490AbZEPKLW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 06:11:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755797AbZEPKLG
+	id S1757117AbZEPK01 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 06:26:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755472AbZEPK0R
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 06:11:06 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:59630 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755154AbZEPKLF (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 06:11:05 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=googlemail.com; s=gamma;
-        h=mime-version:sender:reply-to:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=sfueBbNAUV8H2HeqcAsmxCCVk2l1v2iaE4i2wYM6ReC3Rw+ulRd77GmcZp50Tj3pxV
-         IaqRxErGxwI1WLxeEZrgtj4sraPtlsSo5rw6KeFzQv2H2Tv/+Q1QIRMiakdIqizI+UYH
-         Hkl2YQPo0rtKX5TInHo9/wv7frq+TDZWNFkTQ=
+	Sat, 16 May 2009 06:26:17 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:37442 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1755391AbZEPK0P (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 06:26:15 -0400
+Date: Sat, 16 May 2009 12:25:55 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Bjorn Helgaas <bjorn.helgaas@hp.com>
+Cc: Yinghai Lu <yinghai@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+       "H. Peter Anvin" <hpa@zytor.com>,
+       Jesse Barnes <jbarnes@virtuousgeek.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       linux-pci@vger.kernel.org
+Subject: Re: [PATCH] x86: update_mptable need pci_routeirq
+Message-ID: <20090516102555.GA6261@elte.hu>
+References: <4A0DC7DC.7000204@kernel.org> <200905151552.53139.bjorn.helgaas@hp.com> <4A0DE6C5.6060903@kernel.org> <200905151608.25250.bjorn.helgaas@hp.com>
 MIME-Version: 1.0
-Reply-To: Tobias_Mueller@twam.info
-In-Reply-To: <17be05570905160252l3ffc1923xf5031702947948a6@mail.gmail.com>
-References: <17be05570905130710s1192729cqafa09127f6c34bf9@mail.gmail.com>
-	 <20090513151415.6e84fd82.akpm@linux-foundation.org>
-	 <17be05570905140208n5fd695aayfad221808f70ac21@mail.gmail.com>
-	 <20090515010947.4016ba66.const@mimas.ru>
-	 <17be05570905141323l31ee6f9o71698e57aec4b698@mail.gmail.com>
-	 <20090515023202.57387cb2.const@mimas.ru>
-	 <17be05570905160252l3ffc1923xf5031702947948a6@mail.gmail.com>
-Date: Sat, 16 May 2009 12:11:03 +0200
-X-Google-Sender-Auth: efa2c579525135b3
-Message-ID: <17be05570905160311l3b56bf31q91597eef4050f982@mail.gmail.com>
-Subject: [PATCH v3 001/001] [PATCH 001/001] leds: alix-leds2 fixed for Award 
-	BIOS
-From: =?UTF-8?Q?Tobias_M=C3=BCller?= <Tobias_Mueller@twam.info>
-To: linux-kernel@vger.kernel.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       Constantin Baranov <const@mimas.ru>, Richard Purdie <rpurdie@rpsys.net>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905151608.25250.bjorn.helgaas@hp.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Tobias Mueller <Tobias_Mueller@twam.info>
 
-Added initialisation of GPIO ports for compatibility with boards with Award
-BIOS (e.g. ALIX.3D3).
-Signed-off-by: Tobias Mueller <Tobias_Mueller@twam.info>
----
-diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
-index 9b60b6b..37e9118 100644
---- a/drivers/leds/Kconfig
-+++ b/drivers/leds/Kconfig
-@@ -75,6 +75,7 @@ config LEDS_ALIX2
- 	depends on LEDS_CLASS && X86 && EXPERIMENTAL
- 	help
- 	  This option enables support for the PCEngines ALIX.2 and ALIX.3 LEDs.
-+	  You have to set leds-alix2.force=1 for boards with Award BIOS.
+* Bjorn Helgaas <bjorn.helgaas@hp.com> wrote:
 
- config LEDS_H1940
- 	tristate "LED Support for iPAQ H1940 device"
-diff --git a/drivers/leds/leds-alix2.c b/drivers/leds/leds-alix2.c
-index ddbd773..731d4ee 100644
---- a/drivers/leds/leds-alix2.c
-+++ b/drivers/leds/leds-alix2.c
-@@ -14,7 +14,7 @@
+> On Friday 15 May 2009 04:03:49 pm Yinghai Lu wrote:
+> > Bjorn Helgaas wrote:
+> > > On Friday 15 May 2009 03:13:20 pm Yinghai Lu wrote:
+> > >> Bjorn Helgaas wrote:
+> > >>> On Friday 15 May 2009 01:51:56 pm Yinghai Lu wrote:
+> > >>>> to get all device irq routing and save them
+> > >>> This changelog isn't really enough for me to understand
+> > >>> what's going on.
+> > >>>
+> > >>>> Index: linux-2.6/arch/x86/kernel/mpparse.c
+> > >>>> ===================================================================
+> > >>>> --- linux-2.6.orig/arch/x86/kernel/mpparse.c
+> > >>>> +++ linux-2.6/arch/x86/kernel/mpparse.c
+> > >>>> @@ -17,6 +17,7 @@
+> > >>>>  #include <linux/acpi.h>
+> > >>>>  #include <linux/module.h>
+> > >>>>  #include <linux/smp.h>
+> > >>>> +#include <linux/pci.h>
+> > >>>>  
+> > >>>>  #include <asm/mtrr.h>
+> > >>>>  #include <asm/mpspec.h>
+> > >>>> @@ -961,6 +962,7 @@ static int __initdata enable_update_mpta
+> > >>>>  static int __init update_mptable_setup(char *str)
+> > >>>>  {
+> > >>>>  	enable_update_mptable = 1;
+> > >>>> +	pci_routeirq = 1;
+> > >>> I hate to see new uses of pci_routeirq.  It'd be nice to remove it
+> > >>> completely someday.  But maybe it can't be helped.
+> > >>>
+> > >>>>  	return 0;
+> > >>>>  }
+> > >>>>  early_param("update_mptable", update_mptable_setup);
+> > >>> "update_mptable" is apparently a boot option, but it's not mentioned
+> > >>> in Documentation/kernel-parameters.txt.  Is this some sort of debug
+> > >>> code or BIOS-writer's helper?  Same with "alloc_mptable".  Why do
+> > >>> we have this stuff?
+> > >>>
+> > >> 1. kexec path: after acpi kernel and use kexec to load kerenl with mptable support only or acpi=off
+> > >> 2. help to BIOS engineer to understand how to set mptable and irq routing setup by chipset.
+> > >>    esp system have several cards and there is bridge in those cards.
+> > ...
+> > > Is (1) common enough to worry about?  What OSes don't have ACPI
+> > > support?  What advantage is there to using "acpi=off"?
+> > ...
+> > 
+> > some one want to disable acpi, because acpid is using 100%...
+> 
+> I'd rather fix the problem with acpid than make it easier to use 
+> "acpi=off".
 
- static int force = 0;
- module_param(force, bool, 0444);
--MODULE_PARM_DESC(force, "Assume system has ALIX.2 style LEDs");
-+MODULE_PARM_DESC(force, "Assume system has ALIX.2/ALIX.3 style LEDs");
+Well, acpi=off is frequently used. Besides of that, there's a design 
+and future-proof-ness issue as well: having a correct mptable is 
+good in sense of not having all our collective eggs in the ACPI 
+basket. ACPI also has IP attached and there are vendors who are 
+loathe to use it for one reason or another.
 
- struct alix_led {
- 	struct led_classdev cdev;
-@@ -155,6 +155,11 @@ static int __init alix_led_init(void)
- 		goto out;
- 	}
+So as long as Yinghai is willing to maintain this path and is 
+willing to keep it correct, and as long as we _have_ an acpi=off 
+option in the upstream kernel it makes sense to make the kexec 
+environment as correct and inclusive as possible.
 
-+	/* enable output on GPIO for LED 1,2,3 */
-+	outl(1 << 6, 0x6104);
-+	outl(1 << 9, 0x6184);
-+	outl(1 << 11, 0x6184);
-+
- 	pdev = platform_device_register_simple(KBUILD_MODNAME, -1, NULL, 0);
- 	if (!IS_ERR(pdev)) {
- 		ret = platform_driver_probe(&alix_led_driver, alix_led_probe);
+acpid looping should of course be fixed separately. Almost all 
+distros ship with acpi enabled so there's no shortage of bugs being 
+reported, and there's no need to artificially make it harder for 
+people to not use acpi if they so choose.
+
+	Ingo
