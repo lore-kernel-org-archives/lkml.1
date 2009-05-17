@@ -1,84 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbZEQTmk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbZEQTq1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755211AbZEQTmk (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 15:42:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZEQTm2
+	id S1754200AbZEQTq1 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 15:46:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbZEQTqQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 15:42:28 -0400
-Received: from moutng.kundenserver.de ([212.227.126.187]:57676 "EHLO
-	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753569AbZEQTm0 (ORCPT
+	Sun, 17 May 2009 15:46:16 -0400
+Received: from fmmailgate04.web.de ([217.72.192.242]:38649 "EHLO
+	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752349AbZEQTqP convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 15:42:26 -0400
-From: Arnd Bergmann <arnd@arndb.de>
-To: Robert Hancock <hancockrwd@gmail.com>
-Subject: Re: [PATCH] ata: libata depends on HAS_DMA
-Date: Sun, 17 May 2009 21:38:54 +0200
-User-Agent: KMail/1.9.9
-Cc: Tejun Heo <htejun@gmail.com>,
-       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
-       alan@lxorguk.ukuu.org.uk, flar@allandria.com,
-       schmitz@biophys.uni-duesseldorf.de, linux-kernel@vger.kernel.org,
-       jgarzik@pobox.com, linux-ide@vger.kernel.org, takata@linux-m32r.org,
-       geert@linux-m68k.org, linux-m68k@vger.kernel.org,
-       ysato@users.sourceforge.jp
-References: <20090513043409.GA13577@cynthia.pants.nu> <200905151355.09888.arnd@arndb.de> <4A0FD229.9010401@gmail.com>
-In-Reply-To: <4A0FD229.9010401@gmail.com>
-X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
- =?iso-8859-1?q?Y=2Ea=5E3zb?=)
- =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
- =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
+	Sun, 17 May 2009 15:46:15 -0400
+Date: Sun, 17 May 2009 21:46:15 +0200
+Message-Id: <720427516@web.de>
 MIME-Version: 1.0
-Content-Disposition: inline
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Message-Id: <200905172138.55145.arnd@arndb.de>
-X-Provags-ID: V01U2FsdGVkX1/I5DFzxYF2s6+C+JJkvJFSIEt08hmj8qJBn+h
- D73Fezdfir5M22wfxXYnUvPru/xprCvOoYYqwdsC5Ax+OdWAv8
- aOeKeNfvHG9bComxz9LBQ==
+From: devzero@web.de
+To: david@lang.hm
+Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+       Ingo Molnar <mingo@elte.hu>
+Subject: Re: Where do we stand with the Xen patches?
+Organization: http://freemail.web.de/
+X-Provags-Id: V01U2FsdGVkX1+t+EGJ4my+uPwPb49eKxC4cUdx6+uv8eXZYtcTnpKUbrV9K
+ aTmgeGDG1q+AI9Wi8bgiMBBomUTmYmFALmfuAhEMV7Q6xlSSnk=
+Content-Type: text/plain; charset=iso-8859-15
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 May 2009, Robert Hancock wrote:
-> Arnd Bergmann wrote:
-> > On Friday 15 May 2009, Tejun Heo wrote:
-> >> Don't know much history here but I don't wanna sprinkle ifdefs around
-> >> in libata so I would much prefer dummy implementation which doesn't
-> >> fail compile.
-> > 
-> > My original patch did that by adding 'depends on HAS_DMA'.
-> > 
-> > The only architectures that don't have that are m68k, m32r,
-> > h8300, s390 and microblaze. More research has shown that
-> > they all found a different way to disable the ATA drivers
-> > already, except microblaze.
-> > 
-> > Alan, you objected the patch initially (and loudly), but
-> > maybe you can reconsider this. The only actual effect
-> > that my patch has is to allow an allyesconfig build on
-> > microblaze and that will implement dma-mapping.h in the
-> > next version.
-> > 
-> > All existing architectures do not care at all about this
-> > change, unless I'm missing something.
-> > 
-> > Besides, all the other users of the DMA mapping API
-> > also depend on CONFIG_HAS_DMA.
+> >> As in the past, my main worry is performance overhead of paravirt in
+> >> general.
+> >>
+> >> The patches that dont affect any native kernel fast path are
+> >> probably OK (but still pending final review).
+> >>
+> >> Regarding patches that do change the fastpath i'll do a round of
+> >> measurements of CONFIG_PARAVIRT against !CONFIG_PARAVIRT kernels,
+> >> and make up my mind based on that.
+> >>
+> >> You could accelerate this by sending some "perf stat" hard numbers
+> >> to give us an idea about where we stand today.
+> >>
+> >> 	Ingo
+> >
+> > maybe this is iust a stupid comment (please forgive, i?m no advanced kernel
+> > hacker), but can?t the code inserted by the patches and which changes the
+> > fastpath just #IFDEF`ed at the critical offsets ?  (as building a dom0 kernel is
+> > just another build target, isn`t it ?)
 > 
-> Yes, it fixes the compile problem by preventing libata from being 
-> compiled at all. But the point is that libata should be able to work 
-> without DMA support.
+> no, if dom0 is going to be widely deployed, it will be because the distros 
+> turn on dom0 support by default. as a result any penalties due to xen 
+> support will be felt by all users of those distros (even if they don't use 
+> xen)
+> 
+> David Lang
 
-Please reread my explanations above and your own reply from 
-last thursday. The case is entirely theoretical, as all platforms
-(except microblaze, which is getting fixed) either set HAS_DMA or
-don't allow building ATA drivers anyway. Platforms that don't support
-DMA can just define CONFIG_HAS_DMA and do what you suggested:
+so what?
 
-On Thursday 14 May 2009, Robert Hancock wrote:
-> Wouldn't the easiest solution be to just dummy out the DMA API calls on 
-> this platform to always fail? That would fix these compile problems..
+print a huge warning on boot that running dom0 for xen may affect performance and that 
+you should better run a normal kernel instead if you don`t use xen , and you`re done.
 
-	Arnd <><
+or is maintaining two different kernel packages a problem?
+
+if so, instead of using IFDEF`s, can`t the critical path`s being generously circumvented 
+by default, (if, else...), needing some dom0 kernel bootparam to be activated (i.e. use
+the kernel as dom0 kernel) ?
+
+or is this too short-sighted view of the things ?
+
+regards
+roland
+
+
+
+
+______________________________________________________
+GRATIS für alle WEB.DE-Nutzer: Die maxdome Movie-FLAT!
+Jetzt freischalten unter http://movieflat.web.de
+
