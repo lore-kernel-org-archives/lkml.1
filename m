@@ -1,210 +1,831 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757857AbZEQKnc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756150AbZEQLGz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757857AbZEQKnc (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 06:43:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751852AbZEQKnW
+	id S1756150AbZEQLGz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 07:06:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754052AbZEQLGk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 06:43:22 -0400
-Received: from wf-out-1314.google.com ([209.85.200.170]:42917 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753253AbZEQKnT (ORCPT
+	Sun, 17 May 2009 07:06:40 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:54655 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804AbZEQLGi (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 06:43:19 -0400
+	Sun, 17 May 2009 07:06:38 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=fhsUI6yVU6oQTEkhPYUmlWtvhUWBj0jmPJv5BTR8l2QTpCwkx3I4xsZFeXxHu43qy2
-         rSv8tqh3Xdc250hkT407vIrtl8c4d5QdAccRYgrNuAHAR5dldQKPxry+5hWCJ2fw0qM3
-         R/mnQDDmo+MY0h6bpMm6lkzOg1PIlYuN7n9W4=
-Date: Sun, 17 May 2009 18:42:51 +0800
-From: Ming Lei <tom.leiming@gmail.com>
-To: Ingo Molnar <mingo@elte.hu>
-Cc: Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: INFO: possible circular locking dependency at
- cleanup_workqueue_thread
-Message-ID: <20090517184251.1a87a270@linux-lm>
-In-Reply-To: <20090517071834.GA8507@elte.hu>
-References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
-	<20090517071834.GA8507@elte.hu>
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.4; x86_64-unknown-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+        h=from:to:cc:subject:date:message-id:x-mailer;
+        b=lhFpEzU2aE3XggS//lqTktiGzyk/6zrYL9vDhK9dTh6SSWExn1xfR2snecJT5b3/1S
+         i7Q30NVOfrFDCwXm6qPT4R7KCGS5GRqkbewsy4sPGzSPUksYjhiZhGjhpK2nMn3rBBZ4
+         MVf81XZVD0tzLDGpDZRGk7MKQnp4RkO3ipl0I=
+From: Richard Genoud <richard.genoud@gmail.com>
+To: Greg Kroah-Hartman <gregkh@suse.de>
+Cc: Judd Montgomery <judd@jpilot.org>, Jeff Frontz <jeff.frontz@gmail.com>,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org,
+       Richard Genoud <richard.genoud@gmail.com>
+Subject: [PATCH 1/3] clean rspiusb code
+Date: Sun, 17 May 2009 13:06:30 +0200
+Message-Id: <128c57bf092e08fe6372f6e8c3d02fc88b62e094.1242557192.git.richard.genoud@gmail.com>
+X-Mailer: git-send-email 1.6.0.4
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 May 2009 09:18:34 +0200
-Ingo Molnar <mingo@elte.hu> wrote:
+This first patch makes checkpatch happier
 
-> 
-> Cc:s added. This dependency:
-> 
-> > -> #2 (cfg80211_mutex){+.+.+.}:
-> >        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
-> >        [<ffffffff80271f38>] lock_acquire+0x98/0x140
-> >        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
-> >        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
-> >        [<ffffffffa007e66a>] reg_todo+0x19a/0x590 [cfg80211]
-> >        [<ffffffff80258f18>] worker_thread+0x1e8/0x3a0
-> >        [<ffffffff8025dc3a>] kthread+0x5a/0xa0
-> >        [<ffffffff8020d23a>] child_rip+0xa/0x20
-> 
-> is what sets the dependencies upside down.
-> 
-> 	Ingo
-> 
+Signed-off-by: Richard Genoud <richard.genoud@gmail.com>
+---
+ drivers/staging/rspiusb/rspiusb.c |  406 ++++++++++++++++++++-----------------
+ drivers/staging/rspiusb/rspiusb.h |   28 ++-
+ 2 files changed, 242 insertions(+), 192 deletions(-)
 
-If I remove cfg80211 and related wireless module, the warning becomes:
-
-
-[  562.689264] [ INFO: possible circular locking dependency detected ]
-[  562.689267] 2.6.30-rc5-next-20090515-00004-g346c29d-dirty #106
-[  562.689270] -------------------------------------------------------
-[  562.689272] pm-suspend/4672 is trying to acquire lock:
-[  562.689275]  (events){+.+.+.}, at: [<ffffffff80258523>] cleanup_workqueue_thread+0x23/0xf1
-[  562.689284] 
-[  562.689285] but task is already holding lock:
-[  562.689287]  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff80247685>] disable_nonboot_cpus+0x38/0x125
-[  562.689295] 
-[  562.689296] which lock already depends on the new lock.
-[  562.689298] 
-[  562.689299] 
-[  562.689300] the existing dependency chain (in reverse order) is:
-[  562.689302] 
-[  562.689303] -> #5 (cpu_add_remove_lock){+.+.+.}:
-[  562.689308]        [<ffffffff8026eae8>] __lock_acquire+0x13a9/0x171c
-[  562.689313]        [<ffffffff8026ef5f>] lock_acquire+0x104/0x130
-[  562.689318]        [<ffffffff804ab2f0>] mutex_lock_nested+0x6f/0x36b
-[  562.689324]        [<ffffffff802475df>] cpu_maps_update_begin+0x17/0x19
-[  562.689328]        [<ffffffff8025883d>] __create_workqueue_key+0xef/0x1bd
-[  562.689333]        [<ffffffff80282024>] stop_machine_create+0x3f/0xa0
-[  562.689338]        [<ffffffff802820a3>] stop_machine+0x1e/0x4f
-[  562.689343]        [<ffffffff8028ef29>] ftrace_run_update_code+0x2b/0x7c
-[  562.689347]        [<ffffffff8028f21d>] ftrace_startup+0x42/0x44
-[  562.689351]        [<ffffffff8028f2a2>] register_ftrace_function+0x83/0x95
-[  562.689356]        [<ffffffff8029b09b>] function_trace_init+0x91/0xa1
-[  562.689360]        [<ffffffff80298017>] tracer_init+0x1d/0x22
-[  562.689366]        [<ffffffff80298c49>] trace_selftest_startup_function+0x4e/0xf7
-[  562.689371]        [<ffffffff8029840a>] register_tracer+0x151/0x270
-[  562.689375]        [<ffffffff806e7132>] init_function_trace+0x3c/0x3e
-[  562.689381]        [<ffffffff80209080>] do_one_initcall+0x75/0x18a
-[  562.689386]        [<ffffffff806d0678>] kernel_init+0x138/0x18e
-[  562.689391]        [<ffffffff8020c33a>] child_rip+0xa/0x20
-[  562.689396]        [<ffffffffffffffff>] 0xffffffffffffffff
-[  562.689406] 
-[  562.689407] -> #4 (setup_lock){+.+...}:
-[  562.689411]        [<ffffffff8026eae8>] __lock_acquire+0x13a9/0x171c
-[  562.689416]        [<ffffffff8026ef5f>] lock_acquire+0x104/0x130
-[  562.689420]        [<ffffffff804ab2f0>] mutex_lock_nested+0x6f/0x36b
-[  562.689424]        [<ffffffff80281ffc>] stop_machine_create+0x17/0xa0
-[  562.689429]        [<ffffffff80247668>] disable_nonboot_cpus+0x1b/0x125
-[  562.689434]        [<ffffffff8027b235>] suspend_devices_and_enter+0xdb/0x1c0
-[  562.689439]        [<ffffffff8027b4b0>] enter_state+0x168/0x1ce
-[  562.689443]        [<ffffffff8027b5d2>] state_store+0xbc/0xdd
-[  562.689447]        [<ffffffff803696ef>] kobj_attr_store+0x17/0x19
-[  562.689452]        [<ffffffff8032d5f9>] sysfs_write_file+0xe9/0x11e
-[  562.689457]        [<ffffffff802db580>] vfs_write+0xb3/0x13c
-[  562.689462]        [<ffffffff802db6d7>] sys_write+0x4c/0x73
-[  562.689466]        [<ffffffff8020b202>] system_call_fastpath+0x16/0x1b
-[  562.689471]        [<ffffffffffffffff>] 0xffffffffffffffff
-[  562.689475] 
-[  562.689476] -> #3 (dpm_list_mtx){+.+.+.}:
-[  562.689480]        [<ffffffff8026eae8>] __lock_acquire+0x13a9/0x171c
-[  562.689484]        [<ffffffff8026ef5f>] lock_acquire+0x104/0x130
-[  562.689489]        [<ffffffff804ab2f0>] mutex_lock_nested+0x6f/0x36b
-[  562.689493]        [<ffffffff803f6395>] device_pm_add+0x4b/0xf2
-[  562.689499]        [<ffffffff803ef382>] device_add+0x498/0x62a
-[  562.689503]        [<ffffffff8043fd32>] netdev_register_kobject+0x7b/0x80
-[  562.689509]        [<ffffffff80434761>] register_netdevice+0x2d0/0x469
-[  562.689514]        [<ffffffff80434939>] register_netdev+0x3f/0x4d
-[  562.689519]        [<ffffffff806f634f>] loopback_net_init+0x40/0x7d
-[  562.689524]        [<ffffffff8042ee79>] register_pernet_device+0x32/0x5f
-[  562.689528]        [<ffffffff806fb41a>] net_dev_init+0x143/0x1a1
-[  562.689533]        [<ffffffff80209080>] do_one_initcall+0x75/0x18a
-[  562.689538]        [<ffffffff806d0678>] kernel_init+0x138/0x18e
-[  562.689542]        [<ffffffff8020c33a>] child_rip+0xa/0x20
-[  562.689546]        [<ffffffffffffffff>] 0xffffffffffffffff
-[  562.689550] 
-[  562.689551] -> #2 (rtnl_mutex){+.+.+.}:
-[  562.689555]        [<ffffffff8026eae8>] __lock_acquire+0x13a9/0x171c
-[  562.689559]        [<ffffffff8026ef5f>] lock_acquire+0x104/0x130
-[  562.689564]        [<ffffffff804ab2f0>] mutex_lock_nested+0x6f/0x36b
-[  562.689568]        [<ffffffff8043cf2d>] rtnl_lock+0x17/0x19
-[  562.689573]        [<ffffffff8043df37>] linkwatch_event+0xe/0x2c
-[  562.689577]        [<ffffffff8025810b>] worker_thread+0x23a/0x359
-[  562.689581]        [<ffffffff8025c258>] kthread+0x5b/0x88
-[  562.689586]        [<ffffffff8020c33a>] child_rip+0xa/0x20
-[  562.689590]        [<ffffffffffffffff>] 0xffffffffffffffff
-[  562.689594] 
-[  562.689595] -> #1 ((linkwatch_work).work){+.+...}:
-[  562.689599]        [<ffffffff8026eae8>] __lock_acquire+0x13a9/0x171c
-[  562.689603]        [<ffffffff8026ef5f>] lock_acquire+0x104/0x130
-[  562.689607]        [<ffffffff80258102>] worker_thread+0x231/0x359
-[  562.689611]        [<ffffffff8025c258>] kthread+0x5b/0x88
-[  562.689616]        [<ffffffff8020c33a>] child_rip+0xa/0x20
-[  562.689619]        [<ffffffffffffffff>] 0xffffffffffffffff
-[  562.689635] 
-[  562.689636] -> #0 (events){+.+.+.}:
-[  562.689639]        [<ffffffff8026e81d>] __lock_acquire+0x10de/0x171c
-[  562.689644]        [<ffffffff8026ef5f>] lock_acquire+0x104/0x130
-[  562.689648]        [<ffffffff8025854a>] cleanup_workqueue_thread+0x4a/0xf1
-[  562.689652]        [<ffffffff8049b999>] workqueue_cpu_callback+0xc7/0x10a
-[  562.689658]        [<ffffffff802606ff>] notifier_call_chain+0x33/0x5b
-[  562.689663]        [<ffffffff802607ab>] raw_notifier_call_chain+0x14/0x16
-[  562.689667]        [<ffffffff80499bca>] _cpu_down+0x280/0x29d
-[  562.689672]        [<ffffffff802476ca>] disable_nonboot_cpus+0x7d/0x125
-[  562.689677]        [<ffffffff8027b235>] suspend_devices_and_enter+0xdb/0x1c0
-[  562.689681]        [<ffffffff8027b4b0>] enter_state+0x168/0x1ce
-[  562.689685]        [<ffffffff8027b5d2>] state_store+0xbc/0xdd
-[  562.689689]        [<ffffffff803696ef>] kobj_attr_store+0x17/0x19
-[  562.689694]        [<ffffffff8032d5f9>] sysfs_write_file+0xe9/0x11e
-[  562.689698]        [<ffffffff802db580>] vfs_write+0xb3/0x13c
-[  562.689702]        [<ffffffff802db6d7>] sys_write+0x4c/0x73
-[  562.689706]        [<ffffffff8020b202>] system_call_fastpath+0x16/0x1b
-[  562.689711]        [<ffffffffffffffff>] 0xffffffffffffffff
-[  562.689715] 
-[  562.689716] other info that might help us debug this:
-[  562.689717] 
-[  562.689720] 4 locks held by pm-suspend/4672:
-[  562.689722]  #0:  (&buffer->mutex){+.+.+.}, at: [<ffffffff8032d54d>] sysfs_write_file+0x3d/0x11e
-[  562.689729]  #1:  (pm_mutex){+.+.+.}, at: [<ffffffff8027b50d>] enter_state+0x1c5/0x1ce
-[  562.689736]  #2:  (dpm_list_mtx){+.+.+.}, at: [<ffffffff803f55f9>] device_pm_lock+0x17/0x19
-[  562.689742]  #3:  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff80247685>] disable_nonboot_cpus+0x38/0x125
-[  562.689749] 
-[  562.689750] stack backtrace:
-[  562.689753] Pid: 4672, comm: pm-suspend Not tainted 2.6.30-rc5-next-20090515-00004-g346c29d-dirty #106
-[  562.689757] Call Trace:
-[  562.689762]  [<ffffffff8026d297>] print_circular_bug_tail+0xc1/0xcc
-[  562.689767]  [<ffffffff8026e81d>] __lock_acquire+0x10de/0x171c
-[  562.689772]  [<ffffffff8026add2>] ? lock_release_holdtime+0x7d/0x100
-[  562.689776]  [<ffffffff8026acf6>] ? get_lock_stats+0x14/0x4c
-[  562.689781]  [<ffffffff804aaca2>] ? __mutex_unlock_slowpath+0x121/0x14d
-[  562.689786]  [<ffffffff8026ca24>] ? trace_hardirqs_on_caller+0x12d/0x158
-[  562.689791]  [<ffffffff8026ef5f>] lock_acquire+0x104/0x130
-[  562.689795]  [<ffffffff80258523>] ? cleanup_workqueue_thread+0x23/0xf1
-[  562.689800]  [<ffffffff8025854a>] cleanup_workqueue_thread+0x4a/0xf1
-[  562.689804]  [<ffffffff80258523>] ? cleanup_workqueue_thread+0x23/0xf1
-[  562.689809]  [<ffffffff8049b999>] workqueue_cpu_callback+0xc7/0x10a
-[  562.689813]  [<ffffffff802606ff>] notifier_call_chain+0x33/0x5b
-[  562.689818]  [<ffffffff802607ab>] raw_notifier_call_chain+0x14/0x16
-[  562.689822]  [<ffffffff80499bca>] _cpu_down+0x280/0x29d
-[  562.689827]  [<ffffffff802476ca>] disable_nonboot_cpus+0x7d/0x125
-[  562.689832]  [<ffffffff8027b235>] suspend_devices_and_enter+0xdb/0x1c0
-[  562.689836]  [<ffffffff8027b4b0>] enter_state+0x168/0x1ce
-[  562.689841]  [<ffffffff8027b5d2>] state_store+0xbc/0xdd
-[  562.689845]  [<ffffffff803696ef>] kobj_attr_store+0x17/0x19
-[  562.689849]  [<ffffffff8032d5f9>] sysfs_write_file+0xe9/0x11e
-[  562.689854]  [<ffffffff802db580>] vfs_write+0xb3/0x13c
-[  562.689859]  [<ffffffff802db6d7>] sys_write+0x4c/0x73
-[  562.689863]  [<ffffffff8020b202>] system_call_fastpath+0x16/0x1b
-
-
-
+diff --git a/drivers/staging/rspiusb/rspiusb.c b/drivers/staging/rspiusb/rspiusb.c
+index b233972..72241f2 100644
+--- a/drivers/staging/rspiusb/rspiusb.c
++++ b/drivers/staging/rspiusb/rspiusb.c
+@@ -39,7 +39,11 @@ static int debug;
+ #endif
+ /* Use our own dbg macro */
+ #undef dbg
+-#define dbg(format, arg...) do { if (debug) printk(KERN_DEBUG __FILE__ ": " format "\n" , ## arg); } while (0)
++#define dbg(format, arg...) \
++	do { \
++		if (debug) \
++			printk(KERN_DEBUG __FILE__ ": " format "\n" , ##arg); \
++	} while (0)
+ 
+ /* Version Information */
+ #define DRIVER_VERSION "V1.0.1"
+@@ -63,52 +67,58 @@ static DECLARE_MUTEX(disconnect_sem);
+ 
+ /* Structure to hold all of our device specific stuff */
+ struct device_extension {
+-	struct usb_device *udev;	/* save off the usb device pointer */
+-	struct usb_interface *interface;	/* the interface for this device */
+-	unsigned char minor;	/* the starting minor number for this device */
++	struct usb_device *udev;	 /* save off the usb device pointer */
++	struct usb_interface *interface; /* the interface for this device */
++	unsigned char minor;		 /* the starting minor number
++					  * for this device
++					  */
+ 	size_t bulk_in_size_returned;
+ 	int bulk_in_byte_trk;
+ 	struct urb ***PixelUrb;
+ 	int frameIdx;
+ 	int urbIdx;
+ 	unsigned int *maplist_numPagesMapped;
+-	int open;		/* if the port is open or not */
+-	int present;		/* if the device is not disconnected */
+-	int userBufMapped;	/* has the user buffer been mapped? */
+-	struct scatterlist **sgl;	/* scatter-gather list for user buffer */
++	int open;		  /* if the port is open or not */
++	int present;		  /* if the device is not disconnected */
++	int userBufMapped;	  /* has the user buffer been mapped ? */
++	struct scatterlist **sgl; /* scatter-gather list for user buffer */
+ 	unsigned int *sgEntries;
+ 	struct kref kref;
+ 	int gotPixelData;
+ 	int pendingWrite;
+ 	char **pendedPixelUrbs;
+-	int iama;		/*PIXIS or ST133 */
+-	int num_frames;		/* the number of frames that will fit in the user buffer */
++	int iama;		 /* PIXIS or ST133 */
++	int num_frames;		 /* the number of frames that will fit
++				  * in the user buffer
++				  */
+ 	int active_frame;
+ 	unsigned long frameSize;
+ 	struct semaphore sem;
+-	//FX2 specific endpoints
+-	unsigned int hEP[8];
++	unsigned int hEP[8];	 /* FX2 specific endpoints */
+ };
+-#define to_pi_dev(d) container_of( d, struct device_extension, kref )
+ 
++#define to_pi_dev(d) container_of(d, struct device_extension, kref)
++
++/* Prototypes */
+ static int MapUserBuffer(struct ioctl_struct *, struct device_extension *);
+ static int UnMapUserBuffer(struct device_extension *);
+ static int piusb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 		       unsigned long arg);
+-static int piusb_output(struct ioctl_struct *, unsigned char *, int, struct device_extension *);
++static int piusb_output(struct ioctl_struct *, unsigned char *, int,
++		struct device_extension *);
+ static struct usb_driver piusb_driver;
+ 
+ /* table of devices that work with this driver */
+ static struct usb_device_id pi_device_table[] = {
+ 	{USB_DEVICE(VENDOR_ID, ST133_PID)},
+ 	{USB_DEVICE(VENDOR_ID, PIXIS_PID)},
+-	{0, }			/* Terminating entry */
++	{0, } /* Terminating entry */
+ };
+ 
+ MODULE_DEVICE_TABLE(usb, pi_device_table);
+ 
+-static int lastErr = 0;
+-static int errCnt = 0;
++static int lastErr;
++static int errCnt;
+ 
+ static void piusb_delete(struct kref *kref)
+ {
+@@ -143,25 +153,29 @@ static int piusb_open(struct inode *inode, struct file *file)
+ 	}
+ 	dbg("Alternate Setting = %d", interface->num_altsetting);
+ 
+-	pdx->frameIdx = pdx->urbIdx = 0;
++	pdx->bulk_in_size_returned = 0;
++	pdx->bulk_in_byte_trk = 0;
++	pdx->PixelUrb = NULL;
++	pdx->frameIdx = 0;
++	pdx->urbIdx = 0;
++	pdx->maplist_numPagesMapped = NULL;
++	pdx->userBufMapped = 0;
++	pdx->sgl = NULL;
++	pdx->sgEntries = NULL;
+ 	pdx->gotPixelData = 0;
+ 	pdx->pendingWrite = 0;
+-	pdx->frameSize = 0;
++	pdx->pendedPixelUrbs = NULL;
+ 	pdx->num_frames = 0;
+ 	pdx->active_frame = 0;
+-	pdx->bulk_in_byte_trk = 0;
+-	pdx->userBufMapped = 0;
+-	pdx->pendedPixelUrbs = NULL;
+-	pdx->sgEntries = NULL;
+-	pdx->sgl = NULL;
+-	pdx->maplist_numPagesMapped = NULL;
+-	pdx->PixelUrb = NULL;
+-	pdx->bulk_in_size_returned = 0;
++	pdx->frameSize = 0;
++
+ 	/* increment our usage count for the device */
+ 	kref_get(&pdx->kref);
++
+ 	/* save our object in the file's private structure */
+ 	file->private_data = pdx;
+-      exit_no_device:
++
++exit_no_device:
+ 	return retval;
+ }
+ 
+@@ -174,10 +188,13 @@ static int piusb_release(struct inode *inode, struct file *file)
+ 	pdx = (struct device_extension *)file->private_data;
+ 	if (pdx == NULL) {
+ 		dbg("%s - object is NULL", __func__);
+-		return -ENODEV;
++		retval = -ENODEV;
++		goto object_null;
+ 	}
+ 	/* decrement the count on our device */
+ 	kref_put(&pdx->kref, piusb_delete);
++
++object_null:
+ 	return retval;
+ }
+ 
+@@ -206,9 +223,11 @@ static int piusb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 	}
+ 	/* fill in your device specific stuff here */
+ 	if (_IOC_DIR(cmd) & _IOC_READ)
+-		err = !access_ok(VERIFY_WRITE, (void __user *)arg, _IOC_SIZE(cmd));
++		err = !access_ok(VERIFY_WRITE, (void __user *)arg,
++				_IOC_SIZE(cmd));
+ 	else if (_IOC_DIR(cmd) & _IOC_WRITE)
+-		err = !access_ok(VERIFY_READ, (void __user *)arg, _IOC_SIZE(cmd));
++		err = !access_ok(VERIFY_READ, (void __user *)arg,
++			       _IOC_SIZE(cmd));
+ 	if (err) {
+ 		dev_err(&pdx->udev->dev, "return with error = %d\n", err);
+ 		return -EFAULT;
+@@ -227,50 +246,57 @@ static int piusb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 			dbg("FW Version returned from HW = %ld.%ld",
+ 			    (devRB >> 8), (devRB & 0xFF));
+ 		}
+-		return devRB;
++		if (retval >= 0)
++			retval = (int)devRB;
++		return retval;
++
+ 	case PIUSB_SETVNDCMD:
+ 		if (copy_from_user
+ 		    (&ctrl, (void __user *)arg, sizeof(struct ioctl_struct)))
+ 			dev_err(&pdx->udev->dev, "copy_from_user failed\n");
+-//            dbg( "%s %x", "Set Vendor Command = ",ctrl.cmd );
++		/* dbg( "%s %x", "Set Vendor Command = ",ctrl.cmd ); */
+ 		controlData = ctrl.pData[0];
+ 		controlData |= (ctrl.pData[1] << 8);
+-//            dbg( "%s %d", "Vendor Data =",controlData );
+-		retval = usb_control_msg(pdx->udev, usb_sndctrlpipe(pdx->udev, 0), ctrl.cmd, (USB_DIR_OUT | USB_TYPE_VENDOR),	/* | USB_RECIP_ENDPOINT), */
+-					 controlData,
+-					 0,
+-					 &dummyCtlBuf, ctrl.numbytes, HZ * 10);
++		/* dbg( "%s %d", "Vendor Data =",controlData ); */
++		retval = usb_control_msg(pdx->udev,
++				usb_sndctrlpipe(pdx->udev, 0),
++				ctrl.cmd,
++				(USB_DIR_OUT | USB_TYPE_VENDOR
++				 /* | USB_RECIP_ENDPOINT */),
++				controlData, 0,
++				&dummyCtlBuf, ctrl.numbytes, HZ * 10);
+ 		return retval;
+-		break;
++
+ 	case PIUSB_ISHIGHSPEED:
+ 		return ((pdx->udev->speed == USB_SPEED_HIGH) ? 1 : 0);
+-		break;
++
+ 	case PIUSB_WRITEPIPE:
+ 		if (copy_from_user(&ctrl, (void __user *)arg, _IOC_SIZE(cmd)))
+-			dev_err(&pdx->udev->dev, "copy_from_user WRITE_DUMMY failed\n");
++			dev_err(&pdx->udev->dev,
++					"copy_from_user WRITE_DUMMY failed\n");
+ 		if (!access_ok(VERIFY_READ, ctrl.pData, ctrl.numbytes)) {
+ 			dbg("can't access pData");
+ 			return 0;
+ 		}
+-		piusb_output(&ctrl, ctrl.pData /*uBuf */ , ctrl.numbytes, pdx);
++		piusb_output(&ctrl, ctrl.pData /* uBuf */, ctrl.numbytes, pdx);
+ 		return ctrl.numbytes;
+-		break;
++
+ 	case PIUSB_USERBUFFER:
+ 		if (copy_from_user
+ 		    (&ctrl, (void __user *)arg, sizeof(struct ioctl_struct)))
+ 			dev_err(&pdx->udev->dev, "copy_from_user failed\n");
+-		return MapUserBuffer((struct ioctl_struct *) & ctrl, pdx);
+-		break;
++		return MapUserBuffer((struct ioctl_struct *) &ctrl, pdx);
++
+ 	case PIUSB_UNMAP_USERBUFFER:
+-		UnMapUserBuffer(pdx);
+-		return 0;
+-		break;
++		retval = UnMapUserBuffer(pdx);
++		return retval;
++
+ 	case PIUSB_READPIPE:
+ 		if (copy_from_user
+ 		    (&ctrl, (void __user *)arg, sizeof(struct ioctl_struct)))
+ 			dev_err(&pdx->udev->dev, "copy_from_user failed\n");
+ 		switch (ctrl.endpoint) {
+-		case 0:	//ST133 Pixel Data or PIXIS IO
++		case 0:	/* ST133 Pixel Data or PIXIS IO */
+ 			if (pdx->iama == PIXIS_PID) {
+ 				unsigned int numToRead = 0;
+ 				unsigned int totalRead = 0;
+@@ -286,21 +312,19 @@ static int piusb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 				if (copy_from_user(uBuf, ctrl.pData, numbytes))
+ 					dbg("copying ctrl.pData to dummyBuf failed");
+ 				do {
+-					i = usb_bulk_msg(pdx->udev, pdx->hEP[ctrl.endpoint], (uBuf + totalRead), (numToRead > 64) ? 64 : numToRead, &numbytes, HZ * 10);	//EP0 can only handle 64 bytes at a time
++					i = usb_bulk_msg(pdx->udev, pdx->hEP[ctrl.endpoint], (uBuf + totalRead), (numToRead > 64) ? 64 : numToRead, &numbytes, HZ * 10);	/* EP0 can only handle 64 bytes at a time */
+ 					if (i) {
+ 						dbg("CMD = %s, Address = 0x%02X", ((uBuf[3] == 0x02) ? "WRITE" : "READ"), uBuf[1]);
+ 						dbg("Number of bytes Attempted to read = %d", (int)ctrl.numbytes);
+ 						dbg("Blocking ReadI/O Failed with status %d", i);
+ 						kfree(uBuf);
+ 						return -1;
+-					} else {
+-						dbg("Pixis EP0 Read %d bytes",
+-						    numbytes);
+-						totalRead += numbytes;
+-						numToRead -= numbytes;
+ 					}
+-				}
+-				while (numToRead);
++					dbg("Pixis EP0 Read %d bytes",
++							numbytes);
++					totalRead += numbytes;
++					numToRead -= numbytes;
++				} while (numToRead);
+ 				memcpy(ctrl.pData, uBuf, totalRead);
+ 				dbg("Total Bytes Read from PIXIS EP0 = %d",
+ 				    totalRead);
+@@ -311,34 +335,29 @@ static int piusb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 					dbg("copy_to_user failed in IORB");
+ 				kfree(uBuf);
+ 				return ctrl.numbytes;
+-			} else	//ST133 Pixel Data
+-			{
+-				if (!pdx->gotPixelData)
+-					return 0;
+-				else {
+-					pdx->gotPixelData = 0;
+-					ctrl.numbytes =
+-					    pdx->bulk_in_size_returned;
+-					pdx->bulk_in_size_returned -=
+-					    pdx->frameSize;
+-					for (i = 0; i < pdx->maplist_numPagesMapped[pdx->active_frame]; i++)
+-						SetPageDirty(pdx->sgl[pdx->active_frame][i].page_link);
+-					pdx->active_frame =
+-					    ((pdx->active_frame +
+-					      1) % pdx->num_frames);
+-					return ctrl.numbytes;
+-				}
+ 			}
+-			break;
+-		case 1:	//ST133IO
+-		case 4:	//PIXIS IO
++			/* ST133 Pixel Data */
++			if (!pdx->gotPixelData)
++				return 0;
++			pdx->gotPixelData = 0;
++			ctrl.numbytes = pdx->bulk_in_size_returned;
++			pdx->bulk_in_size_returned -= pdx->frameSize;
++			for (i = 0; i < pdx->maplist_numPagesMapped[pdx->active_frame]; i++)
++				SetPageDirty(pdx->sgl[pdx->active_frame][i].page_link);
++			pdx->active_frame = ((pdx->active_frame + 1)
++					% pdx->num_frames);
++			return ctrl.numbytes;
++
++		case 1:	/* ST133IO */
++			/* fall through */
++		case 4:	/* PIXIS IO */
+ 			uBuf = kmalloc(ctrl.numbytes, GFP_KERNEL);
+ 			if (!uBuf) {
+ 				dbg("Alloc for uBuf failed");
+ 				return 0;
+ 			}
+ 			numbytes = ctrl.numbytes;
+-//                                      dbg( "numbytes to read = %d", numbytes );
++			/* dbg( "numbytes to read = %d", numbytes ); */
+ 			if (copy_from_user(uBuf, ctrl.pData, numbytes))
+ 				dbg("copying ctrl.pData to dummyBuf failed");
+ 			i = usb_bulk_msg(pdx->udev, pdx->hEP[ctrl.endpoint],
+@@ -348,41 +367,37 @@ static int piusb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 				    i);
+ 				kfree(uBuf);
+ 				return -1;
+-			} else {
+-				ctrl.numbytes = numbytes;
+-				memcpy(ctrl.pData, uBuf, numbytes);
+-				if (copy_to_user
+-				    ((struct ioctl_struct *) arg, &ctrl,
+-				     sizeof(struct ioctl_struct)))
+-					dbg("copy_to_user failed in IORB");
+-				kfree(uBuf);
+-				return ctrl.numbytes;
+ 			}
+-			break;
+-
+-		case 2:	//PIXIS Ping
+-		case 3:	//PIXIS Pong
++			ctrl.numbytes = numbytes;
++			memcpy(ctrl.pData, uBuf, numbytes);
++			if (copy_to_user((struct ioctl_struct *) arg, &ctrl,
++						sizeof(struct ioctl_struct)))
++				dbg("copy_to_user failed in IORB");
++			kfree(uBuf);
++			return ctrl.numbytes;
++
++		case 2:	/* PIXIS Ping */
++			/* fall through */
++		case 3:	/* PIXIS Pong */
+ 			if (!pdx->gotPixelData)
+ 				return 0;
+-			else {
+-				pdx->gotPixelData = 0;
+-				ctrl.numbytes = pdx->bulk_in_size_returned;
+-				pdx->bulk_in_size_returned -= pdx->frameSize;
+-				for (i = 0;
+-				     i <
+-				     pdx->maplist_numPagesMapped[pdx->
+-								 active_frame];
+-				     i++)
+-					SetPageDirty(pdx->sgl[pdx->active_frame][i].page_link);
+-				pdx->active_frame =
+-				    ((pdx->active_frame + 1) % pdx->num_frames);
+-				return ctrl.numbytes;
+-			}
++			pdx->gotPixelData = 0;
++			ctrl.numbytes = pdx->bulk_in_size_returned;
++			pdx->bulk_in_size_returned -= pdx->frameSize;
++			for (i = 0; i < pdx->maplist_numPagesMapped[pdx->active_frame]; i++)
++				SetPageDirty(pdx->sgl[pdx->active_frame][i].page_link);
++			pdx->active_frame =
++				((pdx->active_frame + 1) % pdx->num_frames);
++			return ctrl.numbytes;
++
++		default:
+ 			break;
+ 		}
+ 		break;
++
+ 	case PIUSB_WHATCAMERA:
+ 		return pdx->iama;
++
+ 	case PIUSB_SETFRAMESIZE:
+ 		dbg("PIUSB_SETFRAMESIZE");
+ 		if (copy_from_user
+@@ -410,6 +425,7 @@ static int piusb_ioctl(struct inode *inode, struct file *file, unsigned int cmd,
+ 			    kmalloc(sizeof(char *) * pdx->num_frames,
+ 				    GFP_KERNEL);
+ 		return 0;
++
+ 	default:
+ 		dbg("%s\n", "No IOCTL found");
+ 		break;
+@@ -436,7 +452,7 @@ static void piusb_write_bulk_callback(struct urb *urb)
+ 			urb->transfer_buffer, urb->transfer_dma);
+ }
+ 
+-int piusb_output(struct ioctl_struct * io, unsigned char *uBuf, int len,
++int piusb_output(struct ioctl_struct *io, unsigned char *uBuf, int len,
+ 		 struct device_extension *pdx)
+ {
+ 	struct urb *urb = NULL;
+@@ -472,6 +488,7 @@ static int UnMapUserBuffer(struct device_extension *pdx)
+ 	int i = 0;
+ 	int k = 0;
+ 	unsigned int epAddr;
++
+ 	for (k = 0; k < pdx->num_frames; k++) {
+ 		dbg("Killing Urbs for Frame %d", k);
+ 		for (i = 0; i < pdx->sgEntries[k]; i++) {
+@@ -485,23 +502,19 @@ static int UnMapUserBuffer(struct device_extension *pdx)
+ 	}
+ 
+ 	for (k = 0; k < pdx->num_frames; k++) {
+-		if (pdx->iama == PIXIS_PID)	//if so, which EP should we map this frame to
+-		{
+-			if (k % 2)	//check to see if this should use EP4(PONG)
+-			{
+-				epAddr = pdx->hEP[3];	//PONG, odd frames
+-			} else {
+-				epAddr = pdx->hEP[2];	//PING, even frames and zero
+-			}
+-		} else		//ST133 only has 1 endpoint for Pixel data transfer
+-		{
++		if (pdx->iama == PIXIS_PID)
++			/* which EP should we map this frame to ? */
++			/* PONG, odd frames: hEP[3] */
++			/* PING, even frames and zero hEP[2] */
++			epAddr = (k % 2) ? pdx->hEP[3] : pdx->hEP[2];
++		else
++			/* ST133 only has 1 endpoint for Pixel data transfer */
+ 			epAddr = pdx->hEP[0];
+-		}
++
+ 		usb_buffer_unmap_sg(pdx->udev, epAddr, pdx->sgl[k],
+ 				    pdx->maplist_numPagesMapped[k]);
+-		for (i = 0; i < pdx->maplist_numPagesMapped[k]; i++) {
++		for (i = 0; i < pdx->maplist_numPagesMapped[k]; i++)
+ 			page_cache_release(pdx->sgl[k][i].page_link);
+-		}
+ 		kfree(pdx->sgl[k]);
+ 		kfree(pdx->PixelUrb[k]);
+ 		kfree(pdx->pendedPixelUrbs[k]);
+@@ -509,6 +522,7 @@ static int UnMapUserBuffer(struct device_extension *pdx)
+ 		pdx->PixelUrb[k] = NULL;
+ 		pdx->pendedPixelUrbs[k] = NULL;
+ 	}
++
+ 	kfree(pdx->sgEntries);
+ 	vfree(pdx->maplist_numPagesMapped);
+ 	pdx->sgEntries = NULL;
+@@ -519,6 +533,7 @@ static int UnMapUserBuffer(struct device_extension *pdx)
+ 	pdx->sgl = NULL;
+ 	pdx->pendedPixelUrbs = NULL;
+ 	pdx->PixelUrb = NULL;
++
+ 	return 0;
+ }
+ 
+@@ -539,26 +554,25 @@ static void piusb_readPIXEL_callback(struct urb *urb)
+ 		pdx->pendedPixelUrbs[pdx->frameIdx][pdx->urbIdx] = 0;
+ 	} else {
+ 		pdx->bulk_in_byte_trk += urb->actual_length;
+-		{
+-			i = usb_submit_urb(urb, GFP_ATOMIC);	//resubmit the URB
+-			if (i) {
+-				errCnt++;
+-				if (i != lastErr) {
+-					dbg("submit urb in callback failed with error code %d", i);
+-					lastErr = i;
+-				}
+-			} else {
+-				pdx->urbIdx++;	//point to next URB when we callback
+-				if (pdx->bulk_in_byte_trk >= pdx->frameSize) {
+-					pdx->bulk_in_size_returned =
+-					    pdx->bulk_in_byte_trk;
+-					pdx->bulk_in_byte_trk = 0;
+-					pdx->gotPixelData = 1;
+-					pdx->frameIdx =
+-					    ((pdx->frameIdx +
+-					      1) % pdx->num_frames);
+-					pdx->urbIdx = 0;
+-				}
++		i = usb_submit_urb(urb, GFP_ATOMIC);	/* resubmit the URB */
++		if (i) {
++			errCnt++;
++			if (i != lastErr) {
++				dbg("submit urb in callback failed "
++						"with error code %d", i);
++				lastErr = i;
++			}
++		} else {
++			pdx->urbIdx++; /* point to next URB when we callback */
++			if (pdx->bulk_in_byte_trk >= pdx->frameSize) {
++				pdx->bulk_in_size_returned =
++					pdx->bulk_in_byte_trk;
++				pdx->bulk_in_byte_trk = 0;
++				pdx->gotPixelData = 1;
++				pdx->frameIdx =
++					((pdx->frameIdx +
++					  1) % pdx->num_frames);
++				pdx->urbIdx = 0;
+ 			}
+ 		}
+ 	}
+@@ -566,24 +580,37 @@ static void piusb_readPIXEL_callback(struct urb *urb)
+ 
+ /* MapUserBuffer(
+ 	inputs:
+-	struct ioctl_struct *io - structure containing user address, frame #, and size
++	struct ioctl_struct *io - structure containing user address,
++				frame #, and size
+ 	struct device_extension *pdx - the PIUSB device extension
++
+ 	returns:
+ 	int - status of the task
++
+ 	Notes:
+-	MapUserBuffer maps a buffer passed down through an ioctl.  The user buffer is Page Aligned by the app
+-	and then passed down.  The function get_free_pages(...) does the actual mapping of the buffer from user space to
+-	kernel space.  From there a scatterlist is created from all the pages.  The next function called is to usb_buffer_map_sg
+-	which allocated DMA addresses for each page, even coalescing them if possible.  The DMA address is placed in the scatterlist
+-	structure.  The function returns the number of DMA addresses.  This may or may not be equal to the number of pages that
+-	the user buffer uses.  We then build an URB for each DMA address and then submit them.
++	MapUserBuffer maps a buffer passed down through an ioctl.
++	The user buffer is Page Aligned by the app and then passed down.
++	The function get_free_pages(...) does the actual mapping of the buffer
++	from user space to kernel space.
++	From there a scatterlist is created from all the pages.
++	The next function called is to usb_buffer_map_sg which allocated
++	DMA addresses for each page, even coalescing them if possible.
++	The DMA address is placed in the scatterlist structure.
++	The function returns the number of DMA addresses.
++	This may or may not be equal to the number of pages that
++	the user buffer uses.
++	We then build an URB for each DMA address and then submit them.
++*/
++
++/*
++int MapUserBuffer(unsigned long uaddr, unsigned long numbytes,
++		unsigned long frameInfo, struct device_extension *pdx)
+ */
+-//int MapUserBuffer( unsigned long uaddr, unsigned long numbytes, unsigned long frameInfo, struct device_extension *pdx )
+ static int MapUserBuffer(struct ioctl_struct *io, struct device_extension *pdx)
+ {
+ 	unsigned long uaddr;
+ 	unsigned long numbytes;
+-	int frameInfo;		//which frame we're mapping
++	int frameInfo;	/* which frame we're mapping */
+ 	unsigned int epAddr = 0;
+ 	unsigned long count = 0;
+ 	int i = 0;
+@@ -591,45 +618,45 @@ static int MapUserBuffer(struct ioctl_struct *io, struct device_extension *pdx)
+ 	int err = 0;
+ 	struct page **maplist_p;
+ 	int numPagesRequired;
++
+ 	frameInfo = io->numFrames;
+ 	uaddr = (unsigned long)io->pData;
+ 	numbytes = io->numbytes;
+ 
+-	if (pdx->iama == PIXIS_PID)	//if so, which EP should we map this frame to
+-	{
+-		if (frameInfo % 2)	//check to see if this should use EP4(PONG)
+-		{
+-			epAddr = pdx->hEP[3];	//PONG, odd frames
+-		} else {
+-			epAddr = pdx->hEP[2];	//PING, even frames and zero
+-		}
++	if (pdx->iama == PIXIS_PID) {
++		/* which EP should we map this frame to ? */
++		/* PONG, odd frames: hEP[3] */
++		/* PING, even frames and zero hEP[2] */
++		epAddr = (frameInfo % 2) ? pdx->hEP[3] : pdx->hEP[2];
+ 		dbg("Pixis Frame #%d: EP=%d", frameInfo,
+ 		    (epAddr == pdx->hEP[2]) ? 2 : 4);
+-	} else			//ST133 only has 1 endpoint for Pixel data transfer
+-	{
++	} else { /* ST133 only has 1 endpoint for Pixel data transfer */
+ 		epAddr = pdx->hEP[0];
+ 		dbg("ST133 Frame #%d: EP=2", frameInfo);
+ 	}
+ 	count = numbytes;
+ 	dbg("UserAddress = 0x%08lX", uaddr);
+ 	dbg("numbytes = %d", (int)numbytes);
+-	//number of pages to map the entire user space DMA buffer
++
++	/* number of pages to map the entire user space DMA buffer */
+ 	numPagesRequired =
+ 	    ((uaddr & ~PAGE_MASK) + count + ~PAGE_MASK) >> PAGE_SHIFT;
+ 	dbg("Number of pages needed = %d", numPagesRequired);
+-	maplist_p = vmalloc(numPagesRequired * sizeof(struct page));	//, GFP_ATOMIC);
++	maplist_p = vmalloc(numPagesRequired * sizeof(struct page));
+ 	if (!maplist_p) {
+ 		dbg("Can't Allocate Memory for maplist_p");
+ 		return -ENOMEM;
+ 	}
+-	//map the user buffer to kernel memory
++
++	/* map the user buffer to kernel memory */
+ 	down_write(&current->mm->mmap_sem);
+-	pdx->maplist_numPagesMapped[frameInfo] = get_user_pages(current, current->mm, (uaddr & PAGE_MASK), numPagesRequired, WRITE, 0,	//Don't Force
+-								maplist_p,
+-								NULL);
++	pdx->maplist_numPagesMapped[frameInfo] = get_user_pages(current,
++			current->mm, (uaddr & PAGE_MASK), numPagesRequired,
++			WRITE, 0 /* Don't Force*/, maplist_p, NULL);
+ 	up_write(&current->mm->mmap_sem);
+ 	dbg("Number of pages mapped = %d",
+ 	    pdx->maplist_numPagesMapped[frameInfo]);
++
+ 	for (i = 0; i < pdx->maplist_numPagesMapped[frameInfo]; i++)
+ 		flush_dcache_page(maplist_p[i]);
+ 	if (!pdx->maplist_numPagesMapped[frameInfo]) {
+@@ -637,7 +664,10 @@ static int MapUserBuffer(struct ioctl_struct *io, struct device_extension *pdx)
+ 		vfree(maplist_p);
+ 		return -ENOMEM;
+ 	}
+-	//need to create a scatterlist that spans each frame that can fit into the mapped buffer
++
++	/* need to create a scatterlist that spans each frame
++	 * that can fit into the mapped buffer
++	 */
+ 	pdx->sgl[frameInfo] =
+ 	    kmalloc((pdx->maplist_numPagesMapped[frameInfo] *
+ 		     sizeof(struct scatterlist)), GFP_ATOMIC);
+@@ -657,7 +687,7 @@ static int MapUserBuffer(struct ioctl_struct *io, struct device_extension *pdx)
+ 			pdx->sgl[frameInfo][k].page_link = maplist_p[k];
+ 			pdx->sgl[frameInfo][k].length =
+ 			    (count < PAGE_SIZE) ? count : PAGE_SIZE;
+-			count -= PAGE_SIZE;	//example had PAGE_SIZE here;
++			count -= PAGE_SIZE; /* example had PAGE_SIZE here */
+ 		}
+ 	} else {
+ 		pdx->sgl[frameInfo][0].length = count;
+@@ -668,7 +698,8 @@ static int MapUserBuffer(struct ioctl_struct *io, struct device_extension *pdx)
+ 	dbg("number of sgEntries = %d", pdx->sgEntries[frameInfo]);
+ 	pdx->userBufMapped = 1;
+ 	vfree(maplist_p);
+-	//Create and Send the URB's for each s/g entry
++
++	/* Create and Send the URB's for each s/g entry */
+ 	pdx->PixelUrb[frameInfo] =
+ 	    kmalloc(pdx->sgEntries[frameInfo] * sizeof(struct urb *),
+ 		    GFP_KERNEL);
+@@ -677,7 +708,8 @@ static int MapUserBuffer(struct ioctl_struct *io, struct device_extension *pdx)
+ 		return -ENOMEM;
+ 	}
+ 	for (i = 0; i < pdx->sgEntries[frameInfo]; i++) {
+-		pdx->PixelUrb[frameInfo][i] = usb_alloc_urb(0, GFP_KERNEL);	//0 because we're using BULK transfers
++		/* 0 iso packets because we're using BULK transfers */
++		pdx->PixelUrb[frameInfo][i] = usb_alloc_urb(0, GFP_KERNEL);
+ 		usb_fill_bulk_urb(pdx->PixelUrb[frameInfo][i],
+ 				  pdx->udev,
+ 				  epAddr,
+@@ -691,7 +723,8 @@ static int MapUserBuffer(struct ioctl_struct *io, struct device_extension *pdx)
+ 		pdx->PixelUrb[frameInfo][i]->transfer_flags =
+ 		    URB_NO_TRANSFER_DMA_MAP | URB_NO_INTERRUPT;
+ 	}
+-	pdx->PixelUrb[frameInfo][--i]->transfer_flags &= ~URB_NO_INTERRUPT;	//only interrupt when last URB completes
++	/* only interrupt when last URB completes */
++	pdx->PixelUrb[frameInfo][--i]->transfer_flags &= ~URB_NO_INTERRUPT;
+ 	pdx->pendedPixelUrbs[frameInfo] =
+ 	    kmalloc((pdx->sgEntries[frameInfo] * sizeof(char)), GFP_KERNEL);
+ 	if (!pdx->pendedPixelUrbs[frameInfo])
+@@ -702,13 +735,13 @@ static int MapUserBuffer(struct ioctl_struct *io, struct device_extension *pdx)
+ 			dbg("%s %d\n", "submit urb error =", err);
+ 			pdx->pendedPixelUrbs[frameInfo][i] = 0;
+ 			return err;
+-		} else
+-			pdx->pendedPixelUrbs[frameInfo][i] = 1;;
++		}
++		pdx->pendedPixelUrbs[frameInfo][i] = 1;
+ 	}
+ 	return 0;
+ }
+ 
+-static struct file_operations piusb_fops = {
++static const struct file_operations piusb_fops = {
+ 	.owner = THIS_MODULE,
+ 	.ioctl = piusb_ioctl,
+ 	.open = piusb_open,
+@@ -751,9 +784,9 @@ static int piusb_probe(struct usb_interface *interface,
+ 	/* See if the device offered us matches what we can accept */
+ 	if ((pdx->udev->descriptor.idVendor != VENDOR_ID)
+ 	    || ((pdx->udev->descriptor.idProduct != PIXIS_PID)
+-		&& (pdx->udev->descriptor.idProduct != ST133_PID))) {
++		&& (pdx->udev->descriptor.idProduct != ST133_PID)))
+ 		return -ENODEV;
+-	}
++
+ 	pdx->iama = pdx->udev->descriptor.idProduct;
+ 
+ 	if (debug) {
+@@ -807,7 +840,7 @@ static int piusb_probe(struct usb_interface *interface,
+ 	dbg("PI USB2.0 device now attached to piusb-%d", pdx->minor);
+ 	return 0;
+ 
+-      error:
++error:
+ 	if (pdx)
+ 		kref_put(&pdx->kref, piusb_delete);
+ 	return retval;
+@@ -828,12 +861,17 @@ static void piusb_disconnect(struct usb_interface *interface)
+ {
+ 	struct device_extension *pdx;
+ 	int minor = interface->minor;
++
+ 	lock_kernel();
++
+ 	pdx = usb_get_intfdata(interface);
+ 	usb_set_intfdata(interface, NULL);
++
+ 	/* give back our minor */
+ 	usb_deregister_dev(interface, &piusb_class);
++
+ 	unlock_kernel();
++
+ 	/* prevent device read, write and ioctl */
+ 	pdx->present = 0;
+ 	kref_put(&pdx->kref, piusb_delete);
+@@ -853,16 +891,20 @@ static struct usb_driver piusb_driver = {
+ static int __init piusb_init(void)
+ {
+ 	int result;
++
++	lastErr = 0;
++	errCnt = 0;
++
+ 	/* register this driver with the USB subsystem */
+ 	result = usb_register(&piusb_driver);
+-	if (result) {
++	if (result)
+ 		printk(KERN_ERR KBUILD_MODNAME
+-		       ": usb_register failed. Error number %d\n", result);
+-		return result;
+-	}
+-	printk(KERN_INFO KBUILD_MODNAME ":%s: %s\n", DRIVER_DESC,
+-	       DRIVER_VERSION);
+-	return 0;
++				": usb_register failed. Error number %d\n",
++				result);
++	else
++		printk(KERN_INFO KBUILD_MODNAME ":%s: %s\n", DRIVER_DESC,
++				DRIVER_VERSION);
++	return result;
+ }
+ 
+ /**
+diff --git a/drivers/staging/rspiusb/rspiusb.h b/drivers/staging/rspiusb/rspiusb.h
+index 965cd2d..3fc1db7 100644
+--- a/drivers/staging/rspiusb/rspiusb.h
++++ b/drivers/staging/rspiusb/rspiusb.h
+@@ -3,20 +3,28 @@
+ 
+ #define PIUSB_MAGIC		'm'
+ #define PIUSB_IOCTL_BASE	192
+-#define PIUSB_GETVNDCMD		_IOR(PIUSB_MAGIC, PIUSB_IOCTL_BASE + 1, struct ioctl_struct)
+-#define PIUSB_SETVNDCMD		_IOW(PIUSB_MAGIC, PIUSB_IOCTL_BASE + 2, struct ioctl_struct)
+-#define PIUSB_WRITEPIPE		_IOW(PIUSB_MAGIC, PIUSB_IOCTL_BASE + 3, struct ioctl_struct)
+-#define PIUSB_READPIPE		_IOR(PIUSB_MAGIC, PIUSB_IOCTL_BASE + 4, struct ioctl_struct)
+-#define PIUSB_SETFRAMESIZE	_IOW(PIUSB_MAGIC, PIUSB_IOCTL_BASE + 5, struct ioctl_struct)
+-#define PIUSB_WHATCAMERA	_IO(PIUSB_MAGIC,  PIUSB_IOCTL_BASE + 6)
+-#define PIUSB_USERBUFFER	_IOW(PIUSB_MAGIC, PIUSB_IOCTL_BASE + 7, struct ioctl_struct)
+-#define PIUSB_ISHIGHSPEED	_IO(PIUSB_MAGIC,  PIUSB_IOCTL_BASE + 8)
+-#define PIUSB_UNMAP_USERBUFFER	_IOW(PIUSB_MAGIC, PIUSB_IOCTL_BASE + 9, struct ioctl_struct)
++
++#define PIUSB_IOR(offset) \
++	_IOR(PIUSB_MAGIC, PIUSB_IOCTL_BASE + offset, struct ioctl_struct)
++#define PIUSB_IOW(offset) \
++	_IOW(PIUSB_MAGIC, PIUSB_IOCTL_BASE + offset, struct ioctl_struct)
++#define PIUSB_IO(offset) \
++	_IO(PIUSB_MAGIC, PIUSB_IOCTL_BASE + offset)
++
++#define PIUSB_GETVNDCMD		PIUSB_IOR(1)
++#define PIUSB_SETVNDCMD		PIUSB_IOW(2)
++#define PIUSB_WRITEPIPE		PIUSB_IOW(3)
++#define PIUSB_READPIPE		PIUSB_IOR(4)
++#define PIUSB_SETFRAMESIZE	PIUSB_IOW(5)
++#define PIUSB_WHATCAMERA	PIUSB_IO(6)
++#define PIUSB_USERBUFFER	PIUSB_IOW(7)
++#define PIUSB_ISHIGHSPEED	PIUSB_IO(8)
++#define PIUSB_UNMAP_USERBUFFER	PIUSB_IOW(9)
+ 
+ struct ioctl_struct {
+ 	unsigned char cmd;
+ 	unsigned long numbytes;
+-	unsigned char dir;	//1=out;0=in
++	unsigned char dir;	/* 1=out; 0=in */
+ 	int endpoint;
+ 	int numFrames;
+ 	unsigned char *pData;
 -- 
-Lei Ming
+1.6.0.4
+
