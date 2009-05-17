@@ -1,97 +1,134 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757660AbZEQB1S@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757290AbZEQBgy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757660AbZEQB1S (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 21:27:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754262AbZEQB1E
+	id S1757290AbZEQBgy (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 21:36:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756327AbZEQBgo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 21:27:04 -0400
-Received: from wf-out-1314.google.com ([209.85.200.171]:12006 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751579AbZEQB1B (ORCPT
+	Sat, 16 May 2009 21:36:44 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:39900 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753673AbZEQBgo convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 21:27:01 -0400
+	Sat, 16 May 2009 21:36:44 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=UANRE7fR31OBB5i8BhVVugwjkbmWxaYwa0q4WmDX8In0WiH0U5Jte3txfXIWgBuXd8
-         bUcPXZj3EfPqCiKr5ugazMkjAvxvHyUefyF6MoefNOoFx6YZacRRtdkvy3D8eVvcTd/0
-         3so/tWRPJMTpS0kG6+fTwRpmy9N/OhqWnX0rw=
+        b=puhWqMFjc38sZdEgJgIIFSovXR5CIq6RHPc/KmY2TUZptVP1D1rReMT7DlL1Ync3QX
+         ZBJjlTOPEhB5NIeW+nlT61NyOOHtHsrR6z8lAruTZ1s21sF2zoi3U3j8r3KSY61F3Nhx
+         s5Gqsg1YDnozyx0PkiCW8q3wgIMbZFz0bVE8c=
 MIME-Version: 1.0
-In-Reply-To: <20090517011906.GA6375@localhost>
-References: <93655eb70905151007v5f9bb34aj34be4b65ffeb02a4@mail.gmail.com>
-	 <2c0942db0905151102y4f144437xa02632effccda72c@mail.gmail.com>
-	 <alpine.DEB.1.10.0905151533070.13433@qirst.com>
-	 <2c0942db0905160903i5517d3d6l50fc7457a2629694@mail.gmail.com>
-	 <4A0EFA08.4060106@redhat.com> <20090517011906.GA6375@localhost>
-Date: Sun, 17 May 2009 06:57:03 +0530
-Message-ID: <93655eb70905161827x34a432ebn4910ee86d9bae30@mail.gmail.com>
-Subject: Re: unresponsiveness on linux desktop during file copy
-From: Satish Eerpini <eerpini@gmail.com>
+In-Reply-To: <20090516090448.249602749@intel.com>
+References: <20090516090005.916779788@intel.com>
+	 <20090516090448.249602749@intel.com>
+Date: Sun, 17 May 2009 10:36:44 +0900
+Message-ID: <28c262360905161836u332f9e9aj6fa3f3b65da95592@mail.gmail.com>
+Subject: Re: [PATCH 1/3] vmscan: report vm_flags in page_referenced()
+From: Minchan Kim <minchan.kim@gmail.com>
 To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Rik van Riel <riel@redhat.com>, Ray Lee <ray-lk@madrabbit.org>,
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Peter Zijlstra <peterz@infradead.org>,
        Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       "riel@redhat.com" <riel@redhat.com>, "tytso@mit.edu" <tytso@mit.edu>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "elladan@eskimo.com" <elladan@eskimo.com>,
+       "npiggin@suse.de" <npiggin@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Yes, better to apply Rik and mine patches together to get the best
-> cache behavior. Rik's patch is crucial. They are both small patches,
-> so can be backported trivially. Satish, what's your kernel version
-> (or, do you want to try a newer kernel)? And the content of
-> /proc/meminfo?
+On Sat, May 16, 2009 at 6:00 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
+> Collect vma->vm_flags of the VMAs that actually referenced the page.
+>
+> This is preparing for more informed reclaim heuristics,
+> eg. to protect executable file pages more aggressively.
+> For now only the VM_EXEC bit will be used by the caller.
+>
+> CC: Minchan Kim <minchan.kim@gmail.com>
+> CC: Johannes Weiner <hannes@cmpxchg.org>
+> CC: Peter Zijlstra <peterz@infradead.org>
+> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> ---
+>  include/linux/rmap.h |    5 +++--
+>  mm/rmap.c            |   37 ++++++++++++++++++++++++++-----------
+>  mm/vmscan.c          |    7 +++++--
+>  3 files changed, 34 insertions(+), 15 deletions(-)
+>
+> --- linux.orig/include/linux/rmap.h
+> +++ linux/include/linux/rmap.h
+> @@ -83,7 +83,8 @@ static inline void page_dup_rmap(struct
+>  /*
+>  * Called from mm/vmscan.c to handle paging out
+>  */
+> -int page_referenced(struct page *, int is_locked, struct mem_cgroup *cnt);
+> +int page_referenced(struct page *, int is_locked,
+> +                       struct mem_cgroup *cnt, unsigned long *vm_flags);
+>  int try_to_unmap(struct page *, int ignore_refs);
+>
+>  /*
+> @@ -128,7 +129,7 @@ int page_wrprotect(struct page *page, in
+>  #define anon_vma_prepare(vma)  (0)
+>  #define anon_vma_link(vma)     do {} while (0)
+>
+> -#define page_referenced(page,l,cnt) TestClearPageReferenced(page)
+> +#define page_referenced(page, locked, cnt, flags) TestClearPageReferenced(page)
+>  #define try_to_unmap(page, refs) SWAP_FAIL
+>
+>  static inline int page_mkclean(struct page *page)
+> --- linux.orig/mm/rmap.c
+> +++ linux/mm/rmap.c
+> @@ -333,7 +333,9 @@ static int page_mapped_in_vma(struct pag
+>  * repeatedly from either page_referenced_anon or page_referenced_file.
+>  */
+>  static int page_referenced_one(struct page *page,
+> -       struct vm_area_struct *vma, unsigned int *mapcount)
+> +                              struct vm_area_struct *vma,
+> +                              unsigned int *mapcount,
+> +                              unsigned long *vm_flags)
+>  {
+>        struct mm_struct *mm = vma->vm_mm;
+>        unsigned long address;
+> @@ -381,11 +383,14 @@ out_unmap:
+>        (*mapcount)--;
+>        pte_unmap_unlock(pte, ptl);
+>  out:
+> +       if (referenced)
+> +               *vm_flags |= vma->vm_flags;
+>        return referenced;
+>  }
+>
+>  static int page_referenced_anon(struct page *page,
+> -                               struct mem_cgroup *mem_cont)
+> +                               struct mem_cgroup *mem_cont,
+> +                               unsigned long *vm_flags)
+>  {
+>        unsigned int mapcount;
+>        struct anon_vma *anon_vma;
+> @@ -405,7 +410,8 @@ static int page_referenced_anon(struct p
+>                 */
+>                if (mem_cont && !mm_match_cgroup(vma->vm_mm, mem_cont))
+>                        continue;
+> -               referenced += page_referenced_one(page, vma, &mapcount);
+> +               referenced += page_referenced_one(page, vma,
+> +                                                 &mapcount, vm_flags);
+>                if (!mapcount)
+>                        break;
+>        }
+> @@ -418,6 +424,7 @@ static int page_referenced_anon(struct p
+>  * page_referenced_file - referenced check for object-based rmap
+>  * @page: the page we're checking references on.
+>  * @mem_cont: target memory controller
+> + * @vm_flags: collect encountered vma->vm_flags
 
-I am running 2.6.29.1 right now , just tell me which kernel to try, or
-to which kernel I have to apply the patches and try them, I will test
-the patches and let you know if the situation improves.
-and the contents of /proc/meminfo are :
-MemTotal:        2585724 kB
-MemFree:          900524 kB
-Buffers:          197504 kB
-Cached:          1080332 kB
-SwapCached:            0 kB
-Active:           639544 kB
-Inactive:         933068 kB
-Active(anon):     307100 kB
-Inactive(anon):        0 kB
-Active(file):     332444 kB
-Inactive(file):   933068 kB
-Unevictable:          16 kB
-Mlocked:              16 kB
-HighTotal:       1707848 kB
-HighFree:         321868 kB
-LowTotal:         877876 kB
-LowFree:          578656 kB
-SwapTotal:       3526256 kB
-SwapFree:        3526256 kB
-Dirty:              1000 kB
-Writeback:             0 kB
-AnonPages:        294788 kB
-Mapped:            80084 kB
-Slab:              89692 kB
-SReclaimable:      71436 kB
-SUnreclaim:        18256 kB
-PageTables:         6008 kB
-NFS_Unstable:          0 kB
-Bounce:                0 kB
-WritebackTmp:          0 kB
-CommitLimit:     4819116 kB
-Committed_AS:     796332 kB
-VmallocTotal:     122880 kB
-VmallocUsed:        8240 kB
-VmallocChunk:      96952 kB
-HugePages_Total:       0
-HugePages_Free:        0
-HugePages_Rsvd:        0
-HugePages_Surp:        0
-Hugepagesize:       4096 kB
-DirectMap4k:       20472 kB
-DirectMap4M:      884736 kB
+I missed this.
+To clarify, how about ?
+collect encountered vma->vm_flags among vma which referenced the page
 
-Cheers
-Satish
 -- 
-http://satish.playdrupal.com
+Kinds regards,
+Minchan Kim
