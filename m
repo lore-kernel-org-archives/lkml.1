@@ -1,103 +1,101 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757930AbZEQAi6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757080AbZEQBCB@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757930AbZEQAi6 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 20:38:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757660AbZEQAin
+	id S1757080AbZEQBCB (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 21:02:01 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755979AbZEQBBv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 20:38:43 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:52057 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1757733AbZEQAil (ORCPT
+	Sat, 16 May 2009 21:01:51 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:38343 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755909AbZEQBBu (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 20:38:41 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=En3x6R7BEdIshPdHhdOt4AxcVAaZWHZHhGAmTRnId41bEPyJ5RGrv+i7MeAp5W/7Gf
-         dIoOYIuZPOV/ONywsrgR8sxnsxstn2qFphmm6rF+qldKI4G4WoZzXwwHJs9XtViIfStW
-         guSIWMImVhe13WcSrQxXW/Ca//444hZIpzVGs=
-Date: Sun, 17 May 2009 02:38:39 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jonathan Corbet <corbet@lwn.net>, LKML <linux-kernel@vger.kernel.org>
-Subject: Re: 2.6.30-rc kills my box hard - and lockdep chains
-Message-ID: <20090517003837.GA4640@nowhere>
-References: <20090514094951.36fd7333@bike.lwn.net> <20090516161419.62c45c2b.akpm@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090516161419.62c45c2b.akpm@linux-foundation.org>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sat, 16 May 2009 21:01:50 -0400
+Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
+From: Kay Sievers <kay.sievers@vrfy.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+In-Reply-To: <ac3eb2510905161715m7d42879bqdc0d59c465521e99@mail.gmail.com>
+References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
+	 <alpine.LFD.2.01.0905161644350.3301@localhost.localdomain>
+	 <ac3eb2510905161715m7d42879bqdc0d59c465521e99@mail.gmail.com>
+Content-Type: text/plain
+Date: Sun, 17 May 2009 03:01:49 +0200
+Message-Id: <1242522109.2635.6.camel@poy>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 16, 2009 at 04:14:19PM -0700, Andrew Morton wrote:
-> On Thu, 14 May 2009 09:49:51 -0600 Jonathan Corbet <corbet@lwn.net> wrote:
+On Sun, 2009-05-17 at 02:15 +0200, Kay Sievers wrote:
+> On Sun, May 17, 2009 at 02:01, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
 > 
-> > So...every now and then I return to my system (a dual-core 64-bit
-> > x86 box) only to find it totally dead.  Lights are on but there's no
-> > disk activity, no ping responses, no alternative to simply pulling the
-> > plug.  It happens fairly reliably about once a day with the 2.6.30-rc
-> > kernels; it does not happen with 2.6.29.
-> > 
-> > I'm at a bit of a loss for how to try to track this one down.  "System
-> > disappears without a trace" isn't much to go on.  I can't reproduce it
-> > at will; even the "maintain an unsaved editor buffer with hours' worth
-> > of work" trick doesn't seem to work this time.  
-> > 
-> > One clue might be found here, perhaps: I didn't have lockdep enabled but I do
-> > now.
-> 
-> So the lockup isn't due to lockdep.
-> 
-> Did you try all the usual sysrq-P, nmi-watchdog stuff?
-> 
-> Is netconsole enabled, to see if it squawked as it died?
-> 
-> > May 14 01:06:55 bike kernel: [38730.804833] BUG: MAX_LOCKDEP_CHAINS too low!
-> > May 14 01:06:55 bike kernel: [38730.804838] turning off the locking correctness validator.
-> > May 14 01:06:55 bike kernel: [38730.804843] Pid: 5321, comm: tar Tainted: G        W  2.6.30-rc5 #11
-> > May 14 01:06:55 bike kernel: [38730.804846] Call Trace:
-> > May 14 01:06:55 bike kernel: [38730.804854]  [<ffffffff8025df59>] __lock_acquire+0x57f/0xbc9
-> > May 14 01:06:55 bike kernel: [38730.804860]  [<ffffffff8020f3a9>] ? print_context_stack+0xfa/0x119
-> > May 14 01:06:55 bike kernel: [38730.804866]  [<ffffffff80394da9>] ? get_hash_bucket+0x28/0x34
+> >        [   10.428691] Error: Driver 'rtc_cmos' is already registered, aborting...
 > >
-> > ...
+> > but the driver doesn't really care whether that succeeded or not, but then
+> > the platform_driver_probe fails (because the thing is already in use), so
+> > then it ends up unregistering something that never got registered in the
+> > first place.
 > >
-> > May 14 01:06:55 bike kernel: [38730.805340]  [<ffffffff802c2741>] ? filldir+0x0/0xc4
-> > May 14 01:06:55 bike kernel: [38730.805344]  [<ffffffff802c293d>] vfs_readdir+0x79/0xb6
-> > May 14 01:06:55 bike kernel: [38730.805348]  [<ffffffff802c2ac3>] sys_getdents+0x81/0xd1
-> > May 14 01:06:55 bike kernel: [38730.805353]  [<ffffffff8020bcdb>] system_call_fastpath+0x16/0x1b
-> > 
-> > That's quite the call stack...  and, evidently, a lot of lock chains...  
+> > I think this is strictly speaking a bug in driver_unregister(), which is
+> > too fragile. If you unregister a drivert that wasn't registered, we
+> > shouldn't oops.
+> >
+> > But we could certainly do it at the rtc-cmos.c level too, and just not
+> > unregister it if the registration failed. My gut feel is that we should
+> > aim for the core driver helpers to be less fragile, though - we'll always
+> > have driver bugs.
 > 
-> It is a deep stack trace.
+> In:
+>  driver_remove_file()
+> we try to access the private part:
+>  sysfs_remove_file(&drv->p->kobj, ...
+> and that is NULL, for an unregistered driver, I would expect.
 > 
-> And unfortunately
-> 
-> a) that diagnostic didn't print the stack pointer value, from which
->    we can often work out if we're looking at a stack overflow.
-> 
-> b) I regularly think it would be useful if that stack backtrace were
->    to print out the actual stack address, so we could see how much
->    stack each function is using.
-> 
->    I just went in to hack these things up, but the x86 stacktrace
->    code which I used to understand has become stupidly complex so I
->    gave up.
-> 
-> What tools do we have to diagnose a possible kernel stack overflow? 
-> There's CONFIG_DEBUG_STACK_USAGE but that's unlikely to be much use.
+> I'm looking into it.
+
+This makes the oops in the driver-core, caused by the rtc driver
+unregister, go away. The original issue is also fixed in the rtc driver
+itself.
+
+Thanks,
+Kay
 
 
-I think about CONFIG_STACK_TRACER. Currently this tracer
-dumps the max stack footprint backtrace through a file in debugfs.
-Then it's not that much useful to debug a stack overflow.
+From: Kay Sievers <kay.sievers@vrfy.org>
+Subject: Driver Core: do not oops when driver_unregister() is called for unregistered drivers
 
-I'm trying to hack around a printk dump for each max stack footprint
-encountered. Hopefully it could help to debug this.
+Handle the case someone tries to unregister a non-registered driver
+more gracefully.
 
-Frederic.
+  Error: Driver 'rtc_cmos' is already registered, aborting...
+  BUG: unable to handle kernel NULL pointer dereference at 00000018
+  [<c01e16ba>] sysfs_remove_file+0x1/0xf
+
+Cc: Greg Kroah-Hartman <gregkh@suse.de>
+Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
+---
+
+ driver.c |    2 ++
+ 1 file changed, 2 insertions(+)
+
+--- a/drivers/base/driver.c
++++ b/drivers/base/driver.c
+@@ -257,6 +257,8 @@ EXPORT_SYMBOL_GPL(driver_register);
+  */
+ void driver_unregister(struct device_driver *drv)
+ {
++	if (!drv || !drv->p)
++		return;
+ 	driver_remove_groups(drv, drv->groups);
+ 	bus_remove_driver(drv);
+ }
+
 
