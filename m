@@ -1,52 +1,44 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756397AbZEQIOF@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755295AbZEQIdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756397AbZEQIOF (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 04:14:05 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbZEQINq
+	id S1755295AbZEQIdV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 04:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752876AbZEQIdA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 04:13:46 -0400
-Received: from e23smtp05.au.ibm.com ([202.81.31.147]:58371 "EHLO
-	e23smtp05.au.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751951AbZEQINo (ORCPT
+	Sun, 17 May 2009 04:33:00 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:55563 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751872AbZEQIc7 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 04:13:44 -0400
-Message-ID: <4A0FC736.7050301@in.ibm.com>
-Date: Sun, 17 May 2009 13:43:42 +0530
-From: Sachin Sant <sachinp@in.ibm.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081216)
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>
-Subject: Re: [Bug #13068] Lockdep warining in inotify_dev_queue_event
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <385Pu-agh7M.A.UHD.QazDKB@chimera> <20090517063530.GB1583@elte.hu>
-In-Reply-To: <20090517063530.GB1583@elte.hu>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+	Sun, 17 May 2009 04:32:59 -0400
+Date: Sun, 17 May 2009 10:38:36 +0200
+From: Andi Kleen <andi@firstfloor.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Andi Kleen <andi@firstfloor.org>,
+       "Brandeburg, Jesse" <jesse.brandeburg@intel.com>,
+       linux-kernel@vger.kernel.org, oprofile-list@lists.sourceforge.net,
+       netdev@vger.kernel.org, rusty@rustcorp.com.au
+Subject: Re: [BUG 2.6.30-rc1] panic when loading oprofile
+Message-ID: <20090517083836.GL16682@one.firstfloor.org>
+References: <alpine.WNT.2.00.0905131327430.7052__41366.1100705669$1242253861$gmane$org@jbrandeb-desk1.amr.corp.intel.com> <87fxf6pmh5.fsf@basil.nowhere.org> <20090516162017.2525511c.akpm@linux-foundation.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090516162017.2525511c.akpm@linux-foundation.org>
+User-Agent: Mutt/1.4.2.1i
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> i think this might be fixed by:
->
-> 381a80e: inotify: use GFP_NOFS in kernel_event() to work around a lockdep false-positive
->
-> already in -rc6.
->   
-Haven't seen this issue with rc6.
+> Ping?
 
-Thanks
--Sachin
+We'll probably need to wait for Monday for Jesse trying that.
 
+> 
+> This is in Rafael's regression list but I suspect that it's a
+> linux-next-only thing?
+
+No, it was reproduced on rc5.
+
+-Andi
 -- 
-
----------------------------------
-Sachin Sant
-IBM Linux Technology Center
-India Systems and Technology Labs
-Bangalore, India
----------------------------------
-
+ak@linux.intel.com -- Speaking for myself only.
