@@ -1,108 +1,120 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752305AbZEQGYs@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754441AbZEQGd2@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752305AbZEQGYs (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 02:24:48 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751872AbZEQGYi
+	id S1754441AbZEQGd2 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 02:33:28 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbZEQGdS
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 02:24:38 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:47224 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751816AbZEQGYi convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 02:24:38 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=vUncVshpBKIqq+mjdOO3sIYdWyw0OeRnTYIiAyY5oO9PnLMAIwEXg3yHLLTbo8u0pa
-         NYndFQKv76dud5Kn4Y+hQHjzduPZAHTyzMqebdMkpdEaoQSc1DG/kB1aIzuEAonJOHVh
-         GK8rgeGsPHbLeH4pRJOL5K/2tWmwk9XKjlOJk=
+	Sun, 17 May 2009 02:33:18 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:53510 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751816AbZEQGdS (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 02:33:18 -0400
+Date: Sun, 17 May 2009 08:32:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Kay Sievers <kay.sievers@vrfy.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>
+Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
+Message-ID: <20090517063234.GA1583@elte.hu>
+References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <alpine.LFD.2.01.0905161644350.3301@localhost.localdomain> <ac3eb2510905161715m7d42879bqdc0d59c465521e99@mail.gmail.com> <1242522109.2635.6.camel@poy>
 MIME-Version: 1.0
-In-Reply-To: <20090516221331.0a456cbb@tlielax.poochiereds.net>
-References: <20090516162813.GA18098@nb-core2.darkstar.lan>
-	 <20090516205558.GA20346@nb-core2.darkstar.lan>
-	 <20090516221331.0a456cbb@tlielax.poochiereds.net>
-Date: Sun, 17 May 2009 01:24:36 -0500
-Message-ID: <524f69650905162324x249b59a0i3fb74036cd3ab53d@mail.gmail.com>
-Subject: Re: [linux-cifs-client] Re: [2.6.30-rc6] cifs_close: NULL pointer 
-	dereference
-From: Steve French <smfrench@gmail.com>
-To: Jeff Layton <jlayton@redhat.com>
-Cc: Luca Tettamanti <kronos.it@gmail.com>, linux-kernel@vger.kernel.org,
-       linux-cifs-client@lists.samba.org,
-       Shirish Pargaonkar <shirishpargaonkar@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242522109.2635.6.camel@poy>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 16, 2009 at 9:13 PM, Jeff Layton <jlayton@redhat.com> wrote:
-> On Sat, 16 May 2009 22:55:58 +0200
-> Luca Tettamanti <kronos.it@gmail.com> wrote:
->
->> On Sat, May 16, 2009 at 06:28:13PM +0200, Luca Tettamanti wrote:
->> > Hello,
->> > I just hit a NULL pointer dereference in cifs_close while accessing a file on a
->> > remote Samba shared directory.
->> [...]
->> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
->> > IP: [<ffffffffa05f105c>] cifs_close+0x1c1/0x2e8 [cifs]
->>
->> Ok, I've reproduced this on a machine with a serial port :)
->>
->> 0xffffffff803574e0 in list_del (entry=0xffff8800ac184210)
->> at /home/kronos/src/linux-2.6.git/lib/list_debug.c:46
->> 46              WARN(entry->prev->next != entry,
->> (gdb) bt
->> #0  0xffffffff803574e0 in list_del (entry=0xffff8800ac184210)
->>     at /home/kronos/src/linux-2.6.git/lib/list_debug.c:46
->> #1  0xffffffff80319588 in cifs_close (inode=0xffff8800b8d5f088, file=0xffff8800ad8f6d00)
->>     at /home/kronos/src/linux-2.6.git/fs/cifs/file.c:670
->> #2  0xffffffff8029d95e in __fput (file=0xffff8800ad8f6d00)
->>     at /home/kronos/src/linux-2.6.git/fs/file_table.c:281
->> #3  0xffffffff8029da32 in fput (file=0xffff8800ac184210)
->>     at /home/kronos/src/linux-2.6.git/fs/file_table.c:227
->> #4  0xffffffff8029ad30 in filp_close (filp=0xffff8800ad8f6d00, id=0xffff880037a3e080)
->>     at /home/kronos/src/linux-2.6.git/fs/open.c:1108
->> #5  0xffffffff8029ade0 in sys_close (fd=0)
->>     at /home/kronos/src/linux-2.6.git/fs/open.c:1137
->> #6  0xffffffff802271e4 in sysenter_dispatch ()
->>     at /home/kronos/src/linux-2.6.git/arch/x86/ia32/ia32entry.S:161
->> #7  0x0000000000000000 in ?? ()
->>
->> (gdb) f 1
->> #1  0xffffffff80319588 in cifs_close (inode=0xffff8800b8d5f088, file=0xffff8800ad8f6d00)
->>     at /home/kronos/src/linux-2.6.git/fs/cifs/file.c:670
->> 670                     list_del(&pSMBFile->flist);
->>
->> (gdb) p *&pSMBFile->flist
->> $2 = {next = 0x0, prev = 0x0}
->>
->> (gdb) p *&pSMBFile->tlist
->> $5 = {next = 0x0, prev = 0x0}
->>
->> So both flist and tlist were not initilized in cifs_open.
->>
->> The content of the whole pSMBFile structure:
->>
->
-> Luca...thanks for the bug report and analysis. I've been able to
-> reproduce this too against 3.3.2.
 
-After reproducing the problem, I just looked at this in more detail:
-the flist and tlist look like they were initialized, but the problem
-is instead that they are being deleted from the wrong cifs file
-struct.
+* Kay Sievers <kay.sievers@vrfy.org> wrote:
 
-Tthe create adds them to the 1st pSMBFile, the close deletes them from
-the 1st pSMBFile, the subsequent open added them to the 2nd pSMBFile,
-the close deleted them from the 1st pSMBfile (which oopses).
+> On Sun, 2009-05-17 at 02:15 +0200, Kay Sievers wrote:
+> > On Sun, May 17, 2009 at 02:01, Linus Torvalds
+> > <torvalds@linux-foundation.org> wrote:
+> > 
+> > >        [   10.428691] Error: Driver 'rtc_cmos' is already registered, aborting...
+> > >
+> > > but the driver doesn't really care whether that succeeded or not, but then
+> > > the platform_driver_probe fails (because the thing is already in use), so
+> > > then it ends up unregistering something that never got registered in the
+> > > first place.
+> > >
+> > > I think this is strictly speaking a bug in driver_unregister(), which is
+> > > too fragile. If you unregister a drivert that wasn't registered, we
+> > > shouldn't oops.
+> > >
+> > > But we could certainly do it at the rtc-cmos.c level too, and just not
+> > > unregister it if the registration failed. My gut feel is that we should
+> > > aim for the core driver helpers to be less fragile, though - we'll always
+> > > have driver bugs.
+> > 
+> > In:
+> >  driver_remove_file()
+> > we try to access the private part:
+> >  sysfs_remove_file(&drv->p->kobj, ...
+> > and that is NULL, for an unregistered driver, I would expect.
+> > 
+> > I'm looking into it.
+> 
+> This makes the oops in the driver-core, caused by the rtc driver
+> unregister, go away. The original issue is also fixed in the rtc driver
+> itself.
+> 
+> Thanks,
+> Kay
+> 
+> 
+> From: Kay Sievers <kay.sievers@vrfy.org>
+> Subject: Driver Core: do not oops when driver_unregister() is called for unregistered drivers
+> 
+> Handle the case someone tries to unregister a non-registered driver
+> more gracefully.
+> 
+>   Error: Driver 'rtc_cmos' is already registered, aborting...
+>   BUG: unable to handle kernel NULL pointer dereference at 00000018
+>   [<c01e16ba>] sysfs_remove_file+0x1/0xf
+> 
+> Cc: Greg Kroah-Hartman <gregkh@suse.de>
+> Signed-off-by: Kay Sievers <kay.sievers@vrfy.org>
 
-This should be straightforward to fix, but I want to talk with Shirish about it.
+please also put in a proper Reported-by.
 
+> ---
+> 
+>  driver.c |    2 ++
+>  1 file changed, 2 insertions(+)
+> 
+> --- a/drivers/base/driver.c
+> +++ b/drivers/base/driver.c
+> @@ -257,6 +257,8 @@ EXPORT_SYMBOL_GPL(driver_register);
+>   */
+>  void driver_unregister(struct device_driver *drv)
+>  {
+> +	if (!drv || !drv->p)
+> +		return;
 
--- 
-Thanks,
+I think it would be reasonable to also emit a:
 
-Steve
+	 WARN_ONCE(1, "unexpected driver unregister!\n");
+
+here - as long as all such cases are a bug. As the imbalance (and a 
+bug) is really at the rtc-cmos driver level too and we should not 
+condone such pattern, silently.
+
+( Not crashing in the driver core when we can avoid it is nice to 
+  have too, of course. )
+
+	Ingo
