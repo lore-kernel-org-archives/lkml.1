@@ -1,264 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754075AbZEQHMY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752154AbZEQHTN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754075AbZEQHMY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 03:12:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750834AbZEQHMN
+	id S1752154AbZEQHTN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 03:19:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbZEQHS4
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 03:12:13 -0400
-Received: from mail-pz0-f115.google.com ([209.85.222.115]:33804 "EHLO
-	mail-pz0-f115.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750724AbZEQHMM (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 03:12:12 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
-         :mime-version:content-type:content-transfer-encoding;
-        b=nP5v1tJpA8RHtFZ8e2Fo4OnJlw1QT7xkdjmSODS/Sxs/nTRG2T0UaXwBgVtwWA43PE
-         JOSfV5igX2Xo++mwh0LZtBf769FhBJoPQSZtuckDU8bLgga2YDoRoKpfR2nuap/AOzHW
-         7TXE+pOEYJj7HrA8/sCwXIxM5qENXEjrX3b1M=
-Date: Sun, 17 May 2009 16:12:10 +0900
-From: Hitoshi Mitake <h.mitake@gmail.com>
-To: Jeff Garzik <jeff@garzik.org>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Roland Dreier <rdreier@cisco.com>,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, tglx@linutronix.de,
-       rpjday@crashcourse.ca, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
-Message-Id: <20090517161210.4274ddf9.h.mitake@gmail.com>
-In-Reply-To: <4A0DFE43.7050705@garzik.org>
-References: <49EE37AF.4020507@zytor.com>
-	<20090421.173123.191021055.davem@davemloft.net>
-	<adak55438gp.fsf_-_@cisco.com>
-	<20090428.221228.217954247.davem@davemloft.net>
-	<20090429115654.GC11586@elte.hu>
-	<49F843BC.7020902@garzik.org>
-	<adahc071ie4.fsf@cisco.com>
-	<49F8B1A1.4010208@garzik.org>
-	<a6b9f31a0905122232s2d23b4e3h6e447c3fa5c29ee6@mail.gmail.com>
-	<4A0B2B54.5090803@zytor.com>
-	<4A0B4C1C.9000706@garzik.org>
-	<4A0B5A34.1080301@zytor.com>
-	<4A0B6A96.2030008@garzik.org>
-	<20090514161903.4ba00c09.h.mitake@gmail.com>
-	<4A0DFE43.7050705@garzik.org>
-X-Mailer: Sylpheed 2.5.0 (GTK+ 2.12.11; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 17 May 2009 03:18:56 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:56542 "EHLO mx3.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750834AbZEQHSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 03:18:55 -0400
+Date: Sun, 17 May 2009 09:18:34 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Zdenek Kabelac <zdenek.kabelac@gmail.com>,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>,
+       Oleg Nesterov <oleg@redhat.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: INFO: possible circular locking dependency at
+	cleanup_workqueue_thread
+Message-ID: <20090517071834.GA8507@elte.hu>
+References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.5
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Fri, 15 May 2009 19:44:03 -0400
-Jeff Garzik <jeff@garzik.org> wrote:
 
-> Hitoshi Mitake wrote:
-> > On Wed, 13 May 2009 20:49:26 -0400
-> > Jeff Garzik <jeff@garzik.org> wrote:
-> > 
-> >> H. Peter Anvin wrote:
-> >>> Jeff Garzik wrote:
-> >>>> Judging from this thread and past, I think people will continue to 
-> >>>> complain and get confused, even with the above.
-> >>>>
-> >>> Do you really think so?  Seems unfortunate, since an API rename would be
-> >>> way more invasive.  This is the entirety of the header patch
-> >>> (compile-tested using 32-bit allyesconfig).
-> >> The header patch does not lessen the confusion, because you cannot look 
-> >> at the code and immediately tell what is going on...
-> >>
-> >> Having a single function's behavior change based on #include selection 
-> >> is /not/ intuitive at all, particularly for driver writers.  That is 
-> >> unlike almost every other Linux API, where functions' behavior stays 
-> >> constant across platforms, regardless of magic "under the hood."
-> >>
-> >> That sort of trick is reserved for arch maintainers who know what they 
-> >> are doing :)
-> >>
-> >> 	Jeff
-> >>
-> >>
-> >>
-> > 
-> > I found another way:
-> > Making architecture with atomic readq/writeq provide HAVE_READQ_ATOMIC/HAVE_WRITEQ_ATOMIC
-> > and making architecture with non-atomic readq/writeq provide HAVE_READQ/HAVE_WRITEQ.
-> > (HAVE_READQ_ATOMIC/HAVE_WRITEQ_ATOMIC should double as HAVE_READQ/HAVE_WRITEQ.)
-> > 
-> > So driver programmers who need atomic readq/writeq can judge existence of API they really need.
-> > If platform doesn't provide atomic readq/writeq, drivers need these can be disabled by Kconfig.
-> > And bugs Roland and David talking about will be banished.
-> > How about this? > Roland and David
-> > I wrote a test patch. Request for comments.
-> > 
-> > Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
-> > 
-> > ---
-> >  arch/x86/Kconfig |   16 ++++++++++++++--
-> >  1 files changed, 14 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-> > index df9e885..c94fc48 100644
-> > --- a/arch/x86/Kconfig
-> > +++ b/arch/x86/Kconfig
-> > @@ -19,8 +19,6 @@ config X86_64
-> >  config X86
-> >  	def_bool y
-> >  	select HAVE_AOUT if X86_32
-> > -	select HAVE_READQ
-> > -	select HAVE_WRITEQ
-> >  	select HAVE_UNSTABLE_SCHED_CLOCK
-> >  	select HAVE_IDE
-> >  	select HAVE_OPROFILE
-> > @@ -2022,6 +2020,20 @@ config HAVE_ATOMIC_IOMAP
-> >  	def_bool y
-> >  	depends on X86_32
-> >  
-> > +config HAVE_READQ
-> > +	def_bool y
-> > +
-> > +config HAVE_WRITEQ
-> > +	def_bool y
-> > +
-> > +config HAVE_READQ_ATOMIC
-> > +	def_bool y
-> > +	depends on X86_64
-> > +
-> > +config HAVE_WRITEQ_ATOMIC
-> > +	def_bool y
-> > +	depends on X86_64
+Cc:s added. This dependency:
+
+> -> #2 (cfg80211_mutex){+.+.+.}:
+>        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
+>        [<ffffffff80271f38>] lock_acquire+0x98/0x140
+>        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
+>        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
+>        [<ffffffffa007e66a>] reg_todo+0x19a/0x590 [cfg80211]
+>        [<ffffffff80258f18>] worker_thread+0x1e8/0x3a0
+>        [<ffffffff8025dc3a>] kthread+0x5a/0xa0
+>        [<ffffffff8020d23a>] child_rip+0xa/0x20
+
+is what sets the dependencies upside down.
+
+	Ingo
+
+* Zdenek Kabelac <zdenek.kabelac@gmail.com> wrote:
+
+> Hi
 > 
-> If you create HAVE_{READQ,WRITEQ}_ATOMIC, then you don't really need 
-> HAVE_READQ -- the other relevant 32-bit platforms simply need a 
-> definition of readq and writeq.  Probably easy enough to have a common 
-> definition in asm-generic.
+> With this kernel a4d7749be5de4a7261bcbe3c7d96c748792ec455
 > 
-That's good idea. I didn't noticed the way to use asm-generic. Thanks.
-
-How is this?
-
-Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
-
----
- arch/x86/Kconfig             |   10 ++++++++--
- arch/x86/include/asm/io.h    |   27 ++++++---------------------
- include/asm-generic/quadrw.h |   34 ++++++++++++++++++++++++++++++++++
- 3 files changed, 48 insertions(+), 23 deletions(-)
- create mode 100644 include/asm-generic/quadrw.h
-
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index df9e885..151b6a0 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -19,8 +19,6 @@ config X86_64
- config X86
- 	def_bool y
- 	select HAVE_AOUT if X86_32
--	select HAVE_READQ
--	select HAVE_WRITEQ
- 	select HAVE_UNSTABLE_SCHED_CLOCK
- 	select HAVE_IDE
- 	select HAVE_OPROFILE
-@@ -2022,6 +2020,14 @@ config HAVE_ATOMIC_IOMAP
- 	def_bool y
- 	depends on X86_32
- 
-+config HAVE_READQ_ATOMIC
-+	def_bool y
-+	depends on X86_64
-+
-+config HAVE_WRITEQ_ATOMIC
-+	def_bool y
-+	depends on X86_64
-+
- source "net/Kconfig"
- 
- source "drivers/Kconfig"
-diff --git a/arch/x86/include/asm/io.h b/arch/x86/include/asm/io.h
-index 7373932..bad940d 100644
---- a/arch/x86/include/asm/io.h
-+++ b/arch/x86/include/asm/io.h
-@@ -51,32 +51,17 @@ build_mmio_write(__writel, "l", unsigned int, "r", )
- build_mmio_read(readq, "q", unsigned long, "=r", :"memory")
- build_mmio_write(writeq, "q", unsigned long, "r", :"memory")
- 
--#else
--
--static inline __u64 readq(const volatile void __iomem *addr)
--{
--	const volatile u32 __iomem *p = addr;
--	u32 low, high;
--
--	low = readl(p);
--	high = readl(p + 1);
--
--	return low + ((u64)high << 32);
--}
--
--static inline void writeq(__u64 val, volatile void __iomem *addr)
--{
--	writel(val, addr);
--	writel(val >> 32, addr+4);
--}
--
--#endif
--
- #define readq_relaxed(a)	readq(a)
- 
- #define __raw_readq(a)		readq(a)
- #define __raw_writeq(val, addr)	writeq(val, addr)
- 
-+#endif	/* CONFIG_X86_64 */
-+
-+#ifdef CONFIG_X86_32
-+#include <asm-generic/quadrw.h>
-+#endif	/* CONFIG_X86_32 */
-+
- /* Let people know that we have them */
- #define readq			readq
- #define writeq			writeq
-diff --git a/include/asm-generic/quadrw.h b/include/asm-generic/quadrw.h
-new file mode 100644
-index 0000000..78159a2
---- /dev/null
-+++ b/include/asm-generic/quadrw.h
-@@ -0,0 +1,34 @@
-+#ifndef GENERIC_QUADRW_H
-+#define GENERIC_QUADRW_H
-+
-+#include <asm/io.h>
-+
-+/*
-+ * General readq/writeq implementation.
-+ * These are not atomic operations.
-+ * The drivers which need atomic version readq/writeq,
-+ * they should depend on HAVE_{READQ,WRITEQ}_ATOMIC in Kconfig level.
-+ */
-+
-+#ifndef CONFIG_HAVE_READQ_ATOMIC
-+static inline __u64 readq(const volatile void __iomem *addr)
-+{
-+	const volatile u32 __iomem *p = addr;
-+	u32 low, high;
-+
-+	low = readl(p);
-+	high = readl(p + 1);
-+
-+	return low + ((u64)high << 32);
-+}
-+#endif	/* CONFIG_HAVE_READQ_ATOMIC */
-+
-+#ifndef CONFIG_HAVE_WRITEQ_ATOMIC
-+static inline void writeq(__u64 val, volatile void __iomem *addr)
-+{
-+	writel(val, addr);
-+	writel(val >> 32, addr+4);
-+}
-+#endif	/* CONFIG_HAVE_WRITEQ_ATOMIC */
-+
-+#endif	/* GENERIC_QUADRW_H */
--- 
-1.5.6.5
-
-
+> I've got this INFO trace during suspend:
+> 
+> 
+> CPU 1 is now offline
+> lockdep: fixing up alternatives.
+> SMP alternatives: switching to UP code
+> CPU0 attaching NULL sched-domain.
+> CPU1 attaching NULL sched-domain.
+> CPU0 attaching NULL sched-domain.
+> 
+> =======================================================
+> [ INFO: possible circular locking dependency detected ]
+> 2.6.30-rc5-00097-gd665355 #59
+> -------------------------------------------------------
+> pm-suspend/12129 is trying to acquire lock:
+>  (events){+.+.+.}, at: [<ffffffff80259496>] cleanup_workqueue_thread+0x26/0xd0
+> 
+> but task is already holding lock:
+>  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff80246e57>]
+> cpu_maps_update_begin+0x17/0x20
+> 
+> which lock already depends on the new lock.
+> 
+> 
+> the existing dependency chain (in reverse order) is:
+> 
+> -> #5 (cpu_add_remove_lock){+.+.+.}:
+>        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
+>        [<ffffffff80271f38>] lock_acquire+0x98/0x140
+>        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
+>        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
+>        [<ffffffff80246e57>] cpu_maps_update_begin+0x17/0x20
+>        [<ffffffff80259c33>] __create_workqueue_key+0xc3/0x250
+>        [<ffffffff80287b20>] stop_machine_create+0x40/0xb0
+>        [<ffffffff8027a784>] sys_delete_module+0x84/0x270
+>        [<ffffffff8020c15b>] system_call_fastpath+0x16/0x1b
+>        [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> -> #4 (setup_lock){+.+.+.}:
+>        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
+>        [<ffffffff80271f38>] lock_acquire+0x98/0x140
+>        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
+>        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
+>        [<ffffffff80287af7>] stop_machine_create+0x17/0xb0
+>        [<ffffffff80246f06>] disable_nonboot_cpus+0x26/0x130
+>        [<ffffffff8027dd8d>] suspend_devices_and_enter+0xbd/0x1b0
+>        [<ffffffff8027dff7>] enter_state+0x107/0x170
+>        [<ffffffff8027e0f9>] state_store+0x99/0x100
+>        [<ffffffff803abe17>] kobj_attr_store+0x17/0x20
+>        [<ffffffff8033f1e9>] sysfs_write_file+0xd9/0x160
+>        [<ffffffff802e1c88>] vfs_write+0xb8/0x180
+>        [<ffffffff802e2771>] sys_write+0x51/0x90
+>        [<ffffffff8020c15b>] system_call_fastpath+0x16/0x1b
+>        [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> -> #3 (dpm_list_mtx){+.+.+.}:
+>        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
+>        [<ffffffff80271f38>] lock_acquire+0x98/0x140
+>        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
+>        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
+>        [<ffffffff804532ff>] device_pm_add+0x1f/0xe0
+>        [<ffffffff8044b9bf>] device_add+0x45f/0x570
+>        [<ffffffffa007c578>] wiphy_register+0x158/0x280 [cfg80211]
+>        [<ffffffffa017567c>] ieee80211_register_hw+0xbc/0x410 [mac80211]
+>        [<ffffffffa01f7c5c>] iwl3945_pci_probe+0xa1c/0x1080 [iwl3945]
+>        [<ffffffff803c4307>] local_pci_probe+0x17/0x20
+>        [<ffffffff803c5458>] pci_device_probe+0x88/0xb0
+>        [<ffffffff8044e1e9>] driver_probe_device+0x89/0x180
+>        [<ffffffff8044e37b>] __driver_attach+0x9b/0xa0
+>        [<ffffffff8044d67c>] bus_for_each_dev+0x6c/0xa0
+>        [<ffffffff8044e03e>] driver_attach+0x1e/0x20
+>        [<ffffffff8044d955>] bus_add_driver+0xd5/0x290
+>        [<ffffffff8044e668>] driver_register+0x78/0x140
+>        [<ffffffff803c56f6>] __pci_register_driver+0x66/0xe0
+>        [<ffffffffa00bd05c>] 0xffffffffa00bd05c
+>        [<ffffffff8020904f>] do_one_initcall+0x3f/0x1c0
+>        [<ffffffff8027d071>] sys_init_module+0xb1/0x200
+>        [<ffffffff8020c15b>] system_call_fastpath+0x16/0x1b
+>        [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> -> #2 (cfg80211_mutex){+.+.+.}:
+>        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
+>        [<ffffffff80271f38>] lock_acquire+0x98/0x140
+>        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
+>        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
+>        [<ffffffffa007e66a>] reg_todo+0x19a/0x590 [cfg80211]
+>        [<ffffffff80258f18>] worker_thread+0x1e8/0x3a0
+>        [<ffffffff8025dc3a>] kthread+0x5a/0xa0
+>        [<ffffffff8020d23a>] child_rip+0xa/0x20
+>        [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> -> #1 (reg_work){+.+.+.}:
+>        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
+>        [<ffffffff80271f38>] lock_acquire+0x98/0x140
+>        [<ffffffff80258f12>] worker_thread+0x1e2/0x3a0
+>        [<ffffffff8025dc3a>] kthread+0x5a/0xa0
+>        [<ffffffff8020d23a>] child_rip+0xa/0x20
+>        [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> -> #0 (events){+.+.+.}:
+>        [<ffffffff80271b36>] __lock_acquire+0xd36/0x10a0
+>        [<ffffffff80271f38>] lock_acquire+0x98/0x140
+>        [<ffffffff802594bd>] cleanup_workqueue_thread+0x4d/0xd0
+>        [<ffffffff8053fe79>] workqueue_cpu_callback+0xc9/0x10f
+>        [<ffffffff805539a8>] notifier_call_chain+0x68/0xa0
+>        [<ffffffff802630d6>] raw_notifier_call_chain+0x16/0x20
+>        [<ffffffff8053d9ec>] _cpu_down+0x1cc/0x2d0
+>        [<ffffffff80246f90>] disable_nonboot_cpus+0xb0/0x130
+>        [<ffffffff8027dd8d>] suspend_devices_and_enter+0xbd/0x1b0
+>        [<ffffffff8027dff7>] enter_state+0x107/0x170
+>        [<ffffffff8027e0f9>] state_store+0x99/0x100
+>        [<ffffffff803abe17>] kobj_attr_store+0x17/0x20
+>        [<ffffffff8033f1e9>] sysfs_write_file+0xd9/0x160
+>        [<ffffffff802e1c88>] vfs_write+0xb8/0x180
+>        [<ffffffff802e2771>] sys_write+0x51/0x90
+>        [<ffffffff8020c15b>] system_call_fastpath+0x16/0x1b
+>        [<ffffffffffffffff>] 0xffffffffffffffff
+> 
+> other info that might help us debug this:
+> 
+> 4 locks held by pm-suspend/12129:
+>  #0:  (&buffer->mutex){+.+.+.}, at: [<ffffffff8033f154>]
+> sysfs_write_file+0x44/0x160
+>  #1:  (pm_mutex){+.+.+.}, at: [<ffffffff8027df44>] enter_state+0x54/0x170
+>  #2:  (dpm_list_mtx){+.+.+.}, at: [<ffffffff80452747>] device_pm_lock+0x17/0x20
+>  #3:  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff80246e57>]
+> cpu_maps_update_begin+0x17/0x20
+> 
+> stack backtrace:
+> Pid: 12129, comm: pm-suspend Not tainted 2.6.30-rc5-00097-gd665355 #59
+> Call Trace:
+>  [<ffffffff8026fa3d>] print_circular_bug_tail+0x9d/0xe0
+>  [<ffffffff80271b36>] __lock_acquire+0xd36/0x10a0
+>  [<ffffffff80270000>] ? mark_lock+0x3e0/0x400
+>  [<ffffffff80271f38>] lock_acquire+0x98/0x140
+>  [<ffffffff80259496>] ? cleanup_workqueue_thread+0x26/0xd0
+>  [<ffffffff802594bd>] cleanup_workqueue_thread+0x4d/0xd0
+>  [<ffffffff80259496>] ? cleanup_workqueue_thread+0x26/0xd0
+>  [<ffffffff802703ed>] ? trace_hardirqs_on+0xd/0x10
+>  [<ffffffff8053fe79>] workqueue_cpu_callback+0xc9/0x10f
+>  [<ffffffff8054acf1>] ? cpu_callback+0x12/0x280
+>  [<ffffffff805539a8>] notifier_call_chain+0x68/0xa0
+>  [<ffffffff802630d6>] raw_notifier_call_chain+0x16/0x20
+>  [<ffffffff8053d9ec>] _cpu_down+0x1cc/0x2d0
+>  [<ffffffff80246f90>] disable_nonboot_cpus+0xb0/0x130
+>  [<ffffffff8027dd8d>] suspend_devices_and_enter+0xbd/0x1b0
+>  [<ffffffff8027dff7>] enter_state+0x107/0x170
+>  [<ffffffff8027e0f9>] state_store+0x99/0x100
+>  [<ffffffff803abe17>] kobj_attr_store+0x17/0x20
+>  [<ffffffff8033f1e9>] sysfs_write_file+0xd9/0x160
+>  [<ffffffff802e1c88>] vfs_write+0xb8/0x180
+>  [<ffffffff8029088c>] ? audit_syscall_entry+0x21c/0x240
+>  [<ffffffff802e2771>] sys_write+0x51/0x90
+>  [<ffffffff8020c15b>] system_call_fastpath+0x16/0x1b
+> CPU1 is down
+> Extended CMOS year: 2000
+> x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
+> Back to C!
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
