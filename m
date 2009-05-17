@@ -1,224 +1,180 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752040AbZEQMFj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753216AbZEQMGl@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752040AbZEQMFj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 08:05:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbZEQMFZ
+	id S1753216AbZEQMGl (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 08:06:41 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751163AbZEQMGb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 08:05:25 -0400
-Received: from rv-out-0506.google.com ([209.85.198.234]:7961 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750709AbZEQMFX (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 08:05:23 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:subject:references
-         :in-reply-to:x-enigmail-version:content-type
-         :content-transfer-encoding;
-        b=p1Qm8QabsVyUCjOaj/UmypnT53HEYu20gO/qfc8j9bQH5axqPAS9LG698/fGR6IniT
-         HXiSKtf/klWnn+r6AN35MoyVIOwMtonfMPW7WzOpOGLhhj+rOeUexH1jJRUDt5qM8mbU
-         oreaTWsL0LwVFpq3bCWsCuC/vzjzhphvqvADA=
-Message-ID: <4A0FFD7E.8050607@gmail.com>
-Date: Sun, 17 May 2009 21:05:18 +0900
-From: Tejun Heo <htejun@gmail.com>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	Sun, 17 May 2009 08:06:31 -0400
+Received: from mga14.intel.com ([143.182.124.37]:40053 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750890AbZEQMGa (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 08:06:30 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,207,1241420400"; 
+   d="scan'208";a="143720798"
+Date: Sun, 17 May 2009 20:06:13 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@tuxonice.net>,
+       David Rientjes <rientjes@google.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to allocate too much
+	memory too hard
+Message-ID: <20090517120613.GB3254@localhost>
+References: <200905070040.08561.rjw@sisk.pl> <200905101548.57557.rjw@sisk.pl> <200905131032.53624.rjw@sisk.pl> <200905131042.18137.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Jens Axboe <jens.axboe@oracle.com>,
-       James Bottomley <James.Bottomley@HansenPartnership.com>,
-       Boaz Harrosh <bharrosh@panasas.com>,
-       Linux Kernel <linux-kernel@vger.kernel.org>,
-       linux-scsi <linux-scsi@vger.kernel.org>,
-       IDE/ATA development list <linux-ide@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Borislav Petkov <petkovbb@googlemail.com>,
-       Pete Zaitcev <zaitcev@redhat.com>,
-       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
-       Eric Moore <Eric.Moore@lsi.com>, "Darrick J. Wong" <djwong@us.ibm.com>
-Subject: [PATCH UPDATED2 block#for-2.6.31 2/3] block: set rq->resid_len to
- blk_rq_bytes() on issue
-References: <4A0D86DB.9000203@kernel.org> <4A0D87D2.7090806@gmail.com> <4A0E0650.1020500@gmail.com>
-In-Reply-To: <4A0E0650.1020500@gmail.com>
-X-Enigmail-Version: 0.95.7
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905131042.18137.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In commit c3a4d78c580de4edc9ef0f7c59812fb02ceb037f, while introducing
-rq->resid_len, the default value of residue count was changed from
-full count to zero.  The conversion was done under the assumption that
-when a request fails residue count wasn't defined.  However, Boaz and
-James pointed out that this wasn't true and the residue count should
-be preserved for failed requests too.
+Hi Rafael,
 
-This patchset restores the original behavior by setting rq->resid_len
-to blk_rq_bytes(rq) on request start and restoring explicit clearing
-in affected drivers.  While at it, take advantage of the fact that
-rq->resid_len is set to full count where applicable.
+Sorry for being late.
 
-* ide-cd: rq->resid_len cleared on pc success
+On Wed, May 13, 2009 at 04:42:17PM +0800, Rafael J. Wysocki wrote:
+> From: Rafael J. Wysocki <rjw@sisk.pl>
+> 
+> We want to avoid attempting to free too much memory too hard during
+> hibernation, so estimate the minimum size of the image to use as the
+> lower limit for preallocating memory.
+> 
+> The approach here is based on the (experimental) observation that we
+> can't free more page frames than the sum of:
+> 
+> * global_page_state(NR_SLAB_RECLAIMABLE)
+> * global_page_state(NR_ACTIVE_ANON)
+> * global_page_state(NR_INACTIVE_ANON)
+> * global_page_state(NR_ACTIVE_FILE)
+> * global_page_state(NR_INACTIVE_FILE)
 
-* mptsas: req->resid_len cleared on success
+It's a very good idea to count the numbers in a reverse way.
 
-* sas_expander: rsp/req->resid_len cleared on success
+> and even that is usually impossible to free in practice, because some
+> of the pages reported as global_page_state(NR_SLAB_RECLAIMABLE) can't
+> in fact be freed.  It turns out, however, that if the sum of the
+> above numbers is subtracted from the number of saveable pages in the
+> system and the result is multiplied by 1.25, we get a suitable
+> estimate of the minimum size of the image.
 
-* mpt2sas_transport: req->resid_len cleared on success
+However, the "*1.25" looks like a hack. We should really apply more
+constraints to the individual components.
 
-* ide-cd, ide-tape, mptsas, sas_host_smp, mpt2sas_transport, ub: take
-  advantage of initial full count to simplify code
+> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+> ---
+>  kernel/power/snapshot.c |   56 ++++++++++++++++++++++++++++++++++++++++++++----
+>  1 file changed, 52 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6/kernel/power/snapshot.c
+> ===================================================================
+> --- linux-2.6.orig/kernel/power/snapshot.c
+> +++ linux-2.6/kernel/power/snapshot.c
+> @@ -1213,6 +1213,49 @@ static void free_unnecessary_pages(void)
+>  }
+>  
+>  /**
+> + * minimum_image_size - Estimate the minimum acceptable size of an image
+> + * @saveable: The total number of saveable pages in the system.
+> + *
+> + * We want to avoid attempting to free too much memory too hard, so estimate the
+> + * minimum acceptable size of a hibernation image to use as the lower limit for
+> + * preallocating memory.
+> + *
+> + * The minimum size of the image is computed as
+> + *
+> + * ([number of saveable pages] - [number of pages we can free]) * 1.25
+> + *
+> + * where the second term is the sum of reclaimable slab, anonymouns pages and
+> + * active/inactive file pages.
+> + *
+> + * NOTE: It usually turns out that we can't really free all pages reported as
+> + * reclaimable slab, so the number resulting from the subtraction alone is too
+> + * low.  Still, it seems reasonable to assume that this number is proportional
+> + * to the total number of pages that cannot be freed, which leads to the
+> + * formula above.  The coefficient of proportinality in this formula, 1.25, has
+> + * been determined experimentally.
+> + */
+> +static unsigned long minimum_image_size(unsigned long saveable)
+> +{
+> +	unsigned long size;
+> +
+> +	/* Compute the number of saveable pages we can free. */
+> +	size = global_page_state(NR_SLAB_RECLAIMABLE)
+> +		+ global_page_state(NR_ACTIVE_ANON)
+> +		+ global_page_state(NR_INACTIVE_ANON)
+> +		+ global_page_state(NR_ACTIVE_FILE)
+> +		+ global_page_state(NR_INACTIVE_FILE);
 
-Boaz Harrosh spotted bug in resid_len initialization.  Fixed as
-suggested.
+For example, we could drop the 1.25 ratio and calculate the above
+reclaimable size with more meaningful constraints:
 
-Signed-off-by: Tejun Heo <tj@kernel.org>
-Acked-by: Borislav Petkov <petkovbb@googlemail.com>
-Cc: Jens Axboe <jens.axboe@oracle.com>
-Cc: Boaz Harrosh <bharrosh@panasas.com>
-Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Pete Zaitcev <zaitcev@redhat.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Cc: Eric Moore <Eric.Moore@lsi.com>
-Cc: Darrick J. Wong <djwong@us.ibm.com>
----
-Fixed as Boaz suggested.  Thanks Boaz.
+        /* slabs are not easy to reclaim */
+	size = global_page_state(NR_SLAB_RECLAIMABLE) / 2;
 
- block/blk-core.c                         |    5 +++--
- drivers/block/ub.c                       |    6 ++++--
- drivers/ide/ide-cd.c                     |    4 ++--
- drivers/ide/ide-tape.c                   |    2 +-
- drivers/message/fusion/mptsas.c          |    3 ++-
- drivers/scsi/libsas/sas_expander.c       |    4 ++++
- drivers/scsi/libsas/sas_host_smp.c       |    3 ---
- drivers/scsi/mpt2sas/mpt2sas_transport.c |    4 ++--
- 8 files changed, 18 insertions(+), 13 deletions(-)
+        /* keep NR_ACTIVE_ANON */
+	size += global_page_state(NR_INACTIVE_ANON);
 
-Index: block/block/blk-core.c
-===================================================================
---- block.orig/block/blk-core.c
-+++ block/block/blk-core.c
-@@ -1783,9 +1783,10 @@ void blk_start_request(struct request *r
- 	blk_dequeue_request(req);
- 
- 	/*
--	 * We are now handing the request to the hardware, add the
--	 * timeout handler.
-+	 * We are now handing the request to the hardware, initialize
-+	 * resid_len to full count and add the timeout handler.
- 	 */
-+	req->resid_len = blk_rq_bytes(req);
- 	blk_add_timer(req);
- }
- EXPORT_SYMBOL(blk_start_request);
-Index: block/drivers/ide/ide-cd.c
-===================================================================
---- block.orig/drivers/ide/ide-cd.c
-+++ block/drivers/ide/ide-cd.c
-@@ -699,6 +699,7 @@ static ide_startstop_t cdrom_newpc_intr(
- 
- out_end:
- 	if (blk_pc_request(rq) && rc == 0) {
-+		rq->resid_len = 0;
- 		blk_end_request_all(rq, 0);
- 		hwif->rq = NULL;
- 	} else {
-@@ -718,8 +719,7 @@ out_end:
- 
- 		/* make sure it's fully ended */
- 		if (blk_fs_request(rq) == 0) {
--			rq->resid_len = blk_rq_bytes(rq) -
--				(cmd->nbytes - cmd->nleft);
-+			rq->resid_len -= cmd->nbytes - cmd->nleft;
- 			if (uptodate == 0 && (cmd->tf_flags & IDE_TFLAG_WRITE))
- 				rq->resid_len += cmd->last_xfer_len;
- 		}
-Index: block/drivers/ide/ide-tape.c
-===================================================================
---- block.orig/drivers/ide/ide-tape.c
-+++ block/drivers/ide/ide-tape.c
-@@ -380,7 +380,7 @@ static int ide_tape_callback(ide_drive_t
- 		}
- 
- 		tape->first_frame += blocks;
--		rq->resid_len = blk_rq_bytes(rq) - blocks * tape->blk_size;
-+		rq->resid_len -= blocks * tape->blk_size;
- 
- 		if (pc->error) {
- 			uptodate = 0;
-Index: block/drivers/message/fusion/mptsas.c
-===================================================================
---- block.orig/drivers/message/fusion/mptsas.c
-+++ block/drivers/message/fusion/mptsas.c
-@@ -1357,7 +1357,8 @@ static int mptsas_smp_handler(struct Scs
- 		smprep = (SmpPassthroughReply_t *)ioc->sas_mgmt.reply;
- 		memcpy(req->sense, smprep, sizeof(*smprep));
- 		req->sense_len = sizeof(*smprep);
--		rsp->resid_len = blk_rq_bytes(rsp) - smprep->ResponseDataLength;
-+		req->resid_len = 0;
-+		rsp->resid_len -= smprep->ResponseDataLength;
- 	} else {
- 		printk(MYIOC_s_ERR_FMT "%s: smp passthru reply failed to be returned\n",
- 		    ioc->name, __func__);
-Index: block/drivers/scsi/libsas/sas_expander.c
-===================================================================
---- block.orig/drivers/scsi/libsas/sas_expander.c
-+++ block/drivers/scsi/libsas/sas_expander.c
-@@ -1937,7 +1937,11 @@ int sas_smp_handler(struct Scsi_Host *sh
- 	if (ret > 0) {
- 		/* positive number is the untransferred residual */
- 		rsp->resid_len = ret;
-+		req->resid_len = 0;
- 		ret = 0;
-+	} else if (ret == 0) {
-+		rsp->resid_len = 0;
-+		req->resid_len = 0;
- 	}
- 
- 	return ret;
-Index: block/drivers/scsi/libsas/sas_host_smp.c
-===================================================================
---- block.orig/drivers/scsi/libsas/sas_host_smp.c
-+++ block/drivers/scsi/libsas/sas_host_smp.c
-@@ -176,9 +176,6 @@ int sas_smp_host_handler(struct Scsi_Hos
- 	resp_data[1] = req_data[1];
- 	resp_data[2] = SMP_RESP_FUNC_UNK;
- 
--	req->resid_len = blk_rq_bytes(req);
--	rsp->resid_len = blk_rq_bytes(rsp);
--
- 	switch (req_data[1]) {
- 	case SMP_REPORT_GENERAL:
- 		req->resid_len -= 8;
-Index: block/drivers/scsi/mpt2sas/mpt2sas_transport.c
-===================================================================
---- block.orig/drivers/scsi/mpt2sas/mpt2sas_transport.c
-+++ block/drivers/scsi/mpt2sas/mpt2sas_transport.c
-@@ -1170,8 +1170,8 @@ transport_smp_handler(struct Scsi_Host *
- 
- 		memcpy(req->sense, mpi_reply, sizeof(*mpi_reply));
- 		req->sense_len = sizeof(*mpi_reply);
--		rsp->resid_len = blk_rq_bytes(rsp) -
--				 mpi_reply->ResponseDataLength;
-+		req->resid_len = 0;
-+		rsp->resid_len -= mpi_reply->ResponseDataLength;
- 	} else {
- 		dtransportprintk(ioc, printk(MPT2SAS_DEBUG_FMT
- 		    "%s - no reply\n", ioc->name, __func__));
-Index: block/drivers/block/ub.c
-===================================================================
---- block.orig/drivers/block/ub.c
-+++ block/drivers/block/ub.c
-@@ -781,8 +781,10 @@ static void ub_rw_cmd_done(struct ub_dev
- 
- 	if (cmd->error == 0) {
- 		if (blk_pc_request(rq)) {
--			if (cmd->act_len < blk_rq_bytes(rq))
--				rq->resid_len = blk_rq_bytes(rq) - cmd->act_len;
-+			if (cmd->act_len >= rq->resid_len)
-+				rq->resid_len = 0;
-+			else
-+				rq->resid_len -= cmd->act_len;
- 			scsi_status = 0;
- 		} else {
- 			if (cmd->act_len != cmd->len) {
+        /* keep mapped files */
+	size += global_page_state(NR_ACTIVE_FILE);
+	size += global_page_state(NR_INACTIVE_FILE);
+        size -= global_page_state(NR_FILE_MAPPED);
+
+That restores the hard core working set logic in the reverse way ;)
+
+Thanks,
+Fengguang
+
+> +	if (saveable <= size)
+> +		return saveable;
+> +
+> +	size = saveable - size;
+> +	size += (size >> 2);
+> +
+> +	return size;
+> +}
+> +
+> +
+> +/**
+>   * hibernate_preallocate_memory - Preallocate memory for hibernation image
+>   *
+>   * To create a hibernation image it is necessary to make a copy of every page
+> @@ -1229,8 +1272,8 @@ static void free_unnecessary_pages(void)
+>   *
+>   * If image_size is set below the number following from the above formula,
+>   * the preallocation of memory is continued until the total number of saveable
+> - * pages in the system is below the requested image size or it is impossible to
+> - * allocate more memory, whichever happens first.
+> + * pages in the system is below the requested image size or the minimum
+> + * acceptable image size returned by minimum_image_size(), whichever is greater.
+>   */
+>  int hibernate_preallocate_memory(void)
+>  {
+> @@ -1291,6 +1334,11 @@ int hibernate_preallocate_memory(void)
+>  		goto out;
+>  	}
+>  
+> +	/* Estimate the minimum size of the image. */
+> +	pages = minimum_image_size(saveable);
+> +	if (size < pages)
+> +		size = min_t(unsigned long, pages, max_size);
+> +
+>  	/*
+>  	 * Let the memory management subsystem know that we're going to need a
+>  	 * large number of page frames to allocate and make it free some memory.
+> @@ -1303,8 +1351,8 @@ int hibernate_preallocate_memory(void)
+>  	 * The number of saveable pages in memory was too high, so apply some
+>  	 * pressure to decrease it.  First, make room for the largest possible
+>  	 * image and fail if that doesn't work.  Next, try to decrease the size
+> -	 * of the image as much as indicated by image_size using allocations
+> -	 * from highmem and non-highmem zones separately.
+> +	 * of the image as much as indicated by 'size' using allocations from
+> +	 * highmem and non-highmem zones separately.
+>  	 */
+>  	pages_highmem = preallocate_image_highmem(highmem / 2);
+>  	max_size += pages_highmem;
