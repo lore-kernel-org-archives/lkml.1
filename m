@@ -1,61 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756992AbZEQH62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756601AbZEQIFN@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756992AbZEQH62 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 03:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753024AbZEQH6S
+	id S1756601AbZEQIFN (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 04:05:13 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752714AbZEQIEs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 03:58:18 -0400
-Received: from mail-bw0-f174.google.com ([209.85.218.174]:55968 "EHLO
-	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752714AbZEQH6R convert rfc822-to-8bit (ORCPT
+	Sun, 17 May 2009 04:04:48 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:56246 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752679AbZEQIEq (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 03:58:17 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=O3TjbAXuh/P1c80BSj3dnZ+uBZ/UJFhpkww6TfZ4bwJlL8lfx44XrwfVagSWtMBcfI
-         acf2C61anmCa4CR+OYEb/SVXyDi4/LNLicsGSJxzBGagvT22MToRF3LnqbwsJdNUn8e9
-         IneNEZAXKKd8SkInUL7L/NWdvG7oyetVJvESY=
-MIME-Version: 1.0
-In-Reply-To: <pQ9WADCjgyE.A.gb.dD0DKB@chimera>
-References: <yO1BmxN79sN.A.xAG.8_zDKB@chimera>
-	 <pQ9WADCjgyE.A.gb.dD0DKB@chimera>
-Date: Sun, 17 May 2009 09:58:17 +0200
-Message-ID: <8db1092f0905170058n338a3cbcr2a7524b11a22d21@mail.gmail.com>
-Subject: Re: [Bug #12499] Problem with using bluetooth adaper connected to usb 
-	port
-From: Maciej Rutecki <maciej.rutecki@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Marcel Holtmann <marcel@holtmann.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+	Sun, 17 May 2009 04:04:46 -0400
+Date: Sun, 17 May 2009 01:03:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Chris Peterson <cpeterso@cpeterso.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: Re: [RFC] mod_timer() helper functions?
+Message-Id: <20090517010347.f25843f9.akpm@linux-foundation.org>
+In-Reply-To: <a24804730905170050m16bfb81cj6c9ee4c99ac9d08f@mail.gmail.com>
+References: <a24804730905160036j2720c557o347cec1513df9c4a@mail.gmail.com>
+	<20090516230350.ec4fb487.akpm@linux-foundation.org>
+	<a24804730905170050m16bfb81cj6c9ee4c99ac9d08f@mail.gmail.com>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-2009/5/16 Rafael J. Wysocki <rjw@sisk.pl>:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.28 and 2.6.29.
->
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> be listed and let me know (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=12499
-> Subject         : Problem with using bluetooth adaper connected to usb port
-> Submitter       : Maciej Rutecki <maciej.rutecki@gmail.com>
-> Date            : 2009-01-13 18:34 (124 days old)
-> References      : http://marc.info/?l=linux-kernel&m=123187185426236&w=4
-> Handled-By      : Marcel Holtmann <marcel@holtmann.org>
->
+On Sun, 17 May 2009 00:50:55 -0700 Chris Peterson <cpeterso@cpeterso.com> wrote:
 
-2.6.30-rc6 works fine. Please, remove it.
+> >> Reviewing the kernel's nearly one-thousand calls to mod_timer(), there
+> >> are three basic patterns:
+> >>
+> >> __* multi-second timeouts
+> >> __* millisecond timeouts
+> >> __* +1 jiffie ASAP events
+> >>
+> 
+> Is there a functional difference between the following "expire this
+> timer ASAP" statements?
+> 
+> mod_timer(timer, jiffies + 1); /* 48 uses */
+> mod_timer(timer, jiffies); /* 44 uses */
+> mod_timer(timer, jiffies - 1); /* 6 uses */
 
-Thanks
--- 
-Maciej Rutecki
-http://www.maciek.unixy.pl
+That's something which has always worried me.  Lots of code does:
+
+	mod_timer(timer, jiffies + 1);
+
+(for varying values of "1").  What happens if this thread of control
+then gets stalled for a couple of jiffies.  Say it gets preempted or
+there's a long interrupt or whatever.  So there's a several-jiffy
+interval between the caller evaluating jiffies+1 and the entry to
+mod_timer().
+
+
+>From my reading, we'll hit
+
+		int i;
+		/* If the timeout is larger than 0xffffffff on 64-bit
+		 * architectures then we use the maximum timeout:
+		 */
+		if (idx > 0xffffffffUL) {
+			idx = 0xffffffffUL;
+			expires = idx + base->timer_jiffies;
+		}
+		i = (expires >> (TVR_BITS + 3 * TVN_BITS)) & TVN_MASK;
+		vec = base->tv5.vec + i;
+
+and the timer gets scheduled at some time in the far-distant future!
+
+But this is such a glaring and huge problem that surely it cannot
+exist.  But I don't know why not.
+
+If the bug _does_ exist then mod_timer(timer, jiffies - 1) will set the
+timer to go off in the far future.  mod_timer(timer, jiffies) will
+usually make it go off real soon now, but it's scary.  mod_timer(timer,
+jiffies + 1) is safer, but still vulnerable.
+
+
