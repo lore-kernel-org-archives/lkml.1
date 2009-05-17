@@ -1,18 +1,18 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753326AbZEQObE@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbZEQOeq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753326AbZEQObE (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 10:31:04 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752293AbZEQOat
+	id S1753968AbZEQOeq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 10:34:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbZEQOeg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 10:30:49 -0400
-Received: from tomts36.bellnexxia.net ([209.226.175.93]:54375 "EHLO
-	tomts36-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751232AbZEQOar (ORCPT
+	Sun, 17 May 2009 10:34:36 -0400
+Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:44651 "EHLO
+	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751499AbZEQOef (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 10:30:47 -0400
+	Sun, 17 May 2009 10:34:35 -0400
 X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8IANG7D0pMQW1W/2dsb2JhbACBT4EwzSqCQoE/BQ
-Date: Sun, 17 May 2009 10:30:45 -0400
+X-IronPort-Anti-Spam-Result: Ao8IAMK4D0pMQW1W/2dsb2JhbACBT4EwzSSCQoE/BQ
+Date: Sun, 17 May 2009 10:29:33 -0400
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
@@ -21,8 +21,8 @@ Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        stable@kernel.org, cpufreq@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
        rjw@sisk.pl, Ben Slusky <sluskyb@paranoiacs.org>,
        Dave Jones <davej@redhat.com>
-Subject: [PATCH] cpufreq fix timer teardown in ondemand governor
-Message-ID: <20090517143045.GC27882@Krystal>
+Subject: [PATCH] cpufreq fix timer teardown in conservative governor
+Message-ID: <20090517142933.GB27882@Krystal>
 References: <yO1BmxN79sN.A.xAG.8_zDKB@chimera> <pQ9WADCjgyE.A.PTG.HA0DKB@chimera>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -32,8 +32,8 @@ In-Reply-To: <pQ9WADCjgyE.A.PTG.HA0DKB@chimera>
 X-Editor: vi
 X-Info: http://krystal.dyndns.org:8080
 X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:29:34 up 78 days, 10:55,  3 users,  load average: 0.53, 0.34,
-	0.30
+X-Uptime: 10:25:56 up 78 days, 10:52,  3 users,  load average: 0.16, 0.25,
+	0.28
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
@@ -58,9 +58,9 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 > 		  http://patchwork.kernel.org/patch/19753/
 > 
 
-(updated changelog)
+(re-send with updated changelog)
 
-cpufreq fix timer teardown in ondemand governor
+cpufreq fix timer teardown in conservative governor
 
 The problem is that dbs_timer_exit() uses cancel_delayed_work() when it should
 use cancel_delayed_work_sync(). cancel_delayed_work() does not wait for the
@@ -76,10 +76,12 @@ started, this could lead to the following race :
 dbs_enable could be reenabled and multiple do_dbs_timer handlers would run.
 This is why a synchronized teardown is required.
 
-The following patch applies to, at least, 2.6.28.x, 2.6.29.1, 2.6.30-rc2.
-
 Depends on patch
 cpufreq: remove rwsem lock from CPUFREQ_GOV_STOP call
+
+The following patch applies to 2.6.30-rc2. Stable kernels have a similar
+issue which should also be fixed, but the code changed between 2.6.29
+and 2.6.30, so this patch only applies to 2.6.30-rc.
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 CC: Andrew Morton <akpm@linux-foundation.org>
@@ -91,14 +93,14 @@ CC: rjw@sisk.pl
 CC: Ben Slusky <sluskyb@paranoiacs.org>
 CC: Dave Jones <davej@redhat.com>
 ---
- drivers/cpufreq/cpufreq_ondemand.c |    5 ++++-
+ drivers/cpufreq/cpufreq_conservative.c |    5 ++++-
  1 file changed, 4 insertions(+), 1 deletion(-)
 
-Index: linux-2.6-lttng/drivers/cpufreq/cpufreq_ondemand.c
+Index: linux-2.6-lttng/drivers/cpufreq/cpufreq_conservative.c
 ===================================================================
---- linux-2.6-lttng.orig/drivers/cpufreq/cpufreq_ondemand.c	2009-04-23 23:25:00.000000000 -0400
-+++ linux-2.6-lttng/drivers/cpufreq/cpufreq_ondemand.c	2009-04-23 23:25:39.000000000 -0400
-@@ -98,6 +98,9 @@ static unsigned int dbs_enable;	/* numbe
+--- linux-2.6-lttng.orig/drivers/cpufreq/cpufreq_conservative.c	2009-04-23 23:22:15.000000000 -0400
++++ linux-2.6-lttng/drivers/cpufreq/cpufreq_conservative.c	2009-04-23 23:24:38.000000000 -0400
+@@ -91,6 +91,9 @@ static unsigned int dbs_enable;	/* numbe
   * (like __cpufreq_driver_target()) is being called with dbs_mutex taken, then
   * cpu_hotplug lock should be taken before that. Note that cpu_hotplug lock
   * is recursive for the same process. -Venki
@@ -108,7 +110,7 @@ Index: linux-2.6-lttng/drivers/cpufreq/cpufreq_ondemand.c
   */
  static DEFINE_MUTEX(dbs_mutex);
  
-@@ -562,7 +565,7 @@ static inline void dbs_timer_init(struct
+@@ -542,7 +545,7 @@ static inline void dbs_timer_init(struct
  static inline void dbs_timer_exit(struct cpu_dbs_info_s *dbs_info)
  {
  	dbs_info->enable = 0;
@@ -117,6 +119,7 @@ Index: linux-2.6-lttng/drivers/cpufreq/cpufreq_ondemand.c
  }
  
  static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
+
 -- 
 Mathieu Desnoyers
 OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
