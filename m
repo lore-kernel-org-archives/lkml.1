@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758109AbZEQK2H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755212AbZEQKdW@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758109AbZEQK2H (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 06:28:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757739AbZEQK1u
+	id S1755212AbZEQKdW (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 06:33:22 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753483AbZEQKdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 06:27:50 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46367 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754630AbZEQK1t (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 06:27:49 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Pekka Enberg <penberg@cs.helsinki.fi>
-Subject: Re: [Bug #13069] regression in 2.6.29-git3 on SH/Dreamcast
-Date: Sun, 17 May 2009 12:28:03 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Adrian McMenamin <adrian@newgolddream.dyndns.info>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Manuel Lauss <mano@roarinelk.homelinux.net>
-References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera> <1240594638.4777.1.camel@localhost.localdomain> <84144f020905170112l789e9ec0p2bf6bb71879579e1@mail.gmail.com>
-In-Reply-To: <84144f020905170112l789e9ec0p2bf6bb71879579e1@mail.gmail.com>
+	Sun, 17 May 2009 06:33:08 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:47558 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750804AbZEQKdH (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 06:33:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=nN2usvbC+YJWlWfB8a3ZCTuswCT1mP7FNuBSITZUJRjPOxfEC3yWpd7owIygnsJBwU
+         e30varXaSq3uuIU9AlmwvDDya/0MuS3TuyvMHeMqdH0JemZIbMP61d9nm8mSP59RFDBC
+         8xzUlsS6ZYTPaRv6kQUYT/Vld7CtxlA81TYvY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Subject: Re: [PATCH 0/15 v2] ide-atapi: remove pc->buf and misc cleanups
+Date: Sun, 17 May 2009 12:36:15 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-00442-ga3668b0; KDE/4.2.2; i686; ; )
+Cc: Borislav Petkov <petkovbb@googlemail.com>, linux-ide@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Jens Axboe <axboe@kernel.dk>
+References: <1242364293-29223-1-git-send-email-petkovbb@gmail.com> <200905162107.38332.bzolnier@gmail.com> <4A0F3963.8050000@kernel.org>
+In-Reply-To: <4A0F3963.8050000@kernel.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905171228.04027.rjw@sisk.pl>
+Message-Id: <200905171236.15366.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 May 2009, Pekka Enberg wrote:
-> On Thu, 2009-04-16 at 23:45 +0200, Rafael J. Wysocki wrote:
-> >> This message has been generated automatically as a part of a report
-> >> of recent regressions.
-> >>
-> >> The following bug entry is on the current list of known regressions
-> >> from 2.6.29.  Please verify if it still should be listed and let me know
-> >> (either way).
-> >>
-> >>
-> >> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=13069
-> >> Subject               : regression in 2.6.29-git3 on SH/Dreamcast
-> >> Submitter     : Adrian McMenamin <adrian@newgolddream.dyndns.info>
-> >> Date          : 2009-03-29 19:04 (19 days old)
-> >> References    : http://marc.info/?l=linux-kernel&m=123835353115372&w=4
-> 
-> On Fri, Apr 24, 2009 at 8:37 PM, Adrian McMenamin
-> <adrian@newgolddream.info> wrote:
-> > At this point it *looks* as though it was simply a question of
-> > insufficient memory to boot, but I think it needs further testing.
-> > Nobody else seems to have picked it up though.
-> 
-> Yeah, it looks like there's not enough memory to boot. It could well
-> be that the kernel memory footprint got bigger but I don't think the
-> bisected commit is at fault here. Perhaps we should just close the
-> bug?
 
-Done.
+[ So long with my idyllic ide git tree experience... ]
 
-Thanks,
-Rafael
+On Sunday 17 May 2009 00:08:35 Tejun Heo wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+> >> It also got rebased ontop of block/for-2.6.31 after Tejun's stuff got merged.
+> ...
+
+"..." == a lot of merge conflicts...
+
+> > Looking at creation dates I suspect that somewhere along the way
+> > something was rebased?
+> > 
+> > One quick temporary solution would be to recreate bp/pc-remove-buf
+> > on top of tj/block-peek-fetch...
+
+...which are coming up before tj/block-peek-fetch and which simply
+shouldn't be there since there were no further modifications to these
+files in ide-2.6.git/for-next
+
+> Oh.. please use block commit.  Jens didn't pull in my tree but applied
+> patches on top of the block tree, so my commits shouldn't be in any
+> official trees.
+
+I took a closer look and it seems the same is true for your earlier IDE
+patchsets...  IOW they were also applied on top of block tree even though
+your commits have been pulled into ide-2.6.git/for-next long before.
+
+This seems to be wrong in terms of git usage and definitely is not what
+we have agreed on w.r.t. handling of those patchsets.
+
+Jens?
