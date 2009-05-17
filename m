@@ -1,66 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756773AbZEQFGQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbZEQFu3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756773AbZEQFGQ (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 01:06:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753733AbZEQFEj
+	id S1753019AbZEQFu3 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 01:50:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZEQFuN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 01:04:39 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:45090 "EHLO mx2.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752230AbZEQFEg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 01:04:36 -0400
-Message-Id: <20090517050331.993181046@suse.com>
-User-Agent: quilt/0.47-14.9
-Date: Sun, 17 May 2009 01:02:02 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: [patch 2/4] [PATCH] reiserfs: deal with NULL xattr root w/ xattrs disabled
-References: <20090517050200.786752018@suse.com>
-Content-Disposition: inline; filename=patches.fixes/reiserfs-xattr-root-fixup
+	Sun, 17 May 2009 01:50:13 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:44673 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750724AbZEQFuM (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 01:50:12 -0400
+Date: Sat, 16 May 2009 22:49:47 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Thomas Meyer <thomas@m3y3r.de>
+Cc: linux-kernel@vger.kernel.org, oprofile-list@lists.sf.net,
+       Robert Richter <robert.richter@amd.com>
+Subject: Re: oprofile: WQ on CPU0, prefer CPU1
+Message-Id: <20090516224947.05067f96.akpm@linux-foundation.org>
+In-Reply-To: <20090514202214.14243n1debrzobx2@mail.your-server.de>
+References: <20090514202214.14243n1debrzobx2@mail.your-server.de>
+X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
- This patch avoids an Oops in open_xa_root that can occur when deleting a
- file with xattrs disabled. It assumes that the xattr root will be there,
- and that is not guaranteed.
+(cc's added, from MAINTAINERS)
 
-Signed-off-by: Jeff Mahoney <jeffm@suse.com>
----
- fs/reiserfs/super.c |    2 --
- fs/reiserfs/xattr.c |    4 +++-
- 2 files changed, 3 insertions(+), 3 deletions(-)
+On Thu, 14 May 2009 20:22:14 +0200 Thomas Meyer <thomas@m3y3r.de> wrote:
 
---- a/fs/reiserfs/super.c
-+++ b/fs/reiserfs/super.c
-@@ -448,13 +448,11 @@ int remove_save_link(struct inode *inode
- static void reiserfs_kill_sb(struct super_block *s)
- {
- 	if (REISERFS_SB(s)) {
--#ifdef CONFIG_REISERFS_FS_XATTR
- 		if (REISERFS_SB(s)->xattr_root) {
- 			d_invalidate(REISERFS_SB(s)->xattr_root);
- 			dput(REISERFS_SB(s)->xattr_root);
- 			REISERFS_SB(s)->xattr_root = NULL;
- 		}
--#endif
- 		if (REISERFS_SB(s)->priv_root) {
- 			d_invalidate(REISERFS_SB(s)->priv_root);
- 			dput(REISERFS_SB(s)->priv_root);
---- a/fs/reiserfs/xattr.c
-+++ b/fs/reiserfs/xattr.c
-@@ -123,7 +123,9 @@ static struct dentry *open_xa_root(struc
- 	mutex_lock_nested(&privroot->d_inode->i_mutex, I_MUTEX_XATTR);
- 
- 	xaroot = dget(REISERFS_SB(sb)->xattr_root);
--	if (!xaroot->d_inode) {
-+	if (!xaroot)
-+		xaroot = ERR_PTR(-ENODATA);
-+	else if (!xaroot->d_inode) {
- 		int err = -ENODATA;
- 		if (xattr_may_create(flags))
- 			err = xattr_mkdir(privroot->d_inode, xaroot, 0700);
+> 
+> After suspend and resume to/from S3 I see a lot of these messages in  
+> the kernel log:
+> 
+> [11750.054031] WQ on CPU0, prefer CPU1
+> [11750.154023] WQ on CPU0, prefer CPU1
+> [11750.254022] WQ on CPU0, prefer CPU1
+> [11750.354022] WQ on CPU0, prefer CPU1
+> [11750.454018] WQ on CPU0, prefer CPU1
+> [11750.554022] WQ on CPU0, prefer CPU1
+> [11750.654022] WQ on CPU0, prefer CPU1
+> [11750.754039] WQ on CPU0, prefer CPU1
+> [11750.854020] WQ on CPU0, prefer CPU1
+> [11750.954024] WQ on CPU0, prefer CPU1
+> [11751.054029] WQ on CPU0, prefer CPU1
+> [11751.154028] WQ on CPU0, prefer CPU1
+> [11751.254026] WQ on CPU0, prefer CPU1
+> [11751.354019] WQ on CPU0, prefer CPU1
+> [11751.454022] WQ on CPU0, prefer CPU1
+> [11751.554032] WQ on CPU0, prefer CPU1
+> [11751.654028] WQ on CPU0, prefer CPU1
+> [11751.754028] WQ on CPU0, prefer CPU1
+> [11751.854033] WQ on CPU0, prefer CPU1
+> [11751.954029] WQ on CPU0, prefer CPU1
+> [and so on; seems not to stop]
+> 
+> This comes from drivers/oprofile/cpu_buffer.c
+> 
+> Bug or feature?
+> 
 
+Don't know.  It needs fixing though - the kernel shouldn't blurt random
+printks like this.
+
+> 
+> PS: 2.6.30-rc5
+
+Do you know if earlier kernels did the same thing?
