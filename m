@@ -1,209 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755140AbZEQVPR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755435AbZEQVR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755140AbZEQVPR (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 17:15:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbZEQVO7
+	id S1755435AbZEQVR4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 17:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754660AbZEQVRr
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 17:14:59 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:48708 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753279AbZEQVO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 17:14:59 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to allocate too much memory too hard
-Date: Sun, 17 May 2009 23:14:29 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@tuxonice.net>,
-       David Rientjes <rientjes@google.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-References: <200905070040.08561.rjw@sisk.pl> <200905171455.06120.rjw@sisk.pl> <20090517140712.GE3254@localhost>
-In-Reply-To: <20090517140712.GE3254@localhost>
-MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905172314.29850.rjw@sisk.pl>
+	Sun, 17 May 2009 17:17:47 -0400
+Received: from moutng.kundenserver.de ([212.227.126.188]:62540 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754481AbZEQVRp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 17:17:45 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: linux-kernel@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>
+Subject: [PATCH] asm-generic: make get_rtc_time overridable
+Date: Sun, 17 May 2009 21:17:45 +0000
+Message-Id: <1242595065-24210-1-git-send-email-arnd@arndb.de>
+X-Mailer: git-send-email 1.6.0.4
+X-Provags-ID: V01U2FsdGVkX1/F2ZYVmpkYALcce985rdcXMoLmKtYNJ/ynU0j
+ ZIE6SlsbBCDRP7bBEEn07ipuWEKbM/DMMI5TMqBFdihoGpIMgg
+ pEa9ZFMFk/Wv/2bdeXkZg==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 May 2009, Wu Fengguang wrote:
-> On Sun, May 17, 2009 at 08:55:05PM +0800, Rafael J. Wysocki wrote:
-> > On Sunday 17 May 2009, Wu Fengguang wrote:
-> 
-> > > > +static unsigned long minimum_image_size(unsigned long saveable)
-> > > > +{
-> > > > +	unsigned long size;
-> > > > +
-> > > > +	/* Compute the number of saveable pages we can free. */
-> > > > +	size = global_page_state(NR_SLAB_RECLAIMABLE)
-> > > > +		+ global_page_state(NR_ACTIVE_ANON)
-> > > > +		+ global_page_state(NR_INACTIVE_ANON)
-> > > > +		+ global_page_state(NR_ACTIVE_FILE)
-> > > > +		+ global_page_state(NR_INACTIVE_FILE);
-> > > 
-> > > For example, we could drop the 1.25 ratio and calculate the above
-> > > reclaimable size with more meaningful constraints:
-> > > 
-> > >         /* slabs are not easy to reclaim */
-> > > 	size = global_page_state(NR_SLAB_RECLAIMABLE) / 2;
-> > 
-> > Why 1/2?
-> 
-> Also a very coarse value:
-> - we don't want to stress icache/dcache too much
->   (unless they grow too large)
-> - my experience was that the icache/dcache are scanned in a slower
->   pace than lru pages.
-> - most importantly, inside the NR_SLAB_RECLAIMABLE pages, maybe half
->   of the pages are actually *in use* and cannot be freed:
->         % cat /proc/sys/fs/inode-nr     
->         30450   16605
->         % cat /proc/sys/fs/dentry-state 
->         41598   35731   45      0       0       0
->   See? More than half entries are in-use. Sure many of them will actually
->   become unused when dentries are freed, but in the mean time the internal
->   fragmentations in the slabs can go up.
-> 
-> > >         /* keep NR_ACTIVE_ANON */
-> > > 	size += global_page_state(NR_INACTIVE_ANON);
-> > 
-> > Why exactly did you omit ACTIVE_ANON?
-> 
-> To keep the "core working set" :)
->   	
-> > >         /* keep mapped files */
-> > > 	size += global_page_state(NR_ACTIVE_FILE);
-> > > 	size += global_page_state(NR_INACTIVE_FILE);
-> > >         size -= global_page_state(NR_FILE_MAPPED);
-> > > 
-> > > That restores the hard core working set logic in the reverse way ;)
-> > 
-> > I think the 1/2 factor for NR_SLAB_RECLAIMABLE may be too high in some cases,
-> > but I'm going to check that.
-> 
-> Yes, after updatedb. In that case simple magics numbers may not help.
-> In that case we should really first call shrink_slab() in a loop to
-> cut down the slab pages to a sane number.
+Evidently, set_rtc_time is supposed to be overridable
+by architectures that define their own version, but
+unfortunately, get_rtc_ss would in that case still
+use the generic version.
 
-I have verified that the appended patch works reasonably well.
+This makes get_rtc_ss call the real set_rtc_time
+to let architectures define their own version.
+The change should fix the "Extended RTC operation"
+on Alpha, which uses the incorrect get_rtc_ss
+call. It also allows PowerPC to use the asm-generic/rtc.h
+file in the future.
 
-The value returned as the minimum image size is usually too high, but not very
-much (on x86_64 usually about 20%) and there are no "magic" coefficients
-involved any more and the computation of the minimum image size is carried out
-before calling shrink_all_memory() (so it's still going to be useful after
-we've dropped shrink_all_memory() at one point).
-
-Thanks,
-Rafael
-
+Cc: Richard Henderson <rth@twiddle.net>
+Cc: linux-alpha@vger.kernel.org
+Cc: Tom Rini <trini@mvista.com>
+Cc: rtc-linux@googlegroups.com
+Cc: Alessandro Zummo <a.zummo@towertech.it>
+Cc: Paul Gortmaker <p_gortmaker@yahoo.com>
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
-From: Rafael J. Wysocki <rjw@sisk.pl>
-Subject: PM/Hibernate: Do not try to allocate too much memory too hard (rev. 2)
+ include/asm-generic/rtc.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-We want to avoid attempting to free too much memory too hard during
-hibernation, so estimate the minimum size of the image to use as the
-lower limit for preallocating memory.
-
-The approach here is based on the (experimental) observation that we
-can't free more page frames than the sum of:
-
-* global_page_state(NR_SLAB_RECLAIMABLE)
-* global_page_state(NR_ACTIVE_ANON)
-* global_page_state(NR_INACTIVE_ANON)
-* global_page_state(NR_ACTIVE_FILE)
-* global_page_state(NR_INACTIVE_FILE)
-
-minus
-
-* global_page_state(NR_FILE_MAPPED)
-
-Namely, if this number is subtracted from the number of saveable
-pages in the system, we get a good estimate of the minimum reasonable
-size of a hibernation image.
-
-Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
----
- kernel/power/snapshot.c |   43 +++++++++++++++++++++++++++++++++++++++----
- 1 file changed, 39 insertions(+), 4 deletions(-)
-
-Index: linux-2.6/kernel/power/snapshot.c
-===================================================================
---- linux-2.6.orig/kernel/power/snapshot.c
-+++ linux-2.6/kernel/power/snapshot.c
-@@ -1204,6 +1204,36 @@ static void free_unnecessary_pages(void)
+diff --git a/include/asm-generic/rtc.h b/include/asm-generic/rtc.h
+index 763e3b0..fa86f24 100644
+--- a/include/asm-generic/rtc.h
++++ b/include/asm-generic/rtc.h
+@@ -202,7 +202,7 @@ static inline unsigned int get_rtc_ss(void)
+ {
+ 	struct rtc_time h;
+ 
+-	__get_rtc_time(&h);
++	get_rtc_time(&h);
+ 	return h.tm_sec;
  }
  
- /**
-+ * minimum_image_size - Estimate the minimum acceptable size of an image
-+ * @saveable: Number of saveable pages in the system.
-+ *
-+ * We want to avoid attempting to free too much memory too hard, so estimate the
-+ * minimum acceptable size of a hibernation image to use as the lower limit for
-+ * preallocating memory.
-+ *
-+ * We assume that the minimum image size should be proportional to
-+ *
-+ * [number of saveable pages] - [number of pages that can be freed in theory]
-+ *
-+ * where the second term is the sum of (1) reclaimable slab pages, (2) active
-+ * and (3) inactive anonymouns pages, (4) active and (5) inactive file pages,
-+ * minus mapped file pages.
-+ */
-+static unsigned long minimum_image_size(unsigned long saveable)
-+{
-+	unsigned long size;
-+
-+	size = global_page_state(NR_SLAB_RECLAIMABLE)
-+		+ global_page_state(NR_ACTIVE_ANON)
-+		+ global_page_state(NR_INACTIVE_ANON)
-+		+ global_page_state(NR_ACTIVE_FILE)
-+		+ global_page_state(NR_INACTIVE_FILE)
-+		- global_page_state(NR_FILE_MAPPED);
-+
-+	return saveable <= size ? 0 : saveable - size;
-+}
-+
-+/**
-  * hibernate_preallocate_memory - Preallocate memory for hibernation image
-  *
-  * To create a hibernation image it is necessary to make a copy of every page
-@@ -1220,8 +1250,8 @@ static void free_unnecessary_pages(void)
-  *
-  * If image_size is set below the number following from the above formula,
-  * the preallocation of memory is continued until the total number of saveable
-- * pages in the system is below the requested image size or it is impossible to
-- * allocate more memory, whichever happens first.
-+ * pages in the system is below the requested image size or the minimum
-+ * acceptable image size returned by minimum_image_size(), whichever is greater.
-  */
- int hibernate_preallocate_memory(void)
- {
-@@ -1282,6 +1312,11 @@ int hibernate_preallocate_memory(void)
- 		goto out;
- 	}
- 
-+	/* Estimate the minimum size of the image. */
-+	pages = minimum_image_size(saveable);
-+	if (size < pages)
-+		size = min_t(unsigned long, pages, max_size);
-+
- 	/*
- 	 * Let the memory management subsystem know that we're going to need a
- 	 * large number of page frames to allocate and make it free some memory.
-@@ -1294,8 +1329,8 @@ int hibernate_preallocate_memory(void)
- 	 * The number of saveable pages in memory was too high, so apply some
- 	 * pressure to decrease it.  First, make room for the largest possible
- 	 * image and fail if that doesn't work.  Next, try to decrease the size
--	 * of the image as much as indicated by image_size using allocations
--	 * from highmem and non-highmem zones separately.
-+	 * of the image as much as indicated by 'size' using allocations from
-+	 * highmem and non-highmem zones separately.
- 	 */
- 	pages_highmem = preallocate_image_highmem(highmem / 2);
- 	max_size += pages_highmem;
+-- 
+1.6.0.4
+
