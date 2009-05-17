@@ -1,136 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758023AbZEQB6u@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752771AbZEQCIr@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758023AbZEQB6u (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 21:58:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753460AbZEQB6k
+	id S1752771AbZEQCIr (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 22:08:47 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752001AbZEQCIf
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 21:58:40 -0400
-Received: from mga14.intel.com ([143.182.124.37]:42453 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753161AbZEQB6j (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 21:58:39 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,206,1241420400"; 
-   d="scan'208";a="143635535"
-Date: Sun, 17 May 2009 09:58:06 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Peter Zijlstra <peterz@infradead.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       "riel@redhat.com" <riel@redhat.com>, "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>,
-       "elladan@eskimo.com" <elladan@eskimo.com>,
-       "npiggin@suse.de" <npiggin@suse.de>
-Subject: Re: [PATCH 1/3] vmscan: report vm_flags in page_referenced()
-Message-ID: <20090517015806.GA6809@localhost>
-References: <20090516090005.916779788@intel.com> <20090516090448.249602749@intel.com> <28c262360905161836u332f9e9aj6fa3f3b65da95592@mail.gmail.com>
+	Sat, 16 May 2009 22:08:35 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50903 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751917AbZEQCIf (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 22:08:35 -0400
+Date: Sat, 16 May 2009 19:06:53 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: =?UTF-8?Q?Ozan_=C3=87a=C4=9Flayan?= <ozan@pardus.org.tr>
+cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
+Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
+In-Reply-To: <4A0F5B2A.8010009@pardus.org.tr>
+Message-ID: <alpine.LFD.2.01.0905161859170.3301@localhost.localdomain>
+References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <alpine.LFD.2.01.0905161644350.3301@localhost.localdomain> <4A0F5B2A.8010009@pardus.org.tr>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <28c262360905161836u332f9e9aj6fa3f3b65da95592@mail.gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 17, 2009 at 09:36:44AM +0800, Minchan Kim wrote:
-> On Sat, May 16, 2009 at 6:00 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> > Collect vma->vm_flags of the VMAs that actually referenced the page.
-> >
-> > This is preparing for more informed reclaim heuristics,
-> > eg. to protect executable file pages more aggressively.
-> > For now only the VM_EXEC bit will be used by the caller.
-> >
-> > CC: Minchan Kim <minchan.kim@gmail.com>
-> > CC: Johannes Weiner <hannes@cmpxchg.org>
-> > CC: Peter Zijlstra <peterz@infradead.org>
-> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
-> > ---
-> >  include/linux/rmap.h |    5 +++--
-> >  mm/rmap.c            |   37 ++++++++++++++++++++++++++-----------
-> >  mm/vmscan.c          |    7 +++++--
-> >  3 files changed, 34 insertions(+), 15 deletions(-)
-> >
-> > --- linux.orig/include/linux/rmap.h
-> > +++ linux/include/linux/rmap.h
-> > @@ -83,7 +83,8 @@ static inline void page_dup_rmap(struct
-> >  /*
-> >  * Called from mm/vmscan.c to handle paging out
-> >  */
-> > -int page_referenced(struct page *, int is_locked, struct mem_cgroup *cnt);
-> > +int page_referenced(struct page *, int is_locked,
-> > +                       struct mem_cgroup *cnt, unsigned long *vm_flags);
-> >  int try_to_unmap(struct page *, int ignore_refs);
-> >
-> >  /*
-> > @@ -128,7 +129,7 @@ int page_wrprotect(struct page *page, in
-> >  #define anon_vma_prepare(vma)  (0)
-> >  #define anon_vma_link(vma)     do {} while (0)
-> >
-> > -#define page_referenced(page,l,cnt) TestClearPageReferenced(page)
-> > +#define page_referenced(page, locked, cnt, flags) TestClearPageReferenced(page)
-> >  #define try_to_unmap(page, refs) SWAP_FAIL
-> >
-> >  static inline int page_mkclean(struct page *page)
-> > --- linux.orig/mm/rmap.c
-> > +++ linux/mm/rmap.c
-> > @@ -333,7 +333,9 @@ static int page_mapped_in_vma(struct pag
-> >  * repeatedly from either page_referenced_anon or page_referenced_file.
-> >  */
-> >  static int page_referenced_one(struct page *page,
-> > -       struct vm_area_struct *vma, unsigned int *mapcount)
-> > +                              struct vm_area_struct *vma,
-> > +                              unsigned int *mapcount,
-> > +                              unsigned long *vm_flags)
-> >  {
-> >        struct mm_struct *mm = vma->vm_mm;
-> >        unsigned long address;
-> > @@ -381,11 +383,14 @@ out_unmap:
-> >        (*mapcount)--;
-> >        pte_unmap_unlock(pte, ptl);
-> >  out:
-> > +       if (referenced)
-> > +               *vm_flags |= vma->vm_flags;
-> >        return referenced;
-> >  }
-> >
-> >  static int page_referenced_anon(struct page *page,
-> > -                               struct mem_cgroup *mem_cont)
-> > +                               struct mem_cgroup *mem_cont,
-> > +                               unsigned long *vm_flags)
-> >  {
-> >        unsigned int mapcount;
-> >        struct anon_vma *anon_vma;
-> > @@ -405,7 +410,8 @@ static int page_referenced_anon(struct p
-> >                 */
-> >                if (mem_cont && !mm_match_cgroup(vma->vm_mm, mem_cont))
-> >                        continue;
-> > -               referenced += page_referenced_one(page, vma, &mapcount);
-> > +               referenced += page_referenced_one(page, vma,
-> > +                                                 &mapcount, vm_flags);
-> >                if (!mapcount)
-> >                        break;
-> >        }
-> > @@ -418,6 +424,7 @@ static int page_referenced_anon(struct p
-> >  * page_referenced_file - referenced check for object-based rmap
-> >  * @page: the page we're checking references on.
-> >  * @mem_cont: target memory controller
-> > + * @vm_flags: collect encountered vma->vm_flags
+
+
+On Sun, 17 May 2009, Ozan Çağlayan wrote:
 > 
-> I missed this.
-> To clarify, how about ?
-> collect encountered vma->vm_flags among vma which referenced the page
+> The patch[0] from Andrew fixed the problem.
 
-Good catch! I'll resubmit the whole patchset :)
+Yeah, but that's the patch that I think isn't the long-term solution (ie 
+other drievrs will do things like this too).
 
-[ In fact I was thinking about changing those comments - and then
-  forgot it over night. I should really put some notepad around me. ]
+Also, I'm not 100% convinced it's even the right one for cmos-rtc, 
+although I can't really judge. The thing is, even if the 
+pnp_register_driver() call fails, I'm not at all sure that we shouldn't 
+just continue. I suspect we might still want to do the 
+platform_driver_probe regardless of any PnP issues.
 
-Thanks,
-Fengguang
+I dunno. What I _do_ know is that I'd be happier of 
 
+	pnp_register_driver(&driver);
+	pnp_unregister_driver(&driver);
+
+always worked without oopsing, regardless of whether the registration 
+worked or not. Whether the rtc-cmos driver shold do that is then a 
+secondary issue. 
+
+The whole PnP thing has been broken several times, look for example at 
+commit 72f22b1eb6ca5e4676a632a04d40d46cb61d4562. That one introduced the 
+whole "do the platform driver regardless of any PnP driver issues", which 
+makes me suspect we really shouldn't return early just because of some 
+random pnp issue.
+
+			Linus
