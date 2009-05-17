@@ -1,202 +1,77 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753508AbZEQNEA@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbZEQNGU@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753508AbZEQNEA (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 09:04:00 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753136AbZEQNDt
+	id S1754159AbZEQNGU (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 09:06:20 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZEQNGI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 09:03:49 -0400
-Received: from mail-pz0-f115.google.com ([209.85.222.115]:55587 "EHLO
-	mail-pz0-f115.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751695AbZEQNDr (ORCPT
+	Sun, 17 May 2009 09:06:08 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:39780 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752838AbZEQNGE (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 09:03:47 -0400
+	Sun, 17 May 2009 09:06:04 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type;
-        b=sZnlFcHmvdYkk6poWHs/EFtS3E3/B2+/2ayYGGRlDdan4TBEyS3M3nI771gHnLJ9qO
-         YZ55HnG8Kd3YXYGlExa4M1ycnJ56/XqbDvZjBOYfDLI95r8G4+AXACceZrZBMb7xVrBF
-         oS4j+mv4dT+pgbPFy8WNB27vHIebEpM1kO+Kg=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=mcyslK0fx7swOBw+J8cUAlMJ63aev0s3A7LCkFmpUaxPo4ti3lVQY4ynBEEHJbtQZ7
+         VeLBOEHRv21ig/DjUQfVBpk/YqjS+LoqZJjMMDxCX+V88Y7Qj1Mdu7QPr2fornKRpZlQ
+         26SB7xkIy+FPWJrlEwRLVz7AR3wRAXar4gRb4=
+Date: Sun, 17 May 2009 15:06:03 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: tom.leiming@gmail.com
+Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH] ftrace:fix check for return value of
+	register_module_notifier
+Message-ID: <20090517130601.GA4640@nowhere>
+References: <1242545498-7285-1-git-send-email-tom.leiming@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090517123914.GA4221@localhost>
-References: <20090517011906.GA6375@localhost> <20090517020829.GB6809@localhost>
-	 <93655eb70905162130k13ebd627o5eba2582508a1c07@mail.gmail.com>
-	 <20090517045800.GA32723@localhost>
-	 <93655eb70905162318oeccafa9p76b5594f9625aefc@mail.gmail.com>
-	 <20090517093004.GA2635@localhost>
-	 <93655eb70905170501q3caf04acj761ff61b539b7d40@mail.gmail.com>
-	 <20090517121711.GA3583@localhost>
-	 <93655eb70905170527t490653dge6e25a9e3724a918@mail.gmail.com>
-	 <20090517123914.GA4221@localhost>
-Date: Sun, 17 May 2009 18:33:48 +0530
-Message-ID: <93655eb70905170603n50af7b7en2e2161e56ba91db9@mail.gmail.com>
-Subject: Re: unresponsiveness on linux desktop during file copy
-From: Satish Eerpini <eerpini@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Rik van Riel <riel@redhat.com>, Ray Lee <ray-lk@madrabbit.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: multipart/mixed; boundary=00504502c74fff16b8046a1b4e66
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1242545498-7285-1-git-send-email-tom.leiming@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---00504502c74fff16b8046a1b4e66
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+On Sun, May 17, 2009 at 03:31:38PM +0800, tom.leiming@gmail.com wrote:
+> From: Ming Lei <tom.leiming@gmail.com>
+> 
+> return zero should be correct, so fix it.
+> 
+> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+> ---
+>  kernel/trace/ftrace.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+> 
+> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+> index 5b606f4..140699a 100644
+> --- a/kernel/trace/ftrace.c
+> +++ b/kernel/trace/ftrace.c
+> @@ -2826,7 +2826,7 @@ void __init ftrace_init(void)
+>  				  __stop_mcount_loc);
+>  
+>  	ret = register_module_notifier(&ftrace_module_nb);
+> -	if (!ret)
+> +	if (ret)
+>  		pr_warning("Failed to register trace ftrace module notifier\n");
+>  
+>  	return;
 
-> Or maybe the time is spent in gnome-terminal or bash?
-> What if you change them to xterm and dash?
->
-ok here you go , I ran "strace -o log -tt clear " on xterm and dash :
 
-"log "
+Indeed!
 
-18:31:02.162301 execve("/usr/bin/clear", ["clear"], [/* 49 vars */]) = 0
-18:31:02.163558 brk(0)                  = 0x943b000
-18:31:02.163668 access("/etc/ld.so.preload", R_OK) = -1 ENOENT (No
-such file or directory)
-18:31:02.163779 open("/etc/ld.so.cache", O_RDONLY) = 3
-18:31:02.163858 fstat64(3, {st_mode=S_IFREG|0644, st_size=140850, ...}) = 0
-18:31:02.163975 mmap2(NULL, 140850, PROT_READ, MAP_PRIVATE, 3, 0) = 0xb7f16000
-18:31:02.164036 close(3)                = 0
-18:31:02.164122 open("/lib/libtinfo.so.5", O_RDONLY) = 3
-18:31:02.164206 read(3,
-"\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0\340\332\355\0074\0\0\0D"...,
-512) = 512
-18:31:02.164303 fstat64(3, {st_mode=S_IFREG|0755, st_size=98036, ...}) = 0
-18:31:02.164411 mmap2(NULL, 4096, PROT_READ|PROT_WRITE,
-MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb7f15000
-18:31:02.164481 mmap2(0x7ed8000, 99928, PROT_READ|PROT_EXEC,
-MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x7ed8000
-18:31:02.164545 mmap2(0x7eee000, 12288, PROT_READ|PROT_WRITE,
-MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x15) = 0x7eee000
-18:31:02.164620 close(3)                = 0
-18:31:02.164693 open("/lib/libc.so.6", O_RDONLY) = 3
-18:31:02.164777 read(3,
-"\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0\3\0\1\0\0\0@xk\0004\0\0\0P"...,
-512) = 512
-18:31:02.164862 fstat64(3, {st_mode=S_IFREG|0755, st_size=1809672, ...}) = 0
-18:31:02.164972 mmap2(0x6a1000, 1521232, PROT_READ|PROT_EXEC,
-MAP_PRIVATE|MAP_DENYWRITE, 3, 0) = 0x6a1000
-18:31:02.165035 mmap2(0x80f000, 12288, PROT_READ|PROT_WRITE,
-MAP_PRIVATE|MAP_FIXED|MAP_DENYWRITE, 3, 0x16e) = 0x80f000
-18:31:02.165123 mmap2(0x812000, 9808, PROT_READ|PROT_WRITE,
-MAP_PRIVATE|MAP_FIXED|MAP_ANONYMOUS, -1, 0) = 0x812000
-18:31:02.165187 close(3)                = 0
-18:31:02.165265 mmap2(NULL, 4096, PROT_READ|PROT_WRITE,
-MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb7f14000
-18:31:02.165327 set_thread_area({entry_number:-1 -> 6,
-base_addr:0xb7f146c0, limit:1048575, seg_32bit:1, contents:0,
-read_exec_only:0, limit_in_pages:1, seg_not_present:0, useable:1}) = 0
-18:31:02.165412 mprotect(0x80f000, 8192, PROT_READ) = 0
-18:31:02.165472 mprotect(0x69d000, 4096, PROT_READ) = 0
-18:31:02.165532 munmap(0xb7f16000, 140850) = 0
-18:31:02.165635 ioctl(1, SNDCTL_TMR_TIMEBASE or TCGETS, {B38400 opost
-isig icanon echo ...}) = 0
-18:31:02.165816 brk(0)                  = 0x943b000
-18:31:02.165870 brk(0x945c000)          = 0x945c000
-18:31:02.165966 stat64("/root/.terminfo", 0xbfc37e14) = -1 ENOENT (No
-such file or directory)
-18:31:02.166040 stat64("/etc/terminfo", {st_mode=S_IFDIR|0755,
-st_size=4096, ...}) = 0
-18:31:02.166181 access("/etc/terminfo/x/xterm", R_OK) = -1 ENOENT (No
-such file or directory)
-18:31:02.166256 stat64("/usr/share/terminfo", {st_mode=S_IFDIR|0755,
-st_size=4096, ...}) = 0
-18:31:02.166379 access("/usr/share/terminfo/x/xterm", R_OK) = 0
-18:31:02.166454 open("/usr/share/terminfo/x/xterm", O_RDONLY|O_LARGEFILE) = 3
-18:31:02.166531 read(3, "\32\0010\0&\0\17\0\235\1F\5xterm|xterm
-terminal "..., 4097) = 3220
-18:31:02.166646 close(3)                = 0
-18:31:02.166709 ioctl(1, SNDCTL_TMR_TIMEBASE or TCGETS, {B38400 opost
-isig icanon echo ...}) = 0
-18:31:02.166788 ioctl(1, SNDCTL_TMR_TIMEBASE or TCGETS, {B38400 opost
-isig icanon echo ...}) = 0
-18:31:02.166866 ioctl(1, SNDCTL_TMR_TIMEBASE or TCGETS, {B38400 opost
-isig icanon echo ...}) = 0
-18:31:02.166941 ioctl(1, TIOCGWINSZ, {ws_row=24, ws_col=80,
-ws_xpixel=499, ws_ypixel=316}) = 0
-18:31:02.167010 fstat64(1, {st_mode=S_IFCHR|0620, st_rdev=makedev(136,
-0), ...}) = 0
-18:31:02.167134 mmap2(NULL, 4096, PROT_READ|PROT_WRITE,
-MAP_PRIVATE|MAP_ANONYMOUS, -1, 0) = 0xb7f38000
-18:31:02.167205 write(1, "\33[H\33[2J"..., 7) = 7
-18:31:02.167613 exit_group(0)           = ?
+register_module_notifier returns blocking_notifier_chain_register():
 
-Satish
--- 
-http://satish.playdrupal.com
+ *
+ *	Currently always returns zero.
+ */
+int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
+		struct notifier_block *n)
 
---00504502c74fff16b8046a1b4e66
-Content-Type: application/octet-stream; name=log
-Content-Disposition: attachment; filename=log
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_futrd9190
+For now it will never return anything else than 0 but we can keep
+the warning in case it changes one day, as you did.
 
-MTg6MzE6MDIuMTYyMzAxIGV4ZWN2ZSgiL3Vzci9iaW4vY2xlYXIiLCBbImNsZWFyIl0sIFsvKiA0
-OSB2YXJzICovXSkgPSAwCjE4OjMxOjAyLjE2MzU1OCBicmsoMCkgICAgICAgICAgICAgICAgICA9
-IDB4OTQzYjAwMAoxODozMTowMi4xNjM2NjggYWNjZXNzKCIvZXRjL2xkLnNvLnByZWxvYWQiLCBS
-X09LKSA9IC0xIEVOT0VOVCAoTm8gc3VjaCBmaWxlIG9yIGRpcmVjdG9yeSkKMTg6MzE6MDIuMTYz
-Nzc5IG9wZW4oIi9ldGMvbGQuc28uY2FjaGUiLCBPX1JET05MWSkgPSAzCjE4OjMxOjAyLjE2Mzg1
-OCBmc3RhdDY0KDMsIHtzdF9tb2RlPVNfSUZSRUd8MDY0NCwgc3Rfc2l6ZT0xNDA4NTAsIC4uLn0p
-ID0gMAoxODozMTowMi4xNjM5NzUgbW1hcDIoTlVMTCwgMTQwODUwLCBQUk9UX1JFQUQsIE1BUF9Q
-UklWQVRFLCAzLCAwKSA9IDB4YjdmMTYwMDAKMTg6MzE6MDIuMTY0MDM2IGNsb3NlKDMpICAgICAg
-ICAgICAgICAgID0gMAoxODozMTowMi4xNjQxMjIgb3BlbigiL2xpYi9saWJ0aW5mby5zby41Iiwg
-T19SRE9OTFkpID0gMwoxODozMTowMi4xNjQyMDYgcmVhZCgzLCAiXDE3N0VMRlwxXDFcMVwwXDBc
-MFwwXDBcMFwwXDBcMFwzXDBcM1wwXDFcMFwwXDBcMzQwXDMzMlwzNTVcMDA3NFwwXDBcMEQiLi4u
-LCA1MTIpID0gNTEyCjE4OjMxOjAyLjE2NDMwMyBmc3RhdDY0KDMsIHtzdF9tb2RlPVNfSUZSRUd8
-MDc1NSwgc3Rfc2l6ZT05ODAzNiwgLi4ufSkgPSAwCjE4OjMxOjAyLjE2NDQxMSBtbWFwMihOVUxM
-LCA0MDk2LCBQUk9UX1JFQUR8UFJPVF9XUklURSwgTUFQX1BSSVZBVEV8TUFQX0FOT05ZTU9VUywg
-LTEsIDApID0gMHhiN2YxNTAwMAoxODozMTowMi4xNjQ0ODEgbW1hcDIoMHg3ZWQ4MDAwLCA5OTky
-OCwgUFJPVF9SRUFEfFBST1RfRVhFQywgTUFQX1BSSVZBVEV8TUFQX0RFTllXUklURSwgMywgMCkg
-PSAweDdlZDgwMDAKMTg6MzE6MDIuMTY0NTQ1IG1tYXAyKDB4N2VlZTAwMCwgMTIyODgsIFBST1Rf
-UkVBRHxQUk9UX1dSSVRFLCBNQVBfUFJJVkFURXxNQVBfRklYRUR8TUFQX0RFTllXUklURSwgMywg
-MHgxNSkgPSAweDdlZWUwMDAKMTg6MzE6MDIuMTY0NjIwIGNsb3NlKDMpICAgICAgICAgICAgICAg
-ID0gMAoxODozMTowMi4xNjQ2OTMgb3BlbigiL2xpYi9saWJjLnNvLjYiLCBPX1JET05MWSkgPSAz
-CjE4OjMxOjAyLjE2NDc3NyByZWFkKDMsICJcMTc3RUxGXDFcMVwxXDBcMFwwXDBcMFwwXDBcMFww
-XDNcMFwzXDBcMVwwXDBcMEB4a1wwMDA0XDBcMFwwUCIuLi4sIDUxMikgPSA1MTIKMTg6MzE6MDIu
-MTY0ODYyIGZzdGF0NjQoMywge3N0X21vZGU9U19JRlJFR3wwNzU1LCBzdF9zaXplPTE4MDk2NzIs
-IC4uLn0pID0gMAoxODozMTowMi4xNjQ5NzIgbW1hcDIoMHg2YTEwMDAsIDE1MjEyMzIsIFBST1Rf
-UkVBRHxQUk9UX0VYRUMsIE1BUF9QUklWQVRFfE1BUF9ERU5ZV1JJVEUsIDMsIDApID0gMHg2YTEw
-MDAKMTg6MzE6MDIuMTY1MDM1IG1tYXAyKDB4ODBmMDAwLCAxMjI4OCwgUFJPVF9SRUFEfFBST1Rf
-V1JJVEUsIE1BUF9QUklWQVRFfE1BUF9GSVhFRHxNQVBfREVOWVdSSVRFLCAzLCAweDE2ZSkgPSAw
-eDgwZjAwMAoxODozMTowMi4xNjUxMjMgbW1hcDIoMHg4MTIwMDAsIDk4MDgsIFBST1RfUkVBRHxQ
-Uk9UX1dSSVRFLCBNQVBfUFJJVkFURXxNQVBfRklYRUR8TUFQX0FOT05ZTU9VUywgLTEsIDApID0g
-MHg4MTIwMDAKMTg6MzE6MDIuMTY1MTg3IGNsb3NlKDMpICAgICAgICAgICAgICAgID0gMAoxODoz
-MTowMi4xNjUyNjUgbW1hcDIoTlVMTCwgNDA5NiwgUFJPVF9SRUFEfFBST1RfV1JJVEUsIE1BUF9Q
-UklWQVRFfE1BUF9BTk9OWU1PVVMsIC0xLCAwKSA9IDB4YjdmMTQwMDAKMTg6MzE6MDIuMTY1MzI3
-IHNldF90aHJlYWRfYXJlYSh7ZW50cnlfbnVtYmVyOi0xIC0+IDYsIGJhc2VfYWRkcjoweGI3ZjE0
-NmMwLCBsaW1pdDoxMDQ4NTc1LCBzZWdfMzJiaXQ6MSwgY29udGVudHM6MCwgcmVhZF9leGVjX29u
-bHk6MCwgbGltaXRfaW5fcGFnZXM6MSwgc2VnX25vdF9wcmVzZW50OjAsIHVzZWFibGU6MX0pID0g
-MAoxODozMTowMi4xNjU0MTIgbXByb3RlY3QoMHg4MGYwMDAsIDgxOTIsIFBST1RfUkVBRCkgPSAw
-CjE4OjMxOjAyLjE2NTQ3MiBtcHJvdGVjdCgweDY5ZDAwMCwgNDA5NiwgUFJPVF9SRUFEKSA9IDAK
-MTg6MzE6MDIuMTY1NTMyIG11bm1hcCgweGI3ZjE2MDAwLCAxNDA4NTApID0gMAoxODozMTowMi4x
-NjU2MzUgaW9jdGwoMSwgU05EQ1RMX1RNUl9USU1FQkFTRSBvciBUQ0dFVFMsIHtCMzg0MDAgb3Bv
-c3QgaXNpZyBpY2Fub24gZWNobyAuLi59KSA9IDAKMTg6MzE6MDIuMTY1ODE2IGJyaygwKSAgICAg
-ICAgICAgICAgICAgID0gMHg5NDNiMDAwCjE4OjMxOjAyLjE2NTg3MCBicmsoMHg5NDVjMDAwKSAg
-ICAgICAgICA9IDB4OTQ1YzAwMAoxODozMTowMi4xNjU5NjYgc3RhdDY0KCIvcm9vdC8udGVybWlu
-Zm8iLCAweGJmYzM3ZTE0KSA9IC0xIEVOT0VOVCAoTm8gc3VjaCBmaWxlIG9yIGRpcmVjdG9yeSkK
-MTg6MzE6MDIuMTY2MDQwIHN0YXQ2NCgiL2V0Yy90ZXJtaW5mbyIsIHtzdF9tb2RlPVNfSUZESVJ8
-MDc1NSwgc3Rfc2l6ZT00MDk2LCAuLi59KSA9IDAKMTg6MzE6MDIuMTY2MTgxIGFjY2VzcygiL2V0
-Yy90ZXJtaW5mby94L3h0ZXJtIiwgUl9PSykgPSAtMSBFTk9FTlQgKE5vIHN1Y2ggZmlsZSBvciBk
-aXJlY3RvcnkpCjE4OjMxOjAyLjE2NjI1NiBzdGF0NjQoIi91c3Ivc2hhcmUvdGVybWluZm8iLCB7
-c3RfbW9kZT1TX0lGRElSfDA3NTUsIHN0X3NpemU9NDA5NiwgLi4ufSkgPSAwCjE4OjMxOjAyLjE2
-NjM3OSBhY2Nlc3MoIi91c3Ivc2hhcmUvdGVybWluZm8veC94dGVybSIsIFJfT0spID0gMAoxODoz
-MTowMi4xNjY0NTQgb3BlbigiL3Vzci9zaGFyZS90ZXJtaW5mby94L3h0ZXJtIiwgT19SRE9OTFl8
-T19MQVJHRUZJTEUpID0gMwoxODozMTowMi4xNjY1MzEgcmVhZCgzLCAiXDMyXDAwMTBcMCZcMFwx
-N1wwXDIzNVwxRlw1eHRlcm18eHRlcm0gdGVybWluYWwgIi4uLiwgNDA5NykgPSAzMjIwCjE4OjMx
-OjAyLjE2NjY0NiBjbG9zZSgzKSAgICAgICAgICAgICAgICA9IDAKMTg6MzE6MDIuMTY2NzA5IGlv
-Y3RsKDEsIFNORENUTF9UTVJfVElNRUJBU0Ugb3IgVENHRVRTLCB7QjM4NDAwIG9wb3N0IGlzaWcg
-aWNhbm9uIGVjaG8gLi4ufSkgPSAwCjE4OjMxOjAyLjE2Njc4OCBpb2N0bCgxLCBTTkRDVExfVE1S
-X1RJTUVCQVNFIG9yIFRDR0VUUywge0IzODQwMCBvcG9zdCBpc2lnIGljYW5vbiBlY2hvIC4uLn0p
-ID0gMAoxODozMTowMi4xNjY4NjYgaW9jdGwoMSwgU05EQ1RMX1RNUl9USU1FQkFTRSBvciBUQ0dF
-VFMsIHtCMzg0MDAgb3Bvc3QgaXNpZyBpY2Fub24gZWNobyAuLi59KSA9IDAKMTg6MzE6MDIuMTY2
-OTQxIGlvY3RsKDEsIFRJT0NHV0lOU1osIHt3c19yb3c9MjQsIHdzX2NvbD04MCwgd3NfeHBpeGVs
-PTQ5OSwgd3NfeXBpeGVsPTMxNn0pID0gMAoxODozMTowMi4xNjcwMTAgZnN0YXQ2NCgxLCB7c3Rf
-bW9kZT1TX0lGQ0hSfDA2MjAsIHN0X3JkZXY9bWFrZWRldigxMzYsIDApLCAuLi59KSA9IDAKMTg6
-MzE6MDIuMTY3MTM0IG1tYXAyKE5VTEwsIDQwOTYsIFBST1RfUkVBRHxQUk9UX1dSSVRFLCBNQVBf
-UFJJVkFURXxNQVBfQU5PTllNT1VTLCAtMSwgMCkgPSAweGI3ZjM4MDAwCjE4OjMxOjAyLjE2NzIw
-NSB3cml0ZSgxLCAiXDMzW0hcMzNbMkoiLi4uLCA3KSA9IDcKMTg6MzE6MDIuMTY3NjEzIGV4aXRf
-Z3JvdXAoMCkgICAgICAgICAgID0gPwo=
---00504502c74fff16b8046a1b4e66--
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+
