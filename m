@@ -1,171 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754209AbZEQIIC@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755302AbZEQIMy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754209AbZEQIIC (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 04:08:02 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751538AbZEQIHp
+	id S1755302AbZEQIMy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 04:12:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752230AbZEQIMh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 04:07:45 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:59279 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751152AbZEQIHn (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 04:07:43 -0400
-Message-ID: <4A0FC592.6030005@garzik.org>
-Date: Sun, 17 May 2009 04:06:42 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 17 May 2009 04:12:37 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:55858 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751855AbZEQIMf convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 04:12:35 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=s6x6Azu9dwwrLxxs9H469ztcuWiT+ZHT+k8dKMe1YZGVVE4s2V7QITeUS88903ZHWI
+         9VNJytRlNqT706aDsPVLIFmCbmm/xKukG+j4yK/0K48q+k1GXV2+k711Y+jZkfVSSJdM
+         +8rNfvFhB+LZnLMZK1HXjzLK7FxQaxpB2cXnQ=
 MIME-Version: 1.0
-To: Hitoshi Mitake <h.mitake@gmail.com>
-CC: "H. Peter Anvin" <hpa@zytor.com>, Roland Dreier <rdreier@cisco.com>,
-       Ingo Molnar <mingo@elte.hu>, David Miller <davem@davemloft.net>,
-       Linus Torvalds <torvalds@linux-foundation.org>, tglx@linutronix.de,
-       rpjday@crashcourse.ca, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] x86: Remove readq()/writeq() on 32-bit
-References: <49EE37AF.4020507@zytor.com>	<20090421.173123.191021055.davem@davemloft.net>	<adak55438gp.fsf_-_@cisco.com>	<20090428.221228.217954247.davem@davemloft.net>	<20090429115654.GC11586@elte.hu>	<49F843BC.7020902@garzik.org>	<adahc071ie4.fsf@cisco.com>	<49F8B1A1.4010208@garzik.org>	<a6b9f31a0905122232s2d23b4e3h6e447c3fa5c29ee6@mail.gmail.com>	<4A0B2B54.5090803@zytor.com>	<4A0B4C1C.9000706@garzik.org>	<4A0B5A34.1080301@zytor.com>	<4A0B6A96.2030008@garzik.org>	<20090514161903.4ba00c09.h.mitake@gmail.com>	<4A0DFE43.7050705@garzik.org> <20090517161210.4274ddf9.h.mitake@gmail.com>
-In-Reply-To: <20090517161210.4274ddf9.h.mitake@gmail.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+In-Reply-To: <1240594638.4777.1.camel@localhost.localdomain>
+References: <EJaiQ4Wfaz.A.3YG.4v85JB@chimera>
+	 <nY3-4PrO6XH.A.QZB.ow85JB@chimera>
+	 <1240594638.4777.1.camel@localhost.localdomain>
+Date: Sun, 17 May 2009 11:12:35 +0300
+X-Google-Sender-Auth: 806dfab35c648076
+Message-ID: <84144f020905170112l789e9ec0p2bf6bb71879579e1@mail.gmail.com>
+Subject: Re: [Bug #13069] regression in 2.6.29-git3 on SH/Dreamcast
+From: Pekka Enberg <penberg@cs.helsinki.fi>
+To: Adrian McMenamin <adrian@newgolddream.dyndns.info>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Manuel Lauss <mano@roarinelk.homelinux.net>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hitoshi Mitake wrote:
-> On Fri, 15 May 2009 19:44:03 -0400
-> Jeff Garzik <jeff@garzik.org> wrote:
-> 
->> Hitoshi Mitake wrote:
->>> On Wed, 13 May 2009 20:49:26 -0400
->>> Jeff Garzik <jeff@garzik.org> wrote:
->>>
->>>> H. Peter Anvin wrote:
->>>>> Jeff Garzik wrote:
->>>>>> Judging from this thread and past, I think people will continue to 
->>>>>> complain and get confused, even with the above.
->>>>>>
->>>>> Do you really think so?  Seems unfortunate, since an API rename would be
->>>>> way more invasive.  This is the entirety of the header patch
->>>>> (compile-tested using 32-bit allyesconfig).
->>>> The header patch does not lessen the confusion, because you cannot look 
->>>> at the code and immediately tell what is going on...
->>>>
->>>> Having a single function's behavior change based on #include selection 
->>>> is /not/ intuitive at all, particularly for driver writers.  That is 
->>>> unlike almost every other Linux API, where functions' behavior stays 
->>>> constant across platforms, regardless of magic "under the hood."
->>>>
->>>> That sort of trick is reserved for arch maintainers who know what they 
->>>> are doing :)
->>>>
->>>> 	Jeff
->>>>
->>>>
->>>>
->>> I found another way:
->>> Making architecture with atomic readq/writeq provide HAVE_READQ_ATOMIC/HAVE_WRITEQ_ATOMIC
->>> and making architecture with non-atomic readq/writeq provide HAVE_READQ/HAVE_WRITEQ.
->>> (HAVE_READQ_ATOMIC/HAVE_WRITEQ_ATOMIC should double as HAVE_READQ/HAVE_WRITEQ.)
->>>
->>> So driver programmers who need atomic readq/writeq can judge existence of API they really need.
->>> If platform doesn't provide atomic readq/writeq, drivers need these can be disabled by Kconfig.
->>> And bugs Roland and David talking about will be banished.
->>> How about this? > Roland and David
->>> I wrote a test patch. Request for comments.
->>>
->>> Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
->>>
->>> ---
->>>  arch/x86/Kconfig |   16 ++++++++++++++--
->>>  1 files changed, 14 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
->>> index df9e885..c94fc48 100644
->>> --- a/arch/x86/Kconfig
->>> +++ b/arch/x86/Kconfig
->>> @@ -19,8 +19,6 @@ config X86_64
->>>  config X86
->>>  	def_bool y
->>>  	select HAVE_AOUT if X86_32
->>> -	select HAVE_READQ
->>> -	select HAVE_WRITEQ
->>>  	select HAVE_UNSTABLE_SCHED_CLOCK
->>>  	select HAVE_IDE
->>>  	select HAVE_OPROFILE
->>> @@ -2022,6 +2020,20 @@ config HAVE_ATOMIC_IOMAP
->>>  	def_bool y
->>>  	depends on X86_32
->>>  
->>> +config HAVE_READQ
->>> +	def_bool y
->>> +
->>> +config HAVE_WRITEQ
->>> +	def_bool y
->>> +
->>> +config HAVE_READQ_ATOMIC
->>> +	def_bool y
->>> +	depends on X86_64
->>> +
->>> +config HAVE_WRITEQ_ATOMIC
->>> +	def_bool y
->>> +	depends on X86_64
->> If you create HAVE_{READQ,WRITEQ}_ATOMIC, then you don't really need 
->> HAVE_READQ -- the other relevant 32-bit platforms simply need a 
->> definition of readq and writeq.  Probably easy enough to have a common 
->> definition in asm-generic.
+On Thu, 2009-04-16 at 23:45 +0200, Rafael J. Wysocki wrote:
+>> This message has been generated automatically as a part of a report
+>> of recent regressions.
 >>
-> That's good idea. I didn't noticed the way to use asm-generic. Thanks.
-> 
-> How is this?
-> 
-> Signed-off-by: Hitoshi Mitake <h.mitake@gmail.com>
-> 
-> ---
->  arch/x86/Kconfig             |   10 ++++++++--
->  arch/x86/include/asm/io.h    |   27 ++++++---------------------
->  include/asm-generic/quadrw.h |   34 ++++++++++++++++++++++++++++++++++
->  3 files changed, 48 insertions(+), 23 deletions(-)
->  create mode 100644 include/asm-generic/quadrw.h
+>> The following bug entry is on the current list of known regressions
+>> from 2.6.29.  Please verify if it still should be listed and let me know
+>> (either way).
+>>
+>>
+>> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=13069
+>> Subject               : regression in 2.6.29-git3 on SH/Dreamcast
+>> Submitter     : Adrian McMenamin <adrian@newgolddream.dyndns.info>
+>> Date          : 2009-03-29 19:04 (19 days old)
+>> References    : http://marc.info/?l=linux-kernel&m=123835353115372&w=4
 
+On Fri, Apr 24, 2009 at 8:37 PM, Adrian McMenamin
+<adrian@newgolddream.info> wrote:
+> At this point it *looks* as though it was simply a question of
+> insufficient memory to boot, but I think it needs further testing.
+> Nobody else seems to have picked it up though.
 
-Seems fine to me, no objections here...
-
-
-
-> +#ifndef CONFIG_HAVE_READQ_ATOMIC
-> +static inline __u64 readq(const volatile void __iomem *addr)
-> +{
-> +	const volatile u32 __iomem *p = addr;
-> +	u32 low, high;
-> +
-> +	low = readl(p);
-> +	high = readl(p + 1);
-> +
-> +	return low + ((u64)high << 32);
-> +}
-> +#endif	/* CONFIG_HAVE_READQ_ATOMIC */
-
-Personally I would do
-
-	static inline __u64 readq(const volatile void __iomem *addr)
-	{
-		__u64 low, high;
-
-		low = readl(addr);
-		high = readl(addr + 4);
-
-		return (high << 32) | low;
-	}
-
-but maybe that's just me.
-
-It seems inconsistent that the generic readq and writeq internals, 
-simple as they are, differ to such a degree in this implementation.
-
-But overall, as mentioned above, the approach seems sound to me.
-
-Cheers!
-
-	Jeff
-
-
+Yeah, it looks like there's not enough memory to boot. It could well
+be that the kernel memory footprint got bigger but I don't think the
+bisected commit is at fault here. Perhaps we should just close the
+bug?
