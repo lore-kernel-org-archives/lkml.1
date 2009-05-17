@@ -1,68 +1,128 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757174AbZEQJ3z@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757444AbZEQJae@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757174AbZEQJ3z (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 05:29:55 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756625AbZEQJ3e
+	id S1757444AbZEQJae (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 05:30:34 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755727AbZEQJaN
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 05:29:34 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:59870 "EHLO mgw1.diku.dk"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1756586AbZEQJ3d (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 05:29:33 -0400
-Date: Sun, 17 May 2009 11:29:21 +0200 (CEST)
-From: Julia Lawall <julia@diku.dk>
-To: timur@freescale.com, alsa-devel@alsa-project.org, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: [PATCH 3/3] sound: use dev_set_drvdata
-Message-ID: <Pine.LNX.4.64.0905171129020.20440@pc-004.diku.dk>
+	Sun, 17 May 2009 05:30:13 -0400
+Received: from mailout02.t-online.de ([194.25.134.17]:35645 "EHLO
+	mailout02.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1755390AbZEQJaL (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 05:30:11 -0400
+X-Greylist: delayed 1058 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 May 2009 05:30:10 EDT
+Date: Sun, 17 May 2009 11:12:24 +0200
+From: Martin Lottermoser <Martin.Lottermoser@t-online.de>
+To: linux-kernel@vger.kernel.org
+Subject: PATA DMA problem leading to kernel panic on reading movie DVDs
+Message-ID: <20090517091224.GA8280@wanza.invalid>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ID: TJ0-RiZSohI5gE8IiFKaS-ro0JZxucsH2LtGWtSsONKCySP2SKGpzjjHeyuppK-gh8
+X-TOI-MSGID: 164d97dd-73cd-4eb6-95ed-6fbe7f22f2c7
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Julia Lawall <julia@diku.dk>
+Hello,
 
-Eliminate direct accesses to the driver_data field.
-cf 82ab13b26f15f49be45f15ccc96bfa0b81dfd015
+newer versions of the Linux kernel overestimate my DVD drive's
+DMA capabilities, leading either to DMA being disabled or a kernel
+panic.
 
-The semantic patch that makes this change is as follows:
-(http://www.emn.fr/x-info/coccinelle/)
+My setup is:
 
-// <smpl>
-@@
-struct device *dev;
-expression E;
-type T;
-@@
+  Motherboard: ASUS P4C800-E Deluxe
+    South bridge: ICH5R
+      IDE Interface Controller (PATA): Intel 82801EB/ER (PCI: 8086:24db)
+  DVD drive: Samsung SH-S202N, attached as hdc.
+    There is also an older CD writer (Lite-On LTR-52327S) attached as
+    hdd.
+  Operating system: Debian 5.0.0 with security updates
 
-- dev->driver_data = (T)E
-+ dev_set_drvdata(dev, E)
+On upgrading from Debian 4.0 (Linux 2.6.18) to 5.0 (Linux 2.6.26) I
+found that trying to play movie DVDs with vlc (VideoLAN media player)
+led to DMA being disabled:
 
-@@
-struct device *dev;
-type T;
-@@
+  hdc: cdrom_decode_status: status=0x51 { DriveReady SeekComplete Error }
+  hdc: cdrom_decode_status: error=0x40 { LastFailedSense=0x04 }
+  ide: failed opcode was: unknown
+  <4 more identical groups of these messages>
+  hdc: DMA disabled
+  hdc: ide_intr: huh? expected NULL handler on exit
+  hdc: ATAPI reset complete
 
-- (T)dev->driver_data
-+ dev_get_drvdata(dev)
-// </smpl>
+The resulting configuration is too slow to play movies. I booted the
+older kernel and everything was fine.
 
-Signed-off-by: Julia Lawall <julia@diku.dk>
+I then tested various versions of the Linux kernel where I happened to
+have the original sources. The most interesting results were:
 
----
- sound/soc/fsl/fsl_ssi.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+  2.6.22.9      works, no errors visible in syslog
+  2.6.23.14     works, but syslog shows an error (see below)
+  2.6.24.3	DMA disabled
+  2.6.29.3	Kernel panic: Fatal exception in interrupt (ide_intr)
+                on trying to open the DVD with vlc
 
-diff -u -p a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -674,7 +674,7 @@ struct snd_soc_dai *fsl_ssi_create_dai(s
- 	ssi_private->dev = ssi_info->dev;
- 	ssi_private->asynchronous = ssi_info->asynchronous;
- 
--	ssi_private->dev->driver_data = fsl_ssi_dai;
-+	dev_set_drvdata(ssi_private->dev, fsl_ssi_dai);
- 
- 	/* Initialize the the device_attribute structure */
- 	dev_attr->attr.name = "ssi-stats";
+The error message with 2.6.23.14 was:
+
+  hdc: drive_cmd: status=0x51 { DriveReady SeekComplete Error }
+  hdc: drive_cmd: error=0x04 { AbortedCommand }
+  ide: failed opcode was: 0xec
+
+This kernel as well as 2.6.22.9 also showed the following on booting:
+
+  hdc: host side 80-wire cable detection failed, limiting max speed to UDMA33
+
+This is correct: the drive is only capable of Ultra DMA mode 2 33.3 MB/s
+(see manufacturer's documentation) and is attached with a standard 40-wire
+ATA cable (black connectors for master and slave).
+
+This led me to inspect other boot messages. With 2.6.18.3 I found:
+
+  hdc: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache, UDMA(33)
+
+2.6.24.3 showed:
+
+  hdc: UDMA/66 mode selected
+  ...
+  hdc: ATAPI 48X DVD-ROM DVD-R-RAM CD-R/RW drive, 2048kB Cache
+
+In contrast, the hdd drive shows up with "UDMA/33 mode selected" up to
+and including 2.6.29.3.
+
+I now use "hdparm -d1 -X udma2 /dev/hdc" with the Debian kernel 2.6.26
+and the drive works as desired. However, when querying the drive's
+capabilities with "hdparm -I", although the command terminates
+successfully and without any error messages (it shows
+
+  DMA: mdma0 mdma1 mdma2 udma0 udma1 *udma2 udma3 udma4
+
+), on inspecting the syslog I find, on each invocation, a similar
+error message as above with 2.6.23.14:
+
+  hdc: task_in_intr: status=0x51 { DriveReady SeekComplete Error }
+  hdc: task_in_intr: error=0x04 { AbortedCommand }
+  ide: failed opcode was: 0xec
+
+Interestingly enough, this happens also when calling "hdparm -I" on hdd.
+There are also error messages
+
+  hdc: set_drive_speed_status: status=0x51 { DriveReady SeekComplete Error }
+  hdc: set_drive_speed_status: error=0x04 { AbortedCommand }
+  ide: failed opcode was: unknown
+
+from the boot phase.
+
+Therefore there is still something wrong. Any suggestions on what that
+is and how to fix it? (Answers preferably through "Cc:", but I'll also
+try and follow the thread through list archives.)
+
+Martin Lottermoser
+--
+Martin Lottermoser             Martin.Lottermoser at _REMOVE_t-online.de
+Greifswaldstrasse 28
+38124 Braunschweig             http://home.vrweb.de/martin.lottermoser
+Germany
