@@ -1,59 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755252AbZEQTej@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbZEQTlx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755252AbZEQTej (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 15:34:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753041AbZEQTeZ
+	id S1754755AbZEQTlx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 15:41:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbZEQTll
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 15:34:25 -0400
-Received: from casper.infradead.org ([85.118.1.10]:42536 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755088AbZEQTeX (ORCPT
+	Sun, 17 May 2009 15:41:41 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:49119 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752782AbZEQTlk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 15:34:23 -0400
-Date: Sun, 17 May 2009 12:33:24 -0700
-From: Arjan van de Ven <arjan@infradead.org>
-To: david@lang.hm
-Cc: devzero@web.de, Jeremy Fitzhardinge <jeremy@goop.org>,
-       Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
-Subject: Re: Where do we stand with the Xen patches?
-Message-ID: <20090517123324.2e57bc55@infradead.org>
-In-Reply-To: <alpine.DEB.1.10.0905171223250.26653@asgard>
-References: <720338507@web.de>
-	<alpine.DEB.1.10.0905171223250.26653@asgard>
-Organization: Intel
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Sun, 17 May 2009 15:41:40 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-disposition:message-id:content-type
+         :content-transfer-encoding;
+        b=v4sq7AtQ/34VUiuYKdy0jSo7EiXvayOxjpANCwVqX72J2fZdxkxOQG4EEM8G2RDtWP
+         vB5eebpdPHvgT4XnCYj2OfADmSP55Kh1WnPi0f34g3zWHtQMfYE430k0nolsw+OVjP6A
+         Y0yxZqeiLBikUbYXQruScx8T30McUM79hLyzY=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Borislav Petkov <petkovbb@googlemail.com>
+Subject: Re: PATA DMA problem leading to kernel panic on reading movie DVDs
+Date: Sun, 17 May 2009 21:45:45 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-00442-ga3668b0; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org,
+       Martin Lottermoser <Martin.Lottermoser@t-online.de>,
+       linux-ide@vger.kernel.org
+References: <20090517091224.GA8280@wanza.invalid> <20090517121444.GA8733@wanza.invalid> <20090517193409.GC2976@liondog.tnic>
+In-Reply-To: <20090517193409.GC2976@liondog.tnic>
+MIME-Version: 1.0
+Content-Disposition: inline
+Message-Id: <200905172145.45756.bzolnier@gmail.com>
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
-X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
-	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 May 2009 12:25:38 -0700 (PDT)
-david@lang.hm wrote:
-
-> On Sun, 17 May 2009, devzero@web.de wrote:
-> > maybe this is iust a stupid comment (please forgive, i?m no
-> > advanced kernel hacker), but can?t the code inserted by the patches
-> > and which changes the fastpath just #IFDEF`ed at the critical
-> > offsets ?  (as building a dom0 kernel is just another build target,
-> > isn`t it ?)
+On Sunday 17 May 2009 21:34:09 Borislav Petkov wrote:
+> (adding Bart to CC)
 > 
-> no, if dom0 is going to be widely deployed, it will be because the
-> distros turn on dom0 support by default. as a result any penalties
-> due to xen support will be felt by all users of those distros (even
-> if they don't use xen)
+> Hi Bart,
 > 
+> please take a look at the OOPS below, seems like we BUG() in ide_intr() at
+> BUG_ON(!hwif->handler) which shouldn't happen. Full message is at:
+> 
+> http://www.gossamer-threads.com/lists/linux/kernel/1077445.
+> 
+> It is 2.6.29.3 with both PIIX_IDE and ata_piix compiled and it could be
+> that those two step on each other's toes, but this is only wild stab in
+> the dark.
+> 
+> I'm sure you have more ideas.
 
-at minimum we need to split CONFIG_PARAVIRT up into 
-"want to be nice to hypervisors" and "I want to be Xen Dom0";
-they look to largely not overlap.... so lets not make the costs overlap
-either.
+Yes, see my other mail.
 
+[ After writing "I will cc: linux-ide on IDE/ATA problems" 100x times
+  on the whiteboard... ;-) ]
 
--- 
-Arjan van de Ven 	Intel Open Source Technology Centre
-For development, discussion and tips for power savings, 
-visit http://www.lesswatts.org
+> On Sun, May 17, 2009 at 02:14:44PM +0200, Martin Lottermoser wrote:
+> > Hello,
+> > 
+> > On Sun, May 17, 2009 at 01:15:35PM +0200, Martin Lottermoser wrote:
+> > > no, I don't have the necessary cable for that, but I'll provide a
+> > > photograph of the screen and put it on my web site.
+> > 
+> > I've done that now. The file is available from this URL:
+> > 
+> >   http://home.vrweb.de/martin.lottermoser/linux/
+> > 
+> > The directory contains a file "0-readme.txt" which explains what the
+> > files in the directory are; I've added the kernel configuration and the
+> > syslog.
+> > 
+> > Regards,
+> > Martin Lottermoser
+> > -- 
+> > Martin Lottermoser             Martin.Lottermoser at _REMOVE_t-online.de
+> > Greifswaldstrasse 28
+> > 38124 Braunschweig             http://home.vrweb.de/martin.lottermoser
+> > Germany
