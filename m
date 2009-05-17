@@ -1,66 +1,59 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754659AbZEQT0R@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754930AbZEQT1X@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754659AbZEQT0R (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 15:26:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbZEQT0A
+	id S1754930AbZEQT1X (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 15:27:23 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753705AbZEQT1N
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 15:26:00 -0400
-Received: from mail.lang.hm ([64.81.33.126]:33077 "EHLO bifrost.lang.hm"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753367AbZEQTZ7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 15:25:59 -0400
-Date: Sun, 17 May 2009 12:25:38 -0700 (PDT)
-From: david@lang.hm
-X-X-Sender: dlang@asgard
-To: devzero@web.de
-cc: Jeremy Fitzhardinge <jeremy@goop.org>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org
-Subject: Re: Where do we stand with the Xen patches?
-In-Reply-To: <720338507@web.de>
-Message-ID: <alpine.DEB.1.10.0905171223250.26653@asgard>
-References: <720338507@web.de>
-User-Agent: Alpine 1.10 (DEB 962 2008-03-14)
+	Sun, 17 May 2009 15:27:13 -0400
+Received: from mail.gmx.net ([213.165.64.20]:52699 "HELO mail.gmx.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with SMTP
+	id S1753367AbZEQT1M (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 15:27:12 -0400
+X-Authenticated: #10801262
+X-Provags-ID: V01U2FsdGVkX1+s2cswW2msZZAMtB3s3EsinnYR+VHHn7U/5E2JKc
+	9MZlZgOmx1Fm78
+Date: Sun, 17 May 2009 21:27:07 +0200
+From: Richard Atterer <richard@2009.atterer.net>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Elias Oltmanns <eo@nebensachen.de>
+Subject: Re: s2disk hangs with kernel >=2.6.29, SATA, Gigabyte EG45M-DS2H
+	(bisected)
+Message-ID: <20090517192707.GA6110@arbonne.lan>
+Mail-Followup-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Elias Oltmanns <eo@nebensachen.de>
+References: <20090516225153.GA7883@arbonne.lan> <4A0F7FC2.5090109@garzik.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain; charset=iso-8859-15
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <4A0F7FC2.5090109@garzik.org>
+Mail-Copies-To: nobody
+X-Y-GMX-Trusted: 0
+X-FuHaFi: 0.62
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 May 2009, devzero@web.de wrote:
+On Sat, May 16, 2009 at 11:08:50PM -0400, Jeff Garzik wrote:
+> Does it work if you disable CONFIG_IDE, and use only CONFIG_ATA for PATA?
 
->>> Aside from some whitespace issues around some Impact: lines, I
->>> don't know of any outstanding problems.  (I just pushed an updates
->>> to these branches to fix those, and fold a change to address
->>> Jesse's comment.)
->>>
->>> Please tell me if you have any further issues which prevents you
->>> from pulling these changes.  Otherwise I'd appreciate it if you
->>> pulled them soon, as we're already on -rc5, and I have more
->>> changes I'd like to prep for the next merge window.
->>
->> As in the past, my main worry is performance overhead of paravirt in
->> general.
->>
->> The patches that dont affect any native kernel fast path are
->> probably OK (but still pending final review).
->>
->> Regarding patches that do change the fastpath i'll do a round of
->> measurements of CONFIG_PARAVIRT against !CONFIG_PARAVIRT kernels,
->> and make up my mind based on that.
->>
->> You could accelerate this by sending some "perf stat" hard numbers
->> to give us an idea about where we stand today.
->>
->> 	Ingo
->
-> maybe this is iust a stupid comment (please forgive, i?m no advanced kernel
-> hacker), but can?t the code inserted by the patches and which changes the
-> fastpath just #IFDEF`ed at the critical offsets ?  (as building a dom0 kernel is
-> just another build target, isn`t it ?)
+Yes, it works fine then!
 
-no, if dom0 is going to be widely deployed, it will be because the distros 
-turn on dom0 support by default. as a result any penalties due to xen 
-support will be felt by all users of those distros (even if they don't use 
-xen)
+I had to disconnect my PATA data drive to avoid the disks from being 
+renumbered before I could test without CONFIG_IDE.
 
-David Lang
+(But I then double-checked with the broken CONFIG_IDE=m kernel: The failure 
+happens independently of whether the second PATA drive is connected or 
+not.)
+
+Cheers,
+
+  Richard
+
+-- 
+  __   _
+  |_) /|  Richard Atterer     |  GnuPG key: 888354F7
+  | \/¯|  http://atterer.net  |  08A9 7B7D 3D13 3EF2 3D25  D157 79E6 F6DC 8883 54F7
+  ¯ '` ¯
