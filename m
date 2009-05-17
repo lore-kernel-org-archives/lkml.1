@@ -1,29 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752154AbZEQHTN@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754667AbZEQHe4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752154AbZEQHTN (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 03:19:13 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751704AbZEQHS4
+	id S1754667AbZEQHe4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 03:34:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751899AbZEQHej
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 03:18:56 -0400
-Received: from mx3.mail.elte.hu ([157.181.1.138]:56542 "EHLO mx3.mail.elte.hu"
+	Sun, 17 May 2009 03:34:39 -0400
+Received: from mx3.mail.elte.hu ([157.181.1.138]:43382 "EHLO mx3.mail.elte.hu"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750834AbZEQHSz (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 03:18:55 -0400
-Date: Sun, 17 May 2009 09:18:34 +0200
+	id S1751844AbZEQHeg (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 03:34:36 -0400
+Date: Sun, 17 May 2009 09:33:27 +0200
 From: Ingo Molnar <mingo@elte.hu>
-To: Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>,
-       Oleg Nesterov <oleg@redhat.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-Subject: Re: INFO: possible circular locking dependency at
-	cleanup_workqueue_thread
-Message-ID: <20090517071834.GA8507@elte.hu>
-References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>, Jonathan Corbet <corbet@lwn.net>,
+       Martin Bammer <mrb74@gmx.at>, Jeff Garzik <jgarzik@pobox.com>,
+       Oleg Nesterov <oleg@redhat.com>, Kumar Gala <galak@kernel.crashing.org>,
+       Andrew Morton <akpm@linux-foundation.org>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Adrian Bunk <bunk@kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Linus Torvalds <torvalds@linux-foundation.org>,
+       Natalie Protasevich <protasnb@gmail.com>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Network Development <netdev@vger.kernel.org>,
+       Linux ACPI <linux-acpi@vger.kernel.org>,
+       Linux PM List <linux-pm@lists.linux-foundation.org>,
+       Linux SCSI List <linux-scsi@vger.kernel.org>,
+       Linux Wireless List <linux-wireless@vger.kernel.org>,
+       DRI <dri-devel@lists.sourceforge.net>
+Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
+Message-ID: <20090517073327.GC1583@elte.hu>
+References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
+In-Reply-To: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 X-ELTE-SpamScore: -1.5
 X-ELTE-SpamLevel: 
@@ -37,188 +47,177 @@ List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
 
-Cc:s added. This dependency:
+* Rafael J. Wysocki <rjw@sisk.pl> wrote:
 
-> -> #2 (cfg80211_mutex){+.+.+.}:
->        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
->        [<ffffffff80271f38>] lock_acquire+0x98/0x140
->        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
->        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
->        [<ffffffffa007e66a>] reg_todo+0x19a/0x590 [cfg80211]
->        [<ffffffff80258f18>] worker_thread+0x1e8/0x3a0
->        [<ffffffff8025dc3a>] kthread+0x5a/0xa0
->        [<ffffffff8020d23a>] child_rip+0xa/0x20
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13325
+> Subject		: 2.6.30-rc kills my box hard - and lockdep chains
+> Submitter	: Jonathan Corbet <corbet@lwn.net>
+> Date		: 2009-05-14 15:49 (3 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124231630701394&w=4
 
-is what sets the dependencies upside down.
+Jonathan, there's a side-issue reported there, us running out of 
+lockdep space. Could you try this commit from -tip:
+
+d80c19d: lockdep: increase MAX_LOCKDEP_ENTRIES and MAX_LOCKDEP_CHAINS
+
+(which i'll get to Linus in the next ~24 hours.) Maybe that allows 
+lockdep to report the reason for the deadlock.
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13321
+> Subject		: kernel crash with NULL pointer when boot
+> Submitter	: Martin Bammer <mrb74@gmx.at>
+> Date		: 2009-05-16 12:37 (1 days old)
+> References	: http://lkml.org/lkml/2009/5/16/100
+
+that crash is in reiserfs_for_each_xattr(), during sys_unlink()'s 
+xattr teardown.
+
+There's been a good deal of reiserfs changes in this cycle - some 
+touch the xattr code as well. Some of them fairly late in the cycle, 
+in the last two weeks:
+
+ earth4:~/tip> gll v2.6.29..linus --since=two-weeks-ago fs/reiserfs/
+ 2a32ceb: Fix races around the access to ->s_options
+ 677c9b2: reiserfs: remove privroot hiding in lookup
+ b82bb72: reiserfs: dont associate security.* with xattr files
+ ab17c4f: reiserfs: fixup xattr_root caching
+ edcc37a: Always lookup priv_root on reiserfs mount and keep it
+ 5a6059c: reiserfs: Expand i_mutex to enclose lookup_one_len
+
+Martin, you could try a blind revert of say ... ab17c4f, which looks 
+the most suspect and which is also a rather large commit.
+
+Or/and you could try a bisect - perhaps accelerated via:
+
+   git bisect start fs/reiserfs/
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13297
+> Subject		: kernel panic -  not syncing : fatel exception in interupt
+> Submitter	: rob <rob1@housetosell.net>
+> Date		: 2009-05-12 19:34 (5 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124216126903309&w=4
+
+tainted crash, but probably legit. It does show some badness in an 
+old-IDE legacy codepath:
+
+[<c0371865>] error_code+0x65/0x6c
+[<c0110155>] do_page_fault+0x0/0x1e0
+[<c027dafc>] ide_complete_rq+0xf/0x3b
+[<c02870a0>] cdrom_newpc_intr+0x64d/0x6cd
+[<c0286a53>] cdrom_newpc_intr+0x0/0x6cd
+[<c027dcc2>] ide_intr+0x109/0x161
+[<c0132298>] handle_IRQ_event+0x54/0xc7
+[<c013354a>] handle_level_irq+0x4f/0x85
+[<c0103df7>] handle_irq+0x17/0x20
+[<c0103da5>] do_IRQ+0x2b/0x66
+[<c0102be9>] common_interupt+0x29/0x30
+[<c0480000>] cmd40x_init+0x2ac/0x38d
+[<c0106db3>] default_idle+0x25/0x38
+[<c01019be>] cpu_idle+0x19/0x2d
+[<c0468907>] start_kernel+0x23f/0x242
+
+report subject line is too unspecific, it should be changed to 
+something like:
+
+  legacy IDE cmd40x related bootup crash
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13296
+> Subject		: Lockdep violation at cleanup_workqueue_thread during suspend
+> Submitter	: Zdenek Kabelac <zdenek.kabelac@gmail.com>
+> Date		: 2009-05-12 7:59 (5 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124211522525625&w=4
+
+looks like wireless related - the dependency that connects the 
+locks in a wrong way appears to be:
+
+ -> #2 (cfg80211_mutex){+.+.+.}:
+        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
+        [<ffffffff80271f38>] lock_acquire+0x98/0x140
+        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
+        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
+        [<ffffffffa007e66a>] reg_todo+0x19a/0x590 [cfg80211]
+        [<ffffffff80258f18>] worker_thread+0x1e8/0x3a0
+        [<ffffffff8025dc3a>] kthread+0x5a/0xa0
+        [<ffffffff8020d23a>] child_rip+0xa/0x20
+
+(havent checked deeper)
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13245
+> Subject		: possible circular locking dependency detected
+> Submitter	: Miles Lane <miles.lane@gmail.com>
+> Date		: 2009-05-04 16:56 (13 days old)
+
+same as #13296 above. (The one above should be merged into this one 
+i guess)
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13126
+> Subject		: BUG: MAX_LOCKDEP_ENTRIES too low! when mounting rootfs
+> Submitter	: Alexander Beregalov <a.beregalov@gmail.com>
+> Date		: 2009-04-15 12:43 (32 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123979949820538&w=4
+
+should be resolved via the lockdep space extension fix.
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13118
+> Subject		: iptables very slow after commit 784544739a25c30637397ace5489eeb6e15d7d49
+> Submitter	: Jeff Chua <jeff.chua.linux@gmail.com>
+> Date		: 2009-04-10 16:05 (37 days old)
+> References	: http://lkml.org/lkml/2009/4/10/111
+> 		  http://lkml.org/lkml/2009/4/25/83
+> Handled-By	: Eric Dumazet <dada1@cosmosbay.com>
+
+solved by:
+
+ commit 942e4a2bd680c606af0211e64eb216be2e19bf61
+ Author: Stephen Hemminger <shemminger@vyatta.com>
+ Date:   Tue Apr 28 22:36:33 2009 -0700
+
+    netfilter: revised locking for x_tables
+
+commit log does not credit reporters and testers and does not 
+mention bugzilla id.
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13116
+> Subject		: Can't boot with nosmp
+> Submitter	: Stephen Hemminger <shemminger@vyatta.com>
+> Date		: 2009-04-15 4:18 (32 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123976917817920&w=4
+> Handled-By	: Dan Williams <dan.j.williams@intel.com>
+
+I think this might be fixed by:
+
+ d6de2c8: async: Fix module loading async-work regression
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13107
+> Subject		: LTP 20080131 causes defunct processes w/2.6.30-rc1
+> Submitter	: Kumar Gala <galak@kernel.crashing.org>
+> Date		: 2009-04-09 15:43 (38 days old)
+> First-Bad-Commit: http://git.kernel.org/?p=linux/kernel/git/torvalds/linux-2.6.git;a=commit;h=b3bfa0cba867f23365b81658b47efd906830879b
+> References	: http://marc.info/?l=linux-kernel&m=123929187208953&w=4
+> 		  http://lkml.org/lkml/2009/4/10/193
+> Handled-By	: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+
+Oleg says in that thread that it's as-designed, and followup 
+questions were not replied to (yet).
+
+But ... a relevant seeming commit has been bisected to so this 
+shouldnt be ignored that easily.
+
+Andrew, you merged the commit that was bisected to:
+
+  From b3bfa0cba867f23365b81658b47efd906830879b Mon Sep 17 00:00:00 2001
+  From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+  Date: Thu, 2 Apr 2009 16:58:08 -0700
+  Subject: [PATCH] signals: protect cinit from blocked fatal signals
+
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13068
+> Subject		: Lockdep warining in inotify_dev_queue_event
+> Submitter	: Sachin Sant <sachinp@in.ibm.com>
+> Date		: 2009-04-05 12:37 (42 days old)
+> References	: http://marc.info/?l=linux-kernel&m=123893439229272&w=4
+
+should be fixed by:
+
+381a80e: inotify: use GFP_NOFS in kernel_event() to work around a lockdep false-positive
 
 	Ingo
-
-* Zdenek Kabelac <zdenek.kabelac@gmail.com> wrote:
-
-> Hi
-> 
-> With this kernel a4d7749be5de4a7261bcbe3c7d96c748792ec455
-> 
-> I've got this INFO trace during suspend:
-> 
-> 
-> CPU 1 is now offline
-> lockdep: fixing up alternatives.
-> SMP alternatives: switching to UP code
-> CPU0 attaching NULL sched-domain.
-> CPU1 attaching NULL sched-domain.
-> CPU0 attaching NULL sched-domain.
-> 
-> =======================================================
-> [ INFO: possible circular locking dependency detected ]
-> 2.6.30-rc5-00097-gd665355 #59
-> -------------------------------------------------------
-> pm-suspend/12129 is trying to acquire lock:
->  (events){+.+.+.}, at: [<ffffffff80259496>] cleanup_workqueue_thread+0x26/0xd0
-> 
-> but task is already holding lock:
->  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff80246e57>]
-> cpu_maps_update_begin+0x17/0x20
-> 
-> which lock already depends on the new lock.
-> 
-> 
-> the existing dependency chain (in reverse order) is:
-> 
-> -> #5 (cpu_add_remove_lock){+.+.+.}:
->        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
->        [<ffffffff80271f38>] lock_acquire+0x98/0x140
->        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
->        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
->        [<ffffffff80246e57>] cpu_maps_update_begin+0x17/0x20
->        [<ffffffff80259c33>] __create_workqueue_key+0xc3/0x250
->        [<ffffffff80287b20>] stop_machine_create+0x40/0xb0
->        [<ffffffff8027a784>] sys_delete_module+0x84/0x270
->        [<ffffffff8020c15b>] system_call_fastpath+0x16/0x1b
->        [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> -> #4 (setup_lock){+.+.+.}:
->        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
->        [<ffffffff80271f38>] lock_acquire+0x98/0x140
->        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
->        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
->        [<ffffffff80287af7>] stop_machine_create+0x17/0xb0
->        [<ffffffff80246f06>] disable_nonboot_cpus+0x26/0x130
->        [<ffffffff8027dd8d>] suspend_devices_and_enter+0xbd/0x1b0
->        [<ffffffff8027dff7>] enter_state+0x107/0x170
->        [<ffffffff8027e0f9>] state_store+0x99/0x100
->        [<ffffffff803abe17>] kobj_attr_store+0x17/0x20
->        [<ffffffff8033f1e9>] sysfs_write_file+0xd9/0x160
->        [<ffffffff802e1c88>] vfs_write+0xb8/0x180
->        [<ffffffff802e2771>] sys_write+0x51/0x90
->        [<ffffffff8020c15b>] system_call_fastpath+0x16/0x1b
->        [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> -> #3 (dpm_list_mtx){+.+.+.}:
->        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
->        [<ffffffff80271f38>] lock_acquire+0x98/0x140
->        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
->        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
->        [<ffffffff804532ff>] device_pm_add+0x1f/0xe0
->        [<ffffffff8044b9bf>] device_add+0x45f/0x570
->        [<ffffffffa007c578>] wiphy_register+0x158/0x280 [cfg80211]
->        [<ffffffffa017567c>] ieee80211_register_hw+0xbc/0x410 [mac80211]
->        [<ffffffffa01f7c5c>] iwl3945_pci_probe+0xa1c/0x1080 [iwl3945]
->        [<ffffffff803c4307>] local_pci_probe+0x17/0x20
->        [<ffffffff803c5458>] pci_device_probe+0x88/0xb0
->        [<ffffffff8044e1e9>] driver_probe_device+0x89/0x180
->        [<ffffffff8044e37b>] __driver_attach+0x9b/0xa0
->        [<ffffffff8044d67c>] bus_for_each_dev+0x6c/0xa0
->        [<ffffffff8044e03e>] driver_attach+0x1e/0x20
->        [<ffffffff8044d955>] bus_add_driver+0xd5/0x290
->        [<ffffffff8044e668>] driver_register+0x78/0x140
->        [<ffffffff803c56f6>] __pci_register_driver+0x66/0xe0
->        [<ffffffffa00bd05c>] 0xffffffffa00bd05c
->        [<ffffffff8020904f>] do_one_initcall+0x3f/0x1c0
->        [<ffffffff8027d071>] sys_init_module+0xb1/0x200
->        [<ffffffff8020c15b>] system_call_fastpath+0x16/0x1b
->        [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> -> #2 (cfg80211_mutex){+.+.+.}:
->        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
->        [<ffffffff80271f38>] lock_acquire+0x98/0x140
->        [<ffffffff8054e78c>] __mutex_lock_common+0x4c/0x3b0
->        [<ffffffff8054ebf6>] mutex_lock_nested+0x46/0x60
->        [<ffffffffa007e66a>] reg_todo+0x19a/0x590 [cfg80211]
->        [<ffffffff80258f18>] worker_thread+0x1e8/0x3a0
->        [<ffffffff8025dc3a>] kthread+0x5a/0xa0
->        [<ffffffff8020d23a>] child_rip+0xa/0x20
->        [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> -> #1 (reg_work){+.+.+.}:
->        [<ffffffff80271a64>] __lock_acquire+0xc64/0x10a0
->        [<ffffffff80271f38>] lock_acquire+0x98/0x140
->        [<ffffffff80258f12>] worker_thread+0x1e2/0x3a0
->        [<ffffffff8025dc3a>] kthread+0x5a/0xa0
->        [<ffffffff8020d23a>] child_rip+0xa/0x20
->        [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> -> #0 (events){+.+.+.}:
->        [<ffffffff80271b36>] __lock_acquire+0xd36/0x10a0
->        [<ffffffff80271f38>] lock_acquire+0x98/0x140
->        [<ffffffff802594bd>] cleanup_workqueue_thread+0x4d/0xd0
->        [<ffffffff8053fe79>] workqueue_cpu_callback+0xc9/0x10f
->        [<ffffffff805539a8>] notifier_call_chain+0x68/0xa0
->        [<ffffffff802630d6>] raw_notifier_call_chain+0x16/0x20
->        [<ffffffff8053d9ec>] _cpu_down+0x1cc/0x2d0
->        [<ffffffff80246f90>] disable_nonboot_cpus+0xb0/0x130
->        [<ffffffff8027dd8d>] suspend_devices_and_enter+0xbd/0x1b0
->        [<ffffffff8027dff7>] enter_state+0x107/0x170
->        [<ffffffff8027e0f9>] state_store+0x99/0x100
->        [<ffffffff803abe17>] kobj_attr_store+0x17/0x20
->        [<ffffffff8033f1e9>] sysfs_write_file+0xd9/0x160
->        [<ffffffff802e1c88>] vfs_write+0xb8/0x180
->        [<ffffffff802e2771>] sys_write+0x51/0x90
->        [<ffffffff8020c15b>] system_call_fastpath+0x16/0x1b
->        [<ffffffffffffffff>] 0xffffffffffffffff
-> 
-> other info that might help us debug this:
-> 
-> 4 locks held by pm-suspend/12129:
->  #0:  (&buffer->mutex){+.+.+.}, at: [<ffffffff8033f154>]
-> sysfs_write_file+0x44/0x160
->  #1:  (pm_mutex){+.+.+.}, at: [<ffffffff8027df44>] enter_state+0x54/0x170
->  #2:  (dpm_list_mtx){+.+.+.}, at: [<ffffffff80452747>] device_pm_lock+0x17/0x20
->  #3:  (cpu_add_remove_lock){+.+.+.}, at: [<ffffffff80246e57>]
-> cpu_maps_update_begin+0x17/0x20
-> 
-> stack backtrace:
-> Pid: 12129, comm: pm-suspend Not tainted 2.6.30-rc5-00097-gd665355 #59
-> Call Trace:
->  [<ffffffff8026fa3d>] print_circular_bug_tail+0x9d/0xe0
->  [<ffffffff80271b36>] __lock_acquire+0xd36/0x10a0
->  [<ffffffff80270000>] ? mark_lock+0x3e0/0x400
->  [<ffffffff80271f38>] lock_acquire+0x98/0x140
->  [<ffffffff80259496>] ? cleanup_workqueue_thread+0x26/0xd0
->  [<ffffffff802594bd>] cleanup_workqueue_thread+0x4d/0xd0
->  [<ffffffff80259496>] ? cleanup_workqueue_thread+0x26/0xd0
->  [<ffffffff802703ed>] ? trace_hardirqs_on+0xd/0x10
->  [<ffffffff8053fe79>] workqueue_cpu_callback+0xc9/0x10f
->  [<ffffffff8054acf1>] ? cpu_callback+0x12/0x280
->  [<ffffffff805539a8>] notifier_call_chain+0x68/0xa0
->  [<ffffffff802630d6>] raw_notifier_call_chain+0x16/0x20
->  [<ffffffff8053d9ec>] _cpu_down+0x1cc/0x2d0
->  [<ffffffff80246f90>] disable_nonboot_cpus+0xb0/0x130
->  [<ffffffff8027dd8d>] suspend_devices_and_enter+0xbd/0x1b0
->  [<ffffffff8027dff7>] enter_state+0x107/0x170
->  [<ffffffff8027e0f9>] state_store+0x99/0x100
->  [<ffffffff803abe17>] kobj_attr_store+0x17/0x20
->  [<ffffffff8033f1e9>] sysfs_write_file+0xd9/0x160
->  [<ffffffff802e1c88>] vfs_write+0xb8/0x180
->  [<ffffffff8029088c>] ? audit_syscall_entry+0x21c/0x240
->  [<ffffffff802e2771>] sys_write+0x51/0x90
->  [<ffffffff8020c15b>] system_call_fastpath+0x16/0x1b
-> CPU1 is down
-> Extended CMOS year: 2000
-> x86 PAT enabled: cpu 0, old 0x7040600070406, new 0x7010600070106
-> Back to C!
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
