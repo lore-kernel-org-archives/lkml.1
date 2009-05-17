@@ -1,153 +1,103 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757817AbZEQAil@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757930AbZEQAi6@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757817AbZEQAil (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 20:38:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754716AbZEQAib
+	id S1757930AbZEQAi6 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 20:38:58 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757660AbZEQAin
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 20:38:31 -0400
-Received: from yw-out-2324.google.com ([74.125.46.30]:28074 "EHLO
-	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754262AbZEQAia convert rfc822-to-8bit (ORCPT
+	Sat, 16 May 2009 20:38:43 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:52057 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757733AbZEQAil (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 20:38:30 -0400
+	Sat, 16 May 2009 20:38:41 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=ZQeN978JbTLUz/81rK0tOLNKJHJo0ytAaFGBEKDLTQZtTtkQuzyBl1+XVQpR8oL3JG
-         NS2fLB7Jz4lJRePhcXW/h1JdKh59D5SAmIYoAVHYaHuEpM0GtAZ+kunsPYLA1I6ecIqb
-         r9eHwvukYEzvlahKXdjkwHX+ytfUswB2/kqF4=
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=En3x6R7BEdIshPdHhdOt4AxcVAaZWHZHhGAmTRnId41bEPyJ5RGrv+i7MeAp5W/7Gf
+         dIoOYIuZPOV/ONywsrgR8sxnsxstn2qFphmm6rF+qldKI4G4WoZzXwwHJs9XtViIfStW
+         guSIWMImVhe13WcSrQxXW/Ca//444hZIpzVGs=
+Date: Sun, 17 May 2009 02:38:39 +0200
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Jonathan Corbet <corbet@lwn.net>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: 2.6.30-rc kills my box hard - and lockdep chains
+Message-ID: <20090517003837.GA4640@nowhere>
+References: <20090514094951.36fd7333@bike.lwn.net> <20090516161419.62c45c2b.akpm@linux-foundation.org>
 MIME-Version: 1.0
-In-Reply-To: <20090516092858.GA12104@localhost>
-References: <20090516090005.916779788@intel.com>
-	 <20090516090448.410032840@intel.com>
-	 <20090516092858.GA12104@localhost>
-Date: Sun, 17 May 2009 09:38:30 +0900
-Message-ID: <28c262360905161738o2ec8b0cg6bfb40b40fc048fa@mail.gmail.com>
-Subject: Re: [PATCH 2/3] vmscan: make mapped executable pages the first class 
-	citizen
-From: Minchan Kim <minchan.kim@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Peter Zijlstra <peterz@infradead.org>, Rik van Riel <riel@redhat.com>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090516161419.62c45c2b.akpm@linux-foundation.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sat, May 16, 2009 at 6:28 PM, Wu Fengguang <fengguang.wu@intel.com> wrote:
-> [trivial update on comment text, according to Rik's comment]
->
-> --
-> vmscan: make mapped executable pages the first class citizen
->
-> Protect referenced PROT_EXEC mapped pages from being deactivated.
->
-> PROT_EXEC(or its internal presentation VM_EXEC) pages normally belong to some
-> currently running executables and their linked libraries, they shall really be
-> cached aggressively to provide good user experiences.
->
-> Thanks to Johannes Weiner for the advice to reuse the VMA walk in
-> page_referenced() to get the PROT_EXEC bit.
->
->
-> [more details]
->
-> ( The consequences of this patch will have to be discussed together with
->  Rik van Riel's recent patch "vmscan: evict use-once pages first". )
->
-> ( Some of the good points and insights are taken into this changelog.
->  Thanks to all the involved people for the great LKML discussions. )
->
-> the problem
-> -----------
->
-> For a typical desktop, the most precious working set is composed of
-> *actively accessed*
->        (1) memory mapped executables
->        (2) and their anonymous pages
->        (3) and other files
->        (4) and the dcache/icache/.. slabs
-> while the least important data are
->        (5) infrequently used or use-once files
->
-> For a typical desktop, one major problem is busty and large amount of (5)
-> use-once files flushing out the working set.
->
-> Inside the working set, (4) dcache/icache have already been too sticky ;-)
-> So we only have to care (2) anonymous and (1)(3) file pages.
->
-> anonymous pages
-> ---------------
-> Anonymous pages are effectively immune to the streaming IO attack, because we
-> now have separate file/anon LRU lists. When the use-once files crowd into the
-> file LRU, the list's "quality" is significantly lowered. Therefore the scan
-> balance policy in get_scan_ratio() will choose to scan the (low quality) file
-> LRU much more frequently than the anon LRU.
->
-> file pages
-> ----------
-> Rik proposed to *not* scan the active file LRU when the inactive list grows
-> larger than active list. This guarantees that when there are use-once streaming
-> IO, and the working set is not too large(so that active_size < inactive_size),
-> the active file LRU will *not* be scanned at all. So the not-too-large working
-> set can be well protected.
->
-> But there are also situations where the file working set is a bit large so that
-> (active_size >= inactive_size), or the streaming IOs are not purely use-once.
-> In these cases, the active list will be scanned slowly. Because the current
-> shrink_active_list() policy is to deactivate active pages regardless of their
-> referenced bits. The deactivated pages become susceptible to the streaming IO
-> attack: the inactive list could be scanned fast (500MB / 50MBps = 10s) so that
-> the deactivated pages don't have enough time to get re-referenced. Because a
-> user tend to switch between windows in intervals from seconds to minutes.
->
-> This patch holds mapped executable pages in the active list as long as they
-> are referenced during each full scan of the active list.  Because the active
-> list is normally scanned much slower, they get longer grace time (eg. 100s)
-> for further references, which better matches the pace of user operations.
->
-> Therefore this patch greatly prolongs the in-cache time of executable code,
-> when there are moderate memory pressures.
->
->        before patch: guaranteed to be cached if reference intervals < I
->        after  patch: guaranteed to be cached if reference intervals < I+A
->                      (except when randomly reclaimed by the lumpy reclaim)
-> where
->        A = time to fully scan the   active file LRU
->        I = time to fully scan the inactive file LRU
->
-> Note that normally A >> I.
->
-> side effects
-> ------------
->
-> This patch is safe in general, it restores the pre-2.6.28 mmap() behavior
-> but in a much smaller and well targeted scope.
->
-> One may worry about some one to abuse the PROT_EXEC heuristic.  But as
-> Andrew Morton stated, there are other tricks to getting that sort of boost.
->
-> Another concern is the PROT_EXEC mapped pages growing large in rare cases,
-> and therefore hurting reclaim efficiency. But a sane application targeted for
-> large audience will never use PROT_EXEC for data mappings. If some home made
-> application tries to abuse that bit, it shall be aware of the consequences.
-> If it is abused to scale of 2/3 total memory, it gains nothing but overheads.
->
-> CC: Elladan <elladan@eskimo.com>
-> CC: Nick Piggin <npiggin@suse.de>
-> CC: Johannes Weiner <hannes@cmpxchg.org>
-> CC: Christoph Lameter <cl@linux-foundation.org>
-> CC: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-> Acked-by: Peter Zijlstra <peterz@infradead.org>
-> Acked-by: Rik van Riel <riel@redhat.com>
-> Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+On Sat, May 16, 2009 at 04:14:19PM -0700, Andrew Morton wrote:
+> On Thu, 14 May 2009 09:49:51 -0600 Jonathan Corbet <corbet@lwn.net> wrote:
+> 
+> > So...every now and then I return to my system (a dual-core 64-bit
+> > x86 box) only to find it totally dead.  Lights are on but there's no
+> > disk activity, no ping responses, no alternative to simply pulling the
+> > plug.  It happens fairly reliably about once a day with the 2.6.30-rc
+> > kernels; it does not happen with 2.6.29.
+> > 
+> > I'm at a bit of a loss for how to try to track this one down.  "System
+> > disappears without a trace" isn't much to go on.  I can't reproduce it
+> > at will; even the "maintain an unsaved editor buffer with hours' worth
+> > of work" trick doesn't seem to work this time.  
+> > 
+> > One clue might be found here, perhaps: I didn't have lockdep enabled but I do
+> > now.
+> 
+> So the lockup isn't due to lockdep.
+> 
+> Did you try all the usual sysrq-P, nmi-watchdog stuff?
+> 
+> Is netconsole enabled, to see if it squawked as it died?
+> 
+> > May 14 01:06:55 bike kernel: [38730.804833] BUG: MAX_LOCKDEP_CHAINS too low!
+> > May 14 01:06:55 bike kernel: [38730.804838] turning off the locking correctness validator.
+> > May 14 01:06:55 bike kernel: [38730.804843] Pid: 5321, comm: tar Tainted: G        W  2.6.30-rc5 #11
+> > May 14 01:06:55 bike kernel: [38730.804846] Call Trace:
+> > May 14 01:06:55 bike kernel: [38730.804854]  [<ffffffff8025df59>] __lock_acquire+0x57f/0xbc9
+> > May 14 01:06:55 bike kernel: [38730.804860]  [<ffffffff8020f3a9>] ? print_context_stack+0xfa/0x119
+> > May 14 01:06:55 bike kernel: [38730.804866]  [<ffffffff80394da9>] ? get_hash_bucket+0x28/0x34
+> >
+> > ...
+> >
+> > May 14 01:06:55 bike kernel: [38730.805340]  [<ffffffff802c2741>] ? filldir+0x0/0xc4
+> > May 14 01:06:55 bike kernel: [38730.805344]  [<ffffffff802c293d>] vfs_readdir+0x79/0xb6
+> > May 14 01:06:55 bike kernel: [38730.805348]  [<ffffffff802c2ac3>] sys_getdents+0x81/0xd1
+> > May 14 01:06:55 bike kernel: [38730.805353]  [<ffffffff8020bcdb>] system_call_fastpath+0x16/0x1b
+> > 
+> > That's quite the call stack...  and, evidently, a lot of lock chains...  
+> 
+> It is a deep stack trace.
+> 
+> And unfortunately
+> 
+> a) that diagnostic didn't print the stack pointer value, from which
+>    we can often work out if we're looking at a stack overflow.
+> 
+> b) I regularly think it would be useful if that stack backtrace were
+>    to print out the actual stack address, so we could see how much
+>    stack each function is using.
+> 
+>    I just went in to hack these things up, but the x86 stacktrace
+>    code which I used to understand has become stupidly complex so I
+>    gave up.
+> 
+> What tools do we have to diagnose a possible kernel stack overflow? 
+> There's CONFIG_DEBUG_STACK_USAGE but that's unlikely to be much use.
 
-Reviewed-by: Minchan Kim <minchan.kim@gmail.com>
+
+I think about CONFIG_STACK_TRACER. Currently this tracer
+dumps the max stack footprint backtrace through a file in debugfs.
+Then it's not that much useful to debug a stack overflow.
+
+I'm trying to hack around a printk dump for each max stack footprint
+encountered. Hopefully it could help to debug this.
+
+Frederic.
+
