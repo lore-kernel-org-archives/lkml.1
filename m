@@ -1,45 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755401AbZEQWBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbZEQWIx@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755401AbZEQWBp (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 18:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754498AbZEQWBg
+	id S1755209AbZEQWIx (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 18:08:53 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbZEQWIj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 18:01:36 -0400
-Received: from gate.crashing.org ([63.228.1.57]:42184 "EHLO gate.crashing.org"
+	Sun, 17 May 2009 18:08:39 -0400
+Received: from e3.ny.us.ibm.com ([32.97.182.143]:40545 "EHLO e3.ny.us.ibm.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752378AbZEQWBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 18:01:35 -0400
-Subject: Re: [PATCH] [PowerPC] Support For Initrd Loaded Into Highmem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-Cc: Konstantin Baydarov <kbaidarov@ru.mvista.com>, linuxppc-dev@ozlabs.org,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <20090517133417.9E0FC832E416@gemini.denx.de>
-References: <4A103EDF.7050108@ru.mvista.com>
-	 <20090517133417.9E0FC832E416@gemini.denx.de>
-Content-Type: text/plain
-Date: Mon, 18 May 2009 07:56:17 +1000
-Message-Id: <1242597377.18075.1.camel@pasglop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	id S1752378AbZEQWIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 18:08:38 -0400
+Date: Sun, 17 May 2009 15:08:35 -0700
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Evgeniy Polyakov <zbr@ioremap.net>
+Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+       netfilter-devel@vger.kernel.org, mingo@elte.hu,
+       akpm@linux-foundation.org, torvalds@linux-foundation.org,
+       davem@davemloft.net, dada1@cosmosbay.com, jeff.chua.linux@gmail.com,
+       paulus@samba.org, laijs@cn.fujitsu.com, jengelh@medozas.de,
+       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
+Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
+Message-ID: <20090517220835.GF6973@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <20090517191141.GA25915@linux.vnet.ibm.com> <20090517200223.GA31029@ioremap.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20090517200223.GA31029@ioremap.net>
+User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, May 18, 2009 at 12:02:23AM +0400, Evgeniy Polyakov wrote:
+> Hi.
 
-> >   How Solved:
-> > Code was added that checks if initrd is in the highmem and relocates initrd
-> > into lowmem if required.
+Hello, Evgeniy!
+
+> On Sun, May 17, 2009 at 12:11:41PM -0700, Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
+> > Fifth cut of "big hammer" expedited RCU grace periods.  This uses per-CPU
+> > kthreads that are scheduled in parallel by a call to smp_call_function()
+> > by yet another kthread.  The synchronize_sched(), synchronize_rcu(),
+> > and synchronize_bh() primitives wake this kthread up and then wait for
+> > it to force the grace period.
 > 
-> I don't think this is needed. Just don't load the ramdisk to highmem
-> in the first place.
+> I'm curious, but doesn't the fact that registered 'barrier' callback is
+> invoked mean grace period completion? I.e. why to bother with
+> rescheduling, waiting for thread to complete and so on, when we only
+> care in the fact that 'barrier' callback is invoked, and thus all
+> previous ones are completed?
+> Or it is done just for the simplicity, since all rescheduling machinery
+> already manages the rcu bits correctly, so you do not want to put it
+> directly into 'barrier' callback?
 
-Well, it does make some sense to avoid the kernel eating itself if
-passed things out of lowmem in the reserve map, though Konstantin patch
-doesn't fix that properly, I think it's still something to look into.
+It is a short-term expedient course of action.  Longer term, I will drop
+rcuclassic in favor of rcutree, and then merge rcupreempt into rcutree.
+I will then add machinery to rcutree to handle expedited grace periods
+(somewhat) more naturally.  Trying to expedite three very different RCU
+implementations seems a bit silly, hence the current off-on-the-side
+approach.
 
-Cheers,
-Ben.
+But even then I will avoid relying on a "barrier" callback, or, indeed,
+any sort of callback, because we don't want expedited grace periods to
+have to wait on invocation of earlier RCU callbacks.  There will thus
+not be a call_rcu_expedited(), at least not unless someone comes up with
+a -really- compelling reason why.
 
+But the exercise of going through several possible implementations was
+quite useful, as I learned a number of things that will improve the
+eventual rcutree implementation.  Like the fact that expedited grace
+periods don't want to be waiting on invocation of prior callbacks.  ;-)
 
+And rcutiny is, as always, as special case.  Here is the implementation
+of synchronize_rcu_expedited() in rcutiny:
+
+	void synchronize_rcu_expedited(void)
+	{
+	}
+
+Or even:
+
+	#define synchronize_rcu_expedited synchronize_rcu
+
+;-)
+
+							Thanx, Paul
