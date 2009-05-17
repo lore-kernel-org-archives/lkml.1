@@ -1,46 +1,136 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbZEQKZb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756763AbZEQK0Y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757119AbZEQKZb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 06:25:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbZEQKZV
+	id S1756763AbZEQK0Y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 06:26:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753245AbZEQK0M
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 06:25:21 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46320 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753245AbZEQKZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 06:25:20 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Sachin Sant <sachinp@in.ibm.com>
-Subject: Re: [Bug #13068] Lockdep warining in inotify_dev_queue_event
-Date: Sun, 17 May 2009 12:25:34 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Ingo Molnar <mingo@elte.hu>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Marcin Slusarz <marcin.slusarz@gmail.com>
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <20090517063530.GB1583@elte.hu> <4A0FC736.7050301@in.ibm.com>
-In-Reply-To: <4A0FC736.7050301@in.ibm.com>
+	Sun, 17 May 2009 06:26:12 -0400
+Received: from fk-out-0910.google.com ([209.85.128.185]:53298 "EHLO
+	fk-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753498AbZEQK0K (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 06:26:10 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:in-reply-to:user-agent;
+        b=KotGQzPhQyHIplzHlBq/rIkf7gAEvx1eB1Y4+h4kCGO+d2r8NzK9TRNAvPJcoDsr6K
+         4eORcBjb4b2YQuRxerUGjBSH5e+pQjUhYqPoSXqRz2sqKtdctV1NQdvBEBivPPJ3FbNv
+         70Q+Ad8jJU3ggtTVIuKksZWGnAiX1gKWZY2EY=
+Date: Sun, 17 May 2009 12:26:06 +0200
+From: Andrea Righi <righi.andrea@gmail.com>
+To: Vivek Goyal <vgoyal@redhat.com>
+Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
+       Nauman Rafique <nauman@google.com>, dpshah@google.com,
+       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
+       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
+       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
+       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
+       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
+       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
+       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
+Subject: Re: [PATCH] io-controller: Add io group reference handling for
+	request
+Message-ID: <20090517102604.GA4255@linux>
+References: <1241553525-28095-1-git-send-email-vgoyal@redhat.com> <4A03FF3C.4020506@cn.fujitsu.com> <20090508135724.GE7293@redhat.com> <e98e18940905081041r386e52a5q5a2b1f13f1e8c634@mail.gmail.com> <4A078051.5060702@cn.fujitsu.com> <20090511154127.GD6036@redhat.com> <4A0CFA6C.3080609@cn.fujitsu.com> <20090515074839.GA3340@linux> <20090515140643.GB19350@redhat.com>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Message-Id: <200905171225.34911.rjw@sisk.pl>
+In-Reply-To: <20090515140643.GB19350@redhat.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 May 2009, Sachin Sant wrote:
-> Ingo Molnar wrote:
-> > i think this might be fixed by:
-> >
-> > 381a80e: inotify: use GFP_NOFS in kernel_event() to work around a lockdep false-positive
-> >
-> > already in -rc6.
-> >   
-> Haven't seen this issue with rc6.
+On Fri, May 15, 2009 at 10:06:43AM -0400, Vivek Goyal wrote:
+> On Fri, May 15, 2009 at 09:48:40AM +0200, Andrea Righi wrote:
+> > On Fri, May 15, 2009 at 01:15:24PM +0800, Gui Jianfeng wrote:
+> > > Vivek Goyal wrote:
+> > > ...
+> > > >  }
+> > > > @@ -1462,20 +1462,27 @@ struct io_cgroup *get_iocg_from_bio(stru
+> > > >  /*
+> > > >   * Find the io group bio belongs to.
+> > > >   * If "create" is set, io group is created if it is not already present.
+> > > > + * If "curr" is set, io group is information is searched for current
+> > > > + * task and not with the help of bio.
+> > > > + *
+> > > > + * FIXME: Can we assume that if bio is NULL then lookup group for current
+> > > > + * task and not create extra function parameter ?
+> > > >   *
+> > > > - * Note: There is a narrow window of race where a group is being freed
+> > > > - * by cgroup deletion path and some rq has slipped through in this group.
+> > > > - * Fix it.
+> > > >   */
+> > > > -struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
+> > > > -					int create)
+> > > > +struct io_group *io_get_io_group(struct request_queue *q, struct bio *bio,
+> > > > +					int create, int curr)
+> > > 
+> > >   Hi Vivek,
+> > > 
+> > >   IIUC we can get rid of curr, and just determine iog from bio. If bio is not NULL,
+> > >   get iog from bio, otherwise get it from current task.
+> > 
+> > Consider also that get_cgroup_from_bio() is much more slow than
+> > task_cgroup() and need to lock/unlock_page_cgroup() in
+> > get_blkio_cgroup_id(), while task_cgroup() is rcu protected.
+> > 
+> 
+> True.
+> 
+> > BTW another optimization could be to use the blkio-cgroup functionality
+> > only for dirty pages and cut out some blkio_set_owner(). For all the
+> > other cases IO always occurs in the same context of the current task,
+> > and you can use task_cgroup().
+> > 
+> 
+> Yes, may be in some cases we can avoid setting page owner. I will get
+> to it once I have got functionality going well. In the mean time if
+> you have a patch for it, it will be great.
+> 
+> > However, this is true only for page cache pages, for IO generated by
+> > anonymous pages (swap) you still need the page tracking functionality
+> > both for reads and writes.
+> > 
+> 
+> Right now I am assuming that all the sync IO will belong to task
+> submitting the bio hence use task_cgroup() for that. Only for async
+> IO, I am trying to use page tracking functionality to determine the owner.
+> Look at elv_bio_sync(bio).
+> 
+> You seem to be saying that there are cases where even for sync IO, we
+> can't use submitting task's context and need to rely on page tracking
+> functionlity? In case of getting page (read) from swap, will it not happen
+> in the context of process who will take a page fault and initiate the
+> swap read?
 
-Great, thanks.  Bug closed.
+No, for example in read_swap_cache_async():
 
-Best,
-Rafael
+@@ -308,6 +309,7 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
+ 		 */
+ 		__set_page_locked(new_page);
+ 		SetPageSwapBacked(new_page);
++		blkio_cgroup_set_owner(new_page, current->mm);
+ 		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
+ 		if (likely(!err)) {
+ 			/*
+
+This is a read, but the current task is not always the owner of this
+swap cache page, because it's a readahead operation.
+
+Anyway, this is a minor corner case I think. And probably it is safe to
+consider this like any other read IO and get rid of the
+blkio_cgroup_set_owner().
+
+I wonder if it would be better to attach the blkio_cgroup to the
+anonymous page only when swap-out occurs. I mean, just put the
+blkio_cgroup_set_owner() hook in try_to_umap() in order to keep track of
+the IO generated by direct reclaim of anon memory. For all the other
+cases we can simply use the submitting task's context.
+
+BTW, O_DIRECT is another case that is possible to optimize, because all
+the bios generated by direct IO occur in the same context of the current
+task.
+
+-Andrea
