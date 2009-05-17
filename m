@@ -1,24 +1,23 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753019AbZEQFu3@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753079AbZEQGEs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753019AbZEQFu3 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 01:50:29 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751326AbZEQFuN
+	id S1753079AbZEQGEs (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 02:04:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751258AbZEQGEh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 01:50:13 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:44673 "EHLO
+	Sun, 17 May 2009 02:04:37 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:55432 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1750724AbZEQFuM (ORCPT
+	by vger.kernel.org with ESMTP id S1750795AbZEQGEg (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 01:50:12 -0400
-Date: Sat, 16 May 2009 22:49:47 -0700
+	Sun, 17 May 2009 02:04:36 -0400
+Date: Sat, 16 May 2009 23:03:50 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Thomas Meyer <thomas@m3y3r.de>
-Cc: linux-kernel@vger.kernel.org, oprofile-list@lists.sf.net,
-       Robert Richter <robert.richter@amd.com>
-Subject: Re: oprofile: WQ on CPU0, prefer CPU1
-Message-Id: <20090516224947.05067f96.akpm@linux-foundation.org>
-In-Reply-To: <20090514202214.14243n1debrzobx2@mail.your-server.de>
-References: <20090514202214.14243n1debrzobx2@mail.your-server.de>
+To: Chris Peterson <cpeterso@cpeterso.com>
+Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de
+Subject: Re: [RFC] mod_timer() helper functions?
+Message-Id: <20090516230350.ec4fb487.akpm@linux-foundation.org>
+In-Reply-To: <a24804730905160036j2720c557o347cec1513df9c4a@mail.gmail.com>
+References: <a24804730905160036j2720c557o347cec1513df9c4a@mail.gmail.com>
 X-Mailer: Sylpheed 2.4.8 (GTK+ 2.12.5; x86_64-redhat-linux-gnu)
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
@@ -27,45 +26,55 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-(cc's added, from MAINTAINERS)
+On Sat, 16 May 2009 00:36:15 -0700 Chris Peterson <cpeterso@cpeterso.com> wrote:
 
-On Thu, 14 May 2009 20:22:14 +0200 Thomas Meyer <thomas@m3y3r.de> wrote:
+> Reviewing the kernel's nearly one-thousand calls to mod_timer(), there
+> are three basic patterns:
+> 
+>  * multi-second timeouts
+>  * millisecond timeouts
+>  * +1 jiffie ASAP events
+> 
+> Few mod_timer() calls actually use the function's 'expires' deadline
+> time without manually calculating 'jiffies + delay'. The following
+> helper functions could provide a simpler, more descriptive interface
+> than the low-level mod_timer() function. Also, when scheduling longer
+> timers, these helper functions could use round_jiffies() to (secretly)
+> batch timers on whole seconds to reduce power usage.
+> 
+> Any suggestions? Is there enough value to warrant adding helper
+> function like these as an alternative to mod_timer()?
+> 
+> 
+> chris
+> 
+> ---
+> static inline int mod_timer_seconds(struct timer_list *timer, time_t seconds)
+> {
+> 	return mod_timer(timer, round_jiffies(jiffies + seconds * HZ));
+> }
+> 
+> static inline int mod_timer_msecs(struct timer_list *timer, unsigned int msecs)
+> {
+> 	/* TODO? Round jiffies if within some epsilon of a whole second? */
+> 	return mod_timer(timer, jiffies + msecs_to_jiffies(msecs));
+> }
+> 
+> static inline int mod_timer_yield(struct timer_list *timer)
+> {
+> 	/* After these messages, we'll be right back. */
+> 	return mod_timer(timer, jiffies + 1);
+> }
 
-> 
-> After suspend and resume to/from S3 I see a lot of these messages in  
-> the kernel log:
-> 
-> [11750.054031] WQ on CPU0, prefer CPU1
-> [11750.154023] WQ on CPU0, prefer CPU1
-> [11750.254022] WQ on CPU0, prefer CPU1
-> [11750.354022] WQ on CPU0, prefer CPU1
-> [11750.454018] WQ on CPU0, prefer CPU1
-> [11750.554022] WQ on CPU0, prefer CPU1
-> [11750.654022] WQ on CPU0, prefer CPU1
-> [11750.754039] WQ on CPU0, prefer CPU1
-> [11750.854020] WQ on CPU0, prefer CPU1
-> [11750.954024] WQ on CPU0, prefer CPU1
-> [11751.054029] WQ on CPU0, prefer CPU1
-> [11751.154028] WQ on CPU0, prefer CPU1
-> [11751.254026] WQ on CPU0, prefer CPU1
-> [11751.354019] WQ on CPU0, prefer CPU1
-> [11751.454022] WQ on CPU0, prefer CPU1
-> [11751.554032] WQ on CPU0, prefer CPU1
-> [11751.654028] WQ on CPU0, prefer CPU1
-> [11751.754028] WQ on CPU0, prefer CPU1
-> [11751.854033] WQ on CPU0, prefer CPU1
-> [11751.954029] WQ on CPU0, prefer CPU1
-> [and so on; seems not to stop]
-> 
-> This comes from drivers/oprofile/cpu_buffer.c
-> 
-> Bug or feature?
-> 
+I think it makes sense, yes.
 
-Don't know.  It needs fixing though - the kernel shouldn't blurt random
-printks like this.
+I do think that the name should be changed to communicate the fact that
+the change is relative.  advance_timer_foo(), perhaps.
 
-> 
-> PS: 2.6.30-rc5
+Or, if you want to put lipstick on our pig, timer_advance_foo().  All
+these API functions should have started with "timer_" but we screwed
+that up ages ago.
 
-Do you know if earlier kernels did the same thing?
+I expect that most/all of these functions will be too large to inline,
+btw.  Check the generated code and I expect you'll be surprised how
+porky they are.
