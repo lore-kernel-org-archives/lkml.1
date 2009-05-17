@@ -1,51 +1,62 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757629AbZEQDFb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbZEQDJJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757629AbZEQDFb (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 23:05:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753252AbZEQDFW
+	id S1757281AbZEQDJJ (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 23:09:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZEQDIx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 23:05:22 -0400
-Received: from mail.crca.org.au ([67.207.131.56]:33539 "EHLO crca.org.au"
+	Sat, 16 May 2009 23:08:53 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:35672 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752972AbZEQDFV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 23:05:21 -0400
-X-Bogosity: Ham, spamicity=0.000000
-Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
-From: Nigel Cunningham <nigel@tuxonice.net>
-Reply-To: nigel@tuxonice.net
-To: Matt Price <moptop99@gmail.com>
-Cc: Martin Steigerwald <Martin@lichtvoll.de>,
-       linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net,
-       linux-kernel@vger.kernel.org
-In-Reply-To: <f22f52180905161953t6248e60fg3f6732a04d59b406@mail.gmail.com>
-References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
-	 <200905162107.58677.Martin@lichtvoll.de>
-	 <f22f52180905161953t6248e60fg3f6732a04d59b406@mail.gmail.com>
-Content-Type: text/plain
-Date: Sun, 17 May 2009 13:06:43 +1000
-Message-Id: <1242529603.10835.2.camel@nigel-laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.3 
+	id S1752742AbZEQDIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 23:08:53 -0400
+Message-ID: <4A0F7FC2.5090109@garzik.org>
+Date: Sat, 16 May 2009 23:08:50 -0400
+From: Jeff Garzik <jeff@garzik.org>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+MIME-Version: 1.0
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Elias Oltmanns <eo@nebensachen.de>
+Subject: Re: s2disk hangs with kernel >=2.6.29, SATA, Gigabyte EG45M-DS2H
+ (bisected)
+References: <20090516225153.GA7883@arbonne.lan>
+In-Reply-To: <20090516225153.GA7883@arbonne.lan>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Matt et al.
+Richard Atterer wrote:
+> Hello,
+> 
+> I have had problems using s2disk starting sometime before 2.6.29 (and 
+> continuing up until now, 2.6.30-rc6), but only got around to bisecting the 
+> issue now.
+> 
+> The symptom is as follows: When I start s2disk (by running the hibernate 
+> command), the system switches to the console and prints "s2disk: 
+> Snapshotting system". The cursor freezes for a moment, I hear the noise 
+> that my DVD writer makes when it is reset, the lights of my USB hub go off 
+> and on again. Then the cursor continues to blink and nothing more happens, 
+> the system just hangs.
+> 
+> I have a Gigabyte EG45M-DS2H motherboard with two disks attached: One SATA 
+> disk containing Linux, and one older PATA disk with data. AHCI is enabled 
+> in the BIOS.
+> 
+> The patch that causes the hang is 295f00042aaf6b553b5f37348f89bab463d4a469:
+> ide: don't execute the next queued command from the hard-IRQ context (v2)
+> 
+> Any help with this problem would be very much appreciated!
 
-On Sat, 2009-05-16 at 22:53 -0400, Matt Price wrote:
-> one of the real frustrations i've had watching this process from the
-> sidelines is that those with the authority to make decisions have
-> never taken either of these very important concerns seriously.  And
-> until they do, I do think it's quite likely that suspend-to-disk will
-> continue in its largely-broken state for quite some time to come.
+Does it work if you disable CONFIG_IDE, and use only CONFIG_ATA for PATA?
 
-I just want to talk a little in defence of Rafael - I've found him
-really good to deal with. Yes, he has been headed in a different
-direction, but he's not unreasonable and he is responsive to bug reports
-and suggestions. Please don't think less of him than you ought.
+	Jeff
 
-Regards,
 
-Nigel
+
 
