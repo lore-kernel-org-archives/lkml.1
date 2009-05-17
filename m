@@ -1,62 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757281AbZEQDJJ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbZEQDW7@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757281AbZEQDJJ (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 23:09:09 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752972AbZEQDIx
+	id S1757904AbZEQDW7 (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 23:22:59 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbZEQDWt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 23:08:53 -0400
-Received: from srv5.dvmed.net ([207.36.208.214]:35672 "EHLO mail.dvmed.net"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752742AbZEQDIx (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 23:08:53 -0400
-Message-ID: <4A0F7FC2.5090109@garzik.org>
-Date: Sat, 16 May 2009 23:08:50 -0400
-From: Jeff Garzik <jeff@garzik.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sat, 16 May 2009 23:22:49 -0400
+Received: from wf-out-1314.google.com ([209.85.200.172]:33564 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750878AbZEQDWs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sat, 16 May 2009 23:22:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=vkFgSqYC+cpJd7fxBeC0oOJGDDv4xbejK0hoS97cTrhi9Xu52Zsecd8stJQTk6u9Le
+         tofdmM/5T7xYgXVOFbxEisTj//Eg7VchCP2t69wVRuB/27cLL0+f/AWnVOriXFWz5Efc
+         l9Vk0l+ncHcY+Mpnyo+HvNKIvRNMHSAaESFEQ=
 MIME-Version: 1.0
-To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       Elias Oltmanns <eo@nebensachen.de>
-Subject: Re: s2disk hangs with kernel >=2.6.29, SATA, Gigabyte EG45M-DS2H
- (bisected)
-References: <20090516225153.GA7883@arbonne.lan>
-In-Reply-To: <20090516225153.GA7883@arbonne.lan>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Spam-Score: -4.4 (----)
-X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
-	Content analysis details:   (-4.4 points, 5.0 required)
+In-Reply-To: <385Pu-agh7M.A.nFB.5YzDKB@chimera>
+References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
+	 <385Pu-agh7M.A.nFB.5YzDKB@chimera>
+Date: Sun, 17 May 2009 11:22:48 +0800
+Message-ID: <d82e647a0905162022k7be627f1s933a84640562f749@mail.gmail.com>
+Subject: Re: [Bug #13245] possible circular locking dependency detected
+From: Ming Lei <tom.leiming@gmail.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       Miles Lane <miles.lane@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Richard Atterer wrote:
-> Hello,
-> 
-> I have had problems using s2disk starting sometime before 2.6.29 (and 
-> continuing up until now, 2.6.30-rc6), but only got around to bisecting the 
-> issue now.
-> 
-> The symptom is as follows: When I start s2disk (by running the hibernate 
-> command), the system switches to the console and prints "s2disk: 
-> Snapshotting system". The cursor freezes for a moment, I hear the noise 
-> that my DVD writer makes when it is reset, the lights of my USB hub go off 
-> and on again. Then the cursor continues to blink and nothing more happens, 
-> the system just hangs.
-> 
-> I have a Gigabyte EG45M-DS2H motherboard with two disks attached: One SATA 
-> disk containing Linux, and one older PATA disk with data. AHCI is enabled 
-> in the BIOS.
-> 
-> The patch that causes the hang is 295f00042aaf6b553b5f37348f89bab463d4a469:
-> ide: don't execute the next queued command from the hard-IRQ context (v2)
-> 
-> Any help with this problem would be very much appreciated!
+I also can reproduce it on 2.6.30-rc5-next-20090515.
 
-Does it work if you disable CONFIG_IDE, and use only CONFIG_ATA for PATA?
+2009/5/17 Rafael J. Wysocki <rjw@sisk.pl>:
+> This message has been generated automatically as a part of a report
+> of recent regressions.
+>
+> The following bug entry is on the current list of known regressions
+> from 2.6.29.  Please verify if it still should be listed and let me know
+> (either way).
+>
+>
+> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13245
+> Subject         : possible circular locking dependency detected
+> Submitter       : Miles Lane <miles.lane@gmail.com>
+> Date            : 2009-05-04 16:56 (13 days old)
+>
 
-	Jeff
-
-
-
-
+-- 
+Lei Ming
