@@ -1,104 +1,96 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754689AbZEQOAy@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752786AbZEQOHy@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754689AbZEQOAy (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 10:00:54 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753970AbZEQOAd
+	id S1752786AbZEQOHy (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 10:07:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752189AbZEQOHm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 10:00:33 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:52140 "EHLO mx2.suse.de"
+	Sun, 17 May 2009 10:07:42 -0400
+Received: from mga03.intel.com ([143.182.124.21]:33085 "EHLO mga03.intel.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753772AbZEQOAb (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 10:00:31 -0400
-Message-ID: <4A101842.7000501@suse.com>
-Date: Sun, 17 May 2009 09:59:30 -0400
-From: Jeff Mahoney <jeffm@suse.com>
-Organization: SUSE Labs, Novell, Inc
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
+	id S1751466AbZEQOHl (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 10:07:41 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,208,1241420400"; 
+   d="scan'208";a="143744588"
+Date: Sun, 17 May 2009 22:07:12 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@tuxonice.net>,
+       David Rientjes <rientjes@google.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to allocate too much
+	memory too hard
+Message-ID: <20090517140712.GE3254@localhost>
+References: <200905070040.08561.rjw@sisk.pl> <200905131042.18137.rjw@sisk.pl> <20090517120613.GB3254@localhost> <200905171455.06120.rjw@sisk.pl>
 MIME-Version: 1.0
-To: Stefan Richter <stefanr@s5r6.in-berlin.de>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, Ingo Molnar <mingo@elte.hu>,
-       Martin Bammer <mrb74@gmx.at>, Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>
-Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <20090517073327.GC1583@elte.hu> <200905171234.23436.rjw@sisk.pl> <4A100977.1070506@s5r6.in-berlin.de>
-In-Reply-To: <4A100977.1070506@s5r6.in-berlin.de>
-X-Enigmail-Version: 0.95.2
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905171455.06120.rjw@sisk.pl>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
------BEGIN PGP SIGNED MESSAGE-----
-Hash: SHA1
+On Sun, May 17, 2009 at 08:55:05PM +0800, Rafael J. Wysocki wrote:
+> On Sunday 17 May 2009, Wu Fengguang wrote:
 
-Stefan Richter wrote:
-> Rafael J. Wysocki wrote:
->> On Sunday 17 May 2009, Ingo Molnar wrote:
->>> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>>> Bug-Entry    : http://bugzilla.kernel.org/show_bug.cgi?id=13321
->>>> Subject        : kernel crash with NULL pointer when boot
->>>> Submitter    : Martin Bammer <mrb74@gmx.at>
->>>> Date        : 2009-05-16 12:37 (1 days old)
->>>> References    : http://lkml.org/lkml/2009/5/16/100
->>> that crash is in reiserfs_for_each_xattr(), during sys_unlink()'s
->>> xattr teardown.
->>>
->>> There's been a good deal of reiserfs changes in this cycle - some
->>> touch the xattr code as well. Some of them fairly late in the cycle,
+> > > +static unsigned long minimum_image_size(unsigned long saveable)
+> > > +{
+> > > +	unsigned long size;
+> > > +
+> > > +	/* Compute the number of saveable pages we can free. */
+> > > +	size = global_page_state(NR_SLAB_RECLAIMABLE)
+> > > +		+ global_page_state(NR_ACTIVE_ANON)
+> > > +		+ global_page_state(NR_INACTIVE_ANON)
+> > > +		+ global_page_state(NR_ACTIVE_FILE)
+> > > +		+ global_page_state(NR_INACTIVE_FILE);
+> > 
+> > For example, we could drop the 1.25 ratio and calculate the above
+> > reclaimable size with more meaningful constraints:
+> > 
+> >         /* slabs are not easy to reclaim */
+> > 	size = global_page_state(NR_SLAB_RECLAIMABLE) / 2;
 > 
-> (Also, the bug is reportedly a post -rc5 regression.)
+> Why 1/2?
+
+Also a very coarse value:
+- we don't want to stress icache/dcache too much
+  (unless they grow too large)
+- my experience was that the icache/dcache are scanned in a slower
+  pace than lru pages.
+- most importantly, inside the NR_SLAB_RECLAIMABLE pages, maybe half
+  of the pages are actually *in use* and cannot be freed:
+        % cat /proc/sys/fs/inode-nr     
+        30450   16605
+        % cat /proc/sys/fs/dentry-state 
+        41598   35731   45      0       0       0
+  See? More than half entries are in-use. Sure many of them will actually
+  become unused when dentries are freed, but in the mean time the internal
+  fragmentations in the slabs can go up.
+
+> >         /* keep NR_ACTIVE_ANON */
+> > 	size += global_page_state(NR_INACTIVE_ANON);
 > 
->>> in the last two weeks:
->>>
->>>  earth4:~/tip> gll v2.6.29..linus --since=two-weeks-ago fs/reiserfs/
->>>  2a32ceb: Fix races around the access to ->s_options
->>>  677c9b2: reiserfs: remove privroot hiding in lookup
->>>  b82bb72: reiserfs: dont associate security.* with xattr files
->>>  ab17c4f: reiserfs: fixup xattr_root caching
->>>  edcc37a: Always lookup priv_root on reiserfs mount and keep it
->>>  5a6059c: reiserfs: Expand i_mutex to enclose lookup_one_len
->>>
->>> Martin, you could try a blind revert of say ... ab17c4f, which looks
->>> the most suspect and which is also a rather large commit.
->>>
->>> Or/and you could try a bisect - perhaps accelerated via:
->>>
->>>    git bisect start fs/reiserfs/
->>
->> I think there's a fix already for this in the works, but it hasn't
->> been merged
->> yet.  It looks like Jeff has just posted some reiserfs fixes. :-)
+> Why exactly did you omit ACTIVE_ANON?
+
+To keep the "core working set" :)
+  	
+> >         /* keep mapped files */
+> > 	size += global_page_state(NR_ACTIVE_FILE);
+> > 	size += global_page_state(NR_INACTIVE_FILE);
+> >         size -= global_page_state(NR_FILE_MAPPED);
+> > 
+> > That restores the hard core working set logic in the reverse way ;)
 > 
-> I'd say Martin should try Jeff's pending patches before a revert or
-> before starting a bisection.  Either apply them from
-> http://lkml.org/lkml/2009/5/17/6, or pull from
->  git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git for-next
-> or wait for them to appear in Linus' tree...
-> 
-> I for one didn't test the post v2.6.30-rc5 changes to reiserfs, but I
-> did try them _together_ with the four pending patches on a system with
-> reiserfs root filesystem and extended attributes disabled in the config.
-> Everything is fine here after almost a week uptime.
+> I think the 1/2 factor for NR_SLAB_RECLAIMABLE may be too high in some cases,
+> but I'm going to check that.
 
-Yes, this bug is known and is fixed with "[patch 2/4] [PATCH] reiserfs:
-deal with NULL xattr root w/ xattrs disabled"
+Yes, after updatedb. In that case simple magics numbers may not help.
+In that case we should really first call shrink_slab() in a loop to
+cut down the slab pages to a sane number.
 
-- -Jeff
-
-- --
-Jeff Mahoney
-SUSE Labs
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.9 (GNU/Linux)
-Comment: Using GnuPG with SUSE - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkoQGEIACgkQLPWxlyuTD7K8kwCfUEq36jJvY+FzzuvWbAyOYX+r
-BPwAniRe6a7Cj8n5+vC2Zmwfp1hRRUb1
-=fh19
------END PGP SIGNATURE-----
+Thanks,
+Fengguang
