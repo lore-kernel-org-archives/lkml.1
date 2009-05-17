@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbZEQJ3T@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756866AbZEQJ3j@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbZEQJ3T (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 05:29:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754610AbZEQJ24
+	id S1756866AbZEQJ3j (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 05:29:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755503AbZEQJ3J
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 05:28:56 -0400
-Received: from mgw1.diku.dk ([130.225.96.91]:59778 "EHLO mgw1.diku.dk"
+	Sun, 17 May 2009 05:29:09 -0400
+Received: from mgw1.diku.dk ([130.225.96.91]:59814 "EHLO mgw1.diku.dk"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753317AbZEQJ2y (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 05:28:54 -0400
-Date: Sun, 17 May 2009 11:28:42 +0200 (CEST)
+	id S1755332AbZEQJ3H (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 05:29:07 -0400
+Date: Sun, 17 May 2009 11:29:00 +0200 (CEST)
 From: Julia Lawall <julia@diku.dk>
-To: yi.zhu@intel.com, reinette.chatre@intel.com,
-       linux-wireless@vger.kernel.org, ipw3945-devel@lists.sourceforge.net,
-       netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
-       kernel-janitors@vger.kernel.org
-Subject: [PATCH 1/3] drivers/net: use dev_get_drvdata
-Message-ID: <Pine.LNX.4.64.0905171128140.20440@pc-004.diku.dk>
+To: adaplas@gmail.com, linux-fbdev-devel@lists.sourceforge.net,
+       linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
+Subject: [PATCH 2/3] drivers/video: use dev_get_drvdata
+Message-ID: <Pine.LNX.4.64.0905171128430.20440@pc-004.diku.dk>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
@@ -53,18 +51,72 @@ type T;
 Signed-off-by: Julia Lawall <julia@diku.dk>
 
 ---
- drivers/net/wireless/iwlwifi/iwl-agn.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/video/omap/omapfb_main.c |   14 +++++++-------
+ 1 file changed, 7 insertions(+), 7 deletions(-)
 
-diff -u -p a/drivers/net/wireless/iwlwifi/iwl-agn.c b/drivers/net/wireless/iwlwifi/iwl-agn.c
---- a/drivers/net/wireless/iwlwifi/iwl-agn.c
-+++ b/drivers/net/wireless/iwlwifi/iwl-agn.c
-@@ -2478,7 +2478,7 @@ static DEVICE_ATTR(power_level, S_IWUSR 
- static ssize_t show_qos(struct device *d,
- 				struct device_attribute *attr, char *buf)
+diff -u -p a/drivers/video/omap/omapfb_main.c b/drivers/video/omap/omapfb_main.c
+--- a/drivers/video/omap/omapfb_main.c
++++ b/drivers/video/omap/omapfb_main.c
+@@ -1250,7 +1250,7 @@ static struct fb_ops omapfb_ops = {
+ static ssize_t omapfb_show_caps_num(struct device *dev,
+ 				    struct device_attribute *attr, char *buf)
  {
--	struct iwl_priv *priv = (struct iwl_priv *)d->driver_data;
-+	struct iwl_priv *priv = dev_get_drvdata(d);
- 	char *p = buf;
- 	int   q;
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 	int plane;
+ 	size_t size;
+ 	struct omapfb_caps caps;
+@@ -1270,7 +1270,7 @@ static ssize_t omapfb_show_caps_num(stru
+ static ssize_t omapfb_show_caps_text(struct device *dev,
+ 				     struct device_attribute *attr, char *buf)
+ {
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 	int i;
+ 	struct omapfb_caps caps;
+ 	int plane;
+@@ -1317,7 +1317,7 @@ static DEVICE_ATTR(caps_text, 0444, omap
+ static ssize_t omapfb_show_panel_name(struct device *dev,
+ 				      struct device_attribute *attr, char *buf)
+ {
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
  
+ 	return snprintf(buf, PAGE_SIZE, "%s\n", fbdev->panel->name);
+ }
+@@ -1326,7 +1326,7 @@ static ssize_t omapfb_show_bklight_level
+ 					 struct device_attribute *attr,
+ 					 char *buf)
+ {
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 	int r;
+ 
+ 	if (fbdev->panel->get_bklight_level) {
+@@ -1341,7 +1341,7 @@ static ssize_t omapfb_store_bklight_leve
+ 					  struct device_attribute *attr,
+ 					  const char *buf, size_t size)
+ {
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 	int r;
+ 
+ 	if (fbdev->panel->set_bklight_level) {
+@@ -1360,7 +1360,7 @@ static ssize_t omapfb_store_bklight_leve
+ static ssize_t omapfb_show_bklight_max(struct device *dev,
+ 				       struct device_attribute *attr, char *buf)
+ {
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 	int r;
+ 
+ 	if (fbdev->panel->get_bklight_level) {
+@@ -1393,7 +1393,7 @@ static struct attribute_group panel_attr
+ static ssize_t omapfb_show_ctrl_name(struct device *dev,
+ 				     struct device_attribute *attr, char *buf)
+ {
+-	struct omapfb_device *fbdev = (struct omapfb_device *)dev->driver_data;
++	struct omapfb_device *fbdev = dev_get_drvdata(dev);
+ 
+ 	return snprintf(buf, PAGE_SIZE, "%s\n", fbdev->ctrl->name);
+ }
