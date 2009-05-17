@@ -1,43 +1,49 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754630AbZEQRK4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZEQRLV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754630AbZEQRK4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 13:10:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753602AbZEQRKp
+	id S1754833AbZEQRLV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 13:11:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbZEQRKp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
 	Sun, 17 May 2009 13:10:45 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:43603 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752934AbZEQRKo (ORCPT
+Received: from mx-out2.daemonmail.net ([216.104.160.39]:49829 "EHLO
+	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753488AbZEQRKo (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
 	Sun, 17 May 2009 13:10:44 -0400
-Date: Sun, 17 May 2009 10:10:40 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Jeff Mahoney <jeffm@suse.com>
-cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>,
-       ReiserFS Development List <reiserfs-devel@vger.kernel.org>
-Subject: Re: [patch 4/4] reiserfs: allow exposing privroot w/ xattrs
- enabled
-In-Reply-To: <20090517050332.566856122@suse.com>
-Message-ID: <alpine.LFD.2.01.0905171009200.3301@localhost.localdomain>
-References: <20090517050200.786752018@suse.com> <20090517050332.566856122@suse.com>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+From: "Michael S. Zick" <lkml@morethan.org>
+Reply-To: lkml@morethan.org
+To: lkml <linux-kernel@vger.kernel.org>
+Subject: 2.6.30-rcX VIA agp initialization
+Date: Sun, 17 May 2009 12:10:41 -0500
+User-Agent: KMail/1.9.9
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905171210.43999.lkml@morethan.org>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+I have been seeing the following in my dmesg:
 
+- - - snip - - - -
+agpgart-via 0000:00:00.0: AGP 3.5 bridge
+agpgart-via 0000:00:00.0: putting AGP V3 device into 8x mode
+pci 0000:01:00.0: putting AGP V3 device into 8x mode
+mtrr: no MTRR for a0000000,4000000 found
+agpgart-via 0000:00:00.0: AGP 3.5 bridge
+agpgart-via 0000:00:00.0: putting AGP V3 device into 8x mode
+pci 0000:01:00.0: putting AGP V3 device into 8x mode
+- - - - snip - - - -
 
-On Sun, 17 May 2009, Jeff Mahoney wrote:
->
-> --- a/fs/reiserfs/dir.c
-> +++ b/fs/reiserfs/dir.c
+Is that as intended?  Just cosmetic?
 
-Hmm. This had no explanation or sign-off. Please? At least the sign-off, 
-but I think I'd like a log message too, since this adds a new mount option 
-etc, so it's not like this is some trivial one-liner that doesn't need it.
+Or is that driver actually being initialized twice?
+Notes: 
+The driver is "built-in" not a module.
+The chip-set is VIA-CX700.
+The driver/hardware does appear to survive the experience.  ;)
 
-		Linus
+Mike
