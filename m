@@ -1,135 +1,260 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755141AbZEQV4h@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755336AbZEQWAq@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755141AbZEQV4h (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 17:56:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754203AbZEQV40
+	id S1755336AbZEQWAq (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 18:00:46 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754020AbZEQWAh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 17:56:26 -0400
-Received: from electric-eye.fr.zoreil.com ([213.41.134.224]:44158 "EHLO
-	electric-eye.fr.zoreil.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1753717AbZEQV4Z (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 17:56:25 -0400
-Date: Sun, 17 May 2009 23:57:24 +0200
-From: Francois Romieu <romieu@fr.zoreil.com>
-To: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
-Cc: David Dillow <dave@thedillows.org>, linux-kernel@vger.kernel.org,
-       Edward Hsu <edward_hsu@realtek.com.tw>
-Subject: Re: Realtek 8168D: no active link (2.6.29.2)
-Message-ID: <20090517215724.GA7699@electric-eye.fr.zoreil.com>
-References: <1242323133.32579.4.camel@lap75545.ornl.gov> <200905142322.n4ENMJP3028786@turbo.physics.adelaide.edu.au>
-MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="fdj2RfSjLxBAspz7"
-Content-Disposition: inline
-In-Reply-To: <200905142322.n4ENMJP3028786@turbo.physics.adelaide.edu.au>
-X-Organisation: Land of Sunshine Inc.
-User-Agent: Mutt/1.5.18 (2008-05-17)
+	Sun, 17 May 2009 18:00:37 -0400
+Received: from gate.crashing.org ([63.228.1.57]:42166 "EHLO gate.crashing.org"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752378AbZEQWAf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 18:00:35 -0400
+Subject: Re: [v0 PATCH 1/4] EDAC: MPIC Hypertransport IRQ support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Harry Ciao <qingtao.cao@windriver.com>
+Cc: bluesmoke-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org,
+       linux-kernel@vger.kernel.org
+In-Reply-To: <1242377034-7378-2-git-send-email-qingtao.cao@windriver.com>
+References: <1242377034-7378-1-git-send-email-qingtao.cao@windriver.com>
+	 <1242377034-7378-2-git-send-email-qingtao.cao@windriver.com>
+Content-Type: text/plain
+Date: Mon, 18 May 2009 08:00:23 +1000
+Message-Id: <1242597623.18075.3.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Fri, 2009-05-15 at 16:43 +0800, Harry Ciao wrote:
+> Support EDAC INT mode for Hypertransport devices, where southbridge
+> NMI Request messages posted through Hypertransport Channel will
+> be transferred to a MPIC interrupt instance that latches MPIC INT0
+> pin. Also, Hypertransport Hostbridge controller may latch MPIC INT2
+> pin for Hypertransport Link Errors.
+> 
+> Since multiple Hypertransport southbridges such as AMD8131 & AMD8111
+> could post NMI request messages, EDAC core should be responsible
+> for maintaining the mapping from hwirq == 0 to a virq.
+> 
+> The edac_mpic_irq.c is inert for EDAC drivers where related hardware
+> is not connecting to MPIC, so it should be controlled by CONFIG_MPIC.
 
---fdj2RfSjLxBAspz7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+It would have been simpler to ajust avoid this layer completely and
+always just map the interrupts.
 
-Jonathan Woithe <jwoithe@physics.adelaide.edu.au> :
-[...]
-> Indeed.  To follow up on this, as per my earlier email I left the machine
-> disconnected from the mains all night - so it was truly "off" for about 9
-> hours.  Just before coming to work I flicked it on and the "link" LED lit
-> almost immediately.  So whatever the Realtek driver did, the resulting
-> status would appear to be stored in some kind of non-volatile memory.  While
-> it would appear that this has worked around the problem for me, it would be
-> nice if the mainline driver could do this itself.
+IE. There is no problem with calling irq_create_mapping() for the same
+hwirq multiple times, though they aren't refcounted, so just don't call
+irq_dispose_mapping() and you're done :-)
 
-The attached patch is not complete but can you give it a try and check if
-it makes a difference ?
+IRQ mappings don't need to be disposed of, especially with mpic where
+they don't actually occupy resources (the reverse map is of fixed size
+anyway).
 
-Thanks in advance.
+Ben.
 
--- 
-Ueimor
+> Signed-off-by: Harry Ciao <qingtao.cao@windriver.com>
+> diff --git a/drivers/edac/Makefile b/drivers/edac/Makefile
+> index 07a31cf..62778ee 100644
+> --- a/drivers/edac/Makefile
+> +++ b/drivers/edac/Makefile
+> @@ -17,6 +17,10 @@ ifdef CONFIG_PCI
+>  edac_core-objs	+= edac_pci.o edac_pci_sysfs.o
+>  endif
+>  
+> +ifdef CONFIG_MPIC
+> +edac_core-objs += edac_mpic_irq.o
+> +endif
+> +
+>  obj-$(CONFIG_EDAC_AMD76X)		+= amd76x_edac.o
+>  obj-$(CONFIG_EDAC_CPC925)		+= cpc925_edac.o
+>  obj-$(CONFIG_EDAC_I5000)		+= i5000_edac.o
+> diff --git a/drivers/edac/edac_mpic_irq.c b/drivers/edac/edac_mpic_irq.c
+> new file mode 100644
+> index 0000000..26b43c0
+> --- /dev/null
+> +++ b/drivers/edac/edac_mpic_irq.c
+> @@ -0,0 +1,145 @@
+> +/*
+> + * edac_mpic_irq.c -
+> + * 	For all EDAC Hypertransport southbridge devices(such as AMD8111
+> + * 	or AMD8131) that could post upstream NMI Request Messages, this
+> + * 	driver is used to manage the mapping from the hardware IRQ that
+> + * 	carried in the NMI Request Message to its related virtual IRQ.
+> + *
+> + * 	The EDAC driver for a specific Hypertransport southbridge device
+> + * 	must implement its mach-specific method for edac_mach_get_irq().
+> + *
+> + * Copyright (c) 2009 Wind River Systems, Inc.
+> + *
+> + * Authors:	Cao Qingtao <qingtao.cao@windriver.com>
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License version 2 as
+> + * published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+> + * See the GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License
+> + * along with this program; if not, write to the Free Software
+> + * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/of.h>
+> +#include <linux/edac.h>
+> +
+> +struct irqmap {
+> +	int virq;
+> +	int count;
+> +};
+> +
+> +static struct irqmap hwirq2virqs[MPIC_HWIRQS] = {
+> +	[MPIC_HWIRQ_HT_NMI] = {
+> +		.virq = NO_IRQ,
+> +		.count = 0,
+> +	},
+> +	[MPIC_HWIRQ_INTERNAL_ERROR] = {
+> +		.virq = NO_IRQ,
+> +		.count = 0,
+> +	},
+> +};
+> +
+> +#ifdef CONFIG_PPC_MAPLE
+> +static int edac_maple_get_irq(int hwirq)
+> +{
+> +	struct device_node *np, *mpic_node = NULL;
+> +	int irq = NO_IRQ;
+> +
+> +	/*
+> +	 * Locate MPIC in the device-tree. Note that there is a bug
+> +	 * in Maple device-tree where the type of the controller is
+> +	 * open-pic and not interrupt-controller
+> +	 */
+> +	for_each_node_by_type(np, "interrupt-controller") {
+> +		if (of_device_is_compatible(np, "open-pic")) {
+> +			mpic_node = np;
+> +			break;
+> +		}
+> +	}
+> +
+> +	if (mpic_node == NULL) {
+> +		for_each_node_by_type(np, "open-pic") {
+> +			mpic_node = np;
+> +			break;
+> +		}
+> +	}
+> +
+> +	if (mpic_node) {
+> +		irq = irq_create_of_mapping(mpic_node, &hwirq, 1);
+> +		of_node_put(mpic_node);
+> +	} else
+> +		printk(KERN_ERR "Failed to locate the MPIC DTB node\n");
+> +
+> +	return irq;
+> +}
+> +#endif
+> +
+> +/*
+> + * NOTE:
+> + * The EDAC driver should implement and register its machine-specific
+> + * method to get a virtual IRQ here.
+> + */
+> +static int edac_mach_get_irq(int hwirq)
+> +{
+> +	int virq = NO_IRQ;
+> +
+> +#ifdef CONFIG_PPC_MAPLE
+> +	virq = edac_maple_get_irq(hwirq);
+> +#endif
+> +
+> +	return virq;
+> +}
+> +
+> +int edac_get_mpic_irq(int hwirq)
+> +{
+> +	struct irqmap *irq;
+> +
+> +	if ((hwirq != MPIC_HWIRQ_HT_NMI) &&
+> +	    (hwirq != MPIC_HWIRQ_INTERNAL_ERROR))
+> +		return NO_IRQ;
+> +
+> +	irq = &hwirq2virqs[hwirq];
+> +
+> +	if (irq->virq == NO_IRQ) {
+> +		if (irq->count == 0) {
+> +			irq->virq = edac_mach_get_irq(hwirq);
+> +			if (irq->virq != NO_IRQ)
+> +				irq->count++;
+> +			else
+> +				irq->count = -1; /* error */
+> +		}
+> +	} else
+> +		irq->count++;
+> +
+> +	return irq->virq;
+> +}
+> +EXPORT_SYMBOL_GPL(edac_get_mpic_irq);
+> +
+> +void edac_put_mpic_irq(int hwirq)
+> +{
+> +	struct irqmap *irq;
+> +
+> +	if ((hwirq != MPIC_HWIRQ_HT_NMI) &&
+> +	    (hwirq != MPIC_HWIRQ_INTERNAL_ERROR))
+> +		return;
+> +
+> +	irq = &hwirq2virqs[hwirq];
+> +
+> +	if (irq->count <= 0)
+> +		return;
+> +
+> +	if (--irq->count == 0) {
+> +		irq_dispose_mapping(irq->virq);
+> +		irq->virq = NO_IRQ;
+> +	}
+> +}
+> +EXPORT_SYMBOL_GPL(edac_put_mpic_irq);
+> diff --git a/include/linux/edac.h b/include/linux/edac.h
+> index 7cf92e8..804dbb6 100644
+> --- a/include/linux/edac.h
+> +++ b/include/linux/edac.h
+> @@ -38,4 +38,27 @@ static inline void opstate_init(void)
+>  	return;
+>  }
+>  
+> +#ifdef CONFIG_MPIC
+> +enum {
+> +	/*
+> +	 * Vector carried in southbridge NMI Request Messages
+> +	 * posted through Hypertransport Channel
+> +	 */
+> +	MPIC_HWIRQ_HT_NMI = 0,
+> +
+> +	/*
+> +	 * Vector for MPIC Internal Error
+> +	 */
+> +	MPIC_HWIRQ_INTERNAL_ERROR = 2,
+> +
+> +	MPIC_HWIRQS,	/* must be the very last */
+> +};
+> +
+> +/* Create a hwirq2virq mapping for the specified hwirq */
+> +extern int edac_get_mpic_irq(int hwirq);
+> +
+> +/* Dispose the hwirq2virq mapping for the specified hwirq */
+> +extern void edac_put_mpic_irq(int hwirq);
+> +#endif
+> +
+>  #endif
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
 
---fdj2RfSjLxBAspz7
-Content-Type: application/x-gzip
-Content-Disposition: attachment; filename="r8169-8168d.patch.gz"
-Content-Transfer-Encoding: base64
-
-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
-
---fdj2RfSjLxBAspz7--
