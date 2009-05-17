@@ -1,69 +1,72 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757653AbZEQL0U@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757334AbZEQLdY@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757653AbZEQL0U (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 07:26:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755373AbZEQL0J
+	id S1757334AbZEQLdY (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 07:33:24 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754817AbZEQLdI
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 07:26:09 -0400
-Received: from mga03.intel.com ([143.182.124.21]:51516 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755332AbZEQL0I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 07:26:08 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,207,1241420400"; 
-   d="scan'208";a="143712841"
-Date: Sun, 17 May 2009 19:25:50 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: Minchan Kim <minchan.kim@gmail.com>
-Cc: Peter Zijlstra <peterz@infradead.org>,
-       Johannes Weiner <hannes@cmpxchg.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Rik van Riel <riel@redhat.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       "tytso@mit.edu" <tytso@mit.edu>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>, Elladan <elladan@eskimo.com>,
-       Nick Piggin <npiggin@suse.de>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Lee Schermerhorn <Lee.Schermerhorn@hp.com>
-Subject: Re: [RFC][PATCH] vmscan: report vm_flags in page_referenced()
-Message-ID: <20090517112550.GA3254@localhost>
-References: <1241432635.7620.4732.camel@twins> <20090507121101.GB20934@localhost> <20090507151039.GA2413@cmpxchg.org> <1241709466.11251.164.camel@twins> <20090508041700.GC8892@localhost> <28c262360905080509q333ec8acv2d2be69d99e1dfa3@mail.gmail.com> <20090508121549.GA17077@localhost> <28c262360905080701h366e071cv1560b09126cbc78c@mail.gmail.com> <20090509065640.GA6487@localhost> <20090511084500.2fccdc73.minchan.kim@barrios-desktop>
+	Sun, 17 May 2009 07:33:08 -0400
+Received: from rv-out-0506.google.com ([209.85.198.226]:6401 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753993AbZEQLdD (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 07:33:03 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=kAWP74YnPtu7gREMuPQOw6+ysz434b2sFyI+G0p8ozI62bMuGDgeTwthYZTYDcgtyz
+         ojrgycHRODyZNiQQqoki6IVxY/BpSQy/kbKXeVVSwYxxfMT8EJFPydF37Dro90Yu9Dt6
+         No+fDmfBMM+oKGoSZZuWAwcG2rLVxa4GXzfcM=
+Message-ID: <4A0FF5EA.3020805@gmail.com>
+Date: Sun, 17 May 2009 20:32:58 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090511084500.2fccdc73.minchan.kim@barrios-desktop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Boaz Harrosh <bharrosh@panasas.com>
+CC: Jens Axboe <jens.axboe@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       Pete Zaitcev <zaitcev@redhat.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Eric Moore <Eric.Moore@lsi.com>, "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: Re: [PATCH UPDATED block#for-2.6.31 2/3] block: set rq->resid_len
+ to blk_rq_bytes() on issue
+References: <4A0D86DB.9000203@kernel.org> <4A0D87D2.7090806@gmail.com> <4A0E0650.1020500@gmail.com> <4A0FCF52.7070406@panasas.com>
+In-Reply-To: <4A0FCF52.7070406@panasas.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 11, 2009 at 07:45:00AM +0800, Minchan Kim wrote:
-> Sorry for late. 
+Hello, Boaz.
+
+Boaz Harrosh wrote:
+> Surly this is not enough. This is not the only place rq->__data_len
+> gets a value.  Specifically it can be added to in blk_rq_append_bio.
+> You must then update all places that set rq->__data_len to also set
+> rq->resid_len.
+
+Right, nice spotting, but I think those are the only two places.  You
+now see why I don't like that append thing.  :-)
+
+> Alternatively you could do a single:
+> +	rq->resid_len = blk_rq_bytes(rq);
 > 
-> On Sat, 9 May 2009 14:56:40 +0800
-> Wu Fengguang <fengguang.wu@intel.com> wrote:
-> 
-> > Hmm, this reminded me of the mlocked page protection logic in
-> > page_referenced_one(). Why shall the "if (vma->vm_flags & VM_LOCKED)"
-> > check be placed *after* the page_check_address() check? Is there a
-> > case that an *existing* page frame is not mapped to the VM_LOCKED vma?
-> > And why not to protect the page in such a case?
-> 
-> 
-> I also have been having a question that routine.
-> As annotation said, it seems to prevent increaseing referenced counter for mlocked page to move the page to unevictable list ASAP.
-> Is right?
+> inside  blk_fetch_request(q) or before the call to prep_fn, or even at
+> __elv_add_request().
 
-That's right. And it is only stopping the reference count for the
-current VMA - if the reference count has already been elevated, the
-mlocked page will continue to float in the [in]active lists.
+I think I'll just add resid_len adjustment there right after
+__data_len manipulation.  That code path should really go away
+eventually.
 
-> But now, page_referenced use refereced variable as just flag not count. 
-> So, I think referecned variable counted is meaningless. 
+Thanks.
 
-Yes kind of, but anyway it costs nothing :-)
-
-Thanks,
-Fengguang
-
+-- 
+tejun
