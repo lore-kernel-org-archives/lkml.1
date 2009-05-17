@@ -1,67 +1,116 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754759AbZEQRQ5@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754577AbZEQR0f@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754759AbZEQRQ5 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 13:16:57 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753718AbZEQRQp
+	id S1754577AbZEQR0f (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 13:26:35 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752461AbZEQR0Y
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 13:16:45 -0400
-Received: from neskaya.eckenfels.net ([195.49.138.57]:54109 "EHLO
-	neskaya.eckenfels.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751499AbZEQRQo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 13:16:44 -0400
-X-Greylist: delayed 2870 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 May 2009 13:16:44 EDT
-Date: Sun, 17 May 2009 18:27:27 +0200 (CEST)
-Message-Id: <200905171627.n4HGRRGO075133@neskaya.eckenfels.net>
-From: Bernd Eckenfels <bernd-09@eckenfels.net>
-To: linux-kernel@vger.kernel.org
-Subject: Re: dd if=/dev/random of=data.bin bs=512 count=1
-In-Reply-To: <19ac3f7a0905170822q28255239nea01b56d52e3ddf8@mail.gmail.com>
-X-Newsgroups: ka.lists.linux.kernel
-User-Agent: tin/1.8.3-20070201 ("Scotasay") (UNIX) (FreeBSD/7.2-PRERELEASE (i386))
-X-Spam-Score: -0.8 (/)
-X-Spam-Report: Spam detection software, running on the system "neskaya.eckenfels.net", has
-	identified this incoming email as possible spam.  The original message
-	has been attached to this so you can view it (if it isn't spam) or label
-	similar future email.  If you have any questions, see
-	The administrator of that system for details.
-	Content preview:  In article <19ac3f7a0905170822q28255239nea01b56d52e3ddf8@mail.gmail.com>
-	you wrote: > Issuing this command, I expected to get a file 4096 bytes in
-	size. one time 512 is 512 not 4096. > if I have a count=10 it hangs forever
-	(several hours). [...] 
-	Content analysis details:   (-0.8 points, 5.0 required)
-	pts rule name              description
-	---- ---------------------- --------------------------------------------------
-	-1.4 ALL_TRUSTED            Passed through trusted hosts only via SMTP
-	0.3 LONGWORD               BODY: Uses overlong words
-	0.4 AWL                    AWL: From: address is in the auto white-list
-X-SA-Exim-Connect-IP: 127.0.0.1
-X-SA-Exim-Mail-From: ecki@neskaya.eckenfels.net
-X-SA-Exim-Scanned: No (on neskaya.eckenfels.net); SAEximRunCond expanded to false
+	Sun, 17 May 2009 13:26:24 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:47827 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1750893AbZEQR0X (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 13:26:23 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Fabio Comolli <fabio.comolli@gmail.com>
+Subject: Re: 2.6.29.2 - WARNING: at kernel/hrtimer.c:625 hres_timers_resume+0x2f/0x45()
+Date: Sun, 17 May 2009 19:25:53 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Pavel Machek <pavel@suse.cz>,
+       ACPI Devel Maling List <linux-acpi@vger.kernel.org>,
+       Len Brown <lenb@kernel.org>
+References: <b637ec0b0905041404h481463cckd4f6fb90cfd61ab2@mail.gmail.com> <200905162255.55548.rjw@sisk.pl> <b637ec0b0905170822o1ee6716dh6f69f90bf01b6833@mail.gmail.com>
+In-Reply-To: <b637ec0b0905170822o1ee6716dh6f69f90bf01b6833@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905171925.54391.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-In article <19ac3f7a0905170822q28255239nea01b56d52e3ddf8@mail.gmail.com> you wrote:
-> Issuing this command, I expected to get a file 4096 bytes in size.
+On Sunday 17 May 2009, Fabio Comolli wrote:
+> Hi Rafael.
+> 
+> On Sat, May 16, 2009 at 10:55 PM, Rafael J. Wysocki <rjw@sisk.pl> wrote:
+> > On Monday 04 May 2009, Fabio Comolli wrote:
+> >> Hi.
+> >> After a successful resume from disk I get this warning:
+> >>
+> >> May  4 22:53:15 hawking kernel: ------------[ cut here ]------------
+> >> May  4 22:53:15 hawking kernel: WARNING: at kernel/hrtimer.c:625
+> >> hres_timers_resume+0x2f/0x45()
+> >> May  4 22:53:15 hawking kernel: Hardware name: Pavilion dv4000 (ES973EA#ABZ)
+> >> May  4 22:53:15 hawking kernel: hres_timers_resume() called with IRQs
+> >> enabled!Modules linked in: radeon(N) drm(N) michael_mic(N) arc4(N)
+> >> ecb(N) lib80211_crypt_tkip(N) af_packet(N) snd_pcm_oss(N)
+> >> snd_mixer_oss(N) snd_seq(N) microcode(N) snd_seq_device(N) edd(N)
+> >> cpufreq_conservative(N) cpufreq_userspace(N) cpufreq_powersave(N)
+> >> acpi_cpufreq(N) speedstep_lib(N) fuse(N) loop(N) dm_mod(N)
+> >> snd_intel8x0m(N) snd_intel8x0(N) snd_ac97_codec(N) pcmcia(N)
+> >> ac97_bus(N) sdhci_pci(N) sdhci(N) snd_pcm(N) thermal(N) snd_timer(N)
+> >> yenta_socket(N) btusb(N) iTCO_wdt(N) mmc_core(N) ipw2200(N)
+> >> tifm_7xx1(N) ohci1394(N) rsrc_nonstatic(N) 8139too(N) snd(N)
+> >> rtc_cmos(N) iTCO_vendor_support(N) video(N) processor(N) soundcore(N)
+> >> thermal_sys(N) i2c_i801(N) intel_agp(N) wmi(N) libipw(N) output(N)
+> >> led_class(N) battery(N) ac(N) 8139cp(N) tifm_core(N) ieee1394(N)
+> >> pcmcia_core(N) rtc_core(N) sr_mod(N) button(N) snd_page_alloc(N)
+> >> pcspkr(N) rtc_lib(N) i2c_core(N) hwmon(N) bluetooth(N) agpgart(N)
+> >> cdrom(N) joydev(N) sg(N) ext4(N) mbcache(N) jbd2(N) crc16(
+> >> May  4 22:53:15 hawking kernel: N) sd_mod(N) crc_t10dif(N) ata_piix(N)
+> >> libata(N) scsi_mod(N) ehci_hcd(N) uhci_hcd(N) usbcore(N)
+> >> May  4 22:53:15 hawking kernel: Supported: Yes
+> >> May  4 22:53:15 hawking kernel: Pid: 3533, comm: s2disk Tainted: G
+> >>      N  2.6.29.2-6-pae #1
+> >> May  4 22:53:15 hawking kernel: Call Trace:
+> >> May  4 22:53:15 hawking kernel:  [<c010688c>] try_stack_unwind+0x51/0x11d
+> >> May  4 22:53:15 hawking kernel:  [<c0105ca3>] dump_trace+0x55/0xca
+> >> May  4 22:53:15 hawking kernel:  [<c010665f>] show_trace_log_lvl+0x33/0x3e
+> >> May  4 22:53:15 hawking kernel:  [<c010667a>] show_trace+0x10/0x14
+> >> May  4 22:53:15 hawking kernel:  [<c03727ab>] dump_stack+0x57/0x61
+> >> May  4 22:53:15 hawking kernel:  [<c012f2a2>] warn_slowpath+0x71/0xa8
+> >> May  4 22:53:16 hawking kernel:  [<c01431cb>] hres_timers_resume+0x2f/0x45
+> >> May  4 22:53:16 hawking kernel:  [<c0147049>] timekeeping_resume+0x11f/0x125
+> >> May  4 22:53:16 hawking kernel:  [<c02bdd58>] __sysdev_resume+0x14/0x38
+> >> May  4 22:53:16 hawking kernel:  [<c02bdedd>] sysdev_resume+0xcb/0x105
+> >> May  4 22:53:16 hawking kernel:  [<c0155e69>] hibernation_snapshot+0xf1/0x189
+> >> May  4 22:53:16 hawking kernel:  [<c0159008>] snapshot_ioctl+0x214/0x4c5
+> >> May  4 22:53:16 hawking kernel:  [<c01b341f>] vfs_ioctl+0x22/0x67
+> >> May  4 22:53:16 hawking kernel:  [<c01b397a>] do_vfs_ioctl+0x444/0x47d
+> >> May  4 22:53:16 hawking kernel:  [<c01b3a1a>] sys_ioctl+0x67/0x81
+> >> May  4 22:53:16 hawking kernel:  [<c010406b>] sysenter_do_call+0x12/0x2f
+> >> May  4 22:53:17 hawking kernel:  [<ffffe430>] 0xffffe430
+> >> May  4 22:53:17 hawking kernel: ---[ end trace 8cd3b732941f0f91 ]---
+> >>
+> >>
+> >> This causes a second hibernate-resume cycle to hang solid during
+> >> resume. Power cycle is needed.
+> >>
+> >> I'm not sure if this is a regression wrt 2.6.28.7 (my previous kernel)
+> >> because I changed the DRI driver from fglrx to radeon and also
+> >> upgraded the X.org userspace. I didn't have any hibernation-related
+> >> problem with any previous kernels for sure.
+> >>
+> >> It may be related to http://lkml.org/lkml/2009/4/19/133 but the
+> >> backtrace is somewhat different.
+> >>
+> >> Please let me know if you need more details.
+> >
+> > I think this is a cpufreq problem.
+> >
+> 
+> Indeed it is. I managed to "solve" it by rmmod-ing acpi-cpufreq before
+> hibernating and reloading it after resume. With this trick I had no
+> further problems.
 
-one time 512 is 512 not 4096.
+Thanks for this information, it's quite important.
 
-> if I have a count=10 it hangs forever (several hours).
+> > Please try to reproduce the problem with the appended patch applied.
+> 
+> I'm sorry but I don't have access to that laptop anymore.
 
-It depends on your harware and usage type (mouse atached?) how much entropy
-is generated and filled into the pool.  If you drain it, it will hang for
-/dev/random and generate PRNG data with /dev/urandom. 
+No problem, we should be able to find the bug in acpi-cpufreq anyway.
 
-You should think carefully about sucking too many random bytes from /dev/random.
-
-> $ dd if=/dev/random of=data.bin bs=512 count=1
-> 0+1 records in
-> 0+1 records out
-> 8 bytes (8 B) copied, 4.47366 s, 0.0 kB/s
-
-I am not sure why you only get 8bytes here, but I would suggest to use "bs=1
-count=256" anyway.
-
-Gruss
-Bernd
+Thanks,
+Rafael
