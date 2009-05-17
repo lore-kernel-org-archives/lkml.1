@@ -1,70 +1,48 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbZEQQCP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754092AbZEQQJA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753809AbZEQQCP (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 12:02:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZEQQB6
+	id S1754092AbZEQQJA (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 12:09:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751773AbZEQQIt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 12:01:58 -0400
-Received: from mail-gx0-f166.google.com ([209.85.217.166]:45921 "EHLO
-	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751349AbZEQQB6 convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 12:01:58 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=IeoAuvD1yxNwBthDIPSQtUcTRznL/4PIuXQ8mycolIsVSeo12UgFjkUa/1HRbsdeDf
-         99KsRhI3l5M9i/E02VdC8OJwWXgnjS84dHz7G7apHJIa0u9Ee4I13Kgrt8oIkZtG6vhD
-         bX5Lv7TLpI2eAaW+dy6dk3Pzb6UZpL1hVNlU8=
-MIME-Version: 1.0
-In-Reply-To: <19ac3f7a0905170822q28255239nea01b56d52e3ddf8@mail.gmail.com>
-References: <19ac3f7a0905170822q28255239nea01b56d52e3ddf8@mail.gmail.com>
-Date: Mon, 18 May 2009 01:01:58 +0900
-X-Google-Sender-Auth: aac03732fa51e313
-Message-ID: <2f11576a0905170901x41e15f65sf10bb5ee36050d14@mail.gmail.com>
-Subject: Re: dd if=/dev/random of=data.bin bs=512 count=1
-From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
-To: Jon Grant <jg@jguk.org>
-Cc: linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+	Sun, 17 May 2009 12:08:49 -0400
+Received: from pearlgates.net ([82.92.180.13]:35986 "EHLO mail.pearlgates.net"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751618AbZEQQIs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 12:08:48 -0400
+Date: Sun, 17 May 2009 18:08:48 +0200
+From: Jos van der Ende <seraph@xs4all.nl>
+To: "Rafael J. Wysocki" <rjw@sisk.pl>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Kernel Testers List <kernel-testers@vger.kernel.org>,
+       "DRI" <dri-devel@lists.sourceforge.net>,
+       "Jos van der Ende" <seraph@xs4all.nl>,
+       "venkatesh.pallipadi@intel.com" <venkatesh.pallipadi@intel.com>
+Subject: Re: [Bug #12947] r128: system hangs when X is started with DRI
+ enabled
+Message-Id: <20090517180848.9f20a768.seraph@xs4all.nl>
+In-Reply-To: <pQ9WADCjgyE.A.XPH.6A0DKB@chimera>
+References: <yO1BmxN79sN.A.xAG.8_zDKB@chimera>
+	<pQ9WADCjgyE.A.XPH.6A0DKB@chimera>
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.14.7; i686-pc-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hello
->
-> Issuing this command, I expected to get a file 4096 bytes in size.
-> Could someone let me know if I have missed something..? Or is there a
-> problem with using /dev/random this way?
->
-> if I have a count=10 it hangs forever (several hours).
->
-> Changing to use /dev/urandom and it generates the file ok.
+On Sat, 16 May 2009 22:05:58 +0200 (CEST)
+"Rafael J. Wysocki" <rjw@sisk.pl> wrote:
 
-you already have the answer. /dev/random might blocked, /dev/urandom doesn't.
+> This message has been generated automatically as a part of a report
+> of regressions introduced between 2.6.28 and 2.6.29.
+> 
+> The following bug entry is on the current list of known regressions
+> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
+> be listed and let me know (either way).
+
+The bug is still present in 2.6.29.3, but we've found the likely cause and a potential fix. As soon as I have access to the system again, I will test this patch. Unfortunately I won't be anywhere near the system this week. I'll get back to it on Monday 25th.
 
 
-> Please include my email address in replies,  as I'm not a member of this list.
->
-> Best regards, Jon
->
-> $ dd if=/dev/random of=data.bin bs=512 count=1
-> 0+1 records in
-> 0+1 records out
-> 8 bytes (8 B) copied, 4.47366 s, 0.0 kB/s
->
-> $ dd --version
-> dd (coreutils) 6.10
->
-> $ uname -a
-> Linux ubuntu 2.6.28-11-generic #42-Ubuntu SMP Fri Apr 17 01:57:59 UTC
-> 2009 i686 GNU/Linux
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
->
+-- 
+Jos van der Ende <seraph@xs4all.nl>
