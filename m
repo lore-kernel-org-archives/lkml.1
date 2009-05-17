@@ -1,66 +1,52 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbZEQPC4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754303AbZEQPEi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753678AbZEQPC4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 11:02:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbZEQPCp
+	id S1754303AbZEQPEi (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 11:04:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751349AbZEQPE3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 11:02:45 -0400
-Received: from one.firstfloor.org ([213.235.205.2]:48129 "EHLO
-	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751442AbZEQPCp (ORCPT
+	Sun, 17 May 2009 11:04:29 -0400
+Received: from yx-out-2324.google.com ([74.125.44.30]:17003 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750829AbZEQPE2 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 11:02:45 -0400
-To: Andrea <andrea256it@yahoo.it>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: super root shell/mode/api
-From: Andi Kleen <andi@firstfloor.org>
-References: <861928.62033.qm@web23602.mail.ird.yahoo.com>
-Date: Sun, 17 May 2009 17:02:40 +0200
-In-Reply-To: <861928.62033.qm@web23602.mail.ird.yahoo.com> (Andrea's message of "Sun, 17 May 2009 13:06:53 +0000 (GMT)")
-Message-ID: <87iqjzpyb3.fsf@basil.nowhere.org>
-User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+	Sun, 17 May 2009 11:04:28 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=WHzN0rAlDja8tKh57z6nREk4k/D8Vfiwrr1oAVzAxkqG3Fz81OmsFx6KzYGndhgJMj
+         KyWrs6UtUD7JrpmNqM6ogd9tyXoVzWD+10l7auRhs0na1C4eozgx7bcx8YU1ZtmTfHcm
+         d2Vk1VBUh3Q+M02NT8xRXc0xX2spKPyXlrfiY=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Date: Sun, 17 May 2009 23:04:27 +0800
+Message-ID: <af3ea28a0905170804n500126e4tc425dafd9fcaa68a@mail.gmail.com>
+Subject: fix rtc_cmos bug
+From: ye janboe <janboe.ye@gmail.com>
+To: linux-kernel <linux-kernel@vger.kernel.org>
+Cc: rjw@sisk.pl, bunk@kernel.org, bugme-janitors@lists.osdl.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrea <andrea256it@yahoo.it> writes:
->
-> I know there is an OOM handling, but the only thing that
-> happened was the hard disk light flashing for more or less 30 minutes
-> and I was forced to press the reset button and my data was lost :(
+    fix  Bug 13326 -  Null pointer dereference in rtc-cmos driver
+    http://bugzilla.kernel.org/show_bug.cgi?id=13326
 
-One trick I found very useful to make OOM much less painful is to
-make the swap partition small (not zero though).
+    Signed-off-by: janboe <janboe.ye@gmail.com>
 
-The traditional suggestion of 2x RAM is far too large on modern
-systems and since Linux is rather inefficient at swapping having
-so much swap space just prolongs the death struggle.
+diff --git a/drivers/rtc/rtc-cmos.c b/drivers/rtc/rtc-cmos.c
+index 23e10b6..da132f6 100644
+--- a/drivers/rtc/rtc-cmos.c
++++ b/drivers/rtc/rtc-cmos.c
+@@ -1179,7 +1179,9 @@ static int __init cmos_init(void)
+        int retval = 0;
 
-With a smaller swap partition (not more than 100-200MB) the OOM killer kicks in 
-relatively quickly when something goes wrong and kills the offending process.
+ #ifdef CONFIG_PNP
+-       pnp_register_driver(&cmos_pnp_driver);
++       retval = pnp_register_driver(&cmos_pnp_driver);
++       if (retval)
++               return retval;
+ #endif
 
-> I think it would be simply awesome to have a Linux Kernel mode
-> similar to the c-64 cartridge concept.
->
-> Maybe call it in honor to the c-64 'cartridge freeze mode' or so :)
->
-> You hit a button combination and you enter in a Linux Kernel ncurses menu
-> and/or shell and/or GUI, where you can for example:
-
-You could do all that today by using a suitable kexec/kdump kernel setup with
-sysrq-C. 
-
-The kdump kernel can do all that based on the image of the previous kernel.
-Some of it is very easy (e.g. for disassemble just run "crash"), other
-parts don't make sense (e.g. swap out processes -- the parent kernel
-already did that)
-
-Traditional distributions just dump the image, but there's no
-principle reason it couldn't do more.
-
--Andi
-
--- 
-ak@linux.intel.com -- Speaking for myself only.
+        if (!cmos_rtc.dev)
