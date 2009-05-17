@@ -1,119 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751984AbZEQO6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753678AbZEQPC4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751984AbZEQO6V (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 10:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751062AbZEQO6L
+	id S1753678AbZEQPC4 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 11:02:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751798AbZEQPCp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 10:58:11 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:52328 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750885AbZEQO6K (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 10:58:10 -0400
-Date: Sun, 17 May 2009 10:58:00 -0400
-From: Jeff Layton <jlayton@redhat.com>
-To: Shirish Pargaonkar <shirishpargaonkar@gmail.com>
-Cc: Steve French <smfrench@gmail.com>, Luca Tettamanti <kronos.it@gmail.com>,
-       linux-cifs-client@lists.samba.org, linux-kernel@vger.kernel.org
-Subject: Re: [linux-cifs-client] Re: [2.6.30-rc6] cifs_close: NULL pointer 
- dereference
-Message-ID: <20090517105800.1cc72156@tlielax.poochiereds.net>
-In-Reply-To: <4a4634330905170740m180f451dg9e16a3886f2af298@mail.gmail.com>
-References: <20090516162813.GA18098@nb-core2.darkstar.lan>
-	<20090516205558.GA20346@nb-core2.darkstar.lan>
-	<20090516221331.0a456cbb@tlielax.poochiereds.net>
-	<4a4634330905170740m180f451dg9e16a3886f2af298@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Sun, 17 May 2009 11:02:45 -0400
+Received: from one.firstfloor.org ([213.235.205.2]:48129 "EHLO
+	one.firstfloor.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751442AbZEQPCp (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 11:02:45 -0400
+To: Andrea <andrea256it@yahoo.it>
+Cc: linux-kernel@vger.kernel.org
+Subject: Re: super root shell/mode/api
+From: Andi Kleen <andi@firstfloor.org>
+References: <861928.62033.qm@web23602.mail.ird.yahoo.com>
+Date: Sun, 17 May 2009 17:02:40 +0200
+In-Reply-To: <861928.62033.qm@web23602.mail.ird.yahoo.com> (Andrea's message of "Sun, 17 May 2009 13:06:53 +0000 (GMT)")
+Message-ID: <87iqjzpyb3.fsf@basil.nowhere.org>
+User-Agent: Gnus/5.1008 (Gnus v5.10.8) Emacs/22.3 (gnu/linux)
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 May 2009 09:40:44 -0500
-Shirish Pargaonkar <shirishpargaonkar@gmail.com> wrote:
+Andrea <andrea256it@yahoo.it> writes:
+>
+> I know there is an OOM handling, but the only thing that
+> happened was the hard disk light flashing for more or less 30 minutes
+> and I was forced to press the reset button and my data was lost :(
 
-> On Sat, May 16, 2009 at 9:13 PM, Jeff Layton <jlayton@redhat.com> wrote:
-> > On Sat, 16 May 2009 22:55:58 +0200
-> > Luca Tettamanti <kronos.it@gmail.com> wrote:
-> >
-> >> On Sat, May 16, 2009 at 06:28:13PM +0200, Luca Tettamanti wrote:
-> >> > Hello,
-> >> > I just hit a NULL pointer dereference in cifs_close while accessing a file on a
-> >> > remote Samba shared directory.
-> >> [...]
-> >> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
-> >> > IP: [<ffffffffa05f105c>] cifs_close+0x1c1/0x2e8 [cifs]
-> >>
-> >> Ok, I've reproduced this on a machine with a serial port :)
-> >>
-> >> 0xffffffff803574e0 in list_del (entry=0xffff8800ac184210)
-> >> at /home/kronos/src/linux-2.6.git/lib/list_debug.c:46
-> >> 46              WARN(entry->prev->next != entry,
-> >> (gdb) bt
-> >> #0  0xffffffff803574e0 in list_del (entry=0xffff8800ac184210)
-> >>     at /home/kronos/src/linux-2.6.git/lib/list_debug.c:46
-> >> #1  0xffffffff80319588 in cifs_close (inode=0xffff8800b8d5f088, file=0xffff8800ad8f6d00)
-> >>     at /home/kronos/src/linux-2.6.git/fs/cifs/file.c:670
-> >> #2  0xffffffff8029d95e in __fput (file=0xffff8800ad8f6d00)
-> >>     at /home/kronos/src/linux-2.6.git/fs/file_table.c:281
-> >> #3  0xffffffff8029da32 in fput (file=0xffff8800ac184210)
-> >>     at /home/kronos/src/linux-2.6.git/fs/file_table.c:227
-> >> #4  0xffffffff8029ad30 in filp_close (filp=0xffff8800ad8f6d00, id=0xffff880037a3e080)
-> >>     at /home/kronos/src/linux-2.6.git/fs/open.c:1108
-> >> #5  0xffffffff8029ade0 in sys_close (fd=0)
-> >>     at /home/kronos/src/linux-2.6.git/fs/open.c:1137
-> >> #6  0xffffffff802271e4 in sysenter_dispatch ()
-> >>     at /home/kronos/src/linux-2.6.git/arch/x86/ia32/ia32entry.S:161
-> >> #7  0x0000000000000000 in ?? ()
-> >>
-> >> (gdb) f 1
-> >> #1  0xffffffff80319588 in cifs_close (inode=0xffff8800b8d5f088, file=0xffff8800ad8f6d00)
-> >>     at /home/kronos/src/linux-2.6.git/fs/cifs/file.c:670
-> >> 670                     list_del(&pSMBFile->flist);
-> >>
-> >> (gdb) p *&pSMBFile->flist
-> >> $2 = {next = 0x0, prev = 0x0}
-> >>
-> >> (gdb) p *&pSMBFile->tlist
-> >> $5 = {next = 0x0, prev = 0x0}
-> >>
-> >> So both flist and tlist were not initilized in cifs_open.
-> >>
-> >> The content of the whole pSMBFile structure:
-> >>
-> >> (gdb) p *pSMBFile
-> >> $6 = {tlist = {next = 0x0, prev = 0x0}, flist = {next = 0x0, prev = 0x0}, uid = 0, pid = 5322, netfid = 13880,
-> >>   pfile = 0xffff8800ad8f6d00, pInode = 0xffff8800b8d5f088, lock_mutex = {count = {counter = 1}, wait_lock = {raw_lock = {
-> >>         slock = 514}, magic = 3735899821, owner_cpu = 4294967295, owner = 0xffffffffffffffff, dep_map = {
-> >>         key = 0xffffffff806a5c98, class_cache = 0x0, name = 0xffffffff80537308 "&lock->wait_lock"}}, wait_list = {
-> >>       next = 0xffff8800ac184278, prev = 0xffff8800ac184278}, owner = 0x0, name = 0x0, magic = 0xffff8800ac184240, dep_map = {
-> >>       key = 0xffffffff80d7ff50, class_cache = 0xffffffff80835400, name = 0xffffffff8054cdfa "&private_data->lock_mutex"}},
-> >>   llist = {next = 0xffff8800ac1842b8, prev = 0xffff8800ac1842b8}, closePend = true, invalidHandle = false,
-> >>   messageMode = false, wrtPending = {counter = 0}, fh_mutex = {count = {counter = 1}, wait_lock = {raw_lock = {slock = 0},
-> >>       magic = 3735899821, owner_cpu = 4294967295, owner = 0xffffffffffffffff, dep_map = {key = 0xffffffff806a5c98,
-> >>         class_cache = 0x0, name = 0xffffffff80537308 "&lock->wait_lock"}}, wait_list = {next = 0xffff8800ac184308,
-> >>       prev = 0xffff8800ac184308}, owner = 0x0, name = 0x0, magic = 0xffff8800ac1842d0, dep_map = {key = 0xffffffff80d7ff58,
-> >>       class_cache = 0x0, name = 0xffffffff8054cde2 "&private_data->fh_mutex"}}, srch_inf = {index_of_last_entry = 0,
-> >>     entries_in_buffer = 0, info_level = 0, resume_key = 0, ntwrk_buf_start = 0x0, srch_entries_start = 0x0, last_entry = 0x0,
-> >>     presume_name = 0x0, resume_name_len = 0, endOfSearch = false, emptyDir = false, unicode = false, smallBuf = false}}
-> >>
-> >
-> > Luca...thanks for the bug report and analysis. I've been able to
-> > reproduce this too against 3.3.2. The attached patch reverts the open
-> > with lookup intent functionality that was added at the beginning of the
-> > 2.6.30 cycle. This fixes the problem for me.
-> >
-> > Steve and Shirish...given that we've already seen a couple of
-> > regressions from these patches, I'd like to see them reverted until
-> > they have been better tested.
-> >
-> > --
-> > Jeff Layton <jlayton@redhat.com>
-> >
-> 
-> Does this happen inspite of the patch 90e4ee5d311d4e0729daa676b1d7f754265b5874
+One trick I found very useful to make OOM much less painful is to
+make the swap partition small (not zero though).
 
-Yes. It's trivial to reproduce against a samba 3.3.2 server.
+The traditional suggestion of 2x RAM is far too large on modern
+systems and since Linux is rather inefficient at swapping having
+so much swap space just prolongs the death struggle.
+
+With a smaller swap partition (not more than 100-200MB) the OOM killer kicks in 
+relatively quickly when something goes wrong and kills the offending process.
+
+> I think it would be simply awesome to have a Linux Kernel mode
+> similar to the c-64 cartridge concept.
+>
+> Maybe call it in honor to the c-64 'cartridge freeze mode' or so :)
+>
+> You hit a button combination and you enter in a Linux Kernel ncurses menu
+> and/or shell and/or GUI, where you can for example:
+
+You could do all that today by using a suitable kexec/kdump kernel setup with
+sysrq-C. 
+
+The kdump kernel can do all that based on the image of the previous kernel.
+Some of it is very easy (e.g. for disassemble just run "crash"), other
+parts don't make sense (e.g. swap out processes -- the parent kernel
+already did that)
+
+Traditional distributions just dump the image, but there's no
+principle reason it couldn't do more.
+
+-Andi
 
 -- 
-Jeff Layton <jlayton@redhat.com>
+ak@linux.intel.com -- Speaking for myself only.
