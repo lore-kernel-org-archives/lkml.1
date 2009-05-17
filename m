@@ -1,51 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbZEQK1G@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758012AbZEQK11@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757142AbZEQK1G (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 06:27:06 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757595AbZEQK0o
+	id S1758012AbZEQK11 (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 06:27:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757699AbZEQK0s
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 06:26:44 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46343 "EHLO ogre.sisk.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1757489AbZEQK0n (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 06:26:43 -0400
-From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Ming Lei <tom.leiming@gmail.com>
-Subject: Re: [Bug #13245] possible circular locking dependency detected
-Date: Sun, 17 May 2009 12:26:57 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Miles Lane <miles.lane@gmail.com>
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <385Pu-agh7M.A.nFB.5YzDKB@chimera> <d82e647a0905162022k7be627f1s933a84640562f749@mail.gmail.com>
-In-Reply-To: <d82e647a0905162022k7be627f1s933a84640562f749@mail.gmail.com>
+	Sun, 17 May 2009 06:26:48 -0400
+Received: from mail-bw0-f174.google.com ([209.85.218.174]:65024 "EHLO
+	mail-bw0-f174.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1757559AbZEQK0p (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 06:26:45 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=IosX6PoxUd7imMQAhKNNBQxFuKlEEJ3sRLQ5s6KC8hh0H4tcOCaNRhkQ5WiU4kBG/l
+         qikx5q1x4siVSwVNw9SGgTC/0MTO+e3PrxbvNLa7EPfN2Vko0B3J+8KZCOEqd5irg++m
+         KbEw5cuZlEMYfkmuCrYL8yfLivWeGY6zPz/Ok=
+Date: Sun, 17 May 2009 12:26:40 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: bzolnier@gmail.com
+Cc: linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Jens Axboe <axboe@kernel.dk>, tj@kernel.org
+Subject: Re: [PATCH 0/15 v2] ide-atapi: remove pc->buf and misc cleanups
+Message-ID: <20090517102640.GA27838@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>, bzolnier@gmail.com,
+	linux-ide@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Jens Axboe <axboe@kernel.dk>, tj@kernel.org
+References: <1242364293-29223-1-git-send-email-petkovbb@gmail.com> <200905162107.38332.bzolnier@gmail.com> <4A0F3963.8050000@kernel.org>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-Message-Id: <200905171226.57915.rjw@sisk.pl>
+In-Reply-To: <4A0F3963.8050000@kernel.org>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 May 2009, Ming Lei wrote:
-> I also can reproduce it on 2.6.30-rc5-next-20090515.
+Hi,
+
+On Sun, May 17, 2009 at 07:08:35AM +0900, Tejun Heo wrote:
+> Bartlomiej Zolnierkiewicz wrote:
+> >> It also got rebased ontop of block/for-2.6.31 after Tejun's stuff got merged.
+> ...
+> > Looking at creation dates I suspect that somewhere along the way
+> > something was rebased?
+> > 
+> > One quick temporary solution would be to recreate bp/pc-remove-buf
+> > on top of tj/block-peek-fetch...
 > 
-> 2009/5/17 Rafael J. Wysocki <rjw@sisk.pl>:
-> > This message has been generated automatically as a part of a report
-> > of recent regressions.
-> >
-> > The following bug entry is on the current list of known regressions
-> > from 2.6.29.  Please verify if it still should be listed and let me know
-> > (either way).
-> >
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13245
-> > Subject         : possible circular locking dependency detected
-> > Submitter       : Miles Lane <miles.lane@gmail.com>
-> > Date            : 2009-05-04 16:56 (13 days old)
+> Oh.. please use block commit.  Jens didn't pull in my tree but applied
+> patches on top of the block tree, so my commits shouldn't be in any
+> official trees.
 
-Thanks for the update.
+ok, this means we'll have to synchronize a bit here. I just scanned
+the tj/block-peek-fetch changes and there will IMHO be one conflict
+point with my patchset - ide_retry_pc() in ide-atapi but FWICS it won't
+be a big pain to merge it since the two patchsets touch different
+functionality.
 
-Rafael
+So, I could wait till you sync with Jens after he has pulled
+tj/block-peek-fetch and I rebase my changes on top of it. I could do
+that quite fast and we'll be hitting the merge window alright.
+
+Opinions? Better ideas?
+
+-- 
+Regards/Gruss,
+    Boris.
