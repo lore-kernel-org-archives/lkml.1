@@ -1,68 +1,224 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751871AbZEQMBj@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752040AbZEQMFj@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751871AbZEQMBj (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 08:01:39 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750890AbZEQMB3
+	id S1752040AbZEQMFj (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 08:05:39 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750829AbZEQMFZ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 08:01:29 -0400
-Received: from mail-pz0-f115.google.com ([209.85.222.115]:62890 "EHLO
-	mail-pz0-f115.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750709AbZEQMB2 convert rfc822-to-8bit (ORCPT
+	Sun, 17 May 2009 08:05:25 -0400
+Received: from rv-out-0506.google.com ([209.85.198.234]:7961 "EHLO
+	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750709AbZEQMFX (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 08:01:28 -0400
+	Sun, 17 May 2009 08:05:23 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
-        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
-         :cc:content-type:content-transfer-encoding;
-        b=oreUd7ltGLayYXLLEvlmxkbfMMB2jx2tl7C9KPuG1hjLA/KNLOdIQLeOdYy/gvbr34
-         JLrV5l0jfwyWU9KYSPum6FsXc5LffQ0SLLrTCbL5wg8j4SqfxgGKi1+3tw5Rx9NuWcZ5
-         pqAw4z4ZeD4XIFd0kYU4hsTTb8AfxPhiY0q1Q=
+        h=message-id:date:from:user-agent:mime-version:to:subject:references
+         :in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=p1Qm8QabsVyUCjOaj/UmypnT53HEYu20gO/qfc8j9bQH5axqPAS9LG698/fGR6IniT
+         HXiSKtf/klWnn+r6AN35MoyVIOwMtonfMPW7WzOpOGLhhj+rOeUexH1jJRUDt5qM8mbU
+         oreaTWsL0LwVFpq3bCWsCuC/vzjzhphvqvADA=
+Message-ID: <4A0FFD7E.8050607@gmail.com>
+Date: Sun, 17 May 2009 21:05:18 +0900
+From: Tejun Heo <htejun@gmail.com>
+User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
 MIME-Version: 1.0
-In-Reply-To: <20090517093004.GA2635@localhost>
-References: <2c0942db0905151102y4f144437xa02632effccda72c@mail.gmail.com>
-	 <2c0942db0905160903i5517d3d6l50fc7457a2629694@mail.gmail.com>
-	 <4A0EFA08.4060106@redhat.com> <20090517011906.GA6375@localhost>
-	 <93655eb70905161827x34a432ebn4910ee86d9bae30@mail.gmail.com>
-	 <20090517020829.GB6809@localhost>
-	 <93655eb70905162130k13ebd627o5eba2582508a1c07@mail.gmail.com>
-	 <20090517045800.GA32723@localhost>
-	 <93655eb70905162318oeccafa9p76b5594f9625aefc@mail.gmail.com>
-	 <20090517093004.GA2635@localhost>
-Date: Sun, 17 May 2009 17:31:29 +0530
-Message-ID: <93655eb70905170501q3caf04acj761ff61b539b7d40@mail.gmail.com>
-Subject: Re: unresponsiveness on linux desktop during file copy
-From: Satish Eerpini <eerpini@gmail.com>
-To: Wu Fengguang <fengguang.wu@intel.com>
-Cc: Rik van Riel <riel@redhat.com>, Ray Lee <ray-lk@madrabbit.org>,
-       Christoph Lameter <cl@linux-foundation.org>,
-       linux-kernel <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+To: Jens Axboe <jens.axboe@oracle.com>,
+       James Bottomley <James.Bottomley@HansenPartnership.com>,
+       Boaz Harrosh <bharrosh@panasas.com>,
+       Linux Kernel <linux-kernel@vger.kernel.org>,
+       linux-scsi <linux-scsi@vger.kernel.org>,
+       IDE/ATA development list <linux-ide@vger.kernel.org>,
+       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+       Borislav Petkov <petkovbb@googlemail.com>,
+       Pete Zaitcev <zaitcev@redhat.com>,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>,
+       Eric Moore <Eric.Moore@lsi.com>, "Darrick J. Wong" <djwong@us.ibm.com>
+Subject: [PATCH UPDATED2 block#for-2.6.31 2/3] block: set rq->resid_len to
+ blk_rq_bytes() on issue
+References: <4A0D86DB.9000203@kernel.org> <4A0D87D2.7090806@gmail.com> <4A0E0650.1020500@gmail.com>
+In-Reply-To: <4A0E0650.1020500@gmail.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Hmm, how do you define/feel the unresponsiveness?  Is it related to
-> the currently *running* applications, or opening a *new* application?
+In commit c3a4d78c580de4edc9ef0f7c59812fb02ceb037f, while introducing
+rq->resid_len, the default value of residue count was changed from
+full count to zero.  The conversion was done under the assumption that
+when a request fails residue count wasn't defined.  However, Boaz and
+James pointed out that this wasn't true and the residue count should
+be preserved for failed requests too.
 
-the unresponsiveness is for both the currently running applications
-and for opening new applications, here are some pointers :
+This patchset restores the original behavior by setting rq->resid_len
+to blk_rq_bytes(rq) on request start and restoring explicit clearing
+in affected drivers.  While at it, take advantage of the fact that
+rq->resid_len is set to full count where applicable.
 
---> during normal operation, swtiching between windows( alt+tab) is
-simultaneous, while during a file copy it takes around 1 second, which
-I think is quite a lag.
---> Opening a simple application like gnome-terminal takes a second or
-more for sure when there is a file copy going on.
--->Also a particular window after gaining focus takes a second or so,
-to resume what it was doing, .. so if I am copying a file in a session
-of gnome-terminal and open another session of gnome-terminal and type
-in "clear" it takes around 2 seconds before the screen is cleared on
-the second session,
-this is the case with almost every application and worser with big
-ones like firefox and office. This was the kind of unresponsiveness I
-was talking about.
+* ide-cd: rq->resid_len cleared on pc success
 
-Cheers
-Satish
--- 
-http://satish.playdrupal.com
+* mptsas: req->resid_len cleared on success
+
+* sas_expander: rsp/req->resid_len cleared on success
+
+* mpt2sas_transport: req->resid_len cleared on success
+
+* ide-cd, ide-tape, mptsas, sas_host_smp, mpt2sas_transport, ub: take
+  advantage of initial full count to simplify code
+
+Boaz Harrosh spotted bug in resid_len initialization.  Fixed as
+suggested.
+
+Signed-off-by: Tejun Heo <tj@kernel.org>
+Acked-by: Borislav Petkov <petkovbb@googlemail.com>
+Cc: Jens Axboe <jens.axboe@oracle.com>
+Cc: Boaz Harrosh <bharrosh@panasas.com>
+Cc: James Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Pete Zaitcev <zaitcev@redhat.com>
+Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: Eric Moore <Eric.Moore@lsi.com>
+Cc: Darrick J. Wong <djwong@us.ibm.com>
+---
+Fixed as Boaz suggested.  Thanks Boaz.
+
+ block/blk-core.c                         |    5 +++--
+ drivers/block/ub.c                       |    6 ++++--
+ drivers/ide/ide-cd.c                     |    4 ++--
+ drivers/ide/ide-tape.c                   |    2 +-
+ drivers/message/fusion/mptsas.c          |    3 ++-
+ drivers/scsi/libsas/sas_expander.c       |    4 ++++
+ drivers/scsi/libsas/sas_host_smp.c       |    3 ---
+ drivers/scsi/mpt2sas/mpt2sas_transport.c |    4 ++--
+ 8 files changed, 18 insertions(+), 13 deletions(-)
+
+Index: block/block/blk-core.c
+===================================================================
+--- block.orig/block/blk-core.c
++++ block/block/blk-core.c
+@@ -1783,9 +1783,10 @@ void blk_start_request(struct request *r
+ 	blk_dequeue_request(req);
+ 
+ 	/*
+-	 * We are now handing the request to the hardware, add the
+-	 * timeout handler.
++	 * We are now handing the request to the hardware, initialize
++	 * resid_len to full count and add the timeout handler.
+ 	 */
++	req->resid_len = blk_rq_bytes(req);
+ 	blk_add_timer(req);
+ }
+ EXPORT_SYMBOL(blk_start_request);
+Index: block/drivers/ide/ide-cd.c
+===================================================================
+--- block.orig/drivers/ide/ide-cd.c
++++ block/drivers/ide/ide-cd.c
+@@ -699,6 +699,7 @@ static ide_startstop_t cdrom_newpc_intr(
+ 
+ out_end:
+ 	if (blk_pc_request(rq) && rc == 0) {
++		rq->resid_len = 0;
+ 		blk_end_request_all(rq, 0);
+ 		hwif->rq = NULL;
+ 	} else {
+@@ -718,8 +719,7 @@ out_end:
+ 
+ 		/* make sure it's fully ended */
+ 		if (blk_fs_request(rq) == 0) {
+-			rq->resid_len = blk_rq_bytes(rq) -
+-				(cmd->nbytes - cmd->nleft);
++			rq->resid_len -= cmd->nbytes - cmd->nleft;
+ 			if (uptodate == 0 && (cmd->tf_flags & IDE_TFLAG_WRITE))
+ 				rq->resid_len += cmd->last_xfer_len;
+ 		}
+Index: block/drivers/ide/ide-tape.c
+===================================================================
+--- block.orig/drivers/ide/ide-tape.c
++++ block/drivers/ide/ide-tape.c
+@@ -380,7 +380,7 @@ static int ide_tape_callback(ide_drive_t
+ 		}
+ 
+ 		tape->first_frame += blocks;
+-		rq->resid_len = blk_rq_bytes(rq) - blocks * tape->blk_size;
++		rq->resid_len -= blocks * tape->blk_size;
+ 
+ 		if (pc->error) {
+ 			uptodate = 0;
+Index: block/drivers/message/fusion/mptsas.c
+===================================================================
+--- block.orig/drivers/message/fusion/mptsas.c
++++ block/drivers/message/fusion/mptsas.c
+@@ -1357,7 +1357,8 @@ static int mptsas_smp_handler(struct Scs
+ 		smprep = (SmpPassthroughReply_t *)ioc->sas_mgmt.reply;
+ 		memcpy(req->sense, smprep, sizeof(*smprep));
+ 		req->sense_len = sizeof(*smprep);
+-		rsp->resid_len = blk_rq_bytes(rsp) - smprep->ResponseDataLength;
++		req->resid_len = 0;
++		rsp->resid_len -= smprep->ResponseDataLength;
+ 	} else {
+ 		printk(MYIOC_s_ERR_FMT "%s: smp passthru reply failed to be returned\n",
+ 		    ioc->name, __func__);
+Index: block/drivers/scsi/libsas/sas_expander.c
+===================================================================
+--- block.orig/drivers/scsi/libsas/sas_expander.c
++++ block/drivers/scsi/libsas/sas_expander.c
+@@ -1937,7 +1937,11 @@ int sas_smp_handler(struct Scsi_Host *sh
+ 	if (ret > 0) {
+ 		/* positive number is the untransferred residual */
+ 		rsp->resid_len = ret;
++		req->resid_len = 0;
+ 		ret = 0;
++	} else if (ret == 0) {
++		rsp->resid_len = 0;
++		req->resid_len = 0;
+ 	}
+ 
+ 	return ret;
+Index: block/drivers/scsi/libsas/sas_host_smp.c
+===================================================================
+--- block.orig/drivers/scsi/libsas/sas_host_smp.c
++++ block/drivers/scsi/libsas/sas_host_smp.c
+@@ -176,9 +176,6 @@ int sas_smp_host_handler(struct Scsi_Hos
+ 	resp_data[1] = req_data[1];
+ 	resp_data[2] = SMP_RESP_FUNC_UNK;
+ 
+-	req->resid_len = blk_rq_bytes(req);
+-	rsp->resid_len = blk_rq_bytes(rsp);
+-
+ 	switch (req_data[1]) {
+ 	case SMP_REPORT_GENERAL:
+ 		req->resid_len -= 8;
+Index: block/drivers/scsi/mpt2sas/mpt2sas_transport.c
+===================================================================
+--- block.orig/drivers/scsi/mpt2sas/mpt2sas_transport.c
++++ block/drivers/scsi/mpt2sas/mpt2sas_transport.c
+@@ -1170,8 +1170,8 @@ transport_smp_handler(struct Scsi_Host *
+ 
+ 		memcpy(req->sense, mpi_reply, sizeof(*mpi_reply));
+ 		req->sense_len = sizeof(*mpi_reply);
+-		rsp->resid_len = blk_rq_bytes(rsp) -
+-				 mpi_reply->ResponseDataLength;
++		req->resid_len = 0;
++		rsp->resid_len -= mpi_reply->ResponseDataLength;
+ 	} else {
+ 		dtransportprintk(ioc, printk(MPT2SAS_DEBUG_FMT
+ 		    "%s - no reply\n", ioc->name, __func__));
+Index: block/drivers/block/ub.c
+===================================================================
+--- block.orig/drivers/block/ub.c
++++ block/drivers/block/ub.c
+@@ -781,8 +781,10 @@ static void ub_rw_cmd_done(struct ub_dev
+ 
+ 	if (cmd->error == 0) {
+ 		if (blk_pc_request(rq)) {
+-			if (cmd->act_len < blk_rq_bytes(rq))
+-				rq->resid_len = blk_rq_bytes(rq) - cmd->act_len;
++			if (cmd->act_len >= rq->resid_len)
++				rq->resid_len = 0;
++			else
++				rq->resid_len -= cmd->act_len;
+ 			scsi_status = 0;
+ 		} else {
+ 			if (cmd->act_len != cmd->len) {
