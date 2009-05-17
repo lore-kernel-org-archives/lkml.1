@@ -1,58 +1,70 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752465AbZEQP62@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753809AbZEQQCP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752465AbZEQP62 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 11:58:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751520AbZEQP6S
+	id S1753809AbZEQQCP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 12:02:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751618AbZEQQB6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 11:58:18 -0400
-Received: from mx1.wp.pl ([212.77.101.5]:37287 "EHLO mx1.wp.pl"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751403AbZEQP6R (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 11:58:17 -0400
-Date: Sun, 17 May 2009 18:04:24 +0200
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
-To: cpufreq@vger.kernel.org
-Cc: LKLM <linux-kernel@vger.kernel.org>
-Subject: [PATCH] x86: Fix VIA C3 Longhaul v2 identification
-Message-Id: <20090517180424.6836b46d.krzysztof.h1@wp.pl>
-X-Mailer: Sylpheed 2.4.3 (GTK+ 2.11.0; i686-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-WP-AV: skaner antywirusowy poczty Wirtualnej Polski S. A.
-X-WP-SPAM: NO 0000000 [gWN0]                               
+	Sun, 17 May 2009 12:01:58 -0400
+Received: from mail-gx0-f166.google.com ([209.85.217.166]:45921 "EHLO
+	mail-gx0-f166.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751349AbZEQQB6 convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 12:01:58 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:sender:in-reply-to:references:date
+         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=IeoAuvD1yxNwBthDIPSQtUcTRznL/4PIuXQ8mycolIsVSeo12UgFjkUa/1HRbsdeDf
+         99KsRhI3l5M9i/E02VdC8OJwWXgnjS84dHz7G7apHJIa0u9Ee4I13Kgrt8oIkZtG6vhD
+         bX5Lv7TLpI2eAaW+dy6dk3Pzb6UZpL1hVNlU8=
+MIME-Version: 1.0
+In-Reply-To: <19ac3f7a0905170822q28255239nea01b56d52e3ddf8@mail.gmail.com>
+References: <19ac3f7a0905170822q28255239nea01b56d52e3ddf8@mail.gmail.com>
+Date: Mon, 18 May 2009 01:01:58 +0900
+X-Google-Sender-Auth: aac03732fa51e313
+Message-ID: <2f11576a0905170901x41e15f65sf10bb5ee36050d14@mail.gmail.com>
+Subject: Re: dd if=/dev/random of=data.bin bs=512 count=1
+From: KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>
+To: Jon Grant <jg@jguk.org>
+Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Krzysztof Helt <krzysztof.h1@wp.pl>
+> Hello
+>
+> Issuing this command, I expected to get a file 4096 bytes in size.
+> Could someone let me know if I have missed something..? Or is there a
+> problem with using /dev/random this way?
+>
+> if I have a count=10 it hangs forever (several hours).
+>
+> Changing to use /dev/urandom and it generates the file ok.
 
-An identification of the Longhaul versions (v1, v2 and v3) selects only
-v1 or v3 version. There is a special case for late Samuel2 and early Ezra cores
-which support the Longhaul v2 but the Longhaul v1 is selected. These cores
-are described in the comment as supporting the Longhaul v2.
+you already have the answer. /dev/random might blocked, /dev/urandom doesn't.
 
-Select the Longhaul v2 for cores which support it.
 
-Signed-off-by: Krzysztof Helt <krzysztof.h1@wp.pl>
---- 
-I don't know if selecting the Longhaul v1 for these cores was a typo or done or 
-purpose. I cannot find any reference to this part of the code.
-
-I have tested the change and it enables the Longhaul v2 on my Samuel2 core
-but voltage change is not supported by my motherboard (PCChips something).
-The voltage range is detected as a single value.
-
-diff --git a/arch/x86/kernel/cpu/cpufreq/longhaul.c b/arch/x86/kernel/cpu/cpufreq/longhaul.c
-index ce2ed3e..cabd2fa 100644
---- a/arch/x86/kernel/cpu/cpufreq/longhaul.c
-+++ b/arch/x86/kernel/cpu/cpufreq/longhaul.c
-@@ -813,7 +813,7 @@ static int __init longhaul_cpu_init(struct cpufreq_policy *policy)
- 			memcpy(eblcr, samuel2_eblcr, sizeof(samuel2_eblcr));
- 			break;
- 		case 1 ... 15:
--			longhaul_version = TYPE_LONGHAUL_V1;
-+			longhaul_version = TYPE_LONGHAUL_V2;
- 			if (c->x86_mask < 8) {
- 				cpu_model = CPU_SAMUEL2;
- 				cpuname = "C3 'Samuel 2' [C5B]";
+> Please include my email address in replies,  as I'm not a member of this list.
+>
+> Best regards, Jon
+>
+> $ dd if=/dev/random of=data.bin bs=512 count=1
+> 0+1 records in
+> 0+1 records out
+> 8 bytes (8 B) copied, 4.47366 s, 0.0 kB/s
+>
+> $ dd --version
+> dd (coreutils) 6.10
+>
+> $ uname -a
+> Linux ubuntu 2.6.28-11-generic #42-Ubuntu SMP Fri Apr 17 01:57:59 UTC
+> 2009 i686 GNU/Linux
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+>
