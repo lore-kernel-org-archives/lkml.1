@@ -1,43 +1,363 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754013AbZEQTG1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbZEQTLZ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754013AbZEQTG1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 15:06:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752194AbZEQTGP
+	id S1754200AbZEQTLZ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 15:11:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752342AbZEQTLJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 15:06:15 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:56469 "EHLO mx2.redhat.com"
+	Sun, 17 May 2009 15:11:09 -0400
+Received: from mail-out2.uio.no ([129.240.10.58]:60816 "EHLO mail-out2.uio.no"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751958AbZEQTGP (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 15:06:15 -0400
-Message-ID: <4A105E37.5060704@redhat.com>
-Date: Sun, 17 May 2009 21:57:59 +0300
-From: Avi Kivity <avi@redhat.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
-MIME-Version: 1.0
-To: Jaswinder Singh Rajput <jaswinder@kernel.org>
-CC: Huang Ying <ying.huang@intel.com>, Ingo Molnar <mingo@elte.hu>,
-       x86 maintainers <x86@kernel.org>,
-       "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH -tip] x86: kvm/x86.c use MSR names in place of address
-References: <1242031695.8213.17.camel@yhuang-dev.sh.intel.com>	 <1242032701.3114.4.camel@localhost.localdomain>	 <1242032889.8213.32.camel@yhuang-dev.sh.intel.com> <1242279010.4574.6.camel@localhost.localdomain>
-In-Reply-To: <1242279010.4574.6.camel@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	id S1752168AbZEQTLG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 15:11:06 -0400
+Subject: Re: 2.6.30-rc deadline scheduler performance regression for iozone
+ over NFS
+From: Trond Myklebust <trond.myklebust@fys.uio.no>
+To: Jeff Moyer <jmoyer@redhat.com>
+Cc: netdev@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Jens Axboe <jens.axboe@oracle.com>, linux-kernel@vger.kernel.org,
+       "Rafael J. Wysocki" <rjw@sisk.pl>,
+       Olga Kornievskaia <aglo@citi.umich.edu>,
+       "J. Bruce Fields" <bfields@fieldses.org>, Jim Rees <rees@umich.edu>,
+       linux-nfs@vger.kernel.org
+In-Reply-To: <x49ws8j686r.fsf@segfault.boston.devel.redhat.com>
+References: <x49hc0f79k9.fsf@segfault.boston.devel.redhat.com>
+	 <20090508120119.8c93cfd7.akpm@linux-foundation.org>
+	 <20090511081415.GL4694@kernel.dk>
+	 <x49skjb21b7.fsf@segfault.boston.devel.redhat.com>
+	 <20090511165826.GG4694@kernel.dk>
+	 <x494ovp4r51.fsf@segfault.boston.devel.redhat.com>
+	 <20090512204433.7eb69075.akpm@linux-foundation.org>
+	 <x49y6t1rqw0.fsf@segfault.boston.devel.redhat.com>
+	 <x49k54ku7i2.fsf@segfault.boston.devel.redhat.com>
+	 <1242258338.5407.244.camel@heimdal.trondhjem.org>
+	 <x49octv7qr8.fsf@segfault.boston.devel.redhat.com>
+	 <1242311620.6560.14.camel@heimdal.trondhjem.org>
+	 <x49ws8j686r.fsf@segfault.boston.devel.redhat.com>
+Content-Type: text/plain
+Date: Sun, 17 May 2009 15:10:54 -0400
+Message-Id: <1242587454.17796.2.camel@heimdal.trondhjem.org>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
+X-UiO-Ratelimit-Test: rcpts/h 10 msgs/h 1 sum rcpts/h 11 sum msgs/h 2 total rcpts 365 max rcpts/h 20 ratelimit 0
+X-UiO-Spam-info: not spam, SpamAssassin (score=-5.0, required=5.0, autolearn=disabled, UIO_MAIL_IS_INTERNAL=-5, uiobl=_BLID_, uiouri=_URIID_)
+X-UiO-Scanned: FE41B926510EFC94647CA9D1F333085588C7A027
+X-UiO-SPAM-Test: remote_host: 71.227.91.12 spam_score: -49 maxlevel 80 minaction 2 bait 0 mail/h: 1 total 290 max/h 5 blacklist 0 greylist 0 ratelimit 0
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Jaswinder Singh Rajput wrote:
-> [PATCH -tip] x86: kvm/x86.c use MSR names in place of address
->
-> Replace 0xc0010010 with MSR_K8_SYSCFG and 0xc0010015 with MSR_K7_HWCR.
->
->   
+On Thu, 2009-05-14 at 11:00 -0400, Jeff Moyer wrote:
+> Sorry for the previous, stupid question.  I applied the patch in
+> addition the last one and here are the results:
+> 
+> 70327
+> 71561
+> 68760
+> 69199
+> 65324
+> 
+> A packet capture for this run is available here:
+>   http://people.redhat.com/jmoyer/trond2.pcap.bz2
+> 
+> Any more ideas?  ;)
 
-Applied, thanks.
+Yep. I've got 2 more patches for you. With both of them applied, I'm
+seeing decent performance on my own test rig. The first patch is
+appended. I'll send the second in another email (to avoid attachments).
 
+Cheers
+ Trond
+-----------------------------------------------------------------------
+>From fcfdaf81eb21a996d83a2b68da2d62bb3697c1db Mon Sep 17 00:00:00 2001
+From: Trond Myklebust <Trond.Myklebust@netapp.com>
+Date: Sun, 17 May 2009 12:40:05 -0400
+Subject: [PATCH] SUNRPC: Fix svc_tcp_recvfrom()
+
+Ensure that if the TCP receive window is smaller than the message length,
+then we just buffer the existing data, in order to allow the client to send
+more...
+
+Signed-off-by: Trond Myklebust <Trond.Myklebust@netapp.com>
+---
+ include/linux/sunrpc/svcsock.h |    1 +
+ net/sunrpc/svcsock.c           |  167 +++++++++++++++++++++++++++++-----------
+ 2 files changed, 124 insertions(+), 44 deletions(-)
+
+diff --git a/include/linux/sunrpc/svcsock.h b/include/linux/sunrpc/svcsock.h
+index 483e103..b0b4546 100644
+--- a/include/linux/sunrpc/svcsock.h
++++ b/include/linux/sunrpc/svcsock.h
+@@ -28,6 +28,7 @@ struct svc_sock {
+ 	/* private TCP part */
+ 	u32			sk_reclen;	/* length of record */
+ 	u32			sk_tcplen;	/* current read length */
++	struct page *		sk_pages[RPCSVC_MAXPAGES];	/* received data */
+ };
+ 
+ /*
+diff --git a/net/sunrpc/svcsock.c b/net/sunrpc/svcsock.c
+index c4e7be5..6069489 100644
+--- a/net/sunrpc/svcsock.c
++++ b/net/sunrpc/svcsock.c
+@@ -323,6 +323,33 @@ static int svc_recvfrom(struct svc_rqst *rqstp, struct kvec *iov, int nr,
+ 	return len;
+ }
+ 
++static int svc_partial_recvfrom(struct svc_rqst *rqstp,
++				struct kvec *iov, int nr,
++				int buflen, unsigned int base)
++{
++	size_t save_iovlen;
++	void __user *save_iovbase;
++	unsigned int i;
++	int ret;
++
++	if (base == 0)
++		return svc_recvfrom(rqstp, iov, nr, buflen);
++
++	for (i = 0; i < nr; i++) {
++		if (iov[i].iov_len > base)
++			break;
++		base -= iov[i].iov_len;
++	}
++	save_iovlen = iov[i].iov_len;
++	save_iovbase = iov[i].iov_base;
++	iov[i].iov_len -= base;
++	iov[i].iov_base += base;
++	ret = svc_recvfrom(rqstp, &iov[i], nr - i, buflen);
++	iov[i].iov_len = save_iovlen;
++	iov[i].iov_base = save_iovbase;
++	return ret;
++}
++
+ /*
+  * Set socket snd and rcv buffer lengths
+  */
+@@ -790,6 +817,56 @@ failed:
+ 	return NULL;
+ }
+ 
++static unsigned int svc_tcp_restore_pages(struct svc_sock *svsk, struct svc_rqst *rqstp)
++{
++	unsigned int i, len, npages;
++
++	if (svsk->sk_tcplen <= sizeof(rpc_fraghdr))
++		return 0;
++	len = svsk->sk_tcplen - sizeof(rpc_fraghdr);
++	npages = (len + PAGE_SIZE - 1) >> PAGE_SHIFT;
++	for (i = 0; i < npages; i++) {
++		if (rqstp->rq_pages[i] != NULL)
++			put_page(rqstp->rq_pages[i]);
++		BUG_ON(svsk->sk_pages[i] == NULL);
++		rqstp->rq_pages[i] = svsk->sk_pages[i];
++		svsk->sk_pages[i] = NULL;
++	}
++	rqstp->rq_arg.head[0].iov_base = page_address(rqstp->rq_pages[0]);
++	return len;
++}
++
++static void svc_tcp_save_pages(struct svc_sock *svsk, struct svc_rqst *rqstp)
++{
++	unsigned int i, len, npages;
++
++	if (svsk->sk_tcplen <= sizeof(rpc_fraghdr))
++		return;
++	len = svsk->sk_tcplen - sizeof(rpc_fraghdr);
++	npages = (len + PAGE_SIZE - 1) >> PAGE_SHIFT;
++	for (i = 0; i < npages; i++) {
++		svsk->sk_pages[i] = rqstp->rq_pages[i];
++		rqstp->rq_pages[i] = NULL;
++	}
++}
++
++static void svc_tcp_clear_pages(struct svc_sock *svsk)
++{
++	unsigned int i, len, npages;
++
++	if (svsk->sk_tcplen <= sizeof(rpc_fraghdr))
++		goto out;
++	len = svsk->sk_tcplen - sizeof(rpc_fraghdr);
++	npages = (len + PAGE_SIZE - 1) >> PAGE_SHIFT;
++	for (i = 0; i < npages; i++) {
++		BUG_ON(svsk->sk_pages[i] == NULL);
++		put_page(svsk->sk_pages[i]);
++		svsk->sk_pages[i] = NULL;
++	}
++out:
++	svsk->sk_tcplen = 0;
++}
++
+ /*
+  * Receive data from a TCP socket.
+  */
+@@ -800,7 +877,8 @@ static int svc_tcp_recvfrom(struct svc_rqst *rqstp)
+ 	struct svc_serv	*serv = svsk->sk_xprt.xpt_server;
+ 	int		len;
+ 	struct kvec *vec;
+-	int pnum, vlen;
++	unsigned int want, base, vlen;
++	int pnum;
+ 
+ 	dprintk("svc: tcp_recv %p data %d conn %d close %d\n",
+ 		svsk, test_bit(XPT_DATA, &svsk->sk_xprt.xpt_flags),
+@@ -814,9 +892,9 @@ static int svc_tcp_recvfrom(struct svc_rqst *rqstp)
+ 	 * possible up to the complete record length.
+ 	 */
+ 	if (svsk->sk_tcplen < sizeof(rpc_fraghdr)) {
+-		int		want = sizeof(rpc_fraghdr) - svsk->sk_tcplen;
+ 		struct kvec	iov;
+ 
++		want = sizeof(rpc_fraghdr) - svsk->sk_tcplen;
+ 		iov.iov_base = ((char *) &svsk->sk_reclen) + svsk->sk_tcplen;
+ 		iov.iov_len  = want;
+ 		if ((len = svc_recvfrom(rqstp, &iov, 1, want)) < 0)
+@@ -826,8 +904,7 @@ static int svc_tcp_recvfrom(struct svc_rqst *rqstp)
+ 		if (len < want) {
+ 			dprintk("svc: short recvfrom while reading record "
+ 				"length (%d of %d)\n", len, want);
+-			svc_xprt_received(&svsk->sk_xprt);
+-			return -EAGAIN; /* record header not complete */
++			goto err_noclose;
+ 		}
+ 
+ 		svsk->sk_reclen = ntohl(svsk->sk_reclen);
+@@ -853,25 +930,14 @@ static int svc_tcp_recvfrom(struct svc_rqst *rqstp)
+ 		}
+ 	}
+ 
+-	/* Check whether enough data is available */
+-	len = svc_recv_available(svsk);
+-	if (len < 0)
+-		goto error;
+-
+-	if (len < svsk->sk_reclen) {
+-		dprintk("svc: incomplete TCP record (%d of %d)\n",
+-			len, svsk->sk_reclen);
+-		svc_xprt_received(&svsk->sk_xprt);
+-		return -EAGAIN;	/* record not complete */
+-	}
+-	len = svsk->sk_reclen;
+-	set_bit(XPT_DATA, &svsk->sk_xprt.xpt_flags);
++	base = svc_tcp_restore_pages(svsk, rqstp);
++	want = svsk->sk_reclen - base;
+ 
+ 	vec = rqstp->rq_vec;
+ 	vec[0] = rqstp->rq_arg.head[0];
+ 	vlen = PAGE_SIZE;
+ 	pnum = 1;
+-	while (vlen < len) {
++	while (vlen < svsk->sk_reclen) {
+ 		vec[pnum].iov_base = page_address(rqstp->rq_pages[pnum]);
+ 		vec[pnum].iov_len = PAGE_SIZE;
+ 		pnum++;
+@@ -880,19 +946,26 @@ static int svc_tcp_recvfrom(struct svc_rqst *rqstp)
+ 	rqstp->rq_respages = &rqstp->rq_pages[pnum];
+ 
+ 	/* Now receive data */
+-	len = svc_recvfrom(rqstp, vec, pnum, len);
+-	if (len < 0)
+-		goto error;
++	clear_bit(XPT_DATA, &svsk->sk_xprt.xpt_flags);
++	len = svc_partial_recvfrom(rqstp, vec, pnum, want, base);
++	if (len != want) {
++		if (len >= 0)
++			svsk->sk_tcplen += len;
++		else if (len != -EAGAIN)
++			goto err_other;
++		svc_tcp_save_pages(svsk, rqstp);
++		dprintk("svc: incomplete TCP record (%d of %d)\n",
++			svsk->sk_tcplen, svsk->sk_reclen);
++		goto err_noclose;
++	}
+ 
+-	dprintk("svc: TCP complete record (%d bytes)\n", len);
+-	rqstp->rq_arg.len = len;
++	rqstp->rq_arg.len = svsk->sk_reclen;
+ 	rqstp->rq_arg.page_base = 0;
+-	if (len <= rqstp->rq_arg.head[0].iov_len) {
+-		rqstp->rq_arg.head[0].iov_len = len;
++	if (rqstp->rq_arg.len <= rqstp->rq_arg.head[0].iov_len) {
++		rqstp->rq_arg.head[0].iov_len = rqstp->rq_arg.len;
+ 		rqstp->rq_arg.page_len = 0;
+-	} else {
+-		rqstp->rq_arg.page_len = len - rqstp->rq_arg.head[0].iov_len;
+-	}
++	} else
++		rqstp->rq_arg.page_len = rqstp->rq_arg.len - rqstp->rq_arg.head[0].iov_len;
+ 
+ 	rqstp->rq_xprt_ctxt   = NULL;
+ 	rqstp->rq_prot	      = IPPROTO_TCP;
+@@ -900,29 +973,32 @@ static int svc_tcp_recvfrom(struct svc_rqst *rqstp)
+ 	/* Reset TCP read info */
+ 	svsk->sk_reclen = 0;
+ 	svsk->sk_tcplen = 0;
++	/* If we have more data, signal svc_xprt_enqueue() to try again */
++	if (svc_recv_available(svsk) > sizeof(rpc_fraghdr))
++		set_bit(XPT_DATA, &svsk->sk_xprt.xpt_flags);
++
+ 
+ 	svc_xprt_copy_addrs(rqstp, &svsk->sk_xprt);
+ 	svc_xprt_received(&svsk->sk_xprt);
+ 	if (serv->sv_stats)
+ 		serv->sv_stats->nettcpcnt++;
+ 
+-	return len;
+-
+- err_delete:
++	dprintk("svc: TCP complete record (%d bytes)\n", rqstp->rq_arg.len);
++	return rqstp->rq_arg.len;
++error:
++	if (len == -EAGAIN)
++		goto err_got_eagain;
++err_other:
++	printk(KERN_NOTICE "%s: recvfrom returned errno %d\n",
++	       svsk->sk_xprt.xpt_server->sv_name, -len);
++err_delete:
+ 	set_bit(XPT_CLOSE, &svsk->sk_xprt.xpt_flags);
+ 	return -EAGAIN;
+-
+- error:
+-	if (len == -EAGAIN) {
+-		dprintk("RPC: TCP recvfrom got EAGAIN\n");
+-		svc_xprt_received(&svsk->sk_xprt);
+-	} else {
+-		printk(KERN_NOTICE "%s: recvfrom returned errno %d\n",
+-		       svsk->sk_xprt.xpt_server->sv_name, -len);
+-		goto err_delete;
+-	}
+-
+-	return len;
++err_got_eagain:
++	dprintk("RPC: TCP recvfrom got EAGAIN\n");
++err_noclose:
++	svc_xprt_received(&svsk->sk_xprt);
++	return -EAGAIN;	/* record not complete */
+ }
+ 
+ /*
+@@ -1043,6 +1119,7 @@ static void svc_tcp_init(struct svc_sock *svsk, struct svc_serv *serv)
+ 
+ 		svsk->sk_reclen = 0;
+ 		svsk->sk_tcplen = 0;
++		memset(&svsk->sk_pages[0], 0, sizeof(svsk->sk_pages));
+ 
+ 		tcp_sk(sk)->nonagle |= TCP_NAGLE_OFF;
+ 
+@@ -1291,8 +1368,10 @@ static void svc_tcp_sock_detach(struct svc_xprt *xprt)
+ 
+ 	svc_sock_detach(xprt);
+ 
+-	if (!test_bit(XPT_LISTENER, &xprt->xpt_flags))
++	if (!test_bit(XPT_LISTENER, &xprt->xpt_flags)) {
++		svc_tcp_clear_pages(svsk);
+ 		kernel_sock_shutdown(svsk->sk_sock, SHUT_RDWR);
++	}
+ }
+ 
+ /*
 -- 
-Do not meddle in the internals of kernels, for they are subtle and quick to panic.
+1.6.0.4
+
+
 
