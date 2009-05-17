@@ -1,79 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754200AbZEQTq1@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754770AbZEQTvP@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754200AbZEQTq1 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 15:46:27 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753864AbZEQTqQ
+	id S1754770AbZEQTvP (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 15:51:15 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753981AbZEQTuz
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 15:46:16 -0400
-Received: from fmmailgate04.web.de ([217.72.192.242]:38649 "EHLO
-	fmmailgate04.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752349AbZEQTqP convert rfc822-to-8bit (ORCPT
+	Sun, 17 May 2009 15:50:55 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:62835 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752378AbZEQTuy (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 15:46:15 -0400
-Date: Sun, 17 May 2009 21:46:15 +0200
-Message-Id: <720427516@web.de>
+	Sun, 17 May 2009 15:50:54 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=gvm3xt+iPD/dQJ5u7sUorQ707R3AzvacyV7+/EXza+LbqNl6l+3tj2I3TqlawpnUrv
+         RMtPvgd5tBYW9kWL9PfJtntagq+m0BW/QLjk6LeuHvc4vrXv1q3sk306Yov6dZhWgnlI
+         XNB7nGkWCcbLMXhicdoKLbuuCv/IlmI/TyuUY=
+Date: Sun, 17 May 2009 21:50:51 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: Borislav Petkov <petkovbb@googlemail.com>, linux-kernel@vger.kernel.org,
+       Martin Lottermoser <Martin.Lottermoser@t-online.de>,
+       linux-ide@vger.kernel.org
+Subject: Re: PATA DMA problem leading to kernel panic on reading movie DVDs
+Message-ID: <20090517195051.GA5142@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	Borislav Petkov <petkovbb@googlemail.com>,
+	linux-kernel@vger.kernel.org,
+	Martin Lottermoser <Martin.Lottermoser@t-online.de>,
+	linux-ide@vger.kernel.org
+References: <20090517091224.GA8280@wanza.invalid> <20090517121444.GA8733@wanza.invalid> <20090517193409.GC2976@liondog.tnic> <200905172145.45756.bzolnier@gmail.com>
 MIME-Version: 1.0
-From: devzero@web.de
-To: david@lang.hm
-Cc: Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
-       Ingo Molnar <mingo@elte.hu>
-Subject: Re: Where do we stand with the Xen patches?
-Organization: http://freemail.web.de/
-X-Provags-Id: V01U2FsdGVkX1+t+EGJ4my+uPwPb49eKxC4cUdx6+uv8eXZYtcTnpKUbrV9K
- aTmgeGDG1q+AI9Wi8bgiMBBomUTmYmFALmfuAhEMV7Q6xlSSnk=
-Content-Type: text/plain; charset=iso-8859-15
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200905172145.45756.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> >> As in the past, my main worry is performance overhead of paravirt in
-> >> general.
-> >>
-> >> The patches that dont affect any native kernel fast path are
-> >> probably OK (but still pending final review).
-> >>
-> >> Regarding patches that do change the fastpath i'll do a round of
-> >> measurements of CONFIG_PARAVIRT against !CONFIG_PARAVIRT kernels,
-> >> and make up my mind based on that.
-> >>
-> >> You could accelerate this by sending some "perf stat" hard numbers
-> >> to give us an idea about where we stand today.
-> >>
-> >> 	Ingo
-> >
-> > maybe this is iust a stupid comment (please forgive, i?m no advanced kernel
-> > hacker), but can?t the code inserted by the patches and which changes the
-> > fastpath just #IFDEF`ed at the critical offsets ?  (as building a dom0 kernel is
-> > just another build target, isn`t it ?)
+On Sun, May 17, 2009 at 09:45:45PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> On Sunday 17 May 2009 21:34:09 Borislav Petkov wrote:
+> > (adding Bart to CC)
+> > 
+> > Hi Bart,
+> > 
+> > please take a look at the OOPS below, seems like we BUG() in ide_intr() at
+> > BUG_ON(!hwif->handler) which shouldn't happen. Full message is at:
+> > 
+> > http://www.gossamer-threads.com/lists/linux/kernel/1077445.
+> > 
+> > It is 2.6.29.3 with both PIIX_IDE and ata_piix compiled and it could be
+> > that those two step on each other's toes, but this is only wild stab in
+> > the dark.
+> > 
+> > I'm sure you have more ideas.
 > 
-> no, if dom0 is going to be widely deployed, it will be because the distros 
-> turn on dom0 support by default. as a result any penalties due to xen 
-> support will be felt by all users of those distros (even if they don't use 
-> xen)
-> 
-> David Lang
+> Yes, see my other mail.
 
-so what?
+Saw it right after hitting send.
 
-print a huge warning on boot that running dom0 for xen may affect performance and that 
-you should better run a normal kernel instead if you don`t use xen , and you`re done.
+> [ After writing "I will cc: linux-ide on IDE/ATA problems" 100x times
+>   on the whiteboard... ;-) ]
 
-or is maintaining two different kernel packages a problem?
+And I CC'ed you instead, this has even bigger effect :)
 
-if so, instead of using IFDEF`s, can`t the critical path`s being generously circumvented 
-by default, (if, else...), needing some dom0 kernel bootparam to be activated (i.e. use
-the kernel as dom0 kernel) ?
-
-or is this too short-sighted view of the things ?
-
-regards
-roland
-
-
-
-
-______________________________________________________
-GRATIS für alle WEB.DE-Nutzer: Die maxdome Movie-FLAT!
-Jetzt freischalten unter http://movieflat.web.de
-
+-- 
+Regards/Gruss,
+    Boris.
