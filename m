@@ -1,113 +1,75 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754313AbZEQUUY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754922AbZEQU0y@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754313AbZEQUUY (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 16:20:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbZEQUUG
+	id S1754922AbZEQU0y (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 16:26:54 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753042AbZEQU0p
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 16:20:06 -0400
-Received: from mailout07.t-online.de ([194.25.134.83]:47557 "EHLO
-	mailout07.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754076AbZEQUUE (ORCPT
+	Sun, 17 May 2009 16:26:45 -0400
+Received: from casper.infradead.org ([85.118.1.10]:33376 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752064AbZEQU0o (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 16:20:04 -0400
-Date: Sun, 17 May 2009 22:18:56 +0200
-From: Martin Lottermoser <Martin.Lottermoser@t-online.de>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
-Subject: Re: PATA DMA problem leading to kernel panic on reading movie DVDs
-Message-ID: <20090517201856.GA1496@wanza.invalid>
-References: <20090517091224.GA8280@wanza.invalid> <4A10509C.603@gmail.com> <200905172135.10136.bzolnier@gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <200905172135.10136.bzolnier@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ID: r2+LJOZOZhIMG4l7y+08wCD7nNkPeRQxsDLOzNhvJ5JHl7bHH1NIZHawjNTtCj-gem
-X-TOI-MSGID: 83d48128-4f07-4e8d-af63-37fcf77ee8d3
+	Sun, 17 May 2009 16:26:44 -0400
+Date: Sun, 17 May 2009 13:26:13 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: tom.leiming@gmail.com
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org,
+       Ming Lei <tom.leiming@gmail.com>
+Subject: Re: [PATCH] kernel/async.c:introduce async_schedule*_atomic
+Message-ID: <20090517132613.688da272@infradead.org>
+In-Reply-To: <1242141222-8454-1-git-send-email-tom.leiming@gmail.com>
+References: <1242141222-8454-1-git-send-email-tom.leiming@gmail.com>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello,
+On Tue, 12 May 2009 23:13:42 +0800
+tom.leiming@gmail.com wrote:
 
-On Sun, May 17, 2009 at 21:35:09 +0200, Bartlomiej Zolnierkiewicz wrote:
-> > > The error message with 2.6.23.14 was:
-> > > 
-> > >   hdc: drive_cmd: status=0x51 { DriveReady SeekComplete Error }
-> > >   hdc: drive_cmd: error=0x04 { AbortedCommand }
-> > >   ide: failed opcode was: 0xec
+> From: Ming Lei <tom.leiming@gmail.com>
 > 
-> This is more-or-less innocent -- some user-space utility wrongly uses
-> ATA IDENTIFY command on ATAPI devices and it gets logged as an error...
-
-thanks; that's a load off my mind :-).
-
-> > > This is correct: the drive is only capable of Ultra DMA mode 2 33.3 MB/s
-> > > (see manufacturer's documentation) and is attached with a standard 40-wire
-> > > ATA cable (black connectors for master and slave).
+> The async_schedule* may not be called in atomic contexts if out of
+> memory or if there's too much work pending already, because the
+> async function to be called may sleep.
 > 
-> Martin, this is one of ATAPI drives which support UDMA66 but have broken
-> cable detection.
+> This patch fixes the comment of async_schedule*, and introduces
+> async_schedules*_atomic to allow them called from atomic contexts
+> safely.
 
-Are you sure? Compare this:
+(sorry for the late response; have been away from most of my email for
+a few days)
 
-  http://downloadcenter.samsung.com/content/UM/200709/20070928095126750_SH-S202N_Eng.pdf
+I like the general idea; I was hoping to do it a little bit different
+though, API wise.
+I don't mind the parameter for "don't do blocking things" (we should
+use that to also use GFP_KERNEL/GFP_NOFS or whatever for the
+allocation), it makes sense.
 
-> Please:
-> 
-> * send 'hdparm --Istdout /dev/hdc' output
+What I would like to see is the option to pass in memory that was
+externally kmalloc'd. So that you can do
 
-Here it is:
+foo = kmalloc(..)
+spin_lock(bar)
+...
+async_schedule_atomic(...);
 
-  /dev/hdc:
-  85c0 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 2020 2020 2020 2020 2020 2020
-  2020 2020 2020 2020 0000 0000 0000 5342
-  3031 2020 2020 5453 5354 636f 7270 2043
-  4444 5644 5720 5348 2d53 3230 324e 2020
-  2020 2020 2020 2020 2020 2020 2020 0000
-  0000 0b00 0000 0200 0200 0006 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0007
-  0003 0078 0078 017f 0078 0000 0000 0000
-  0000 00f8 0210 0000 0000 0000 0000 0000
-  00f8 0210 0210 0000 0000 0000 0000 0000
-  041f 0000 8005 3200 005b 2000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 0000
-  0000 0000 0000 0000 0000 0000 0000 a3a5
+spin_unlock(bar);
+if (not_used_foo)
+    kfree(foo);
 
-> * try 2.6.30-rc6 (maybe 2.6.29.3 oops has been fixed already and we just
->   need to backport it)
+in cases where you don't want to fail while in the atomic portion,
+but can fail better earlier.
 
-That'll have to wait until tomorrow -- I have a low-bandwidth connection
-here.
 
-> also connecting the drive using 80-wires cable and getting another hdparm
-> output (+ seeing if it helps the other problems) would be very useful.
 
-I'll try that too, but that also will have to wait until tommorrow.
-
-Thanks for the help,
-Martin Lottermoser
 -- 
-Martin Lottermoser             Martin.Lottermoser at _REMOVE_t-online.de
-Greifswaldstrasse 28
-38124 Braunschweig             http://home.vrweb.de/martin.lottermoser
-Germany
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
