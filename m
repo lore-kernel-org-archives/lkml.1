@@ -1,56 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755460AbZEQXQ6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755153AbZEQXhJ@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755460AbZEQXQ6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 19:16:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752864AbZEQXQq
+	id S1755153AbZEQXhJ (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 19:37:09 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755035AbZEQXgs
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 19:16:46 -0400
-Received: from fmailhost01.isp.att.net ([204.127.217.101]:35871 "EHLO
-	fmailhost01.isp.att.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751951AbZEQXQq (ORCPT
+	Sun, 17 May 2009 19:36:48 -0400
+Received: from fmmailgate01.web.de ([217.72.192.221]:43778 "EHLO
+	fmmailgate01.web.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754351AbZEQXgr (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 19:16:46 -0400
-X-Originating-IP: [71.195.50.4]
-Message-ID: <4A109AC5.7040008@lwfinger.net>
-Date: Sun, 17 May 2009 18:16:21 -0500
-From: Larry Finger <Larry.Finger@lwfinger.net>
-User-Agent: Thunderbird 2.0.0.19 (X11/20081227)
-MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-CC: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       linux-wireless@vger.kernel.org
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>	<385Pu-agh7M.A.SU.iYzDKB@chimera> <20090516163610.8a012268.akpm@linux-foundation.org>
-In-Reply-To: <20090516163610.8a012268.akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
+	Sun, 17 May 2009 19:36:47 -0400
+From: Markus Heidelberg <markus.heidelberg@web.de>
+To: Sam Ravnborg <sam@ravnborg.org>, Roman Zippel <zippel@linux-m68k.org>
+Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+       Markus Heidelberg <markus.heidelberg@web.de>
+Subject: [PATCH resend 00/10] kconfig: various fixes and documentation updates
+Date: Mon, 18 May 2009 01:36:44 +0200
+Message-Id: <1242603414-9267-1-git-send-email-markus.heidelberg@web.de>
+X-Mailer: git-send-email 1.6.3.1.20.ga30f
+X-Provags-ID: V01U2FsdGVkX1/MhsewowDRMMoSwJXRoMvzuTS7YzO7WK50VhJ7
+	/UhwAhwHljqjScQHq5PtEubBqTuWXUnx+5h5gtWOTlV1fT0eBb
+	LLI4omJ3c7359qmQ0IxQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Andrew Morton wrote:
-> 
-> Well..  order-1 GFP_ATOMIC allocations are unreliable.  The networking
-> code should hanlde the situation and recover.  I assume that is
-> happening in this case?
+Hi,
 
-Yes, the driver has recovered in all cases so far.
+I sent this series about 4 weeks ago on 2009-04-19, but didn't receive any
+comments. Is Roman inactive currently?
 
-> Perhaps we did something in that code after 2.6.29 which increased the
-> frequency of the order-1 allocation attempts?  Maybe earlier kernels
-> used order-0 all the time?  Those are much more reliable.
 
-I think something happened to change the allocation as I never saw these O(1)
-failures before with these particular drivers. I put in a few test printk's and
-the buffers were 700-800 bytes long, and I would not expect them to require more
-than an O(0) allocation.
+Patches  1-3: documentation updates, typo fixes
+Patch      4: .gitignore
+Patches  5-8: qconf fixes (compiler warnings/errors)
+Patches 9-10: environment variable fixes (KCONFIG_CONFIG + KCONFIG_AUTOCONFIG)
 
-I pushed 2.6.30-rc6 hard for ~12 hours without any recurrence of the problem.
-Given the relative infrequency of the error, this certainly does not indicate a
-fix in recent code. I will be trying to force it again.
+Markus Heidelberg (10):
+  kconfig: fix typo "mconfig" to "menuconfig" in a comment
+  kconfig: add a note about the deps to the 'silentoldconfig' help
+  kconfig: resort the documentation of the environment variables
+  gitignore: ignore Kconfig i18n files
+  kconfig qconf: fix -Wall compiler warnings
+  kconfig qconf: fix namespace for Horizontal and Vertical enum values
+  kconfig qconf: add namespace for use of Key_ enum values
+  kconfig qconf: fix the type of the desktop widget
+  kconfig: do not hardcode ".config" filename
+  kconfig: do not hardcode "include/config/auto.conf" filename
 
-Larry
+ Documentation/kbuild/kconfig.txt |  116 +++++++++++++++++++------------------
+ README                           |    1 +
+ scripts/kconfig/.gitignore       |    2 +
+ scripts/kconfig/Makefile         |    4 +-
+ scripts/kconfig/conf.c           |    7 +-
+ scripts/kconfig/confdata.c       |   20 ++++---
+ scripts/kconfig/lkc.h            |    1 +
+ scripts/kconfig/qconf.cc         |   48 +++++++++-------
+ scripts/kconfig/util.c           |    6 +-
+ 9 files changed, 112 insertions(+), 93 deletions(-)
 
