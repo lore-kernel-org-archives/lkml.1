@@ -1,212 +1,209 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755220AbZEQVMS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755140AbZEQVPR@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755220AbZEQVMS (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 17:12:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753279AbZEQVMA
+	id S1755140AbZEQVPR (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 17:15:17 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754182AbZEQVO7
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 17:12:00 -0400
-Received: from ist.d-labs.de ([213.239.218.44]:55638 "EHLO mx01.d-labs.de"
+	Sun, 17 May 2009 17:14:59 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:48708 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752609AbZEQVL7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 17:11:59 -0400
-Date: Sun, 17 May 2009 23:11:35 +0200
-From: Florian Mickler <florian@mickler.org>
-To: Rob Landley <rob@landley.net>
-Cc: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Subject: Re: http://www.kernel.org/doc/local/git-quick.html#bisect
-Message-ID: <20090517231135.3c740ab2@schatten>
-In-Reply-To: <200905151820.05246.rob@landley.net>
-References: <20090515121829.60de2210@schatten>
-	<200905151820.05246.rob@landley.net>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_/tFTnEEzb89x/qS=9JlHwBRR";
- protocol="application/pgp-signature"; micalg=PGP-SHA1
+	id S1753279AbZEQVO7 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 17:14:59 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: Wu Fengguang <fengguang.wu@intel.com>
+Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to allocate too much memory too hard
+Date: Sun, 17 May 2009 23:14:29 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+Cc: pm list <linux-pm@lists.linux-foundation.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
+       Nigel Cunningham <nigel@tuxonice.net>,
+       David Rientjes <rientjes@google.com>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+References: <200905070040.08561.rjw@sisk.pl> <200905171455.06120.rjw@sisk.pl> <20090517140712.GE3254@localhost>
+In-Reply-To: <20090517140712.GE3254@localhost>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905172314.29850.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
---Sig_/tFTnEEzb89x/qS=9JlHwBRR
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Sunday 17 May 2009, Wu Fengguang wrote:
+> On Sun, May 17, 2009 at 08:55:05PM +0800, Rafael J. Wysocki wrote:
+> > On Sunday 17 May 2009, Wu Fengguang wrote:
+> 
+> > > > +static unsigned long minimum_image_size(unsigned long saveable)
+> > > > +{
+> > > > +	unsigned long size;
+> > > > +
+> > > > +	/* Compute the number of saveable pages we can free. */
+> > > > +	size = global_page_state(NR_SLAB_RECLAIMABLE)
+> > > > +		+ global_page_state(NR_ACTIVE_ANON)
+> > > > +		+ global_page_state(NR_INACTIVE_ANON)
+> > > > +		+ global_page_state(NR_ACTIVE_FILE)
+> > > > +		+ global_page_state(NR_INACTIVE_FILE);
+> > > 
+> > > For example, we could drop the 1.25 ratio and calculate the above
+> > > reclaimable size with more meaningful constraints:
+> > > 
+> > >         /* slabs are not easy to reclaim */
+> > > 	size = global_page_state(NR_SLAB_RECLAIMABLE) / 2;
+> > 
+> > Why 1/2?
+> 
+> Also a very coarse value:
+> - we don't want to stress icache/dcache too much
+>   (unless they grow too large)
+> - my experience was that the icache/dcache are scanned in a slower
+>   pace than lru pages.
+> - most importantly, inside the NR_SLAB_RECLAIMABLE pages, maybe half
+>   of the pages are actually *in use* and cannot be freed:
+>         % cat /proc/sys/fs/inode-nr     
+>         30450   16605
+>         % cat /proc/sys/fs/dentry-state 
+>         41598   35731   45      0       0       0
+>   See? More than half entries are in-use. Sure many of them will actually
+>   become unused when dentries are freed, but in the mean time the internal
+>   fragmentations in the slabs can go up.
+> 
+> > >         /* keep NR_ACTIVE_ANON */
+> > > 	size += global_page_state(NR_INACTIVE_ANON);
+> > 
+> > Why exactly did you omit ACTIVE_ANON?
+> 
+> To keep the "core working set" :)
+>   	
+> > >         /* keep mapped files */
+> > > 	size += global_page_state(NR_ACTIVE_FILE);
+> > > 	size += global_page_state(NR_INACTIVE_FILE);
+> > >         size -= global_page_state(NR_FILE_MAPPED);
+> > > 
+> > > That restores the hard core working set logic in the reverse way ;)
+> > 
+> > I think the 1/2 factor for NR_SLAB_RECLAIMABLE may be too high in some cases,
+> > but I'm going to check that.
+> 
+> Yes, after updatedb. In that case simple magics numbers may not help.
+> In that case we should really first call shrink_slab() in a loop to
+> cut down the slab pages to a sane number.
 
-Hi!
+I have verified that the appended patch works reasonably well.
 
-Sorry. It seems we started off on the wrong foot.
+The value returned as the minimum image size is usually too high, but not very
+much (on x86_64 usually about 20%) and there are no "magic" coefficients
+involved any more and the computation of the minimum image size is carried out
+before calling shrink_all_memory() (so it's still going to be useful after
+we've dropped shrink_all_memory() at one point).
 
-I know that one never ends learning and I am glad you took the
-time to write this stuff down because it helps.=20
-So let this be clear between us, i'm not trying to offend you and the
-criticism is only about git-quick.html as it is found by google. =20
+Thanks,
+Rafael
 
-I choose the 'the sky is falling' attitude to 'shout into the
-woods' and provoke at least some response. (not knowing where or who
-the maintainer was... )
+---
+From: Rafael J. Wysocki <rjw@sisk.pl>
+Subject: PM/Hibernate: Do not try to allocate too much memory too hard (rev. 2)
 
+We want to avoid attempting to free too much memory too hard during
+hibernation, so estimate the minimum size of the image to use as the
+lower limit for preallocating memory.
 
-On Fri, 15 May 2009 18:20:04 -0500
-Rob Landley <rob@landley.net> wrote:
+The approach here is based on the (experimental) observation that we
+can't free more page frames than the sum of:
 
-> On Friday 15 May 2009 05:18:29 Florian Mickler wrote:
-> > Hi Rob!
-> >
-> > I'm writing to this emailadress, because I went down from $subject
-> > to doc/local to doc/  and yours was the first email-adress I found.
-> >
-> > Who is maintaining $subject? I found it via google searching for git
-> > bisect.
->=20
-> Um, me?
+* global_page_state(NR_SLAB_RECLAIMABLE)
+* global_page_state(NR_ACTIVE_ANON)
+* global_page_state(NR_INACTIVE_ANON)
+* global_page_state(NR_ACTIVE_FILE)
+* global_page_state(NR_INACTIVE_FILE)
 
-perhaps you should add that bit of information to it then?=20
+minus
 
->=20
-> I wrote it way back when, because I had to learn how to use git
-> enough to do a bisect and it wasn't properly documented then.  (At
-> least three other people have written up their own bisect howtos on
-> it since then.)
->=20
-> People poke me about it from time to time, but mostly I personally
-> use mercurial.
+* global_page_state(NR_FILE_MAPPED)
 
-which is fine and i appreciate your effort.
+Namely, if this number is subtracted from the number of saveable
+pages in the system, we get a good estimate of the minimum reasonable
+size of a hibernation image.
 
->=20
-> > Instead you should use
-> > git bisect skip or
-> > git bisect visualize and choose another commit to test.
->=20
-> I believe that both of those options were implemented _after_ I wrote
-> the above document.  (People keep telling me that the user interface
-> of git can't be said to "suck" because it keeps changing.)
+Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
+---
+ kernel/power/snapshot.c |   43 +++++++++++++++++++++++++++++++++++++++----
+ 1 file changed, 39 insertions(+), 4 deletions(-)
 
-yes. so my email is all the more relevant, or not?
-
->=20
-> > If you guess wrong, your bisection result is not valid anymore.
->=20
-> Which is why it tells you how to back up to where you guessed so you
-> can try it the other way when you guess wrong.  (Did you stop reading
-> when you encountered the first thing you disagreed with?)  Lemme cut
-> and paste the appropriate chunk:
-
-of course i stopped _not_. Who do you think i am! :)
-
->=20
->   If you guess wrong (hint: every revision bisect wants
->   to test after that comes out the opposite of your guess, all the
-> way to the end) do a <b>git bisect replay ../bisect.log</b> to
-> restart from your saved position, and guess the other way.
-
-which is exactly my point: you need to replay and wasted 10
- reboot+compile cycles.
-AND it may be possible that every test after your guess comes out the
-opposite of your guess but you guessed right nonetheless. this does
-not tell you that your guess was wrong! it is not even a pre-requisit
-for your guess being wrong.=20
-
-suppose the following:=20
-
-Good--+---B--1+--------BAD
-       \     / =20
-        ----2  =20
-
-("B" being the bug-introducing changeset, "1" the first tested commit,
-"2" the 2nd tested commit, "-" some other commit and "+" some merge or
-branchpoint. )
-
-you guess wrong at 1 (this means you classify 1 good.)
-second commit is 2 which is good, as there the bug B was never
-introduced. so you get 2 as good. which is not the opposite of your
-guess.=20
-
-> The ability to do that sort of thing would presumably be why they
-> implemented the replay option in the first place.
-
-well,  i would say they introduced it so one can doublecheck the tests
-if one realizes that maybe unplugging the speakers is overshadowing the
-bug "speakers don't work in rc5, but in rc1 they worked". or smth like
-that. but this is irrelevant.
-
->=20
-> > (and that really sucks, because all your compiliations after that
-> > one are _worthless_ ).
->=20
-> No, they demonstrate that the bug isn't in that fork, at which point
-> you back up and check the other fork.
-no... you never know because you
-have no way of knowing if the bisection succeeded or not.=20
-
-> > But if you defer the decision for that commit (via git-skip) you at
-> > least get a range of commits including the bad
-> > commit, or if the commit immidiatly before the bad commit is
-> > buildable, you even get the right bad commit.
-> >
-> > i'm quoting the text that neeeds to be _removed_:
->=20
-> I'm going to give you the benefit of the doubt and assume that
-> "neeeds" isn't a typo rather than a "badwrong" _word_ indicating how
-> _falling_ the -=3D>*[(SKY)]*<=3D- is today.
-
-if you use git-bisect skip there is the (large) chance that your
-skipped commit is based ontop of a test-able commit which already has
-the bug. so you don't  need to guess, but have the chance to get a
-correct bisection result.  so i think the 'needs' is warranted.
-(relative to the impact git-bisect has on one's life...)
-
->=20
-> Last time somebody poked me about this I added this bit:
->=20
->   Note: you can also tell git itself to skip a commit you can't test
-> with git bisect skip.  Unfortunately, the git-bisect man page gives
-> this warning about the "skip" command:
->=20
->     But computing the commit to test may be slower afterwards and git
-> may eventually not be able to tell the first bad among a bad and one
-> or more "skip"ped commits.
-
-this is nonsense (the ''being slower part'').  the other part:
-the first bad among a bad and one or more skipped commits is of course
-true. but what do you expect? at least you can defer the guessing to
-the end of the bisection. maybe the skipped commits are ''cut off'' by
-test-able commits. so you don't need to guess about them . at the very
-least you get a range of commits which contain the bad one.=20
-
-
-> Let me know when they sky _finishes_ falling for you, and then if
-> you'd like to send a slightly less hysterical message I might take a
-> closer look at what git's doing this week and see if it's actually
-> changed since the last time I was paying attention.  (Keep in mind
-> that since my laptop's still running Ubuntu LTS, because 8.10's
-> wireless support spontaneously ate itself so badly I had to
-> reinstall, and 9.04 doesn't like Intel 3D chipsets.  So I'll have to
-> build git from source to see how the "current" versions differ from
-> that...)
-
-i guess this is not necessary, as it is not implementation specific but
-fundamental to the princip of binary-search.=20
-
->=20
-> But you have yet to convince me anything's actually wrong...
-
-of course! i never expect someone to do smth without being convinced.
-some do, but thats a sign of not caring, being intimidated or being
-stupid.=20
-
-sincerely,
-
-Florian
-
---Sig_/tFTnEEzb89x/qS=9JlHwBRR
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2.0.11 (GNU/Linux)
-
-iEYEARECAAYFAkoQfZQACgkQPjqCkyL3Kv1oeACgxVnLFZjzsRXjuDExwhX7RvmE
-UtwAn3Y/dhNbfZWOtOMyc7by22a3Rfh8
-=CvBo
------END PGP SIGNATURE-----
-
---Sig_/tFTnEEzb89x/qS=9JlHwBRR--
+Index: linux-2.6/kernel/power/snapshot.c
+===================================================================
+--- linux-2.6.orig/kernel/power/snapshot.c
++++ linux-2.6/kernel/power/snapshot.c
+@@ -1204,6 +1204,36 @@ static void free_unnecessary_pages(void)
+ }
+ 
+ /**
++ * minimum_image_size - Estimate the minimum acceptable size of an image
++ * @saveable: Number of saveable pages in the system.
++ *
++ * We want to avoid attempting to free too much memory too hard, so estimate the
++ * minimum acceptable size of a hibernation image to use as the lower limit for
++ * preallocating memory.
++ *
++ * We assume that the minimum image size should be proportional to
++ *
++ * [number of saveable pages] - [number of pages that can be freed in theory]
++ *
++ * where the second term is the sum of (1) reclaimable slab pages, (2) active
++ * and (3) inactive anonymouns pages, (4) active and (5) inactive file pages,
++ * minus mapped file pages.
++ */
++static unsigned long minimum_image_size(unsigned long saveable)
++{
++	unsigned long size;
++
++	size = global_page_state(NR_SLAB_RECLAIMABLE)
++		+ global_page_state(NR_ACTIVE_ANON)
++		+ global_page_state(NR_INACTIVE_ANON)
++		+ global_page_state(NR_ACTIVE_FILE)
++		+ global_page_state(NR_INACTIVE_FILE)
++		- global_page_state(NR_FILE_MAPPED);
++
++	return saveable <= size ? 0 : saveable - size;
++}
++
++/**
+  * hibernate_preallocate_memory - Preallocate memory for hibernation image
+  *
+  * To create a hibernation image it is necessary to make a copy of every page
+@@ -1220,8 +1250,8 @@ static void free_unnecessary_pages(void)
+  *
+  * If image_size is set below the number following from the above formula,
+  * the preallocation of memory is continued until the total number of saveable
+- * pages in the system is below the requested image size or it is impossible to
+- * allocate more memory, whichever happens first.
++ * pages in the system is below the requested image size or the minimum
++ * acceptable image size returned by minimum_image_size(), whichever is greater.
+  */
+ int hibernate_preallocate_memory(void)
+ {
+@@ -1282,6 +1312,11 @@ int hibernate_preallocate_memory(void)
+ 		goto out;
+ 	}
+ 
++	/* Estimate the minimum size of the image. */
++	pages = minimum_image_size(saveable);
++	if (size < pages)
++		size = min_t(unsigned long, pages, max_size);
++
+ 	/*
+ 	 * Let the memory management subsystem know that we're going to need a
+ 	 * large number of page frames to allocate and make it free some memory.
+@@ -1294,8 +1329,8 @@ int hibernate_preallocate_memory(void)
+ 	 * The number of saveable pages in memory was too high, so apply some
+ 	 * pressure to decrease it.  First, make room for the largest possible
+ 	 * image and fail if that doesn't work.  Next, try to decrease the size
+-	 * of the image as much as indicated by image_size using allocations
+-	 * from highmem and non-highmem zones separately.
++	 * of the image as much as indicated by 'size' using allocations from
++	 * highmem and non-highmem zones separately.
+ 	 */
+ 	pages_highmem = preallocate_image_highmem(highmem / 2);
+ 	max_size += pages_highmem;
