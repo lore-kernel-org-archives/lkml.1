@@ -1,87 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753481AbZEQM7H@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753655AbZEQNDk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753481AbZEQM7H (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 08:59:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752743AbZEQM6t
+	id S1753655AbZEQNDk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 09:03:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752318AbZEQNDa
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 08:58:49 -0400
-Received: from einhorn.in-berlin.de ([192.109.42.8]:50573 "EHLO
-	einhorn.in-berlin.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751382AbZEQM6s (ORCPT
+	Sun, 17 May 2009 09:03:30 -0400
+Received: from www17.your-server.de ([213.133.104.17]:52253 "EHLO
+	www17.your-server.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751695AbZEQNDa (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 08:58:48 -0400
-X-Envelope-From: stefanr@s5r6.in-berlin.de
-Message-ID: <4A100977.1070506@s5r6.in-berlin.de>
-Date: Sun, 17 May 2009 14:56:23 +0200
-From: Stefan Richter <stefanr@s5r6.in-berlin.de>
-User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; en-US; rv:1.8.1.21) Gecko/20090411 SeaMonkey/1.1.16
+	Sun, 17 May 2009 09:03:30 -0400
+Message-ID: <20090517150318.13801o5efb1taoeu@mail.your-server.de>
+Date: Sun, 17 May 2009 15:03:18 +0200
+From: Thomas Meyer <thomas@m3y3r.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, oprofile-list@lists.sf.net,
+       Robert Richter <robert.richter@amd.com>
+Subject: Re: oprofile: WQ on CPU0, prefer CPU1
+References: <20090514202214.14243n1debrzobx2@mail.your-server.de>
+ <20090516224947.05067f96.akpm@linux-foundation.org>
+In-Reply-To: <20090516224947.05067f96.akpm@linux-foundation.org>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-CC: Ingo Molnar <mingo@elte.hu>, Martin Bammer <mrb74@gmx.at>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Adrian Bunk <bunk@kernel.org>,
-       Linus Torvalds <torvalds@linux-foundation.org>,
-       Natalie Protasevich <protasnb@gmail.com>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Network Development <netdev@vger.kernel.org>,
-       Jeff Mahoney <jeffm@suse.com>
-Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <20090517073327.GC1583@elte.hu> <200905171234.23436.rjw@sisk.pl>
-In-Reply-To: <200905171234.23436.rjw@sisk.pl>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+ charset=ISO-8859-1;
+ DelSp="Yes";
+ format="flowed"
+Content-Disposition: inline
 Content-Transfer-Encoding: 7bit
+User-Agent: Dynamic Internet Messaging Program (DIMP) H3 (1.1.2)
+X-Authenticated-Sender: thomas@m3y3r.de
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Rafael J. Wysocki wrote:
-> On Sunday 17 May 2009, Ingo Molnar wrote:
->> * Rafael J. Wysocki <rjw@sisk.pl> wrote:
->>> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13321
->>> Subject		: kernel crash with NULL pointer when boot
->>> Submitter	: Martin Bammer <mrb74@gmx.at>
->>> Date		: 2009-05-16 12:37 (1 days old)
->>> References	: http://lkml.org/lkml/2009/5/16/100
->> that crash is in reiserfs_for_each_xattr(), during sys_unlink()'s 
->> xattr teardown.
->>
->> There's been a good deal of reiserfs changes in this cycle - some 
->> touch the xattr code as well. Some of them fairly late in the cycle,
 
-(Also, the bug is reportedly a post -rc5 regression.)
+Zitat von Andrew Morton <akpm@linux-foundation.org>:
 
->> in the last two weeks:
+> (cc's added, from MAINTAINERS)
+>
+> On Thu, 14 May 2009 20:22:14 +0200 Thomas Meyer <thomas@m3y3r.de> wrote:
+>
 >>
->>  earth4:~/tip> gll v2.6.29..linus --since=two-weeks-ago fs/reiserfs/
->>  2a32ceb: Fix races around the access to ->s_options
->>  677c9b2: reiserfs: remove privroot hiding in lookup
->>  b82bb72: reiserfs: dont associate security.* with xattr files
->>  ab17c4f: reiserfs: fixup xattr_root caching
->>  edcc37a: Always lookup priv_root on reiserfs mount and keep it
->>  5a6059c: reiserfs: Expand i_mutex to enclose lookup_one_len
+>> After suspend and resume to/from S3 I see a lot of these messages in
+>> the kernel log:
 >>
->> Martin, you could try a blind revert of say ... ab17c4f, which looks 
->> the most suspect and which is also a rather large commit.
+>> [11750.054031] WQ on CPU0, prefer CPU1
+>> [11750.154023] WQ on CPU0, prefer CPU1
+>> [11750.254022] WQ on CPU0, prefer CPU1
+>> [11750.354022] WQ on CPU0, prefer CPU1
+>> [11750.454018] WQ on CPU0, prefer CPU1
+>> [11750.554022] WQ on CPU0, prefer CPU1
+>> [11750.654022] WQ on CPU0, prefer CPU1
+>> [11750.754039] WQ on CPU0, prefer CPU1
+>> [11750.854020] WQ on CPU0, prefer CPU1
+>> [11750.954024] WQ on CPU0, prefer CPU1
+>> [11751.054029] WQ on CPU0, prefer CPU1
+>> [11751.154028] WQ on CPU0, prefer CPU1
+>> [11751.254026] WQ on CPU0, prefer CPU1
+>> [11751.354019] WQ on CPU0, prefer CPU1
+>> [11751.454022] WQ on CPU0, prefer CPU1
+>> [11751.554032] WQ on CPU0, prefer CPU1
+>> [11751.654028] WQ on CPU0, prefer CPU1
+>> [11751.754028] WQ on CPU0, prefer CPU1
+>> [11751.854033] WQ on CPU0, prefer CPU1
+>> [11751.954029] WQ on CPU0, prefer CPU1
+>> [and so on; seems not to stop]
 >>
->> Or/and you could try a bisect - perhaps accelerated via:
+>> This comes from drivers/oprofile/cpu_buffer.c
 >>
->>    git bisect start fs/reiserfs/
-> 
-> I think there's a fix already for this in the works, but it hasn't been merged
-> yet.  It looks like Jeff has just posted some reiserfs fixes. :-)
+>> Bug or feature?
+>>
+>
+> Don't know.  It needs fixing though - the kernel shouldn't blurt random
+> printks like this.
+>
+>>
+>> PS: 2.6.30-rc5
+>
+> Do you know if earlier kernels did the same thing?
 
-I'd say Martin should try Jeff's pending patches before a revert or 
-before starting a bisection.  Either apply them from 
-http://lkml.org/lkml/2009/5/17/6, or pull from
-  git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs-2.6.git for-next
-or wait for them to appear in Linus' tree...
+I don't know.
 
-I for one didn't test the post v2.6.30-rc5 changes to reiserfs, but I 
-did try them _together_ with the four pending patches on a system with 
-reiserfs root filesystem and extended attributes disabled in the config. 
-Everything is fine here after almost a week uptime.
--- 
-Stefan Richter
--=====-=-=== -=-= -==-=
-http://arcgraph.de/sr/
+
