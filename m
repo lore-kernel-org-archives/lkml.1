@@ -1,16 +1,16 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757429AbZEPXqW@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755804AbZEQACv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757429AbZEPXqW (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 19:46:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753725AbZEPXqH
+	id S1755804AbZEQACv (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 20:02:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753852AbZEQACl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 19:46:07 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:42878 "EHLO
+	Sat, 16 May 2009 20:02:41 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:50616 "EHLO
 	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1755963AbZEPXqD (ORCPT
+	by vger.kernel.org with ESMTP id S1753725AbZEQACl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 19:46:03 -0400
-Date: Sat, 16 May 2009 16:44:28 -0700 (PDT)
+	Sat, 16 May 2009 20:02:41 -0400
+Date: Sat, 16 May 2009 17:01:26 -0700 (PDT)
 From: Linus Torvalds <torvalds@linux-foundation.org>
 X-X-Sender: torvalds@localhost.localdomain
 To: "Rafael J. Wysocki" <rjw@sisk.pl>
@@ -18,15 +18,15 @@ cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Adrian Bunk <bunk@kernel.org>,
        Andrew Morton <akpm@linux-foundation.org>,
        Natalie Protasevich <protasnb@gmail.com>,
-       Shirish Pargaonkar <shirishp@us.ibm.com>,
-       Steve French <sfrench@us.ibm.com>
+       Greg Kroah-Hartman <gregkh@suse.de>, Kay Sievers <kay.sievers@vrfy.org>
 Subject: Re: 2.6.30-rc6: Reported regressions from 2.6.29
 In-Reply-To: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
-Message-ID: <alpine.LFD.2.01.0905161632160.3301@localhost.localdomain>
+Message-ID: <alpine.LFD.2.01.0905161644350.3301@localhost.localdomain>
 References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
 User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
@@ -35,61 +35,56 @@ X-Mailing-List: linux-kernel@vger.kernel.org
 
 On Sat, 16 May 2009, Rafael J. Wysocki wrote:
 > 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13329
-> Subject		: cifs_close: NULL pointer dereference
-> Submitter	: Luca Tettamanti <kronos.it@gmail.com>
-> Date		: 2009-05-16 16:28 (1 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124249133701702&w=4
+> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13326
+> Subject		: Null pointer dereference in rtc-cmos driver
+> Submitter	: Ozan Çağlayan <ozan@pardus.org.tr>
+> Date		: 2009-05-14 16:16 (3 days old)
+> References	: http://marc.info/?l=linux-kernel&m=124231783704696&w=4
 
-The code in this one decodes to
+Ok, I'm of two minds on this one.
 
-   0:	89 ef                	mov    %ebp,%edi
-   2:	45 31 e4             	xor    %r12d,%r12d
-   5:	e8 f3 63 e7 df       	callq  0xffffffffdfe763fd
-   a:	41 bd 0a 00 00 00    	mov    $0xa,%r13d
-  10:	48 c7 c7 c4 6b 61 a0 	mov    $0xffffffffa0616bc4,%rdi
-  17:	e8 b3 7f e7 df       	callq  0xffffffffdfe77fcf
-  1c:	48 8b 53 10          	mov    0x10(%rbx),%rdx
-  20:	48 8b 43 18          	mov    0x18(%rbx),%rax
-  24:	48 c7 c7 c4 6b 61 a0 	mov    $0xffffffffa0616bc4,%rdi
-  2b:*	48 89 42 08          	mov    %rax,0x8(%rdx)     <-- trapping instruction
-  2f:	48 89 10             	mov    %rdx,(%rax)
-  32:	48 c7 43 18 00 02 20 	movq   $0x200200,0x18(%rbx)
-  39:	00 
-  3a:	48 8b 13             	mov    (%rbx),%rdx
+The thing that triggers it is a module that is both a module _and_ 
+compiled in (ie the same kernel compiled twice, and the stale module kept 
+around). I can see how it happens, and we should react more gracefully to 
+it, but at the same time I can't really bring myself to care deeply.
 
-which seems to match (modulo normal compiler issues):
+What is going on is that the cmos-rtc.c driver does this:
 
-        movq    -56(%rbp), %rdi # %sfp,
-        call    mutex_unlock    #
-        movq    $GlobalSMBSeslock, %rdi #,
-        call    _write_lock     #
-        movq    16(%rbx), %rdx  # <variable>.flist.next, D.47095
-        movq    24(%rbx), %rax  # <variable>.flist.prev, D.47094
-        movq    %rax, 8(%rdx)   # D.47094, <variable>.prev
-        movq    %rdx, (%rax)    # D.47095, <variable>.next
-        movq    $2097664, 24(%rbx)      #, <variable>.flist.prev
-        movq    (%rbx), %rdx    # <variable>.tlist.next, D.47099
+	#ifdef  CONFIG_PNP
+	        pnp_register_driver(&cmos_pnp_driver);
+	#endif
 
-which I think ends up being this code:
+	        if (!cmos_rtc.dev)
+	                retval = platform_driver_probe(&cmos_platform_driver,
+                                               cmos_platform_probe);
 
-                mutex_unlock(&pSMBFile->lock_mutex);
-        
-                write_lock(&GlobalSMBSeslock);
-                list_del(&pSMBFile->flist);   
+	        if (retval == 0)
+	                return 0;
 
-ie 'pSMBFile->flist.next' looks to be zero. Either uninitialized or 
-perhaps a use-after-free thing..
+	#ifdef  CONFIG_PNP
+	        pnp_unregister_driver(&cmos_pnp_driver);
+	#endif
+	        return retval;
 
-We have commit 90e4ee5d31 "[CIFS] Fix double list addition in cifs posix 
-open code" that touches exactly that 'flist' thing, and removes the thing 
-that adds it to the list because it's _claimed_ to be a "double add". It 
-probably wasn't.
+and what happens is that the pnp_register_driver fails when the module 
+calls it (because the built-in driver already exists under the same name):
 
-The bug reporter says:
+	[   10.428691] Error: Driver 'rtc_cmos' is already registered, aborting...
 
-> The machine is running kernel from git (1d80cac - almost rc6)
+but the driver doesn't really care whether that succeeded or not, but then 
+the platform_driver_probe fails (because the thing is already in use), so 
+then it ends up unregistering something that never got registered in the 
+first place.
 
-and that 1d80cac is _after_ 90e4ee5d31. So I do think 90e4ee5d31 is buggy.
+I think this is strictly speaking a bug in driver_unregister(), which is 
+too fragile. If you unregister a drivert that wasn't registered, we 
+shouldn't oops. 
 
-		Linus
+But we could certainly do it at the rtc-cmos.c level too, and just not 
+unregister it if the registration failed. My gut feel is that we should 
+aim for the core driver helpers to be less fragile, though - we'll always 
+have driver bugs.
+
+Greg?
+
+			Linus
