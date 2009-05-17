@@ -1,69 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756091AbZEQKX4@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757119AbZEQKZb@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756091AbZEQKX4 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 06:23:56 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751949AbZEQKXq
+	id S1757119AbZEQKZb (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 06:25:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbZEQKZV
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 06:23:46 -0400
-Received: from ogre.sisk.pl ([217.79.144.158]:46304 "EHLO ogre.sisk.pl"
+	Sun, 17 May 2009 06:25:21 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:46320 "EHLO ogre.sisk.pl"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750804AbZEQKXp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 06:23:45 -0400
+	id S1753245AbZEQKZU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 06:25:20 -0400
 From: "Rafael J. Wysocki" <rjw@sisk.pl>
-To: Maciej Rutecki <maciej.rutecki@gmail.com>
-Subject: Re: [Bug #13172] Spontaneous reboots since 2.6.29-rc*
-Date: Sun, 17 May 2009 12:23:59 +0200
+To: Sachin Sant <sachinp@in.ibm.com>
+Subject: Re: [Bug #13068] Lockdep warining in inotify_dev_queue_event
+Date: Sun, 17 May 2009 12:25:34 +0200
 User-Agent: KMail/1.11.2 (Linux/2.6.30-rc5-rjw; KDE/4.2.2; x86_64; ; )
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+Cc: Ingo Molnar <mingo@elte.hu>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
        Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Yinghai Lu <yhlu.kernel@gmail.com>
-References: <yO1BmxN79sN.A.xAG.8_zDKB@chimera> <pQ9WADCjgyE.A.QrG.PA0DKB@chimera> <8db1092f0905170053k5ccd8903k7b6d203dd349daeb@mail.gmail.com>
-In-Reply-To: <8db1092f0905170053k5ccd8903k7b6d203dd349daeb@mail.gmail.com>
+       Marcin Slusarz <marcin.slusarz@gmail.com>
+References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera> <20090517063530.GB1583@elte.hu> <4A0FC736.7050301@in.ibm.com>
+In-Reply-To: <4A0FC736.7050301@in.ibm.com>
 MIME-Version: 1.0
 Content-Type: Text/Plain;
-  charset="utf-8"
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-Message-Id: <200905171224.00249.rjw@sisk.pl>
+Message-Id: <200905171225.34911.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 May 2009, Maciej Rutecki wrote:
-> 2009/5/16 Rafael J. Wysocki <rjw@sisk.pl>:
-> > This message has been generated automatically as a part of a report
-> > of regressions introduced between 2.6.28 and 2.6.29.
+On Sunday 17 May 2009, Sachin Sant wrote:
+> Ingo Molnar wrote:
+> > i think this might be fixed by:
 > >
-> > The following bug entry is on the current list of known regressions
-> > introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> > be listed and let me know (either way).
+> > 381a80e: inotify: use GFP_NOFS in kernel_event() to work around a lockdep false-positive
 > >
-> >
-> > Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13172
-> > Subject         : Spontaneous reboots since 2.6.29-rc*
-> > Submitter       : Maciej Rutecki <maciej.rutecki@gmail.com>
-> > Date            : 2009-04-17 17:03 (30 days old)
-> > References      : http://marc.info/?l=linux-kernel&m=123998788921733&w=4
-> >
-> >
-> 
-> I try:
-> CONFIG_MTRR_SANITIZER=y
-> CONFIG_MTRR_SANITIZER_ENABLE_DEFAULT=1
-> CONFIG_MTRR_SANITIZER_SPARE_REG_NR_DEFAULT=1
-> 
-> from:
-> http://marc.info/?l=linux-kernel&m=124022460715035&w=4
-> 
-> Spontaneous reboots occur less often than in previous .config. From
-> last report it occur once or twice. I think, it's hardware/bios/mtrr
-> issue.
-> 
-> Because of this I think we should remove this regression from list,
-> until I find out, why it happen, or more people report this. What do
-> You think?
+> > already in -rc6.
+> >   
+> Haven't seen this issue with rc6.
 
-I've closed the bug.  Pleaes reopen it once you've found the root cause.
+Great, thanks.  Bug closed.
 
-Thanks,
+Best,
 Rafael
