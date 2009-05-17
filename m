@@ -1,63 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753717AbZEQUiU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754744AbZEQUvv@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753717AbZEQUiU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 16:38:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753709AbZEQUiG
+	id S1754744AbZEQUvv (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 16:51:51 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752609AbZEQUvk
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 16:38:06 -0400
-Received: from lon1-post-3.mail.demon.net ([195.173.77.150]:56536 "EHLO
-	lon1-post-3.mail.demon.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1752628AbZEQUiF (ORCPT
+	Sun, 17 May 2009 16:51:40 -0400
+Received: from ch-smtp01.sth.basefarm.net ([80.76.149.212]:59777 "EHLO
+	ch-smtp01.sth.basefarm.net" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752037AbZEQUvj (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 16:38:05 -0400
-Subject: Re: regression in 2.6.30-rc6 -- via82xx sound very quiet
-From: Richard Kennedy <richard@rsk.demon.co.uk>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: perex@perex.cz, lkml <linux-kernel@vger.kernel.org>
-In-Reply-To: <s5h7i0f7iqo.wl%tiwai@suse.de>
-References: <1242578874.2748.11.camel@localhost.localdomain>
-	 <s5h7i0f7iqo.wl%tiwai@suse.de>
-Content-Type: text/plain
-Date: Sun, 17 May 2009 21:38:03 +0100
-Message-Id: <1242592683.2748.24.camel@localhost.localdomain>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.24.5 (2.24.5-1.fc10) 
-Content-Transfer-Encoding: 7bit
+	Sun, 17 May 2009 16:51:39 -0400
+From: "Henrik Rydberg" <rydberg@euromail.se>
+To: Dmitry Torokhov <dmitry.torokhov@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-input@vger.kernel.org,
+       linux-kernel@vger.kernel.org, Henrik Rydberg <rydberg@euromail.se>
+Subject: [PATCH] input: mt: add tracking ID to the MT protocol
+Date: Sun, 17 May 2009 22:51:18 +0200
+Message-Id: <1242593479-9238-1-git-send-email-rydberg@euromail.se>
+X-Mailer: git-send-email 1.5.6.3
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+X-Originating-IP: 83.248.194.102
+X-Scan-Result: No virus found in message 1M5nKT-0001Df-5C.
+X-Scan-Signature: ch-smtp01.sth.basefarm.net 1M5nKT-0001Df-5C 7897f070e16a3f0151d45350902bb7ec
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 2009-05-17 at 19:16 +0200, Takashi Iwai wrote:
-> At Sun, 17 May 2009 17:47:54 +0100,
-> Richard Kennedy wrote:
-> > 
-> > In the current git 2.6.30-rc6 the sound from my motherboard has become
-> > extremely quiet, I have to turn my speakers up all the way to hear
-> > anything at all.
-> > I'm not too sure when the problem first started but I've just tested
-> > 2.6.30-rc4 and it works correctly.  
-> 
-> Try to correct "DXS Playback Volume" mixer elements.
-> The dB range of these volumes were fixed recently to the correct
-> values.  If the old mixer value is restored using the dB value,
-> it would be restored to a much lower value, which explains your
-> symptom.
-> 
-> Simply set these volumes to the max (i.e. 0dB) and never change unless
-> you really need them.
-> 
-> 
-> thanks,
-> 
-> Takashi
+There are a few multi-touch devices that support finger tracking
+well in hardware, Stantum being the prime example. By exposing the
+tracking ID in the MT protocol, evdev bandwidth and cpu usage in
+user space can be reduced.
 
-Hi Takashi,
+This patch adds the ABS_MT_TRACKING_ID to the MT protocol.
 
-thanks for that. Yes that works.
+Signed-off-by: Henrik Rydberg <rydberg@euromail.se>
+Tested-by: Stéphane Chatty <chatty@enac.fr>
+---
+ drivers/input/input.c |    1 +
+ include/linux/input.h |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
-I didn't even know I had that control, so I guess this could be a common
-problem.
-
-regards
-Richard
+diff --git a/drivers/input/input.c b/drivers/input/input.c
+index e54e002..5d445f4 100644
+--- a/drivers/input/input.c
++++ b/drivers/input/input.c
+@@ -42,6 +42,7 @@ static unsigned int input_abs_bypass_init_data[] __initdata = {
+ 	ABS_MT_POSITION_Y,
+ 	ABS_MT_TOOL_TYPE,
+ 	ABS_MT_BLOB_ID,
++	ABS_MT_TRACKING_ID,
+ 	0
+ };
+ static unsigned long input_abs_bypass[BITS_TO_LONGS(ABS_CNT)];
+diff --git a/include/linux/input.h b/include/linux/input.h
+index 0e6ff5d..6fed4f6 100644
+--- a/include/linux/input.h
++++ b/include/linux/input.h
+@@ -656,6 +656,7 @@ struct input_absinfo {
+ #define ABS_MT_POSITION_Y	0x36	/* Center Y ellipse position */
+ #define ABS_MT_TOOL_TYPE	0x37	/* Type of touching device */
+ #define ABS_MT_BLOB_ID		0x38	/* Group a set of packets as a blob */
++#define ABS_MT_TRACKING_ID	0x39	/* Unique ID of initiated contact */
+ 
+ #define ABS_MAX			0x3f
+ #define ABS_CNT			(ABS_MAX+1)
+-- 
+1.5.6.3
 
