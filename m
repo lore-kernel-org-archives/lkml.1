@@ -1,83 +1,84 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754755AbZEQTlx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755211AbZEQTmk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754755AbZEQTlx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 15:41:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753569AbZEQTll
+	id S1755211AbZEQTmk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 15:42:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754204AbZEQTm2
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 15:41:41 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:49119 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752782AbZEQTlk (ORCPT
+	Sun, 17 May 2009 15:42:28 -0400
+Received: from moutng.kundenserver.de ([212.227.126.187]:57676 "EHLO
+	moutng.kundenserver.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753569AbZEQTm0 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 15:41:40 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=v4sq7AtQ/34VUiuYKdy0jSo7EiXvayOxjpANCwVqX72J2fZdxkxOQG4EEM8G2RDtWP
-         vB5eebpdPHvgT4XnCYj2OfADmSP55Kh1WnPi0f34g3zWHtQMfYE430k0nolsw+OVjP6A
-         Y0yxZqeiLBikUbYXQruScx8T30McUM79hLyzY=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Borislav Petkov <petkovbb@googlemail.com>
-Subject: Re: PATA DMA problem leading to kernel panic on reading movie DVDs
-Date: Sun, 17 May 2009 21:45:45 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-00442-ga3668b0; KDE/4.2.2; i686; ; )
-Cc: linux-kernel@vger.kernel.org,
-       Martin Lottermoser <Martin.Lottermoser@t-online.de>,
-       linux-ide@vger.kernel.org
-References: <20090517091224.GA8280@wanza.invalid> <20090517121444.GA8733@wanza.invalid> <20090517193409.GC2976@liondog.tnic>
-In-Reply-To: <20090517193409.GC2976@liondog.tnic>
+	Sun, 17 May 2009 15:42:26 -0400
+From: Arnd Bergmann <arnd@arndb.de>
+To: Robert Hancock <hancockrwd@gmail.com>
+Subject: Re: [PATCH] ata: libata depends on HAS_DMA
+Date: Sun, 17 May 2009 21:38:54 +0200
+User-Agent: KMail/1.9.9
+Cc: Tejun Heo <htejun@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       alan@lxorguk.ukuu.org.uk, flar@allandria.com,
+       schmitz@biophys.uni-duesseldorf.de, linux-kernel@vger.kernel.org,
+       jgarzik@pobox.com, linux-ide@vger.kernel.org, takata@linux-m32r.org,
+       geert@linux-m68k.org, linux-m68k@vger.kernel.org,
+       ysato@users.sourceforge.jp
+References: <20090513043409.GA13577@cynthia.pants.nu> <200905151355.09888.arnd@arndb.de> <4A0FD229.9010401@gmail.com>
+In-Reply-To: <4A0FD229.9010401@gmail.com>
+X-Face: I@=L^?./?$U,EK.)V[4*>`zSqm0>65YtkOe>TFD'!aw?7OVv#~5xd\s,[~w]-J!)|%=]>=?iso-8859-1?q?+=0A=09=7EohchhkRGW=3F=7C6=5FqTmkd=5Ft=3FLZC=23Q-=60=2E=60?=
+ =?iso-8859-1?q?Y=2Ea=5E3zb?=)
+ =?iso-8859-1?q?+U-JVN=5DWT=25cw=23=5BYo0=267C=26bL12wWGlZi=0A=09=7EJ=3B=5C?=
+ =?iso-8859-1?q?wg=3B3zRnz?=,J"CT_)=\H'1/{?SR7GDu?WIopm.HaBG=QYj"NZD_[zrM\Gip^U
 MIME-Version: 1.0
 Content-Disposition: inline
-Message-Id: <200905172145.45756.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="utf-8"
+Content-Type: text/plain;
+  charset="iso-8859-1"
 Content-Transfer-Encoding: 7bit
+Message-Id: <200905172138.55145.arnd@arndb.de>
+X-Provags-ID: V01U2FsdGVkX1/I5DFzxYF2s6+C+JJkvJFSIEt08hmj8qJBn+h
+ D73Fezdfir5M22wfxXYnUvPru/xprCvOoYYqwdsC5Ax+OdWAv8
+ aOeKeNfvHG9bComxz9LBQ==
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sunday 17 May 2009 21:34:09 Borislav Petkov wrote:
-> (adding Bart to CC)
+On Sunday 17 May 2009, Robert Hancock wrote:
+> Arnd Bergmann wrote:
+> > On Friday 15 May 2009, Tejun Heo wrote:
+> >> Don't know much history here but I don't wanna sprinkle ifdefs around
+> >> in libata so I would much prefer dummy implementation which doesn't
+> >> fail compile.
+> > 
+> > My original patch did that by adding 'depends on HAS_DMA'.
+> > 
+> > The only architectures that don't have that are m68k, m32r,
+> > h8300, s390 and microblaze. More research has shown that
+> > they all found a different way to disable the ATA drivers
+> > already, except microblaze.
+> > 
+> > Alan, you objected the patch initially (and loudly), but
+> > maybe you can reconsider this. The only actual effect
+> > that my patch has is to allow an allyesconfig build on
+> > microblaze and that will implement dma-mapping.h in the
+> > next version.
+> > 
+> > All existing architectures do not care at all about this
+> > change, unless I'm missing something.
+> > 
+> > Besides, all the other users of the DMA mapping API
+> > also depend on CONFIG_HAS_DMA.
 > 
-> Hi Bart,
-> 
-> please take a look at the OOPS below, seems like we BUG() in ide_intr() at
-> BUG_ON(!hwif->handler) which shouldn't happen. Full message is at:
-> 
-> http://www.gossamer-threads.com/lists/linux/kernel/1077445.
-> 
-> It is 2.6.29.3 with both PIIX_IDE and ata_piix compiled and it could be
-> that those two step on each other's toes, but this is only wild stab in
-> the dark.
-> 
-> I'm sure you have more ideas.
+> Yes, it fixes the compile problem by preventing libata from being 
+> compiled at all. But the point is that libata should be able to work 
+> without DMA support.
 
-Yes, see my other mail.
+Please reread my explanations above and your own reply from 
+last thursday. The case is entirely theoretical, as all platforms
+(except microblaze, which is getting fixed) either set HAS_DMA or
+don't allow building ATA drivers anyway. Platforms that don't support
+DMA can just define CONFIG_HAS_DMA and do what you suggested:
 
-[ After writing "I will cc: linux-ide on IDE/ATA problems" 100x times
-  on the whiteboard... ;-) ]
+On Thursday 14 May 2009, Robert Hancock wrote:
+> Wouldn't the easiest solution be to just dummy out the DMA API calls on 
+> this platform to always fail? That would fix these compile problems..
 
-> On Sun, May 17, 2009 at 02:14:44PM +0200, Martin Lottermoser wrote:
-> > Hello,
-> > 
-> > On Sun, May 17, 2009 at 01:15:35PM +0200, Martin Lottermoser wrote:
-> > > no, I don't have the necessary cable for that, but I'll provide a
-> > > photograph of the screen and put it on my web site.
-> > 
-> > I've done that now. The file is available from this URL:
-> > 
-> >   http://home.vrweb.de/martin.lottermoser/linux/
-> > 
-> > The directory contains a file "0-readme.txt" which explains what the
-> > files in the directory are; I've added the kernel configuration and the
-> > syslog.
-> > 
-> > Regards,
-> > Martin Lottermoser
-> > -- 
-> > Martin Lottermoser             Martin.Lottermoser at _REMOVE_t-online.de
-> > Greifswaldstrasse 28
-> > 38124 Braunschweig             http://home.vrweb.de/martin.lottermoser
-> > Germany
+	Arnd <><
