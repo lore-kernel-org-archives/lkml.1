@@ -1,125 +1,118 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753968AbZEQOeq@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751499AbZEQOkz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753968AbZEQOeq (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 10:34:46 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751984AbZEQOeg
+	id S1751499AbZEQOkz (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 10:40:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750885AbZEQOkp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 10:34:36 -0400
-Received: from tomts22-srv.bellnexxia.net ([209.226.175.184]:44651 "EHLO
-	tomts22-srv.bellnexxia.net" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751499AbZEQOef (ORCPT
+	Sun, 17 May 2009 10:40:45 -0400
+Received: from yw-out-2324.google.com ([74.125.46.29]:4717 "EHLO
+	yw-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750829AbZEQOko (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 10:34:35 -0400
-X-IronPort-Anti-Spam-Filtered: true
-X-IronPort-Anti-Spam-Result: Ao8IAMK4D0pMQW1W/2dsb2JhbACBT4EwzSSCQoE/BQ
-Date: Sun, 17 May 2009 10:29:33 -0400
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>, gregkh@suse.de,
-       stable@kernel.org, cpufreq@vger.kernel.org, Ingo Molnar <mingo@elte.hu>,
-       rjw@sisk.pl, Ben Slusky <sluskyb@paranoiacs.org>,
-       Dave Jones <davej@redhat.com>
-Subject: [PATCH] cpufreq fix timer teardown in conservative governor
-Message-ID: <20090517142933.GB27882@Krystal>
-References: <yO1BmxN79sN.A.xAG.8_zDKB@chimera> <pQ9WADCjgyE.A.PTG.HA0DKB@chimera>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Sun, 17 May 2009 10:40:44 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=SvA15aACI79+IStKSHyqTnKy+7c4xPGDbLhX1KaundwfsPh/L86FFv+lEoe9s+T+mc
+         0zyzn0OeMs2yjcTFesDH/7vtnnntBjShXfWGKEXd+cuXDSR3PrrAI9KVFU7c2YgZa7Ht
+         psg0BO7dt312g/EkNu+ecGRMST9wa3TI//77Y=
+MIME-Version: 1.0
+In-Reply-To: <20090516221331.0a456cbb@tlielax.poochiereds.net>
+References: <20090516162813.GA18098@nb-core2.darkstar.lan>
+	 <20090516205558.GA20346@nb-core2.darkstar.lan>
+	 <20090516221331.0a456cbb@tlielax.poochiereds.net>
+Date: Sun, 17 May 2009 09:40:44 -0500
+Message-ID: <4a4634330905170740m180f451dg9e16a3886f2af298@mail.gmail.com>
+Subject: Re: [linux-cifs-client] Re: [2.6.30-rc6] cifs_close: NULL pointer 
+	dereference
+From: Shirish Pargaonkar <shirishpargaonkar@gmail.com>
+To: Jeff Layton <jlayton@redhat.com>
+Cc: Luca Tettamanti <kronos.it@gmail.com>, linux-kernel@vger.kernel.org,
+       linux-cifs-client@lists.samba.org, Steve French <smfrench@gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-In-Reply-To: <pQ9WADCjgyE.A.PTG.HA0DKB@chimera>
-X-Editor: vi
-X-Info: http://krystal.dyndns.org:8080
-X-Operating-System: Linux/2.6.21.3-grsec (i686)
-X-Uptime: 10:25:56 up 78 days, 10:52,  3 users,  load average: 0.16, 0.25,
-	0.28
-User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-* Rafael J. Wysocki (rjw@sisk.pl) wrote:
-> This message has been generated automatically as a part of a report
-> of regressions introduced between 2.6.28 and 2.6.29.
-> 
-> The following bug entry is on the current list of known regressions
-> introduced between 2.6.28 and 2.6.29.  Please verify if it still should
-> be listed and let me know (either way).
-> 
-> 
-> Bug-Entry	: http://bugzilla.kernel.org/show_bug.cgi?id=13186
-> Subject		: cpufreq timer teardown problem
-> Submitter	: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Date		: 2009-04-23 14:00 (24 days old)
-> References	: http://marc.info/?l=linux-kernel&m=124049523515036&w=4
-> Handled-By	: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-> Patch		: http://patchwork.kernel.org/patch/19754/
-> 		  http://patchwork.kernel.org/patch/19753/
-> 
+On Sat, May 16, 2009 at 9:13 PM, Jeff Layton <jlayton@redhat.com> wrote:
+> On Sat, 16 May 2009 22:55:58 +0200
+> Luca Tettamanti <kronos.it@gmail.com> wrote:
+>
+>> On Sat, May 16, 2009 at 06:28:13PM +0200, Luca Tettamanti wrote:
+>> > Hello,
+>> > I just hit a NULL pointer dereference in cifs_close while accessing a file on a
+>> > remote Samba shared directory.
+>> [...]
+>> > BUG: unable to handle kernel NULL pointer dereference at 0000000000000008
+>> > IP: [<ffffffffa05f105c>] cifs_close+0x1c1/0x2e8 [cifs]
+>>
+>> Ok, I've reproduced this on a machine with a serial port :)
+>>
+>> 0xffffffff803574e0 in list_del (entry=0xffff8800ac184210)
+>> at /home/kronos/src/linux-2.6.git/lib/list_debug.c:46
+>> 46              WARN(entry->prev->next != entry,
+>> (gdb) bt
+>> #0  0xffffffff803574e0 in list_del (entry=0xffff8800ac184210)
+>>     at /home/kronos/src/linux-2.6.git/lib/list_debug.c:46
+>> #1  0xffffffff80319588 in cifs_close (inode=0xffff8800b8d5f088, file=0xffff8800ad8f6d00)
+>>     at /home/kronos/src/linux-2.6.git/fs/cifs/file.c:670
+>> #2  0xffffffff8029d95e in __fput (file=0xffff8800ad8f6d00)
+>>     at /home/kronos/src/linux-2.6.git/fs/file_table.c:281
+>> #3  0xffffffff8029da32 in fput (file=0xffff8800ac184210)
+>>     at /home/kronos/src/linux-2.6.git/fs/file_table.c:227
+>> #4  0xffffffff8029ad30 in filp_close (filp=0xffff8800ad8f6d00, id=0xffff880037a3e080)
+>>     at /home/kronos/src/linux-2.6.git/fs/open.c:1108
+>> #5  0xffffffff8029ade0 in sys_close (fd=0)
+>>     at /home/kronos/src/linux-2.6.git/fs/open.c:1137
+>> #6  0xffffffff802271e4 in sysenter_dispatch ()
+>>     at /home/kronos/src/linux-2.6.git/arch/x86/ia32/ia32entry.S:161
+>> #7  0x0000000000000000 in ?? ()
+>>
+>> (gdb) f 1
+>> #1  0xffffffff80319588 in cifs_close (inode=0xffff8800b8d5f088, file=0xffff8800ad8f6d00)
+>>     at /home/kronos/src/linux-2.6.git/fs/cifs/file.c:670
+>> 670                     list_del(&pSMBFile->flist);
+>>
+>> (gdb) p *&pSMBFile->flist
+>> $2 = {next = 0x0, prev = 0x0}
+>>
+>> (gdb) p *&pSMBFile->tlist
+>> $5 = {next = 0x0, prev = 0x0}
+>>
+>> So both flist and tlist were not initilized in cifs_open.
+>>
+>> The content of the whole pSMBFile structure:
+>>
+>> (gdb) p *pSMBFile
+>> $6 = {tlist = {next = 0x0, prev = 0x0}, flist = {next = 0x0, prev = 0x0}, uid = 0, pid = 5322, netfid = 13880,
+>>   pfile = 0xffff8800ad8f6d00, pInode = 0xffff8800b8d5f088, lock_mutex = {count = {counter = 1}, wait_lock = {raw_lock = {
+>>         slock = 514}, magic = 3735899821, owner_cpu = 4294967295, owner = 0xffffffffffffffff, dep_map = {
+>>         key = 0xffffffff806a5c98, class_cache = 0x0, name = 0xffffffff80537308 "&lock->wait_lock"}}, wait_list = {
+>>       next = 0xffff8800ac184278, prev = 0xffff8800ac184278}, owner = 0x0, name = 0x0, magic = 0xffff8800ac184240, dep_map = {
+>>       key = 0xffffffff80d7ff50, class_cache = 0xffffffff80835400, name = 0xffffffff8054cdfa "&private_data->lock_mutex"}},
+>>   llist = {next = 0xffff8800ac1842b8, prev = 0xffff8800ac1842b8}, closePend = true, invalidHandle = false,
+>>   messageMode = false, wrtPending = {counter = 0}, fh_mutex = {count = {counter = 1}, wait_lock = {raw_lock = {slock = 0},
+>>       magic = 3735899821, owner_cpu = 4294967295, owner = 0xffffffffffffffff, dep_map = {key = 0xffffffff806a5c98,
+>>         class_cache = 0x0, name = 0xffffffff80537308 "&lock->wait_lock"}}, wait_list = {next = 0xffff8800ac184308,
+>>       prev = 0xffff8800ac184308}, owner = 0x0, name = 0x0, magic = 0xffff8800ac1842d0, dep_map = {key = 0xffffffff80d7ff58,
+>>       class_cache = 0x0, name = 0xffffffff8054cde2 "&private_data->fh_mutex"}}, srch_inf = {index_of_last_entry = 0,
+>>     entries_in_buffer = 0, info_level = 0, resume_key = 0, ntwrk_buf_start = 0x0, srch_entries_start = 0x0, last_entry = 0x0,
+>>     presume_name = 0x0, resume_name_len = 0, endOfSearch = false, emptyDir = false, unicode = false, smallBuf = false}}
+>>
+>
+> Luca...thanks for the bug report and analysis. I've been able to
+> reproduce this too against 3.3.2. The attached patch reverts the open
+> with lookup intent functionality that was added at the beginning of the
+> 2.6.30 cycle. This fixes the problem for me.
+>
+> Steve and Shirish...given that we've already seen a couple of
+> regressions from these patches, I'd like to see them reverted until
+> they have been better tested.
+>
+> --
+> Jeff Layton <jlayton@redhat.com>
+>
 
-(re-send with updated changelog)
-
-cpufreq fix timer teardown in conservative governor
-
-The problem is that dbs_timer_exit() uses cancel_delayed_work() when it should
-use cancel_delayed_work_sync(). cancel_delayed_work() does not wait for the
-workqueue handler to exit.
-
-The ondemand governor does not seem to be affected because the
-"if (!dbs_info->enable)" check at the beginning of the workqueue handler returns
-immediately without rescheduling the work. The conservative governor in
-2.6.30-rc has the same check as the ondemand governor, which makes things
-usually run smoothly. However, if the governor is quickly stopped and then
-started, this could lead to the following race :
-
-dbs_enable could be reenabled and multiple do_dbs_timer handlers would run.
-This is why a synchronized teardown is required.
-
-Depends on patch
-cpufreq: remove rwsem lock from CPUFREQ_GOV_STOP call
-
-The following patch applies to 2.6.30-rc2. Stable kernels have a similar
-issue which should also be fixed, but the code changed between 2.6.29
-and 2.6.30, so this patch only applies to 2.6.30-rc.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-CC: Andrew Morton <akpm@linux-foundation.org>
-CC: gregkh@suse.de
-CC: stable@kernel.org
-CC: cpufreq@vger.kernel.org
-CC: Ingo Molnar <mingo@elte.hu>
-CC: rjw@sisk.pl
-CC: Ben Slusky <sluskyb@paranoiacs.org>
-CC: Dave Jones <davej@redhat.com>
----
- drivers/cpufreq/cpufreq_conservative.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
-
-Index: linux-2.6-lttng/drivers/cpufreq/cpufreq_conservative.c
-===================================================================
---- linux-2.6-lttng.orig/drivers/cpufreq/cpufreq_conservative.c	2009-04-23 23:22:15.000000000 -0400
-+++ linux-2.6-lttng/drivers/cpufreq/cpufreq_conservative.c	2009-04-23 23:24:38.000000000 -0400
-@@ -91,6 +91,9 @@ static unsigned int dbs_enable;	/* numbe
-  * (like __cpufreq_driver_target()) is being called with dbs_mutex taken, then
-  * cpu_hotplug lock should be taken before that. Note that cpu_hotplug lock
-  * is recursive for the same process. -Venki
-+ * DEADLOCK ALERT! (2) : do_dbs_timer() must not take the dbs_mutex, because it
-+ * would deadlock with cancel_delayed_work_sync(), which is needed for proper
-+ * raceless workqueue teardown.
-  */
- static DEFINE_MUTEX(dbs_mutex);
- 
-@@ -542,7 +545,7 @@ static inline void dbs_timer_init(struct
- static inline void dbs_timer_exit(struct cpu_dbs_info_s *dbs_info)
- {
- 	dbs_info->enable = 0;
--	cancel_delayed_work(&dbs_info->work);
-+	cancel_delayed_work_sync(&dbs_info->work);
- }
- 
- static int cpufreq_governor_dbs(struct cpufreq_policy *policy,
-
--- 
-Mathieu Desnoyers
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Does this happen inspite of the patch 90e4ee5d311d4e0729daa676b1d7f754265b5874
