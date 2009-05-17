@@ -1,49 +1,46 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754833AbZEQRLV@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754870AbZEQRNV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754833AbZEQRLV (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 13:11:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754544AbZEQRKp
+	id S1754870AbZEQRNV (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 13:13:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752908AbZEQRNL
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 13:10:45 -0400
-Received: from mx-out2.daemonmail.net ([216.104.160.39]:49829 "EHLO
-	mx-out2.daemonmail.net" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753488AbZEQRKo (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 13:10:44 -0400
-From: "Michael S. Zick" <lkml@morethan.org>
-Reply-To: lkml@morethan.org
-To: lkml <linux-kernel@vger.kernel.org>
-Subject: 2.6.30-rcX VIA agp initialization
-Date: Sun, 17 May 2009 12:10:41 -0500
-User-Agent: KMail/1.9.9
+	Sun, 17 May 2009 13:13:11 -0400
+Received: from web23606.mail.ird.yahoo.com ([87.248.115.49]:40596 "HELO
+	web23606.mail.ird.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1751989AbZEQRNK convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 13:13:10 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.it;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=FR4fuqV2xXq6gSelD6PT6lTi/PNjUG2E5bc0c7TDxWyHLT4eHi2IFDIEVvI0qkVvENpv2hW0KHtQgeC72YSjhLBLvMXnSWH9xXcj9EWBNkYODB9R5QtgA7LDXNweS67+QcGIWNindwuGJKTQ7YiBgRS+GR0oIfHhgzWFrsKjWC4=;
+Message-ID: <668419.88351.qm@web23606.mail.ird.yahoo.com>
+X-YMail-OSG: rf0KwiIVM1lnPtpnw_9Xg3VbTQle7TM9bjkbOiI0Jfll5b958ULlo5vSci63Z49MSeD0MVLlHWtBPDr0kxm6Oq3GxyEKoxNaQYMdnIWhYtcg.SG6vIw4V2r9vd..Uey4DWv2RLW9jDglyuymdbdw4dSn1CX2j82A.4uXCyK3yCWN1VQscYtt5bxpohjMtEK.HRUqMDPCcdUa54P2GEdkq2j5AS6kKvjU2OcwLNhMQ_wDYOKfCuhcge0TX7ZaZ5kVi0jjJqjY1ImysLgMIom.PT02vGhgTLeUbplaTXO9i1s6G9DR
+X-Mailer: YahooMailClassic/5.2.20 YahooMailWebService/0.7.289.10
+Date: Sun, 17 May 2009 17:13:09 +0000 (GMT)
+From: Andrea <andrea256it@yahoo.it>
+Subject: Re: super root shell/mode/api
+To: andi@firstfloor.org
+Cc: linux-kernel@vger.kernel.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-Message-Id: <200905171210.43999.lkml@morethan.org>
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I have been seeing the following in my dmesg:
 
-- - - snip - - - -
-agpgart-via 0000:00:00.0: AGP 3.5 bridge
-agpgart-via 0000:00:00.0: putting AGP V3 device into 8x mode
-pci 0000:01:00.0: putting AGP V3 device into 8x mode
-mtrr: no MTRR for a0000000,4000000 found
-agpgart-via 0000:00:00.0: AGP 3.5 bridge
-agpgart-via 0000:00:00.0: putting AGP V3 device into 8x mode
-pci 0000:01:00.0: putting AGP V3 device into 8x mode
-- - - - snip - - - -
+Thanks.
 
-Is that as intended?  Just cosmetic?
+I'll take a look.
 
-Or is that driver actually being initialized twice?
-Notes: 
-The driver is "built-in" not a module.
-The chip-set is VIA-CX700.
-The driver/hardware does appear to survive the experience.  ;)
+In order to be able to dump/terminate viruses, attacks and OOM processes an
+admin should have the possibility to *quickly* SIGSTP *all* processes except
+vga consoles and to switch from X11 to vga, maybe with SysRq.
 
-Mike
+Is this possible?
+
+Andrea Gedda
+
+
+      
