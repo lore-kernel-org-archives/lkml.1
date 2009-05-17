@@ -1,86 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755209AbZEQWIx@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755186AbZEQWTG@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755209AbZEQWIx (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 18:08:53 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754407AbZEQWIj
+	id S1755186AbZEQWTG (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 18:19:06 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753841AbZEQWSx
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 18:08:39 -0400
-Received: from e3.ny.us.ibm.com ([32.97.182.143]:40545 "EHLO e3.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752378AbZEQWIi (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 18:08:38 -0400
-Date: Sun, 17 May 2009 15:08:35 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Evgeniy Polyakov <zbr@ioremap.net>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, jeff.chua.linux@gmail.com,
-       paulus@samba.org, laijs@cn.fujitsu.com, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
-Message-ID: <20090517220835.GF6973@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <20090517191141.GA25915@linux.vnet.ibm.com> <20090517200223.GA31029@ioremap.net>
+	Sun, 17 May 2009 18:18:53 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:45248 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752998AbZEQWSw (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 18:18:52 -0400
+Date: Sun, 17 May 2009 15:18:19 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Hugh Dickins <hugh@veritas.com>
+cc: Andi Kleen <ak@linux.intel.com>, Ian Campbell <ian.campbell@citrix.com>,
+       Jakub Jelinek <jakub@redhat.com>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Jesper Nilsson <jesper.nilsson@axis.com>,
+       Johannes Weiner <hannes@cmpxchg.org>,
+       Arjan van de Ven <arjan@linux.intel.com>,
+       Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH] Fix print out of function which called WARN_ON()
+In-Reply-To: <Pine.LNX.4.64.0905171536470.23834@blonde.anvils>
+Message-ID: <alpine.LFD.2.01.0905171502160.3301@localhost.localdomain>
+References: <1242404236-17624-1-git-send-email-ian.campbell@citrix.com> <alpine.LFD.2.01.0905151018370.3343@localhost.localdomain> <4A0DC797.7040502@linux.intel.com> <alpine.LFD.2.01.0905161342150.3301@localhost.localdomain>
+ <Pine.LNX.4.64.0905171536470.23834@blonde.anvils>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090517200223.GA31029@ioremap.net>
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 18, 2009 at 12:02:23AM +0400, Evgeniy Polyakov wrote:
-> Hi.
 
-Hello, Evgeniy!
 
-> On Sun, May 17, 2009 at 12:11:41PM -0700, Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> > Fifth cut of "big hammer" expedited RCU grace periods.  This uses per-CPU
-> > kthreads that are scheduled in parallel by a call to smp_call_function()
-> > by yet another kthread.  The synchronize_sched(), synchronize_rcu(),
-> > and synchronize_bh() primitives wake this kthread up and then wait for
-> > it to force the grace period.
+On Sun, 17 May 2009, Hugh Dickins wrote:
+
+> On Sat, 16 May 2009, Linus Torvalds wrote:
+> > 
+> > This patch not only avoids the warnings and gets the right caller 
+> > information, it cleans up the code too:
+> > 
+> >  - it uses '%pS' instead of of sprint_symbol
 > 
-> I'm curious, but doesn't the fact that registered 'barrier' callback is
-> invoked mean grace period completion? I.e. why to bother with
-> rescheduling, waiting for thread to complete and so on, when we only
-> care in the fact that 'barrier' callback is invoked, and thus all
-> previous ones are completed?
-> Or it is done just for the simplicity, since all rescheduling machinery
-> already manages the rcu bits correctly, so you do not want to put it
-> directly into 'barrier' callback?
+> > -	char function[KSYM_SYMBOL_LEN];
+> 
+> This should be a big improvement, because that buffer on the stack
+> was netting lots of stale return addresses, printed out with ?s in
+> the warning's dump_stack().  I had been wanting to add a memset,
+> but your %pS should circumvent the need for that nicely.
 
-It is a short-term expedient course of action.  Longer term, I will drop
-rcuclassic in favor of rcutree, and then merge rcupreempt into rcutree.
-I will then add machinery to rcutree to handle expedited grace periods
-(somewhat) more naturally.  Trying to expedite three very different RCU
-implementations seems a bit silly, hence the current off-on-the-side
-approach.
+Are you sure it was that function[] array?
 
-But even then I will avoid relying on a "barrier" callback, or, indeed,
-any sort of callback, because we don't want expedited grace periods to
-have to wait on invocation of earlier RCU callbacks.  There will thus
-not be a call_rcu_expedited(), at least not unless someone comes up with
-a -really- compelling reason why.
+The thing is, on at least x86-64, any function using va_start() will 
+allocate something like 64 bytes of stack space for the reg-save area. I'm 
+not quite sure _why_ it does that, but it's very irritating, and it showed 
+up quite clearly in some of the stackspace usage things.
 
-But the exercise of going through several possible implementations was
-quite useful, as I learned a number of things that will improve the
-eventual rcutree implementation.  Like the fact that expedited grace
-periods don't want to be waiting on invocation of prior callbacks.  ;-)
+I even sent the gcc people a patch to fix the worst of it (gcc used to 
+allocate about twice as much space because it also had a XMM save area 
+even if you compiled without XMM support or something like that), but my 
+point is, I'm afraid there is still a noticeable gap on the stack due to 
+this, at least for the _fmt() case.
 
-And rcutiny is, as always, as special case.  Here is the implementation
-of synchronize_rcu_expedited() in rcutiny:
+But yes, for the _null() case we now have neither that function buffer 
+_nor_ the stupid va_list save area, so that case should be much better.
 
-	void synchronize_rcu_expedited(void)
-	{
-	}
+Of course, we could avoid that entirely if we were to just pass in the 
+right stack pointer to dump_stack(), and the "warn_slowpath_xyz()" 
+functions could just pass in the stack of their caller. Sadly, we 
+currently have no way to do that :(
 
-Or even:
+We could change the dump_stack() calling convention to give a stack 
+pointer or NULL, and then use __builtin_frame_address(0) in the caller.. 
+But we have a _lot_ of "dump_stack()" users.
 
-	#define synchronize_rcu_expedited synchronize_rcu
-
-;-)
-
-							Thanx, Paul
+		Linus
