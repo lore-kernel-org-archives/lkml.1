@@ -1,77 +1,351 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754159AbZEQNGU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753844AbZEQNJm@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754159AbZEQNGU (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 09:06:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752875AbZEQNGI
+	id S1753844AbZEQNJm (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 09:09:42 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751433AbZEQNJb
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 09:06:08 -0400
-Received: from mail-ew0-f176.google.com ([209.85.219.176]:39780 "EHLO
-	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752838AbZEQNGE (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 09:06:04 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=mcyslK0fx7swOBw+J8cUAlMJ63aev0s3A7LCkFmpUaxPo4ti3lVQY4ynBEEHJbtQZ7
-         VeLBOEHRv21ig/DjUQfVBpk/YqjS+LoqZJjMMDxCX+V88Y7Qj1Mdu7QPr2fornKRpZlQ
-         26SB7xkIy+FPWJrlEwRLVz7AR3wRAXar4gRb4=
-Date: Sun, 17 May 2009 15:06:03 +0200
-From: Frederic Weisbecker <fweisbec@gmail.com>
-To: tom.leiming@gmail.com
-Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org,
-       akpm@linux-foundation.org, mingo@elte.hu
-Subject: Re: [PATCH] ftrace:fix check for return value of
-	register_module_notifier
-Message-ID: <20090517130601.GA4640@nowhere>
-References: <1242545498-7285-1-git-send-email-tom.leiming@gmail.com>
+	Sun, 17 May 2009 09:09:31 -0400
+Received: from mga14.intel.com ([143.182.124.37]:42679 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1751073AbZEQNJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 09:09:29 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,208,1241420400"; 
+   d="scan'208";a="143735110"
+Date: Sun, 17 May 2009 21:09:07 +0800
+From: Wu Fengguang <fengguang.wu@intel.com>
+To: Mel Gorman <mel@csn.ul.ie>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+       LKML <linux-kernel@vger.kernel.org>, Matt Mackall <mpm@selenic.com>,
+       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
+       Andi Kleen <andi@firstfloor.org>,
+       "linux-mm@kvack.org" <linux-mm@kvack.org>
+Subject: Re: [PATCH 1/8] mm: introduce PageHuge() for testing huge/gigantic
+	pages
+Message-ID: <20090517130907.GC3254@localhost>
+References: <20090508105320.316173813@intel.com> <20090508111030.264063904@intel.com> <20090513170552.GB18006@csn.ul.ie>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <1242545498-7285-1-git-send-email-tom.leiming@gmail.com>
+In-Reply-To: <20090513170552.GB18006@csn.ul.ie>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, May 17, 2009 at 03:31:38PM +0800, tom.leiming@gmail.com wrote:
-> From: Ming Lei <tom.leiming@gmail.com>
+On Thu, May 14, 2009 at 01:05:53AM +0800, Mel Gorman wrote:
+> Sorry to join the game so late.
 > 
-> return zero should be correct, so fix it.
+> On Fri, May 08, 2009 at 06:53:21PM +0800, Wu Fengguang wrote:
+> > Introduce PageHuge(), which identifies huge/gigantic pages
+> > by their dedicated compound destructor functions.
+> > 
+> > Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+> > ---
+> >  include/linux/mm.h |   24 ++++++++++++++++++++++++
+> >  mm/hugetlb.c       |    2 +-
+> >  mm/page_alloc.c    |   11 ++++++++++-
+> >  3 files changed, 35 insertions(+), 2 deletions(-)
+> > 
+> > --- linux.orig/mm/page_alloc.c
+> > +++ linux/mm/page_alloc.c
+> > @@ -299,13 +299,22 @@ void prep_compound_page(struct page *pag
+> >  }
+> >  
+> >  #ifdef CONFIG_HUGETLBFS
+> > +/*
+> > + * This (duplicated) destructor function distinguishes gigantic pages from
+> > + * normal compound pages.
+> > + */
+> > +void free_gigantic_page(struct page *page)
+> > +{
+> > +	__free_pages_ok(page, compound_order(page));
+> > +}
+> > +
+> >  void prep_compound_gigantic_page(struct page *page, unsigned long order)
+> >  {
+> >  	int i;
+> >  	int nr_pages = 1 << order;
+> >  	struct page *p = page + 1;
+> >  
+> > -	set_compound_page_dtor(page, free_compound_page);
+> > +	set_compound_page_dtor(page, free_gigantic_page);
+> >  	set_compound_order(page, order);
 > 
-> Signed-off-by: Ming Lei <tom.leiming@gmail.com>
-> ---
->  kernel/trace/ftrace.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+> This made me raise an eyebrow. gigantic pages can never end up back in the
+> page allocator.  It should cause bugs all over the place so I looked closer
+> and this free_gigantic_page() looks unnecessary.
 > 
-> diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
-> index 5b606f4..140699a 100644
-> --- a/kernel/trace/ftrace.c
-> +++ b/kernel/trace/ftrace.c
-> @@ -2826,7 +2826,7 @@ void __init ftrace_init(void)
->  				  __stop_mcount_loc);
->  
->  	ret = register_module_notifier(&ftrace_module_nb);
-> -	if (!ret)
-> +	if (ret)
->  		pr_warning("Failed to register trace ftrace module notifier\n");
->  
->  	return;
+> This is what happens for gigantic pages at boot-time
+> 
+> gather_bootmem_prealloc() called at boot-time to gather gigantic pages
+>   -> Find the boot allocated pages and call prep_compound_huge_page()
+>     -> For gigantic pages, call prep_compound_gigantic_page(), sets destructor to free_compound_page()
+>     -> Call prep_new_huge_page(), sets destructor to free_huge_page()
+> 
+> So, free_gigantic_page() should never used as such in reality and you can
+> just check free_huge_page(). If a gigantic page was really freed that way,
+> it would be really bad.
+> 
+> Does that make sense?
 
+You are right, thanks!
 
-Indeed!
+> > +#ifdef CONFIG_HUGETLBFS
+> > +void free_huge_page(struct page *page);
+> > +void free_gigantic_page(struct page *page);
+> > +
+> > +static inline int PageHuge(struct page *page)
+> > +{
+> > +	compound_page_dtor *dtor;
+> > +
+> > +	if (!PageCompound(page))
+> > +		return 0;
+> > +
+> > +	page = compound_head(page);
+> > +	dtor = get_compound_page_dtor(page);
+> > +
+> > +	return  dtor == free_huge_page ||
+> > +		dtor == free_gigantic_page;
+> > +}
+> > +#else
+> > +static inline int PageHuge(struct page *page)
+> > +{
+> > +	return 0;
+> > +}
+> > +#endif
+> 
+> That is fairly hefty function to be inline and it exports free_huge_page
+> and free_gigantic_page.  The latter of which is dead code and the former
+> which was previously a static function.
+> 
+> At least make PageHuge a non-inlined function contained in mm/hugetlb.c and
+> expose it via mm/internal.h if possible or include/linux/hugetlb.h otherwise.
 
-register_module_notifier returns blocking_notifier_chain_register():
+OK, moved the declaration to hugetlb.h, which will be included by fs/proc/page.c.
 
- *
- *	Currently always returns zero.
- */
-int blocking_notifier_chain_register(struct blocking_notifier_head *nh,
-		struct notifier_block *n)
+Andrew, will you replace the -mm patch
+        mm-introduce-pagehuge-for-testing-huge-gigantic-pages.patch
+with this one?
 
-For now it will never return anything else than 0 but we can keep
-the warning in case it changes one day, as you did.
+---
+mm: introduce PageHuge() for testing huge/gigantic pages
 
-Acked-by: Frederic Weisbecker <fweisbec@gmail.com>
+Introduce PageHuge(), which identifies huge/gigantic pages
+by their dedicated compound destructor functions.
 
+Also move prep_compound_gigantic_page() to hugetlb.c and
+move adjust_pool_surplus() close to its caller.
+
+CC: Mel Gorman <mel@csn.ul.ie>
+CC: Ingo Molnar <mingo@elte.hu>
+Signed-off-by: Wu Fengguang <fengguang.wu@intel.com>
+---
+ fs/proc/page.c          |    1 
+ include/linux/hugetlb.h |    7 ++
+ mm/hugetlb.c            |   98 ++++++++++++++++++++++++--------------
+ mm/internal.h           |    5 -
+ mm/page_alloc.c         |   17 ------
+ 5 files changed, 73 insertions(+), 55 deletions(-)
+
+--- linux.orig/mm/page_alloc.c
++++ linux/mm/page_alloc.c
+@@ -298,23 +298,6 @@ void prep_compound_page(struct page *pag
+ 	}
+ }
+ 
+-#ifdef CONFIG_HUGETLBFS
+-void prep_compound_gigantic_page(struct page *page, unsigned long order)
+-{
+-	int i;
+-	int nr_pages = 1 << order;
+-	struct page *p = page + 1;
+-
+-	set_compound_page_dtor(page, free_compound_page);
+-	set_compound_order(page, order);
+-	__SetPageHead(page);
+-	for (i = 1; i < nr_pages; i++, p = mem_map_next(p, page, i)) {
+-		__SetPageTail(p);
+-		p->first_page = page;
+-	}
+-}
+-#endif
+-
+ static int destroy_compound_page(struct page *page, unsigned long order)
+ {
+ 	int i;
+--- linux.orig/mm/hugetlb.c
++++ linux/mm/hugetlb.c
+@@ -578,41 +578,6 @@ static void free_huge_page(struct page *
+ 		hugetlb_put_quota(mapping, 1);
+ }
+ 
+-/*
+- * Increment or decrement surplus_huge_pages.  Keep node-specific counters
+- * balanced by operating on them in a round-robin fashion.
+- * Returns 1 if an adjustment was made.
+- */
+-static int adjust_pool_surplus(struct hstate *h, int delta)
+-{
+-	static int prev_nid;
+-	int nid = prev_nid;
+-	int ret = 0;
+-
+-	VM_BUG_ON(delta != -1 && delta != 1);
+-	do {
+-		nid = next_node(nid, node_online_map);
+-		if (nid == MAX_NUMNODES)
+-			nid = first_node(node_online_map);
+-
+-		/* To shrink on this node, there must be a surplus page */
+-		if (delta < 0 && !h->surplus_huge_pages_node[nid])
+-			continue;
+-		/* Surplus cannot exceed the total number of pages */
+-		if (delta > 0 && h->surplus_huge_pages_node[nid] >=
+-						h->nr_huge_pages_node[nid])
+-			continue;
+-
+-		h->surplus_huge_pages += delta;
+-		h->surplus_huge_pages_node[nid] += delta;
+-		ret = 1;
+-		break;
+-	} while (nid != prev_nid);
+-
+-	prev_nid = nid;
+-	return ret;
+-}
+-
+ static void prep_new_huge_page(struct hstate *h, struct page *page, int nid)
+ {
+ 	set_compound_page_dtor(page, free_huge_page);
+@@ -623,6 +588,34 @@ static void prep_new_huge_page(struct hs
+ 	put_page(page); /* free it into the hugepage allocator */
+ }
+ 
++static void prep_compound_gigantic_page(struct page *page, unsigned long order)
++{
++	int i;
++	int nr_pages = 1 << order;
++	struct page *p = page + 1;
++
++	/* we rely on prep_new_huge_page to set the destructor */
++	set_compound_order(page, order);
++	__SetPageHead(page);
++	for (i = 1; i < nr_pages; i++, p = mem_map_next(p, page, i)) {
++		__SetPageTail(p);
++		p->first_page = page;
++	}
++}
++
++int PageHuge(struct page *page)
++{
++	compound_page_dtor *dtor;
++
++	if (!PageCompound(page))
++		return 0;
++
++	page = compound_head(page);
++	dtor = get_compound_page_dtor(page);
++
++	return dtor == free_huge_page;
++}
++
+ static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
+ {
+ 	struct page *page;
+@@ -1140,6 +1133,41 @@ static inline void try_to_free_low(struc
+ }
+ #endif
+ 
++/*
++ * Increment or decrement surplus_huge_pages.  Keep node-specific counters
++ * balanced by operating on them in a round-robin fashion.
++ * Returns 1 if an adjustment was made.
++ */
++static int adjust_pool_surplus(struct hstate *h, int delta)
++{
++	static int prev_nid;
++	int nid = prev_nid;
++	int ret = 0;
++
++	VM_BUG_ON(delta != -1 && delta != 1);
++	do {
++		nid = next_node(nid, node_online_map);
++		if (nid == MAX_NUMNODES)
++			nid = first_node(node_online_map);
++
++		/* To shrink on this node, there must be a surplus page */
++		if (delta < 0 && !h->surplus_huge_pages_node[nid])
++			continue;
++		/* Surplus cannot exceed the total number of pages */
++		if (delta > 0 && h->surplus_huge_pages_node[nid] >=
++						h->nr_huge_pages_node[nid])
++			continue;
++
++		h->surplus_huge_pages += delta;
++		h->surplus_huge_pages_node[nid] += delta;
++		ret = 1;
++		break;
++	} while (nid != prev_nid);
++
++	prev_nid = nid;
++	return ret;
++}
++
+ #define persistent_huge_pages(h) (h->nr_huge_pages - h->surplus_huge_pages)
+ static unsigned long set_max_huge_pages(struct hstate *h, unsigned long count)
+ {
+--- linux.orig/mm/internal.h
++++ linux/mm/internal.h
+@@ -16,9 +16,6 @@
+ void free_pgtables(struct mmu_gather *tlb, struct vm_area_struct *start_vma,
+ 		unsigned long floor, unsigned long ceiling);
+ 
+-extern void prep_compound_page(struct page *page, unsigned long order);
+-extern void prep_compound_gigantic_page(struct page *page, unsigned long order);
+-
+ static inline void set_page_count(struct page *page, int v)
+ {
+ 	atomic_set(&page->_count, v);
+@@ -51,6 +48,8 @@ extern void putback_lru_page(struct page
+  */
+ extern unsigned long highest_memmap_pfn;
+ extern void __free_pages_bootmem(struct page *page, unsigned int order);
++extern void prep_compound_page(struct page *page, unsigned long order);
++
+ 
+ /*
+  * function for dealing with page's order in buddy system.
+--- linux.orig/include/linux/hugetlb.h
++++ linux/include/linux/hugetlb.h
+@@ -11,6 +11,8 @@
+ 
+ struct ctl_table;
+ 
++int PageHuge(struct page *page);
++
+ static inline int is_vm_hugetlb_page(struct vm_area_struct *vma)
+ {
+ 	return vma->vm_flags & VM_HUGETLB;
+@@ -61,6 +63,11 @@ void hugetlb_change_protection(struct vm
+ 
+ #else /* !CONFIG_HUGETLB_PAGE */
+ 
++static inline int PageHuge(struct page *page)
++{
++	return 0;
++}
++
+ static inline int is_vm_hugetlb_page(struct vm_area_struct *vma)
+ {
+ 	return 0;
+--- linux.orig/fs/proc/page.c
++++ linux/fs/proc/page.c
+@@ -6,6 +6,7 @@
+ #include <linux/mmzone.h>
+ #include <linux/proc_fs.h>
+ #include <linux/seq_file.h>
++#include <linux/hugetlb.h>
+ #include <asm/uaccess.h>
+ #include "internal.h"
+ 
