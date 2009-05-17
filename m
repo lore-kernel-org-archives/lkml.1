@@ -1,56 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757904AbZEQDW7@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754904AbZEQDYS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757904AbZEQDW7 (ORCPT <rfc822;w@1wt.eu>);
-	Sat, 16 May 2009 23:22:59 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbZEQDWt
+	id S1754904AbZEQDYS (ORCPT <rfc822;w@1wt.eu>);
+	Sat, 16 May 2009 23:24:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753545AbZEQDYB
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sat, 16 May 2009 23:22:49 -0400
-Received: from wf-out-1314.google.com ([209.85.200.172]:33564 "EHLO
-	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1750878AbZEQDWs convert rfc822-to-8bit (ORCPT
+	Sat, 16 May 2009 23:24:01 -0400
+Received: from mail-qy0-f112.google.com ([209.85.221.112]:38851 "EHLO
+	mail-qy0-f112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753540AbZEQDYA convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sat, 16 May 2009 23:22:48 -0400
+	Sat, 16 May 2009 23:24:00 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
         d=gmail.com; s=gamma;
         h=mime-version:in-reply-to:references:date:message-id:subject:from:to
          :cc:content-type:content-transfer-encoding;
-        b=vkFgSqYC+cpJd7fxBeC0oOJGDDv4xbejK0hoS97cTrhi9Xu52Zsecd8stJQTk6u9Le
-         tofdmM/5T7xYgXVOFbxEisTj//Eg7VchCP2t69wVRuB/27cLL0+f/AWnVOriXFWz5Efc
-         l9Vk0l+ncHcY+Mpnyo+HvNKIvRNMHSAaESFEQ=
+        b=LAy/CbyQ3DPV5j35YTuYEtDh0XWcNLuNuisTsS9pLkIt6lVFCYcWYNLYXaZr8q4+Fr
+         Ut5leWvLi2hdL8Awx2nS2k/NB9tAWc55ed+RJaxHQbpkzdVQT/7VzgyTywtOqvQfXqLd
+         KwK9mfgUxvPs4iFYbOIUu8U1M7E5sM+a4nJyQ=
 MIME-Version: 1.0
-In-Reply-To: <385Pu-agh7M.A.nFB.5YzDKB@chimera>
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
-	 <385Pu-agh7M.A.nFB.5YzDKB@chimera>
-Date: Sun, 17 May 2009 11:22:48 +0800
-Message-ID: <d82e647a0905162022k7be627f1s933a84640562f749@mail.gmail.com>
-Subject: Re: [Bug #13245] possible circular locking dependency detected
-From: Ming Lei <tom.leiming@gmail.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Miles Lane <miles.lane@gmail.com>
+In-Reply-To: <1242529603.10835.2.camel@nigel-laptop>
+References: <1241620755-22133-1-git-send-email-nigel@tuxonice.net>
+	 <200905162107.58677.Martin@lichtvoll.de>
+	 <f22f52180905161953t6248e60fg3f6732a04d59b406@mail.gmail.com>
+	 <1242529603.10835.2.camel@nigel-laptop>
+Date: Sat, 16 May 2009 23:24:01 -0400
+Message-ID: <f22f52180905162024s4d946c31j47e237f3ce007f6a@mail.gmail.com>
+Subject: Re: [TuxOnIce-devel] [RFC] TuxOnIce
+From: Matt Price <moptop99@gmail.com>
+To: nigel@tuxonice.net
+Cc: Martin Steigerwald <Martin@lichtvoll.de>,
+       linux-pm@lists.linux-foundation.org, tuxonice-devel@lists.tuxonice.net,
+       linux-kernel@vger.kernel.org
 Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-I also can reproduce it on 2.6.30-rc5-next-20090515.
+On Sat, May 16, 2009 at 11:06 PM, Nigel Cunningham <nigel@tuxonice.net> wrote:
+> Hi Matt et al.
+>
+> On Sat, 2009-05-16 at 22:53 -0400, Matt Price wrote:
+>> one of the real frustrations i've had watching this process from the
+>> sidelines is that those with the authority to make decisions have
+>> never taken either of these very important concerns seriously.  And
+>> until they do, I do think it's quite likely that suspend-to-disk will
+>> continue in its largely-broken state for quite some time to come.
+>
+> I just want to talk a little in defence of Rafael - I've found him
+> really good to deal with. Yes, he has been headed in a different
+> direction, but he's not unreasonable and he is responsive to bug reports
+> and suggestions. Please don't think less of him than you ought.
+>
 
-2009/5/17 Rafael J. Wysocki <rjw@sisk.pl>:
-> This message has been generated automatically as a part of a report
-> of recent regressions.
->
-> The following bug entry is on the current list of known regressions
-> from 2.6.29.  Please verify if it still should be listed and let me know
-> (either way).
->
->
-> Bug-Entry       : http://bugzilla.kernel.org/show_bug.cgi?id=13245
-> Subject         : possible circular locking dependency detected
-> Submitter       : Miles Lane <miles.lane@gmail.com>
-> Date            : 2009-05-04 16:56 (13 days old)
->
+didn't really mean to personalize my comments, which on rereading it
+appears i may have done.  all i meant to say was that these other
+concerns are real issues that make a real difference to the usability
+of the code.  and i think it's a shame they aren't (perhaps can't be)
+taken into account in these code reviews.
 
--- 
-Lei Ming
+though, echoing martin again, at least in these public threads i've
+seen very little specific review of the patches themselves.  i only
+hope this is happening on other channels.
+
+matt
