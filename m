@@ -1,52 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755127AbZEQUCl@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755023AbZEQUGc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755127AbZEQUCl (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 16:02:41 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754411AbZEQUC2
+	id S1755023AbZEQUGc (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 16:06:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753762AbZEQUGU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 16:02:28 -0400
-Received: from tservice.ru ([195.178.208.66]:40651 "EHLO tservice.net.ru"
+	Sun, 17 May 2009 16:06:20 -0400
+Received: from srv5.dvmed.net ([207.36.208.214]:48539 "EHLO mail.dvmed.net"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754368AbZEQUC1 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 16:02:27 -0400
-Date: Mon, 18 May 2009 00:02:23 +0400
-From: Evgeniy Polyakov <zbr@ioremap.net>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, mingo@elte.hu,
-       akpm@linux-foundation.org, torvalds@linux-foundation.org,
-       davem@davemloft.net, dada1@cosmosbay.com, jeff.chua.linux@gmail.com,
-       paulus@samba.org, laijs@cn.fujitsu.com, jengelh@medozas.de,
-       r000n@r000n.net, benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
-Message-ID: <20090517200223.GA31029@ioremap.net>
-References: <20090517191141.GA25915@linux.vnet.ibm.com>
+	id S1752250AbZEQUGT (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 16:06:19 -0400
+Message-ID: <4A106E22.1010705@pobox.com>
+Date: Sun, 17 May 2009 16:05:54 -0400
+From: Jeff Garzik <jgarzik@pobox.com>
+User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090517191141.GA25915@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.13 (2006-08-11)
+To: Arnd Bergmann <arnd@arndb.de>
+CC: Robert Hancock <hancockrwd@gmail.com>, Tejun Heo <htejun@gmail.com>,
+       FUJITA Tomonori <fujita.tomonori@lab.ntt.co.jp>,
+       alan@lxorguk.ukuu.org.uk, flar@allandria.com,
+       schmitz@biophys.uni-duesseldorf.de, linux-kernel@vger.kernel.org,
+       linux-ide@vger.kernel.org, takata@linux-m32r.org, geert@linux-m68k.org,
+       linux-m68k@vger.kernel.org, ysato@users.sourceforge.jp
+Subject: Re: [PATCH] ata: libata depends on HAS_DMA
+References: <20090513043409.GA13577@cynthia.pants.nu> <200905151355.09888.arnd@arndb.de> <4A0FD229.9010401@gmail.com> <200905172138.55145.arnd@arndb.de>
+In-Reply-To: <200905172138.55145.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+X-Spam-Score: -4.4 (----)
+X-Spam-Report: SpamAssassin version 3.2.5 on srv5.dvmed.net summary:
+	Content analysis details:   (-4.4 points, 5.0 required)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+Arnd Bergmann wrote:
+> On Sunday 17 May 2009, Robert Hancock wrote:
+> Please reread my explanations above and your own reply from 
+> last thursday. The case is entirely theoretical, as all platforms
+> (except microblaze, which is getting fixed) either set HAS_DMA or
+> don't allow building ATA drivers anyway. Platforms that don't support
+> DMA can just define CONFIG_HAS_DMA and do what you suggested:
+> 
+> On Thursday 14 May 2009, Robert Hancock wrote:
+>> Wouldn't the easiest solution be to just dummy out the DMA API calls on 
+>> this platform to always fail? That would fix these compile problems..
 
-On Sun, May 17, 2009 at 12:11:41PM -0700, Paul E. McKenney (paulmck@linux.vnet.ibm.com) wrote:
-> Fifth cut of "big hammer" expedited RCU grace periods.  This uses per-CPU
-> kthreads that are scheduled in parallel by a call to smp_call_function()
-> by yet another kthread.  The synchronize_sched(), synchronize_rcu(),
-> and synchronize_bh() primitives wake this kthread up and then wait for
-> it to force the grace period.
 
-I'm curious, but doesn't the fact that registered 'barrier' callback is
-invoked mean grace period completion? I.e. why to bother with
-rescheduling, waiting for thread to complete and so on, when we only
-care in the fact that 'barrier' callback is invoked, and thus all
-previous ones are completed?
-Or it is done just for the simplicity, since all rescheduling machinery
-already manages the rcu bits correctly, so you do not want to put it
-directly into 'barrier' callback?
+That's what needs to happen.  We provide no-op functions for e.g. PCI 
+and x86 DMI, for platforms where this support does not exist.
 
--- 
-	Evgeniy Polyakov
+Pretty much all architectures support some form of ATA.  m68k, m32r, 
+h8300 and microblaze all have IDE interface, which means that libata 
+needs to work on that platform.
+
+The only !ATA arch in the entire kernel is s390, AFAICT.
+
+	Jeff
+
+
+
