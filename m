@@ -1,119 +1,124 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759352AbZERJwH@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759378AbZERJwi@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759352AbZERJwH (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:52:07 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758946AbZERJq4
+	id S1759378AbZERJwi (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:52:38 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758839AbZERJra
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:46:56 -0400
-Received: from mga11.intel.com ([192.55.52.93]:2484 "EHLO mga11.intel.com"
+	Mon, 18 May 2009 05:47:30 -0400
+Received: from cantor.suse.de ([195.135.220.2]:54028 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1758924AbZERJqy convert rfc822-to-8bit (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 05:46:54 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,208,1241420400"; 
-   d="scan'208";a="691330056"
-From: "Han, Weidong" <weidong.han@intel.com>
-To: "'Ingo Molnar'" <mingo@elte.hu>
-CC: "Siddha, Suresh B" <suresh.b.siddha@intel.com>,
-       "'dwmw2@infradead.org'" <dwmw2@infradead.org>,
-       "'linux-kernel@vger.kernel.org'" <linux-kernel@vger.kernel.org>,
-       "'iommu@lists.linux-foundation.org'" 
-	<iommu@lists.linux-foundation.org>,
-       "'kvm@vger.kernel.org'" <kvm@vger.kernel.org>
-Date: Mon, 18 May 2009 17:46:22 +0800
-Subject: RE: [PATCH 2/2] Intel-IOMMU, intr-remap: source-id checking
-Thread-Topic: [PATCH 2/2] Intel-IOMMU, intr-remap: source-id checking
-Thread-Index: AcnSO031hCPtwKsBSROvEnaAT4mNkwFYLqNQ
-Message-ID: <715D42877B251141A38726ABF5CABF2C054568FA16@pdsmsx503.ccr.corp.intel.com>
-References: <1241676996-27406-1-git-send-email-weidong.han@intel.com>
- <1241676996-27406-2-git-send-email-weidong.han@intel.com>
- <1241720381.27006.8582.camel@localhost.localdomain>
- <715D42877B251141A38726ABF5CABF2C01A6DD4900@pdsmsx503.ccr.corp.intel.com>
- <20090511132027.GC32693@elte.hu>
-In-Reply-To: <20090511132027.GC32693@elte.hu>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach: 
-X-MS-TNEF-Correlator: 
-acceptlanguage: en-US
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 8BIT
+	id S1758942AbZERJr2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 05:47:28 -0400
+Date: Mon, 18 May 2009 11:47:45 +0200
+From: Kurt Garloff <garloff@suse.de>
+To: Linux kernel list <linux-kernel@vger.kernel.org>,
+       Norbert Eicker <N.Eicker@fz-juelich.de>,
+       Greg Kroah-Hartman <GregKH@suse.de>,
+       Alexey Starikovskiy <AStarikovskiy@suse.cz>,
+       Len Brown <LenB@kernel.org>, xb <xavier.bru@bull.net>
+Subject: Re: [PATCH 2/3]: x86-64: Handle SRAT v1 and v2 consistently
+Message-ID: <20090518094745.GF15531@tpkurt2.garloff.de>
+Mail-Followup-To: Kurt Garloff <garloff@suse.de>,
+	Linux kernel list <linux-kernel@vger.kernel.org>,
+	Norbert Eicker <N.Eicker@fz-juelich.de>,
+	Greg Kroah-Hartman <GregKH@suse.de>,
+	Alexey Starikovskiy <AStarikovskiy@suse.cz>,
+	Len Brown <LenB@kernel.org>, xb <xavier.bru@bull.net>
+References: <20090518093352.GC15531@tpkurt2.garloff.de>
 MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="EemXnrF2ob+xzFeB"
+Content-Disposition: inline
+In-Reply-To: <20090518093352.GC15531@tpkurt2.garloff.de>
+X-Operating-System: Linux 2.6.27.21-5.1-default x86_64
+X-PGP-Info: on http://www.garloff.de/kurt/mykeys.pgp
+X-PGP-Key: 1024D/1C98774E
+Organization: SUSE Linux Products GmbH (a Novell company), Nuernberg, GF:
+	Markus Rex, HRB 16746 (AG Nuernberg)
+User-Agent: Mutt/1.5.17 (2007-11-01)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Ingo Molnar wrote:
-> * Han, Weidong <weidong.han@intel.com> wrote:
-> 
->> Siddha, Suresh B wrote:
->>> On Wed, 2009-05-06 at 23:16 -0700, Han, Weidong wrote:
->>>> @@ -634,6 +694,44 @@ static int ir_parse_ioapic_scope(struct
->>>>  			       acpi_dmar_header *header, " 0x%Lx\n",
->>>>  			       scope->enumeration_id, drhd->address);
->>>> 
->>>> +			bus = pci_find_bus(drhd->segment, scope->bus);
->>>> +			path = (struct acpi_dmar_pci_path *)(scope + 1); +			count =
->>>> (scope->length - +				 sizeof(struct acpi_dmar_device_scope))
->>>> +				/ sizeof(struct acpi_dmar_pci_path);
->>>> +
->>>> +			while (count) {
->>>> +				if (pdev)
->>>> +					pci_dev_put(pdev);
->>>> +
->>>> +				if (!bus)
->>>> +					break;
->>>> +
->>>> +				pdev = pci_get_slot(bus,
->>>> +					PCI_DEVFN(path->dev, path->fn));
->>>> +				if (!pdev)
->>>> +					break;
->>> 
->>> ir_parse_ioapic_scope() happens very early in the boot. So, I
->>> don't think we can do the pci related discovery here.
->>> 
->> 
->> Thanks for your pointing it out. It should enable the source-id
->> checking for io-apic's after the pci subsystem is up. I will
->> change it.
-> 
-> Note, there's ways to do early PCI quirks too, check
-> arch/x86/kernel/early-quirks.c. It's done by reading the PCI
-> configuration space directly via a careful early-capable subset of
-> the PCI config space APIs.
-> 
-> But it's a method of last resort.
-> 
 
-Thanks for your reminder. It can use direct PCI access here as follows. It's easy and clean. I think it's better than adding the source-id checking for io-apic's after the pci subsystem is up. I will send out updated patches after some tests.
- 
-@@ -634,6 +695,24 @@ static int ir_parse_ioapic_scope(struct acpi_dmar_header *header,
-                               " 0x%Lx\n", scope->enumeration_id,
-                               drhd->address);
-
-+                       bus = scope->bus;
-+                       path = (struct acpi_dmar_pci_path *)(scope + 1);
-+                       count = (scope->length -
-+                                sizeof(struct acpi_dmar_device_scope))
-+                               / sizeof(struct acpi_dmar_pci_path);
-+
-+                       while (--count > 0) {
-+                               /* Access PCI directly due to the PCI
-+                                * subsystem isn't initialized yet.
-+                                */
-+                               bus = read_pci_config_byte(bus, path->dev,
-+                                       path->fn, PCI_SECONDARY_BUS);
-+                               path++;
-+                       }
-+
-+                       ir_ioapic[ir_ioapic_num].bus = bus;
-+                       ir_ioapic[ir_ioapic_num].devfn =
-+                                       PCI_DEVFN(path->dev, path->fn);
-                        ir_ioapic[ir_ioapic_num].iommu = iommu;
-                        ir_ioapic[ir_ioapic_num].id = scope->enumeration_id;
-                        ir_ioapic_num++;
+--EemXnrF2ob+xzFeB
+Content-Type: multipart/mixed; boundary="Cgrdyab2wu3Akvjd"
+Content-Disposition: inline
 
 
+--Cgrdyab2wu3Akvjd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+x86-64 was rather inconsistent prior to this patch; it used 8 bits=20
+for the pxm field in cpu_affinity, but 32 bits in mem_affinity.
+This patch makes it consistent: Either use 8 bits consistently (SRAT
+rev 1 or lower) or 32 bits (SRAT rev 2 or higher).
+
+This is patch 2/3.
+--=20
+Kurt Garloff, VP OPS Partner Engineering -- Novell Inc.
+
+--Cgrdyab2wu3Akvjd
+Content-Type: text/x-patch; charset=us-ascii
+Content-Disposition: attachment; filename="srat-pxm-rev-x86-64.diff"
+Content-Transfer-Encoding: quoted-printable
+
+=46rom: Kurt Garloff <garloff@suse.de>
+Subject: Use SRAT table rev to use 8bit or 32bit PXM fields (x86-64)
+References: bnc#503038
+
+In SRAT v1, we had 8bit proximity domain (PXM) fields; SRAT v2 provides
+32bits for these. The new fields were reserved before.
+According to the ACPI spec, the OS must disregrard reserved fields.
+
+x86-64 was rather inconsistent prior to this patch; it used 8 bits=20
+for the pxm field in cpu_affinity, but 32 bits in mem_affinity.
+This patch makes it consistent: Either use 8 bits consistently (SRAT
+rev 1 or lower) or 32 bits (SRAT rev 2 or higher).
+
+This is patch 2/3.
+
+Signed-off-by: Kurt Garloff <garloff@suse.de>
+
+diff -r a4ed8abcc815 arch/x86/mm/srat_64.c
+--- a/arch/x86/mm/srat_64.c	Sat May 16 13:41:28 2009 -0700
++++ b/arch/x86/mm/srat_64.c	Mon May 18 10:45:40 2009 +0200
+@@ -164,6 +164,8 @@
+ 	if ((pa->flags & ACPI_SRAT_CPU_ENABLED) =3D=3D 0)
+ 		return;
+ 	pxm =3D pa->proximity_domain_lo;
++	if (acpi_srat_revision >=3D 2)
++		pxm |=3D *((unsigned int*)pa->proximity_domain_hi) << 8;
+ 	node =3D setup_node(pxm);
+ 	if (node < 0) {
+ 		printk(KERN_ERR "SRAT: Too many proximity domains %x\n", pxm);
+@@ -275,6 +277,8 @@
+ 	start =3D ma->base_address;
+ 	end =3D start + ma->length;
+ 	pxm =3D ma->proximity_domain;
++	if (acpi_srat_revision <=3D 1)
++		pxm &=3D 0xff;
+ 	node =3D setup_node(pxm);
+ 	if (node < 0) {
+ 		printk(KERN_ERR "SRAT: Too many proximity domains.\n");
 
 
+--Cgrdyab2wu3Akvjd--
+
+--EemXnrF2ob+xzFeB
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.9 (GNU/Linux)
+
+iD8DBQFKES7BxmLh6hyYd04RAlciAKDM5+R4vggAwJKXxm2rDmvqAd0XRQCg04DL
+KpR3F7nsfclKD6h1gOjfS24=
+=4WN9
+-----END PGP SIGNATURE-----
+
+--EemXnrF2ob+xzFeB--
