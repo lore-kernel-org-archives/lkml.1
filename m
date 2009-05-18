@@ -1,76 +1,65 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753752AbZERUgT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755332AbZERUiS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753752AbZERUgT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 16:36:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751991AbZERUgL
+	id S1755332AbZERUiS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 16:38:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752979AbZERUiK
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 16:36:11 -0400
-Received: from waste.org ([66.93.16.53]:45429 "EHLO waste.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751905AbZERUgK (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 16:36:10 -0400
-Date: Mon, 18 May 2009 15:34:20 -0500
-From: Matt Mackall <mpm@selenic.com>
-To: Martin Knoblauch <spamtrap@knobisoft.de>,
-       Linus Torvalds <torvalds@osdl.org>
-Cc: linux-kernel@vger.kernel.org
-Subject: Re: Rgeression: 2.6.30-rc6-git3 build error - ICE from
-	drivers/char/random.c
-Message-ID: <20090518203420.GF2658@calx>
-References: <688406.16641.qm@web32603.mail.mud.yahoo.com>
+	Mon, 18 May 2009 16:38:10 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:49070 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752875AbZERUiJ (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 16:38:09 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:date:message-id:subject:from:to:cc:content-type
+         :content-transfer-encoding;
+        b=L8KcaReI0kgLKp+/CIWd+AOgEI5m4p9r1AT4XAuO+0V+1ksIexPv/wf1r565iLcLjS
+         BQi8StqM8mnTUiFWUQgYVNU5kZWCLMBQou5RBi+Ce8otkbXeZ4qmqR/i9jtnNXAvmEZd
+         56kefUgAf8Ay5kthK3Vn3YG6QGssDSmsyXiOA=
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <688406.16641.qm@web32603.mail.mud.yahoo.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Date: Mon, 18 May 2009 22:38:08 +0200
+Message-ID: <63386a3d0905181338l2ce5bd9er9f6e4470e3656dd9@mail.gmail.com>
+Subject: [PATCH 0/1] MFD: Add U300 AB3100 core support v2
+From: Linus Walleij <linus.ml.walleij@gmail.com>
+To: linux-kernel@vger.kernel.org, sameo@linux.intel.com
+Cc: linux-i2c@vger.kernel.org, Linus Walleij <linus.walleij@stericsson.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 18, 2009 at 06:29:13AM -0700, Martin Knoblauch wrote:
-> 
-> CC Maintainer.
+ChangeLog from v1 -> v2:
 
-Bizarre. I bet Linus has an opinion about your compiler.
- 
-> ----- Original Message ----
-> > From: Martin Knoblauch <spamtrap@knobisoft.de>
-> > To: linux-kernel@vger.kernel.org
-> > Sent: Monday, May 18, 2009 2:58:35 PM
-> > Subject: Rgeression: 2.6.30-rc6-git3 build error - ICE from drivers/char/random.c
-> > 
-> > Hi,
-> > 
-> > trying to build 2.6.30-rc6-git3 with RHEL4.3 userspace (gcc (GCC) 3.4.5 20051201 
-> > (Red Hat 3.4.5-2)):
-> > 
-> > 
-> >   CC      drivers/char/mem.o
-> >   CC      drivers/char/random.o
-> > drivers/char/random.c: In function `get_random_int':
-> > drivers/char/random.c:1672: error: unrecognizable insn:
-> > (insn 202 148 150 0 
-> > /scratch/build/linux-2.6.30-rc6-git3/arch/x86/include/asm/tsc.h:23 (set (reg:SI 
-> > 0 ax [91])
-> >         (subreg:SI (plus:DI (plus:DI (reg:DI 0 ax [88])
-> >                     (subreg:DI (reg:SI 6 bp) 0))
-> >                 (const_int -4 [0xfffffffffffffffc])) 0)) -1 (nil)
-> >     (nil))
-> > drivers/char/random.c:1672: internal compiler error: in extract_insn, at 
-> > recog.c:2083
-> > Please submit a full bug report,
-> > with preprocessed source if appropriate.
-> > See for instructions.
-> > Preprocessed source stored into /tmp/ccvLBDQc.out file, please attach this to 
-> > your bugreport.
-> > make[2]: *** [drivers/char/random.o] Error 1
-> > make[1]: *** [drivers/char] Error 2
-> > make: *** [drivers] Error 2
-> > 
-> > did not happen with -rc3. Config attached.
-> > 
-> > Cheers
-> > Martin
+* use dynamically allocated struct ab3100 holder for
+  state encapsulation.
 
--- 
-Mathematics is the supreme nostalgia of our time.
+* Create sub-platform_devices for all the devices found
+  inside the AB3100. This is done after init, and all
+  drivers have to pass the driver_data back in order
+  to call back into ab3100-core. I also define a resource
+  containing the register range applicable for each
+  functionality so that it is actually possible to
+  limit register access to the appropriate registers for
+  each sub-device sometime further down the road.
+
+* Since all sub-devices are initialized after the AB3100,
+  the initialization check could be removed from all
+  symbols.
+
+* Converted the callback into a broadcasting notifier,
+  simplifying that code quite a bit by catenating the
+  event flags into a 24-bit field passed as value to
+  the listeners for masking and reacting to the proper
+  events.
+
+* Register a secondary dummy I2C client for performing
+  test register operations.
+
+* const on AB3100 debugfs file operations struct.
+
+* free_irq() on the IRQ.
+
+
+Linus Walleij
