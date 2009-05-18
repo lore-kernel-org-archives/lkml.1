@@ -1,88 +1,64 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757691AbZERJop@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1751989AbZERJpS@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757691AbZERJop (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:44:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756812AbZERJZc
+	id S1751989AbZERJpS (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:45:18 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756777AbZERJZ1
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:25:32 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:38429 "EHLO mx2.redhat.com"
+	Mon, 18 May 2009 05:25:27 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:38431 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754380AbZERJXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1754451AbZERJXL (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 May 2009 05:23:11 -0400
 From: Avi Kivity <avi@redhat.com>
 To: linux-kernel@vger.kernel.org
 Cc: kvm@vger.kernel.org
-Subject: [PATCH 27/43] KVM: ia64: SN2 adjust emulated ITC frequency to match RTC frequency
-Date: Mon, 18 May 2009 12:22:49 +0300
-Message-Id: <1242638585-18470-28-git-send-email-avi@redhat.com>
+Subject: [PATCH 29/43] KVM: make 'lapic_timer_ops' and 'kpit_ops' static
+Date: Mon, 18 May 2009 12:22:51 +0300
+Message-Id: <1242638585-18470-30-git-send-email-avi@redhat.com>
 In-Reply-To: <1242638585-18470-1-git-send-email-avi@redhat.com>
 References: <1242638585-18470-1-git-send-email-avi@redhat.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-From: Jes Sorensen <jes@sgi.com>
+From: Hannes Eder <hannes@hanneseder.net>
 
-On SN2 do not pass down the real ITC frequency, but rather patch the
-values to match the SN2 RTC frequency.
+Fix this sparse warnings:
+  arch/x86/kvm/lapic.c:916:22: warning: symbol 'lapic_timer_ops' was not declared. Should it be static?
+  arch/x86/kvm/i8254.c:268:22: warning: symbol 'kpit_ops' was not declared. Should it be static?
 
-Signed-off-by: Jes Sorensen <jes@sgi.com>
-Acked-by: Xiantao Zhang <xiantao.zhang@intel.com>
+Signed-off-by: Hannes Eder <hannes@hanneseder.net>
 Signed-off-by: Avi Kivity <avi@redhat.com>
 ---
- arch/ia64/kvm/kvm_fw.c |   28 +++++++++++++++++++++++++++-
- 1 files changed, 27 insertions(+), 1 deletions(-)
+ arch/x86/kvm/i8254.c |    2 +-
+ arch/x86/kvm/lapic.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/ia64/kvm/kvm_fw.c b/arch/ia64/kvm/kvm_fw.c
-index a8ae52e..e4b8231 100644
---- a/arch/ia64/kvm/kvm_fw.c
-+++ b/arch/ia64/kvm/kvm_fw.c
-@@ -21,6 +21,9 @@
- 
- #include <linux/kvm_host.h>
- #include <linux/smp.h>
-+#include <asm/sn/addrs.h>
-+#include <asm/sn/clksupport.h>
-+#include <asm/sn/shub_mmr.h>
- 
- #include "vti.h"
- #include "misc.h"
-@@ -188,12 +191,35 @@ static struct ia64_pal_retval pal_freq_base(struct kvm_vcpu *vcpu)
- 	return result;
+diff --git a/arch/x86/kvm/i8254.c b/arch/x86/kvm/i8254.c
+index 4e2e3f2..cf09bb6 100644
+--- a/arch/x86/kvm/i8254.c
++++ b/arch/x86/kvm/i8254.c
+@@ -265,7 +265,7 @@ static bool kpit_is_periodic(struct kvm_timer *ktimer)
+ 	return ps->is_periodic;
  }
  
--static struct ia64_pal_retval pal_freq_ratios(struct kvm_vcpu *vcpu)
-+/*
-+ * On the SGI SN2, the ITC isn't stable. Emulation backed by the SN2
-+ * RTC is used instead. This function patches the ratios from SAL
-+ * to match the RTC before providing them to the guest.
-+ */
-+static void sn2_patch_itc_freq_ratios(struct ia64_pal_retval *result)
- {
-+	struct pal_freq_ratio *ratio;
-+	unsigned long sal_freq, sal_drift, factor;
-+
-+	result->status = ia64_sal_freq_base(SAL_FREQ_BASE_PLATFORM,
-+					    &sal_freq, &sal_drift);
-+	ratio = (struct pal_freq_ratio *)&result->v2;
-+	factor = ((sal_freq * 3) + (sn_rtc_cycles_per_second / 2)) /
-+		sn_rtc_cycles_per_second;
-+
-+	ratio->num = 3;
-+	ratio->den = factor;
-+}
+-struct kvm_timer_ops kpit_ops = {
++static struct kvm_timer_ops kpit_ops = {
+ 	.is_periodic = kpit_is_periodic,
+ };
  
-+static struct ia64_pal_retval pal_freq_ratios(struct kvm_vcpu *vcpu)
-+{
- 	struct ia64_pal_retval result;
- 
- 	PAL_CALL(result, PAL_FREQ_RATIOS, 0, 0, 0);
-+
-+	if (vcpu->kvm->arch.is_sn2)
-+		sn2_patch_itc_freq_ratios(&result);
-+
- 	return result;
+diff --git a/arch/x86/kvm/lapic.c b/arch/x86/kvm/lapic.c
+index dd934d2..4d76bb6 100644
+--- a/arch/x86/kvm/lapic.c
++++ b/arch/x86/kvm/lapic.c
+@@ -913,7 +913,7 @@ void kvm_apic_nmi_wd_deliver(struct kvm_vcpu *vcpu)
+ 		kvm_apic_local_deliver(apic, APIC_LVT0);
  }
+ 
+-struct kvm_timer_ops lapic_timer_ops = {
++static struct kvm_timer_ops lapic_timer_ops = {
+ 	.is_periodic = lapic_is_periodic,
+ };
  
 -- 
 1.6.0.6
