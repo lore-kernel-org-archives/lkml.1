@@ -1,45 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756128AbZERMMM@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752702AbZERMR4@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756128AbZERMMM (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 08:12:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754515AbZERMLz
+	id S1752702AbZERMR4 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 08:17:56 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750955AbZERMRh
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 08:11:55 -0400
-Received: from cantor.suse.de ([195.135.220.2]:57001 "EHLO mx1.suse.de"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753967AbZERMLy (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 08:11:54 -0400
-Date: Mon, 18 May 2009 14:11:54 +0200
-From: Jan Kara <jack@suse.cz>
-To: naresh kamboju <naresh.kernel@gmail.com>
-Cc: mtk-manpages@gmx.net, linux-kernel@vger.kernel.org
-Subject: Re: quotactl ERANGE man page update
-Message-ID: <20090518121153.GA25232@duck.suse.cz>
-References: <f5a7b3810905160458if6ce50en5079fc7f877484ee@mail.gmail.com>
+	Mon, 18 May 2009 08:17:37 -0400
+Received: from mailfilter7.ihug.co.nz ([203.109.136.7]:54060 "EHLO
+	mailfilter7.ihug.co.nz" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750879AbZERMRg (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 08:17:36 -0400
+X-IronPort-Anti-Spam-Filtered: true
+X-IronPort-Anti-Spam-Result: AisnAGnuEEop25ZS/2dsb2JhbACNXIhnggwHhWQSgUOfU4FGCY1rgk1FbwU
+X-IronPort-AV: E=Sophos;i="4.41,209,1241352000"; 
+   d="scan'208";a="185756880"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f5a7b3810905160458if6ce50en5079fc7f877484ee@mail.gmail.com>
-User-Agent: Mutt/1.5.17 (2007-11-01)
+Date: Tue, 19 May 2009 00:16:52 +1200
+From: Mnl <Mnl@yahoo.co.uk>
+To: undisclosed-recipients:;
+Subject: (no subject)
+Reply-To: mrs.jeniferfox@9.cn
+Message-ID: <d1a4c407580cf0df9711a26bd80d6acd@ihug.co.nz>
+SenderIP: 41.219.150.82
+User-Agent: Vodafone Webmail/0.1
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-  Hello,
+Hello,
 
-On Sat 16-05-09 17:28:28, naresh kamboju wrote:
-> Regarding the quota system call man page update,
-> 
-> I have noticed changes in recent kernels
-> Linux/fs/quota/ dquot.c under function name
-> static int do_set_dqblk(struct dquot *dquot, struct if_dqblk *di)
-> ERANGE error check has been added.
-> 
-> So could you update the quotactl man page w.r.t if_dqblk.dqb_valid
-  Thanks for reminder. I've updated manpage distributed with quota-tools
-accordingly.
+£1,000,000.00 Pounds is now yours. Congrats... You have won.
 
-								Honza
--- 
-Jan Kara <jack@suse.cz>
-SUSE Labs, CR
+Send your information to Mr. Michael Smith. +44-704-573-6915 on
+mrs.jeniferfox@9.cn  to help you process your claims.
+Provide your Name, Address, Age, Phone Number, Occupation.
+
+Mrs. Jenifer Fox
+Monday Lotto
+
