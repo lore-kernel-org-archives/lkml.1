@@ -1,72 +1,76 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754515AbZERLa2@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755088AbZERLe5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754515AbZERLa2 (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 07:30:28 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753097AbZERLaI
+	id S1755088AbZERLe5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 07:34:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753967AbZERLep
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 07:30:08 -0400
-Received: from mtagate6.uk.ibm.com ([195.212.29.139]:41083 "EHLO
-	mtagate6.uk.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752461AbZERLaG (ORCPT
+	Mon, 18 May 2009 07:34:45 -0400
+Received: from mailout5.samsung.com ([203.254.224.35]:37275 "EHLO
+	mailout5.samsung.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754152AbZERLep (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 07:30:06 -0400
-Date: Mon, 18 May 2009 13:29:08 +0200
-From: Cornelia Huck <cornelia.huck@de.ibm.com>
-To: Arjan van de Ven <arjan@infradead.org>
-Cc: Frederic Weisbecker <fweisbec@gmail.com>, Ming Lei <tom.leiming@gmail.com>,
-       linux-kernel@vger.kernel.org, akpm@linux-foundation.org
-Subject: Re: [PATCH] kernel/async.c:introduce async_schedule*_atomic
-Message-ID: <20090518132908.3cf40630@gondolin>
-In-Reply-To: <20090517135940.42cb30a0@infradead.org>
-References: <1242141222-8454-1-git-send-email-tom.leiming@gmail.com>
-	<20090512154456.GC6255@nowhere>
-	<20090512160434.GD6255@nowhere>
-	<20090512183105.09e628f0@gondolin>
-	<20090512165227.GE6255@nowhere>
-	<20090512191848.25764af6@gondolin>
-	<d82e647a0905121728m278b604bn9a0f5122b964978a@mail.gmail.com>
-	<20090513012011.GA32518@nowhere>
-	<20090513094728.59d10898@gondolin>
-	<20090517135940.42cb30a0@infradead.org>
-Organization: IBM Deutschland Research & Development GmbH Vorsitzender des
- Aufsichtsrats: Martin Jetter =?ISO-8859-15?Q?Gesch=E4ftsf=FChrung:?= Erich
- Baier Sitz der Gesellschaft: =?ISO-8859-15?Q?B=F6blingen?= Registergericht:
- Amtsgericht Stuttgart, HRB 243294
-X-Mailer: Claws Mail 3.7.1 (GTK+ 2.16.1; i486-pc-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+	Mon, 18 May 2009 07:34:45 -0400
+Date: Mon, 18 May 2009 13:32:32 +0200
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+Subject: RE: [PATCH] LP3971 PMIC regulator driver update
+In-reply-to: <1242641718.5473.2156.camel@vega.slimlogic.co.uk>
+To: "'Liam Girdwood'" <lrg@slimlogic.co.uk>
+Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.arm.linux.org.uk,
+       kyungmin.park@samsung.com, "'Mark Brown'" <mark.brown@wolfsonmicro.com>,
+       Marek Szyprowski <m.szyprowski@samsung.com>
+Message-id: <000601c9d7ac$58af73d0$0a0e5b70$%szyprowski@samsung.com>
+MIME-version: 1.0
+X-Mailer: Microsoft Office Outlook 12.0
+Content-type: text/plain; charset=us-ascii
+Content-language: pl
+Content-transfer-encoding: 7BIT
+Thread-index: AcnXoZz4HPxFyKQ8QYiDX1dAhh48hQACg3Cg
+References: <E4D3F24EA6C9E54F817833EAE0D912AC02245E9A11@bssrvexch01.BS.local>
+ <20090515092030.GA2202@rakim.wolfsonmicro.main>
+ <1242641718.5473.2156.camel@vega.slimlogic.co.uk>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Sun, 17 May 2009 13:59:40 -0700,
-Arjan van de Ven <arjan@infradead.org> wrote:
+Hello, 
 
-> On Wed, 13 May 2009 09:47:28 +0200
-> Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
-> 
-> > On Wed, 13 May 2009 03:20:13 +0200,
-> > Frederic Weisbecker <fweisbec@gmail.com> wrote:
-> > 
-> > > On Wed, May 13, 2009 at 08:28:15AM +0800, Ming Lei wrote:
-> > 
-> > > > Also we still allow async_schedule*()  to run a job synchronously
-> > > > if out of memory
-> > > > or other failure. This can keep consistency with before.
-> > > 
-> > > 
-> > > Yes, but also most of the current users of async_schedule() could
-> > > call it with GFP_KERNEL. For now it's not an issue because it is
-> > > not widely used, but who knows how that will evolve...
-> > 
-> > Well, if we want to change the interface, now would be a good time
-> > since there are still few callers.
-> 
-> I would prefer it that if we make a more complex interface, we keep the
-> current simple interface as a wrapper, so that the simple case can
-> remain simple.
+On Monday, May 18, 2009 12:15 PM Liam Girdwood wrote:
 
-Of course. I was just thinking about changing the semantics of
-async_schedule() to doing GFP_KERNEL allocation - now it's still easy
-to audit all callers.
+> On Fri, 2009-05-15 at 10:20 +0100, Mark Brown wrote:
+> > On Fri, May 15, 2009 at 11:16:19AM +0200, Marek Szyprowski wrote:
+> > > This patch fixes issues reported by Mark Brown in his review of
+> National Semiconductors LP3971
+> > > PMIC regulator driver. It contains:
+> > > - a little code cleanup
+> > > - list_voltage() callback added
+> >
+> > > Reviewed-by: Kyungmin Park <kyungmin.park@samsung.com>
+> > > Signed-off-by: Marek Szyprowski <m.szyprowski@samsung.com>
+> >
+> > Looks good.
+> >
+> > Acked-by: Mark Brown <broonie@opensource.wolfsonmicro.com>
+> 
+> Doesn't apply :-
+> 
+> Applying: LP3971 PMIC regulator driver update
+> error: patch failed: drivers/regulator/lp3971.c:91
+> error: drivers/regulator/lp3971.c: patch does not apply
+> Patch failed at 0001 LP3971 PMIC regulator driver update
+> 
+> Could you regenerate against the voltage for-next branch.
+
+I've checked the
+git://git.kernel.org/pub/scm/linux/kernel/git/lrg/voltage-2.6.git, the
+for-next branch. I looks that all tabs are converted to spaces in my
+previous patch. I've checked again it imho I've posted it properly. Maybe it
+was broken by merge conflicts in Makefile/Kconfig. What should I do in such
+case? Would you revert the broken version or do I need to post a patch for
+it?
+
+Best regards
+--
+Marek Szyprowski
+Samsung Poland R&D Center
+
+
