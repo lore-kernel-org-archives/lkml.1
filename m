@@ -1,128 +1,54 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755546AbZERUla@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755388AbZERUwk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755546AbZERUla (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 16:41:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbZERUlV
+	id S1755388AbZERUwk (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 16:52:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752164AbZERUwc
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 16:41:21 -0400
-Received: from bombadil.infradead.org ([18.85.46.34]:52876 "EHLO
-	bombadil.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753476AbZERUlV (ORCPT
+	Mon, 18 May 2009 16:52:32 -0400
+Received: from smtp-out.google.com ([216.239.45.13]:7323 "EHLO
+	smtp-out.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751905AbZERUwb (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 16:41:21 -0400
-Subject: Re: INFO: possible circular locking dependency at
- cleanup_workqueue_thread
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>, Ingo Molnar <mingo@elte.hu>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Gautham R Shenoy <ego@in.ibm.com>
-In-Reply-To: <20090518201650.GA4384@redhat.com>
-References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
-	 <20090517071834.GA8507@elte.hu> <1242559101.28127.63.camel@johannes.local>
-	 <20090518194749.GA3501@redhat.com> <1242676857.32543.1343.camel@laptop>
-	 <20090518201650.GA4384@redhat.com>
-Content-Type: text/plain
-Date: Mon, 18 May 2009 22:40:21 +0200
-Message-Id: <1242679221.32543.1396.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
-Content-Transfer-Encoding: 7bit
+	Mon, 18 May 2009 16:52:31 -0400
+DomainKey-Signature: a=rsa-sha1; s=beta; d=google.com; c=nofws; q=dns;
+	h=date:from:x-x-sender:to:cc:subject:in-reply-to:message-id:
+	references:user-agent:mime-version:content-type:x-system-of-record;
+	b=pS/aQlYX2QdkaIaGWaoD4fCuueSZGfkiUbf75qRqwIsld3AFAMh9JjWpVD6KlXDGS
+	fcCiWJs38FyObJEDR7Uyw==
+Date: Mon, 18 May 2009 13:52:26 -0700 (PDT)
+From: David Rientjes <rientjes@google.com>
+X-X-Sender: rientjes@chino.kir.corp.google.com
+To: Geoffrey Thomas <geofft@mit.edu>
+cc: linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] sysrq: Don't panic_on_oom if the user requested an OOM
+ kill.
+In-Reply-To: <1242643274-26733-1-git-send-email-geofft@mit.edu>
+Message-ID: <alpine.DEB.2.00.0905181350400.2281@chino.kir.corp.google.com>
+References: <1242643274-26733-1-git-send-email-geofft@mit.edu>
+User-Agent: Alpine 2.00 (DEB 1167 2008-08-23)
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+X-System-Of-Record: true
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-18 at 22:16 +0200, Oleg Nesterov wrote:
-> On 05/18, Peter Zijlstra wrote:
-> >
-> > On Mon, 2009-05-18 at 21:47 +0200, Oleg Nesterov wrote:
-> > >
-> > > But, I am starting to suspect we have some problems with lockdep too.
-> > > OK, I can't explain what I mean... But consider this code:
-> > >
-> > > 	DEFINE_SPINLOCK(Z);
-> > > 	DEFINE_SPINLOCK(L1);
-> > > 	DEFINE_SPINLOCK(L2);
-> > >
-> > > 	#define L(l)	spin_lock(&l)
-> > > 	#define U(l)	spin_unlock(&l)
-> > >
-> > > 	void t1(void)
-> > > 	{
-> > > 		L(L1);
-> > > 		L(L2);
-> > >
-> > > 		U(L2);
-> > > 		U(L1);
-> > > 	}
-> >
-> > (1) L1 -> L2
-> >
-> > > 	void t2(void)
-> > > 	{
-> > > 		L(L2);
-> > > 			L(Z);
-> >
-> > (2) L2 -> Z
-> >
-> > > 		L(L1);
-> >
-> > (3) Z -> L1
-> >
-> > > 		U(L1);
-> > > 			U(Z);
-> > > 		U(L2);
-> > > 	}
-> > >
-> > > 	void tst(void)
-> > > 	{
-> > > 		t1();
-> > > 		t2();
-> > > 	}
-> > >
-> > > We have the trivial AB-BA deadlock with L1 and L2, but lockdep says:
-> > >
-> > > 	[ INFO: possible circular locking dependency detected ]
-> > > 	2.6.30-rc6-00043-g22ef37e-dirty #3
-> > > 	-------------------------------------------------------
-> > > 	perl/676 is trying to acquire lock:
-> > > 	 (L1){+.+...}, at: [<ffffffff802522b8>] t2+0x28/0x50
-> > >
-> > > 	but task is already holding lock:
-> > > 	 (Z){+.+...}, at: [<ffffffff802522ac>] t2+0x1c/0x50
-> > >
-> > >
-> > > This output looks obviously wrong, Z does not depend on L1 or any
-> > > other lock.
-> >
-> > It does, L1 -> L2 -> Z as per 1 and 2
-> > which 3 obviously reverses.
+On Mon, 18 May 2009, Geoffrey Thomas wrote:
+
+> If I specifically request an OOM kill via magic sysrq, I don't want
+> panic_on_oom to apply and crash the machine. I ran into this on a server
+> with panic_on_oom and automatic reboot after panic configured on the
+> assumption that nobody is likely physically present. If I'm able to use
+> magic sysrq, though, I can use that to reboot the machine slightly more
+> safely, if that's what I wanted.
 > 
-> Yes, yes, I see. And, as I said, I can't explain what I mean.
+> This patch adds an extra parameter to out_of_memory to ignore the value
+> of sysctl_panic_on_oom, and just proceed with the OOM kill.
 > 
-> I mean... The output above looks as if we take L1 and Z in wrong order.
-> But Z has nothing to do with this deadlock, it can't depend on any lock
-> from the correctness pov. Except yes, we have it in L1->L2->Z->L1 cycle.
+> Signed-off-by: Geoffrey Thomas <geofft@mit.edu>
 
-AB-BC-CA deadlock
+Nack, it's your own fault for asking for panic_on_oom and then not wanting 
+it to panic on oom.
 
-Thread 1		Thread 2		Thread 3
-
-L(L1)
-			L(L2)
-						L(Z)
-L(L2)
-			L(Z)
-						L(L1)
-
-And you're saying, we can't have that deadlock because we don't have the
-3 separate functions?
-
-That is, there is no concurrency on Z because its always taken under L2?
-
-For those situations we have the spin_lock_nest_lock(X, y) annotation,
-where we say, there cannot be any concurrency on x element of X, because
-all such locks are always taken under y.
-
+Disable /proc/sys/vm/panic_on_oom before invoking the oom killer and then 
+reenable it afterwards.
