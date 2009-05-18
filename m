@@ -1,175 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753307AbZERTVY@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755190AbZERTWw@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753307AbZERTVY (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 15:21:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752540AbZERTVQ
+	id S1755190AbZERTWw (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 15:22:52 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753345AbZERTWp
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 15:21:16 -0400
-Received: from ey-out-2122.google.com ([74.125.78.24]:61356 "EHLO
-	ey-out-2122.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751396AbZERTVO (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 15:21:14 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=message-id:date:from:user-agent:mime-version:to:cc:subject
-         :content-type:content-transfer-encoding;
-        b=jy7U6F7AopwZ72cQdlidLDJq28I2nCGLp5is17QipBReLeV/5y+9R+kFy4CyHh+AXM
-         k5o8wumgOcuaZgRvyqCROkQTud8qrbSMHzGPv3/ScIz4PiWx0X0BdBiLQCViFCaMZlh+
-         FjToxdn1YhBMm1JdH/1Mk8mH/hVOZdtusk6dQ=
-Message-ID: <4A11B52E.7080808@gmail.com>
-Date: Mon, 18 May 2009 21:21:18 +0200
-From: Niel Lambrechts <niel.lambrechts@gmail.com>
-User-Agent: Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.9.1b5pre) Gecko/20090517 Shredder/3.0b3pre
-MIME-Version: 1.0
-To: "linux.kernel" <linux-kernel@vger.kernel.org>
-CC: Eric Anholt <eric@anholt.net>, Jesse Barnes <jbarnes@virtuousgeek.org>
-Subject: 2.6.30-rc6: i915: Xserver crash - oops after rmmod
-Content-Type: text/plain; charset=UTF-8; format=flowed
+	Mon, 18 May 2009 15:22:45 -0400
+Received: from mga14.intel.com ([143.182.124.37]:4545 "EHLO mga14.intel.com"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752894AbZERTWp (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 15:22:45 -0400
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="4.41,211,1241420400"; 
+   d="scan'208";a="144180879"
+Subject: Re: [GIT PATCH] x86,percpu: fix pageattr handling with remap
+ allocator
+From: Suresh Siddha <suresh.b.siddha@intel.com>
+Reply-To: suresh.b.siddha@intel.com
+To: Tejun Heo <tj@kernel.org>
+Cc: "JBeulich@novell.com" <JBeulich@novell.com>,
+       "andi@firstfloor.org" <andi@firstfloor.org>,
+       "mingo@elte.hu" <mingo@elte.hu>,
+       "linux-kernel-owner@vger.kernel.org" 
+	<linux-kernel-owner@vger.kernel.org>,
+       "hpa@zytor.com" <hpa@zytor.com>,
+       "tglx@linutronix.de" <tglx@linutronix.de>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+In-Reply-To: <4A0F672A.3000309@kernel.org>
+References: <1242305390-21958-1-git-send-email-tj@kernel.org>
+	 <1242436626.27006.8623.camel@localhost.localdomain>
+	 <4A0ED8D8.2010303@kernel.org>
+	 <1242500964.27006.8636.camel@localhost.localdomain>
+	 <4A0F672A.3000309@kernel.org>
+Content-Type: text/plain
+Organization: Intel Corp
+Date: Mon, 18 May 2009 12:20:44 -0700
+Message-Id: <1242674444.27006.8691.camel@localhost.localdomain>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.24.1 (2.24.1-2.fc10) 
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+On Sat, 2009-05-16 at 18:23 -0700, Tejun Heo wrote:
+> Units in
+> a single chunk should be contiguous and of the same size such that
+> unit_addr_for_cpu_N == chunk_addr + N * unit_size whereas chunks don't
+> need to have any special address relation to other chunks. 
 
-I use s2disk on a daily basis, and I recently tried to switch to UXA in 
-xorg.conf in anticipation of KMS, for my Lenovo W500 with the integrated 
-Intel card active:
-00:02.0 VGA compatible controller: Intel Corporation Mobile 4 Series 
-Chipset Integrated Graphics Controller (rev 07)
+And the size of the unit is same across chunks.
 
-Resuming worked just fine the last couple of days using UXA but I 
-admittedly frequently update Mesa/Xorg/git kernel.
+This is what I was missing :)
 
-Tonight the X server crashed on resume and I was placed back at the KDM 
-prompt. I thought "$%^&$ the one time I actually had real applications 
-open! I am switching back to EXA!", so I changed AccelMethod back to 
-"exa" and decided to unload all i915 modules - i915, drm, and video.
+Can we don't use PERCPU_DYNAMIC_RESERVE in the first chunk and for
+dynamic per_cpu_ptr's we can use some other offset such as
+per_cpu_ptr_offset() or some such thing?
 
-The latter unexpectedly returned "Killed", although none of these 
-modules showed any 'used by' count.
+Then we can separate the static and dynamic chunks. And use large page
+kernel-direct mappings for fast access for critical common things and
+use small page accesses for dynamic and not so common accesses.
 
-I then did 'init 5' upon which I had a black screen, and decided to 
-reboot. I then noticed that the following OOPS occurred prior to the 
-reboot, likely the result of my "rmmod drm" or "rmmod output".
+Just checking to see if we can reduce the complexity of setting up the
+percpu areas (different versions for embed, non-embed etc) and handling
+all these aliases with simple code, rather than making it complex.
 
-May 18 19:35:56 linux-7vph kernel: Restarting tasks ... done.
-May 18 19:36:07 linux-7vph kdm[2882]: X server for display :0 terminated 
-unexpectedly
-May 18 19:36:18 linux-7vph bonobo-activation-server (niella-10440): 
-could not associate with desktop session: Failed to connect to socket 
-/tmp/dbus-snlESQlAbp: Connection refused
-May 18 19:36:32 linux-7vph kernel: [drm:gm45_get_vblank_counter] *ERROR* 
-trying to get vblank count for disabled pipe 0
-May 18 19:37:01 linux-7vph kernel: [drm:gm45_get_vblank_counter] *ERROR* 
-trying to get vblank count for disabled pipe 0
-May 18 19:37:03 linux-7vph init: Switching to runlevel: 3
-May 18 19:37:34 linux-7vph kernel: mtrr: MTRR 4 not used
-May 18 19:37:34 linux-7vph kernel: [drm] Module unloaded
-May 18 19:37:47 linux-7vph kernel: BUG: unable to handle kernel NULL 
-pointer dereference at 00000010
-May 18 19:37:47 linux-7vph kernel: IP: [<c02fbbef>] klist_put+0x12/0x6f
-May 18 19:37:47 linux-7vph kernel: *pde = 00000000
-May 18 19:37:47 linux-7vph kernel: Oops: 0000 [#1] SMP
-May 18 19:37:47 linux-7vph kernel: last sysfs file: 
-/sys/devices/pci0000:00/0000:00:1c.1/0000:03:00.0/rfkill/rfkill1/state
-May 18 19:37:47 linux-7vph kernel: Modules linked in: usbhid hid tun 
-i2c_algo_bit af_packet ip6t_LOG xt_tcpudp xt_pkttype ipt_LOG xt_limit 
-snd_pcm_oss snd_mixer_oss snd_seq binfmt_misc ip6t_REJECT 
-nf_conntrack_ipv6 ip6table_raw xt_NOTRACK ipt_REJECT xt_state 
-cpufreq_conservative cpufreq_userspace iptable_raw cpufreq_powersave 
-iptable_filter acpi_cpufreq speedstep_lib ip6table_mangle 
-nf_conntrack_netbios_ns nf_conntrack_ipv4 nf_conntrack nf_defrag_ipv4 
-ip_tables ip6table_filter ip6_tables x_tables ipv6 microcode fuse loop 
-dm_mod snd_usb_audio snd_usb_lib snd_rawmidi snd_seq_device arc4 ecb 
-iwlagn iwlcore thinkpad_acpi rfkill led_class snd_hda_codec_conexant 
-video(-) mac80211 ohci1394 battery ac output nvram ieee1394 rtc_cmos 
-snd_hda_intel wmi snd_hda_codec rtc_core button snd_hwdep snd_pcm 
-snd_timer snd i2c_i801 soundcore iTCO_wdt snd_page_alloc 
-iTCO_vendor_support intel_agp cfg80211 rtc_lib e1000e i2c_core agpgart 
-sr_mod cdrom joydev sg ehci_hcd uhci_hcd sd_mod usbcore ext4 jbd2 crc16 
-edd ext3 mbcache jbd fan ahci l
-May 18 19:37:47 linux-7vph kernel: ibata scsi_mod thermal processor 
-[last unloaded: drm]
-May 18 19:37:47 linux-7vph kernel:
-May 18 19:37:47 linux-7vph kernel: Pid: 10594, comm: rmmod Not tainted 
-(2.6.30-rc6-pae #47) 40622XG
-May 18 19:37:47 linux-7vph kernel: EIP: 0060:[<c02fbbef>] EFLAGS: 
-00010246 CPU: 1
-May 18 19:37:47 linux-7vph kernel: EIP is at klist_put+0x12/0x6f
-May 18 19:37:47 linux-7vph kernel: EAX: f5c281f8 EBX: 00000001 ECX: 
-00000004 EDX: 00000001
-May 18 19:37:47 linux-7vph kernel: ESI: 00000000 EDI: f5c281f8 EBP: 
-f44adef0 ESP: f44adedc
-May 18 19:37:47 linux-7vph kernel:  DS: 007b ES: 007b FS: 00d8 GS: 0033 
-SS: 0068
-May 18 19:37:47 linux-7vph kernel: Process rmmod (pid: 10594, 
-ti=f44ac000 task=f5c7f0b0 task.ti=f44ac000)
-May 18 19:37:47 linux-7vph kernel: Stack:
-May 18 19:37:47 linux-7vph kernel:  c0134d30 00000000 00000002 00000000 
-c04297b4 f44adef8 c02fbc77 f44adf18
-May 18 19:37:47 linux-7vph kernel:  c02fbd7b c04376d0 c04376d0 f5c281f8 
-f5c7f0b0 00000000 f85e08c0 f44adf2c
-May 18 19:37:47 linux-7vph kernel:  c026d83e 00000000 f85e08c0 00000000 
-f44adf3c c026e6e1 f85e0980 bf994ca0
-May 18 19:37:47 linux-7vph kernel: Call Trace:
-May 18 19:37:47 linux-7vph kernel:  [<c0134d30>] ? insert_work+0x78/0x81
-May 18 19:37:47 linux-7vph kernel:  [<c02fbc77>] ? klist_del+0xd/0xf
-May 18 19:37:47 linux-7vph kernel:  [<c02fbd7b>] ? klist_remove+0x58/0x81
-May 18 19:37:47 linux-7vph kernel:  [<c026d83e>] ? 
-bus_remove_driver+0x5c/0x89
-May 18 19:37:47 linux-7vph kernel:  [<c026e6e1>] ? 
-driver_unregister+0x2a/0x2e
-May 18 19:37:47 linux-7vph kernel:  [<c0226253>] ? 
-acpi_bus_unregister_driver+0xd/0xf
-May 18 19:37:47 linux-7vph kernel:  [<f85de371>] ? 
-cleanup_module+0xd/0x25 [video]
-May 18 19:37:47 linux-7vph kernel:  [<c01477d5>] ? 
-sys_delete_module+0x18a/0x1e3
-May 18 19:37:47 linux-7vph kernel:  [<c017b9be>] ? remove_vma+0x46/0x4c
-May 18 19:37:47 linux-7vph kernel:  [<c017c5d2>] ? do_munmap+0x20a/0x225
-May 18 19:37:47 linux-7vph kernel:  [<c01029d4>] ? 
-sysenter_do_call+0x12/0x28
-May 18 19:37:47 linux-7vph kernel: Code: 90 83 7d f0 00 74 09 85 ff 74 
-05 89 f8 ff 55 f0 8b 46 04 5a 5b 5e 5f 5d c3 55 89 e5 57 89 c7 56 53 89 
-d3 83 ec 08 8b 30 83 e6 fe <8b> 46 10 89 45 f0 89 f0 e8 0b f4 00 00 84 
-db 74 17 f6 07 01 74
-May 18 19:37:47 linux-7vph kernel: EIP: [<c02fbbef>] klist_put+0x12/0x6f 
-SS:ESP 0068:f44adedc
-May 18 19:37:47 linux-7vph kernel: CR2: 0000000000000010
-May 18 19:37:47 linux-7vph kernel: ---[ end trace c76e3f0980caa485 ]---
-May 18 19:38:41 linux-7vph sudo:   niella : TTY=tty2 ; PWD=/home/niella 
-; USER=root ; COMMAND=/sbin/reboot
-
-Xorg.0.log contained the following at more or less the same time of the 
-X crash:
-X Protocol Version 11, Revision 0
-Build Operating System: openSUSE SUSE LINUX
-Current Operating System: Linux linux-7vph 2.6.30-rc6-pae #47 SMP Mon 
-May 18 00:42:36 SAST 2009 i686
-Build Date: 16 May 2009  11:20:59AM
-
-    Before reporting problems, check http://wiki.x.org
-    to make sure that you have the latest version.
-Markers: (--) probed, (**) from config file, (==) default setting,
-    (++) from command line, (!!) notice, (II) informational,
-    (WW) warning, (EE) error, (NI) not implemented, (??) unknown.
-(==) Log file: "/var/log/Xorg.0.log", Time: Mon May 18 19:36:14 2009
-(==) Using config file: "/etc/X11/xorg.conf"
-Setting master
-/org/freedesktop/Hal/devices/computer
-xrandr for VGA: new mode 1600x1024 136.36 1600 1704 1872 2144 1024 1025 
-1028 1060
-X Error of failed request:  BadName (named color or font does not exist)
-   Major opcode of failed request:  149 (RANDR)
-   Minor opcode of failed request:  16 (RRCreateMode)
-   Serial number of failed request:  23
-   Current serial number in output stream:  23
-Dropping master
-Setting master
-Dropping master
-
-Regards,
-Niel
+thanks,
+suresh
 
