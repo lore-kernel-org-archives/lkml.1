@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756894AbZERQJw@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756847AbZERQKE@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756894AbZERQJw (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 12:09:52 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754209AbZERQJb
+	id S1756847AbZERQKE (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 12:10:04 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754789AbZERQJj
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 12:09:31 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56856 "EHLO mx2.suse.de"
+	Mon, 18 May 2009 12:09:39 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41551 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752648AbZERQJ3 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 12:09:29 -0400
+	id S1756047AbZERQJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 12:09:37 -0400
 From: Jan Blunck <jblunck@suse.de>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
        mszeredi@suse.cz, vaurora@redhat.com
-Subject: [PATCH 07/32] VFS: Introduce dput() variant that maintains a kill-list
-Date: Mon, 18 May 2009 18:09:03 +0200
-Message-Id: <1242662968-11684-8-git-send-email-jblunck@suse.de>
+Subject: [PATCH 27/32] union-mount: Always create topmost directory on open
+Date: Mon, 18 May 2009 18:09:23 +0200
+Message-Id: <1242662968-11684-28-git-send-email-jblunck@suse.de>
 X-Mailer: git-send-email 1.6.1.3
 In-Reply-To: <1242662968-11684-1-git-send-email-jblunck@suse.de>
 References: <1242662968-11684-1-git-send-email-jblunck@suse.de>
@@ -23,200 +23,46 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch introduces a new variant of dput(). This becomes necessary to
-prevent a recursive call to dput() from the union mount code.
+From: Valerie Aurora (Henson) <vaurora@redhat.com>
 
-  void __dput(struct dentry *dentry, struct list_head *list, int greedy);
-  struct dentry *__d_kill(struct dentry *dentry, struct list_head *list,
-  	 		  int greedy);
-
-__dput() works mostly like the original dput() did. The main difference is
-that if it the greedy argument is zero it will put the parent on a special
-list instead of trying to get rid of it directly.
-
-Therefore the union mount code can safely call __dput() when it wants to get
-rid of underlying dentry references during a dput(). After calling __dput()
-or __d_kill() the caller must make sure that __d_kill_final() is called on all
-dentries on the kill list. __d_kill_final() is actually doing the
-dentry_iput() and is also dereferencing the parent.
+When we open a directory, unconditionally create a matching directory
+on the top-level.  This way we don't have to go back and create all
+the directories on the path to an element when we want to copy it up.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 Signed-off-by: Valerie Aurora (Henson) <vaurora@redhat.com>
 ---
- fs/dcache.c |  115 +++++++++++++++++++++++++++++++++++++++++++++++++++++-----
- 1 files changed, 105 insertions(+), 10 deletions(-)
+ fs/namei.c |   10 ++++++----
+ 1 files changed, 6 insertions(+), 4 deletions(-)
 
-diff --git a/fs/dcache.c b/fs/dcache.c
-index 085f527..8bfbcd7 100644
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -157,14 +157,19 @@ static void dentry_lru_del_init(struct dentry *dentry)
- }
+diff --git a/fs/namei.c b/fs/namei.c
+index 4d68597..684619c 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -1265,8 +1265,9 @@ static int __link_path_walk(const char *name, struct nameidata *nd)
+ 		if (err)
+ 			break;
  
- /**
-- * d_kill - kill dentry and return parent
-+ * __d_kill - kill dentry and return parent
-  * @dentry: dentry to kill
-+ * @list: kill list
-+ * @greedy: return parent instead of putting it on the kill list
-  *
-  * The dentry must already be unhashed and removed from the LRU.
-  *
-- * If this is the root of the dentry tree, return NULL.
-+ * If this is the root of the dentry tree, return NULL. If greedy is zero, we
-+ * put the parent of this dentry on the kill list instead. The callers must
-+ * make sure that __d_kill_final() is called on all dentries on the kill list.
-  */
--static struct dentry *d_kill(struct dentry *dentry)
-+static struct dentry *__d_kill(struct dentry *dentry, struct list_head *list,
-+			       int greedy)
- 	__releases(dentry->d_lock)
- 	__releases(dcache_lock)
- {
-@@ -172,6 +177,20 @@ static struct dentry *d_kill(struct dentry *dentry)
+-		if ((nd->flags & LOOKUP_TOPMOST) &&
+-		    (nd->um_flags & LAST_LOWLEVEL)) {
++		if ((nd->um_flags & LAST_LOWLEVEL) &&
++		    (S_ISDIR(next.dentry->d_inode->i_mode) ||
++		     (nd->flags & LOOKUP_TOPMOST))) {
+ 			struct dentry *dentry;
  
- 	list_del(&dentry->d_u.d_child);
- 	dentry_stat.nr_dentry--;	/* For d_free, below */
-+
-+	/*
-+	 * If we are not greedy we just put this on a list for later processing
-+	 * (follow up to parent, releasing of inode and freeing dentry memory).
-+	 */
-+	if (!greedy) {
-+		list_del_init(&dentry->d_alias);
-+		/* at this point nobody can reach this dentry */
-+		list_add(&dentry->d_lru, list);
-+		spin_unlock(&dentry->d_lock);
-+		spin_unlock(&dcache_lock);
-+		return NULL;
-+	}
-+
- 	/*drops the locks, at that point nobody can reach this dentry */
- 	dentry_iput(dentry);
- 	if (IS_ROOT(dentry))
-@@ -182,6 +201,54 @@ static struct dentry *d_kill(struct dentry *dentry)
- 	return parent;
- }
+ 			dentry = union_create_topmost(nd, &this, &next);
+@@ -1330,8 +1331,9 @@ last_component:
+ 		if (err)
+ 			break;
  
-+void __dput(struct dentry *, struct list_head *, int);
-+
-+static void __d_kill_final(struct dentry *dentry, struct list_head *list)
-+{
-+	struct dentry *parent;
-+	struct inode *inode = dentry->d_inode;
-+
-+	if (inode) {
-+		dentry->d_inode = NULL;
-+		if (!inode->i_nlink)
-+			fsnotify_inoderemove(inode);
-+		if (dentry->d_op && dentry->d_op->d_iput)
-+			dentry->d_op->d_iput(dentry, inode);
-+		else
-+			iput(inode);
-+	}
-+
-+	if (IS_ROOT(dentry))
-+		parent = NULL;
-+	else
-+		parent = dentry->d_parent;
-+	d_free(dentry);
-+	__dput(parent, list, 1);
-+}
-+
-+/**
-+ * d_kill - kill dentry and return parent
-+ * @dentry: dentry to kill
-+ *
-+ * The dentry must already be unhashed and removed from the LRU.
-+ *
-+ * If this is the root of the dentry tree, return NULL.
-+ */
-+static struct dentry *d_kill(struct dentry *dentry)
-+{
-+	LIST_HEAD(mortuary);
-+	struct dentry *parent;
-+
-+	parent = __d_kill(dentry, &mortuary, 1);
-+	while (!list_empty(&mortuary)) {
-+		dentry = list_entry(mortuary.next, struct dentry, d_lru);
-+		list_del(&dentry->d_lru);
-+		__d_kill_final(dentry, &mortuary);
-+	}
-+
-+	return parent;
-+}
-+
- /* 
-  * This is dput
-  *
-@@ -199,19 +266,24 @@ static struct dentry *d_kill(struct dentry *dentry)
-  * Real recursion would eat up our stack space.
-  */
+-		if ((nd->flags & LOOKUP_TOPMOST) &&
+-		    (nd->um_flags & LAST_LOWLEVEL)) {
++		if ((nd->um_flags & LAST_LOWLEVEL) &&
++		    (S_ISDIR(next.dentry->d_inode->i_mode) ||
++		     (nd->flags & LOOKUP_TOPMOST))) {
+ 			struct dentry *dentry;
  
--/*
-- * dput - release a dentry
-- * @dentry: dentry to release 
-+/**
-+ * __dput - release a dentry
-+ * @dentry: dentry to release
-+ * @list: kill list argument for __d_kill()
-+ * @greedy: greedy argument for __d_kill()
-  *
-  * Release a dentry. This will drop the usage count and if appropriate
-  * call the dentry unlink method as well as removing it from the queues and
-  * releasing its resources. If the parent dentries were scheduled for release
-- * they too may now get deleted.
-+ * they too may now get deleted if @greedy is not zero. Otherwise parent is
-+ * added to the kill list. The callers must make sure that __d_kill_final() is
-+ * called on all dentries on the kill list.
-+ *
-+ * You probably want to use dput() instead.
-  *
-  * no dcache lock, please.
-  */
--
--void dput(struct dentry *dentry)
-+void __dput(struct dentry *dentry, struct list_head *list, int greedy)
- {
- 	if (!dentry)
- 		return;
-@@ -252,12 +324,35 @@ unhash_it:
- kill_it:
- 	/* if dentry was on the d_lru list delete it from there */
- 	dentry_lru_del(dentry);
--	dentry = d_kill(dentry);
-+	dentry = __d_kill(dentry, list, greedy);
- 	if (dentry)
- 		goto repeat;
- }
- 
- /**
-+ * dput - release a dentry
-+ * @dentry: dentry to release
-+ *
-+ * Release a dentry. This will drop the usage count and if appropriate
-+ * call the dentry unlink method as well as removing it from the queues and
-+ * releasing its resources. If the parent dentries were scheduled for release
-+ * they too may now get deleted.
-+ *
-+ * no dcache lock, please.
-+ */
-+void dput(struct dentry *dentry)
-+{
-+	LIST_HEAD(mortuary);
-+
-+	__dput(dentry, &mortuary, 1);
-+	while (!list_empty(&mortuary)) {
-+		dentry = list_entry(mortuary.next, struct dentry, d_lru);
-+		list_del(&dentry->d_lru);
-+		__d_kill_final(dentry, &mortuary);
-+	}
-+}
-+
-+/**
-  * d_invalidate - invalidate a dentry
-  * @dentry: dentry to invalidate
-  *
+ 			dentry = union_create_topmost(nd, &this, &next);
 -- 
 1.6.1.3
 
