@@ -1,46 +1,69 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752697AbZERS0M@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752843AbZERSgM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752697AbZERS0M (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 14:26:12 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751790AbZERSZ6
+	id S1752843AbZERSgM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 14:36:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751939AbZERSf5
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 14:25:58 -0400
-Received: from plexity.net ([206.123.115.38]:45165 "EHLO plexity.net"
+	Mon, 18 May 2009 14:35:57 -0400
+Received: from mx2.redhat.com ([66.187.237.31]:42322 "EHLO mx2.redhat.com"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751433AbZERSZ6 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 14:25:58 -0400
-Date: Mon, 18 May 2009 18:24:54 +0000
-From: Deepak Saxena <dsaxena@plexity.net>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] 8250: Don't restore NS16550 mode when console suspend
-	is disabled
-Message-ID: <20090518182454.GA13297@plexity.net>
-Reply-To: dsaxena@plexity.net
-References: <20090512210015.GA25540@plexity.net> <alpine.LFD.2.01.0905121452190.3343@localhost.localdomain> <20090513011842.22d9cd6c@lxorguk.ukuu.org.uk> <20090513002850.GA28422@plexity.net> <20090513094409.50c2409f@lxorguk.ukuu.org.uk> <alpine.LFD.2.01.0905130755090.3343@localhost.localdomain> <20090513163507.556c3832@lxorguk.ukuu.org.uk> <20090513180436.GA5592@plexity.net> <20090513194651.78e02ec2@lxorguk.ukuu.org.uk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090513194651.78e02ec2@lxorguk.ukuu.org.uk>
-Organization: Plexity, LLC
-User-Agent: Mutt/1.5.15+20070412 (2007-04-11)
+	id S1751396AbZERSf4 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 14:35:56 -0400
+Subject: Re: iwlagn broken in next-20090514 and next-20090515
+From: Dan Williams <dcbw@redhat.com>
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: reinette chatre <reinette.chatre@intel.com>,
+       Stephen Rothwell <sfr@canb.auug.org.au>,
+       Nico -telmich- Schottelius <nico-linux-next@schottelius.org>,
+       "linux-next@vger.kernel.org" <linux-next@vger.kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>,
+       "John W. Linville" <linville@tuxdriver.com>,
+       "linux-wireless@vger.kernel.org" <linux-wireless@vger.kernel.org>
+In-Reply-To: <1242670211.29049.10.camel@johannes.local>
+References: <20090515153733.4384db9f.sfr@canb.auug.org.au>
+	 <20090515102621.GA5735@ikn.schottelius.org>
+	 <20090518171505.d30d2f64.sfr@canb.auug.org.au>
+	 <1242662635.32358.523.camel@rc-desk>
+	 <1242663867.27425.1.camel@johannes.local>
+	 <1242669029.3845.0.camel@localhost.localdomain>
+	 <1242670211.29049.10.camel@johannes.local>
+Content-Type: text/plain
+Date: Mon, 18 May 2009 14:35:20 -0400
+Message-Id: <1242671720.3845.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On May 13 2009, at 19:46, Alan Cox was caught saying:
-> > > So can we apply Deepak's original correct 2008 patch instead please ?
-> > 
-> > I've updated it with proper header and attached.
+On Mon, 2009-05-18 at 20:10 +0200, Johannes Berg wrote:
+> On Mon, 2009-05-18 at 13:50 -0400, Dan Williams wrote:
 > 
-> Thanks - much better approach.
+> > > > > > Also wpa_supplicant is not happy:
+> > > > > > 
+> > > > > > + wpa_supplicant -B -Dwext -iwlan0 -c /home/user/nico/ethz/wlan/wpa_supplicant.conf
+> > > > > > ioctl[SIOCSIWENCODEEXT]: No such file or directory
+> > > > > > ioctl[SIOCSIWENCODEEXT]: No such file or directory
+> > > > > > ioctl[SIOCSIWENCODEEXT]: No such file or directory
+> > > > > > ioctl[SIOCSIWENCODEEXT]: No such file or directory
+> > > > > > 
+> > > > 
+> > > > There were some changes recently to this ioctl, but I am not familiar
+> > > > with details. Johannes will know.
+> > > 
+> > > Yeah, I'm not sure -- this happens when clearing keys. I'll look into
+> > > it, we probably need to accept removing a key that doesn't exist.
+> > 
+> > Why bother (if that's actually the root cause)?  Maybe the supplicant
+> > should be fixed.  Other drivers return ENOENT in this case, so mac80211
+> > certainly isn't out-of-common-spec here now.
+> 
+> I just looked at the code in wpa_supplicant, it doesn't care a bit, just
+> prints the error. Problem is users attribute any other breakage to the
+> error it prints since our behaviour changed...
 
-Alan, is this queued up for .31?
+I meant "make wpa_supplicant not print anything out on -ENOENT".
 
-Thanks,
-~Deepak
+Dan
 
--- 
-In the end, they will not say, "those were dark times,"  they will ask
-"why were their poets silent?" - Bertold Brecht
 
