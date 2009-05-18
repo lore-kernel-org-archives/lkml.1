@@ -1,153 +1,129 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755865AbZERKnu@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756167AbZERKqa@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755865AbZERKnu (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 06:43:50 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754152AbZERKnh
+	id S1756167AbZERKqa (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 06:46:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753700AbZERKqO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 06:43:37 -0400
-Received: from smtp.nokia.com ([192.100.122.230]:33812 "EHLO
-	mgw-mx03.nokia.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1753700AbZERKng (ORCPT
+	Mon, 18 May 2009 06:46:14 -0400
+Received: from e35.co.us.ibm.com ([32.97.110.153]:56717 "EHLO
+	e35.co.us.ibm.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752494AbZERKqM (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 06:43:36 -0400
-Date: Mon, 18 May 2009 13:31:30 +0300
-From: Felipe Balbi <felipe.balbi@nokia.com>
-To: ext Jonathan Cameron <jic23@cam.ac.uk>
-Cc: "Balbi Felipe (Nokia-D/Helsinki)" <felipe.balbi@nokia.com>,
-       ext Kim Kyuwon <chammoru@gmail.com>,
-       ext Mohamed Ikbel Boulabiar <boulabiar@gmail.com>,
-       Trilok Soni <soni.trilok@gmail.com>,
+	Mon, 18 May 2009 06:46:12 -0400
+Date: Mon, 18 May 2009 18:45:52 +0800
+From: Balbir Singh <balbir@linux.vnet.ibm.com>
+To: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Dmitry Torokhov <dmitry.torokhov@gmail.com>,
-       "linux-input@vger.kernel.org" <linux-input@vger.kernel.org>,
-       Kim Kyuwon <q1.kim@samsung.com>,
-       Kyungmin Park <kyungmin.park@samsung.com>,
-       Jean Delvare <khali@linux-fr.org>,
-       "Zhang, Xing Z" <xing.z.zhang@intel.com>,
-       "Gross, Mark" <mark.gross@intel.com>,
-       jketreno <jketreno@linux.intel.com>,
-       "Trisal, Kalhan" <kalhan.trisal@intel.com>
-Subject: Re: [RFC] Add Input IOCTL for accelerometer devices
-Message-ID: <20090518103130.GK4443@nokia.com>
-Reply-To: felipe.balbi@nokia.com
-References: <20090515131636.GE4443@nokia.com> <5d5443650905151106v2fe7ad1ci6c966463a991e732@mail.gmail.com> <45cc95260905151230j5485995dpbbd882dc91b25339@mail.gmail.com> <20090515200235.GA11829@nokia.com> <4d34a0a70905180045u6619773dt1563fe38b13d46fb@mail.gmail.com> <20090518091236.GH4443@nokia.com> <4A11344B.3000405@cam.ac.uk>
+       Andrew Morton <akpm@linux-foundation.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>
+Subject: Re: [RFC] Low overhead patches for the memory cgroup controller
+	(v2)
+Message-ID: <20090518104552.GB5156@balbir.in.ibm.com>
+Reply-To: balbir@linux.vnet.ibm.com
+References: <b7dd123f0a15fff62150bc560747d7f0.squirrel@webmail-b.css.fujitsu.com> <20090515181639.GH4451@balbir.in.ibm.com> <20090518191107.8a7cc990.kamezawa.hiroyu@jp.fujitsu.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
-In-Reply-To: <4A11344B.3000405@cam.ac.uk>
+In-Reply-To: <20090518191107.8a7cc990.kamezawa.hiroyu@jp.fujitsu.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
-X-OriginalArrivalTime: 18 May 2009 10:42:56.0225 (UTC) FILETIME=[6777CD10:01C9D7A5]
-X-Nokia-AV: Clean
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi,
+* KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-05-18 19:11:07]:
 
-On Mon, May 18, 2009 at 12:11:23PM +0200, ext Jonathan Cameron wrote:
-> Hi All,
+> On Fri, 15 May 2009 23:46:39 +0530
+> Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 > 
-> Firstly sorry for lack of response, my email filters hid this in a
-> folder I don't read often!
+> > * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-05-16 02:45:03]:
+> > 
+> > > Balbir Singh wrote:
+> > > > Feature: Remove the overhead associated with the root cgroup
+> > > >
+> > > > From: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > > >
+> > > > This patch changes the memory cgroup and removes the overhead associated
+> > > > with LRU maintenance of all pages in the root cgroup. As a side-effect, we
+> > > > can
+> > > > no longer set a memory hard limit in the root cgroup.
+> > > >
+> > > > A new flag is used to track page_cgroup associated with the root cgroup
+> > > > pages. A new flag to track whether the page has been accounted or not
+> > > > has been added as well.
+> > > >
+> > > > Review comments higly appreciated
+> > > >
+> > > > Tests
+> > > >
+> > > > 1. Tested with allocate, touch and limit test case for a non-root cgroup
+> > > > 2. For the root cgroup tested performance impact with reaim
+> > > >
+> > > >
+> > > > 		+patch		mmtom-08-may-2009
+> > > > AIM9		1362.93		1338.17
+> > > > Dbase		17457.75	16021.58
+> > > > New Dbase	18070.18	16518.54
+> > > > Shared		9681.85		8882.11
+> > > > Compute		16197.79	15226.13
+> > > >
+> > > Hmm, at first impression, I can't convice the numbers...
+> > > Just avoiding list_add/del makes programs _10%_ faster ?
+> > > Could you show changes in cpu cache-miss late if you can ?
+> > > (And why Aim9 goes bad ?)
+> > 
+> > OK... I'll try but I am away on travel for 3 weeks :( you can try and run
+> > this as well
+> > 
+> tested aim7 with some config.
 > 
-> I've copied in a few other people I've discussed similar things with
-> in the past. (sorry if guys if you were getting this via the mailing
-> list anyway!)
+> CPU: Xeon 3.1GHz/4Core x2 (8cpu)
+> Memory: 32G
+> HDD: Usual? Scsi disk (just 1 disk)
+> (try_to_free_pages() etc...will never be called.)
 > 
-> To give you my background, I'm generally interested in sensors
-> attached to mote's (ultra small linux machines) which tend not to
-> have user interfaces as such and hence supporting these things for
-> input is for a matter of interest rather than requirements. 
-
-You're right here...
-
-> Whether it makes sense to write unified drivers for my types of uses
-> and input is still an open question.
-
-I guess iio could provide 'links' to other subsystems where applicable.
-
-> If you are interested in iio, there's a git tree at
-> http://www.kernel.org/pub/scm/linux/kernel/git/jic23/iio.git
-
-cloning :-p
-
-> and a draft of a white paper at:
+> Multiuser config. #of tasks 1100 (near to peak on my host)
 > 
-> www-sigproc.eng.cam.ac.uk/~jic23/iio.pdf
-
-Printed
-
-> This was very much one of the thinks IIO was designed to address.
-> One thing to keep in mind is that the framework
-> was not intended to replace input / hwmon if they are the appropriate places
-> for a given driver. In fact one of the conclusions of the discussions linked
-> above was that, in cases where an accelerometer (or other sensor) serves
-> different purposes in different devices it may make sense to actually provide
-> more than one kernel driver. (obviously sharing code where appropriate.
-
-why not one kernel driver exporting the device through different
-subsystems ?? Otherwise we'd need to fake it's a multifunction device,
-right ?!?
-
-> There have been a few off list discussions about how to provide a 'query' type
-> function so as to allow very different sensors to be used transparently by user
-> space.  HID was suggested, but to my mind isn't necessarily the way to go. I'm
-> very much of the view that the kernel should expose enough parameters for userspace
-> to be able to figure out the 'calibration' type stuff.  This would be in a similar
-> fashion to that used by hwmon.  I'm not sure I've gotten in right in IIO.
+> 10runs.
+> rc6mm1 score(Jobs/min)
+> 44009.1 44844.5 44691.1 43981.9 44992.6
+> 44544.9 44179.1 44283.0 44442.9 45033.8  average=44500
 > 
-> If things are chip specific then it's simply a case of discussing naming / parameter
-> conventions on the relevant list and keeping definitions in driver. When they start
-> turning up on lots of chips then they get moved into a 'device type header'
+> +patch
+> 44656.8 44270.8 44706.7 44106.1 44467.6
+> 44585.3 44167.0 44756.7 44853.9 44249.4  average=44482
+> 
+> Dbase config. #of tasks 25
+> rc6mm1 score (jobs/min)
+> 11022.7 11018.9 11037.9 11003.8 11087.5 
+> 11145.2 11133.6 11068.3 11091.3 11106.6 average=11071
+> 
+> +patch
+> 10888.0 10973.7 10913.9 11000.0 10984.9
+> 10996.2 10969.9 10921.3 10921.3 11053.1 average=10962
+> 
+> Hmm, 1% improvement ?
+> (I think this is reasonable score of the effect of this patch)
+>
 
-right
+Thanks for the test, I have a 4 CPU system and I create 80 users,
+larger config shows larger difference at my end. I think even 1% is
+quite reasonable as you mentioned. If the patch looks fine, should we
+ask for larger testing by Andrew?
+ 
+> Anyway, I'm afraid of difference between mine and your kernel config.
+> plz enjoy your travel for now :)
 
-> Agreed.  If you know a given accelerometer is only going to be used for
-> input then that's where the driver belongs.  However, these chips are
-> generally capable of a lot more and it tends to be annoying specific.
-> Take for example things like calibration offsets, and for the really fun
-> cases on chip event driven ring buffers?  These really don't fit into
-> your classic input cases.
+Sorry, I did not send you my .config, why do you think .config makes a
+difference? I think loading AIM makes the difference and I also made
+one other change to the aim tests. I run with "sync" linked to
+/bin/true and use tmpfs for temporary partition and 20*numnber of cpus
+for number of users.
 
-but that'll never be the case. It can be used as input only in my device
-but what about yours ? That's why we need ways to make the driver as
-generic as possible so it can be used for several applications.
-
-> I'd also argue the problem here is that you are going to end up with a
-> large class of similar devices.  If you start directly adding accelerometers
-> to Input then the same arguement applies to magnetometers, bend sensors,
-> gyroscopes etc.  Also beware that many accelerometers are going to be wired
-> up to adc's (rather than providing digital outputs) so you'll need some
-> framework to specify this connectivity. (open area in IIO to and the moment).
-
-sure, I agree with you here.
-
-> >So let accelerometer drivers use both APIs of hwmon and input
-> >> subsystems(hwmon_device_register, input_register_device,
-> >> input_register_polled_device). Acutally this is what many
-> >> accelerometer drivers in current Linux kernel are doing, so we don't
-> >> have to do much.
-> >>
-> >> Let's
-> >> 1) Introduce a new maintainer of accelerometer (Felipe?).
-> >> 2) Move accelerometer drivers in current Linux kernel to /driver/accelerometer.
-> >> 3) If we find the common functions of accelerometer or have idea about
-> >> new API or Macro, let's make at driver/accelerometer/acccelerometer.c,
-> >> input/linux/acccelerometer.h file or modify input.h little.
-> >> 4) Add every new accelerometer into /driver/accelerometer..
->  > How about extending these to several kinds of sensors ??
-> Yup, lots out there - and lots of them don't fit into your nice clean categories.
->  Why not having
-> > a sensor framework that abstracts the creating of the input_dev for
-> > accelerometer ?
-> In my view too limited.  (which is where IIO came from in the first place!)
-> Just because their primary use in your applications is input doesn't mean
-> that's going to be the case in future.
-
-well, I'm thinking mostly about accelerometers, mostly. But same comment
-applies to magnetometers, those can't be exported through input, that
-one doesn't make sense at all, so how to export it ? and when that's
-defined, make iio export helper functions for registering such devices..
+If required, I can still send out my .config to you.
 
 -- 
-balbi
+	Balbir
