@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758268AbZERQPc@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758270AbZERQPI@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758268AbZERQPc (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 12:15:32 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756520AbZERQMo
+	id S1758270AbZERQPI (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 12:15:08 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757641AbZERQMm
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 12:12:44 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41519 "EHLO mx1.suse.de"
+	Mon, 18 May 2009 12:12:42 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41522 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755114AbZERQJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	id S1755253AbZERQJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
 	Mon, 18 May 2009 12:09:33 -0400
 From: Jan Blunck <jblunck@suse.de>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
        mszeredi@suse.cz, vaurora@redhat.com
-Subject: [PATCH 06/32] VFS: Make real_lookup() return a struct path
-Date: Mon, 18 May 2009 18:09:02 +0200
-Message-Id: <1242662968-11684-7-git-send-email-jblunck@suse.de>
+Subject: [PATCH 10/32] whiteout: Set S_OPAQUE inode flag when creating directories
+Date: Mon, 18 May 2009 18:09:06 +0200
+Message-Id: <1242662968-11684-11-git-send-email-jblunck@suse.de>
 X-Mailer: git-send-email 1.6.1.3
 In-Reply-To: <1242662968-11684-1-git-send-email-jblunck@suse.de>
 References: <1242662968-11684-1-git-send-email-jblunck@suse.de>
@@ -23,157 +23,71 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This patch changes real_lookup() into returning a struct path.
+In case of an union directory we don't want that the directories on lower
+layers of the union "show through". So to prevent that the contents of
+underlying directories magically shows up after a mkdir() we set the S_OPAQUE
+flag if directories are created where a whiteout existed before.
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 Signed-off-by: Valerie Aurora (Henson) <vaurora@redhat.com>
 ---
- fs/namei.c |   82 +++++++++++++++++++++++++++++++++++++----------------------
- 1 files changed, 51 insertions(+), 31 deletions(-)
+ fs/namei.c         |   11 ++++++++++-
+ include/linux/fs.h |    3 +++
+ 2 files changed, 13 insertions(+), 1 deletions(-)
 
 diff --git a/fs/namei.c b/fs/namei.c
-index a9dd19b..e19fa2b 100644
+index 9cab708..fe58172 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -460,10 +460,11 @@ ok:
-  * make sure that nobody added the entry to the dcache in the meantime..
-  * SMP-safe
-  */
--static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, struct nameidata *nd)
-+static int real_lookup(struct nameidata *nd, struct qstr *name,
-+		       struct path *path)
+@@ -2050,6 +2050,7 @@ SYSCALL_DEFINE3(mknod, const char __user *, filename, int, mode, unsigned, dev)
+ int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
  {
--	struct dentry * result;
--	struct inode *dir = parent->d_inode;
-+	struct inode *dir = nd->path.dentry->d_inode;
-+	int res = 0;
+ 	int error = may_create(dir, dentry);
++	int opaque = 0;
  
- 	mutex_lock(&dir->i_mutex);
- 	/*
-@@ -480,27 +481,36 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
- 	 *
- 	 * so doing d_lookup() (with seqlock), instead of lockfree __d_lookup
- 	 */
--	result = d_lookup(parent, name);
--	if (!result) {
-+	path->dentry = d_lookup(nd->path.dentry, name);
-+	path->mnt = nd->path.mnt;
-+	if (!path->dentry) {
- 		struct dentry *dentry;
+ 	if (error)
+ 		return error;
+@@ -2062,10 +2063,18 @@ int vfs_mkdir(struct inode *dir, struct dentry *dentry, int mode)
+ 	if (error)
+ 		return error;
  
- 		/* Don't create child dentry for a dead directory. */
--		result = ERR_PTR(-ENOENT);
--		if (IS_DEADDIR(dir))
-+		if (IS_DEADDIR(dir)) {
-+			res = -ENOENT;
- 			goto out_unlock;
-+		}
- 
--		dentry = d_alloc(parent, name);
--		result = ERR_PTR(-ENOMEM);
-+		dentry = d_alloc(nd->path.dentry, name);
- 		if (dentry) {
--			result = dir->i_op->lookup(dir, dentry, nd);
--			if (result)
-+			path->dentry = dir->i_op->lookup(dir, dentry, nd);
-+			if (path->dentry) {
- 				dput(dentry);
--			else
--				result = dentry;
-+				if (IS_ERR(path->dentry)) {
-+					res = PTR_ERR(path->dentry);
-+					path->dentry = NULL;
-+					path->mnt = NULL;
-+				}
-+			} else
-+				path->dentry = dentry;
-+		} else {
-+			res = -ENOMEM;
-+			path->mnt = NULL;
- 		}
- out_unlock:
- 		mutex_unlock(&dir->i_mutex);
--		return result;
-+		return res;
- 	}
- 
- 	/*
-@@ -508,12 +518,20 @@ out_unlock:
- 	 * we waited on the semaphore. Need to revalidate.
- 	 */
- 	mutex_unlock(&dir->i_mutex);
--	if (result->d_op && result->d_op->d_revalidate) {
--		result = do_revalidate(result, nd);
--		if (!result)
--			result = ERR_PTR(-ENOENT);
-+	if (path->dentry->d_op && path->dentry->d_op->d_revalidate) {
-+		path->dentry = do_revalidate(path->dentry, nd);
-+		if (!path->dentry) {
-+			res = -ENOENT;
-+			path->mnt = NULL;
-+		}
-+		if (IS_ERR(path->dentry)) {
-+			res = PTR_ERR(path->dentry);
-+			path->dentry = NULL;
-+			path->mnt = NULL;
-+		}
- 	}
--	return result;
++	if (d_is_whiteout(dentry))
++		opaque = 1;
 +
-+	return res;
- }
- 
- /*
-@@ -779,35 +797,37 @@ static __always_inline void follow_dotdot(struct nameidata *nd)
- static int do_lookup(struct nameidata *nd, struct qstr *name,
- 		     struct path *path)
- {
--	struct vfsmount *mnt = nd->path.mnt;
--	struct dentry *dentry = __d_lookup(nd->path.dentry, name);
-+	int err;
- 
--	if (!dentry)
-+	path->dentry = __d_lookup(nd->path.dentry, name);
-+	path->mnt = nd->path.mnt;
-+	if (!path->dentry)
- 		goto need_lookup;
--	if (dentry->d_op && dentry->d_op->d_revalidate)
-+	if (path->dentry->d_op && path->dentry->d_op->d_revalidate)
- 		goto need_revalidate;
-+
- done:
--	path->mnt = mnt;
--	path->dentry = dentry;
- 	__follow_mount(path);
- 	return 0;
- 
- need_lookup:
--	dentry = real_lookup(nd->path.dentry, name, nd);
--	if (IS_ERR(dentry))
-+	err = real_lookup(nd, name, path);
-+	if (err)
- 		goto fail;
- 	goto done;
- 
- need_revalidate:
--	dentry = do_revalidate(dentry, nd);
--	if (!dentry)
-+	path->dentry = do_revalidate(path->dentry, nd);
-+	if (!path->dentry)
- 		goto need_lookup;
--	if (IS_ERR(dentry))
-+	if (IS_ERR(path->dentry)) {
-+		err = PTR_ERR(path->dentry);
- 		goto fail;
+ 	DQUOT_INIT(dir);
+ 	error = dir->i_op->mkdir(dir, dentry, mode);
+-	if (!error)
++	if (!error) {
+ 		fsnotify_mkdir(dir, dentry);
++		if (opaque) {
++			dentry->d_inode->i_flags |= S_OPAQUE;
++			mark_inode_dirty(dentry->d_inode);
++		}
 +	}
- 	goto done;
- 
- fail:
--	return PTR_ERR(dentry);
-+	return err;
+ 	return error;
  }
  
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 5950616..841bc1d 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -168,6 +168,7 @@ struct inodes_stat_t {
+ #define S_NOCMTIME	128	/* Do not update file c/mtime */
+ #define S_SWAPFILE	256	/* Do not truncate: swapon got its bmaps */
+ #define S_PRIVATE	512	/* Inode is fs-internal */
++#define S_OPAQUE	1024	/* Directory is opaque */
+ 
  /*
+  * Note that nosuid etc flags are inode-specific: setting some file-system
+@@ -203,6 +204,8 @@ struct inodes_stat_t {
+ #define IS_SWAPFILE(inode)	((inode)->i_flags & S_SWAPFILE)
+ #define IS_PRIVATE(inode)	((inode)->i_flags & S_PRIVATE)
+ 
++#define IS_OPAQUE(inode)	((inode)->i_flags & S_OPAQUE)
++
+ /* the read-only stuff doesn't really belong here, but any other place is
+    probably as bad and I don't want to create yet another include file. */
+ 
 -- 
 1.6.1.3
 
