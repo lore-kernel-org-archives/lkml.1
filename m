@@ -1,49 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753446AbZERSzk@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754050AbZERTBo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753446AbZERSzk (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 14:55:40 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753161AbZERSzc
+	id S1754050AbZERTBo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 15:01:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753219AbZERTBg
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 14:55:32 -0400
-Received: from earthlight.etchedpixels.co.uk ([81.2.110.250]:44263 "EHLO
-	www.etchedpixels.co.uk" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
-	with ESMTP id S1752468AbZERSzb (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 14:55:31 -0400
-Date: Mon, 18 May 2009 19:55:33 +0100
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Joe Perches <joe@perches.com>,
-       Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-Subject: Re: [PATCH 6/6] drivers/ide: Convert printk(KERN_NOTICE to
- pr_notice(
-Message-ID: <20090518195533.6ca4412d@lxorguk.ukuu.org.uk>
-In-Reply-To: <m3skj2im12.fsf@intrepid.localdomain>
-References: <cover.1242609803.git.joe@perches.com>
-	<3ff9e9c7a8918f4d5f7bab5590f46073a196a4bf.1242609804.git.joe@perches.com>
-	<4A11343C.5070809@ru.mvista.com>
-	<m3skj2im12.fsf@intrepid.localdomain>
-X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; x86_64-redhat-linux-gnu)
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	Mon, 18 May 2009 15:01:36 -0400
+Received: from ogre.sisk.pl ([217.79.144.158]:56870 "EHLO ogre.sisk.pl"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1752938AbZERTBf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 15:01:35 -0400
+From: "Rafael J. Wysocki" <rjw@sisk.pl>
+To: ACPI Devel Maling List <linux-acpi@vger.kernel.org>
+Subject: Re: [i915] Kernel does not compile when set to use i915 kernel mode-setting per default (CONFIG_DRM_I915_KMS=y)
+Date: Mon, 18 May 2009 21:01:06 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc6-rjw; KDE/4.2.3; x86_64; ; )
+References: <fcd863fc0905181109h372e5967t9d179b820a62132d@mail.gmail.com>
+In-Reply-To: <fcd863fc0905181109h372e5967t9d179b820a62132d@mail.gmail.com>
+Cc: Zorael <zorael@gmail.com>, Len Brown <lenb@kernel.org>,
+       LKML <linux-kernel@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: Text/Plain;
+  charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+Message-Id: <200905182101.06511.rjw@sisk.pl>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Though I think most people would agree that the latter is much better,
-> no?
-> I think removal (rewording) of this rule has already been agreed upon,
-> though not exactly yet codified.
+Adding CCs.
 
-There are no rules - its a style guide ;)
-
-And yes sticking to 80 columns is frequently totally bogus especially
-when it splits text strings
-
-Alan
---
-	"Policy is a poor man's substitute for common sense."
-			-- David Woodhouse
+On Monday 18 May 2009, you wrote:
+> (First post, so please CC to zorael@gmail.com in case it doesn't automatically.)
+> 
+> 
+> I'm trying to compile 2.6.30-rc6 to enable kernel mode-setting *per
+> default*, for my Intel 945GME video chipset. Alas, when compiling, it
+> halts with the following tidbit:
+> 
+> ...
+>   LD      .tmp_vmlinux1
+> drivers/built-in.o: In function `intel_opregion_free':
+> /usr/src/linux/drivers/gpu/drm/i915/i915_opregion.c:422: undefined
+> reference to `acpi_video_exit'
+> drivers/built-in.o: In function `intel_opregion_init':
+> /usr/src/linux/drivers/gpu/drm/i915/i915_opregion.c:393: undefined
+> reference to `acpi_video_register'
+> make[1]: *** [.tmp_vmlinux1] Error 1
+> make[1]: Leaving directory `/usr/src/linux-2.6.29'
+> make: *** [debian/stamp/build/kernel] Error 2
+> 
+> 
+> grepping acpi_video_register recursively I see it's defined as an
+> empty function in ./include/acpi/video.h, and as a more proper
+> function in ./drivers/acpi/video.c. Does somehow setting it to use KMS
+> per default via CONFIG_DRM_I915_KMS=y stop it from reading those
+> files?
+> 
+> I used to run with KMS by default in the early -30rc*s, but at some
+> point (rc2?), it stopped compiling succesfully. If I don't enable it
+> per default, it *does* compile, though I don't know how to explicitly
+> enable it at boot-time. So I'm living without KMS for the time being.
+> Woe.
+> 
+> Anything obvious I'm doing wrong?
+> 
+> -- Zorael
