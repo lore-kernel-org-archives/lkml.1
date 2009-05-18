@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756637AbZERQJo@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757236AbZERQKg@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756637AbZERQJo (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 12:09:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753477AbZERQJ3
+	id S1757236AbZERQKg (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 12:10:36 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756621AbZERQJo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 12:09:29 -0400
-Received: from cantor2.suse.de ([195.135.220.15]:56859 "EHLO mx2.suse.de"
+	Mon, 18 May 2009 12:09:44 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41548 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752918AbZERQJ2 (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 12:09:28 -0400
+	id S1756015AbZERQJh (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 12:09:37 -0400
 From: Jan Blunck <jblunck@suse.de>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
        mszeredi@suse.cz, vaurora@redhat.com
-Subject: [PATCH 03/32] VFS: propagate mnt_flags into do_loopback
-Date: Mon, 18 May 2009 18:08:59 +0200
-Message-Id: <1242662968-11684-4-git-send-email-jblunck@suse.de>
+Subject: [PATCH 21/32] union-mount: Make lookup work for union-mounted file systems
+Date: Mon, 18 May 2009 18:09:17 +0200
+Message-Id: <1242662968-11684-22-git-send-email-jblunck@suse.de>
 X-Mailer: git-send-email 1.6.1.3
 In-Reply-To: <1242662968-11684-1-git-send-email-jblunck@suse.de>
 References: <1242662968-11684-1-git-send-email-jblunck@suse.de>
@@ -23,40 +23,648 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-The mnt_flags are propagated into do_loopback(), so that they can be checked
-when mounting something loopback into a union.
+On union-mounted file systems the lookup function must also visit lower layers
+of the union-stack when doing a lookup. This patches add support for
+union-mounts to cached lookups and real lookups.
+
+We have 3 different styles of lookup functions now:
+- multiple pathname components, follow mounts, follow union, follow symlinks
+- single pathname component, doesn't follow mounts, follow union, doesn't
+  follow symlinks
+- single pathname component doesn't follow mounts, doesn't follow unions,
+  doesn't follow symlinks
 
 Signed-off-by: Jan Blunck <jblunck@suse.de>
 Signed-off-by: Valerie Aurora (Henson) <vaurora@redhat.com>
 ---
- fs/namespace.c |    7 ++++---
- 1 files changed, 4 insertions(+), 3 deletions(-)
+ fs/namei.c            |  470 ++++++++++++++++++++++++++++++++++++++++++++++++-
+ include/linux/namei.h |    6 +
+ 2 files changed, 468 insertions(+), 8 deletions(-)
 
-diff --git a/fs/namespace.c b/fs/namespace.c
-index 06f8e63..f0a5ce7 100644
---- a/fs/namespace.c
-+++ b/fs/namespace.c
-@@ -1461,8 +1461,8 @@ static int do_change_type(struct path *path, int flag)
+diff --git a/fs/namei.c b/fs/namei.c
+index 9dc51b0..2bb8a22 100644
+--- a/fs/namei.c
++++ b/fs/namei.c
+@@ -31,6 +31,7 @@
+ #include <linux/file.h>
+ #include <linux/fcntl.h>
+ #include <linux/device_cgroup.h>
++#include <linux/union.h>
+ #include <asm/uaccess.h>
+ 
+ #define ACC_MODE(x) ("\000\004\002\006"[(x)&O_ACCMODE])
+@@ -413,6 +414,173 @@ static struct dentry *cache_lookup(struct dentry *parent, struct qstr *name,
+ 	return dentry;
+ }
+ 
++/**
++ * __cache_lookup_topmost - lookup the topmost (non-)negative dentry
++ *
++ * @nd - parent's nameidata
++ * @name - pathname part to lookup
++ * @path - found dentry for pathname part
++ *
++ * This is used for union mount lookups from dcache. The first non-negative
++ * dentry is searched on all layers of the union stack. Otherwise the topmost
++ * negative dentry is returned.
++ */
++static int __cache_lookup_topmost(struct nameidata *nd, struct qstr *name,
++				  struct path *path)
++{
++	struct dentry *dentry;
++
++	dentry = d_lookup(nd->path.dentry, name);
++	if (dentry && dentry->d_op && dentry->d_op->d_revalidate)
++		dentry = do_revalidate(dentry, nd);
++
++	/*
++	 * Remember the topmost negative dentry in case we don't find anything
++	 */
++	path->dentry = dentry;
++	path->mnt = dentry ? nd->path.mnt : NULL;
++
++	if (!dentry || dentry->d_inode)
++		return !dentry;
++
++	/* look for the first non-negative dentry */
++
++	while (follow_union_down(&nd->path.mnt, &nd->path.dentry)) {
++		dentry = d_hash_and_lookup(nd->path.dentry, name);
++
++		/*
++		 * If parts of the union stack are not in the dcache we need
++		 * to do a real lookup
++		 */
++		if (!dentry)
++			goto out_dput;
++
++		/*
++		 * If parts of the union don't survive the revalidation we
++		 * need to do a real lookup
++		 */
++		if (dentry->d_op && dentry->d_op->d_revalidate) {
++			dentry = do_revalidate(dentry, nd);
++			if (!dentry)
++				goto out_dput;
++		}
++
++		if (dentry->d_inode)
++			goto out_dput;
++
++		dput(dentry);
++	}
++
++	return !dentry;
++
++out_dput:
++	dput(path->dentry);
++	path->dentry = dentry;
++	path->mnt = dentry ? mntget(nd->path.mnt) : NULL;
++	return !dentry;
++}
++
++/**
++ * __cache_lookup_build_union - build the union stack for this part,
++ * cached version
++ *
++ * This is called after you have the topmost dentry in @path.
++ */
++static int __cache_lookup_build_union(struct nameidata *nd, struct qstr *name,
++				      struct path *path)
++{
++	struct path last = *path;
++	struct dentry *dentry;
++
++	while (follow_union_down(&nd->path.mnt, &nd->path.dentry)) {
++		dentry = d_hash_and_lookup(nd->path.dentry, name);
++		if (!dentry)
++			return 1;
++
++		if (dentry->d_op && dentry->d_op->d_revalidate) {
++			dentry = do_revalidate(dentry, nd);
++			if (!dentry)
++				return 1;
++		}
++
++		if (!dentry->d_inode) {
++			dput(dentry);
++			continue;
++		}
++
++		/* only directories can be part of a union stack */
++		if (!S_ISDIR(dentry->d_inode->i_mode)) {
++			dput(dentry);
++			break;
++		}
++
++		/* Add the newly discovered dir to the union stack */
++		append_to_union(last.mnt, last.dentry, nd->path.mnt, dentry);
++
++		if (last.dentry != path->dentry)
++			path_put(&last);
++		last.dentry = dentry;
++		last.mnt = mntget(nd->path.mnt);
++	}
++
++	if (last.dentry != path->dentry)
++		path_put(&last);
++
++	return 0;
++}
++
++/**
++ * cache_lookup_union - lookup a single pathname part from dcache
++ *
++ * This is a union mount capable version of what d_lookup() & revalidate()
++ * would do. This function returns a valid (union) dentry on success.
++ *
++ * Remember: On failure it means that parts of the union aren't cached. You
++ * should call real_lookup() afterwards to find the proper (union) dentry.
++ */
++static int cache_lookup_union(struct nameidata *nd, struct qstr *name,
++			      struct path *path)
++{
++	int res ;
++
++	if (!IS_MNT_UNION(nd->path.mnt)) {
++		path->dentry = cache_lookup(nd->path.dentry, name, nd);
++		path->mnt = path->dentry ? nd->path.mnt : NULL;
++		res = path->dentry ? 0 : 1;
++	} else {
++		struct path safe = {
++			.dentry = nd->path.dentry,
++			.mnt = nd->path.mnt
++		};
++
++		path_get(&safe);
++		res = __cache_lookup_topmost(nd, name, path);
++		if (res)
++			goto out;
++
++		/* only directories can be part of a union stack */
++		if (!path->dentry->d_inode ||
++		    !S_ISDIR(path->dentry->d_inode->i_mode))
++			goto out;
++
++		/* Build the union stack for this part */
++		res = __cache_lookup_build_union(nd, name, path);
++		if (res) {
++			dput(path->dentry);
++			if (path->mnt != safe.mnt)
++				mntput(path->mnt);
++			goto out;
++		}
++
++out:
++		path_put(&nd->path);
++		nd->path.dentry = safe.dentry;
++		nd->path.mnt = safe.mnt;
++	}
++
++	return res;
++}
++
  /*
-  * do loopback mount.
-  */
--static int do_loopback(struct path *path, char *old_name,
--				int recurse)
-+static int do_loopback(struct path *path, char *old_name, int recurse,
-+		       int mnt_flags)
+  * Short-cut version of permission(), for calling by
+  * path_walk(), when dcache lock is held.  Combines parts
+@@ -534,6 +702,146 @@ out_unlock:
+ 	return res;
+ }
+ 
++/**
++ * __real_lookup_topmost - lookup topmost dentry, non-cached version
++ *
++ * If we reach a dentry with restricted access, we just stop the lookup
++ * because we shouldn't see through that dentry. Same thing for dentry
++ * type mismatch and whiteouts.
++ *
++ * FIXME:
++ * - handle DT_WHT
++ * - handle union stacks in use
++ * - handle union stacks mounted upon union stacks
++ * - avoid unnecessary allocations of union locks
++ */
++static int __real_lookup_topmost(struct nameidata *nd, struct qstr *name,
++				 struct path *path)
++{
++	struct path next;
++	int err;
++
++	err = real_lookup(nd, name, path);
++	if (err)
++		return err;
++
++	if (path->dentry->d_inode)
++		return 0;
++
++	while (follow_union_down(&nd->path.mnt, &nd->path.dentry)) {
++		name->hash = full_name_hash(name->name, name->len);
++		if (nd->path.dentry->d_op && nd->path.dentry->d_op->d_hash) {
++			err = nd->path.dentry->d_op->d_hash(nd->path.dentry,
++							    name);
++			if (err < 0)
++				goto out;
++		}
++
++		err = real_lookup(nd, name, &next);
++		if (err)
++			goto out;
++
++		if (next.dentry->d_inode) {
++			dput(path->dentry);
++			mntget(next.mnt);
++			*path = next;
++			goto out;
++		}
++
++		dput(next.dentry);
++	}
++out:
++	if (err)
++		dput(path->dentry);
++	return err;
++}
++
++/**
++ * __real_lookup_build_union: build the union stack for this pathname
++ * part, non-cached version
++ *
++ * Called when not all parts of the union stack are in cache
++ */
++
++static int __real_lookup_build_union(struct nameidata *nd, struct qstr *name,
++				     struct path *path)
++{
++	struct path last = *path;
++	struct path next;
++	int err = 0;
++
++	while (follow_union_down(&nd->path.mnt, &nd->path.dentry)) {
++		/* We need to recompute the hash for lower layer lookups */
++		name->hash = full_name_hash(name->name, name->len);
++		if (nd->path.dentry->d_op && nd->path.dentry->d_op->d_hash) {
++			err = nd->path.dentry->d_op->d_hash(nd->path.dentry,
++							    name);
++			if (err < 0)
++				goto out;
++		}
++
++		err = real_lookup(nd, name, &next);
++		if (err)
++			goto out;
++
++		if (!next.dentry->d_inode) {
++			dput(next.dentry);
++			continue;
++		}
++
++		/* only directories can be part of a union stack */
++		if (!S_ISDIR(next.dentry->d_inode->i_mode)) {
++			dput(next.dentry);
++			break;
++		}
++
++		/* now we know we found something "real" */
++		append_to_union(last.mnt, last.dentry, next.mnt, next.dentry);
++
++		if (last.dentry != path->dentry)
++			path_put(&last);
++		last.dentry = next.dentry;
++		last.mnt = mntget(next.mnt);
++	}
++
++	if (last.dentry != path->dentry)
++		path_put(&last);
++out:
++	return err;
++}
++
++static int real_lookup_union(struct nameidata *nd, struct qstr *name,
++			     struct path *path)
++{
++	struct path safe = { .dentry = nd->path.dentry, .mnt = nd->path.mnt };
++	int res ;
++
++	path_get(&safe);
++	res = __real_lookup_topmost(nd, name, path);
++	if (res)
++		goto out;
++
++	/* only directories can be part of a union stack */
++	if (!path->dentry->d_inode ||
++	    !S_ISDIR(path->dentry->d_inode->i_mode))
++		goto out;
++
++	/* Build the union stack for this part */
++	res = __real_lookup_build_union(nd, name, path);
++	if (res) {
++		dput(path->dentry);
++		if (path->mnt != safe.mnt)
++			mntput(path->mnt);
++		goto out;
++	}
++
++out:
++	path_put(&nd->path);
++	nd->path.dentry = safe.dentry;
++	nd->path.mnt = safe.mnt;
++	return res;
++}
++
+ /*
+  * Wrapper to retry pathname resolution whenever the underlying
+  * file system returns an ESTALE.
+@@ -787,6 +1095,7 @@ static __always_inline void follow_dotdot(struct nameidata *nd)
+ 		nd->path.mnt = parent;
+ 	}
+ 	follow_mount(&nd->path.mnt, &nd->path.dentry);
++	follow_union_mount(&nd->path.mnt, &nd->path.dentry);
+ }
+ 
+ /*
+@@ -799,6 +1108,9 @@ static int do_lookup(struct nameidata *nd, struct qstr *name,
  {
- 	struct path old_path;
- 	struct vfsmount *mnt = NULL;
-@@ -1952,7 +1952,8 @@ long do_mount(char *dev_name, char *dir_name, char *type_page,
- 		retval = do_remount(&path, flags & ~MS_REMOUNT, mnt_flags,
- 				    data_page);
- 	else if (flags & MS_BIND)
--		retval = do_loopback(&path, dev_name, flags & MS_REC);
-+		retval = do_loopback(&path, dev_name, flags & MS_REC,
-+				     mnt_flags);
- 	else if (flags & (MS_SHARED | MS_PRIVATE | MS_SLAVE | MS_UNBINDABLE))
- 		retval = do_change_type(&path, flags);
- 	else if (flags & MS_MOVE)
+ 	int err;
+ 
++	if (IS_MNT_UNION(nd->path.mnt))
++		goto need_union_lookup;
++
+ 	path->dentry = __d_lookup(nd->path.dentry, name);
+ 	path->mnt = nd->path.mnt;
+ 	if (!path->dentry)
+@@ -807,7 +1119,12 @@ static int do_lookup(struct nameidata *nd, struct qstr *name,
+ 		goto need_revalidate;
+ 
+ done:
+-	__follow_mount(path);
++	if (nd->path.mnt != path->mnt) {
++		nd->um_flags |= LAST_LOWLEVEL;
++		follow_mount(&path->mnt, &path->dentry);
++	} else
++		__follow_mount(path);
++	follow_union_mount(&path->mnt, &path->dentry);
+ 	return 0;
+ 
+ need_lookup:
+@@ -816,6 +1133,16 @@ need_lookup:
+ 		goto fail;
+ 	goto done;
+ 
++need_union_lookup:
++	err = cache_lookup_union(nd, name, path);
++	if (!err && path->dentry)
++		goto done;
++
++	err = real_lookup_union(nd, name, path);
++	if (err)
++		goto fail;
++	goto done;
++
+ need_revalidate:
+ 	path->dentry = do_revalidate(path->dentry, nd);
+ 	if (!path->dentry)
+@@ -854,6 +1181,8 @@ static int __link_path_walk(const char *name, struct nameidata *nd)
+ 	if (nd->depth)
+ 		lookup_flags = LOOKUP_FOLLOW | (nd->flags & LOOKUP_CONTINUE);
+ 
++	follow_union_mount(&nd->path.mnt, &nd->path.dentry);
++
+ 	/* At this point we know we have a real path component. */
+ 	for(;;) {
+ 		unsigned long hash;
+@@ -1038,6 +1367,7 @@ static int do_path_lookup(int dfd, const char *name,
+ 
+ 	nd->last_type = LAST_ROOT; /* if there are only slashes... */
+ 	nd->flags = flags;
++	nd->um_flags = 0;
+ 	nd->depth = 0;
+ 
+ 	if (*name=='/') {
+@@ -1229,6 +1559,130 @@ static int lookup_hash(struct nameidata *nd, struct qstr *name,
+ 	return err;
+ }
+ 
++static int __hash_lookup_topmost(struct nameidata *nd, struct qstr *name,
++				 struct path *path)
++{
++	struct path next;
++	int err;
++
++	err = lookup_hash(nd, name, path);
++	if (err)
++		return err;
++
++	if (path->dentry->d_inode)
++		return 0;
++
++	while (follow_union_down(&nd->path.mnt, &nd->path.dentry)) {
++		name->hash = full_name_hash(name->name, name->len);
++		if (nd->path.dentry->d_op && nd->path.dentry->d_op->d_hash) {
++			err = nd->path.dentry->d_op->d_hash(nd->path.dentry,
++							    name);
++			if (err < 0)
++				goto out;
++		}
++
++		mutex_lock(&nd->path.dentry->d_inode->i_mutex);
++		err = lookup_hash(nd, name, &next);
++		mutex_unlock(&nd->path.dentry->d_inode->i_mutex);
++		if (err)
++			goto out;
++
++		if (next.dentry->d_inode) {
++			dput(path->dentry);
++			mntget(next.mnt);
++			*path = next;
++			goto out;
++		}
++
++		dput(next.dentry);
++	}
++out:
++	if (err)
++		dput(path->dentry);
++	return err;
++}
++
++static int __hash_lookup_build_union(struct nameidata *nd, struct qstr *name,
++				     struct path *path)
++{
++	struct path last = *path;
++	struct path next;
++	int err = 0;
++
++	while (follow_union_down(&nd->path.mnt, &nd->path.dentry)) {
++		/* We need to recompute the hash for lower layer lookups */
++		name->hash = full_name_hash(name->name, name->len);
++		if (nd->path.dentry->d_op && nd->path.dentry->d_op->d_hash) {
++			err = nd->path.dentry->d_op->d_hash(nd->path.dentry,
++							    name);
++			if (err < 0)
++				goto out;
++		}
++
++		mutex_lock(&nd->path.dentry->d_inode->i_mutex);
++		err = lookup_hash(nd, name, &next);
++		mutex_unlock(&nd->path.dentry->d_inode->i_mutex);
++		if (err)
++			goto out;
++
++		if (!next.dentry->d_inode) {
++			dput(next.dentry);
++			continue;
++		}
++
++		/* only directories can be part of a union stack */
++		if (!S_ISDIR(next.dentry->d_inode->i_mode)) {
++			dput(next.dentry);
++			break;
++		}
++
++		/* now we know we found something "real" */
++		append_to_union(last.mnt, last.dentry, next.mnt, next.dentry);
++
++		if (last.dentry != path->dentry)
++			path_put(&last);
++		last.dentry = next.dentry;
++		last.mnt = mntget(next.mnt);
++	}
++
++	if (last.dentry != path->dentry)
++		path_put(&last);
++out:
++	return err;
++}
++
++static int hash_lookup_union(struct nameidata *nd, struct qstr *name,
++			     struct path *path)
++{
++	struct path safe = { .dentry = nd->path.dentry, .mnt = nd->path.mnt };
++	int res ;
++
++	path_get(&safe);
++	res = __hash_lookup_topmost(nd, name, path);
++	if (res)
++		goto out;
++
++	/* only directories can be part of a union stack */
++	if (!path->dentry->d_inode ||
++	    !S_ISDIR(path->dentry->d_inode->i_mode))
++		goto out;
++
++	/* Build the union stack for this part */
++	res = __hash_lookup_build_union(nd, name, path);
++	if (res) {
++		dput(path->dentry);
++		if (path->mnt != safe.mnt)
++			mntput(path->mnt);
++		goto out;
++	}
++
++out:
++	path_put(&nd->path);
++	nd->path.dentry = safe.dentry;
++	nd->path.mnt = safe.mnt;
++	return res;
++}
++
+ static int __lookup_one_len(const char *name, struct qstr *this,
+ 		struct dentry *base, int len)
+ {
+@@ -1713,7 +2167,7 @@ struct file *do_filp_open(int dfd, const char *pathname,
+ 	if (flag & O_EXCL)
+ 		nd.flags |= LOOKUP_EXCL;
+ 	mutex_lock(&dir->d_inode->i_mutex);
+-	error = lookup_hash(&nd, &nd.last, &path);
++	error = hash_lookup_union(&nd, &nd.last, &path);
+ 
+ do_last:
+ 	if (error) {
+@@ -1862,7 +2316,7 @@ do_link:
+ 	}
+ 	dir = nd.path.dentry;
+ 	mutex_lock(&dir->d_inode->i_mutex);
+-	error = lookup_hash(&nd, &nd.last, &path);
++	error = hash_lookup_union(&nd, &nd.last, &path);
+ 	__putname(nd.last.name);
+ 	goto do_last;
+ }
+@@ -1913,7 +2367,7 @@ struct dentry *lookup_create(struct nameidata *nd, int is_dir)
+ 	/*
+ 	 * Do the final lookup.
+ 	 */
+-	err = lookup_hash(nd, &nd->last, &path);
++	err = hash_lookup_union(nd, &nd->last, &path);
+ 	if (err) {
+ 		path.dentry = ERR_PTR(err);
+ 		goto fail;
+@@ -2323,7 +2777,7 @@ static long do_rmdir(int dfd, const char __user *pathname)
+ 	nd.flags &= ~LOOKUP_PARENT;
+ 
+ 	mutex_lock_nested(&nd.path.dentry->d_inode->i_mutex, I_MUTEX_PARENT);
+-	error = lookup_hash(&nd, &nd.last, &path);
++	error = hash_lookup_union(&nd, &nd.last, &path);
+ 	if (error)
+ 		goto exit2;
+ 	error = mnt_want_write(nd.path.mnt);
+@@ -2406,7 +2860,7 @@ static long do_unlinkat(int dfd, const char __user *pathname)
+ 	nd.flags &= ~LOOKUP_PARENT;
+ 
+ 	mutex_lock_nested(&nd.path.dentry->d_inode->i_mutex, I_MUTEX_PARENT);
+-	error = lookup_hash(&nd, &nd.last, &path);
++	error = hash_lookup_union(&nd, &nd.last, &path);
+ 	if (!error) {
+ 		/* Why not before? Because we want correct error value */
+ 		if (nd.last.name[nd.last.len])
+@@ -2810,7 +3264,7 @@ SYSCALL_DEFINE4(renameat, int, olddfd, const char __user *, oldname,
+ 
+ 	trap = lock_rename(new_dir, old_dir);
+ 
+-	error = lookup_hash(&oldnd, &oldnd.last, &old);
++	error = hash_lookup_union(&oldnd, &oldnd.last, &old);
+ 	if (error)
+ 		goto exit3;
+ 	/* source must exist */
+@@ -2829,7 +3283,7 @@ SYSCALL_DEFINE4(renameat, int, olddfd, const char __user *, oldname,
+ 	error = -EINVAL;
+ 	if (old.dentry == trap)
+ 		goto exit4;
+-	error = lookup_hash(&newnd, &newnd.last, &new);
++	error = hash_lookup_union(&newnd, &newnd.last, &new);
+ 	if (error)
+ 		goto exit4;
+ 	/* target should not be an ancestor of source */
+diff --git a/include/linux/namei.h b/include/linux/namei.h
+index fc2e035..e465cc7 100644
+--- a/include/linux/namei.h
++++ b/include/linux/namei.h
+@@ -19,6 +19,7 @@ struct nameidata {
+ 	struct path	path;
+ 	struct qstr	last;
+ 	unsigned int	flags;
++	unsigned int	um_flags;
+ 	int		last_type;
+ 	unsigned	depth;
+ 	char *saved_names[MAX_NESTED_LINKS + 1];
+@@ -34,6 +35,9 @@ struct nameidata {
+  */
+ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT, LAST_BIND};
+ 
++#define LAST_UNION             0x01
++#define LAST_LOWLEVEL          0x02
++
+ /*
+  * The bitmask for a lookup event:
+  *  - follow links at the end
+@@ -48,6 +52,8 @@ enum {LAST_NORM, LAST_ROOT, LAST_DOT, LAST_DOTDOT, LAST_BIND};
+ #define LOOKUP_CONTINUE		 4
+ #define LOOKUP_PARENT		16
+ #define LOOKUP_REVAL		64
++#define LOOKUP_TOPMOST	       128
++
+ /*
+  * Intent data
+  */
 -- 
 1.6.1.3
 
