@@ -1,91 +1,79 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752432AbZERN6V@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753379AbZERN7Z@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752432AbZERN6V (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 09:58:21 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751382AbZERN6J
+	id S1753379AbZERN7Z (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 09:59:25 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751422AbZERN7H
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 09:58:09 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:43352 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751208AbZERN6I (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 09:58:08 -0400
-Date: Mon, 18 May 2009 15:56:49 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Yinghai Lu <yinghai@kernel.org>, Jack Steiner <steiner@sgi.com>,
-       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: tip: patches in git for irq and numa
-Message-ID: <20090518135649.GB20014@elte.hu>
-References: <20090511095022.GA23121@elte.hu> <20090511163158.c4e4d334.akpm@linux-foundation.org> <20090512090704.GC18004@elte.hu> <4A0A6700.3070100@kernel.org> <20090513133635.GB7384@elte.hu> <4A0AFA6E.5050200@kernel.org> <20090515173521.GA29647@elte.hu> <4A0DE0ED.6090402@kernel.org> <20090518072952.GA12460@elte.hu> <1242654650.26820.429.camel@twins>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242654650.26820.429.camel@twins>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+	Mon, 18 May 2009 09:59:07 -0400
+Received: from casper.infradead.org ([85.118.1.10]:42127 "EHLO
+	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751208AbZERN7G (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 09:59:06 -0400
+Date: Mon, 18 May 2009 06:58:58 -0700
+From: Arjan van de Ven <arjan@infradead.org>
+To: Cornelia Huck <cornelia.huck@de.ibm.com>
+Cc: tom.leiming@gmail.com, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org
+Subject: Re: [PATCH 1/2] kernel:async function call:introduce
+ async_run_inatomic(v3)
+Message-ID: <20090518065858.387b7012@infradead.org>
+In-Reply-To: <20090518131054.1ace6885@gondolin>
+References: <1242482058-5203-1-git-send-email-tom.leiming@gmail.com>
+	<20090518131054.1ace6885@gondolin>
+Organization: Intel
+X-Mailer: Claws Mail 3.7.0 (GTK+ 2.14.7; i386-redhat-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+X-SRS-Rewrite: SMTP reverse-path rewritten from <arjan@infradead.org> by casper.infradead.org
+	See http://www.infradead.org/rpr.html
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+On Mon, 18 May 2009 13:10:54 +0200
+Cornelia Huck <cornelia.huck@de.ibm.com> wrote:
 
-* Peter Zijlstra <peterz@infradead.org> wrote:
-
-> On Mon, 2009-05-18 at 09:29 +0200, Ingo Molnar wrote:
-> > * Yinghai Lu <yinghai@kernel.org> wrote:
-> > 
-> > > irq related:
-> > > git://git.kernel.org/pub/scm/linux/kernel/git/yinghai/linux-2.6-yinghai.git irq
-> > > need to on top of tip/irq/numa
-> > 
-> > ok, these were nicely structured. the pci_routeirq patch had a build 
-> > bug for !CONFIG_PCI.
-> > 
-> > ( I added an #ifdef for now, it might make sense to send a clean-up 
-> >   patch in the next merge window (not now) to factor out a 
-> >   pci_routeirq_enable() method that does all this cleanly. )
-> > 
-> > Also, please add appropriate Cc: lines to the commit logs in the 
-> > future, beyond the LKML-Reference tgs.
-> > 
-> > > for memoryless node support: 
-> > > git://git.kernel.org/pub/scm/linux/kernel/git/yinghai/linux-2.6-yinghai.git numa
-> > > and it is on top of tip/master
-> > 
-> > small note: you could have based these on x86/mm btw. - that's where 
-> > these patches go, typically.
-> > 
-> > regarding subject lines:
-> > 
-> >  d03a6a4: mm: clear N_HIGH_MEMORY map before se set it again -v2
-> >  02ce039: x86: fix system without memory on node0 -v2
-> >  8c1aec8: x86: fix node_possible_map logic -v2
-> >  44a633c: x86: remove MEMORY_HOTPLUG_RESERVE related code -v2
-> > 
-> > please never put '-v2' type of tags into the title of commits. In 
-> > the title of patches they can be put here:
-> > 
-> >   [PATCH, v2] x86: fix system without memory on node0
-> > 
-> > that saves maintainers a bit of typing work.
-> > 
-> > Also, you included:
-> > 
-> >  d03a6a4: mm: clear N_HIGH_MEMORY map before se set it again -v2
-> > 
-> > with no Acks from MM folks yet. So i skipped that one and will 
-> > follow up about it.
+> On Sat, 16 May 2009 21:54:17 +0800,
+> tom.leiming@gmail.com wrote:
 > 
-> The below seems to wreck my opteron, ata1 interrupts fail to get
-> through.
+> > + /**
+> > + * async_run_inatomic - in atomic contexts schedule a function for
+> > + * 			asynchronous execution
+> > + *
+> > + * @ptr: function to execute asynchronously
+> > + * @data: data pointer to pass to the function
+> > + *
+> > + * The purpose of this function is to offer a simple way to
+> > schedule an
+> > + * asynchronous thread from an atomic context.
+> > + *
+> > + * Return zero one success, !zero on failured
+> > + * Note: async_run_inatomic() uses a distinct running list in order
+> > + * to avoid slowing down synchronization within the general domain.
+> > + * Since it does not return a cookie for checkpointing, it is for
+> > callers
+> > + * that don't need later synchronization.
+> > + */
+> > +int async_run_inatomic(async_func_ptr *ptr, void *data)
+> > +{
+> > +	return !__async_schedule(ptr, data,
+> > &async_running_no_sync, 1); +}
+> > +EXPORT_SYMBOL_GPL(async_run_inatomic);
+> > +
+> 
+> While we can skip synchronization on cookies, we still need something
+> like async_run_synchronize() for module unloading (and possibly
+> others).
 
-thanks Peter for bisecting this, i've excluded irq/numa from 
-tip:master again.
+We don't have this problem if we use the existing naming and existing
+standard domain... 
+(I don't like the "run" part of the name, rather than schedule.. lets
+keep the apis consistent please)
 
-	Ingo
+
+-- 
+Arjan van de Ven 	Intel Open Source Technology Centre
+For development, discussion and tips for power savings, 
+visit http://www.lesswatts.org
