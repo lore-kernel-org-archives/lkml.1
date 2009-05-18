@@ -1,230 +1,86 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752378AbZERMhP@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1752502AbZERMk3@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752378AbZERMhP (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 08:37:15 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751361AbZERMgv
+	id S1752502AbZERMk3 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 08:40:29 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751109AbZERMkJ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 08:36:51 -0400
-Received: from fxip-0047f.externet.hu ([88.209.222.127]:48881 "EHLO
-	pomaz-ex.szeredi.hu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751260AbZERMgt (ORCPT
+	Mon, 18 May 2009 08:40:09 -0400
+Received: from wf-out-1314.google.com ([209.85.200.171]:12619 "EHLO
+	wf-out-1314.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1750905AbZERMkH convert rfc822-to-8bit (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 08:36:49 -0400
-To: jens.axboe@oracle.com
-CC: miklos@szeredi.hu, akpm@linux-foundation.org, max@duempel.org,
-       torvalds@linux-foundation.org, linux-fsdevel@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-In-reply-to: <20090514180003.GU4140@kernel.dk> (message from Jens Axboe on
-	Thu, 14 May 2009 20:00:03 +0200)
-Subject: Re: [patch 2/3] splice: implement default splice_read method
-References: <20090507133734.450612199@szeredi.hu> <20090507133748.161689790@szeredi.hu> <20090512223500.d7ef4648.akpm@linux-foundation.org> <20090513063707.GC4140@kernel.dk> <E1M4ALP-0005za-1i@pomaz-ex.szeredi.hu> <20090514172935.GR4140@kernel.dk> <E1M4f8b-0000Tb-GI@pomaz-ex.szeredi.hu> <20090514180003.GU4140@kernel.dk>
-Message-Id: <E1M6254-00070d-0p@pomaz-ex.szeredi.hu>
-From: Miklos Szeredi <miklos@szeredi.hu>
-Date: Mon, 18 May 2009 14:36:34 +0200
+	Mon, 18 May 2009 08:40:07 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:in-reply-to:references:x-mailer
+         :mime-version:content-type:content-transfer-encoding;
+        b=PybzO913YntEOlWC0Lg9RPENtk2e4Qo+Dk8lI19WzTHmKDwpHeD193GznqUfwbA88P
+         S4BZ2abBD4P2ijxZqo3SBBIRH/VmfG+oQyksiOAaEGHtqvT0LDdRfQniZNcIxhlMzYnt
+         r+q3St9IHK1EKOkj1kx4Xe0RyI2luVAgg1YsY=
+Date: Mon, 18 May 2009 20:39:57 +0800
+From: Ming Lei <tom.leiming@gmail.com>
+To: Li Zefan <lizf@cn.fujitsu.com>
+Cc: rostedt@goodmis.org, linux-kernel@vger.kernel.org,
+       akpm@linux-foundation.org, mingo@elte.hu
+Subject: Re: [PATCH] ftrace:fix check for return value of
+ register_module_notifier
+Message-ID: <20090518203957.0bc1eff8@linux-lm>
+In-Reply-To: <4A10B1B4.5080309@cn.fujitsu.com>
+References: <1242545498-7285-1-git-send-email-tom.leiming@gmail.com>
+	<4A10B1B4.5080309@cn.fujitsu.com>
+X-Mailer: Claws Mail 3.7.1 (GTK+ 2.14.4; x86_64-unknown-linux-gnu)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Jens,
+>From d0d91950165f1d0a05ce8f68b333c6f0724b0007 Mon Sep 17 00:00:00 2001
+From: Ming Lei <tom.leiming@gmail.com>
+Date: Sun, 17 May 2009 15:26:28 +0800
+Subject: [PATCH] ftrace:fix check for return value of register_module_notifier(v2)
 
-On Thu, 14 May 2009, Jens Axboe wrote:
-> On Thu, May 14 2009, Miklos Szeredi wrote:
-> > > > Hmm.  Simple solution would be to do a write() for each buffer.  But
-> > > > this only affects HIGHMEM kernels, so it's a bit pointless to do that
-> > > > on all archs.  Sigh...
-> > > 
-> > > It is unfortunate, we are going to be stuck with that for some time
-> > > still...
+return zero should be correct, so fix it.
 
-Here's a patch that fixes the multiple kmap() issue.  It goes on top
-of the previous splice patches.
-
-Thanks,
-Miklos
-
-----
-Subject: splice: fix kmaps in default_file_splice_write()
-From: Miklos Szeredi <mszeredi@suse.cz>
-
-Unfortunately multiple kmap() within a single thread are deadlockable,
-so writing out multiple buffers with writev() isn't possible.
-
-Change the implementation so that it does a separate write() for each
-buffer.  This actually simplifies the code a lot since the
-splice_from_pipe() helper can be used.
-
-This limitation is caused by HIGHMEM pages, and so only affects a
-subset of architectures and configurations.  In the future it may be
-worth to implement default_file_splice_write() in a more efficient way
-on configs that allow it.
-
-Signed-off-by: Miklos Szeredi <mszeredi@suse.cz>
+Signed-off-by: Ming Lei <tom.leiming@gmail.com>
+Signed-off-by: Li Zefan <lizf@cn.fujitsu.com>
+Acked-by: Frederic Weisbecker <fweisbec@gmail.com> 
 ---
- fs/splice.c |  130 ++++++++++--------------------------------------------------
- 1 file changed, 22 insertions(+), 108 deletions(-)
+ kernel/trace/ftrace.c       |    2 +-
+ kernel/trace/trace_events.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-Index: linux-2.6/fs/splice.c
-===================================================================
---- linux-2.6.orig/fs/splice.c	2009-05-18 13:22:49.000000000 +0200
-+++ linux-2.6/fs/splice.c	2009-05-18 14:18:22.000000000 +0200
-@@ -535,8 +535,8 @@ static ssize_t kernel_readv(struct file
- 	return res;
- }
+diff --git a/kernel/trace/ftrace.c b/kernel/trace/ftrace.c
+index 5b606f4..140699a 100644
+--- a/kernel/trace/ftrace.c
++++ b/kernel/trace/ftrace.c
+@@ -2826,7 +2826,7 @@ void __init ftrace_init(void)
+ 				  __stop_mcount_loc);
  
--static ssize_t kernel_writev(struct file *file, const struct iovec *vec,
--			    unsigned long vlen, loff_t *ppos)
-+static ssize_t kernel_write(struct file *file, const char *buf, size_t count,
-+			    loff_t pos)
- {
- 	mm_segment_t old_fs;
- 	ssize_t res;
-@@ -544,7 +544,7 @@ static ssize_t kernel_writev(struct file
- 	old_fs = get_fs();
- 	set_fs(get_ds());
- 	/* The cast to a user pointer is valid due to the set_fs() */
--	res = vfs_writev(file, (const struct iovec __user *)vec, vlen, ppos);
-+	res = vfs_write(file, (const char __user *)buf, count, &pos);
- 	set_fs(old_fs);
- 
- 	return res;
-@@ -1003,120 +1003,34 @@ generic_file_splice_write(struct pipe_in
- 
- EXPORT_SYMBOL(generic_file_splice_write);
- 
--static struct pipe_buffer *nth_pipe_buf(struct pipe_inode_info *pipe, int n)
-+static int write_pipe_buf(struct pipe_inode_info *pipe, struct pipe_buffer *buf,
-+			  struct splice_desc *sd)
- {
--	return &pipe->bufs[(pipe->curbuf + n) % PIPE_BUFFERS];
-+	int ret;
-+	void *data;
-+
-+	ret = buf->ops->confirm(pipe, buf);
+ 	ret = register_module_notifier(&ftrace_module_nb);
+-	if (!ret)
 +	if (ret)
-+		return ret;
-+
-+	data = buf->ops->map(pipe, buf, 0);
-+	ret = kernel_write(sd->u.file, data + buf->offset, sd->len, sd->pos);
-+	buf->ops->unmap(pipe, buf, data);
-+
-+	return ret;
- }
+ 		pr_warning("Failed to register trace ftrace module notifier\n");
  
- static ssize_t default_file_splice_write(struct pipe_inode_info *pipe,
- 					 struct file *out, loff_t *ppos,
- 					 size_t len, unsigned int flags)
- {
--	ssize_t ret = 0;
--	ssize_t total_len = 0;
--	int do_wakeup = 0;
--
--	pipe_lock(pipe);
--	while (len) {
--		struct pipe_buffer *buf;
--		void *data[PIPE_BUFFERS];
--		struct iovec vec[PIPE_BUFFERS];
--		unsigned int nr_pages = 0;
--		unsigned int write_len = 0;
--		unsigned int now_len = len;
--		unsigned int this_len;
--		int i;
--
--		BUG_ON(pipe->nrbufs > PIPE_BUFFERS);
--		for (i = 0; i < pipe->nrbufs && now_len; i++) {
--			buf = nth_pipe_buf(pipe, i);
--
--			ret = buf->ops->confirm(pipe, buf);
--			if (ret)
--				break;
--
--			data[i] = buf->ops->map(pipe, buf, 0);
--			this_len = min(buf->len, now_len);
--			vec[i].iov_base = (void __user *) data[i] + buf->offset;
--			vec[i].iov_len = this_len;
--			now_len -= this_len;
--			write_len += this_len;
--			nr_pages++;
--		}
--
--		if (nr_pages) {
--			ret = kernel_writev(out, vec, nr_pages, ppos);
--			if (ret == 0)
--				ret = -EIO;
--			if (ret > 0) {
--				len -= ret;
--				total_len += ret;
--			}
--		}
--
--		for (i = 0; i < nr_pages; i++) {
--			buf = nth_pipe_buf(pipe, i);
--			buf->ops->unmap(pipe, buf, data[i]);
--
--			if (ret > 0) {
--				this_len = min_t(unsigned, vec[i].iov_len, ret);
--				buf->offset += this_len;
--				buf->len -= this_len;
--				ret -= this_len;
--			}
--		}
--
--		if (ret < 0)
--			break;
--
--		while (pipe->nrbufs) {
--			const struct pipe_buf_operations *ops;
--
--			buf = nth_pipe_buf(pipe, 0);
--			if (buf->len)
--				break;
--
--			ops = buf->ops;
--			buf->ops = NULL;
--			ops->release(pipe, buf);
--			pipe->curbuf = (pipe->curbuf + 1) % PIPE_BUFFERS;
--			pipe->nrbufs--;
--			if (pipe->inode)
--				do_wakeup = 1;
--		}
--
--		if (pipe->nrbufs)
--			continue;
--		if (!pipe->writers)
--			break;
--		if (!pipe->waiting_writers) {
--			if (total_len)
--				break;
--		}
--
--		if (flags & SPLICE_F_NONBLOCK) {
--			ret = -EAGAIN;
--			break;
--		}
--
--		if (signal_pending(current)) {
--			ret = -ERESTARTSYS;
--			break;
--		}
--
--		if (do_wakeup) {
--			wakeup_pipe_writers(pipe);
--			do_wakeup = 0;
--		}
--
--		pipe_wait(pipe);
--	}
--	pipe_unlock(pipe);
-+	ssize_t ret;
+ 	return;
+diff --git a/kernel/trace/trace_events.c b/kernel/trace/trace_events.c
+index 0eec0c5..9e91c4a 100644
+--- a/kernel/trace/trace_events.c
++++ b/kernel/trace/trace_events.c
+@@ -1174,7 +1174,7 @@ static __init int event_trace_init(void)
+ 	}
  
--	if (do_wakeup)
--		wakeup_pipe_writers(pipe);
-+	ret = splice_from_pipe(pipe, out, ppos, len, flags, write_pipe_buf);
-+	if (ret > 0)
-+		*ppos += ret;
+ 	ret = register_module_notifier(&trace_module_nb);
+-	if (!ret)
++	if (ret)
+ 		pr_warning("Failed to register trace events module notifier\n");
  
--	return total_len ? total_len : ret;
-+	return ret;
- }
- 
- /**
+ 	return 0;
+-- 
+1.6.0.GIT
 
+
+
+-- 
+Lei Ming
