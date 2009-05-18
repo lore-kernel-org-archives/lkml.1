@@ -1,42 +1,57 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755821AbZERU4W@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755197AbZERU4k@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755821AbZERU4W (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 16:56:22 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753165AbZERU4P
+	id S1755197AbZERU4k (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 16:56:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752800AbZERU4c
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 16:56:15 -0400
-Received: from gate.crashing.org ([63.228.1.57]:33212 "EHLO gate.crashing.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1753060AbZERU4O (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 16:56:14 -0400
-In-Reply-To: <1242620044.18075.31.camel@pasglop>
-References: <20090502001329.GA11549@oksana.dev.rtsoft.ru> <20090502001421.GA9342@oksana.dev.rtsoft.ru> <68B2EF73-0FD2-41F9-966B-9A54965AFBA6@kernel.crashing.org> <1241316249.4243.22.camel@localhost.localdomain> <6A6BE346-925C-4F73-ABFA-C6110070F071@kernel.crashing.org> <1241530382.11379.12.camel@localhost.localdomain> <299D7402-29D3-4602-8F42-58FDF034DEC5@kernel.crashing.org> <1241565080.11379.14.camel@localhost.localdomain> <1242620044.18075.31.camel@pasglop>
-Mime-Version: 1.0 (Apple Message framework v753.1)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <7171D9FE-B5DD-40B7-B7F2-BFD5694B398B@kernel.crashing.org>
-Cc: Steven Rostedt <srostedt@redhat.com>,
-       Anton Vorontsov <avorontsov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
-       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-       Paul Mackerras <paulus@samba.org>, Sam Ravnborg <sam@ravnborg.org>
+	Mon, 18 May 2009 16:56:32 -0400
+Received: from mu-out-0910.google.com ([209.85.134.184]:6849 "EHLO
+	mu-out-0910.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753838AbZERU4b (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 16:56:31 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=message-id:date:from:user-agent:mime-version:to:cc:subject
+         :references:in-reply-to:x-enigmail-version:content-type
+         :content-transfer-encoding;
+        b=CJ51y9ECb27ISLSY2/DBDLAgV8l2Nr9UfdFuUwrFX7S/6v7c92QNeOTKHy/pb/ksdp
+         O/XBvwF09NmUNuLjUipiNrIQ3MkpDBJf/GfwI+6qz0zLHsOgVuDkNY0KPHxMnnlDha5Q
+         7bGj9vodaPxueJEwLDb08wRxo/FJ4qqPYwSaA=
+Message-ID: <4A11CB5C.8070800@gmail.com>
+Date: Mon, 18 May 2009 22:55:56 +0200
+From: Jiri Slaby <jirislaby@gmail.com>
+User-Agent: Mozilla/5.0 (X11; U; Linux x86_64; cs-CZ; rv:1.9.1b5pre) Gecko/20090511 SUSE/3.0b2-9.1 Thunderbird/3.0b3pre
+MIME-Version: 1.0
+To: Lai Jiangshan <laijs@cn.fujitsu.com>
+CC: Ingo Molnar <mingo@elte.hu>, Steven Rostedt <rostedt@goodmis.org>,
+       Li Zefan <lizf@cn.fujitsu.com>, LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] tracing: use strlcpy instead of strncpy
+References: <4A11480F.3030000@cn.fujitsu.com>
+In-Reply-To: <4A11480F.3030000@cn.fujitsu.com>
+X-Enigmail-Version: 0.96a
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely select CONFIG_FRAME_POINTER
-Date: Mon, 18 May 2009 21:55:59 +0200
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-X-Mailer: Apple Mail (2.753.1)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-> Segher, what are we missing here ?
+On 05/18/2009 01:35 PM, Lai Jiangshan wrote:
+> strlcpy() will add '\0' for the copied string.
+> 
+> [Impact] cleanup
+...
+> --- a/kernel/trace/trace_branch.c
+> +++ b/kernel/trace/trace_branch.c
+> @@ -67,10 +67,8 @@ probe_likely_condition(struct ftrace_branch_data *f, int val, int expect)
+>  		p--;
+>  	p++;
+>  
+> -	strncpy(entry->func, f->func, TRACE_FUNC_SIZE);
+> -	strncpy(entry->file, p, TRACE_FILE_SIZE);
+> -	entry->func[TRACE_FUNC_SIZE] = 0;
+> -	entry->file[TRACE_FILE_SIZE] = 0;
+> +	strlcpy(entry->func, f->func, TRACE_FUNC_SIZE);
+> +	strlcpy(entry->file, p, TRACE_FILE_SIZE);
 
-The symbol name is misleading, and the help text is incorrect.
-
-With those things fixed, I won't oppose the patch; it would
-be nice if the logic here was cleaned up to avoid all the
-double negations, but I'm not going to do it, so I won't ask
-others to either.
-
-
-Segher
-
+Hmm, this is not the same. +1 is missing here.
