@@ -1,77 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756022AbZERGcS@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756113AbZERGdV@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756022AbZERGcS (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 02:32:18 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754970AbZERGb5
+	id S1756113AbZERGdV (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 02:33:21 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755075AbZERGdG
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 02:31:57 -0400
-Received: from mail-bw0-f222.google.com ([209.85.218.222]:42021 "EHLO
-	mail-bw0-f222.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752433AbZERGb4 convert rfc822-to-8bit (ORCPT
+	Mon, 18 May 2009 02:33:06 -0400
+Received: from mail-fx0-f158.google.com ([209.85.220.158]:60379 "EHLO
+	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752761AbZERGdF (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 02:31:56 -0400
+	Mon, 18 May 2009 02:33:05 -0400
 DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=mime-version:sender:in-reply-to:references:date
-         :x-google-sender-auth:message-id:subject:from:to:cc:content-type
-         :content-transfer-encoding;
-        b=c4ErhQdYj1lvcAcLj3ztNA1pWK4CU9WSgYi27Jx0GJg+ET/LiP+Mby2tojxgLvfisK
-         Sk5TFzb5gz20jnfSAIH55g1FxoXmI4UoWbVdrNYV8qhsWZXexBPv32j2UNvLVTtebKDa
-         HTWZDBPvampAViDlmazxi/RnTo3vwy88XhSPo=
+        d=googlemail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:mail-followup-to:references
+         :mime-version:content-type:content-disposition:in-reply-to
+         :user-agent;
+        b=NwIoUriW1xbyenGg4sTuuLt+g7Xu21ASeGJq1zxWjqzkgROY7zA99GJLcD5NUyvEcp
+         YlP99RIKpfT58ZDf6PxdG2Ry4XS//gdZwJy3auhBgvIqDJyj56XJoxHEFt05L1gQ+Teb
+         x8gbimIHDR1f6qEJpvPrf09w3R4WcFFWZrB/8=
+Date: Mon, 18 May 2009 08:32:58 +0200
+From: Borislav Petkov <petkovbb@googlemail.com>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org,
+       Martin Lottermoser <Martin.Lottermoser@t-online.de>,
+       linux-ide@vger.kernel.org
+Subject: Re: PATA DMA problem leading to kernel panic on reading movie DVDs
+Message-ID: <20090518063258.GB7818@liondog.tnic>
+Mail-Followup-To: Borislav Petkov <petkovbb@gmail.com>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
+	linux-kernel@vger.kernel.org,
+	Martin Lottermoser <Martin.Lottermoser@t-online.de>,
+	linux-ide@vger.kernel.org
+References: <20090517091224.GA8280@wanza.invalid> <200905172218.01606.bzolnier@gmail.com> <20090517203033.GB5142@liondog.tnic> <200905180048.36483.bzolnier@gmail.com>
 MIME-Version: 1.0
-In-Reply-To: <20090516163610.8a012268.akpm@linux-foundation.org>
-References: <_AjETDMbIoL.A.DcH.RYzDKB@chimera>
-	 <385Pu-agh7M.A.SU.iYzDKB@chimera>
-	 <20090516163610.8a012268.akpm@linux-foundation.org>
-Date: Mon, 18 May 2009 09:31:47 +0300
-X-Google-Sender-Auth: dfb76fd0ed075039
-Message-ID: <84144f020905172331x6032394fn172f02e36298192d@mail.gmail.com>
-Subject: Re: [Bug #13319] Page allocation failures with b43 and p54usb
-From: Pekka Enberg <penberg@cs.helsinki.fi>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Kernel Testers List <kernel-testers@vger.kernel.org>,
-       Johannes Berg <johannes@sipsolutions.net>,
-       Larry Finger <Larry.Finger@lwfinger.net>,
-       linux-wireless@vger.kernel.org, adrian@newgolddream.dyndns.info
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: 8BIT
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <200905180048.36483.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi Andrew,
+Hi,
 
-On Sat, 16 May 2009 21:20:45 +0200 (CEST) "Rafael J. Wysocki"
-<rjw@sisk.pl> wrote:
->> This message has been generated automatically as a part of a report
->> of recent regressions.
->>
->> The following bug entry is on the current list of known regressions
->> from 2.6.29.  Please verify if it still should be listed and let me know
->> (either way).
->>
->>
->> Bug-Entry     : http://bugzilla.kernel.org/show_bug.cgi?id=13319
->> Subject               : Page allocation failures with b43 and p54usb
->> Submitter     : Larry Finger <Larry.Finger@lwfinger.net>
->> Date          : 2009-04-29 21:01 (18 days old)
->> References    : http://marc.info/?l=linux-kernel&m=124103897101088&w=4
->> Handled-By    : Johannes Berg <johannes@sipsolutions.net>
+On Mon, May 18, 2009 at 12:48:36AM +0200, Bartlomiej Zolnierkiewicz wrote:
 
-On Sun, May 17, 2009 at 2:36 AM, Andrew Morton
-<akpm@linux-foundation.org> wrote:
-> Well..  order-1 GFP_ATOMIC allocations are unreliable.  The networking
-> code should hanlde the situation and recover.  I assume that is
-> happening in this case?
->
-> Perhaps we did something in that code after 2.6.29 which increased the
-> frequency of the order-1 allocation attempts?  Maybe earlier kernels
-> used order-0 all the time?  Those are much more reliable.
+[..]
 
-I wonder if this is related:
+> > have a hunch - and you did. Besides, it's not like I'm waiting for you
+> > - I have other things on my plate which I could tackle while you handle
+> > the case you're more knowledgeable at. It is simple as that.
+> 
+> That is missing the point -- we are not the only knowledgeable ones here
+> and we definitely want to encourage other people to attack the problems.
+> 
+> [ Please read my mail again.  I explicitly said "people" not "you" there. ]
 
-http://bugzilla.kernel.org/show_bug.cgi?id=13069
+I was being a realist - nobody but you, Sergei and me does attack
+problems. But there's always the hope :).
 
-Both point to post 2.6.29... Hmm.
+> 
+> > But I'll start CCing linux-ide if that's your preference.
+> 
+> Thanks but my preferences are not the point here.  That is just the most
+> efficient way for everybody: IDE/ATA problems should be handled at linux-ide
+> mailing list.  You can still cc: me but cc:ing linux-ide takes priority.
+
+Yep, got it.
+
+-- 
+Regards/Gruss,
+    Boris.
