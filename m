@@ -1,84 +1,71 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753186AbZERFko@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755673AbZERFna@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753186AbZERFko (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 01:40:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752064AbZERFkd
+	id S1755673AbZERFna (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 01:43:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752753AbZERFnU
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 01:40:33 -0400
-Received: from hera.kernel.org ([140.211.167.34]:57785 "EHLO hera.kernel.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751700AbZERFkc (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 01:40:32 -0400
-Date: Mon, 18 May 2009 05:39:48 GMT
-From: tip-bot for Paul Mackerras <paulus@samba.org>
-To: linux-tip-commits@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, hpa@zytor.com,
-       mingo@redhat.com, a.p.zijlstra@chello.nl, tglx@linutronix.de,
-       cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-Reply-To: mingo@redhat.com, hpa@zytor.com, paulus@samba.org,
-       linux-kernel@vger.kernel.org, a.p.zijlstra@chello.nl,
-       tglx@linutronix.de, cjashfor@linux.vnet.ibm.com, mingo@elte.hu
-In-Reply-To: <18960.56772.869734.304631@drongo.ozlabs.ibm.com>
-References: <18960.56772.869734.304631@drongo.ozlabs.ibm.com>
-Subject: [tip:perfcounters/core] perf_counter: powerpc: initialize cpuhw pointer before use
-Message-ID: <tip-c0daaf3f1f672defa3a45ca449b76d0e86c55892@git.kernel.org>
-Git-Commit-ID: c0daaf3f1f672defa3a45ca449b76d0e86c55892
-X-Mailer: tip-git-log-daemon
+	Mon, 18 May 2009 01:43:20 -0400
+Received: from adelphi.physics.adelaide.edu.au ([129.127.102.1]:38778 "EHLO
+	adelphi.physics.adelaide.edu.au" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1752433AbZERFnT (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 01:43:19 -0400
+From: Jonathan Woithe <jwoithe@physics.adelaide.edu.au>
+Message-Id: <200905180532.n4I5Wxa1031243@turbo.physics.adelaide.edu.au>
+Subject: Re: 2.9.29.2: ide-tape: panic when probing device at boot
+To: petkovbb@gmail.com
+Date: Mon, 18 May 2009 15:02:59 +0930 (CST)
+Cc: bzolnier@gmail.com (Bartlomiej Zolnierkiewicz),
+       jwoithe@physics.adelaide.edu.au (Jonathan Woithe),
+       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       tj@kernel.org (Tejun Heo)
+In-Reply-To: <20090509161801.GB5749@liondog.tnic> from "Borislav Petkov" at May 09, 2009 06:18:01 PM
+X-Mailer: ELM [version 2.5 PL6]
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Disposition: inline
-X-Greylist: Sender IP whitelisted, not delayed by milter-greylist-4.0 (hera.kernel.org [127.0.0.1]); Mon, 18 May 2009 05:39:52 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit-ID:  c0daaf3f1f672defa3a45ca449b76d0e86c55892
-Gitweb:     http://git.kernel.org/tip/c0daaf3f1f672defa3a45ca449b76d0e86c55892
-Author:     Paul Mackerras <paulus@samba.org>
-AuthorDate: Mon, 18 May 2009 14:02:12 +1000
-Committer:  Ingo Molnar <mingo@elte.hu>
-CommitDate: Mon, 18 May 2009 07:38:42 +0200
+> On Sat, May 09, 2009 at 05:57:49PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> > 
+> > [ cc:ing linux-ide and knowledgeable people ]
+> > 
+> > Borislav/Tejun:
+> > Is the 2.6.29 problem the same thing that was fixed recently?
+> 
+> I'll let Tejun answer that one since I don't get an oops. However, now
+> that I have an ide-tape hardware here, I do get something DMA-related
+> failing during boot ...
+> :
+> and more specifically the bad DMA info in identify block thing above. I
+> haven't looked into it yet but its next on my TODO.
 
-perf_counter: powerpc: initialize cpuhw pointer before use
+Cool.
 
-Commit 9e35ad38 ("perf_counter: Rework the perf counter
-disable/enable") added code to the powerpc hw_perf_enable (renamed
-from hw_perf_restore) to test cpuhw->disabled and return immediately
-if it is not set (i.e. if the PMU is already enabled).
+> > Should I just push commit 1e75540ec5202cae63cd238c86bd880e3d496546
+> > ("ide-tape: remove back-to-back REQUEST_SENSE detection") to Linus
+> > or there is more needed to bring ide-tape to the world of living?
+>
+> The oops will probably fixed the above commit.  I don't have much idea
+> about the DMA problem on 2.6.24 tho.  But even with the above commit
+> fixed, I doubt it would work.  The buffer allocation code is broken
+> and reliably triggered OOM on my test machine.  While trying to locate
+> the bug, I realized the complex code didn't do much good to begin with
+> and just stripped it down, so I didn't actually tracked down the
+> actual bug && the patch to simplify buffer management is way too large
+> for 2.6.29, so unless someone is willing to hunt down the bug just for
+> 2.6.29, we're kind of stuck.  :-(
 
-Unfortunately the test got added before cpuhw was initialized,
-resulting in an oops the first time hw_perf_enable got called.
-This fixes it by moving the initialization of cpuhw to before
-cpuhw->disabled is tested.
+So I take it that 2.6.30 (or one of the RCs) is worth trying (at least in so
+far as preventing the oops on boot)?
 
-[ Impact: fix oops-causing bug on powerpc ]
+> ... and I'm afraid we'll have to do some serious bugfixing since this
+> driver is behaving really funny :). Stay tuned, I'm on it.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
-Cc: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Corey Ashford <cjashfor@linux.vnet.ibm.com>
-LKML-Reference: <18960.56772.869734.304631@drongo.ozlabs.ibm.com>
-Signed-off-by: Ingo Molnar <mingo@elte.hu>
+Ok, I'll keep an eye out for updates.  Presumedly we're talking 2.6.31 or
+.32 here.
 
-
----
- arch/powerpc/kernel/perf_counter.c |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 6baae5a..fe21b24 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -450,12 +450,11 @@ void hw_perf_enable(void)
- 	int idx;
- 
- 	local_irq_save(flags);
-+	cpuhw = &__get_cpu_var(cpu_hw_counters);
- 	if (!cpuhw->disabled) {
- 		local_irq_restore(flags);
- 		return;
- 	}
--
--	cpuhw = &__get_cpu_var(cpu_hw_counters);
- 	cpuhw->disabled = 0;
- 
- 	/*
+Regards
+  jonathan
