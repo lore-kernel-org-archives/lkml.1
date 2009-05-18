@@ -1,198 +1,366 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1752641AbZEROjh@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755416AbZEROjt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752641AbZEROjh (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 10:39:37 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751968AbZEROj2
+	id S1755416AbZEROjt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 10:39:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753346AbZEROjd
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 10:39:28 -0400
-Received: from mail-fx0-f158.google.com ([209.85.220.158]:54599 "EHLO
-	mail-fx0-f158.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751771AbZEROj1 (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 10:39:27 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=date:from:to:cc:subject:message-id:references:mime-version
-         :content-type:content-disposition:in-reply-to:user-agent;
-        b=Irlp7EzqcMMJNaS9ng/NF7tJ22Hz3lguaa0EeKvqmkaZ2FVNDfI9ATCwxWyCbtsbLr
-         XhHMiYNfpw9LFm9S7YR1T9DwcGD2rjixqsb4LOgAp4+GcppsLWRzgPhK2p8BzFmW7+1m
-         dXyGGmEFHRvH6fPXDiCr5SUtgWjCS2wPfN/Cc=
-Date: Mon, 18 May 2009 16:39:23 +0200
-From: Andrea Righi <righi.andrea@gmail.com>
-To: Vivek Goyal <vgoyal@redhat.com>
-Cc: Gui Jianfeng <guijianfeng@cn.fujitsu.com>,
-       Nauman Rafique <nauman@google.com>, dpshah@google.com,
-       lizf@cn.fujitsu.com, mikew@google.com, fchecconi@gmail.com,
-       paolo.valente@unimore.it, jens.axboe@oracle.com, ryov@valinux.co.jp,
-       fernando@oss.ntt.co.jp, s-uchida@ap.jp.nec.com, taka@valinux.co.jp,
-       jmoyer@redhat.com, dhaval@linux.vnet.ibm.com, balbir@linux.vnet.ibm.com,
-       linux-kernel@vger.kernel.org, containers@lists.linux-foundation.org,
-       agk@redhat.com, dm-devel@redhat.com, snitzer@redhat.com,
-       m-ikeda@ds.jp.nec.com, akpm@linux-foundation.org
-Subject: Re: [PATCH] io-controller: Add io group reference handling for
-	request
-Message-ID: <20090518143921.GE3113@linux>
-References: <4A03FF3C.4020506@cn.fujitsu.com> <20090508135724.GE7293@redhat.com> <e98e18940905081041r386e52a5q5a2b1f13f1e8c634@mail.gmail.com> <4A078051.5060702@cn.fujitsu.com> <20090511154127.GD6036@redhat.com> <4A0CFA6C.3080609@cn.fujitsu.com> <20090515074839.GA3340@linux> <20090515140643.GB19350@redhat.com> <20090517102604.GA4255@linux> <20090518140114.GB27080@redhat.com>
+	Mon, 18 May 2009 10:39:33 -0400
+Received: from mx2.mail.elte.hu ([157.181.151.9]:39842 "EHLO mx2.mail.elte.hu"
+	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
+	id S1753467AbZEROja (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 10:39:30 -0400
+Date: Mon, 18 May 2009 16:38:47 +0200
+From: Ingo Molnar <mingo@elte.hu>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+       Thomas Gleixner <tglx@linutronix.de>, "H. Peter Anvin" <hpa@zytor.com>
+Subject: [GIT PULL] x86 fixes
+Message-ID: <20090518143847.GA26834@elte.hu>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20090518140114.GB27080@redhat.com>
 User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ELTE-SpamScore: -1.5
+X-ELTE-SpamLevel: 
+X-ELTE-SpamCheck: no
+X-ELTE-SpamVersion: ELTE 2.0 
+X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
+	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
+	[score: 0.0000]
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 18, 2009 at 10:01:14AM -0400, Vivek Goyal wrote:
-> On Sun, May 17, 2009 at 12:26:06PM +0200, Andrea Righi wrote:
-> > On Fri, May 15, 2009 at 10:06:43AM -0400, Vivek Goyal wrote:
-> > > On Fri, May 15, 2009 at 09:48:40AM +0200, Andrea Righi wrote:
-> > > > On Fri, May 15, 2009 at 01:15:24PM +0800, Gui Jianfeng wrote:
-> > > > > Vivek Goyal wrote:
-> > > > > ...
-> > > > > >  }
-> > > > > > @@ -1462,20 +1462,27 @@ struct io_cgroup *get_iocg_from_bio(stru
-> > > > > >  /*
-> > > > > >   * Find the io group bio belongs to.
-> > > > > >   * If "create" is set, io group is created if it is not already present.
-> > > > > > + * If "curr" is set, io group is information is searched for current
-> > > > > > + * task and not with the help of bio.
-> > > > > > + *
-> > > > > > + * FIXME: Can we assume that if bio is NULL then lookup group for current
-> > > > > > + * task and not create extra function parameter ?
-> > > > > >   *
-> > > > > > - * Note: There is a narrow window of race where a group is being freed
-> > > > > > - * by cgroup deletion path and some rq has slipped through in this group.
-> > > > > > - * Fix it.
-> > > > > >   */
-> > > > > > -struct io_group *io_get_io_group_bio(struct request_queue *q, struct bio *bio,
-> > > > > > -					int create)
-> > > > > > +struct io_group *io_get_io_group(struct request_queue *q, struct bio *bio,
-> > > > > > +					int create, int curr)
-> > > > > 
-> > > > >   Hi Vivek,
-> > > > > 
-> > > > >   IIUC we can get rid of curr, and just determine iog from bio. If bio is not NULL,
-> > > > >   get iog from bio, otherwise get it from current task.
-> > > > 
-> > > > Consider also that get_cgroup_from_bio() is much more slow than
-> > > > task_cgroup() and need to lock/unlock_page_cgroup() in
-> > > > get_blkio_cgroup_id(), while task_cgroup() is rcu protected.
-> > > > 
-> > > 
-> > > True.
-> > > 
-> > > > BTW another optimization could be to use the blkio-cgroup functionality
-> > > > only for dirty pages and cut out some blkio_set_owner(). For all the
-> > > > other cases IO always occurs in the same context of the current task,
-> > > > and you can use task_cgroup().
-> > > > 
-> > > 
-> > > Yes, may be in some cases we can avoid setting page owner. I will get
-> > > to it once I have got functionality going well. In the mean time if
-> > > you have a patch for it, it will be great.
-> > > 
-> > > > However, this is true only for page cache pages, for IO generated by
-> > > > anonymous pages (swap) you still need the page tracking functionality
-> > > > both for reads and writes.
-> > > > 
-> > > 
-> > > Right now I am assuming that all the sync IO will belong to task
-> > > submitting the bio hence use task_cgroup() for that. Only for async
-> > > IO, I am trying to use page tracking functionality to determine the owner.
-> > > Look at elv_bio_sync(bio).
-> > > 
-> > > You seem to be saying that there are cases where even for sync IO, we
-> > > can't use submitting task's context and need to rely on page tracking
-> > > functionlity? In case of getting page (read) from swap, will it not happen
-> > > in the context of process who will take a page fault and initiate the
-> > > swap read?
-> > 
-> > No, for example in read_swap_cache_async():
-> > 
-> > @@ -308,6 +309,7 @@ struct page *read_swap_cache_async(swp_entry_t entry, gfp_t gfp_mask,
-> >  		 */
-> >  		__set_page_locked(new_page);
-> >  		SetPageSwapBacked(new_page);
-> > +		blkio_cgroup_set_owner(new_page, current->mm);
-> >  		err = add_to_swap_cache(new_page, entry, gfp_mask & GFP_KERNEL);
-> >  		if (likely(!err)) {
-> >  			/*
-> > 
-> > This is a read, but the current task is not always the owner of this
-> > swap cache page, because it's a readahead operation.
-> > 
-> 
-> But will this readahead be not initiated in the context of the task taking
-> the page fault?
-> 
-> handle_pte_fault()
-> 	do_swap_page()
-> 		swapin_readahead()
-> 			read_swap_cache_async()
-> 
-> If yes, then swap reads issued will still be in the context of process and
-> we should be fine?
+Linus,
 
-Right. I was trying to say that the current task may swap-in also pages
-belonging to a different task, so from a certain point of view it's not
-so fair to charge the current task for the whole activity. But ok, I
-think it's a minor issue.
+Please pull the latest x86-fixes-for-linus git tree from:
 
-> 
-> > Anyway, this is a minor corner case I think. And probably it is safe to
-> > consider this like any other read IO and get rid of the
-> > blkio_cgroup_set_owner().
-> 
-> Agreed.
-> 
-> > 
-> > I wonder if it would be better to attach the blkio_cgroup to the
-> > anonymous page only when swap-out occurs.
-> 
-> Swap seems to be an interesting case in general. Somebody raised this
-> question on lwn io controller article also. A user process never asked
-> for swap activity. It is something enforced by kernel. So while doing
-> some swap outs, it does not seem too fair to charge the write out to
-> the process page belongs to and the fact of the matter may be that there
-> is some other memory hungry application which is forcing these swap outs.
-> 
-> Keeping this in mind, should swap activity be considered as system
-> activity and be charged to root group instead of to user tasks in other
-> cgroups?
+   git://git.kernel.org/pub/scm/linux/kernel/git/tip/linux-2.6-tip.git x86-fixes-for-linus
 
-In this case I assume the swap-in activity should be charged to the root
-cgroup as well.
+The Kconfig change comes from separating the paravirt-spinlocks 
+feature out of CONFIG_PARAVIRT and turning it off by default. (i was 
+tempted to mark it broken as well, but lets give it some time to get 
+fixed.)
 
-Anyway, in the logic of the memory and swap control it would seem
-reasonable to provide IO separation also for the swap IO activity.
+ Thanks,
 
-In the MEMHOG example, it would be unfair if the memory pressure is
-caused by a task in another cgroup, but with memory and swap isolation a
-memory pressure condition can only be caused by a memory hog that runs
-in the same cgroup. From this point of view it seems more fair to
-consider the swap activity as the particular cgroup IO activity, instead
-of charging always the root cgroup.
+	Ingo
 
-Otherwise, I suspect, memory pressure would be a simple way to blow away
-any kind of QoS guarantees provided by the IO controller.
+------------------>
+Jan Beulich (1):
+      x86: fix percpu_{to,from}_op()
 
->   
-> > I mean, just put the
-> > blkio_cgroup_set_owner() hook in try_to_umap() in order to keep track of
-> > the IO generated by direct reclaim of anon memory. For all the other
-> > cases we can simply use the submitting task's context.
-> > 
-> > BTW, O_DIRECT is another case that is possible to optimize, because all
-> > the bios generated by direct IO occur in the same context of the current
-> > task.
-> 
-> Agreed about the direct IO optimization.
-> 
-> Ryo, what do you think? would you like to do include these optimizations
-> by the Andrea in next version of IO tracking patches?
->  
-> Thanks
-> Vivek
+Jeremy Fitzhardinge (1):
+      x86: Fix performance regression caused by paravirt_ops on native kernels
 
-Thanks,
--Andrea
+Masami Hiramatsu (1):
+      x86, 32-bit: fix kernel_trap_sp()
+
+Randy Dunlap (1):
+      xen: use header for EXPORT_SYMBOL_GPL
+
+Sam Ravnborg (1):
+      x86: Fix false positive section mismatch warnings in the apic code
+
+Yinghai Lu (1):
+      x86: mtrr: Fix high_width computation when phys-addr is >= 44bit
+
+
+ arch/x86/Kconfig                   |   13 +++++++++++++
+ arch/x86/include/asm/paravirt.h    |    2 +-
+ arch/x86/include/asm/percpu.h      |   10 +++++-----
+ arch/x86/include/asm/ptrace.h      |    7 ++++---
+ arch/x86/include/asm/spinlock.h    |    4 ++--
+ arch/x86/kernel/Makefile           |    3 ++-
+ arch/x86/kernel/apic/es7000_32.c   |    8 ++++----
+ arch/x86/kernel/cpu/mtrr/generic.c |    6 +++++-
+ arch/x86/kernel/paravirt.c         |    2 ++
+ arch/x86/oprofile/backtrace.c      |    2 +-
+ arch/x86/xen/Makefile              |    5 +++--
+ arch/x86/xen/mmu.c                 |    1 +
+ arch/x86/xen/xen-ops.h             |   19 +++++++++++++++----
+ 13 files changed, 58 insertions(+), 24 deletions(-)
+
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index df9e885..a6efe0a 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -498,6 +498,19 @@ config PARAVIRT
+ 	  over full virtualization.  However, when run without a hypervisor
+ 	  the kernel is theoretically slower and slightly larger.
+ 
++config PARAVIRT_SPINLOCKS
++	bool "Paravirtualization layer for spinlocks"
++	depends on PARAVIRT && SMP && EXPERIMENTAL
++	---help---
++	  Paravirtualized spinlocks allow a pvops backend to replace the
++	  spinlock implementation with something virtualization-friendly
++	  (for example, block the virtual CPU rather than spinning).
++
++	  Unfortunately the downside is an up to 5% performance hit on
++	  native kernels, with various workloads.
++
++	  If you are unsure how to answer this question, answer N.
++
+ config PARAVIRT_CLOCK
+ 	bool
+ 	default n
+diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
+index 378e369..a53da00 100644
+--- a/arch/x86/include/asm/paravirt.h
++++ b/arch/x86/include/asm/paravirt.h
+@@ -1443,7 +1443,7 @@ u64 _paravirt_ident_64(u64);
+ 
+ #define paravirt_nop	((void *)_paravirt_nop)
+ 
+-#ifdef CONFIG_SMP
++#if defined(CONFIG_SMP) && defined(CONFIG_PARAVIRT_SPINLOCKS)
+ 
+ static inline int __raw_spin_is_locked(struct raw_spinlock *lock)
+ {
+diff --git a/arch/x86/include/asm/percpu.h b/arch/x86/include/asm/percpu.h
+index aee103b..02ecb30 100644
+--- a/arch/x86/include/asm/percpu.h
++++ b/arch/x86/include/asm/percpu.h
+@@ -82,22 +82,22 @@ do {							\
+ 	case 1:						\
+ 		asm(op "b %1,"__percpu_arg(0)		\
+ 		    : "+m" (var)			\
+-		    : "ri" ((T__)val));			\
++		    : "qi" ((T__)(val)));		\
+ 		break;					\
+ 	case 2:						\
+ 		asm(op "w %1,"__percpu_arg(0)		\
+ 		    : "+m" (var)			\
+-		    : "ri" ((T__)val));			\
++		    : "ri" ((T__)(val)));		\
+ 		break;					\
+ 	case 4:						\
+ 		asm(op "l %1,"__percpu_arg(0)		\
+ 		    : "+m" (var)			\
+-		    : "ri" ((T__)val));			\
++		    : "ri" ((T__)(val)));		\
+ 		break;					\
+ 	case 8:						\
+ 		asm(op "q %1,"__percpu_arg(0)		\
+ 		    : "+m" (var)			\
+-		    : "re" ((T__)val));			\
++		    : "re" ((T__)(val)));		\
+ 		break;					\
+ 	default: __bad_percpu_size();			\
+ 	}						\
+@@ -109,7 +109,7 @@ do {							\
+ 	switch (sizeof(var)) {				\
+ 	case 1:						\
+ 		asm(op "b "__percpu_arg(1)",%0"		\
+-		    : "=r" (ret__)			\
++		    : "=q" (ret__)			\
+ 		    : "m" (var));			\
+ 		break;					\
+ 	case 2:						\
+diff --git a/arch/x86/include/asm/ptrace.h b/arch/x86/include/asm/ptrace.h
+index e304b66..624f133 100644
+--- a/arch/x86/include/asm/ptrace.h
++++ b/arch/x86/include/asm/ptrace.h
+@@ -187,14 +187,15 @@ static inline int v8086_mode(struct pt_regs *regs)
+ 
+ /*
+  * X86_32 CPUs don't save ss and esp if the CPU is already in kernel mode
+- * when it traps.  So regs will be the current sp.
++ * when it traps.  The previous stack will be directly underneath the saved
++ * registers, and 'sp/ss' won't even have been saved. Thus the '&regs->sp'.
+  *
+  * This is valid only for kernel mode traps.
+  */
+-static inline unsigned long kernel_trap_sp(struct pt_regs *regs)
++static inline unsigned long kernel_stack_pointer(struct pt_regs *regs)
+ {
+ #ifdef CONFIG_X86_32
+-	return (unsigned long)regs;
++	return (unsigned long)(&regs->sp);
+ #else
+ 	return regs->sp;
+ #endif
+diff --git a/arch/x86/include/asm/spinlock.h b/arch/x86/include/asm/spinlock.h
+index e5e6caf..b7e5db8 100644
+--- a/arch/x86/include/asm/spinlock.h
++++ b/arch/x86/include/asm/spinlock.h
+@@ -172,7 +172,7 @@ static inline int __ticket_spin_is_contended(raw_spinlock_t *lock)
+ 	return (((tmp >> TICKET_SHIFT) - tmp) & ((1 << TICKET_SHIFT) - 1)) > 1;
+ }
+ 
+-#ifndef CONFIG_PARAVIRT
++#ifndef CONFIG_PARAVIRT_SPINLOCKS
+ 
+ static inline int __raw_spin_is_locked(raw_spinlock_t *lock)
+ {
+@@ -206,7 +206,7 @@ static __always_inline void __raw_spin_lock_flags(raw_spinlock_t *lock,
+ 	__raw_spin_lock(lock);
+ }
+ 
+-#endif
++#endif	/* CONFIG_PARAVIRT_SPINLOCKS */
+ 
+ static inline void __raw_spin_unlock_wait(raw_spinlock_t *lock)
+ {
+diff --git a/arch/x86/kernel/Makefile b/arch/x86/kernel/Makefile
+index 145cce7..88d1bfc 100644
+--- a/arch/x86/kernel/Makefile
++++ b/arch/x86/kernel/Makefile
+@@ -89,7 +89,8 @@ obj-$(CONFIG_DEBUG_NX_TEST)	+= test_nx.o
+ obj-$(CONFIG_VMI)		+= vmi_32.o vmiclock_32.o
+ obj-$(CONFIG_KVM_GUEST)		+= kvm.o
+ obj-$(CONFIG_KVM_CLOCK)		+= kvmclock.o
+-obj-$(CONFIG_PARAVIRT)		+= paravirt.o paravirt_patch_$(BITS).o paravirt-spinlocks.o
++obj-$(CONFIG_PARAVIRT)		+= paravirt.o paravirt_patch_$(BITS).o
++obj-$(CONFIG_PARAVIRT_SPINLOCKS)+= paravirt-spinlocks.o
+ obj-$(CONFIG_PARAVIRT_CLOCK)	+= pvclock.o
+ 
+ obj-$(CONFIG_PCSPKR_PLATFORM)	+= pcspeaker.o
+diff --git a/arch/x86/kernel/apic/es7000_32.c b/arch/x86/kernel/apic/es7000_32.c
+index 1c11b81..3029477 100644
+--- a/arch/x86/kernel/apic/es7000_32.c
++++ b/arch/x86/kernel/apic/es7000_32.c
+@@ -254,7 +254,7 @@ static int parse_unisys_oem(char *oemptr)
+ }
+ 
+ #ifdef CONFIG_ACPI
+-static int find_unisys_acpi_oem_table(unsigned long *oem_addr)
++static int __init find_unisys_acpi_oem_table(unsigned long *oem_addr)
+ {
+ 	struct acpi_table_header *header = NULL;
+ 	struct es7000_oem_table *table;
+@@ -285,7 +285,7 @@ static int find_unisys_acpi_oem_table(unsigned long *oem_addr)
+ 	return 0;
+ }
+ 
+-static void unmap_unisys_acpi_oem_table(unsigned long oem_addr)
++static void __init unmap_unisys_acpi_oem_table(unsigned long oem_addr)
+ {
+ 	if (!oem_addr)
+ 		return;
+@@ -306,7 +306,7 @@ static int es7000_check_dsdt(void)
+ static int es7000_acpi_ret;
+ 
+ /* Hook from generic ACPI tables.c */
+-static int es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
++static int __init es7000_acpi_madt_oem_check(char *oem_id, char *oem_table_id)
+ {
+ 	unsigned long oem_addr = 0;
+ 	int check_dsdt;
+@@ -717,7 +717,7 @@ struct apic apic_es7000_cluster = {
+ 	.safe_wait_icr_idle		= native_safe_apic_wait_icr_idle,
+ };
+ 
+-struct apic apic_es7000 = {
++struct apic __refdata apic_es7000 = {
+ 
+ 	.name				= "es7000",
+ 	.probe				= probe_es7000,
+diff --git a/arch/x86/kernel/cpu/mtrr/generic.c b/arch/x86/kernel/cpu/mtrr/generic.c
+index 0b776c0..d21d4fb 100644
+--- a/arch/x86/kernel/cpu/mtrr/generic.c
++++ b/arch/x86/kernel/cpu/mtrr/generic.c
+@@ -275,7 +275,11 @@ static void __init print_mtrr_state(void)
+ 	}
+ 	printk(KERN_DEBUG "MTRR variable ranges %sabled:\n",
+ 	       mtrr_state.enabled & 2 ? "en" : "dis");
+-	high_width = ((size_or_mask ? ffs(size_or_mask) - 1 : 32) - (32 - PAGE_SHIFT) + 3) / 4;
++	if (size_or_mask & 0xffffffffUL)
++		high_width = ffs(size_or_mask & 0xffffffffUL) - 1;
++	else
++		high_width = ffs(size_or_mask>>32) + 32 - 1;
++	high_width = (high_width - (32 - PAGE_SHIFT) + 3) / 4;
+ 	for (i = 0; i < num_var_ranges; ++i) {
+ 		if (mtrr_state.var_ranges[i].mask_lo & (1 << 11))
+ 			printk(KERN_DEBUG "  %u base %0*X%05X000 mask %0*X%05X000 %s\n",
+diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
+index 8e45f44..9faf43b 100644
+--- a/arch/x86/kernel/paravirt.c
++++ b/arch/x86/kernel/paravirt.c
+@@ -134,7 +134,9 @@ static void *get_call_destination(u8 type)
+ 		.pv_irq_ops = pv_irq_ops,
+ 		.pv_apic_ops = pv_apic_ops,
+ 		.pv_mmu_ops = pv_mmu_ops,
++#ifdef CONFIG_PARAVIRT_SPINLOCKS
+ 		.pv_lock_ops = pv_lock_ops,
++#endif
+ 	};
+ 	return *((void **)&tmpl + type);
+ }
+diff --git a/arch/x86/oprofile/backtrace.c b/arch/x86/oprofile/backtrace.c
+index 04df67f..044897b 100644
+--- a/arch/x86/oprofile/backtrace.c
++++ b/arch/x86/oprofile/backtrace.c
+@@ -76,9 +76,9 @@ void
+ x86_backtrace(struct pt_regs * const regs, unsigned int depth)
+ {
+ 	struct frame_head *head = (struct frame_head *)frame_pointer(regs);
+-	unsigned long stack = kernel_trap_sp(regs);
+ 
+ 	if (!user_mode_vm(regs)) {
++		unsigned long stack = kernel_stack_pointer(regs);
+ 		if (depth)
+ 			dump_trace(NULL, regs, (unsigned long *)stack, 0,
+ 				   &backtrace_ops, &depth);
+diff --git a/arch/x86/xen/Makefile b/arch/x86/xen/Makefile
+index 3b767d0..172438f 100644
+--- a/arch/x86/xen/Makefile
++++ b/arch/x86/xen/Makefile
+@@ -9,5 +9,6 @@ obj-y		:= enlighten.o setup.o multicalls.o mmu.o irq.o \
+ 			time.o xen-asm.o xen-asm_$(BITS).o \
+ 			grant-table.o suspend.o
+ 
+-obj-$(CONFIG_SMP)		+= smp.o spinlock.o
+-obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
+\ No newline at end of file
++obj-$(CONFIG_SMP)		+= smp.o
++obj-$(CONFIG_PARAVIRT_SPINLOCKS)+= spinlock.o
++obj-$(CONFIG_XEN_DEBUG_FS)	+= debugfs.o
+diff --git a/arch/x86/xen/mmu.c b/arch/x86/xen/mmu.c
+index e25a78e..fba55b1 100644
+--- a/arch/x86/xen/mmu.c
++++ b/arch/x86/xen/mmu.c
+@@ -42,6 +42,7 @@
+ #include <linux/highmem.h>
+ #include <linux/debugfs.h>
+ #include <linux/bug.h>
++#include <linux/module.h>
+ 
+ #include <asm/pgtable.h>
+ #include <asm/tlbflush.h>
+diff --git a/arch/x86/xen/xen-ops.h b/arch/x86/xen/xen-ops.h
+index 2013946..ca6596b 100644
+--- a/arch/x86/xen/xen-ops.h
++++ b/arch/x86/xen/xen-ops.h
+@@ -62,15 +62,26 @@ void xen_setup_vcpu_info_placement(void);
+ #ifdef CONFIG_SMP
+ void xen_smp_init(void);
+ 
+-void __init xen_init_spinlocks(void);
+-__cpuinit void xen_init_lock_cpu(int cpu);
+-void xen_uninit_lock_cpu(int cpu);
+-
+ extern cpumask_var_t xen_cpu_initialized_map;
+ #else
+ static inline void xen_smp_init(void) {}
+ #endif
+ 
++#ifdef CONFIG_PARAVIRT_SPINLOCKS
++void __init xen_init_spinlocks(void);
++__cpuinit void xen_init_lock_cpu(int cpu);
++void xen_uninit_lock_cpu(int cpu);
++#else
++static inline void xen_init_spinlocks(void)
++{
++}
++static inline void xen_init_lock_cpu(int cpu)
++{
++}
++static inline void xen_uninit_lock_cpu(int cpu)
++{
++}
++#endif
+ 
+ /* Declare an asm function, along with symbols needed to make it
+    inlineable */
