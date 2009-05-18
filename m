@@ -1,60 +1,63 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756124AbZERPno@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756324AbZERPp1@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756124AbZERPno (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 11:43:44 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752796AbZERPng
+	id S1756324AbZERPp1 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 11:45:27 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753610AbZERPpT
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 11:43:36 -0400
-Received: from mx2.mail.elte.hu ([157.181.151.9]:48679 "EHLO mx2.mail.elte.hu"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1752432AbZERPnf (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 11:43:35 -0400
-Date: Mon, 18 May 2009 17:42:41 +0200
-From: Ingo Molnar <mingo@elte.hu>
-To: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
-       netfilter-devel@vger.kernel.org, akpm@linux-foundation.org,
-       torvalds@linux-foundation.org, davem@davemloft.net, dada1@cosmosbay.com,
-       zbr@ioremap.net, jeff.chua.linux@gmail.com, paulus@samba.org,
-       laijs@cn.fujitsu.com, jengelh@medozas.de, r000n@r000n.net,
-       benh@kernel.crashing.org, mathieu.desnoyers@polymtl.ca
-Subject: Re: [PATCH RFC] v5 expedited "big hammer" RCU grace periods
-Message-ID: <20090518154241.GA27047@elte.hu>
-References: <20090517191141.GA25915@linux.vnet.ibm.com> <20090518075630.GA10687@elte.hu> <20090518151421.GB6768@linux.vnet.ibm.com>
+	Mon, 18 May 2009 11:45:19 -0400
+Received: from mail-ew0-f224.google.com ([209.85.219.224]:56361 "EHLO
+	mail-ew0-f224.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752863AbZERPpS (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 11:45:18 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=from:to:subject:date:user-agent:cc:references:in-reply-to
+         :mime-version:content-type:content-transfer-encoding
+         :content-disposition:message-id;
+        b=AzJSRY3n1UHElCMjPZUua50z8eZAfdBz8zAYZ1DIQCapcx0Y1f8tEvbYcDxJWVhoRT
+         OMjYns6fLy5leQBBhyoF4NktjPrLH9wgGrlwZnvN8S3bFhHS5M1B8JR/z/7wZQphSQK1
+         UlXaf0DgULsZF0Prs1cLtNUxcl8/yYk8mC38U=
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH 0/6] drivers/ide Convert printk(KERN_<foo> to pr_<foo>(
+Date: Mon, 18 May 2009 17:48:40 +0200
+User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-00442-ga3668b0; KDE/4.2.2; i686; ; )
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+       Sergei Shtylyov <sshtylyov@ru.mvista.com>
+References: <cover.1242609803.git.joe@perches.com> <200905181612.43632.bzolnier@gmail.com> <1242661288.1572.82.camel@Joe-Laptop.home>
+In-Reply-To: <1242661288.1572.82.camel@Joe-Laptop.home>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: Text/Plain;
+  charset="iso-8859-15"
+Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
-In-Reply-To: <20090518151421.GB6768@linux.vnet.ibm.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
-X-ELTE-SpamScore: -1.5
-X-ELTE-SpamLevel: 
-X-ELTE-SpamCheck: no
-X-ELTE-SpamVersion: ELTE 2.0 
-X-ELTE-SpamCheck-Details: score=-1.5 required=5.9 tests=BAYES_00 autolearn=no SpamAssassin version=3.2.3
-	-1.5 BAYES_00               BODY: Bayesian spam probability is 0 to 1%
-	[score: 0.0000]
+Message-Id: <200905181748.41172.bzolnier@gmail.com>
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-
-* Paul E. McKenney <paulmck@linux.vnet.ibm.com> wrote:
-
-> > i might be missing something fundamental here, but why not just 
-> > have per CPU helper threads, all on the same waitqueue, and wake 
-> > them up via a single wake_up() call? That would remove the SMP 
-> > cross call (wakeups do immediate cross-calls already).
+On Monday 18 May 2009 17:41:28 Joe Perches wrote:
+> On Mon, 2009-05-18 at 16:12 +0200, Bartlomiej Zolnierkiewicz wrote:
+> > On Monday 18 May 2009 04:21:08 Joe Perches wrote:
+> > > Mostly mechanical conversion of printk's
+> > Hmm.. less mechanical conversion using also dev_*() macros where suitable
+> > would be much better...
+> > How's about fixing pr_devel() which currently doesn't seem to be used
+> > by anything inside kernel to not depend on DEBUG in separate pre-patch
+> > and then using it instead of pr_debug()?
 > 
-> My concern with this is that the cache misses accessing all the 
-> processes on this single waitqueue would be serialized, slowing 
-> things down. In contrast, the bitmask that smp_call_function() 
-> traverses delivers on the order of a thousand CPUs' worth of bits 
-> per cache miss.  I will give it a try, though.
+> How about deferring the "printk(KERN_DEBUG" to something else
+> and doing the mechanical conversion to core as a first pass,
+> followed by core pr_<foo> to dev_<foo> where appropriate
+> as a second pass?
 
-At least if you go via the migration threads, you can queue up 
-requests to them locally. But there's going to be cachemisses 
-_anyway_, since you have to access them all from a single CPU, and 
-then they have to fetch details about what to do, and then have to 
-notify the originator about completion.
+Fine with me.
 
-	Ingo
+> What do you think is appropriate for pr_<foo> to dev_<foo>
+> conversions?
+
+printk()s using drive->name or hwif->name
+
+Thanks,
+Bart
