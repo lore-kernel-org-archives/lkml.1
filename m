@@ -1,59 +1,61 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1751127AbZERECa@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755527AbZEREPA@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1751127AbZERECa (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 00:02:30 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1750716AbZERECV
+	id S1755527AbZEREPA (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 00:15:00 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754699AbZEREOt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 00:02:21 -0400
-Received: from bilbo.ozlabs.org ([203.10.76.25]:34843 "EHLO bilbo.ozlabs.org"
+	Mon, 18 May 2009 00:14:49 -0400
+Received: from gate.crashing.org ([63.228.1.57]:44479 "EHLO gate.crashing.org"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1750706AbZERECV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 00:02:21 -0400
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	id S1754458AbZEREOs (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 00:14:48 -0400
+Subject: Re: [PATCH 1/3] powerpc, Makefile: Make it possible to safely
+ select CONFIG_FRAME_POINTER
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Steven Rostedt <srostedt@redhat.com>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+       Anton Vorontsov <avorontsov@ru.mvista.com>, Ingo Molnar <mingo@elte.hu>,
+       linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+       Paul Mackerras <paulus@samba.org>, Sam Ravnborg <sam@ravnborg.org>
+In-Reply-To: <1241565080.11379.14.camel@localhost.localdomain>
+References: <20090502001329.GA11549@oksana.dev.rtsoft.ru>
+	 <20090502001421.GA9342@oksana.dev.rtsoft.ru>
+	 <68B2EF73-0FD2-41F9-966B-9A54965AFBA6@kernel.crashing.org>
+	 <1241316249.4243.22.camel@localhost.localdomain>
+	 <6A6BE346-925C-4F73-ABFA-C6110070F071@kernel.crashing.org>
+	 <1241530382.11379.12.camel@localhost.localdomain>
+	 <299D7402-29D3-4602-8F42-58FDF034DEC5@kernel.crashing.org>
+	 <1241565080.11379.14.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 18 May 2009 14:14:04 +1000
+Message-Id: <1242620044.18075.31.camel@pasglop>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
 Content-Transfer-Encoding: 7bit
-Message-ID: <18960.56772.869734.304631@drongo.ozlabs.ibm.com>
-Date: Mon, 18 May 2009 14:02:12 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Ingo Molnar <mingo@elte.hu>
-CC: Peter Zijlstra <a.p.zijlstra@chello.nl>, linux-kernel@vger.kernel.org,
-       Corey Ashford <cjashfor@linux.vnet.ibm.com>,
-       Thomas Gleixner <tglx@linutronix.de>
-Subject: perf_counter: powerpc: initialize cpuhw pointer before use
-X-Mailer: VM 8.0.12 under 22.3.1 (powerpc-unknown-linux-gnu)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Commit 9e35ad38 ("perf_counter: Rework the perf counter
-disable/enable") added code to the powerpc hw_perf_enable (renamed
-from hw_perf_restore) to test cpuhw->disabled and return immediately
-if it is not set (i.e. if the PMU is already enabled).
+On Tue, 2009-05-05 at 19:11 -0400, Steven Rostedt wrote:
 
-Unfortunately the test got added before cpuhw was initialized,
-resulting in an oops the first time hw_perf_enable got called.
-This fixes it by moving the initialization of cpuhw to before
-cpuhw->disabled is tested.
+> OK, so what's the status with this patch series?
+> 
+> I don't want to pull it in unless I have an ack from Sam, and now
+> there's issues with having -fno-omit-frame-pointer. Should we add a
+> patch instead that simply removes that?
+> 
+> If we eliminate the -fno-omit-frame-pointer, would that solve the PPC
+> problem? And would it cause any other issues with other archs?
 
-[ Impact: fix oops-causing bug on powerpc ]
+Well, the patch looks fine to me to be honest I'm not sure what the
+complaint is above... 
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-diff --git a/arch/powerpc/kernel/perf_counter.c b/arch/powerpc/kernel/perf_counter.c
-index 6baae5a..fe21b24 100644
---- a/arch/powerpc/kernel/perf_counter.c
-+++ b/arch/powerpc/kernel/perf_counter.c
-@@ -450,12 +450,11 @@ void hw_perf_enable(void)
- 	int idx;
- 
- 	local_irq_save(flags);
-+	cpuhw = &__get_cpu_var(cpu_hw_counters);
- 	if (!cpuhw->disabled) {
- 		local_irq_restore(flags);
- 		return;
- 	}
--
--	cpuhw = &__get_cpu_var(cpu_hw_counters);
- 	cpuhw->disabled = 0;
- 
- 	/*
+IE. On arch that define the new HAVE_NORMAL_FRAME_POINTER (let's just
+call it HAVE_IMPLIED_FRAME_POINTER then :-)  we just don't do
+-fno-omit-frame-pointer and avoid triggering the bug...
+
+Segher, what are we missing here ?
+
+Ben.
+
+
