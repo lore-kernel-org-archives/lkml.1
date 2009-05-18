@@ -1,99 +1,102 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755877AbZERWTR@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755830AbZERW3p@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755877AbZERWTR (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 18:19:17 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754972AbZERWTH
+	id S1755830AbZERW3p (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 18:29:45 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751979AbZERW3i
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 18:19:07 -0400
-Received: from mx2.redhat.com ([66.187.237.31]:33980 "EHLO mx2.redhat.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1754737AbZERWTG (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 18:19:06 -0400
-Date: Tue, 19 May 2009 00:14:03 +0200
-From: Oleg Nesterov <oleg@redhat.com>
-To: Peter Zijlstra <a.p.zijlstra@chello.nl>
-Cc: Johannes Berg <johannes@sipsolutions.net>, Ingo Molnar <mingo@elte.hu>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Gautham R Shenoy <ego@in.ibm.com>
-Subject: Re: INFO: possible circular locking dependency at
-	cleanup_workqueue_thread
-Message-ID: <20090518221403.GA7393@redhat.com>
-References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com> <20090517071834.GA8507@elte.hu> <1242559101.28127.63.camel@johannes.local> <20090518194749.GA3501@redhat.com> <1242676857.32543.1343.camel@laptop> <20090518201650.GA4384@redhat.com> <1242679221.32543.1396.camel@laptop>
+	Mon, 18 May 2009 18:29:38 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:52879 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1750898AbZERW3h (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 18:29:37 -0400
+Date: Mon, 18 May 2009 15:29:22 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Matt Mackall <mpm@selenic.com>, Ingo Molnar <mingo@elte.hu>
+cc: Martin Knoblauch <spamtrap@knobisoft.de>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Subject: Re: Rgeression: 2.6.30-rc6-git3 build error - ICE from
+ drivers/char/random.c
+In-Reply-To: <20090518203420.GF2658@calx>
+Message-ID: <alpine.LFD.2.01.0905181506550.3301@localhost.localdomain>
+References: <688406.16641.qm@web32603.mail.mud.yahoo.com> <20090518203420.GF2658@calx>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <1242679221.32543.1396.camel@laptop>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On 05/18, Peter Zijlstra wrote:
->
-> On Mon, 2009-05-18 at 22:16 +0200, Oleg Nesterov wrote:
-> > On 05/18, Peter Zijlstra wrote:
-> > >
-> > > On Mon, 2009-05-18 at 21:47 +0200, Oleg Nesterov wrote:
-> > > >
-> > > > This output looks obviously wrong, Z does not depend on L1 or any
-> > > > other lock.
-> > >
-> > > It does, L1 -> L2 -> Z as per 1 and 2
-> > > which 3 obviously reverses.
-> >
-> > Yes, yes, I see. And, as I said, I can't explain what I mean.
-> >
-> > I mean... The output above looks as if we take L1 and Z in wrong order.
-> > But Z has nothing to do with this deadlock, it can't depend on any lock
-> > from the correctness pov. Except yes, we have it in L1->L2->Z->L1 cycle.
->
-> AB-BC-CA deadlock
->
-> Thread 1		Thread 2		Thread 3
->
-> L(L1)
-> 			L(L2)
-> 						L(Z)
-> L(L2)
-> 			L(Z)
-> 						L(L1)
-
-Sure. Now Z really depends on L1. But if you change Thread 3 to take yet
-another unique lock X under Z, then lockdep will complain that X depends
-on L1, not Z.
-
-To clarify, I do not say the output is bugggy. I only meant it could be
-better. But I don't understand how to improve it.
-
-If we return to the original bug report, perhaps cpu_add_remove_lock
-has nothing to do with this problem... we could have the similar output
-if device_pm_lock() is called from work_struct.
-
-> And you're saying, we can't have that deadlock because we don't have the
-> 3 separate functions?
-
-No,
-
-> That is, there is no concurrency on Z because its always taken under L2?
-
-Yes, nobody else can hold Z when we take L2.
-
-But this wasn't my point.
-
-> For those situations we have the spin_lock_nest_lock(X, y) annotation,
-> where we say, there cannot be any concurrency on x element of X, because
-> all such locks are always taken under y.
-
-We can just kill L(Z) instead of annotating, this changes nothing from
-the correctness pov, we have the same deadlock. But the output becomes
-very clear: L1 depends on L2.
 
 
-OK, please forget. Not sure why I started this thread. Just because I
-was surprised a bit when I figured out that lockdep's output does not
-match my naive expectations.
+On Mon, 18 May 2009, Matt Mackall wrote:
 
-Oleg.
+> On Mon, May 18, 2009 at 06:29:13AM -0700, Martin Knoblauch wrote:
+> > 
+> > CC Maintainer.
+> 
+> Bizarre. I bet Linus has an opinion about your compiler.
 
+I have opinions about a lot of things ;)
+
+> > > drivers/char/random.c: In function `get_random_int':
+> > > drivers/char/random.c:1672: error: unrecognizable insn:
+> > > (insn 202 148 150 0 /scratch/build/linux-2.6.30-rc6-git3/arch/x86/include/asm/tsc.h:23 (set (reg:SI 0 ax [91])
+> > >         (subreg:SI (plus:DI (plus:DI (reg:DI 0 ax [88])
+> > >                     (subreg:DI (reg:SI 6 bp) 0))
+> > >                 (const_int -4 [0xfffffffffffffffc])) 0)) -1 (nil)
+> > >     (nil))
+> > > drivers/char/random.c:1672: internal compiler error: in extract_insn, at recog.c:2083
+
+Oh wow. We seldom hit these things. Internal gcc compiler errors do 
+happen, but it tends to be _very_ rare. And it's almost always some subtle 
+use of inline asm that gets gcc's knickers all twisted up. Often due to 
+the double register usage of 64-bit long long arithmetic.
+
+That error report seems to be a bit confused about exactly what triggered 
+it: it points to both "get_cycles()" (arch/x86/include/asm/tsc.h:23) and 
+to the get_cpu_var() asm code (drivers/char/random.c:1672).
+
+Martin - Is this a 32-bit compile? In particular, does the problem go away 
+if you remove the " + get_cycles() "  part (which is three lines down from 
+what that error case reports, but with code movement and combining, who 
+can tell which one it is?)
+
+Usually the only way to get gcc to calm down when it gets into a tizzy 
+like this is to rewrite the thing in some way that gcc has a harder time 
+screwing up. In particular, asking gcc to handle a 64-bit value (inside 
+get_cycles()) while it's busy doing a lot of other things may have just 
+fused the compilers poor little brain.
+
+So the fix _may_ be as simple as just something like the appended. It 
+doesn't change anything, but it rewrites things so that it doesn't do that 
+"rdtsc" while a lot of other things are also "in flight" at the same time.
+
+		Linus
+
+---
+ drivers/char/random.c |    7 +++++--
+ 1 files changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/char/random.c b/drivers/char/random.c
+index b2ced39..68120e5 100644
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -1669,11 +1669,14 @@ DEFINE_PER_CPU(__u32 [4], get_random_int_hash);
+ unsigned int get_random_int(void)
+ {
+ 	struct keydata *keyptr;
+-	__u32 *hash = get_cpu_var(get_random_int_hash);
++	__u32 *hash, garbage;
+ 	int ret;
+ 
++	garbage = get_cycles() + (long)&ret;
++	hash = get_cpu_var(get_random_int_hash);
++
+ 	keyptr = get_keyptr();
+-	hash[0] += current->pid + jiffies + get_cycles() + (int)(long)&ret;
++	hash[0] += current->pid + jiffies + garbage;
+ 
+ 	ret = half_md4_transform(hash, keyptr->secret);
+ 	put_cpu_var(get_random_int_hash);
