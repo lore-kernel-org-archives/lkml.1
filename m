@@ -1,235 +1,56 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753901AbZERI5Y@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756205AbZERI5o@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753901AbZERI5Y (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 04:57:24 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752250AbZERI5G
+	id S1756205AbZERI5o (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 04:57:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754764AbZERI5O
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 04:57:06 -0400
-Received: from mga03.intel.com ([143.182.124.21]:3218 "EHLO mga03.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751580AbZERI5B (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 04:57:01 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,208,1241420400"; 
-   d="scan'208";a="143962817"
-Date: Mon, 18 May 2009 16:56:48 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: "Rafael J. Wysocki" <rjw@sisk.pl>
-Cc: pm list <linux-pm@lists.linux-foundation.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, Pavel Machek <pavel@ucw.cz>,
-       Nigel Cunningham <nigel@tuxonice.net>,
-       David Rientjes <rientjes@google.com>,
-       "linux-mm@kvack.org" <linux-mm@kvack.org>
-Subject: Re: [RFC][PATCH 6/6] PM/Hibernate: Do not try to allocate too much
-	memory too hard
-Message-ID: <20090518085648.GB10033@localhost>
-References: <200905070040.08561.rjw@sisk.pl> <200905171455.06120.rjw@sisk.pl> <20090517140712.GE3254@localhost> <200905172314.29850.rjw@sisk.pl>
+	Mon, 18 May 2009 04:57:14 -0400
+Received: from buzzloop.caiaq.de ([212.112.241.133]:45358 "EHLO
+	buzzloop.caiaq.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1754376AbZERI5N (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 04:57:13 -0400
+Date: Mon, 18 May 2009 10:57:10 +0200
+From: Daniel Mack <daniel@caiaq.de>
+To: Ben Dooks <ben-linux@fluff.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
+       "'LKML'" <linux-kernel@vger.kernel.org>,
+       linux-arm-kernel@lists.arm.linux.org.uk, kyungmin.park@samsung.com
+Subject: Re: [PATCH] [drivers] [SPI] SPI_GPIO: add support for controllers
+	with missing MISO pin
+Message-ID: <20090518085710.GE14595@buzzloop.caiaq.de>
+References: <E4D3F24EA6C9E54F817833EAE0D912AC02243DBF8C@bssrvexch01.BS.local> <20090507123157.GU32548@trinity.fluff.org> <000501c9d792$f8feb950$eafc2bf0$%szyprowski@samsung.com> <20090518083412.GA28648@trinity.fluff.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <200905172314.29850.rjw@sisk.pl>
+In-Reply-To: <20090518083412.GA28648@trinity.fluff.org>
 User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, May 18, 2009 at 05:14:29AM +0800, Rafael J. Wysocki wrote:
-> On Sunday 17 May 2009, Wu Fengguang wrote:
-> > On Sun, May 17, 2009 at 08:55:05PM +0800, Rafael J. Wysocki wrote:
-> > > On Sunday 17 May 2009, Wu Fengguang wrote:
-> > 
-> > > > > +static unsigned long minimum_image_size(unsigned long saveable)
-> > > > > +{
-> > > > > +	unsigned long size;
-> > > > > +
-> > > > > +	/* Compute the number of saveable pages we can free. */
-> > > > > +	size = global_page_state(NR_SLAB_RECLAIMABLE)
-> > > > > +		+ global_page_state(NR_ACTIVE_ANON)
-> > > > > +		+ global_page_state(NR_INACTIVE_ANON)
-> > > > > +		+ global_page_state(NR_ACTIVE_FILE)
-> > > > > +		+ global_page_state(NR_INACTIVE_FILE);
-> > > > 
-> > > > For example, we could drop the 1.25 ratio and calculate the above
-> > > > reclaimable size with more meaningful constraints:
-> > > > 
-> > > >         /* slabs are not easy to reclaim */
-> > > > 	size = global_page_state(NR_SLAB_RECLAIMABLE) / 2;
+On Mon, May 18, 2009 at 09:34:12AM +0100, Ben Dooks wrote:
+> > > >  static inline int getmiso(const struct spi_device *spi)
+> > > >  {
+> > > > -	return !!gpio_get_value(SPI_MISO_GPIO);
+> > > > +	if (SPI_MISO_GPIO)
+> > > > +		return !!gpio_get_value(SPI_MISO_GPIO);
+> > > > +	else
+> > > > +		return 0;
+> > > >  }
 > > > 
-> > > Why 1/2?
+> > > Is zero a good approximation for 'no gpio' ?
 > > 
-> > Also a very coarse value:
-> > - we don't want to stress icache/dcache too much
-> >   (unless they grow too large)
-> > - my experience was that the icache/dcache are scanned in a slower
-> >   pace than lru pages.
-> > - most importantly, inside the NR_SLAB_RECLAIMABLE pages, maybe half
-> >   of the pages are actually *in use* and cannot be freed:
-> >         % cat /proc/sys/fs/inode-nr     
-> >         30450   16605
-> >         % cat /proc/sys/fs/dentry-state 
-> >         41598   35731   45      0       0       0
-> >   See? More than half entries are in-use. Sure many of them will actually
-> >   become unused when dentries are freed, but in the mean time the internal
-> >   fragmentations in the slabs can go up.
-> > 
-> > > >         /* keep NR_ACTIVE_ANON */
-> > > > 	size += global_page_state(NR_INACTIVE_ANON);
-> > > 
-> > > Why exactly did you omit ACTIVE_ANON?
-> > 
-> > To keep the "core working set" :)
-> >   	
-> > > >         /* keep mapped files */
-> > > > 	size += global_page_state(NR_ACTIVE_FILE);
-> > > > 	size += global_page_state(NR_INACTIVE_FILE);
-> > > >         size -= global_page_state(NR_FILE_MAPPED);
-> > > > 
-> > > > That restores the hard core working set logic in the reverse way ;)
-> > > 
-> > > I think the 1/2 factor for NR_SLAB_RECLAIMABLE may be too high in some cases,
-> > > but I'm going to check that.
-> > 
-> > Yes, after updatedb. In that case simple magics numbers may not help.
-> > In that case we should really first call shrink_slab() in a loop to
-> > cut down the slab pages to a sane number.
+> > Now I found that zero might be a valid gpio pin number on some architectures
+> > (it just means GPIO0 pin). This is imho a bit strange behavior of gpiolib as
+> > there should be also a special values for INVALID or NOGPIO cases. Does 
+> > anyone have any ideas how such cases should be handled properly? 
 > 
-> I have verified that the appended patch works reasonably well.
+> I belive there is a gpio_is_valid() function to tell you precisely if the
+> given GPIO is valid.
 
-This is illogical: in previous email you complained the formula
+And then -1 can be passed in from the platform data which will fail the
+gpio_is_valid() test.
 
-        TOTAL - MAPPED - ACTIVE_ANON - SLAB/2
+Daniel
 
-gives too high number, while 
-
-        TOTAL - MAPPED
-
-in this patch is OK.  (I'm not claiming the first formula to be fine.)
-
-> The value returned as the minimum image size is usually too high, but not very
-> much (on x86_64 usually about 20%) and there are no "magic" coefficients
-
-It is _OK_ for the minimum image size to be higher, that margin serves
-as a safety margin as well as the working set size we want to preserve.
-
-> involved any more and the computation of the minimum image size is carried out
-> before calling shrink_all_memory() (so it's still going to be useful after
-> we've dropped shrink_all_memory() at one point).
-
-That's OK. Because shrink_all_memory() shrinks memory in a prioritized
-list-after-list order.
-
-> ---
-> From: Rafael J. Wysocki <rjw@sisk.pl>
-> Subject: PM/Hibernate: Do not try to allocate too much memory too hard (rev. 2)
-> 
-> We want to avoid attempting to free too much memory too hard during
-> hibernation, so estimate the minimum size of the image to use as the
-> lower limit for preallocating memory.
-
-I'd like to advocate to add "working set preservation" as another goal
-of this function, and I can even do with the formula in this patch :-)
-
-That means, when one day more accurate working set estimation is
-possible, we can extend this function to support that goal.
-
-Thanks,
-Fengguang
-
-> The approach here is based on the (experimental) observation that we
-> can't free more page frames than the sum of:
-> 
-> * global_page_state(NR_SLAB_RECLAIMABLE)
-> * global_page_state(NR_ACTIVE_ANON)
-> * global_page_state(NR_INACTIVE_ANON)
-> * global_page_state(NR_ACTIVE_FILE)
-> * global_page_state(NR_INACTIVE_FILE)
-> 
-> minus
-> 
-> * global_page_state(NR_FILE_MAPPED)
-> 
-> Namely, if this number is subtracted from the number of saveable
-> pages in the system, we get a good estimate of the minimum reasonable
-> size of a hibernation image.
-> 
-> Signed-off-by: Rafael J. Wysocki <rjw@sisk.pl>
-> ---
->  kernel/power/snapshot.c |   43 +++++++++++++++++++++++++++++++++++++++----
->  1 file changed, 39 insertions(+), 4 deletions(-)
-> 
-> Index: linux-2.6/kernel/power/snapshot.c
-> ===================================================================
-> --- linux-2.6.orig/kernel/power/snapshot.c
-> +++ linux-2.6/kernel/power/snapshot.c
-> @@ -1204,6 +1204,36 @@ static void free_unnecessary_pages(void)
->  }
->  
->  /**
-> + * minimum_image_size - Estimate the minimum acceptable size of an image
-> + * @saveable: Number of saveable pages in the system.
-> + *
-> + * We want to avoid attempting to free too much memory too hard, so estimate the
-> + * minimum acceptable size of a hibernation image to use as the lower limit for
-> + * preallocating memory.
-> + *
-> + * We assume that the minimum image size should be proportional to
-> + *
-> + * [number of saveable pages] - [number of pages that can be freed in theory]
-> + *
-> + * where the second term is the sum of (1) reclaimable slab pages, (2) active
-> + * and (3) inactive anonymouns pages, (4) active and (5) inactive file pages,
-> + * minus mapped file pages.
-> + */
-> +static unsigned long minimum_image_size(unsigned long saveable)
-> +{
-> +	unsigned long size;
-> +
-> +	size = global_page_state(NR_SLAB_RECLAIMABLE)
-> +		+ global_page_state(NR_ACTIVE_ANON)
-> +		+ global_page_state(NR_INACTIVE_ANON)
-> +		+ global_page_state(NR_ACTIVE_FILE)
-> +		+ global_page_state(NR_INACTIVE_FILE)
-> +		- global_page_state(NR_FILE_MAPPED);
-> +
-> +	return saveable <= size ? 0 : saveable - size;
-> +}
-> +
-> +/**
->   * hibernate_preallocate_memory - Preallocate memory for hibernation image
->   *
->   * To create a hibernation image it is necessary to make a copy of every page
-> @@ -1220,8 +1250,8 @@ static void free_unnecessary_pages(void)
->   *
->   * If image_size is set below the number following from the above formula,
->   * the preallocation of memory is continued until the total number of saveable
-> - * pages in the system is below the requested image size or it is impossible to
-> - * allocate more memory, whichever happens first.
-> + * pages in the system is below the requested image size or the minimum
-> + * acceptable image size returned by minimum_image_size(), whichever is greater.
->   */
->  int hibernate_preallocate_memory(void)
->  {
-> @@ -1282,6 +1312,11 @@ int hibernate_preallocate_memory(void)
->  		goto out;
->  	}
->  
-> +	/* Estimate the minimum size of the image. */
-> +	pages = minimum_image_size(saveable);
-> +	if (size < pages)
-> +		size = min_t(unsigned long, pages, max_size);
-> +
->  	/*
->  	 * Let the memory management subsystem know that we're going to need a
->  	 * large number of page frames to allocate and make it free some memory.
-> @@ -1294,8 +1329,8 @@ int hibernate_preallocate_memory(void)
->  	 * The number of saveable pages in memory was too high, so apply some
->  	 * pressure to decrease it.  First, make room for the largest possible
->  	 * image and fail if that doesn't work.  Next, try to decrease the size
-> -	 * of the image as much as indicated by image_size using allocations
-> -	 * from highmem and non-highmem zones separately.
-> +	 * of the image as much as indicated by 'size' using allocations from
-> +	 * highmem and non-highmem zones separately.
->  	 */
->  	pages_highmem = preallocate_image_highmem(highmem / 2);
->  	max_size += pages_highmem;
