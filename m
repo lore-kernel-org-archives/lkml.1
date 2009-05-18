@@ -1,114 +1,73 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755852AbZERGid@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755910AbZERGyM@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755852AbZERGid (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 02:38:33 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751700AbZERGiW
+	id S1755910AbZERGyM (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 02:54:12 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754044AbZERGxt
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 02:38:22 -0400
-Received: from e9.ny.us.ibm.com ([32.97.182.139]:35198 "EHLO e9.ny.us.ibm.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751379AbZERGiV (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 02:38:21 -0400
-Subject: Re: [PATCH] Fix Warnining in arch/x86/kernel/signal.c
-From: Subrata Modak <subrata@linux.vnet.ibm.com>
-Reply-To: subrata@linux.vnet.ibm.com
-To: Hiroshi Shimamoto <h-shimamoto@ct.jp.nec.com>
-Cc: "H. Peter Anvin" <hpa@zytor.com>, Balbir Singh <balbir@linux.vnet.ibm.com>,
-       Andi Kleen <andi@firstfloor.org>, Ingo Molnar <mingo@redhat.com>,
-       x86@kernel.org, Linux Kernel <linux-kernel@vger.kernel.org>,
-       Thomas Gleixner <tglx@linutronix.de>,
-       Sachin P Sant <sachinp@linux.vnet.ibm.com>,
-       Andi Kleen <ak@linux.intel.com>, Ingo Molnar <mingo@elte.hu>
-In-Reply-To: <4A10D7CE.90005@ct.jp.nec.com>
-References: <20090514091247.32082.38639.sendpatchset@subratamodak.linux.ibm.com>
-	 <4A0CE250.9050703@ct.jp.nec.com>
-	 <1242382591.7224.40.camel@subratamodak.linux.ibm.com>
-	 <4A10D7CE.90005@ct.jp.nec.com>
-Content-Type: text/plain
-Organization: IBM
-Date: Mon, 18 May 2009 12:08:12 +0530
-Message-Id: <1242628692.1750.1.camel@subratamodak.linux.ibm.com>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.12.3 (2.12.3-8.el5_2.2) 
-Content-Transfer-Encoding: 7bit
+	Mon, 18 May 2009 02:53:49 -0400
+Received: from mail-ew0-f176.google.com ([209.85.219.176]:32798 "EHLO
+	mail-ew0-f176.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751379AbZERGxs convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 02:53:48 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=eKrgNMXOvgANdQWVZKNuu24gvDbkubm3rK/ym11jQj232Fyf9RAC6sw0yAb41BsHtq
+         NhGbfdPvPNYQB+aAbQupFkIisQC8nHj6y9meOwF6tJ5gZhpl1vuPEOqOZ68Yyvpx9kul
+         Vk3kki0IP1tZJ/umZKlkVJNkoZU7avaky+qH4=
+MIME-Version: 1.0
+In-Reply-To: <alpine.LNX.2.00.0905111746100.22712@wotan.suse.de>
+References: <1241867943.26731.5.camel@blr-psankar.blr.novell.com>
+	 <alpine.LNX.2.00.0905111746100.22712@wotan.suse.de>
+Date: Mon, 18 May 2009 12:23:48 +0530
+Message-ID: <108af1800905172353g5692d340g1c389fbec7116c10@mail.gmail.com>
+Subject: Re: [PATCH] Spelling fix in btrfs code comment
+From: Sankar P <sankar.curiosity@gmail.com>
+To: Jiri Kosina <jkosina@suse.cz>
+Cc: linux-kernel@vger.kernel.org, linux-btrfs@vger.kernel.org,
+       trivial@kernel.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-18 at 12:36 +0900, Hiroshi Shimamoto wrote:
-> Subrata Modak wrote:
-> > On Fri, 2009-05-15 at 12:32 +0900, Hiroshi Shimamoto wrote:
-> >> Subrata Modak wrote:
-> >>> Hello Hiroshi-san,
-> >>>
-> >>> On Thu, 2009-05-14 at 09:24 +0900, Hiroshi Shimamoto wrote:
-> >>> H. Peter Anvin wrote:
-> >>>>> Ingo Molnar wrote:
-> >>>>>>>>>  
-> >>>>>>>>>         if (!access_ok(VERIFY_READ, frame, sizeof(*frame)))
-> >>>>>>>>>                 goto badframe;
-> >>>>>>>>> -       if (__get_user(set.sig[0], &frame->sc.oldmask) || (_NSIG_WORDS > 1
-> >>>>>>>>> -               && __copy_from_user(&set.sig[1], &frame->extramask,
-> >>>>>>>>> -                                   sizeof(frame->extramask))))
-> >>>>>>>>> +
-> >>>>>>>>> +        if ( (__copy_from_user(&set.sig[1], &frame->extramask,
-> >>>>>>>>> +                sizeof(frame->extramask)) && _NSIG_WORDS > 1) || 
-> >>>>>>>>> +                __get_user(set.sig[0], &frame->sc.oldmask))
-> >>>>>>>>>                 goto badframe;
-> >>>>>>>> I'm not sure why this eliminates that warning.
-> >>>>>>>> set.sig[0] may not be initialized too, if __copy_from_user() failed.
-> >>>>>>> True, but only when either or both of __copy_from_user() and
-> >>>>>>> (_NSIG_WORDS > 1) fails. But in all instances set.sig[1] gets
-> >>>>>>> initialized.
-> >>>>>>>
-> >>>>>>>> I don't have enough time to look at this right now, sorry.
-> >>>>>>>>
-> >>>>>>>> Another question, __copy_from_user() will be called even if
-> >>>>>>>> _NSIG_WORDS is less than 2, perhaps it never occurs.
-> >>>>>>>> I think, to check _NSIG_WORDS > 1 before calling __copy_from_user()
-> >>>>>>>> is better.
-> >>>>>>> Fine. Let Ingo/Thomas/Peter decide whether they would like this fix or
-> >>>>>>> drop it.
-> >>>>>> If you get the Acked-by from Hiroshi-san it looks good to me. He 
-> >>>>>> modified this code last.
-> >>>>>>
-> >>>>> This seriously looks wrong to me.  If _NSIG_WORDS == 1, then calling
-> >>>>> __copy_from_user here is a serious error.
-> >>>> Right. If _NSIG_WORDS is 1, sigset_t set has only sig[0], writing to
-> >>>> set.sig[1] means stack corruption.
-> >>>>
-> >>>> Subrata, could you try like this?
-> >>>> if ((_NSIG_WORDS > 1 && __copy_from_user(&set.sig[1], ...) ||
-> >>>>       __get_user(set.sig[0], ...))
-> >>>>
-> >>>>
-> >>> How about now ? Thanks for pointing that out. My mistake ;-)
-> >> Hi Subrata, I have a question.
-> >> Have you tried to compile on x86_64 whether the compiler claims the
-> >> similar code in sys32_sigreturn() in arch/x86/ia32/ia32_signal.c?
-> > 
-> > Oops. No, the compiler does not complain here. It simply compiles fine. 
-> > 
-> > So, do you want to take a different view for the patch against
-> > arch/x86/kernel/signal.c, or, i would resend it with the following
-> > things fixed:
-> 
-> If you don't think this fix is urgent, could you please check whether
-> that warning is false positive on 32bit or gcc for 64bit has an issue
-> not to complain against ia32 part?
-> 
+On Mon, May 11, 2009 at 9:16 PM, Jiri Kosina <jkosina@suse.cz> wrote:
+> On Sat, 9 May 2009, Sankar P wrote:
+>
+>> Fix a trivial spelling error in a comment
+>>
+>> Signed-off-by: Sankar P <sankar.curiosity@gmail.com>
+>>
+>> ---
+>> diff --git a/fs/btrfs/extent-tree.c b/fs/btrfs/extent-tree.c
+>> index e496644..3e2c7c7 100644
+>> --- a/fs/btrfs/extent-tree.c
+>> +++ b/fs/btrfs/extent-tree.c
+>> @@ -312,7 +312,7 @@ btrfs_lookup_first_block_group(struct btrfs_fs_info *info, u64 bytenr)
+>>  }
+>>
+>>  /*
+>> - * return the block group that contains teh given bytenr
+>> + * return the block group that contains the given bytenr
+>>   */
+>>  struct btrfs_block_group_cache *btrfs_lookup_block_group(
+>>                                                struct btrfs_fs_info *info,
+>
+> Appplied to trivial tree. If it has been already applied to btrfs pileup,
+> please let me know so that I could drop it.
 
-I will try to find out.
+This is now available in the btrfs tree and Linus' tree. Thanks.
 
-> I think arch/x86/kernel/signal.c and arch/x86/ia32/ia32_signal.c should
-> have the same code.
-
-Sure. Not a problem. Please drop the patch for the time being.
-
-Regards--
-Subrata
-
-> 
+>
 > Thanks,
-> Hiroshi
+>
+> --
+> Jiri Kosina
+> SUSE Labs
+>
 
+--
+Sankar
