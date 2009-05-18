@@ -1,52 +1,87 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755837AbZERCeb@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756109AbZERChk@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755837AbZERCeb (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 22:34:31 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752534AbZERCeU
+	id S1756109AbZERChk (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 22:37:40 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754726AbZERCh3
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 22:34:20 -0400
-Received: from mga14.intel.com ([143.182.124.37]:64370 "EHLO mga14.intel.com"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751917AbZERCeU (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 22:34:20 -0400
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="4.41,208,1241420400"; 
-   d="scan'208";a="143876769"
-Date: Mon, 18 May 2009 10:34:04 +0800
-From: Wu Fengguang <fengguang.wu@intel.com>
-To: MinChan Kim <minchan.kim@gmail.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>,
-       LKML <linux-kernel@vger.kernel.org>, linux-mm <linux-mm@kvack.org>,
-       KOSAKI Motohiro <kosaki.motohiro@jp.fujitsu.com>,
-       Johannes Weiner <hannes@cmpxchg.org>, Rik van Riel <riel@redhat.com>
-Subject: Re: [PATCH] mmtom: Prevent shrinking of active anon lru list in
-	case of no swap space V3
-Message-ID: <20090518023404.GB5869@localhost>
-References: <20090514231555.f52c81eb.minchan.kim@gmail.com>
+	Sun, 17 May 2009 22:37:29 -0400
+Received: from victor.provo.novell.com ([137.65.250.26]:49238 "EHLO
+	victor.provo.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753021AbZERCh2 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 22:37:28 -0400
+Message-ID: <4A10C9D5.7000408@novell.com>
+Date: Sun, 17 May 2009 22:37:09 -0400
+From: Gregory Haskins <ghaskins@novell.com>
+User-Agent: Thunderbird 2.0.0.21 (Macintosh/20090302)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20090514231555.f52c81eb.minchan.kim@gmail.com>
-User-Agent: Mutt/1.5.18 (2008-05-17)
+To: Avi Kivity <avi@redhat.com>
+CC: kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [KVM PATCH v2 4/4] kvm: add iosignalfd support
+References: <20090515162047.26209.93545.stgit@dev.haskins.net> <20090515162823.26209.72294.stgit@dev.haskins.net> <4A10704E.1080301@redhat.com>
+In-Reply-To: <4A10704E.1080301@redhat.com>
+X-Enigmail-Version: 0.95.7
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="------------enigD328AFFCD4713ADA18A9330D"
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Thu, May 14, 2009 at 11:15:55PM +0900, MinChan Kim wrote:
- 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index 2f9d555..621708f 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -1577,7 +1577,7 @@ static void shrink_zone(int priority, struct zone *zone,
->  	 * Even if we did not try to evict anon pages at all, we want to
->  	 * rebalance the anon lru active/inactive ratio.
->  	 */
-> -	if (inactive_anon_is_low(zone, sc))
-> +	if (inactive_anon_is_low(zone, sc) && nr_swap_pages > 0)
->  		shrink_active_list(SWAP_CLUSTER_MAX, zone, sc, priority, 0);
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enigD328AFFCD4713ADA18A9330D
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-There's another "if (inactive_anon_is_low) shrink_active_list;"
-occurrence to be fixed in balance_pgdat()? Otherwise:
+Avi Kivity wrote:
+> Gregory Haskins wrote:
+>> +
+>> +struct _iosignalfd {
+>>  =20
+>
+> Why the underscore?  It's unorthodox for a structure.
 
-Acked-by: Wu Fengguang <fengguang.wu@intel.com>
+I tend to do that to denote "this is a private structure", but it makes
+more sense if we are building a factory interface for a corresponding
+public version of the structure of the same name.  In this case, I do
+not think I was using that pattern, but old habits die hard. ;)  I will
+get rid of this extra underscore in the next rev.
+
+>
+>
+>> +    u64                  cookie;
+>> +    u64                  addr;
+>> +    size_t               length;
+>> +    struct file         *file;
+>> +    struct list_head     list;
+>> +    struct kvm_io_device dev;
+>> +};
+>>  =20
+>
+> How will that work with multiple identical addresses and different
+> cookies?  Will the code iterate over all of them and just fire for one?=
+
+Yeah, primarily because I think the io_bus code will stop once it finds
+the first in_range() match.  But I put this logic in anyway in
+preparation for the future when we may perhaps support such a notion
+(similar to what you had me do with the irqfd side).
+
+-Greg
+
+
+
+--------------enigD328AFFCD4713ADA18A9330D
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG/MacGPG2 v2.0.11 (Darwin)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iEYEARECAAYFAkoQydYACgkQlOSOBdgZUxnCcQCfeUbM2YOLqFcmvyQPX2Jx/7lv
+wSYAn2O6/3GR6Mu0jmtGILbO967QKY4a
+=504A
+-----END PGP SIGNATURE-----
+
+--------------enigD328AFFCD4713ADA18A9330D--
