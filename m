@@ -1,92 +1,126 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1757180AbZERKLg@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1757142AbZERKMz@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1757180AbZERKLg (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 06:11:36 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756359AbZERKLO
+	id S1757142AbZERKMz (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 06:12:55 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1754353AbZERKMl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 06:11:14 -0400
-Received: from h155.mvista.com ([63.81.120.155]:45033 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1756829AbZERKLM (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 06:11:12 -0400
-Message-ID: <4A11343C.5070809@ru.mvista.com>
-Date: Mon, 18 May 2009 14:11:08 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
-MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>
-Cc: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-Subject: Re: [PATCH 6/6] drivers/ide: Convert printk(KERN_NOTICE to pr_notice(
-References: <cover.1242609803.git.joe@perches.com> <3ff9e9c7a8918f4d5f7bab5590f46073a196a4bf.1242609804.git.joe@perches.com>
-In-Reply-To: <3ff9e9c7a8918f4d5f7bab5590f46073a196a4bf.1242609804.git.joe@perches.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Mon, 18 May 2009 06:12:41 -0400
+Received: from fgwmail5.fujitsu.co.jp ([192.51.44.35]:43414 "EHLO
+	fgwmail5.fujitsu.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751666AbZERKMk (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 06:12:40 -0400
+Date: Mon, 18 May 2009 19:11:07 +0900
+From: KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com>
+To: balbir@linux.vnet.ibm.com
+Cc: "linux-mm@kvack.org" <linux-mm@kvack.org>,
+       "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       "nishimura@mxp.nes.nec.co.jp" <nishimura@mxp.nes.nec.co.jp>,
+       "lizf@cn.fujitsu.com" <lizf@cn.fujitsu.com>,
+       "menage@google.com" <menage@google.com>,
+       KOSAKI Motohiro <m-kosaki@ceres.dti.ne.jp>
+Subject: Re: [RFC] Low overhead patches for the memory cgroup controller
+ (v2)
+Message-Id: <20090518191107.8a7cc990.kamezawa.hiroyu@jp.fujitsu.com>
+In-Reply-To: <20090515181639.GH4451@balbir.in.ibm.com>
+References: <b7dd123f0a15fff62150bc560747d7f0.squirrel@webmail-b.css.fujitsu.com>
+	<20090515181639.GH4451@balbir.in.ibm.com>
+Organization: FUJITSU Co. LTD.
+X-Mailer: Sylpheed 2.5.0 (GTK+ 2.10.14; i686-pc-mingw32)
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
+On Fri, 15 May 2009 23:46:39 +0530
+Balbir Singh <balbir@linux.vnet.ibm.com> wrote:
 
-Joe Perches wrote:
+> * KAMEZAWA Hiroyuki <kamezawa.hiroyu@jp.fujitsu.com> [2009-05-16 02:45:03]:
+> 
+> > Balbir Singh wrote:
+> > > Feature: Remove the overhead associated with the root cgroup
+> > >
+> > > From: Balbir Singh <balbir@linux.vnet.ibm.com>
+> > >
+> > > This patch changes the memory cgroup and removes the overhead associated
+> > > with LRU maintenance of all pages in the root cgroup. As a side-effect, we
+> > > can
+> > > no longer set a memory hard limit in the root cgroup.
+> > >
+> > > A new flag is used to track page_cgroup associated with the root cgroup
+> > > pages. A new flag to track whether the page has been accounted or not
+> > > has been added as well.
+> > >
+> > > Review comments higly appreciated
+> > >
+> > > Tests
+> > >
+> > > 1. Tested with allocate, touch and limit test case for a non-root cgroup
+> > > 2. For the root cgroup tested performance impact with reaim
+> > >
+> > >
+> > > 		+patch		mmtom-08-may-2009
+> > > AIM9		1362.93		1338.17
+> > > Dbase		17457.75	16021.58
+> > > New Dbase	18070.18	16518.54
+> > > Shared		9681.85		8882.11
+> > > Compute		16197.79	15226.13
+> > >
+> > Hmm, at first impression, I can't convice the numbers...
+> > Just avoiding list_add/del makes programs _10%_ faster ?
+> > Could you show changes in cpu cache-miss late if you can ?
+> > (And why Aim9 goes bad ?)
+> 
+> OK... I'll try but I am away on travel for 3 weeks :( you can try and run
+> this as well
+> 
+tested aim7 with some config.
 
-> Signed-off-by: Joe Perches <joe@perches.com>
->   
+CPU: Xeon 3.1GHz/4Core x2 (8cpu)
+Memory: 32G
+HDD: Usual? Scsi disk (just 1 disk)
+(try_to_free_pages() etc...will never be called.)
 
-  This patch creates lines > 80 chars long, co no ACK this time.
+Multiuser config. #of tasks 1100 (near to peak on my host)
 
-> diff --git a/drivers/ide/ide-floppy.c b/drivers/ide/ide-floppy.c
-> index a6edb0d..d7c4f5c 100644
-> --- a/drivers/ide/ide-floppy.c
-> +++ b/drivers/ide/ide-floppy.c
->   
-[...]
-> @@ -428,17 +428,15 @@ static int ide_floppy_get_capacity(ide_drive_t *drive)
->  			memcpy(&floppy->cap_desc, cap_desc, 8);
->  
->  			if (!length || length % 512) {
-> -				printk(KERN_NOTICE PFX "%s: %d bytes block size"
-> -				       " not supported\n", drive->name, length);
-> +				pr_notice(PFX "%s: %d bytes block size not supported\n",
->   
+10runs.
+rc6mm1 score(Jobs/min)
+44009.1 44844.5 44691.1 43981.9 44992.6
+44544.9 44179.1 44283.0 44442.9 45033.8  average=44500
 
-  Line longer than 80 characters...
++patch
+44656.8 44270.8 44706.7 44106.1 44467.6
+44585.3 44167.0 44756.7 44853.9 44249.4  average=44482
 
-> +					  drive->name, length);
->  			} else {
->  				floppy->blocks = blocks;
->  				floppy->block_size = length;
->  				floppy->bs_factor = length / 512;
->  				if (floppy->bs_factor != 1)
-> -					printk(KERN_NOTICE PFX "%s: Warning: "
-> -					       "non 512 bytes block size not "
-> -					       "fully supported\n",
-> -					       drive->name);
-> +					pr_notice(PFX "%s: Warning: non 512 bytes block size not fully supported\n",
->   
+Dbase config. #of tasks 25
+rc6mm1 score (jobs/min)
+11022.7 11018.9 11037.9 11003.8 11087.5 
+11145.2 11133.6 11068.3 11091.3 11106.6 average=11071
 
-   Again.
++patch
+10888.0 10973.7 10913.9 11000.0 10984.9
+10996.2 10969.9 10921.3 10921.3 11053.1 average=10962
 
-> +						  drive->name);
->  				drive->capacity64 =
->  					floppy->blocks * floppy->bs_factor;
->  				rc = 0;
-> diff --git a/drivers/ide/ide-tape.c b/drivers/ide/ide-tape.c
-> index 138c42d..bf3c128 100644
-> --- a/drivers/ide/ide-tape.c
-> +++ b/drivers/ide/ide-tape.c
-> @@ -756,8 +756,8 @@ static ide_startstop_t idetape_do_request(ide_drive_t *drive,
->  
->  	if (!blk_special_request(rq)) {
->  		/* We do not support buffer cache originated requests. */
-> -		printk(KERN_NOTICE "ide-tape: %s: Unsupported request in "
-> -			"request queue (%d)\n", drive->name, rq->cmd_type);
-> +		pr_notice("ide-tape: %s: Unsupported request in request queue (%d)\n",
->   
+Hmm, 1% improvement ?
+(I think this is reasonable score of the effect of this patch)
 
-    And again.
+Anyway, I'm afraid of difference between mine and your kernel config.
+plz enjoy your travel for now :)
 
-MBR, Sergei
+Thanks,
+-Kame
+
+
+
+
+
+
+
+
+
+
 
 
