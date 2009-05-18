@@ -1,79 +1,39 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754703AbZERNqQ@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754668AbZERNsF@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754703AbZERNqQ (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 09:46:16 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751951AbZERNpw
+	id S1754668AbZERNsF (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 09:48:05 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752136AbZERNrv
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 09:45:52 -0400
-Received: from rv-out-0506.google.com ([209.85.198.231]:64575 "EHLO
-	rv-out-0506.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1751665AbZERNpv (ORCPT
-	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 09:45:51 -0400
-DomainKey-Signature: a=rsa-sha1; c=nofws;
-        d=gmail.com; s=gamma;
-        h=from:to:subject:date:user-agent:cc:references:in-reply-to
-         :mime-version:content-disposition:message-id:content-type
-         :content-transfer-encoding;
-        b=d3qBsfiMnaIsIlVHHQsAM6hGfA5ceqEeJkosyfTXjhvE/tDKGUVIy+cmiK7s+lG6qr
-         AHHeVsDFAhD6mQRBw53QKuG44FBvU9/Qi8bkBE5+j6Ic30b6XLG5x9AfkBFjcKlxnDiW
-         7dchWGjXzIFvb6qYlLsUbpBSE67UyLmrFVnug=
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Krzysztof Halasa <khc@pm.waw.pl>
-Subject: Re: [PATCH 6/6] drivers/ide: Convert printk(KERN_NOTICE to pr_notice(
-Date: Mon, 18 May 2009 15:50:07 +0200
-User-Agent: KMail/1.11.2 (Linux/2.6.30-rc3-00442-ga3668b0; KDE/4.2.2; i686; ; )
-Cc: Sergei Shtylyov <sshtylyov@ru.mvista.com>, Joe Perches <joe@perches.com>,
-       linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
-       Borislav Petkov <petkovbb@gmail.com>
-References: <cover.1242609803.git.joe@perches.com> <4A11343C.5070809@ru.mvista.com> <m3skj2im12.fsf@intrepid.localdomain>
-In-Reply-To: <m3skj2im12.fsf@intrepid.localdomain>
+	Mon, 18 May 2009 09:47:51 -0400
+Received: from web26101.mail.ukl.yahoo.com ([217.146.182.142]:21719 "HELO
+	web26101.mail.ukl.yahoo.com" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with SMTP id S1750978AbZERNrv convert rfc822-to-8bit
+	(ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 09:47:51 -0400
+DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws;
+  s=s1024; d=yahoo.co.uk;
+  h=Message-ID:X-YMail-OSG:Received:X-Mailer:Date:From:Subject:To:MIME-Version:Content-Type:Content-Transfer-Encoding;
+  b=RILuFy0cMkxm6JBls+X1ZeiEi6gIRz9iRDDLG84YyBrLcSSyA2k7teqX4Go26xhnBJ9atzXurbPanXCAvJeGcZMBAR+/7Ozp0kb1sodb9Thz3Ua6c0AvCU1rAdKHE6GQtvooubS1dSYhcA8iH6dUw0aB0DkzOV0OAubqQ4GYgBY=;
+Message-ID: <223602.79528.qm@web26101.mail.ukl.yahoo.com>
+X-YMail-OSG: L3mixI4VM1nCO5GiTkxdnuPzPSUUr4NeFo.zqBdjxxiaREwktQjc9zDDRagRsz6Ecsc4r6tubBVN6SesHHwf5O8Y_0MisU9M8tOTL34.QxmIoRJsIEjIHnB7dVzcGIOncrtouJ6AHfgZzXEQkFo5fwVNSI5IIYIDZQGCtbz88dGH7NTjc7ZDHoGjtTAu2wefxeEIuyHE1JjmrqQ2Z4uGBlbJk4x2jNWkeqttUfnEaJC9CWqL4OnQoXL1r6Lm27CGz3JpQNJWUaLhX1EB_4Rti17eBPqpGOjGLCE7pw.lCLME.MlDScLGdjzq4zh0vWIFpIONgkhcKArIZXoi3x0-
+X-Mailer: YahooMailClassic/5.3.9 YahooMailWebService/0.7.289.10
+Date: Mon, 18 May 2009 13:47:50 +0000 (GMT)
+From: John Zupfel <jzupfel@yahoo.co.uk>
+Subject: Re: Houston, we have a problem: big file copying, USB, external disks
+To: linux-kernel@vger.kernel.org,
+       Ralf Hildebrandt <Ralf.Hildebrandt@charite.de>
 MIME-Version: 1.0
-Content-Disposition: inline
-Message-Id: <200905181550.07723.bzolnier@gmail.com>
-Content-Type: Text/Plain;
-  charset="iso-8859-1"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Monday 18 May 2009 15:22:01 Krzysztof Halasa wrote:
-> Sergei Shtylyov <sshtylyov@ru.mvista.com> writes:
-> 
-> >>  			} else {
-> >>  				floppy->blocks = blocks;
-> >>  				floppy->block_size = length;
-> >>  				floppy->bs_factor = length / 512;
-> >>  				if (floppy->bs_factor != 1)
-> >> -					printk(KERN_NOTICE PFX "%s: Warning: "
-> >> -					       "non 512 bytes block size not "
-> >> -					       "fully supported\n",
-> >> -					       drive->name);
-> >> +					pr_notice(PFX "%s: Warning: non 512 bytes block size not fully supported\n",
-> >>   
-> >
-> >   Again.
-> 
-> (> 80 chars in line)
-> 
-> Though I think most people would agree that the latter is much better,
-> no?
 
-No, it just hides the real issue:
+--- On Mon, 18/5/09, Ralf Hildebrandt <Ralf.Hildebrandt@charite.de> wrote:
+> Does this happen AFTER a suspend/hibernate or ALL THE TIME?
 
-Please factor out descriptor parsing from ide_floppy_get_capacity()
-and remove superfluous "Warning: " part of the message instead if you
-want something much better.
+All the time. And according to most of the reports, the slowdown usually starts after the first several hundred MiBs have been copied.
 
-It is also a real pain for people depending on some kind of automatic
-verification of patches (infamous checkpatch.pl ;).
 
-> I think removal (rewording) of this rule has already been agreed upon,
-> though not exactly yet codified.
-
-This is not a strict rule but in 99% cases it shows that the code could
-be improved further without >80 chars lines.
-
-Thanks.
-Bart
+      
