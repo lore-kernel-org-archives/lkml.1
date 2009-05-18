@@ -1,64 +1,66 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1759212AbZERJue@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1759294AbZERJu5@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1759212AbZERJue (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 05:50:34 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1758706AbZERJnN
+	id S1759294AbZERJu5 (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 05:50:57 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757387AbZERJno
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 05:43:13 -0400
-Received: from serv2.oss.ntt.co.jp ([222.151.198.100]:35280 "EHLO
-	serv2.oss.ntt.co.jp" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1758330AbZERJnK (ORCPT
+	Mon, 18 May 2009 05:43:44 -0400
+Received: from wa-out-1112.google.com ([209.85.146.180]:22531 "EHLO
+	wa-out-1112.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1758756AbZERJnm (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 05:43:10 -0400
-Message-Id: <6.0.0.20.2.20090518183752.0581fdc0@172.19.0.2>
-X-Mailer: QUALCOMM Windows Eudora Version 6J-Jr3
-Date: Mon, 18 May 2009 18:38:39 +0900
-To: Andrew Morton <akpm@linux-foundation.org>
-From: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-Subject: [PATCH] readahead:add blk_run_backing_dev
-Cc: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+	Mon, 18 May 2009 05:43:42 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=date:from:to:cc:subject:message-id:references:mime-version
+         :content-type:content-disposition:content-transfer-encoding
+         :in-reply-to:user-agent;
+        b=ONB+NJNgZABQ8QB9WXrF9n1Lqy9eGLhggVyQWPQZyk2B5jieNg1YYDQDsfklXkwagy
+         Yo6ozn0kicCkJKl3LVU0qCuz/tqJcGctLFZkKPLFfUt4nD/rH4tstqkz/Bg6BpPhtJw7
+         DLBaxUgswWpd4a8l5didqiBvaKG+ji9vi2qcc=
+Date: Mon, 18 May 2009 17:45:01 +0800
+From: Amerigo Wang <xiyou.wangcong@gmail.com>
+To: =?utf-8?Q?Am=C3=A9rico?= Wang <xiyou.wangcong@gmail.com>
+Cc: Renzo Davoli <renzo@cs.unibo.it>, linux-kernel@vger.kernel.org,
+       Jeff Dike <jdike@addtoit.com>,
+       user-mode-linux-devel@lists.sourceforge.net, mtk.manpages@gmail.com,
+       Roland McGrath <roland@redhat.com>, akpm@linux-foundation.org
+Subject: Re: [PATCH 0/2] ptrace_vm: ptrace for syscall emulation virtual
+	machines
+Message-ID: <20090518094501.GB13776@cr0.nay.redhat.com>
+References: <20090316074520.GC3360@hack> <20090324234753.GH22695@cs.unibo.it> <20090329163228.GE7671@hack> <20090404101708.GG4203@cs.unibo.it> <20090407173646.GL12226@hack> <20090408121851.GE24173@cs.unibo.it> <20090413163603.GG2391@hack> <20090417081823.GA31897@hack> <20090425091928.GB18153@cs.unibo.it> <20090430082711.GA24819@hack>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20090430082711.GA24819@hack>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hi.
+On Thu, Apr 30, 2009 at 04:27:11PM +0800, Américo Wang wrote:
+>On Sat, Apr 25, 2009 at 11:19:28AM +0200, Renzo Davoli wrote:
+>
+>>
+>>I have successfully tested my paches in various configurations:
+>>- patched-kernel running patched-UML
+>>- patched-kernel running unpatched-UML
+>>- patched-kernel running umview
+>>- patched-UML running umview
+>>- UML on UML fails in the same way with and without the patch.
+>>I am currently running the patched kernel on my laptop.
+>
+>Thanks, I will give them another testing soon...
 
-I wrote a patch that adds blk_run_backing_dev on page_cache_async_readahead
-so readahead I/O is unpluged to improve throughput.
+Sorry for the long delay...
 
-Following is the test result with dd.
+I reviewed the whole patch set again, and tested it on both i386
+and x86_64, it looks very fine!! :-)
 
-#dd if=testdir/testfile of=/dev/null bs=16384
+So I would like to see these patches to be merged.
 
--2.6.30-rc6
-1048576+0 records in
-1048576+0 records out
-17179869184 bytes (17 GB) copied, 224.182 seconds, 76.6 MB/s
+Andrew, could you please take these two patches for us??
 
--2.6.30-rc6-patched
-1048576+0 records in
-1048576+0 records out
-17179869184 bytes (17 GB) copied, 206.465 seconds, 83.2 MB/s
-
-Sequential read performance on a big file was improved.
-Please merge my patch.
-
-Thanks.
-
-Signed-off-by: Hisashi Hifumi <hifumi.hisashi@oss.ntt.co.jp>
-
-diff -Nrup linux-2.6.30-rc6.org/mm/readahead.c linux-2.6.30-rc6.unplug/mm/readahead.c
---- linux-2.6.30-rc6.org/mm/readahead.c	2009-05-18 10:46:15.000000000 +0900
-+++ linux-2.6.30-rc6.unplug/mm/readahead.c	2009-05-18 13:00:42.000000000 +0900
-@@ -490,5 +490,7 @@ page_cache_async_readahead(struct addres
- 
- 	/* do read-ahead */
- 	ondemand_readahead(mapping, ra, filp, true, offset, req_size);
-+
-+	blk_run_backing_dev(mapping->backing_dev_info, NULL);
- }
- EXPORT_SYMBOL_GPL(page_cache_async_readahead);
+Thank you!
 
