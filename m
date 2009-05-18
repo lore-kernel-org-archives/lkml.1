@@ -1,77 +1,82 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1754794AbZERTRT@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754885AbZERTSt@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1754794AbZERTRT (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 15:17:19 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbZERTRM
+	id S1754885AbZERTSt (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 15:18:49 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751605AbZERTSl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 15:17:12 -0400
-Received: from smtp1.linux-foundation.org ([140.211.169.13]:37402 "EHLO
-	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with ESMTP id S1751450AbZERTRL (ORCPT
+	Mon, 18 May 2009 15:18:41 -0400
+Received: from mailout02.t-online.de ([194.25.134.17]:34644 "EHLO
+	mailout02.t-online.de" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751258AbZERTSl (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 15:17:11 -0400
-Date: Mon, 18 May 2009 12:16:33 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-X-X-Sender: torvalds@localhost.localdomain
-To: Ingo Molnar <mingo@elte.hu>
-cc: Jeff Garzik <jgarzik@pobox.com>, Alexander Viro <viro@ftp.linux.org.uk>,
-       Rusty Russell <rusty@rustcorp.com.au>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-       Andrew Morton <akpm@linux-foundation.org>,
-       Peter Zijlstra <a.p.zijlstra@chello.nl>
-Subject: Re: [GIT PULL] scheduler fixes
-In-Reply-To: <20090518190320.GA20260@elte.hu>
-Message-ID: <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain>
-References: <20090518142707.GA24142@elte.hu> <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain> <20090518164921.GA6903@elte.hu> <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain> <20090518170909.GA1623@elte.hu>
- <20090518190320.GA20260@elte.hu>
-User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
+	Mon, 18 May 2009 15:18:41 -0400
+Date: Mon, 18 May 2009 21:12:07 +0200
+From: Martin Lottermoser <Martin.Lottermoser@t-online.de>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org
+Subject: Re: PATA DMA problem leading to kernel panic on reading movie DVDs
+Message-ID: <20090518191207.GA7531@wanza.invalid>
+References: <20090517091224.GA8280@wanza.invalid> <4A10509C.603@gmail.com> <200905172135.10136.bzolnier@gmail.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <200905172135.10136.bzolnier@gmail.com>
+User-Agent: Mutt/1.5.18 (2008-05-17)
+X-ID: GWxvUqZF8h2pmHyApYx82FjjobkZLvnAZDeEJzeGEO12X6Zo3+nDKsgbLfupdCDgGk
+X-TOI-MSGID: f3d08477-48f9-4c78-89f5-5b8bafc5b300
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
+Hi,
 
-
-On Mon, 18 May 2009, Ingo Molnar wrote:
+On Sun, May 17, 2009 at 09:35:09PM +0200, Bartlomiej Zolnierkiewicz wrote:
+> Martin, this is one of ATAPI drives which support UDMA66 but have broken
+> cable detection.  Since 2.6.26 we have a special quirk for it ide (commit
+> 3ced5c49bd2d1f2c7f769e3a54385883de63a652) and subsequent one in libata
+> (commit e9f3340673c1da32041f2a282b166c72cd78632e).
 > 
-> Something like the patch below. It also fixes ->span[] which has a 
-> similar problem.
+> In your system's case the cable detection doesn't seem to work properly
+> which in turn results in all kind of later problems.
+> 
+> It could be that the quirk itself needs to be revised (I wonder if it was
+> originally tested with 40-wires cable) or maybe we need some other cable
+> detection fix...
+> 
+> Please:
+> 
+> * send 'hdparm --Istdout /dev/hdc' output
+> 
+> * try 2.6.30-rc6 (maybe 2.6.29.3 oops has been fixed already and we just
+>   need to backport it)
+> 
+> also connecting the drive using 80-wires cable and getting another hdparm
+> output (+ seeing if it helps the other problems) would be very useful.
 
-Patch looks good to me.
+I've done that now as well. Test runs with Debian's 2.6.26 and with 2.6.30-rc6
+show no problems: no disabling of DMA, no kernel panic.
 
-> But ... i think this needs further clean-ups really. Either go fully 
-> static, or go fully dynamic.
+The hdparm output ("hdparm --Istdout") is the same for a 40-wire cable and an
+80-wire cable (checked under 2.6.26).
 
-I do agree that it would probably be good to try to avoid this static 
-allocation, and allocate these data structures dynamically. However, if we 
-end up having to use two different allocators anyway (one for bootup, and 
-one for regular uptimes), then I think that would be an overall loss 
-(compared to just the simplicity of statically doing this in a couple of 
-places), rather than an overall win.
+This indicates that your hypothesis above that it's a cable detection problem
+is correct.
 
-> Would be nice if bootmem_alloc() was extended with such properties - 
-> if SLAB is up (and bootmem is down) it would return 
-> kmalloc(GFP_KERNEL) memory buffers.
+Just out of curiosity: is this a bug on the drive's side or in the kernel?
+Or in other words: if the output of "hdparm -I" shows the drive as attached
+to be able to support UDMA4, is this a statement passed through unmodified
+from the drive or is this a deduction made by the kernel? I ask because
+under 2.6.22.9 and 2.6.23.14 I got a message that "host side 80-wire cable
+detection failed".
 
-I would rather say the other way around: no "bootmem_alloc()" at all, but 
-just have a regular alloc() that ends up working like the "SMP 
-alternatives" code, but instead of being about SMP, it would be about how 
-early in the boot sequence it is.
+Should anyone find a fix to correct/circumvent this problem in the kernel,
+I'ld be willing to test it on my system; just send a patch file or tell me
+where to pick it up.
 
-That said, if there are just a couple of places like this that care, I 
-don't think it's worth it. The static allocation isn't that horrible. I'd 
-rather have a few ugly static allocations with comments about _why_ they 
-look the way they do, than try to over-design things to look "clean".
-
-Simplicity is a good thing - even if it can then end up meaning special 
-cases like this.
-
-That said, if we could move the kmalloc initialization up some more (and 
-get at least the "boot node" data structures set up, and avoid any bootmem 
-alloc issues _entirely_, then that would be good.
-
-I hate that stupid bootmem allocator. I suspect we seriously over-use it, 
-and that we _should_ be able to do the SL*B init earlier.
-
-			Linus
+Regards,
+Martin Lottermoser
+-- 
+Martin Lottermoser             Martin.Lottermoser at _REMOVE_t-online.de
+Greifswaldstrasse 28
+38124 Braunschweig             http://home.vrweb.de/martin.lottermoser
+Germany
