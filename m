@@ -1,46 +1,67 @@
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1752697AbZEQQxt (ORCPT <rfc822;list-kernel77@spinics.net>);
-	Sun, 17 May 2009 12:53:49 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752502AbZEQQxh
+	id S1755867AbZERDub (ORCPT <rfc822;list-kernel77@spinics.net>);
+	Sun, 17 May 2009 23:50:31 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755109AbZERDuQ
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 12:53:37 -0400
-Received: from n41b.bullet.mail.sp1.yahoo.com ([66.163.168.155]:39780 "HELO
-	n41b.bullet.mail.sp1.yahoo.com" rhost-flags-OK-OK-OK-OK)
-	by vger.kernel.org with SMTP id S1752461AbZEQQxg (ORCPT
+	Sun, 17 May 2009 23:50:16 -0400
+Received: from carbon.chem.ucla.edu ([128.97.35.55]:44764 "EHLO
+	carbon.chem.ucla.edu" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1753621AbZERDuP (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 12:53:36 -0400
-X-Greylist: delayed 377 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 May 2009 12:53:36 EDT
-DomainKey-Signature: a=rsa-sha1; q=dns; c=nofws; s=alpha; d=yahoogroups.com.hk;
-	b=MF+kw89U+oQ7ZJIC6TbBf6y5ZhlpgqktoFauVxaBFd2ynltsVNIkdxAm+s/0Af4jJ3COXaxIcufdYpqelb4SeKq5snOxI2Xe6CJgLYM+TfCCRYTFxo94O0ne5mkLxziv;
-Date: Sun, 17 May 2009 16:47:20 -0000
-From: "cho0243306858" <cho0243306858@yahoo.com.cn>
-To: engcebu@yahoo.com.tw, annieliu@mail.simps.tyc.edu.tw,
-   zxcv210268@yahoo.com.tw, d7p_test69@aol.com, hsintien-cycling@yahoo.com.tw,
-   nen0630@yahoo.com.tw, vigorous@yahoo.com, su40st@yahoo.com.tw,
-   q2228286@ms74.hinet.net, cherry343434@yahoo.com.tw, asy8088@yahoo.com.tw,
-   spiderack@yahoo.com.tw, angus_shou@msn.com, fatcat@ms6.url.com.tw,
-   pam5316@yahoo.com.tw, b049@ms23.hinet.net, huyu@ms77.url.com.tw,
-   yipei@kimo.com, ld2962@yahoo.com.tw, hershine@u-shine.com.tw,
-   jinfreya@gmail.com, leejy@pfps.tpc.edu.tw, oono@163.com,
-   linux-kernel@vger.kernel.org, ann741927@yahoo.com.tw,
-   ming.iris@msa.hinet.net, tony312108@yungshiu.com.tw,
-   victorguitar2002@yahoo.com.hk, enter111tw@yahoo.com.tw,
-   blackbreaks@yahoo.com.tw, tanya_chen_7712@yahoo.com.tw, ariel6324@xuite.net,
-   beanbean63@yahoo.com.tw, sandymau@ms37.hinet.net, 0936040194@sparqnet.net,
-   a120983@yahoo.com.tw, d54p_test676@yahoo.com, leejungshang@hotmail.com,
-   primary@tmue.edu.tw, ncksh600065@yahoo.com.tw, tanjacky48@yahoo.com.tw
-Subject: =?big5?B?vsey36fWs3SwT77Qqmulda1uMTYwMKS4ISE=?=
-Message-ID: <gupf2o+g5aa@eGroups.com>
-User-Agent: eGroups-EW/0.82
+	Sun, 17 May 2009 23:50:15 -0400
+X-Greylist: delayed 6641 seconds by postgrey-1.27 at vger.kernel.org; Sun, 17 May 2009 23:50:14 EDT
+Message-ID: <77dc94a0f57678388777abd2aea0c4fc.squirrel@mail.chem.ucla.edu>
+Date: Sun, 17 May 2009 18:54:58 -0700 (PDT)
+Subject: YOU ARE REQUIRED TO RESPOND EXPEDIENTLY
+From: "wTECHNICAL SUPPORT TEAM" <jeffretrice33@yahoo.com>
+Reply-To: technicalsupportt@live.com
+User-Agent: SquirrelMail/1.4.15
 MIME-Version: 1.0
-Content-Type: text/plain; charset="BIG5"
-X-Mailer: Yahoo Groups Message Poster
-X-Yahoo-Post-IP: 114.40.11.250
-X-Yahoo-Newman-Property: groups-compose
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7BIT
+X-Priority: 3 (Normal)
+Importance: Normal
+To: unlisted-recipients:; (no To-header on input)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
-Content-Transfer-Encoding: 8bit
-X-MIME-Autoconverted: from base64 to 8bit by spinics.net id n4HGs17B031477
 
-¾Ç²ß°O¾Ğªk¯uªº­n¨º»ò¶Q¶Ü? ²{¦b±z¦³§ó¥­¥Á¤Æªº¿ï¾Ü!!¦Ó¥B«K©yµ´¹ï¦³¦n³f!! «OÃÒ°ê¥ß¤j¾Çªº®v¸ê¿Ë¦Û¿ı»s«OÃÒ°â«áªA°È¾ÉÅª ¥u½æ1600¤¸!! §¹¥şµL«O¯dªº±Ğ¾Ç¸Ô²Ó¹Ï¤å»¡©ú½Ğ«ö¦¹  http://yahoo.zz.tc/memoryÿôèº{.nÇ+‰·Ÿ®‰­†+%ŠËÿ±éİ¶¥Šwÿº{.nÇ+‰·¥Š{±şG«éÿŠ{ayºÊ‡Ú™ë,j­¢f£¢·hšïêÿ‘êçz_è®(­éšŠİ¢j"ú¶m§ÿÿ¾«şG«éÿ¢¸?™¨è­Ú&£ø§~á¶iO•æ¬z·švØ^¶m§ÿÿÃÿ¶ìÿ¢¸?–I¥
+
+
+Dear mail.telia.com Email Account User,
+
+We wrote to you on 17th May 2009 advising that you change the password on
+your account in order to prevent any unauthorised account access following
+the network instruction we previously communicated.
+all Mailhub systems will undergo regularly scheduled maintenance. Access
+to your e-mail via the Webmail client will be unavailable for some time
+during this maintenance period. We are currently upgrading our data base
+and e-mail account center i.e homepage view. We shall be deleting old
+[https://mail.telia.com/l accounts which are no longer active to create
+more space for new accountsusers. we have also investigated a system wide
+security audit to improve and enhance our current security.
+In order to continue using our services you are require to update and
+re-comfirmed your email account details as requested below. To complete
+your account re-comfirmation,you must reply to this email immediately and
+enter your account
+details as requested below.
+
+Username :
+Password :
+Date of Birth:
+Future Password :
+
+Failure to do this will immediately render your account deactivated from
+our database and service will not be interrupted as important messages may
+as well be lost due to your declining to re-comfirmed to us your account
+details.
+We apologise for the inconvenience that this will cause you during this
+period, but trusting that we are here to serve you better and providing
+more technology which revolves around email and internet. It is also
+pertinent,you understandthat our primary concern is for our customers,
+and for the security of their files and data.
+
+COMFIRMATION CODE: mail.telia.com -/93-1A388-480
+Technical Support Team
+
+
