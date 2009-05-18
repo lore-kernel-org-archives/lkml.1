@@ -1,21 +1,21 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1758244AbZERQOv@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1758268AbZERQPc@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1758244AbZERQOv (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 12:14:51 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1757622AbZERQMl
+	id S1758268AbZERQPc (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 12:15:32 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1756520AbZERQMo
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 12:12:41 -0400
-Received: from cantor.suse.de ([195.135.220.2]:41530 "EHLO mx1.suse.de"
+	Mon, 18 May 2009 12:12:44 -0400
+Received: from cantor.suse.de ([195.135.220.2]:41519 "EHLO mx1.suse.de"
 	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1755499AbZERQJe (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 12:09:34 -0400
+	id S1755114AbZERQJd (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 12:09:33 -0400
 From: Jan Blunck <jblunck@suse.de>
 To: linux-kernel@vger.kernel.org, linux-fsdevel@vger.kernel.org
 Cc: viro@zeniv.linux.org.uk, bharata@in.ibm.com, dwmw2@infradead.org,
        mszeredi@suse.cz, vaurora@redhat.com
-Subject: [PATCH 14/32] whiteout: Add path_whiteout() helper
-Date: Mon, 18 May 2009 18:09:10 +0200
-Message-Id: <1242662968-11684-15-git-send-email-jblunck@suse.de>
+Subject: [PATCH 06/32] VFS: Make real_lookup() return a struct path
+Date: Mon, 18 May 2009 18:09:02 +0200
+Message-Id: <1242662968-11684-7-git-send-email-jblunck@suse.de>
 X-Mailer: git-send-email 1.6.1.3
 In-Reply-To: <1242662968-11684-1-git-send-email-jblunck@suse.de>
 References: <1242662968-11684-1-git-send-email-jblunck@suse.de>
@@ -23,60 +23,157 @@ Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Add a path_whiteout() helper for vfs_whiteout().
+This patch changes real_lookup() into returning a struct path.
 
-Signed-off-by: Jan Blunck <jblunck@suse.org>
+Signed-off-by: Jan Blunck <jblunck@suse.de>
 Signed-off-by: Valerie Aurora (Henson) <vaurora@redhat.com>
 ---
- fs/namei.c         |   15 ++++++++++++++-
- include/linux/fs.h |    1 -
- 2 files changed, 14 insertions(+), 2 deletions(-)
+ fs/namei.c |   82 +++++++++++++++++++++++++++++++++++++----------------------
+ 1 files changed, 51 insertions(+), 31 deletions(-)
 
 diff --git a/fs/namei.c b/fs/namei.c
-index fe58172..9dc51b0 100644
+index a9dd19b..e19fa2b 100644
 --- a/fs/namei.c
 +++ b/fs/namei.c
-@@ -2172,7 +2172,7 @@ static inline int may_whiteout(struct inode *dir, struct dentry *victim,
-  * After this returns with success, don't make any assumptions about the inode.
-  * Just dput() it dentry.
+@@ -460,10 +460,11 @@ ok:
+  * make sure that nobody added the entry to the dcache in the meantime..
+  * SMP-safe
   */
--int vfs_whiteout(struct inode *dir, struct dentry *dentry, int isdir)
-+static int vfs_whiteout(struct inode *dir, struct dentry *dentry, int isdir)
+-static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, struct nameidata *nd)
++static int real_lookup(struct nameidata *nd, struct qstr *name,
++		       struct path *path)
  {
- 	int err;
- 	struct inode *old_inode = dentry->d_inode;
-@@ -2224,6 +2224,19 @@ int vfs_whiteout(struct inode *dir, struct dentry *dentry, int isdir)
- 	return err;
+-	struct dentry * result;
+-	struct inode *dir = parent->d_inode;
++	struct inode *dir = nd->path.dentry->d_inode;
++	int res = 0;
+ 
+ 	mutex_lock(&dir->i_mutex);
+ 	/*
+@@ -480,27 +481,36 @@ static struct dentry * real_lookup(struct dentry * parent, struct qstr * name, s
+ 	 *
+ 	 * so doing d_lookup() (with seqlock), instead of lockfree __d_lookup
+ 	 */
+-	result = d_lookup(parent, name);
+-	if (!result) {
++	path->dentry = d_lookup(nd->path.dentry, name);
++	path->mnt = nd->path.mnt;
++	if (!path->dentry) {
+ 		struct dentry *dentry;
+ 
+ 		/* Don't create child dentry for a dead directory. */
+-		result = ERR_PTR(-ENOENT);
+-		if (IS_DEADDIR(dir))
++		if (IS_DEADDIR(dir)) {
++			res = -ENOENT;
+ 			goto out_unlock;
++		}
+ 
+-		dentry = d_alloc(parent, name);
+-		result = ERR_PTR(-ENOMEM);
++		dentry = d_alloc(nd->path.dentry, name);
+ 		if (dentry) {
+-			result = dir->i_op->lookup(dir, dentry, nd);
+-			if (result)
++			path->dentry = dir->i_op->lookup(dir, dentry, nd);
++			if (path->dentry) {
+ 				dput(dentry);
+-			else
+-				result = dentry;
++				if (IS_ERR(path->dentry)) {
++					res = PTR_ERR(path->dentry);
++					path->dentry = NULL;
++					path->mnt = NULL;
++				}
++			} else
++				path->dentry = dentry;
++		} else {
++			res = -ENOMEM;
++			path->mnt = NULL;
+ 		}
+ out_unlock:
+ 		mutex_unlock(&dir->i_mutex);
+-		return result;
++		return res;
+ 	}
+ 
+ 	/*
+@@ -508,12 +518,20 @@ out_unlock:
+ 	 * we waited on the semaphore. Need to revalidate.
+ 	 */
+ 	mutex_unlock(&dir->i_mutex);
+-	if (result->d_op && result->d_op->d_revalidate) {
+-		result = do_revalidate(result, nd);
+-		if (!result)
+-			result = ERR_PTR(-ENOENT);
++	if (path->dentry->d_op && path->dentry->d_op->d_revalidate) {
++		path->dentry = do_revalidate(path->dentry, nd);
++		if (!path->dentry) {
++			res = -ENOENT;
++			path->mnt = NULL;
++		}
++		if (IS_ERR(path->dentry)) {
++			res = PTR_ERR(path->dentry);
++			path->dentry = NULL;
++			path->mnt = NULL;
++		}
+ 	}
+-	return result;
++
++	return res;
  }
  
-+int path_whiteout(struct path *dir_path, struct dentry *dentry, int isdir)
-+{
-+	int error = mnt_want_write(dir_path->mnt);
-+
-+	if (!error) {
-+		error = vfs_whiteout(dir_path->dentry->d_inode, dentry, isdir);
-+		mnt_drop_write(dir_path->mnt);
-+	}
-+
-+	return error;
-+}
-+EXPORT_SYMBOL(path_whiteout);
-+
  /*
-  * We try to drop the dentry early: we should have
-  * a usage count of 2 if we're the only user of this
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 841bc1d..f5ca398 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -1245,7 +1245,6 @@ extern int vfs_link(struct dentry *, struct inode *, struct dentry *);
- extern int vfs_rmdir(struct inode *, struct dentry *);
- extern int vfs_unlink(struct inode *, struct dentry *);
- extern int vfs_rename(struct inode *, struct dentry *, struct inode *, struct dentry *);
--extern int vfs_whiteout(struct inode *, struct dentry *, int);
+@@ -779,35 +797,37 @@ static __always_inline void follow_dotdot(struct nameidata *nd)
+ static int do_lookup(struct nameidata *nd, struct qstr *name,
+ 		     struct path *path)
+ {
+-	struct vfsmount *mnt = nd->path.mnt;
+-	struct dentry *dentry = __d_lookup(nd->path.dentry, name);
++	int err;
+ 
+-	if (!dentry)
++	path->dentry = __d_lookup(nd->path.dentry, name);
++	path->mnt = nd->path.mnt;
++	if (!path->dentry)
+ 		goto need_lookup;
+-	if (dentry->d_op && dentry->d_op->d_revalidate)
++	if (path->dentry->d_op && path->dentry->d_op->d_revalidate)
+ 		goto need_revalidate;
++
+ done:
+-	path->mnt = mnt;
+-	path->dentry = dentry;
+ 	__follow_mount(path);
+ 	return 0;
+ 
+ need_lookup:
+-	dentry = real_lookup(nd->path.dentry, name, nd);
+-	if (IS_ERR(dentry))
++	err = real_lookup(nd, name, path);
++	if (err)
+ 		goto fail;
+ 	goto done;
+ 
+ need_revalidate:
+-	dentry = do_revalidate(dentry, nd);
+-	if (!dentry)
++	path->dentry = do_revalidate(path->dentry, nd);
++	if (!path->dentry)
+ 		goto need_lookup;
+-	if (IS_ERR(dentry))
++	if (IS_ERR(path->dentry)) {
++		err = PTR_ERR(path->dentry);
+ 		goto fail;
++	}
+ 	goto done;
+ 
+ fail:
+-	return PTR_ERR(dentry);
++	return err;
+ }
  
  /*
-  * VFS dentry helper functions.
 -- 
 1.6.1.3
 
