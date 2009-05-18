@@ -1,135 +1,68 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755398AbZERUMn@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1753062AbZERUUs@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755398AbZERUMn (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 16:12:43 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755228AbZERUMV
+	id S1753062AbZERUUs (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 16:20:48 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751794AbZERUUl
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 16:12:21 -0400
-Received: from ausc60ps301.us.dell.com ([143.166.148.206]:58861 "EHLO
-	ausc60ps301.us.dell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1754930AbZERUMS (ORCPT
+	Mon, 18 May 2009 16:20:41 -0400
+Received: from 136-022.dsl.LABridge.com ([206.117.136.22]:1957 "EHLO
+	mail.perches.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1751656AbZERUUk (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 16:12:18 -0400
-X-Loopcount0: from 10.9.160.254
-Message-ID: <4A11C126.1000704@dell.com>
-Date: Mon, 18 May 2009 15:12:22 -0500
-From: Mario Limonciello <mario_limonciello@dell.com>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090409)
-MIME-Version: 1.0
-To: linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org
-CC: Matthew Garrett <mjg59@srcf.ucam.org>
-Subject: [PATCH] Explicitly disable BT radio using rfkill interface on suspend
-X-Enigmail-Version: 0.95.7
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="------------enig08D4E019BB02BAAF0F838102"
+	Mon, 18 May 2009 16:20:40 -0400
+Subject: Re: [PATCH] Acer Aspire One Fan Control
+From: Joe Perches <joe@perches.com>
+To: Peter Feuerer <peter@piie.net>
+Cc: Borislav Petkov <petkovbb@googlemail.com>,
+       LKML <linux-kernel@vger.kernel.org>, lenb@kernel.org,
+       Matthew Garrett <mjg59@srcf.ucam.org>,
+       Maxim Levitsky <maximlevitsky@gmail.com>
+In-Reply-To: <cone.1242669880.118150.4276.1000@deskpiie>
+References: <cone.1240858632.795110.5316.1000@onepiie>
+	 <20090428072519.GA12170@liondog.tnic>
+	 <1240913055.29860.14.camel@maxim-laptop>
+	 <cone.1240949852.549814.7466.1000@mentalhome>
+	 <1240950704.3781.12.camel@maxim-laptop>
+	 <cone.1241299309.265715.3948.1000@mentalhome>
+	 <20090503184617.GA3555@liondog.tnic>
+	 <cone.1241648222.299676.7476.1000@mentalhome>
+	 <20090509171432.GA31126@liondog.tnic>
+	 <cone.1242065107.695268.13534.1000@onepiie>
+	 <20090512060231.GB26286@liondog.tnic>
+	 <cone.1242669880.118150.4276.1000@deskpiie>
+Content-Type: text/plain
+Date: Mon, 18 May 2009 13:20:32 -0700
+Message-Id: <1242678032.1572.122.camel@Joe-Laptop.home>
+Mime-Version: 1.0
+X-Mailer: Evolution 2.26.1 
+Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
---------------enig08D4E019BB02BAAF0F838102
-Content-Type: multipart/mixed;
- boundary="------------000604050903000405080809"
+On Mon, 2009-05-18 at 20:04 +0200, Peter Feuerer wrote:
+> diff --git a/drivers/platform/x86/acerhdf.c b/drivers/platform/x86/acerhdf.c
+> new file mode 100644
+> index 0000000..99ae2e6
+> --- /dev/null
+> +++ b/drivers/platform/x86/acerhdf.c
+> @@ -0,0 +1,530 @@
+[]
+> +#define acerhdf_printk(loglevel, fmt, args...) \
+> +	printk(loglevel "acerhdf: " fmt, ## args);
+> +
+> +#define acerhdf_notice(fmt, args...) \
+> +	acerhdf_printk(KERN_NOTICE, fmt, ## args);
+> +
+> +#define acerhdf_error(fmt, args...) \
+> +	acerhdf_printk(KERN_ERR, fmt, ## args);
 
-This is a multi-part message in MIME format.
---------------000604050903000405080809
-Content-Type: text/plain; charset=ISO-8859-1
-Content-Transfer-Encoding: quoted-printable
+Could you please not create new prefixes for printk?
 
- Dell BT devices need to be removed from the bus and reinserted
- so that userspace udev rules can transition the devices into the
- proper mode after S3 or S4.
+I think:
 
----
- drivers/platform/x86/dell-laptop.c |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
+#define pr_fmt(fmt) "acerhdf:" fmt
+and use of pr_err and pr_notice would be better.
 
+cheers, Joe
 
-Attaching patch so Exchange doesn't mangle it.
---=20
-Mario Limonciello
-*Dell | Linux Engineering*
-mario_limonciello@dell.com
-
---------------000604050903000405080809
-Content-Type: text/x-patch;
- name="0001-Explicitly-disable-BT-radio-using-rfkill-interface-o.patch"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline;
- filename*0="0001-Explicitly-disable-BT-radio-using-rfkill-interface-o.pa";
- filename*1="tch"
-
-=46rom ab8b8ad20dede82f9d13293e94e76b4dd360fcf4 Mon Sep 17 00:00:00 2001
-From: Mario Limonciello <Mario_Limonciello@Dell.com>
-Date: Mon, 18 May 2009 21:07:59 +0100
-Subject: [PATCH] Explicitly disable BT radio using rfkill interface on su=
-spend.
- Dell BT devices need to be removed from the bus and reinserted
- so that userspace udev rules can transition the devices into the
- proper mode after S3 or S4.
-
----
- drivers/platform/x86/dell-laptop.c |   19 +++++++++++++++++++
- 1 files changed, 19 insertions(+), 0 deletions(-)
-
-diff --git a/drivers/platform/x86/dell-laptop.c b/drivers/platform/x86/de=
-ll-laptop.c
-index af9f430..90a3d7c 100644
---- a/drivers/platform/x86/dell-laptop.c
-+++ b/drivers/platform/x86/dell-laptop.c
-@@ -186,6 +186,24 @@ static int dell_rfkill_set(int radio, enum rfkill_st=
-ate state)
- 	return 0;
- }
-=20
-+static int dell_rfkill_suspend(struct device *dev, pm_message_t state)
-+{
-+	struct rfkill *rfkill =3D to_rfkill(dev);
-+
-+	/* store state for the resume handler */
-+	rfkill->state_for_resume =3D rfkill->state;
-+
-+	/* kill radio explicitly if it's on. it needs proper
-+	 * reinitialization post suspend */
-+	rfkill->toggle_radio(NULL,RFKILL_STATE_SOFT_BLOCKED);
-+
-+	/* mark class device as suspended */
-+	if (dev->power.power_state.event !=3D state.event)
-+		dev->power.power_state =3D state;
-+
-+	return 0;
-+}
-+
- static int dell_wifi_set(void *data, enum rfkill_state state)
- {
- 	return dell_rfkill_set(1, state);
-@@ -266,6 +284,7 @@ static int dell_setup_rfkill(void)
- 		bluetooth_rfkill->name =3D "dell-bluetooth";
- 		bluetooth_rfkill->toggle_radio =3D dell_bluetooth_set;
- 		bluetooth_rfkill->get_state =3D dell_bluetooth_get;
-+		bluetooth_rfkill->dev.class->suspend =3D dell_rfkill_suspend;
- 		ret =3D rfkill_register(bluetooth_rfkill);
- 		if (ret)
- 			goto err_bluetooth;
---=20
-1.5.4.3
-
-
---------------000604050903000405080809--
-
---------------enig08D4E019BB02BAAF0F838102
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.9 (GNU/Linux)
-Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
-
-iEYEARECAAYFAkoRwSYACgkQ2CrZjkA73Yu2FwCeKkqUlkw3n1aGSnrr4uJVaru8
-VyYAn0UB+JvH4ivaSxduLeA1/YoYQvCL
-=mF0J
------END PGP SIGNATURE-----
-
---------------enig08D4E019BB02BAAF0F838102--
