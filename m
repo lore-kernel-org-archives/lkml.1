@@ -1,92 +1,74 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755741AbZERVkm@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754456AbZERWIO@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755741AbZERVkm (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 17:40:42 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753707AbZERVkf
+	id S1754456AbZERWIO (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 18:08:14 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752918AbZERWIA
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 17:40:35 -0400
-Received: from h155.mvista.com ([63.81.120.155]:62610 "EHLO imap.sh.mvista.com"
-	rhost-flags-OK-FAIL-OK-FAIL) by vger.kernel.org with ESMTP
-	id S1753516AbZERVke (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 17:40:34 -0400
-Message-ID: <4A11D5CC.5070909@ru.mvista.com>
-Date: Tue, 19 May 2009 01:40:28 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-User-Agent: Thunderbird 2.0.0.21 (Windows/20090302)
+	Mon, 18 May 2009 18:08:00 -0400
+Received: from smtp1.linux-foundation.org ([140.211.169.13]:42780 "EHLO
+	smtp1.linux-foundation.org" rhost-flags-OK-OK-OK-OK)
+	by vger.kernel.org with ESMTP id S1751992AbZERWH7 (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Mon, 18 May 2009 18:07:59 -0400
+Date: Mon, 18 May 2009 15:06:26 -0700 (PDT)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+X-X-Sender: torvalds@localhost.localdomain
+To: Ingo Molnar <mingo@elte.hu>
+cc: "H. Peter Anvin" <hpa@zytor.com>, Pekka Enberg <penberg@cs.helsinki.fi>,
+       Yinghai Lu <yinghai@kernel.org>, Jeff Garzik <jgarzik@pobox.com>,
+       Alexander Viro <viro@ftp.linux.org.uk>,
+       Rusty Russell <rusty@rustcorp.com.au>,
+       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+       Andrew Morton <akpm@linux-foundation.org>,
+       Peter Zijlstra <a.p.zijlstra@chello.nl>
+Subject: Re: [GIT PULL] scheduler fixes
+In-Reply-To: <20090518202031.GA26549@elte.hu>
+Message-ID: <alpine.LFD.2.01.0905181457320.3301@localhost.localdomain>
+References: <20090518142707.GA24142@elte.hu> <alpine.LFD.2.01.0905180850110.3301@localhost.localdomain> <20090518164921.GA6903@elte.hu> <alpine.LFD.2.01.0905180955550.3301@localhost.localdomain> <20090518170909.GA1623@elte.hu> <20090518190320.GA20260@elte.hu>
+ <alpine.LFD.2.01.0905181208130.3301@localhost.localdomain> <20090518202031.GA26549@elte.hu>
+User-Agent: Alpine 2.01 (LFD 1184 2008-12-16)
 MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Cc: Joe Perches <joe@perches.com>, linux-ide@vger.kernel.org,
-       linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/7] ide: merge ide_disk_special() into do_special()
-References: <20090513205139.28638.87226.sendpatchset@localhost.localdomain> <1242248102.4639.17.camel@Joe-AcerAspire> <4A0C0D44.9020308@ru.mvista.com> <200905171900.45661.bzolnier@gmail.com>
-In-Reply-To: <200905171900.45661.bzolnier@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-Hello.
-
-Bartlomiej Zolnierkiewicz wrote:
-
->>>> While at it:
->>>> - change debug printk() level to KERN_DEBUG
->>>> - update documentation
->>>>         
->>>> There should be no functional changes caused by this patch.
->>>>         
->>>> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
->>>> ---
->>>> drivers/ide/ide-io.c |   44 ++++++++++++++++++--------------------------
->>>> 1 file changed, 18 insertions(+), 26 deletions(-)
->>>>         
->>>> Index: b/drivers/ide/ide-io.c
->>>> ===================================================================
->>>> --- a/drivers/ide/ide-io.c
->>>> +++ b/drivers/ide/ide-io.c
->>>> @@ -184,11 +184,28 @@ static void ide_tf_set_setmult_cmd(ide_d
->>>>         
->>> []
->>>       
->>>> +#ifdef DEBUG
->>>> +	printk(KERN_DEBUG "%s: %s: 0x%02x\n", drive->name, s->all);
->>>> +#endif
->>>>         
->>> pr_debug?
->>>       
->>     Yes, and the number of arguments doesn't correspond to the number of the 
->> format specifiers.
->>     
->
-> Ugh :)  Fixed in the revised version (interdiff below)...
->
-> When it comes to pr_debug() & co. I will warmly welcome patches converting
-> drivers/ide/*.[ch] to use them.
->
-> ...
-> v2:
-> - fix DEBUG build (noticed by Sergei)
-> ...
->
-> diff -u b/drivers/ide/ide-io.c b/drivers/ide/ide-io.c
-> --- b/drivers/ide/ide-io.c
-> +++ b/drivers/ide/ide-io.c
-> @@ -198,7 +198,7 @@
->  	struct ide_cmd cmd;
->  
->  #ifdef DEBUG
-> -	printk(KERN_DEBUG "%s: %s: 0x%02x\n", drive->name, s->all);
-> +	printk(KERN_DEBUG "%s: %s: 0x%02x\n", drive->name, __func__, s->all);
->  #endif
->  	if (drive->media != ide_disk) {
->  		s->all = 0;
->   
-
-Acked-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-
-MBR, Sergei
 
 
+On Mon, 18 May 2009, Ingo Molnar wrote:
+> 
+> ok. I've queued it up for .31, with your Acked-by. (which i assume 
+> your reply implies?)
 
+Yes.
 
+> > I hate that stupid bootmem allocator. I suspect we seriously 
+> > over-use it, and that we _should_ be able to do the SL*B init 
+> > earlier.
+> 
+> Hm, tempting thought - not sure how to pull it off though.
+
+As far as I can recall, one of the things that historically made us want 
+to use the bootmem allocator even relatively late was that the real SLAB 
+allocator had to wait until all the node information etc was initialized. 
+
+That's pretty damn late. And I wonder if SLUB (and SLOB) might not need a 
+lot less initialization, and work much earlier. Something like that might 
+be the final nail in the coffin for SLAB, and convince me to just say 
+'we don't support it any more".
+
+That said, for the case of things like 'static_sched_group' and 
+'static_sched_domain', the problem might well be not just about the 
+allocation itself, but simply about the use of those variables. Maybe they 
+themselves are needed before we've done all the CPU setup?
+
+> One of the biggest user of bootmem is the mem_map[] hierarchies and 
+> the page allocator bitmaps. Not sure we can get rid of bootmem there 
+> - those areas are really large, physical memory is often fragmented 
+> and we need a good NUMA sense for them as well.
+
+I think that's the _valid_ kind of use of a bootmem allocator.
+
+But for something like the scheduler data structures? Not so much.
+
+		Linus
