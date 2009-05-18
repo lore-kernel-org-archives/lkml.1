@@ -1,130 +1,100 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1753880AbZERUBp@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1754308AbZERUFH@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1753880AbZERUBp (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 16:01:45 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752782AbZERUBi
+	id S1754308AbZERUFH (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 16:05:07 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1753047AbZERUE6
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 16:01:38 -0400
-Received: from casper.infradead.org ([85.118.1.10]:47342 "EHLO
-	casper.infradead.org" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1752540AbZERUBh (ORCPT
+	Mon, 18 May 2009 16:04:58 -0400
+Received: from yx-out-2324.google.com ([74.125.44.29]:30135 "EHLO
+	yx-out-2324.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752136AbZERUE5 (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 16:01:37 -0400
-Subject: Re: INFO: possible circular locking dependency at
- cleanup_workqueue_thread
-From: Peter Zijlstra <a.p.zijlstra@chello.nl>
-To: Oleg Nesterov <oleg@redhat.com>
-Cc: Johannes Berg <johannes@sipsolutions.net>, Ingo Molnar <mingo@elte.hu>,
-       Zdenek Kabelac <zdenek.kabelac@gmail.com>,
-       "Rafael J. Wysocki" <rjw@sisk.pl>,
-       Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
-In-Reply-To: <20090518194749.GA3501@redhat.com>
-References: <c4e36d110905120059i4c155508oa00672da0b33a07a@mail.gmail.com>
-	 <20090517071834.GA8507@elte.hu> <1242559101.28127.63.camel@johannes.local>
-	 <20090518194749.GA3501@redhat.com>
-Content-Type: text/plain
-Date: Mon, 18 May 2009 22:00:57 +0200
-Message-Id: <1242676857.32543.1343.camel@laptop>
-Mime-Version: 1.0
-X-Mailer: Evolution 2.26.1 
+	Mon, 18 May 2009 16:04:57 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=gKXzg7uxR31SBY2pLdlLaA9PL91HSQqFn5TgYFMScjpzd8Gsnf0kmBe8gggr7ffCW9
+         4kU36OG5oVWHmRu3tfLkRZy3wXnPS9N5Ux+a0IJrxY4bS2HbL1v0JH9Jpii1xCkszWjy
+         dZJi4ofC8uRa61f17b93G1Alvf3QkddORnjWM=
+MIME-Version: 1.0
+In-Reply-To: <20090518094745.GF15531@tpkurt2.garloff.de>
+References: <20090518093352.GC15531@tpkurt2.garloff.de>
+	 <20090518094745.GF15531@tpkurt2.garloff.de>
+Date: Mon, 18 May 2009 13:04:58 -0700
+Message-ID: <86802c440905181304m47b2a2afx264f970a29d06930@mail.gmail.com>
+Subject: Re: [PATCH 2/3]: x86-64: Handle SRAT v1 and v2 consistently
+From: Yinghai Lu <yhlu.kernel@gmail.com>
+To: Kurt Garloff <garloff@suse.de>,
+       Linux kernel list <linux-kernel@vger.kernel.org>,
+       Norbert Eicker <N.Eicker@fz-juelich.de>,
+       Greg Kroah-Hartman <GregKH@suse.de>,
+       Alexey Starikovskiy <AStarikovskiy@suse.cz>,
+       Len Brown <LenB@kernel.org>, xb <xavier.bru@bull.net>
+Cc: Ingo Molnar <mingo@elte.hu>, "H. Peter Anvin" <hpa@zytor.com>,
+       Thomas Gleixner <tglx@linutronix.de>,
+       Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=ISO-8859-1
 Content-Transfer-Encoding: 7bit
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-On Mon, 2009-05-18 at 21:47 +0200, Oleg Nesterov wrote:
-> On 05/17, Johannes Berg wrote:
-> >
-> > I'm not entirely sure yet, but I would think the problem might be a
-> > false positive in the workqueue code -- remember this report only
-> > triggers because cleanup_workqueue_thread() acquires the fake lock for
-> > the workqueue.
-> 
-> I spent a lot of time, but I can't explain this report too :( Even
-> if it is false positive, I don't understand why lockdep complains.
-> 
-> > Maybe it shouldn't do that from the CPU_POST_DEAD
-> > notifier?
-> 
-> Well, in any case we should understand why we have the problem, before
-> changing the code. And CPU_POST_DEAD is not special, why should we treat
-> it specially and skip lock_map_acquire(wq->lockdep_map) ?
-> 
-> 
-> But, I am starting to suspect we have some problems with lockdep too.
-> OK, I can't explain what I mean... But consider this code:
-> 
-> 	DEFINE_SPINLOCK(Z);
-> 	DEFINE_SPINLOCK(L1);
-> 	DEFINE_SPINLOCK(L2);
-> 
-> 	#define L(l)	spin_lock(&l)
-> 	#define U(l)	spin_unlock(&l)
-> 
-> 	void t1(void)
-> 	{
-> 		L(L1);
-> 		L(L2);
-> 
-> 		U(L2);
-> 		U(L1);
-> 	}
+On Mon, May 18, 2009 at 2:47 AM, Kurt Garloff <garloff@suse.de> wrote:
+> Hi,
+>
+> x86-64 was rather inconsistent prior to this patch; it used 8 bits
+> for the pxm field in cpu_affinity, but 32 bits in mem_affinity.
+> This patch makes it consistent: Either use 8 bits consistently (SRAT
+> rev 1 or lower) or 32 bits (SRAT rev 2 or higher).
+>
+> This is patch 2/3.
+> --
+> Kurt Garloff, VP OPS Partner Engineering -- Novell Inc.
+>
+From: Kurt Garloff <garloff@suse.de>
+Subject: Use SRAT table rev to use 8bit or 32bit PXM fields (x86-64)
+References: bnc#503038
 
-(1) L1 -> L2  
+In SRAT v1, we had 8bit proximity domain (PXM) fields; SRAT v2 provides
+32bits for these. The new fields were reserved before.
+According to the ACPI spec, the OS must disregrard reserved fields.
 
-> 	void t2(void)
-> 	{
-> 		L(L2);
-> 			L(Z);
+x86-64 was rather inconsistent prior to this patch; it used 8 bits
+for the pxm field in cpu_affinity, but 32 bits in mem_affinity.
+This patch makes it consistent: Either use 8 bits consistently (SRAT
+rev 1 or lower) or 32 bits (SRAT rev 2 or higher).
 
-(2) L2 -> Z
+This is patch 2/3.
 
-> 		L(L1);
+Signed-off-by: Kurt Garloff <garloff@suse.de>
 
-(3) Z -> L1
+---
+ arch/x86/mm/srat_64.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-> 		U(L1);
-> 			U(Z);
-> 		U(L2);
-> 	}
-> 
-> 	void tst(void)
-> 	{
-> 		t1();
-> 		t2();
-> 	}
-> 
-> We have the trivial AB-BA deadlock with L1 and L2, but lockdep says:
-> 
-> 	[ INFO: possible circular locking dependency detected ]
-> 	2.6.30-rc6-00043-g22ef37e-dirty #3
-> 	-------------------------------------------------------
-> 	perl/676 is trying to acquire lock:
-> 	 (L1){+.+...}, at: [<ffffffff802522b8>] t2+0x28/0x50
-> 
-> 	but task is already holding lock:
-> 	 (Z){+.+...}, at: [<ffffffff802522ac>] t2+0x1c/0x50
-> 
-> 	which lock already depends on the new lock.
-> 
-> 
-> 	the existing dependency chain (in reverse order) is:
-> 
-> 	-> #2 (Z){+.+...}:
-> 
-> 	-> #1 (L2){+.+...}:
-> 
-> 	-> #0 (L1){+.+...}:
-> 
-> 	other info that might help us debug this:
-> 
-> 	2 locks held by perl/676:
-> 	 #0:  (L2){+.+...}, at: [<ffffffff802522a0>] t2+0x10/0x50
-> 	 #1:  (Z){+.+...}, at: [<ffffffff802522ac>] t2+0x1c/0x50
-> 
-> This output looks obviously wrong, Z does not depend on L1 or any
-> other lock.
+Index: linux-2.6/arch/x86/mm/srat_64.c
+===================================================================
+--- linux-2.6.orig/arch/x86/mm/srat_64.c
++++ linux-2.6/arch/x86/mm/srat_64.c
+@@ -154,6 +154,8 @@ acpi_numa_processor_affinity_init(struct
+ 	if ((pa->flags & ACPI_SRAT_CPU_ENABLED) == 0)
+ 		return;
+ 	pxm = pa->proximity_domain_lo;
++	if (acpi_srat_revision >= 2)
++		pxm |= *((unsigned int*)pa->proximity_domain_hi) << 8;
+ 	node = setup_node(pxm);
+ 	if (node < 0) {
+ 		printk(KERN_ERR "SRAT: Too many proximity domains %x\n", pxm);
+@@ -255,6 +257,8 @@ acpi_numa_memory_affinity_init(struct ac
+ 	start = ma->base_address;
+ 	end = start + ma->length;
+ 	pxm = ma->proximity_domain;
++	if (acpi_srat_revision <= 1)
++		pxm &= 0xff;
+ 	node = setup_node(pxm);
+ 	if (node < 0) {
+ 		printk(KERN_ERR "SRAT: Too many proximity domains.\n");
 
-It does, L1 -> L2 -> Z as per 1 and 2
-which 3 obviously reverses.
 
+Acked-by: Yinghai Lu <yinghai@kernel.org>
