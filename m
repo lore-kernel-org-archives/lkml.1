@@ -1,49 +1,83 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1755616AbZERBy6@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1755768AbZERBza@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1755616AbZERBy6 (ORCPT <rfc822;w@1wt.eu>);
-	Sun, 17 May 2009 21:54:58 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1752334AbZERBys
+	id S1755768AbZERBza (ORCPT <rfc822;w@1wt.eu>);
+	Sun, 17 May 2009 21:55:30 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1751918AbZERBzO
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Sun, 17 May 2009 21:54:48 -0400
-Received: from claw.goop.org ([74.207.240.146]:44027 "EHLO claw.goop.org"
-	rhost-flags-OK-OK-OK-OK) by vger.kernel.org with ESMTP
-	id S1751918AbZERByr (ORCPT <rfc822;linux-kernel@vger.kernel.org>);
-	Sun, 17 May 2009 21:54:47 -0400
-Message-ID: <4A10BFE8.9020703@goop.org>
-Date: Sun, 17 May 2009 18:54:48 -0700
-From: Jeremy Fitzhardinge <jeremy@goop.org>
-User-Agent: Thunderbird 2.0.0.21 (X11/20090320)
+	Sun, 17 May 2009 21:55:14 -0400
+Received: from mail-pz0-f115.google.com ([209.85.222.115]:34781 "EHLO
+	mail-pz0-f115.google.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
+	with ESMTP id S1752334AbZERBzN convert rfc822-to-8bit (ORCPT
+	<rfc822;linux-kernel@vger.kernel.org>);
+	Sun, 17 May 2009 21:55:13 -0400
+DomainKey-Signature: a=rsa-sha1; c=nofws;
+        d=gmail.com; s=gamma;
+        h=mime-version:in-reply-to:references:date:message-id:subject:from:to
+         :cc:content-type:content-transfer-encoding;
+        b=sSu3+KypzG87XZZmgmzNw8ZYp6f8Tq/26ylDIEobyoy9mTXYNDmKGThfr/Wp4Gvas6
+         qZACQhNINvTl09Z6w2X0UA3VK3T8Ej/NDRQ1ZEs5FhEHDHZuHDFpyChQml0QWKD5LOX7
+         KXObTP9xaw4yz+PrkAZvFihA6syOruKNYwtGo=
 MIME-Version: 1.0
-To: devzero@web.de
-CC: david@lang.hm, linux-kernel@vger.kernel.org, Ingo Molnar <mingo@elte.hu>
-Subject: Re: Where do we stand with the Xen patches?
-References: <720427516@web.de>
-In-Reply-To: <720427516@web.de>
-X-Enigmail-Version: 0.95.6
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
-Content-Transfer-Encoding: 7bit
+In-Reply-To: <20090517132613.688da272@infradead.org>
+References: <1242141222-8454-1-git-send-email-tom.leiming@gmail.com>
+	 <20090517132613.688da272@infradead.org>
+Date: Mon, 18 May 2009 09:55:14 +0800
+Message-ID: <d82e647a0905171855x79850a5bv7262f9e698d8b3f7@mail.gmail.com>
+Subject: Re: [PATCH] kernel/async.c:introduce async_schedule*_atomic
+From: Ming Lei <tom.leiming@gmail.com>
+To: Arjan van de Ven <arjan@infradead.org>
+Cc: linux-kernel@vger.kernel.org, akpm@linux-foundation.org
+Content-Type: text/plain; charset=ISO-8859-1
+Content-Transfer-Encoding: 8BIT
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
-devzero@web.de wrote:
-> or is maintaining two different kernel packages a problem?
->   
+2009/5/18 Arjan van de Ven <arjan@infradead.org>:
+> On Tue, 12 May 2009 23:13:42 +0800
+> tom.leiming@gmail.com wrote:
+>
+>> From: Ming Lei <tom.leiming@gmail.com>
+>>
+>> The async_schedule* may not be called in atomic contexts if out of
+>> memory or if there's too much work pending already, because the
+>> async function to be called may sleep.
+>>
+>> This patch fixes the comment of async_schedule*, and introduces
+>> async_schedules*_atomic to allow them called from atomic contexts
+>> safely.
+>
+> (sorry for the late response; have been away from most of my email for
+> a few days)
+>
+> I like the general idea; I was hoping to do it a little bit different
+> though, API wise.
+> I don't mind the parameter for "don't do blocking things" (we should
+> use that to also use GFP_KERNEL/GFP_NOFS or whatever for the
+> allocation), it makes sense.
+>
+> What I would like to see is the option to pass in memory that was
+> externally kmalloc'd. So that you can do
+>
+> foo = kmalloc(..)
+> spin_lock(bar)
+> ...
+> async_schedule_atomic(...);
+>
+> spin_unlock(bar);
+> if (not_used_foo)
+>    kfree(foo);
+>
+> in cases where you don't want to fail while in the atomic portion,
+> but can fail better earlier.
 
-Yes, distros hate the proliferation of kernel packages with different 
-config options, partly because of the combinatorial explosion (32 vs 64, 
-UP vs SMP, PAE vs non-PAE...).  An explicit design intent of all the Xen 
-work is that it can be compile-time enabled without any (significant) 
-effect on native performance, so that the decision to enable Xen doesn't 
-have any downsides (either in terms of raw performance or maintenance of 
-the kernel package).
+If we do this way, the type of async_schedule*()  and async_schedule*_inatomic()
+is different, and callers will be messed with them, especially for _inatomic().
 
-> if so, instead of using IFDEF`s, can`t the critical path`s being generously circumvented 
-> by default, (if, else...), needing some dom0 kernel bootparam to be activated (i.e. use
-> the kernel as dom0 kernel) ?
->   
-Well, broadly speaking, yes.  We try to avoid putting if/thens in 
-critical paths, and where there are changes to hot patches, we use 
-dynamic code patching to make it as efficient as possible.
+BTW: I have submited new version of this patches, would you mind
+giving a review?
 
-    J
+Thanks.
+
+-- 
+Lei Ming
