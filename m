@@ -1,81 +1,42 @@
-Return-Path: <linux-kernel-owner+w=401wt.eu-S1756276AbZERHTU@vger.kernel.org>
+Return-Path: <linux-kernel-owner+w=401wt.eu-S1756327AbZERHWo@vger.kernel.org>
 Received: (majordomo@vger.kernel.org) by vger.kernel.org via listexpand
-	id S1756276AbZERHTU (ORCPT <rfc822;w@1wt.eu>);
-	Mon, 18 May 2009 03:19:20 -0400
-Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755902AbZERHTF
+	id S1756327AbZERHWo (ORCPT <rfc822;w@1wt.eu>);
+	Mon, 18 May 2009 03:22:44 -0400
+Received: (majordomo@vger.kernel.org) by vger.kernel.org id S1755770AbZERHWe
 	(ORCPT <rfc822;linux-kernel-outgoing>);
-	Mon, 18 May 2009 03:19:05 -0400
-Received: from vpn.id2.novell.com ([195.33.99.129]:19269 "EHLO
-	vpn.id2.novell.com" rhost-flags-OK-OK-OK-OK) by vger.kernel.org
-	with ESMTP id S1755917AbZERHTD convert rfc822-to-8bit (ORCPT
+	Mon, 18 May 2009 03:22:34 -0400
+Received: from rhun.apana.org.au ([64.62.148.172]:49558 "EHLO
+	arnor.apana.org.au" rhost-flags-OK-OK-OK-FAIL) by vger.kernel.org
+	with ESMTP id S1755064AbZERHWd (ORCPT
 	<rfc822;linux-kernel@vger.kernel.org>);
-	Mon, 18 May 2009 03:19:03 -0400
-Message-Id: <4A11280402000078000014E2@vpn.id2.novell.com>
-X-Mailer: Novell GroupWise Internet Agent 8.0.0 
-Date: Mon, 18 May 2009 08:19:00 +0100
-From: "Jan Beulich" <JBeulich@novell.com>
-To: "Jeremy Fitzhardinge" <jeremy@goop.org>
-Cc: "Ingo Molnar" <mingo@elte.hu>, "Jun Nakajima" <jun.nakajima@intel.com>,
-       "Xiaohui Xin" <xiaohui.xin@intel.com>, "Xin Li" <xin.li@intel.com>,
-       "Xen-devel" <xen-devel@lists.xensource.com>,
-       "Nick Piggin" <npiggin@suse.de>,
-       "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
-       "H. Peter Anvin" <hpa@zytor.com>
-Subject: Re: [Xen-devel] Performance overhead of paravirt_ops on		
-	 nativeidentified
-References: <4A0B62F7.5030802@goop.org>
- <4A0BED040200007800000DB0@vpn.id2.novell.com> <4A0C58BB.3090303@goop.org>
- <4A0D3F8C02000078000010A7@vpn.id2.novell.com> <4A0DB988.6000009@goop.org>
-In-Reply-To: <4A0DB988.6000009@goop.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 8BIT
+	Mon, 18 May 2009 03:22:33 -0400
+Date: Mon, 18 May 2009 17:22:26 +1000
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Phillip Lougher <phillip@lougher.demon.co.uk>,
+       linux-crypto@vger.kernel.org,
+       Linux Kernel Development <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH] crypto: compress - Return produced bytes in
+	crypto_{,de}compress_{update,final}()
+Message-ID: <20090518072226.GA19735@gondor.apana.org.au>
+References: <20090307104637.GB8731@gondor.apana.org.au> <49B36A18.5030506@lougher.demon.co.uk> <alpine.LRH.2.00.0903111830540.1040@vixen.sonytel.be> <alpine.LRH.2.00.0903171345040.7595@vixen.sonytel.be> <alpine.LRH.2.00.0903241729540.4446@vixen.sonytel.be> <20090420060313.GA891@gondor.apana.org.au> <alpine.LRH.2.00.0904200925290.11211@vixen.sonytel.be> <alpine.LRH.2.00.0905051613070.21255@vixen.sonytel.be> <alpine.LRH.2.00.0905111731490.302@vixen.sonytel.be> <alpine.LRH.2.00.0905180915430.16754@vixen.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <alpine.LRH.2.00.0905180915430.16754@vixen.sonytel.be>
+User-Agent: Mutt/1.5.18 (2008-05-17)
 Sender: linux-kernel-owner@vger.kernel.org
 List-ID: <linux-kernel.vger.kernel.org>
 X-Mailing-List: linux-kernel@vger.kernel.org
 
->>> Jeremy Fitzhardinge <jeremy@goop.org> 15.05.09 20:50 >>>
->Jan Beulich wrote:
->> A patch for the pv-ops kernel would require some time. What I can give you
->> right away - just for reference - are the sources we currently use in our kernel:
->> attached.
+On Mon, May 18, 2009 at 09:16:49AM +0200, Geert Uytterhoeven wrote:
 >
->Hm, I see.  Putting a call out to a pv-ops function in the ticket lock 
->slow path looks pretty straightforward.  The need for an extra lock on 
->the contended unlock side is a bit unfortunate; have you measured to see 
->what hit that has?  Seems to me like you could avoid the problem by 
->using per-cpu storage rather than stack storage (though you'd need to 
->copy the per-cpu data to stack when handling a nested spinlock).
+> As I just saw your pull request for Linus, which didn't include this change,
+> I'm wondering if you plan to apply it for 2.6.30?
 
-Not sure how you'd imagine this to work: The unlock code has to look at all
-cpus' data in either case, so an inner lock would still be required imo.
-
->What's the thinking behind the xen_spin_adjust() stuff?
-
-That's the placeholder for implementing interrupt re-enabling in the irq-save
-lock path. The requirement is that if a nested lock attempt hits the same
-lock on the same cpu that it failed to get acquired on earlier (but got a ticket
-already), tickets for the given (lock, cpu) pair need to be circularly shifted
-around so that the innermost requestor gets the earliest ticket. This is what
-that function's job will become if I ever get to implement this.
-
->> static __always_inline void __ticket_spin_lock(raw_spinlock_t *lock) { 
->> unsigned int token, count; bool free; __ticket_spin_lock_preamble; if 
->> (unlikely(!free)) token = xen_spin_adjust(lock, token); do { count = 1 
->> << 10; __ticket_spin_lock_body; } while (unlikely(!count) && 
->> !xen_spin_wait(lock, token)); } 
->
->How does this work?  Doesn't it always go into the slowpath loop even if 
->the preamble got the lock with no contention?
-
-It indeed always enters the slowpath loop, but only for a single pass through
-part of its body (the first compare in the body macro will make it exit the loop
-right away: 'token' is not only the ticket here, but the full lock->slock
-contents). But yes, I think you're right, one could avoid entering the body
-altogether by moving the containing loop into the if(!free) body. The logic
-went through a number of re-writes, so I must have overlooked that
-opportunity on the last round of adjustments.
-
-Jan
-
+Sorry, this is too late for 2.6.30.
+-- 
+Visit Openswan at http://www.openswan.org/
+Email: Herbert Xu ~{PmV>HI~} <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
